@@ -1,4 +1,4 @@
-import { ChakraBox as Box, useChakraToast as useToast } from "fidesui";
+import { ChakraBox as Box, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -7,7 +7,6 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
@@ -16,7 +15,7 @@ import PropertyForm, { FormValues } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const { id: propertyId } = router.query;
   const { data, error } = useGetPropertyByIdQuery(propertyId as string);
@@ -31,11 +30,11 @@ const EditPropertyPage: NextPage = () => {
     const result = await updateProperty({ id: id!, property: updateValues });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
 
-    toast(successToastParams(`Property ${values.name} updated successfully`));
+    message.success(`Property ${values.name} updated successfully`);
   };
 
   if (error) {

@@ -13,7 +13,7 @@ import {
   Radio,
   Space,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
@@ -237,7 +237,7 @@ export const TCFConfigurationDropdown = ({
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_CREATE,
   ]);
 
-  const toast = useToast({ id: "tcf-config-toast" });
+  const message = useMessage();
   const [deleteTCFConfiguration] = useDeleteTCFConfigurationMutation();
 
   const {
@@ -282,16 +282,15 @@ export const TCFConfigurationDropdown = ({
       onConfigurationDelete?.(id);
       setConfigToDelete(undefined);
       onDeleteClose();
-      toast({
-        status: "success",
-        description: `Configuration "${configToDelete?.name}" was successfully deleted.`,
-      });
+      message.success(
+        `Configuration "${configToDelete?.name}" was successfully deleted.`,
+      );
     } catch (error: any) {
       const errorMsg = getErrorMessage(
         error,
         "A problem occurred while deleting the configuration.",
       );
-      toast({ status: "error", description: errorMsg });
+      message.error(errorMsg);
     }
   };
 
