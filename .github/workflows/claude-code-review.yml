@@ -69,6 +69,10 @@ jobs:
 
       # Pull commands, skills, and CLAUDE.md context from talos so the
       # review runs with the same prompts and architecture docs we use locally.
+      #
+      # SECURITY NOTE: Do NOT enable ACTIONS_STEP_DEBUG on this workflow.
+      # talos is a private repo — debug logging can expose its file contents
+      # in this public repo's GHA logs. Default verbosity only reveals file paths.
       - name: Checkout talos Claude config
         uses: actions/checkout@v4
         with:
