@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Added Claude Code Review GitHub Actions workflow for automated PR reviews
+pr: 7647
+labels: []
