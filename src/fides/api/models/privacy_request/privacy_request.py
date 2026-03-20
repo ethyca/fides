@@ -709,7 +709,7 @@ class PrivacyRequest(
         drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
 
         # Serialize complex objects to repr format for storage
-        serialized_body = {}
+        serialized_body: Dict[str, Any] = {}
         for key, value in drp_request_body_dict.items():
             if value is not None:
                 # Handle nested dict/objects
