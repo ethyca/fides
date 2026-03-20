@@ -2,10 +2,10 @@ import {
   Button,
   ChakraBox as Box,
   ChakraSimpleGrid as SimpleGrid,
-  ChakraText as Text,
   ChakraVStack as VStack,
   useMessage,
   useModal,
+  useNotification,
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
@@ -35,6 +35,7 @@ const RegulationManagement = ({
   data: LocationRegulationResponse;
 }) => {
   const message = useMessage();
+  const notification = useNotification();
   const modal = useModal();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.regulations ?? [],
@@ -53,7 +54,7 @@ const RegulationManagement = ({
   const router = useRouter();
   const goToLocations = () => {
     router.push(LOCATIONS_ROUTE).then(() => {
-      message.destroy();
+      notification.destroy();
     });
   };
 
@@ -69,13 +70,12 @@ const RegulationManagement = ({
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
-      message.success(
-        <Text display="inline">
-          Fides has automatically associated the relevant locations with your
-          regulation choices.
-          <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
-        </Text>,
-      );
+      notification.success({
+        message: "Regulation saved",
+        description:
+          "Fides has automatically associated the relevant locations with your regulation choices.",
+        actions: <ToastLink onClick={goToLocations}>View locations</ToastLink>,
+      });
     }
   };
 

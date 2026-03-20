@@ -1,4 +1,4 @@
-import { Empty, useMessage } from "fidesui";
+import { Empty, useMessage, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -13,6 +13,7 @@ import {
   useAntTable,
   useTableState,
 } from "~/features/common/table/hooks";
+import ToastLink from "~/features/common/ToastLink";
 import {
   AlertLevel,
   ConsentAlertInfo,
@@ -26,7 +27,6 @@ import {
   useIgnoreMonitorResultSystemsMutation,
 } from "../action-center.slice";
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
-import { SuccessToastContent } from "../SuccessToastContent";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
@@ -42,6 +42,7 @@ export const useDiscoveredSystemAggregateTable = ({
 }: UseDiscoveredSystemAggregateTableConfig) => {
   const router = useRouter();
   const message = useMessage();
+  const notification = useNotification();
 
   const [firstPageConsentStatus, setFirstPageConsentStatus] = useState<
     ConsentAlertInfo | undefined
@@ -175,12 +176,13 @@ export const useDiscoveredSystemAggregateTable = ({
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
-      message.success(
-        SuccessToastContent(
-          `${totalUpdates} assets have been added to the system inventory.`,
-          () => router.push(SYSTEM_ROUTE),
+      notification.success({
+        message: "Added to inventory",
+        description: `${totalUpdates} assets have been added to the system inventory.`,
+        actions: (
+          <ToastLink onClick={() => router.push(SYSTEM_ROUTE)}>View</ToastLink>
         ),
-      );
+      });
       resetSelections();
     }
   }, [
@@ -188,6 +190,7 @@ export const useDiscoveredSystemAggregateTable = ({
     addMonitorResultSystemsMutation,
     monitorId,
     message,
+    notification,
     router,
     resetSelections,
   ]);
@@ -208,14 +211,19 @@ export const useDiscoveredSystemAggregateTable = ({
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
-      message.success(
-        SuccessToastContent(
-          `${totalUpdates} assets have been ignored and will not appear in future scans.`,
-          async () => {
-            await onTabChange(ActionCenterTabHash.IGNORED);
-          },
+      notification.success({
+        message: "Assets ignored",
+        description: `${totalUpdates} assets have been ignored and will not appear in future scans.`,
+        actions: (
+          <ToastLink
+            onClick={async () => {
+              await onTabChange(ActionCenterTabHash.IGNORED);
+            }}
+          >
+            View
+          </ToastLink>
         ),
-      );
+      });
       resetSelections();
     }
   }, [
@@ -223,6 +231,7 @@ export const useDiscoveredSystemAggregateTable = ({
     ignoreMonitorResultSystemsMutation,
     monitorId,
     message,
+    notification,
     onTabChange,
     resetSelections,
   ]);

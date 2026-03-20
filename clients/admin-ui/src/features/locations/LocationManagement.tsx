@@ -2,10 +2,10 @@ import {
   Button,
   ChakraBox as Box,
   ChakraSimpleGrid as SimpleGrid,
-  ChakraText as Text,
   ChakraVStack as VStack,
   useMessage,
   useModal,
+  useNotification,
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
@@ -28,6 +28,7 @@ import { groupLocationsByContinent } from "./transformations";
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const message = useMessage();
+  const notification = useNotification();
   const modal = useModal();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.locations?.filter((l) => l.id !== PrivacyNoticeRegion.GLOBAL) ?? [],
@@ -52,7 +53,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const router = useRouter();
   const goToRegulations = () => {
     router.push(REGULATIONS_ROUTE).then(() => {
-      message.destroy();
+      notification.destroy();
     });
   };
 
@@ -68,15 +69,14 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
-      message.success(
-        <Text display="inline">
-          Fides has automatically associated the relevant regulations with your
-          location choices.{" "}
-          <ToastLink onClick={goToRegulations}>
-            View regulations here.
-          </ToastLink>
-        </Text>,
-      );
+      notification.success({
+        message: "Location saved",
+        description:
+          "Fides has automatically associated the relevant regulations with your location choices.",
+        actions: (
+          <ToastLink onClick={goToRegulations}>View regulations</ToastLink>
+        ),
+      });
     }
   };
 

@@ -2,8 +2,9 @@ import {
   ChakraBox as Box,
   ChakraLink as Link,
   ChakraText as Text,
+  Space,
   TabsProps,
-  useMessage,
+  useNotification,
 } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -44,26 +45,19 @@ enum SystemTabKeys {
   HISTORY = "history",
 }
 
-// The toast doesn't seem to handle next links well, so use buttons with onClick
-// handlers instead
-const ToastMessage = ({
+const NotificationActions = ({
   onViewDatamap,
   onAddPrivacyDeclaration,
 }: {
   onViewDatamap: () => void;
   onAddPrivacyDeclaration: () => void;
 }) => (
-  <Box>
-    <Text fontWeight="700">System has been saved successfully</Text>
-    <Text textColor="gray.700" whiteSpace="inherit">
-      Your system has been added to your data map. You can{" "}
-      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> or{" "}
-      <ToastLink onClick={onAddPrivacyDeclaration}>
-        add privacy declarations in the next tab
-      </ToastLink>
-      .
-    </Text>
-  </Box>
+  <Space>
+    <ToastLink onClick={onViewDatamap}>View data map</ToastLink>
+    <ToastLink onClick={onAddPrivacyDeclaration}>
+      Add privacy declarations
+    </ToastLink>
+  </Space>
 );
 
 const useSystemFormTabs = ({
@@ -85,7 +79,7 @@ const useSystemFormTabs = ({
 
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
-  const message = useMessage();
+  const notification = useNotification();
   const dispatch = useAppDispatch();
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
@@ -115,21 +109,25 @@ const useSystemFormTabs = ({
         query: { id: system.fides_key },
       });
 
-      message.success(
-        <ToastMessage
-          onViewDatamap={() => {
-            router.push(systemOrDatamapRoute).then(() => {
-              message.destroy();
-            });
-          }}
-          onAddPrivacyDeclaration={() => {
-            baseOnTabChange("data-uses");
-            message.destroy();
-          }}
-        />,
-      );
+      notification.success({
+        message: "System saved",
+        description: "Your system has been added to your data map.",
+        actions: (
+          <NotificationActions
+            onViewDatamap={() => {
+              router.push(systemOrDatamapRoute).then(() => {
+                notification.destroy();
+              });
+            }}
+            onAddPrivacyDeclaration={() => {
+              baseOnTabChange("data-uses");
+              notification.destroy();
+            }}
+          />
+        ),
+      });
     },
-    [activeSystem, router, systemOrDatamapRoute, message, baseOnTabChange],
+    [activeSystem, router, systemOrDatamapRoute, notification, baseOnTabChange],
   );
 
   useEffect(() => {

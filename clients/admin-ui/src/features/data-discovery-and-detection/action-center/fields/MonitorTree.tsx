@@ -655,7 +655,7 @@ const MonitorTree = forwardRef<
     ]);
 
     return (
-      <Flex gap="middle" vertical className="h-full">
+      <Flex gap="medium" vertical className="h-full">
         <Title level={3} className="sticky top-0" ellipsis>
           Schema explorer
         </Title>

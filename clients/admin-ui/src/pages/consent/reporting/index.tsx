@@ -80,7 +80,7 @@ const ConsentReportingPage = () => {
           </Button>
         }
       />
-      <Flex vertical gap="middle">
+      <Flex vertical gap="medium">
         <Flex justify="space-between">
           <DateRangePicker
             placeholder={["From", "To"]}
@@ -112,7 +112,7 @@ const ConsentReportingPage = () => {
                   },
                 ],
               }}
-              overlayStyle={{ width: "220px" }}
+              styles={{ root: { width: "220px" } }}
               trigger={["click"]}
             >
               <Button

@@ -6,6 +6,7 @@ import {
   Space,
   Text,
   useMessage,
+  useNotification,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";
@@ -25,6 +26,7 @@ import {
 } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
+import ToastLink from "~/features/common/ToastLink";
 import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
@@ -49,7 +51,6 @@ import {
   DiscoveryStatusDisplayNames,
 } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
-import { SuccessToastContent } from "../SuccessToastContent";
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
@@ -76,6 +77,7 @@ export const useDiscoveredAssetsTable = ({
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
   const message = useMessage();
+  const notification = useNotification();
 
   const [systemName, setSystemName] = useState(systemId);
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
@@ -464,15 +466,16 @@ export const useDiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
-      message.success(
-        SuccessToastContent(
-          `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
-          systemToLink
-            ? () =>
-                router.push(`${SYSTEM_ROUTE}/configure/${systemToLink}#assets`)
-            : () => router.push(SYSTEM_ROUTE),
+      const viewHref = systemToLink
+        ? `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`
+        : SYSTEM_ROUTE;
+      notification.success({
+        message: "Added to inventory",
+        description: `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
+        actions: (
+          <ToastLink onClick={() => router.push(viewHref)}>View</ToastLink>
         ),
-      );
+      });
       resetSelections();
     }
   }, [
@@ -481,6 +484,7 @@ export const useDiscoveredAssetsTable = ({
     selectedRows,
     systemName,
     message,
+    notification,
     router,
     resetSelections,
   ]);

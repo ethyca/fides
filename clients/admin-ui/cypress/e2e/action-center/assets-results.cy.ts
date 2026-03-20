@@ -190,7 +190,7 @@ describe("Action center Asset Results", () => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addAssets");
-      cy.shouldShowMessage(
+      cy.shouldShowNotification(
         "success",
         'Browser request "11020051272" has been added to the system inventory.',
       );
@@ -200,7 +200,7 @@ describe("Action center Asset Results", () => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreAssets");
-      cy.shouldShowMessage(
+      cy.shouldShowNotification(
         "success",
         'Browser request "11020051272" has been ignored and will not appear in future scans.',
       );
@@ -226,7 +226,7 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.get(".ant-dropdown-menu-item").contains("Add").click();
       cy.wait("@addAssets");
-      cy.shouldShowMessage(
+      cy.shouldShowNotification(
         "success",
         "3 assets from Google Tag Manager have been added to the system inventory.",
       );

@@ -112,7 +112,7 @@ describe("Action center system aggregate results", () => {
     cy.wait("@ignoreMonitorResultSystem").then((interception) => {
       expect(interception.request.url).to.contain("[undefined]");
     });
-    cy.shouldShowMessage(
+    cy.shouldShowNotification(
       "success",
       "108 uncategorized assets have been ignored and will not appear in future scans.",
     );
@@ -122,7 +122,7 @@ describe("Action center system aggregate results", () => {
       cy.getByTestId("add-btn").click({ force: true });
     });
     cy.wait("@addMonitorResultSystem");
-    cy.shouldShowMessage(
+    cy.shouldShowNotification(
       "success",
       "10 assets from Google Tag Manager have been added to the system inventory.",
     );
@@ -132,7 +132,7 @@ describe("Action center system aggregate results", () => {
       cy.getByTestId("ignore-btn").click({ force: true });
     });
     cy.wait("@ignoreMonitorResultSystem");
-    cy.shouldShowMessage(
+    cy.shouldShowNotification(
       "success",
       "10 assets from Google Tag Manager have been ignored and will not appear in future scans.",
     );
@@ -154,7 +154,7 @@ describe("Action center system aggregate results", () => {
     cy.getByTestId("bulk-actions-menu").click();
     cy.get(".ant-dropdown-menu-item").contains("Add").click();
     cy.wait("@addMonitorResultSystem");
-    cy.shouldShowMessage(
+    cy.shouldShowNotification(
       "success",
       "16 assets have been added to the system inventory.",
     );
@@ -168,7 +168,7 @@ describe("Action center system aggregate results", () => {
     cy.getByTestId("bulk-actions-menu").click();
     cy.get(".ant-dropdown-menu-item").contains("Ignore").click();
     cy.wait("@ignoreMonitorResultSystem");
-    cy.shouldShowMessage(
+    cy.shouldShowNotification(
       "success",
       "124 assets have been ignored and will not appear in future scans.",
     );

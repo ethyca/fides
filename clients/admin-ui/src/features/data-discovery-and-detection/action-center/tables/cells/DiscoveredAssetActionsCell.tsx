@@ -1,10 +1,18 @@
-import { Button, Icons, Space, Tooltip, useMessage } from "fidesui";
+import {
+  Button,
+  Icons,
+  Space,
+  Tooltip,
+  useMessage,
+  useNotification,
+} from "fidesui";
 import { truncate } from "lodash";
 import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
+import ToastLink from "~/features/common/ToastLink";
 import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
@@ -14,7 +22,6 @@ import {
   useRestoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
-import { SuccessToastContent } from "../../SuccessToastContent";
 import hasConsentComplianceIssue from "../../utils/hasConsentComplianceIssue";
 
 interface DiscoveredAssetActionsCellProps {
@@ -42,6 +49,7 @@ export const DiscoveredAssetActionsCell = ({
   ] = useRestoreMonitorResultAssetsMutation();
 
   const message = useMessage();
+  const notification = useNotification();
 
   const router = useRouter();
 
@@ -73,12 +81,13 @@ export const DiscoveredAssetActionsCell = ({
     } else {
       const systemToLink = userAssignedSystemKey || systemKey;
       const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
-      message.success(
-        SuccessToastContent(
-          `${type} "${truncatedAssetName}" has been added to the system inventory.`,
-          systemToLink ? () => router.push(href) : undefined,
-        ),
-      );
+      notification.success({
+        message: "Added to inventory",
+        description: `${type} "${truncatedAssetName}" has been added to the system inventory.`,
+        actions: systemToLink ? (
+          <ToastLink onClick={() => router.push(href)}>View</ToastLink>
+        ) : undefined,
+      });
     }
   };
 
@@ -89,14 +98,19 @@ export const DiscoveredAssetActionsCell = ({
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
-      message.success(
-        SuccessToastContent(
-          `${type} "${truncatedAssetName}" has been ignored and will not appear in future scans.`,
-          async () => {
-            await onTabChange(ActionCenterTabHash.IGNORED);
-          },
+      notification.success({
+        message: "Asset ignored",
+        description: `${type} "${truncatedAssetName}" has been ignored and will not appear in future scans.`,
+        actions: (
+          <ToastLink
+            onClick={async () => {
+              await onTabChange(ActionCenterTabHash.IGNORED);
+            }}
+          >
+            View
+          </ToastLink>
         ),
-      );
+      });
     }
   };
 
