@@ -173,7 +173,11 @@ const ConfigurePrivacyExperience = ({
           passedInExperience ? "updated" : "created"
         }`,
       );
-      router.push(PRIVACY_EXPERIENCE_ROUTE);
+      // Defer navigation to the next microtask so the message re-render
+      // completes before the page transition starts unmounting components.
+      // Without this, Ant v6 can throw a locale error when the message
+      // state update overlaps with component unmounting.
+      queueMicrotask(() => router.push(PRIVACY_EXPERIENCE_ROUTE));
     }
   };
 
