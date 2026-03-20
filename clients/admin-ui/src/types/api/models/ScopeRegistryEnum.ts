@@ -653,6 +653,62 @@ export enum ScopeRegistryEnum {
    */
   PROPERTY_UPDATE = "property:update",
   /**
+   * RBAC_EVALUATE
+   */
+  RBAC_EVALUATE = "rbac:evaluate",
+  /**
+   * RBAC_CONSTRAINT_CREATE
+   */
+  RBAC_CONSTRAINT_CREATE = "rbac_constraint:create",
+  /**
+   * RBAC_CONSTRAINT_DELETE
+   */
+  RBAC_CONSTRAINT_DELETE = "rbac_constraint:delete",
+  /**
+   * RBAC_CONSTRAINT_READ
+   */
+  RBAC_CONSTRAINT_READ = "rbac_constraint:read",
+  /**
+   * RBAC_CONSTRAINT_UPDATE
+   */
+  RBAC_CONSTRAINT_UPDATE = "rbac_constraint:update",
+  /**
+   * RBAC_PERMISSION_READ
+   */
+  RBAC_PERMISSION_READ = "rbac_permission:read",
+  /**
+   * RBAC_ROLE_CREATE
+   */
+  RBAC_ROLE_CREATE = "rbac_role:create",
+  /**
+   * RBAC_ROLE_DELETE
+   */
+  RBAC_ROLE_DELETE = "rbac_role:delete",
+  /**
+   * RBAC_ROLE_READ
+   */
+  RBAC_ROLE_READ = "rbac_role:read",
+  /**
+   * RBAC_ROLE_UPDATE
+   */
+  RBAC_ROLE_UPDATE = "rbac_role:update",
+  /**
+   * RBAC_USER_ROLE_CREATE
+   */
+  RBAC_USER_ROLE_CREATE = "rbac_user_role:create",
+  /**
+   * RBAC_USER_ROLE_DELETE
+   */
+  RBAC_USER_ROLE_DELETE = "rbac_user_role:delete",
+  /**
+   * RBAC_USER_ROLE_READ
+   */
+  RBAC_USER_ROLE_READ = "rbac_user_role:read",
+  /**
+   * RBAC_USER_ROLE_UPDATE
+   */
+  RBAC_USER_ROLE_UPDATE = "rbac_user_role:update",
+  /**
    * RESPONDENT_CREATE
    */
   RESPONDENT_CREATE = "respondent:create",

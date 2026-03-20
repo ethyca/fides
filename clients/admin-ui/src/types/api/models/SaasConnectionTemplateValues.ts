@@ -77,6 +77,26 @@ export type SaasConnectionTemplateValues = {
       }
     | {
         /**
+         * Tenant ID
+         *
+         * Azure AD tenant ID (directory ID) from the Azure portal
+         */
+        tenant_id: string;
+        /**
+         * Client ID
+         *
+         * Application (client) ID from your Entra app registration
+         */
+        client_id: string;
+        /**
+         * Client Secret
+         *
+         * Client secret value from your Entra app registration (Certificates & secrets)
+         */
+        client_secret: string;
+      }
+    | {
+        /**
          * Test Email Address
          */
         test_email_address?: string | null;
@@ -250,6 +270,37 @@ export type SaasConnectionTemplateValues = {
          * Site Url
          */
         site_url?: string | null;
+        /**
+         * Domain
+         */
+        domain?: string | null;
+        /**
+         * Username
+         */
+        username?: string | null;
+        /**
+         * Api Key
+         */
+        api_key?: string | null;
+        [key: string]:
+          | unknown
+          | string
+          | null
+          | string
+          | null
+          | string
+          | null
+          | string
+          | null
+          | string
+          | null
+          | string
+          | null
+          | string
+          | null
+          | string
+          | null
+          | undefined;
       }
     | {
         [key: string]: unknown;

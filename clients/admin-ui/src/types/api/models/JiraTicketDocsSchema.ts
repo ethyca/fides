@@ -26,4 +26,35 @@ export type JiraTicketDocsSchema = {
    * Site Url
    */
   site_url?: string | null;
+  /**
+   * Domain
+   */
+  domain?: string | null;
+  /**
+   * Username
+   */
+  username?: string | null;
+  /**
+   * Api Key
+   */
+  api_key?: string | null;
+  [key: string]:
+    | unknown
+    | string
+    | null
+    | string
+    | null
+    | string
+    | null
+    | string
+    | null
+    | string
+    | null
+    | string
+    | null
+    | string
+    | null
+    | string
+    | null
+    | undefined;
 };

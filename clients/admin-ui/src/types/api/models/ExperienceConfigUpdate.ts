@@ -84,5 +84,4 @@ export type ExperienceConfigUpdate = {
    * Determines the behavior of the reject all button
    */
   reject_all_mechanism?: RejectAllMechanism | null;
-  resurface_behavior?: Array<ResurfaceBehavior> | null;
 };

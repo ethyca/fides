@@ -5,7 +5,7 @@
  *
  * Enum of constraint types
  */
-export enum ConstraintType {
+export enum fidesplus__api__schemas__discovery_monitor__ConstraintType {
   PRIMARY_KEY = "primary_key",
   FOREIGN_KEY = "foreign_key",
 }

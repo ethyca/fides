@@ -51,6 +51,10 @@ export type fides__api__schemas__privacy_center_config__PrivacyCenterConfig = {
    */
   favicon_path?: string | null;
   /**
+   * Page Title
+   */
+  page_title?: string | null;
+  /**
    * Actions
    */
   actions: Array<PrivacyRequestOption>;
@@ -67,6 +71,9 @@ export type fides__api__schemas__privacy_center_config__PrivacyCenterConfig = {
    * Privacy Policy Url Text
    */
   privacy_policy_url_text?: string | null;
+  /**
+   * Links
+   */
   links?: Array<PrivacyCenterLink>;
   policy_unavailable_messages?: PolicyUnavailableMessages | null;
 };

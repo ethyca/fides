@@ -84,6 +84,10 @@ import type { ClassifyResult } from "./models/ClassifyResult";
 import type { ClassifyStatusUpdatePayload } from "./models/ClassifyStatusUpdatePayload";
 import type { ClassifySystem } from "./models/ClassifySystem";
 import type { ClientCreatedResponse } from "./models/ClientCreatedResponse";
+import type { ClientCreateRequest } from "./models/ClientCreateRequest";
+import type { ClientResponse } from "./models/ClientResponse";
+import type { ClientSecretRotateResponse } from "./models/ClientSecretRotateResponse";
+import type { ClientUpdateRequest } from "./models/ClientUpdateRequest";
 import type { CloudConfig } from "./models/CloudConfig";
 import { ColumnSort } from "./models/ColumnSort";
 import type { CommentResponse } from "./models/CommentResponse";
@@ -131,6 +135,8 @@ import { DATAMAP_GROUPING } from "./models/DATAMAP_GROUPING";
 import type { Dataset } from "./models/Dataset";
 import type { DatasetConfigCtlDataset } from "./models/DatasetConfigCtlDataset";
 import type { DatasetConfigSchema } from "./models/DatasetConfigSchema";
+import type { DatasetFidesKeysResponse } from "./models/DatasetFidesKeysResponse";
+import type { DatasetPropertyIdsResponse } from "./models/DatasetPropertyIdsResponse";
 import type { DatasetReachability } from "./models/DatasetReachability";
 import type { DatasetResponse } from "./models/DatasetResponse";
 import type { DatasetTestRequest } from "./models/DatasetTestRequest";
@@ -201,12 +207,14 @@ import type { IDPBulkActionResponse } from "./models/IDPBulkActionResponse";
 import type { IDPMonitorBulkSelection } from "./models/IDPMonitorBulkSelection";
 import type { IDPMonitorResourcesDynamicFilters } from "./models/IDPMonitorResourcesDynamicFilters";
 import type { JiraIssueType } from "./models/JiraIssueType";
+import type { JiraLinkRequest } from "./models/JiraLinkRequest";
 import type { JiraOAuthInitiateRequest } from "./models/JiraOAuthInitiateRequest";
 import type { JiraOAuthInitiateResponse } from "./models/JiraOAuthInitiateResponse";
 import type { JiraPreviewRequest } from "./models/JiraPreviewRequest";
 import type { JiraProject } from "./models/JiraProject";
 import type { JiraStatusCategory } from "./models/JiraStatusCategory";
 import type { JiraTicketData } from "./models/JiraTicketData";
+import type { JiraTicketResult } from "./models/JiraTicketResult";
 import type { LLMChatRequest } from "./models/LLMChatRequest";
 import type { LLMClassifyRequest } from "./models/LLMClassifyRequest";
 import type { LocationRegulationResponse } from "./models/LocationRegulationResponse";
@@ -264,6 +272,7 @@ import type { Page_AttachmentResponse_ } from "./models/Page_AttachmentResponse_
 import type { Page_BasicSystemResponseExtended_ } from "./models/Page_BasicSystemResponseExtended_";
 import type { Page_ClassificationBenchmarkSummary_ } from "./models/Page_ClassificationBenchmarkSummary_";
 import type { Page_ClassifyInstanceResponseValues_ } from "./models/Page_ClassifyInstanceResponseValues_";
+import type { Page_ClientResponse_ } from "./models/Page_ClientResponse_";
 import type { Page_CommentResponse_ } from "./models/Page_CommentResponse_";
 import type { Page_ConnectionConfigurationResponse_ } from "./models/Page_ConnectionConfigurationResponse_";
 import type { Page_ConnectionSystemTypeMap_ } from "./models/Page_ConnectionSystemTypeMap_";
@@ -311,6 +320,7 @@ import type { Page_TCFPublisherRestrictionResponse_ } from "./models/Page_TCFPub
 import type { Page_TemplateResponse_ } from "./models/Page_TemplateResponse_";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "./models/Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__";
 import type { Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ } from "./models/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__";
+import type { Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__ } from "./models/Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__";
 import type { Page_UserResponse_ } from "./models/Page_UserResponse_";
 import type { PaginatedResponse_ConsentResponse_ } from "./models/PaginatedResponse_ConsentResponse_";
 import type { PaginationFilterParams } from "./models/PaginationFilterParams";
@@ -365,11 +375,23 @@ import type { PromptInfo } from "./models/PromptInfo";
 import { PropagationPolicyKey } from "./models/PropagationPolicyKey";
 import type { Property } from "./models/Property";
 import type { PropertyCreate } from "./models/PropertyCreate";
+import type { PropertyDatasetMappingsResponse } from "./models/PropertyDatasetMappingsResponse";
 import type { PropertyNameResolutionRequest } from "./models/PropertyNameResolutionRequest";
 import type { PropertyNameResolutionResponse } from "./models/PropertyNameResolutionResponse";
 import type { PublicPropertyResponse } from "./models/PublicPropertyResponse";
 import type { PurposesResponse } from "./models/PurposesResponse";
 import type { QuestionnaireStatusResponse } from "./models/QuestionnaireStatusResponse";
+import type { RBACConstraintCreate } from "./models/RBACConstraintCreate";
+import type { RBACConstraintResponse } from "./models/RBACConstraintResponse";
+import type { RBACEvaluateRequest } from "./models/RBACEvaluateRequest";
+import type { RBACEvaluateResponse } from "./models/RBACEvaluateResponse";
+import type { RBACPermissionResponse } from "./models/RBACPermissionResponse";
+import type { RBACRoleCreate } from "./models/RBACRoleCreate";
+import type { RBACRolePermissionsUpdate } from "./models/RBACRolePermissionsUpdate";
+import type { RBACRoleResponse } from "./models/RBACRoleResponse";
+import type { RBACRoleUpdate } from "./models/RBACRoleUpdate";
+import type { RBACUserRoleCreate } from "./models/RBACUserRoleCreate";
+import type { RBACUserRoleResponse } from "./models/RBACUserRoleResponse";
 import type { RecalculateConsentResponse } from "./models/RecalculateConsentResponse";
 import type { RecordConsentServedRequest } from "./models/RecordConsentServedRequest";
 import type { RecordsServedResponse } from "./models/RecordsServedResponse";
@@ -1852,6 +1874,26 @@ export type patchConnectionSecretsApiV1SystemFidesKeyConnectionSecretsPatchData 
         }
       | {
           /**
+           * Tenant ID
+           *
+           * Azure AD tenant ID (directory ID) from the Azure portal
+           */
+          tenant_id: string;
+          /**
+           * Client ID
+           *
+           * Application (client) ID from your Entra app registration
+           */
+          client_id: string;
+          /**
+           * Client Secret
+           *
+           * Client secret value from your Entra app registration (Certificates & secrets)
+           */
+          client_secret: string;
+        }
+      | {
+          /**
            * Test Email Address
            */
           test_email_address?: string | null;
@@ -2025,6 +2067,37 @@ export type patchConnectionSecretsApiV1SystemFidesKeyConnectionSecretsPatchData 
            * Site Url
            */
           site_url?: string | null;
+          /**
+           * Domain
+           */
+          domain?: string | null;
+          /**
+           * Username
+           */
+          username?: string | null;
+          /**
+           * Api Key
+           */
+          api_key?: string | null;
+          [key: string]:
+            | unknown
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | undefined;
         }
       | {
           [key: string]: unknown;
@@ -3385,6 +3458,26 @@ export type patchConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPatchD
         }
       | {
           /**
+           * Tenant ID
+           *
+           * Azure AD tenant ID (directory ID) from the Azure portal
+           */
+          tenant_id: string;
+          /**
+           * Client ID
+           *
+           * Application (client) ID from your Entra app registration
+           */
+          client_id: string;
+          /**
+           * Client Secret
+           *
+           * Client secret value from your Entra app registration (Certificates & secrets)
+           */
+          client_secret: string;
+        }
+      | {
+          /**
            * Test Email Address
            */
           test_email_address?: string | null;
@@ -3558,6 +3651,37 @@ export type patchConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPatchD
            * Site Url
            */
           site_url?: string | null;
+          /**
+           * Domain
+           */
+          domain?: string | null;
+          /**
+           * Username
+           */
+          username?: string | null;
+          /**
+           * Api Key
+           */
+          api_key?: string | null;
+          [key: string]:
+            | unknown
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | undefined;
         }
       | {
           [key: string]: unknown;
@@ -4178,6 +4302,26 @@ export type putConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPutData 
         }
       | {
           /**
+           * Tenant ID
+           *
+           * Azure AD tenant ID (directory ID) from the Azure portal
+           */
+          tenant_id: string;
+          /**
+           * Client ID
+           *
+           * Application (client) ID from your Entra app registration
+           */
+          client_id: string;
+          /**
+           * Client Secret
+           *
+           * Client secret value from your Entra app registration (Certificates & secrets)
+           */
+          client_secret: string;
+        }
+      | {
+          /**
            * Test Email Address
            */
           test_email_address?: string | null;
@@ -4351,6 +4495,37 @@ export type putConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPutData 
            * Site Url
            */
           site_url?: string | null;
+          /**
+           * Domain
+           */
+          domain?: string | null;
+          /**
+           * Username
+           */
+          username?: string | null;
+          /**
+           * Api Key
+           */
+          api_key?: string | null;
+          [key: string]:
+            | unknown
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
+            | undefined;
         }
       | {
           [key: string]: unknown;
@@ -6276,11 +6451,47 @@ export type acquireAccessTokenApiV1OauthTokenPostResponses = {
 export type acquireAccessTokenApiV1OauthTokenPostResponse =
   acquireAccessTokenApiV1OauthTokenPostResponses[keyof acquireAccessTokenApiV1OauthTokenPostResponses];
 
+export type listClientsApiV1OauthClientGetData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Page
+     */
+    page?: number;
+    /**
+     * Size
+     */
+    size?: number;
+  };
+  url: "/api/v1/oauth/client";
+};
+
+export type listClientsApiV1OauthClientGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type listClientsApiV1OauthClientGetError =
+  listClientsApiV1OauthClientGetErrors[keyof listClientsApiV1OauthClientGetErrors];
+
+export type listClientsApiV1OauthClientGetResponses = {
+  /**
+   * Successful Response
+   */
+  200: Page_ClientResponse_;
+};
+
+export type listClientsApiV1OauthClientGetResponse =
+  listClientsApiV1OauthClientGetResponses[keyof listClientsApiV1OauthClientGetResponses];
+
 export type createClientApiV1OauthClientPostData = {
   /**
-   * Scopes
+   * Body
    */
-  body?: Array<string>;
+  body?: ClientCreateRequest | null;
   path?: never;
   query?: never;
   url: "/api/v1/oauth/client";
@@ -6334,6 +6545,102 @@ export type deleteClientApiV1OauthClientClientIdDeleteResponses = {
    */
   200: unknown;
 };
+
+export type getClientApiV1OauthClientClientIdGetData = {
+  body?: never;
+  path: {
+    /**
+     * Client Id
+     */
+    client_id: string;
+  };
+  query?: never;
+  url: "/api/v1/oauth/client/{client_id}";
+};
+
+export type getClientApiV1OauthClientClientIdGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getClientApiV1OauthClientClientIdGetError =
+  getClientApiV1OauthClientClientIdGetErrors[keyof getClientApiV1OauthClientClientIdGetErrors];
+
+export type getClientApiV1OauthClientClientIdGetResponses = {
+  /**
+   * Successful Response
+   */
+  200: ClientResponse;
+};
+
+export type getClientApiV1OauthClientClientIdGetResponse =
+  getClientApiV1OauthClientClientIdGetResponses[keyof getClientApiV1OauthClientClientIdGetResponses];
+
+export type updateClientApiV1OauthClientClientIdPutData = {
+  body: ClientUpdateRequest;
+  path: {
+    /**
+     * Client Id
+     */
+    client_id: string;
+  };
+  query?: never;
+  url: "/api/v1/oauth/client/{client_id}";
+};
+
+export type updateClientApiV1OauthClientClientIdPutErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type updateClientApiV1OauthClientClientIdPutError =
+  updateClientApiV1OauthClientClientIdPutErrors[keyof updateClientApiV1OauthClientClientIdPutErrors];
+
+export type updateClientApiV1OauthClientClientIdPutResponses = {
+  /**
+   * Successful Response
+   */
+  200: ClientResponse;
+};
+
+export type updateClientApiV1OauthClientClientIdPutResponse =
+  updateClientApiV1OauthClientClientIdPutResponses[keyof updateClientApiV1OauthClientClientIdPutResponses];
+
+export type rotateClientSecretApiV1OauthClientClientIdSecretPostData = {
+  body?: never;
+  path: {
+    /**
+     * Client Id
+     */
+    client_id: string;
+  };
+  query?: never;
+  url: "/api/v1/oauth/client/{client_id}/secret";
+};
+
+export type rotateClientSecretApiV1OauthClientClientIdSecretPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type rotateClientSecretApiV1OauthClientClientIdSecretPostError =
+  rotateClientSecretApiV1OauthClientClientIdSecretPostErrors[keyof rotateClientSecretApiV1OauthClientClientIdSecretPostErrors];
+
+export type rotateClientSecretApiV1OauthClientClientIdSecretPostResponses = {
+  /**
+   * Successful Response
+   */
+  200: ClientSecretRotateResponse;
+};
+
+export type rotateClientSecretApiV1OauthClientClientIdSecretPostResponse =
+  rotateClientSecretApiV1OauthClientClientIdSecretPostResponses[keyof rotateClientSecretApiV1OauthClientClientIdSecretPostResponses];
 
 export type getClientScopesApiV1OauthClientClientIdScopeGetData = {
   body?: never;
@@ -7634,45 +7941,6 @@ export type createPrivacyRequestApiV1PrivacyRequestPostResponses = {
 export type createPrivacyRequestApiV1PrivacyRequestPostResponse =
   createPrivacyRequestApiV1PrivacyRequestPostResponses[keyof createPrivacyRequestApiV1PrivacyRequestPostResponses];
 
-export type privacyRequestSearchApiV1PrivacyRequestSearchPostData = {
-  /**
-   * Privacy Request Filter
-   */
-  body?: PrivacyRequestFilter | null;
-  path?: never;
-  query?: {
-    /**
-     * Page
-     */
-    page?: number;
-    /**
-     * Size
-     */
-    size?: number;
-  };
-  url: "/api/v1/privacy-request/search";
-};
-
-export type privacyRequestSearchApiV1PrivacyRequestSearchPostErrors = {
-  /**
-   * Validation Error
-   */
-  422: HTTPValidationError;
-};
-
-export type privacyRequestSearchApiV1PrivacyRequestSearchPostError =
-  privacyRequestSearchApiV1PrivacyRequestSearchPostErrors[keyof privacyRequestSearchApiV1PrivacyRequestSearchPostErrors];
-
-export type privacyRequestSearchApiV1PrivacyRequestSearchPostResponses = {
-  /**
-   * Successful Response
-   */
-  200: Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__;
-};
-
-export type privacyRequestSearchApiV1PrivacyRequestSearchPostResponse =
-  privacyRequestSearchApiV1PrivacyRequestSearchPostResponses[keyof privacyRequestSearchApiV1PrivacyRequestSearchPostResponses];
-
 export type getRequestStatusLogsApiV1PrivacyRequestPrivacyRequestIdLogGetData =
   {
     body?: never;
@@ -7967,36 +8235,6 @@ export type verifyIdentificationCodeApiV1PrivacyRequestPrivacyRequestIdVerifyPos
 
 export type verifyIdentificationCodeApiV1PrivacyRequestPrivacyRequestIdVerifyPostResponse =
   verifyIdentificationCodeApiV1PrivacyRequestPrivacyRequestIdVerifyPostResponses[keyof verifyIdentificationCodeApiV1PrivacyRequestPrivacyRequestIdVerifyPostResponses];
-
-export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchData =
-  {
-    body: PrivacyRequestBulkSelection;
-    path?: never;
-    query?: never;
-    url: "/api/v1/privacy-request/administrate/approve";
-  };
-
-export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchErrors =
-  {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-  };
-
-export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchError =
-  approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchErrors[keyof approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchErrors];
-
-export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponses =
-  {
-    /**
-     * Successful Response
-     */
-    200: BulkReviewResponse;
-  };
-
-export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponse =
-  approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponses[keyof approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponses];
 
 export type denyPrivacyRequestApiV1PrivacyRequestAdministrateDenyPatchData = {
   body: DenyPrivacyRequestSelection;
@@ -13961,15 +14199,23 @@ export type initiateJiraOauthApiV1PlusOauthJiraInitiatePostResponse =
 export type jiraOauthCallbackApiV1PlusOauthJiraCallbackGetData = {
   body?: never;
   path?: never;
-  query: {
+  query?: {
     /**
      * Code
      */
-    code: string;
+    code?: string | null;
     /**
      * State
      */
-    state: string;
+    state?: string | null;
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Error Description
+     */
+    error_description?: string | null;
     /**
      * Config Path Override
      */
@@ -13998,6 +14244,113 @@ export type jiraOauthCallbackApiV1PlusOauthJiraCallbackGetResponses = {
    */
   200: unknown;
 };
+
+export type createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Connection Key
+       */
+      connection_key: string;
+    };
+    query?: never;
+    url: "/api/v1/plus/connection/{connection_key}/jira/test-ticket";
+  };
+
+export type createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostError =
+  createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostErrors[keyof createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostErrors];
+
+export type createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: JiraTicketResult;
+  };
+
+export type createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostResponse =
+  createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostResponses[keyof createTestTicketApiV1PlusConnectionConnectionKeyJiraTestTicketPostResponses];
+
+export type listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Privacy Request Id
+       */
+      privacy_request_id: string;
+    };
+    query?: never;
+    url: "/api/v1/plus/privacy-request/{privacy_request_id}/jira-tickets";
+  };
+
+export type listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetError =
+  listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetErrors[keyof listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetErrors];
+
+export type listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetResponses =
+  {
+    /**
+     * Response List Jira Tickets Api V1 Plus Privacy Request  Privacy Request Id  Jira Tickets Get
+     *
+     * Successful Response
+     */
+    200: Array<JiraTicketResult>;
+  };
+
+export type listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetResponse =
+  listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetResponses[keyof listJiraTicketsApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsGetResponses];
+
+export type linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostData =
+  {
+    body: JiraLinkRequest;
+    path: {
+      /**
+       * Privacy Request Id
+       */
+      privacy_request_id: string;
+    };
+    query?: never;
+    url: "/api/v1/plus/privacy-request/{privacy_request_id}/jira-tickets/link";
+  };
+
+export type linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostError =
+  linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostErrors[keyof linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostErrors];
+
+export type linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: JiraTicketResult;
+  };
+
+export type linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostResponse =
+  linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostResponses[keyof linkJiraTicketApiV1PlusPrivacyRequestPrivacyRequestIdJiraTicketsLinkPostResponses];
 
 export type getCustomAssetApiV1PlusCustomAssetAssetTypeGetData = {
   body?: never;
@@ -17852,6 +18205,41 @@ export type idpBulkActionEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigK
 export type idpBulkActionEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsActionTypePostResponse =
   idpBulkActionEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsActionTypePostResponses[keyof idpBulkActionEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsActionTypePostResponses];
 
+export type classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostData =
+  {
+    body: IDPMonitorBulkSelection;
+    path: {
+      /**
+       * Monitor Config Key
+       */
+      monitor_config_key: string;
+    };
+    query?: never;
+    url: "/api/v1/plus/identity-provider-monitors/{monitor_config_key}/classify-assets";
+  };
+
+export type classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostError =
+  classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostErrors[keyof classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostErrors];
+
+export type classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: MonitorActionResponse;
+  };
+
+export type classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostResponse =
+  classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostResponses[keyof classifyIdpAssetsEndpointApiV1PlusIdentityProviderMonitorsMonitorConfigKeyClassifyAssetsPostResponses];
+
 export type resetEndpointCachesApiV1PlusEndpointCacheResetPostData = {
   body?: never;
   path?: never;
@@ -20615,6 +21003,63 @@ export type resolvePropertyNamesApiV1PlusDatasetPropertiesResolveNamesPostRespon
 export type resolvePropertyNamesApiV1PlusDatasetPropertiesResolveNamesPostResponse =
   resolvePropertyNamesApiV1PlusDatasetPropertiesResolveNamesPostResponses[keyof resolvePropertyNamesApiV1PlusDatasetPropertiesResolveNamesPostResponses];
 
+export type getDatasetPropertiesApiV1PlusDatasetPropertiesGetData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Property Id
+     *
+     * Filter by property ID
+     */
+    property_id?: string | null;
+    /**
+     * Fides Key
+     *
+     * Filter by dataset fides_key
+     */
+    fides_key?: string | null;
+    /**
+     * Page
+     *
+     * Page number
+     */
+    page?: number;
+    /**
+     * Size
+     *
+     * Items per page
+     */
+    size?: number;
+  };
+  url: "/api/v1/plus/dataset-properties";
+};
+
+export type getDatasetPropertiesApiV1PlusDatasetPropertiesGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getDatasetPropertiesApiV1PlusDatasetPropertiesGetError =
+  getDatasetPropertiesApiV1PlusDatasetPropertiesGetErrors[keyof getDatasetPropertiesApiV1PlusDatasetPropertiesGetErrors];
+
+export type getDatasetPropertiesApiV1PlusDatasetPropertiesGetResponses = {
+  /**
+   * Response Get Dataset Properties Api V1 Plus Dataset Properties Get
+   *
+   * Successful Response
+   */
+  200:
+    | DatasetFidesKeysResponse
+    | DatasetPropertyIdsResponse
+    | PropertyDatasetMappingsResponse;
+};
+
+export type getDatasetPropertiesApiV1PlusDatasetPropertiesGetResponse =
+  getDatasetPropertiesApiV1PlusDatasetPropertiesGetResponses[keyof getDatasetPropertiesApiV1PlusDatasetPropertiesGetResponses];
+
 export type getCustomFieldLocationsApiV1PlusCustomFieldsLocationsGetData = {
   body?: never;
   path?: never;
@@ -20671,6 +21116,618 @@ export type rapidConsentReportingApiV1PlusConsentReportingGetResponses = {
    */
   200: unknown;
 };
+
+export type getRolesApiV1PlusRbacRolesGetData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Include Inactive
+     */
+    include_inactive?: boolean;
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/roles";
+};
+
+export type getRolesApiV1PlusRbacRolesGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getRolesApiV1PlusRbacRolesGetError =
+  getRolesApiV1PlusRbacRolesGetErrors[keyof getRolesApiV1PlusRbacRolesGetErrors];
+
+export type getRolesApiV1PlusRbacRolesGetResponses = {
+  /**
+   * Response Get Roles Api V1 Plus Rbac Roles Get
+   *
+   * Successful Response
+   */
+  200: Array<RBACRoleResponse>;
+};
+
+export type getRolesApiV1PlusRbacRolesGetResponse =
+  getRolesApiV1PlusRbacRolesGetResponses[keyof getRolesApiV1PlusRbacRolesGetResponses];
+
+export type createRoleApiV1PlusRbacRolesPostData = {
+  body: RBACRoleCreate;
+  path?: never;
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/roles";
+};
+
+export type createRoleApiV1PlusRbacRolesPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type createRoleApiV1PlusRbacRolesPostError =
+  createRoleApiV1PlusRbacRolesPostErrors[keyof createRoleApiV1PlusRbacRolesPostErrors];
+
+export type createRoleApiV1PlusRbacRolesPostResponses = {
+  /**
+   * Successful Response
+   */
+  201: RBACRoleResponse;
+};
+
+export type createRoleApiV1PlusRbacRolesPostResponse =
+  createRoleApiV1PlusRbacRolesPostResponses[keyof createRoleApiV1PlusRbacRolesPostResponses];
+
+export type deleteRoleApiV1PlusRbacRolesRoleIdDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * Role Id
+     */
+    role_id: string;
+  };
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/roles/{role_id}";
+};
+
+export type deleteRoleApiV1PlusRbacRolesRoleIdDeleteErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type deleteRoleApiV1PlusRbacRolesRoleIdDeleteError =
+  deleteRoleApiV1PlusRbacRolesRoleIdDeleteErrors[keyof deleteRoleApiV1PlusRbacRolesRoleIdDeleteErrors];
+
+export type deleteRoleApiV1PlusRbacRolesRoleIdDeleteResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type deleteRoleApiV1PlusRbacRolesRoleIdDeleteResponse =
+  deleteRoleApiV1PlusRbacRolesRoleIdDeleteResponses[keyof deleteRoleApiV1PlusRbacRolesRoleIdDeleteResponses];
+
+export type getRoleApiV1PlusRbacRolesRoleIdGetData = {
+  body?: never;
+  path: {
+    /**
+     * Role Id
+     */
+    role_id: string;
+  };
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/roles/{role_id}";
+};
+
+export type getRoleApiV1PlusRbacRolesRoleIdGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getRoleApiV1PlusRbacRolesRoleIdGetError =
+  getRoleApiV1PlusRbacRolesRoleIdGetErrors[keyof getRoleApiV1PlusRbacRolesRoleIdGetErrors];
+
+export type getRoleApiV1PlusRbacRolesRoleIdGetResponses = {
+  /**
+   * Successful Response
+   */
+  200: RBACRoleResponse;
+};
+
+export type getRoleApiV1PlusRbacRolesRoleIdGetResponse =
+  getRoleApiV1PlusRbacRolesRoleIdGetResponses[keyof getRoleApiV1PlusRbacRolesRoleIdGetResponses];
+
+export type updateRoleApiV1PlusRbacRolesRoleIdPutData = {
+  body: RBACRoleUpdate;
+  path: {
+    /**
+     * Role Id
+     */
+    role_id: string;
+  };
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/roles/{role_id}";
+};
+
+export type updateRoleApiV1PlusRbacRolesRoleIdPutErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type updateRoleApiV1PlusRbacRolesRoleIdPutError =
+  updateRoleApiV1PlusRbacRolesRoleIdPutErrors[keyof updateRoleApiV1PlusRbacRolesRoleIdPutErrors];
+
+export type updateRoleApiV1PlusRbacRolesRoleIdPutResponses = {
+  /**
+   * Successful Response
+   */
+  200: RBACRoleResponse;
+};
+
+export type updateRoleApiV1PlusRbacRolesRoleIdPutResponse =
+  updateRoleApiV1PlusRbacRolesRoleIdPutResponses[keyof updateRoleApiV1PlusRbacRolesRoleIdPutResponses];
+
+export type updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutData = {
+  body: RBACRolePermissionsUpdate;
+  path: {
+    /**
+     * Role Id
+     */
+    role_id: string;
+  };
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/roles/{role_id}/permissions";
+};
+
+export type updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutError =
+  updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutErrors[keyof updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutErrors];
+
+export type updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: RBACRoleResponse;
+  };
+
+export type updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutResponse =
+  updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutResponses[keyof updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutResponses];
+
+export type getPermissionsApiV1PlusRbacPermissionsGetData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Resource Type
+     */
+    resource_type?: string | null;
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/permissions";
+};
+
+export type getPermissionsApiV1PlusRbacPermissionsGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getPermissionsApiV1PlusRbacPermissionsGetError =
+  getPermissionsApiV1PlusRbacPermissionsGetErrors[keyof getPermissionsApiV1PlusRbacPermissionsGetErrors];
+
+export type getPermissionsApiV1PlusRbacPermissionsGetResponses = {
+  /**
+   * Response Get Permissions Api V1 Plus Rbac Permissions Get
+   *
+   * Successful Response
+   */
+  200: Array<RBACPermissionResponse>;
+};
+
+export type getPermissionsApiV1PlusRbacPermissionsGetResponse =
+  getPermissionsApiV1PlusRbacPermissionsGetResponses[keyof getPermissionsApiV1PlusRbacPermissionsGetResponses];
+
+export type getUserRolesApiV1PlusRbacUsersUserIdRolesGetData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: {
+    /**
+     * Include Expired
+     */
+    include_expired?: boolean;
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/users/{user_id}/roles";
+};
+
+export type getUserRolesApiV1PlusRbacUsersUserIdRolesGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getUserRolesApiV1PlusRbacUsersUserIdRolesGetError =
+  getUserRolesApiV1PlusRbacUsersUserIdRolesGetErrors[keyof getUserRolesApiV1PlusRbacUsersUserIdRolesGetErrors];
+
+export type getUserRolesApiV1PlusRbacUsersUserIdRolesGetResponses = {
+  /**
+   * Response Get User Roles Api V1 Plus Rbac Users  User Id  Roles Get
+   *
+   * Successful Response
+   */
+  200: Array<RBACUserRoleResponse>;
+};
+
+export type getUserRolesApiV1PlusRbacUsersUserIdRolesGetResponse =
+  getUserRolesApiV1PlusRbacUsersUserIdRolesGetResponses[keyof getUserRolesApiV1PlusRbacUsersUserIdRolesGetResponses];
+
+export type assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostData = {
+  body: RBACUserRoleCreate;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/users/{user_id}/roles";
+};
+
+export type assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostError =
+  assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostErrors[keyof assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostErrors];
+
+export type assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostResponses = {
+  /**
+   * Successful Response
+   */
+  201: RBACUserRoleResponse;
+};
+
+export type assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostResponse =
+  assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostResponses[keyof assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostResponses];
+
+export type removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteData =
+  {
+    body?: never;
+    path: {
+      /**
+       * User Id
+       */
+      user_id: string;
+      /**
+       * Assignment Id
+       */
+      assignment_id: string;
+    };
+    query?: {
+      /**
+       * Config Path Override
+       */
+      config_path_override?: string;
+      /**
+       * Verbose
+       */
+      verbose?: boolean;
+    };
+    url: "/api/v1/plus/rbac/users/{user_id}/roles/{assignment_id}";
+  };
+
+export type removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteError =
+  removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteErrors[keyof removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteErrors];
+
+export type removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteResponses =
+  {
+    /**
+     * Successful Response
+     */
+    204: void;
+  };
+
+export type removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteResponse =
+  removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteResponses[keyof removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteResponses];
+
+export type getConstraintsApiV1PlusRbacConstraintsGetData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/constraints";
+};
+
+export type getConstraintsApiV1PlusRbacConstraintsGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getConstraintsApiV1PlusRbacConstraintsGetError =
+  getConstraintsApiV1PlusRbacConstraintsGetErrors[keyof getConstraintsApiV1PlusRbacConstraintsGetErrors];
+
+export type getConstraintsApiV1PlusRbacConstraintsGetResponses = {
+  /**
+   * Response Get Constraints Api V1 Plus Rbac Constraints Get
+   *
+   * Successful Response
+   */
+  200: Array<RBACConstraintResponse>;
+};
+
+export type getConstraintsApiV1PlusRbacConstraintsGetResponse =
+  getConstraintsApiV1PlusRbacConstraintsGetResponses[keyof getConstraintsApiV1PlusRbacConstraintsGetResponses];
+
+export type createConstraintApiV1PlusRbacConstraintsPostData = {
+  body: RBACConstraintCreate;
+  path?: never;
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/constraints";
+};
+
+export type createConstraintApiV1PlusRbacConstraintsPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type createConstraintApiV1PlusRbacConstraintsPostError =
+  createConstraintApiV1PlusRbacConstraintsPostErrors[keyof createConstraintApiV1PlusRbacConstraintsPostErrors];
+
+export type createConstraintApiV1PlusRbacConstraintsPostResponses = {
+  /**
+   * Successful Response
+   */
+  201: RBACConstraintResponse;
+};
+
+export type createConstraintApiV1PlusRbacConstraintsPostResponse =
+  createConstraintApiV1PlusRbacConstraintsPostResponses[keyof createConstraintApiV1PlusRbacConstraintsPostResponses];
+
+export type deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * Constraint Id
+     */
+    constraint_id: string;
+  };
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/constraints/{constraint_id}";
+};
+
+export type deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteError =
+  deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteErrors[keyof deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteErrors];
+
+export type deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteResponses =
+  {
+    /**
+     * Successful Response
+     */
+    204: void;
+  };
+
+export type deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteResponse =
+  deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteResponses[keyof deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteResponses];
+
+export type evaluatePermissionApiV1PlusRbacEvaluatePostData = {
+  body: RBACEvaluateRequest;
+  path?: never;
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/evaluate";
+};
+
+export type evaluatePermissionApiV1PlusRbacEvaluatePostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type evaluatePermissionApiV1PlusRbacEvaluatePostError =
+  evaluatePermissionApiV1PlusRbacEvaluatePostErrors[keyof evaluatePermissionApiV1PlusRbacEvaluatePostErrors];
+
+export type evaluatePermissionApiV1PlusRbacEvaluatePostResponses = {
+  /**
+   * Successful Response
+   */
+  200: RBACEvaluateResponse;
+};
+
+export type evaluatePermissionApiV1PlusRbacEvaluatePostResponse =
+  evaluatePermissionApiV1PlusRbacEvaluatePostResponses[keyof evaluatePermissionApiV1PlusRbacEvaluatePostResponses];
+
+export type getMyPermissionsApiV1PlusRbacMePermissionsGetData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Config Path Override
+     */
+    config_path_override?: string;
+    /**
+     * Verbose
+     */
+    verbose?: boolean;
+  };
+  url: "/api/v1/plus/rbac/me/permissions";
+};
+
+export type getMyPermissionsApiV1PlusRbacMePermissionsGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type getMyPermissionsApiV1PlusRbacMePermissionsGetError =
+  getMyPermissionsApiV1PlusRbacMePermissionsGetErrors[keyof getMyPermissionsApiV1PlusRbacMePermissionsGetErrors];
+
+export type getMyPermissionsApiV1PlusRbacMePermissionsGetResponses = {
+  /**
+   * Response Get My Permissions Api V1 Plus Rbac Me Permissions Get
+   *
+   * Successful Response
+   */
+  200: Array<string>;
+};
+
+export type getMyPermissionsApiV1PlusRbacMePermissionsGetResponse =
+  getMyPermissionsApiV1PlusRbacMePermissionsGetResponses[keyof getMyPermissionsApiV1PlusRbacMePermissionsGetResponses];
 
 export type getSystemHistoryApiV1PlusSystemFidesKeyHistoryGetData = {
   body?: never;
@@ -24966,6 +26023,76 @@ export type createPrivacyRequestAuthenticatedApiV1PrivacyRequestAuthenticatedPos
 
 export type createPrivacyRequestAuthenticatedApiV1PrivacyRequestAuthenticatedPostResponse =
   createPrivacyRequestAuthenticatedApiV1PrivacyRequestAuthenticatedPostResponses[keyof createPrivacyRequestAuthenticatedApiV1PrivacyRequestAuthenticatedPostResponses];
+
+export type privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostData = {
+  /**
+   * Privacy Request Filter
+   */
+  body?: PrivacyRequestFilter | null;
+  path?: never;
+  query?: {
+    /**
+     * Page
+     */
+    page?: number;
+    /**
+     * Size
+     */
+    size?: number;
+  };
+  url: "/api/v1/privacy-request/search";
+};
+
+export type privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostError =
+  privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostErrors[keyof privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostErrors];
+
+export type privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__;
+  };
+
+export type privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostResponse =
+  privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostResponses[keyof privacyRequestSearchExtendedApiV1PrivacyRequestSearchPostResponses];
+
+export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchData =
+  {
+    body: PrivacyRequestBulkSelection;
+    path?: never;
+    query?: never;
+    url: "/api/v1/privacy-request/administrate/approve";
+  };
+
+export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchError =
+  approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchErrors[keyof approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchErrors];
+
+export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: BulkReviewResponse;
+  };
+
+export type approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponse =
+  approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponses[keyof approvePrivacyRequestApiV1PrivacyRequestAdministrateApprovePatchResponses];
 
 export type userLoginExtendedApiV1LoginPostData = {
   body: UserLogin;

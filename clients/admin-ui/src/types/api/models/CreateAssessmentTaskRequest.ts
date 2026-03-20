@@ -16,6 +16,7 @@ export type CreateAssessmentTaskRequest = {
    */
   assessment_types: Array<
     | "best_practice_pia"
+    | "eu_ai_act_fria"
     | "gdpr_dpia"
     | "uk_gdpr_dpia"
     | "us_ca_cpra_risk_assessment"

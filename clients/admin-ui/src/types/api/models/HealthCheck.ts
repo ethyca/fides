@@ -2,6 +2,7 @@
 
 import type { DictionaryStatus } from "./DictionaryStatus";
 import type { FidesCloudStatus } from "./FidesCloudStatus";
+import type { SystemScannerStatus } from "./SystemScannerStatus";
 import type { TCFStatus } from "./TCFStatus";
 
 /**
@@ -22,6 +23,7 @@ export type HealthCheck = {
    * Fidesplus Server
    */
   fidesplus_server: string;
+  system_scanner: SystemScannerStatus;
   dictionary: DictionaryStatus;
   fides_cloud: FidesCloudStatus;
   tcf: TCFStatus;
