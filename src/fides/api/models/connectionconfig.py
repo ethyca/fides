@@ -44,6 +44,7 @@ class ConnectionType(enum.Enum):
     generic_consent_email = "generic_consent_email"  # Run after the traversal
     generic_erasure_email = "generic_erasure_email"  # Run after the traversal
     dynamic_erasure_email = "dynamic_erasure_email"  # Run after the traversal
+    entra = "entra"  # Microsoft Entra ID (Azure AD) for IDP discovery
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
     google_cloud_sql_postgres = "google_cloud_sql_postgres"
     https = "https"
@@ -82,6 +83,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
             ConnectionType.dynamodb.value: "DynamoDB",
+            ConnectionType.entra.value: "Microsoft Entra ID",
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.generic_consent_email.value: "Generic Consent Email",
             ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
@@ -130,6 +132,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.datahub.value: SystemType.data_catalog,
             ConnectionType.dynamic_erasure_email.value: SystemType.email,
             ConnectionType.dynamodb.value: SystemType.database,
+            ConnectionType.entra.value: SystemType.system,
             ConnectionType.fides.value: SystemType.manual,
             ConnectionType.generic_consent_email.value: SystemType.email,
             ConnectionType.generic_erasure_email.value: SystemType.email,
@@ -268,12 +271,27 @@ class ConnectionConfig(Base):
 
     @property
     def system_key(self) -> Optional[str]:
-        """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting"""
+        """Returns the system fides_key (or connector name as a fallback).
+
+        .. deprecated::
+            Use :attr:`consent_tracking_key` for consent status tracking.
+            ``system_key`` returns the *system* fides_key, which conflates
+            multiple integrations on the same system.  Retained for any
+            external callers and backward compatibility only.
+        """
         if self.system:
             return self.system.fides_key
-        # TODO: Remove this fallback once all connection configs are linked to systems
-        # This will always be None in the future. `self.system` will always be set.
         return self.name
+
+    @property
+    def consent_tracking_key(self) -> str:
+        """Unique key used for per-connection consent status tracking.
+
+        Uses the ConnectionConfig key so that each integration on a system
+        gets its own entry in ``affected_system_status``, avoiding the
+        overwrite bug when a system has multiple integrations.
+        """
+        return self.key
 
     @property
     def authorized(self) -> bool:

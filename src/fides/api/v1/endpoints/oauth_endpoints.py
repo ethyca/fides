@@ -5,6 +5,9 @@ from urllib.parse import urlparse
 from fastapi import Body, Depends, HTTPException, Request, Response, Security
 from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.security import HTTPBasic
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -18,6 +21,7 @@ from fides.api.common_exceptions import (
     FidesopsException,
     OAuth2TokenException,
 )
+from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.deps import get_db
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
@@ -25,7 +29,13 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
-from fides.api.schemas.client import ClientCreatedResponse
+from fides.api.schemas.client import (
+    ClientCreatedResponse,
+    ClientCreateRequest,
+    ClientResponse,
+    ClientSecretRotateResponse,
+    ClientUpdateRequest,
+)
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -52,6 +62,7 @@ from fides.common.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
+    CLIENT_SECRET,
     OAUTH_CALLBACK,
     ROLE,
     SCOPE,
@@ -61,6 +72,23 @@ from fides.common.urn_registry import (
 from fides.config import CONFIG
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
+
+
+def _get_client_or_error(db: Session, client_id: str) -> ClientDetail:
+    """Returns the ClientDetail for client_id, raising 404 if not found or if it is the root client."""
+    if client_id == CONFIG.security.oauth_root_client_id:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    if not client:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    return client
+
+
+def _get_client_or_none(db: Session, client_id: str) -> Optional[ClientDetail]:
+    """Returns the ClientDetail for client_id, or None if not found or if it is the root client."""
+    if client_id == CONFIG.security.oauth_root_client_id:
+        return None
+    return ClientDetail.get(db, object_id=client_id, config=CONFIG)
 
 
 @router.post(
@@ -112,7 +140,7 @@ async def acquire_access_token(
 
     expire_minutes = CONFIG.security.oauth_access_token_expire_minutes
     access_code = client_detail.create_access_code_jwe(
-        CONFIG.security.app_encryption_key,
+        get_encryption_key(),
         token_expire_minutes=expire_minutes,
     )
 
@@ -137,29 +165,100 @@ def create_client(
     *,
     request: Request,
     db: Session = Depends(get_db),
-    scopes: List[str] = Body([]),
+    body: Optional[ClientCreateRequest] = Body(None),
     requesting_client: ClientDetail = Security(
         verify_oauth_client, scopes=[CLIENT_CREATE]
     ),
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint."""
     logger.info("Creating new client")
-    if not all(scope in SCOPE_REGISTRY for scope in scopes):
+    if body is None:
+        body = ClientCreateRequest()
+    if not all(scope in SCOPE_REGISTRY for scope in body.scopes):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
 
     # Security check: Verify that the requesting client has all the scopes they're trying to assign
-    verify_client_can_assign_scopes(request, requesting_client, scopes, db)
+    verify_client_can_assign_scopes(request, requesting_client, body.scopes, db)
 
     client, secret = ClientDetail.create_client_and_secret(
         db,
         CONFIG.security.oauth_client_id_length_bytes,
         CONFIG.security.oauth_client_secret_length_bytes,
-        scopes=scopes,
+        scopes=body.scopes,
+        name=body.name,
+        description=body.description,
     )
     return ClientCreatedResponse(client_id=client.id, client_secret=secret)
+
+
+@router.get(
+    CLIENT,
+    response_model=Page[ClientResponse],
+    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_READ])],
+)
+def list_clients(
+    *,
+    db: Session = Depends(get_db),
+    params: Params = Depends(),
+) -> AbstractPage[ClientDetail]:
+    """Returns a paginated list of all OAuth clients, excluding the root client."""
+    logger.info("Listing OAuth clients")
+    query = (
+        ClientDetail.query(db=db)
+        .filter(ClientDetail.id != CONFIG.security.oauth_root_client_id)
+        .order_by(ClientDetail.created_at.desc())
+    )
+    return paginate(query, params=params)
+
+
+@router.get(
+    CLIENT_BY_ID,
+    response_model=ClientResponse,
+    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_READ])],
+)
+def get_client(client_id: str, db: Session = Depends(get_db)) -> ClientDetail:
+    """Returns the OAuth client with the given id."""
+    return _get_client_or_error(db, client_id)
+
+
+@router.put(
+    CLIENT_BY_ID,
+    response_model=ClientResponse,
+)
+def update_client(
+    *,
+    client_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    body: ClientUpdateRequest,
+    requesting_client: ClientDetail = Security(
+        verify_oauth_client, scopes=[CLIENT_UPDATE]
+    ),
+) -> ClientDetail:
+    """Updates name, description, and/or scopes of the given client."""
+    client = _get_client_or_error(db, client_id)
+
+    update_data: dict = {}
+    if body.name is not None:
+        update_data["name"] = body.name
+    if "description" in body.model_fields_set:
+        update_data["description"] = body.description
+    if body.scopes is not None:
+        if not all(scope in SCOPE_REGISTRY for scope in body.scopes):
+            raise HTTPException(
+                status_code=HTTP_403_FORBIDDEN,
+                detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
+            )
+        verify_client_can_assign_scopes(request, requesting_client, body.scopes, db)
+        update_data["scopes"] = body.scopes
+
+    if update_data:
+        client.update(db, data=update_data)
+
+    return client
 
 
 @router.delete(
@@ -168,11 +267,29 @@ def create_client(
 def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    client = _get_client_or_none(db, client_id)
     if not client:
         return
     logger.info("Deleting client")
     client.delete(db)
+
+
+@router.post(
+    CLIENT_SECRET,
+    response_model=ClientSecretRotateResponse,
+    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_UPDATE])],
+)
+def rotate_client_secret(
+    client_id: str, db: Session = Depends(get_db)
+) -> ClientSecretRotateResponse:
+    """Rotates the secret for the given client. Returns the new secret exactly once."""
+    client = _get_client_or_error(db, client_id)
+
+    logger.info("Rotating secret for client '{}'", client_id)
+    new_secret = client.rotate_secret(
+        db, CONFIG.security.oauth_client_secret_length_bytes
+    )
+    return ClientSecretRotateResponse(client_id=client.id, client_secret=new_secret)
 
 
 @router.get(
@@ -184,7 +301,7 @@ def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str
     """Returns a list of the directly-assigned scopes associated with the client.
     Does not return roles associated with the client.
     Returns an empty list if client does not exist."""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    client = _get_client_or_none(db, client_id)
     if not client:
         return []
 
@@ -208,7 +325,7 @@ def set_client_scopes(
     """Overwrites the client's directly-assigned scopes with those provided.
     Roles cannot be edited via this endpoint.
     Does nothing if the client doesn't exist"""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    client = _get_client_or_none(db, client_id)
     if not client:
         return
 

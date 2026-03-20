@@ -11,7 +11,6 @@ import { defaultAntTheme } from "./default-theme";
 export const darkAntTheme: ThemeConfig = {
   ...defaultAntTheme,
   algorithm: theme.darkAlgorithm,
-  cssVar: true,
   token: {
     ...defaultAntTheme.token,
     colorBgBase: palette.FIDESUI_BG_MINOS,

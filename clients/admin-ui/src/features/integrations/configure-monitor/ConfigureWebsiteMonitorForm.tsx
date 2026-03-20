@@ -199,6 +199,7 @@ const ConfigureWebsiteMonitorForm = ({
         initialValues={initialValues}
         onFinish={handleSubmit}
         layout="vertical"
+        disabled={isLoadingSystem}
       >
         <Form.Item
           label="Name"

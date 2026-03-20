@@ -48,7 +48,7 @@ dependencies = [
     "cloudpickle~=3.1.2",
     "colorama~=0.4.6",
     "dask==2025.11.0",
-    "deepdiff==8.6.1",
+    "deepdiff==8.6.2",
     "defusedxml==0.7.1",
     "ecdsa~=0.19.1",
     "email-validator~=2.3.0",
@@ -110,9 +110,9 @@ dependencies = [
     "starlette~=0.50.0",
     "stream-zip==0.0.83",
     "tenacity~=9.1.2",
-    "tinycss2==1.2.1",
+    "tinycss2>=1.5.0",
     "toml==0.10.2",
-    "tornado~=6.5.2",
+    "tornado~=6.5.5",
     "twilio==7.15.0",
     "typer==0.20.0",
     "types-defusedxml==0.7.0.20240218",
@@ -136,8 +136,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mssql = ["pymssql==2.3.7"]
-all = ["pymssql==2.3.7"]
+mssql = ["pymssql==2.3.13"]
+all = ["pymssql==2.3.13"]
 
 [dependency-groups]
 dev = [
@@ -200,7 +200,7 @@ artifacts = ["src/fides/ui-build"]
 build-constraint-dependencies = ["setuptools==80.10.2"]
 # If a dependency fails in CI with ModuleNotFoundError: pkg_resources or setuptools, add it here.
 # CI and Dockerfile pre-install setuptools/wheel before uv sync so these packages can build.
-no-build-isolation-package = ["pyahocorasick", "pymssql", "scylla-driver"]
+no-build-isolation-package = ["pyahocorasick", "scylla-driver"]
 
 # Packages whose setup uses pkg_resources at build time but don't declare setuptools
 # as a build dependency; required when building via uv (e.g. docs container).

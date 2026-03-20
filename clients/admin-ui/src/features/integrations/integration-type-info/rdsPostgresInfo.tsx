@@ -18,7 +18,7 @@ export const RDS_POSTGRES_PLACEHOLDER = {
   created_at: "",
 };
 
-export const RDS_POSTGRES_TAGS = ["Discovery", "Detection"];
+export const RDS_POSTGRES_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const RDSPostgresOverview = () => (
   <>

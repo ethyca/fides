@@ -8,7 +8,7 @@ const getPageMetadata = async (): Promise<Metadata> => {
   const { config } = await getPrivacyCenterEnvironmentCached();
 
   return {
-    title: "Privacy Center",
+    title: config?.page_title || "Privacy Center",
     description: "Privacy Center",
     icons: {
       icon: config?.favicon_path || "/favicon.ico",

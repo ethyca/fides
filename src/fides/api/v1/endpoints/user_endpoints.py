@@ -29,6 +29,7 @@ from fides.api import deps
 from fides.api.common_exceptions import AuthenticationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
+from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.deps import get_config_proxy, get_db, get_user_service
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -290,9 +291,7 @@ def logout_oauth_client(
         return None
 
     try:
-        token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
-        )
+        token_data = json.loads(extract_payload(authorization, get_encryption_key()))
     except JoseError:
         return None
 
@@ -588,6 +587,8 @@ def get_user(
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> FidesUser:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
@@ -633,6 +634,8 @@ def get_users(
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> AbstractPage[FidesUser]:
     """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     query = FidesUser.query(db)
 
     # Check if user has USER_READ_OWN scope and filter accordingly
@@ -752,7 +755,7 @@ def user_login(
     logger.info("Creating login access token")
     expire_minutes = config.security.oauth_access_token_expire_minutes
     access_code = client.create_access_code_jwe(
-        config.security.app_encryption_key,
+        get_encryption_key(),
         token_expire_minutes=expire_minutes,
     )
 

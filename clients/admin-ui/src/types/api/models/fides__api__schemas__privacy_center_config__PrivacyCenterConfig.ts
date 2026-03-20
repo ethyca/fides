@@ -2,6 +2,7 @@
 
 import type { fides__api__schemas__privacy_center_config__ConsentConfig } from "./fides__api__schemas__privacy_center_config__ConsentConfig";
 import type { PolicyUnavailableMessages } from "./PolicyUnavailableMessages";
+import type { PrivacyCenterLink } from "./PrivacyCenterLink";
 import type { PrivacyRequestOption } from "./PrivacyRequestOption";
 
 /**
@@ -66,5 +67,6 @@ export type fides__api__schemas__privacy_center_config__PrivacyCenterConfig = {
    * Privacy Policy Url Text
    */
   privacy_policy_url_text?: string | null;
+  links?: Array<PrivacyCenterLink>;
   policy_unavailable_messages?: PolicyUnavailableMessages | null;
 };

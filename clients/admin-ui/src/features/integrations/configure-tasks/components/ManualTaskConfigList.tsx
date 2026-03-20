@@ -1,7 +1,6 @@
-import { Button, Flex, List, Typography, WarningIcon } from "fidesui";
-import { useCallback, useState } from "react";
+import { Button, Flex, List, Typography, useModal } from "fidesui";
+import { useState } from "react";
 
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import AddManualTaskModal from "../AddManualTaskModal";
@@ -19,25 +18,13 @@ const ManualTaskConfigList = ({ integration }: ManualTaskConfigListProps) => {
 
   // Local state for task modals only
   const [editingManualTask, setEditingManualTask] = useState<Task | null>(null);
-  const [manualTaskToDelete, setManualTaskToDelete] = useState<Task | null>(
-    null,
-  );
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const modal = useModal();
 
   const handleAddManualTask = () => {
     setEditingManualTask(null);
     setIsAddEditModalOpen(true);
   };
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (manualTaskToDelete) {
-      await deleteManualTask(manualTaskToDelete);
-    }
-    // Close delete modal
-    setManualTaskToDelete(null);
-    setIsDeleteModalOpen(false);
-  }, [manualTaskToDelete, deleteManualTask]);
 
   const handleEdit = (task: Task) => {
     setEditingManualTask(task);
@@ -45,8 +32,18 @@ const ManualTaskConfigList = ({ integration }: ManualTaskConfigListProps) => {
   };
 
   const handleDelete = (task: Task) => {
-    setManualTaskToDelete(task);
-    setIsDeleteModalOpen(true);
+    modal.confirm({
+      title: "Delete manual task",
+      content: (
+        <span className="text-gray-500">
+          Are you sure you want to delete the manual task &quot;
+          {task.name}&quot;? This action cannot be undone.
+        </span>
+      ),
+      okText: "Delete",
+      centered: true,
+      onOk: () => deleteManualTask(task),
+    });
   };
 
   return (
@@ -122,25 +119,6 @@ const ManualTaskConfigList = ({ integration }: ManualTaskConfigListProps) => {
         integration={integration}
         onTaskAdded={refreshManualTasks}
         editingTask={editingManualTask}
-      />
-
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setManualTaskToDelete(null);
-          setIsDeleteModalOpen(false);
-        }}
-        onConfirm={handleConfirmDelete}
-        title="Delete manual task"
-        message={
-          <span className="text-gray-500">
-            Are you sure you want to delete the manual task &quot;
-            {manualTaskToDelete?.name}&quot;? This action cannot be undone.
-          </span>
-        }
-        continueButtonText="Delete"
-        isCentered
-        icon={<WarningIcon />}
       />
     </>
   );

@@ -26,7 +26,7 @@ export const ExternalTaskLayout = () => {
   const user = useExternalAppSelector(selectExternalUser);
   const isAuthenticated = useExternalAppSelector(selectIsExternalAuthenticated);
   const config = useConfig();
-  const { SHOW_BRAND_LINK } = useSettings();
+  const { SHOW_BRAND_LINK, ATTRIBUTION_ENABLED } = useSettings();
 
   // If not authenticated, don't render anything (parent should handle this)
   if (!isAuthenticated || !user) {
@@ -102,8 +102,7 @@ export const ExternalTaskLayout = () => {
         </Flex>
       </div>
 
-      {/* Brand Link - positioned in bottom right if enabled */}
-      {SHOW_BRAND_LINK && (
+      {(SHOW_BRAND_LINK || ATTRIBUTION_ENABLED) && (
         <BrandLink
           position="fixed"
           right={6}

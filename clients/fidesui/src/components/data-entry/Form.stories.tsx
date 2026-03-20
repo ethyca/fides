@@ -9,7 +9,7 @@ const LayoutOptions: Array<FormProps["layout"]> = [
   "inline",
   "horizontal",
 ];
-const SizeOptions: Array<FormProps["size"]> = ["middle", "small", "large"];
+const SizeOptions: Array<FormProps["size"]> = ["medium", "small", "large"];
 
 const meta = {
   title: "Data Entry/Form",
@@ -46,7 +46,7 @@ export const Primary: Story = {
       </Form.Item>
 
       <Form.Item>
-        <Flex justify="space-between" gap="middle">
+        <Flex justify="space-between" gap="medium">
           <Button type="default" variant="outlined" htmlType="reset" block>
             Reset
           </Button>
@@ -80,7 +80,7 @@ export const Validation: Story = {
       </Form.Item>
 
       <Form.Item>
-        <Flex justify="space-between" gap="middle">
+        <Flex justify="space-between" gap="medium">
           <Button type="default" variant="outlined" htmlType="reset" block>
             Reset
           </Button>
