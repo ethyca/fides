@@ -56,7 +56,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          head_sha=$(gh pr view ${{ github.event.issue.number }} --json headRefOid --jq '.headRefOid')
+          head_sha=$(gh pr view ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --json headRefOid --jq '.headRefOid')
           echo "sha=$head_sha" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
@@ -104,8 +106,37 @@ jobs:
         uses: anthropics/claude-code-action@22891970a71915a0bff651b093e5be2b99f336ba # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: >-
+            --allowedTools
+            "Bash(gh pr diff*),Bash(gh pr view*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git status*),Read,Grep,Glob,mcp__github__create_pending_pull_request_review,mcp__github__add_comment_to_pending_review,mcp__github__submit_pending_pull_request_review"
           prompt: |
             Review this PR by running the /code-review command.
             The PR number is ${{ github.event.pull_request.number || github.event.issue.number }}.
             Use `gh pr diff ${{ github.event.pull_request.number || github.event.issue.number }}` to get the diff.
+
+            IMPORTANT: You MUST post your review findings to the PR as a single GitHub review.
+            The repository is ${{ github.repository }} (owner: ${{ github.repository_owner }}, repo: ${{ github.event.repository.name }}).
+            Follow these steps to post the review:
+            1. Call `mcp__github__create_pending_pull_request_review` to start a pending review.
+            2. For each inline finding, call `mcp__github__add_comment_to_pending_review` with the file path, line number, and comment.
+            3. Call `mcp__github__submit_pending_pull_request_review` with event "COMMENT" and your overall review summary as the body.
+
+      - name: Report failure details
+        if: failure() && steps.claude-review.outcome == 'failure'
+        run: |
+          echo "::group::Claude Code Review failure summary"
+          LOG_FILE="${RUNNER_TEMP}/claude-execution-output.json"
+          if [ -f "$LOG_FILE" ]; then
+            # Extract the result message and any assistant text (no tool calls or system prompts)
+            jq -r '
+              if .type == "result" then
+                "Status: \(.subtype)\nError: \(.is_error)\nDuration: \(.duration_ms)ms\nTurns: \(.num_turns)\nCost: $\(.total_cost_usd)\nPermission denials: \(.permission_denials_count)"
+              elif .type == "assistant" and .message then
+                "Assistant: \(.message[0:500])"
+              else empty end
+            ' "$LOG_FILE" 2>/dev/null || echo "Failed to parse log file"
+          else
+            echo "No execution log found at $LOG_FILE"
+          fi
+          echo "::endgroup::"
 
