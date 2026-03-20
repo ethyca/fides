@@ -305,7 +305,7 @@ const ConnectionListDropdown = ({
           setTimeout(() => inputRef.current?.focus(), 0);
         }
       }}
-      styles={{ content: { padding: 0 } }}
+      styles={{ body: { padding: 0 } }}
     >
       <Button
         aria-label={selectedText ?? label}

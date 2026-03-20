@@ -196,7 +196,7 @@ export {
 } from "@chakra-ui/icons";
 
 // Unmodified component exported directly from Ant Design
-export type { DisplayValueType } from "@rc-component/select/lib/interface";
+export type { DisplayValueType } from "rc-select/lib/interface";
 export type { ThemeConfig } from "antd/es";
 export type {
   FilterValue,

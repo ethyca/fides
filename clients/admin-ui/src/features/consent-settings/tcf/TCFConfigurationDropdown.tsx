@@ -301,10 +301,8 @@ export const TCFConfigurationDropdown = ({
         open={dropdownOpen}
         onOpenChange={setDropdownOpen}
         trigger={["click"]}
-        styles={{
-          root: {
-            zIndex: 999, // putting this behind Chakra's modal. Can possibly remove this after Modal is migrated to Ant Design.
-          },
+        overlayStyle={{
+          zIndex: 999, // putting this behind Chakra's modal. Can possibly remove this after Modal is migrated to Ant Design.
         }}
         popupRender={() =>
           renderDropdownContent({

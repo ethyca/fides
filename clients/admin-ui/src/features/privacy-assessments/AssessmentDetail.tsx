@@ -205,7 +205,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           />
         ),
         children: (
-          <Space direction="vertical" size="medium" className="w-full">
+          <Space direction="vertical" size="middle" className="w-full">
             {group.questions.map((q) => (
               <QuestionCard
                 key={q.id}

@@ -138,7 +138,7 @@ const TaxonomyTreeNode = ({
             className={`${styles["add-button"]} ${nodeHoverStatus === TreeNodeHoverStatus.ACTIVE_HOVER ? styles["add-button--visible"] : ""}`}
             icon={<Icons.Add size={20} />}
             onClick={() => onAddButtonClick?.(taxonomyItem)}
-            size="medium"
+            size="middle"
             data-testid="taxonomy-add-child-label-button"
             aria-label={`Add child label to ${label}`}
           />

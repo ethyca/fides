@@ -43,7 +43,7 @@ const AccountDropdownMenu = ({ onLogout }: AccountDropdownMenuProps) => {
           },
         ],
       }}
-      styles={{ root: { width: "200px" } }}
+      overlayStyle={{ width: "200px" }}
       trigger={["click", "hover"]}
     >
       <Button

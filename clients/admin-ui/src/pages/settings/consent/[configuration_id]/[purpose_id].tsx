@@ -66,8 +66,8 @@ const ConsentConfigurationPage: NextPage = () => {
           },
         ]}
       />
-      <Space direction="vertical" size="medium">
-        <Space direction="vertical" size="medium">
+      <Space direction="vertical" size="middle">
+        <Space direction="vertical" size="middle">
           <SettingsBox
             title={`TCF purpose ${purposeId}${
               purpose?.name ? `: ${purpose?.name}` : ""

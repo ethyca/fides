@@ -71,7 +71,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     modalApi.confirm({
       title: "Delete assessment",
       content: (
-        <Space direction="vertical" size="medium" className="w-full">
+        <Space direction="vertical" size="middle" className="w-full">
           <Text>Are you sure you want to delete this assessment?</Text>
           <Text type="secondary">
             This action cannot be undone. All assessment data, including any

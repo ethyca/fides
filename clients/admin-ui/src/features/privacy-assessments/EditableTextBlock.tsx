@@ -49,7 +49,7 @@ export const EditableTextBlock = ({
             autoFocus
             placeholder={placeholder}
             rows={4}
-            size="medium"
+            size="middle"
           />
         </Form.Item>
         <Flex justify="flex-end" gap="small" className="my-2">
