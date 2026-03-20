@@ -2,7 +2,6 @@ import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import { mockPrivacyNotice } from "support/mocks";
 import { stubConfig } from "support/stubs";
 
-import messagesEn from "../../../../fides-js/src/lib/i18n/locales/en/messages.json";
 import { ConsentPreferencesWithVerificationCode } from "../../../types/api";
 import { API_URL } from "../../support/constants";
 
@@ -327,7 +326,7 @@ describe("Consent settings", () => {
           cy.getToggle().should("not.be.checked");
           cy.getByTestId("gpc-badge").should(
             "contain",
-            messagesEn["static.gpc.status.applied"],
+            "Applied",
           );
         });
 
@@ -353,7 +352,7 @@ describe("Consent settings", () => {
           cy.getToggle().should("not.be.checked").check({ force: true });
           cy.getByTestId("gpc-badge").should(
             "contain",
-            messagesEn["static.gpc.status.overridden"],
+            "Overridden",
           );
         });
         cy.getByTestId("save-btn").click();
