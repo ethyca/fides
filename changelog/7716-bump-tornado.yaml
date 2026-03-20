@@ -1,0 +1,4 @@
+type: Security
+description: Bumped Tornado to 6.5.5 (CVE-2026-31958, GHSA-78cv-mqj4-43f7)
+pr: 7716
+labels: []
