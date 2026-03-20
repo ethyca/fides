@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
+import { JiraConfigTab } from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import TaskConditionsTab from "~/features/integrations/configure-tasks/TaskConditionsTab";
@@ -186,6 +187,14 @@ export const useFeatureBasedTabs = ({
         label: "Conditions",
         key: "conditions",
         children: <TaskConditionsTab connectionKey={connection!.key} />,
+      });
+    }
+
+    if (enabledFeatures?.includes(IntegrationFeature.DSR_AUTOMATION)) {
+      tabItems.push({
+        label: "Configuration",
+        key: "configuration",
+        children: <JiraConfigTab connection={connection!} />,
       });
     }
 
