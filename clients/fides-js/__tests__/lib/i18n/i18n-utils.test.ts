@@ -50,20 +50,14 @@ describe("i18n-utils", () => {
     { locale: "es", label_en: "Spanish", label_original: "Español" },
   ];
   // GPC fallback values produced by mock i18n.t() when GPC fields are missing
-  // from the experience config (returns "mock translation" for en, "traducción simulada" for es)
-  const mockGpcFallbacksEn = {
-    "exp.gpc_label": "mock translation",
-    "exp.gpc_title": "mock translation",
-    "exp.gpc_description": "mock translation",
-    "exp.gpc_status_applied_label": "mock translation",
-    "exp.gpc_status_overridden_label": "mock translation",
-  };
-  const mockGpcFallbacksEs = {
-    "exp.gpc_label": "traducción simulada",
-    "exp.gpc_title": "traducción simulada",
-    "exp.gpc_description": "traducción simulada",
-    "exp.gpc_status_applied_label": "traducción simulada",
-    "exp.gpc_status_overridden_label": "traducción simulada",
+  // from the experience config. Since mockCurrentLocale is "" at this point,
+  // the mock t() returns the raw key via the default switch case.
+  const mockGpcFallbacks = {
+    "exp.gpc_label": "static.gpc",
+    "exp.gpc_title": "static.gpc.title",
+    "exp.gpc_description": "static.gpc.description",
+    "exp.gpc_status_applied_label": "static.gpc.status.applied",
+    "exp.gpc_status_overridden_label": "static.gpc.status.overridden",
   };
 
   const mockI18nCatalogLoad = [
@@ -80,7 +74,7 @@ describe("i18n-utils", () => {
       "exp.reject_button_label": "Reject Test",
       "exp.save_button_label": "Save Test",
       "exp.title": "Title Test",
-      ...mockGpcFallbacksEn,
+      ...mockGpcFallbacks,
     },
     {
       "exp.accept_button_label": "Aceptar Prueba",
@@ -96,7 +90,7 @@ describe("i18n-utils", () => {
       "exp.reject_button_label": "Rechazar Prueba",
       "exp.save_button_label": "Guardar Prueba",
       "exp.title": "Título de la Prueba",
-      ...mockGpcFallbacksEs,
+      ...mockGpcFallbacks,
     },
   ];
 
