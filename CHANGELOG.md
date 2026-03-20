@@ -21,9 +21,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.81.0..main)
 
-### Changed
-- Migrate IDP staged resources from per-provider types (Okta App, Entra App) to unified IDP App type with provider stored in meta [#7712](https://github.com/ethyca/fides/pull/7712) https://github.com/ethyca/fides/labels/db-migration
-
 ## [2.81.0](https://github.com/ethyca/fides/compare/2.80.1..2.81.0)
 
 ### Added
