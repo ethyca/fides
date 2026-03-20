@@ -290,12 +290,13 @@ export function loadMessagesFromExperience(
   // static messages for any missing GPC fields
   availableLocales.forEach((locale) => {
     const messages = allMessages[locale] || {};
+    const gpcDefaults: Record<string, string> = {};
     Object.entries(GPC_FALLBACKS).forEach(([expKey, staticKey]) => {
       if (!messages[expKey]) {
-        messages[expKey] = i18n.t(staticKey);
+        gpcDefaults[expKey] = i18n.t(staticKey);
       }
     });
-    i18n.load(locale, messages);
+    i18n.load(locale, { ...messages, ...gpcDefaults });
   });
 }
 
