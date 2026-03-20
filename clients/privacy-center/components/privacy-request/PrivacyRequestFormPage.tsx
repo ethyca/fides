@@ -34,7 +34,8 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   const policyKey = colonIndex !== -1 ? decoded.slice(colonIndex + 1) : decoded;
 
   const action = (
-    !Number.isNaN(actionIndex)
+    !Number.isNaN(actionIndex) &&
+    config.actions[actionIndex]?.policy_key === policyKey
       ? config.actions[actionIndex]
       : config.actions.find((a) => a.policy_key === policyKey)
   ) as PrivacyRequestOption | undefined;
