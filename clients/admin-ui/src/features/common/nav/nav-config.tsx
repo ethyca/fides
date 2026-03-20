@@ -140,7 +140,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         tabs: PRIVACY_REQUEST_TAB_ITEMS,
       },
       {
-        title: "Policies",
+        title: "DSR Policies",
         path: routes.POLICIES_ROUTE,
         requiresFlag: "policies",
         scopes: [ScopeRegistryEnum.POLICY_READ],
