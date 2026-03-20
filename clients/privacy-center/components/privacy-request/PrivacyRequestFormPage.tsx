@@ -33,7 +33,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
     colonIndex !== -1 ? parseInt(decoded.slice(0, colonIndex), 10) : NaN;
   const policyKey = colonIndex !== -1 ? decoded.slice(colonIndex + 1) : decoded;
 
-  const action = (
+  const selectedAction = (
     !Number.isNaN(actionIndex) &&
     config.actions[actionIndex]?.policy_key === policyKey
       ? config.actions[actionIndex]
@@ -50,11 +50,11 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   }, [getIdVerificationConfigQuery]);
 
   useEffect(() => {
-    if (!action) {
+    if (!selectedAction) {
       messageApi.error(`Invalid action key "${policyKey}" for privacy request`);
       router.push(basePath || "/");
     }
-  }, [action, policyKey, messageApi, router, basePath]);
+  }, [selectedAction, policyKey, messageApi, router, basePath]);
 
   const handleExit = () => {
     router.push(basePath || "/");
@@ -79,7 +79,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   return (
     <PrivacyRequestForm
       onExit={handleExit}
-      openAction={action}
+      openAction={selectedAction}
       setCurrentView={handleSetCurrentView}
       setPrivacyRequestId={handleSetPrivacyRequestId}
       isVerificationRequired={isVerificationRequired}
