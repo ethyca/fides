@@ -4,13 +4,13 @@ import {
   ChakraCheckbox as Checkbox,
   ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
+  ChakraFormLabel as FormLabel,
+  ChakraInput as Input,
   ChakraSmallAddIcon as SmallAddIcon,
   ChakraText as Text,
+  Select,
 } from "fidesui";
 import { useFormikContext } from "formik";
-
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { CustomTextInput } from "~/features/common/form/inputs";
 
 import type { PropertyFormValues } from "../PropertyForm";
 
@@ -123,34 +123,46 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
             </Flex>
 
             <Flex flexDir="column" gap={2}>
-              <CustomTextInput
-                label="Field key (internal name)"
-                name={`__custom_key_${actionIndex}_${index}`}
-                value={entry.key}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleFieldChange(index, "key", e.target.value)
-                }
-                variant="stacked"
-              />
-              <ControlledSelect
-                label="Field type"
-                name={`__custom_type_${actionIndex}_${index}`}
-                value={entry.field_type ?? "text"}
-                options={FIELD_TYPE_OPTIONS}
-                layout="stacked"
-                onChange={(val: string) =>
-                  handleFieldChange(index, "field_type", val)
-                }
-              />
-              <CustomTextInput
-                label="Label"
-                name={`__custom_label_${actionIndex}_${index}`}
-                value={entry.label}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleFieldChange(index, "label", e.target.value)
-                }
-                variant="stacked"
-              />
+              <Box>
+                <FormLabel fontSize="xs" my={0} mb={1}>
+                  Field key (internal name)
+                </FormLabel>
+                <Input
+                  value={entry.key}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleFieldChange(index, "key", e.target.value)
+                  }
+                  size="sm"
+                  data-testid={`custom-field-key-${actionIndex}-${index}`}
+                />
+              </Box>
+              <Box>
+                <FormLabel fontSize="xs" my={0} mb={1}>
+                  Field type
+                </FormLabel>
+                <Select
+                  value={entry.field_type ?? "text"}
+                  options={FIELD_TYPE_OPTIONS}
+                  onChange={(val: string) =>
+                    handleFieldChange(index, "field_type", val)
+                  }
+                  style={{ width: "100%" }}
+                  data-testid={`custom-field-type-${actionIndex}-${index}`}
+                />
+              </Box>
+              <Box>
+                <FormLabel fontSize="xs" my={0} mb={1}>
+                  Label
+                </FormLabel>
+                <Input
+                  value={entry.label}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleFieldChange(index, "label", e.target.value)
+                  }
+                  size="sm"
+                  data-testid={`custom-field-label-${actionIndex}-${index}`}
+                />
+              </Box>
               <Flex gap={4}>
                 <Checkbox
                   isChecked={!!entry.required}
@@ -189,15 +201,19 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
                 )}
               </Flex>
               {entry.hidden && (
-                <CustomTextInput
-                  label="Default value (required when hidden)"
-                  name={`__custom_default_${actionIndex}_${index}`}
-                  value={entry.default_value ?? ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleFieldChange(index, "default_value", e.target.value)
-                  }
-                  variant="stacked"
-                />
+                <Box>
+                  <FormLabel fontSize="xs" my={0} mb={1}>
+                    Default value (required when hidden)
+                  </FormLabel>
+                  <Input
+                    value={entry.default_value ?? ""}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleFieldChange(index, "default_value", e.target.value)
+                    }
+                    size="sm"
+                    data-testid={`custom-field-default-${actionIndex}-${index}`}
+                  />
+                </Box>
               )}
             </Flex>
           </Box>

@@ -134,17 +134,16 @@ const ActionEntryForm = ({ index }: Props) => {
                     {key}
                   </Text>
                 </Checkbox>
-                {isEnabled && (
-                  <Checkbox
-                    isChecked={isRequired}
-                    onChange={(e) =>
-                      handleIdentityRequired(key, e.target.checked)
-                    }
-                    data-testid={`identity-${key}-required-${index}`}
-                  >
-                    <Text fontSize="sm">Required</Text>
-                  </Checkbox>
-                )}
+                <Checkbox
+                  isChecked={isRequired}
+                  isDisabled={!isEnabled}
+                  onChange={(e) =>
+                    handleIdentityRequired(key, e.target.checked)
+                  }
+                  data-testid={`identity-${key}-required-${index}`}
+                >
+                  <Text fontSize="sm">Required</Text>
+                </Checkbox>
               </Flex>
             );
           })}

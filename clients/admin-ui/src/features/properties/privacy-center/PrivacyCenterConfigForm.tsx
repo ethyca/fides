@@ -3,7 +3,6 @@ import {
   ChakraBox as Box,
   ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
-  ChakraSmallAddIcon as SmallAddIcon,
 } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 
@@ -52,86 +51,65 @@ const DescriptionSubtextFieldArray = ({
               />
             </Flex>
           ))}
-          <Box>
-            <Button
-              icon={<SmallAddIcon />}
-              onClick={() => arrayHelpers.push("")}
-              loading={false}
-              data-testid={`add-${fieldPath}-button`}
-            >
-              Add {label.toLowerCase()} entry
-            </Button>
-          </Box>
         </Flex>
       )}
     />
   );
 };
 
-const PrivacyCenterConfigForm = () => {
-  const { values } = useFormikContext<PropertyFormValues>();
-  const hasConfig =
-    values.privacy_center_config !== null &&
-    values.privacy_center_config !== undefined;
-
-  if (!hasConfig) {
-    return null;
-  }
-
-  return (
-    <>
-      <Box py={3}>
-        <FormSection title="Privacy Center — General">
-          <CustomTextInput
-            isRequired
-            label="Title"
-            name="privacy_center_config.title"
-            variant="stacked"
-          />
-          <CustomTextInput
-            isRequired
-            label="Description"
-            name="privacy_center_config.description"
-            variant="stacked"
-          />
-          <DescriptionSubtextFieldArray
-            fieldPath="privacy_center_config.description_subtext"
-            label="Description subtext"
-          />
-          <CustomTextInput
-            label="Logo path"
-            name="privacy_center_config.logo_path"
-            variant="stacked"
-          />
-          <CustomTextInput
-            label="Logo URL"
-            name="privacy_center_config.logo_url"
-            variant="stacked"
-          />
-          <CustomTextInput
-            label="Favicon path"
-            name="privacy_center_config.favicon_path"
-            variant="stacked"
-          />
-          <CustomTextInput
-            label="Privacy policy URL"
-            name="privacy_center_config.privacy_policy_url"
-            variant="stacked"
-          />
-          <CustomTextInput
-            label="Privacy policy URL text"
-            name="privacy_center_config.privacy_policy_url_text"
-            variant="stacked"
-          />
-        </FormSection>
-      </Box>
-      <Box py={3}>
-        <FormSection title="Privacy Center — Actions">
-          <ActionsFieldArray />
-        </FormSection>
-      </Box>
-    </>
-  );
-};
+const PrivacyCenterConfigForm = () => (
+  <>
+    <Box py={3}>
+      <FormSection title="Privacy Center — General">
+        <CustomTextInput
+          isRequired
+          label="Title"
+          name="privacy_center_config.title"
+          variant="stacked"
+        />
+        <CustomTextInput
+          isRequired
+          label="Description"
+          name="privacy_center_config.description"
+          variant="stacked"
+        />
+        <DescriptionSubtextFieldArray
+          fieldPath="privacy_center_config.description_subtext"
+          label="Description subtext"
+        />
+        <CustomTextInput
+          label="Logo path"
+          name="privacy_center_config.logo_path"
+          variant="stacked"
+        />
+        <CustomTextInput
+          label="Logo URL"
+          name="privacy_center_config.logo_url"
+          variant="stacked"
+        />
+        <CustomTextInput
+          label="Favicon path"
+          name="privacy_center_config.favicon_path"
+          variant="stacked"
+        />
+        <CustomTextInput
+          label="Privacy policy URL"
+          name="privacy_center_config.privacy_policy_url"
+          variant="stacked"
+        />
+        <CustomTextInput
+          label="Privacy policy URL text"
+          name="privacy_center_config.privacy_policy_url_text"
+          variant="stacked"
+        />
+      </FormSection>
+    </Box>
+    <Box py={3}>
+      <FormSection title="Privacy Center — Actions">
+        <ActionsFieldArray />
+      </FormSection>
+    </Box>
+  </>
+);
 
 export default PrivacyCenterConfigForm;

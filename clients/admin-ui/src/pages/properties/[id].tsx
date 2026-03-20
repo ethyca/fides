@@ -9,7 +9,6 @@ import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import PrivacyCenterPreview from "~/features/properties/privacy-center/PrivacyCenterPreview";
 import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
@@ -75,11 +74,7 @@ const EditPropertyPage: NextPage = () => {
           </Button>
         }
       />
-      <PropertyForm
-        property={data}
-        handleSubmit={handleSubmit}
-        rightPanel={showPreview ? <PrivacyCenterPreview /> : undefined}
-      />
+      <PropertyForm property={data} handleSubmit={handleSubmit} />
     </Layout>
   );
 };

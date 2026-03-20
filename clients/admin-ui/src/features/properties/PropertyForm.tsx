@@ -1,4 +1,4 @@
-import { Button, ChakraBox as Box, ChakraFlex as Flex, Switch } from "fidesui";
+import { Button, ChakraBox as Box, ChakraFlex as Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -35,7 +35,6 @@ import PrivacyCenterConfigForm from "./privacy-center/PrivacyCenterConfigForm";
 interface Props {
   property?: Property;
   handleSubmit: (values: PropertyFormValues) => Promise<void>;
-  rightPanel?: React.ReactNode;
 }
 
 export interface PropertyFormValues {
@@ -44,7 +43,7 @@ export interface PropertyFormValues {
   type: PropertyType;
   messaging_templates?: Array<MinimalMessagingTemplate> | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
-  privacy_center_config?: PrivacyCenterConfig | null;
+  privacy_center_config: PrivacyCenterConfig;
   paths: Array<string>;
 }
 
@@ -80,40 +79,7 @@ const ExperiencesFormSection = () => {
   );
 };
 
-const PrivacyCenterToggleSection = () => {
-  const { values, setFieldValue } = useFormikContext<PropertyFormValues>();
-  const hasConfig =
-    values.privacy_center_config !== null &&
-    values.privacy_center_config !== undefined;
-
-  return (
-    <Box py={3}>
-      <FormSection title="Privacy Center">
-        <Flex alignItems="center" gap={3}>
-          <Switch
-            checked={hasConfig}
-            onChange={(checked) => {
-              if (checked) {
-                setFieldValue(
-                  "privacy_center_config",
-                  DEFAULT_PRIVACY_CENTER_CONFIG,
-                );
-              } else {
-                setFieldValue("privacy_center_config", null);
-              }
-            }}
-            data-testid="privacy-center-toggle"
-          />
-          <Box fontSize="sm" color="gray.700">
-            {hasConfig ? "Privacy Center enabled" : "Enable Privacy Center"}
-          </Box>
-        </Flex>
-      </FormSection>
-    </Box>
-  );
-};
-
-const PropertyForm = ({ property, handleSubmit, rightPanel }: Props) => {
+const PropertyForm = ({ property, handleSubmit }: Props) => {
   const router = useRouter();
 
   const handleCancel = () => {
@@ -129,7 +95,8 @@ const PropertyForm = ({ property, handleSubmit, rightPanel }: Props) => {
             type: property.type,
             messaging_templates: property.messaging_templates,
             experiences: property.experiences,
-            privacy_center_config: property.privacy_center_config ?? null,
+            privacy_center_config:
+              property.privacy_center_config ?? DEFAULT_PRIVACY_CENTER_CONFIG,
             paths: property.paths ?? [],
           }
         : {
@@ -137,7 +104,7 @@ const PropertyForm = ({ property, handleSubmit, rightPanel }: Props) => {
             type: PropertyType.WEBSITE,
             experiences: [],
             messaging_templates: [],
-            privacy_center_config: null,
+            privacy_center_config: DEFAULT_PRIVACY_CENTER_CONFIG,
             paths: [],
           },
     [property],
@@ -150,100 +117,77 @@ const PropertyForm = ({ property, handleSubmit, rightPanel }: Props) => {
       onSubmit={handleSubmit}
     >
       {({ dirty, isValid, isSubmitting }) => (
-        <Flex gap={6} alignItems="flex-start">
-          <Form
-            style={{
-              paddingTop: "12px",
-              paddingBottom: "12px",
-              flex: rightPanel ? "0 0 480px" : "1",
-              minWidth: 0,
-            }}
-          >
+        <Form style={{ paddingTop: "12px", paddingBottom: "12px" }}>
+          <Box py={3}>
+            <FormSection title="Property details">
+              <CustomTextInput
+                isRequired
+                label="Property name"
+                name="name"
+                tooltip="Unique name to identify this property"
+                variant="stacked"
+              />
+              <ControlledSelect
+                isRequired
+                label="Type"
+                name="type"
+                options={enumToOptions(PropertyType)}
+                layout="stacked"
+              />
+            </FormSection>
+          </Box>
+          <Box py={3}>
+            <ExperiencesFormSection />
+          </Box>
+          <Box py={3}>
+            <FormSection title="Paths">
+              <PathsFieldArray />
+            </FormSection>
+          </Box>
+          <PrivacyCenterConfigForm />
+          {property && (
             <Box py={3}>
-              <FormSection title="Property details">
-                <CustomTextInput
-                  isRequired
-                  label="Property name"
-                  name="name"
-                  tooltip="Unique name to identify this property"
+              <FormSection title="Advanced settings">
+                <CustomClipboardCopy
+                  label="Property ID"
+                  name="id"
+                  tooltip="Automatically generated unique ID for this property, used for developer configurations"
                   variant="stacked"
-                />
-                <ControlledSelect
-                  isRequired
-                  label="Type"
-                  name="type"
-                  options={enumToOptions(PropertyType)}
-                  layout="stacked"
+                  readOnly
                 />
               </FormSection>
-            </Box>
-            <Box py={3}>
-              <ExperiencesFormSection />
-            </Box>
-            <Box py={3}>
-              <FormSection title="Paths">
-                <PathsFieldArray />
-              </FormSection>
-            </Box>
-            <PrivacyCenterToggleSection />
-            <PrivacyCenterConfigForm />
-            {property && (
-              <Box py={3}>
-                <FormSection title="Advanced settings">
-                  <CustomClipboardCopy
-                    label="Property ID"
-                    name="id"
-                    tooltip="Automatically generated unique ID for this property, used for developer configurations"
-                    variant="stacked"
-                    readOnly
-                  />
-                </FormSection>
-              </Box>
-            )}
-            <Flex justifyContent="space-between" width="100%" paddingTop={2}>
-              {property && (
-                <DeletePropertyModal
-                  property={property}
-                  triggerComponent={
-                    <Button
-                      data-testid="delete-property-button"
-                      loading={false}
-                      className="mr-3"
-                    >
-                      Delete
-                    </Button>
-                  }
-                />
-              )}
-              <Flex justifyContent="right" width="100%" paddingTop={2}>
-                <Button onClick={handleCancel} loading={false} className="mr-3">
-                  Cancel
-                </Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={isSubmitting || !dirty || !isValid}
-                  loading={isSubmitting}
-                >
-                  Save
-                </Button>
-              </Flex>
-            </Flex>
-          </Form>
-          {rightPanel && (
-            <Box
-              flex="1"
-              minWidth={0}
-              position="sticky"
-              top="88px"
-              maxHeight="calc(100vh - 148px)"
-              overflowY="auto"
-              style={{ paddingTop: "24px" }}
-            >
-              {rightPanel}
             </Box>
           )}
-        </Flex>
+          <Flex justifyContent="space-between" width="100%" paddingTop={2}>
+            {property && (
+              <DeletePropertyModal
+                property={property}
+                triggerComponent={
+                  <Button
+                    data-testid="delete-property-button"
+                    loading={false}
+                    className="mr-3"
+                  >
+                    Delete
+                  </Button>
+                }
+              />
+            )}
+            <Flex justifyContent="right" width="100%" paddingTop={2}>
+              <Button onClick={handleCancel} loading={false} className="mr-3">
+                Cancel
+              </Button>
+              <Button
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting || !dirty || !isValid}
+                loading={isSubmitting}
+              >
+                Save
+              </Button>
+            </Flex>
+          </Flex>
+        </Form>
       )}
     </Formik>
   );

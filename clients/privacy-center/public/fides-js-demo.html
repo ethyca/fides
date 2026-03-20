@@ -25,7 +25,7 @@
         }
         document.write('<script src="' + src + '"><\/script>');
         document.write(
-          "<script>Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
+          "<script>Fides.gcm();Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
         );
       })();
       var deleteCookie = function () {
