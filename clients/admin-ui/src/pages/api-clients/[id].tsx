@@ -20,6 +20,7 @@ import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
 import {
+  useDeleteOAuthClientMutation,
   useGetOAuthClientQuery,
   useRotateOAuthClientSecretMutation,
 } from "~/features/oauth/oauth-clients.slice";
@@ -89,9 +90,12 @@ const SecretManagementTab = ({ clientId }: { clientId: string }) => {
 
 const ApiClientDetailPage: NextPage = () => {
   const router = useRouter();
+  const message = useMessage();
   const clientId = Array.isArray(router.query.id)
     ? router.query.id[0]
     : (router.query.id ?? "");
+  const [deleteClient, { isLoading: isDeleting }] =
+    useDeleteOAuthClientMutation();
 
   const {
     data: client,
@@ -142,6 +146,24 @@ const ApiClientDetailPage: NextPage = () => {
       ]
     : [];
 
+  const confirmDelete = () => {
+    Modal.confirm({
+      title: "Delete API client?",
+      content:
+        "This client will be permanently deleted. Any integrations using it will stop working immediately.",
+      okText: "Delete client",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        const result = await deleteClient(clientId);
+        if (isErrorResult(result)) {
+          message.error(getErrorMessage(result.error));
+        } else {
+          router.push(API_CLIENTS_ROUTE);
+        }
+      },
+    });
+  };
+
   return (
     <FixedLayout title="API Clients - Edit">
       <PageHeader
@@ -151,6 +173,20 @@ const ApiClientDetailPage: NextPage = () => {
           { title: client?.name ?? clientId },
         ]}
         isSticky={false}
+        rightContent={
+          client && (
+            <Restrict scopes={[ScopeRegistryEnum.CLIENT_DELETE]}>
+              <Button
+                danger
+                onClick={confirmDelete}
+                loading={isDeleting}
+                data-testid="delete-client-btn"
+              >
+                Delete client
+              </Button>
+            </Restrict>
+          )
+        }
       />
       {client && (
         <Flex align="center" gap={4} className="-mt-2 mb-4">
