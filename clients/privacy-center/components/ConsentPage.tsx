@@ -2,9 +2,9 @@
 
 import {
   FidesCookie,
-  GPC_FALLBACKS,
   getGpcContext,
   getOrMakeFidesCookie,
+  GPC_FALLBACKS,
   initializeI18n,
   loadMessagesFromFiles,
   PrivacyExperience,
