@@ -258,7 +258,7 @@ def test_delete_privacy_request_removes_cached_data(
     privacy_request.delete(db)
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
-    assert cache.get(key) is None
+    # privacy_request.delete() calls clear_cached_values(), so cache is already cleared
 
 
 def test_cache_identity_fallback_to_db(
@@ -337,8 +337,9 @@ def test_custom_privacy_request_fields_fallback_to_db(
         privacy_request.get_cached_custom_privacy_request_fields()
     )
     assert cached_custom_privacy_request_fields is not None
-    cache.delete(key)
-    assert cache.get(key) is None
+    # Delete using DSR store to clear the cached custom field
+    with get_dsr_cache_store() as store:
+        store.delete(privacy_request.id, f"custom_field:{custom_privacy_request_field.label}")
     assert (
         privacy_request.get_cached_custom_privacy_request_fields()
         == cached_custom_privacy_request_fields

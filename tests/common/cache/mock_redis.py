@@ -125,5 +125,18 @@ class MockRedis:
             return True
         return False
 
+
+    def ping(self) -> bool:
+        """Mock ping - always returns True."""
+        return True
+
+    def get_keys_by_prefix(self, prefix: str) -> List[str]:
+        """Get all keys matching the prefix."""
+        return [k for k in self.keys() if k.startswith(prefix)]
+
+    def set_with_autoexpire(self, key: str, value: Any, ex: Optional[int] = None) -> bool:
+        """Set a key with optional expiration."""
+        return self.set(key, value, ex=ex)
+
     def pipeline(self) -> MockPipeline:
         return MockPipeline(self._data, self._sets)

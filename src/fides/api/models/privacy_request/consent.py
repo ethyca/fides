@@ -96,6 +96,9 @@ class ConsentRequest(IdentityVerificationMixin, Base):
     privacy_request = relationship("PrivacyRequest")
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
+        # TODO: Remove this method - it's dead code (never called).
+        # If identity data is needed, use privacy_request.get_cached_identity_data()
+        # when privacy_request_id exists, or get_persisted_identity() from provided_identity.
         """Retrieves any identity data pertaining to this request from the cache."""
         cache: FidesopsRedis = get_cache()
         keys = cache.get_keys_by_prefix(f"id-{self.id}-identity-")

@@ -108,7 +108,6 @@ from fides.api.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,
     get_cache,
-    get_drp_request_body_cache_key,
     get_dsr_cache_store,
 )
 from fides.api.util.collection_util import Row

@@ -251,6 +251,15 @@ class DSRCacheStore:
 
         # Filter for identity keys (both new and legacy formats)
         identity_keys = [k for k in all_keys if ":identity:" in k or "-identity-" in k]
+        
+        # Also scan for legacy identity keys directly, since get_all_keys() may return early
+        # if an index exists (e.g., when other fields like encryption are cached)
+        legacy_identity_prefix = f"id-{dsr_id}-identity-"
+        legacy_keys = list(self._redis.scan_iter(match=f"{legacy_identity_prefix}*", count=500))
+        # Add legacy keys that aren't already in identity_keys
+        for legacy_key in legacy_keys:
+            if legacy_key not in identity_keys:
+                identity_keys.append(legacy_key)
 
         for key in identity_keys:
             # Extract attribute name from key
@@ -275,7 +284,14 @@ class DSRCacheStore:
         Returns True if any identity keys exist (legacy or new format).
         """
         all_keys = self.get_all_keys(dsr_id)
-        return any(":identity:" in k or "-identity-" in k for k in all_keys)
+        has_identity = any(":identity:" in k or "-identity-" in k for k in all_keys)
+        if has_identity:
+            return True
+        # Also check for legacy identity keys directly, since get_all_keys() may return early
+        # if an index exists (e.g., when other fields like encryption are cached)
+        legacy_identity_prefix = f"id-{dsr_id}-identity-"
+        legacy_keys = list(self._redis.scan_iter(match=f"{legacy_identity_prefix}*", count=500))
+        return len(legacy_keys) > 0
 
     # --- Convenience: encryption ---
 
