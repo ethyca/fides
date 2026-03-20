@@ -144,14 +144,17 @@ const HomePage: NextPage = () => {
 
   const content: ReactNode[] = [];
 
-  config.actions.forEach((action) => {
+  config.actions.forEach((action, index) => {
     content.push(
       <PrivacyCard
-        key={action.policy_key}
+        // eslint-disable-next-line react/no-array-index-key
+        key={index}
         title={action.title}
         iconPath={action.icon_path}
         description={action.description}
-        onClick={() => handlePrivacyRequestOpen(action.policy_key)}
+        onClick={() =>
+          handlePrivacyRequestOpen(`${index}:${action.policy_key}`)
+        }
       />,
     );
   });
