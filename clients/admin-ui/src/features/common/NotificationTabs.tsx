@@ -16,7 +16,7 @@ import { selectThisUsersScopes } from "../user-management";
 
 /** Shared tab definitions used by both the tab bar and nav search. */
 export const NOTIFICATION_TAB_ITEMS: NavConfigTab[] = [
-  { title: "Templates", path: NOTIFICATIONS_TEMPLATES_ROUTE },
+  { title: "Messaging templates", path: NOTIFICATIONS_TEMPLATES_ROUTE },
   { title: "Digests", path: NOTIFICATIONS_DIGESTS_ROUTE },
   { title: "Email providers", path: MESSAGING_PROVIDERS_ROUTE },
   { title: "Chat providers", path: CHAT_PROVIDERS_ROUTE },
