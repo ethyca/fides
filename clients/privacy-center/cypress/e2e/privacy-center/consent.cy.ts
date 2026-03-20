@@ -324,10 +324,7 @@ describe("Consent settings", () => {
         cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getToggle().should("not.be.checked");
-          cy.getByTestId("gpc-badge").should(
-            "contain",
-            "Applied",
-          );
+          cy.getByTestId("gpc-badge").should("contain", "Applied");
         });
 
         cy.getByTestId("save-btn").click();
@@ -350,10 +347,7 @@ describe("Consent settings", () => {
         cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
           cy.getToggle().should("not.be.checked").check({ force: true });
-          cy.getByTestId("gpc-badge").should(
-            "contain",
-            "Overridden",
-          );
+          cy.getByTestId("gpc-badge").should("contain", "Overridden");
         });
         cy.getByTestId("save-btn").click();
 
