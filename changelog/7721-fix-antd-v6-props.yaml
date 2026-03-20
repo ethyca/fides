@@ -1,0 +1,4 @@
+type: Fixed
+description: Fix incorrect Ant Design v6 component props (Dropdown styles, Tag variant, Space/Button size, Popover styles, rc-select import path)
+pr: 7721
+labels: []
