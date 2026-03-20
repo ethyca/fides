@@ -27,11 +27,17 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
 
   const messageApi = useMessage();
 
-  const policyKey = decodePolicyKey(actionKey);
+  const decoded = decodePolicyKey(actionKey);
+  const colonIndex = decoded.indexOf(":");
+  const actionIndex =
+    colonIndex !== -1 ? parseInt(decoded.slice(0, colonIndex), 10) : NaN;
+  const policyKey = colonIndex !== -1 ? decoded.slice(colonIndex + 1) : decoded;
 
-  const action = config.actions.find((a) => a.policy_key === policyKey) as
-    | PrivacyRequestOption
-    | undefined;
+  const action = (
+    !Number.isNaN(actionIndex)
+      ? config.actions[actionIndex]
+      : config.actions.find((a) => a.policy_key === policyKey)
+  ) as PrivacyRequestOption | undefined;
 
   // Update verification requirement from API
   useEffect(() => {
