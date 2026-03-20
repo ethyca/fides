@@ -5,7 +5,8 @@ import {
   isoStringToEntry,
   Space,
   Text,
-  useChakraToast as useToast,
+  useMessage,
+  useNotification,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";
@@ -25,7 +26,7 @@ import {
 } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import ToastLink from "~/features/common/ToastLink";
 import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
@@ -50,7 +51,6 @@ import {
   DiscoveryStatusDisplayNames,
 } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
-import { SuccessToastContent } from "../SuccessToastContent";
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
@@ -76,7 +76,8 @@ export const useDiscoveredAssetsTable = ({
   onShowComplianceIssueDetails,
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
+  const notification = useNotification();
 
   const [systemName, setSystemName] = useState(systemId);
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
@@ -463,21 +464,18 @@ export const useDiscoveredAssetsTable = ({
     const systemToLink = allAssetsHaveSameSystemKey ? systemKey : undefined;
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          SuccessToastContent(
-            `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
-            systemToLink
-              ? () =>
-                  router.push(
-                    `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`,
-                  )
-              : () => router.push(SYSTEM_ROUTE),
-          ),
+      const viewHref = systemToLink
+        ? `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`
+        : SYSTEM_ROUTE;
+      notification.success({
+        message: "Added to inventory",
+        description: `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
+        actions: (
+          <ToastLink onClick={() => router.push(viewHref)}>View</ToastLink>
         ),
-      );
+      });
       resetSelections();
     }
   }, [
@@ -485,7 +483,8 @@ export const useDiscoveredAssetsTable = ({
     selectedUrns,
     selectedRows,
     systemName,
-    toast,
+    message,
+    notification,
     router,
     resetSelections,
   ]);
@@ -499,13 +498,10 @@ export const useDiscoveredAssetsTable = ({
           systemKey: selectedSystem.value,
         });
         if (isErrorResult(result)) {
-          toast(errorToastParams(getErrorMessage(result.error)));
+          message.error(getErrorMessage(result.error));
         } else {
-          toast(
-            successToastParams(
-              `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
-              `Confirmed`,
-            ),
+          message.success(
+            `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
           );
           resetSelections();
         }
@@ -515,7 +511,7 @@ export const useDiscoveredAssetsTable = ({
       updateAssetsSystemMutation,
       monitorId,
       selectedUrns,
-      toast,
+      message,
       resetSelections,
     ],
   );
@@ -541,15 +537,12 @@ export const useDiscoveredAssetsTable = ({
         assets,
       });
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
       } else {
-        toast(
-          successToastParams(
-            `Consent categories added to ${selectedUrns.length} assets${
-              systemName ? ` from ${systemName}` : ""
-            }.`,
-            `Confirmed`,
-          ),
+        message.success(
+          `Consent categories added to ${selectedUrns.length} assets${
+            systemName ? ` from ${systemName}` : ""
+          }.`,
         );
         resetSelections();
       }
@@ -560,7 +553,7 @@ export const useDiscoveredAssetsTable = ({
       monitorId,
       selectedUrns,
       systemName,
-      toast,
+      message,
       resetSelections,
     ],
   );
@@ -570,15 +563,12 @@ export const useDiscoveredAssetsTable = ({
       urnList: selectedUrns,
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          systemName === UNCATEGORIZED_SEGMENT
-            ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
-            : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
-          `Confirmed`,
-        ),
+      message.success(
+        systemName === UNCATEGORIZED_SEGMENT
+          ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
+          : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
       );
       resetSelections();
     }
@@ -586,7 +576,7 @@ export const useDiscoveredAssetsTable = ({
     ignoreMonitorResultAssetsMutation,
     selectedUrns,
     systemName,
-    toast,
+    message,
     resetSelections,
   ]);
 
@@ -595,20 +585,17 @@ export const useDiscoveredAssetsTable = ({
       urnList: selectedUrns,
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          `${selectedUrns.length} assets have been restored and will appear in future scans.`,
-          `Confirmed`,
-        ),
+      message.success(
+        `${selectedUrns.length} assets have been restored and will appear in future scans.`,
       );
       resetSelections();
     }
   }, [
     restoreMonitorResultAssetsMutation,
     selectedUrns,
-    toast,
+    message,
     resetSelections,
   ]);
 
@@ -620,7 +607,7 @@ export const useDiscoveredAssetsTable = ({
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
       router.push({
         pathname: ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
@@ -628,11 +615,8 @@ export const useDiscoveredAssetsTable = ({
           monitorId: encodeURIComponent(monitorId),
         },
       });
-      toast(
-        successToastParams(
-          `${assetCount} assets from ${systemName} have been added to the system inventory.`,
-          `Confirmed`,
-        ),
+      message.success(
+        `${assetCount} assets from ${systemName} have been added to the system inventory.`,
       );
       resetSelections();
     }
@@ -642,7 +626,7 @@ export const useDiscoveredAssetsTable = ({
     monitorId,
     systemId,
     router,
-    toast,
+    message,
     systemName,
     resetSelections,
   ]);

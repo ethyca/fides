@@ -101,7 +101,7 @@ const MonitorList = () => {
     ) || [];
 
   return (
-    <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
+    <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="medium" vertical>
       <MonitorListSearchForm
         {...formProps}
         onFinish={(values) => {

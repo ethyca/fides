@@ -177,6 +177,16 @@ declare global {
         type: "success" | "error" | "info" | "warning",
         text?: string,
       ) => Chainable;
+
+      /**
+       * Assert an Ant Design notification is visible
+       * @param type The notification type (success, error, info, warning)
+       * @param text Optional text to assert the notification contains
+       */
+      shouldShowNotification: (
+        type: "success" | "error" | "info" | "warning",
+        text?: string,
+      ) => Chainable;
     }
   }
 }
@@ -401,7 +411,7 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-content`));
+Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-container`));
 Cypress.Commands.add("getAntModalHeader", () => cy.get(`.ant-modal-header`));
 Cypress.Commands.add("getAntModalFooter", () => cy.get(`.ant-modal-footer`));
 Cypress.Commands.add("getAntModalConfirmButtons", () =>
@@ -419,6 +429,17 @@ Cypress.Commands.add(
   "shouldShowMessage",
   (type: "success" | "error" | "info" | "warning", text?: string) => {
     const selector = `.ant-message-${type}`;
+    cy.get(selector, { timeout: 10000 }).should("be.visible");
+    if (text) {
+      cy.get(selector).should("contain", text);
+    }
+  },
+);
+
+Cypress.Commands.add(
+  "shouldShowNotification",
+  (type: "success" | "error" | "info" | "warning", text?: string) => {
+    const selector = `.ant-notification-notice-${type}`;
     cy.get(selector, { timeout: 10000 }).should("be.visible");
     if (text) {
       cy.get(selector).should("contain", text);
