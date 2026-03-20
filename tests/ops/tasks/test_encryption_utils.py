@@ -7,7 +7,9 @@ from fides.api.tasks.encryption_utils import encrypt_access_request_results
 
 @pytest.fixture
 def mock_cache():
-    with patch("fides.api.tasks.encryption_utils.get_dsr_cache_store") as mock_get_store:
+    with patch(
+        "fides.api.tasks.encryption_utils.get_dsr_cache_store"
+    ) as mock_get_store:
         store = MagicMock()
         mock_get_store.return_value.__enter__.return_value = store
         yield store

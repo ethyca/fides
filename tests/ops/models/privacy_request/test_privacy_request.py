@@ -339,7 +339,9 @@ def test_custom_privacy_request_fields_fallback_to_db(
     assert cached_custom_privacy_request_fields is not None
     # Delete using DSR store to clear the cached custom field
     with get_dsr_cache_store() as store:
-        store.delete(privacy_request.id, f"custom_field:{custom_privacy_request_field.label}")
+        store.delete(
+            privacy_request.id, f"custom_field:{custom_privacy_request_field.label}"
+        )
     assert (
         privacy_request.get_cached_custom_privacy_request_fields()
         == cached_custom_privacy_request_fields
