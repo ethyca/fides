@@ -1,10 +1,18 @@
 import { Icons } from "fidesui";
 import { ReactNode } from "react";
 
+import { ACCESS_CONTROL_TAB_ITEMS } from "~/features/access-control/AccessControlTabs";
 import { FlagNames } from "~/features/common/features";
+import { NOTIFICATION_TAB_ITEMS } from "~/features/common/NotificationTabs";
+import { PRIVACY_REQUEST_TAB_ITEMS } from "~/features/privacy-requests/hooks/usePrivacyRequestTabs";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import * as routes from "./routes";
+
+export interface NavConfigTab {
+  title: string;
+  path: string;
+}
 
 export interface NavConfigRoute {
   title?: string;
@@ -24,6 +32,8 @@ export interface NavConfigRoute {
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
   routes?: NavConfigRoute[];
+  /** Tabs within this page that should appear in search */
+  tabs?: NavConfigTab[];
 }
 
 export interface NavConfigGroup {
@@ -68,6 +78,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresFlag: "alphaPurposeBasedAccessControl",
         requiresPlus: true,
+        tabs: ACCESS_CONTROL_TAB_ITEMS,
       },
     ],
   },
@@ -126,6 +137,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
           ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
+        tabs: PRIVACY_REQUEST_TAB_ITEMS,
       },
       {
         title: "Policies",
@@ -211,6 +223,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.DIGEST_CONFIG_READ,
           ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
         ],
+        tabs: NOTIFICATION_TAB_ITEMS,
       },
       {
         title: "Custom fields",
@@ -282,6 +295,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+        tabs: [
+          {
+            title: "Redaction patterns",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
+          {
+            title: "Duplicate detection",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
+        ],
       },
       {
         title: "Users",
@@ -399,6 +422,7 @@ export interface NavGroupChild {
   exact?: boolean;
   hidden?: boolean;
   children: Array<NavGroupChild>;
+  tabs?: NavConfigTab[];
 }
 
 export interface NavGroup {
@@ -556,6 +580,7 @@ const configureNavRoute = ({
     exact: route.exact,
     hidden: route.hidden,
     children,
+    tabs: route.tabs,
   };
 
   return groupChild;

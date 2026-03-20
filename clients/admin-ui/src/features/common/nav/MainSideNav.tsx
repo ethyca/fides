@@ -22,6 +22,7 @@ import { useNav } from "./hooks";
 import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
 import styles from "./NavMenu.module.scss";
+import NavSearch from "./NavSearch";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
 const NAV_WIDTH = "240px";
@@ -206,6 +207,7 @@ export const UnconnectedMainSideNav = ({
               </div>
             </button>
           </div>
+          <NavSearch groups={groups} collapsed={collapsed} />
           <NavMenu
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}

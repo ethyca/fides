@@ -1,0 +1,219 @@
+/* Expanded sidebar search */
+.expandedWrapper {
+  padding: 0 8px 12px;
+}
+
+.expandedAutoComplete {
+  width: 100% !important;
+}
+
+.expandedInput {
+  background-color: var(--fidesui-neutral-800) !important;
+  border: 1px solid var(--fidesui-neutral-700) !important;
+  color: var(--fidesui-corinth) !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  height: 32px !important;
+
+  &::placeholder {
+    color: var(--fidesui-neutral-400) !important;
+  }
+
+  &:hover {
+    border-color: var(--fidesui-neutral-600) !important;
+  }
+
+  &:focus,
+  &:focus-within {
+    border-color: var(--fidesui-sandstone) !important;
+    box-shadow: 0 0 0 1px var(--fidesui-sandstone) !important;
+  }
+
+  :global(.ant-input) {
+    background-color: transparent !important;
+    color: var(--fidesui-corinth) !important;
+
+    &::placeholder {
+      color: var(--fidesui-neutral-400) !important;
+    }
+  }
+
+  :global(.ant-input-clear-icon) {
+    color: var(--fidesui-neutral-400) !important;
+
+    &:hover {
+      color: var(--fidesui-corinth) !important;
+    }
+  }
+}
+
+/* Collapsed sidebar search */
+.collapsedWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 12px;
+}
+
+.collapsedButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--fidesui-neutral-700);
+  }
+}
+
+/* Spotlight-style modal (collapsed mode) */
+.searchModal {
+  :global(.ant-modal-content) {
+    padding: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+    overflow: hidden;
+  }
+
+  :global(.ant-modal-body) {
+    padding: 0 !important;
+  }
+}
+
+.modalInput {
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 16px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 16px !important;
+  box-shadow: none !important;
+
+  &:focus,
+  &:focus-within {
+    box-shadow: none !important;
+  }
+}
+
+/* Inline results list */
+.resultsList {
+  border-top: 1px solid var(--fidesui-neutral-100);
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.resultsGroup {
+  &:not(:first-child) {
+    margin-top: 4px;
+  }
+}
+
+.resultsGroupLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fidesui-neutral-500);
+  padding: 8px 10px 4px;
+}
+
+.resultItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font-size: 14px;
+  color: var(--fidesui-neutral-900);
+  cursor: pointer;
+  line-height: 1.4;
+
+  &:hover {
+    background-color: var(--fidesui-bg-default);
+  }
+}
+
+.resultItemActive {
+  background-color: var(--fidesui-bg-default);
+}
+
+.resultItemParent {
+  display: block;
+  font-size: 11px;
+  color: var(--fidesui-neutral-500);
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+/* Shared dropdown (expanded sidebar) */
+.searchDropdown {
+  :global(.ant-select-dropdown) {
+    border-radius: 8px !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+    padding: 4px !important;
+  }
+
+  :global(.ant-select-item-group) {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--fidesui-neutral-500) !important;
+    padding: 8px 12px 4px !important;
+  }
+
+  :global(.ant-select-item-option) {
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    margin: 1px 0 !important;
+  }
+
+  :global(.ant-select-item-option-active) {
+    background-color: var(--fidesui-bg-default) !important;
+  }
+}
+
+/* Labels (expanded sidebar autocomplete) */
+.groupLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.optionTwoLine {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.optionParent {
+  font-size: 11px;
+  color: var(--fidesui-neutral-500);
+  margin-top: 1px;
+}
+
+.optionLabel {
+  font-size: 13px;
+}
+
+/* Keyboard shortcut hint */
+.shortcutHint {
+  font-size: 11px;
+  color: var(--fidesui-neutral-500);
+  background-color: var(--fidesui-neutral-700);
+  border-radius: 3px;
+  padding: 1px 5px;
+  line-height: 1.4;
+  font-family: inherit;
+  pointer-events: none;
+}
