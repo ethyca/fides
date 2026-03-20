@@ -72,89 +72,98 @@ export const AssessmentCard = ({
         [styles.cardComplete]: isComplete,
       })}
     >
-      <Flex vertical gap="small" justify="space-between">
-        <Title level={5} className={`!m-0 ${styles.titleLink}`}>
-          <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
-            {assessment.name}
-          </NextLink>
-        </Title>
-        <Text type="secondary" size="sm" className={styles.textWithTags}>
-          Processing{" "}
-          {(assessment.data_categories ?? []).length > 0 ? (
-            <TagList
-              tags={(assessment.data_categories ?? []).map((key) => ({
-                value: key,
-                label: getDataCategoryDisplayName(key),
-              }))}
-              maxTags={1}
-              expandable
-            />
-          ) : (
-            <Tag>0 data categories</Tag>
-          )}{" "}
-          for{" "}
-          <TagList
-            tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-            maxTags={1}
-          />
-        </Text>
-        {riskLevel && (
-          <div>
-            <Tag color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
-              {`${riskLabel} risk`}
-            </Tag>
-          </div>
-        )}
-
-        <Divider className="my-3" />
+      <Flex vertical gap="small" justify="space-between" className="flex-1">
         <div>
-          {isComplete ? (
-            <Flex
-              justify="space-between"
-              align="center"
-              className={styles.completeContainer}
-            >
-              <Flex align="center" gap="medium">
-                <Avatar
-                  shape="circle"
-                  size={28}
-                  icon={<Icons.Checkmark size={14} />}
-                  style={{ backgroundColor: "var(--fidesui-success)" }}
-                />
-                <div>
-                  <Text strong type="success" size="sm">
-                    Assessment complete
-                  </Text>
-                  <Paragraph type="secondary" size="sm">
-                    {completionDate}
-                  </Paragraph>
-                </div>
-              </Flex>
-              <Button type="link" className="p-0" onClick={onClick}>
-                View
-              </Button>
-            </Flex>
-          ) : (
-            <>
-              <Flex justify="space-between">
-                <Text type="secondary" size="sm">
-                  Completeness
-                </Text>
-                <Text strong size="sm">
-                  {completeness}%
-                </Text>
-              </Flex>
-              <Progress percent={completeness} showInfo={false} size="small" />
-              <Flex justify="space-between" align="center" className="mt-1">
-                <Text type={getStatusTextType(status)} size="sm">
-                  {statusLabel}
-                </Text>
+          <Title level={5} className={`!mb-1 ${styles.titleLink}`}>
+            <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
+              {assessment.name}
+            </NextLink>
+          </Title>
+          <Text type="secondary" size="sm" className={styles.textWithTags}>
+            Processing{" "}
+            {(assessment.data_categories ?? []).length > 0 ? (
+              <TagList
+                tags={(assessment.data_categories ?? []).map((key) => ({
+                  value: key,
+                  label: getDataCategoryDisplayName(key),
+                }))}
+                maxTags={1}
+                expandable
+              />
+            ) : (
+              <Tag>0 data categories</Tag>
+            )}{" "}
+            for{" "}
+            <TagList
+              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
+              maxTags={1}
+            />
+          </Text>
+          {riskLevel && (
+            <div>
+              <Tag
+                color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}
+              >
+                {`${riskLabel} risk`}
+              </Tag>
+            </div>
+          )}
+        </div>
+        <div>
+          <Divider className="my-3" />
+          <div>
+            {isComplete ? (
+              <Flex
+                justify="space-between"
+                align="center"
+                className={styles.completeContainer}
+              >
+                <Flex align="center" gap="medium">
+                  <Avatar
+                    shape="circle"
+                    size={28}
+                    icon={<Icons.Checkmark size={14} />}
+                    style={{ backgroundColor: "var(--fidesui-success)" }}
+                  />
+                  <div>
+                    <Text strong type="success" size="sm">
+                      Assessment complete
+                    </Text>
+                    <Paragraph type="secondary" size="sm">
+                      {completionDate}
+                    </Paragraph>
+                  </div>
+                </Flex>
                 <Button type="link" className="p-0" onClick={onClick}>
-                  Resume
+                  View
                 </Button>
               </Flex>
-            </>
-          )}
+            ) : (
+              <>
+                <Flex justify="space-between">
+                  <Text type="secondary" size="sm">
+                    Completeness
+                  </Text>
+                  <Text strong size="sm">
+                    {completeness}%
+                  </Text>
+                </Flex>
+                <Progress
+                  percent={completeness}
+                  showInfo={false}
+                  size="small"
+                />
+                <Flex justify="space-between" align="center" className="mt-1">
+                  <Text type={getStatusTextType(status)} size="sm">
+                    {statusLabel}
+                  </Text>
+                  <Button type="link" className="p-0" onClick={onClick}>
+                    Resume
+                  </Button>
+                </Flex>
+              </>
+            )}
+          </div>
         </div>
       </Flex>
     </Card>
