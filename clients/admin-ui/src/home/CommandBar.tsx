@@ -99,60 +99,57 @@ export const CommandBar = () => {
     <Flex
       align="center"
       className="h-12 shrink-0 select-none px-10"
-      style={{ backgroundColor: token.colorBgLayout }}
+      // style={{ backgroundColor: token.colorBgLayout }}
     >
       <div className="mx-auto flex w-full max-w-[1600px] items-center">
-      <Flex align="center" gap="large" className="flex-1">
-        <Flex
-          align="center"
-          gap="small"
-          role="button"
-          tabIndex={0}
-          className="cursor-pointer rounded-md px-2 py-1 transition-opacity hover:opacity-70"
-          onClick={openPostureDrawer}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              openPostureDrawer();
-            }
-          }}
-        >
-          <Statistic
-            value={animatedScore}
-            valueStyle={{ color: scoreColor }}
-            size="lg"
-            className={styles.scoreStatistic}
-          />
-          <Statistic
-            value={diffPercent}
-            prefix={getDiffArrow(diffDirection)}
-            size="sm"
-            className={styles.diffStatistic}
-          />
-        </Flex>
-
-        <Text style={{ color: token.colorBorder }}>·</Text>
-
-        {stats.map((stat, i) => (
-          <Flex key={stat.label} align="center" gap={4}>
-            {i > 0 && (
-              <Text
-                className="mr-2"
-                style={{ color: token.colorBorder }}
-              >
-                ·
-              </Text>
-            )}
+        <Flex align="center" gap="large" className="flex-1">
+          <Flex
+            align="center"
+            gap="small"
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer rounded-md px-2 py-1 transition-opacity hover:opacity-70"
+            onClick={openPostureDrawer}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openPostureDrawer();
+              }
+            }}
+          >
             <Statistic
-              value={stat.value}
-              suffix={stat.label}
-              valueStyle={valueColor ? { color: valueColor } : undefined}
-              className={styles.barStatistic}
+              value={animatedScore}
+              valueStyle={{ color: scoreColor }}
+              size="lg"
+              className={styles.scoreStatistic}
+            />
+            <Statistic
+              value={diffPercent}
+              prefix={getDiffArrow(diffDirection)}
+              size="sm"
+              className={styles.diffStatistic}
             />
           </Flex>
-        ))}
-      </Flex>
-      {alphaDarkMode && <ThemeModeSegmented />}
+
+          <Text style={{ color: token.colorBorder }}>·</Text>
+
+          {stats.map((stat, i) => (
+            <Flex key={stat.label} align="center" gap={4}>
+              {i > 0 && (
+                <Text className="mr-2" style={{ color: token.colorBorder }}>
+                  ·
+                </Text>
+              )}
+              <Statistic
+                value={stat.value}
+                suffix={stat.label}
+                valueStyle={valueColor ? { color: valueColor } : undefined}
+                className={styles.barStatistic}
+              />
+            </Flex>
+          ))}
+        </Flex>
+        {alphaDarkMode && <ThemeModeSegmented />}
       </div>
     </Flex>
   );

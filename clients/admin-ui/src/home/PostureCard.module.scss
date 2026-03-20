@@ -42,6 +42,8 @@
   position: absolute;
   top: var(--ant-padding-lg, 24px);
   left: var(--ant-padding-lg, 24px);
+  z-index: 1;
+  pointer-events: auto;
 }
 
 .clickableScore {
