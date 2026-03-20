@@ -3,7 +3,6 @@ import {
   Card,
   Flex,
   Form,
-  Input,
   InputNumber,
   Select,
   Typography,
@@ -21,7 +20,7 @@ import {
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import JiraTicketPreviewCard from "./JiraTicketPreviewCard";
-import TemplateVariableInsert from "./TemplateVariableInsert";
+import TemplateVariableTextArea from "./TemplateVariableTextArea";
 
 interface JiraConfigTabProps {
   connection: ConnectionConfigurationResponse;
@@ -75,7 +74,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
       { skip: !connection.key || !selectedProject },
     );
 
-  const { data: templateVariables, isLoading: templateVarsLoading } =
+  const { data: templateVariables } =
     useGetJiraTemplateVariablesQuery(
       { connectionKey: connection.key },
       { skip: !connection.key },
@@ -193,30 +192,23 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
             label="Summary template"
             rules={[{ required: true, message: "Enter a summary template" }]}
           >
-            <Input.TextArea rows={2} placeholder="e.g. DSR: {{ request_type }} for {{ email }}" />
+            <TemplateVariableTextArea
+              variables={templateVariables ?? []}
+              rows={2}
+              placeholder="e.g. DSR: {{ request_type }} for {{ email }}"
+            />
           </Form.Item>
-          <TemplateVariableInsert
-            variables={templateVariables ?? []}
-            targetField="summary_template"
-            form={form}
-            loading={templateVarsLoading}
-          />
 
           <Form.Item
             name="description_template"
             label="Description template"
           >
-            <Input.TextArea
+            <TemplateVariableTextArea
+              variables={templateVariables ?? []}
               rows={6}
               placeholder="e.g. Privacy request {{ request_id }} submitted on {{ submission_date }}."
             />
           </Form.Item>
-          <TemplateVariableInsert
-            variables={templateVariables ?? []}
-            targetField="description_template"
-            form={form}
-            loading={templateVarsLoading}
-          />
 
           <Button onClick={handlePreview}>Preview ticket</Button>
           {previewData && <JiraTicketPreviewCard data={previewData} />}
