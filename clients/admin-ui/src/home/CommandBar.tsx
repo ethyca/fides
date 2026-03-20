@@ -119,8 +119,8 @@ export const CommandBar = () => {
           >
             <Statistic
               value={animatedScore}
-              valueStyle={{ color: scoreColor }}
-              size="lg"
+              // valueStyle={{ color: token.colorSuccess }}
+              // size="lg"
               className={styles.scoreStatistic}
             />
             <Statistic

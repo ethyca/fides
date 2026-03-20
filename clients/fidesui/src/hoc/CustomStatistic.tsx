@@ -6,7 +6,7 @@ type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
 
 export type StatisticTrend = "up" | "down" | "neutral";
 
-export type StatisticSize = "lg" | "sm";
+export type StatisticSize = "xl" | "lg" | "sm";
 
 export interface CustomStatisticProps extends StatisticProps {
   /**
@@ -34,7 +34,11 @@ const TREND_TOKEN_MAP: Record<StatisticTrend, AntColorTokenKey> = {
   neutral: "colorText",
 };
 
-const SIZE_TOKEN_MAP: Record<StatisticSize, "fontSizeLG" | "fontSizeSM"> = {
+const SIZE_TOKEN_MAP: Record<
+  StatisticSize,
+  "fontSizeLG" | "fontSizeSM" | "fontSizeXL"
+> = {
+  xl: "fontSizeXL",
   lg: "fontSizeLG",
   sm: "fontSizeSM",
 };

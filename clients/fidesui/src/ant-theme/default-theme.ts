@@ -116,6 +116,9 @@ export const defaultAntTheme: ThemeConfig = {
       colorIcon: palette.FIDESUI_NEUTRAL_700,
       colorIconHover: palette.FIDESUI_NEUTRAL_900,
     },
+    Statistic: {
+      fontSizeXL: 24,
+    },
   },
 };
 
