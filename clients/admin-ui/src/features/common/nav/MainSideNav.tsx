@@ -162,28 +162,35 @@ export const UnconnectedMainSideNav = ({
           <div
             className={`${styles.logoWrapper} ${collapsed ? styles.logoWrapperCollapsed : styles.logoWrapperExpanded}`}
           >
-            <button
-              type="button"
-              className={`inline-flex cursor-pointer p-0 ${styles.collapseToggle}`}
-              onClick={onCollapseToggle}
-              aria-label={
-                collapsed
-                  ? "Expand navigation menu"
-                  : "Collapse navigation menu"
-              }
-              data-testid="nav-collapse-toggle"
-            >
-              <div
-                className={styles.logoContainer}
-                style={{
-                  width: collapsed
-                    ? `${LOGO_ICON_SIZE}px`
-                    : `${LOGO_FULL_WIDTH}px`,
-                  height: `${LOGO_HEIGHT}px`,
-                }}
+            {collapsed ? (
+              <button
+                type="button"
+                className={styles.collapsedLogoToggle}
+                onClick={onCollapseToggle}
+                aria-label="Expand navigation menu"
+                data-testid="nav-collapse-toggle"
               >
+                <span className={styles.collapsedLogoIcon}>
+                  <Image
+                    src={logoCollapsed}
+                    alt="Fides Logo"
+                    width={LOGO_ICON_SIZE}
+                    height={LOGO_ICON_SIZE}
+                    priority
+                  />
+                </span>
+                <span className={styles.collapsedExpandIcon}>
+                  <Icons.SidePanelOpen size={20} />
+                </span>
+              </button>
+            ) : (
+              <>
                 <div
-                  className={`${styles.logoImage} ${collapsed ? styles.logoImageHidden : styles.logoImageVisible}`}
+                  className={styles.logoContainer}
+                  style={{
+                    width: `${LOGO_FULL_WIDTH}px`,
+                    height: `${LOGO_HEIGHT}px`,
+                  }}
                 >
                   <Image
                     src={logoExpanded}
@@ -193,19 +200,17 @@ export const UnconnectedMainSideNav = ({
                     priority
                   />
                 </div>
-                <div
-                  className={`${styles.logoImage} ${collapsed ? styles.logoImageVisible : styles.logoImageHidden}`}
+                <button
+                  type="button"
+                  className={styles.collapseToggle}
+                  onClick={onCollapseToggle}
+                  aria-label="Collapse navigation menu"
+                  data-testid="nav-collapse-toggle"
                 >
-                  <Image
-                    src={logoCollapsed}
-                    alt="Fides Logo"
-                    width={LOGO_ICON_SIZE}
-                    height={LOGO_ICON_SIZE}
-                    priority
-                  />
-                </div>
-              </div>
-            </button>
+                  <Icons.SidePanelClose size={20} />
+                </button>
+              </>
+            )}
           </div>
           <NavSearch groups={groups} collapsed={collapsed} />
           <NavMenu
