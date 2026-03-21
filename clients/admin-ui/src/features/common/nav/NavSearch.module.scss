@@ -74,9 +74,9 @@
 
 /* Spotlight-style modal (collapsed mode) */
 .searchModal {
-  :global(.ant-modal-content) {
+  :global(.ant-modal-content),
+  :global(.ant-modal-container) {
     padding: 0 !important;
-    --ant-modal-content-padding: 0 !important;
     border-radius: 12px !important;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
     overflow: hidden;
@@ -84,7 +84,6 @@
 
   :global(.ant-modal-body) {
     padding: 0 !important;
-    --ant-modal-body-padding: 0 !important;
   }
 
   :global(.ant-modal-header) {
