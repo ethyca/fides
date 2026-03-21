@@ -26,7 +26,7 @@ const COLLAPSED_ICON_STYLE = {
   color: palette.FIDESUI_CORINTH,
 };
 const MODAL_POSITION = { top: "calc(50vh - 24px)" };
-const DEBOUNCE_MS = 300;
+const DEBOUNCE_MS = 200;
 
 /** Create a unique key for an item to avoid collisions when multiple items share the same path. */
 const itemKey = (item: FlatNavItem): string =>
