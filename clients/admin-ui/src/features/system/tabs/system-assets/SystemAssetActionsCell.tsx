@@ -3,11 +3,10 @@ import {
   ConfirmationModal,
   Flex,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useDeleteSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { Asset } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -24,7 +23,7 @@ const SystemAssetActionsCell = ({
   const [deleteAsset, { isLoading: isDeleting }] =
     useDeleteSystemAssetsMutation();
 
-  const toast = useToast();
+  const message = useMessage();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
   const handleDelete = async () => {
@@ -33,16 +32,14 @@ const SystemAssetActionsCell = ({
       asset_ids: [asset.id],
     });
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          getErrorMessage(
-            result.error,
-            "A problem occurred removing this asset.  Please try again",
-          ),
+      message.error(
+        getErrorMessage(
+          result.error,
+          "A problem occurred removing this asset.  Please try again",
         ),
       );
     } else {
-      toast(successToastParams("Asset removed successfully"));
+      message.success("Asset removed successfully");
     }
   };
 

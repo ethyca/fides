@@ -5,7 +5,7 @@ import {
   Flex,
   Modal,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -17,7 +17,6 @@ import { selectUser } from "~/features/auth/auth.slice";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
 import { clearAuthAndLogout } from "./logout-helpers";
@@ -35,7 +34,7 @@ type FormValues = typeof initialValues;
 
 const useNewPasswordModal = (id: string) => {
   const modal = useDisclosure();
-  const toast = useToast();
+  const message = useMessage();
   const [resetPassword] = useForceResetUserPasswordMutation();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -47,12 +46,10 @@ const useNewPasswordModal = (id: string) => {
       new_password: values.password,
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          "Successfully reset user's password. Please inform the user of their new password.",
-        ),
+      message.success(
+        "Successfully reset user's password. Please inform the user of their new password.",
       );
       modal.onClose();
 
