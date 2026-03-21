@@ -282,22 +282,22 @@ const NavSearch = ({ groups, collapsed = false }: NavSearchProps) => {
               "No results found"}
           </div>
           {indexedModalItems.length > 0 && (
-            <div
+            <ul
               className={styles.resultsList}
               id="nav-search-results-list"
               role="listbox"
               data-testid="nav-search-results"
             >
               {indexedModalItems.map(({ groupTitle, items }) => (
-                <div
+                <li
                   key={groupTitle}
                   role="group"
                   aria-label={groupTitle}
                   className={styles.resultsGroup}
                 >
-                  <div className={styles.resultsGroupLabel} aria-hidden="true">
+                  <span className={styles.resultsGroupLabel} aria-hidden="true">
                     {groupTitle}
-                  </div>
+                  </span>
                   {items.map((item) => (
                     <button
                       key={itemKey(item)}
@@ -318,9 +318,9 @@ const NavSearch = ({ groups, collapsed = false }: NavSearchProps) => {
                       )}
                     </button>
                   ))}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </Modal>
       </div>
