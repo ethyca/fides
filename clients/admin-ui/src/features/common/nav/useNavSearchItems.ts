@@ -34,7 +34,7 @@ const CORE_TAXONOMY_ITEMS = [
 const MIN_SEARCH_LENGTH = 2;
 
 /** Max results to fetch per dynamic source. */
-const SEARCH_PAGE_SIZE = 10;
+const SEARCH_PAGE_SIZE = 50;
 
 export interface FlatNavItem {
   title: string;
