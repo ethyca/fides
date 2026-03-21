@@ -335,7 +335,7 @@ const NavSearch = ({ groups, collapsed = false }: NavSearchProps) => {
         <Input
           ref={inputRef}
           className={styles.expandedInput}
-          placeholder="Search"
+          placeholder="Go to..."
           aria-label="Search pages"
           prefix={<Icons.Search style={SEARCH_ICON_STYLE_SM} />}
           suffix={
