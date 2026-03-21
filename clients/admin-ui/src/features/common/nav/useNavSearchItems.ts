@@ -1,10 +1,7 @@
 import { useMemo } from "react";
 
-import {
-  INITIAL_CONNECTIONS_FILTERS,
-  useGetAllDatastoreConnectionsQuery,
-} from "~/features/datastore-connections/datastore-connection.slice";
-import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
+import { useGetSystemsQuery } from "~/features/system/system.slice";
 import {
   CoreTaxonomiesEnum,
   TaxonomyTypeEnum,
@@ -33,6 +30,12 @@ const CORE_TAXONOMY_ITEMS = [
   },
 ];
 
+/** Minimum characters before server-side search fires. */
+const MIN_SEARCH_LENGTH = 2;
+
+/** Max results to fetch per dynamic source. */
+const SEARCH_PAGE_SIZE = 10;
+
 export interface FlatNavItem {
   title: string;
   path: string;
@@ -42,15 +45,19 @@ export interface FlatNavItem {
 
 /**
  * Builds the full list of searchable nav items, including:
- * - Static pages and their tabs (from nav groups)
- * - Taxonomy type names (core + custom from API)
- * - Dynamic integration items (from API)
- * - Dynamic system names (from API)
- *
- * Queries run eagerly so data is available when the user opens the search.
+ * - Static pages and their tabs (from nav groups, always available)
+ * - Taxonomy type names (core + custom from API, always available)
+ * - Dynamic system names (server-side search, fires after 2+ characters)
+ * - Dynamic integration names (server-side search, fires after 2+ characters)
  */
-const useNavSearchItems = (groups: NavGroup[]): FlatNavItem[] => {
-  // Static items from nav config
+const useNavSearchItems = (
+  groups: NavGroup[],
+  searchQuery: string,
+): FlatNavItem[] => {
+  const trimmedQuery = searchQuery.trim();
+  const shouldSearch = trimmedQuery.length >= MIN_SEARCH_LENGTH;
+
+  // Static items from nav config (always available)
   const staticItems: FlatNavItem[] = useMemo(() => {
     const items: FlatNavItem[] = [];
     groups.forEach((group) => {
@@ -75,9 +82,7 @@ const useNavSearchItems = (groups: NavGroup[]): FlatNavItem[] => {
     return items;
   }, [groups]);
 
-  // Core taxonomy types are always available
-
-  // Custom taxonomy types from API (Plus-only, may be undefined)
+  // Taxonomy types (small fixed set, always available)
   const { data: customTaxonomies } = useGetCustomTaxonomiesQuery();
 
   const taxonomyItems: FlatNavItem[] = useMemo(() => {
@@ -93,7 +98,6 @@ const useNavSearchItems = (groups: NavGroup[]): FlatNavItem[] => {
       parentTitle: "Taxonomy",
     }));
 
-    // Append any custom taxonomy types not already covered by core
     customTaxonomies
       ?.filter((tax) => !coreKeys.has(tax.fides_key))
       .forEach((tax) => {
@@ -108,9 +112,33 @@ const useNavSearchItems = (groups: NavGroup[]): FlatNavItem[] => {
     return items;
   }, [customTaxonomies, groups]);
 
-  // Integration data
+  // Systems - server-side search, skipped until user types 2+ chars
+  const { data: systemsData } = useGetSystemsQuery(
+    { search: trimmedQuery, page: 1, size: SEARCH_PAGE_SIZE },
+    { skip: !shouldSearch },
+  );
+
+  const systemItems: FlatNavItem[] = useMemo(() => {
+    if (!systemsData?.items) {
+      return [];
+    }
+    const systemGroup = groups.find((g) =>
+      g.children.some((c) => c.path === "/systems"),
+    );
+    const groupTitle = systemGroup?.title ?? "Data inventory";
+
+    return systemsData.items.map((sys) => ({
+      title: sys.name || sys.fides_key,
+      path: `/systems/configure/${sys.fides_key}`,
+      groupTitle,
+      parentTitle: "System inventory",
+    }));
+  }, [systemsData, groups]);
+
+  // Integrations - server-side search, skipped until user types 2+ chars
   const { data: connectionsData } = useGetAllDatastoreConnectionsQuery(
-    INITIAL_CONNECTIONS_FILTERS,
+    { search: trimmedQuery, page: 1, size: SEARCH_PAGE_SIZE },
+    { skip: !shouldSearch },
   );
 
   const integrationItems: FlatNavItem[] = useMemo(() => {
@@ -130,34 +158,14 @@ const useNavSearchItems = (groups: NavGroup[]): FlatNavItem[] => {
     }));
   }, [connectionsData, groups]);
 
-  // System names from API
-  const { data: systems } = useGetAllSystemsQuery();
-
-  const systemItems: FlatNavItem[] = useMemo(() => {
-    if (!systems) {
-      return [];
-    }
-    const systemGroup = groups.find((g) =>
-      g.children.some((c) => c.path === "/systems"),
-    );
-    const groupTitle = systemGroup?.title ?? "Data inventory";
-
-    return systems.map((sys) => ({
-      title: sys.name || sys.fides_key,
-      path: `/systems/configure/${sys.fides_key}`,
-      groupTitle,
-      parentTitle: "System inventory",
-    }));
-  }, [systems, groups]);
-
   return useMemo(
     () => [
       ...staticItems,
       ...taxonomyItems,
-      ...integrationItems,
       ...systemItems,
+      ...integrationItems,
     ],
-    [staticItems, taxonomyItems, integrationItems, systemItems],
+    [staticItems, taxonomyItems, systemItems, integrationItems],
   );
 };
 

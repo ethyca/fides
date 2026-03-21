@@ -26,6 +26,7 @@ const COLLAPSED_ICON_STYLE = {
   color: palette.FIDESUI_CORINTH,
 };
 const MODAL_POSITION = { top: "calc(50vh - 24px)" };
+const DEBOUNCE_MS = 300;
 
 /** Create a unique key for an item to avoid collisions when multiple items share the same path. */
 const itemKey = (item: FlatNavItem): string =>
@@ -44,7 +45,14 @@ const NavSearch = ({ groups, collapsed = false }: NavSearchProps) => {
   const modalInputRef = useRef<InputRef>(null);
   const justSelectedRef = useRef(false);
 
-  const flatItems: FlatNavItem[] = useNavSearchItems(groups);
+  // Debounce the search value for server-side queries (systems, integrations)
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchValue), DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [searchValue]);
+
+  const flatItems: FlatNavItem[] = useNavSearchItems(groups, debouncedQuery);
 
   const filteredOptions = useMemo(() => {
     const query = searchValue.trim().toLowerCase();
