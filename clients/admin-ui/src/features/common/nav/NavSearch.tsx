@@ -25,7 +25,7 @@ const COLLAPSED_ICON_STYLE = {
   fontSize: 16,
   color: palette.FIDESUI_CORINTH,
 };
-const MODAL_POSITION = { top: "calc(50vh - 24px)" };
+const MODAL_POSITION = { top: "calc(33vh - 24px)" };
 const DEBOUNCE_MS = 200;
 
 /** Create a unique key for an item to avoid collisions when multiple items share the same path. */
