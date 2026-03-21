@@ -1,4 +1,4 @@
 type: Added
-description: Added context_snapshot and last_evaluated_at columns for assessment re-evaluation
+description: Added context_snapshot, last_evaluated_at, and high_risk_only columns for assessment re-evaluation
 pr: 7530
 labels: ["db-migration"]
