@@ -38,7 +38,8 @@ def upgrade():
         sa.Column(
             "high_risk_only",
             sa.Boolean(),
-            nullable=True,
+            server_default="false",
+            nullable=False,
         ),
     )
 
