@@ -151,12 +151,13 @@ export const yamlToNodesAndEdges = (
     prevConditionIdRef.current = conditionId;
   });
 
-  // Constraint nodes from `unless`
+  // Constraint nodes from `unless` — chained: first from last condition, rest from previous constraint
   const lastConditionId = prevConditionIdRef.current;
   if (policy.unless && lastConditionId) {
     const constraintList: ConstraintItem[] =
       policy.unless.any ?? policy.unless.all ?? [];
 
+    let prevConstraintId: string | null = null;
     constraintList.forEach((item, idx) => {
       const constraintId = `constraint-${idx + 1}`;
       let data: ConstraintNodeData = {};
@@ -187,13 +188,16 @@ export const yamlToNodesAndEdges = (
       };
       nodes.push(constraintNode);
 
+      const sourceId = prevConstraintId ?? lastConditionId;
       edges.push({
-        id: `e-${lastConditionId}-${constraintId}`,
-        source: lastConditionId,
+        id: `e-${sourceId}-${constraintId}`,
+        source: sourceId,
         target: constraintId,
         type: "labeledEdge",
         data: { label: "unless" },
       });
+
+      prevConstraintId = constraintId;
     });
   }
 
@@ -311,16 +315,40 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     policyYaml.allow = conditionMap;
   }
 
-  // Collect constraint nodes attached to any condition node
+  // Collect constraint nodes: BFS from all condition nodes, following constraint→constraint edges
   const conditionIds = new Set(conditionNodes.map((n) => n.id));
-  const constraintItems: ConstraintItem[] = edges
+  const constraintItems: ConstraintItem[] = [];
+  const visitedConstraints = new Set<string>();
+  const constraintQueue: string[] = edges
     .filter((e) => conditionIds.has(e.source))
     .map((e) => nodes.find((n) => n.id === e.target))
     .filter(
       (n): n is Node<ConstraintNodeData> => !!n && n.type === "constraintNode",
     )
-    .map((n) => buildConstraintItem(n.data as ConstraintNodeData))
-    .filter((item): item is ConstraintItem => item !== null);
+    .map((n) => n.id);
+
+  while (constraintQueue.length > 0) {
+    const constraintId = constraintQueue.shift()!;
+    if (!visitedConstraints.has(constraintId)) {
+      visitedConstraints.add(constraintId);
+      const constraintNode = nodes.find(
+        (n): n is Node<ConstraintNodeData> =>
+          n.id === constraintId && n.type === "constraintNode",
+      );
+      if (constraintNode) {
+        const item = buildConstraintItem(
+          constraintNode.data as ConstraintNodeData,
+        );
+        if (item) {
+          constraintItems.push(item);
+        }
+        // Enqueue children of this constraint node
+        edges
+          .filter((e) => e.source === constraintId)
+          .forEach((e) => constraintQueue.push(e.target));
+      }
+    }
+  }
 
   if (constraintItems.length > 0) {
     policyYaml.unless = { any: constraintItems };

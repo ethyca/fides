@@ -39,7 +39,7 @@ import ActionNode, { ActionNodeType } from "./ActionNode";
 import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import LabeledEdge from "./LabeledEdge";
-import { nodesToYaml, yamlToNodesAndEdges } from "./policy-yaml";
+import { nodesToYaml, parseYaml, yamlToNodesAndEdges } from "./policy-yaml";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
@@ -81,16 +81,14 @@ const edgeTypes: EdgeTypes = {
 };
 
 interface PolicyCanvasPanelProps {
-  name: string;
-  description: string;
   controlGroup?: string;
   controlGroupOptions: NonNullable<SelectProps["options"]>;
-  onNameChange: (value: string) => void;
-  onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
   onAddNode?: () => void;
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
+  // Incrementing this triggers a re-parse of initialYaml into nodes (replaces remount)
+  syncKey?: number;
 }
 
 const POLICY_NODE_ID = "policy";
@@ -174,12 +172,12 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
     position: { x: 0, y: 0 },
     style: { width: 300 },
     data: {
-      name: props.name,
-      description: props.description,
+      name: "",
+      description: "",
       controlGroup: props.controlGroup,
       controlGroupOptions: props.controlGroupOptions,
-      onNameChange: props.onNameChange,
-      onDescriptionChange: props.onDescriptionChange,
+      onNameChange: () => {},
+      onDescriptionChange: () => {},
       onControlGroupChange: props.onControlGroupChange,
       onAddNode: props.onAddNode,
     },
@@ -188,16 +186,13 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
 
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
-    name,
-    description,
     controlGroup,
     controlGroupOptions,
-    onNameChange,
-    onDescriptionChange,
     onControlGroupChange,
     onAddNode,
     onYamlChange,
     initialYaml,
+    syncKey,
   } = props;
 
   const initialResult = useMemo(
@@ -220,6 +215,25 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     () => setLastCreatedNodeId(null),
     [],
   );
+
+  // When syncKey increments (Code → Builder switch), re-parse initialYaml into nodes
+  // without remounting the entire React Flow instance
+  const prevSyncKeyRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (syncKey === undefined || syncKey === prevSyncKeyRef.current) {
+      return;
+    }
+    prevSyncKeyRef.current = syncKey;
+    const parsed = initialYaml ? yamlToNodesAndEdges(initialYaml) : null;
+    if (parsed) {
+      setNodes(parsed.nodes);
+      setEdges(parsed.edges);
+    } else {
+      setNodes(createPolicyNode(props));
+      setEdges([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncKey]);
 
   const updateNodeData = useCallback(
     (nodeId: string, updates: Record<string, unknown>) => {
@@ -255,21 +269,15 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [edges, setNodes, setEdges],
   );
 
-  // Wrap policy-level field changes so the nodes state stays in sync for nodesToYaml
+  // name and description are managed entirely in node data; no parent state mirror needed
   const handleNameChange = useCallback(
-    (value: string) => {
-      updateNodeData(POLICY_NODE_ID, { name: value });
-      onNameChange(value);
-    },
-    [updateNodeData, onNameChange],
+    (value: string) => updateNodeData(POLICY_NODE_ID, { name: value }),
+    [updateNodeData],
   );
 
   const handleDescriptionChange = useCallback(
-    (value: string) => {
-      updateNodeData(POLICY_NODE_ID, { description: value });
-      onDescriptionChange(value);
-    },
-    [updateNodeData, onDescriptionChange],
+    (value: string) => updateNodeData(POLICY_NODE_ID, { description: value }),
+    [updateNodeData],
   );
 
   const handleControlGroupChange = useCallback(
@@ -419,8 +427,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
-              name,
-              description,
               controlGroup,
               controlGroupOptions,
               onNameChange: handleNameChange,
@@ -467,10 +473,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           };
         }
         if (node.type === "constraintNode") {
+          const hasChildren = edges.some((e) => e.source === node.id);
           return {
             ...node,
             data: {
               ...node.data,
+              onAddNode,
+              onAddConstraint: () => handleAddConstraintFromNode(node.id),
+              hasChildren,
               onDelete: () => deleteNodeWithDescendants(node.id),
               onConstraintTypeChange: (value: ConstraintType) =>
                 updateNodeData(node.id, {
@@ -499,8 +509,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [
       layoutedNodes,
       edges,
-      name,
-      description,
       controlGroup,
       controlGroupOptions,
       handleNameChange,
@@ -564,22 +572,17 @@ const AccessPolicyEditor = ({
 
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
-  const [name, setName] = useState(initialValues?.name ?? "");
-  const [description, setDescription] = useState(
-    initialValues?.description ?? "",
-  );
   const [controlGroup, setControlGroup] = useState<string | undefined>(
     initialValues?.control_group,
   );
-
-  // Key that forces PolicyCanvasPanel to re-mount when switching from code to builder/split
-  const [canvasKey, setCanvasKey] = useState(0);
+  // Incrementing syncKey triggers PolicyCanvasPanel to re-parse YAML without remounting
+  const [syncKey, setSyncKey] = useState(0);
 
   const handleModeChange = useCallback(
     (newMode: EditorMode) => {
-      // When switching from code-only to a canvas mode, re-parse the YAML into nodes
+      // When switching from code-only to a canvas mode, signal canvas to re-parse YAML
       if (mode === EditorMode.Code && newMode !== EditorMode.Code) {
-        setCanvasKey((k) => k + 1);
+        setSyncKey((k) => k + 1);
       }
       setMode(newMode);
     },
@@ -591,18 +594,22 @@ const AccessPolicyEditor = ({
   }, []);
 
   const handleSave = () => {
+    const parsed = parseYaml(yamlValue);
+    const name = parsed?.name ?? "";
     if (!name.trim()) {
       notification.error({ message: "Name is required." });
       return;
     }
-    onSave?.({ name, description, control_group: controlGroup }, yamlValue);
+    onSave?.(
+      {
+        name,
+        description: parsed?.description ?? "",
+        control_group: controlGroup,
+      },
+      yamlValue,
+    );
   };
 
-  const handleNameChange = useCallback((value: string) => setName(value), []);
-  const handleDescriptionChange = useCallback(
-    (value: string) => setDescription(value),
-    [],
-  );
   const handleControlGroupChange = useCallback(
     (value: string | undefined) => setControlGroup(value),
     [],
@@ -612,32 +619,33 @@ const AccessPolicyEditor = ({
     // TODO: implement add node logic
   }, []);
 
+  const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
+  const displayName = parsedForDisplay?.name ?? "";
+
   const handleExport = () => {
     const blob = new Blob([yamlValue], { type: "text/yaml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${name || "policy"}.yaml`;
+    a.download = `${displayName || "policy"}.yaml`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const title = isNew ? "New access policy" : "Edit access policy";
-  const breadcrumbTitle = isNew ? "New policy" : name || (policyId as string);
+  const breadcrumbTitle = isNew
+    ? "New policy"
+    : displayName || (policyId as string);
 
   const canvasPanel = (
     <PolicyCanvasPanel
-      key={canvasKey}
-      name={name}
-      description={description}
       controlGroup={controlGroup}
       controlGroupOptions={controlGroupOptions}
-      onNameChange={handleNameChange}
-      onDescriptionChange={handleDescriptionChange}
       onControlGroupChange={handleControlGroupChange}
       onAddNode={handleAddNode}
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}
+      syncKey={syncKey}
     />
   );
 
@@ -683,7 +691,9 @@ const AccessPolicyEditor = ({
           buttonStyle="solid"
           options={[
             { label: "Builder", value: EditorMode.Builder },
-            { label: "Split", value: EditorMode.Split },
+            ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
+              ? [{ label: "Split (dev only)", value: EditorMode.Split }]
+              : []),
             { label: "Code", value: EditorMode.Code },
           ]}
           data-testid="mode-toggle"
