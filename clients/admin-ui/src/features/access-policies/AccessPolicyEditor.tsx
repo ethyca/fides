@@ -623,7 +623,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onEnabledChange: handleEnabledChange,
               onPriorityChange: handlePriorityChange,
               onControlsChange: handleControlsChange,
-              onActionMessageChange: handleActionMessageChange,
               onAddNode,
               onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
@@ -641,6 +640,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               hasChildren,
               onActionTypeChange: (value: ActionType) =>
                 updateNodeData(node.id, { actionType: value }),
+              onActionMessageChange: (value: string) =>
+                updateNodeData(node.id, { actionMessage: value }),
             },
           };
         }

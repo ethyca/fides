@@ -1,6 +1,7 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import {
   Avatar,
+  Collapse,
   Flex,
   Icons,
   Input,
@@ -46,14 +47,12 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
     priority,
     controls,
     controlOptions,
-    actionMessage,
     onNameChange,
     onDescriptionChange,
     onFidesKeyChange,
     onEnabledChange,
     onPriorityChange,
     onControlsChange,
-    onActionMessageChange,
     onAddNode,
     onAddAction,
     hasChildren,
@@ -92,14 +91,6 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
         data-testid="policy-name-input"
       />
       <Input
-        placeholder="Fides key (unique identifier)"
-        value={fidesKey}
-        onChange={(e) => onFidesKeyChange(e.target.value)}
-        variant="borderless"
-        className={styles.field}
-        data-testid="policy-fides-key-input"
-      />
-      <Input
         placeholder="Policy description"
         value={description}
         onChange={(e) => onDescriptionChange(e.target.value)}
@@ -107,21 +98,6 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
         className={styles.field}
         data-testid="policy-description-input"
       />
-      <Flex gap="small" align="center" className={styles.field}>
-        <Text type="secondary" style={{ fontSize: 12, whiteSpace: "nowrap" }}>
-          Priority
-        </Text>
-        <InputNumber
-          value={priority}
-          onChange={(val) => onPriorityChange(val ?? 0)}
-          min={0}
-          size="small"
-          variant="borderless"
-          className="nodrag"
-          style={{ width: 80 }}
-          data-testid="policy-priority-input"
-        />
-      </Flex>
       <Select
         placeholder="Select controls"
         mode="multiple"
@@ -133,15 +109,50 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
         data-testid="policy-controls-select"
         aria-label="Select controls"
       />
-      <Input.TextArea
-        placeholder="Action message (shown on denial)"
-        value={actionMessage}
-        onChange={(e) => onActionMessageChange(e.target.value)}
-        variant="borderless"
-        className={styles.field}
-        autoSize={{ minRows: 1, maxRows: 3 }}
-        data-testid="policy-action-message-input"
-      />
+      <div className="nodrag">
+        <Collapse
+          size="small"
+          ghost
+          items={[
+            {
+              key: "advanced",
+              label: (
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Advanced
+                </Text>
+              ),
+              children: (
+                <>
+                  <Input
+                    placeholder="Fides key (unique identifier)"
+                    value={fidesKey}
+                    onChange={(e) => onFidesKeyChange(e.target.value)}
+                    size="small"
+                    className={styles.field}
+                    data-testid="policy-fides-key-input"
+                  />
+                  <Flex gap="small" align="center" className={styles.field}>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 12, whiteSpace: "nowrap" }}
+                    >
+                      Priority
+                    </Text>
+                    <InputNumber
+                      value={priority}
+                      onChange={(val) => onPriorityChange(val ?? 0)}
+                      min={0}
+                      size="small"
+                      style={{ width: 80 }}
+                      data-testid="policy-priority-input"
+                    />
+                  </Flex>
+                </>
+              ),
+            },
+          ]}
+        />
+      </div>
       {!hasChildren && (
         <NodeActions
           onAddNode={onAddNode}

@@ -116,7 +116,10 @@ export const yamlToNodesAndEdges = (
     type: "actionNode",
     position: { x: 0, y: 0 },
     style: { width: 300 },
-    data: { actionType },
+    data: {
+      actionType,
+      actionMessage: policy.action?.message ?? "",
+    },
   };
   nodes.push(actionNode);
   edges.push({
@@ -362,7 +365,6 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     enabled,
     priority,
     controls,
-    actionMessage,
   } = policyNode.data as PolicyNodeData;
 
   // Find action node (connected from policy)
@@ -432,7 +434,8 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     policyYaml.unless = unlessItems;
   }
 
-  // Action block
+  // Action block — read from the action node
+  const { actionMessage } = actionNode.data as ActionNodeData;
   if (actionMessage) {
     policyYaml.action = { message: actionMessage } satisfies ActionBlock;
   }

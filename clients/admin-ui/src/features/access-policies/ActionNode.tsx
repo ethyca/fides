@@ -1,5 +1,5 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import { Avatar, Flex, Form, Icons, Radio, Text } from "fidesui";
+import { Avatar, Flex, Form, Icons, Input, Radio, Text } from "fidesui";
 
 import styles from "./ActionNode.module.scss";
 import { ACTION_TYPE_OPTIONS } from "./constants";
@@ -8,7 +8,9 @@ import { ActionType } from "./types";
 
 export interface ActionNodeData extends Record<string, unknown> {
   actionType?: ActionType;
+  actionMessage?: string;
   onActionTypeChange?: (value: ActionType) => void;
+  onActionMessageChange?: (value: string) => void;
   onAddNode?: () => void;
   onAddCondition?: () => void;
   hasChildren?: boolean;
@@ -26,11 +28,11 @@ const ActionNode = ({ data }: NodeProps<ActionNodeType>) => (
         icon={<Icons.Fork size={16} />}
         className={styles.avatar}
       />
-      <Text strong>Action</Text>
+      <Text strong>Decision</Text>
     </Flex>
     <div className={styles.body}>
       <Form layout="vertical" className="nodrag">
-        <Form.Item className="mb-0">
+        <Form.Item className={data.actionType === ActionType.DENY ? "mb-2" : "mb-0"}>
           <Radio.Group
             value={data.actionType}
             onChange={(e) => data.onActionTypeChange?.(e.target.value)}
@@ -40,6 +42,17 @@ const ActionNode = ({ data }: NodeProps<ActionNodeType>) => (
             className="w-full"
           />
         </Form.Item>
+        {data.actionType === ActionType.DENY && (
+          <Form.Item label="Denial message" className="mb-0">
+            <Input.TextArea
+              placeholder="Message shown when access is blocked"
+              value={data.actionMessage}
+              onChange={(e) => data.onActionMessageChange?.(e.target.value)}
+              autoSize={{ minRows: 1, maxRows: 3 }}
+              data-testid="action-message-input"
+            />
+          </Form.Item>
+        )}
       </Form>
     </div>
     {!data.hasChildren && (

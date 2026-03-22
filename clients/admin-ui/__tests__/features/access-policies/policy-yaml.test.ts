@@ -1071,14 +1071,17 @@ describe("nodesToYaml", () => {
           priority: 0,
           controls: [],
           controlOptions: [],
-          actionMessage: "Access denied due to policy.",
+          actionMessage: "",
         },
       },
       {
         id: "action-1",
         type: "actionNode",
         position: { x: 0, y: 0 },
-        data: { actionType: ActionType.DENY },
+        data: {
+          actionType: ActionType.DENY,
+          actionMessage: "Access denied due to policy.",
+        },
       },
       {
         id: "condition-1",
