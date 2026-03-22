@@ -372,9 +372,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     : undefined;
 
   // Build the YAML object following PRD schema
-  const policyYaml: Record<string, unknown> = {
-    resource_type: "policy",
-  };
+  const policyYaml: Record<string, unknown> = {};
 
   if (fidesKey) {
     policyYaml.fides_key = fidesKey;

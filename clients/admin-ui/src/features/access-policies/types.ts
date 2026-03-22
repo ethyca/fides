@@ -96,7 +96,6 @@ export interface ActionBlock {
 // ─── Full policy YAML schema (PRD §2.1) ──────────────────────────────────────
 
 export interface AccessPolicyYaml {
-  resource_type: "policy";
   fides_key?: string;
   name?: string;
   description?: string;

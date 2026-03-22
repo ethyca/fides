@@ -46,7 +46,6 @@ describe("parseYaml", () => {
 
   it("parses full PRD-format YAML", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: test_policy
 name: Test Policy
 description: A complete policy
@@ -92,7 +91,6 @@ describe("yamlToNodesAndEdges", () => {
 
   it("creates policy + action + condition for ALLOW with match", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: simple_allow
 name: Simple Allow
 decision: ALLOW
@@ -127,7 +125,6 @@ match:
 
   it("creates DENY action for decision: DENY", () => {
     const yamlStr = `
-resource_type: policy
 name: deny_policy
 decision: DENY
 match:
@@ -142,7 +139,6 @@ match:
 
   it("uses ALL operator when match uses all", () => {
     const yamlStr = `
-resource_type: policy
 name: all_operator
 decision: ALLOW
 match:
@@ -159,7 +155,6 @@ match:
 
   it("chains multiple conditions: first with when, rest with vertical and", () => {
     const yamlStr = `
-resource_type: policy
 name: multi_condition
 decision: DENY
 match:
@@ -189,7 +184,6 @@ match:
 
   it("processes condition properties in fixed order: data_category, data_use, data_subject", () => {
     const yamlStr = `
-resource_type: policy
 name: ordered
 decision: ALLOW
 match:
@@ -218,7 +212,6 @@ match:
 
   it("creates consent constraint from unless block", () => {
     const yamlStr = `
-resource_type: policy
 name: with_consent_constraint
 decision: DENY
 match:
@@ -250,7 +243,6 @@ unless:
 
   it("creates geo_location constraint from unless block", () => {
     const yamlStr = `
-resource_type: policy
 name: with_geo_constraint
 decision: ALLOW
 match:
@@ -279,7 +271,6 @@ unless:
 
   it("creates data_flow constraint from unless block", () => {
     const yamlStr = `
-resource_type: policy
 name: with_data_flow_constraint
 decision: DENY
 match:
@@ -311,7 +302,6 @@ unless:
 
   it("chains multiple constraints: first unless, rest vertical and", () => {
     const yamlStr = `
-resource_type: policy
 name: multi_constraint
 decision: ALLOW
 match:
@@ -350,7 +340,6 @@ unless:
 
   it("populates policy node metadata fields", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: meta_test
 name: Metadata Test
 description: Testing metadata fields
@@ -409,7 +398,6 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, []);
     const parsed = parseYaml(result);
-    expect(parsed?.resource_type).toBe("policy");
     expect(parsed?.name).toBe("my_policy");
     expect(parsed?.description).toBeUndefined();
     // enabled defaults to true, so it should not be in output
@@ -1307,7 +1295,6 @@ describe("round-trip: yamlToNodesAndEdges → nodesToYaml", () => {
 
   it("PRD 4.1: Default Deny (catch-all)", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: default_deny
 name: Default Deny All
 description: Baseline policy that denies all unmatched data processing.
@@ -1327,7 +1314,6 @@ action:
 
   it("PRD 4.2: CCPA Sale Blocker (ALLOW + unless consent)", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: ccpa_sale_blocker
 name: CCPA Commercial Data Restriction
 description: Allow commercial data use unless the user has opted out of data sales.
@@ -1365,7 +1351,6 @@ action:
 
   it("PRD 4.4: Unconditional DENY", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: block_third_party_ads
 name: Block Third-Party Advertising
 priority: 200
@@ -1388,7 +1373,6 @@ action:
 
   it("PRD 4.6: Conditional DENY (DENY + unless data_flow)", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: block_data_broker_ingress
 name: Block Data Broker Sources
 priority: 150
@@ -1421,7 +1405,6 @@ action:
 
   it("PRD 4.7: Layered — consent + geo_location unless", () => {
     const yamlStr = `
-resource_type: policy
 fides_key: retention_phone_access
 name: Retention Campaign Phone Access
 priority: 100
