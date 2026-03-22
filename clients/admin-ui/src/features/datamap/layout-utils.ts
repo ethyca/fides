@@ -10,6 +10,8 @@ export interface DagreLayoutOptions {
   marginy?: number;
   nodeWidth?: number;
   nodeHeight?: number;
+  /** Per-node dimension overrides keyed by node id. */
+  nodeSizes?: Record<string, { width: number; height: number }>;
 }
 
 const DEFAULT_OPTIONS: Required<DagreLayoutOptions> = {
@@ -21,6 +23,7 @@ const DEFAULT_OPTIONS: Required<DagreLayoutOptions> = {
   marginy: 15,
   nodeWidth: 220,
   nodeHeight: 70,
+  nodeSizes: {},
 };
 
 // The dagre layout algorithm needs a graph instance with nodes and edges
@@ -48,9 +51,10 @@ export const getLayoutedElements = (
 
   // Set node width and height for layout calculation
   nodes.forEach((node) => {
+    const size = opts.nodeSizes?.[node.id];
     dagreGraph.setNode(node.id, {
-      width: opts.nodeWidth,
-      height: opts.nodeHeight,
+      width: size?.width ?? opts.nodeWidth,
+      height: size?.height ?? opts.nodeHeight,
     });
   });
 

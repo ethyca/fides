@@ -38,8 +38,15 @@ import {
 import ActionNode, { ActionNodeType } from "./ActionNode";
 import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
+import JunctionNode from "./JunctionNode";
 import LabeledEdge from "./LabeledEdge";
-import { nodesToYaml, parseYaml, yamlToNodesAndEdges } from "./policy-yaml";
+import {
+  JUNCTION_NODE_ID,
+  nodesToYaml,
+  parseYaml,
+  POLICY_NODE_ID,
+  yamlToNodesAndEdges,
+} from "./policy-yaml";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
@@ -73,6 +80,7 @@ const nodeTypes: NodeTypes = {
   actionNode: ActionNode,
   conditionNode: ConditionNode,
   constraintNode: ConstraintNode,
+  junctionNode: JunctionNode,
   policyNode: PolicyNode,
 };
 
@@ -90,8 +98,6 @@ interface PolicyCanvasPanelProps {
   // Incrementing this triggers a re-parse of initialYaml into nodes (replaces remount)
   syncKey?: number;
 }
-
-const POLICY_NODE_ID = "policy";
 
 const DEFAULT_ZOOM = 1;
 
@@ -246,27 +252,67 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [setNodes],
   );
 
-  const deleteNodeWithDescendants = useCallback(
+  // ─── Delete handlers ──────────────────────────────────────────────────
+
+  const deleteConditionNode = useCallback(
     (nodeId: string) => {
-      const toDelete = new Set<string>([nodeId]);
-      const queue = [nodeId];
-      while (queue.length > 0) {
-        const current = queue.shift()!;
-        edges
-          .filter((e) => e.source === current)
-          .forEach((e) => {
-            if (!toDelete.has(e.target)) {
-              toDelete.add(e.target);
-              queue.push(e.target);
-            }
-          });
-      }
-      setNodes((nds) => nds.filter((n) => !toDelete.has(n.id)));
-      setEdges((eds) =>
-        eds.filter((e) => !toDelete.has(e.source) && !toDelete.has(e.target)),
+      const remainingConditions = nodes.filter(
+        (n) => n.type === "conditionNode" && n.id !== nodeId,
       );
+
+      if (remainingConditions.length === 0) {
+        // Last condition: also remove junction and all constraints
+        const removeIds = new Set<string>([nodeId]);
+        nodes
+          .filter(
+            (n) => n.type === "constraintNode" || n.type === "junctionNode",
+          )
+          .forEach((n) => removeIds.add(n.id));
+
+        setNodes((nds) => nds.filter((n) => !removeIds.has(n.id)));
+        setEdges((eds) =>
+          eds.filter(
+            (e) => !removeIds.has(e.source) && !removeIds.has(e.target),
+          ),
+        );
+      } else {
+        setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+        setEdges((eds) =>
+          eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
+        );
+      }
     },
-    [edges, setNodes, setEdges],
+    [nodes, setNodes, setEdges],
+  );
+
+  const deleteConstraintNode = useCallback(
+    (nodeId: string) => {
+      const remainingConstraints = nodes.filter(
+        (n) => n.type === "constraintNode" && n.id !== nodeId,
+      );
+
+      if (remainingConstraints.length === 0) {
+        // Last constraint: also remove junction
+        setNodes((nds) =>
+          nds.filter((n) => n.id !== nodeId && n.type !== "junctionNode"),
+        );
+        setEdges((eds) =>
+          eds.filter(
+            (e) =>
+              e.source !== nodeId &&
+              e.target !== nodeId &&
+              e.source !== JUNCTION_NODE_ID &&
+              e.target !== JUNCTION_NODE_ID,
+          ),
+        );
+      } else {
+        setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+        setEdges((eds) =>
+          eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
+        );
+      }
+    },
+    [nodes, setNodes, setEdges],
   );
 
   // name and description are managed entirely in node data; no parent state mirror needed
@@ -301,54 +347,64 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     () =>
       getLayoutedElements(nodes, edges, "LR", {
         ranksep: 80,
-        nodesep: 60,
+        nodesep: 110,
         nodeWidth: 320,
         nodeHeight: 100,
+        nodeSizes: {
+          [JUNCTION_NODE_ID]: { width: 16, height: 16 },
+        },
       }),
     [nodes, edges],
   );
 
-  const handleAddConditionFromNode = useCallback(
-    (sourceNodeId: string) => {
-      const sourceNode = nodes.find((n) => n.id === sourceNodeId);
-      if (!sourceNode) {
-        return;
-      }
+  // ─── Add condition (fan-out from action) ──────────────────────────────
 
-      const conditionCount = nodes.filter(
-        (n) => n.type === "conditionNode",
-      ).length;
-      const conditionId = `condition-${conditionCount + 1}`;
+  const handleAddConditionFromNode = useCallback(() => {
+    const actionNode = nodes.find((n) => n.type === "actionNode");
+    if (!actionNode) {
+      return;
+    }
 
-      const newNode: ConditionNodeType = {
-        id: conditionId,
-        type: "conditionNode",
-        position: { x: 0, y: 0 },
-        style: { width: 300 },
-        data: {},
-      };
+    const conditionCount = nodes.filter(
+      (n) => n.type === "conditionNode",
+    ).length;
+    const conditionId = `condition-${conditionCount + 1}`;
 
-      let label: string | undefined;
-      if (sourceNode.type === "actionNode") {
-        label = "when";
-      } else if (sourceNode.type === "conditionNode") {
-        label = "and";
-      }
+    const newNode: ConditionNodeType = {
+      id: conditionId,
+      type: "conditionNode",
+      position: { x: 0, y: 0 },
+      style: { width: 300 },
+      data: {},
+    };
 
-      const newEdge: Edge = {
-        id: `e-${sourceNodeId}-${conditionId}`,
-        source: sourceNodeId,
-        target: conditionId,
+    const newEdge: Edge = {
+      id: `e-${actionNode.id}-${conditionId}`,
+      source: actionNode.id,
+      target: conditionId,
+      type: "labeledEdge",
+      data: { label: "when" },
+    };
+
+    const newEdges: Edge[] = [newEdge];
+
+    // If junction exists, also connect new condition → junction
+    const junctionExists = nodes.some((n) => n.type === "junctionNode");
+    if (junctionExists) {
+      newEdges.push({
+        id: `e-${conditionId}-${JUNCTION_NODE_ID}`,
+        source: conditionId,
+        target: JUNCTION_NODE_ID,
         type: "labeledEdge",
-        data: label ? { label } : undefined,
-      };
+      });
+    }
 
-      setNodes((nds) => [...nds, newNode]);
-      setEdges((eds) => [...eds, newEdge]);
-      setLastCreatedNodeId(conditionId);
-    },
-    [nodes, setNodes, setEdges],
-  );
+    setNodes((nds) => [...nds, newNode]);
+    setEdges((eds) => [...eds, ...newEdges]);
+    setLastCreatedNodeId(conditionId);
+  }, [nodes, setNodes, setEdges]);
+
+  // ─── Add action (from policy) ─────────────────────────────────────────
 
   const handleAddActionFromNode = useCallback(
     (sourceNodeId: string) => {
@@ -382,40 +438,69 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [nodes, setNodes, setEdges],
   );
 
-  const handleAddConstraintFromNode = useCallback(
-    (sourceNodeId: string) => {
-      const sourceNode = nodes.find((n) => n.id === sourceNodeId);
-      if (!sourceNode) {
-        return;
-      }
+  // ─── Add constraint (fan-out from junction) ───────────────────────────
 
-      const constraintCount = nodes.filter(
-        (n) => n.type === "constraintNode",
-      ).length;
-      const constraintId = `constraint-${constraintCount + 1}`;
+  const handleAddConstraintFromNode = useCallback(() => {
+    const constraintCount = nodes.filter(
+      (n) => n.type === "constraintNode",
+    ).length;
+    const constraintId = `constraint-${constraintCount + 1}`;
 
-      const newNode: ConstraintNodeType = {
-        id: constraintId,
-        type: "constraintNode",
+    const newConstraintNode: ConstraintNodeType = {
+      id: constraintId,
+      type: "constraintNode",
+      position: { x: 0, y: 0 },
+      style: { width: 300 },
+      data: {},
+    };
+
+    const junctionExists = nodes.some((n) => n.type === "junctionNode");
+
+    if (junctionExists) {
+      // Junction already exists — just add constraint from it
+      setNodes((nds) => [...nds, newConstraintNode]);
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: `e-${JUNCTION_NODE_ID}-${constraintId}`,
+          source: JUNCTION_NODE_ID,
+          target: constraintId,
+          type: "labeledEdge",
+          data: { label: "unless" },
+        },
+      ]);
+    } else {
+      // Create junction, connect all conditions → junction → new constraint
+      const junctionNode: Node = {
+        id: JUNCTION_NODE_ID,
+        type: "junctionNode",
         position: { x: 0, y: 0 },
-        style: { width: 300 },
+        style: { width: 16, height: 16 },
         data: {},
       };
 
-      const newEdge: Edge = {
-        id: `e-${sourceNodeId}-${constraintId}`,
-        source: sourceNodeId,
+      const conditionNodes = nodes.filter((n) => n.type === "conditionNode");
+      const junctionEdges: Edge[] = conditionNodes.map((cond) => ({
+        id: `e-${cond.id}-${JUNCTION_NODE_ID}`,
+        source: cond.id,
+        target: JUNCTION_NODE_ID,
+        type: "labeledEdge",
+      }));
+
+      const constraintEdge: Edge = {
+        id: `e-${JUNCTION_NODE_ID}-${constraintId}`,
+        source: JUNCTION_NODE_ID,
         target: constraintId,
         type: "labeledEdge",
         data: { label: "unless" },
       };
 
-      setNodes((nds) => [...nds, newNode]);
-      setEdges((eds) => [...eds, newEdge]);
-      setLastCreatedNodeId(constraintId);
-    },
-    [nodes, setNodes, setEdges],
-  );
+      setNodes((nds) => [...nds, junctionNode, newConstraintNode]);
+      setEdges((eds) => [...eds, ...junctionEdges, constraintEdge]);
+    }
+
+    setLastCreatedNodeId(constraintId);
+  }, [nodes, setNodes, setEdges]);
 
   const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
 
@@ -445,7 +530,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             data: {
               ...node.data,
               onAddNode,
-              onAddCondition: () => handleAddConditionFromNode(node.id),
+              onAddCondition: handleAddConditionFromNode,
               hasChildren,
               onActionTypeChange: (value: ActionType) =>
                 updateNodeData(node.id, { actionType: value }),
@@ -453,15 +538,16 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           };
         }
         if (node.type === "conditionNode") {
+          // hasChildren = connected to junction (constraints exist)
           const hasChildren = edges.some((e) => e.source === node.id);
           return {
             ...node,
             data: {
               ...node.data,
               onAddNode,
-              onAddCondition: () => handleAddConditionFromNode(node.id),
-              onAddConstraint: () => handleAddConstraintFromNode(node.id),
-              onDelete: () => deleteNodeWithDescendants(node.id),
+              onAddCondition: handleAddConditionFromNode,
+              onAddConstraint: handleAddConstraintFromNode,
+              onDelete: () => deleteConditionNode(node.id),
               hasChildren,
               onPropertyChange: (value: ConditionProperty) =>
                 updateNodeData(node.id, { property: value, values: [] }),
@@ -473,15 +559,12 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           };
         }
         if (node.type === "constraintNode") {
-          const hasChildren = edges.some((e) => e.source === node.id);
           return {
             ...node,
             data: {
               ...node.data,
-              onAddNode,
-              onAddConstraint: () => handleAddConstraintFromNode(node.id),
-              hasChildren,
-              onDelete: () => deleteNodeWithDescendants(node.id),
+              onAddConstraint: handleAddConstraintFromNode,
+              onDelete: () => deleteConstraintNode(node.id),
               onConstraintTypeChange: (value: ConstraintType) =>
                 updateNodeData(node.id, {
                   constraintType: value,
@@ -518,7 +601,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       handleAddConditionFromNode,
       handleAddActionFromNode,
       handleAddConstraintFromNode,
-      deleteNodeWithDescendants,
+      deleteConditionNode,
+      deleteConstraintNode,
       updateNodeData,
       policyHasChildren,
     ],

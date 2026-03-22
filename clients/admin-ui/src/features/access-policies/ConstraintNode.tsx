@@ -18,7 +18,6 @@ import {
   USER_OPERATOR_OPTIONS,
 } from "./constants";
 import styles from "./ConstraintNode.module.scss";
-import NodeActions from "./NodeActions";
 import { ConsentValue, ConstraintType, UserOperator } from "./types";
 
 export interface ConstraintNodeData extends Record<string, unknown> {
@@ -35,9 +34,7 @@ export interface ConstraintNodeData extends Record<string, unknown> {
   onUserValueChange?: (value: string) => void;
   onUserOperatorChange?: (value: UserOperator) => void;
   onDelete?: () => void;
-  onAddNode?: () => void;
   onAddConstraint?: () => void;
-  hasChildren?: boolean;
 }
 
 export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
@@ -140,14 +137,19 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         )}
       </Form>
     </div>
-    {!data.hasChildren && (
-      <NodeActions
-        onAddNode={data.onAddNode}
-        onAddConstraint={data.onAddConstraint}
-        showAddAction={false}
-        showAddCondition={false}
-      />
-    )}
+    <div className={styles.addSiblingRow}>
+      <Button
+        type="text"
+        size="small"
+        icon={<Icons.Add size={14} />}
+        onClick={data.onAddConstraint}
+        aria-label="Add constraint"
+        data-testid="add-sibling-constraint-btn"
+        className={styles.addSiblingButton}
+      >
+        Constraint
+      </Button>
+    </div>
     <Handle type="source" position={Position.Right} className={styles.handle} />
   </div>
 );

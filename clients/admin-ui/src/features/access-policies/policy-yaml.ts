@@ -49,7 +49,8 @@ const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
   ConditionProperty.DATA_SUBJECTS,
 ];
 
-const POLICY_NODE_ID = "policy";
+export const POLICY_NODE_ID = "policy";
+export const JUNCTION_NODE_ID = "junction";
 
 const resolveActionType = (
   policy: AccessPolicyYaml,
@@ -115,11 +116,10 @@ export const yamlToNodesAndEdges = (
     type: "labeledEdge",
   });
 
-  // Condition nodes — one per property key present in the condition map, in declared order
+  // Condition nodes — fan out from action (same column in dagre)
   const presentProperties = CONDITION_PROPERTY_KEYS.filter(
     (p) => !!conditionMap[p],
   );
-  const prevConditionIdRef = { current: null as string | null };
 
   presentProperties.forEach((property, idx) => {
     const clause = conditionMap[property] as ConditionClause;
@@ -138,26 +138,42 @@ export const yamlToNodesAndEdges = (
     };
     nodes.push(conditionNode);
 
-    const sourceId = prevConditionIdRef.current ?? actionId;
-    const edgeLabel = prevConditionIdRef.current ? "and" : "when";
+    // All conditions fan out from action with "when" label
     edges.push({
-      id: `e-${sourceId}-${conditionId}`,
-      source: sourceId,
+      id: `e-${actionId}-${conditionId}`,
+      source: actionId,
       target: conditionId,
       type: "labeledEdge",
-      data: { label: edgeLabel },
+      data: { label: "when" },
     });
-
-    prevConditionIdRef.current = conditionId;
   });
 
-  // Constraint nodes from `unless` — chained: first from last condition, rest from previous constraint
-  const lastConditionId = prevConditionIdRef.current;
-  if (policy.unless && lastConditionId) {
-    const constraintList: ConstraintItem[] =
-      policy.unless.any ?? policy.unless.all ?? [];
+  // Constraint nodes from `unless` — fan out from junction
+  const constraintList: ConstraintItem[] =
+    policy.unless?.any ?? policy.unless?.all ?? [];
 
-    let prevConstraintId: string | null = null;
+  if (constraintList.length > 0 && presentProperties.length > 0) {
+    // Add junction node to bridge conditions → constraints
+    nodes.push({
+      id: JUNCTION_NODE_ID,
+      type: "junctionNode",
+      position: { x: 0, y: 0 },
+      style: { width: 16, height: 16 },
+      data: {},
+    });
+
+    // Connect all conditions → junction
+    presentProperties.forEach((_, idx) => {
+      const conditionId = `condition-${idx + 1}`;
+      edges.push({
+        id: `e-${conditionId}-${JUNCTION_NODE_ID}`,
+        source: conditionId,
+        target: JUNCTION_NODE_ID,
+        type: "labeledEdge",
+      });
+    });
+
+    // Connect junction → each constraint
     constraintList.forEach((item, idx) => {
       const constraintId = `constraint-${idx + 1}`;
       let data: ConstraintNodeData = {};
@@ -188,16 +204,13 @@ export const yamlToNodesAndEdges = (
       };
       nodes.push(constraintNode);
 
-      const sourceId = prevConstraintId ?? lastConditionId;
       edges.push({
-        id: `e-${sourceId}-${constraintId}`,
-        source: sourceId,
+        id: `e-${JUNCTION_NODE_ID}-${constraintId}`,
+        source: JUNCTION_NODE_ID,
         target: constraintId,
         type: "labeledEdge",
         data: { label: "unless" },
       });
-
-      prevConstraintId = constraintId;
     });
   }
 
@@ -206,6 +219,11 @@ export const yamlToNodesAndEdges = (
 
 // ─── Nodes + Edges → YAML ────────────────────────────────────────────────────
 
+/**
+ * Collect all conditionNode nodes reachable from actionNodeId via BFS.
+ * Works with both fan-out (action → cond1, action → cond2) and legacy
+ * chain (action → cond1 → cond2) topologies.
+ */
 const collectConditionNodes = (
   actionNodeId: string,
   nodes: Node[],
@@ -228,6 +246,41 @@ const collectConditionNodes = (
       });
   };
   walk(actionNodeId);
+
+  return result;
+};
+
+/**
+ * Collect all constraintNode nodes reachable from the given condition node IDs,
+ * walking through junction nodes and constraint chains.
+ */
+const collectConstraintNodes = (
+  conditionNodeIds: Set<string>,
+  nodes: Node[],
+  edges: Edge[],
+): Node<ConstraintNodeData>[] => {
+  const result: Node<ConstraintNodeData>[] = [];
+  const visited = new Set<string>();
+  const queue = [...conditionNodeIds];
+
+  while (queue.length > 0) {
+    const sourceId = queue.shift()!;
+    edges
+      .filter((e) => e.source === sourceId && !visited.has(e.target))
+      .forEach((e) => {
+        visited.add(e.target);
+        const target = nodes.find((n) => n.id === e.target);
+        if (!target) {
+          return;
+        }
+        if (target.type === "constraintNode") {
+          result.push(target as Node<ConstraintNodeData>);
+          queue.push(target.id);
+        } else if (target.type === "junctionNode") {
+          queue.push(target.id);
+        }
+      });
+  }
 
   return result;
 };
@@ -315,40 +368,12 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     policyYaml.allow = conditionMap;
   }
 
-  // Collect constraint nodes: BFS from all condition nodes, following constraint→constraint edges
+  // Collect constraint nodes reachable from conditions (through junctions)
   const conditionIds = new Set(conditionNodes.map((n) => n.id));
-  const constraintItems: ConstraintItem[] = [];
-  const visitedConstraints = new Set<string>();
-  const constraintQueue: string[] = edges
-    .filter((e) => conditionIds.has(e.source))
-    .map((e) => nodes.find((n) => n.id === e.target))
-    .filter(
-      (n): n is Node<ConstraintNodeData> => !!n && n.type === "constraintNode",
-    )
-    .map((n) => n.id);
-
-  while (constraintQueue.length > 0) {
-    const constraintId = constraintQueue.shift()!;
-    if (!visitedConstraints.has(constraintId)) {
-      visitedConstraints.add(constraintId);
-      const constraintNode = nodes.find(
-        (n): n is Node<ConstraintNodeData> =>
-          n.id === constraintId && n.type === "constraintNode",
-      );
-      if (constraintNode) {
-        const item = buildConstraintItem(
-          constraintNode.data as ConstraintNodeData,
-        );
-        if (item) {
-          constraintItems.push(item);
-        }
-        // Enqueue children of this constraint node
-        edges
-          .filter((e) => e.source === constraintId)
-          .forEach((e) => constraintQueue.push(e.target));
-      }
-    }
-  }
+  const constraintNodes = collectConstraintNodes(conditionIds, nodes, edges);
+  const constraintItems: ConstraintItem[] = constraintNodes
+    .map((n) => buildConstraintItem(n.data as ConstraintNodeData))
+    .filter((item): item is ConstraintItem => !!item);
 
   if (constraintItems.length > 0) {
     policyYaml.unless = { any: constraintItems };

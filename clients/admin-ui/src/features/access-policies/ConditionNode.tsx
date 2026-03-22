@@ -147,11 +147,24 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
           )}
         </Form>
       </div>
+      <div className={styles.addSiblingRow}>
+        <Button
+          type="text"
+          size="small"
+          icon={<Icons.Add size={14} />}
+          onClick={data.onAddCondition}
+          aria-label="Add condition"
+          data-testid="add-sibling-condition-btn"
+          className={styles.addSiblingButton}
+        >
+          Condition
+        </Button>
+      </div>
       {!data.hasChildren && (
         <NodeActions
           onAddNode={data.onAddNode}
-          onAddCondition={data.onAddCondition}
           onAddConstraint={data.onAddConstraint}
+          showAddCondition={false}
           showAddAction={false}
         />
       )}
