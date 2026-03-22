@@ -8,9 +8,11 @@ import {
   ActionType,
   ConditionOperator,
   ConditionProperty,
-  ConsentValue,
+  ConsentRequirement,
   ConstraintType,
-  UserOperator,
+  DataFlowDirection,
+  DataFlowOperator,
+  GeoOperator,
 } from "~/features/access-policies/types";
 
 // ─── parseYaml ───────────────────────────────────────────────────────────────
@@ -33,32 +35,37 @@ describe("parseYaml", () => {
     expect(parseYaml("42")).toBeNull();
   });
 
-  it("returns null when object is missing name field", () => {
-    expect(parseYaml("description: something")).toBeNull();
+  it("returns null when object has neither decision nor name", () => {
+    expect(parseYaml("enabled: true")).toBeNull();
   });
 
-  it("parses minimal valid YAML", () => {
+  it("parses minimal valid YAML with name", () => {
     const result = parseYaml("name: my_policy");
     expect(result).toEqual({ name: "my_policy" });
   });
 
-  it("parses full YAML with all fields", () => {
-    const yaml = `
-name: full_policy
+  it("parses full PRD-format YAML", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: test_policy
+name: Test Policy
 description: A complete policy
 enabled: true
-allow:
+priority: 100
+decision: ALLOW
+match:
   data_use:
-    operator: any
-    values:
+    any:
       - essential
 `;
-    const result = parseYaml(yaml);
-    expect(result?.name).toBe("full_policy");
+    const result = parseYaml(yamlStr);
+    expect(result?.name).toBe("Test Policy");
+    expect(result?.fides_key).toBe("test_policy");
     expect(result?.description).toBe("A complete policy");
     expect(result?.enabled).toBe(true);
-    expect(result?.allow?.data_use?.operator).toBe("any");
-    expect(result?.allow?.data_use?.values).toEqual(["essential"]);
+    expect(result?.priority).toBe(100);
+    expect(result?.decision).toBe("ALLOW");
+    expect(result?.match?.data_use?.any).toEqual(["essential"]);
   });
 });
 
@@ -69,11 +76,11 @@ describe("yamlToNodesAndEdges", () => {
     expect(yamlToNodesAndEdges("not: [valid")).toBeNull();
   });
 
-  it("returns null for YAML without name", () => {
-    expect(yamlToNodesAndEdges("description: no name")).toBeNull();
+  it("returns null for YAML without name or decision", () => {
+    expect(yamlToNodesAndEdges("enabled: true")).toBeNull();
   });
 
-  it("returns policy node only when no allow/deny block", () => {
+  it("returns policy node only when no decision/match block", () => {
     const result = yamlToNodesAndEdges(
       "name: bare_policy\ndescription: no rules",
     );
@@ -83,16 +90,18 @@ describe("yamlToNodesAndEdges", () => {
     expect(result!.edges).toHaveLength(0);
   });
 
-  it("creates policy + action + condition for single allow condition", () => {
-    const yaml = `
-name: simple_allow
-allow:
+  it("creates policy + action + condition for ALLOW with match", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: simple_allow
+name: Simple Allow
+decision: ALLOW
+match:
   data_use:
-    operator: any
-    values:
+    any:
       - essential
 `;
-    const result = yamlToNodesAndEdges(yaml);
+    const result = yamlToNodesAndEdges(yamlStr);
     expect(result).not.toBeNull();
     const { nodes, edges } = result!;
 
@@ -116,45 +125,61 @@ allow:
     expect(conditionEdge.data?.label).toBe("when");
   });
 
-  it("creates deny action for deny block", () => {
-    const yaml = `
+  it("creates DENY action for decision: DENY", () => {
+    const yamlStr = `
+resource_type: policy
 name: deny_policy
-deny:
+decision: DENY
+match:
   data_use:
-    operator: any
-    values:
+    any:
       - marketing.advertising
 `;
-    const result = yamlToNodesAndEdges(yaml);
+    const result = yamlToNodesAndEdges(yamlStr);
     const actionNode = result!.nodes.find((n) => n.id === "action-1")!;
     expect(actionNode.data.actionType).toBe(ActionType.DENY);
   });
 
+  it("uses ALL operator when match uses all", () => {
+    const yamlStr = `
+resource_type: policy
+name: all_operator
+decision: ALLOW
+match:
+  data_category:
+    all:
+      - user.contact
+      - user.contact.email
+`;
+    const result = yamlToNodesAndEdges(yamlStr);
+    const condNode = result!.nodes.find((n) => n.id === "condition-1")!;
+    expect(condNode.data.operator).toBe(ConditionOperator.ALL);
+    expect(condNode.data.values).toEqual(["user.contact", "user.contact.email"]);
+  });
+
   it("chains multiple conditions: first with when, rest with vertical and", () => {
-    const yaml = `
+    const yamlStr = `
+resource_type: policy
 name: multi_condition
-deny:
+decision: DENY
+match:
   data_use:
-    operator: any
-    values:
+    any:
       - marketing
   data_subject:
-    operator: any
-    values:
+    any:
       - visitor
 `;
-    const result = yamlToNodesAndEdges(yaml);
+    const result = yamlToNodesAndEdges(yamlStr);
     expect(result).not.toBeNull();
     const { nodes, edges } = result!;
 
     expect(nodes.filter((n) => n.type === "conditionNode")).toHaveLength(2);
 
-    // First condition: horizontal from action with "when"
     const whenEdge = edges.find((e) => e.data?.label === "when")!;
     expect(whenEdge.source).toBe("action-1");
     expect(whenEdge.target).toBe("condition-1");
 
-    // Second condition: vertical from first with "and"
     const andEdge = edges.find((e) => e.data?.label === "and")!;
     expect(andEdge.source).toBe("condition-1");
     expect(andEdge.target).toBe("condition-2");
@@ -163,20 +188,22 @@ deny:
   });
 
   it("processes condition properties in fixed order: data_category, data_use, data_subject", () => {
-    const yaml = `
+    const yamlStr = `
+resource_type: policy
 name: ordered
-allow:
+decision: ALLOW
+match:
   data_subject:
-    values:
+    any:
       - customer
   data_use:
-    values:
+    any:
       - essential
   data_category:
-    values:
+    any:
       - user.name
 `;
-    const result = yamlToNodesAndEdges(yaml);
+    const result = yamlToNodesAndEdges(yamlStr);
     const conditionNodes = result!.nodes.filter(
       (n) => n.type === "conditionNode",
     );
@@ -189,96 +216,169 @@ allow:
     );
   });
 
-  it("creates constraint from first condition with unless label", () => {
-    const yaml = `
+  it("creates consent constraint from unless block", () => {
+    const yamlStr = `
+resource_type: policy
 name: with_consent_constraint
-deny:
+decision: DENY
+match:
   data_category:
-    values:
+    any:
       - user.financial
 unless:
-  any:
-    - consent:
-        preference_key:
-          - financial_data_processing
-        value: opt_in
+  - type: consent
+    privacy_notice_key: financial_data_processing
+    requirement: opt_in
 `;
-    const result = yamlToNodesAndEdges(yaml);
+    const result = yamlToNodesAndEdges(yamlStr);
     expect(result).not.toBeNull();
     const { nodes, edges } = result!;
 
     const constraintNode = nodes.find((n) => n.type === "constraintNode")!;
     expect(constraintNode.data.constraintType).toBe(ConstraintType.CONSENT);
-    expect(constraintNode.data.preferenceKey).toBe("financial_data_processing");
-    expect(constraintNode.data.consentValue).toBe(ConsentValue.OPT_IN);
+    expect(constraintNode.data.privacyNoticeKey).toBe(
+      "financial_data_processing",
+    );
+    expect(constraintNode.data.consentRequirement).toBe(
+      ConsentRequirement.OPT_IN,
+    );
 
-    // Constraint connects from condition-1 with "unless"
     const constraintEdge = edges.find((e) => e.target === constraintNode.id)!;
     expect(constraintEdge.source).toBe("condition-1");
     expect(constraintEdge.data?.label).toBe("unless");
   });
 
-  it("creates user constraint node from unless block", () => {
-    const yaml = `
-name: with_user_constraint
-deny:
+  it("creates geo_location constraint from unless block", () => {
+    const yamlStr = `
+resource_type: policy
+name: with_geo_constraint
+decision: ALLOW
+match:
   data_use:
-    values:
+    any:
       - marketing
 unless:
-  any:
-    - user:
-        key: age
-        value: 18
-        operator: less_than
+  - type: geo_location
+    field: environment.geo_location
+    operator: in
+    values:
+      - US-CA
+      - EU
 `;
-    const result = yamlToNodesAndEdges(yaml);
+    const result = yamlToNodesAndEdges(yamlStr);
     const constraintNode = result!.nodes.find(
       (n) => n.type === "constraintNode",
     )!;
-    expect(constraintNode.data.constraintType).toBe(ConstraintType.USER);
-    expect(constraintNode.data.userKey).toBe("age");
-    expect(constraintNode.data.userValue).toBe("18");
-    expect(constraintNode.data.userOperator).toBe(UserOperator.LESS_THAN);
+    expect(constraintNode.data.constraintType).toBe(
+      ConstraintType.GEO_LOCATION,
+    );
+    expect(constraintNode.data.geoField).toBe("environment.geo_location");
+    expect(constraintNode.data.geoOperator).toBe(GeoOperator.IN);
+    expect(constraintNode.data.geoValues).toEqual(["US-CA", "EU"]);
+  });
+
+  it("creates data_flow constraint from unless block", () => {
+    const yamlStr = `
+resource_type: policy
+name: with_data_flow_constraint
+decision: DENY
+match:
+  data_use:
+    any:
+      - marketing
+unless:
+  - type: data_flow
+    direction: ingress
+    operator: none_of
+    systems:
+      - third_party_data_broker
+      - external_data_vendor
+`;
+    const result = yamlToNodesAndEdges(yamlStr);
+    const constraintNode = result!.nodes.find(
+      (n) => n.type === "constraintNode",
+    )!;
+    expect(constraintNode.data.constraintType).toBe(ConstraintType.DATA_FLOW);
+    expect(constraintNode.data.dataFlowDirection).toBe(
+      DataFlowDirection.INGRESS,
+    );
+    expect(constraintNode.data.dataFlowOperator).toBe(DataFlowOperator.NONE_OF);
+    expect(constraintNode.data.dataFlowSystems).toEqual([
+      "third_party_data_broker",
+      "external_data_vendor",
+    ]);
   });
 
   it("chains multiple constraints: first unless, rest vertical and", () => {
-    const yaml = `
+    const yamlStr = `
+resource_type: policy
 name: multi_constraint
-deny:
+decision: ALLOW
+match:
   data_use:
-    values:
+    any:
       - marketing
 unless:
-  any:
-    - consent:
-        preference_key:
-          - marketing_pref
-        value: opt_out
-    - user:
-        key: age
-        value: 18
-        operator: less_than
+  - type: consent
+    privacy_notice_key: marketing_pref
+    requirement: not_opt_in
+  - type: geo_location
+    field: environment.geo_location
+    operator: in
+    values:
+      - US-CA
+      - EU
 `;
-    const result = yamlToNodesAndEdges(yaml);
+    const result = yamlToNodesAndEdges(yamlStr);
     expect(result).not.toBeNull();
     const { nodes, edges } = result!;
 
     const constraintNodes = nodes.filter((n) => n.type === "constraintNode");
     expect(constraintNodes).toHaveLength(2);
 
-    // First constraint: from condition-1 with "unless"
     const unlessEdge = edges.find((e) => e.data?.label === "unless")!;
     expect(unlessEdge.source).toBe("condition-1");
     expect(unlessEdge.target).toBe("constraint-1");
 
-    // Second constraint: vertical "and" from first
     const andEdge = edges.find(
       (e) => e.source === "constraint-1" && e.target === "constraint-2",
     )!;
     expect(andEdge.data?.label).toBe("and");
     expect(andEdge.sourceHandle).toBe("bottom");
     expect(andEdge.targetHandle).toBe("top");
+  });
+
+  it("populates policy node metadata fields", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: meta_test
+name: Metadata Test
+description: Testing metadata fields
+enabled: false
+priority: 50
+controls:
+  - gdpr_article_9
+  - ccpa_compliance
+decision: ALLOW
+match:
+  data_use:
+    any:
+      - essential
+action:
+  message: Blocked for compliance reasons.
+`;
+    const result = yamlToNodesAndEdges(yamlStr);
+    const policyNode = result!.nodes.find((n) => n.id === "policy")!;
+    expect(policyNode.data.fidesKey).toBe("meta_test");
+    expect(policyNode.data.enabled).toBe(false);
+    expect(policyNode.data.priority).toBe(50);
+    expect(policyNode.data.controls).toEqual([
+      "gdpr_article_9",
+      "ccpa_compliance",
+    ]);
+    expect(policyNode.data.actionMessage).toBe(
+      "Blocked for compliance reasons.",
+    );
   });
 });
 
@@ -289,19 +389,79 @@ describe("nodesToYaml", () => {
     expect(nodesToYaml([], [])).toBe("");
   });
 
-  it("serializes policy node with name only", () => {
+  it("serializes policy node with name only (no action)", () => {
     const nodes = [
       {
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
-        data: { name: "my_policy", description: "", controlGroupOptions: [] },
+        data: {
+          name: "my_policy",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
       },
     ];
     const result = nodesToYaml(nodes as any, []);
     const parsed = parseYaml(result);
+    expect(parsed?.resource_type).toBe("policy");
     expect(parsed?.name).toBe("my_policy");
     expect(parsed?.description).toBeUndefined();
+    // enabled defaults to true, so it should not be in output
+    expect(parsed?.enabled).toBeUndefined();
+  });
+
+  it("includes fides_key, priority, controls when set", () => {
+    const nodes = [
+      {
+        id: "policy",
+        type: "policyNode",
+        position: { x: 0, y: 0 },
+        data: {
+          name: "my_policy",
+          description: "",
+          fidesKey: "my_key",
+          enabled: true,
+          priority: 100,
+          controls: ["gdpr_article_9"],
+          controlOptions: [],
+          actionMessage: "",
+        },
+      },
+    ];
+    const result = nodesToYaml(nodes as any, []);
+    const parsed = parseYaml(result);
+    expect(parsed?.fides_key).toBe("my_key");
+    expect(parsed?.priority).toBe(100);
+    expect(parsed?.controls).toEqual(["gdpr_article_9"]);
+  });
+
+  it("includes enabled: false when disabled", () => {
+    const nodes = [
+      {
+        id: "policy",
+        type: "policyNode",
+        position: { x: 0, y: 0 },
+        data: {
+          name: "disabled_policy",
+          description: "",
+          fidesKey: "",
+          enabled: false,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
+      },
+    ];
+    const result = nodesToYaml(nodes as any, []);
+    const parsed = parseYaml(result);
+    expect(parsed?.enabled).toBe(false);
   });
 
   it("includes description when non-empty", () => {
@@ -313,7 +473,12 @@ describe("nodesToYaml", () => {
         data: {
           name: "my_policy",
           description: "A description",
-          controlGroupOptions: [],
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
         },
       },
     ];
@@ -322,7 +487,7 @@ describe("nodesToYaml", () => {
     expect(parsed?.description).toBe("A description");
   });
 
-  it("serializes allow action with condition", () => {
+  it("serializes ALLOW decision with match block", () => {
     const nodes = [
       {
         id: "policy",
@@ -331,7 +496,12 @@ describe("nodesToYaml", () => {
         data: {
           name: "allow_policy",
           description: "",
-          controlGroupOptions: [],
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
         },
       },
       {
@@ -368,18 +538,27 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, edges as any);
     const parsed = parseYaml(result);
-    expect(parsed?.allow?.data_use?.values).toEqual(["essential"]);
-    expect(parsed?.allow?.data_use?.operator).toBe(ConditionOperator.ANY);
-    expect(parsed?.deny).toBeUndefined();
+    expect(parsed?.decision).toBe("ALLOW");
+    expect(parsed?.match?.data_use?.any).toEqual(["essential"]);
+    expect((parsed as any)?.allow).toBeUndefined();
   });
 
-  it("serializes deny action", () => {
+  it("serializes DENY decision", () => {
     const nodes = [
       {
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
-        data: { name: "deny_policy", description: "", controlGroupOptions: [] },
+        data: {
+          name: "deny_policy",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
       },
       {
         id: "action-1",
@@ -410,8 +589,62 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, edges as any);
     const parsed = parseYaml(result);
-    expect(parsed?.deny?.data_category?.values).toEqual(["user.financial"]);
-    expect(parsed?.allow).toBeUndefined();
+    expect(parsed?.decision).toBe("DENY");
+    expect(parsed?.match?.data_category?.any).toEqual(["user.financial"]);
+    expect((parsed as any)?.deny).toBeUndefined();
+  });
+
+  it("uses all operator in match when condition operator is ALL", () => {
+    const nodes = [
+      {
+        id: "policy",
+        type: "policyNode",
+        position: { x: 0, y: 0 },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
+      },
+      {
+        id: "action-1",
+        type: "actionNode",
+        position: { x: 0, y: 0 },
+        data: { actionType: ActionType.ALLOW },
+      },
+      {
+        id: "condition-1",
+        type: "conditionNode",
+        position: { x: 0, y: 0 },
+        data: {
+          property: ConditionProperty.DATA_CATEGORIES,
+          values: ["user.contact", "user.contact.email"],
+          operator: ConditionOperator.ALL,
+        },
+      },
+    ];
+    const edges = [
+      { id: "e1", source: "policy", target: "action-1", type: "labeledEdge" },
+      {
+        id: "e2",
+        source: "action-1",
+        target: "condition-1",
+        type: "labeledEdge",
+        data: { label: "when" },
+      },
+    ];
+    const result = nodesToYaml(nodes as any, edges as any);
+    const parsed = parseYaml(result);
+    expect(parsed?.match?.data_category?.all).toEqual([
+      "user.contact",
+      "user.contact.email",
+    ]);
+    expect(parsed?.match?.data_category?.any).toBeUndefined();
   });
 
   it("skips condition nodes with no property", () => {
@@ -420,7 +653,16 @@ describe("nodesToYaml", () => {
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
       },
       {
         id: "action-1",
@@ -451,56 +693,25 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, edges as any);
     const parsed = parseYaml(result);
-    expect(parsed?.allow).toEqual({});
+    expect(parsed?.match).toEqual({});
   });
 
-  it("skips condition nodes with empty values", () => {
+  it("serializes chained conditions into the match block", () => {
     const nodes = [
       {
         id: "policy",
         type: "policyNode",
-        position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
-      },
-      {
-        id: "action-1",
-        type: "actionNode",
-        position: { x: 0, y: 0 },
-        data: { actionType: ActionType.ALLOW },
-      },
-      {
-        id: "condition-1",
-        type: "conditionNode",
         position: { x: 0, y: 0 },
         data: {
-          property: ConditionProperty.DATA_USE,
-          values: [],
-          operator: ConditionOperator.ANY,
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
         },
-      },
-    ];
-    const edges = [
-      { id: "e1", source: "policy", target: "action-1", type: "labeledEdge" },
-      {
-        id: "e2",
-        source: "action-1",
-        target: "condition-1",
-        type: "labeledEdge",
-        data: { label: "when" },
-      },
-    ];
-    const result = nodesToYaml(nodes as any, edges as any);
-    const parsed = parseYaml(result);
-    expect(parsed?.allow).toEqual({});
-  });
-
-  it("serializes chained conditions into the condition map", () => {
-    const nodes = [
-      {
-        id: "policy",
-        type: "policyNode",
-        position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
       },
       {
         id: "action-1",
@@ -550,17 +761,26 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, edges as any);
     const parsed = parseYaml(result);
-    expect(parsed?.deny?.data_use?.values).toEqual(["marketing"]);
-    expect(parsed?.deny?.data_subject?.values).toEqual(["visitor"]);
+    expect(parsed?.match?.data_use?.any).toEqual(["marketing"]);
+    expect(parsed?.match?.data_subject?.any).toEqual(["visitor"]);
   });
 
-  it("serializes constraint via first condition into unless block", () => {
+  it("serializes consent constraint into flat unless array", () => {
     const nodes = [
       {
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
       },
       {
         id: "action-1",
@@ -584,8 +804,8 @@ describe("nodesToYaml", () => {
         position: { x: 0, y: 0 },
         data: {
           constraintType: ConstraintType.CONSENT,
-          preferenceKey: "marketing_pref",
-          consentValue: ConsentValue.OPT_OUT,
+          privacyNoticeKey: "marketing_pref",
+          consentRequirement: ConsentRequirement.OPT_OUT,
         },
       },
     ];
@@ -608,22 +828,102 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, edges as any);
     const parsed = parseYaml(result);
-    expect(parsed?.unless?.any).toHaveLength(1);
-    expect((parsed?.unless?.any?.[0] as any)?.consent?.preference_key).toEqual([
-      "marketing_pref",
-    ]);
-    expect((parsed?.unless?.any?.[0] as any)?.consent?.value).toBe(
-      ConsentValue.OPT_OUT,
-    );
+    expect(parsed?.unless).toHaveLength(1);
+    expect(parsed?.unless?.[0]).toEqual({
+      type: "consent",
+      privacy_notice_key: "marketing_pref",
+      requirement: "opt_out",
+    });
   });
 
-  it("serializes user constraint into unless block", () => {
+  it("serializes geo_location constraint into unless array", () => {
     const nodes = [
       {
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
+      },
+      {
+        id: "action-1",
+        type: "actionNode",
+        position: { x: 0, y: 0 },
+        data: { actionType: ActionType.ALLOW },
+      },
+      {
+        id: "condition-1",
+        type: "conditionNode",
+        position: { x: 0, y: 0 },
+        data: {
+          property: ConditionProperty.DATA_USE,
+          values: ["marketing"],
+          operator: ConditionOperator.ANY,
+        },
+      },
+      {
+        id: "constraint-1",
+        type: "constraintNode",
+        position: { x: 0, y: 0 },
+        data: {
+          constraintType: ConstraintType.GEO_LOCATION,
+          geoField: "environment.geo_location",
+          geoOperator: GeoOperator.IN,
+          geoValues: ["US-CA", "EU"],
+        },
+      },
+    ];
+    const edges = [
+      { id: "e1", source: "policy", target: "action-1", type: "labeledEdge" },
+      {
+        id: "e2",
+        source: "action-1",
+        target: "condition-1",
+        type: "labeledEdge",
+        data: { label: "when" },
+      },
+      {
+        id: "e3",
+        source: "condition-1",
+        target: "constraint-1",
+        type: "labeledEdge",
+        data: { label: "unless" },
+      },
+    ];
+    const result = nodesToYaml(nodes as any, edges as any);
+    const parsed = parseYaml(result);
+    expect(parsed?.unless?.[0]).toEqual({
+      type: "geo_location",
+      field: "environment.geo_location",
+      operator: "in",
+      values: ["US-CA", "EU"],
+    });
+  });
+
+  it("serializes data_flow constraint into unless array", () => {
+    const nodes = [
+      {
+        id: "policy",
+        type: "policyNode",
+        position: { x: 0, y: 0 },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
       },
       {
         id: "action-1",
@@ -646,10 +946,13 @@ describe("nodesToYaml", () => {
         type: "constraintNode",
         position: { x: 0, y: 0 },
         data: {
-          constraintType: ConstraintType.USER,
-          userKey: "age",
-          userValue: "18",
-          userOperator: UserOperator.LESS_THAN,
+          constraintType: ConstraintType.DATA_FLOW,
+          dataFlowDirection: DataFlowDirection.INGRESS,
+          dataFlowOperator: DataFlowOperator.NONE_OF,
+          dataFlowSystems: [
+            "third_party_data_broker",
+            "external_data_vendor",
+          ],
         },
       },
     ];
@@ -672,20 +975,30 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, edges as any);
     const parsed = parseYaml(result);
-    expect((parsed?.unless?.any?.[0] as any)?.user?.key).toBe("age");
-    expect(String((parsed?.unless?.any?.[0] as any)?.user?.value)).toBe("18");
-    expect((parsed?.unless?.any?.[0] as any)?.user?.operator).toBe(
-      UserOperator.LESS_THAN,
-    );
+    expect(parsed?.unless?.[0]).toEqual({
+      type: "data_flow",
+      direction: "ingress",
+      operator: "none_of",
+      systems: ["third_party_data_broker", "external_data_vendor"],
+    });
   });
 
-  it("serializes chained constraints into unless block", () => {
+  it("serializes chained constraints into unless array", () => {
     const nodes = [
       {
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
       },
       {
         id: "action-1",
@@ -709,8 +1022,8 @@ describe("nodesToYaml", () => {
         position: { x: 0, y: 0 },
         data: {
           constraintType: ConstraintType.CONSENT,
-          preferenceKey: "marketing_pref",
-          consentValue: ConsentValue.OPT_OUT,
+          privacyNoticeKey: "marketing_pref",
+          consentRequirement: ConsentRequirement.OPT_OUT,
         },
       },
       {
@@ -718,10 +1031,10 @@ describe("nodesToYaml", () => {
         type: "constraintNode",
         position: { x: 0, y: 0 },
         data: {
-          constraintType: ConstraintType.USER,
-          userKey: "age",
-          userValue: "18",
-          userOperator: UserOperator.LESS_THAN,
+          constraintType: ConstraintType.GEO_LOCATION,
+          geoField: "environment.geo_location",
+          geoOperator: GeoOperator.IN,
+          geoValues: ["US-CA"],
         },
       },
     ];
@@ -753,7 +1066,56 @@ describe("nodesToYaml", () => {
     ];
     const result = nodesToYaml(nodes as any, edges as any);
     const parsed = parseYaml(result);
-    expect(parsed?.unless?.any).toHaveLength(2);
+    expect(parsed?.unless).toHaveLength(2);
+  });
+
+  it("includes action.message in YAML output", () => {
+    const nodes = [
+      {
+        id: "policy",
+        type: "policyNode",
+        position: { x: 0, y: 0 },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "Access denied due to policy.",
+        },
+      },
+      {
+        id: "action-1",
+        type: "actionNode",
+        position: { x: 0, y: 0 },
+        data: { actionType: ActionType.DENY },
+      },
+      {
+        id: "condition-1",
+        type: "conditionNode",
+        position: { x: 0, y: 0 },
+        data: {
+          property: ConditionProperty.DATA_USE,
+          values: ["marketing"],
+          operator: ConditionOperator.ANY,
+        },
+      },
+    ];
+    const edges = [
+      { id: "e1", source: "policy", target: "action-1", type: "labeledEdge" },
+      {
+        id: "e2",
+        source: "action-1",
+        target: "condition-1",
+        type: "labeledEdge",
+        data: { label: "when" },
+      },
+    ];
+    const result = nodesToYaml(nodes as any, edges as any);
+    const parsed = parseYaml(result);
+    expect(parsed?.action?.message).toBe("Access denied due to policy.");
   });
 
   it("skips incomplete constraint nodes (no type set)", () => {
@@ -762,7 +1124,16 @@ describe("nodesToYaml", () => {
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
+        data: {
+          name: "p",
+          description: "",
+          fidesKey: "",
+          enabled: true,
+          priority: 0,
+          controls: [],
+          controlOptions: [],
+          actionMessage: "",
+        },
       },
       {
         id: "action-1",
@@ -853,7 +1224,6 @@ describe("deriveLayoutEdges", () => {
 
     const layout = deriveLayoutEdges(nodes as any, displayEdges as any);
 
-    // Should have: policy→action, action→cond1, action→cond2
     expect(layout).toHaveLength(3);
     expect(layout.filter((e) => e.source === "action-1")).toHaveLength(2);
   });
@@ -910,18 +1280,17 @@ describe("deriveLayoutEdges", () => {
 
     const layout = deriveLayoutEdges(nodes as any, displayEdges as any);
 
-    // Should have: policy→action, action→cond1, cond1→cons1, cond1→cons2
     expect(layout).toHaveLength(4);
     const fromCond1 = layout.filter((e) => e.source === "condition-1");
     expect(fromCond1).toHaveLength(2);
   });
 });
 
-// ─── Round-trip tests ─────────────────────────────────────────────────────────
+// ─── Round-trip tests (PRD examples) ─────────────────────────────────────────
 
 describe("round-trip: yamlToNodesAndEdges → nodesToYaml", () => {
-  const roundTrip = (yaml: string) => {
-    const result = yamlToNodesAndEdges(yaml);
+  const roundTrip = (yamlStr: string) => {
+    const result = yamlToNodesAndEdges(yamlStr);
     if (!result) {
       return null;
     }
@@ -929,144 +1298,174 @@ describe("round-trip: yamlToNodesAndEdges → nodesToYaml", () => {
   };
 
   it("preserves name and description", () => {
-    const yaml = "name: my_policy\ndescription: A policy\n";
-    const output = roundTrip(yaml);
+    const yamlStr = "name: my_policy\ndescription: A policy\n";
+    const output = roundTrip(yamlStr);
     const parsed = parseYaml(output!);
     expect(parsed?.name).toBe("my_policy");
     expect(parsed?.description).toBe("A policy");
   });
 
-  it("preserves simple allow with data_use condition", () => {
-    const yaml = `
-name: allow_essential
-allow:
-  data_use:
-    operator: any
-    values:
-      - essential
-      - essential.service
+  it("PRD 4.1: Default Deny (catch-all)", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: default_deny
+name: Default Deny All
+description: Baseline policy that denies all unmatched data processing.
+decision: DENY
+match: {}
+action:
+  message: No policy explicitly permits this data use.
 `;
-    const output = roundTrip(yaml);
+    const output = roundTrip(yamlStr);
     const parsed = parseYaml(output!);
-    expect(parsed?.allow?.data_use?.values).toEqual([
-      "essential",
-      "essential.service",
-    ]);
-    expect(parsed?.allow?.data_use?.operator).toBe("any");
-  });
-
-  it("preserves deny with multiple conditions", () => {
-    const yaml = `
-name: deny_visitor_profiling
-deny:
-  data_use:
-    operator: any
-    values:
-      - marketing.advertising.profiling
-  data_subject:
-    operator: any
-    values:
-      - visitor
-      - anonymous_user
-`;
-    const output = roundTrip(yaml);
-    const parsed = parseYaml(output!);
-    expect(parsed?.deny?.data_use?.values).toContain(
-      "marketing.advertising.profiling",
+    expect(parsed?.decision).toBe("DENY");
+    expect(parsed?.fides_key).toBe("default_deny");
+    expect(parsed?.action?.message).toBe(
+      "No policy explicitly permits this data use.",
     );
-    expect(parsed?.deny?.data_subject?.values).toContain("visitor");
-    expect(parsed?.deny?.data_subject?.values).toContain("anonymous_user");
   });
 
-  it("preserves deny with consent constraint", () => {
-    const yaml = `
-name: deny_financial
-deny:
-  data_category:
-    operator: any
-    values:
-      - user.financial
-      - user.financial.credit_card
-unless:
-  any:
-    - consent:
-        preference_key:
-          - financial_data_processing
-        value: opt_out
-`;
-    const output = roundTrip(yaml);
-    const parsed = parseYaml(output!);
-    expect(parsed?.deny?.data_category?.values).toContain("user.financial");
-    expect(parsed?.unless?.any).toHaveLength(1);
-    expect((parsed?.unless?.any?.[0] as any)?.consent?.preference_key).toEqual([
-      "financial_data_processing",
-    ]);
-  });
-
-  it("preserves deny with multiple constraints", () => {
-    const yaml = `
-name: multi_constraint
-deny:
+  it("PRD 4.2: CCPA Sale Blocker (ALLOW + unless consent)", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: ccpa_sale_blocker
+name: CCPA Commercial Data Restriction
+description: Allow commercial data use unless the user has opted out of data sales.
+priority: 100
+controls:
+  - ccpa_compliance
+decision: ALLOW
+match:
   data_use:
-    operator: any
-    values:
+    any:
+      - commercial
+unless:
+  - type: consent
+    privacy_notice_key: ccpa_do_not_sell
+    requirement: opt_out
+action:
+  message: User has opted out of the sale/sharing of their personal data.
+`;
+    const output = roundTrip(yamlStr);
+    const parsed = parseYaml(output!);
+    expect(parsed?.decision).toBe("ALLOW");
+    expect(parsed?.priority).toBe(100);
+    expect(parsed?.controls).toEqual(["ccpa_compliance"]);
+    expect(parsed?.match?.data_use?.any).toContain("commercial");
+    expect(parsed?.unless).toHaveLength(1);
+    expect(parsed?.unless?.[0]).toEqual({
+      type: "consent",
+      privacy_notice_key: "ccpa_do_not_sell",
+      requirement: "opt_out",
+    });
+    expect(parsed?.action?.message).toBe(
+      "User has opted out of the sale/sharing of their personal data.",
+    );
+  });
+
+  it("PRD 4.4: Unconditional DENY", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: block_third_party_ads
+name: Block Third-Party Advertising
+priority: 200
+decision: DENY
+match:
+  data_use:
+    any:
+      - marketing.advertising.third_party
+action:
+  message: Third-party targeted advertising is not permitted.
+`;
+    const output = roundTrip(yamlStr);
+    const parsed = parseYaml(output!);
+    expect(parsed?.decision).toBe("DENY");
+    expect(parsed?.priority).toBe(200);
+    expect(parsed?.match?.data_use?.any).toContain(
+      "marketing.advertising.third_party",
+    );
+  });
+
+  it("PRD 4.6: Conditional DENY (DENY + unless data_flow)", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: block_data_broker_ingress
+name: Block Data Broker Sources
+priority: 150
+decision: DENY
+match:
+  data_use:
+    any:
       - marketing
 unless:
-  any:
-    - consent:
-        preference_key:
-          - marketing_pref
-        value: opt_out
-    - user:
-        key: age
-        value: 18
-        operator: less_than
+  - type: data_flow
+    direction: ingress
+    operator: none_of
+    systems:
+      - third_party_data_broker
+      - external_data_vendor
+action:
+  message: Marketing data sourced from unapproved data brokers is not permitted.
 `;
-    const output = roundTrip(yaml);
+    const output = roundTrip(yamlStr);
     const parsed = parseYaml(output!);
-    expect(parsed?.unless?.any).toHaveLength(2);
+    expect(parsed?.decision).toBe("DENY");
+    expect(parsed?.unless).toHaveLength(1);
+    expect(parsed?.unless?.[0]).toEqual({
+      type: "data_flow",
+      direction: "ingress",
+      operator: "none_of",
+      systems: ["third_party_data_broker", "external_data_vendor"],
+    });
   });
 
-  it("preserves allow with data_category and data_use", () => {
-    const yaml = `
-name: allow_payment
-allow:
-  data_category:
-    operator: any
-    values:
-      - user.financial
-      - user.financial.credit_card
-  data_use:
-    operator: any
-    values:
-      - essential.service.payment_processing
-`;
-    const output = roundTrip(yaml);
-    const parsed = parseYaml(output!);
-    expect(parsed?.allow?.data_category?.values).toContain("user.financial");
-    expect(parsed?.allow?.data_use?.values).toContain(
-      "essential.service.payment_processing",
-    );
-  });
-
-  it("preserves allow with data_use and data_subject", () => {
-    const yaml = `
-name: allow_employment
-allow:
-  data_use:
-    operator: any
-    values:
-      - employment
-      - employment.recruitment
+  it("PRD 4.7: Layered — consent + geo_location unless", () => {
+    const yamlStr = `
+resource_type: policy
+fides_key: retention_phone_access
+name: Retention Campaign Phone Access
+priority: 100
+decision: ALLOW
+match:
   data_subject:
-    operator: any
+    all:
+      - customer
+  data_category:
+    all:
+      - user.contact.phone
+  data_use:
+    all:
+      - marketing.retention
+unless:
+  - type: consent
+    privacy_notice_key: marketing_phone_calls
+    requirement: not_opt_in
+  - type: geo_location
+    field: environment.geo_location
+    operator: in
     values:
-      - employee
-      - job_applicant
+      - US-CA
+      - EU
+action:
+  message: Phone marketing requires consent and is restricted in certain regions.
 `;
-    const output = roundTrip(yaml);
+    const output = roundTrip(yamlStr);
     const parsed = parseYaml(output!);
-    expect(parsed?.allow?.data_use?.values).toContain("employment");
-    expect(parsed?.allow?.data_subject?.values).toContain("employee");
+    expect(parsed?.decision).toBe("ALLOW");
+    expect(parsed?.match?.data_subject?.all).toEqual(["customer"]);
+    expect(parsed?.match?.data_category?.all).toEqual(["user.contact.phone"]);
+    expect(parsed?.match?.data_use?.all).toEqual(["marketing.retention"]);
+    expect(parsed?.unless).toHaveLength(2);
+    expect(parsed?.unless?.[0]).toEqual({
+      type: "consent",
+      privacy_notice_key: "marketing_phone_calls",
+      requirement: "not_opt_in",
+    });
+    expect(parsed?.unless?.[1]).toEqual({
+      type: "geo_location",
+      field: "environment.geo_location",
+      operator: "in",
+      values: ["US-CA", "EU"],
+    });
   });
 });

@@ -4,9 +4,11 @@ import {
   ActionType,
   ConditionOperator,
   ConditionProperty,
-  ConsentValue,
+  ConsentRequirement,
   ConstraintType,
-  UserOperator,
+  DataFlowDirection,
+  DataFlowOperator,
+  GeoOperator,
 } from "./types";
 
 interface RadioOption<T> {
@@ -28,23 +30,32 @@ export const CONDITION_PROPERTY_OPTIONS: NonNullable<SelectProps["options"]> = [
 export const CONDITION_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
   { value: ConditionOperator.ALL, label: "All" },
   { value: ConditionOperator.ANY, label: "Any" },
-  { value: ConditionOperator.NONE, label: "None" },
 ];
 
 export const CONSTRAINT_TYPE_OPTIONS: RadioOption<ConstraintType>[] = [
   { value: ConstraintType.CONSENT, label: "Consent" },
-  { value: ConstraintType.USER, label: "User" },
+  { value: ConstraintType.GEO_LOCATION, label: "Geo location" },
+  { value: ConstraintType.DATA_FLOW, label: "Data flow" },
 ];
 
-export const CONSENT_VALUE_OPTIONS: NonNullable<SelectProps["options"]> = [
-  { value: ConsentValue.OPT_IN, label: "Opt in" },
-  { value: ConsentValue.OPT_OUT, label: "Opt out" },
+export const CONSENT_REQUIREMENT_OPTIONS: NonNullable<SelectProps["options"]> = [
+  { value: ConsentRequirement.OPT_IN, label: "Opt in" },
+  { value: ConsentRequirement.OPT_OUT, label: "Opt out" },
+  { value: ConsentRequirement.NOT_OPT_IN, label: "Not opted in" },
+  { value: ConsentRequirement.NOT_OPT_OUT, label: "Not opted out" },
 ];
 
-export const USER_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
-  { value: UserOperator.EQUALS, label: "Equals" },
-  { value: UserOperator.NOT_EQUALS, label: "Not equals" },
-  { value: UserOperator.GREATER_THAN, label: "Greater than" },
-  { value: UserOperator.LESS_THAN, label: "Less than" },
-  { value: UserOperator.CONTAINS, label: "Contains" },
+export const GEO_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
+  { value: GeoOperator.IN, label: "In" },
+  { value: GeoOperator.NOT_IN, label: "Not in" },
+];
+
+export const DATA_FLOW_DIRECTION_OPTIONS: NonNullable<SelectProps["options"]> = [
+  { value: DataFlowDirection.INGRESS, label: "Ingress (source)" },
+  { value: DataFlowDirection.EGRESS, label: "Egress (destination)" },
+];
+
+export const DATA_FLOW_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
+  { value: DataFlowOperator.ANY_OF, label: "Any of" },
+  { value: DataFlowOperator.NONE_OF, label: "None of" },
 ];

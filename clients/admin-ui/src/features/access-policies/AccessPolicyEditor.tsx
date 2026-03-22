@@ -51,9 +51,11 @@ import {
   ActionType,
   ConditionOperator,
   ConditionProperty,
-  ConsentValue,
+  ConsentRequirement,
   ConstraintType,
-  UserOperator,
+  DataFlowDirection,
+  DataFlowOperator,
+  GeoOperator,
 } from "./types";
 
 export enum EditorMode {
@@ -87,9 +89,9 @@ const edgeTypes: EdgeTypes = {
 };
 
 interface PolicyCanvasPanelProps {
-  controlGroup?: string;
-  controlGroupOptions: NonNullable<SelectProps["options"]>;
-  onControlGroupChange: (value: string | undefined) => void;
+  controls: string[];
+  controlOptions: NonNullable<SelectProps["options"]>;
+  onControlsChange: (value: string[]) => void;
   onAddNode?: () => void;
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
@@ -177,11 +179,19 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
     data: {
       name: "",
       description: "",
-      controlGroup: props.controlGroup,
-      controlGroupOptions: props.controlGroupOptions,
+      fidesKey: "",
+      enabled: true,
+      priority: 0,
+      controls: props.controls,
+      controlOptions: props.controlOptions,
+      actionMessage: "",
       onNameChange: () => {},
       onDescriptionChange: () => {},
-      onControlGroupChange: props.onControlGroupChange,
+      onFidesKeyChange: () => {},
+      onEnabledChange: () => {},
+      onPriorityChange: () => {},
+      onControlsChange: props.onControlsChange,
+      onActionMessageChange: () => {},
       onAddNode: props.onAddNode,
     },
   } satisfies PolicyNodeType,
@@ -234,9 +244,9 @@ const findFirstOfType = (
 
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
-    controlGroup,
-    controlGroupOptions,
-    onControlGroupChange,
+    controls,
+    controlOptions,
+    onControlsChange,
     onAddNode,
     onYamlChange,
     initialYaml,
@@ -337,8 +347,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           id: `e-${incomingEdge.source}-${outgoingAndEdge.target}`,
           target: outgoingAndEdge.target,
         });
-      } else if (!incomingEdge && outgoingAndEdge) {
-        // Deleted node had no incoming from same type — shouldn't happen in normal flow
       }
 
       // Transfer "unless" edge to next condition if this was first
@@ -351,7 +359,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             source: nextCondId,
           });
         }
-        // If no next condition, constraints were already removed above
       }
 
       setNodes((nds) => nds.filter((n) => n.id !== nodeId));
@@ -404,12 +411,33 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData],
   );
 
-  const handleControlGroupChange = useCallback(
-    (value: string | undefined) => {
-      updateNodeData(POLICY_NODE_ID, { controlGroup: value });
-      onControlGroupChange(value);
+  const handleFidesKeyChange = useCallback(
+    (value: string) => updateNodeData(POLICY_NODE_ID, { fidesKey: value }),
+    [updateNodeData],
+  );
+
+  const handleEnabledChange = useCallback(
+    (value: boolean) => updateNodeData(POLICY_NODE_ID, { enabled: value }),
+    [updateNodeData],
+  );
+
+  const handlePriorityChange = useCallback(
+    (value: number) => updateNodeData(POLICY_NODE_ID, { priority: value }),
+    [updateNodeData],
+  );
+
+  const handleControlsChange = useCallback(
+    (value: string[]) => {
+      updateNodeData(POLICY_NODE_ID, { controls: value });
+      onControlsChange(value);
     },
-    [updateNodeData, onControlGroupChange],
+    [updateNodeData, onControlsChange],
+  );
+
+  const handleActionMessageChange = useCallback(
+    (value: string) =>
+      updateNodeData(POLICY_NODE_ID, { actionMessage: value }),
+    [updateNodeData],
   );
 
   // Derive YAML from nodes/edges
@@ -587,11 +615,15 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
-              controlGroup,
-              controlGroupOptions,
+              controls,
+              controlOptions,
               onNameChange: handleNameChange,
               onDescriptionChange: handleDescriptionChange,
-              onControlGroupChange: handleControlGroupChange,
+              onFidesKeyChange: handleFidesKeyChange,
+              onEnabledChange: handleEnabledChange,
+              onPriorityChange: handlePriorityChange,
+              onControlsChange: handleControlsChange,
+              onActionMessageChange: handleActionMessageChange,
               onAddNode,
               onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
@@ -641,22 +673,35 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onConstraintTypeChange: (value: ConstraintType) =>
                 updateNodeData(node.id, {
                   constraintType: value,
-                  preferenceKey: undefined,
-                  consentValue: undefined,
-                  userKey: undefined,
-                  userValue: undefined,
-                  userOperator: undefined,
+                  // Reset all type-specific fields
+                  privacyNoticeKey: undefined,
+                  consentRequirement: undefined,
+                  geoField: undefined,
+                  geoOperator: undefined,
+                  geoValues: undefined,
+                  dataFlowDirection: undefined,
+                  dataFlowOperator: undefined,
+                  dataFlowSystems: undefined,
                 }),
-              onPreferenceKeyChange: (value: string) =>
-                updateNodeData(node.id, { preferenceKey: value }),
-              onConsentValueChange: (value: ConsentValue) =>
-                updateNodeData(node.id, { consentValue: value }),
-              onUserKeyChange: (value: string) =>
-                updateNodeData(node.id, { userKey: value }),
-              onUserValueChange: (value: string) =>
-                updateNodeData(node.id, { userValue: value }),
-              onUserOperatorChange: (value: UserOperator) =>
-                updateNodeData(node.id, { userOperator: value }),
+              // Consent callbacks
+              onPrivacyNoticeKeyChange: (value: string) =>
+                updateNodeData(node.id, { privacyNoticeKey: value }),
+              onConsentRequirementChange: (value: ConsentRequirement) =>
+                updateNodeData(node.id, { consentRequirement: value }),
+              // Geo location callbacks
+              onGeoFieldChange: (value: string) =>
+                updateNodeData(node.id, { geoField: value }),
+              onGeoOperatorChange: (value: GeoOperator) =>
+                updateNodeData(node.id, { geoOperator: value }),
+              onGeoValuesChange: (value: string[]) =>
+                updateNodeData(node.id, { geoValues: value }),
+              // Data flow callbacks
+              onDataFlowDirectionChange: (value: DataFlowDirection) =>
+                updateNodeData(node.id, { dataFlowDirection: value }),
+              onDataFlowOperatorChange: (value: DataFlowOperator) =>
+                updateNodeData(node.id, { dataFlowOperator: value }),
+              onDataFlowSystemsChange: (value: string[]) =>
+                updateNodeData(node.id, { dataFlowSystems: value }),
             },
           };
         }
@@ -665,11 +710,15 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [
       layoutedNodes,
       edges,
-      controlGroup,
-      controlGroupOptions,
+      controls,
+      controlOptions,
       handleNameChange,
       handleDescriptionChange,
-      handleControlGroupChange,
+      handleFidesKeyChange,
+      handleEnabledChange,
+      handlePriorityChange,
+      handleControlsChange,
+      handleActionMessageChange,
       onAddNode,
       handleAddCondition,
       handleAddActionFromNode,
@@ -723,15 +772,15 @@ const AccessPolicyEditor = ({
 
   const { data: controlGroups = [] } = useGetControlGroupsQuery();
 
-  const controlGroupOptions = useMemo(
+  const controlOptions = useMemo(
     () => controlGroups.map((cg) => ({ value: cg.key, label: cg.label })),
     [controlGroups],
   );
 
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
-  const [controlGroup, setControlGroup] = useState<string | undefined>(
-    initialValues?.control_group,
+  const [controls, setControls] = useState<string[]>(
+    initialValues?.controls ?? [],
   );
   const [syncKey, setSyncKey] = useState(0);
 
@@ -760,14 +809,14 @@ const AccessPolicyEditor = ({
       {
         name,
         description: parsed?.description ?? "",
-        control_group: controlGroup,
+        control_group: controls.length > 0 ? controls.join(",") : undefined,
       },
       yamlValue,
     );
   };
 
-  const handleControlGroupChange = useCallback(
-    (value: string | undefined) => setControlGroup(value),
+  const handleControlsChange = useCallback(
+    (value: string[]) => setControls(value),
     [],
   );
 
@@ -795,9 +844,9 @@ const AccessPolicyEditor = ({
 
   const canvasPanel = (
     <PolicyCanvasPanel
-      controlGroup={controlGroup}
-      controlGroupOptions={controlGroupOptions}
-      onControlGroupChange={handleControlGroupChange}
+      controls={controls}
+      controlOptions={controlOptions}
+      onControlsChange={handleControlsChange}
       onAddNode={handleAddNode}
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}

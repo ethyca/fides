@@ -7,17 +7,18 @@ import { ConstraintNodeData } from "./ConstraintNode";
 import { PolicyNodeData } from "./PolicyNode";
 import {
   AccessPolicyYaml,
+  ActionBlock,
   ActionType,
-  ConditionClause,
-  ConditionMap,
   ConditionOperator,
   ConditionProperty,
-  ConsentConstraintItem,
-  ConsentValue,
-  ConstraintItem,
+  ConsentRequirement,
   ConstraintType,
-  UserConstraintItem,
-  UserOperator,
+  DataFlowDirection,
+  DataFlowOperator,
+  GeoOperator,
+  MatchBlock,
+  MatchDimension,
+  UnlessItem,
 } from "./types";
 
 // ─── YAML parsing ────────────────────────────────────────────────────────────
@@ -32,7 +33,8 @@ export const parseYaml = (yamlString: string): AccessPolicyYaml | null => {
       return null;
     }
     const obj = parsed as Record<string, unknown>;
-    if (typeof obj.name !== "string") {
+    // Require either decision or name to be present for a valid policy
+    if (typeof obj.decision !== "string" && typeof obj.name !== "string") {
       return null;
     }
     return parsed as AccessPolicyYaml;
@@ -50,18 +52,6 @@ const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
 ];
 
 export const POLICY_NODE_ID = "policy";
-
-const resolveActionType = (
-  policy: AccessPolicyYaml,
-): ActionType | undefined => {
-  if (policy.deny) {
-    return ActionType.DENY;
-  }
-  if (policy.allow) {
-    return ActionType.ALLOW;
-  }
-  return undefined;
-};
 
 /**
  * Build display edges using a chain topology:
@@ -93,22 +83,33 @@ export const yamlToNodesAndEdges = (
     data: {
       name: policy.name ?? "",
       description: policy.description ?? "",
-      controlGroupOptions: [],
+      fidesKey: policy.fides_key ?? "",
+      enabled: policy.enabled ?? true,
+      priority: policy.priority ?? 0,
+      controls: policy.controls ?? [],
+      controlOptions: [],
+      actionMessage: policy.action?.message ?? "",
       onNameChange: () => {},
       onDescriptionChange: () => {},
-      onControlGroupChange: () => {},
+      onFidesKeyChange: () => {},
+      onEnabledChange: () => {},
+      onPriorityChange: () => {},
+      onControlsChange: () => {},
+      onActionMessageChange: () => {},
     },
   };
   nodes.push(policyNode);
 
-  const actionType = resolveActionType(policy);
-  const conditionMap: ConditionMap | undefined = policy.deny ?? policy.allow;
+  const decision = policy.decision;
+  const matchBlock: MatchBlock | undefined = policy.match;
 
-  if (!actionType || !conditionMap) {
+  if (!decision || !matchBlock) {
     return { nodes, edges };
   }
 
   // Action node
+  const actionType =
+    decision === "DENY" ? ActionType.DENY : ActionType.ALLOW;
   const actionId = "action-1";
   const actionNode: Node<ActionNodeData, "actionNode"> = {
     id: actionId,
@@ -127,11 +128,15 @@ export const yamlToNodesAndEdges = (
 
   // Condition nodes — chain: first from action ("when"), rest vertical ("and")
   const presentProperties = CONDITION_PROPERTY_KEYS.filter(
-    (p) => !!conditionMap[p],
+    (p) => !!matchBlock[p],
   );
 
   presentProperties.forEach((property, idx) => {
-    const clause = conditionMap[property] as ConditionClause;
+    const dimension = matchBlock[property] as MatchDimension;
+    const operator = dimension.all
+      ? ConditionOperator.ALL
+      : ConditionOperator.ANY;
+    const values = dimension.all ?? dimension.any ?? [];
     const conditionId = `condition-${idx + 1}`;
 
     const conditionNode: Node<ConditionNodeData, "conditionNode"> = {
@@ -141,8 +146,8 @@ export const yamlToNodesAndEdges = (
       style: { width: 300 },
       data: {
         property,
-        values: clause.values ?? [],
-        operator: clause.operator ?? ConditionOperator.ANY,
+        values,
+        operator,
       },
     };
     nodes.push(conditionNode);
@@ -171,30 +176,33 @@ export const yamlToNodesAndEdges = (
     }
   });
 
-  // Constraint nodes from `unless` — chain: first from condition-1 ("unless"),
-  // rest vertical ("and")
-  const constraintList: ConstraintItem[] =
-    policy.unless?.any ?? policy.unless?.all ?? [];
+  // Constraint nodes from `unless` — flat array, all AND'd
+  const constraintList: UnlessItem[] = policy.unless ?? [];
 
   if (constraintList.length > 0 && presentProperties.length > 0) {
     constraintList.forEach((item, idx) => {
       const constraintId = `constraint-${idx + 1}`;
       let data: ConstraintNodeData = {};
 
-      if ("consent" in item) {
-        const consentItem = item as ConsentConstraintItem;
+      if (item.type === "consent") {
         data = {
           constraintType: ConstraintType.CONSENT,
-          preferenceKey: consentItem.consent.preference_key?.[0] ?? "",
-          consentValue: consentItem.consent.value as ConsentValue,
+          privacyNoticeKey: item.privacy_notice_key ?? "",
+          consentRequirement: item.requirement as ConsentRequirement,
         };
-      } else if ("user" in item) {
-        const userItem = item as UserConstraintItem;
+      } else if (item.type === "geo_location") {
         data = {
-          constraintType: ConstraintType.USER,
-          userKey: String(userItem.user.key),
-          userValue: String(userItem.user.value),
-          userOperator: userItem.user.operator as UserOperator,
+          constraintType: ConstraintType.GEO_LOCATION,
+          geoField: item.field ?? "",
+          geoOperator: item.operator as GeoOperator,
+          geoValues: item.values ?? [],
+        };
+      } else if (item.type === "data_flow") {
+        data = {
+          constraintType: ConstraintType.DATA_FLOW,
+          dataFlowDirection: item.direction as DataFlowDirection,
+          dataFlowOperator: item.operator as DataFlowOperator,
+          dataFlowSystems: item.systems ?? [],
         };
       }
 
@@ -300,33 +308,41 @@ const collectConstraintNodes = (
   return result;
 };
 
-const buildConstraintItem = (
-  data: ConstraintNodeData,
-): ConstraintItem | null => {
+const buildUnlessItem = (data: ConstraintNodeData): UnlessItem | null => {
   if (data.constraintType === ConstraintType.CONSENT) {
-    if (!data.preferenceKey && !data.consentValue) {
+    if (!data.privacyNoticeKey && !data.consentRequirement) {
       return null;
     }
-    const item: ConsentConstraintItem = {
-      consent: {
-        preference_key: data.preferenceKey ? [data.preferenceKey] : [],
-        value: data.consentValue as ConsentValue,
-      },
+    return {
+      type: "consent",
+      privacy_notice_key: data.privacyNoticeKey ?? "",
+      requirement: data.consentRequirement as ConsentRequirement,
     };
-    return item;
   }
-  if (data.constraintType === ConstraintType.USER) {
-    if (!data.userKey && !data.userValue) {
+  if (data.constraintType === ConstraintType.GEO_LOCATION) {
+    if (!data.geoField && !data.geoValues?.length) {
       return null;
     }
-    const item: UserConstraintItem = {
-      user: {
-        key: data.userKey ?? "",
-        value: data.userValue ?? "",
-        operator: data.userOperator as UserOperator,
-      },
+    return {
+      type: "geo_location",
+      field: data.geoField ?? "",
+      operator: (data.geoOperator as GeoOperator) ?? GeoOperator.IN,
+      values: data.geoValues ?? [],
     };
-    return item;
+  }
+  if (data.constraintType === ConstraintType.DATA_FLOW) {
+    if (!data.dataFlowSystems?.length) {
+      return null;
+    }
+    return {
+      type: "data_flow",
+      direction:
+        (data.dataFlowDirection as DataFlowDirection) ??
+        DataFlowDirection.EGRESS,
+      operator:
+        (data.dataFlowOperator as DataFlowOperator) ?? DataFlowOperator.ANY_OF,
+      systems: data.dataFlowSystems ?? [],
+    };
   }
   return null;
 };
@@ -339,7 +355,15 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     return "";
   }
 
-  const { name, description } = policyNode.data as PolicyNodeData;
+  const {
+    name,
+    description,
+    fidesKey,
+    enabled,
+    priority,
+    controls,
+    actionMessage,
+  } = policyNode.data as PolicyNodeData;
 
   // Find action node (connected from policy)
   const actionEdge = edges.find((e) => e.source === POLICY_NODE_ID);
@@ -347,10 +371,28 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     ? nodes.find((n): n is Node<ActionNodeData> => n.id === actionEdge.target)
     : undefined;
 
-  const policyYaml: AccessPolicyYaml = { name: name ?? "" };
+  // Build the YAML object following PRD schema
+  const policyYaml: Record<string, unknown> = {
+    resource_type: "policy",
+  };
 
+  if (fidesKey) {
+    policyYaml.fides_key = fidesKey;
+  }
+  if (name) {
+    policyYaml.name = name;
+  }
   if (description) {
     policyYaml.description = description;
+  }
+  if (enabled === false) {
+    policyYaml.enabled = false;
+  }
+  if (priority !== undefined && priority !== 0) {
+    policyYaml.priority = priority;
+  }
+  if (controls && controls.length > 0) {
+    policyYaml.controls = controls;
   }
 
   if (!actionNode) {
@@ -359,39 +401,42 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
 
   const { actionType } = actionNode.data as ActionNodeData;
 
-  const conditionNodes = collectConditionNodes(actionNode.id, nodes, edges);
+  // Decision
+  policyYaml.decision =
+    actionType === ActionType.DENY ? "DENY" : "ALLOW";
 
-  // Build condition map from collected nodes
-  const conditionMap: ConditionMap = conditionNodes.reduce<ConditionMap>(
+  // Match block
+  const conditionNodes = collectConditionNodes(actionNode.id, nodes, edges);
+  const matchBlock: MatchBlock = conditionNodes.reduce<MatchBlock>(
     (acc, condNode) => {
       const { property, values, operator } = condNode.data as ConditionNodeData;
       if (!property || !values?.length) {
         return acc;
       }
-      const clause: ConditionClause = { values };
-      if (operator) {
-        clause.operator = operator;
-      }
-      return { ...acc, [property]: clause };
+      const dimension: MatchDimension =
+        operator === ConditionOperator.ALL
+          ? { all: values }
+          : { any: values };
+      return { ...acc, [property]: dimension };
     },
     {},
   );
+  policyYaml.match = matchBlock;
 
-  if (actionType === ActionType.DENY) {
-    policyYaml.deny = conditionMap;
-  } else if (actionType === ActionType.ALLOW) {
-    policyYaml.allow = conditionMap;
-  }
-
-  // Collect constraint nodes reachable from conditions
+  // Unless block — flat array, all AND'd
   const conditionIds = new Set(conditionNodes.map((n) => n.id));
   const constraintNodes = collectConstraintNodes(conditionIds, nodes, edges);
-  const constraintItems: ConstraintItem[] = constraintNodes
-    .map((n) => buildConstraintItem(n.data as ConstraintNodeData))
-    .filter((item): item is ConstraintItem => !!item);
+  const unlessItems: UnlessItem[] = constraintNodes
+    .map((n) => buildUnlessItem(n.data as ConstraintNodeData))
+    .filter((item): item is UnlessItem => !!item);
 
-  if (constraintItems.length > 0) {
-    policyYaml.unless = { any: constraintItems };
+  if (unlessItems.length > 0) {
+    policyYaml.unless = unlessItems;
+  }
+
+  // Action block
+  if (actionMessage) {
+    policyYaml.action = { message: actionMessage } satisfies ActionBlock;
   }
 
   return yaml.dump(policyYaml, { lineWidth: -1 });

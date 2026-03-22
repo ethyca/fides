@@ -13,31 +13,72 @@ import {
 } from "fidesui";
 
 import {
-  CONSENT_VALUE_OPTIONS,
+  CONSENT_REQUIREMENT_OPTIONS,
   CONSTRAINT_TYPE_OPTIONS,
-  USER_OPERATOR_OPTIONS,
+  DATA_FLOW_DIRECTION_OPTIONS,
+  DATA_FLOW_OPERATOR_OPTIONS,
+  GEO_OPERATOR_OPTIONS,
 } from "./constants";
 import styles from "./ConstraintNode.module.scss";
-import { ConsentValue, ConstraintType, UserOperator } from "./types";
+import {
+  ConsentRequirement,
+  ConstraintType,
+  DataFlowDirection,
+  DataFlowOperator,
+  GeoOperator,
+} from "./types";
 
 export interface ConstraintNodeData extends Record<string, unknown> {
   constraintType?: ConstraintType;
-  preferenceKey?: string;
-  consentValue?: ConsentValue;
-  userKey?: string;
-  userValue?: string;
-  userOperator?: UserOperator;
+  // Consent fields
+  privacyNoticeKey?: string;
+  consentRequirement?: ConsentRequirement;
+  // Geo location fields
+  geoField?: string;
+  geoOperator?: GeoOperator;
+  geoValues?: string[];
+  // Data flow fields
+  dataFlowDirection?: DataFlowDirection;
+  dataFlowOperator?: DataFlowOperator;
+  dataFlowSystems?: string[];
+  // Callbacks
   onConstraintTypeChange?: (value: ConstraintType) => void;
-  onPreferenceKeyChange?: (value: string) => void;
-  onConsentValueChange?: (value: ConsentValue) => void;
-  onUserKeyChange?: (value: string) => void;
-  onUserValueChange?: (value: string) => void;
-  onUserOperatorChange?: (value: UserOperator) => void;
+  onPrivacyNoticeKeyChange?: (value: string) => void;
+  onConsentRequirementChange?: (value: ConsentRequirement) => void;
+  onGeoFieldChange?: (value: string) => void;
+  onGeoOperatorChange?: (value: GeoOperator) => void;
+  onGeoValuesChange?: (value: string[]) => void;
+  onDataFlowDirectionChange?: (value: DataFlowDirection) => void;
+  onDataFlowOperatorChange?: (value: DataFlowOperator) => void;
+  onDataFlowSystemsChange?: (value: string[]) => void;
   onDelete?: () => void;
   onAddConstraint?: () => void;
 }
 
 export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
+
+const TagInput = ({
+  value = [],
+  onChange,
+  placeholder,
+  testId,
+}: {
+  value?: string[];
+  onChange?: (values: string[]) => void;
+  placeholder: string;
+  testId: string;
+}) => (
+  <Select
+    mode="tags"
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    className="w-full"
+    tokenSeparators={[","]}
+    data-testid={testId}
+    aria-label={placeholder}
+  />
+);
 
 const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
   <div className={styles.node} data-testid="constraint-node">
@@ -90,58 +131,104 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
             optionType="button"
             buttonStyle="solid"
             options={CONSTRAINT_TYPE_OPTIONS}
+            size="small"
           />
         </Form.Item>
+
+        {/* Consent fields */}
         {data.constraintType === ConstraintType.CONSENT && (
           <>
-            <Form.Item label="Preference key" className="mb-2">
+            <Form.Item label="Privacy notice key" className="mb-2">
               <Input
-                placeholder="Enter preference key"
-                value={data.preferenceKey}
-                onChange={(e) => data.onPreferenceKeyChange?.(e.target.value)}
-                data-testid="constraint-preference-key"
+                placeholder="Enter privacy notice key"
+                value={data.privacyNoticeKey}
+                onChange={(e) =>
+                  data.onPrivacyNoticeKeyChange?.(e.target.value)
+                }
+                data-testid="constraint-privacy-notice-key"
               />
             </Form.Item>
-            <Form.Item label="Consent value" className="mb-0">
+            <Form.Item label="Requirement" className="mb-0">
               <Select
-                placeholder="Select consent value"
-                value={data.consentValue}
-                onChange={(value) => data.onConsentValueChange?.(value)}
-                options={CONSENT_VALUE_OPTIONS}
+                placeholder="Select requirement"
+                value={data.consentRequirement}
+                onChange={(value) =>
+                  data.onConsentRequirementChange?.(value)
+                }
+                options={CONSENT_REQUIREMENT_OPTIONS}
                 className="w-full"
-                aria-label="Select consent value"
-                data-testid="constraint-consent-value"
+                aria-label="Select consent requirement"
+                data-testid="constraint-consent-requirement"
               />
             </Form.Item>
           </>
         )}
-        {data.constraintType === ConstraintType.USER && (
+
+        {/* Geo location fields */}
+        {data.constraintType === ConstraintType.GEO_LOCATION && (
           <>
-            <Form.Item label="Key" className="mb-2">
+            <Form.Item label="Field" className="mb-2">
               <Input
-                placeholder="Enter key"
-                value={data.userKey}
-                onChange={(e) => data.onUserKeyChange?.(e.target.value)}
-                data-testid="constraint-user-key"
+                placeholder="e.g. environment.geo_location"
+                value={data.geoField}
+                onChange={(e) => data.onGeoFieldChange?.(e.target.value)}
+                data-testid="constraint-geo-field"
               />
             </Form.Item>
-            <Form.Item label="Value" className="mb-2">
-              <Input
-                placeholder="Enter value"
-                value={data.userValue}
-                onChange={(e) => data.onUserValueChange?.(e.target.value)}
-                data-testid="constraint-user-value"
-              />
-            </Form.Item>
-            <Form.Item label="Operator" className="mb-0">
+            <Form.Item label="Operator" className="mb-2">
               <Select
-                placeholder="Select operator"
-                value={data.userOperator}
-                onChange={(value) => data.onUserOperatorChange?.(value)}
-                options={USER_OPERATOR_OPTIONS}
+                value={data.geoOperator}
+                onChange={(value) => data.onGeoOperatorChange?.(value)}
+                options={GEO_OPERATOR_OPTIONS}
                 className="w-full"
-                aria-label="Select user operator"
-                data-testid="constraint-user-operator"
+                aria-label="Select geo operator"
+                data-testid="constraint-geo-operator"
+              />
+            </Form.Item>
+            <Form.Item label="Values (ISO codes)" className="mb-0">
+              <TagInput
+                value={data.geoValues}
+                onChange={data.onGeoValuesChange}
+                placeholder="e.g. US-CA, EU"
+                testId="constraint-geo-values"
+              />
+            </Form.Item>
+          </>
+        )}
+
+        {/* Data flow fields */}
+        {data.constraintType === ConstraintType.DATA_FLOW && (
+          <>
+            <Form.Item label="Direction" className="mb-2">
+              <Select
+                value={data.dataFlowDirection}
+                onChange={(value) =>
+                  data.onDataFlowDirectionChange?.(value)
+                }
+                options={DATA_FLOW_DIRECTION_OPTIONS}
+                className="w-full"
+                aria-label="Select data flow direction"
+                data-testid="constraint-data-flow-direction"
+              />
+            </Form.Item>
+            <Form.Item label="Operator" className="mb-2">
+              <Select
+                value={data.dataFlowOperator}
+                onChange={(value) =>
+                  data.onDataFlowOperatorChange?.(value)
+                }
+                options={DATA_FLOW_OPERATOR_OPTIONS}
+                className="w-full"
+                aria-label="Select data flow operator"
+                data-testid="constraint-data-flow-operator"
+              />
+            </Form.Item>
+            <Form.Item label="Systems" className="mb-0">
+              <TagInput
+                value={data.dataFlowSystems}
+                onChange={data.onDataFlowSystemsChange}
+                placeholder="Enter system fides keys"
+                testId="constraint-data-flow-systems"
               />
             </Form.Item>
           </>

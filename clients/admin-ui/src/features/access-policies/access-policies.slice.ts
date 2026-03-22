@@ -9,7 +9,7 @@ export interface AccessPolicy {
   id: string;
   name: string;
   description?: string;
-  control_group?: string;
+  controls?: string[];
   yaml?: string;
   created_at?: string;
   updated_at?: string;

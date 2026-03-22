@@ -1,7 +1,11 @@
+// ─── Decision ────────────────────────────────────────────────────────────────
+
 export enum ActionType {
-  ALLOW = "allow",
-  DENY = "deny",
+  ALLOW = "ALLOW",
+  DENY = "DENY",
 }
+
+// ─── Match block ─────────────────────────────────────────────────────────────
 
 export enum ConditionProperty {
   DATA_USE = "data_use",
@@ -12,68 +16,95 @@ export enum ConditionProperty {
 export enum ConditionOperator {
   ALL = "all",
   ANY = "any",
-  NONE = "none",
 }
+
+/** PRD match dimension: { any: [...] } | { all: [...] } */
+export interface MatchDimension {
+  any?: string[];
+  all?: string[];
+}
+
+export interface MatchBlock {
+  data_category?: MatchDimension;
+  data_use?: MatchDimension;
+  data_subject?: MatchDimension;
+  /** Custom taxonomy dimensions use their taxonomy_type as key */
+  [key: string]: MatchDimension | undefined;
+}
+
+// ─── Unless block ────────────────────────────────────────────────────────────
 
 export enum ConstraintType {
   CONSENT = "consent",
-  USER = "user",
+  GEO_LOCATION = "geo_location",
+  DATA_FLOW = "data_flow",
 }
 
-export enum ConsentValue {
+export enum ConsentRequirement {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
+  NOT_OPT_IN = "not_opt_in",
+  NOT_OPT_OUT = "not_opt_out",
 }
 
-export enum UserOperator {
-  EQUALS = "equals",
-  NOT_EQUALS = "not_equals",
-  GREATER_THAN = "greater_than",
-  LESS_THAN = "less_than",
-  CONTAINS = "contains",
+export enum GeoOperator {
+  IN = "in",
+  NOT_IN = "not_in",
 }
 
-// YAML format interfaces
+export enum DataFlowDirection {
+  INGRESS = "ingress",
+  EGRESS = "egress",
+}
 
-export interface ConditionClause {
-  operator?: ConditionOperator;
+export enum DataFlowOperator {
+  ANY_OF = "any_of",
+  NONE_OF = "none_of",
+}
+
+export interface ConsentUnlessItem {
+  type: "consent";
+  privacy_notice_key: string;
+  requirement: ConsentRequirement;
+}
+
+export interface GeoLocationUnlessItem {
+  type: "geo_location";
+  field: string;
+  operator: GeoOperator;
   values: string[];
 }
 
-export interface ConditionMap {
-  data_category?: ConditionClause;
-  data_use?: ConditionClause;
-  data_subject?: ConditionClause;
+export interface DataFlowUnlessItem {
+  type: "data_flow";
+  direction: DataFlowDirection;
+  operator: DataFlowOperator;
+  systems: string[];
 }
 
-export interface ConsentConstraintItem {
-  consent: {
-    preference_key: string[];
-    value: ConsentValue;
-  };
+export type UnlessItem =
+  | ConsentUnlessItem
+  | GeoLocationUnlessItem
+  | DataFlowUnlessItem;
+
+// ─── Action block ────────────────────────────────────────────────────────────
+
+export interface ActionBlock {
+  message?: string;
 }
 
-export interface UserConstraintItem {
-  user: {
-    key: string;
-    value: string | number;
-    operator: UserOperator;
-  };
-}
-
-export type ConstraintItem = ConsentConstraintItem | UserConstraintItem;
-
-export interface UnlessBlock {
-  any?: ConstraintItem[];
-  all?: ConstraintItem[];
-}
+// ─── Full policy YAML schema (PRD §2.1) ──────────────────────────────────────
 
 export interface AccessPolicyYaml {
+  resource_type: "policy";
   fides_key?: string;
-  name: string;
+  name?: string;
   description?: string;
   enabled?: boolean;
-  allow?: ConditionMap;
-  deny?: ConditionMap;
-  unless?: UnlessBlock;
+  priority?: number;
+  controls?: string[];
+  decision: "ALLOW" | "DENY";
+  match: MatchBlock;
+  unless?: UnlessItem[];
+  action?: ActionBlock;
 }
