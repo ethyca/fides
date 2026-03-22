@@ -38,10 +38,9 @@ import {
 import ActionNode, { ActionNodeType } from "./ActionNode";
 import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
-import JunctionNode from "./JunctionNode";
 import LabeledEdge from "./LabeledEdge";
 import {
-  JUNCTION_NODE_ID,
+  deriveLayoutEdges,
   nodesToYaml,
   parseYaml,
   POLICY_NODE_ID,
@@ -80,7 +79,6 @@ const nodeTypes: NodeTypes = {
   actionNode: ActionNode,
   conditionNode: ConditionNode,
   constraintNode: ConstraintNode,
-  junctionNode: JunctionNode,
   policyNode: PolicyNode,
 };
 
@@ -95,7 +93,6 @@ interface PolicyCanvasPanelProps {
   onAddNode?: () => void;
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
-  // Incrementing this triggers a re-parse of initialYaml into nodes (replaces remount)
   syncKey?: number;
 }
 
@@ -190,6 +187,51 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
   } satisfies PolicyNodeType,
 ];
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/** Find the last node in a vertical chain of a given type. */
+const findLastInChain = (
+  nodeType: string,
+  nodes: Node[],
+  edges: Edge[],
+): Node | undefined => {
+  const typed = nodes.filter((n) => n.type === nodeType);
+  if (typed.length === 0) {
+    return undefined;
+  }
+  // The last node has no outgoing edge to another node of the same type
+  return typed.find(
+    (n) =>
+      !edges.some(
+        (e) =>
+          e.source === n.id &&
+          nodes.find((t) => t.id === e.target)?.type === nodeType,
+      ),
+  );
+};
+
+/** Find the first node of a type (the one whose incoming edge is NOT from same type). */
+const findFirstOfType = (
+  nodeType: string,
+  nodes: Node[],
+  edges: Edge[],
+): Node | undefined => {
+  const typed = nodes.filter((n) => n.type === nodeType);
+  if (typed.length === 0) {
+    return undefined;
+  }
+  return typed.find(
+    (n) =>
+      !edges.some(
+        (e) =>
+          e.target === n.id &&
+          nodes.find((t) => t.id === e.source)?.type === nodeType,
+      ),
+  );
+};
+
+// ─── PolicyCanvasPanel ──────────────────────────────────────────────────────
+
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
     controlGroup,
@@ -203,7 +245,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
 
   const initialResult = useMemo(
     () => (initialYaml ? yamlToNodesAndEdges(initialYaml) : null),
-    // Only run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -222,8 +263,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [],
   );
 
-  // When syncKey increments (Code → Builder switch), re-parse initialYaml into nodes
-  // without remounting the entire React Flow instance
+  // When syncKey increments (Code → Builder switch), re-parse initialYaml
   const prevSyncKeyRef = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (syncKey === undefined || syncKey === prevSyncKeyRef.current) {
@@ -252,7 +292,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [setNodes],
   );
 
-  // ─── Delete handlers ──────────────────────────────────────────────────
+  // ─── Delete handlers (chain surgery) ────────────────────────────────
 
   const deleteConditionNode = useCallback(
     (nodeId: string) => {
@@ -261,61 +301,99 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       );
 
       if (remainingConditions.length === 0) {
-        // Last condition: also remove junction and all constraints
+        // Last condition: also remove all constraints
         const removeIds = new Set<string>([nodeId]);
         nodes
-          .filter(
-            (n) => n.type === "constraintNode" || n.type === "junctionNode",
-          )
+          .filter((n) => n.type === "constraintNode")
           .forEach((n) => removeIds.add(n.id));
-
         setNodes((nds) => nds.filter((n) => !removeIds.has(n.id)));
         setEdges((eds) =>
           eds.filter(
             (e) => !removeIds.has(e.source) && !removeIds.has(e.target),
           ),
         );
-      } else {
-        setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-        setEdges((eds) =>
-          eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
-        );
+        return;
       }
+
+      // Find incoming and outgoing edges for chain surgery
+      const incomingEdge = edges.find((e) => e.target === nodeId);
+      const outgoingAndEdge = edges.find(
+        (e) =>
+          e.source === nodeId &&
+          nodes.find((n) => n.id === e.target)?.type === "conditionNode",
+      );
+      const outgoingUnlessEdge = edges.find(
+        (e) =>
+          e.source === nodeId &&
+          nodes.find((n) => n.id === e.target)?.type === "constraintNode",
+      );
+
+      const newEdges: Edge[] = [];
+
+      // Reconnect chain: incoming → next condition
+      if (incomingEdge && outgoingAndEdge) {
+        newEdges.push({
+          ...incomingEdge,
+          id: `e-${incomingEdge.source}-${outgoingAndEdge.target}`,
+          target: outgoingAndEdge.target,
+        });
+      } else if (!incomingEdge && outgoingAndEdge) {
+        // Deleted node had no incoming from same type — shouldn't happen in normal flow
+      }
+
+      // Transfer "unless" edge to next condition if this was first
+      if (outgoingUnlessEdge) {
+        const nextCondId = outgoingAndEdge?.target;
+        if (nextCondId) {
+          newEdges.push({
+            ...outgoingUnlessEdge,
+            id: `e-${nextCondId}-${outgoingUnlessEdge.target}`,
+            source: nextCondId,
+          });
+        }
+        // If no next condition, constraints were already removed above
+      }
+
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => [
+        ...eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
+        ...newEdges,
+      ]);
     },
-    [nodes, setNodes, setEdges],
+    [nodes, edges, setNodes, setEdges],
   );
 
   const deleteConstraintNode = useCallback(
     (nodeId: string) => {
-      const remainingConstraints = nodes.filter(
-        (n) => n.type === "constraintNode" && n.id !== nodeId,
+      const incomingEdge = edges.find((e) => e.target === nodeId);
+      const outgoingAndEdge = edges.find(
+        (e) =>
+          e.source === nodeId &&
+          nodes.find((n) => n.id === e.target)?.type === "constraintNode",
       );
 
-      if (remainingConstraints.length === 0) {
-        // Last constraint: also remove junction
-        setNodes((nds) =>
-          nds.filter((n) => n.id !== nodeId && n.type !== "junctionNode"),
-        );
-        setEdges((eds) =>
-          eds.filter(
-            (e) =>
-              e.source !== nodeId &&
-              e.target !== nodeId &&
-              e.source !== JUNCTION_NODE_ID &&
-              e.target !== JUNCTION_NODE_ID,
-          ),
-        );
-      } else {
-        setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-        setEdges((eds) =>
-          eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
-        );
+      const newEdges: Edge[] = [];
+
+      // Reconnect: incoming → next constraint
+      if (incomingEdge && outgoingAndEdge) {
+        newEdges.push({
+          ...incomingEdge,
+          id: `e-${incomingEdge.source}-${outgoingAndEdge.target}`,
+          target: outgoingAndEdge.target,
+        });
       }
+
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => [
+        ...eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
+        ...newEdges,
+      ]);
     },
-    [nodes, setNodes, setEdges],
+    [nodes, edges, setNodes, setEdges],
   );
 
-  // name and description are managed entirely in node data; no parent state mirror needed
+  // ─── Field change handlers ──────────────────────────────────────────
+
   const handleNameChange = useCallback(
     (value: string) => updateNodeData(POLICY_NODE_ID, { name: value }),
     [updateNodeData],
@@ -334,7 +412,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData, onControlGroupChange],
   );
 
-  // Derive YAML from nodes/edges and call onYamlChange
+  // Derive YAML from nodes/edges
   useEffect(() => {
     if (!onYamlChange) {
       return;
@@ -343,23 +421,27 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     onYamlChange(derived);
   }, [nodes, edges, onYamlChange]);
 
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
+  // ─── Layout: use fan-out edges for dagre, display edges for render ──
+
+  const layoutEdges = useMemo(
+    () => deriveLayoutEdges(nodes, edges),
+    [nodes, edges],
+  );
+
+  const { nodes: layoutedNodes } = useMemo(
     () =>
-      getLayoutedElements(nodes, edges, "LR", {
+      getLayoutedElements(nodes, layoutEdges, "LR", {
         ranksep: 80,
         nodesep: 110,
         nodeWidth: 320,
         nodeHeight: 100,
-        nodeSizes: {
-          [JUNCTION_NODE_ID]: { width: 16, height: 16 },
-        },
       }),
-    [nodes, edges],
+    [nodes, layoutEdges],
   );
 
-  // ─── Add condition (fan-out from action) ──────────────────────────────
+  // ─── Add condition (chain from last condition) ────────────────────
 
-  const handleAddConditionFromNode = useCallback(() => {
+  const handleAddCondition = useCallback(() => {
     const actionNode = nodes.find((n) => n.type === "actionNode");
     if (!actionNode) {
       return;
@@ -378,33 +460,38 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       data: {},
     };
 
-    const newEdge: Edge = {
-      id: `e-${actionNode.id}-${conditionId}`,
-      source: actionNode.id,
-      target: conditionId,
-      type: "labeledEdge",
-      data: { label: "when" },
-    };
+    let newEdge: Edge;
 
-    const newEdges: Edge[] = [newEdge];
-
-    // If junction exists, also connect new condition → junction
-    const junctionExists = nodes.some((n) => n.type === "junctionNode");
-    if (junctionExists) {
-      newEdges.push({
-        id: `e-${conditionId}-${JUNCTION_NODE_ID}`,
-        source: conditionId,
-        target: JUNCTION_NODE_ID,
+    if (conditionCount === 0) {
+      // First condition: horizontal from action
+      newEdge = {
+        id: `e-${actionNode.id}-${conditionId}`,
+        source: actionNode.id,
+        target: conditionId,
         type: "labeledEdge",
-      });
+        data: { label: "when" },
+      };
+    } else {
+      // Chain: vertical "and" from last condition
+      const lastCond = findLastInChain("conditionNode", nodes, edges);
+      const sourceId = lastCond?.id ?? actionNode.id;
+      newEdge = {
+        id: `e-${sourceId}-${conditionId}`,
+        source: sourceId,
+        target: conditionId,
+        sourceHandle: "bottom",
+        targetHandle: "top",
+        type: "labeledEdge",
+        data: { label: "and" },
+      };
     }
 
     setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [...eds, ...newEdges]);
+    setEdges((eds) => [...eds, newEdge]);
     setLastCreatedNodeId(conditionId);
-  }, [nodes, setNodes, setEdges]);
+  }, [nodes, edges, setNodes, setEdges]);
 
-  // ─── Add action (from policy) ─────────────────────────────────────────
+  // ─── Add action (from policy) ─────────────────────────────────────
 
   const handleAddActionFromNode = useCallback(
     (sourceNodeId: string) => {
@@ -438,15 +525,15 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [nodes, setNodes, setEdges],
   );
 
-  // ─── Add constraint (fan-out from junction) ───────────────────────────
+  // ─── Add constraint (chain from last constraint, or first from cond1) ─
 
-  const handleAddConstraintFromNode = useCallback(() => {
+  const handleAddConstraint = useCallback(() => {
     const constraintCount = nodes.filter(
       (n) => n.type === "constraintNode",
     ).length;
     const constraintId = `constraint-${constraintCount + 1}`;
 
-    const newConstraintNode: ConstraintNodeType = {
+    const newNode: ConstraintNodeType = {
       id: constraintId,
       type: "constraintNode",
       position: { x: 0, y: 0 },
@@ -454,55 +541,43 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       data: {},
     };
 
-    const junctionExists = nodes.some((n) => n.type === "junctionNode");
+    let newEdge: Edge;
 
-    if (junctionExists) {
-      // Junction already exists — just add constraint from it
-      setNodes((nds) => [...nds, newConstraintNode]);
-      setEdges((eds) => [
-        ...eds,
-        {
-          id: `e-${JUNCTION_NODE_ID}-${constraintId}`,
-          source: JUNCTION_NODE_ID,
-          target: constraintId,
-          type: "labeledEdge",
-          data: { label: "unless" },
-        },
-      ]);
-    } else {
-      // Create junction, connect all conditions → junction → new constraint
-      const junctionNode: Node = {
-        id: JUNCTION_NODE_ID,
-        type: "junctionNode",
-        position: { x: 0, y: 0 },
-        style: { width: 16, height: 16 },
-        data: {},
-      };
-
-      const conditionNodes = nodes.filter((n) => n.type === "conditionNode");
-      const junctionEdges: Edge[] = conditionNodes.map((cond) => ({
-        id: `e-${cond.id}-${JUNCTION_NODE_ID}`,
-        source: cond.id,
-        target: JUNCTION_NODE_ID,
-        type: "labeledEdge",
-      }));
-
-      const constraintEdge: Edge = {
-        id: `e-${JUNCTION_NODE_ID}-${constraintId}`,
-        source: JUNCTION_NODE_ID,
+    if (constraintCount === 0) {
+      // First constraint: horizontal from first condition
+      const firstCond = findFirstOfType("conditionNode", nodes, edges);
+      const sourceId = firstCond?.id ?? "condition-1";
+      newEdge = {
+        id: `e-${sourceId}-${constraintId}`,
+        source: sourceId,
         target: constraintId,
         type: "labeledEdge",
         data: { label: "unless" },
       };
-
-      setNodes((nds) => [...nds, junctionNode, newConstraintNode]);
-      setEdges((eds) => [...eds, ...junctionEdges, constraintEdge]);
+    } else {
+      // Chain: vertical "and" from last constraint
+      const lastCons = findLastInChain("constraintNode", nodes, edges);
+      const sourceId = lastCons?.id ?? `constraint-${constraintCount}`;
+      newEdge = {
+        id: `e-${sourceId}-${constraintId}`,
+        source: sourceId,
+        target: constraintId,
+        sourceHandle: "bottom",
+        targetHandle: "top",
+        type: "labeledEdge",
+        data: { label: "and" },
+      };
     }
 
+    setNodes((nds) => [...nds, newNode]);
+    setEdges((eds) => [...eds, newEdge]);
     setLastCreatedNodeId(constraintId);
-  }, [nodes, setNodes, setEdges]);
+  }, [nodes, edges, setNodes, setEdges]);
+
+  // ─── Node callbacks ───────────────────────────────────────────────
 
   const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
+  const constraintsExist = nodes.some((n) => n.type === "constraintNode");
 
   const nodesWithCallbacks = useMemo(
     () =>
@@ -530,7 +605,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             data: {
               ...node.data,
               onAddNode,
-              onAddCondition: handleAddConditionFromNode,
+              onAddCondition: handleAddCondition,
               hasChildren,
               onActionTypeChange: (value: ActionType) =>
                 updateNodeData(node.id, { actionType: value }),
@@ -538,17 +613,15 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
           };
         }
         if (node.type === "conditionNode") {
-          // hasChildren = connected to junction (constraints exist)
-          const hasChildren = edges.some((e) => e.source === node.id);
           return {
             ...node,
             data: {
               ...node.data,
               onAddNode,
-              onAddCondition: handleAddConditionFromNode,
-              onAddConstraint: handleAddConstraintFromNode,
+              onAddCondition: handleAddCondition,
+              onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConditionNode(node.id),
-              hasChildren,
+              hasChildren: constraintsExist,
               onPropertyChange: (value: ConditionProperty) =>
                 updateNodeData(node.id, { property: value, values: [] }),
               onValuesChange: (values: string[]) =>
@@ -563,7 +636,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
-              onAddConstraint: handleAddConstraintFromNode,
+              onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConstraintNode(node.id),
               onConstraintTypeChange: (value: ConstraintType) =>
                 updateNodeData(node.id, {
@@ -598,13 +671,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       handleDescriptionChange,
       handleControlGroupChange,
       onAddNode,
-      handleAddConditionFromNode,
+      handleAddCondition,
       handleAddActionFromNode,
-      handleAddConstraintFromNode,
+      handleAddConstraint,
       deleteConditionNode,
       deleteConstraintNode,
       updateNodeData,
       policyHasChildren,
+      constraintsExist,
     ],
   );
 
@@ -618,7 +692,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     >
       <ReactFlow
         nodes={nodesWithCallbacks}
-        edges={layoutedEdges}
+        edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
@@ -659,12 +733,10 @@ const AccessPolicyEditor = ({
   const [controlGroup, setControlGroup] = useState<string | undefined>(
     initialValues?.control_group,
   );
-  // Incrementing syncKey triggers PolicyCanvasPanel to re-parse YAML without remounting
   const [syncKey, setSyncKey] = useState(0);
 
   const handleModeChange = useCallback(
     (newMode: EditorMode) => {
-      // When switching from code-only to a canvas mode, signal canvas to re-parse YAML
       if (mode === EditorMode.Code && newMode !== EditorMode.Code) {
         setSyncKey((k) => k + 1);
       }

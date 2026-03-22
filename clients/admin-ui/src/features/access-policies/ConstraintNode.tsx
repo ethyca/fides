@@ -41,7 +41,18 @@ export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
 
 const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
   <div className={styles.node} data-testid="constraint-node">
-    <Handle type="target" position={Position.Left} className={styles.handle} />
+    <Handle
+      type="target"
+      position={Position.Left}
+      id="left"
+      className={styles.handle}
+    />
+    <Handle
+      type="target"
+      position={Position.Top}
+      id="top"
+      className={styles.handle}
+    />
     <Flex align="center" gap="small" className={styles.header}>
       <Avatar
         shape="square"
@@ -150,7 +161,18 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         Constraint
       </Button>
     </div>
-    <Handle type="source" position={Position.Right} className={styles.handle} />
+    <Handle
+      type="source"
+      position={Position.Right}
+      id="right"
+      className={styles.handle}
+    />
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      id="bottom"
+      className={styles.handle}
+    />
   </div>
 );
 

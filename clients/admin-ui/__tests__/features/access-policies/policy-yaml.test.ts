@@ -1,5 +1,5 @@
 import {
-  JUNCTION_NODE_ID,
+  deriveLayoutEdges,
   nodesToYaml,
   parseYaml,
   yamlToNodesAndEdges,
@@ -130,7 +130,7 @@ deny:
     expect(actionNode.data.actionType).toBe(ActionType.DENY);
   });
 
-  it("fans out multiple conditions from action with when edges", () => {
+  it("chains multiple conditions: first with when, rest with vertical and", () => {
     const yaml = `
 name: multi_condition
 deny:
@@ -149,14 +149,17 @@ deny:
 
     expect(nodes.filter((n) => n.type === "conditionNode")).toHaveLength(2);
 
-    // Both conditions fan out from action with "when" label
-    const conditionEdges = edges.filter((e) => e.data?.label === "when");
-    expect(conditionEdges).toHaveLength(2);
-    expect(conditionEdges[0].source).toBe("action-1");
-    expect(conditionEdges[1].source).toBe("action-1");
+    // First condition: horizontal from action with "when"
+    const whenEdge = edges.find((e) => e.data?.label === "when")!;
+    expect(whenEdge.source).toBe("action-1");
+    expect(whenEdge.target).toBe("condition-1");
 
-    // No "and" edges (old chain topology)
-    expect(edges.find((e) => e.data?.label === "and")).toBeUndefined();
+    // Second condition: vertical from first with "and"
+    const andEdge = edges.find((e) => e.data?.label === "and")!;
+    expect(andEdge.source).toBe("condition-1");
+    expect(andEdge.target).toBe("condition-2");
+    expect(andEdge.sourceHandle).toBe("bottom");
+    expect(andEdge.targetHandle).toBe("top");
   });
 
   it("processes condition properties in fixed order: data_category, data_use, data_subject", () => {
@@ -186,7 +189,7 @@ allow:
     );
   });
 
-  it("creates junction node and constraint nodes from unless block", () => {
+  it("creates constraint from first condition with unless label", () => {
     const yaml = `
 name: with_consent_constraint
 deny:
@@ -204,25 +207,14 @@ unless:
     expect(result).not.toBeNull();
     const { nodes, edges } = result!;
 
-    // Junction node exists
-    const junctionNode = nodes.find((n) => n.type === "junctionNode");
-    expect(junctionNode).toBeDefined();
-    expect(junctionNode!.id).toBe(JUNCTION_NODE_ID);
-
-    // Condition → junction edge
-    const condToJunction = edges.find(
-      (e) => e.source === "condition-1" && e.target === JUNCTION_NODE_ID,
-    );
-    expect(condToJunction).toBeDefined();
-
-    // Junction → constraint edge with "unless" label
     const constraintNode = nodes.find((n) => n.type === "constraintNode")!;
     expect(constraintNode.data.constraintType).toBe(ConstraintType.CONSENT);
     expect(constraintNode.data.preferenceKey).toBe("financial_data_processing");
     expect(constraintNode.data.consentValue).toBe(ConsentValue.OPT_IN);
 
+    // Constraint connects from condition-1 with "unless"
     const constraintEdge = edges.find((e) => e.target === constraintNode.id)!;
-    expect(constraintEdge.source).toBe(JUNCTION_NODE_ID);
+    expect(constraintEdge.source).toBe("condition-1");
     expect(constraintEdge.data?.label).toBe("unless");
   });
 
@@ -250,7 +242,7 @@ unless:
     expect(constraintNode.data.userOperator).toBe(UserOperator.LESS_THAN);
   });
 
-  it("fans out multiple constraints from junction", () => {
+  it("chains multiple constraints: first unless, rest vertical and", () => {
     const yaml = `
 name: multi_constraint
 deny:
@@ -275,39 +267,18 @@ unless:
     const constraintNodes = nodes.filter((n) => n.type === "constraintNode");
     expect(constraintNodes).toHaveLength(2);
 
-    // Both constraints connect from junction with "unless" label
-    const constraintEdges = edges.filter((e) => e.data?.label === "unless");
-    expect(constraintEdges).toHaveLength(2);
-    expect(constraintEdges[0].source).toBe(JUNCTION_NODE_ID);
-    expect(constraintEdges[1].source).toBe(JUNCTION_NODE_ID);
-  });
+    // First constraint: from condition-1 with "unless"
+    const unlessEdge = edges.find((e) => e.data?.label === "unless")!;
+    expect(unlessEdge.source).toBe("condition-1");
+    expect(unlessEdge.target).toBe("constraint-1");
 
-  it("connects all conditions to junction when constraints exist", () => {
-    const yaml = `
-name: multi_cond_constraint
-deny:
-  data_use:
-    values:
-      - marketing
-  data_subject:
-    values:
-      - visitor
-unless:
-  any:
-    - consent:
-        preference_key:
-          - pref
-        value: opt_out
-`;
-    const result = yamlToNodesAndEdges(yaml);
-    expect(result).not.toBeNull();
-    const { edges } = result!;
-
-    // Both conditions connect to junction
-    const condToJunction = edges.filter(
-      (e) => e.target === JUNCTION_NODE_ID && e.source.startsWith("condition-"),
-    );
-    expect(condToJunction).toHaveLength(2);
+    // Second constraint: vertical "and" from first
+    const andEdge = edges.find(
+      (e) => e.source === "constraint-1" && e.target === "constraint-2",
+    )!;
+    expect(andEdge.data?.label).toBe("and");
+    expect(andEdge.sourceHandle).toBe("bottom");
+    expect(andEdge.targetHandle).toBe("top");
   });
 });
 
@@ -351,7 +322,7 @@ describe("nodesToYaml", () => {
     expect(parsed?.description).toBe("A description");
   });
 
-  it("serializes allow action with condition (fan-out topology)", () => {
+  it("serializes allow action with condition", () => {
     const nodes = [
       {
         id: "policy",
@@ -523,7 +494,7 @@ describe("nodesToYaml", () => {
     expect(parsed?.allow).toEqual({});
   });
 
-  it("serializes multiple conditions (fan-out) into the condition map", () => {
+  it("serializes chained conditions into the condition map", () => {
     const nodes = [
       {
         id: "policy",
@@ -569,10 +540,12 @@ describe("nodesToYaml", () => {
       },
       {
         id: "e3",
-        source: "action-1",
+        source: "condition-1",
         target: "condition-2",
+        sourceHandle: "bottom",
+        targetHandle: "top",
         type: "labeledEdge",
-        data: { label: "when" },
+        data: { label: "and" },
       },
     ];
     const result = nodesToYaml(nodes as any, edges as any);
@@ -581,7 +554,7 @@ describe("nodesToYaml", () => {
     expect(parsed?.deny?.data_subject?.values).toEqual(["visitor"]);
   });
 
-  it("serializes constraint via junction into unless block", () => {
+  it("serializes constraint via first condition into unless block", () => {
     const nodes = [
       {
         id: "policy",
@@ -604,12 +577,6 @@ describe("nodesToYaml", () => {
           values: ["marketing"],
           operator: ConditionOperator.ANY,
         },
-      },
-      {
-        id: JUNCTION_NODE_ID,
-        type: "junctionNode",
-        position: { x: 0, y: 0 },
-        data: {},
       },
       {
         id: "constraint-1",
@@ -634,12 +601,6 @@ describe("nodesToYaml", () => {
       {
         id: "e3",
         source: "condition-1",
-        target: JUNCTION_NODE_ID,
-        type: "labeledEdge",
-      },
-      {
-        id: "e4",
-        source: JUNCTION_NODE_ID,
         target: "constraint-1",
         type: "labeledEdge",
         data: { label: "unless" },
@@ -656,7 +617,7 @@ describe("nodesToYaml", () => {
     );
   });
 
-  it("serializes user constraint via junction into unless block", () => {
+  it("serializes user constraint into unless block", () => {
     const nodes = [
       {
         id: "policy",
@@ -679,12 +640,6 @@ describe("nodesToYaml", () => {
           values: ["marketing"],
           operator: ConditionOperator.ANY,
         },
-      },
-      {
-        id: JUNCTION_NODE_ID,
-        type: "junctionNode",
-        position: { x: 0, y: 0 },
-        data: {},
       },
       {
         id: "constraint-1",
@@ -710,12 +665,6 @@ describe("nodesToYaml", () => {
       {
         id: "e3",
         source: "condition-1",
-        target: JUNCTION_NODE_ID,
-        type: "labeledEdge",
-      },
-      {
-        id: "e4",
-        source: JUNCTION_NODE_ID,
         target: "constraint-1",
         type: "labeledEdge",
         data: { label: "unless" },
@@ -730,7 +679,7 @@ describe("nodesToYaml", () => {
     );
   });
 
-  it("serializes multiple constraints (fan-out via junction) into unless block", () => {
+  it("serializes chained constraints into unless block", () => {
     const nodes = [
       {
         id: "policy",
@@ -753,12 +702,6 @@ describe("nodesToYaml", () => {
           values: ["marketing"],
           operator: ConditionOperator.ANY,
         },
-      },
-      {
-        id: JUNCTION_NODE_ID,
-        type: "junctionNode",
-        position: { x: 0, y: 0 },
-        data: {},
       },
       {
         id: "constraint-1",
@@ -794,22 +737,18 @@ describe("nodesToYaml", () => {
       {
         id: "e3",
         source: "condition-1",
-        target: JUNCTION_NODE_ID,
-        type: "labeledEdge",
-      },
-      {
-        id: "e4",
-        source: JUNCTION_NODE_ID,
         target: "constraint-1",
         type: "labeledEdge",
         data: { label: "unless" },
       },
       {
-        id: "e5",
-        source: JUNCTION_NODE_ID,
+        id: "e4",
+        source: "constraint-1",
         target: "constraint-2",
+        sourceHandle: "bottom",
+        targetHandle: "top",
         type: "labeledEdge",
-        data: { label: "unless" },
+        data: { label: "and" },
       },
     ];
     const result = nodesToYaml(nodes as any, edges as any);
@@ -842,12 +781,6 @@ describe("nodesToYaml", () => {
         },
       },
       {
-        id: JUNCTION_NODE_ID,
-        type: "junctionNode",
-        position: { x: 0, y: 0 },
-        data: {},
-      },
-      {
         id: "constraint-1",
         type: "constraintNode",
         position: { x: 0, y: 0 },
@@ -866,12 +799,6 @@ describe("nodesToYaml", () => {
       {
         id: "e3",
         source: "condition-1",
-        target: JUNCTION_NODE_ID,
-        type: "labeledEdge",
-      },
-      {
-        id: "e4",
-        source: JUNCTION_NODE_ID,
         target: "constraint-1",
         type: "labeledEdge",
         data: { label: "unless" },
@@ -881,64 +808,112 @@ describe("nodesToYaml", () => {
     const parsed = parseYaml(result);
     expect(parsed?.unless).toBeUndefined();
   });
+});
 
-  it("handles legacy chain topology for backward compatibility", () => {
-    // Old chain: action → condition-1 → condition-2
+// ─── deriveLayoutEdges ───────────────────────────────────────────────────────
+
+describe("deriveLayoutEdges", () => {
+  it("fans out conditions from action for same dagre rank", () => {
     const nodes = [
-      {
-        id: "policy",
-        type: "policyNode",
-        position: { x: 0, y: 0 },
-        data: { name: "p", description: "", controlGroupOptions: [] },
-      },
+      { id: "policy", type: "policyNode", position: { x: 0, y: 0 }, data: {} },
       {
         id: "action-1",
         type: "actionNode",
         position: { x: 0, y: 0 },
-        data: { actionType: ActionType.DENY },
+        data: {},
       },
       {
         id: "condition-1",
         type: "conditionNode",
         position: { x: 0, y: 0 },
-        data: {
-          property: ConditionProperty.DATA_USE,
-          values: ["marketing"],
-          operator: ConditionOperator.ANY,
-        },
+        data: {},
       },
       {
         id: "condition-2",
         type: "conditionNode",
         position: { x: 0, y: 0 },
-        data: {
-          property: ConditionProperty.DATA_SUBJECTS,
-          values: ["visitor"],
-          operator: ConditionOperator.ANY,
-        },
+        data: {},
       },
     ];
-    const edges = [
+    const displayEdges = [
       { id: "e1", source: "policy", target: "action-1", type: "labeledEdge" },
       {
         id: "e2",
         source: "action-1",
         target: "condition-1",
         type: "labeledEdge",
-        data: { label: "when" },
       },
       {
         id: "e3",
         source: "condition-1",
         target: "condition-2",
         type: "labeledEdge",
-        data: { label: "and" },
       },
     ];
-    const result = nodesToYaml(nodes as any, edges as any);
-    const parsed = parseYaml(result);
-    expect(parsed?.deny?.data_use?.values).toEqual(["marketing"]);
-    expect(parsed?.deny?.data_subject?.values).toEqual(["visitor"]);
+
+    const layout = deriveLayoutEdges(nodes as any, displayEdges as any);
+
+    // Should have: policy→action, action→cond1, action→cond2
+    expect(layout).toHaveLength(3);
+    expect(layout.filter((e) => e.source === "action-1")).toHaveLength(2);
+  });
+
+  it("fans out constraints from first condition for same dagre rank", () => {
+    const nodes = [
+      { id: "policy", type: "policyNode", position: { x: 0, y: 0 }, data: {} },
+      {
+        id: "action-1",
+        type: "actionNode",
+        position: { x: 0, y: 0 },
+        data: {},
+      },
+      {
+        id: "condition-1",
+        type: "conditionNode",
+        position: { x: 0, y: 0 },
+        data: {},
+      },
+      {
+        id: "constraint-1",
+        type: "constraintNode",
+        position: { x: 0, y: 0 },
+        data: {},
+      },
+      {
+        id: "constraint-2",
+        type: "constraintNode",
+        position: { x: 0, y: 0 },
+        data: {},
+      },
+    ];
+    const displayEdges = [
+      { id: "e1", source: "policy", target: "action-1", type: "labeledEdge" },
+      {
+        id: "e2",
+        source: "action-1",
+        target: "condition-1",
+        type: "labeledEdge",
+      },
+      {
+        id: "e3",
+        source: "condition-1",
+        target: "constraint-1",
+        type: "labeledEdge",
+      },
+      {
+        id: "e4",
+        source: "constraint-1",
+        target: "constraint-2",
+        type: "labeledEdge",
+      },
+    ];
+
+    const layout = deriveLayoutEdges(nodes as any, displayEdges as any);
+
+    // Should have: policy→action, action→cond1, cond1→cons1, cond1→cons2
+    expect(layout).toHaveLength(4);
+    const fromCond1 = layout.filter((e) => e.source === "condition-1");
+    expect(fromCond1).toHaveLength(2);
   });
 });
 
@@ -1028,7 +1003,7 @@ unless:
     ]);
   });
 
-  it("preserves deny with multiple constraints (fan-out via junction)", () => {
+  it("preserves deny with multiple constraints", () => {
     const yaml = `
 name: multi_constraint
 deny:

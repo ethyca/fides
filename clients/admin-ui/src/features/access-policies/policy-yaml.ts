@@ -50,7 +50,6 @@ const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
 ];
 
 export const POLICY_NODE_ID = "policy";
-export const JUNCTION_NODE_ID = "junction";
 
 const resolveActionType = (
   policy: AccessPolicyYaml,
@@ -64,6 +63,16 @@ const resolveActionType = (
   return undefined;
 };
 
+/**
+ * Build display edges using a chain topology:
+ *   action ──when──▶ cond1 ──and──▶ cond2 ──and──▶ cond3
+ *                     │
+ *                     └──unless──▶ constraint1 ──and──▶ constraint2
+ *
+ * Horizontal edges use default Left/Right handles.
+ * Vertical "and" edges use Bottom→Top handles so dagre-independent
+ * rendering draws them top-to-bottom within a column.
+ */
 export const yamlToNodesAndEdges = (
   yamlString: string,
 ): { nodes: Node[]; edges: Edge[] } | null => {
@@ -116,7 +125,7 @@ export const yamlToNodesAndEdges = (
     type: "labeledEdge",
   });
 
-  // Condition nodes — fan out from action (same column in dagre)
+  // Condition nodes — chain: first from action ("when"), rest vertical ("and")
   const presentProperties = CONDITION_PROPERTY_KEYS.filter(
     (p) => !!conditionMap[p],
   );
@@ -138,42 +147,36 @@ export const yamlToNodesAndEdges = (
     };
     nodes.push(conditionNode);
 
-    // All conditions fan out from action with "when" label
-    edges.push({
-      id: `e-${actionId}-${conditionId}`,
-      source: actionId,
-      target: conditionId,
-      type: "labeledEdge",
-      data: { label: "when" },
-    });
+    if (idx === 0) {
+      // First condition: horizontal from action
+      edges.push({
+        id: `e-${actionId}-${conditionId}`,
+        source: actionId,
+        target: conditionId,
+        type: "labeledEdge",
+        data: { label: "when" },
+      });
+    } else {
+      // Subsequent conditions: vertical "and" from previous
+      const prevConditionId = `condition-${idx}`;
+      edges.push({
+        id: `e-${prevConditionId}-${conditionId}`,
+        source: prevConditionId,
+        target: conditionId,
+        sourceHandle: "bottom",
+        targetHandle: "top",
+        type: "labeledEdge",
+        data: { label: "and" },
+      });
+    }
   });
 
-  // Constraint nodes from `unless` — fan out from junction
+  // Constraint nodes from `unless` — chain: first from condition-1 ("unless"),
+  // rest vertical ("and")
   const constraintList: ConstraintItem[] =
     policy.unless?.any ?? policy.unless?.all ?? [];
 
   if (constraintList.length > 0 && presentProperties.length > 0) {
-    // Add junction node to bridge conditions → constraints
-    nodes.push({
-      id: JUNCTION_NODE_ID,
-      type: "junctionNode",
-      position: { x: 0, y: 0 },
-      style: { width: 16, height: 16 },
-      data: {},
-    });
-
-    // Connect all conditions → junction
-    presentProperties.forEach((_, idx) => {
-      const conditionId = `condition-${idx + 1}`;
-      edges.push({
-        id: `e-${conditionId}-${JUNCTION_NODE_ID}`,
-        source: conditionId,
-        target: JUNCTION_NODE_ID,
-        type: "labeledEdge",
-      });
-    });
-
-    // Connect junction → each constraint
     constraintList.forEach((item, idx) => {
       const constraintId = `constraint-${idx + 1}`;
       let data: ConstraintNodeData = {};
@@ -204,13 +207,28 @@ export const yamlToNodesAndEdges = (
       };
       nodes.push(constraintNode);
 
-      edges.push({
-        id: `e-${JUNCTION_NODE_ID}-${constraintId}`,
-        source: JUNCTION_NODE_ID,
-        target: constraintId,
-        type: "labeledEdge",
-        data: { label: "unless" },
-      });
+      if (idx === 0) {
+        // First constraint: horizontal from first condition
+        edges.push({
+          id: `e-condition-1-${constraintId}`,
+          source: "condition-1",
+          target: constraintId,
+          type: "labeledEdge",
+          data: { label: "unless" },
+        });
+      } else {
+        // Subsequent constraints: vertical "and" from previous
+        const prevConstraintId = `constraint-${idx}`;
+        edges.push({
+          id: `e-${prevConstraintId}-${constraintId}`,
+          source: prevConstraintId,
+          target: constraintId,
+          sourceHandle: "bottom",
+          targetHandle: "top",
+          type: "labeledEdge",
+          data: { label: "and" },
+        });
+      }
     });
   }
 
@@ -221,8 +239,7 @@ export const yamlToNodesAndEdges = (
 
 /**
  * Collect all conditionNode nodes reachable from actionNodeId via BFS.
- * Works with both fan-out (action → cond1, action → cond2) and legacy
- * chain (action → cond1 → cond2) topologies.
+ * Works with both fan-out and chain topologies.
  */
 const collectConditionNodes = (
   actionNodeId: string,
@@ -252,7 +269,7 @@ const collectConditionNodes = (
 
 /**
  * Collect all constraintNode nodes reachable from the given condition node IDs,
- * walking through junction nodes and constraint chains.
+ * walking through constraint chains.
  */
 const collectConstraintNodes = (
   conditionNodeIds: Set<string>,
@@ -275,8 +292,6 @@ const collectConstraintNodes = (
         }
         if (target.type === "constraintNode") {
           result.push(target as Node<ConstraintNodeData>);
-          queue.push(target.id);
-        } else if (target.type === "junctionNode") {
           queue.push(target.id);
         }
       });
@@ -368,7 +383,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     policyYaml.allow = conditionMap;
   }
 
-  // Collect constraint nodes reachable from conditions (through junctions)
+  // Collect constraint nodes reachable from conditions
   const conditionIds = new Set(conditionNodes.map((n) => n.id));
   const constraintNodes = collectConstraintNodes(conditionIds, nodes, edges);
   const constraintItems: ConstraintItem[] = constraintNodes
@@ -380,4 +395,53 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   }
 
   return yaml.dump(policyYaml, { lineWidth: -1 });
+};
+
+// ─── Layout helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Derive fan-out edges from display edges for dagre positioning.
+ * Dagre uses these to assign same-rank to same-type sibling nodes,
+ * while the original chain edges are rendered by React Flow.
+ */
+export const deriveLayoutEdges = (nodes: Node[], edges: Edge[]): Edge[] => {
+  const layoutEdges: Edge[] = [];
+
+  // Keep policy → action edge
+  const policyToAction = edges.find((e) => e.source === POLICY_NODE_ID);
+  if (policyToAction) {
+    layoutEdges.push(policyToAction);
+  }
+
+  const actionNode = nodes.find((n) => n.type === "actionNode");
+  if (!actionNode) {
+    return layoutEdges;
+  }
+
+  // Fan out: action → all conditions (forces same dagre rank)
+  const conditionNodes = nodes.filter((n) => n.type === "conditionNode");
+  conditionNodes.forEach((cond) => {
+    layoutEdges.push({
+      id: `layout-${actionNode.id}-${cond.id}`,
+      source: actionNode.id,
+      target: cond.id,
+      type: "labeledEdge",
+    });
+  });
+
+  // Fan out: first condition → all constraints (forces same dagre rank)
+  const constraintNodes = nodes.filter((n) => n.type === "constraintNode");
+  const firstCondition = conditionNodes[0];
+  if (firstCondition && constraintNodes.length > 0) {
+    constraintNodes.forEach((cons) => {
+      layoutEdges.push({
+        id: `layout-${firstCondition.id}-${cons.id}`,
+        source: firstCondition.id,
+        target: cons.id,
+        type: "labeledEdge",
+      });
+    });
+  }
+
+  return layoutEdges;
 };

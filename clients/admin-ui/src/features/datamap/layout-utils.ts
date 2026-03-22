@@ -47,6 +47,7 @@ export const getLayoutedElements = (
     edgesep: opts.edgesep,
     marginx: opts.marginx,
     marginy: opts.marginy,
+    align: "UL",
   });
 
   // Set node width and height for layout calculation

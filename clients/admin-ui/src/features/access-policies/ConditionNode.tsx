@@ -46,6 +46,13 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
       <Handle
         type="target"
         position={Position.Left}
+        id="left"
+        className={styles.handle}
+      />
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
         className={styles.handle}
       />
       <Flex align="center" gap="small" className={styles.header}>
@@ -171,6 +178,13 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
       <Handle
         type="source"
         position={Position.Right}
+        id="right"
+        className={styles.handle}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
         className={styles.handle}
       />
     </div>
