@@ -7,6 +7,11 @@ Focuses on service-layer methods for DRP data management, including:
 - Automatic migration on read
 """
 
+import pytest
+
+# Mark all tests as unit tests
+pytestmark = pytest.mark.unit
+
 
 class TestDSRCacheStoreDRP:
     """Test DSRCacheStore DRP request body methods."""

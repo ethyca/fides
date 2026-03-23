@@ -143,11 +143,11 @@ class DSRCacheStore:
             if new_infix in key:
                 field = key.split(":")[-1]
             elif legacy_infix in key:
-                field = key.split("-")[-1]
+                field = key.split(legacy_infix, 1)[-1]
             else:
                 continue
             value = getter(dsr_id, field)
-            if value:
+            if value:  # Intentionally drops empty/falsy — matches legacy behavior
                 result[field] = value
         return result
 
