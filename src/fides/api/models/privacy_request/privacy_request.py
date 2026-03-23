@@ -106,7 +106,6 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
-    get_async_task_tracking_cache_key,
     get_cache,
     get_dsr_cache_store,
 )
@@ -693,8 +692,10 @@ class PrivacyRequest(
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
-        cache: FidesopsRedis = get_cache()
-        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
+        store = get_dsr_cache_store()
+        task_id = store.get_async_execution(self.id)
+        if isinstance(task_id, bytes):
+            return task_id.decode(CONFIG.security.encoding)
         return task_id
 
     def get_async_execution_task(self) -> Optional[AsyncResult]:

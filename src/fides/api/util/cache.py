@@ -418,6 +418,12 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
 
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
+    """Return the *legacy* Redis key for async-execution tracking.
+
+    Prefer ``get_dsr_cache_store().get_async_execution()`` for reads and
+    ``cache_task_tracking_key()`` for writes — both route through the
+    DSRCacheStore which handles legacy fallback automatically.
+    """
     return f"id-{privacy_request_id}-async-execution"
 
 
@@ -434,12 +440,12 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
     :return: None
     """
 
-    cache: FidesopsRedis = get_cache()
-
     try:
-        cache.set_with_autoexpire(
-            get_async_task_tracking_cache_key(request_id),
+        store = get_dsr_cache_store()
+        store.write_async_execution(
+            request_id,
             celery_task_id,
+            expire_seconds=CONFIG.redis.default_ttl_seconds,
         )
     except DataError:
         logger.debug(
