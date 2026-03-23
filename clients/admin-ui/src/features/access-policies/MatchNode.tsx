@@ -14,7 +14,7 @@ import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import DataSubjectSelect from "~/features/common/dropdown/DataSubjectSelect";
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 
-import styles from "./ConditionNode.module.scss";
+import styles from "./MatchNode.module.scss";
 import {
   CONDITION_OPERATOR_OPTIONS,
   CONDITION_PROPERTY_OPTIONS,
@@ -63,11 +63,11 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
         className={styles.avatar}
       />
       <Text strong style={{ flex: 1 }}>
-        Condition
+        Match
       </Text>
       <Popconfirm
-        title="Delete condition"
-        description="Are you sure you want to delete this condition and its children?"
+        title="Delete match"
+        description="Are you sure you want to delete this match and its children?"
         onConfirm={data.onDelete}
         okText="Delete"
         okButtonProps={{ danger: true }}
@@ -79,7 +79,7 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
           icon={<Icons.TrashCan size={14} />}
           danger
           className="nodrag"
-          aria-label="Delete condition"
+          aria-label="Delete match"
           data-testid="delete-condition-btn"
         />
       </Popconfirm>
@@ -162,11 +162,11 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
         size="small"
         icon={<Icons.Add size={14} />}
         onClick={data.onAddCondition}
-        aria-label="Add condition"
+        aria-label="Add match"
         data-testid="add-sibling-condition-btn"
         className={styles.addSiblingButton}
       >
-        Condition
+        Match
       </Button>
     </div>
     {!data.hasChildren && (

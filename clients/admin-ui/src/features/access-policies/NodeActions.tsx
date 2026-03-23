@@ -45,7 +45,7 @@ const NodeActions = ({
             className={classNames(styles.iconButton, styles.conditionButton)}
           />
           <Typography.Text className={styles.actionLabel}>
-            Condition
+            Match
           </Typography.Text>
         </Flex>
       )}
@@ -77,7 +77,7 @@ const NodeActions = ({
             className={classNames(styles.iconButton, styles.actionButton)}
           />
           <Typography.Text className={styles.actionLabel}>
-            Action
+            Decision
           </Typography.Text>
         </Flex>
       )}

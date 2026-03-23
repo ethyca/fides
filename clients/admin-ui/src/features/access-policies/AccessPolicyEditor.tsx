@@ -35,10 +35,10 @@ import {
   AccessPolicy,
   useGetControlGroupsQuery,
 } from "./access-policies.slice";
-import ActionNode, { ActionNodeType } from "./ActionNode";
-import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
+import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
+import ConditionNode, { ConditionNodeType } from "./MatchNode";
 import {
   deriveLayoutEdges,
   nodesToYaml,

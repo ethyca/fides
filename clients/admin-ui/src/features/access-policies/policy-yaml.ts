@@ -1,9 +1,9 @@
 import { Edge, Node } from "@xyflow/react";
 import yaml from "js-yaml";
 
-import { ActionNodeData } from "./ActionNode";
-import { ConditionNodeData } from "./ConditionNode";
 import { ConstraintNodeData } from "./ConstraintNode";
+import { ActionNodeData } from "./DecisionNode";
+import { ConditionNodeData } from "./MatchNode";
 import { PolicyNodeData } from "./PolicyNode";
 import {
   AccessPolicyYaml,
@@ -135,9 +135,10 @@ export const yamlToNodesAndEdges = (
 
   presentProperties.forEach((property, idx) => {
     const dimension = matchBlock[property] as MatchDimension;
-    const operator = dimension.all
-      ? ConditionOperator.ALL
-      : ConditionOperator.ALL;
+    let operator = ConditionOperator.ALL;
+    if (dimension.any) {
+      operator = ConditionOperator.ANY;
+    }
     const values = dimension.all ?? dimension.any ?? [];
     const conditionId = `condition-${idx + 1}`;
 

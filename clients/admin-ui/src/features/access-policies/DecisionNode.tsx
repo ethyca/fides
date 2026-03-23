@@ -1,7 +1,7 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { Avatar, Flex, Form, Icons, Input, Radio, Text } from "fidesui";
 
-import styles from "./ActionNode.module.scss";
+import styles from "./DecisionNode.module.scss";
 import { ACTION_TYPE_OPTIONS } from "./constants";
 import NodeActions from "./NodeActions";
 import { ActionType } from "./types";
