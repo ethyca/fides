@@ -16,6 +16,8 @@ export interface DagreLayoutOptions {
   nodeSizes?: Record<string, { width: number; height: number }>;
   /** Node alignment within ranks. Default: dagre default (center). */
   align?: AlignOption;
+  /** Align the top of every rank to the same y origin. Default: false. */
+  topAlign?: boolean;
 }
 
 const DEFAULT_OPTIONS = {
@@ -29,6 +31,40 @@ const DEFAULT_OPTIONS = {
   nodeHeight: 70,
   nodeSizes: {} as Record<string, { width: number; height: number }>,
   align: undefined as AlignOption,
+  topAlign: false,
+};
+
+/**
+ * Shift nodes so that every rank (column in LR layout) starts at the same
+ * top y coordinate. Dagre centers ranks independently, which causes misalignment
+ * when nodes in different ranks have different heights. This corrects for that
+ * by finding the minimum y in each rank and aligning them all to the global minimum.
+ */
+const alignRankTops = <T extends { position: { x: number; y: number } }>(
+  nodes: T[],
+): T[] => {
+  if (nodes.length === 0) {
+    return nodes;
+  }
+
+  // Find the topmost y in each rank (grouped by x position)
+  const rankMinY = new Map<number, number>();
+  nodes.forEach((n) => {
+    const rx = Math.round(n.position.x);
+    const prev = rankMinY.get(rx);
+    if (prev === undefined || n.position.y < prev) {
+      rankMinY.set(rx, n.position.y);
+    }
+  });
+  const globalMinY = Math.min(...rankMinY.values());
+
+  return nodes.map((n) => {
+    const shift = rankMinY.get(Math.round(n.position.x))! - globalMinY;
+    return {
+      ...n,
+      position: { ...n.position, y: n.position.y - shift },
+    };
+  });
 };
 
 // The dagre layout algorithm needs a graph instance with nodes and edges
@@ -72,12 +108,10 @@ export const getLayoutedElements = (
   // Calculate positions
   dagre.layout(dagreGraph);
 
-  // Get position and assign it to the nodes
-  const layoutedNodes = nodes.map((node) => {
+  // Get position and assign it to the nodes (top-left origin)
+  let layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
 
-    // Position node at the calculated coordinates
-    // with the origin in the top left corner
     return {
       ...node,
       position: {
@@ -89,6 +123,10 @@ export const getLayoutedElements = (
       targetPosition: opts.rankdir === "LR" ? Position.Left : Position.Top,
     };
   });
+
+  if (opts.topAlign) {
+    layoutedNodes = alignRankTops(layoutedNodes);
+  }
 
   return { nodes: layoutedNodes, edges };
 };

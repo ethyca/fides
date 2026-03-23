@@ -475,6 +475,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         nodeWidth: 320,
         nodeHeight: 100,
         nodeSizes,
+        topAlign: true,
       }),
     [nodes, layoutEdges, nodeSizes],
   );
