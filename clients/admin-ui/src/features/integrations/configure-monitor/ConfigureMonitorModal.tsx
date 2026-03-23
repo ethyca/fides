@@ -2,12 +2,10 @@ import {
   ChakraUseDisclosureReturn as UseDisclosureReturn,
   Modal,
   PageSpinner,
-  useChakraToast as useToast,
   useMessage,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
@@ -62,19 +60,13 @@ const ConfigureMonitorModal = ({
 
   const databasesAvailable = !!databases && !!databases.total;
 
-  const toast = useToast();
-
   const message = useMessage();
 
   const handleSubmit = async (values: EditableMonitorConfig) => {
     let result: RTKResult | undefined;
     const timeout = setTimeout(() => {
       if (!result) {
-        toast({
-          ...DEFAULT_TOAST_PARAMS,
-          status: "info",
-          description: TIMEOUT_COPY,
-        });
+        message.info(TIMEOUT_COPY);
         onClose();
       }
     }, TIMEOUT_DELAY);
