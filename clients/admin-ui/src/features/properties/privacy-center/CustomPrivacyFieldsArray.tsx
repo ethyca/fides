@@ -168,6 +168,7 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
                   Field type
                 </FormLabel>
                 <Select
+                  aria-label="Field type"
                   value={entry.field_type ?? "text"}
                   options={FIELD_TYPE_OPTIONS}
                   onChange={(val: string) =>
