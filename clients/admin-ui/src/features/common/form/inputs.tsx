@@ -135,7 +135,11 @@ export const TextInput = forwardRef(
                   <EyeIcon
                     width="100%"
                     height="100%"
-                    color={type === "password" ? "#A0AEC0" : "#2D3748"}
+                    color={
+                      type === "password"
+                        ? "var(--fidesui-neutral-400)"
+                        : "var(--fidesui-neutral-700)"
+                    }
                   />
                 }
                 onClick={handleClickReveal}
