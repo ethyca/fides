@@ -172,7 +172,13 @@ def _restore_protected_structure(
     Restore protected structural elements (collections and protected fields)
     to their original values. User edits to non-protected parts are kept.
     Returns structured warnings for each restoration.
+
+    Requires ``connection_config.saas_config`` to be non-None (the caller in
+    ``SaaSValidationStep.validate`` guarantees this).
     """
+    if not connection_config.saas_config:
+        return []
+
     saas_config = SaaSConfig(**connection_config.saas_config)
     instance_key = connection_config.saas_config["fides_key"]
     warnings: List[DatasetFieldWarning] = []

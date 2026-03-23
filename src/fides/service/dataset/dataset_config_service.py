@@ -94,14 +94,13 @@ class DatasetConfigService:
 
             warnings = validation_response.warnings
 
-            # Mutations can't be persisted through the CtlDataset path,
-            # so clear warnings to avoid misleading the caller.
             if isinstance(dataset, DatasetConfigCtlDataset):
+                # Mutations can't be persisted through the CtlDataset path,
+                # so clear warnings to avoid misleading the caller.
                 warnings = []
-
-            # If the dataset was mutated by validation (restored fields),
-            # update the data_dict with the corrected dataset
-            if warnings and not isinstance(dataset, DatasetConfigCtlDataset):
+            elif warnings:
+                # The dataset was mutated by validation (restored fields),
+                # update the data_dict with the corrected dataset.
                 data_dict["dataset"] = dataset_to_validate.model_dump(mode="json")
 
             # Create or update using unified method
