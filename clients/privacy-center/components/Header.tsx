@@ -20,7 +20,7 @@ const Header = ({ logoPath, logoUrl }: HeaderProps) => {
         justifyContent="center"
         alignItems="center"
       >
-        <Logo src={logoPath ?? ""} href={logoUrl ?? ""} />
+        {logoPath && <Logo src={logoPath} href={logoUrl ?? ""} />}
       </Flex>
     </header>
   );

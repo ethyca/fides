@@ -77,7 +77,7 @@ const PrivacyCenterPreview = () => {
         {(config?.logo_url || config?.logo_path) && (
           <Box mb={6} textAlign="center">
             <Image
-              src={config.logo_url ?? config.logo_path ?? ""}
+              src={config.logo_url || config.logo_path || ""}
               alt="Logo"
               maxHeight="60px"
               objectFit="contain"
@@ -158,11 +158,16 @@ const PrivacyCenterPreview = () => {
           ))}
         </Flex>
 
-        {/* Privacy policy link */}
-        {config?.privacy_policy_url && (
-          <Text fontSize="xs" color="gray.500" textAlign="center" mt={6}>
-            {config.privacy_policy_url_text || "Privacy Policy"}
-          </Text>
+        {/* Links */}
+        {(config?.links ?? []).length > 0 && (
+          <Flex justifyContent="center" gap={4} mt={6} flexWrap="wrap">
+            {(config.links ?? []).map((link, i) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Text key={i} fontSize="xs" color="gray.500">
+                {link.label}
+              </Text>
+            ))}
+          </Flex>
         )}
       </Box>
     </Box>
