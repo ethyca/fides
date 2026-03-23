@@ -22,6 +22,7 @@ interface CustomFieldEntry {
   hidden?: boolean | null;
   ip_geolocation_hint?: boolean | null;
   default_value?: string | null;
+  options?: string[] | null;
 }
 
 const FIELD_TYPE_OPTIONS = [
@@ -94,10 +95,36 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
     syncToFormik(updated);
   };
 
+  const handleAddOption = (entryIndex: number) => {
+    const current = entries[entryIndex].options ?? [];
+    handleFieldChange(entryIndex, "options", [...current, ""]);
+  };
+
+  const handleRemoveOption = (entryIndex: number, optionIndex: number) => {
+    const updated = (entries[entryIndex].options ?? []).filter(
+      (_, i) => i !== optionIndex,
+    );
+    handleFieldChange(entryIndex, "options", updated.length ? updated : null);
+  };
+
+  const handleOptionChange = (
+    entryIndex: number,
+    optionIndex: number,
+    value: string,
+  ) => {
+    const updated = (entries[entryIndex].options ?? []).map((opt, i) =>
+      i === optionIndex ? value : opt,
+    );
+    handleFieldChange(entryIndex, "options", updated);
+  };
+
   return (
     <Flex flexDir="column" gap={3}>
       {entries.map((entry, index) => {
         const isLocation = entry.field_type === "location";
+        const hasOptions =
+          entry.field_type === "select" || entry.field_type === "multiselect";
+        const showDefaultValue = !!entry.hidden || hasOptions;
         return (
           <Box
             // eslint-disable-next-line react/no-array-index-key
@@ -200,10 +227,10 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
                   </Checkbox>
                 )}
               </Flex>
-              {entry.hidden && (
+              {showDefaultValue && (
                 <Box>
                   <FormLabel fontSize="xs" my={0} mb={1}>
-                    Default value (required when hidden)
+                    Default value{entry.hidden ? " (required when hidden)" : ""}
                   </FormLabel>
                   <Input
                     value={entry.default_value ?? ""}
@@ -213,6 +240,45 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
                     size="sm"
                     data-testid={`custom-field-default-${actionIndex}-${index}`}
                   />
+                </Box>
+              )}
+              {hasOptions && (
+                <Box>
+                  <FormLabel fontSize="xs" my={0} mb={1}>
+                    Options
+                  </FormLabel>
+                  <Flex flexDir="column" gap={1}>
+                    {(entry.options ?? []).map((opt, optIdx) => (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <Flex key={optIdx} gap={2} alignItems="center">
+                        <Input
+                          value={opt}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            handleOptionChange(index, optIdx, e.target.value)
+                          }
+                          size="sm"
+                          data-testid={`custom-field-option-${actionIndex}-${index}-${optIdx}`}
+                        />
+                        <Button
+                          aria-label="Remove option"
+                          icon={<DeleteIcon />}
+                          onClick={() => handleRemoveOption(index, optIdx)}
+                          loading={false}
+                          data-testid={`remove-option-${actionIndex}-${index}-${optIdx}`}
+                        />
+                      </Flex>
+                    ))}
+                    <Box>
+                      <Button
+                        icon={<SmallAddIcon />}
+                        onClick={() => handleAddOption(index)}
+                        loading={false}
+                        data-testid={`add-option-${actionIndex}-${index}`}
+                      >
+                        Add option
+                      </Button>
+                    </Box>
+                  </Flex>
                 </Box>
               )}
             </Flex>

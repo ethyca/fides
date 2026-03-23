@@ -1,5 +1,8 @@
 import {
   Button,
+  ChakraAlert as Alert,
+  ChakraAlertDescription as AlertDescription,
+  ChakraAlertIcon as AlertIcon,
   ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraSmallAddIcon as SmallAddIcon,
@@ -21,23 +24,36 @@ const PathsFieldArray = () => {
         <Flex flexDir="column" gap={3}>
           {paths.map((_, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Flex key={index} flexDir="row" gap={2} alignItems="flex-end">
-              <Flex flex={1}>
-                <CustomTextInput
-                  name={`paths[${index}]`}
-                  label={index === 0 ? "Path" : undefined}
-                  placeholder="/path"
-                  variant="stacked"
+            <Flex key={index} flexDir="column" gap={2}>
+              {paths[index] === "/" && (
+                <Alert status="warning" colorScheme="warn">
+                  <AlertIcon />
+                  <AlertDescription>
+                    <code>FIDES_PRIVACY_CENTER__USE_API_CONFIG</code> must be
+                    set to <code>true</code> when serving the Privacy Center at
+                    the root path (<code>/</code>). Update this variable to
+                    continue.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <Flex flexDir="row" gap={2} alignItems="flex-end">
+                <Flex flex={1}>
+                  <CustomTextInput
+                    name={`paths[${index}]`}
+                    label={index === 0 ? "Path" : undefined}
+                    placeholder="/path"
+                    variant="stacked"
+                  />
+                </Flex>
+                <Button
+                  aria-label="Remove path"
+                  icon={<DeleteIcon />}
+                  onClick={() => arrayHelpers.remove(index)}
+                  loading={false}
+                  className="mb-1"
+                  data-testid={`remove-path-${index}`}
                 />
               </Flex>
-              <Button
-                aria-label="Remove path"
-                icon={<DeleteIcon />}
-                onClick={() => arrayHelpers.remove(index)}
-                loading={false}
-                className="mb-1"
-                data-testid={`remove-path-${index}`}
-              />
             </Flex>
           ))}
           <Button
