@@ -1,7 +1,7 @@
 import { formatDistance } from "date-fns";
-import type { ColumnsType } from "fidesui";
+import { type ColumnsType, Text } from "fidesui";
 
-import type { PolicyViolationLog } from "../types";
+import type { PolicyViolationLog } from "./types";
 
 export const getRequestLogColumns = (): ColumnsType<PolicyViolationLog> => [
   {
@@ -40,14 +40,6 @@ export const getRequestLogColumns = (): ColumnsType<PolicyViolationLog> => [
     key: "dataset",
     width: 200,
     ellipsis: true,
-    render: (value: string) => <span className="font-mono">{value}</span>,
-  },
-  {
-    title: "Data use",
-    dataIndex: "data_use",
-    key: "data_use",
-    width: 200,
-    ellipsis: true,
-    render: (value: string) => <span className="font-mono">{value}</span>,
+    render: (value: string) => <Text code>{value}</Text>,
   },
 ];

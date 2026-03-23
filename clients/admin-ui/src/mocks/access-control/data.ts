@@ -1,3 +1,5 @@
+import { pickInterval } from "fidesui";
+
 import type {
   AccessControlSummaryResponse,
   ConsumerRequestSummary,
@@ -6,7 +8,6 @@ import type {
   TimeseriesBucket,
   TimeseriesResponse,
 } from "~/features/access-control/types";
-import { pickInterval } from "fidesui";
 
 const sumField = (
   items: TimeseriesBucket[],
@@ -141,9 +142,7 @@ export const LOG_DATA_USES = [
   "collect.provide",
 ];
 
-export const LOG_CONTROLS = [
-  ...new Set(Object.values(CONTROLS).flat()),
-].sort();
+export const LOG_CONTROLS = [...new Set(Object.values(CONTROLS).flat())].sort();
 
 const POLICY_DESCRIPTIONS: Record<string, string> = {
   "Marketing Data Policy":
@@ -298,11 +297,14 @@ export const aggregateLogsToTimeseries = (
   const bucketCount = Math.max(1, Math.ceil((endMs - flooredStart) / interval));
   const rand = seededRandom(7);
 
-  const buckets: TimeseriesBucket[] = Array.from({ length: bucketCount }, (_, i) => ({
-    label: new Date(flooredStart + i * interval).toISOString(),
-    requests: 0,
-    violations: 0,
-  }));
+  const buckets: TimeseriesBucket[] = Array.from(
+    { length: bucketCount },
+    (_, i) => ({
+      label: new Date(flooredStart + i * interval).toISOString(),
+      requests: 0,
+      violations: 0,
+    }),
+  );
 
   logs.forEach((log) => {
     const logMs = new Date(log.timestamp).getTime();

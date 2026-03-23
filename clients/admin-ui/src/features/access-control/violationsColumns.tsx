@@ -1,7 +1,7 @@
 import { formatDistance } from "date-fns";
 import { type ColumnsType, Tag } from "fidesui";
 
-import type { PolicyViolationAggregate } from "../types";
+import type { PolicyViolationAggregate } from "./types";
 
 const getViolationColor = (count: number) => {
   if (count >= 100) {

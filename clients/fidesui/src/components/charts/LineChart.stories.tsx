@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { HOUR_MS } from "../../index";
-import type { AreaChartProps } from "./AreaChart";
-import { AreaChart } from "./AreaChart";
+import type { LineChartProps } from "./LineChart";
+import { LineChart } from "./LineChart";
 import { seededRandom } from "./story-utils";
 
-const generateData = (hours: number): AreaChartProps["data"] => {
+const generateData = (hours: number): LineChartProps["data"] => {
   const rand = seededRandom(99);
   const now = new Date("2026-03-18T12:00:00Z").getTime();
   const start = now - hours * HOUR_MS;
@@ -17,8 +17,8 @@ const generateData = (hours: number): AreaChartProps["data"] => {
 };
 
 const meta = {
-  title: "Charts/AreaChart",
-  component: AreaChart,
+  title: "Charts/LineChart",
+  component: LineChart,
   parameters: { layout: "fullscreen" },
   tags: ["autodocs"],
   decorators: [
@@ -38,7 +38,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof AreaChart>;
+} satisfies Meta<typeof LineChart>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

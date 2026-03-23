@@ -1,36 +1,55 @@
-import { Card, DonutChart, Flex, Statistic, Text } from "fidesui";
-import { theme as antTheme } from "antd/lib";
+import { antTheme, Card, DonutChart, Flex, Statistic, Text } from "fidesui";
 
-interface ViolationRateCardProps {
-  violations: number;
-  totalRequests: number;
-  trend: number;
-  totalPolicies: number;
-  loading?: boolean;
-}
+import { useGetAccessControlSummaryQuery } from "./access-control.slice";
+import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
 
-export const ViolationRateCard = ({
-  violations,
-  totalRequests,
-  trend,
-  totalPolicies,
-  loading,
-}: ViolationRateCardProps) => {
+const getTrendColor = (
+  trend: number,
+  token: ReturnType<typeof antTheme.useToken>["token"],
+) => {
+  if (trend < 0) {
+    return token.colorSuccess;
+  }
+  if (trend > 0) {
+    return token.colorErrorText;
+  }
+  return token.colorTextSecondary;
+};
+
+const getTrendPrefix = (trend: number) => {
+  if (trend < 0) {
+    return "-";
+  }
+  if (trend > 0) {
+    return "+";
+  }
+  return "";
+};
+
+export const ViolationRateCard = () => {
   const { token } = antTheme.useToken();
+  const { filters } = useRequestLogFilterContext();
+
+  const { data, isLoading } = useGetAccessControlSummaryQuery(filters);
+
+  const violations = data?.violations ?? 0;
+  const totalRequests = data?.total_requests ?? 0;
+  const trend = data?.trend ?? 0;
+
   const ratePercent =
     totalRequests > 0 ? (violations / totalRequests) * 100 : 0;
   const rate = ratePercent > 0 ? ratePercent.toFixed(1) : "0";
 
   return (
     <Card
-      loading={loading}
+      loading={isLoading}
       title={<Text strong>Violation rate</Text>}
       className="flex h-full flex-col"
-      styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
+      classNames={{ body: "flex flex-1 flex-col" }}
     >
       <Flex vertical gap={16} className="flex-1">
         <Flex align="center" gap={16}>
-          <div className="h-[100px] w-[100px] shrink-0">
+          <div className="size-[100px] shrink-0">
             <DonutChart
               segments={[
                 {
@@ -45,7 +64,7 @@ export const ViolationRateCard = ({
                 },
               ]}
               centerLabel={
-                <Text strong style={{ fontSize: token.fontSizeLG }}>
+                <Text strong className="text-lg">
                   {rate}%
                 </Text>
               }
@@ -59,15 +78,10 @@ export const ViolationRateCard = ({
             <Statistic
               value={Math.abs(trend * 100)}
               precision={1}
-              prefix={trend < 0 ? "-" : trend > 0 ? "+" : ""}
+              prefix={getTrendPrefix(trend)}
               suffix="% vs last mo"
               valueStyle={{
-                color:
-                  trend < 0
-                    ? token.colorSuccess
-                    : trend > 0
-                      ? token.colorError
-                      : token.colorTextSecondary,
+                color: getTrendColor(trend, token),
                 fontSize: token.fontSizeSM,
               }}
             />

@@ -1,16 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Flex, theme } from "antd/lib";
-import { useMemo, useRef, useState } from "react";
+import { Flex } from "antd/lib";
+import { useMemo, useState } from "react";
 
-import type { BarChartProps, BarSize, ChartDataRequest } from "../../index";
-import {
-  BarChart,
-  computeDataRequest,
-  HOUR_MS,
-  useContainerWidth,
-} from "../../index";
-import { BAR_SIZE_TOKEN } from "./chart-constants";
-
+import type { BarChartProps, ChartDataRequest } from "../../index";
+import { BarChart, HOUR_MS } from "../../index";
 import { seededRandom } from "./story-utils";
 
 interface ViolationPoint {

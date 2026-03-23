@@ -1,6 +1,7 @@
 import {
-  Avatar,
+  antTheme,
   Button,
+  Card,
   CUSTOM_TAG_COLOR,
   Drawer,
   Flex,
@@ -14,7 +15,7 @@ import { useMemo } from "react";
 
 import { Editor } from "~/features/common/yaml/helpers";
 
-import { useGetViolationDetailQuery } from "../access-control.slice";
+import { useGetViolationDetailQuery } from "./access-control.slice";
 
 const { Text, Title } = Typography;
 
@@ -29,6 +30,7 @@ export const ViolationDetailDrawer = ({
   open,
   onClose,
 }: ViolationDetailDrawerProps) => {
+  const { token } = antTheme.useToken();
   const {
     data: violation,
     isLoading,
@@ -76,81 +78,70 @@ export const ViolationDetailDrawer = ({
         />
       )}
       {violation && timestamp && (
-        <div className="space-y-6">
-          <div>
-            <Text className="mb-2 block text-xs font-semibold text-neutral-10">
+        <Flex vertical gap={24}>
+          <section>
+            <Text type="secondary" strong className="mb-2 block">
               Violation reason
             </Text>
-            <div className="rounded-lg bg-gray-50 p-5">
-              <Text className="text-sm leading-relaxed">
-                {violation.ai_reason ?? "Analysis pending..."}
-              </Text>
-            </div>
-          </div>
+            <Card size="small">
+              <Text>{violation.ai_reason ?? "Analysis pending..."}</Text>
+            </Card>
+          </section>
 
-          <div>
-            <Text className="mb-2 block text-xs font-semibold text-neutral-10">
+          <section>
+            <Text type="secondary" strong className="mb-2 block">
               Data consumer
             </Text>
-            <Flex justify="space-between" align="center">
-              <Flex align="center" gap="middle">
-                <div>
-                  <Text strong className="block">
-                    {violation.consumer}
-                  </Text>
-                  {violation.consumer_email && (
-                    <a
-                      href={`mailto:${violation.consumer_email}`}
-                      className="text-sm text-neutral-10/60 hover:underline"
-                    >
-                      {violation.consumer_email}
-                    </a>
-                  )}
-                </div>
-              </Flex>
+            <Flex vertical>
+              <Text strong>{violation.consumer}</Text>
+              {violation.consumer_email && (
+                <a href={`mailto:${violation.consumer_email}`}>
+                  <Text type="secondary">{violation.consumer_email}</Text>
+                </a>
+              )}
             </Flex>
-          </div>
+          </section>
 
-          <div>
-            <Text className="mb-2 block text-xs font-semibold text-neutral-10">
+          <section>
+            <Text type="secondary" strong className="mb-2 block">
               Details
             </Text>
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg bg-gray-50 px-4 py-3">
-                <Text className="mb-1 block text-xs text-neutral-10">
+              <Card size="small">
+                <Text type="secondary" className="mb-1 block">
                   Timestamp
                 </Text>
-                <Text className="text-sm">
+                <Text>
                   {timestamp.toISOString().slice(0, 10)}{" "}
                   {timestamp.toISOString().slice(11, 19)}
                 </Text>
-              </div>
-              <div className="rounded-lg bg-gray-50 px-4 py-3">
-                <Text className="mb-1 block text-xs text-neutral-10">
+              </Card>
+              <Card size="small">
+                <Text type="secondary" className="mb-1 block">
                   Data use
                 </Text>
-                <Text className="text-sm">{violation.data_use ?? "N/A"}</Text>
-              </div>
-              <div className="rounded-lg bg-gray-50 px-4 py-3">
-                <Text className="mb-1 block text-xs text-neutral-10">
+                <Text>{violation.data_use ?? "N/A"}</Text>
+              </Card>
+              <Card size="small">
+                <Text type="secondary" className="mb-1 block">
                   Dataset
                 </Text>
-                <Text className="text-sm">{violation.dataset}</Text>
-              </div>
-              <div className="rounded-lg bg-gray-50 px-4 py-3">
-                <Text className="mb-1 block text-xs text-neutral-10">
+                <Text>{violation.dataset}</Text>
+              </Card>
+              <Card size="small">
+                <Text type="secondary" className="mb-1 block">
                   Policy
                 </Text>
-                <Text className="text-sm">{violation.policy ?? "N/A"}</Text>
-              </div>
+                <Text>{violation.policy ?? "N/A"}</Text>
+              </Card>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <Text className="mb-2 block text-xs font-semibold text-neutral-10">
+          <section>
+            <Text type="secondary" strong className="mb-2 block">
               Request context
             </Text>
-            <div className="overflow-hidden rounded-lg border border-gray-200">
+            <Card size="small" className="overflow-hidden">
               <Editor
                 defaultLanguage="sql"
                 value={violation.sql_statement}
@@ -163,7 +154,7 @@ export const ViolationDetailDrawer = ({
                   scrollBeyondLastLine: false,
                   folding: false,
                   fontSize: 12,
-                  fontFamily: "Menlo, monospace",
+                  fontFamily: token.fontFamilyCode,
                   wordWrap: "on",
                   padding: { top: 12, bottom: 12 },
                   renderLineHighlight: "none",
@@ -174,15 +165,15 @@ export const ViolationDetailDrawer = ({
                   },
                 }}
               />
-            </div>
-          </div>
+            </Card>
+          </section>
 
-          <div>
-            <Text className="mb-2 block text-xs font-semibold text-neutral-10">
+          <section>
+            <Text type="secondary" strong className="mb-2 block">
               Policy deviated
             </Text>
             {violation.policy ? (
-              <div className="rounded-lg border border-gray-200 p-5">
+              <Card size="small">
                 <Flex align="center" gap="small" className="mb-2">
                   <Title level={5} className="!m-0">
                     {violation.policy}
@@ -191,29 +182,22 @@ export const ViolationDetailDrawer = ({
                     {violation.data_use}
                   </Tag>
                 </Flex>
-                <Text
-                  type="secondary"
-                  className="block text-sm leading-relaxed"
-                >
-                  {violation.policy_description}
-                </Text>
+                <Text type="secondary">{violation.policy_description}</Text>
                 <Flex align="center" gap={4} className="mt-3">
-                  <Text type="secondary" className="text-sm font-medium">
-                    View policy
-                  </Text>
+                  <Text type="secondary">View policy</Text>
                   <Icons.ArrowRight size={14} />
                 </Flex>
-              </div>
+              </Card>
             ) : (
-              <div className="rounded-lg border border-dashed border-gray-300 p-5 text-center">
-                <Text type="secondary" className="mb-2 block text-sm">
+              <Card size="small" className="text-center">
+                <Text type="secondary" className="mb-2 block">
                   No policy associated with this violation
                 </Text>
                 <Button size="small">Add policy</Button>
-              </div>
+              </Card>
             )}
-          </div>
-        </div>
+          </section>
+        </Flex>
       )}
     </Drawer>
   );

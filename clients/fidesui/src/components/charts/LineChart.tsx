@@ -14,6 +14,7 @@ import type { AntColorTokenKey } from "./chart-constants";
 import {
   CHART_ANIMATION,
   CHART_STROKE,
+  LABEL_WIDTH,
   MIN_PX_PER_POINT,
 } from "./chart-constants";
 import {
@@ -29,32 +30,32 @@ import {
 import { ChartGradient } from "./ChartGradient";
 import { XAxisTick } from "./XAxisTick";
 
-export interface AreaChartSeries {
+export interface LineChartSeries {
   key: string;
   name: string;
   color?: AntColorTokenKey;
 }
 
-export interface AreaChartDataPoint {
+export interface LineChartDataPoint {
   label: string;
   [key: string]: string | number;
 }
 
-export interface AreaChartProps {
-  data?: AreaChartDataPoint[];
-  series: AreaChartSeries[];
+export interface LineChartProps {
+  data?: LineChartDataPoint[];
+  series: LineChartSeries[];
   animationDuration?: number;
   showTooltip?: boolean;
   showGrid?: boolean;
 }
 
-export const AreaChart = ({
+export const LineChart = ({
   data,
   series,
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   showGrid = true,
-}: AreaChartProps) => {
+}: LineChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
   const animationActive = useChartAnimation(animationDuration);
@@ -66,13 +67,17 @@ export const AreaChart = ({
   const rawData = data ?? [];
 
   const chartData = useMemo(() => {
-    if (containerWidth <= 0 || rawData.length < 2) return rawData;
+    if (containerWidth <= 0 || rawData.length < 2) {
+      return rawData;
+    }
 
     const timestamps = rawData.map((point) => new Date(point.label).getTime());
     const minTs = Math.min(...timestamps);
     const maxTs = Math.max(...timestamps);
     const rangeMs = maxTs - minTs;
-    if (rangeMs <= 0) return rawData;
+    if (rangeMs <= 0) {
+      return rawData;
+    }
 
     const intervalHours = pickIntervalHours(
       rangeMs,
@@ -87,15 +92,15 @@ export const AreaChart = ({
     );
 
     const seriesKeys = series.map((entry) => entry.key);
-    const buckets: AreaChartDataPoint[] = Array.from(
+    const buckets: LineChartDataPoint[] = Array.from(
       { length: bucketCount },
       (_, index) => {
-        const point: AreaChartDataPoint = {
+        const point: LineChartDataPoint = {
           label: new Date(flooredStart + index * intervalMs).toISOString(),
         };
-        for (const key of seriesKeys) {
+        seriesKeys.forEach((key) => {
           point[key] = 0;
-        }
+        });
         return point;
       },
     );
@@ -105,15 +110,22 @@ export const AreaChart = ({
         Math.floor((ts - flooredStart) / intervalMs),
         bucketCount - 1,
       );
-      for (const key of seriesKeys) {
+      seriesKeys.forEach((key) => {
         (buckets[bucketIndex][key] as number) += Number(rawData[idx][key] ?? 0);
-      }
+      });
     });
 
     return buckets;
   }, [rawData, series, containerWidth]);
 
   const intervalMs = deriveInterval(chartData);
+
+  const pointCount = chartData.length;
+  const slotWidth =
+    pointCount > 0 && containerWidth > 0
+      ? containerWidth / pointCount
+      : LABEL_WIDTH;
+  const tickInterval = Math.max(0, Math.ceil(LABEL_WIDTH / slotWidth) - 1);
 
   return (
     <div ref={containerRef} className="h-full w-full">
@@ -146,6 +158,7 @@ export const AreaChart = ({
                   fill={token.colorTextTertiary}
                 />
               }
+              interval={tickInterval}
               axisLine={false}
               tickLine={false}
             />

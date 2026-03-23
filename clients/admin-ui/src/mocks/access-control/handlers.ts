@@ -45,6 +45,7 @@ export const accessControlHandlers = () => {
       const startDate = filters.start_date ?? DEFAULT_START;
       const endDate = filters.end_date ?? DEFAULT_END;
       const filtered = filterLogs(allViolationLogs, {
+        ...filters,
         start_date: startDate,
         end_date: endDate,
       });
@@ -72,17 +73,13 @@ export const accessControlHandlers = () => {
     }),
 
     rest.get(`${apiBase}/access-control/consumers`, (req, res, ctx) => {
-      const orderBy =
-        req.url.searchParams.get("order_by") || "violation_count";
+      const orderBy = req.url.searchParams.get("order_by") || "violation_count";
       const sorted = [...dataConsumersByViolationsData].sort((a, b) =>
         orderBy === "request_count"
           ? b.requests - a.requests
           : b.violations - a.violations,
       );
-      return res(
-        ctx.status(200),
-        ctx.json({ items: sorted }),
-      );
+      return res(ctx.status(200), ctx.json({ items: sorted }));
     }),
 
     rest.get(`${apiBase}/access-control/violations/logs`, (req, res, ctx) => {
@@ -101,7 +98,7 @@ export const accessControlHandlers = () => {
       const items = filtered.slice(startIdx, startIdx + size);
       const nextCursor =
         startIdx + size < filtered.length
-          ? items[items.length - 1]?.id ?? null
+          ? (items[items.length - 1]?.id ?? null)
           : null;
 
       return res(
@@ -145,10 +142,16 @@ export const accessControlHandlers = () => {
       const filtered = filterLogs(allViolationLogs, filters);
 
       const consumers = [...new Set(filtered.map((l) => l.consumer))].sort();
-      const policies = [...new Set(filtered.map((l) => l.policy).filter(Boolean))].sort() as string[];
+      const policies = [
+        ...new Set(filtered.map((l) => l.policy).filter(Boolean)),
+      ].sort() as string[];
       const datasets = [...new Set(filtered.map((l) => l.dataset))].sort();
-      const dataUses = [...new Set(filtered.map((l) => l.data_use).filter(Boolean))].sort() as string[];
-      const controls = [...new Set(filtered.map((l) => l.control).filter(Boolean))].sort() as string[];
+      const dataUses = [
+        ...new Set(filtered.map((l) => l.data_use).filter(Boolean)),
+      ].sort() as string[];
+      const controls = [
+        ...new Set(filtered.map((l) => l.control).filter(Boolean)),
+      ].sort() as string[];
 
       return res(
         ctx.status(200),

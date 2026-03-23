@@ -5,11 +5,13 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
-import { SEPARATOR } from "./FacetedSearchInput";
+import { SEPARATOR } from "../FacetedSearchInput";
 
 type FacetKey = "consumer" | "policy" | "dataset" | "data_use" | "control";
 
@@ -37,6 +39,7 @@ export interface RequestLogFilterState {
   liveTail: boolean;
   setLiveTail: (value: boolean) => void;
   onChartIntervalChange: (request: ChartDataRequest) => void;
+  applyFacets: (facets: Record<string, string>) => void;
 }
 
 export const RequestLogFilterContext =
@@ -53,22 +56,46 @@ export const useRequestLogFilterContext = (): RequestLogFilterState => {
 };
 
 export const useRequestLogFilters = (): RequestLogFilterState => {
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
+    () => [dayjs().subtract(7, "day"), dayjs()],
+  );
+
   const router = useRouter();
 
-  const [dateRange, setDateRange] = useState<
-    [dayjs.Dayjs, dayjs.Dayjs] | null
-  >(() => [dayjs().subtract(7, "day"), dayjs()]);
-
   const [searchValues, setSearchValues] = useState<string[]>(() => {
-    const initial: string[] = [];
-    for (const key of ["policy", "control"] as const) {
-      const val = router.query[key];
-      if (typeof val === "string" && val) {
-        initial.push(`${key}${SEPARATOR}${val}`);
-      }
+    const { facets } = router.query;
+    if (typeof facets === "string" && facets) {
+      return facets.split(",");
     }
-    return initial;
+    if (Array.isArray(facets)) {
+      return facets.filter(Boolean) as string[];
+    }
+    return [];
   });
+
+  const skipUrlSyncRef = useRef(false);
+
+  useEffect(() => {
+    if (skipUrlSyncRef.current) {
+      skipUrlSyncRef.current = false;
+      return;
+    }
+    const desired = searchValues.join(",");
+    const current = (router.query.facets as string) ?? "";
+    if (current === desired) {
+      return;
+    }
+    const query = { ...router.query };
+    if (desired) {
+      query.facets = desired;
+    } else {
+      delete query.facets;
+    }
+    router.replace({ pathname: router.pathname, query }, undefined, {
+      shallow: true,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchValues]);
 
   const [liveTail, setLiveTail] = useState(false);
   const [intervalHours, setIntervalHours] = useState<number | undefined>();
@@ -119,7 +146,7 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
   const timeseriesFilters: TimeseriesFilters = useMemo(
     () => ({
       ...filters,
-      ...(intervalHours != null ? { interval: intervalHours } : {}),
+      ...(intervalHours !== null ? { interval: intervalHours } : {}),
     }),
     [filters, intervalHours],
   );
@@ -127,6 +154,31 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
   const onChartIntervalChange = useCallback((request: ChartDataRequest) => {
     setIntervalHours(request.interval);
   }, []);
+
+  const applyFacets = useCallback(
+    (facets: Record<string, string>) => {
+      const encoded = Object.entries(facets).map(
+        ([key, value]) => `${key}${SEPARATOR}${value}`,
+      );
+
+      const params = new URLSearchParams(window.location.search);
+      const desired = encoded.join(",");
+      if (desired) {
+        params.set("facets", desired);
+      } else {
+        params.delete("facets");
+      }
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}?${params}`,
+      );
+
+      skipUrlSyncRef.current = true;
+      setSearchValues(encoded);
+    },
+    [setSearchValues],
+  );
 
   return {
     filters,
@@ -138,5 +190,6 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     liveTail,
     setLiveTail,
     onChartIntervalChange,
+    applyFacets,
   };
 };

@@ -36,7 +36,7 @@ interface ConsumersByViolationsParams extends FacetFilters {
   order_by?: "violation_count" | "request_count";
 }
 
-interface SummaryParams {
+interface SummaryParams extends FacetFilters {
   start_date?: string;
   end_date?: string;
 }
@@ -51,9 +51,10 @@ interface ViolationLogsParams extends FacetFilters, DateRange {
   size?: number;
 }
 
-interface PolicyViolationsParams extends PaginatedParams, DateRange {
-  policy?: string | string[];
-  control?: string | string[];
+interface PolicyViolationsParams
+  extends PaginatedParams,
+    DateRange,
+    FacetFilters {
   sort_by?: "violation_count" | "last_violation";
   sort_direction?: "asc" | "desc";
 }
@@ -79,7 +80,11 @@ const accessControlApi = baseApi.injectEndpoints({
         params,
       }),
       transformResponse: (response: {
-        items: Array<{ timestamp: string; requests: number; violations: number }>;
+        items: Array<{
+          timestamp: string;
+          requests: number;
+          violations: number;
+        }>;
       }): TimeseriesResponse => ({
         items: response.items.map(({ timestamp, ...rest }) => ({
           label: timestamp,
