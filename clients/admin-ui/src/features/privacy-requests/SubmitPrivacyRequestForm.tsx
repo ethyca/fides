@@ -3,7 +3,7 @@ import {
   ChakraStack as Stack,
   Checkbox,
   Form,
-  LinkIcon,
+  Icons,
   LocationSelect,
   useChakraClipboard as useClipboard,
   useMessage,
@@ -304,7 +304,7 @@ export const CopyPrivacyRequestLinkForm = ({
                   type="primary"
                   disabled={!dirty || !isValid}
                   data-testid="submit-btn"
-                  icon={<LinkIcon />}
+                  icon={<Icons.Link />}
                 >
                   Copy
                 </Button>

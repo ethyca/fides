@@ -5,7 +5,6 @@ import {
   GreenCheckCircleIcon,
   Icons,
   Layout,
-  LinkIcon as FidesUILinkIcon,
   MoreIcon,
   SearchLineIcon,
   SparkleIcon as FidesUISparkleIcon,
@@ -82,15 +81,6 @@ const ICON_DATA: IconEntry[] = [
     source: "fidesui",
     suggestedCarbon: "CheckmarkFilled",
     notes: "Uses green fill color",
-  },
-  {
-    key: "fidesui-LinkIcon",
-    currentName: "LinkIcon",
-    currentIcon: <FidesUILinkIcon boxSize={5} />,
-    iconType: "chakra-icon",
-    source: "fidesui",
-    suggestedCarbon: "Link",
-    notes: "",
   },
   {
     key: "fidesui-MoreIcon",
