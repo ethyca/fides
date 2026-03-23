@@ -28,8 +28,8 @@ export const CONDITION_PROPERTY_OPTIONS: NonNullable<SelectProps["options"]> = [
 ];
 
 export const CONDITION_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
-  { value: ConditionOperator.ALL, label: "All" },
-  { value: ConditionOperator.ANY, label: "Any" },
+  { value: ConditionOperator.ANY, label: "Any of" },
+  { value: ConditionOperator.ALL, label: "All of" },
 ];
 
 export const CONSTRAINT_TYPE_OPTIONS: RadioOption<ConstraintType>[] = [
