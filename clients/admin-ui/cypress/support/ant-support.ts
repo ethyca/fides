@@ -211,8 +211,8 @@ Cypress.Commands.add(
     prevSubject: "element",
   },
   (subject, option, clickOptions = { force: true }) => {
-    cy.get(subject.selector).first().should("have.class", "ant-select");
-    cy.get(subject.selector)
+    cy.wrap(subject).first().should("have.class", "ant-select");
+    cy.wrap(subject)
       .first()
       .invoke("attr", "class")
       .then((classes) => {
@@ -221,19 +221,15 @@ Cypress.Commands.add(
         }
         if (!classes.includes("ant-select-open")) {
           if (classes.includes("ant-select-multiple")) {
-            cy.get(subject.selector).first().find("input").focus().click();
+            cy.wrap(subject).first().find("input").focus().click();
           } else {
-            cy.get(subject.selector)
-              .first()
-              .find("input")
-              .focus()
-              .click(clickOptions);
+            cy.wrap(subject).first().find("input").focus().click(clickOptions);
           }
         }
         cy.antSelectDropdownVisible();
         cy.getAntSelectOption(option).should("be.visible").click(clickOptions);
         if (classes.includes("ant-select-multiple")) {
-          cy.get(subject.selector).first().find("input").blur();
+          cy.wrap(subject).first().find("input").blur();
         }
         cy.get("body").should(() => {
           const dropdown = Cypress.$(".ant-select-dropdown:visible");
@@ -249,8 +245,8 @@ Cypress.Commands.add(
     prevSubject: "element",
   },
   (subject) => {
-    cy.get(subject.selector).should("have.class", "ant-select-allow-clear");
-    cy.get(subject.selector).find(".ant-select-clear").click({ force: true });
+    cy.wrap(subject).should("have.class", "ant-select-allow-clear");
+    cy.wrap(subject).find(".ant-select-clear").click({ force: true });
   },
 );
 
@@ -260,7 +256,7 @@ Cypress.Commands.add(
     prevSubject: "element",
   },
   (subject, option) => {
-    cy.get(subject.selector)
+    cy.wrap(subject)
       .find(`.ant-select-selection-item[title="${option}"]`)
       .find(".ant-select-selection-item-remove")
       .click({ force: true });
