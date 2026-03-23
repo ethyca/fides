@@ -1,71 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Flex } from "antd/lib";
-import { useMemo, useState } from "react";
 
-import type { BarChartProps, ChartDataRequest } from "../../index";
+import type { BarChartProps } from "../../index";
 import { BarChart, HOUR_MS } from "../../index";
 import { seededRandom } from "./story-utils";
 
-interface ViolationPoint {
-  timestamp: string;
-  violations: number;
-}
-
-const generateViolationLogs = (hours: number): ViolationPoint[] => {
+const generateData = (hours: number): BarChartProps["data"] => {
   const rand = seededRandom(42);
   const now = new Date("2026-03-18T12:00:00Z").getTime();
   const start = now - hours * HOUR_MS;
   return Array.from({ length: hours }, (_, index) => ({
-    timestamp: new Date(start + index * HOUR_MS).toISOString(),
-    violations: Math.floor(rand() * 30) + 1,
+    label: new Date(start + index * HOUR_MS).toISOString(),
+    value: Math.floor(rand() * 30) + 1,
   }));
-};
-
-const VIOLATION_DATA_7D = generateViolationLogs(168);
-
-const mockBucketData = (
-  points: ViolationPoint[],
-  intervalHours: number,
-): BarChartProps["data"] => {
-  const ms = intervalHours * HOUR_MS;
-  const timestamps = points.map((p) => new Date(p.timestamp).getTime());
-  const minTs = Math.min(...timestamps);
-  const maxTs = Math.max(...timestamps);
-  const flooredStart = Math.floor(minTs / ms) * ms;
-  const bucketCount = Math.max(1, Math.ceil((maxTs - flooredStart) / ms));
-
-  const buckets = Array.from({ length: bucketCount }, (_, i) => ({
-    label: new Date(flooredStart + i * ms).toISOString(),
-    value: 0,
-  }));
-
-  timestamps.forEach((ts, idx) => {
-    const bucketIndex = Math.min(
-      Math.floor((ts - flooredStart) / ms),
-      bucketCount - 1,
-    );
-    buckets[bucketIndex].value += points[idx].violations;
-  });
-
-  return buckets;
-};
-
-const DynamicBucketedChart = ({
-  points,
-  ...props
-}: Omit<BarChartProps, "data" | "onIntervalChange"> & {
-  points: ViolationPoint[];
-}) => {
-  const [request, setRequest] = useState<ChartDataRequest | null>(null);
-  const data = useMemo(
-    () =>
-      request
-        ? mockBucketData(points, request.interval)
-        : mockBucketData(points, 6),
-    [points, request],
-  );
-
-  return <BarChart {...props} data={data} onIntervalChange={setRequest} />;
 };
 
 const meta = {
@@ -118,6 +65,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
+    data: generateData(168),
     color: "colorError",
     size: "md",
   },
@@ -133,11 +81,7 @@ export const Default: Story = {
       }}
     >
       <Flex style={{ height: 160, width: "100%" }}>
-        <DynamicBucketedChart
-          points={VIOLATION_DATA_7D}
-          color={args.color}
-          size={args.size}
-        />
+        <BarChart {...args} />
       </Flex>
     </Flex>
   ),

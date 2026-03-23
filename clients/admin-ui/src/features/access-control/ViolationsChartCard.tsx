@@ -3,7 +3,7 @@ import {
   BarChart,
   Card,
   Flex,
-  LineChart,
+  AreaChart,
   Segmented,
   Statistic,
   Text,
@@ -99,7 +99,7 @@ export const ViolationsChartCard = () => {
       cover={
         <div className="h-[120px] w-full">
           {mode === "line" ? (
-            <LineChart data={areaChartData} series={AREA_SERIES} />
+            <AreaChart data={areaChartData} series={AREA_SERIES} />
           ) : (
             <BarChart
               data={barChartData}

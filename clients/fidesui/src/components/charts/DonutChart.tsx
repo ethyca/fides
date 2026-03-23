@@ -31,7 +31,8 @@ export const DonutChart = ({
 }: DonutChartProps) => {
   const { token } = theme.useToken();
   const containerRef = useRef<HTMLDivElement>(null);
-  const size = useContainerSize(containerRef);
+  const { width, height } = useContainerSize(containerRef);
+  const size = Math.min(width, height);
   const animationActive = useChartAnimation(animationDuration);
 
   const thickness = DONUT_THICKNESS[variant];

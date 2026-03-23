@@ -1,5 +1,5 @@
 import { theme } from "antd/lib";
-import { useEffect, useRef } from "react";
+import { useMemo, useRef } from "react";
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -14,17 +14,17 @@ import {
   CHART_ANIMATION,
   LABEL_WIDTH,
 } from "./chart-constants";
-import type { ChartDataRequest } from "./chart-utils";
 import {
-  computeDataRequest,
+  calcTickInterval,
   deriveInterval,
   formatTimestamp,
-  tooltipLabelFormatter,
+  HOUR_MS,
+  pickIntervalHours,
   useChartAnimation,
-  useContainerWidth,
+  useContainerSize,
   useTooltipContentStyle,
 } from "./chart-utils";
-import { ChartText } from "./ChartText";
+import { XAxisTick } from "./XAxisTick";
 
 export interface BarChartDataPoint {
   label: string;
@@ -37,7 +37,6 @@ export interface BarChartProps {
   animationDuration?: number;
   showTooltip?: boolean;
   size?: BarSize;
-  onIntervalChange?: (request: ChartDataRequest) => void;
 }
 
 export const BarChart = ({
@@ -46,7 +45,6 @@ export const BarChart = ({
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   size = "md",
-  onIntervalChange,
 }: BarChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
@@ -55,76 +53,55 @@ export const BarChart = ({
   const barWidth = token[BAR_SIZE_TOKEN[size]];
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const containerWidth = useContainerWidth(containerRef);
+  const { width: containerWidth } = useContainerSize(containerRef);
 
-  const chartData = data ?? [];
+  const rawData = data ?? [];
 
-  const derivedIntervalMs = deriveInterval(chartData);
-  const timeRangeMs =
-    chartData.length >= 2
-      ? new Date(chartData[chartData.length - 1].label).getTime() -
-        new Date(chartData[0].label).getTime()
-      : 0;
-
-  // Stable ref prevents oscillation: re-bucketed data shifts range
-  // slightly due to bucket alignment, triggering a feedback loop.
-  const stableRangeMsRef = useRef(0);
-  useEffect(() => {
-    if (timeRangeMs > 0 && stableRangeMsRef.current === 0) {
-      stableRangeMsRef.current = timeRangeMs;
-    }
-  }, [timeRangeMs]);
-
-  const prevRequestRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (
-      !onIntervalChange ||
-      containerWidth <= 0 ||
-      stableRangeMsRef.current <= 0
-    ) {
-      return;
+  const chartData = useMemo(() => {
+    if (containerWidth <= 0 || rawData.length < 2) {
+      return rawData;
     }
 
-    const request = computeDataRequest(
-      containerWidth,
-      barWidth,
-      stableRangeMsRef.current,
+    const timestamps = rawData.map((d) => new Date(d.label).getTime());
+    const minTs = timestamps.reduce((a, b) => Math.min(a, b), Infinity);
+    const maxTs = timestamps.reduce((a, b) => Math.max(a, b), -Infinity);
+    const rangeMs = maxTs - minTs;
+    if (rangeMs <= 0) {
+      return rawData;
+    }
+
+    const intervalMs =
+      pickIntervalHours(rangeMs, containerWidth, barWidth) * HOUR_MS;
+    const flooredStart = Math.floor(minTs / intervalMs) * intervalMs;
+    const bucketCount = Math.max(
+      1,
+      Math.ceil((maxTs - flooredStart) / intervalMs),
     );
-    const key = `${request.interval}:${request.rangeMs}`;
 
-    if (key !== prevRequestRef.current) {
-      prevRequestRef.current = key;
-      onIntervalChange(request);
-    }
-  }, [onIntervalChange, containerWidth, barWidth]);
+    const buckets: BarChartDataPoint[] = Array.from(
+      { length: bucketCount },
+      (_, i) => ({
+        label: new Date(flooredStart + i * intervalMs).toISOString(),
+        value: 0,
+      }),
+    );
 
-  const formatLabel = (label: string) =>
-    formatTimestamp(label, derivedIntervalMs);
+    timestamps.forEach((ts, idx) => {
+      const bucketIndex = Math.min(
+        Math.floor((ts - flooredStart) / intervalMs),
+        bucketCount - 1,
+      );
+      buckets[bucketIndex].value += rawData[idx].value;
+    });
 
-  const barCount = chartData.length;
-  const slotWidth =
-    barCount > 0 && containerWidth > 0
-      ? containerWidth / barCount
-      : LABEL_WIDTH;
-  const tickInterval = Math.max(0, Math.ceil(LABEL_WIDTH / slotWidth) - 1);
+    return buckets;
+  }, [rawData, containerWidth, barWidth]);
 
-  const renderTick = ({
-    x,
-    y,
-    payload,
-  }: {
-    x?: string | number;
-    y?: string | number;
-    payload?: { value: string };
-  }) => (
-    <ChartText
-      x={Number(x ?? 0)}
-      y={Number(y ?? 0) + 12}
-      fill={token.colorTextTertiary}
-      width={LABEL_WIDTH}
-    >
-      {payload ? formatLabel(payload.value) : null}
-    </ChartText>
+  const intervalMs = deriveInterval(chartData);
+  const tickInterval = calcTickInterval(
+    chartData.length,
+    containerWidth,
+    LABEL_WIDTH,
   );
 
   return (
@@ -138,7 +115,12 @@ export const BarChart = ({
           >
             <XAxis
               dataKey="label"
-              tick={renderTick}
+              tick={
+                <XAxisTick
+                  intervalMs={intervalMs}
+                  fill={token.colorTextTertiary}
+                />
+              }
               interval={tickInterval}
               axisLine={false}
               tickLine={false}
@@ -148,7 +130,7 @@ export const BarChart = ({
                 cursor={false}
                 contentStyle={tooltipContentStyle}
                 labelFormatter={(label) =>
-                  tooltipLabelFormatter(String(label), derivedIntervalMs)
+                  formatTimestamp(String(label), intervalMs, true)
                 }
               />
             )}

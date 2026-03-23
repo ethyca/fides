@@ -18,53 +18,54 @@ import {
   MIN_PX_PER_POINT,
 } from "./chart-constants";
 import {
+  calcTickInterval,
   deriveInterval,
   formatTimestamp,
   HOUR_MS,
   pickIntervalHours,
-  tooltipLabelFormatter,
   useChartAnimation,
-  useContainerWidth,
+  useContainerSize,
   useTooltipContentStyle,
 } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 import { XAxisTick } from "./XAxisTick";
 
-export interface LineChartSeries {
+export interface AreaChartSeries {
   key: string;
   name: string;
   color?: AntColorTokenKey;
 }
 
-export interface LineChartDataPoint {
+export interface AreaChartDataPoint {
   label: string;
   [key: string]: string | number;
 }
 
-export interface LineChartProps {
-  data?: LineChartDataPoint[];
-  series: LineChartSeries[];
+export interface AreaChartProps {
+  data?: AreaChartDataPoint[];
+  series: AreaChartSeries[];
   animationDuration?: number;
   showTooltip?: boolean;
   showGrid?: boolean;
 }
 
-export const LineChart = ({
+export const AreaChart = ({
   data,
   series,
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   showGrid = true,
-}: LineChartProps) => {
+}: AreaChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
   const animationActive = useChartAnimation(animationDuration);
   const gradientPrefix = `area-gradient-${useId()}`;
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const containerWidth = useContainerWidth(containerRef);
+  const { width: containerWidth } = useContainerSize(containerRef);
 
   const rawData = data ?? [];
+  const seriesKeys = useMemo(() => series.map((s) => s.key), [series]);
 
   const chartData = useMemo(() => {
     if (containerWidth <= 0 || rawData.length < 2) {
@@ -72,30 +73,25 @@ export const LineChart = ({
     }
 
     const timestamps = rawData.map((point) => new Date(point.label).getTime());
-    const minTs = Math.min(...timestamps);
-    const maxTs = Math.max(...timestamps);
+    const minTs = timestamps.reduce((a, b) => Math.min(a, b), Infinity);
+    const maxTs = timestamps.reduce((a, b) => Math.max(a, b), -Infinity);
     const rangeMs = maxTs - minTs;
     if (rangeMs <= 0) {
       return rawData;
     }
 
-    const intervalHours = pickIntervalHours(
-      rangeMs,
-      containerWidth,
-      MIN_PX_PER_POINT,
-    );
-    const intervalMs = intervalHours * HOUR_MS;
+    const intervalMs =
+      pickIntervalHours(rangeMs, containerWidth, MIN_PX_PER_POINT) * HOUR_MS;
     const flooredStart = Math.floor(minTs / intervalMs) * intervalMs;
     const bucketCount = Math.max(
       1,
       Math.ceil((maxTs - flooredStart) / intervalMs),
     );
 
-    const seriesKeys = series.map((entry) => entry.key);
-    const buckets: LineChartDataPoint[] = Array.from(
+    const buckets: AreaChartDataPoint[] = Array.from(
       { length: bucketCount },
       (_, index) => {
-        const point: LineChartDataPoint = {
+        const point: AreaChartDataPoint = {
           label: new Date(flooredStart + index * intervalMs).toISOString(),
         };
         seriesKeys.forEach((key) => {
@@ -116,16 +112,14 @@ export const LineChart = ({
     });
 
     return buckets;
-  }, [rawData, series, containerWidth]);
+  }, [rawData, seriesKeys, containerWidth]);
 
   const intervalMs = deriveInterval(chartData);
-
-  const pointCount = chartData.length;
-  const slotWidth =
-    pointCount > 0 && containerWidth > 0
-      ? containerWidth / pointCount
-      : LABEL_WIDTH;
-  const tickInterval = Math.max(0, Math.ceil(LABEL_WIDTH / slotWidth) - 1);
+  const tickInterval = calcTickInterval(
+    chartData.length,
+    containerWidth,
+    LABEL_WIDTH,
+  );
 
   return (
     <div ref={containerRef} className="h-full w-full">
@@ -151,7 +145,6 @@ export const LineChart = ({
             )}
             <XAxis
               dataKey="label"
-              tickFormatter={(ts) => formatTimestamp(ts, intervalMs)}
               tick={
                 <XAxisTick
                   intervalMs={intervalMs}
@@ -174,7 +167,7 @@ export const LineChart = ({
               <Tooltip
                 contentStyle={tooltipContentStyle}
                 labelFormatter={(label) =>
-                  tooltipLabelFormatter(String(label), intervalMs)
+                  formatTimestamp(String(label), intervalMs, true)
                 }
               />
             )}
