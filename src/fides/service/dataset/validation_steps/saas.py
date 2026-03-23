@@ -49,7 +49,6 @@ def _validate_saas_dataset(
 
 
 _IMMUTABLE_DATASET_FIELDS = (
-    "fides_key",
     "organization_fides_key",
     "name",
     "description",

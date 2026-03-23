@@ -605,6 +605,7 @@ def dataset_reachability(
 )
 def get_dataset_protected_fields(
     *,
+    db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     dataset_key: FidesKey,
 ) -> DatasetProtectedFields:
@@ -613,6 +614,19 @@ def get_dataset_protected_fields(
     immutable top-level metadata fields and collection fields
     referenced by the SaaS config.
     """
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == dataset_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{dataset_key}'",
+        )
+
     if (
         connection_config.connection_type != ConnectionType.saas
         or not connection_config.saas_config
