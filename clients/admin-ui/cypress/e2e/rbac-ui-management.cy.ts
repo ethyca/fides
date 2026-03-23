@@ -590,7 +590,10 @@ describe("RBAC UI Management", () => {
 
         cy.visit("/settings/rbac", {
           onBeforeLoad(win) {
-            win.localStorage.setItem(STORAGE_ROOT_KEY, JSON.stringify(storageData));
+            win.localStorage.setItem(
+              STORAGE_ROOT_KEY,
+              JSON.stringify(storageData),
+            );
           },
         });
 
