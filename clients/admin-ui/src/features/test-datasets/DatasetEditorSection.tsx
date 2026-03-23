@@ -105,7 +105,6 @@ const EditorSection = ({
     },
   );
 
-
   const datasetOptions = useMemo(
     () =>
       (datasetConfigs?.items || []).map((item) => ({
@@ -197,6 +196,8 @@ const EditorSection = ({
       }
     }
 
+    let saasWarnings: Array<{ message: string }> = [];
+
     if (isSaas) {
       const result = await patchConnectionDatasets({
         connectionKey,
@@ -229,13 +230,7 @@ const EditorSection = ({
         return;
       }
 
-      // Show warnings if the backend restored any protected fields
-      const warnings = result.data?.warnings;
-      if (warnings && warnings.length > 0) {
-        warnings.forEach((warning) => {
-          messageApi.warning(warning.message);
-        });
-      }
+      saasWarnings = result.data?.warnings ?? [];
     } else {
       const result = await updateDataset(datasetValues);
 
@@ -251,7 +246,18 @@ const EditorSection = ({
         }),
       );
     }
-    messageApi.success("Successfully modified dataset");
+
+    if (saasWarnings.length > 0) {
+      messageApi.success(
+        `Dataset saved — ${saasWarnings.length} protected field(s) were restored`,
+      );
+      saasWarnings.forEach((warning) => {
+        messageApi.warning(warning.message);
+      });
+    } else {
+      messageApi.success("Successfully modified dataset");
+    }
+
     await refetchDatasets();
     if (!isSaas) {
       await refetchReachability();

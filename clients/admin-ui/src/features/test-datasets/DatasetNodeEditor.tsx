@@ -288,6 +288,17 @@ const DatasetNodeEditorInner = ({
     let currentCollection = "";
     const fieldStack: [number, string][] = [];
 
+    // Detect the collection indent level from the first `- name:` line
+    // instead of hardcoding a threshold.
+    let collectionIndent: number | null = null;
+    for (const line of lines) {
+      const m = line.match(/^(\s*)-\s+name:\s+\S+/);
+      if (m) {
+        collectionIndent = m[1].length;
+        break;
+      }
+    }
+
     lines.forEach((line: string, i: number) => {
       let isProtected = false;
 
@@ -305,7 +316,10 @@ const DatasetNodeEditorInner = ({
         const [, indent, name] = nameMatch;
         const indentLevel = indent.length;
 
-        if (indentLevel <= 4) {
+        if (
+          collectionIndent !== null &&
+          indentLevel <= collectionIndent
+        ) {
           currentCollection = name;
           fieldStack.length = 0;
         } else {
@@ -367,17 +381,31 @@ const DatasetNodeEditorInner = ({
     applyYamlDecorations();
   }, [applyYamlDecorations]);
 
-  // Inject immutable-line style and clean up on unmount
+  // Inject immutable-line style with ref-counting so concurrent instances
+  // don't remove the style while another component still needs it.
   useEffect(() => {
     const styleId = "immutable-line-style";
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement("style");
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement("style");
       style.id = styleId;
       style.textContent = ".immutable-line { opacity: 0.5; }";
+      style.dataset.refCount = "0";
       document.head.appendChild(style);
     }
+    style.dataset.refCount = String(
+      Number(style.dataset.refCount || "0") + 1,
+    );
     return () => {
-      document.getElementById(styleId)?.remove();
+      const el = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (el) {
+        const count = Number(el.dataset.refCount || "1") - 1;
+        if (count <= 0) {
+          el.remove();
+        } else {
+          el.dataset.refCount = String(count);
+        }
+      }
     };
   }, []);
 
