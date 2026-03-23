@@ -19,7 +19,7 @@ import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import MailgunIcon from "~/features/messaging/icons/MailgunIcon";
+import MailgunLogo from "~/features/common/logos/MailgunLogo";
 
 import { messagingProviders } from "../constants";
 import {
@@ -312,7 +312,7 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
             borderTopRadius={6}
           >
             <HStack>
-              <MailgunIcon />
+              <MailgunLogo />
               <Heading as="h3" size="xs">
                 Mailgun email messaging configuration
               </Heading>

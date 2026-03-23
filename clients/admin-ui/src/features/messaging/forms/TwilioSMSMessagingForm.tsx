@@ -19,7 +19,7 @@ import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import TwilioIcon from "~/features/messaging/icons/TwilioIcon";
+import TwilioLogo from "~/features/common/logos/TwilioLogo";
 
 import { messagingProviders } from "../constants";
 import {
@@ -336,7 +336,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
             borderTopRadius={6}
           >
             <HStack>
-              <TwilioIcon />
+              <TwilioLogo />
               <Heading as="h3" size="xs">
                 Twilio SMS messaging configuration
               </Heading>

@@ -19,6 +19,7 @@ import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RTKErrorResult } from "~/types/errors/api";
 
+import SlackLogo from "../common/logos/SlackLogo";
 import styles from "./AssessmentDetail.module.scss";
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import {
@@ -30,7 +31,6 @@ import {
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
-import { SlackIcon } from "./SlackIcon";
 import {
   AnswerSource,
   AnswerStatus,
@@ -275,7 +275,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
             }
           >
             <Button
-              icon={<SlackIcon size={14} />}
+              icon={<SlackLogo size={14} />}
               size="small"
               onClick={handleRequestInput}
               disabled={!slackChannelName}

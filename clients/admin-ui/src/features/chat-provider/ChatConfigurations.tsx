@@ -27,7 +27,7 @@ import {
   useEnableChatConfigMutation,
   useGetChatConfigsQuery,
 } from "./chatProvider.slice";
-import SlackIcon from "./icons/SlackIcon";
+import SlackLogo from "../common/logos/SlackLogo";
 
 const { Text } = Typography;
 
@@ -143,9 +143,9 @@ export const ChatConfigurations = () => {
           const getProviderIcon = () => {
             switch (record.provider_type) {
               case "slack":
-                return <SlackIcon />;
+                return <SlackLogo />;
               default:
-                return <SlackIcon />;
+                return <SlackLogo />;
             }
           };
 

@@ -24,10 +24,10 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
+import AwsSesLogo from "../../common/logos/AwsSesLogo";
+import MailgunLogo from "../../common/logos/MailgunLogo";
+import TwilioLogo from "../../common/logos/TwilioLogo";
 import { useHasPermission } from "../../common/Restrict";
-import AwsIcon from "../icons/AwsIcon";
-import MailgunIcon from "../icons/MailgunIcon";
-import TwilioIcon from "../icons/TwilioIcon";
 import {
   useDeleteMessagingConfigurationByKeyMutation,
   useGetActiveMessagingProviderQuery,
@@ -217,14 +217,14 @@ export const useMessagingConfigurationsTable = () => {
           const getProviderIcon = () => {
             switch (record.service_type) {
               case "mailgun":
-                return <MailgunIcon />;
+                return <MailgunLogo />;
               case "twilio_text":
               case "twilio_email":
-                return <TwilioIcon />;
+                return <TwilioLogo />;
               case "aws_ses":
-                return <AwsIcon />;
+                return <AwsSesLogo />;
               default:
-                return <TwilioIcon />; // fallback
+                return <TwilioLogo />; // fallback
             }
           };
 

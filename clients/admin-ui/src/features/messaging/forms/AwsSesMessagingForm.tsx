@@ -20,7 +20,7 @@ import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import AwsIcon from "~/features/messaging/icons/AwsIcon";
+import AwsSesLogo from "~/features/common/logos/AwsSesLogo";
 
 import { messagingProviders } from "../constants";
 import {
@@ -398,7 +398,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
             borderTopRadius={6}
           >
             <HStack>
-              <AwsIcon />
+              <AwsSesLogo />
               <Heading as="h3" size="xs">
                 AWS SES email messaging configuration
               </Heading>

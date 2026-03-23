@@ -1,6 +1,6 @@
 import React from "react";
 
-const AwsIcon = () => {
+const AwsSesLogo = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -47,4 +47,4 @@ const AwsIcon = () => {
   );
 };
 
-export default AwsIcon;
+export default AwsSesLogo;

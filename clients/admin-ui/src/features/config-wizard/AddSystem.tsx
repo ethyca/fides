@@ -11,11 +11,7 @@ import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import {
-  AWSLogoIcon,
-  ManualSetupIcon,
-  OktaLogoIcon,
-} from "~/features/common/Icon";
+import { ManualSetupIcon } from "~/features/common/Icon";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
@@ -23,6 +19,8 @@ import {
 import { ValidTargets } from "~/types/api";
 
 import CalloutNavCard from "../common/CalloutNavCard";
+import AWSLogo from "../common/logos/AWSLogo";
+import OktaLogo from "../common/logos/OktaLogo";
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { SystemMethods } from "./types";
 
@@ -138,7 +136,7 @@ const AddSystem = () => {
               title="Scan your infrastructure (AWS)"
               color={palette.FIDESUI_TERRACOTTA}
               description="Automatically discover new systems in your AWS infrastructure"
-              icon={<AWSLogoIcon boxSize={6} />}
+              icon={<AWSLogo boxSize={6} />}
             />
           </button>
           <button
@@ -155,7 +153,7 @@ const AddSystem = () => {
               title="Scan your Sign On Provider (Okta)"
               color={palette.FIDESUI_MINOS}
               description="Automatically discover new systems in your Okta infrastructure"
-              icon={<OktaLogoIcon boxSize={6} />}
+              icon={<OktaLogo boxSize={6} />}
             />
           </button>
         </SimpleGrid>

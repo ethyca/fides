@@ -1,6 +1,6 @@
 import React from "react";
 
-const MailgunIcon = () => {
+const MailgunLogo = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17,4 +17,4 @@ const MailgunIcon = () => {
   );
 };
 
-export default MailgunIcon;
+export default MailgunLogo;

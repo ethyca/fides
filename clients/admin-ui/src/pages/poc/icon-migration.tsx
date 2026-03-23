@@ -20,16 +20,13 @@ import {
 import type { NextPage } from "next";
 import React from "react";
 
-import SlackIconChat from "~/features/chat-provider/icons/SlackIcon";
 import {
-  AWSLogoIcon,
   CopyIcon,
   DisplayAllIcon,
   DownloadLightIcon,
   GearLightIcon,
   GroupedIcon,
   ManualSetupIcon,
-  OktaLogoIcon,
 } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
@@ -43,10 +40,6 @@ import { TagIcon } from "~/features/common/Icon/svg/TagIcon";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { TrashCanSolidIcon as AdminTrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import PageHeader from "~/features/common/PageHeader";
-import AwsIcon from "~/features/messaging/icons/AwsIcon";
-import MailgunIcon from "~/features/messaging/icons/MailgunIcon";
-import TwilioIcon from "~/features/messaging/icons/TwilioIcon";
-import { SlackIcon as AssessmentsSlackIcon } from "~/features/privacy-assessments/SlackIcon";
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -173,21 +166,12 @@ const ICON_DATA: IconEntry[] = [
 
   // admin-ui custom icons
   {
-    key: "admin-AWSLogoIcon",
-    currentName: "AWSLogoIcon",
-    currentIcon: <AWSLogoIcon />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Brand logo, no Carbon equivalent",
-  },
-  {
     key: "admin-CompassIcon",
     currentName: "CompassIcon",
     currentIcon: <CompassIcon boxSize={5} />,
     iconType: "createIcon",
     source: "admin-ui",
-    suggestedCarbon: "Compass",
+    suggestedCarbon: null,
     notes: "",
   },
   {
@@ -281,15 +265,6 @@ const ICON_DATA: IconEntry[] = [
     notes: "",
   },
   {
-    key: "admin-OktaLogoIcon",
-    currentName: "OktaLogoIcon",
-    currentIcon: <OktaLogoIcon />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Brand logo, no Carbon equivalent",
-  },
-  {
     key: "admin-TrashCanOutlineIcon",
     currentName: "TrashCanOutlineIcon",
     currentIcon: <TrashCanOutlineIcon boxSize={5} />,
@@ -354,51 +329,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: "Tag",
     notes: "svg/ subdirectory",
-  },
-  {
-    key: "admin-SlackIcon-chat",
-    currentName: "SlackIcon (chat-provider)",
-    currentIcon: <SlackIconChat />,
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Brand logo, no Carbon equivalent",
-  },
-  {
-    key: "admin-SlackIcon-assessments",
-    currentName: "SlackIcon (privacy-assessments)",
-    currentIcon: <AssessmentsSlackIcon />,
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Brand logo, no Carbon equivalent",
-  },
-  {
-    key: "admin-AwsIcon-messaging",
-    currentName: "AwsIcon (messaging)",
-    currentIcon: <AwsIcon />,
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Brand logo, no Carbon equivalent",
-  },
-  {
-    key: "admin-MailgunIcon",
-    currentName: "MailgunIcon",
-    currentIcon: <MailgunIcon />,
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Brand logo, no Carbon equivalent",
-  },
-  {
-    key: "admin-TwilioIcon",
-    currentName: "TwilioIcon",
-    currentIcon: <TwilioIcon />,
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Brand logo, no Carbon equivalent",
   },
 ];
 

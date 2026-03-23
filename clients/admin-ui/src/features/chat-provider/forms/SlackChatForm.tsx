@@ -15,7 +15,7 @@ import {
 import AuthorizationStatus from "../components/AuthorizationStatus";
 import ConfigurationCard from "../components/ConfigurationCard";
 import { SECRET_PLACEHOLDER } from "../constants";
-import SlackIcon from "../icons/SlackIcon";
+import SlackLogo from "../../common/logos/SlackLogo";
 import { cleanupUrlParams, getOAuthErrorMessage } from "../utils/urlHelpers";
 
 interface SlackChatFormProps {
@@ -159,7 +159,7 @@ const SlackChatForm = ({ configId }: SlackChatFormProps) => {
     >
       <ConfigurationCard
         title="Slack chat provider configuration"
-        icon={<SlackIcon />}
+        icon={<SlackLogo />}
       >
         <Form.Item
           name="workspace_url"

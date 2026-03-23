@@ -1,4 +1,4 @@
-const TwilioIcon = () => {
+const TwilioLogo = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,4 +15,4 @@ const TwilioIcon = () => {
   );
 };
 
-export default TwilioIcon;
+export default TwilioLogo;
