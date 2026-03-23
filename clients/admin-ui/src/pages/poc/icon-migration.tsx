@@ -17,7 +17,6 @@ import React from "react";
 import { ManualSetupIcon } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
-import { SparkleIcon as AdminSparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import { TagIcon } from "~/features/common/Icon/svg/TagIcon";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { TrashCanSolidIcon as AdminTrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
@@ -136,15 +135,6 @@ const ICON_DATA: IconEntry[] = [
     iconType: "createIcon",
     source: "admin-ui",
     suggestedCarbon: "TrashCan",
-    notes: "Duplicate of fidesui version",
-  },
-  {
-    key: "admin-SparkleIcon",
-    currentName: "SparkleIcon",
-    currentIcon: <AdminSparkleIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "MagicWandFilled",
     notes: "Duplicate of fidesui version",
   },
   {
