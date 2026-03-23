@@ -14,6 +14,7 @@ import type { AntColorTokenKey } from "./chart-constants";
 import {
   CHART_ANIMATION,
   CHART_STROKE,
+  LABEL_WIDTH,
   MIN_PX_PER_POINT,
 } from "./chart-constants";
 import {
@@ -115,6 +116,13 @@ export const AreaChart = ({
 
   const intervalMs = deriveInterval(chartData);
 
+  const pointCount = chartData.length;
+  const slotWidth =
+    pointCount > 0 && containerWidth > 0
+      ? containerWidth / pointCount
+      : LABEL_WIDTH;
+  const tickInterval = Math.max(0, Math.ceil(LABEL_WIDTH / slotWidth) - 1);
+
   return (
     <div ref={containerRef} className="h-full w-full">
       {containerWidth > 0 && (
@@ -146,6 +154,7 @@ export const AreaChart = ({
                   fill={token.colorTextTertiary}
                 />
               }
+              interval={tickInterval}
               axisLine={false}
               tickLine={false}
             />

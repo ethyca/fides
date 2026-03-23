@@ -19,7 +19,7 @@ export const DataConsumersCard = ({
   const items = useMemo(() => data.slice(0, 5), [data]);
 
   return (
-    <Card loading={loading} title={<Text strong>Data consumers</Text>}>
+    <Card loading={loading} title={<Text strong>Data consumers</Text>} className="h-full">
       <Flex vertical gap={8}>
         <div
           className="grid gap-y-2"

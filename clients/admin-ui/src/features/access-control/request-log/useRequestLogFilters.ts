@@ -37,6 +37,7 @@ export interface RequestLogFilterState {
   liveTail: boolean;
   setLiveTail: (value: boolean) => void;
   onChartIntervalChange: (request: ChartDataRequest) => void;
+  applyFacets: (facets: Record<string, string>) => void;
 }
 
 export const RequestLogFilterContext =
@@ -128,6 +129,16 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     setIntervalHours(request.interval);
   }, []);
 
+  const applyFacets = useCallback(
+    (facets: Record<string, string>) => {
+      const encoded = Object.entries(facets).map(
+        ([key, value]) => `${key}${SEPARATOR}${value}`,
+      );
+      setSearchValues(encoded);
+    },
+    [setSearchValues],
+  );
+
   return {
     filters,
     timeseriesFilters,
@@ -138,5 +149,6 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     liveTail,
     setLiveTail,
     onChartIntervalChange,
+    applyFacets,
   };
 };
