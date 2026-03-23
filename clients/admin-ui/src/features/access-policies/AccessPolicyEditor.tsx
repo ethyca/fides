@@ -762,6 +762,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         edgeTypes={edgeTypes}
         defaultEdgeOptions={{ type: "labeledEdge" }}
         defaultViewport={{ x: 0, y: 0, zoom: DEFAULT_ZOOM }}
+        nodesConnectable={false}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
