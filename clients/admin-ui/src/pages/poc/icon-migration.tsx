@@ -20,12 +20,7 @@ import {
 } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
-import NextArrow from "~/features/common/Icon/NextArrow";
-import PrevArrow from "~/features/common/Icon/PrevArrow";
-import RightArrow from "~/features/common/Icon/RightArrow";
 import { SparkleIcon as AdminSparkleIcon } from "~/features/common/Icon/SparkleIcon";
-import { RightDownArrowIcon } from "~/features/common/Icon/svg/RightDownArrowIcon";
-import { RightUpArrowIcon } from "~/features/common/Icon/svg/RightUpArrowIcon";
 import { TagIcon } from "~/features/common/Icon/svg/TagIcon";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { TrashCanSolidIcon as AdminTrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
@@ -138,33 +133,6 @@ const ICON_DATA: IconEntry[] = [
     notes: "",
   },
   {
-    key: "admin-NextArrow",
-    currentName: "NextArrow",
-    currentIcon: <NextArrow boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "ChevronRight",
-    notes: "Pagination",
-  },
-  {
-    key: "admin-PrevArrow",
-    currentName: "PrevArrow",
-    currentIcon: <PrevArrow boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "ChevronLeft",
-    notes: "Pagination",
-  },
-  {
-    key: "admin-RightArrow",
-    currentName: "RightArrow",
-    currentIcon: <RightArrow boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "ArrowRight",
-    notes: "",
-  },
-  {
     key: "admin-TrashCanOutlineIcon",
     currentName: "TrashCanOutlineIcon",
     currentIcon: <TrashCanOutlineIcon boxSize={5} />,
@@ -190,32 +158,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: "MagicWandFilled",
     notes: "Duplicate of fidesui version",
-  },
-  {
-    key: "admin-RightDownArrowIcon",
-    currentName: "RightDownArrowIcon",
-    currentIcon: (
-      <SvgIconBox>
-        <RightDownArrowIcon width={20} height={20} />
-      </SvgIconBox>
-    ),
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: "ArrowDownRight",
-    notes: "svg/ subdirectory",
-  },
-  {
-    key: "admin-RightUpArrowIcon",
-    currentName: "RightUpArrowIcon",
-    currentIcon: (
-      <SvgIconBox>
-        <RightUpArrowIcon width={20} height={20} />
-      </SvgIconBox>
-    ),
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: "ArrowUpRight",
-    notes: "svg/ subdirectory",
   },
   {
     key: "admin-TagIcon",

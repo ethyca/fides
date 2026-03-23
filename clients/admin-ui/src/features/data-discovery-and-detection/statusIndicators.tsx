@@ -1,13 +1,11 @@
 import { Icons } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import { RightDownArrowIcon } from "~/features/common/Icon/svg/RightDownArrowIcon";
-import { RightUpArrowIcon } from "~/features/common/Icon/svg/RightUpArrowIcon";
 import { TagIcon } from "~/features/common/Icon/svg/TagIcon";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 
 export const AdditionIndicator = () => (
-  <RightUpArrowIcon
+  <Icons.ArrowUpRight
     style={{ color: palette.FIDESUI_SUCCESS }}
     className="size-2"
     data-testid="add-icon"
@@ -15,7 +13,7 @@ export const AdditionIndicator = () => (
 );
 
 export const RemovalIndicator = () => (
-  <RightDownArrowIcon
+  <Icons.ArrowDownRight
     style={{ color: palette.FIDESUI_ERROR }}
     className="size-2"
     data-testid="remove-icon"
