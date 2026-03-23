@@ -1,4 +1,5 @@
-import { antTheme, Card, DonutChart, Flex, Statistic, Text } from "fidesui";
+import { Card, DonutChart, Flex, Statistic, Text } from "fidesui";
+import { theme as antTheme } from "antd/lib";
 
 interface ViolationRateCardProps {
   violations: number;
@@ -24,11 +25,6 @@ export const ViolationRateCard = ({
     <Card
       loading={loading}
       title={<Text strong>Violation rate</Text>}
-      extra={
-        <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
-          {totalPolicies} policies
-        </Text>
-      }
       className="flex h-full flex-col"
       styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
     >

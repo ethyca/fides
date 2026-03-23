@@ -1,4 +1,5 @@
-import { antTheme, AreaChart, Card, Statistic, Text } from "fidesui";
+import { AreaChart, Card, Statistic, Text, Flex } from "fidesui";
+import { theme as antTheme } from "antd/lib";
 import { useMemo } from "react";
 
 import type { TimeseriesBucket } from "../types";
@@ -37,7 +38,19 @@ export const ViolationsOverTimeCard = ({
     <Card
       loading={loading}
       title={<Text strong>Violations over time</Text>}
-      extra={
+      className="flex h-full flex-col text-clip"
+      cover={
+        <div className="h-[200px] w-full">
+          <AreaChart data={chartData} series={SERIES} />
+        </div>
+      }
+      styles={{
+        cover: { padding: "0 12px 12px" },
+      }}
+      coverPosition="bottom"
+    >
+      <Flex align="baseline" gap="small">
+        <Statistic value={totalViolations} />
         <Statistic
           value={Math.abs(trend * 100)}
           precision={1}
@@ -53,25 +66,7 @@ export const ViolationsOverTimeCard = ({
             fontSize: token.fontSizeSM,
           }}
         />
-      }
-      className="flex h-full flex-col text-clip"
-      cover={
-        <div className="h-[200px] w-full">
-          <AreaChart data={chartData} series={SERIES} />
-        </div>
-      }
-      styles={{
-        cover: { padding: "0 12px 12px" },
-      }}
-      coverPosition="bottom"
-    >
-      <Statistic
-        value={totalViolations}
-        valueStyle={{
-          color: token.colorError,
-          fontSize: token.fontSizeHeading2,
-        }}
-      />
+      </Flex>
     </Card>
   );
 };

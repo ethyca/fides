@@ -24,9 +24,6 @@ export const ViolationsBarChartCard = () => {
   return (
     <Card loading={isLoading}>
       <div className="mb-2">
-        <Text type="secondary" className="text-xs font-semibold">
-          Violations over time
-        </Text>
         <Flex align="baseline" gap="small" className="mt-1">
           <Statistic
             value={totalViolations}
