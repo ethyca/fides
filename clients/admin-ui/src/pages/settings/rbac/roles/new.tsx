@@ -7,7 +7,6 @@ import {
   InputNumber,
   Select,
   Space,
-  Typography,
   useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -63,96 +62,93 @@ const NewRolePage: NextPage = () => {
   };
 
   return (
-    <Layout title="Create Custom Role">
+    <Layout title="Create role">
       <PageHeader
-        heading="Create Custom Role"
+        heading="Create role"
         isSticky={false}
         className="pb-0"
-      >
-        <Typography.Paragraph className="max-w-screen-md">
-          Create a new custom role with specific permissions. You can optionally
-          inherit permissions from a parent role.
-        </Typography.Paragraph>
-      </PageHeader>
+        breadcrumbItems={[
+          { title: "Role management", href: RBAC_ROUTE },
+          { title: "Create role" },
+        ]}
+      />
 
-      <Flex vertical className="p-6">
-        <div className="max-w-2xl rounded-lg border border-gray-200 p-6">
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-            initialValues={{ priority: 0 }}
+      <Flex vertical>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{ priority: 0 }}
+          className="max-w-2xl"
+        >
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Name is required" }]}
           >
-            <Form.Item
-              name="name"
-              label="Display Name"
-              rules={[{ required: true, message: "Name is required" }]}
-            >
-              <Input
-                placeholder="e.g., Privacy Analyst"
-                onChange={handleNameChange}
-              />
-            </Form.Item>
+            <Input
+              placeholder="e.g., Privacy Analyst"
+              onChange={handleNameChange}
+            />
+          </Form.Item>
 
-            <Form.Item
-              name="key"
-              label="Key"
-              rules={[
-                { required: true, message: "Key is required" },
-                {
-                  pattern: /^[a-z][a-z0-9_]*$/,
-                  message:
-                    "Key must start with a letter and contain only lowercase letters, numbers, and underscores",
-                },
-              ]}
-              extra="Machine-readable identifier. Auto-generated from name."
-            >
-              <Input placeholder="e.g., privacy_analyst" />
-            </Form.Item>
+          <Form.Item
+            name="key"
+            label="Key"
+            rules={[
+              {
+                pattern: /^[a-z][a-z0-9_]*$/,
+                message:
+                  "Key must start with a letter and contain only lowercase letters, numbers, and underscores",
+              },
+            ]}
+            tooltip="Auto-generated from name. Used as a machine-readable identifier."
+          >
+            <Input placeholder="e.g., privacy_analyst" />
+          </Form.Item>
 
-            <Form.Item name="description" label="Description">
-              <Input.TextArea
-                rows={3}
-                placeholder="Describe what this role is used for..."
-              />
-            </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea
+              rows={3}
+              placeholder="Describe what this role is used for..."
+            />
+          </Form.Item>
 
-            <Form.Item
-              name="parent_role_id"
-              label="Parent Role"
-              extra="Inherit permissions from another role."
-            >
-              <Select
-                aria-label="Parent Role"
-                allowClear
-                placeholder="Select parent role (optional)"
-                options={parentRoleOptions}
-              />
-            </Form.Item>
+          <Form.Item
+            name="parent_role_id"
+            label="Parent role"
+            tooltip="Optionally inherit permissions from another role."
+          >
+            <Select
+              aria-label="Parent role"
+              allowClear
+              placeholder="Select a parent role"
+              options={parentRoleOptions}
+            />
+          </Form.Item>
 
-            <Form.Item
-              name="priority"
-              label="Priority"
-              extra="Higher priority roles take precedence in permission conflicts (0-100)."
-            >
-              <InputNumber
-                aria-label="Priority"
-                min={0}
-                max={100}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
+          <Form.Item
+            name="priority"
+            label="Priority"
+            tooltip="Higher priority roles take precedence when permissions conflict (0–100)."
+          >
+            <InputNumber
+              aria-label="Priority"
+              min={0}
+              max={100}
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
 
-            <Form.Item>
-              <Space>
-                <Button type="primary" htmlType="submit" loading={isLoading}>
-                  Create Role
-                </Button>
-                <Button onClick={() => router.push(RBAC_ROUTE)}>Cancel</Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </div>
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={isLoading}>
+                Create role
+              </Button>
+              <Button onClick={() => router.push(RBAC_ROUTE)}>Cancel</Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Flex>
     </Layout>
   );
