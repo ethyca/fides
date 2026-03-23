@@ -9,6 +9,7 @@ import {
   InputNumber,
   Select,
   Space,
+  Spin,
   Switch,
   Table,
   Tag,
@@ -232,9 +233,9 @@ const RoleDetailPage: NextPage = () => {
 
   if (isLoading || isRolesLoading || isPermissionsLoading || !role) {
     return (
-      <Layout title="Loading...">
+      <Layout title="Edit role">
         <Flex justify="center" align="center" style={{ minHeight: 400 }}>
-          Loading...
+          <Spin />
         </Flex>
       </Layout>
     );
