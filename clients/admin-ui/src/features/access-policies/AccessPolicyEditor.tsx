@@ -435,8 +435,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
 
   const handleActionMessageChange = useCallback(
-    (value: string) =>
-      updateNodeData(POLICY_NODE_ID, { actionMessage: value }),
+    (value: string) => updateNodeData(POLICY_NODE_ID, { actionMessage: value }),
     [updateNodeData],
   );
 
@@ -456,6 +455,18 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [nodes, edges],
   );
 
+  const nodeSizes = useMemo(() => {
+    const sizes: Record<string, { width: number; height: number }> = {};
+    nodes.forEach((n) => {
+      if (n.type === "conditionNode") {
+        sizes[n.id] = { width: 320, height: 310 };
+      } else if (n.type === "constraintNode") {
+        sizes[n.id] = { width: 320, height: 380 };
+      }
+    });
+    return sizes;
+  }, [nodes]);
+
   const { nodes: layoutedNodes } = useMemo(
     () =>
       getLayoutedElements(nodes, layoutEdges, "LR", {
@@ -463,8 +474,9 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         nodesep: 110,
         nodeWidth: 320,
         nodeHeight: 100,
+        nodeSizes,
       }),
-    [nodes, layoutEdges],
+    [nodes, layoutEdges, nodeSizes],
   );
 
   // ─── Add condition (chain from last condition) ────────────────────

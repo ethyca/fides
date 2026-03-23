@@ -1,6 +1,8 @@
 import { Edge, Node, Position } from "@xyflow/react";
 import dagre from "dagre";
 
+type AlignOption = "UL" | "UR" | "DL" | "DR" | undefined;
+
 export interface DagreLayoutOptions {
   rankdir?: "LR" | "TB";
   ranksep?: number;
@@ -12,10 +14,12 @@ export interface DagreLayoutOptions {
   nodeHeight?: number;
   /** Per-node dimension overrides keyed by node id. */
   nodeSizes?: Record<string, { width: number; height: number }>;
+  /** Node alignment within ranks. Default: dagre default (center). */
+  align?: AlignOption;
 }
 
-const DEFAULT_OPTIONS: Required<DagreLayoutOptions> = {
-  rankdir: "LR",
+const DEFAULT_OPTIONS = {
+  rankdir: "LR" as const,
   ranksep: 60,
   nodesep: 60,
   edgesep: 50,
@@ -23,7 +27,8 @@ const DEFAULT_OPTIONS: Required<DagreLayoutOptions> = {
   marginy: 15,
   nodeWidth: 220,
   nodeHeight: 70,
-  nodeSizes: {},
+  nodeSizes: {} as Record<string, { width: number; height: number }>,
+  align: undefined as AlignOption,
 };
 
 // The dagre layout algorithm needs a graph instance with nodes and edges
@@ -47,7 +52,7 @@ export const getLayoutedElements = (
     edgesep: opts.edgesep,
     marginx: opts.marginx,
     marginy: opts.marginy,
-    align: "UL",
+    align: opts.align,
   });
 
   // Set node width and height for layout calculation
