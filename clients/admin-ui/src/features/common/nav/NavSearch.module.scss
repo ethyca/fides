@@ -221,7 +221,7 @@
   font-size: 13px;
 }
 
-/* Keyboard shortcut hint — hidden by default, visible on focus */
+/* Keyboard shortcut hint — hidden by default, visible on hover */
 .shortcutHint {
   font-size: 11px;
   color: var(--fidesui-neutral-500);
@@ -235,6 +235,7 @@
   transition: opacity 0.15s ease;
 }
 
+.expandedInput:hover .shortcutHint,
 .expandedInput:focus-within .shortcutHint {
   opacity: 1;
 }
