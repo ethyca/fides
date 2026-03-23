@@ -1,7 +1,7 @@
 import {
   ChakraCenter as Center,
   ChakraSpinner as Spinner,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -15,7 +15,7 @@ const LoginWithOIDC: NextPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [loginRequest] = useLoginWithOIDCMutation();
-  const toast = useToast();
+  const message = useMessage();
 
   useEffect(() => {
     if (
@@ -40,15 +40,12 @@ const LoginWithOIDC: NextPage = () => {
         router.push("/");
       })
       .catch((error) => {
-        toast({
-          status: "error",
-          description: "An error occurred while logging in.",
-        });
+        message.error("An error occurred while logging in.");
         // eslint-disable-next-line no-console
         console.error(error);
         router.push("/login");
       });
-  }, [router, toast, dispatch, router.query, loginRequest]);
+  }, [router, message, dispatch, router.query, loginRequest]);
 
   return (
     <Center h="100%" w="100%">

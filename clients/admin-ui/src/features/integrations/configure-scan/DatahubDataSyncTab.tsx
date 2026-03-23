@@ -5,10 +5,9 @@ import {
   ChakraLink as Link,
   ChakraText as Text,
   ChakraVStack as VStack,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
-import { successToastParams } from "~/features/common/toast";
 import { pluralize } from "~/features/common/utils";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import { useGetConnectionConfigDatasetConfigsQuery } from "~/features/datastore-connections";
@@ -33,7 +32,7 @@ const DatahubDataSyncTab = ({
   });
   const [syncDatahubConnection, { isLoading }] =
     useSyncDatahubConnectionMutation();
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSync = async () => {
     try {
@@ -54,18 +53,13 @@ const DatahubDataSyncTab = ({
       });
 
       const successCount = response.data?.succeeded.length ?? 0;
-      const message = `Fides has begun syncing with DataHub. ${successCount} ${pluralize(successCount, "dataset", "datasets")} queued for syncing.`;
+      const successMessage = `Fides has begun syncing with DataHub. ${successCount} ${pluralize(successCount, "dataset", "datasets")} queued for syncing.`;
 
-      toast(successToastParams(message));
+      message.success(successMessage);
     } catch (error) {
-      toast({
-        title: "Error syncing datasets",
-        description:
-          "There was an error syncing your datasets with DataHub. Please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      message.error(
+        "There was an error syncing your datasets with DataHub. Please try again.",
+      );
     }
   };
 

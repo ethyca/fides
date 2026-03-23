@@ -109,7 +109,9 @@ export const FormikAntFormItemPOC = () => (
               </AntForm.Item>
               <AntForm.Item label="Date" name="date" layout="vertical">
                 <DatePicker
-                  onChange={(date) => setFieldValue("date", date.toISOString())}
+                  onChange={(date) =>
+                    setFieldValue("date", date?.toISOString())
+                  }
                 />
               </AntForm.Item>
               <AntForm.Item label="Number" name="number" layout="vertical">

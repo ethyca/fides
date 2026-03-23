@@ -189,13 +189,15 @@ describe("System management page", () => {
           cy.getByTestId("input-description").clear().type(description);
           // then try navigating to the privacy declarations tab
           cy.getAntTab("Data uses").click({ force: true });
-          cy.getByTestId("confirmation-modal");
+          cy.get(".ant-modal-confirm").should("exist");
           // make sure canceling works
-          cy.getByTestId("cancel-btn").click();
+          cy.getAntModalConfirmButtons()
+            .find(".ant-btn:not(.ant-btn-primary)")
+            .click();
           cy.getByTestId("input-description").should("have.value", description);
           // now actually discard
           cy.getAntTab("Data uses").click({ force: true });
-          cy.getByTestId("continue-btn").click();
+          cy.getAntModalConfirmButtons().contains("OK").click();
           // should load the privacy declarations page
           cy.getByTestId("privacy-declaration-step");
           // navigate back and make sure description has the original description
@@ -408,14 +410,14 @@ describe("System management page", () => {
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-error-msg");
+      cy.shouldShowMessage("error");
 
       // changing to a different data use should go through
       cy.getByTestId("new-declaration-form").within(() => {
         cy.getByTestId("input-data_use").type(`collect{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     // Cannot currently edit the data use or name fields—they have been disabled
@@ -443,7 +445,7 @@ describe("System management page", () => {
         cy.getByTestId("input-name").clear().type(`Store system data.{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-error-msg");
+      cy.shouldShowMessage("error");
     });
 
     it.skip("can have multiple of the same data use if the names are different", () => {
@@ -465,7 +467,7 @@ describe("System management page", () => {
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it.skip("can edit an accordion data use while persisting a newly added data use", () => {
@@ -540,8 +542,8 @@ describe("System management page", () => {
 
       it("can show a modal on deleting a privacy declaration", () => {
         cy.getByTestId("delete-btn").click();
-        cy.getByTestId("continue-btn").click();
-        cy.getByTestId("toast-success-msg").contains("Data use deleted");
+        cy.getAntModalConfirmButtons().contains("OK").click();
+        cy.shouldShowMessage("success", "Data use deleted");
       });
 
       it.skip("deletes a new privacy declaration", () => {
@@ -560,9 +562,9 @@ describe("System management page", () => {
           // now go through delete flow
           cy.getByTestId("delete-btn").click();
         });
-        cy.getByTestId("continue-btn").click();
+        cy.getAntModalConfirmButtons().contains("OK").click();
         cy.wait("@putFidesSystem");
-        cy.getByTestId("toast-success-msg").contains("Data use deleted");
+        cy.shouldShowMessage("success", "Data use deleted");
       });
 
       it.skip("deletes an accordion privacy declaration", () => {
@@ -570,7 +572,7 @@ describe("System management page", () => {
         cy.getByTestId("functional.service.improve-form").within(() => {
           cy.getByTestId("delete-btn").click();
         });
-        cy.getByTestId("continue-btn").click();
+        cy.getAntModalConfirmButtons().contains("OK").click();
         cy.wait("@putFidesSystem").then((interception) => {
           const { body } = interception.request;
           expect(body.privacy_declarations.length).to.eql(1);
@@ -579,7 +581,7 @@ describe("System management page", () => {
               "functional.service.improve",
           );
         });
-        cy.getByTestId("toast-success-msg").contains("Data use deleted");
+        cy.shouldShowMessage("success", "Data use deleted");
       });
     });
   });

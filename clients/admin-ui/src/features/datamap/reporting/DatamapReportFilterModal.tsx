@@ -1,4 +1,5 @@
 import {
+  Button,
   ChakraAccordion as Accordion,
   ChakraAccordionButton as AccordionButton,
   ChakraAccordionIcon as AccordionIcon,
@@ -6,15 +7,14 @@ import {
   ChakraAccordionItemProps as AccordionItemProps,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
+  ChakraFlex as Flex,
   ChakraHeading as Heading,
+  Modal,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import CheckboxTree from "~/features/common/CheckboxTree";
-import StandardDialog, {
-  StandardDialogProps,
-} from "~/features/common/modals/StandardDialog";
 import { TreeNode } from "~/features/common/types";
 import {
   selectDataSubjects,
@@ -32,8 +32,9 @@ import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 
 import { DatamapReportFilterSelections } from "../types";
 
-interface DatamapReportFilterModalProps
-  extends Omit<StandardDialogProps, "children" | "onConfirm"> {
+interface DatamapReportFilterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   columnNameMap: Record<string, string>;
   selectedFilters: DatamapReportFilterSelections;
   onFilterChange: (selectedFilters: DatamapReportFilterSelections) => void;
@@ -65,11 +66,11 @@ const FilterModalAccordionItem = ({
 );
 
 export const DatamapReportFilterModal = ({
+  isOpen,
   columnNameMap,
   selectedFilters,
   onFilterChange,
   onClose,
-  ...props
 }: DatamapReportFilterModalProps): JSX.Element => {
   useGetAllDataUsesQuery();
   useGetAllDataSubjectsQuery();
@@ -137,15 +138,21 @@ export const DatamapReportFilterModal = ({
   };
 
   return (
-    <StandardDialog
-      heading="Filter Datamap Report"
-      {...props}
-      onCancel={resetFilters}
-      onConfirm={handleFilterChange}
-      onClose={onClose}
-      cancelButtonText="Reset filters"
-      continueButtonText="Done"
+    <Modal
+      title="Filter Datamap Report"
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
       data-testid="datamap-report-filter-modal"
+      footer={
+        <Flex gap={3} sx={{ "& button": { width: "100%" } }}>
+          <Button onClick={resetFilters}>Reset filters</Button>
+          <Button type="primary" onClick={handleFilterChange}>
+            Done
+          </Button>
+        </Flex>
+      }
     >
       <Accordion allowToggle>
         <FilterModalAccordionItem label={columnNameMap.data_uses}>
@@ -173,6 +180,6 @@ export const DatamapReportFilterModal = ({
           />
         </FilterModalAccordionItem>
       </Accordion>
-    </StandardDialog>
+    </Modal>
   );
 };

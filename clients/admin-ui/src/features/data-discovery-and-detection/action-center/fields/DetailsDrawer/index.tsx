@@ -9,7 +9,7 @@ export const DetailsDrawer = ({
   titleIcon,
   titleTag,
   actions,
-  width = 480 /* TODO: add refactor for making this the default width for all drawers */,
+  width,
   ...drawerProps
 }: DetailsDrawerProps) => {
   return (

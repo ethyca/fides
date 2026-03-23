@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.81.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.81.1..main)
+
+## [2.81.1](https://github.com/ethyca/fides/compare/2.81.0..2.81.1)
+
+### Fixed
+- Fixed privacy center cards sharing a policy key routing to the wrong action [#7711](https://github.com/ethyca/fides/pull/7711)
 
 ## [2.81.0](https://github.com/ethyca/fides/compare/2.80.1..2.81.0)
 
@@ -83,6 +88,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated Organization encrypted columns from pgcrypto to AES-GCM [#7554](https://github.com/ethyca/fides/pull/7554) https://github.com/ethyca/fides/labels/db-migration
 - Refined chart components with animation state management and dark theme card config [#7537](https://github.com/ethyca/fides/pull/7537)
 - Changed span to div in ExperienceDescription to expand the set of supported HTML tags in experience descriptions [#7502](https://github.com/ethyca/fides/pull/7502)
+- Un-deprecated GET /system/{fides_key}/connection endpoint [#7668](https://github.com/ethyca/fides/pull/7668)
+- Okta ux refactor [#7596](https://github.com/ethyca/fides/pull/7596)
 
 ### Developer Experience
 - Added Carbon icon defaults for Ant Modal imperative API methods [#7569](https://github.com/ethyca/fides/pull/7569)

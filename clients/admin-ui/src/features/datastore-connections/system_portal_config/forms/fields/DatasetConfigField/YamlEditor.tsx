@@ -1,10 +1,9 @@
-import { useAlert } from "common/hooks/useAlert";
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraModalFooter as ModalFooter,
   ChakraText as Text,
   ChakraVStack as VStack,
+  useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import React, { Fragment, useRef, useState } from "react";
@@ -34,7 +33,7 @@ const YamlEditor = ({
   onChange,
 }: YamlEditorFormProps) => {
   const monacoRef = useRef(null);
-  const { errorAlert } = useAlert();
+  const message = useMessage();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException,
@@ -85,7 +84,7 @@ const YamlEditor = ({
       if (isYamlException(error)) {
         setYamlError(error);
       } else {
-        errorAlert("Could not parse the supplied YAML");
+        message.error("Could not parse the supplied YAML");
       }
     }
   };
@@ -140,28 +139,26 @@ const YamlEditor = ({
             })}
           </Text>
         ) : null}
-        <ModalFooter>
-          <div className="flex w-full justify-end gap-4">
-            {onCancel && (
-              <Button
-                onClick={onCancel}
-                data-testid="cancel-btn"
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-            )}
+        <div className="flex w-full justify-end gap-4">
+          {onCancel && (
             <Button
-              type="primary"
-              onClick={handleSubmit}
-              data-testid="continue-btn"
-              disabled={submitDisabled}
-              loading={isSubmitting || isLoading}
+              onClick={onCancel}
+              data-testid="cancel-btn"
+              disabled={isLoading}
             >
-              Confirm
+              Cancel
             </Button>
-          </div>
-        </ModalFooter>
+          )}
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            data-testid="continue-btn"
+            disabled={submitDisabled}
+            loading={isSubmitting || isLoading}
+          >
+            Confirm
+          </Button>
+        </div>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
