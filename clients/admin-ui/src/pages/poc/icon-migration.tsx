@@ -20,7 +20,6 @@ import type { NextPage } from "next";
 import React from "react";
 
 import {
-  CopyIcon,
   DisplayAllIcon,
   DownloadLightIcon,
   GearLightIcon,
@@ -162,15 +161,6 @@ const ICON_DATA: IconEntry[] = [
     iconType: "createIcon",
     source: "admin-ui",
     suggestedCarbon: null,
-    notes: "",
-  },
-  {
-    key: "admin-CopyIcon",
-    currentName: "CopyIcon",
-    currentIcon: <CopyIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "Copy",
     notes: "",
   },
   {
