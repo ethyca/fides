@@ -18,11 +18,11 @@ import {
   MIN_PX_PER_POINT,
 } from "./chart-constants";
 import {
+  calcTickInterval,
   deriveInterval,
   formatTimestamp,
   HOUR_MS,
   pickIntervalHours,
-  tooltipLabelFormatter,
   useChartAnimation,
   useContainerSize,
   useTooltipContentStyle,
@@ -80,12 +80,8 @@ export const LineChart = ({
       return rawData;
     }
 
-    const intervalHours = pickIntervalHours(
-      rangeMs,
-      containerWidth,
-      MIN_PX_PER_POINT,
-    );
-    const intervalMs = intervalHours * HOUR_MS;
+    const intervalMs =
+      pickIntervalHours(rangeMs, containerWidth, MIN_PX_PER_POINT) * HOUR_MS;
     const flooredStart = Math.floor(minTs / intervalMs) * intervalMs;
     const bucketCount = Math.max(
       1,
@@ -119,13 +115,11 @@ export const LineChart = ({
   }, [rawData, seriesKeys, containerWidth]);
 
   const intervalMs = deriveInterval(chartData);
-
-  const pointCount = chartData.length;
-  const slotWidth =
-    pointCount > 0 && containerWidth > 0
-      ? containerWidth / pointCount
-      : LABEL_WIDTH;
-  const tickInterval = Math.max(0, Math.ceil(LABEL_WIDTH / slotWidth) - 1);
+  const tickInterval = calcTickInterval(
+    chartData.length,
+    containerWidth,
+    LABEL_WIDTH,
+  );
 
   return (
     <div ref={containerRef} className="h-full w-full">
@@ -174,7 +168,7 @@ export const LineChart = ({
               <Tooltip
                 contentStyle={tooltipContentStyle}
                 labelFormatter={(label) =>
-                  tooltipLabelFormatter(String(label), intervalMs)
+                  formatTimestamp(String(label), intervalMs, true)
                 }
               />
             )}

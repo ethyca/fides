@@ -30,33 +30,45 @@ export const useContainerSize = (
 };
 
 export const useChartAnimation = (animationDuration: number): boolean => {
-  const [animationActive, setAnimationActive] = useState(true);
+  const [active, setActive] = useState(true);
   useEffect(() => {
     if (animationDuration <= 0) {
+      setActive(false);
       return undefined;
     }
-    const startTime = performance.now();
-    let animationId: number;
-    const tick = (now: number) => {
-      if (now - startTime >= animationDuration) {
-        setAnimationActive(false);
-      } else {
-        animationId = requestAnimationFrame(tick);
-      }
-    };
-    animationId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animationId);
+    const id = setTimeout(() => setActive(false), animationDuration);
+    return () => clearTimeout(id);
   }, [animationDuration]);
-  return animationActive;
+  return active;
 };
 
+/**
+ * Format a timestamp for display on chart axes or tooltips.
+ * When `verbose` is true (tooltips), includes more context like year or AM/PM.
+ */
 export const formatTimestamp = (
   timestamp: string,
   intervalMs: number,
+  verbose = false,
 ): string => {
   const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) {
     return timestamp;
+  }
+  if (verbose) {
+    if (intervalMs < DAY_MS) {
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   }
   if (intervalMs <= HOUR_MS) {
     return date.toLocaleTimeString("en-US", {
@@ -77,6 +89,7 @@ export const formatTimestamp = (
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
+/** Infer the interval between data points from the first two labels. */
 export const deriveInterval = (data: { label: string }[]): number => {
   if (data.length < 2) {
     return HOUR_MS;
@@ -86,34 +99,7 @@ export const deriveInterval = (data: { label: string }[]): number => {
   return gap > 0 ? gap : HOUR_MS;
 };
 
-export const tooltipLabelFormatter = (
-  label: string,
-  intervalMs: number,
-): string => {
-  const date = new Date(label);
-  if (Number.isNaN(date.getTime())) {
-    return label;
-  }
-  if (intervalMs < DAY_MS) {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  }
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-export interface ChartDataRequest {
-  interval: number;
-  rangeMs: number;
-}
-
+/** Pick a bucket size (in hours) that fits the data range into the container. */
 export const pickIntervalHours = (
   rangeMs: number,
   containerWidth: number,
@@ -124,24 +110,17 @@ export const pickIntervalHours = (
   return Math.max(1, Math.min(idealHours, 72));
 };
 
-export const computeDataRequest = (
+/** Calculate how many ticks to skip so labels don't overlap. */
+export const calcTickInterval = (
+  pointCount: number,
   containerWidth: number,
-  minPointWidth: number,
-  timeRangeMs?: number,
-): ChartDataRequest => {
-  const maxBuckets = Math.max(1, Math.floor(containerWidth / minPointWidth));
-
-  if (timeRangeMs != null) {
-    const interval = pickIntervalHours(
-      timeRangeMs,
-      containerWidth,
-      minPointWidth,
-    );
-    return { interval, rangeMs: timeRangeMs };
-  }
-
-  const rangeMs = maxBuckets * HOUR_MS;
-  return { interval: 1, rangeMs };
+  labelWidth: number,
+): number => {
+  const slotWidth =
+    pointCount > 0 && containerWidth > 0
+      ? containerWidth / pointCount
+      : labelWidth;
+  return Math.max(0, Math.ceil(labelWidth / slotWidth) - 1);
 };
 
 export const useTooltipContentStyle = (): CSSProperties => {

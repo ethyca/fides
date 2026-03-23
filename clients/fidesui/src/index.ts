@@ -351,18 +351,14 @@ export {
   CHART_STROKE,
   CHART_TYPOGRAPHY,
 } from "./components/charts/chart-constants";
-export type {
-  ChartDataRequest,
-  ContainerSize,
-} from "./components/charts/chart-utils";
+export type { ContainerSize } from "./components/charts/chart-utils";
 export {
-  computeDataRequest,
+  calcTickInterval,
   DAY_MS,
   deriveInterval,
   formatTimestamp,
   HOUR_MS,
   pickIntervalHours,
-  tooltipLabelFormatter,
   useContainerSize,
   useTooltipContentStyle,
 } from "./components/charts/chart-utils";
