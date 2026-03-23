@@ -466,7 +466,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     () =>
       getLayoutedElements(nodes, layoutEdges, "LR", {
         ranksep: 80,
-        nodesep: 110,
+        nodesep: 60,
         nodeWidth: 320,
         nodeHeight: 100,
         nodeSizes,
