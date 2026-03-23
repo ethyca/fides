@@ -1,9 +1,8 @@
-import { errorToastParams, successToastParams } from "common/toast";
 import {
   ChakraText as Text,
   ConfirmationModal,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -41,7 +40,7 @@ const EditCollectionDrawer = ({
     [collection, dataset?.collections],
   );
   const [updateDataset] = useUpdateDatasetMutation();
-  const toast = useToast();
+  const message = useMessage();
   const {
     isOpen: deleteIsOpen,
     onOpen: onDeleteOpen,
@@ -59,9 +58,9 @@ const EditCollectionDrawer = ({
     );
     try {
       await updateDataset(updatedDataset);
-      toast(successToastParams("Successfully modified collection"));
+      message.success("Successfully modified collection");
     } catch (error) {
-      toast(errorToastParams(error as string));
+      message.error(error as string);
     }
     onClose();
   };
@@ -74,9 +73,9 @@ const EditCollectionDrawer = ({
       );
       try {
         await updateDataset(updatedDataset);
-        toast(successToastParams("Successfully deleted collection"));
+        message.success("Successfully deleted collection");
       } catch (error) {
-        toast(errorToastParams(error as string));
+        message.error(error as string);
       }
       onClose();
       onDeleteClose();

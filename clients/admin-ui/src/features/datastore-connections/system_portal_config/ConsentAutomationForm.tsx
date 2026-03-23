@@ -14,14 +14,13 @@ import {
   ChakraSkeleton as Skeleton,
   ChakraText as Text,
   Select,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikValues, useField } from "formik";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { Option } from "~/features/common/form/inputs";
-import { errorToastParams } from "~/features/common/toast";
 import {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
@@ -96,7 +95,7 @@ export const ConsentAutomationForm = ({
   connectionKey,
   ...props
 }: ConsentAutomationFormProps) => {
-  const toast = useToast();
+  const message = useMessage();
 
   const { data, isLoading: isLoadingConsentableItems } =
     useGetConsentableItemsQuery(connectionKey);
@@ -165,22 +164,11 @@ export const ConsentAutomationForm = ({
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams("Failed to save bidirectional consent"));
+      message.error("Failed to save bidirectional consent");
     } else {
-      toast({
-        variant: "subtle",
-        position: "top",
-        duration: 3000,
-        status: "success",
-        isClosable: true,
-        description: (
-          <Text data-testid="toast-success-msg">
-            Your bidirectional consent settings have been successfully saved and
-            applied.
-          </Text>
-        ),
-        title: "Settings updated",
-      });
+      message.success(
+        "Your bidirectional consent settings have been successfully saved and applied.",
+      );
     }
   };
 

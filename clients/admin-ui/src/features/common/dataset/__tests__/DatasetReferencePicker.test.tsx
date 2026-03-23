@@ -32,13 +32,6 @@ jest.mock("~/features/dataset/dataset.slice", () => {
   };
 });
 
-// Mock the alert hook
-jest.mock("~/features/common/hooks/useAlert", () => ({
-  useAlert: jest.fn(() => ({
-    errorAlert: jest.fn(),
-  })),
-}));
-
 const mockUseGetAllFilteredDatasetsQuery =
   require("~/features/dataset/dataset.slice").useGetAllFilteredDatasetsQuery;
 const mockUseLazyGetDatasetByKeyQuery =

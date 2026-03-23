@@ -114,7 +114,7 @@ export const CompareTitleInBody: Story = {
   name: "Compare: Title in body vs title prop",
   decorators: [
     () => (
-      <Flex gap="middle" className="w-[800px]">
+      <Flex gap="medium" className="w-[800px]">
         <div className="flex-1">
           <CompareLabel>Existing (Title in body)</CompareLabel>
           <Card>
@@ -147,7 +147,7 @@ export const CompareWithActions: Story = {
   name: "Compare: Actions in body vs extra prop",
   decorators: [
     () => (
-      <Flex gap="middle" className="w-[800px]">
+      <Flex gap="medium" className="w-[800px]">
         <div className="flex-1">
           <CompareLabel>Existing (buttons in body)</CompareLabel>
           <Card>
