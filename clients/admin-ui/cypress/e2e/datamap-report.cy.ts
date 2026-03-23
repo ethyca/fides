@@ -398,9 +398,7 @@ describe("Data map report table", () => {
       cy.wait("@getCustomReportById");
       cy.getByTestId("apply-report-button").click();
       cy.getByTestId("custom-reports-popover").should("not.be.visible");
-      cy.get("#toast-datamap-report-toast")
-        .should("be.visible")
-        .should("have.attr", "data-status", "success");
+      cy.shouldShowMessage("success", "Report applied successfully.");
       cy.getByTestId("custom-reports-trigger").should(
         "contain.text",
         "My Custom Report",
@@ -497,7 +495,7 @@ describe("Data map report table", () => {
       cy.wait("@getCustomReportById");
       cy.getByTestId("custom-report-popover-cancel").click();
       cy.getByTestId("custom-reports-popover").should("not.be.visible");
-      cy.get("#toast-datamap-report-toast").should("not.exist");
+      cy.get(".ant-message-success").should("not.exist");
     });
     it("should not be affected by the user's custom column settings", () => {
       cy.wait("@getCustomReportsMinimal");
@@ -529,9 +527,7 @@ describe("Data map report table", () => {
         cy.getByTestId("custom-report-item").first().click();
       });
       cy.wait("@getCustomReportById500");
-      cy.get("#toast-custom-report-toast")
-        .should("be.visible")
-        .should("have.attr", "data-status", "error");
+      cy.shouldShowMessage("error");
     });
     it("should allow an authorized user to create a new report", () => {
       cy.getByTestId("custom-reports-trigger").click();

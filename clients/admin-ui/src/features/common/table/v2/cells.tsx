@@ -16,7 +16,7 @@ import {
   Tag,
   TagProps,
   Tooltip,
-  useChakraToast as useToast,
+  useMessage,
   useModal,
 } from "fidesui";
 import { FastField, useFormikContext } from "formik";
@@ -24,7 +24,6 @@ import { isBoolean } from "lodash";
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams } from "~/features/common/toast";
 import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
@@ -439,11 +438,11 @@ export const EnableCell = ({
   ...switchProps
 }: EnableCellProps) => {
   const confirmModal = useModal();
-  const toast = useToast();
+  const messageApi = useMessage();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
     const result = await onToggle(enable);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      messageApi.error(getErrorMessage(result.error));
     }
   };
 
