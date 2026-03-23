@@ -99,10 +99,6 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         )
 
 
-def send_init_analytics(opt_out: bool, config_path: str, executed_at: "Any") -> None:
-    """Deprecated no-op. Fideslog has been sunset."""
-
-
 def with_server_health_check(func: Callable) -> Callable:
     """
     Click command decorator which can be added to enable server health check.
@@ -115,11 +111,6 @@ def with_server_health_check(func: Callable) -> Callable:
         return ctx.invoke(func, ctx, *args, **kwargs)
 
     return update_wrapper(wrapper_func, func)
-
-
-def with_analytics(func: Callable) -> Callable:
-    """Passthrough decorator. Fideslog analytics have been sunset."""
-    return func
 
 
 def handle_database_credentials_options(
