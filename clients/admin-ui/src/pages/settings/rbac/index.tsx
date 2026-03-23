@@ -160,20 +160,24 @@ const RBACPage: NextPage = () => {
 
   return (
     <Layout title="Role Management">
-      <PageHeader heading="Role Management" isSticky={false} className="pb-0">
-        <Typography.Paragraph className="max-w-screen-md">
-          {RBAC_COPY}
-        </Typography.Paragraph>
-      </PageHeader>
-      <Flex vertical gap={16} className="p-6">
-        <Flex justify="flex-end">
+      <PageHeader
+        heading="Role Management"
+        isSticky={false}
+        className="pb-0"
+        rightContent={
           <Button
             type="primary"
             onClick={() => router.push(RBAC_ROLE_NEW_ROUTE)}
           >
             Create Custom Role
           </Button>
-        </Flex>
+        }
+      >
+        <Typography.Paragraph className="max-w-screen-md">
+          {RBAC_COPY}
+        </Typography.Paragraph>
+      </PageHeader>
+      <Flex vertical gap={16}>
         <Table
           dataSource={roles || []}
           columns={columns}
