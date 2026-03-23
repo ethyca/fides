@@ -43,7 +43,7 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.connection.merge_configs_util import (
     get_saas_config_referenced_field_paths,
 )
-from fides.service.dataset.validation_steps.saas import _IMMUTABLE_DATASET_FIELDS
+from fides.service.dataset.validation_steps.saas import _MUTABLE_DATASET_FIELDS
 from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import DatasetTestRequest
 from fides.api.util.api_router import APIRouter
@@ -641,7 +641,10 @@ def get_dataset_protected_fields(
     protected = get_saas_config_referenced_field_paths(saas_config, instance_key)
 
     return DatasetProtectedFields(
-        immutable_fields=list(_IMMUTABLE_DATASET_FIELDS),
+        immutable_fields=[
+            f for f in FideslangDataset.model_fields
+            if f not in _MUTABLE_DATASET_FIELDS
+        ],
         protected_collection_fields=[
             ProtectedCollectionField(collection=col, field=field_path)
             for col, field_path in protected

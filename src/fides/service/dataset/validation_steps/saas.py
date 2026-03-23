@@ -48,11 +48,7 @@ def _validate_saas_dataset(
                 )
 
 
-_IMMUTABLE_DATASET_FIELDS = (
-    "organization_fides_key",
-    "name",
-    "description",
-)
+_MUTABLE_DATASET_FIELDS = {"collections"}
 
 
 def _restore_immutable_fields(
@@ -61,13 +57,16 @@ def _restore_immutable_fields(
 ) -> List[DatasetFieldWarning]:
     """
     Restore top-level immutable fields to their original values.
+    Every field outside ``collections`` is considered immutable.
     Returns structured warnings for each field that was restored.
     """
     if not existing_dataset:
         return []
 
     warnings: List[DatasetFieldWarning] = []
-    for field_name in _IMMUTABLE_DATASET_FIELDS:
+    for field_name in dataset.model_fields:
+        if field_name in _MUTABLE_DATASET_FIELDS:
+            continue
         existing_value = getattr(existing_dataset, field_name)
         incoming_value = getattr(dataset, field_name)
         if existing_value != incoming_value:
