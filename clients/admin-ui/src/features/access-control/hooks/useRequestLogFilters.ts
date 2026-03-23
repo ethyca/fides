@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -72,16 +73,27 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     return [];
   });
 
-  // Sync searchValues to URL
+  const skipUrlSyncRef = useRef(false);
+
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (searchValues.length > 0) {
-      params.set("facets", searchValues.join(","));
-    } else {
-      params.delete("facets");
+    if (skipUrlSyncRef.current) {
+      skipUrlSyncRef.current = false;
+      return;
     }
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    router.replace(newUrl, undefined, { shallow: true });
+    const desired = searchValues.join(",");
+    const current = (router.query.facets as string) ?? "";
+    if (current === desired) {
+      return;
+    }
+    const query = { ...router.query };
+    if (desired) {
+      query.facets = desired;
+    } else {
+      delete query.facets;
+    }
+    router.replace({ pathname: router.pathname, query }, undefined, {
+      shallow: true,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValues]);
 
@@ -148,6 +160,21 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
       const encoded = Object.entries(facets).map(
         ([key, value]) => `${key}${SEPARATOR}${value}`,
       );
+
+      const params = new URLSearchParams(window.location.search);
+      const desired = encoded.join(",");
+      if (desired) {
+        params.set("facets", desired);
+      } else {
+        params.delete("facets");
+      }
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}?${params}`,
+      );
+
+      skipUrlSyncRef.current = true;
       setSearchValues(encoded);
     },
     [setSearchValues],

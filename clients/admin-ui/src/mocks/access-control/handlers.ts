@@ -45,6 +45,7 @@ export const accessControlHandlers = () => {
       const startDate = filters.start_date ?? DEFAULT_START;
       const endDate = filters.end_date ?? DEFAULT_END;
       const filtered = filterLogs(allViolationLogs, {
+        ...filters,
         start_date: startDate,
         end_date: endDate,
       });

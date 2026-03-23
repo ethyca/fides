@@ -2,11 +2,7 @@ import { DatePicker, Flex } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 
-import {
-  useGetAccessControlSummaryQuery,
-  useGetConsumersByViolationsQuery,
-  useGetFiltersQuery,
-} from "~/features/access-control/access-control.slice";
+import { useGetFiltersQuery } from "~/features/access-control/access-control.slice";
 import { AccessControlTableTabs } from "~/features/access-control/AccessControlTableTabs";
 import {
   type FacetDefinition,
@@ -40,17 +36,6 @@ const AccessControlPage: NextPage = () => {
 
   const { data: facetOptions } = useGetFiltersQuery(filters);
 
-  const { data: summaryData, isLoading: summaryLoading } =
-    useGetAccessControlSummaryQuery({
-      start_date: filters.start_date,
-      end_date: filters.end_date,
-    });
-
-  const { data: consumersData, isLoading: consumersLoading } =
-    useGetConsumersByViolationsQuery({
-      ...filters,
-      order_by: "violation_count",
-    });
 
   const facets: FacetDefinition[] = useMemo(
     () =>
@@ -96,11 +81,7 @@ const AccessControlPage: NextPage = () => {
             />
           </Flex>
 
-          <SummaryCards
-            summaryData={summaryData}
-            consumersData={consumersData}
-            loading={summaryLoading || consumersLoading}
-          />
+          <SummaryCards />
 
           <AccessControlTableTabs />
         </Flex>

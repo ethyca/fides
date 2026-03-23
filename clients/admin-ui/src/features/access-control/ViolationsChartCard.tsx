@@ -34,10 +34,7 @@ export const ViolationsChartCard = () => {
     useGetRequestsTimeseriesQuery(timeseriesFilters);
 
   const { data: summaryData, isLoading: summaryLoading } =
-    useGetAccessControlSummaryQuery({
-      start_date: filters.start_date,
-      end_date: filters.end_date,
-    });
+    useGetAccessControlSummaryQuery(filters);
 
   const loading = timeseriesLoading || summaryLoading;
 
