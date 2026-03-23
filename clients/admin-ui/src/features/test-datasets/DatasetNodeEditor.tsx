@@ -1,5 +1,6 @@
 import "@xyflow/react/dist/style.css";
 
+import type { OnMount } from "@monaco-editor/react";
 import {
   Background,
   BackgroundVariant,
@@ -39,7 +40,7 @@ import {
 import { DatasetTreeHoverProvider } from "./context/DatasetTreeHoverContext";
 import DatasetNodeDetailPanel from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
-import { removeNulls } from "./helpers";
+import { buildProtectedPathsByCollection, removeNulls } from "./helpers";
 import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
 import DatasetFieldNode from "./nodes/DatasetFieldNode";
 import DatasetRootNode from "./nodes/DatasetRootNode";
@@ -51,6 +52,14 @@ import useDatasetGraph, {
   ProtectedFieldsInfo,
 } from "./useDatasetGraph";
 import useDatasetNodeLayout from "./useDatasetNodeLayout";
+
+type MonacoEditor = Parameters<OnMount>[0];
+type MonacoDecorationsCollection = ReturnType<
+  MonacoEditor["createDecorationsCollection"]
+>;
+type MonacoDecorationOptions = Parameters<
+  MonacoEditor["createDecorationsCollection"]
+>[0][number];
 
 const LAYOUT_OPTIONS = { direction: "LR" } as const;
 
@@ -94,6 +103,10 @@ const DatasetNodeEditorInner = ({
   const reactFlowInstance = useReactFlow();
   const reactFlowRef = useRef<HTMLDivElement>(null);
 
+  // Keep a ref to the latest dataset so modal callbacks avoid stale closures
+  const datasetRef = useRef(dataset);
+  datasetRef.current = dataset;
+
   const [focusedCollection, setFocusedCollection] = useState<string | null>(
     null,
   );
@@ -111,6 +124,8 @@ const DatasetNodeEditorInner = ({
   // Tracks who initiated the last change to prevent sync loops
   const changeSourceRef = useRef<"graph" | "yaml" | null>(null);
   const yamlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const yamlEditorRef = useRef<MonacoEditor | null>(null);
+  const yamlDecorationsRef = useRef<MonacoDecorationsCollection | null>(null);
 
   const highlightNode = useCallback((nodeId: string) => {
     if (highlightTimerRef.current) {
@@ -188,6 +203,145 @@ const DatasetNodeEditorInner = ({
     },
     [onDatasetChange],
   );
+
+  // Compute protected YAML line ranges for Monaco decorations
+  const protectedRanges = useMemo((): MonacoDecorationOptions[] => {
+    if (!yamlPanelOpen || !protectedFields || !yamlContent) {
+      return [];
+    }
+
+    const lines = yamlContent.split("\n");
+    const ranges: MonacoDecorationOptions[] = [];
+
+    // Build lookup: collection → Set of field paths (including ancestor paths)
+    const protectedPathsByCollection = buildProtectedPathsByCollection(
+      protectedFields.protected_collection_fields,
+    );
+
+    const immutableSet = new Set(protectedFields.immutable_fields);
+    let currentCollection = "";
+    const fieldStack: [number, string][] = [];
+
+    // Detect the collection indent level from the first `- name:` line
+    // instead of hardcoding a threshold.
+    let collectionIndent: number | null = null;
+    for (const line of lines) {
+      const m = line.match(/^(\s*)-\s+name:\s+\S+/);
+      if (m) {
+        collectionIndent = m[1].length;
+        break;
+      }
+    }
+
+    lines.forEach((line: string, i: number) => {
+      let isProtected = false;
+
+      // Top-level immutable keys (fides_key, name, description, etc.)
+      if (/^\S/.test(line) && line.includes(":")) {
+        const key = line.split(":")[0].trim();
+        if (immutableSet.has(key)) {
+          isProtected = true;
+        }
+      }
+
+      // Track collection/field structure
+      const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)/);
+      if (nameMatch) {
+        const [, indent, name] = nameMatch;
+        const indentLevel = indent.length;
+
+        if (
+          collectionIndent !== null &&
+          indentLevel <= collectionIndent
+        ) {
+          currentCollection = name;
+          fieldStack.length = 0;
+        } else {
+          while (
+            fieldStack.length > 0 &&
+            fieldStack[fieldStack.length - 1][0] >= indentLevel
+          ) {
+            fieldStack.pop();
+          }
+          fieldStack.push([indentLevel, name]);
+
+          if (protectedPathsByCollection.has(currentCollection)) {
+            const currentPath = fieldStack.map(([, n]) => n).join(".");
+            if (
+              protectedPathsByCollection
+                .get(currentCollection)!
+                .has(currentPath)
+            ) {
+              isProtected = true;
+            }
+          }
+        }
+      }
+
+      if (isProtected) {
+        ranges.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: line.length + 1,
+          },
+          options: {
+            isWholeLine: true,
+            inlineClassName: "immutable-line",
+          },
+        });
+      }
+    });
+
+    return ranges;
+  }, [yamlPanelOpen, protectedFields, yamlContent]);
+
+  // Apply decorations when ranges change or editor is available
+  const applyYamlDecorations = useCallback(() => {
+    const monacoEditor = yamlEditorRef.current;
+    if (!monacoEditor) {
+      return;
+    }
+    if (yamlDecorationsRef.current) {
+      yamlDecorationsRef.current.set(protectedRanges);
+    } else {
+      yamlDecorationsRef.current =
+        monacoEditor.createDecorationsCollection(protectedRanges);
+    }
+  }, [protectedRanges]);
+
+  useEffect(() => {
+    applyYamlDecorations();
+  }, [applyYamlDecorations]);
+
+  // Inject immutable-line style with ref-counting so concurrent instances
+  // don't remove the style while another component still needs it.
+  useEffect(() => {
+    const styleId = "immutable-line-style";
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = ".immutable-line { opacity: 0.5; }";
+      style.dataset.refCount = "0";
+      document.head.appendChild(style);
+    }
+    style.dataset.refCount = String(
+      Number(style.dataset.refCount || "0") + 1,
+    );
+    return () => {
+      const el = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (el) {
+        const count = Number(el.dataset.refCount || "1") - 1;
+        if (count <= 0) {
+          el.remove();
+        } else {
+          el.dataset.refCount = String(count);
+        }
+      }
+    };
+  }, []);
 
   const { nodes: rawNodes, edges } = useDatasetGraph(
     dataset,
@@ -402,11 +556,11 @@ const DatasetNodeEditorInner = ({
   const editorActions: DatasetEditorActions = useMemo(
     () => ({
       addCollection: () => {
-        const currentDataset = datasetRef.current;
+        const { current } = datasetRef;
         setAddModal({
           open: true,
           title: "Add Collection",
-          existingNames: currentDataset.collections.map((c) => c.name),
+          existingNames: current.collections.map((c) => c.name),
           mode: "collection",
           onConfirm: (name: string) => {
             handleAddCollection(name);
@@ -415,8 +569,8 @@ const DatasetNodeEditorInner = ({
         });
       },
       addField: (collectionName: string, parentFieldPath?: string) => {
-        const currentDataset = datasetRef.current;
-        const collection = currentDataset.collections.find(
+        const { current } = datasetRef;
+        const collection = current.collections.find(
           (c) => c.name === collectionName,
         );
         const siblingFields = parentFieldPath
@@ -587,6 +741,10 @@ const DatasetNodeEditorInner = ({
                 value={yamlContent}
                 height="100%"
                 onChange={handleYamlChange}
+                onMount={(editor) => {
+                  yamlEditorRef.current = editor;
+                  applyYamlDecorations();
+                }}
                 options={{
                   fontFamily: "Menlo",
                   fontSize: 13,
