@@ -559,6 +559,7 @@ class PrivacyRequestService:
             property_id=existing_privacy_request.property_id,
             consent_preferences=existing_privacy_request.consent_preferences,
             source=existing_privacy_request.source,
+            location=existing_privacy_request.location,
             reviewed_at=existing_privacy_request.reviewed_at,
             reviewed_by=existing_privacy_request.reviewed_by,
             identity_verified_at=existing_privacy_request.identity_verified_at,
