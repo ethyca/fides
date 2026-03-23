@@ -32,7 +32,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { ExportFormat } from "~/features/datamap/constants";
@@ -614,7 +613,7 @@ export const DatamapReportTable = ({
                 aria-label="Export report"
                 data-testid="export-btn"
                 onClick={onExportReportOpen}
-                icon={<DownloadLightIcon ml="1.5px" />}
+                icon={<Icons.Download />}
               />
               <Dropdown
                 menu={{

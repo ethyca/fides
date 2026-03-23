@@ -20,7 +20,6 @@ import type { NextPage } from "next";
 import React from "react";
 
 import {
-  DownloadLightIcon,
   GearLightIcon,
   ManualSetupIcon,
 } from "~/features/common/Icon";
@@ -160,15 +159,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: null,
     notes: "",
-  },
-  {
-    key: "admin-DownloadLightIcon",
-    currentName: "DownloadLightIcon",
-    currentIcon: <DownloadLightIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "Download",
-    notes: "Light variant",
   },
   {
     key: "admin-GearLightIcon",
