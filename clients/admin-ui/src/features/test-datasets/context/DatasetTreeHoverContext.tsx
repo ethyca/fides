@@ -36,8 +36,8 @@ export const DatasetTreeHoverContext =
 const buildAncestryMaps = (edges: Edge[]) => {
   // parentOf: child → parent
   const parentOf = new Map<string, string>();
-  edges.forEach((e) => {
-    parentOf.set(e.target, e.source);
+  edges.forEach((edge) => {
+    parentOf.set(edge.target, edge.source);
   });
 
   const getAncestors = (nodeId: string): Set<string> => {

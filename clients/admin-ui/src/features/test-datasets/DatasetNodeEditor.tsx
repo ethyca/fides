@@ -454,11 +454,7 @@ const DatasetNodeEditorInner = ({
 
   return (
     <DatasetEditorActionsContext.Provider value={editorActions}>
-      <div
-        ref={reactFlowRef}
-        className="size-full"
-        style={{ display: "flex", flexDirection: "column" }}
-      >
+      <Flex ref={reactFlowRef} className="size-full" vertical>
         {/* Toolbar / Breadcrumb navigation */}
         <Flex
           align="center"
@@ -546,13 +542,12 @@ const DatasetNodeEditorInner = ({
         </div>
         {/* Collapsible YAML editor panel */}
         {yamlPanelOpen && (
-          <div
+          <Flex
+            vertical
             style={{
               flexShrink: 0,
               height: 300,
               borderTop: "1px solid var(--fidesui-neutral-200)",
-              display: "flex",
-              flexDirection: "column",
               backgroundColor: "white",
             }}
           >
@@ -605,7 +600,7 @@ const DatasetNodeEditorInner = ({
                 theme="light"
               />
             </div>
-          </div>
+          </Flex>
         )}
         <DatasetNodeDetailPanel
           open={!!selectedNodeData}
@@ -624,7 +619,7 @@ const DatasetNodeEditorInner = ({
           onConfirm={addModal.onConfirm}
           onCancel={() => setAddModal(CLOSED_MODAL)}
         />
-      </div>
+      </Flex>
     </DatasetEditorActionsContext.Provider>
   );
 };
