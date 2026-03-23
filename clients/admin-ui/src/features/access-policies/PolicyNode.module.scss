@@ -20,6 +20,21 @@
 .body {
   padding: 12px 16px;
   border-top: 1px solid var(--ant-color-border);
+
+  :global(.ant-collapse-content-box) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  :global(.ant-collapse-body) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  :global(.ant-collapse-header) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
 }
 
 .handle {
