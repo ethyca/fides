@@ -1,17 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Flex, theme } from "antd/lib";
-import { useMemo, useRef, useState } from "react";
+import { Flex } from "antd/lib";
+import { useMemo, useState } from "react";
 
-import type { BarChartProps, BarSize, ChartDataRequest, ChartInterval } from "../../index";
-import {
-  BarChart,
-  computeDataRequest,
-  HOUR_MS,
-  intervalToMs,
-  useContainerWidth,
-} from "../../index";
-import { BAR_SIZE_TOKEN } from "./chart-constants";
-
+import type { BarChartProps, ChartDataRequest } from "../../index";
+import { BarChart, HOUR_MS } from "../../index";
 import { seededRandom } from "./story-utils";
 
 interface ViolationPoint {
@@ -33,9 +25,9 @@ const VIOLATION_DATA_7D = generateViolationLogs(168);
 
 const mockBucketData = (
   points: ViolationPoint[],
-  interval: ChartInterval,
+  intervalHours: number,
 ): BarChartProps["data"] => {
-  const ms = intervalToMs(interval);
+  const ms = intervalHours * HOUR_MS;
   const timestamps = points.map((p) => new Date(p.timestamp).getTime());
   const minTs = Math.min(...timestamps);
   const maxTs = Math.max(...timestamps);
@@ -69,7 +61,7 @@ const DynamicBucketedChart = ({
     () =>
       request
         ? mockBucketData(points, request.interval)
-        : mockBucketData(points, "6h"),
+        : mockBucketData(points, 6),
     [points, request],
   );
 

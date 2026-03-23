@@ -9,18 +9,21 @@ import {
 } from "recharts";
 
 import type { AntColorTokenKey, BarSize } from "./chart-constants";
-import { BAR_SIZE_TOKEN, CHART_ANIMATION, LABEL_WIDTH } from "./chart-constants";
+import {
+  BAR_SIZE_TOKEN,
+  CHART_ANIMATION,
+  LABEL_WIDTH,
+} from "./chart-constants";
 import type { ChartDataRequest } from "./chart-utils";
 import {
   computeDataRequest,
   deriveInterval,
-  formatTimestamp,
   tooltipLabelFormatter,
   useChartAnimation,
-  useContainerWidth,
+  useContainerSize,
   useTooltipContentStyle,
 } from "./chart-utils";
-import { ChartText } from "./ChartText";
+import { XAxisTick } from "./XAxisTick";
 
 export interface BarChartDataPoint {
   label: string;
@@ -51,7 +54,7 @@ export const BarChart = ({
   const barWidth = token[BAR_SIZE_TOKEN[size]];
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const containerWidth = useContainerWidth(containerRef);
+  const { width: containerWidth } = useContainerSize(containerRef);
 
   const chartData = data ?? [];
 
@@ -94,34 +97,12 @@ export const BarChart = ({
     }
   }, [onIntervalChange, containerWidth, barWidth]);
 
-  const formatLabel = (label: string) =>
-    formatTimestamp(label, derivedIntervalMs);
-
   const barCount = chartData.length;
   const slotWidth =
     barCount > 0 && containerWidth > 0
       ? containerWidth / barCount
       : LABEL_WIDTH;
   const tickInterval = Math.max(0, Math.ceil(LABEL_WIDTH / slotWidth) - 1);
-
-  const renderTick = ({
-    x,
-    y,
-    payload,
-  }: {
-    x?: string | number;
-    y?: string | number;
-    payload?: { value: string };
-  }) => (
-    <ChartText
-      x={Number(x ?? 0)}
-      y={Number(y ?? 0) + 12}
-      fill={token.colorTextTertiary}
-      width={LABEL_WIDTH}
-    >
-      {payload ? formatLabel(payload.value) : null}
-    </ChartText>
-  );
 
   return (
     <div ref={containerRef} className="h-full w-full">
@@ -134,7 +115,12 @@ export const BarChart = ({
           >
             <XAxis
               dataKey="label"
-              tick={renderTick}
+              tick={
+                <XAxisTick
+                  intervalMs={derivedIntervalMs}
+                  fill={token.colorTextTertiary}
+                />
+              }
               interval={tickInterval}
               axisLine={false}
               tickLine={false}

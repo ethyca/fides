@@ -331,11 +331,11 @@ export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
 export type {
-  AreaChartDataPoint,
-  AreaChartProps,
-  AreaChartSeries,
-} from "./components/charts/AreaChart";
-export { AreaChart } from "./components/charts/AreaChart";
+  LineChartDataPoint,
+  LineChartProps,
+  LineChartSeries,
+} from "./components/charts/LineChart";
+export { LineChart } from "./components/charts/LineChart";
 export type {
   BarChartDataPoint,
   BarChartProps,
@@ -344,7 +344,6 @@ export { BarChart } from "./components/charts/BarChart";
 export type {
   AntColorTokenKey,
   BarSize,
-  ChartInterval,
 } from "./components/charts/chart-constants";
 export {
   CHART_ANIMATION,
@@ -352,18 +351,19 @@ export {
   CHART_STROKE,
   CHART_TYPOGRAPHY,
 } from "./components/charts/chart-constants";
-export type { ChartDataRequest } from "./components/charts/chart-utils";
+export type {
+  ChartDataRequest,
+  ContainerSize,
+} from "./components/charts/chart-utils";
 export {
   computeDataRequest,
   DAY_MS,
   deriveInterval,
   formatTimestamp,
   HOUR_MS,
-  intervalToMs,
-  pickBucketInterval,
-  pickInterval,
+  pickIntervalHours,
   tooltipLabelFormatter,
-  useContainerWidth,
+  useContainerSize,
   useTooltipContentStyle,
 } from "./components/charts/chart-utils";
 export type { ChartGradientProps } from "./components/charts/ChartGradient";

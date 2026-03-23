@@ -31,13 +31,11 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
   >(({ trend = "neutral", valueStyle, ...props }, ref) => {
     const { token } = theme.useToken();
     const trendColor = token[TREND_TOKEN_MAP[trend]];
-
     return (
       <WrappedComponent
         ref={ref}
         valueStyle={{
           fontWeight: 600, // semibold
-          fontFamily: token.fontFamilyCode,
           color: trendColor,
           ...valueStyle, // allow per-instance overrides
         }}
