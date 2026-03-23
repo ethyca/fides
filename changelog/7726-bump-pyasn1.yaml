@@ -1,0 +1,4 @@
+type: Security
+description: Bumped pyasn1 to 0.6.3 (CVE-2026-30922)
+pr: 7726
+labels: []
