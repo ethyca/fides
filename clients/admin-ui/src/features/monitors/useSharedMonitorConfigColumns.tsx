@@ -1,13 +1,6 @@
-import {
-  Button,
-  Flex,
-  Icons,
-  TableProps,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, Flex, Icons, TableProps, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useDeleteSharedMonitorConfigMutation } from "~/features/monitors/shared-monitor-config.slice";
 import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
 import { isErrorResult } from "~/types/errors";
@@ -18,21 +11,19 @@ const useSharedMonitorConfigColumns = ({
   onEditClick: (row: SharedMonitorConfig) => void;
 }) => {
   const [deleteMonitorConfig] = useDeleteSharedMonitorConfigMutation();
-  const toast = useToast();
+  const message = useMessage();
 
   const handleDeleteMonitorConfig = async (id: string) => {
     const result = await deleteMonitorConfig({ id });
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          getErrorMessage(
-            result.error,
-            "A problem occurred deleting this config",
-          ),
+      message.error(
+        getErrorMessage(
+          result.error,
+          "A problem occurred deleting this config",
         ),
       );
     } else {
-      toast(successToastParams("Monitor config deleted successfully"));
+      message.success("Monitor config deleted successfully");
     }
   };
 

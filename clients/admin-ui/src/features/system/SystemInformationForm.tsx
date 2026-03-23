@@ -6,7 +6,7 @@ import {
   ChakraHeading as Heading,
   ChakraStack as Stack,
   ChakraText as Text,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
@@ -29,7 +29,6 @@ import {
   VendorSources,
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
-import { errorToastParams } from "~/features/common/toast";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import {
   selectAllDictEntries,
@@ -229,7 +228,7 @@ const SystemInformationForm = ({
     [dataProps.allDatasets],
   );
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (
     values: FormValues,
@@ -249,7 +248,7 @@ const SystemInformationForm = ({
             dataUseQueryResult.error,
             `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
-          toast(errorToastParams(dataUseErrorMsg));
+          message.error(dataUseErrorMsg);
         }
       } else if (
         dataUseQueryResult.data &&
@@ -281,12 +280,9 @@ const SystemInformationForm = ({
           result.error,
           `An unexpected error occurred while ${attemptedAction} the system. Please try again.`,
         );
-        toast({
-          status: "error",
-          description: errorMsg,
-        });
+        message.error(errorMsg);
       } else {
-        toast.closeAll();
+        message.destroy();
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
         onSuccess(result.data);
@@ -315,10 +311,8 @@ const SystemInformationForm = ({
         systemKey: result.data.fides_key,
       });
       if (isErrorResult(assetResult)) {
-        toast(
-          errorToastParams(
-            "An unexpected error occurred while populating the system assets from Compass. Please try again.",
-          ),
+        message.error(
+          "An unexpected error occurred while populating the system assets from Compass. Please try again.",
         );
       }
     }
@@ -353,13 +347,12 @@ const SystemInformationForm = ({
             system_keys: [systemData.fides_key],
           });
           if (isErrorResult(assignResult)) {
-            toast({
-              status: "warning",
-              description: `Failed to assign ${steward} as data steward. ${getErrorMessage(
+            message.warning(
+              `Failed to assign ${steward} as data steward. ${getErrorMessage(
                 assignResult.error,
                 "Please try again.",
               )}`,
-            });
+            );
           }
         }),
       );
@@ -371,10 +364,9 @@ const SystemInformationForm = ({
           .map((steward) => {
             const stewardId = currentStewardsMap.get(steward);
             if (!stewardId) {
-              toast({
-                status: "warning",
-                description: `Could not find user ID for ${steward}. Skipping removal.`,
-              });
+              message.warning(
+                `Could not find user ID for ${steward}. Skipping removal.`,
+              );
               return null;
             }
             return { steward, stewardId };
@@ -389,13 +381,12 @@ const SystemInformationForm = ({
               systemKey: systemData.fides_key,
             });
             if (isErrorResult(removeResult)) {
-              toast({
-                status: "warning",
-                description: `Failed to remove ${steward} as data steward. ${getErrorMessage(
+              message.warning(
+                `Failed to remove ${steward} as data steward. ${getErrorMessage(
                   removeResult.error,
                   "Please try again.",
                 )}`,
-              });
+              );
             }
           }),
       );

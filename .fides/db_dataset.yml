@@ -445,6 +445,12 @@ dataset:
     - name: monitors
       data_categories:
         - system.operations
+    - name: name
+      data_categories:
+        - system.operations
+    - name: description
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
@@ -1602,6 +1608,12 @@ dataset:
     - name: privacy_assessment_task_id
       data_categories:
       - system.operations
+    - name: context_snapshot
+      data_categories:
+      - system.operations
+    - name: last_evaluated_at
+      data_categories:
+      - system.operations
   - name: privacy_assessment_config
     description: 'Global configuration for privacy assessments (single-row table)'
     fields:
@@ -1681,6 +1693,9 @@ dataset:
       data_categories:
       - system.operations
     - name: llm_model
+      data_categories:
+      - system.operations
+    - name: high_risk_only
       data_categories:
       - system.operations
   - name: policy
@@ -2829,6 +2844,8 @@ dataset:
     - name: property_id
       data_categories: [system.operations]
     - name: is_hash_migrated
+      data_categories: [system.operations]
+    - name: received_at
       data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'

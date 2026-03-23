@@ -2,7 +2,9 @@ import type {
   AgentBriefingResponse,
   PostureResponse,
   PriorityAction,
+  PrivacyRequestsResponse,
   SystemCoverageResponse,
+  TrendsResponse,
 } from "~/features/dashboard/types";
 import {
   ActionSeverity,
@@ -356,6 +358,18 @@ export const mockPriorityActions: PriorityAction[] = [
   },
 ];
 
+export const mockPrivacyRequests: PrivacyRequestsResponse = {
+  active_count: 47,
+  statuses: { in_progress: 22, pending_action: 14, awaiting_approval: 11 },
+  overdue_count: 5,
+  sla_health: {
+    access: { on_track: 8, approaching: 3, overdue: 1 },
+    erasure: { on_track: 12, approaching: 5, overdue: 3 },
+    consent: { on_track: 6, approaching: 2, overdue: 0 },
+    update: { on_track: 5, approaching: 1, overdue: 1 },
+  },
+};
+
 export const mockAgentBriefing: AgentBriefingResponse = {
   briefing:
     "Since you were away: Your GPS improved by 2 points after Casey approved 34 classifications across Snowflake and BigQuery. 3 DSRs completed on time. However, 1 new critical risk was detected — unclassified health data found in BigQuery project analytics-prod. Recommended action: assign a steward and initiate classification.",
@@ -373,4 +387,33 @@ export const mockAgentBriefing: AgentBriefingResponse = {
       severity: ActionSeverity.CRITICAL,
     },
   ],
+};
+
+export const mockTrends: TrendsResponse = {
+  metrics: {
+    gps_score: {
+      value: 64,
+      history: [58, 59, 61, 60, 63, 62, 64],
+      metadata: {},
+      diff: 3.2,
+    },
+    dsr_volume: {
+      value: 47,
+      history: [8, 12, 9, 15, 11, 18, 14],
+      metadata: {},
+      diff: -0.08,
+    },
+    system_coverage: {
+      value: 64.6,
+      history: [55, 57, 58, 61, 60, 63, 64.6],
+      metadata: {},
+      diff: 2.1,
+    },
+    classification_health: {
+      value: 58,
+      history: [52, 51, 54, 55, 53, 56, 58],
+      metadata: {},
+      diff: 1.8,
+    },
+  },
 };

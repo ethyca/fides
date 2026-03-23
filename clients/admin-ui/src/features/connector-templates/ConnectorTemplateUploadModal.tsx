@@ -4,7 +4,7 @@ import {
   ChakraBox as Box,
   ChakraText as Text,
   Modal,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -12,7 +12,6 @@ import { useDispatch } from "react-redux";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   setConnectionOptions,
   useGetAllConnectionTypesQuery,
@@ -33,14 +32,14 @@ const ConnectorTemplateUploadModal = ({
 }: RequestModalProps) => {
   const dispatch = useDispatch();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const toast = useToast();
+  const message = useMessage();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
       if (fileExtension !== "zip") {
-        toast(errorToastParams("Only zip files are allowed."));
+        message.error("Only zip files are allowed.");
         return;
       }
 
@@ -63,16 +62,14 @@ const ConnectorTemplateUploadModal = ({
     if (uploadedFile) {
       try {
         await registerConnectorTemplate(uploadedFile).unwrap();
-        toast(
-          successToastParams("Integration template uploaded successfully."),
-        );
+        message.success("Integration template uploaded successfully.");
 
         // refresh the connection types
         const { data } = await refetchConnectionTypes();
         dispatch(setConnectionOptions(data?.items ?? []));
         onClose();
       } catch (error) {
-        toast(errorToastParams(getErrorMessage(error as FetchBaseQueryError)));
+        message.error(getErrorMessage(error as FetchBaseQueryError));
       } finally {
         setUploadedFile(null);
       }

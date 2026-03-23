@@ -35,13 +35,6 @@
   position: absolute;
   inset: 0;
 
-  *,
-  *:focus,
-  *:active,
-  *:focus-visible {
-    outline: none !important;
-  }
-
   :global(.recharts-radar-polygon) {
     pointer-events: none;
   }

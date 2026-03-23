@@ -117,7 +117,7 @@ describe("Experience translations", () => {
       // Save the experience
       cy.getByTestId("save-btn").click();
       cy.url().should("match", /privacy-experience$/);
-      cy.getByTestId("toast-success-msg").should("exist");
+      cy.shouldShowMessage("success");
     });
   });
 
