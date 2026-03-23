@@ -218,7 +218,6 @@ const DatasetNodeEditorInner = ({
       protectedFields.protected_collection_fields,
     );
 
-    const immutableSet = new Set(protectedFields.immutable_fields);
     let currentCollection = "";
     const fieldStack: [number, string][] = [];
 
@@ -236,10 +235,10 @@ const DatasetNodeEditorInner = ({
     lines.forEach((line: string, i: number) => {
       let isProtected = false;
 
-      // Top-level immutable keys (fides_key, name, description, etc.)
+      // Top-level keys outside "collections" are immutable
       if (/^\S/.test(line) && line.includes(":")) {
         const key = line.split(":")[0].trim();
-        if (immutableSet.has(key)) {
+        if (key !== "collections") {
           isProtected = true;
         }
       }
