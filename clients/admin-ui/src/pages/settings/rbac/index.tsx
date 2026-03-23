@@ -1,69 +1,23 @@
 import Layout from "common/Layout";
-import {
-  Button,
-  Flex,
-  Space,
-  Table,
-  Tag,
-  Typography,
-  useMessage,
-  useModal,
-} from "fidesui";
+import { Button, Flex, Space, Table, Tag, Typography } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { RBAC_ROLE_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import { useDeleteRoleMutation, useGetRolesQuery } from "~/features/rbac";
+import { useGetRolesQuery } from "~/features/rbac";
 import type { RBACRole } from "~/types/api";
 
 const RBACPage: NextPage = () => {
   const router = useRouter();
-  const message = useMessage();
-  const modal = useModal();
   const {
     data: roles,
     isLoading,
     error,
   } = useGetRolesQuery({ include_inactive: true });
-  const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
-  const [deletingRoleId, setDeletingRoleId] = useState<string | null>(null);
-
-  const handleDeleteRole = async (role: RBACRole) => {
-    if (role.is_system_role) {
-      message.error("System roles cannot be deleted");
-      return;
-    }
-    setDeletingRoleId(role.id);
-    try {
-      await deleteRole(role.id).unwrap();
-      message.success(`Role "${role.name}" deleted successfully`);
-    } catch (err) {
-      message.error("Failed to delete role");
-    }
-    setDeletingRoleId(null);
-  };
-
-  const confirmDelete = (role: RBACRole) => {
-    modal.confirm({
-      title: "Delete role",
-      content: (
-        <Typography.Text>
-          Are you sure you want to delete &quot;{role.name}&quot;? This action
-          cannot be undone.
-        </Typography.Text>
-      ),
-      okText: "Delete",
-      okButtonProps: { danger: true },
-      centered: true,
-      icon: null,
-      onOk: () => handleDeleteRole(role),
-      className: "delete-role-confirmation-modal",
-    });
-  };
 
   if (error) {
     return (
@@ -121,30 +75,6 @@ const RBACPage: NextPage = () => {
         <Tag color={record.is_active ? "success" : "default"}>
           {record.is_active ? "Active" : "Inactive"}
         </Tag>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_: unknown, record: RBACRole) => (
-        <Space>
-          <Button
-            size="small"
-            onClick={() => router.push(`/settings/rbac/roles/${record.id}`)}
-          >
-            Edit
-          </Button>
-          {!record.is_system_role && (
-            <Button
-              size="small"
-              danger
-              onClick={() => confirmDelete(record)}
-              loading={isDeleting && deletingRoleId === record.id}
-            >
-              Delete
-            </Button>
-          )}
-        </Space>
       ),
     },
   ];

@@ -14,6 +14,7 @@ import {
   Tag,
   Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -23,6 +24,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  useDeleteRoleMutation,
   useGetPermissionsQuery,
   useGetRoleByIdQuery,
   useGetRolesQuery,
@@ -77,6 +79,7 @@ const RoleDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const message = useMessage();
+  const modal = useModal();
   const [form] = Form.useForm();
 
   const {
@@ -99,6 +102,7 @@ const RoleDetailPage: NextPage = () => {
   const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
   const [updatePermissions, { isLoading: isUpdatingPermissions }] =
     useUpdateRolePermissionsMutation();
+  const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
 
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
@@ -182,6 +186,40 @@ const RoleDetailPage: NextPage = () => {
     );
   };
 
+  const handleDeleteRole = async () => {
+    if (!id || !role) {
+      return;
+    }
+    try {
+      await deleteRole(id as string).unwrap();
+      message.success(`Role "${role.name}" deleted successfully`);
+      router.push(RBAC_ROUTE);
+    } catch (err) {
+      message.error("Failed to delete role");
+    }
+  };
+
+  const confirmDelete = () => {
+    if (!role) {
+      return;
+    }
+    modal.confirm({
+      title: "Delete role",
+      content: (
+        <Typography.Text>
+          Are you sure you want to delete &quot;{role.name}&quot;? This action
+          cannot be undone.
+        </Typography.Text>
+      ),
+      okText: "Delete",
+      okButtonProps: { danger: true },
+      centered: true,
+      icon: null,
+      onOk: () => handleDeleteRole(),
+      className: "delete-role-confirmation-modal",
+    });
+  };
+
   if (error || rolesError || permissionsError) {
     return (
       <ErrorPage
@@ -235,7 +273,22 @@ const RoleDetailPage: NextPage = () => {
 
   return (
     <Layout title={`Edit Role: ${role.name}`}>
-      <PageHeader heading={role.name} isSticky={false} className="pb-0">
+      <PageHeader
+        heading={role.name}
+        isSticky={false}
+        className="pb-0"
+        rightContent={
+          !role.is_system_role && (
+            <Button
+              danger
+              onClick={() => confirmDelete()}
+              loading={isDeleting}
+            >
+              Delete
+            </Button>
+          )
+        }
+      >
         <Space>
           <Tag color={role.is_system_role ? "info" : "success"}>
             {role.is_system_role ? "System Role" : "Custom Role"}
