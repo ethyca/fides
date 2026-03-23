@@ -28,8 +28,8 @@ export const CONDITION_PROPERTY_OPTIONS: NonNullable<SelectProps["options"]> = [
 ];
 
 export const CONDITION_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
-  { value: ConditionOperator.ANY, label: "Any of" },
   { value: ConditionOperator.ALL, label: "All of" },
+  { value: ConditionOperator.ANY, label: "Any of" },
 ];
 
 export const CONSTRAINT_TYPE_OPTIONS: RadioOption<ConstraintType>[] = [
@@ -38,22 +38,24 @@ export const CONSTRAINT_TYPE_OPTIONS: RadioOption<ConstraintType>[] = [
   { value: ConstraintType.DATA_FLOW, label: "Data flow" },
 ];
 
-export const CONSENT_REQUIREMENT_OPTIONS: NonNullable<SelectProps["options"]> = [
-  { value: ConsentRequirement.OPT_IN, label: "Opt in" },
-  { value: ConsentRequirement.OPT_OUT, label: "Opt out" },
-  { value: ConsentRequirement.NOT_OPT_IN, label: "Not opted in" },
-  { value: ConsentRequirement.NOT_OPT_OUT, label: "Not opted out" },
-];
+export const CONSENT_REQUIREMENT_OPTIONS: NonNullable<SelectProps["options"]> =
+  [
+    { value: ConsentRequirement.OPT_IN, label: "Opt in" },
+    { value: ConsentRequirement.OPT_OUT, label: "Opt out" },
+    { value: ConsentRequirement.NOT_OPT_IN, label: "Not opted in" },
+    { value: ConsentRequirement.NOT_OPT_OUT, label: "Not opted out" },
+  ];
 
 export const GEO_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
   { value: GeoOperator.IN, label: "In" },
   { value: GeoOperator.NOT_IN, label: "Not in" },
 ];
 
-export const DATA_FLOW_DIRECTION_OPTIONS: NonNullable<SelectProps["options"]> = [
-  { value: DataFlowDirection.INGRESS, label: "Ingress (source)" },
-  { value: DataFlowDirection.EGRESS, label: "Egress (destination)" },
-];
+export const DATA_FLOW_DIRECTION_OPTIONS: NonNullable<SelectProps["options"]> =
+  [
+    { value: DataFlowDirection.INGRESS, label: "Ingress (source)" },
+    { value: DataFlowDirection.EGRESS, label: "Egress (destination)" },
+  ];
 
 export const DATA_FLOW_OPERATOR_OPTIONS: NonNullable<SelectProps["options"]> = [
   { value: DataFlowOperator.ANY_OF, label: "Any of" },

@@ -5,12 +5,14 @@ import {
   Flex,
   Form,
   Icons,
-  Input,
+  LocationSelect,
   Popconfirm,
   Radio,
   Select,
   Text,
 } from "fidesui";
+
+import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 
 import {
   CONSENT_REQUIREMENT_OPTIONS,
@@ -20,6 +22,7 @@ import {
   GEO_OPERATOR_OPTIONS,
 } from "./constants";
 import styles from "./ConstraintNode.module.scss";
+import PrivacyNoticeSelect from "./PrivacyNoticeSelect";
 import {
   ConsentRequirement,
   ConstraintType,
@@ -56,29 +59,6 @@ export interface ConstraintNodeData extends Record<string, unknown> {
 }
 
 export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
-
-const TagInput = ({
-  value = [],
-  onChange,
-  placeholder,
-  testId,
-}: {
-  value?: string[];
-  onChange?: (values: string[]) => void;
-  placeholder: string;
-  testId: string;
-}) => (
-  <Select
-    mode="tags"
-    value={value}
-    onChange={onChange}
-    placeholder={placeholder}
-    className="w-full"
-    tokenSeparators={[","]}
-    data-testid={testId}
-    aria-label={placeholder}
-  />
-);
 
 const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
   <div className={styles.node} data-testid="constraint-node">
@@ -138,13 +118,11 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         {/* Consent fields */}
         {data.constraintType === ConstraintType.CONSENT && (
           <>
-            <Form.Item label="Privacy notice key" className="mb-2">
-              <Input
-                placeholder="Enter privacy notice key"
+            <Form.Item label="Privacy notice" className="mb-2">
+              <PrivacyNoticeSelect
                 value={data.privacyNoticeKey}
-                onChange={(e) =>
-                  data.onPrivacyNoticeKeyChange?.(e.target.value)
-                }
+                onChange={(value) => data.onPrivacyNoticeKeyChange?.(value)}
+                className="w-full"
                 data-testid="constraint-privacy-notice-key"
               />
             </Form.Item>
@@ -152,9 +130,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
               <Select
                 placeholder="Select requirement"
                 value={data.consentRequirement}
-                onChange={(value) =>
-                  data.onConsentRequirementChange?.(value)
-                }
+                onChange={(value) => data.onConsentRequirementChange?.(value)}
                 options={CONSENT_REQUIREMENT_OPTIONS}
                 className="w-full"
                 aria-label="Select consent requirement"
@@ -167,14 +143,6 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         {/* Geo location fields */}
         {data.constraintType === ConstraintType.GEO_LOCATION && (
           <>
-            <Form.Item label="Field" className="mb-2">
-              <Input
-                placeholder="e.g. environment.geo_location"
-                value={data.geoField}
-                onChange={(e) => data.onGeoFieldChange?.(e.target.value)}
-                data-testid="constraint-geo-field"
-              />
-            </Form.Item>
             <Form.Item label="Operator" className="mb-2">
               <Select
                 value={data.geoOperator}
@@ -185,12 +153,15 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
                 data-testid="constraint-geo-operator"
               />
             </Form.Item>
-            <Form.Item label="Values (ISO codes)" className="mb-0">
-              <TagInput
+            <Form.Item label="Locations" className="mb-0">
+              <LocationSelect
+                mode="multiple"
                 value={data.geoValues}
-                onChange={data.onGeoValuesChange}
-                placeholder="e.g. US-CA, EU"
-                testId="constraint-geo-values"
+                onChange={(values) =>
+                  data.onGeoValuesChange?.(values as string[])
+                }
+                maxTagCount={1}
+                data-testid="constraint-geo-values"
               />
             </Form.Item>
           </>
@@ -202,9 +173,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
             <Form.Item label="Direction" className="mb-2">
               <Select
                 value={data.dataFlowDirection}
-                onChange={(value) =>
-                  data.onDataFlowDirectionChange?.(value)
-                }
+                onChange={(value) => data.onDataFlowDirectionChange?.(value)}
                 options={DATA_FLOW_DIRECTION_OPTIONS}
                 className="w-full"
                 aria-label="Select data flow direction"
@@ -214,9 +183,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
             <Form.Item label="Operator" className="mb-2">
               <Select
                 value={data.dataFlowOperator}
-                onChange={(value) =>
-                  data.onDataFlowOperatorChange?.(value)
-                }
+                onChange={(value) => data.onDataFlowOperatorChange?.(value)}
                 options={DATA_FLOW_OPERATOR_OPTIONS}
                 className="w-full"
                 aria-label="Select data flow operator"
@@ -224,11 +191,14 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
               />
             </Form.Item>
             <Form.Item label="Systems" className="mb-0">
-              <TagInput
+              <SystemSelect
+                mode="multiple"
                 value={data.dataFlowSystems}
-                onChange={data.onDataFlowSystemsChange}
-                placeholder="Enter system fides keys"
-                testId="constraint-data-flow-systems"
+                onChange={(values) =>
+                  data.onDataFlowSystemsChange?.(values as string[])
+                }
+                maxTagCount={1}
+                data-testid="constraint-data-flow-systems"
               />
             </Form.Item>
           </>

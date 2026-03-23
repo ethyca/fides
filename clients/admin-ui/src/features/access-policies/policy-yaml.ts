@@ -100,7 +100,7 @@ export const yamlToNodesAndEdges = (
   };
   nodes.push(policyNode);
 
-  const decision = policy.decision;
+  const { decision } = policy;
   const matchBlock: MatchBlock | undefined = policy.match;
 
   if (!decision || !matchBlock) {
@@ -108,8 +108,7 @@ export const yamlToNodesAndEdges = (
   }
 
   // Action node
-  const actionType =
-    decision === "DENY" ? ActionType.DENY : ActionType.ALLOW;
+  const actionType = decision === "DENY" ? ActionType.DENY : ActionType.ALLOW;
   const actionId = "action-1";
   const actionNode: Node<ActionNodeData, "actionNode"> = {
     id: actionId,
@@ -138,7 +137,7 @@ export const yamlToNodesAndEdges = (
     const dimension = matchBlock[property] as MatchDimension;
     const operator = dimension.all
       ? ConditionOperator.ALL
-      : ConditionOperator.ANY;
+      : ConditionOperator.ALL;
     const values = dimension.all ?? dimension.any ?? [];
     const conditionId = `condition-${idx + 1}`;
 
@@ -358,14 +357,8 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     return "";
   }
 
-  const {
-    name,
-    description,
-    fidesKey,
-    enabled,
-    priority,
-    controls,
-  } = policyNode.data as PolicyNodeData;
+  const { name, description, fidesKey, enabled, priority, controls } =
+    policyNode.data as PolicyNodeData;
 
   // Find action node (connected from policy)
   const actionEdge = edges.find((e) => e.source === POLICY_NODE_ID);
@@ -402,8 +395,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   const { actionType } = actionNode.data as ActionNodeData;
 
   // Decision
-  policyYaml.decision =
-    actionType === ActionType.DENY ? "DENY" : "ALLOW";
+  policyYaml.decision = actionType === ActionType.DENY ? "DENY" : "ALLOW";
 
   // Match block
   const conditionNodes = collectConditionNodes(actionNode.id, nodes, edges);
@@ -414,9 +406,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
         return acc;
       }
       const dimension: MatchDimension =
-        operator === ConditionOperator.ALL
-          ? { all: values }
-          : { any: values };
+        operator === ConditionOperator.ALL ? { all: values } : { any: values };
       return { ...acc, [property]: dimension };
     },
     {},
