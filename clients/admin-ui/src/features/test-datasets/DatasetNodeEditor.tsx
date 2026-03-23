@@ -30,6 +30,12 @@ import AddNodeModal from "./AddNodeModal";
 import DatasetEditorActionsContext, {
   DatasetEditorActions,
 } from "./context/DatasetEditorActionsContext";
+import {
+  addNestedField,
+  getFieldsAtPath,
+  removeFieldAtPath,
+  updateFieldAtPath,
+} from "./dataset-field-helpers";
 import { DatasetTreeHoverProvider } from "./context/DatasetTreeHoverContext";
 import DatasetNodeDetailPanel from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
@@ -62,78 +68,6 @@ const nodeTypes: NodeTypes = {
 
 const edgeTypes: EdgeTypes = {
   datasetTreeEdge: DatasetTreeEdge,
-};
-
-/** Walk nested fields to find and update the one at fieldPath */
-const updateFieldAtPath = (
-  fields: DatasetField[],
-  segments: string[],
-  updates: Partial<DatasetField>,
-): DatasetField[] =>
-  fields.map((f) => {
-    if (f.name !== segments[0]) {
-      return f;
-    }
-    if (segments.length === 1) {
-      return { ...f, ...updates };
-    }
-    return {
-      ...f,
-      fields: updateFieldAtPath(f.fields ?? [], segments.slice(1), updates),
-    };
-  });
-
-/** Get the children fields of a field at the given path */
-const getFieldsAtPath = (
-  fields: DatasetField[],
-  segments: string[],
-): DatasetField[] => {
-  const match = fields.find((f) => f.name === segments[0]);
-  if (!match) {
-    return [];
-  }
-  if (segments.length === 1) {
-    return match.fields ?? [];
-  }
-  return getFieldsAtPath(match.fields ?? [], segments.slice(1));
-};
-
-/** Append a new child field to the parent at the given path */
-const addNestedField = (
-  fields: DatasetField[],
-  segments: string[],
-  newField: DatasetField,
-): DatasetField[] =>
-  fields.map((f) => {
-    if (f.name !== segments[0]) {
-      return f;
-    }
-    if (segments.length === 1) {
-      return { ...f, fields: [...(f.fields ?? []), newField] };
-    }
-    return {
-      ...f,
-      fields: addNestedField(f.fields ?? [], segments.slice(1), newField),
-    };
-  });
-
-/** Recursively remove a field at the given path */
-const removeFieldAtPath = (
-  fields: DatasetField[],
-  segments: string[],
-): DatasetField[] => {
-  if (segments.length === 1) {
-    return fields.filter((f) => f.name !== segments[0]);
-  }
-  return fields.map((f) => {
-    if (f.name !== segments[0]) {
-      return f;
-    }
-    return {
-      ...f,
-      fields: removeFieldAtPath(f.fields ?? [], segments.slice(1)),
-    };
-  });
 };
 
 interface AddModalState {
@@ -341,15 +275,16 @@ const DatasetNodeEditorInner = ({
 
   const handleUpdateCollection = useCallback(
     (collectionName: string, updates: Partial<DatasetCollection>) => {
+      const current = datasetRef.current;
       const updated: Dataset = {
-        ...dataset,
-        collections: dataset.collections.map((c) =>
+        ...current,
+        collections: current.collections.map((c) =>
           c.name === collectionName ? { ...c, ...updates } : c,
         ),
       };
       onDatasetChange(updated);
     },
-    [dataset, onDatasetChange],
+    [onDatasetChange],
   );
 
   const handleUpdateField = useCallback(
@@ -358,10 +293,11 @@ const DatasetNodeEditorInner = ({
       fieldPath: string,
       updates: Partial<DatasetField>,
     ) => {
+      const current = datasetRef.current;
       const segments = fieldPath.split(".");
       const updated: Dataset = {
-        ...dataset,
-        collections: dataset.collections.map((c) => {
+        ...current,
+        collections: current.collections.map((c) => {
           if (c.name !== collectionName) {
             return c;
           }
@@ -373,24 +309,28 @@ const DatasetNodeEditorInner = ({
       };
       onDatasetChange(updated);
     },
-    [dataset, onDatasetChange],
+    [onDatasetChange],
   );
 
   // --- Add / Delete handlers ---
 
+  const datasetRef = useRef(dataset);
+  datasetRef.current = dataset;
+
   const handleAddCollection = useCallback(
     (name: string) => {
+      const current = datasetRef.current;
       const newCollection: DatasetCollection = {
         name,
         fields: [],
       };
       onDatasetChange({
-        ...dataset,
-        collections: [...dataset.collections, newCollection],
+        ...current,
+        collections: [...current.collections, newCollection],
       });
       highlightNode(`${COLLECTION_ROOT_PREFIX}${name}`);
     },
-    [dataset, onDatasetChange, highlightNode],
+    [onDatasetChange, highlightNode],
   );
 
   const handleAddField = useCallback(
@@ -400,10 +340,11 @@ const DatasetNodeEditorInner = ({
       parentFieldPath?: string,
       fieldData?: Partial<DatasetField>,
     ) => {
+      const current = datasetRef.current;
       const newField: DatasetField = { name, ...fieldData };
       onDatasetChange({
-        ...dataset,
-        collections: dataset.collections.map((c) => {
+        ...current,
+        collections: current.collections.map((c) => {
           if (c.name !== collectionName) {
             return c;
           }
@@ -420,14 +361,15 @@ const DatasetNodeEditorInner = ({
       const fieldPath = parentFieldPath ? `${parentFieldPath}.${name}` : name;
       highlightNode(`field-${collectionName}-${fieldPath}`);
     },
-    [dataset, onDatasetChange, highlightNode],
+    [onDatasetChange, highlightNode],
   );
 
   const handleDeleteCollection = useCallback(
     (collectionName: string) => {
+      const current = datasetRef.current;
       onDatasetChange({
-        ...dataset,
-        collections: dataset.collections.filter(
+        ...current,
+        collections: current.collections.filter(
           (c) => c.name !== collectionName,
         ),
       });
@@ -436,15 +378,16 @@ const DatasetNodeEditorInner = ({
       }
       setSelectedNodeId(null);
     },
-    [dataset, onDatasetChange, focusedCollection],
+    [onDatasetChange, focusedCollection],
   );
 
   const handleDeleteField = useCallback(
     (collectionName: string, fieldPath: string) => {
+      const current = datasetRef.current;
       const segments = fieldPath.split(".");
       onDatasetChange({
-        ...dataset,
-        collections: dataset.collections.map((c) => {
+        ...current,
+        collections: current.collections.map((c) => {
           if (c.name !== collectionName) {
             return c;
           }
@@ -453,11 +396,8 @@ const DatasetNodeEditorInner = ({
       });
       setSelectedNodeId(null);
     },
-    [dataset, onDatasetChange],
+    [onDatasetChange],
   );
-
-  const datasetRef = useRef(dataset);
-  datasetRef.current = dataset;
 
   const editorActions: DatasetEditorActions = useMemo(
     () => ({
@@ -525,7 +465,7 @@ const DatasetNodeEditorInner = ({
           justify="space-between"
           style={{
             padding: "6px 12px",
-            borderBottom: "1px solid #E2E8F0",
+            borderBottom: "1px solid var(--fidesui-neutral-200)",
             backgroundColor: "white",
             flexShrink: 0,
           }}
@@ -610,7 +550,7 @@ const DatasetNodeEditorInner = ({
             style={{
               flexShrink: 0,
               height: 300,
-              borderTop: "1px solid #E2E8F0",
+              borderTop: "1px solid var(--fidesui-neutral-200)",
               display: "flex",
               flexDirection: "column",
               backgroundColor: "white",
@@ -621,7 +561,7 @@ const DatasetNodeEditorInner = ({
               justify="space-between"
               style={{
                 padding: "4px 12px",
-                borderBottom: "1px solid #E2E8F0",
+                borderBottom: "1px solid var(--fidesui-neutral-200)",
                 flexShrink: 0,
               }}
             >

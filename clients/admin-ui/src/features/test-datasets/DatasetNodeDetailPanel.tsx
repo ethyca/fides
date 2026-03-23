@@ -127,8 +127,9 @@ const DatasetNodeDetailPanel = ({
     if (!open && debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
+      flushUpdate(form.getFieldsValue());
     }
-  }, [open]);
+  }, [open, flushUpdate, form]);
 
   // Clean up debounce timer on unmount
   useEffect(() => {
