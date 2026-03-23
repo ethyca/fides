@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Replaced @chakra-ui/icons with React 19-compatible createIcon shim
+pr: 7730
+labels: []
