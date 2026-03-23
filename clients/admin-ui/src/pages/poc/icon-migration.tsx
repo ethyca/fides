@@ -8,7 +8,6 @@ import {
   SparkleIcon as FidesUISparkleIcon,
   Table,
   Tag,
-  TrashCanSolidIcon as FidesUITrashCanSolidIcon,
   Typography,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -17,8 +16,6 @@ import React from "react";
 import { ManualSetupIcon } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
-import { TrashCanSolidIcon as AdminTrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import PageHeader from "~/features/common/PageHeader";
 
 const { Content } = Layout;
@@ -57,15 +54,6 @@ const ICON_DATA: IconEntry[] = [
     notes: "Uses green fill color",
   },
   {
-    key: "fidesui-TrashCanSolidIcon",
-    currentName: "TrashCanSolidIcon",
-    currentIcon: <FidesUITrashCanSolidIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: "TrashCan",
-    notes: "",
-  },
-  {
     key: "fidesui-SparkleIcon",
     currentName: "SparkleIcon",
     currentIcon: <FidesUISparkleIcon width={20} height={20} />,
@@ -102,24 +90,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: "Dashboard",
     notes: "",
-  },
-  {
-    key: "admin-TrashCanOutlineIcon",
-    currentName: "TrashCanOutlineIcon",
-    currentIcon: <TrashCanOutlineIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "TrashCan",
-    notes: "Outline variant",
-  },
-  {
-    key: "admin-TrashCanSolidIcon",
-    currentName: "TrashCanSolidIcon",
-    currentIcon: <AdminTrashCanSolidIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "TrashCan",
-    notes: "Duplicate of fidesui version",
   },
 ];
 

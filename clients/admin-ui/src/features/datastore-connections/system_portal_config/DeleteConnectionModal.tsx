@@ -4,12 +4,12 @@ import {
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
   ChakraText as Text,
+  Icons,
   Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React from "react";
 
-import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 
 type DataConnectionProps = {
   onDelete: () => void;
@@ -43,7 +43,7 @@ const DeleteConnectionModal = ({
           <Text fontSize="sm">Delete integration</Text>
           <Button
             aria-label="Delete integration"
-            icon={<TrashCanSolidIcon />}
+            icon={<Icons.TrashCan />}
             disabled={deleteResult.isLoading}
             onClick={onOpen}
             className="ml-2"

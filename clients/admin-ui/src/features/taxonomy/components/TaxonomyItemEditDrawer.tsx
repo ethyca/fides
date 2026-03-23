@@ -15,7 +15,6 @@ import {
 import { useCustomFields } from "~/features/common/custom-fields";
 import EditDrawer, { EditDrawerHeader } from "~/features/common/EditDrawer";
 import { getErrorMessage } from "~/features/common/helpers";
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { taxonomyKeyToScopeRegistryEnum } from "~/features/taxonomy/constants";
 import { taxonomyTypeToResourceType } from "~/features/taxonomy/helpers";
@@ -115,7 +114,7 @@ const TaxonomyItemEditDrawer = ({
               <Tooltip title="Delete label">
                 <Button
                   aria-label="delete"
-                  icon={<TrashCanOutlineIcon fontSize="small" />}
+                  icon={<Icons.TrashCan />}
                   onClick={onDeleteOpen}
                   data-testid="delete-btn"
                 />
