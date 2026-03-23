@@ -134,7 +134,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
             <Form.Item label="Requirement" className="mb-0">
               <Select
                 placeholder="Select requirement"
-                value={data.consentRequirement}
+                value={data.consentRequirement ?? ConsentRequirement.OPT_IN}
                 onChange={(value) => data.onConsentRequirementChange?.(value)}
                 options={CONSENT_REQUIREMENT_OPTIONS}
                 className="w-full"
@@ -150,7 +150,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
           <>
             <Form.Item label="Operator" className="mb-2">
               <Select
-                value={data.geoOperator}
+                value={data.geoOperator ?? GeoOperator.IN}
                 onChange={(value) => data.onGeoOperatorChange?.(value)}
                 options={GEO_OPERATOR_OPTIONS}
                 className="w-full"
@@ -178,7 +178,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
           <>
             <Form.Item label="Direction" className="mb-2">
               <Select
-                value={data.dataFlowDirection}
+                value={data.dataFlowDirection ?? DataFlowDirection.EGRESS}
                 onChange={(value) => data.onDataFlowDirectionChange?.(value)}
                 options={DATA_FLOW_DIRECTION_OPTIONS}
                 className="w-full"
@@ -188,7 +188,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
             </Form.Item>
             <Form.Item label="Operator" className="mb-2">
               <Select
-                value={data.dataFlowOperator}
+                value={data.dataFlowOperator ?? DataFlowOperator.ANY_OF}
                 onChange={(value) => data.onDataFlowOperatorChange?.(value)}
                 options={DATA_FLOW_OPERATOR_OPTIONS}
                 className="w-full"

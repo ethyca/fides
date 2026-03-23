@@ -14,11 +14,11 @@ import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import DataSubjectSelect from "~/features/common/dropdown/DataSubjectSelect";
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 
-import styles from "./MatchNode.module.scss";
 import {
   CONDITION_OPERATOR_OPTIONS,
   CONDITION_PROPERTY_OPTIONS,
 } from "./constants";
+import styles from "./MatchNode.module.scss";
 import NodeActions from "./NodeActions";
 import { ConditionOperator, ConditionProperty } from "./types";
 
@@ -102,7 +102,7 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
         <Form.Item label="Match" className="mb-2">
           <Select
             placeholder="Select match type"
-            value={data.operator}
+            value={data.operator ?? ConditionOperator.ALL}
             onChange={(value) => data.onOperatorChange?.(value)}
             options={CONDITION_OPERATOR_OPTIONS}
             variant="outlined"
