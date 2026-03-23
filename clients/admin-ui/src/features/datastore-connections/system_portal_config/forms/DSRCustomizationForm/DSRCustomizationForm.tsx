@@ -153,7 +153,7 @@ const DSRCustomizationForm = ({
                               >
                                 <TrashCanSolidIcon
                                   onClick={() => fieldArrayProps.remove(index)}
-                                  _hover={{ cursor: "pointer" }}
+                                  style={{ cursor: "pointer" }}
                                 />
                               </Box>
                             </HStack>

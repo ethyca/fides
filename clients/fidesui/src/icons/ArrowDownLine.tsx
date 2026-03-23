@@ -1,4 +1,4 @@
-import { createIcon } from "@chakra-ui/icons";
+import { createIcon } from "./createIcon";
 
 export default createIcon({
   displayName: "ArrowDownLineIcon",

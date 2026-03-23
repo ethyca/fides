@@ -133,8 +133,9 @@ export const TextInput = forwardRef(
                 aria-label="Reveal/Hide Secret"
                 icon={
                   <EyeIcon
-                    boxSize="full"
-                    color={type === "password" ? "gray.400" : "gray.700"}
+                    width="100%"
+                    height="100%"
+                    color={type === "password" ? "#A0AEC0" : "#2D3748"}
                   />
                 }
                 onClick={handleClickReveal}
