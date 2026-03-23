@@ -34,6 +34,7 @@ export interface ConditionNodeData extends Record<string, unknown> {
   onAddConstraint?: () => void;
   onDelete?: () => void;
   hasChildren?: boolean;
+  isFirstOfType?: boolean;
 }
 
 export type ConditionNodeType = Node<ConditionNodeData, "conditionNode">;
@@ -46,12 +47,14 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
       id="left"
       className={styles.handle}
     />
-    <Handle
-      type="target"
-      position={Position.Top}
-      id="top"
-      className={styles.handle}
-    />
+    {!data.isFirstOfType && (
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        className={styles.handle}
+      />
+    )}
     <Flex align="center" gap="small" className={styles.header}>
       <Avatar
         shape="square"

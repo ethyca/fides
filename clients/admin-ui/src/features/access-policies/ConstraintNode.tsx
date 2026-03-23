@@ -56,6 +56,7 @@ export interface ConstraintNodeData extends Record<string, unknown> {
   onDataFlowSystemsChange?: (value: string[]) => void;
   onDelete?: () => void;
   onAddConstraint?: () => void;
+  isFirstOfType?: boolean;
 }
 
 export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
@@ -68,12 +69,14 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
       id="left"
       className={styles.handle}
     />
-    <Handle
-      type="target"
-      position={Position.Top}
-      id="top"
-      className={styles.handle}
-    />
+    {!data.isFirstOfType && (
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        className={styles.handle}
+      />
+    )}
     <Flex align="center" gap="small" className={styles.header}>
       <Avatar
         shape="square"

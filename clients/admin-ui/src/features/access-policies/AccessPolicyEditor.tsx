@@ -434,11 +434,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData, onControlsChange],
   );
 
-  const handleActionMessageChange = useCallback(
-    (value: string) => updateNodeData(POLICY_NODE_ID, { actionMessage: value }),
-    [updateNodeData],
-  );
-
   // Derive YAML from nodes/edges
   useEffect(() => {
     if (!onYamlChange) {
@@ -619,6 +614,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
 
   const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
   const constraintsExist = nodes.some((n) => n.type === "constraintNode");
+  const firstConditionId = findFirstOfType("conditionNode", nodes, edges)?.id;
+  const firstConstraintId = findFirstOfType("constraintNode", nodes, edges)?.id;
 
   const nodesWithCallbacks = useMemo(
     () =>
@@ -663,6 +660,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
+              isFirstOfType: node.id === firstConditionId,
               onAddNode,
               onAddCondition: handleAddCondition,
               onAddConstraint: handleAddConstraint,
@@ -682,6 +680,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
+              isFirstOfType: node.id === firstConstraintId,
               onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConstraintNode(node.id),
               onConstraintTypeChange: (value: ConstraintType) =>
@@ -732,7 +731,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       handleEnabledChange,
       handlePriorityChange,
       handleControlsChange,
-      handleActionMessageChange,
       onAddNode,
       handleAddCondition,
       handleAddActionFromNode,
@@ -742,6 +740,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       updateNodeData,
       policyHasChildren,
       constraintsExist,
+      firstConditionId,
+      firstConstraintId,
     ],
   );
 
