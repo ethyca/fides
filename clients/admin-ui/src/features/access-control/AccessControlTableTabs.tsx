@@ -2,17 +2,17 @@ import { Tabs } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { RequestLogTable } from "./request-log/RequestLogTable";
-import { useRequestLogFilterContext } from "./request-log/useRequestLogFilters";
-import { ViolationDetailDrawer } from "./request-log/ViolationDetailDrawer";
-import { FindingsTable } from "./summary/FindingsTable";
+import { RequestLogTable } from "./RequestLogTable";
+import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
+import { ViolationDetailDrawer } from "./ViolationDetailDrawer";
+import { FindingsTable } from "./FindingsTable";
 import type { PolicyViolationAggregate, PolicyViolationLog } from "./types";
 
 type TableTab = "summary" | "log";
 
 export const AccessControlTableTabs = () => {
   const router = useRouter();
-  const { applyFacets, filters } = useRequestLogFilterContext();
+  const { applyFacets } = useRequestLogFilterContext();
 
   const [activeTab, setActiveTab] = useState<TableTab>(() => {
     return router.query.tab === "log" ? "log" : "summary";
@@ -54,13 +54,7 @@ export const AccessControlTableTabs = () => {
       {
         key: "summary",
         label: "Summary",
-        children: (
-          <FindingsTable
-            onRowClick={handleSummaryRowClick}
-            startDate={filters.start_date}
-            endDate={filters.end_date}
-          />
-        ),
+        children: <FindingsTable onRowClick={handleSummaryRowClick} />,
       },
       {
         key: "log",
@@ -68,12 +62,7 @@ export const AccessControlTableTabs = () => {
         children: <RequestLogTable onRowClick={handleLogRowClick} />,
       },
     ],
-    [
-      handleSummaryRowClick,
-      handleLogRowClick,
-      filters.start_date,
-      filters.end_date,
-    ],
+    [handleSummaryRowClick, handleLogRowClick],
   );
 
   return (

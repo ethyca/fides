@@ -1,8 +1,9 @@
-import { DatePicker, Flex, Switch, Typography } from "fidesui";
+import { DatePicker, Flex } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 
 import {
+  useGetAccessControlSummaryQuery,
   useGetConsumersByViolationsQuery,
   useGetFiltersQuery,
 } from "~/features/access-control/access-control.slice";
@@ -10,12 +11,12 @@ import { AccessControlTableTabs } from "~/features/access-control/AccessControlT
 import {
   type FacetDefinition,
   FacetedSearchInput,
-} from "~/features/access-control/request-log/FacetedSearchInput";
+} from "~/features/access-control/FacetedSearchInput";
 import {
   RequestLogFilterContext,
   useRequestLogFilters,
-} from "~/features/access-control/request-log/useRequestLogFilters";
-import { SummaryCards } from "~/features/access-control/summary/SummaryCards";
+} from "~/features/access-control/hooks/useRequestLogFilters";
+import { SummaryCards } from "~/features/access-control/SummaryCards";
 import type { FiltersResponse } from "~/features/access-control/types";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
@@ -40,11 +41,15 @@ const AccessControlPage: NextPage = () => {
     setDateRange,
     searchValues,
     setSearchValues,
-    liveTail,
-    setLiveTail,
   } = filterState;
 
   const { data: facetOptions } = useGetFiltersQuery(filters);
+
+  const { data: summaryData, isLoading: summaryLoading } =
+    useGetAccessControlSummaryQuery({
+      start_date: filters.start_date,
+      end_date: filters.end_date,
+    });
 
   const { data: consumersData, isLoading: consumersLoading } =
     useGetConsumersByViolationsQuery({
@@ -70,54 +75,40 @@ const AccessControlPage: NextPage = () => {
     <Layout title="Access control">
       <PageHeader heading="Access control" isSticky />
       <RequestLogFilterContext.Provider value={filterState}>
-        <div className="px-6">
-          <Flex vertical gap={16}>
-            <Flex gap={12} align="center">
-              <div className="flex-1">
-                <FacetedSearchInput
-                  facets={facets}
-                  value={searchValues}
-                  onChange={setSearchValues}
-                />
-              </div>
-              <DatePicker.RangePicker
-                format="YYYY-MM-DD"
-                value={dateRange}
-                onChange={(dates) => {
-                  if (dates && dates[0] && dates[1]) {
-                    setDateRange([dates[0], dates[1]]);
-                  } else {
-                    setDateRange(null);
-                  }
-                }}
-                placeholder={["From", "To"]}
-                allowClear
-                disabled={liveTail}
-                aria-label="Date range"
-                className="w-60"
+        <Flex vertical gap={16}>
+          <Flex gap={12} align="center">
+            <Flex flex={1}>
+              <FacetedSearchInput
+                facets={facets}
+                value={searchValues}
+                onChange={setSearchValues}
               />
-              <Flex align="center" gap={8}>
-                <Switch
-                  size="small"
-                  checked={liveTail}
-                  onChange={setLiveTail}
-                />
-                <Typography.Text
-                  className={liveTail ? "text-green-600" : "text-gray-500"}
-                >
-                  Live tail
-                </Typography.Text>
-              </Flex>
             </Flex>
-
-            <SummaryCards
-              consumersData={consumersData}
-              loading={consumersLoading}
+            <DatePicker.RangePicker
+              format="YYYY-MM-DD"
+              value={dateRange}
+              onChange={(dates) => {
+                if (dates && dates[0] && dates[1]) {
+                  setDateRange([dates[0], dates[1]]);
+                } else {
+                  setDateRange(null);
+                }
+              }}
+              placeholder={["From", "To"]}
+              allowClear
+              aria-label="Date range"
+              className="w-60"
             />
-
-            <AccessControlTableTabs />
           </Flex>
-        </div>
+
+          <SummaryCards
+            summaryData={summaryData}
+            consumersData={consumersData}
+            loading={summaryLoading || consumersLoading}
+          />
+
+          <AccessControlTableTabs />
+        </Flex>
       </RequestLogFilterContext.Provider>
     </Layout>
   );

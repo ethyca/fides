@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-import { SEPARATOR } from "./FacetedSearchInput";
+import { SEPARATOR } from "../FacetedSearchInput";
 
 type FacetKey = "consumer" | "policy" | "dataset" | "data_use" | "control";
 

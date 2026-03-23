@@ -1,6 +1,5 @@
 import {
-  antTheme,
-  AreaChart,
+  LineChart,
   BarChart,
   Card,
   Flex,
@@ -8,13 +7,14 @@ import {
   Statistic,
   Text,
 } from "fidesui";
+import { theme as antTheme } from "antd";
 import { useMemo, useState } from "react";
 
 import {
   useGetAccessControlSummaryQuery,
   useGetRequestsTimeseriesQuery,
 } from "./access-control.slice";
-import { useRequestLogFilterContext } from "./request-log/useRequestLogFilters";
+import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
 
 type ChartMode = "line" | "bar";
 
@@ -64,22 +64,14 @@ export const ViolationsChartCard = () => {
   const trend = summaryData?.trend ?? 0;
 
   const getTrendPrefix = () => {
-    if (trend < 0) {
-      return "-";
-    }
-    if (trend > 0) {
-      return "+";
-    }
+    if (trend < 0) return "-";
+    if (trend > 0) return "+";
     return "";
   };
 
   const getTrendColor = () => {
-    if (trend < 0) {
-      return token.colorSuccess;
-    }
-    if (trend > 0) {
-      return token.colorError;
-    }
+    if (trend < 0) return token.colorSuccess;
+    if (trend > 0) return token.colorError;
     return token.colorTextSecondary;
   };
 
@@ -100,9 +92,9 @@ export const ViolationsChartCard = () => {
       }
       className="flex h-full flex-col text-clip"
       cover={
-        <div className="h-[200px] w-full">
+        <div className="h-[120px] w-full">
           {mode === "line" ? (
-            <AreaChart data={areaChartData} series={AREA_SERIES} />
+            <LineChart data={areaChartData} series={AREA_SERIES} />
           ) : (
             <BarChart
               data={barChartData}
@@ -112,8 +104,9 @@ export const ViolationsChartCard = () => {
           )}
         </div>
       }
-      styles={{
-        cover: { padding: "0 12px 12px" },
+      classNames={{
+        cover: "px-3 pb-3",
+        body: "!pt-0",
       }}
       coverPosition="bottom"
     >

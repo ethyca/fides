@@ -1,7 +1,8 @@
-import { Table, Typography } from "fidesui";
+import { Table } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useGetPolicyViolationsQuery } from "~/features/access-control/access-control.slice";
+import { useRequestLogFilterContext } from "~/features/access-control/hooks/useRequestLogFilters";
 import type { PolicyViolationAggregate } from "~/features/access-control/types";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 
@@ -9,25 +10,19 @@ import { getViolationsColumns } from "./violationsColumns";
 
 interface FindingsTableProps {
   onRowClick?: (record: PolicyViolationAggregate) => void;
-  startDate?: string;
-  endDate?: string;
 }
 
-export const FindingsTable = ({
-  onRowClick,
-  startDate,
-  endDate,
-}: FindingsTableProps) => {
+export const FindingsTable = ({ onRowClick }: FindingsTableProps) => {
+  const { filters } = useRequestLogFilterContext();
   const { pageIndex, pageSize } = useAntPagination({
     pageQueryKey: "findings_page",
     sizeQueryKey: "findings_size",
   });
 
   const { data, isLoading } = useGetPolicyViolationsQuery({
+    ...filters,
     page: pageIndex,
     size: pageSize,
-    ...(startDate ? { start_date: startDate } : {}),
-    ...(endDate ? { end_date: endDate } : {}),
   });
 
   const columns = useMemo(() => getViolationsColumns(), []);
@@ -40,7 +35,6 @@ export const FindingsTable = ({
   );
 
   return (
-    // <div className="mt-6">
     <Table
       columns={columns}
       dataSource={data?.items}
@@ -53,6 +47,5 @@ export const FindingsTable = ({
         onClick: onRowClick ? () => handleRowClick(record) : undefined,
       })}
     />
-    // </div>
   );
 };

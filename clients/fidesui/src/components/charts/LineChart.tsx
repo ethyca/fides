@@ -30,32 +30,32 @@ import {
 import { ChartGradient } from "./ChartGradient";
 import { XAxisTick } from "./XAxisTick";
 
-export interface AreaChartSeries {
+export interface LineChartSeries {
   key: string;
   name: string;
   color?: AntColorTokenKey;
 }
 
-export interface AreaChartDataPoint {
+export interface LineChartDataPoint {
   label: string;
   [key: string]: string | number;
 }
 
-export interface AreaChartProps {
-  data?: AreaChartDataPoint[];
-  series: AreaChartSeries[];
+export interface LineChartProps {
+  data?: LineChartDataPoint[];
+  series: LineChartSeries[];
   animationDuration?: number;
   showTooltip?: boolean;
   showGrid?: boolean;
 }
 
-export const AreaChart = ({
+export const LineChart = ({
   data,
   series,
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   showGrid = true,
-}: AreaChartProps) => {
+}: LineChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
   const animationActive = useChartAnimation(animationDuration);
@@ -88,10 +88,10 @@ export const AreaChart = ({
     );
 
     const seriesKeys = series.map((entry) => entry.key);
-    const buckets: AreaChartDataPoint[] = Array.from(
+    const buckets: LineChartDataPoint[] = Array.from(
       { length: bucketCount },
       (_, index) => {
-        const point: AreaChartDataPoint = {
+        const point: LineChartDataPoint = {
           label: new Date(flooredStart + index * intervalMs).toISOString(),
         };
         for (const key of seriesKeys) {
