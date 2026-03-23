@@ -156,7 +156,7 @@ export const DiscoveredAssetsTable = ({
               Clear filters
             </Button>
             <Dropdown
-              overlayClassName="bulk-actions-menu-dropdown"
+              classNames={{ root: "bulk-actions-menu-dropdown" }}
               menu={{
                 items: [
                   ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)

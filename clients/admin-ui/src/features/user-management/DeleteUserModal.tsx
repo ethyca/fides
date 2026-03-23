@@ -3,17 +3,12 @@ import {
   ChakraAlert as Alert,
   ChakraAlertDescription as AlertDescription,
   ChakraAlertIcon as AlertIcon,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   ChakraText as Text,
   ChakraUseDisclosureReturn as UseDisclosureReturn,
-  useChakraToast as useToast,
+  Flex,
+  Modal,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -24,7 +19,6 @@ import { useAppDispatch } from "~/app/hooks";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
 import {
@@ -39,7 +33,7 @@ const useDeleteUserModal = ({
   username,
   onClose,
 }: Pick<User, "id" | "username"> & { onClose: () => void }) => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [deleteUser] = useDeleteUserMutation();
@@ -47,9 +41,9 @@ const useDeleteUserModal = ({
   const handleDeleteUser = async () => {
     const result = await deleteUser(id);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(successToastParams("Successfully deleted user"));
+      message.success("Successfully deleted user");
       onClose();
     }
     dispatch(setActiveUserId(undefined));
@@ -81,75 +75,69 @@ const DeleteUserModal = ({
   });
 
   return (
-    <Modal isCentered isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent data-testid="delete-user-modal">
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={handleDeleteUser}
-        >
-          {({ isSubmitting, dirty, isValid }) => (
-            <Form>
-              <ModalHeader>Delete User</ModalHeader>
-              <ModalCloseButton />
-              <ModalBody>
-                <Alert
-                  status="warning"
-                  overflow="visible"
-                  colorScheme="warn"
-                  marginBottom={4}
-                >
-                  <AlertIcon />
-                  <AlertDescription>
-                    <Text as="span" mb={2}>
-                      You are about to delete the user&nbsp;
-                    </Text>
-                    <Text
-                      as="span"
-                      mb={2}
-                      fontStyle="italic"
-                      fontWeight="semibold"
-                    >
-                      {user.username}.
-                    </Text>
-                    <Text mb={2}>
-                      This action cannot be undone. To confirm, please enter the
-                      user&rsquo;s username below.
-                    </Text>
-                  </AlertDescription>
-                </Alert>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      data-testid="delete-user-modal"
+      title="Delete User"
+      centered
+      destroyOnHidden
+      footer={null}
+    >
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleDeleteUser}
+      >
+        {({ isSubmitting, dirty, isValid }) => (
+          <Form>
+            <Alert
+              status="warning"
+              overflow="visible"
+              colorScheme="warn"
+              marginBottom={4}
+            >
+              <AlertIcon />
+              <AlertDescription>
+                <Text as="span" mb={2}>
+                  You are about to delete the user&nbsp;
+                </Text>
+                <Text as="span" mb={2} fontStyle="italic" fontWeight="semibold">
+                  {user.username}.
+                </Text>
+                <Text mb={2}>
+                  This action cannot be undone. To confirm, please enter the
+                  user&rsquo;s username below.
+                </Text>
+              </AlertDescription>
+            </Alert>
 
-                <Stack direction="column" spacing={4}>
-                  <CustomTextInput
-                    name="usernameConfirmation"
-                    label="Confirm username"
-                    placeholder="Type the username to delete"
-                  />
-                </Stack>
-              </ModalBody>
+            <Stack direction="column" spacing={4}>
+              <CustomTextInput
+                name="usernameConfirmation"
+                label="Confirm username"
+                placeholder="Type the username to delete"
+              />
+            </Stack>
 
-              <ModalFooter>
-                <div className="flex w-full gap-2">
-                  <Button onClick={onClose} className="w-1/2">
-                    Cancel
-                  </Button>
-                  <Button
-                    type="primary"
-                    disabled={!dirty || !isValid}
-                    loading={isSubmitting}
-                    htmlType="submit"
-                    className="w-1/2"
-                    data-testid="submit-btn"
-                  >
-                    Delete User
-                  </Button>
-                </div>
-              </ModalFooter>
-            </Form>
-          )}
-        </Formik>
-      </ModalContent>
+            <Flex className="mt-4 w-full" gap="small">
+              <Button onClick={onClose} className="w-1/2">
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                disabled={!dirty || !isValid}
+                loading={isSubmitting}
+                htmlType="submit"
+                className="w-1/2"
+                data-testid="submit-btn"
+              >
+                Delete User
+              </Button>
+            </Flex>
+          </Form>
+        )}
+      </Formik>
     </Modal>
   );
 };

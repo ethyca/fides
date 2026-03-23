@@ -1,0 +1,4 @@
+type: Fixed
+description: Display Slack thread evidence (team input) in the evidence drawer
+pr: 7657
+labels: []

@@ -229,6 +229,34 @@ class TestMaskSensitiveValues:
         assert "non_schema_value" not in keys
         assert "another_non_schema_value" not in keys
 
+    def test_mask_preserves_non_schema_values_when_additional_properties_allowed(
+        self, connection_secrets
+    ):
+        """Schemas with additionalProperties: true (e.g. extra='allow')
+        preserve non-schema fields so extension config can coexist with
+        core secrets."""
+        schema_with_additional = {
+            "additionalProperties": True,
+            "properties": {
+                "api_id": {"sensitive": False, "title": "API ID", "type": "string"},
+                "api_token": {
+                    "sensitive": True,
+                    "title": "API token",
+                    "type": "string",
+                },
+            },
+        }
+        connection_secrets["project_key"] = "PLAY"
+        connection_secrets["summary_template"] = "DSR: {{ request_type }}"
+
+        masked_secrets = mask_sensitive_fields(
+            connection_secrets, schema_with_additional
+        )
+        assert masked_secrets["api_id"] == "secret-test"
+        assert masked_secrets["api_token"] == "**********"
+        assert masked_secrets["project_key"] == "PLAY"
+        assert masked_secrets["summary_template"] == "DSR: {{ request_type }}"
+
     def test_return_none_if_no_secrets(self, secret_schema):
         masked_secrets = mask_sensitive_fields(None, secret_schema)
         assert masked_secrets is None

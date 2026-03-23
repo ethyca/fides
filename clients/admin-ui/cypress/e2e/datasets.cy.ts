@@ -66,7 +66,7 @@ describe("Dataset", () => {
       cy.wait("@deleteDataset").then((interception) => {
         expect(interception.request.url).to.contain("demo_users_dataset");
       });
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it("Can use the search bar to filter datasets", () => {

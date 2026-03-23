@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 
 import pytest
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
@@ -83,14 +84,55 @@ class TestJiraTicketSecretsSchema:
         schema_cls = get_connection_secrets_schema("jira_ticket", None)
         assert schema_cls is JiraTicketSchema
 
-    def test_extra_fields_ignored(self):
-        """Extra fields are silently ignored (from_attributes / extra=ignore)."""
+    def test_extra_fields_preserved(self):
+        """Extra fields are preserved so Fidesplus can store template config."""
         schema = JiraTicketSchema(
             access_token="token",
-            unexpected_field="should_be_ignored",  # type: ignore[call-arg]
+            project_key="PLAY",
+            summary_template="DSR: {{ request_type }}",
         )
         assert schema.access_token == "token"
-        assert not hasattr(schema, "unexpected_field")
+        assert schema.project_key == "PLAY"
+        assert schema.summary_template == "DSR: {{ request_type }}"
+
+    def test_api_key_secrets_valid(self):
+        """API key auth fields are accepted."""
+        schema = JiraTicketSchema(
+            domain="company.atlassian.net",
+            username="user@company.com",
+            api_key="secret-token-123",
+        )
+        assert schema.domain == "company.atlassian.net"
+        assert schema.username == "user@company.com"
+        assert schema.api_key == "secret-token-123"
+        assert schema.access_token is None
+
+    def test_partial_api_key_valid(self):
+        """Partial API key fields are valid (pre-configuration)."""
+        schema = JiraTicketSchema(domain="company.atlassian.net")
+        assert schema.domain == "company.atlassian.net"
+        assert schema.username is None
+
+    def test_mixed_oauth_and_api_key_rejected(self):
+        """Mixing OAuth and API key fields raises a validation error."""
+        with pytest.raises(
+            PydanticValidationError, match="Cannot mix OAuth and API key credentials"
+        ):
+            JiraTicketSchema(
+                access_token="oauth-token",
+                cloud_id="cloud123",
+                domain="company.atlassian.net",
+            )
+
+    def test_mixed_api_key_and_site_url_rejected(self):
+        """Even one field from each group is rejected."""
+        with pytest.raises(
+            PydanticValidationError, match="Cannot mix OAuth and API key credentials"
+        ):
+            JiraTicketSchema(
+                site_url="https://example.atlassian.net",
+                api_key="token",
+            )
 
 
 class TestJiraTicketSingletonEnforcement:

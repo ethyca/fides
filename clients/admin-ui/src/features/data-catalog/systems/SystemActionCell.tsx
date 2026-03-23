@@ -1,36 +1,34 @@
-import {
-  Button,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuList as MenuList,
-  MoreIcon,
-} from "fidesui";
+import { Button, Dropdown, Icons, MenuProps } from "fidesui";
+import { useMemo } from "react";
 
 interface SystemActionsCellProps {
   onDetailClick?: () => void;
 }
 
 const SystemActionsCell = ({ onDetailClick }: SystemActionsCellProps) => {
+  const items: MenuProps["items"] = useMemo(() => {
+    const menuItems: MenuProps["items"] = [];
+    if (onDetailClick) {
+      menuItems.push({
+        key: "view-details",
+        label: "View details",
+        onClick: onDetailClick,
+      });
+    }
+    return menuItems;
+  }, [onDetailClick]);
+
   return (
-    <Menu>
-      <MenuButton
-        as={Button}
+    <Dropdown menu={{ items }}>
+      <Button
         size="small"
-        // @ts-expect-error - Ant type, not Chakra type because of `as` prop
         type="text"
         className="max-w-4"
-        icon={<MoreIcon transform="rotate(90deg)" ml={2} />}
+        icon={<Icons.OverflowMenuVertical />}
         data-testid="system-actions-menu"
+        aria-label="more"
       />
-      <MenuList>
-        {onDetailClick && (
-          <MenuItem onClick={onDetailClick} data-testid="view-system-details">
-            View details
-          </MenuItem>
-        )}
-      </MenuList>
-    </Menu>
+    </Dropdown>
   );
 };
 

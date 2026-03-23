@@ -27,7 +27,7 @@ const meta = {
     message: TITLE_LOREM,
     description: SUBTITLE_LOREM,
     key: "key",
-    duration: null,
+    duration: false,
   },
   tags: ["autodocs"],
 } satisfies Meta<typeof Notification>;

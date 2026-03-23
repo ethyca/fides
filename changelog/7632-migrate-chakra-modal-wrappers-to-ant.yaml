@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated shared Chakra modal wrappers to Ant Design modals
+pr: 7632
+labels: []

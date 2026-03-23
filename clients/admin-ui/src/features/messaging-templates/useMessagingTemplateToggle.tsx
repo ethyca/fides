@@ -1,13 +1,12 @@
 import { getErrorMessage } from "common/helpers";
-import { useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 import { useCallback } from "react";
 
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { usePatchMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import { isErrorResult } from "~/types/errors";
 
 const useMessagingTemplateToggle = () => {
-  const toast = useToast();
+  const message = useMessage();
   const [patchMessagingTemplateById] = usePatchMessagingTemplateByIdMutation();
 
   const toggleIsTemplateEnabled = useCallback(
@@ -24,17 +23,15 @@ const useMessagingTemplateToggle = () => {
       });
 
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
         return;
       }
 
-      toast(
-        successToastParams(
-          `Messaging template ${isEnabled ? "enabled" : "disabled"}`,
-        ),
+      message.success(
+        `Messaging template ${isEnabled ? "enabled" : "disabled"}`,
       );
     },
-    [patchMessagingTemplateById, toast],
+    [patchMessagingTemplateById, message],
   );
 
   return { toggleIsTemplateEnabled };
