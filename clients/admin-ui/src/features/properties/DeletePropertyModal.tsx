@@ -1,16 +1,10 @@
-import {
-  ChakraText as Text,
-  Tooltip,
-  useChakraToast as useToast,
-  useModal,
-} from "fidesui";
+import { ChakraText as Text, Tooltip, useMessage, useModal } from "fidesui";
 import router from "next/router";
 import React from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useDeletePropertyMutation } from "~/features/properties/property.slice";
 import { Property, ScopeRegistryEnum } from "~/types/api";
 
@@ -34,7 +28,7 @@ interface Props {
  * />
  */
 const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
-  const toast = useToast();
+  const message = useMessage();
   const modal = useModal();
   const [deletePropertyMutationTrigger] = useDeletePropertyMutation();
 
@@ -58,15 +52,11 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
         onOk: async () => {
           const result = await deletePropertyMutationTrigger(property.id!);
           if (isErrorResult(result)) {
-            toast(errorToastParams(getErrorMessage(result.error)));
+            message.error(getErrorMessage(result.error));
             return;
           }
           router.push(`${PROPERTIES_ROUTE}`);
-          toast(
-            successToastParams(
-              `Property ${property.name} deleted successfully`,
-            ),
-          );
+          message.success(`Property ${property.name} deleted successfully`);
         },
       });
     }

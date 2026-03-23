@@ -322,9 +322,10 @@ describe("Privacy Request with multiselect custom fields", () => {
       cy.get('[data-testid="select-preferred_format"]').click();
       cy.get('[data-testid="select-preferred_format"]').type("HTML{enter}");
 
-      // Verify selection was made
+      // Verify selection was made — single Select renders the value in
+      // .ant-select-content (not .ant-select-selection-item) in Ant Design v6
       cy.get('[data-testid="select-preferred_format"]').within(() => {
-        cy.get('.ant-select-selection-item[title="HTML"]').should("exist");
+        cy.get('.ant-select-content[title="HTML"]').should("exist");
       });
 
       // Close the dropdown by clicking on another field to avoid covering the submit button
