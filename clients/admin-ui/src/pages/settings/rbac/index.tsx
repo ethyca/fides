@@ -47,7 +47,7 @@ const RBACPage: NextPage = () => {
       title: "Type",
       key: "type",
       render: (_: unknown, record: RBACRole) => (
-        <Tag color={record.is_system_role ? "info" : "success"}>
+        <Tag color={record.is_system_role ? "default" : "nectar"}>
           {record.is_system_role ? "System" : "Custom"}
         </Tag>
       ),
@@ -60,9 +60,9 @@ const RBACPage: NextPage = () => {
         const inheritedCount = record.inherited_permissions.length;
         return (
           <Space>
-            <Tag>{directCount} Direct</Tag>
+            <Tag color="corinth">{directCount} Direct</Tag>
             {inheritedCount > 0 && (
-              <Tag color="minos">{inheritedCount} Inherited</Tag>
+              <Tag color="default">{inheritedCount} Inherited</Tag>
             )}
           </Space>
         );
