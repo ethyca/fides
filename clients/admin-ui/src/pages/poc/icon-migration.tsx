@@ -22,7 +22,6 @@ import React from "react";
 import {
   DownloadLightIcon,
   GearLightIcon,
-  GroupedIcon,
   ManualSetupIcon,
 } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
@@ -179,15 +178,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: "Settings",
     notes: "Light variant",
-  },
-  {
-    key: "admin-GroupedIcon",
-    currentName: "GroupedIcon",
-    currentIcon: <GroupedIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "CollapseAll",
-    notes: "Used as 'Collapse all' toggle in table column headers",
   },
   {
     key: "admin-ManualSetupIcon",

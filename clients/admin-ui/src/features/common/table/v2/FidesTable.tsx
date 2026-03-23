@@ -37,7 +37,6 @@ import {
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
-import { GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 import {
   COLUMN_VERSION_DELIMITER,
@@ -188,7 +187,7 @@ const HeaderContent = <T,>({
             color={!isExpandAll ? "complimentary.500" : undefined}
             onClick={() => onGroupAll(header.id)}
           >
-            <GroupedIcon /> Collapse all
+            <Icons.CollapseAll /> Collapse all
           </MenuItem>
           {enableSorting && header.column.getCanSort() && (
             <MenuItem gap={2} onClick={header.column.getToggleSortingHandler()}>
