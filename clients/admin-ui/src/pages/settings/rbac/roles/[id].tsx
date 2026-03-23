@@ -125,6 +125,7 @@ const RoleDetailPage: NextPage = () => {
   const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
 
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [permissionSearch, setPermissionSearch] = useState<string>("");
 
   // Initialize form and selected permissions when role data loads
   useEffect(() => {
@@ -275,6 +276,25 @@ const RoleDetailPage: NextPage = () => {
       title: "Permission",
       dataIndex: "code",
       key: "code",
+      width: 300,
+      onFilter: (value: any, record: any) => {
+        const searchLower = String(value).toLowerCase();
+        if (record.isGroup) {
+          // Show group only if it has matching children
+          return (
+            record.children?.some(
+              (child: any) =>
+                child.code.toLowerCase().includes(searchLower) ||
+                child.description?.toLowerCase().includes(searchLower),
+            ) ?? false
+          );
+        }
+        return (
+          record.code.toLowerCase().includes(searchLower) ||
+          record.description?.toLowerCase().includes(searchLower)
+        );
+      },
+      filteredValue: permissionSearch ? [permissionSearch] : [],
       render: (code: string, record: any) => {
         if (record.isGroup) {
           const warning = RESOURCE_TYPE_WARNINGS[record.key];
@@ -306,10 +326,45 @@ const RoleDetailPage: NextPage = () => {
     {
       title: "Assigned",
       key: "assigned",
-      width: 120,
+      width: 125,
       render: (_: unknown, record: any) => {
         if (record.isGroup) {
-          return null;
+          const assignedCount = record.children.filter(
+            (child: any) => child.isSelected || child.isInherited,
+          ).length;
+          const totalCount = record.children.length;
+          const allAssigned = assignedCount === totalCount;
+          const someAssigned = assignedCount > 0 && assignedCount < totalCount;
+
+          const handleGroupToggle = () => {
+            if (allAssigned) {
+              // Deselect all non-inherited
+              setSelectedPermissions((prev) =>
+                prev.filter((code) =>
+                  record.children.every(
+                    (child: any) => child.code !== code || child.isInherited,
+                  ),
+                ),
+              );
+            } else {
+              // Select all non-inherited
+              setSelectedPermissions((prev) => {
+                const nonInheritedCodes = record.children
+                  .filter((child: any) => !child.isInherited)
+                  .map((child: any) => child.code);
+                return [...new Set([...prev, ...nonInheritedCodes])];
+              });
+            }
+          };
+
+          return (
+            <Checkbox
+              checked={allAssigned}
+              indeterminate={someAssigned}
+              disabled={role.is_system_role}
+              onChange={handleGroupToggle}
+            />
+          );
         }
         return (
           <Space>
@@ -410,21 +465,28 @@ const RoleDetailPage: NextPage = () => {
         </div>
 
         <div>
-          <Typography.Title level={4}>Permissions</Typography.Title>
+          <div className="mb-3">
+            <Typography.Title level={4}>Permissions</Typography.Title>
+          </div>
           {role.is_system_role && (
             <Typography.Text type="secondary" className="mb-4 block">
               System role permissions cannot be modified.
             </Typography.Text>
           )}
+          <div className="mb-4">
+            <Input
+              placeholder="Search permissions by code or description..."
+              value={permissionSearch}
+              onChange={(e) => setPermissionSearch(e.target.value)}
+              allowClear
+            />
+          </div>
           <Table
             dataSource={permissionTreeData}
             columns={permissionColumns}
             rowKey="key"
             pagination={false}
             size="small"
-            expandable={{
-              defaultExpandAllRows: true,
-            }}
           />
         </div>
       </Flex>
