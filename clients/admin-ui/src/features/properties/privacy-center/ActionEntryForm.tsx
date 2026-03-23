@@ -46,15 +46,6 @@ const ActionEntryForm = ({ index }: Props) => {
   const currentPolicyKey = action?.policy_key ?? "";
   const defaultIconForKey = POLICY_KEY_DEFAULT_ICONS[currentPolicyKey];
 
-  const handlePolicyKeyChange = (newKey: string) => {
-    const defaultIcon = POLICY_KEY_DEFAULT_ICONS[newKey];
-    // Auto-fill icon_path with the default for this policy key, but only
-    // when the user hasn't already set a custom value.
-    if (defaultIcon && !action?.icon_path) {
-      setFieldValue(`${basePath}.icon_path`, defaultIcon);
-    }
-  };
-
   const handleIdentityToggle = (key: string, checked: boolean) => {
     const updated = { ...identityInputs };
     if (checked) {
@@ -79,7 +70,6 @@ const ActionEntryForm = ({ index }: Props) => {
         name={`${basePath}.policy_key`}
         options={policyOptions}
         layout="stacked"
-        onChange={handlePolicyKeyChange}
       />
       <CustomTextInput
         label="Icon path"
