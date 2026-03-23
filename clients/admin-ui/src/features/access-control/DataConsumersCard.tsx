@@ -26,10 +26,10 @@ export const DataConsumersCard = ({
           Consumer
         </Text>
         <Text type="secondary" className="text-right text-xs">
-          Reqs
+          Reqs.
         </Text>
         <Text type="secondary" className="text-right text-xs">
-          Viol
+          Viol.
         </Text>
 
         {items.map((item) => (
@@ -37,9 +37,7 @@ export const DataConsumersCard = ({
             <Text ellipsis={{ tooltip: item.name }} className="min-w-0">
               {item.name}
             </Text>
-            <Text className="text-right">
-              {item.requests.toLocaleString()}
-            </Text>
+            <Text className="text-right">{item.requests.toLocaleString()}</Text>
             <Text
               strong
               type={item.violations > 0 ? "danger" : "success"}

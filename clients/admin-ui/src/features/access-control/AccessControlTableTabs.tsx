@@ -1,6 +1,6 @@
 import { Tabs } from "fidesui";
-import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
+import { useCallback, useMemo } from "react";
 
 import { RequestLogTable } from "./RequestLogTable";
 import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
@@ -11,23 +11,19 @@ import type { PolicyViolationAggregate, PolicyViolationLog } from "./types";
 type TableTab = "summary" | "log";
 
 export const AccessControlTableTabs = () => {
-  const router = useRouter();
   const { applyFacets } = useRequestLogFilterContext();
 
-  const [activeTab, setActiveTab] = useState<TableTab>(() => {
-    return router.query.tab === "log" ? "log" : "summary";
-  });
-
-  const [selectedViolationId, setSelectedViolationId] = useState<string | null>(
-    null,
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    parseAsStringLiteral(["summary", "log"] as const)
+      .withDefault("summary")
+      .withOptions({ history: "push" }),
   );
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    if (router.query.tab === "log") {
-      setActiveTab("log");
-    }
-  }, [router.query.tab]);
+  const [selectedViolationId, setSelectedViolationId] = useQueryState(
+    "violationId",
+    parseAsString.withOptions({ history: "push" }),
+  );
 
   const handleSummaryRowClick = useCallback(
     (record: PolicyViolationAggregate) => {
@@ -41,13 +37,15 @@ export const AccessControlTableTabs = () => {
       applyFacets(facets);
       setActiveTab("log");
     },
-    [applyFacets],
+    [applyFacets, setActiveTab],
   );
 
-  const handleLogRowClick = useCallback((record: PolicyViolationLog) => {
-    setSelectedViolationId(record.id);
-    setDrawerOpen(true);
-  }, []);
+  const handleLogRowClick = useCallback(
+    (record: PolicyViolationLog) => {
+      setSelectedViolationId(record.id);
+    },
+    [setSelectedViolationId],
+  );
 
   const items = useMemo(
     () => [
@@ -74,8 +72,8 @@ export const AccessControlTableTabs = () => {
       />
       <ViolationDetailDrawer
         violationId={selectedViolationId}
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        open={!!selectedViolationId}
+        onClose={() => setSelectedViolationId(null)}
       />
     </>
   );

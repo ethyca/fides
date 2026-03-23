@@ -42,12 +42,4 @@ export const getRequestLogColumns = (): ColumnsType<PolicyViolationLog> => [
     ellipsis: true,
     render: (value: string) => <Text code>{value}</Text>,
   },
-  {
-    title: "Data use",
-    dataIndex: "data_use",
-    key: "data_use",
-    width: 200,
-    ellipsis: true,
-    render: (value: string) => <Text code>{value}</Text>,
-  },
 ];

@@ -5,6 +5,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -54,22 +55,35 @@ export const useRequestLogFilterContext = (): RequestLogFilterState => {
 };
 
 export const useRequestLogFilters = (): RequestLogFilterState => {
-  const router = useRouter();
-
   const [dateRange, setDateRange] = useState<
     [dayjs.Dayjs, dayjs.Dayjs] | null
   >(() => [dayjs().subtract(7, "day"), dayjs()]);
 
+  const router = useRouter();
+
   const [searchValues, setSearchValues] = useState<string[]>(() => {
-    const initial: string[] = [];
-    for (const key of ["policy", "control"] as const) {
-      const val = router.query[key];
-      if (typeof val === "string" && val) {
-        initial.push(`${key}${SEPARATOR}${val}`);
-      }
+    const facets = router.query.facets;
+    if (typeof facets === "string" && facets) {
+      return facets.split(",");
     }
-    return initial;
+    if (Array.isArray(facets)) {
+      return facets.filter(Boolean) as string[];
+    }
+    return [];
   });
+
+  // Sync searchValues to URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (searchValues.length > 0) {
+      params.set("facets", searchValues.join(","));
+    } else {
+      params.delete("facets");
+    }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    router.replace(newUrl, undefined, { shallow: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchValues]);
 
   const [liveTail, setLiveTail] = useState(false);
   const [intervalHours, setIntervalHours] = useState<number | undefined>();
