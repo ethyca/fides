@@ -1,5 +1,4 @@
 // Icons from Fides:
-export { default as ArrowDownLineIcon } from "./ArrowDownLine";
 export { default as ArrowDownRightIcon } from "./ArrowDownRight";
 export { default as EyeIcon } from "./Eye";
 export { default as GreenCheckCircleIcon } from "./GreenCheckCircle";

@@ -1,5 +1,4 @@
 import {
-  ArrowDownLineIcon,
   ArrowDownRightIcon,
   ColumnsType,
   CUSTOM_TAG_COLOR,
@@ -73,15 +72,6 @@ const SvgIconBox = ({ children }: { children: React.ReactNode }) => (
 
 const ICON_DATA: IconEntry[] = [
   // fidesui icons
-  {
-    key: "fidesui-ArrowDownLineIcon",
-    currentName: "ArrowDownLineIcon",
-    currentIcon: <ArrowDownLineIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: "ChevronDown",
-    notes: "",
-  },
   {
     key: "fidesui-ArrowDownRightIcon",
     currentName: "ArrowDownRightIcon",

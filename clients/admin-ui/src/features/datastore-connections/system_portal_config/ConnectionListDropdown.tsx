@@ -1,6 +1,5 @@
 import { debounce } from "common/utils";
 import {
-  ArrowDownLineIcon,
   Button,
   ChakraBox as Box,
   ChakraFlex as Flex,
@@ -310,7 +309,7 @@ const ConnectionListDropdown = ({
       <Button
         aria-label={selectedText ?? label}
         disabled={disabled}
-        icon={<ArrowDownLineIcon />}
+        icon={<Icons.ChevronDown />}
         iconPosition="end"
         data-testid="select-dropdown-btn"
         className="w-[272px]"
