@@ -23,7 +23,8 @@ def upgrade():
             """
             UPDATE stagedresource
             SET meta = (meta - 'okta_app_id') || jsonb_build_object('app_id', meta->'okta_app_id')
-            WHERE jsonb_exists(meta, 'okta_app_id')
+            WHERE resource_type = 'Okta App'
+            AND jsonb_exists(meta, 'okta_app_id')
             """
         )
     )
@@ -70,7 +71,7 @@ def downgrade():
             UPDATE stagedresource
             SET resource_type = 'Okta App'
             WHERE resource_type = 'IDP App'
-            AND COALESCE(meta->>'provider', 'okta') = 'okta'
+            AND meta->>'provider' = 'okta'
             """
         )
     )
