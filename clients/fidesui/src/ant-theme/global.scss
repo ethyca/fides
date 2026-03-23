@@ -269,6 +269,12 @@ h6 {
   }
 }
 
+.recharts-wrapper {
+  *:focus:not(:focus-visible) {
+    outline: none !important;
+  }
+}
+
 .ant-card {
   // Ant does some highly specific styling of the actions list items taylored to
   // using only Ant Icons, and without support for actual buttons. This overrides

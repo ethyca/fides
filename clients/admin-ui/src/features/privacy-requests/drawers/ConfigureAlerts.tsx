@@ -9,11 +9,11 @@ import {
   Space,
   Switch,
   Typography,
+  useMessage,
 } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 import EmailChipList from "../EmailChipList";
@@ -59,7 +59,7 @@ const ConfigureAlerts = () => {
   const [minErrorCount, setMinErrorCount] = useState(DEFAULT_MIN_ERROR_COUNT);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const firstField = useRef(null);
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
   const [skip, setSkip] = useState(true);
 
   const { data } = useGetNotificationQuery(undefined, { skip });
@@ -78,12 +78,11 @@ const ConfigureAlerts = () => {
       notify_after_failures: notify ? minErrorCount : 0,
     });
     if (isErrorResult(payload)) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        "Failed to save notification settings",
+      message.error(
+        `Failed to save notification settings: ${getErrorMessage(payload.error)}`,
       );
     } else {
-      successAlert("Notification settings saved successfully");
+      message.success("Notification settings saved successfully");
     }
     setIsSubmitting(false);
     setIsOpen(false);
@@ -142,7 +141,7 @@ const ConfigureAlerts = () => {
             Get notified when processing failures occur. Set a threshold to
             receive alerts after a specific number of errors.
           </Typography.Text>
-          <Space direction="vertical" size="middle" className="w-full">
+          <Space direction="vertical" size="medium" className="w-full">
             <Form.Item className="mb-0">
               <Flex justify="space-between" align="center">
                 <label htmlFor="enable-email-notifications">

@@ -4,14 +4,13 @@ import {
   Dropdown,
   LinkIcon,
   Modal,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import InfoBox from "~/features/common/InfoBox";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { usePostPrivacyRequestMutation } from "~/features/privacy-requests/privacy-requests.slice";
 import SubmitPrivacyRequestForm, {
@@ -33,7 +32,7 @@ const SubmitPrivacyRequestModal = ({
 }) => {
   const [postPrivacyRequestMutationTrigger] = usePostPrivacyRequestMutation();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (values: PrivacyRequestSubmitFormValues) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -51,16 +50,14 @@ const SubmitPrivacyRequestModal = ({
     };
     const result = await postPrivacyRequestMutationTrigger([payload]);
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          getErrorMessage(
-            result.error,
-            "An error occurred while creating this privacy request. Please try again",
-          ),
+      message.error(
+        getErrorMessage(
+          result.error,
+          "An error occurred while creating this privacy request. Please try again",
         ),
       );
     } else {
-      toast(successToastParams("Privacy request created"));
+      message.success("Privacy request created");
     }
     onClose();
   };

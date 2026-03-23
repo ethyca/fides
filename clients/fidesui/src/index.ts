@@ -196,6 +196,7 @@ export {
 } from "@chakra-ui/icons";
 
 // Unmodified component exported directly from Ant Design
+export type { DisplayValueType } from "@rc-component/select/lib/interface";
 export type { ThemeConfig } from "antd/es";
 export type {
   FilterValue,
@@ -280,7 +281,6 @@ export type {
 export type { ListItemProps } from "antd/lib/list";
 export type { BaseOptionType, DefaultOptionType } from "antd/lib/select";
 export type { UploadChangeParam } from "antd/lib/upload";
-export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
 export type {
@@ -354,6 +354,11 @@ export { RadarChart } from "./components/charts/RadarChart";
 export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
 export type { SparklineProps } from "./components/charts/Sparkline";
 export { Sparkline } from "./components/charts/Sparkline";
+export type {
+  StackedBarChartProps,
+  StackedBarSegment,
+} from "./components/charts/StackedBarChart";
+export { StackedBarChart } from "./components/charts/StackedBarChart";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
