@@ -4,14 +4,13 @@ import {
   Button,
   ChakraBox as Box,
   ChakraFlex as Flex,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import {
   MessagingTemplate,
@@ -36,7 +35,7 @@ type EmailTemplatesFormValues = Record<
 const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
   const [updateMessagingTemplates, { isLoading }] =
     useUpdateMessagingTemplatesMutation();
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (
     values: EmailTemplatesFormValues,
@@ -52,9 +51,9 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
           result.error,
           "An unexpected error occurred while editing the email templates. Please try again.",
         );
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
       } else {
-        toast(successToastParams("Email templates saved."));
+        message.success("Email templates saved.");
         formikHelpers.resetForm({ values });
       }
     };

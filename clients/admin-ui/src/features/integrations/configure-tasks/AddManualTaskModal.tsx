@@ -1,7 +1,12 @@
-import { useAlert, useAPIHelper } from "common/hooks";
-import { ChakraBox as Box, ChakraVStack as VStack, Modal } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraVStack as VStack,
+  Modal,
+  useMessage,
+} from "fidesui";
 import React, { useState } from "react";
 
+import { useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateManualFieldMutation,
   useUpdateManualFieldMutation,
@@ -30,7 +35,7 @@ const AddManualTaskModal = ({
   onTaskAdded,
   editingTask,
 }: Props) => {
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,7 +63,7 @@ const AddManualTaskModal = ({
           body: updatedField,
         }).unwrap();
 
-        successAlert("Manual task updated successfully!");
+        message.success("Manual task updated successfully!");
       } else {
         // Create new field
         const newField: ManualFieldCreate = {
@@ -74,7 +79,7 @@ const AddManualTaskModal = ({
           body: newField,
         }).unwrap();
 
-        successAlert("Manual task added successfully!");
+        message.success("Manual task added successfully!");
       }
 
       onTaskAdded();

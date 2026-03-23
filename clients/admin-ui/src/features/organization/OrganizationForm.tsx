@@ -4,7 +4,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraStack as Stack,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
@@ -12,7 +12,6 @@ import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useUpdateOrganizationMutation,
@@ -78,7 +77,7 @@ export const OrganizationForm = ({
     [organization],
   );
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (
     values: OrganizationFormValues,
@@ -96,9 +95,9 @@ export const OrganizationForm = ({
           result.error,
           "An unexpected error occurred while editing the organization. Please try again.",
         );
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
       } else {
-        toast(successToastParams("Organization configuration saved."));
+        message.success("Organization configuration saved.");
         // TODO: is this needed? Copied from SystemInformationForm which is more complex
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
