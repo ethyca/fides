@@ -277,13 +277,13 @@ const RoleDetailPage: NextPage = () => {
         heading={role.name}
         isSticky={false}
         className="pb-0"
+        breadcrumbItems={[
+          { title: "Role management", href: RBAC_ROUTE },
+          { title: role.name },
+        ]}
         rightContent={
           !role.is_system_role && (
-            <Button
-              danger
-              onClick={() => confirmDelete()}
-              loading={isDeleting}
-            >
+            <Button danger onClick={() => confirmDelete()} loading={isDeleting}>
               Delete
             </Button>
           )
