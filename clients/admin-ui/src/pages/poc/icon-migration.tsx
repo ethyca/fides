@@ -19,7 +19,6 @@ import type { NextPage } from "next";
 import React from "react";
 
 import {
-  GearLightIcon,
   ManualSetupIcon,
 } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
@@ -149,15 +148,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: null,
     notes: "",
-  },
-  {
-    key: "admin-GearLightIcon",
-    currentName: "GearLightIcon",
-    currentIcon: <GearLightIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "Settings",
-    notes: "Light variant",
   },
   {
     key: "admin-ManualSetupIcon",

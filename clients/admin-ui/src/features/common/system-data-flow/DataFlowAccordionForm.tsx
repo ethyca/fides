@@ -10,6 +10,7 @@ import {
   ChakraStack as Stack,
   ChakraTag as Tag,
   ChakraText as Text,
+  Icons,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -19,7 +20,6 @@ import React, { useEffect, useMemo, useState } from "react";
 // Internal features
 import { isErrorResult } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
-import { GearLightIcon } from "~/features/common/Icon";
 import { DataFlowSystemsDeleteTable } from "~/features/common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "~/features/common/system-data-flow/DataFlowSystemsModal";
 // API types and hooks
@@ -145,7 +145,7 @@ export const DataFlowAccordionForm = ({
                   onClick={dataFlowSystemsModal.onOpen}
                   type="primary"
                   size="small"
-                  icon={<GearLightIcon />}
+                  icon={<Icons.Settings />}
                   iconPosition="end"
                   className="mb-4"
                   data-testid="assign-systems-btn"
