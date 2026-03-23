@@ -1,10 +1,10 @@
 import Layout from "common/Layout";
 import {
-  Alert,
   Button,
   Checkbox,
   Flex,
   Form,
+  Icons,
   Input,
   InputNumber,
   Select,
@@ -18,6 +18,7 @@ import {
   useMessage,
   useModal,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -76,6 +77,23 @@ const HIDDEN_UNUSED_SCOPES = [
   "rbac_user_role:update", // No PUT endpoint for user role assignments
   "rbac_constraint:update", // No PUT endpoint for constraints
 ];
+
+// Warnings for specific resource types
+const RESOURCE_TYPE_WARNINGS: Record<
+  string,
+  { title: string; description: string }
+> = {
+  system: {
+    title: "System permissions apply globally",
+    description:
+      "System permissions (system:create, system:read, system:update, system:delete) grant access to ALL systems in the organization. Use system_manager permissions for per-system access control.",
+  },
+  rbac_role: {
+    title: "Role management grants full permission control",
+    description:
+      "Users with rbac_role:update can assign any permission to roles, including permissions they don't personally have. Only grant role management permissions to trusted administrators.",
+  },
+};
 
 const RoleDetailPage: NextPage = () => {
   const router = useRouter();
@@ -139,6 +157,25 @@ const RoleDetailPage: NextPage = () => {
         return acc;
       }, {});
   }, [permissions]);
+
+  // Transform grouped permissions into tree data structure
+  const permissionTreeData = useMemo(() => {
+    return Object.entries(groupedPermissions).map(([resourceType, perms]) => ({
+      key: resourceType,
+      code: resourceType.replace(/_/g, " "),
+      description: null,
+      isGroup: true,
+      children: perms.map((perm) => ({
+        key: perm.id,
+        code: perm.code,
+        description: perm.description,
+        isGroup: false,
+        id: perm.id,
+        isInherited: role?.inherited_permissions.includes(perm.code) ?? false,
+        isSelected: selectedPermissions.includes(perm.code),
+      })),
+    }));
+  }, [groupedPermissions, role?.inherited_permissions, selectedPermissions]);
 
   // Filter out current role and its descendants from parent options
   // to prevent inheritance cycles (A -> B -> A)
@@ -238,7 +275,28 @@ const RoleDetailPage: NextPage = () => {
       title: "Permission",
       dataIndex: "code",
       key: "code",
-      render: (code: string) => <code>{code}</code>,
+      render: (code: string, record: any) => {
+        if (record.isGroup) {
+          const warning = RESOURCE_TYPE_WARNINGS[record.key];
+          return (
+            <Space size={8}>
+              <span className="font-medium capitalize">{code}</span>
+              {warning && (
+                <Tooltip title={warning.description}>
+                  <Icons.WarningAltFilled
+                    size={16}
+                    style={{
+                      color: palette.FIDESUI_WARNING,
+                      cursor: "pointer",
+                    }}
+                  />
+                </Tooltip>
+              )}
+            </Space>
+          );
+        }
+        return <code>{code}</code>;
+      },
     },
     {
       title: "Description",
@@ -248,17 +306,19 @@ const RoleDetailPage: NextPage = () => {
     {
       title: "Assigned",
       key: "assigned",
-      render: (_: unknown, record: RBACPermission) => {
-        const isInherited = role.inherited_permissions.includes(record.code);
-        const isSelected = selectedPermissions.includes(record.code);
+      width: 120,
+      render: (_: unknown, record: any) => {
+        if (record.isGroup) {
+          return null;
+        }
         return (
           <Space>
             <Checkbox
-              checked={isSelected || isInherited}
-              disabled={role.is_system_role || isInherited}
+              checked={record.isSelected || record.isInherited}
+              disabled={role.is_system_role || record.isInherited}
               onChange={() => togglePermission(record.code)}
             />
-            {isInherited && <Tag color="minos">Inherited</Tag>}
+            {record.isInherited && <Tag color="minos">Inherited</Tag>}
           </Space>
         );
       },
@@ -356,38 +416,16 @@ const RoleDetailPage: NextPage = () => {
               System role permissions cannot be modified.
             </Typography.Text>
           )}
-          {Object.entries(groupedPermissions).map(([resourceType, perms]) => (
-            <div key={resourceType} className="mb-6">
-              <Typography.Title level={5} className="capitalize">
-                {resourceType.replace(/_/g, " ")}
-              </Typography.Title>
-              {resourceType === "system" && (
-                <Alert
-                  message="System permissions apply globally"
-                  description="System permissions (system:create, system:read, system:update, system:delete) grant access to ALL systems in the organization. Use system_manager permissions for per-system access control."
-                  type="warning"
-                  showIcon
-                  className="mb-4"
-                />
-              )}
-              {resourceType === "rbac_role" && (
-                <Alert
-                  message="Role management grants full permission control"
-                  description="Users with rbac_role:update can assign any permission to roles, including permissions they don't personally have. Only grant role management permissions to trusted administrators."
-                  type="warning"
-                  showIcon
-                  className="mb-4"
-                />
-              )}
-              <Table
-                dataSource={perms}
-                columns={permissionColumns}
-                rowKey="id"
-                pagination={false}
-                size="small"
-              />
-            </div>
-          ))}
+          <Table
+            dataSource={permissionTreeData}
+            columns={permissionColumns}
+            rowKey="key"
+            pagination={false}
+            size="small"
+            expandable={{
+              defaultExpandAllRows: true,
+            }}
+          />
         </div>
       </Flex>
     </Layout>
