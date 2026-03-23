@@ -1,6 +1,13 @@
-import { describe, expect, it, jest, beforeEach } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
+// Import mocked modules
+import { selectUser } from "~/features/auth";
+import { selectEnvFlags } from "~/features/common/features/features.slice";
+import { rbacApi } from "~/features/rbac/rbac.slice";
 import { ScopeRegistryEnum } from "~/types/api";
+
+// Import the selector under test (after mocks are set up)
+import { selectThisUsersScopes } from "./user-management.slice";
 
 /**
  * Tests for selectThisUsersScopes - the critical dual-mode selector that
@@ -36,14 +43,6 @@ jest.mock("~/features/common/api.slice", () => ({
     })),
   },
 }));
-
-// Import mocked modules
-import { selectUser } from "~/features/auth";
-import { selectEnvFlags } from "~/features/common/features/features.slice";
-import { rbacApi } from "~/features/rbac/rbac.slice";
-
-// Import the selector under test (after mocks are set up)
-import { selectThisUsersScopes } from "./user-management.slice";
 
 const mockSelectUser = selectUser as jest.MockedFunction<typeof selectUser>;
 const mockSelectEnvFlags = selectEnvFlags as jest.MockedFunction<
@@ -192,9 +191,7 @@ describe("selectThisUsersScopes", () => {
 
       const result = selectThisUsersScopes({} as any);
 
-      expect(result).toContain(
-        ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
-      );
+      expect(result).toContain(ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS);
       expect(result.length).toBe(ownerScopes.length);
     });
   });
