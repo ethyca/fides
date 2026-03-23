@@ -410,14 +410,14 @@ describe("System management page", () => {
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-error-msg");
+      cy.shouldShowMessage("error");
 
       // changing to a different data use should go through
       cy.getByTestId("new-declaration-form").within(() => {
         cy.getByTestId("input-data_use").type(`collect{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     // Cannot currently edit the data use or name fields—they have been disabled
@@ -445,7 +445,7 @@ describe("System management page", () => {
         cy.getByTestId("input-name").clear().type(`Store system data.{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-error-msg");
+      cy.shouldShowMessage("error");
     });
 
     it.skip("can have multiple of the same data use if the names are different", () => {
@@ -467,7 +467,7 @@ describe("System management page", () => {
         cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
         cy.getByTestId("save-btn").click();
       });
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it.skip("can edit an accordion data use while persisting a newly added data use", () => {
@@ -543,7 +543,7 @@ describe("System management page", () => {
       it("can show a modal on deleting a privacy declaration", () => {
         cy.getByTestId("delete-btn").click();
         cy.getAntModalConfirmButtons().contains("OK").click();
-        cy.getByTestId("toast-success-msg").contains("Data use deleted");
+        cy.shouldShowMessage("success", "Data use deleted");
       });
 
       it.skip("deletes a new privacy declaration", () => {
@@ -564,7 +564,7 @@ describe("System management page", () => {
         });
         cy.getAntModalConfirmButtons().contains("OK").click();
         cy.wait("@putFidesSystem");
-        cy.getByTestId("toast-success-msg").contains("Data use deleted");
+        cy.shouldShowMessage("success", "Data use deleted");
       });
 
       it.skip("deletes an accordion privacy declaration", () => {
@@ -581,7 +581,7 @@ describe("System management page", () => {
               "functional.service.improve",
           );
         });
-        cy.getByTestId("toast-success-msg").contains("Data use deleted");
+        cy.shouldShowMessage("success", "Data use deleted");
       });
     });
   });

@@ -3,14 +3,13 @@ import { NOTIFICATIONS_TEMPLATES_ROUTE } from "common/nav/routes";
 import {
   ChakraBox as Box,
   ChakraSpinner as Spinner,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   MessagingTemplateCreateOrUpdate,
@@ -23,7 +22,7 @@ import PropertySpecificMessagingTemplateForm, {
 import { isErrorResult } from "~/types/errors";
 
 const AddNotificationTemplatePage: NextPage = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const { templateType } = router.query;
   const [createMessagingTemplate] = useCreateMessagingTemplateByTypeMutation();
@@ -48,11 +47,11 @@ const AddNotificationTemplatePage: NextPage = () => {
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
 
-    toast(successToastParams(`Messaging template created successfully`));
+    message.success(`Messaging template created successfully`);
     router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
   };
 

@@ -6,7 +6,7 @@ import {
   ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraStack as Stack,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import {
   FieldArray,
@@ -24,7 +24,6 @@ import {
   Label,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useCreateOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,
@@ -196,7 +195,7 @@ const SSOProviderForm = ({
     [openIDProvider],
   );
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (
     values: SSOProviderFormValues,
@@ -212,9 +211,9 @@ const SSOProviderForm = ({
           result.error,
           "An unexpected error occurred while editing the SSO provider. Please try again.",
         );
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
       } else {
-        toast(successToastParams("SSO provider configuration saved."));
+        message.success("SSO provider configuration saved.");
         onClose();
         formikHelpers.resetForm({});
         if (onSuccess) {

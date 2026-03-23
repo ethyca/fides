@@ -4,12 +4,11 @@ import {
   ChakraBox as Box,
   ChakraStack as Stack,
   ChakraText as Text,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useUpdateSystemMutation } from "~/features/system/system.slice";
 import {
   PrivacyDeclarationResponse,
@@ -33,7 +32,7 @@ const PrivacyDeclarationManager = ({
   onSave,
   ...dataProps
 }: Props & DataProps) => {
-  const toast = useToast();
+  const message = useMessage();
 
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
   const [showNewForm, setShowNewForm] = useState(false);
@@ -58,10 +57,8 @@ const PrivacyDeclarationManager = ({
         (d) => d.data_use === values.data_use && d.name === values.name,
       ).length > 0
     ) {
-      toast(
-        errorToastParams(
-          "A declaration already exists with that data use in this system. Please supply a different data use.",
-        ),
+      message.error(
+        "A declaration already exists with that data use in this system. Please supply a different data use.",
       );
       return true;
     }
@@ -93,13 +90,11 @@ const PrivacyDeclarationManager = ({
           "An unexpected error occurred while updating the system. Please try again.",
         );
 
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
         return undefined;
       }
-      toast.closeAll();
-      toast(
-        successToastParams(isDelete ? "Data use deleted" : "Data use saved"),
-      );
+      message.destroy();
+      message.success(isDelete ? "Data use deleted" : "Data use saved");
       if (onSave) {
         onSave(result.data);
       }
@@ -137,7 +132,7 @@ const PrivacyDeclarationManager = ({
       return undefined;
     }
 
-    toast.closeAll();
+    message.destroy();
     const updatedDeclarations = [...accordionDeclarations, values];
     const res = await handleSave(updatedDeclarations);
     if (res) {
