@@ -1,4 +1,5 @@
 import {
+  antTheme,
   Button,
   Card,
   CUSTOM_TAG_COLOR,
@@ -29,6 +30,7 @@ export const ViolationDetailDrawer = ({
   open,
   onClose,
 }: ViolationDetailDrawerProps) => {
+  const { token } = antTheme.useToken();
   const {
     data: violation,
     isLoading,
@@ -152,7 +154,7 @@ export const ViolationDetailDrawer = ({
                   scrollBeyondLastLine: false,
                   folding: false,
                   fontSize: 12,
-                  fontFamily: "Menlo, monospace",
+                  fontFamily: token.fontFamilyCode,
                   wordWrap: "on",
                   padding: { top: 12, bottom: 12 },
                   renderLineHighlight: "none",

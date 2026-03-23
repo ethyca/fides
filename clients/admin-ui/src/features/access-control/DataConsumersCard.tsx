@@ -1,22 +1,22 @@
 import { Card, Text } from "fidesui";
 import { Fragment, useMemo } from "react";
 
-import type { ConsumerRequestSummary } from "./types";
+import { useGetConsumersByViolationsQuery } from "./access-control.slice";
+import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
 
-interface DataConsumersCardProps {
-  data: ConsumerRequestSummary[];
-  loading?: boolean;
-}
+export const DataConsumersCard = () => {
+  const { filters } = useRequestLogFilterContext();
 
-export const DataConsumersCard = ({
-  data,
-  loading,
-}: DataConsumersCardProps) => {
-  const items = useMemo(() => data.slice(0, 5), [data]);
+  const { data, isLoading } = useGetConsumersByViolationsQuery({
+    ...filters,
+    order_by: "violation_count",
+  });
+
+  const items = useMemo(() => (data?.items ?? []).slice(0, 5), [data]);
 
   return (
     <Card
-      loading={loading}
+      loading={isLoading}
       title={<Text strong>Data consumers</Text>}
       className="h-full"
     >

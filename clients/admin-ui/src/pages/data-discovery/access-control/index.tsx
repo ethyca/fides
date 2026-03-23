@@ -1,4 +1,4 @@
-import { DatePicker, Flex } from "fidesui";
+import { Col, DatePicker, Flex, Row } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 
@@ -8,12 +8,14 @@ import {
   type FacetDefinition,
   FacetedSearchInput,
 } from "~/features/access-control/FacetedSearchInput";
+import { DataConsumersCard } from "~/features/access-control/DataConsumersCard";
 import {
   RequestLogFilterContext,
   useRequestLogFilters,
 } from "~/features/access-control/hooks/useRequestLogFilters";
-import { SummaryCards } from "~/features/access-control/SummaryCards";
 import type { FiltersResponse } from "~/features/access-control/types";
+import { ViolationRateCard } from "~/features/access-control/ViolationRateCard";
+import { ViolationsChartCard } from "~/features/access-control/ViolationsChartCard";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 
@@ -35,7 +37,6 @@ const AccessControlPage: NextPage = () => {
     filterState;
 
   const { data: facetOptions } = useGetFiltersQuery(filters);
-
 
   const facets: FacetDefinition[] = useMemo(
     () =>
@@ -81,7 +82,17 @@ const AccessControlPage: NextPage = () => {
             />
           </Flex>
 
-          <SummaryCards />
+          <Row gutter={16}>
+            <Col span={14}>
+              <ViolationsChartCard />
+            </Col>
+            <Col span={5}>
+              <ViolationRateCard />
+            </Col>
+            <Col span={5}>
+              <DataConsumersCard />
+            </Col>
+          </Row>
 
           <AccessControlTableTabs />
         </Flex>

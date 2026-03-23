@@ -1,11 +1,7 @@
 import { antTheme, Card, DonutChart, Flex, Statistic, Text } from "fidesui";
 
-interface ViolationRateCardProps {
-  violations: number;
-  totalRequests: number;
-  trend: number;
-  loading?: boolean;
-}
+import { useGetAccessControlSummaryQuery } from "./access-control.slice";
+import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
 
 const getTrendColor = (
   trend: number,
@@ -30,20 +26,23 @@ const getTrendPrefix = (trend: number) => {
   return "";
 };
 
-export const ViolationRateCard = ({
-  violations,
-  totalRequests,
-  trend,
-  loading,
-}: ViolationRateCardProps) => {
+export const ViolationRateCard = () => {
   const { token } = antTheme.useToken();
+  const { filters } = useRequestLogFilterContext();
+
+  const { data, isLoading } = useGetAccessControlSummaryQuery(filters);
+
+  const violations = data?.violations ?? 0;
+  const totalRequests = data?.total_requests ?? 0;
+  const trend = data?.trend ?? 0;
+
   const ratePercent =
     totalRequests > 0 ? (violations / totalRequests) * 100 : 0;
   const rate = ratePercent > 0 ? ratePercent.toFixed(1) : "0";
 
   return (
     <Card
-      loading={loading}
+      loading={isLoading}
       title={<Text strong>Violation rate</Text>}
       className="flex h-full flex-col"
       classNames={{ body: "flex flex-1 flex-col" }}
