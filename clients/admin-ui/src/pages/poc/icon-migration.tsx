@@ -5,7 +5,6 @@ import {
   GreenCheckCircleIcon,
   Icons,
   Layout,
-  MoreIcon,
   SearchLineIcon,
   SparkleIcon as FidesUISparkleIcon,
   Table,
@@ -81,15 +80,6 @@ const ICON_DATA: IconEntry[] = [
     source: "fidesui",
     suggestedCarbon: "CheckmarkFilled",
     notes: "Uses green fill color",
-  },
-  {
-    key: "fidesui-MoreIcon",
-    currentName: "MoreIcon",
-    currentIcon: <MoreIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: "OverflowMenuHorizontal",
-    notes: "",
   },
   {
     key: "fidesui-SearchLineIcon",

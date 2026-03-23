@@ -30,7 +30,6 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   Icons,
-  MoreIcon,
   Spin,
   theme,
 } from "fidesui";
@@ -154,7 +153,7 @@ const HeaderContent = <T,>({
         rightIcon={
           <HStack>
             {sortingDisplay[header.column.getIsSorted() as string]?.icon}
-            <MoreIcon transform="rotate(90deg)" />
+            <Icons.OverflowMenuVertical />
           </HStack>
         }
         title="Column options"

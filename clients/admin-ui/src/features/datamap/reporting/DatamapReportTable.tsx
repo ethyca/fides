@@ -21,7 +21,6 @@ import {
   CheckOutlined,
   Dropdown,
   Icons,
-  MoreIcon,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -636,7 +635,7 @@ export const DatamapReportTable = ({
                 overlayClassName="more-menu-list"
               >
                 <Button
-                  icon={<MoreIcon className="rotate-90" />}
+                  icon={<Icons.OverflowMenuVertical />}
                   data-testid="more-menu"
                   aria-label="More options"
                   className="w-6 gap-0"
