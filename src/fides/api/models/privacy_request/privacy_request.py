@@ -809,7 +809,10 @@ class PrivacyRequest(
         # Parse JSON values
         parsed_result: Dict[str, Any] = {}
         for key, value in result.items():
-            parsed_result[key] = json.loads(value)
+            try:
+                parsed_result[key] = json.loads(value)
+            except json.JSONDecodeError:
+                parsed_result[key] = value
 
         return parsed_result
 

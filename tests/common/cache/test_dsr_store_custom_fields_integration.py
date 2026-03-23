@@ -92,7 +92,7 @@ class TestDSRCacheStoreCustomFields:
         assert dsr_store.has_cached_custom_fields(pr_id) is True
 
         # Clear and test new format
-        mock_redis._data.clear()
+        dsr_store.clear(pr_id)
         dsr_store.write_custom_field(pr_id, "department", json.dumps("Engineering"))
         assert dsr_store.has_cached_custom_fields(pr_id) is True
 

@@ -88,6 +88,6 @@ class TestDSRCacheStoreIdentity:
         assert dsr_store.has_cached_identity_data(pr_id) is True
 
         # Clear and test new format
-        mock_redis._data.clear()
+        dsr_store.clear(pr_id)
         dsr_store.write_identity(pr_id, "email", json.dumps("test@example.com"))
         assert dsr_store.has_cached_identity_data(pr_id) is True

@@ -342,8 +342,8 @@ def very_short_request_task_expiration():
 @pytest.fixture(scope="function")
 def very_short_redis_cache_expiration():
     original_value: int = CONFIG.redis.default_ttl_seconds
-    # Redis SET ex= must be int or timedelta (not float). Use 1s; tests already sleep 1s.
-    CONFIG.redis.default_ttl_seconds = 1
+    # Redis SET ex= must be int or timedelta (not float). Use 2s to avoid flakiness on slow CI.
+    CONFIG.redis.default_ttl_seconds = 2
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
 

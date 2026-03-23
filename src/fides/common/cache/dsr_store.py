@@ -412,27 +412,27 @@ class DSRCacheStore:
         if keys and self._redis.exists(migration_key):
             return keys
 
-        # SCAN for legacy keys (one-time per DSR until migration confirmed)
+        # SCAN for all keys (one-time per DSR until migration confirmed)
         # Filter out internal keys (__migrated:, __idx:) that match the SCAN pattern
-        legacy_keys = [
+        scanned_keys = [
             k
             for k in self._redis.scan_iter(match=f"*{dsr_id}*", count=500)
             if not k.startswith("__migrated:") and not k.startswith("__idx:")
         ]
         indexed = set(keys)
-        legacy_set = set(legacy_keys)
-        all_keys = list(indexed | legacy_set) if keys else legacy_keys
+        scanned_set = set(scanned_keys)
+        all_keys = list(indexed | scanned_set) if keys else scanned_keys
 
         if not all_keys:
             return []
 
         if self._backfill:
-            for k in legacy_keys:
+            for k in scanned_keys:
                 if k not in indexed:
                     self._manager.add_key_to_index(index_prefix, k)
 
-        # If index existed and no legacy keys found outside it, mark as migrated
-        if keys and not (legacy_set - indexed):
+        # If index existed and no scanned keys found outside it, mark as migrated
+        if keys and not (scanned_set - indexed):
             self._redis.setex(migration_key, 86400, "1")  # 24h TTL
 
         return all_keys
