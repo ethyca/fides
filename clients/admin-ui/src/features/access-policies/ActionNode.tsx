@@ -32,7 +32,9 @@ const ActionNode = ({ data }: NodeProps<ActionNodeType>) => (
     </Flex>
     <div className={styles.body}>
       <Form layout="vertical" className="nodrag">
-        <Form.Item className={data.actionType === ActionType.DENY ? "mb-2" : "mb-0"}>
+        <Form.Item
+          className={data.actionType === ActionType.DENY ? "mb-2" : "mb-0"}
+        >
           <Radio.Group
             value={data.actionType}
             onChange={(e) => data.onActionTypeChange?.(e.target.value)}

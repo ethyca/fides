@@ -160,6 +160,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
                 onChange={(values) =>
                   data.onGeoValuesChange?.(values as string[])
                 }
+                includeCountryOnlyOptions
                 maxTagCount={1}
                 data-testid="constraint-geo-values"
               />
