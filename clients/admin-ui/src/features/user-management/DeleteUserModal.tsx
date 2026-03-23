@@ -7,7 +7,7 @@ import {
   ChakraText as Text,
   Flex,
   Modal,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -18,7 +18,6 @@ import { useAppDispatch } from "~/app/hooks";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
 import {
@@ -33,7 +32,7 @@ const useDeleteUserModal = ({
   username,
   onClose,
 }: Pick<User, "id" | "username"> & { onClose: () => void }) => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [deleteUser] = useDeleteUserMutation();
@@ -41,9 +40,9 @@ const useDeleteUserModal = ({
   const handleDeleteUser = async () => {
     const result = await deleteUser(id);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(successToastParams("Successfully deleted user"));
+      message.success("Successfully deleted user");
       onClose();
     }
     dispatch(setActiveUserId(undefined));
