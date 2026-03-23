@@ -21,7 +21,7 @@ import { useDeleteRoleMutation, useGetRolesQuery } from "~/features/rbac";
 import type { RBACRole } from "~/types/api";
 
 const RBAC_COPY =
-  "Role-based access control (RBAC) allows you to create custom roles with specific permissions. " +
+  "Role-based access control (RBAC) allows you to create roles with specific permissions. " +
   "Assign roles to users to control their access to resources and actions within the system.";
 
 const RBACPage: NextPage = () => {
@@ -53,7 +53,7 @@ const RBACPage: NextPage = () => {
 
   const confirmDelete = (role: RBACRole) => {
     modal.confirm({
-      title: "Delete Role",
+      title: "Delete role",
       content: (
         <Typography.Text>
           Are you sure you want to delete &quot;{role.name}&quot;? This action
@@ -110,9 +110,9 @@ const RBACPage: NextPage = () => {
         const inheritedCount = record.inherited_permissions.length;
         return (
           <Space>
-            <Tag>{directCount} direct</Tag>
+            <Tag>{directCount} Direct</Tag>
             {inheritedCount > 0 && (
-              <Tag color="minos">{inheritedCount} inherited</Tag>
+              <Tag color="minos">{inheritedCount} Inherited</Tag>
             )}
           </Space>
         );
@@ -154,9 +154,9 @@ const RBACPage: NextPage = () => {
   ];
 
   return (
-    <Layout title="Role Management">
+    <Layout title="Role management">
       <PageHeader
-        heading="Role Management"
+        heading="Role management"
         isSticky={false}
         className="pb-0"
         rightContent={
@@ -164,7 +164,7 @@ const RBACPage: NextPage = () => {
             type="primary"
             onClick={() => router.push(RBAC_ROLE_NEW_ROUTE)}
           >
-            Create Custom Role
+            Create role
           </Button>
         }
       >
