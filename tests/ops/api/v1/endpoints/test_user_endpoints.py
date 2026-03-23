@@ -994,8 +994,6 @@ class TestGetUsers:
         db,
     ):
         """Test that get_users includes invite status fields for all users"""
-        from datetime import timedelta, timezone
-
         password = str_to_b64_str("Password123!")
 
         # User with active invite
@@ -1040,29 +1038,30 @@ class TestGetUsers:
             },
         )
 
-        auth_header = generate_auth_header(scopes=[USER_READ])
-        resp = api_client.get(url, headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        response_body = resp.json()
+        try:
+            auth_header = generate_auth_header(scopes=[USER_READ])
+            resp = api_client.get(url, headers=auth_header)
+            assert resp.status_code == HTTP_200_OK
+            response_body = resp.json()
 
-        # Find users in response
-        users_by_id = {user["id"]: user for user in response_body["items"]}
+            # Find users in response
+            users_by_id = {user["id"]: user for user in response_body["items"]}
 
-        # Check user with active invite
-        assert users_by_id[user_with_invite.id]["has_invite"] is True
-        assert users_by_id[user_with_invite.id]["invite_expired"] is False
+            # Check user with active invite
+            assert users_by_id[user_with_invite.id]["has_invite"] is True
+            assert users_by_id[user_with_invite.id]["invite_expired"] is False
 
-        # Check user with expired invite
-        assert users_by_id[user_with_expired.id]["has_invite"] is True
-        assert users_by_id[user_with_expired.id]["invite_expired"] is True
+            # Check user with expired invite
+            assert users_by_id[user_with_expired.id]["has_invite"] is True
+            assert users_by_id[user_with_expired.id]["invite_expired"] is True
 
-        # Check user without invite
-        assert users_by_id[user_no_invite.id]["has_invite"] is False
-        assert users_by_id[user_no_invite.id]["invite_expired"] is None
-
-        user_with_invite.delete(db)
-        user_with_expired.delete(db)
-        user_no_invite.delete(db)
+            # Check user without invite
+            assert users_by_id[user_no_invite.id]["has_invite"] is False
+            assert users_by_id[user_no_invite.id]["invite_expired"] is None
+        finally:
+            user_with_invite.delete(db)
+            user_with_expired.delete(db)
+            user_no_invite.delete(db)
 
 
 class TestGetUser:
@@ -1282,14 +1281,15 @@ class TestGetUser:
             data={"username": "invited_user", "invite_code": "test_code"},
         )
 
-        auth_header = generate_auth_header(scopes=[USER_READ])
-        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        user_data = resp.json()
-        assert user_data["has_invite"] is True
-        assert user_data["invite_expired"] is False
-
-        user.delete(db)
+        try:
+            auth_header = generate_auth_header(scopes=[USER_READ])
+            resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
+            assert resp.status_code == HTTP_200_OK
+            user_data = resp.json()
+            assert user_data["has_invite"] is True
+            assert user_data["invite_expired"] is False
+        finally:
+            user.delete(db)
 
     def test_get_user_includes_invite_status_with_expired_invite(
         self,
@@ -1299,8 +1299,6 @@ class TestGetUser:
         db,
     ):
         """Test that get_user includes invite status fields when user has an expired invite"""
-        from datetime import timedelta, timezone
-
         user = FidesUser.create(
             db=db,
             data={
@@ -1318,14 +1316,15 @@ class TestGetUser:
         )
         invite.save(db)
 
-        auth_header = generate_auth_header(scopes=[USER_READ])
-        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        user_data = resp.json()
-        assert user_data["has_invite"] is True
-        assert user_data["invite_expired"] is True
-
-        user.delete(db)
+        try:
+            auth_header = generate_auth_header(scopes=[USER_READ])
+            resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
+            assert resp.status_code == HTTP_200_OK
+            user_data = resp.json()
+            assert user_data["has_invite"] is True
+            assert user_data["invite_expired"] is True
+        finally:
+            user.delete(db)
 
     def test_get_user_includes_invite_status_without_invite(
         self,
@@ -1345,14 +1344,15 @@ class TestGetUser:
             },
         )
 
-        auth_header = generate_auth_header(scopes=[USER_READ])
-        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        user_data = resp.json()
-        assert user_data["has_invite"] is False
-        assert user_data["invite_expired"] is None
-
-        user.delete(db)
+        try:
+            auth_header = generate_auth_header(scopes=[USER_READ])
+            resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
+            assert resp.status_code == HTTP_200_OK
+            user_data = resp.json()
+            assert user_data["has_invite"] is False
+            assert user_data["invite_expired"] is None
+        finally:
+            user.delete(db)
 
 
 class TestUpdateUser:
@@ -2886,8 +2886,7 @@ class TestReinviteUser:
             data={
                 "username": "enabled_user",
                 "email_address": "enabled@example.com",
-                "hashed_password": "hashed_password",
-                "salt": "salt",
+                "password": "Testpassword1!",
                 "disabled": False,
             },
         )
@@ -2912,7 +2911,7 @@ class TestReinviteUser:
         original_updated_at = original_invite.updated_at
 
         with mock.patch(
-            "fides.api.v1.endpoints.user_endpoints.dispatch_message"
+            "fides.service.user.user_service.dispatch_message"
         ) as mock_dispatch:
             response = api_client.post(url, headers=auth_header)
 
@@ -3002,7 +3001,7 @@ class TestReinviteUser:
         invite.save(db)
 
         with mock.patch(
-            "fides.api.v1.endpoints.user_endpoints.dispatch_message"
+            "fides.service.user.user_service.dispatch_message"
         ) as mock_dispatch:
             response = api_client.post(url, headers=auth_header)
 
@@ -3021,7 +3020,7 @@ class TestReinviteUser:
         )
         assert invite.invite_code_valid("original_code")
 
-        with mock.patch("fides.api.v1.endpoints.user_endpoints.dispatch_message"):
+        with mock.patch("fides.service.user.user_service.dispatch_message"):
             response = api_client.post(url, headers=auth_header)
             assert response.status_code == HTTP_204_NO_CONTENT
 
@@ -3042,7 +3041,7 @@ class TestReinviteUser:
         original_hashed_code = invite.hashed_invite_code
 
         with mock.patch(
-            "fides.api.v1.endpoints.user_endpoints.dispatch_message",
+            "fides.service.user.user_service.dispatch_message",
             side_effect=Exception("send failed"),
         ):
             response = api_client.post(url, headers=auth_header)
@@ -3065,7 +3064,7 @@ class TestReinviteUser:
         auth_header = generate_auth_header(scopes=[USER_CREATE])
 
         with mock.patch(
-            "fides.api.v1.endpoints.user_endpoints.dispatch_message"
+            "fides.service.user.user_service.dispatch_message"
         ) as mock_dispatch:
             response = api_client.post(url, headers=auth_header)
 
