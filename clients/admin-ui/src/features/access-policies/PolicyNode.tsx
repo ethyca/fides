@@ -3,6 +3,7 @@ import {
   Avatar,
   Collapse,
   Flex,
+  Form,
   Icons,
   Input,
   InputNumber,
@@ -82,34 +83,39 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
           />
         </Flex>
       </Flex>
-      <Input
-        placeholder="Enter name"
-        value={name}
-        onChange={(e) => onNameChange(e.target.value)}
-        variant="borderless"
-        className={styles.field}
-        data-testid="policy-name-input"
-      />
-      <Input
-        placeholder="Policy description"
-        value={description}
-        onChange={(e) => onDescriptionChange(e.target.value)}
-        variant="borderless"
-        className={styles.field}
-        data-testid="policy-description-input"
-      />
-      <Select
-        placeholder="Select controls"
-        mode="multiple"
-        value={controls}
-        onChange={onControlsChange}
-        options={controlOptions}
-        variant="borderless"
-        className={styles.selectField}
-        data-testid="policy-controls-select"
-        aria-label="Select controls"
-      />
-      <div className="nodrag">
+      <div className={styles.body}>
+        <Form layout="vertical" className="nodrag">
+          <Form.Item label="Name" className="mb-2">
+            <Input
+              placeholder="Enter name"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              data-testid="policy-name-input"
+            />
+          </Form.Item>
+          <Form.Item label="Description" className="mb-2">
+            <Input.TextArea
+              placeholder="Policy description"
+              value={description}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              autoSize={{ minRows: 2, maxRows: 4 }}
+              data-testid="policy-description-input"
+            />
+          </Form.Item>
+          <Form.Item label="Controls" className="mb-2">
+            <Select
+              placeholder="Select controls"
+              mode="multiple"
+              value={controls}
+              onChange={onControlsChange}
+              options={controlOptions}
+              className="w-full"
+              maxTagCount={1}
+              data-testid="policy-controls-select"
+              aria-label="Select controls"
+            />
+          </Form.Item>
+        </Form>
         <Collapse
           size="small"
           ghost
@@ -122,32 +128,25 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
                 </Text>
               ),
               children: (
-                <>
-                  <Input
-                    placeholder="Fides key (unique identifier)"
-                    value={fidesKey}
-                    onChange={(e) => onFidesKeyChange(e.target.value)}
-                    size="small"
-                    className={styles.field}
-                    data-testid="policy-fides-key-input"
-                  />
-                  <Flex gap="small" align="center" className={styles.field}>
-                    <Text
-                      type="secondary"
-                      style={{ fontSize: 12, whiteSpace: "nowrap" }}
-                    >
-                      Priority
-                    </Text>
+                <Form layout="vertical">
+                  <Form.Item label="Fides key" className="mb-2">
+                    <Input
+                      placeholder="Unique identifier"
+                      value={fidesKey}
+                      onChange={(e) => onFidesKeyChange(e.target.value)}
+                      data-testid="policy-fides-key-input"
+                    />
+                  </Form.Item>
+                  <Form.Item label="Priority" className="mb-0">
                     <InputNumber
                       value={priority}
                       onChange={(val) => onPriorityChange(val ?? 0)}
                       min={0}
-                      size="small"
-                      style={{ width: 80 }}
+                      className="w-full"
                       data-testid="policy-priority-input"
                     />
-                  </Flex>
-                </>
+                  </Form.Item>
+                </Form>
               ),
             },
           ]}

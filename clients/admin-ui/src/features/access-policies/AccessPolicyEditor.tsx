@@ -615,7 +615,9 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
   const constraintsExist = nodes.some((n) => n.type === "constraintNode");
   const firstConditionId = findFirstOfType("conditionNode", nodes, edges)?.id;
+  const lastConditionId = findLastInChain("conditionNode", nodes, edges)?.id;
   const firstConstraintId = findFirstOfType("constraintNode", nodes, edges)?.id;
+  const lastConstraintId = findLastInChain("constraintNode", nodes, edges)?.id;
 
   const nodesWithCallbacks = useMemo(
     () =>
@@ -661,6 +663,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             data: {
               ...node.data,
               isFirstOfType: node.id === firstConditionId,
+              isLastOfType: node.id === lastConditionId,
               onAddNode,
               onAddCondition: handleAddCondition,
               onAddConstraint: handleAddConstraint,
@@ -681,6 +684,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             data: {
               ...node.data,
               isFirstOfType: node.id === firstConstraintId,
+              isLastOfType: node.id === lastConstraintId,
               onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConstraintNode(node.id),
               onConstraintTypeChange: (value: ConstraintType) =>
@@ -741,7 +745,9 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       policyHasChildren,
       constraintsExist,
       firstConditionId,
+      lastConditionId,
       firstConstraintId,
+      lastConstraintId,
     ],
   );
 

@@ -11,6 +11,8 @@ interface NodeActionsProps {
   showAddCondition?: boolean;
   showAddAction?: boolean;
   showAddConstraint?: boolean;
+  /** Position relative to the node. Default: "right". */
+  position?: "right" | "bottom";
 }
 
 const NodeActions = ({
@@ -21,8 +23,9 @@ const NodeActions = ({
   showAddCondition = true,
   showAddAction = true,
   showAddConstraint = true,
+  position = "right",
 }: NodeActionsProps) => (
-  <div className={styles.actions}>
+  <div className={classNames(styles.actions, styles[position])}>
     <Button
       type="primary"
       size="small"

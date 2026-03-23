@@ -1,16 +1,26 @@
 .actions {
   position: absolute;
-  top: 50%;
-  left: 100%;
-  transform: translate(10px, -50%);
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 8px;
 
   &:hover .actionMenu {
     opacity: 1;
     visibility: visible;
+  }
+
+  &.right {
+    top: 50%;
+    left: 100%;
+    transform: translate(10px, -50%);
+    flex-direction: row;
+  }
+
+  &.bottom {
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 10px);
+    flex-direction: column;
   }
 }
 

@@ -22,6 +22,7 @@ import {
   GEO_OPERATOR_OPTIONS,
 } from "./constants";
 import styles from "./ConstraintNode.module.scss";
+import NodeActions from "./NodeActions";
 import PrivacyNoticeSelect from "./PrivacyNoticeSelect";
 import {
   ConsentRequirement,
@@ -57,6 +58,7 @@ export interface ConstraintNodeData extends Record<string, unknown> {
   onDelete?: () => void;
   onAddConstraint?: () => void;
   isFirstOfType?: boolean;
+  isLastOfType?: boolean;
 }
 
 export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
@@ -209,19 +211,15 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         )}
       </Form>
     </div>
-    <div className={styles.addSiblingRow}>
-      <Button
-        type="text"
-        size="small"
-        icon={<Icons.Add size={14} />}
-        onClick={data.onAddConstraint}
-        aria-label="Add constraint"
-        data-testid="add-sibling-constraint-btn"
-        className={styles.addSiblingButton}
-      >
-        Constraint
-      </Button>
-    </div>
+    {data.isLastOfType && (
+      <NodeActions
+        position="bottom"
+        onAddNode={data.onAddConstraint}
+        onAddConstraint={data.onAddConstraint}
+        showAddCondition={false}
+        showAddAction={false}
+      />
+    )}
     <Handle
       type="source"
       position={Position.Right}

@@ -35,6 +35,7 @@ export interface ConditionNodeData extends Record<string, unknown> {
   onDelete?: () => void;
   hasChildren?: boolean;
   isFirstOfType?: boolean;
+  isLastOfType?: boolean;
 }
 
 export type ConditionNodeType = Node<ConditionNodeData, "conditionNode">;
@@ -156,25 +157,21 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
         </Form.Item>
       </Form>
     </div>
-    <div className={styles.addSiblingRow}>
-      <Button
-        type="text"
-        size="small"
-        icon={<Icons.Add size={14} />}
-        onClick={data.onAddCondition}
-        aria-label="Add match"
-        data-testid="add-sibling-condition-btn"
-        className={styles.addSiblingButton}
-      >
-        Match
-      </Button>
-    </div>
-    {!data.hasChildren && (
+    {data.isFirstOfType && !data.hasChildren && (
       <NodeActions
         onAddNode={data.onAddNode}
         onAddConstraint={data.onAddConstraint}
         showAddCondition={false}
         showAddAction={false}
+      />
+    )}
+    {data.isLastOfType && (
+      <NodeActions
+        position="bottom"
+        onAddNode={data.onAddCondition}
+        onAddCondition={data.onAddCondition}
+        showAddAction={false}
+        showAddConstraint={false}
       />
     )}
     <Handle

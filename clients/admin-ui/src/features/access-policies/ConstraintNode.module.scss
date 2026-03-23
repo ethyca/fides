@@ -38,15 +38,3 @@
   width: 8px;
   height: 8px;
 }
-
-.addSiblingRow {
-  display: flex;
-  justify-content: center;
-  padding: 4px 16px;
-  border-top: 1px solid var(--ant-color-border);
-}
-
-.addSiblingButton {
-  color: var(--ant-color-text-secondary) !important;
-  font-size: var(--ant-font-size-sm) !important;
-}
