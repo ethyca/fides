@@ -1,9 +1,8 @@
-import { Button, Space, useChakraToast as useToast, useModal } from "fidesui";
+import { Button, Space, useMessage, useModal } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { useDeletePublisherRestrictionMutation } from "./tcf-config.slice";
@@ -20,7 +19,7 @@ export const PublisherRestrictionActionCell = ({
 }: PublisherRestrictionActionCellProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
   const modal = useModal();
 
   const [deleteRestriction] = useDeletePublisherRestrictionMutation();
@@ -42,12 +41,12 @@ export const PublisherRestrictionActionCell = ({
         restriction_id: currentValues.id,
       });
       if (isErrorResult(result)) {
-        toast(errorToastParams("Failed to delete publisher restriction"));
+        message.error("Failed to delete publisher restriction");
         return;
       }
-      toast(successToastParams("Publisher restriction deleted successfully"));
+      message.success("Publisher restriction deleted successfully");
     } catch (error) {
-      toast(errorToastParams("Failed to delete publisher restriction"));
+      message.error("Failed to delete publisher restriction");
     }
   };
 

@@ -5,19 +5,18 @@ import {
   ChakraStack as Stack,
   Modal,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { successToastParams } from "../common/toast";
 import { clearAuthAndLogout } from "./logout-helpers";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
 
 const useUpdatePasswordModal = (id: string) => {
   const modal = useDisclosure();
-  const toast = useToast();
+  const message = useMessage();
   const [oldPasswordValue, setOldPasswordValue] = useState("");
   const [newPasswordValue, setNewPasswordValue] = useState("");
   const [changePassword, { isLoading }] = useUpdateUserPasswordMutation();
@@ -47,7 +46,7 @@ const useUpdatePasswordModal = (id: string) => {
       })
         .unwrap()
         .then(() => {
-          toast(successToastParams("Password updated"));
+          message.success("Password updated");
           clearAuthAndLogout(dispatch as any, router, {
             onClose: modal.onClose,
           });

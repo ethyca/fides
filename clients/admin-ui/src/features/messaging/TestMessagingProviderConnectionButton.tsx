@@ -4,14 +4,13 @@ import {
   ChakraDivider as Divider,
   ChakraHeading as Heading,
   ChakraStack as Stack,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import { successToastParams } from "~/features/common/toast";
 import { messagingProviders } from "~/features/messaging/constants";
 
 import { useCreateTestConnectionMessageMutation } from "./messaging.slice";
@@ -27,7 +26,7 @@ const TestMessagingProviderConnectionButton = ({
   isModal,
   onClose,
 }: TestMessagingProviderConnectionButtonProps) => {
-  const toast = useToast();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [createTestConnectionMessage] =
     useCreateTestConnectionMessageMutation();
@@ -64,7 +63,7 @@ const TestMessagingProviderConnectionButton = ({
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      toast(successToastParams("Test message successfully sent."));
+      message.success("Test message successfully sent.");
       if (onClose) {
         onClose();
       }
