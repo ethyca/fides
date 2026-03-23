@@ -328,7 +328,7 @@ const buildUnlessItem = (data: ConstraintNodeData): UnlessItem | null => {
     }
     return {
       type: "geo_location",
-      field: data.geoField ?? "",
+      field: data.geoField || "environment.geo_location",
       operator: (data.geoOperator as GeoOperator) ?? GeoOperator.IN,
       values: data.geoValues ?? [],
     };

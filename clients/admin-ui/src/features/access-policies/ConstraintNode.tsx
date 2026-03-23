@@ -148,6 +148,21 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         {/* Geo location fields */}
         {data.constraintType === ConstraintType.GEO_LOCATION && (
           <>
+            <Form.Item label="Context field" className="mb-2">
+              <Select
+                value={data.geoField || "environment.geo_location"}
+                onChange={(value) => data.onGeoFieldChange?.(value)}
+                options={[
+                  {
+                    value: "environment.geo_location",
+                    label: "environment.geo_location",
+                  },
+                ]}
+                className="w-full"
+                aria-label="Select context field"
+                data-testid="constraint-geo-field"
+              />
+            </Form.Item>
             <Form.Item label="Operator" className="mb-2">
               <Select
                 value={data.geoOperator ?? GeoOperator.IN}
