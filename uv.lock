@@ -1229,7 +1229,7 @@ requires-dist = [
     { name = "typer", specifier = "==0.20.0" },
     { name = "types-defusedxml", specifier = "==0.7.0.20240218" },
     { name = "typing-extensions", specifier = "==4.14.1" },
-    { name = "ujson", specifier = ">=5.12.0" },
+    { name = "ujson", specifier = "~=5.12.0" },
     { name = "urllib3", specifier = "~=2.6.3" },
     { name = "uvicorn", extras = ["standard"], specifier = "~=0.30.0" },
     { name = "yarl", specifier = "~=1.22.0" },
