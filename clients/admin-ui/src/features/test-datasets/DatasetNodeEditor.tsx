@@ -468,9 +468,6 @@ const DatasetNodeEditorInner = ({
 
   // --- Add / Delete handlers ---
 
-  const datasetRef = useRef(dataset);
-  datasetRef.current = dataset;
-
   const handleAddCollection = useCallback(
     (name: string) => {
       const current = datasetRef.current;
