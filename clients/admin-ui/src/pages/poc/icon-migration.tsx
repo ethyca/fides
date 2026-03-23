@@ -17,7 +17,6 @@ import React from "react";
 import { ManualSetupIcon } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
-import { TagIcon } from "~/features/common/Icon/svg/TagIcon";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { TrashCanSolidIcon as AdminTrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import PageHeader from "~/features/common/PageHeader";
@@ -36,21 +35,6 @@ type IconEntry = {
   suggestedCarbon: string | null;
   notes: string;
 };
-
-/** Wrapper to render raw SVG icons at a consistent size */
-const SvgIconBox = ({ children }: { children: React.ReactNode }) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 20,
-      height: 20,
-    }}
-  >
-    {children}
-  </span>
-);
 
 const ICON_DATA: IconEntry[] = [
   // fidesui icons
@@ -136,19 +120,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: "TrashCan",
     notes: "Duplicate of fidesui version",
-  },
-  {
-    key: "admin-TagIcon",
-    currentName: "TagIcon",
-    currentIcon: (
-      <SvgIconBox>
-        <TagIcon width={20} height={20} />
-      </SvgIconBox>
-    ),
-    iconType: "custom-svg",
-    source: "admin-ui",
-    suggestedCarbon: "Tag",
-    notes: "svg/ subdirectory",
   },
 ];
 

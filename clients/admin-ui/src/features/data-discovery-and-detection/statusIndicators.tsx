@@ -1,7 +1,6 @@
 import { Icons } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import { TagIcon } from "~/features/common/Icon/svg/TagIcon";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 
 export const AdditionIndicator = () => (
@@ -21,7 +20,7 @@ export const RemovalIndicator = () => (
 );
 
 export const ClassificationIndicator = () => (
-  <TagIcon
+  <Icons.Tag
     style={{ color: palette.FIDESUI_WARNING }}
     className="size-3"
     data-testid="classify-icon"
