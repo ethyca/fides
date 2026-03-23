@@ -19,6 +19,7 @@ from sqlalchemy import (
     ARRAY,
     Boolean,
     Column,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -111,6 +112,9 @@ class PrivacyAssessmentTask(WorkerTask, Base):
     created_by = Column(String, nullable=True)
     use_llm = Column(Boolean, nullable=False, default=False)
     llm_model = Column(String, nullable=True)
+    high_risk_only = Column(
+        Boolean, nullable=False, server_default="false", default=False
+    )
 
     assessments = relationship(
         "PrivacyAssessment",
@@ -249,6 +253,10 @@ class PrivacyAssessment(Base):
     data_use = Column(String, nullable=True)
     data_use_name = Column(String, nullable=True)
     data_categories = Column(ARRAY(String), server_default="{}", nullable=False)
+
+    # Re-evaluation tracking
+    context_snapshot = Column(JSONB, nullable=True)
+    last_evaluated_at = Column(DateTime(timezone=True), nullable=True)
 
     # Creator tracking
     created_by = Column(String, nullable=True, index=True)
