@@ -3,7 +3,6 @@ import {
   ColumnsType,
   CUSTOM_TAG_COLOR,
   GreenCheckCircleIcon,
-  GripDotsVerticalIcon,
   Icons,
   Layout,
   LinkIcon as FidesUILinkIcon,
@@ -119,15 +118,6 @@ const ICON_DATA: IconEntry[] = [
     source: "fidesui",
     suggestedCarbon: "TrashCan",
     notes: "",
-  },
-  {
-    key: "fidesui-GripDotsVerticalIcon",
-    currentName: "GripDotsVerticalIcon",
-    currentIcon: <GripDotsVerticalIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: "Draggable",
-    notes: "Plus-only",
   },
   {
     key: "fidesui-SparkleIcon",
