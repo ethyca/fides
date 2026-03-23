@@ -40,6 +40,12 @@ export interface ConditionNodeData extends Record<string, unknown> {
 
 export type ConditionNodeType = Node<ConditionNodeData, "conditionNode">;
 
+const VALUES_LABEL: Record<string, string> = {
+  [ConditionProperty.DATA_USE]: "Data uses",
+  [ConditionProperty.DATA_CATEGORIES]: "Data categories",
+  [ConditionProperty.DATA_SUBJECTS]: "Data subjects",
+};
+
 const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
   <div className={styles.node} data-testid="condition-node">
     <Handle
@@ -111,7 +117,10 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
             data-testid="condition-operator-select"
           />
         </Form.Item>
-        <Form.Item label="Values" className="mb-0">
+        <Form.Item
+          label={data.property ? VALUES_LABEL[data.property] : "Values"}
+          className="mb-0"
+        >
           {data.property === ConditionProperty.DATA_USE && (
             <DataUseSelect
               selectedTaxonomies={data.values}

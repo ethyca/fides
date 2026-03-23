@@ -131,7 +131,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
                 data-testid="constraint-privacy-notice-key"
               />
             </Form.Item>
-            <Form.Item label="Requirement" className="mb-0">
+            <Form.Item label="Consent state" className="mb-0">
               <Select
                 placeholder="Select requirement"
                 value={data.consentRequirement ?? ConsentRequirement.OPT_IN}

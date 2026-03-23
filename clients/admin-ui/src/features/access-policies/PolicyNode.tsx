@@ -129,7 +129,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
               ),
               children: (
                 <Form layout="vertical">
-                  <Form.Item label="Fides key" className="mb-2">
+                  <Form.Item label="Policy key" className="mb-2">
                     <Input
                       placeholder="Unique identifier"
                       value={fidesKey}
