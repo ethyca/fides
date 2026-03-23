@@ -180,9 +180,7 @@ export const ViolationDetailDrawer = ({
                     {violation.data_use}
                   </Tag>
                 </Flex>
-                <Text type="secondary">
-                  {violation.policy_description}
-                </Text>
+                <Text type="secondary">{violation.policy_description}</Text>
                 <Flex align="center" gap={4} className="mt-3">
                   <Text type="secondary">View policy</Text>
                   <Icons.ArrowRight size={14} />

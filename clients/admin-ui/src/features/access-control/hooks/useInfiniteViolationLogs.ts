@@ -38,7 +38,9 @@ export const useInfiniteViolationLogs = ({
 
   // Accumulate fetched pages into allItems
   useEffect(() => {
-    if (!data) return;
+    if (!data) {
+      return;
+    }
 
     const newItems = data.items;
 

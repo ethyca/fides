@@ -1,13 +1,13 @@
 import {
-  LineChart,
+  antTheme,
   BarChart,
   Card,
   Flex,
+  LineChart,
   Segmented,
   Statistic,
   Text,
 } from "fidesui";
-import { theme as antTheme } from "antd";
 import { useMemo, useState } from "react";
 
 import {
@@ -64,14 +64,22 @@ export const ViolationsChartCard = () => {
   const trend = summaryData?.trend ?? 0;
 
   const getTrendPrefix = () => {
-    if (trend < 0) return "-";
-    if (trend > 0) return "+";
+    if (trend < 0) {
+      return "-";
+    }
+    if (trend > 0) {
+      return "+";
+    }
     return "";
   };
 
   const getTrendColor = () => {
-    if (trend < 0) return token.colorSuccess;
-    if (trend > 0) return token.colorError;
+    if (trend < 0) {
+      return token.colorSuccess;
+    }
+    if (trend > 0) {
+      return token.colorError;
+    }
     return token.colorTextSecondary;
   };
 

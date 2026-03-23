@@ -5,7 +5,6 @@ import type { ConsumerRequestSummary } from "./types";
 
 interface DataConsumersCardProps {
   data: ConsumerRequestSummary[];
-  activeCount: number;
   loading?: boolean;
 }
 

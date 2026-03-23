@@ -1,10 +1,10 @@
 import { Col, Row } from "fidesui";
 
+import { DataConsumersCard } from "./DataConsumersCard";
 import type {
   AccessControlSummaryResponse,
   ConsumerRequestsByConsumerResponse,
 } from "./types";
-import { DataConsumersCard } from "./DataConsumersCard";
 import { ViolationRateCard } from "./ViolationRateCard";
 import { ViolationsChartCard } from "./ViolationsChartCard";
 

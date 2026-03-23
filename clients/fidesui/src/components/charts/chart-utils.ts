@@ -83,15 +83,12 @@ export const formatTimestamp = (
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-export const deriveInterval = (
-  data: { label: string }[],
-): number => {
+export const deriveInterval = (data: { label: string }[]): number => {
   if (data.length < 2) {
     return HOUR_MS;
   }
   const gap =
-    new Date(data[1].label).getTime() -
-    new Date(data[0].label).getTime();
+    new Date(data[1].label).getTime() - new Date(data[0].label).getTime();
   return gap > 0 ? gap : HOUR_MS;
 };
 
@@ -159,7 +156,11 @@ export const computeDataRequest = (
   const maxBuckets = Math.max(1, Math.floor(containerWidth / minPointWidth));
 
   if (timeRangeMs != null) {
-    const interval = pickIntervalHours(timeRangeMs, containerWidth, minPointWidth);
+    const interval = pickIntervalHours(
+      timeRangeMs,
+      containerWidth,
+      minPointWidth,
+    );
     return { interval, rangeMs: timeRangeMs };
   }
 

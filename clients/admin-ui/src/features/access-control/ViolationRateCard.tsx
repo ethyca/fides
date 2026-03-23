@@ -1,5 +1,4 @@
-import { Card, DonutChart, Flex, Statistic, Text } from "fidesui";
-import { theme as antTheme } from "antd";
+import { antTheme, Card, DonutChart, Flex, Statistic, Text } from "fidesui";
 
 interface ViolationRateCardProps {
   violations: number;
@@ -8,10 +7,27 @@ interface ViolationRateCardProps {
   loading?: boolean;
 }
 
-const getTrendColor = (trend: number, token: ReturnType<typeof antTheme.useToken>["token"]) => {
-  if (trend < 0) return token.colorSuccess;
-  if (trend > 0) return token.colorErrorText;
+const getTrendColor = (
+  trend: number,
+  token: ReturnType<typeof antTheme.useToken>["token"],
+) => {
+  if (trend < 0) {
+    return token.colorSuccess;
+  }
+  if (trend > 0) {
+    return token.colorErrorText;
+  }
   return token.colorTextSecondary;
+};
+
+const getTrendPrefix = (trend: number) => {
+  if (trend < 0) {
+    return "-";
+  }
+  if (trend > 0) {
+    return "+";
+  }
+  return "";
 };
 
 export const ViolationRateCard = ({
@@ -34,7 +50,7 @@ export const ViolationRateCard = ({
     >
       <Flex vertical gap={16} className="flex-1">
         <Flex align="center" gap={16}>
-          <div className="h-[100px] w-[100px] shrink-0">
+          <div className="size-[100px] shrink-0">
             <DonutChart
               segments={[
                 {
@@ -63,7 +79,7 @@ export const ViolationRateCard = ({
             <Statistic
               value={Math.abs(trend * 100)}
               precision={1}
-              prefix={trend < 0 ? "-" : trend > 0 ? "+" : ""}
+              prefix={getTrendPrefix(trend)}
               suffix="% vs last mo"
               valueStyle={{
                 color: getTrendColor(trend, token),

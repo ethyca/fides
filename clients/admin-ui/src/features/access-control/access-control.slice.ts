@@ -80,7 +80,11 @@ const accessControlApi = baseApi.injectEndpoints({
         params,
       }),
       transformResponse: (response: {
-        items: Array<{ timestamp: string; requests: number; violations: number }>;
+        items: Array<{
+          timestamp: string;
+          requests: number;
+          violations: number;
+        }>;
       }): TimeseriesResponse => ({
         items: response.items.map(({ timestamp, ...rest }) => ({
           label: timestamp,

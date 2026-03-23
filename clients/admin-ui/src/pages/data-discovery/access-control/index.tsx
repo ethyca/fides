@@ -35,13 +35,8 @@ const FACET_CONFIG: {
 
 const AccessControlPage: NextPage = () => {
   const filterState = useRequestLogFilters();
-  const {
-    filters,
-    dateRange,
-    setDateRange,
-    searchValues,
-    setSearchValues,
-  } = filterState;
+  const { filters, dateRange, setDateRange, searchValues, setSearchValues } =
+    filterState;
 
   const { data: facetOptions } = useGetFiltersQuery(filters);
 

@@ -2,11 +2,11 @@ import { Tabs } from "fidesui";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 
-import { RequestLogTable } from "./RequestLogTable";
-import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
-import { ViolationDetailDrawer } from "./ViolationDetailDrawer";
 import { FindingsTable } from "./FindingsTable";
+import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
+import { RequestLogTable } from "./RequestLogTable";
 import type { PolicyViolationAggregate, PolicyViolationLog } from "./types";
+import { ViolationDetailDrawer } from "./ViolationDetailDrawer";
 
 type TableTab = "summary" | "log";
 

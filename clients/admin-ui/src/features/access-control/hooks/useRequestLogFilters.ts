@@ -55,14 +55,14 @@ export const useRequestLogFilterContext = (): RequestLogFilterState => {
 };
 
 export const useRequestLogFilters = (): RequestLogFilterState => {
-  const [dateRange, setDateRange] = useState<
-    [dayjs.Dayjs, dayjs.Dayjs] | null
-  >(() => [dayjs().subtract(7, "day"), dayjs()]);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
+    () => [dayjs().subtract(7, "day"), dayjs()],
+  );
 
   const router = useRouter();
 
   const [searchValues, setSearchValues] = useState<string[]>(() => {
-    const facets = router.query.facets;
+    const { facets } = router.query;
     if (typeof facets === "string" && facets) {
       return facets.split(",");
     }
@@ -134,7 +134,7 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
   const timeseriesFilters: TimeseriesFilters = useMemo(
     () => ({
       ...filters,
-      ...(intervalHours != null ? { interval: intervalHours } : {}),
+      ...(intervalHours !== null ? { interval: intervalHours } : {}),
     }),
     [filters, intervalHours],
   );

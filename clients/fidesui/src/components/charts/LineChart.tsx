@@ -67,13 +67,17 @@ export const LineChart = ({
   const rawData = data ?? [];
 
   const chartData = useMemo(() => {
-    if (containerWidth <= 0 || rawData.length < 2) return rawData;
+    if (containerWidth <= 0 || rawData.length < 2) {
+      return rawData;
+    }
 
     const timestamps = rawData.map((point) => new Date(point.label).getTime());
     const minTs = Math.min(...timestamps);
     const maxTs = Math.max(...timestamps);
     const rangeMs = maxTs - minTs;
-    if (rangeMs <= 0) return rawData;
+    if (rangeMs <= 0) {
+      return rawData;
+    }
 
     const intervalHours = pickIntervalHours(
       rangeMs,
@@ -94,9 +98,9 @@ export const LineChart = ({
         const point: LineChartDataPoint = {
           label: new Date(flooredStart + index * intervalMs).toISOString(),
         };
-        for (const key of seriesKeys) {
+        seriesKeys.forEach((key) => {
           point[key] = 0;
-        }
+        });
         return point;
       },
     );
@@ -106,9 +110,9 @@ export const LineChart = ({
         Math.floor((ts - flooredStart) / intervalMs),
         bucketCount - 1,
       );
-      for (const key of seriesKeys) {
+      seriesKeys.forEach((key) => {
         (buckets[bucketIndex][key] as number) += Number(rawData[idx][key] ?? 0);
-      }
+      });
     });
 
     return buckets;
