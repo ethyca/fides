@@ -10,7 +10,7 @@ export const PrivacyNoticesTable = () => {
   const router = useRouter();
 
   return (
-    <Flex vertical gap="middle" style={{ width: "100%" }}>
+    <Flex vertical gap="medium" style={{ width: "100%" }}>
       {userCanUpdate && (
         <Flex justify="flex-end">
           <Button
