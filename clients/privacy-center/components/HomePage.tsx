@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraLink as Link,
@@ -15,6 +16,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { getEffectivePrivacyCenterLinks } from "~/common/config-links";
 import { encodePolicyKey } from "~/common/policy-key";
 import sanitizeHTML from "~/common/sanitize-html";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
@@ -84,8 +86,7 @@ const HomePage: NextPage = () => {
 
   const { SHOW_BRAND_LINK, ALLOW_HTML_DESCRIPTION } = useSettings();
 
-  const showPrivacyPolicyLink =
-    !!config.privacy_policy_url && !!config.privacy_policy_url_text;
+  const policyLinks = getEffectivePrivacyCenterLinks(config);
 
   // Subscribe to experiences just to see if there are any notices.
   // The subscription automatically handles skipping if overlay is not enabled
@@ -144,14 +145,17 @@ const HomePage: NextPage = () => {
 
   const content: ReactNode[] = [];
 
-  config.actions.forEach((action) => {
+  config.actions.forEach((action, index) => {
     content.push(
       <PrivacyCard
-        key={action.policy_key}
+        // eslint-disable-next-line react/no-array-index-key
+        key={index}
         title={action.title}
         iconPath={action.icon_path}
         description={action.description}
-        onClick={() => handlePrivacyRequestOpen(action.policy_key)}
+        onClick={() =>
+          handlePrivacyRequestOpen(`${index}:${action.policy_key}`)
+        }
       />,
     );
   });
@@ -235,23 +239,26 @@ const HomePage: NextPage = () => {
           </TextOrHtml>
         ))}
 
-        {(SHOW_BRAND_LINK || showPrivacyPolicyLink) && (
-          <Stack flexDirection="row">
-            {showPrivacyPolicyLink && (
-              <Link
-                fontSize={["small", "medium"]}
-                fontWeight="medium"
-                textAlign="center"
-                textDecoration="underline"
-                color="gray.800"
-                href={config.privacy_policy_url!}
-                isExternal
-              >
-                {config.privacy_policy_url_text}
-              </Link>
-            )}
-            <BrandLink isHomePage />
-          </Stack>
+        {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
+          <Box position="relative" width="100%">
+            <Stack flexDirection="column" alignItems="center">
+              {policyLinks.map(({ url, label }) => (
+                <Link
+                  key={`${url}-${label}`}
+                  fontSize={["small", "medium"]}
+                  fontWeight="medium"
+                  textAlign="center"
+                  textDecoration="underline"
+                  color="gray.800"
+                  href={url}
+                  isExternal
+                >
+                  {label}
+                </Link>
+              ))}
+            </Stack>
+            <BrandLink isHomePage position="absolute" right={6} bottom={0} />
+          </Box>
         )}
       </Stack>
 

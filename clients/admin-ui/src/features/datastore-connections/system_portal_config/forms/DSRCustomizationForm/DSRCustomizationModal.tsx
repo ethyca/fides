@@ -1,4 +1,3 @@
-import { useAlert, useAPIHelper } from "common/hooks";
 import {
   useCreateAccessManualWebhookMutation,
   useGetAccessManualHookQuery,
@@ -12,19 +11,16 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCenter as Center,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraSpinner as Spinner,
   ChakraVStack as VStack,
+  Modal,
   Tooltip,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 
+import { useAPIHelper } from "~/features/common/hooks";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import DSRCustomizationForm from "./DSRCustomizationForm";
@@ -36,7 +32,7 @@ type Props = {
 
 const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const mounted = useRef(false);
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fields, setFields] = useState([] as Field[]);
@@ -66,7 +62,7 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
       } else {
         await createAccessManualWebhook(params).unwrap();
       }
-      successAlert(
+      message.success(
         `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
     } catch (error) {
@@ -108,34 +104,34 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
       ) : (
         DSRButton
       )}
-      <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent minWidth="775px">
-          <ModalHeader>Customize DSR</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <VStack align="stretch" gap="16px">
-              <Box color="gray.700" fontSize="14px">
-                Customize your PII fields to create a friendly label name for
-                your privacy request packages. This &quot;Package Label&quot; is
-                the label your user will see in their downloaded package.
-              </Box>
-              {(isFetching || isLoading) && (
-                <Center>
-                  <Spinner />
-                </Center>
-              )}
-              {mounted.current && !isLoading ? (
-                <DSRCustomizationForm
-                  data={fields}
-                  isSubmitting={isSubmitting}
-                  onSaveClick={handleSubmit}
-                  onCancel={onClose}
-                />
-              ) : null}
-            </VStack>
-          </ModalBody>
-        </ModalContent>
+      <Modal
+        open={isOpen}
+        onCancel={onClose}
+        centered
+        destroyOnHidden
+        title="Customize DSR"
+        footer={null}
+      >
+        <VStack align="stretch" gap="16px">
+          <Box color="gray.700" fontSize="14px">
+            Customize your PII fields to create a friendly label name for your
+            privacy request packages. This &quot;Package Label&quot; is the
+            label your user will see in their downloaded package.
+          </Box>
+          {(isFetching || isLoading) && (
+            <Center>
+              <Spinner />
+            </Center>
+          )}
+          {mounted.current && !isLoading ? (
+            <DSRCustomizationForm
+              data={fields}
+              isSubmitting={isSubmitting}
+              onSaveClick={handleSubmit}
+              onCancel={onClose}
+            />
+          ) : null}
+        </VStack>
       </Modal>
     </>
   );

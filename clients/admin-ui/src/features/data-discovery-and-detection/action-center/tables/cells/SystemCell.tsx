@@ -1,10 +1,9 @@
-import { Icons, Tag } from "fidesui";
+import { Icons, Tag, useMessage } from "fidesui";
 import { truncate } from "lodash";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import styles from "~/features/common/table/cells/Cells.module.scss";
 import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
@@ -36,7 +35,7 @@ export const SystemCell = ({
   const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
   const [updateResourceCategoryMutation, { isLoading }] =
     useUpdateResourceCategoryMutation();
-  const { successAlert, errorAlert } = useAlert();
+  const message = useMessage();
 
   const onAddSystem: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
     e.preventDefault();
@@ -59,13 +58,12 @@ export const SystemCell = ({
     });
     const truncatedNewSystemName = truncate(newSystemName, { length: 50 });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      message.error(getErrorMessage(result.error));
     } else {
-      successAlert(
+      message.success(
         isNewSystem
           ? `${truncatedNewSystemName} has been added to your system inventory and the ${assetType} "${truncatedAssetName}" has been assigned to that system.`
           : `${assetType} "${truncatedAssetName}" has been assigned to ${truncatedNewSystemName}.`,
-        `Confirmed`,
       );
       onChange?.(fidesKey);
     }

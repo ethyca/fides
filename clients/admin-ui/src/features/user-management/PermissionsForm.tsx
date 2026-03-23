@@ -6,8 +6,8 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
   Tooltip,
-  useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
+  useModal,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -16,9 +16,7 @@ import React, { useEffect, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -39,17 +37,13 @@ const defaultInitialValues = {
 export type FormValues = typeof defaultInitialValues;
 
 const PermissionsForm = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
+  const modal = useModal();
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
-  const {
-    isOpen: chooseApproverIsOpen,
-    onOpen: chooseApproverOpen,
-    onClose: chooseApproverClose,
-  } = useDisclosure();
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
     initialManagedSystems,
@@ -77,9 +71,6 @@ const PermissionsForm = () => {
   );
 
   const updatePermissions = async (values: FormValues) => {
-    if (chooseApproverIsOpen) {
-      chooseApproverClose();
-    }
     if (!activeUserId) {
       return;
     }
@@ -97,7 +88,7 @@ const PermissionsForm = () => {
     });
 
     if (isErrorResult(userPermissionsResult)) {
-      toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
+      message.error(getErrorMessage(userPermissionsResult.error));
       return;
     }
     if (!skipAssigningSystems) {
@@ -107,11 +98,11 @@ const PermissionsForm = () => {
         fidesKeys,
       });
       if (isErrorResult(userSystemsResult)) {
-        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        message.error(getErrorMessage(userSystemsResult.error));
         return;
       }
     }
-    toast(successToastParams("Permissions updated"));
+    message.success("Permissions updated");
   };
 
   const handleSubmit = async (values: FormValues) => {
@@ -123,7 +114,20 @@ const PermissionsForm = () => {
       values.roles.includes(RoleRegistryEnum.APPROVER)
     ) {
       // approvers cannot be system managers on back-end
-      chooseApproverOpen();
+      modal.confirm({
+        title: "Change role to Approver",
+        content: (
+          <Text>
+            Switching to an approver role will remove all assigned systems. Do
+            you wish to proceed?
+          </Text>
+        ),
+        okText: "Yes",
+        centered: true,
+        icon: null,
+        onOk: () => updatePermissions(values),
+        className: "downgrade-to-approver-confirmation-modal",
+      });
     } else {
       await updatePermissions(values);
     }
@@ -242,20 +246,6 @@ const PermissionsForm = () => {
               </Tooltip>
             </div>
           </Stack>
-          <ConfirmationModal
-            isOpen={chooseApproverIsOpen}
-            onClose={chooseApproverClose}
-            onConfirm={() => updatePermissions(values)}
-            title="Change role to Approver"
-            testId="downgrade-to-approver-confirmation-modal"
-            continueButtonText="Yes"
-            message={
-              <Text>
-                Switching to an approver role will remove all assigned systems.
-                Do you wish to proceed?
-              </Text>
-            }
-          />
         </Form>
       )}
     </Formik>

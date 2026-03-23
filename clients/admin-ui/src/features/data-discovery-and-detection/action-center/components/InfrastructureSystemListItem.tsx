@@ -115,7 +115,7 @@ export const InfrastructureSystemListItem = ({
     >
       <List.Item.Meta
         avatar={
-          <Flex align="center" gap="middle">
+          <Flex align="center" gap="medium">
             <Checkbox
               checked={selected}
               onChange={(e) => handleCheckboxChange(e.target.checked)}
@@ -153,34 +153,37 @@ export const InfrastructureSystemListItem = ({
           </Flex>
         }
         description={
-          <InfrastructureClassificationSelect
-            mode="multiple"
-            value={item.preferred_data_uses ?? []}
-            urn={itemKey}
-            tagRender={(props) => {
-              // Show sparkle icon if the data use was auto-detected (in data_uses)
-              // and not manually assigned (not in user_assigned_data_uses)
-              const isAutoDetectedFromCompass = item.data_uses?.includes(
-                props.value as string,
-              );
+          <>
+            <Text>{item.description}</Text>
+            <InfrastructureClassificationSelect
+              mode="multiple"
+              value={item.preferred_data_uses ?? []}
+              urn={itemKey}
+              tagRender={(props) => {
+                // Show sparkle icon if the data use was auto-detected (in data_uses)
+                // and not manually assigned (not in user_assigned_data_uses)
+                const isAutoDetectedFromCompass = item.data_uses?.includes(
+                  props.value as string,
+                );
 
-              const handleClose = () => {
-                const newDataUses =
-                  item.preferred_data_uses?.filter(
-                    (dataUse) => dataUse !== props.value,
-                  ) ?? [];
-                handleUpdateDataUses(newDataUses);
-              };
+                const handleClose = () => {
+                  const newDataUses =
+                    item.preferred_data_uses?.filter(
+                      (dataUse) => dataUse !== props.value,
+                    ) ?? [];
+                  handleUpdateDataUses(newDataUses);
+                };
 
-              return tagRender({
-                ...props,
-                isFromClassifier: isAutoDetectedFromCompass,
-                onClose: handleClose,
-              });
-            }}
-            onSelectDataUse={handleSelectDataUse}
-            disabled={dataUsesDisabled}
-          />
+                return tagRender({
+                  ...props,
+                  isFromClassifier: isAutoDetectedFromCompass,
+                  onClose: handleClose,
+                });
+              }}
+              onSelectDataUse={handleSelectDataUse}
+              disabled={dataUsesDisabled}
+            />
+          </>
         }
       />
     </List.Item>

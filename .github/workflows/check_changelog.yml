@@ -58,6 +58,7 @@ jobs:
               console.log(`✅ Found changelog entry file(s): ${fileNames}`);
               // Set output for validation step
               core.setOutput('changelog_files', fileNames);
+              core.setOutput('pr_number', pr.number.toString());
             }
 
       - name: Checkout repository
@@ -95,4 +96,4 @@ jobs:
       - name: Validate changelog entries
         if: success()
         run: |
-          uv run nox -s "changelog(validate)" -- --files "${{ steps.check-changelog-files.outputs.changelog_files }}"
+          uv run nox -s "changelog(validate)" -- --files "${{ steps.check-changelog-files.outputs.changelog_files }}" --pr-number "${{ steps.check-changelog-files.outputs.pr_number }}"

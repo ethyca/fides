@@ -2,7 +2,7 @@ import {
   Button,
   ChakraHeading as Heading,
   ChakraText as Text,
-  useChakraDisclosure as useDisclosure,
+  useModal,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { isEqual } from "lodash";
@@ -14,7 +14,6 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import InfoBox from "~/features/common/InfoBox";
-import WarningModal from "~/features/common/modals/WarningModal";
 import { BackButtonNonLink } from "~/features/common/nav/BackButton";
 import {
   getTranslationFormFields,
@@ -70,17 +69,17 @@ const PrivacyExperienceTranslationForm = ({
     initialTranslation,
   );
 
-  const {
-    onOpen: onOpenUnsavedChanges,
-    isOpen: unsavedChangesIsOpen,
-    onClose: onCloseUnsavedChanges,
-  } = useDisclosure();
+  const modal = useModal();
 
-  const {
-    onOpen: onOpenNewDefault,
-    isOpen: newDefaultIsOpen,
-    onClose: onCloseNewDefault,
-  } = useDisclosure();
+  let unsavedChangesMessage;
+  if (!translationsEnabled) {
+    unsavedChangesMessage =
+      "You have unsaved changes to this experience text. Discard changes?";
+  } else {
+    unsavedChangesMessage = isEditing
+      ? "You have unsaved changes to this translation. Discard changes?"
+      : "This translation has not been added to your experience.  Discard translation?";
+  }
 
   const discardChanges = () => {
     const newTranslations = values.translations!.slice();
@@ -106,7 +105,15 @@ const PrivacyExperienceTranslationForm = ({
 
   const handleLeaveForm = () => {
     if (translationIsTouched || isOOB) {
-      onOpenUnsavedChanges();
+      modal.confirm({
+        title: translationsEnabled ? "Translation not saved" : "Text not saved",
+        content: <Text>{unsavedChangesMessage}</Text>,
+        okText: "Discard",
+        cancelText: "Cancel",
+        centered: true,
+        icon: null,
+        onOk: discardChanges,
+      });
     } else {
       onReturnToMainForm();
     }
@@ -128,7 +135,20 @@ const PrivacyExperienceTranslationForm = ({
       values.translations![translationIndex].is_default &&
       !initialTranslation.is_default
     ) {
-      onOpenNewDefault();
+      modal.confirm({
+        title: "Update default language",
+        content: (
+          <Text>
+            Are you sure you want to update the default language of this
+            experience?
+          </Text>
+        ),
+        okText: "Continue",
+        cancelText: "Cancel",
+        centered: true,
+        icon: null,
+        onOk: () => setNewDefaultTranslation(translationIndex),
+      });
     } else {
       onReturnToMainForm();
     }
@@ -150,27 +170,9 @@ const PrivacyExperienceTranslationForm = ({
     </div>
   );
 
-  let unsavedChangesMessage;
-  if (!translationsEnabled) {
-    unsavedChangesMessage =
-      "You have unsaved changes to this experience text. Discard changes?";
-  } else {
-    unsavedChangesMessage = isEditing
-      ? "You have unsaved changes to this translation. Discard changes?"
-      : "This translation has not been added to your experience.  Discard translation?";
-  }
-
   return (
     <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
       <BackButtonNonLink onClick={handleLeaveForm} mt={4} />
-      <WarningModal
-        isOpen={unsavedChangesIsOpen}
-        onClose={onCloseUnsavedChanges}
-        title={translationsEnabled ? "Translation not saved" : "Text not saved"}
-        message={<Text>{unsavedChangesMessage}</Text>}
-        confirmButtonText="Discard"
-        handleConfirm={discardChanges}
-      />
       <Heading fontSize="md" fontWeight="semibold">
         {translationsEnabled
           ? `Edit ${translation.name} translation`
@@ -178,27 +180,13 @@ const PrivacyExperienceTranslationForm = ({
       </Heading>
       {isOOB ? <OOBTranslationNotice languageName={translation.name} /> : null}
       {translationsEnabled && (
-        <>
-          <CustomSwitch
-            name={`translations.${translationIndex}.is_default`}
-            id={`translations.${translationIndex}.is_default`}
-            label="Default language"
-            isDisabled={Boolean(initialTranslation.is_default)}
-            variant="stacked"
-          />
-          <WarningModal
-            isOpen={newDefaultIsOpen}
-            onClose={onCloseNewDefault}
-            title="Update default language"
-            message={
-              <Text>
-                Are you sure you want to update the default language of this
-                experience?
-              </Text>
-            }
-            handleConfirm={() => setNewDefaultTranslation(translationIndex)}
-          />
-        </>
+        <CustomSwitch
+          name={`translations.${translationIndex}.is_default`}
+          id={`translations.${translationIndex}.is_default`}
+          label="Default language"
+          isDisabled={Boolean(initialTranslation.is_default)}
+          variant="stacked"
+        />
       )}
 
       <CustomTextInput

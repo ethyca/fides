@@ -1,15 +1,8 @@
-import {
-  Button,
-  ChakraText as Text,
-  Space,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, ChakraText as Text, Modal, Space, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import FormModal from "~/features/common/modals/FormModal";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useCreateTCFConfigurationMutation } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { isErrorResult } from "~/types/errors";
 
@@ -30,25 +23,28 @@ export const CreateTCFConfigModal = ({
   onClose,
   onSuccess,
 }: CreateTCFConfigModalProps) => {
-  const toast = useToast();
+  const message = useMessage();
   const [createTCFConfiguration] = useCreateTCFConfigurationMutation();
 
   const handleSubmit = async (values: { name: string }) => {
     const result = await createTCFConfiguration({ name: values.name });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(successToastParams("Successfully created TCF configuration"));
+      message.success("Successfully created TCF configuration");
       onSuccess?.(result.data.id);
       onClose();
     }
   };
 
   return (
-    <FormModal
+    <Modal
       title="Create a new TCF configuration"
-      isOpen={isOpen}
-      onClose={onClose}
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      footer={null}
     >
       <Formik
         initialValues={{ name: "" }}
@@ -85,6 +81,6 @@ export const CreateTCFConfigModal = ({
           </Form>
         )}
       </Formik>
-    </FormModal>
+    </Modal>
   );
 };

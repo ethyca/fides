@@ -1,21 +1,17 @@
 import {
   Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   Empty,
   Form,
+  Modal,
   Space,
   Table,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { PreferencesSavedExtended } from "~/types/api";
 
 import { getErrorMessage } from "../common/helpers";
@@ -42,7 +38,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
   const [getCurrentPrivacyPreferencesTrigger] =
     useLazyGetCurrentPrivacyPreferencesQuery();
 
-  const toast = useToast();
+  const message = useMessage();
 
   useEffect(() => {
     // reset state when modal is closed
@@ -64,7 +60,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
         `A problem occurred while looking up the preferences.`,
       );
 
-      toast({ status: "error", description: errorMsg });
+      message.error(errorMsg);
     } else {
       setSearchResults(data || null);
     }
@@ -84,82 +80,77 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
 
   return (
     <Modal
-      id="consent-lookup-modal"
-      isOpen={isOpen}
-      onClose={onClose}
-      size="6xl"
-      returnFocusOnClose={false}
-      isCentered
+      data-testid="consent-lookup-modal"
+      open={isOpen}
+      onCancel={onClose}
+      width={MODAL_SIZE.xxl}
+      centered
+      destroyOnHidden
+      title="Consent preference lookup"
+      footer={null}
     >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalCloseButton />
-        <ModalHeader pb={2}>Consent preference lookup</ModalHeader>
-        <ModalBody>
-          <Typography.Paragraph>
-            Use this search to look up an individual&apos;s latest consent
-            record. You can search by phone number, email, external ID or device
-            ID to retrieve the most recent consent preference associated with
-            that exact identifier.
-          </Typography.Paragraph>
-          <Typography.Paragraph>
-            <strong>Note:</strong> This is an exact match search—partial entries
-            or similar results will not be returned. This lookup retrieves only
-            the most recent consent preference, not the full consent history.
-          </Typography.Paragraph>
+      <Typography.Paragraph>
+        Use this search to look up an individual&apos;s latest consent record.
+        You can search by phone number, email, external ID or device ID to
+        retrieve the most recent consent preference associated with that exact
+        identifier.
+      </Typography.Paragraph>
+      <Typography.Paragraph>
+        <strong>Note:</strong> This is an exact match search—partial entries or
+        similar results will not be returned. This lookup retrieves only the
+        most recent consent preference, not the full consent history.
+      </Typography.Paragraph>
 
-          <Form layout="vertical" className="w-1/2">
-            <Form.Item label="Subject search" className="mb-4 mt-6">
-              <Space.Compact className="w-full">
-                <SearchInput
-                  data-testid="subject-search-input"
-                  placeholder="Enter email, phone number, external ID or device ID"
-                  onChange={setSearchQuery}
-                  width="100%"
-                  onPressEnter={() => handleSearch(searchQuery)}
+      <Form layout="vertical" className="w-1/2">
+        <Form.Item label="Subject search" className="mb-4 mt-6">
+          <Space.Compact className="w-full">
+            <SearchInput
+              data-testid="subject-search-input"
+              placeholder="Enter email, phone number, external ID or device ID"
+              onChange={setSearchQuery}
+              width="100%"
+              onPressEnter={() => handleSearch(searchQuery)}
+            />
+            <Button
+              type="primary"
+              loading={isSearching}
+              onClick={() => handleSearch(searchQuery)}
+            >
+              Search
+            </Button>
+          </Space.Compact>
+        </Form.Item>
+      </Form>
+      <div className="mb-4">
+        {(!hasTcfData || hasPreferences) && (
+          <Table
+            {...tableProps}
+            data-testid="privacy-notice-preferences-table"
+            columns={columns}
+            loading={isSearching}
+            locale={{
+              emptyText: (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={
+                    searchResults === undefined
+                      ? "Search for an email, phone number, or device ID."
+                      : "No results found."
+                  }
                 />
-                <Button
-                  type="primary"
-                  loading={isSearching}
-                  onClick={() => handleSearch(searchQuery)}
-                >
-                  Search
-                </Button>
-              </Space.Compact>
-            </Form.Item>
-          </Form>
-          <div className="mb-4">
-            {(!hasTcfData || hasPreferences) && (
-              <Table
-                {...tableProps}
-                data-testid="privacy-notice-preferences-table"
-                columns={columns}
-                loading={isSearching}
-                locale={{
-                  emptyText: (
-                    <Empty
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description={
-                        searchResults === undefined
-                          ? "Search for an email, phone number, or device ID."
-                          : "No results found."
-                      }
-                    />
-                  ),
-                }}
-              />
-            )}
-            {hasTcfData && (
-              <div className="mt-4">
-                <TcfConsentTable
-                  tcfPreferences={searchResults}
-                  loading={isSearching}
-                />
-              </div>
-            )}
+              ),
+            }}
+          />
+        )}
+        {hasTcfData && (
+          <div className="mt-4">
+            <TcfConsentTable
+              tcfPreferences={searchResults}
+              loading={isSearching}
+            />
           </div>
-        </ModalBody>
-      </ModalContent>
+        )}
+      </div>
     </Modal>
   );
 };

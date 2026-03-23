@@ -2,7 +2,6 @@ import type { NextPage } from "next";
 import React, { useMemo } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import { DirtyFormConfirmationModal } from "~/features/common/hooks/useIsAnyFormDirty";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import Datamap from "~/features/datamap/Datamap";
@@ -38,7 +37,6 @@ const Home: NextPage = () => {
       <PageHeader style={{ paddingLeft: 0 }} heading="Data lineage" />
       <DatamapTableContext.Provider value={datamapTableContextValue}>
         <Datamap />
-        <DirtyFormConfirmationModal />
       </DatamapTableContext.Provider>
     </Layout>
   );

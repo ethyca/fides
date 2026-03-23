@@ -11,7 +11,7 @@ import {
   ChakraTag as Tag,
   ChakraText as Text,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
@@ -22,7 +22,6 @@ import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { GearLightIcon } from "~/features/common/Icon";
 import { DataFlowSystemsDeleteTable } from "~/features/common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "~/features/common/system-data-flow/DataFlowSystemsModal";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 // API types and hooks
 import {
   useGetAllSystemsQuery,
@@ -47,7 +46,7 @@ export const DataFlowAccordionForm = ({
   isIngress,
   isSystemTab,
 }: DataFlowAccordionItemProps) => {
-  const toast = useToast();
+  const message = useMessage();
   const flowType = isIngress ? "Source" : "Destination";
   const pluralFlowType = `${flowType}s`;
   const dataFlowSystemsModal = useDisclosure();
@@ -84,9 +83,9 @@ export const DataFlowAccordionForm = ({
     const result = await updateSystemMutationTrigger(updatedSystem);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams("Failed to update data flows"));
+      message.error("Failed to update data flows");
     } else {
-      toast(successToastParams(`${pluralFlowType} updated`));
+      message.success(`${pluralFlowType} updated`);
     }
 
     resetForm({ values: { dataFlowSystems } });

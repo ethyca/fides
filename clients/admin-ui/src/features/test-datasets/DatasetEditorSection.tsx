@@ -339,7 +339,7 @@ const EditorSection = ({
             minHeight: 0,
             borderRadius: 8,
             overflow: "hidden",
-            border: "1px solid #E2E8F0",
+            border: "1px solid var(--fidesui-neutral-200)",
           }}
         >
           {localDataset && (

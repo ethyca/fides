@@ -2,6 +2,7 @@ import {
   Button,
   Collapse,
   Drawer,
+  Flex,
   Form,
   Input,
   Select,
@@ -127,8 +128,9 @@ const DatasetNodeDetailPanel = ({
     if (!open && debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
+      flushUpdate(form.getFieldsValue());
     }
-  }, [open]);
+  }, [open, flushUpdate, form]);
 
   // Clean up debounce timer on unmount
   useEffect(() => {
@@ -180,7 +182,7 @@ const DatasetNodeDetailPanel = ({
   return (
     <Drawer
       title={
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Flex align="center" gap={8}>
           <Typography.Text strong>{nodeData?.label}</Typography.Text>
           <Tag
             color={nodeData?.nodeType === "collection" ? "minos" : "default"}
@@ -188,7 +190,7 @@ const DatasetNodeDetailPanel = ({
             {nodeData?.nodeType}
           </Tag>
           {isProtected && <Tag color="warning">protected</Tag>}
-        </div>
+        </Flex>
       }
       placement="right"
       width={400}
