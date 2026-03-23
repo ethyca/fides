@@ -30,32 +30,32 @@ import {
 import { ChartGradient } from "./ChartGradient";
 import { XAxisTick } from "./XAxisTick";
 
-export interface LineChartSeries {
+export interface AreaChartSeries {
   key: string;
   name: string;
   color?: AntColorTokenKey;
 }
 
-export interface LineChartDataPoint {
+export interface AreaChartDataPoint {
   label: string;
   [key: string]: string | number;
 }
 
-export interface LineChartProps {
-  data?: LineChartDataPoint[];
-  series: LineChartSeries[];
+export interface AreaChartProps {
+  data?: AreaChartDataPoint[];
+  series: AreaChartSeries[];
   animationDuration?: number;
   showTooltip?: boolean;
   showGrid?: boolean;
 }
 
-export const LineChart = ({
+export const AreaChart = ({
   data,
   series,
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   showGrid = true,
-}: LineChartProps) => {
+}: AreaChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
   const animationActive = useChartAnimation(animationDuration);
@@ -88,10 +88,10 @@ export const LineChart = ({
       Math.ceil((maxTs - flooredStart) / intervalMs),
     );
 
-    const buckets: LineChartDataPoint[] = Array.from(
+    const buckets: AreaChartDataPoint[] = Array.from(
       { length: bucketCount },
       (_, index) => {
-        const point: LineChartDataPoint = {
+        const point: AreaChartDataPoint = {
           label: new Date(flooredStart + index * intervalMs).toISOString(),
         };
         seriesKeys.forEach((key) => {
@@ -145,7 +145,6 @@ export const LineChart = ({
             )}
             <XAxis
               dataKey="label"
-              tickFormatter={(ts) => formatTimestamp(ts, intervalMs)}
               tick={
                 <XAxisTick
                   intervalMs={intervalMs}

@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Flex } from "antd/lib";
 
 import { HOUR_MS } from "../../index";
-import type { LineChartProps } from "./LineChart";
-import { LineChart } from "./LineChart";
+import type { AreaChartProps } from "./AreaChart";
+import { AreaChart } from "./AreaChart";
 import { seededRandom } from "./story-utils";
 
-const generateData = (hours: number): LineChartProps["data"] => {
+const generateData = (hours: number): AreaChartProps["data"] => {
   const rand = seededRandom(99);
   const now = new Date("2026-03-18T12:00:00Z").getTime();
   const start = now - hours * HOUR_MS;
@@ -17,13 +18,13 @@ const generateData = (hours: number): LineChartProps["data"] => {
 };
 
 const meta = {
-  title: "Charts/LineChart",
-  component: LineChart,
+  title: "Charts/AreaChart",
+  component: AreaChart,
   parameters: { layout: "fullscreen" },
   tags: ["autodocs"],
   decorators: [
     (Story) => (
-      <div
+      <Flex
         style={{
           width: 800,
           height: 350,
@@ -35,10 +36,10 @@ const meta = {
         }}
       >
         <Story />
-      </div>
+      </Flex>
     ),
   ],
-} satisfies Meta<typeof LineChart>;
+} satisfies Meta<typeof AreaChart>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
