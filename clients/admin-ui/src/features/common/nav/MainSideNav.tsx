@@ -162,55 +162,38 @@ export const UnconnectedMainSideNav = ({
           <div
             className={`${styles.logoWrapper} ${collapsed ? styles.logoWrapperCollapsed : styles.logoWrapperExpanded}`}
           >
-            {collapsed ? (
-              <button
-                type="button"
-                className={styles.collapsedLogoToggle}
-                onClick={onCollapseToggle}
-                aria-label="Expand navigation menu"
-                data-testid="nav-collapse-toggle"
+            <div
+              className={styles.logoContainer}
+              style={{
+                width: collapsed
+                  ? `${LOGO_ICON_SIZE}px`
+                  : `${LOGO_FULL_WIDTH}px`,
+                height: `${LOGO_HEIGHT}px`,
+              }}
+            >
+              <div
+                className={`${styles.logoImage} ${collapsed ? styles.logoImageHidden : styles.logoImageVisible}`}
               >
-                <span className={styles.collapsedLogoIcon}>
-                  <Image
-                    src={logoCollapsed}
-                    alt="Fides Logo"
-                    width={LOGO_ICON_SIZE}
-                    height={LOGO_ICON_SIZE}
-                    priority
-                  />
-                </span>
-                <span className={styles.collapsedExpandIcon}>
-                  <Icons.SidePanelOpen size={20} />
-                </span>
-              </button>
-            ) : (
-              <>
-                <div
-                  className={styles.logoContainer}
-                  style={{
-                    width: `${LOGO_FULL_WIDTH}px`,
-                    height: `${LOGO_HEIGHT}px`,
-                  }}
-                >
-                  <Image
-                    src={logoExpanded}
-                    alt="Fides Logo"
-                    width={LOGO_FULL_WIDTH}
-                    height={LOGO_HEIGHT}
-                    priority
-                  />
-                </div>
-                <button
-                  type="button"
-                  className={styles.collapseToggle}
-                  onClick={onCollapseToggle}
-                  aria-label="Collapse navigation menu"
-                  data-testid="nav-collapse-toggle"
-                >
-                  <Icons.SidePanelClose size={20} />
-                </button>
-              </>
-            )}
+                <Image
+                  src={logoExpanded}
+                  alt="Fides Logo"
+                  width={LOGO_FULL_WIDTH}
+                  height={LOGO_HEIGHT}
+                  priority
+                />
+              </div>
+              <div
+                className={`${styles.logoImage} ${collapsed ? styles.logoImageVisible : styles.logoImageHidden}`}
+              >
+                <Image
+                  src={logoCollapsed}
+                  alt="Fides Logo"
+                  width={LOGO_ICON_SIZE}
+                  height={LOGO_ICON_SIZE}
+                  priority
+                />
+              </div>
+            </div>
           </div>
           <NavSearch groups={groups} collapsed={collapsed} />
           <NavMenu
@@ -224,17 +207,37 @@ export const UnconnectedMainSideNav = ({
         <div
           className={`${styles.bottomBar} ${collapsed ? styles.bottomBarCollapsed : styles.bottomBarExpanded}`}
         >
-          <Button
-            type="primary"
-            href="https://docs.ethyca.com"
-            target="_blank"
-            className={styles.helpButton}
-            icon={<Icons.Help />}
-            aria-label="Help"
-          />
-          <div className="inline-block">
-            <AccountDropdownMenu onLogout={handleLogout} />
+          <div className={styles.bottomBarLeft}>
+            <Button
+              type="primary"
+              href="https://docs.ethyca.com"
+              target="_blank"
+              className={styles.navBottomButton}
+              icon={<Icons.Help />}
+              aria-label="Help"
+            />
+            <div className="inline-block">
+              <AccountDropdownMenu
+                onLogout={handleLogout}
+                className={styles.navBottomButton}
+              />
+            </div>
           </div>
+          <button
+            type="button"
+            className={styles.collapseToggle}
+            onClick={onCollapseToggle}
+            aria-label={
+              collapsed ? "Expand navigation menu" : "Collapse navigation menu"
+            }
+            data-testid="nav-collapse-toggle"
+          >
+            {collapsed ? (
+              <Icons.SidePanelOpen size={20} />
+            ) : (
+              <Icons.SidePanelClose size={20} />
+            )}
+          </button>
         </div>
       </VStack>
     </div>

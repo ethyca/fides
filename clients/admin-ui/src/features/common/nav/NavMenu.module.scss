@@ -18,12 +18,23 @@
   }
 }
 
-.helpButton {
-  background-color: transparent;
-  border: none;
+.navBottomButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--fidesui-neutral-400) !important;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 
   &:hover {
-    background-color: var(--fidesui-neutral-700);
+    background-color: var(--fidesui-neutral-700) !important;
+    color: var(--fidesui-corinth) !important;
   }
 }
 
@@ -51,10 +62,10 @@
 
 .logoWrapper {
   padding-bottom: 24px;
-  padding-right: 8px;
+  padding-right: 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   transition: padding-inline-start 0.35s ease;
 }
 
@@ -64,46 +75,6 @@
 
 .logoWrapperCollapsed {
   padding-inline-start: 28px;
-}
-
-.collapsedLogoToggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 24px;
-  height: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
-
-.collapsedLogoIcon,
-.collapsedExpandIcon {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease;
-}
-
-.collapsedLogoIcon {
-  opacity: 1;
-}
-
-.collapsedExpandIcon {
-  opacity: 0;
-  color: var(--fidesui-corinth);
-}
-
-.collapsedLogoToggle:hover .collapsedLogoIcon {
-  opacity: 0;
-}
-
-.collapsedLogoToggle:hover .collapsedExpandIcon {
-  opacity: 1;
 }
 
 .logoContainer {
@@ -138,13 +109,24 @@
 }
 
 .bottomBarExpanded {
-  justify-content: flex-start;
+  justify-content: space-between;
   flex-direction: row;
   gap: 0;
 }
 
 .bottomBarCollapsed {
   justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bottomBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.bottomBarCollapsed .bottomBarLeft {
   flex-direction: column;
   gap: 8px;
 }

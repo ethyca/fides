@@ -8,25 +8,31 @@
 }
 
 .expandedInput {
-  background-color: var(--fidesui-neutral-800) !important;
+  background-color: var(--fidesui-minos) !important;
   border: 1px solid var(--fidesui-neutral-700) !important;
   color: var(--fidesui-corinth) !important;
   border-radius: 6px !important;
   font-size: 13px !important;
   height: 32px !important;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease !important;
 
   &::placeholder {
     color: var(--fidesui-neutral-400) !important;
   }
 
   &:hover {
-    border-color: var(--fidesui-neutral-600) !important;
+    background-color: var(--fidesui-neutral-800) !important;
+    border-color: var(--fidesui-neutral-700) !important;
   }
 
   &:focus,
   &:focus-within {
-    border-color: var(--fidesui-sandstone) !important;
-    box-shadow: 0 0 0 1px var(--fidesui-sandstone) !important;
+    background-color: var(--fidesui-neutral-800) !important;
+    border-color: var(--fidesui-neutral-600) !important;
+    box-shadow: none !important;
   }
 
   :global(.ant-input) {
@@ -215,7 +221,7 @@
   font-size: 13px;
 }
 
-/* Keyboard shortcut hint */
+/* Keyboard shortcut hint — hidden by default, visible on focus */
 .shortcutHint {
   font-size: 11px;
   color: var(--fidesui-neutral-500);
@@ -225,4 +231,10 @@
   line-height: 1.4;
   font-family: inherit;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.expandedInput:focus-within .shortcutHint {
+  opacity: 1;
 }
