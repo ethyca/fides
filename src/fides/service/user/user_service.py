@@ -2,8 +2,13 @@ import uuid
 from datetime import datetime
 from typing import Optional, Tuple
 
+from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.db.encryption_utils import get_encryption_key
@@ -150,3 +155,41 @@ class UserService:
         )
 
         return user, access_code
+
+    def reinvite_user(self, user: FidesUser) -> None:
+        """
+        Reinvites a user who has a pending invitation by generating a new invite code
+        and sending a new invitation email.
+        """
+        user_invite = FidesUserInvite.get_by(
+            self.db, field="username", value=user.username
+        )
+
+        if not user_invite:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail="User does not have a pending invitation.",
+            )
+
+        new_invite_code = str(uuid.uuid4())
+        user_invite.renew_invite(self.db, new_invite_code)
+
+        try:
+            dispatch_message(
+                self.db,
+                action_type=MessagingActionType.USER_INVITE,
+                to_identity=Identity(email=user.email_address),
+                service_type=self.config_proxy.notifications.notification_service_type,
+                message_body_params=UserInviteBodyParams(
+                    username=user.username, invite_code=new_invite_code
+                ),
+            )
+        except Exception as exc:
+            self.db.rollback()
+            logger.exception("Failed to dispatch reinvite email")
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to send invitation email. Please try again.",
+            ) from exc
+
+        logger.info("Reinvite email dispatched for pending user")

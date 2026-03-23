@@ -1,7 +1,6 @@
 import json
 import random
 import time
-import uuid
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
@@ -51,12 +50,7 @@ from fides.api.oauth.utils import (
     oauth2_scheme,
     verify_oauth_client,
 )
-from fides.api.schemas.messaging.messaging import (
-    MessagingActionType,
-    UserInviteBodyParams,
-)
 from fides.api.schemas.oauth import AccessToken
-from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.user import (
     DisabledReason,
     UserCreate,
@@ -68,7 +62,6 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.util.api_router import APIRouter
 from fides.api.util.rate_limit import fides_limiter
 from fides.api.v1.endpoints.user_permission_endpoints import validate_user_id
@@ -587,11 +580,13 @@ def delete_user(
     status_code=HTTP_204_NO_CONTENT,
     dependencies=[Security(verify_oauth_client, scopes=[USER_CREATE])],
 )
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
 def reinvite_user(
     *,
+    request: Request,
     db: Session = Depends(get_db),
     user_id: str,
-    config_proxy: ConfigProxy = Depends(get_config_proxy),
+    user_service: UserService = Depends(get_user_service),
 ) -> None:
     """
     Reinvite a user who has a pending invitation by generating a new invite code
@@ -617,41 +612,7 @@ def reinvite_user(
             detail="User is disabled for a reason other than a pending invitation.",
         )
 
-    user_invite = FidesUserInvite.get_by(db, field="username", value=user.username)
-
-    if not user_invite:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="User does not have a pending invitation.",
-        )
-
-    new_invite_code = str(uuid.uuid4())
-    hashed_invite_code, salt = FidesUserInvite.hash_invite_code(new_invite_code)
-    user_invite.hashed_invite_code = hashed_invite_code
-    user_invite.salt = salt
-
-    db.flush()
-
-    try:
-        dispatch_message(
-            db,
-            action_type=MessagingActionType.USER_INVITE,
-            to_identity=Identity(email=user.email_address),
-            service_type=config_proxy.notifications.notification_service_type,
-            message_body_params=UserInviteBodyParams(
-                username=user.username, invite_code=new_invite_code
-            ),
-        )
-    except Exception as exc:
-        db.rollback()
-        logger.exception("Failed to dispatch reinvite email")
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to send invitation email. Please try again.",
-        ) from exc
-
-    db.commit()
-    logger.info("Reinvite email dispatched for pending user")
+    user_service.reinvite_user(user)
 
 
 def attach_invite_status(
