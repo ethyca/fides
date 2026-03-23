@@ -1,4 +1,3 @@
-import { useAlert, useAPIHelper } from "common/hooks";
 import {
   useCreateAccessManualWebhookMutation,
   useGetAccessManualHookQuery,
@@ -17,9 +16,11 @@ import {
   Modal,
   Tooltip,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 
+import { useAPIHelper } from "~/features/common/hooks";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import DSRCustomizationForm from "./DSRCustomizationForm";
@@ -31,7 +32,7 @@ type Props = {
 
 const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const mounted = useRef(false);
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fields, setFields] = useState([] as Field[]);
@@ -61,7 +62,7 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
       } else {
         await createAccessManualWebhook(params).unwrap();
       }
-      successAlert(
+      message.success(
         `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
     } catch (error) {

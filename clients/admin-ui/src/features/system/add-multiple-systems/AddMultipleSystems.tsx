@@ -28,7 +28,6 @@ import {
   TableSkeletonLoader,
   useClientSidePagination,
 } from "common/table/v2";
-import { errorToastParams, successToastParams } from "common/toast";
 import {
   Button,
   ChakraBox as Box,
@@ -40,7 +39,7 @@ import {
   Tag,
   Tooltip,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -111,7 +110,7 @@ const EmptyTableNotice = () => (
 const SYSTEM_TEXT = "Vendor";
 
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
-  const toast = useToast();
+  const message = useMessage();
   const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const router = useRouter();
@@ -266,14 +265,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       const result = await postVendorIds(vendorIds);
       router.push(redirectRoute);
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
       } else {
-        toast(
-          successToastParams(
-            `Successfully added ${
-              vendorIds.length
-            } ${SYSTEM_TEXT.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
-          ),
+        message.success(
+          `Successfully added ${
+            vendorIds.length
+          } ${SYSTEM_TEXT.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
         );
       }
     }

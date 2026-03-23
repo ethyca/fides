@@ -12,7 +12,7 @@ import {
   Space,
   Tag,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
@@ -27,7 +27,6 @@ import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import * as routes from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectEnabledDataUseOptions,
   useGetAllDataUsesQuery,
@@ -115,7 +114,7 @@ const PrivacyNoticeForm = ({
   availableTranslations?: NoticeTranslation[];
 }) => {
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
   const initialValues = passedInPrivacyNotice
     ? transformPrivacyNoticeResponseToCreation(passedInPrivacyNotice)
     : defaultInitialValues;
@@ -163,13 +162,9 @@ const PrivacyNoticeForm = ({
     }
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          `Privacy notice ${isEditing ? "updated" : "created"}`,
-        ),
-      );
+      message.success(`Privacy notice ${isEditing ? "updated" : "created"}`);
       if (!isEditing) {
         router.push(PRIVACY_NOTICES_ROUTE);
       }

@@ -5,11 +5,10 @@ import {
   ChakraText as Text,
   ConfirmationModal,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import EditSSOProviderModal from "~/features/openid-authentication/EditSSOProviderModal";
 import { useDeleteOpenIDProviderMutation } from "~/features/openid-authentication/openprovider.slice";
 import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
@@ -29,7 +28,7 @@ const SSOProvider = ({
     isOpen: deleteIsOpen,
     onClose: onDeleteClose,
   } = useDisclosure();
-  const toast = useToast();
+  const message = useMessage();
 
   const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
 
@@ -38,12 +37,12 @@ const SSOProvider = ({
       openIDProvider.identifier,
     );
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       onDeleteClose();
       return;
     }
 
-    toast(successToastParams(`SSO provider deleted successfully`));
+    message.success(`SSO provider deleted successfully`);
 
     onDeleteClose();
   };
