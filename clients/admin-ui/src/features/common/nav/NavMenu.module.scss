@@ -77,6 +77,14 @@
   padding-inline-start: 28px;
 }
 
+.logoToggle {
+  display: inline-flex;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
 .logoContainer {
   position: relative;
   overflow: hidden;

@@ -162,38 +162,49 @@ export const UnconnectedMainSideNav = ({
           <div
             className={`${styles.logoWrapper} ${collapsed ? styles.logoWrapperCollapsed : styles.logoWrapperExpanded}`}
           >
-            <div
-              className={styles.logoContainer}
-              style={{
-                width: collapsed
-                  ? `${LOGO_ICON_SIZE}px`
-                  : `${LOGO_FULL_WIDTH}px`,
-                height: `${LOGO_HEIGHT}px`,
-              }}
+            <button
+              type="button"
+              className={styles.logoToggle}
+              onClick={onCollapseToggle}
+              aria-label={
+                collapsed
+                  ? "Expand navigation menu"
+                  : "Collapse navigation menu"
+              }
             >
               <div
-                className={`${styles.logoImage} ${collapsed ? styles.logoImageHidden : styles.logoImageVisible}`}
+                className={styles.logoContainer}
+                style={{
+                  width: collapsed
+                    ? `${LOGO_ICON_SIZE}px`
+                    : `${LOGO_FULL_WIDTH}px`,
+                  height: `${LOGO_HEIGHT}px`,
+                }}
               >
-                <Image
-                  src={logoExpanded}
-                  alt="Fides Logo"
-                  width={LOGO_FULL_WIDTH}
-                  height={LOGO_HEIGHT}
-                  priority
-                />
+                <div
+                  className={`${styles.logoImage} ${collapsed ? styles.logoImageHidden : styles.logoImageVisible}`}
+                >
+                  <Image
+                    src={logoExpanded}
+                    alt="Fides Logo"
+                    width={LOGO_FULL_WIDTH}
+                    height={LOGO_HEIGHT}
+                    priority
+                  />
+                </div>
+                <div
+                  className={`${styles.logoImage} ${collapsed ? styles.logoImageVisible : styles.logoImageHidden}`}
+                >
+                  <Image
+                    src={logoCollapsed}
+                    alt="Fides Logo"
+                    width={LOGO_ICON_SIZE}
+                    height={LOGO_ICON_SIZE}
+                    priority
+                  />
+                </div>
               </div>
-              <div
-                className={`${styles.logoImage} ${collapsed ? styles.logoImageVisible : styles.logoImageHidden}`}
-              >
-                <Image
-                  src={logoCollapsed}
-                  alt="Fides Logo"
-                  width={LOGO_ICON_SIZE}
-                  height={LOGO_ICON_SIZE}
-                  priority
-                />
-              </div>
-            </div>
+            </button>
           </div>
           <NavSearch groups={groups} collapsed={collapsed} />
           <NavMenu
