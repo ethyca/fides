@@ -18,8 +18,11 @@ GRAPH_DEFAULT_SCOPE = "https://graph.microsoft.com/.default"
 DEFAULT_REQUEST_TIMEOUT = 30
 # Max page size for applications list (Microsoft Graph limit)
 APPLICATIONS_PAGE_SIZE = 100
-# Minimal $select for connection test and list
-APPLICATIONS_SELECT = "id,appId,displayName,createdDateTime,description,signInAudience"
+# $select fields for IDP monitor discovery
+APPLICATIONS_SELECT = (
+    "id,appId,displayName,createdDateTime,description,"
+    "signInAudience,isDisabled,web"
+)
 
 
 class EntraHttpClient:
