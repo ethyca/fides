@@ -33,7 +33,7 @@ import {
   useUpdateRoleMutation,
   useUpdateRolePermissionsMutation,
 } from "~/features/rbac";
-import type { RBACPermission, RBACRole, RBACRoleUpdate } from "~/types/api";
+import type { RBACPermission, RBACRole } from "~/types/api";
 
 /**
  * Get all descendant role IDs for a given role.
@@ -155,30 +155,22 @@ const RoleDetailPage: NextPage = () => {
       }));
   }, [allRoles, id]);
 
-  const handleSubmit = async (values: RBACRoleUpdate) => {
+  const handleSave = async () => {
     if (!id) {
       return;
     }
     try {
-      await updateRole({ roleId: id as string, data: values }).unwrap();
-      message.success("Role updated successfully");
+      const values = await form.validateFields();
+      await Promise.all([
+        updateRole({ roleId: id as string, data: values }).unwrap(),
+        updatePermissions({
+          roleId: id as string,
+          data: { permission_codes: selectedPermissions },
+        }).unwrap(),
+      ]);
+      message.success("Role saved successfully");
     } catch (err) {
-      message.error("Failed to update role");
-    }
-  };
-
-  const handleSavePermissions = async () => {
-    if (!id) {
-      return;
-    }
-    try {
-      await updatePermissions({
-        roleId: id as string,
-        data: { permission_codes: selectedPermissions },
-      }).unwrap();
-      message.success("Permissions updated successfully");
-    } catch (err) {
-      message.error("Failed to update permissions");
+      message.error("Failed to save role");
     }
   };
 
@@ -284,42 +276,52 @@ const RoleDetailPage: NextPage = () => {
           { title: role.name },
         ]}
         rightContent={
-          <Tooltip
-            title={
-              role.is_system_role ? "System roles cannot be deleted" : undefined
-            }
-          >
-            <Button
-              danger
-              disabled={role.is_system_role}
-              onClick={() => confirmDelete()}
-              loading={isDeleting}
+          <Space>
+            {!role.is_system_role && (
+              <Button
+                type="primary"
+                onClick={handleSave}
+                loading={isUpdating || isUpdatingPermissions}
+              >
+                Save
+              </Button>
+            )}
+            <Tooltip
+              title={
+                role.is_system_role
+                  ? "System roles cannot be deleted"
+                  : undefined
+              }
             >
-              Delete
-            </Button>
-          </Tooltip>
+              <Button
+                danger
+                disabled={role.is_system_role}
+                onClick={() => confirmDelete()}
+                loading={isDeleting}
+              >
+                Delete
+              </Button>
+            </Tooltip>
+          </Space>
         }
-      >
-        <Space>
-          <Tag color={role.is_system_role ? "info" : "success"}>
-            {role.is_system_role ? "System Role" : "Custom Role"}
-          </Tag>
-          <Tag color={role.is_active ? "success" : "default"}>
-            {role.is_active ? "Active" : "Inactive"}
-          </Tag>
-        </Space>
-      </PageHeader>
+      />
 
-      <Flex vertical gap={24} className="p-6">
-        {/* Role Details Form */}
-        <div className="rounded-lg border border-gray-200 p-6">
-          <Typography.Title level={4}>Role Details</Typography.Title>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-            disabled={role.is_system_role}
-          >
+      <Flex vertical gap="large">
+        <div>
+          <Flex align="center" gap={8} className="mb-4">
+            <Typography.Title level={4} className="m-0">
+              Role details
+            </Typography.Title>
+            <Space>
+              <Tag color={role.is_system_role ? "info" : "nectar"}>
+                {role.is_system_role ? "System" : "Custom"}
+              </Tag>
+              <Tag color={role.is_active ? "success" : "default"}>
+                {role.is_active ? "Active" : "Inactive"}
+              </Tag>
+            </Space>
+          </Flex>
+          <Form form={form} layout="vertical" disabled={role.is_system_role}>
             <Form.Item
               name="name"
               label="Name"
@@ -330,9 +332,9 @@ const RoleDetailPage: NextPage = () => {
             <Form.Item name="description" label="Description">
               <Input.TextArea rows={3} />
             </Form.Item>
-            <Form.Item name="parent_role_id" label="Parent Role">
+            <Form.Item name="parent_role_id" label="Parent role">
               <Select
-                aria-label="Parent Role"
+                aria-label="Parent role"
                 allowClear
                 placeholder="Select parent role for inheritance"
                 options={parentRoleOptions}
@@ -344,33 +346,11 @@ const RoleDetailPage: NextPage = () => {
             <Form.Item name="is_active" label="Active" valuePropName="checked">
               <Switch />
             </Form.Item>
-            <Form.Item>
-              <Space>
-                <Button type="primary" htmlType="submit" loading={isUpdating}>
-                  Save Changes
-                </Button>
-                <Button onClick={() => router.push(RBAC_ROUTE)}>Cancel</Button>
-              </Space>
-            </Form.Item>
           </Form>
         </div>
 
-        {/* Permissions Section */}
-        <div className="rounded-lg border border-gray-200 p-6">
-          <Flex justify="space-between" align="center" className="mb-4">
-            <Typography.Title level={4} className="m-0">
-              Permissions
-            </Typography.Title>
-            {!role.is_system_role && (
-              <Button
-                type="primary"
-                onClick={handleSavePermissions}
-                loading={isUpdatingPermissions}
-              >
-                Save Permissions
-              </Button>
-            )}
-          </Flex>
+        <div>
+          <Typography.Title level={4}>Permissions</Typography.Title>
           {role.is_system_role && (
             <Typography.Text type="secondary" className="mb-4 block">
               System role permissions cannot be modified.
