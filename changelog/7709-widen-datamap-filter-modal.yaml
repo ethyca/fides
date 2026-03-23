@@ -1,0 +1,4 @@
+type: Fixed
+description: Widen data lineage filter modal to prevent checkbox label overlap
+pr: 7709
+labels: []
