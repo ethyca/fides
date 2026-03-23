@@ -20,8 +20,7 @@ DEFAULT_REQUEST_TIMEOUT = 30
 APPLICATIONS_PAGE_SIZE = 100
 # $select fields for IDP monitor discovery
 APPLICATIONS_SELECT = (
-    "id,appId,displayName,createdDateTime,description,"
-    "signInAudience,isDisabled,web"
+    "id,appId,displayName,createdDateTime,description,signInAudience,isDisabled,web"
 )
 
 
