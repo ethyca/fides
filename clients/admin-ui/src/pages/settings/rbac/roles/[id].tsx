@@ -277,15 +277,6 @@ const RoleDetailPage: NextPage = () => {
         ]}
         rightContent={
           <Space>
-            {!role.is_system_role && (
-              <Button
-                type="primary"
-                onClick={handleSave}
-                loading={isUpdating || isUpdatingPermissions}
-              >
-                Save
-              </Button>
-            )}
             <Tooltip
               title={
                 role.is_system_role
@@ -302,6 +293,15 @@ const RoleDetailPage: NextPage = () => {
                 Delete
               </Button>
             </Tooltip>
+            {!role.is_system_role && (
+              <Button
+                type="primary"
+                onClick={handleSave}
+                loading={isUpdating || isUpdatingPermissions}
+              >
+                Save
+              </Button>
+            )}
           </Space>
         }
       />
