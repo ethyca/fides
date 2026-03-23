@@ -3,8 +3,8 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
   ConfirmationModal,
-  EyeIcon,
   Flex,
+  Icons,
   Form,
   Tooltip,
   Typography,
@@ -127,7 +127,7 @@ const TaxonomyItemEditDrawer = ({
                   aria-label="enable"
                   onClick={handleEnable}
                   data-testid="enable-btn"
-                  icon={<EyeIcon fontSize="small" />}
+                  icon={<Icons.View />}
                 />
               </Tooltip>
             )}

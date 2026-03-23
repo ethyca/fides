@@ -2,7 +2,6 @@ import {
   ArrowDownRightIcon,
   ColumnsType,
   CUSTOM_TAG_COLOR,
-  EyeIcon,
   GreenCheckCircleIcon,
   GripDotsVerticalIcon,
   Icons,
@@ -76,15 +75,6 @@ const ICON_DATA: IconEntry[] = [
     source: "fidesui",
     suggestedCarbon: null,
     notes: "Used as child/sub-item indicator in ConsentAutomationForm",
-  },
-  {
-    key: "fidesui-EyeIcon",
-    currentName: "EyeIcon",
-    currentIcon: <EyeIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: "View",
-    notes: "",
   },
   {
     key: "fidesui-GreenCheckCircleIcon",
