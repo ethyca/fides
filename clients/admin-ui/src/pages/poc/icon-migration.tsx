@@ -5,7 +5,6 @@ import {
   GreenCheckCircleIcon,
   Icons,
   Layout,
-  SearchLineIcon,
   SparkleIcon as FidesUISparkleIcon,
   Table,
   Tag,
@@ -15,9 +14,7 @@ import {
 import type { NextPage } from "next";
 import React from "react";
 
-import {
-  ManualSetupIcon,
-} from "~/features/common/Icon";
+import { ManualSetupIcon } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import { SparkleIcon as AdminSparkleIcon } from "~/features/common/Icon/SparkleIcon";
@@ -75,15 +72,6 @@ const ICON_DATA: IconEntry[] = [
     source: "fidesui",
     suggestedCarbon: "CheckmarkFilled",
     notes: "Uses green fill color",
-  },
-  {
-    key: "fidesui-SearchLineIcon",
-    currentName: "SearchLineIcon",
-    currentIcon: <SearchLineIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: "Search",
-    notes: "",
   },
   {
     key: "fidesui-TrashCanSolidIcon",
