@@ -20,10 +20,6 @@ import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useDeleteRoleMutation, useGetRolesQuery } from "~/features/rbac";
 import type { RBACRole } from "~/types/api";
 
-const RBAC_COPY =
-  "Role-based access control (RBAC) allows you to create roles with specific permissions. " +
-  "Assign roles to users to control their access to resources and actions within the system.";
-
 const RBACPage: NextPage = () => {
   const router = useRouter();
   const message = useMessage();
@@ -168,8 +164,10 @@ const RBACPage: NextPage = () => {
           </Button>
         }
       >
-        <Typography.Paragraph className="max-w-screen-md">
-          {RBAC_COPY}
+        <Typography.Paragraph className="max-w-screen-sm">
+          Create and manage roles to define fine-grained access control. Assign
+          roles to users to control what resources and actions they can access
+          within the system.
         </Typography.Paragraph>
       </PageHeader>
       <Flex vertical gap={16}>
