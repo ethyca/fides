@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
+import { ConnectionType } from "~/types/api";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -30,7 +31,7 @@ import {
 const MonitorList = () => {
   const toast = useToast();
   const {
-    flags: { webMonitor: webMonitorEnabled },
+    flags: { entraMonitor: entraMonitorEnabled, webMonitor: webMonitorEnabled },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
@@ -96,9 +97,18 @@ const MonitorList = () => {
   }, [isError, toast]);
 
   const results =
-    data?.items?.flatMap((monitor) =>
-      !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
-    ) || [];
+    data?.items?.flatMap((monitor) => {
+      if (!monitor.key || typeof monitor.key === "undefined") {
+        return [];
+      }
+      if (
+        !entraMonitorEnabled &&
+        monitor.connection_type === ConnectionType.ENTRA
+      ) {
+        return [];
+      }
+      return [monitor];
+    }) || [];
 
   return (
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="medium" vertical>

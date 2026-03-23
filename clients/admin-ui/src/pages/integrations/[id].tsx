@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import { useFlags } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -25,6 +26,7 @@ import { ConnectionType } from "~/types/api";
 const IntegrationDetailView: NextPage = () => {
   const router = useRouter();
   const id = router.query.id as string;
+  const { flags } = useFlags();
 
   const {
     data: connection,
@@ -73,7 +75,9 @@ const IntegrationDetailView: NextPage = () => {
 
   if (
     !!connection &&
-    !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
+    (!SUPPORTED_INTEGRATIONS.includes(connection.connection_type) ||
+      (connection.connection_type === ConnectionType.ENTRA &&
+        !flags.entraMonitor))
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }

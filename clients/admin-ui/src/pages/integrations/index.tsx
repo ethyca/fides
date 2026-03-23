@@ -78,7 +78,7 @@ const IntegrationListView: NextPage = () => {
   const router = useRouter();
 
   const {
-    flags: { newIntegrationManagement },
+    flags: { entraMonitor, newIntegrationManagement },
   } = useFlags();
 
   const handleSearchChange = (value: string) => {
@@ -105,17 +105,20 @@ const IntegrationListView: NextPage = () => {
     [connectionTypesData],
   );
 
-  // Filter connection types based on the new integration management flag
+  // Filter connection types based on feature flags
   const connectionTypesToQuery = useMemo(() => {
-    if (newIntegrationManagement) {
-      // Show all integrations (including SaaS) when the flag is enabled
-      return SUPPORTED_INTEGRATIONS;
+    let types = SUPPORTED_INTEGRATIONS;
+
+    if (!entraMonitor) {
+      types = types.filter((type) => type !== ConnectionType.ENTRA);
     }
-    // Hide SaaS integrations when the flag is disabled
-    return SUPPORTED_INTEGRATIONS.filter(
-      (type) => type !== ConnectionType.SAAS,
-    );
-  }, [newIntegrationManagement]);
+
+    if (!newIntegrationManagement) {
+      types = types.filter((type) => type !== ConnectionType.SAAS);
+    }
+
+    return types;
+  }, [entraMonitor, newIntegrationManagement]);
 
   const { data, isLoading, error } = useGetAllDatastoreConnectionsQuery({
     connection_type: connectionTypesToQuery,
