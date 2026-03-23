@@ -1,61 +1,39 @@
 import {
-  AddIcon as FidesUIAddIcon,
   ArrowDownLineIcon,
   ArrowDownRightIcon,
-  ArrowUpLineIcon,
-  CloseSolidIcon,
   ColumnsType,
-  DownloadSolidIcon,
+  CUSTOM_TAG_COLOR,
   EyeIcon,
-  FilterIcon,
-  FilterLightIcon,
-  GearIcon,
   GreenCheckCircleIcon,
-  GreenCircleIcon,
   GripDotsVerticalIcon,
   Icons,
   Layout,
   LinkIcon as FidesUILinkIcon,
   MoreIcon,
   SearchLineIcon,
-  SortArrowIcon,
   SparkleIcon as FidesUISparkleIcon,
-  StepperCircleCheckmarkIcon,
-  StepperCircleIcon,
   Table,
   Tag,
   TrashCanSolidIcon as FidesUITrashCanSolidIcon,
   Typography,
-  UserIcon,
-  VerticalLineIcon,
-  YellowWarningIcon,
 } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
 import SlackIconChat from "~/features/chat-provider/icons/SlackIcon";
-import { AddIcon as CustomFieldsAddIcon } from "~/features/common/custom-fields/icons/AddIcon";
 import {
   AWSLogoIcon,
   CopyIcon,
   DisplayAllIcon,
   DownloadLightIcon,
   GearLightIcon,
-  GlobeIcon,
   GroupedIcon,
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
-import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
-import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
-import { FieldIcon } from "~/features/common/Icon/database/FieldIcon";
-import { TableIcon as DBTableIcon } from "~/features/common/Icon/database/TableIcon";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
-import { MonitorOffIcon } from "~/features/common/Icon/MonitorOffIcon";
-import { MonitorOnIcon } from "~/features/common/Icon/MonitorOnIcon";
 import NextArrow from "~/features/common/Icon/NextArrow";
-import { PlayIcon } from "~/features/common/Icon/Play";
 import PrevArrow from "~/features/common/Icon/PrevArrow";
 import RightArrow from "~/features/common/Icon/RightArrow";
 import { SparkleIcon as AdminSparkleIcon } from "~/features/common/Icon/SparkleIcon";
@@ -103,15 +81,6 @@ const SvgIconBox = ({ children }: { children: React.ReactNode }) => (
 const ICON_DATA: IconEntry[] = [
   // fidesui icons
   {
-    key: "fidesui-AddIcon",
-    currentName: "AddIcon",
-    currentIcon: <FidesUIAddIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
     key: "fidesui-ArrowDownLineIcon",
     currentName: "ArrowDownLineIcon",
     currentIcon: <ArrowDownLineIcon boxSize={5} />,
@@ -126,35 +95,8 @@ const ICON_DATA: IconEntry[] = [
     currentIcon: <ArrowDownRightIcon boxSize={5} />,
     iconType: "createIcon",
     source: "fidesui",
-    suggestedCarbon: "Corner",
+    suggestedCarbon: null,
     notes: "Used as child/sub-item indicator in ConsentAutomationForm",
-  },
-  {
-    key: "fidesui-ArrowUpLineIcon",
-    currentName: "ArrowUpLineIcon",
-    currentIcon: <ArrowUpLineIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-CloseSolidIcon",
-    currentName: "CloseSolidIcon",
-    currentIcon: <CloseSolidIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-DownloadSolidIcon",
-    currentName: "DownloadSolidIcon",
-    currentIcon: <DownloadSolidIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
   },
   {
     key: "fidesui-EyeIcon",
@@ -164,15 +106,6 @@ const ICON_DATA: IconEntry[] = [
     source: "fidesui",
     suggestedCarbon: "View",
     notes: "",
-  },
-  {
-    key: "fidesui-GearIcon",
-    currentName: "GearIcon",
-    currentIcon: <GearIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
   },
   {
     key: "fidesui-GreenCheckCircleIcon",
@@ -211,33 +144,6 @@ const ICON_DATA: IconEntry[] = [
     notes: "",
   },
   {
-    key: "fidesui-SortArrowIcon",
-    currentName: "SortArrowIcon",
-    currentIcon: <SortArrowIcon />,
-    iconType: "chakra-icon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-StepperCircleIcon",
-    currentName: "StepperCircleIcon",
-    currentIcon: <StepperCircleIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-StepperCircleCheckmarkIcon",
-    currentName: "StepperCircleCheckmarkIcon",
-    currentIcon: <StepperCircleCheckmarkIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
     key: "fidesui-TrashCanSolidIcon",
     currentName: "TrashCanSolidIcon",
     currentIcon: <FidesUITrashCanSolidIcon boxSize={5} />,
@@ -245,60 +151,6 @@ const ICON_DATA: IconEntry[] = [
     source: "fidesui",
     suggestedCarbon: "TrashCan",
     notes: "",
-  },
-  {
-    key: "fidesui-UserIcon",
-    currentName: "UserIcon",
-    currentIcon: <UserIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-VerticalLineIcon",
-    currentName: "VerticalLineIcon",
-    currentIcon: <VerticalLineIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-YellowWarningIcon",
-    currentName: "YellowWarningIcon",
-    currentIcon: <YellowWarningIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-FilterIcon",
-    currentName: "FilterIcon",
-    currentIcon: <FilterIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-FilterLightIcon",
-    currentName: "FilterLightIcon",
-    currentIcon: <FilterLightIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
-  },
-  {
-    key: "fidesui-GreenCircleIcon",
-    currentName: "GreenCircleIcon",
-    currentIcon: <GreenCircleIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from fidesui",
   },
   {
     key: "fidesui-GripDotsVerticalIcon",
@@ -375,15 +227,6 @@ const ICON_DATA: IconEntry[] = [
     notes: "Light variant",
   },
   {
-    key: "admin-GlobeIcon",
-    currentName: "GlobeIcon",
-    currentIcon: <GlobeIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
-  },
-  {
     key: "admin-GroupedIcon",
     currentName: "GroupedIcon",
     currentIcon: <GroupedIcon boxSize={5} />,
@@ -409,24 +252,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: "Dashboard",
     notes: "",
-  },
-  {
-    key: "admin-MonitorOffIcon",
-    currentName: "MonitorOffIcon",
-    currentIcon: <MonitorOffIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
-  },
-  {
-    key: "admin-MonitorOnIcon",
-    currentName: "MonitorOnIcon",
-    currentIcon: <MonitorOnIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
   },
   {
     key: "admin-NextArrow",
@@ -483,15 +308,6 @@ const ICON_DATA: IconEntry[] = [
     notes: "Duplicate of fidesui version",
   },
   {
-    key: "admin-PlayIcon",
-    currentName: "PlayIcon",
-    currentIcon: <PlayIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
-  },
-  {
     key: "admin-SparkleIcon",
     currentName: "SparkleIcon",
     currentIcon: <AdminSparkleIcon boxSize={5} />,
@@ -499,42 +315,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: "MagicWandFilled",
     notes: "Duplicate of fidesui version",
-  },
-  {
-    key: "admin-DatabaseIcon",
-    currentName: "DatabaseIcon",
-    currentIcon: <DatabaseIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
-  },
-  {
-    key: "admin-DatasetIcon",
-    currentName: "DatasetIcon",
-    currentIcon: <DatasetIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
-  },
-  {
-    key: "admin-FieldIcon",
-    currentName: "FieldIcon",
-    currentIcon: <FieldIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
-  },
-  {
-    key: "admin-TableIcon",
-    currentName: "TableIcon",
-    currentIcon: <DBTableIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
   },
   {
     key: "admin-RightDownArrowIcon",
@@ -620,15 +400,6 @@ const ICON_DATA: IconEntry[] = [
     suggestedCarbon: null,
     notes: "Brand logo, no Carbon equivalent",
   },
-  {
-    key: "admin-AddIcon-custom-fields",
-    currentName: "AddIcon (custom-fields)",
-    currentIcon: <CustomFieldsAddIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: null,
-    notes: "Unused, remove from admin-ui",
-  },
 ];
 
 const IconsRecord = Icons as Record<
@@ -701,10 +472,13 @@ const columns: ColumnsType<IconEntry> = [
     ],
     onFilter: (value, record) => record.iconType === value,
     render: (iconType: IconType) => {
-      const labels: Record<IconType, { text: string; color: string }> = {
-        createIcon: { text: "createIcon", color: "corinth" },
-        "chakra-icon": { text: "Chakra Icon", color: "olive" },
-        "custom-svg": { text: "Custom SVG", color: "sandstone" },
+      const labels: Record<
+        IconType,
+        { text: string; color: CUSTOM_TAG_COLOR }
+      > = {
+        createIcon: { text: "createIcon", color: CUSTOM_TAG_COLOR.CORINTH },
+        "chakra-icon": { text: "Chakra Icon", color: CUSTOM_TAG_COLOR.OLIVE },
+        "custom-svg": { text: "Custom SVG", color: CUSTOM_TAG_COLOR.SANDSTONE },
       };
       const { text, color } = labels[iconType];
       return <Tag color={color}>{text}</Tag>;

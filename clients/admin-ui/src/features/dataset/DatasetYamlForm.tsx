@@ -142,9 +142,9 @@ const DatasetYamlForm = () => {
         </VStack>
       </Box>
       <Box>
-        {isTouched && (isEmptyState || yamlError) && (
-          <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
-        )}
+        {/* {isTouched && (isEmptyState || yamlError) && ( */}
+        <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
+        {/* )} */}
       </Box>
     </Flex>
   );
