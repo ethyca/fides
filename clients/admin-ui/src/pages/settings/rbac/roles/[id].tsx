@@ -12,6 +12,7 @@ import {
   Switch,
   Table,
   Tag,
+  Tooltip,
   Typography,
   useMessage,
   useModal,
@@ -282,11 +283,20 @@ const RoleDetailPage: NextPage = () => {
           { title: role.name },
         ]}
         rightContent={
-          !role.is_system_role && (
-            <Button danger onClick={() => confirmDelete()} loading={isDeleting}>
+          <Tooltip
+            title={
+              role.is_system_role ? "System roles cannot be deleted" : undefined
+            }
+          >
+            <Button
+              danger
+              disabled={role.is_system_role}
+              onClick={() => confirmDelete()}
+              loading={isDeleting}
+            >
               Delete
             </Button>
-          )
+          </Tooltip>
         }
       >
         <Space>
