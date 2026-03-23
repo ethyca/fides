@@ -62,6 +62,10 @@ class EventAuditType(str, EnumType):
     privacy_assessment_deleted = "privacy_assessment.deleted"
     privacy_assessment_answer_updated = "privacy_assessment.answer.updated"
     privacy_assessment_answer_reverted = "privacy_assessment.answer.reverted"
+    privacy_assessment_re_evaluated = "privacy_assessment.re_evaluated"
+    privacy_assessment_re_evaluated_unchanged = (
+        "privacy_assessment.re_evaluated_unchanged"
+    )
 
 
 class EventAuditStatus(str, EnumType):

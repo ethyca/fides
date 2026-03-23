@@ -195,7 +195,7 @@ const AntPOC: NextPage = () => {
           </Col>
           <Col span={8}>
             <Card title="Input" variant="borderless" className="h-full">
-              <Space direction="vertical" size="middle">
+              <Space direction="vertical" size="medium">
                 <Space.Compact>
                   <Input defaultValue="26888888" aria-label="Input" />
                 </Space.Compact>

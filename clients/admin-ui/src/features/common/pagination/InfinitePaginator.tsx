@@ -11,7 +11,7 @@ export const InfinitePaginator = ({
   pagination: ReturnType<typeof usePagination>;
 }) => {
   return (
-    <Flex gap="middle" align="center" justify="right">
+    <Flex gap="medium" align="center" justify="right">
       <Button
         onClick={pagination.previousPage}
         disabled={pagination.pageIndex === 1}

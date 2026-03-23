@@ -1,7 +1,6 @@
 import { useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import { useRetryMutation } from "../privacy-requests.slice";
@@ -12,11 +11,9 @@ const useReprocessPrivacyRequest = ({
 }: {
   privacyRequest: PrivacyRequestEntity;
 }) => {
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
   const isErrorStatus = privacyRequest.status === PrivacyRequestStatus.ERROR;
   const showReprocess = isErrorStatus;
-
-  const message = useMessage();
 
   const [retry] = useRetryMutation();
 
@@ -27,13 +24,12 @@ const useReprocessPrivacyRequest = ({
     const closeMessage = message.loading("Reprocessing privacy request...", 0);
     const payload = await retry(privacyRequest);
     if ("error" in payload) {
-      errorAlert(
-        getErrorMessage(payload.error!),
-        `DSR automation has failed for this privacy request due to the following:`,
-        { duration: null },
-      );
+      message.error({
+        content: `DSR automation has failed for this privacy request due to the following: ${getErrorMessage(payload.error!)}`,
+        duration: 0,
+      });
     } else {
-      successAlert(`Privacy request is now being reprocessed.`);
+      message.success(`Privacy request is now being reprocessed.`);
     }
     closeMessage();
   };

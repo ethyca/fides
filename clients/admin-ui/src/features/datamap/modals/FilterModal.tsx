@@ -2,12 +2,12 @@ import { Header } from "@tanstack/react-table";
 import {
   Button,
   ChakraBox as Box,
-  ChakraDivider as Divider,
   ChakraHeading as Heading,
   Modal,
 } from "fidesui";
 import React, { ReactNode, useContext, useMemo } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { DatamapRow } from "~/features/datamap";
 import {
   DATA_CATEGORY_COLUMN_ID,
@@ -72,18 +72,16 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
       centered
       destroyOnHidden
       title="Filters"
+      width={MODAL_SIZE.lg}
       footer={
-        <Box display="flex" justifyContent="space-between" width="100%">
-          <Button onClick={resetFilters} className="mr-3 grow">
-            Reset Filters
-          </Button>
-          <Button onClick={onClose} type="primary" className="grow">
+        <Box display="flex" justifyContent="flex-end" gap={3}>
+          <Button onClick={resetFilters}>Reset Filters</Button>
+          <Button onClick={onClose} type="primary">
             Done
           </Button>
         </Box>
       }
     >
-      <Divider />
       {anyFiltersActive(headers, [
         SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
         DATA_CATEGORY_COLUMN_ID,

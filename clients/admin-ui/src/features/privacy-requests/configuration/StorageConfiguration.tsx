@@ -4,11 +4,12 @@ import {
   ChakraText as Text,
   Flex,
   Radio,
+  useMessage,
 } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
   PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
@@ -28,7 +29,7 @@ import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
 
@@ -55,7 +56,7 @@ const StorageConfiguration = () => {
       if (isErrorResult(storageDetailsResult)) {
         handleError(storageDetailsResult.error);
       } else {
-        successAlert(`Configured storage details successfully.`);
+        message.success(`Configured storage details successfully.`);
       }
     }
 

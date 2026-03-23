@@ -56,7 +56,6 @@ export const baseApi = createApi({
     "Monitor Tasks",
     "Dictionary",
     "System Vendors",
-    "Latest Scan",
     "Managed Systems",
     "Notification",
     "Organization",

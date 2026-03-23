@@ -33,7 +33,7 @@ export const QuestionGroupPanel = ({
           <Text strong size="lg" className="mb-3 block">
             {group.id}. {group.title}
           </Text>
-          <Flex gap="middle" align="center" wrap="wrap" className="mb-2">
+          <Flex gap="medium" align="center" wrap="wrap" className="mb-2">
             <Text type="secondary" size="sm">
               {group.last_updated_at
                 ? `Updated ${formatDistanceToNow(new Date(group.last_updated_at), { addSuffix: true })}`

@@ -115,7 +115,7 @@ export const InfrastructureSystemListItem = ({
     >
       <List.Item.Meta
         avatar={
-          <Flex align="center" gap="middle">
+          <Flex align="center" gap="medium">
             <Checkbox
               checked={selected}
               onChange={(e) => handleCheckboxChange(e.target.checked)}
