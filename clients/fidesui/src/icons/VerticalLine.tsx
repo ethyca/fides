@@ -1,5 +1,6 @@
-import { createIcon } from "./createIcon";
 import React from "react";
+
+import { createIcon } from "./createIcon";
 
 export default createIcon({
   displayName: "VerticalLineIcon",
