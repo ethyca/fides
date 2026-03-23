@@ -29,6 +29,7 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
+  Icons,
   MoreIcon,
   Spin,
   theme,
@@ -36,7 +37,7 @@ import {
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
-import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
+import { GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 import {
   COLUMN_VERSION_DELIMITER,
@@ -180,7 +181,7 @@ const HeaderContent = <T,>({
             color={isExpandAll ? "complimentary.500" : undefined}
             onClick={() => onExpandAll(header.id)}
           >
-            <DisplayAllIcon /> Expand all
+            <Icons.ExpandAll /> Expand all
           </MenuItem>
           <MenuItem
             gap={2}

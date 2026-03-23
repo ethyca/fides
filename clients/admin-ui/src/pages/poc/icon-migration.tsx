@@ -20,7 +20,6 @@ import type { NextPage } from "next";
 import React from "react";
 
 import {
-  DisplayAllIcon,
   DownloadLightIcon,
   GearLightIcon,
   GroupedIcon,
@@ -162,15 +161,6 @@ const ICON_DATA: IconEntry[] = [
     source: "admin-ui",
     suggestedCarbon: null,
     notes: "",
-  },
-  {
-    key: "admin-DisplayAllIcon",
-    currentName: "DisplayAllIcon",
-    currentIcon: <DisplayAllIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    suggestedCarbon: "ExpandAll",
-    notes: "Used as 'Expand all' toggle in table column headers",
   },
   {
     key: "admin-DownloadLightIcon",
