@@ -54,6 +54,18 @@ const ApiClientsPage: NextPage = () => {
         }
       />
       <OAuthClientsList />
+      <CreateOAuthClientModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreated={handleCreated}
+      />
+      <ClientSecretModal
+        clientId={newClientId}
+        secret={newClientSecret}
+        context="created"
+        isOpen={secretModalOpen}
+        onClose={() => setSecretModalOpen(false)}
+      />
     </FixedLayout>
   );
 };
