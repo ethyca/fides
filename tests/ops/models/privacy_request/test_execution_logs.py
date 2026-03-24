@@ -109,6 +109,24 @@ def test_execution_log_empty_optional_fields(db, execution_log_data):
     execution_log.delete(db)
 
 
+def test_execution_log_saas_version_stored(db, execution_log_data):
+    execution_log_data["saas_version"] = "2.3.0"
+    ExecutionLog.create(db, data=execution_log_data)
+
+    retrieved = db.query(ExecutionLog).filter_by(privacy_request_id="test_id").first()
+    assert retrieved is not None
+    assert retrieved.saas_version == "2.3.0"
+
+
+def test_execution_log_saas_version_null_for_non_saas(db, execution_log_data):
+    # saas_version not provided — should default to None
+    ExecutionLog.create(db, data=execution_log_data)
+
+    retrieved = db.query(ExecutionLog).filter_by(privacy_request_id="test_id").first()
+    assert retrieved is not None
+    assert retrieved.saas_version is None
+
+
 def test_execution_log_large_data(db, execution_log_data):
     large_message = "a" * 10000  # Large string
     large_fields_affected = ["field" + str(i) for i in range(1000)]  # Large list
