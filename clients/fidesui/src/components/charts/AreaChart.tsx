@@ -75,7 +75,12 @@ export const AreaChart = ({
   const chartData = data ?? [];
 
   useEffect(() => {
-    if (onIntervalChangeRef.current && rangeMs && rangeMs > 0 && containerWidth > 0) {
+    if (
+      onIntervalChangeRef.current &&
+      rangeMs &&
+      rangeMs > 0 &&
+      containerWidth > 0
+    ) {
       onIntervalChangeRef.current(
         pickIntervalHours(rangeMs, containerWidth, MIN_PX_PER_POINT),
       );

@@ -2,6 +2,8 @@ import { format, isValid } from "date-fns";
 import type { RefObject } from "react";
 import { useEffect, useState } from "react";
 
+import { MAX_INTERVAL_HOURS } from "./chart-constants";
+
 export const HOUR_MS = 3_600_000;
 export const DAY_MS = 86_400_000;
 
@@ -78,8 +80,6 @@ export const deriveInterval = (data: { label: string }[]): number => {
     new Date(data[1].label).getTime() - new Date(data[0].label).getTime();
   return gap > 0 ? gap : HOUR_MS;
 };
-
-const MAX_INTERVAL_HOURS = 72;
 
 /** Pick a bucket size (in hours) that fits the data range into the container. */
 export const pickIntervalHours = (
