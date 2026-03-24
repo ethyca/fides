@@ -21,7 +21,12 @@ export const useIntegrationFilters = () => {
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { entraMonitor, newIntegrationManagement, webMonitor, alphaJiraIntegration },
+    flags: {
+      entraMonitor,
+      newIntegrationManagement,
+      webMonitor,
+      alphaJiraIntegration,
+    },
   } = useFlags();
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -81,7 +86,12 @@ export const useIntegrationFilters = () => {
       : [];
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [connectionTypes, entraMonitor, alphaJiraIntegration, newIntegrationManagement]);
+  }, [
+    connectionTypes,
+    entraMonitor,
+    alphaJiraIntegration,
+    newIntegrationManagement,
+  ]);
 
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
