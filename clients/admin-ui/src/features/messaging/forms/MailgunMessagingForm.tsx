@@ -16,11 +16,11 @@ import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import MailgunLogo from "~/features/common/logos/MailgunLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import MailgunLogo from "~/features/common/logos/MailgunLogo";
 
 import { messagingProviders } from "../constants";
 import {
@@ -369,7 +369,9 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <Icons.CheckmarkFilled color={palette.FIDESUI_SUCCESS} />
+                        <Icons.CheckmarkFilled
+                          color={palette.FIDESUI_SUCCESS}
+                        />
                       ) : undefined
                     }
                   >

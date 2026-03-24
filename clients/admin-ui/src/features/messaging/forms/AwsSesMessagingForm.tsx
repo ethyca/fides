@@ -17,11 +17,11 @@ import { useCallback, useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import AwsSesLogo from "~/features/common/logos/AwsSesLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import AwsSesLogo from "~/features/common/logos/AwsSesLogo";
 
 import { messagingProviders } from "../constants";
 import {
@@ -564,7 +564,9 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <Icons.CheckmarkFilled color={palette.FIDESUI_SUCCESS} />
+                        <Icons.CheckmarkFilled
+                          color={palette.FIDESUI_SUCCESS}
+                        />
                       ) : undefined
                     }
                   >

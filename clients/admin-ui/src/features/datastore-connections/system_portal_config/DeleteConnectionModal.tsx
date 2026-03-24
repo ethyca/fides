@@ -10,7 +10,6 @@ import {
 } from "fidesui";
 import React from "react";
 
-
 type DataConnectionProps = {
   onDelete: () => void;
   deleteResult: any;

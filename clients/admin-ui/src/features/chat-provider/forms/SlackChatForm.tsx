@@ -7,6 +7,7 @@ import { useAPIHelper } from "~/features/common/hooks";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { ChatConfigCreate, ChatConfigUpdate } from "~/types/api";
 
+import SlackLogo from "../../common/logos/SlackLogo";
 import {
   useCreateChatConfigMutation,
   useGetChatConfigQuery,
@@ -15,7 +16,6 @@ import {
 import AuthorizationStatus from "../components/AuthorizationStatus";
 import ConfigurationCard from "../components/ConfigurationCard";
 import { SECRET_PLACEHOLDER } from "../constants";
-import SlackLogo from "../../common/logos/SlackLogo";
 import { cleanupUrlParams, getOAuthErrorMessage } from "../utils/urlHelpers";
 
 interface SlackChatFormProps {

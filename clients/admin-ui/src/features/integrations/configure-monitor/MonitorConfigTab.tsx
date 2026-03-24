@@ -1,10 +1,10 @@
 import {
   Button,
   Flex,
+  MonitorIcon,
   Table,
   Tooltip,
   Typography,
-  MonitorIcon,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useState } from "react";

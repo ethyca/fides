@@ -1,7 +1,6 @@
 import { Button, Drawer, Flex, Icons } from "fidesui";
 import type { ReactNode } from "react";
 
-
 interface Props {
   title?: ReactNode;
   /** @deprecated Use `title` prop instead */

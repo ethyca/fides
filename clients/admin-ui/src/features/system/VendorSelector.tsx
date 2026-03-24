@@ -6,9 +6,9 @@ import {
   ChakraHStack as HStack,
   ChakraSpacer as Spacer,
   ChakraVStack as VStack,
+  CompassIcon,
   Dropdown,
   MenuProps,
-  CompassIcon,
   Select,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
@@ -54,7 +54,7 @@ const CompassButton = ({
       <Spacer minHeight="18px" />
       <Dropdown menu={{ items }} disabled={disabled}>
         <Button
-          icon={<CompassIcon boxSize={4} />}
+          icon={<CompassIcon />}
           aria-label="Update information from Compass"
           data-testid="refresh-suggestions-btn"
           disabled={disabled}

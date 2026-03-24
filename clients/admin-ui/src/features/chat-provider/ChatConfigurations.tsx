@@ -22,12 +22,12 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { TableSkeletonLoader } from "~/features/common/table/v2";
 import { ChatProviderSettingsResponse, ScopeRegistryEnum } from "~/types/api";
 
+import SlackLogo from "../common/logos/SlackLogo";
 import {
   useDeleteChatConfigMutation,
   useEnableChatConfigMutation,
   useGetChatConfigsQuery,
 } from "./chatProvider.slice";
-import SlackLogo from "../common/logos/SlackLogo";
 
 const { Text } = Typography;
 

@@ -38,7 +38,6 @@ const DatasetYamlForm = () => {
   const [createDataset] = useCreateDatasetMutation();
   const [isEmptyState, setIsEmptyState] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTouched, setIsTouched] = useState(false);
   const monacoRef = useRef(null);
   const router = useRouter();
   const message = useMessage();
@@ -53,7 +52,6 @@ const DatasetYamlForm = () => {
 
   const handleChange = (value: string | undefined) => {
     try {
-      setIsTouched(true);
       validate(value as string);
       setIsEmptyState(!!(!value || value.trim() === ""));
     } catch (error) {

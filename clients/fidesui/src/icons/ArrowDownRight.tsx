@@ -1,7 +1,6 @@
 import React from "react";
 
-export interface ArrowDownRightIconProps
-  extends React.SVGProps<SVGSVGElement> {
+export interface ArrowDownRightIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
 
