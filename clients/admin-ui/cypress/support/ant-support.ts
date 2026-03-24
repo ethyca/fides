@@ -96,6 +96,14 @@ declare global {
       antPaginateNext: () => void;
 
       /**
+       * Get the overlay container of an Ant Design Dropdown by its overlayClassName.
+       * Useful for `.within()` calls on portal-rendered dropdowns.
+       * @param overlayClassName The overlayClassName prop passed to the Dropdown
+       * @example cy.getAntDropdownOverlay("group-by-menu-list").within(() => { ... });
+       */
+      getAntDropdownOverlay: (overlayClassName: string) => Chainable;
+
+      /**
        * Get an option from an Ant Design Dropdown component by label
        * @param option The label of the option to get
        * @example cy.getAntDropdownOption("Delete").should("be.visible");
@@ -137,9 +145,48 @@ declare global {
        */
       getAntModalConfirmButtons: () => Chainable;
       /**
+       * Get the close button from a visible Ant Design Modal component
+       */
+      getAntModalClose: () => Chainable;
+      /**
+       * Get the close button from an Ant Design Drawer component
+       * @example cy.getAntDrawerClose().click();
+       */
+      getAntDrawerClose: () => Chainable;
+      /**
+       * Get the header from an Ant Design Drawer component
+       * @example cy.getAntDrawerHeader().should("contain", "Title");
+       */
+      getAntDrawerHeader: () => Chainable;
+      /**
+       * Get the footer from an Ant Design Drawer component
+       * @example cy.getAntDrawerFooter().within(() => { ... });
+       */
+      getAntDrawerFooter: () => Chainable;
+      /**
        * Get the Ant Design tooltip
        */
       getAntTooltip: () => Chainable;
+
+      /**
+       * Assert an Ant Design message toast is visible
+       * @param type The message type (success, error, info, warning)
+       * @param text Optional text to assert the message contains
+       */
+      shouldShowMessage: (
+        type: "success" | "error" | "info" | "warning",
+        text?: string,
+      ) => Chainable;
+
+      /**
+       * Assert an Ant Design notification is visible
+       * @param type The notification type (success, error, info, warning)
+       * @param text Optional text to assert the notification contains
+       */
+      shouldShowNotification: (
+        type: "success" | "error" | "info" | "warning",
+        text?: string,
+      ) => Chainable;
     }
   }
 }
@@ -309,6 +356,9 @@ Cypress.Commands.add("antPaginatePrevious", () =>
 Cypress.Commands.add("antPaginateNext", () =>
   cy.getAntPagination().find("li.ant-pagination-next button").click(),
 );
+Cypress.Commands.add("getAntDropdownOverlay", (overlayClassName: string) =>
+  cy.get(`.${overlayClassName}`, { withinSubject: null }),
+);
 Cypress.Commands.add("getAntDropdownOption", (option: string | number) =>
   typeof option === "string"
     ? cy.get(".ant-dropdown-menu-item").contains(option)
@@ -361,12 +411,40 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-content`));
+Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-container`));
 Cypress.Commands.add("getAntModalHeader", () => cy.get(`.ant-modal-header`));
 Cypress.Commands.add("getAntModalFooter", () => cy.get(`.ant-modal-footer`));
 Cypress.Commands.add("getAntModalConfirmButtons", () =>
   cy.get(`.ant-modal-confirm-btns`),
 );
+Cypress.Commands.add("getAntModalClose", () =>
+  cy.get(`.ant-modal-close:visible`),
+);
+Cypress.Commands.add("getAntDrawerClose", () => cy.get(".ant-drawer-close"));
+Cypress.Commands.add("getAntDrawerHeader", () => cy.get(".ant-drawer-header"));
+Cypress.Commands.add("getAntDrawerFooter", () => cy.get(".ant-drawer-footer"));
 Cypress.Commands.add("getAntTooltip", () => cy.findByRole("tooltip"));
+
+Cypress.Commands.add(
+  "shouldShowMessage",
+  (type: "success" | "error" | "info" | "warning", text?: string) => {
+    const selector = `.ant-message-${type}`;
+    cy.get(selector, { timeout: 10000 }).should("be.visible");
+    if (text) {
+      cy.get(selector).should("contain", text);
+    }
+  },
+);
+
+Cypress.Commands.add(
+  "shouldShowNotification",
+  (type: "success" | "error" | "info" | "warning", text?: string) => {
+    const selector = `.ant-notification-notice-${type}`;
+    cy.get(selector, { timeout: 10000 }).should("be.visible");
+    if (text) {
+      cy.get(selector).should("contain", text);
+    }
+  },
+);
 
 export {};

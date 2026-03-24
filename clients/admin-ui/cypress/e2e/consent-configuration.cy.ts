@@ -38,11 +38,6 @@ describe("Consent configuration", () => {
         core_fides_version: "1.9.6",
         fidesplus_server: "healthy",
         fidesplus_version: "1.9.6",
-        system_scanner: {
-          enabled: false,
-          cluster_health: null,
-          cluster_error: null,
-        },
         dictionary: {
           enabled: true,
           service_health: null,
@@ -86,11 +81,6 @@ describe("Consent configuration", () => {
           core_fides_version: "1.9.6",
           fidesplus_server: "healthy",
           fidesplus_version: "1.9.6",
-          system_scanner: {
-            enabled: false,
-            cluster_health: null,
-            cluster_error: null,
-          },
           dictionary: {
             enabled: false,
             service_health: null,
@@ -217,11 +207,6 @@ describe("Consent configuration", () => {
             core_fides_version: "1.9.6",
             fidesplus_server: "healthy",
             fidesplus_version: "1.9.6",
-            system_scanner: {
-              enabled: false,
-              cluster_health: null,
-              cluster_error: null,
-            },
             dictionary: {
               enabled: true,
               service_health: null,

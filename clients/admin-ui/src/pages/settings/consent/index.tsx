@@ -8,7 +8,7 @@ import {
   ChakraSpinner as Spinner,
   ChakraStack as Stack,
   ChakraText as Text,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
@@ -20,7 +20,6 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectGppSettings,
   selectPlusConsentSettings,
@@ -100,7 +99,7 @@ const ConsentConfigPage: NextPage = () => {
 
   const { isLoading: isPurposesLoading } = useGetPurposesQuery();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (values: FormValues) => {
     const handleResult = (
@@ -108,15 +107,14 @@ const ConsentConfigPage: NextPage = () => {
         | { data: object }
         | { error: FetchBaseQueryError | SerializedError },
     ) => {
-      toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
           `An unexpected error occurred while saving. Please try again.`,
         );
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
       } else {
-        toast(successToastParams("Settings saved successfully"));
+        message.success("Settings saved successfully");
       }
     };
 

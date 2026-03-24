@@ -1,4 +1,0 @@
-type: Changed
-description: Renamed backfill_history table, added task_type column and migration-key gating for deferred index creation
-pr: 7583
-labels: ["db-migration"]

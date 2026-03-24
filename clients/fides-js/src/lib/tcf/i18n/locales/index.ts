@@ -18,6 +18,7 @@ import el from "./el/messages-tcf.json";
 import en from "./en/messages-tcf.json";
 import es from "./es/messages-tcf.json";
 import esMX from "./es-MX/messages-tcf.json";
+import esUS from "./es-US/messages-tcf.json";
 import et from "./et/messages-tcf.json";
 import eu from "./eu/messages-tcf.json";
 import fi from "./fi/messages-tcf.json";
@@ -61,6 +62,7 @@ export const STATIC_MESSAGES_TCF: Record<Locale, Messages> = {
   en: en,
   es: es,
   "es-MX": esMX,
+  "es-US": esUS,
   et: et,
   eu: eu,
   fi: fi,

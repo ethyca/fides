@@ -3,6 +3,8 @@ export * from "./CustomAlert";
 export * from "./CustomAvatar";
 export * from "./CustomCard";
 export * from "./CustomDateRangePicker";
+export * from "./CustomDrawer";
+export * from "./CustomDropdown";
 export * from "./CustomInput";
 export * from "./CustomList";
 export * from "./CustomSelect";

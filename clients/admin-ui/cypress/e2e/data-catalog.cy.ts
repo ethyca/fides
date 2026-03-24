@@ -57,8 +57,8 @@ describe("data catalog", () => {
       it("should be able to navigate to system details via the detail drawer", () => {
         cy.getByTestId("row-bigquery_system").within(() => {
           cy.getByTestId("system-actions-menu").click();
-          cy.getByTestId("view-system-details").click({ force: true });
         });
+        cy.selectAntDropdownOption("View details");
         cy.getByTestId("system-details").should("be.visible");
         cy.getByTestId("edit-system-btn").click();
         cy.url().should("include", "/systems/configure/bigquery_system");
@@ -67,8 +67,8 @@ describe("data catalog", () => {
       it("should be able to add data uses via the detail drawer", () => {
         cy.getByTestId("row-bigquery_system").within(() => {
           cy.getByTestId("system-actions-menu").click();
-          cy.getByTestId("view-system-details").click({ force: true });
         });
+        cy.selectAntDropdownOption("View details");
         cy.getByTestId("system-details").within(() => {
           cy.getByTestId("taxonomy-add-btn").click();
           cy.get(".select-wrapper").should("be.visible");
@@ -113,8 +113,8 @@ describe("data catalog", () => {
         "row-bigquery_monitor.prj-bigquery-111111-col-actions",
       ).within(() => {
         cy.getByTestId("actions-menu").click();
-        cy.getByTestId("view-resource-details").click({ force: true });
       });
+      cy.selectAntDropdownOption("View details");
       cy.getByTestId("resource-details").should("be.visible");
     });
   });
@@ -144,10 +144,10 @@ describe("data catalog", () => {
       cy.getByTestId("row-monitor.project.dataset.table_2-col-actions").within(
         () => {
           cy.getByTestId("actions-menu").click();
-          cy.getByTestId("hide-resource").click({ force: true });
-          cy.wait("@ignoreResource");
         },
       );
+      cy.selectAntDropdownOption("Hide");
+      cy.wait("@ignoreResource");
       cy.getByTestId("row-monitor.project.dataset.table_3-col-actions").within(
         () => {
           cy.getByTestId("approve-btn").click();
@@ -160,8 +160,8 @@ describe("data catalog", () => {
       it("should be able to view resource details", () => {
         cy.getByTestId("row-monitor.project.dataset.table_1").within(() => {
           cy.getByTestId("actions-menu").click();
-          cy.getByTestId("view-resource-details").click({ force: true });
         });
+        cy.selectAntDropdownOption("View details");
         cy.getByTestId("resource-details")
           .should("be.visible")
           .within(() => {
@@ -172,8 +172,8 @@ describe("data catalog", () => {
       it("should be able to edit data categories where applicable", () => {
         cy.getByTestId("row-monitor.project.dataset.table_3").within(() => {
           cy.getByTestId("actions-menu").click();
-          cy.getByTestId("view-resource-details").click({ force: true });
         });
+        cy.selectAntDropdownOption("View details");
         cy.getByTestId("resource-details").within(() => {
           cy.getByTestId("user-classification-system").should("exist");
         });

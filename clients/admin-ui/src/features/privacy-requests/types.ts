@@ -60,6 +60,7 @@ export interface ExecutionLog {
   action_type: string;
   status: ExecutionLogStatus;
   updated_at: string;
+  saas_version?: string | null;
 }
 
 export type GetUploadedManualWebhookDataRequest = {

@@ -124,10 +124,7 @@ const IntegrationBox = ({
         </Flex>
         <Flex marginLeft="auto" gap={4} flexShrink={0}>
           {showDeleteButton && integration && (
-            <DeleteConnectionModal
-              showMenu={false}
-              connection_key={integration.key}
-            />
+            <DeleteConnectionModal connection_key={integration.key} />
           )}
           {showTestNotice && needsAuthorization && (
             <Button

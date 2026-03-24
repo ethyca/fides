@@ -1,9 +1,4 @@
-import {
-  Button,
-  ChakraModalProps as ModalProps,
-  Flex,
-  Typography,
-} from "fidesui";
+import { Button, Flex, Modal, Typography, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import { useMemo, useRef, useState } from "react";
 import * as Yup from "yup";
@@ -20,9 +15,7 @@ import {
   isErrorResult,
   VendorSources,
 } from "../common/helpers";
-import { useAlert } from "../common/hooks";
 import { FormGuard } from "../common/hooks/useIsAnyFormDirty";
-import FormModal from "../common/modals/FormModal";
 import { formatKey } from "../datastore-connections/system_portal_config/helpers";
 import {
   selectAllDictEntries,
@@ -56,14 +49,17 @@ const defaultInitialValues: FormValues = {
   tags: [],
 };
 
-interface AddNewSystemModalProps extends Omit<ModalProps, "children"> {
+interface AddNewSystemModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onSuccessfulSubmit?: (fidesKey: string, newSystemName: string) => void;
   toastOnSuccess?: boolean;
 }
 export const AddNewSystemModal = ({
+  isOpen,
+  onClose,
   onSuccessfulSubmit,
   toastOnSuccess,
-  ...props
 }: AddNewSystemModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
@@ -76,7 +72,7 @@ export const AddNewSystemModal = ({
   const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
   const [postVendorIds] = usePostSystemVendorsMutation();
   const [createSystemMutationTrigger] = useCreateSystemMutation();
-  const { successAlert, errorAlert } = useAlert();
+  const message = useMessage();
 
   const { setSuggestions, setLockedForGVL } = dictSuggestionsSlice.actions;
 
@@ -127,7 +123,7 @@ export const AddNewSystemModal = ({
   };
 
   const handleCloseModal = () => {
-    props.onClose();
+    onClose();
     dispatch(setSuggestions("initial"));
     dispatch(setLockedForGVL(false));
   };
@@ -137,13 +133,15 @@ export const AddNewSystemModal = ({
     if (values.vendor_id) {
       const result = await postVendorIds([values.vendor_id]);
       if (isErrorResult(result)) {
-        errorAlert(getErrorMessage(result.error));
+        message.error(getErrorMessage(result.error));
       } else {
         const { data } = result;
         const newSystem = data.systems[0];
         onSuccessfulSubmit?.(newSystem.fides_key, newSystem.name);
         if (toastOnSuccess) {
-          successAlert(`${data.name} has been added to your system inventory.`);
+          message.success(
+            `${data.name} has been added to your system inventory.`,
+          );
         }
         handleCloseModal();
       }
@@ -159,12 +157,12 @@ export const AddNewSystemModal = ({
       const result = await createSystemMutationTrigger(payload);
 
       if (isErrorResult(result)) {
-        errorAlert(getErrorMessage(result.error));
+        message.error(getErrorMessage(result.error));
       } else {
         const { fides_key: fidesKey, name } = result.data;
         onSuccessfulSubmit?.(fidesKey, name as string);
         if (toastOnSuccess) {
-          successAlert(
+          message.success(
             `${values.name} has been added to your system inventory.`,
           );
         }
@@ -175,7 +173,15 @@ export const AddNewSystemModal = ({
   };
 
   return (
-    <FormModal title="Add New System" {...props} onClose={handleCloseModal}>
+    <Modal
+      title="Add New System"
+      open={isOpen}
+      onCancel={handleCloseModal}
+      centered
+      data-testid="add-modal-content"
+      destroyOnClose
+      footer={null}
+    >
       <Formik
         initialValues={defaultInitialValues}
         onSubmit={handleSubmit}
@@ -252,6 +258,6 @@ export const AddNewSystemModal = ({
           </Form>
         )}
       </Formik>
-    </FormModal>
+    </Modal>
   );
 };

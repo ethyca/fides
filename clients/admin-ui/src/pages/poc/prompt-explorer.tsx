@@ -354,7 +354,7 @@ const PromptExplorer: NextPage = () => {
 
           {/* Middle - Configuration */}
           <Col xs={24} md={6}>
-            <Space direction="vertical" className="w-full" size="middle">
+            <Space direction="vertical" className="w-full" size="medium">
               {/* Data Sections - only for assessment prompts */}
               {selectedPrompt?.category === "assessment" && (
                 <Card title="Data Sections" size="small">
@@ -506,7 +506,7 @@ const PromptExplorer: NextPage = () => {
 
           {/* Right - Output */}
           <Col xs={24} md={12}>
-            <Space direction="vertical" className="size-full" size="middle">
+            <Space direction="vertical" className="size-full" size="medium">
               {/* Rendered Prompt */}
               <Card
                 title="Rendered Prompt"

@@ -129,7 +129,7 @@ const DigestSchedulePicker = ({
   };
 
   return (
-    <Space direction="vertical" size="middle" className="w-full">
+    <Space direction="vertical" size="medium" className="w-full">
       {showCustomCronWarning && (
         <Alert
           message="Custom Cron Expression"

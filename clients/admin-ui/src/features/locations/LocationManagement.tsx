@@ -2,20 +2,17 @@ import {
   Button,
   ChakraBox as Box,
   ChakraSimpleGrid as SimpleGrid,
-  ChakraText as Text,
   ChakraVStack as VStack,
-  useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
-  WarningIcon,
+  useMessage,
+  useModal,
+  useNotification,
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import SearchInput from "~/features/common/SearchInput";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   LocationRegulationResponse,
   PrivacyNoticeRegion,
@@ -30,8 +27,9 @@ import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupLocationsByContinent } from "./transformations";
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
-  const toast = useToast();
-  const confirmationDisclosure = useDisclosure();
+  const message = useMessage();
+  const notification = useNotification();
+  const modal = useModal();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.locations?.filter((l) => l.id !== PrivacyNoticeRegion.GLOBAL) ?? [],
   );
@@ -55,7 +53,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const router = useRouter();
   const goToRegulations = () => {
     router.push(REGULATIONS_ROUTE).then(() => {
-      toast.closeAll();
+      notification.destroy();
     });
   };
 
@@ -69,19 +67,16 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       regulations: [],
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          <Text display="inline">
-            Fides has automatically associated the relevant regulations with
-            your location choices.{" "}
-            <ToastLink onClick={goToRegulations}>
-              View regulations here.
-            </ToastLink>
-          </Text>,
+      notification.success({
+        message: "Location saved",
+        description:
+          "Fides has automatically associated the relevant regulations with your location choices.",
+        actions: (
+          <ToastLink onClick={goToRegulations}>View regulations</ToastLink>
         ),
-      );
+      });
     }
   };
 
@@ -127,22 +122,18 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           ),
         )}
       </SimpleGrid>
-      <ConfirmationModal
-        isOpen={confirmationDisclosure.isOpen}
-        onClose={confirmationDisclosure.onClose}
-        onConfirm={() => {
-          handleSave();
-          confirmationDisclosure.onClose();
-        }}
-        title="Regulation updates"
-        message="Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the regulation settings."
-        isCentered
-        icon={<WarningIcon color="orange" />}
-      />
       {showSave ? (
         <Button
           type="primary"
-          onClick={confirmationDisclosure.onOpen}
+          onClick={() => {
+            modal.confirm({
+              title: "Regulation updates",
+              content:
+                "Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the regulation settings.",
+              centered: true,
+              onOk: handleSave,
+            });
+          }}
           loading={isSaving}
           data-testid="save-btn"
         >

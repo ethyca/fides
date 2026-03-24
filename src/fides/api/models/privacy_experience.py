@@ -65,6 +65,19 @@ class RejectAllMechanism(Enum):
     REJECT_CONSENT_ONLY = "reject_consent_only"
 
 
+class ResurfaceBehavior(Enum):
+    """
+    Resurface behavior options - controls when to re-show the banner/modal.
+    Used to configure whether the experience resurfaces after rejection or dismissal.
+    """
+
+    # Resurface the banner after user rejects
+    REJECT = "reject"
+    # Resurface the banner after user dismisses
+    DISMISS = "dismiss"
+    # Note: NULL or empty array means default behavior (no resurfacing)
+
+
 # Fides JS UX Types - there should only be one of these defined per region
 FidesJSUXTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
@@ -107,6 +120,19 @@ class PrivacyExperienceConfigBase:
         nullable=True,
         default=True,
     )  # base is nullable for privacy experience config history
+
+    resurface_behavior = Column(
+        ARRAY(
+            EnumColumn(
+                ResurfaceBehavior,
+                native_enum=False,
+                values_callable=lambda x: [i.value for i in x],
+            )
+        ),
+        nullable=True,
+        server_default="{}",
+        default=list,
+    )
 
     disabled = Column(Boolean, nullable=False, default=True)
 
@@ -161,6 +187,18 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     name = Column(
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
+    resurface_behavior = Column(
+        ARRAY(
+            EnumColumn(
+                ResurfaceBehavior,
+                native_enum=False,
+                values_callable=lambda x: [i.value for i in x],
+            )
+        ),
+        nullable=False,
+        server_default="{}",
+        default=list,
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
 
     privacy_notice_keys = Column(
         ARRAY(String)
@@ -248,6 +286,18 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     name = Column(
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
+    resurface_behavior = Column(
+        ARRAY(
+            EnumColumn(
+                ResurfaceBehavior,
+                native_enum=False,
+                values_callable=lambda x: [i.value for i in x],
+            )
+        ),
+        nullable=False,
+        server_default="{}",
+        default=list,
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     origin = Column(
         String, ForeignKey(ExperienceConfigTemplate.id_field_path)
     )  # The template from which this config was created if applicable
