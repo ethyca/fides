@@ -14,11 +14,11 @@ const DUE_DATE_TYPE_NONE = "none";
 const DUE_DATE_TYPE_FIXED_DAYS = "fixed_days";
 const DUE_DATE_OPTIONS = [
   { value: DUE_DATE_TYPE_NONE, label: "No due date" },
-  { value: "7", label: "7 days after approval" },
-  { value: "14", label: "14 days after approval" },
-  { value: "30", label: "30 days after approval" },
-  { value: "45", label: "45 days after approval" },
-  { value: "60", label: "60 days after approval" },
+  { value: "7", label: "7 days" },
+  { value: "14", label: "14 days" },
+  { value: "30", label: "30 days" },
+  { value: "45", label: "45 days" },
+  { value: "60", label: "60 days" },
 ];
 
 interface JiraConfigTabProps {
@@ -182,7 +182,11 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           />
         </Form.Item>
 
-        <Form.Item name="due_date_days" label="Due date" className="mt-4">
+        <Form.Item
+          name="due_date_days"
+          label="Due date (time after approval)"
+          className="mt-4"
+        >
           <Select aria-label="Due date" options={DUE_DATE_OPTIONS} />
         </Form.Item>
 
