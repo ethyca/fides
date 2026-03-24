@@ -53,12 +53,20 @@ const oauthClientsApi = baseApi.injectEndpoints({
       invalidatesTags: ["OAuth Client"],
     }),
     updateOAuthClient: build.mutation<ClientResponse, ClientUpdateParams>({
+<<<<<<< HEAD
       query: ({ path: { client_id }, body }) => ({
+=======
+      query: ({ client_id, ...body }) => ({
+>>>>>>> 3168e9f8fc (Add OAuth API clients list page)
         url: `oauth/client/${client_id}`,
         method: "PUT",
         body,
       }),
+<<<<<<< HEAD
       invalidatesTags: (_result, _error, { path: { client_id } }) => [
+=======
+      invalidatesTags: (_result, _error, { client_id }) => [
+>>>>>>> 3168e9f8fc (Add OAuth API clients list page)
         "OAuth Client",
         { type: "OAuth Client", id: client_id },
       ],
