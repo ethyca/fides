@@ -53,30 +53,7 @@ const ApiClientsPage: NextPage = () => {
           </Tooltip>
         }
       />
-      <Flex justify="flex-end" className="mb-4">
-        <Restrict scopes={[ScopeRegistryEnum.CLIENT_CREATE]}>
-          <Button
-            type="primary"
-            onClick={() => setCreateModalOpen(true)}
-            data-testid="create-api-client-btn"
-          >
-            Create API client
-          </Button>
-        </Restrict>
-      </Flex>
       <OAuthClientsList />
-      <CreateOAuthClientModal
-        isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        onCreated={handleCreated}
-      />
-      <ClientSecretModal
-        clientId={newClientId}
-        secret={newClientSecret}
-        context="created"
-        isOpen={secretModalOpen}
-        onClose={() => setSecretModalOpen(false)}
-      />
     </FixedLayout>
   );
 };
