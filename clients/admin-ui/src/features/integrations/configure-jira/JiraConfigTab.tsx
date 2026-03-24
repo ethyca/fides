@@ -1,12 +1,4 @@
-import {
-  Button,
-  Flex,
-  Form,
-  InputNumber,
-  Select,
-  Typography,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Form, Select, Typography, useMessage } from "fidesui";
 
 import { usePatchDatastoreConnectionSecretsMutation } from "~/features/datastore-connections";
 import {
@@ -20,6 +12,14 @@ import TemplateVariableTextArea from "./TemplateVariableTextArea";
 
 const DUE_DATE_TYPE_NONE = "none";
 const DUE_DATE_TYPE_FIXED_DAYS = "fixed_days";
+const DUE_DATE_OPTIONS = [
+  { value: DUE_DATE_TYPE_NONE, label: "No due date" },
+  { value: "7", label: "7 days after approval" },
+  { value: "14", label: "14 days after approval" },
+  { value: "30", label: "30 days after approval" },
+  { value: "45", label: "45 days after approval" },
+  { value: "60", label: "60 days after approval" },
+];
 
 interface JiraConfigTabProps {
   connection: ConnectionConfigurationResponse;
@@ -30,8 +30,7 @@ interface JiraConfigFormValues {
   issue_type?: string;
   summary_template?: string;
   description_template?: string;
-  due_date_type?: string;
-  due_date_days?: number;
+  due_date_days?: string;
 }
 
 const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
@@ -43,7 +42,6 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
     | undefined;
 
   const selectedProject = Form.useWatch("project_key", form);
-  const dueDateType = Form.useWatch("due_date_type", form);
   // RTK Query hooks
   const { data: projects, isLoading: projectsLoading } =
     useGetJiraProjectsQuery(
@@ -77,10 +75,10 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
       description_template: values.description_template,
     };
 
-    if (values.due_date_type && values.due_date_type !== DUE_DATE_TYPE_NONE) {
+    if (values.due_date_days && values.due_date_days !== DUE_DATE_TYPE_NONE) {
       secretsPayload.due_date_config = {
-        type: values.due_date_type,
-        days: values.due_date_days,
+        type: DUE_DATE_TYPE_FIXED_DAYS,
+        days: parseInt(values.due_date_days, 10),
       };
     } else {
       secretsPayload.due_date_config = null;
@@ -112,8 +110,10 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           issue_type: secrets?.issue_type || undefined,
           summary_template: secrets?.summary_template || undefined,
           description_template: secrets?.description_template || undefined,
-          due_date_type: secrets?.due_date_config?.type || DUE_DATE_TYPE_NONE,
-          due_date_days: secrets?.due_date_config?.days || undefined,
+          due_date_days:
+            secrets?.due_date_config?.type === DUE_DATE_TYPE_FIXED_DAYS
+              ? String(secrets.due_date_config.days)
+              : DUE_DATE_TYPE_NONE,
         }}
       >
         <Form.Item
@@ -182,31 +182,9 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           />
         </Form.Item>
 
-        <Form.Item
-          name="due_date_type"
-          label="Due date calculation"
-          className="mt-4"
-        >
-          <Select
-            aria-label="Due date calculation"
-            options={[
-              { value: DUE_DATE_TYPE_NONE, label: "No due date" },
-              {
-                value: DUE_DATE_TYPE_FIXED_DAYS,
-                label: "Fixed number of days after approval",
-              },
-            ]}
-          />
+        <Form.Item name="due_date_days" label="Due date" className="mt-4">
+          <Select aria-label="Due date" options={DUE_DATE_OPTIONS} />
         </Form.Item>
-        {dueDateType === DUE_DATE_TYPE_FIXED_DAYS && (
-          <Form.Item
-            name="due_date_days"
-            label="Days after approval"
-            rules={[{ required: true, message: "Enter number of days" }]}
-          >
-            <InputNumber min={1} style={{ width: "100%" }} />
-          </Form.Item>
-        )}
 
         <Flex justify="end" gap="middle" className="mt-4">
           <Button type="primary" htmlType="submit" loading={isSaving}>
