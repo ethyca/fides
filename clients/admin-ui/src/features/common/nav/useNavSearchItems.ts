@@ -58,29 +58,27 @@ const useNavSearchItems = (
   const shouldSearch = trimmedQuery.length >= MIN_SEARCH_LENGTH;
 
   // Static items from nav config (always available)
-  const staticItems: FlatNavItem[] = useMemo(() => {
-    const items: FlatNavItem[] = [];
-    groups.forEach((group) => {
-      group.children
-        .filter((child) => !child.hidden)
-        .forEach((child) => {
-          items.push({
-            title: child.title,
-            path: child.path,
-            groupTitle: group.title,
-          });
-          child.tabs?.forEach((tab) => {
-            items.push({
+  const staticItems: FlatNavItem[] = useMemo(
+    () =>
+      groups.flatMap((group) =>
+        group.children
+          .filter((child) => !child.hidden)
+          .flatMap((child) => [
+            {
+              title: child.title,
+              path: child.path,
+              groupTitle: group.title,
+            },
+            ...(child.tabs?.map((tab) => ({
               title: tab.title,
               path: tab.path,
               groupTitle: group.title,
               parentTitle: child.title,
-            });
-          });
-        });
-    });
-    return items;
-  }, [groups]);
+            })) ?? []),
+          ]),
+      ),
+    [groups],
+  );
 
   // Taxonomy types (small fixed set, always available)
   const { data: customTaxonomies } = useGetCustomTaxonomiesQuery();
@@ -91,25 +89,23 @@ const useNavSearchItems = (
         ?.title ?? "Core configuration";
 
     const coreKeys = new Set<string>(CORE_TAXONOMY_ITEMS.map((c) => c.key));
-    const items: FlatNavItem[] = CORE_TAXONOMY_ITEMS.map((tax) => ({
-      title: tax.title,
-      path: `/taxonomy/${tax.key}`,
-      groupTitle: taxonomyGroupTitle,
-      parentTitle: "Taxonomy",
-    }));
 
-    customTaxonomies
-      ?.filter((tax) => !coreKeys.has(tax.fides_key))
-      .forEach((tax) => {
-        items.push({
+    return [
+      ...CORE_TAXONOMY_ITEMS.map((tax) => ({
+        title: tax.title,
+        path: `/taxonomy/${tax.key}`,
+        groupTitle: taxonomyGroupTitle,
+        parentTitle: "Taxonomy",
+      })),
+      ...(customTaxonomies ?? [])
+        .filter((tax) => !coreKeys.has(tax.fides_key))
+        .map((tax) => ({
           title: tax.name || tax.fides_key,
           path: `/taxonomy/${tax.fides_key}`,
           groupTitle: taxonomyGroupTitle,
           parentTitle: "Taxonomy",
-        });
-      });
-
-    return items;
+        })),
+    ];
   }, [customTaxonomies, groups]);
 
   // Systems - server-side search, skipped until user types 2+ chars

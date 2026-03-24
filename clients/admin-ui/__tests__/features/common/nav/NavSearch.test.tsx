@@ -96,6 +96,49 @@ jest.mock("fidesui/src/palette/palette.module.scss", () => ({
   FIDESUI_NEUTRAL_400: "#a8aaad",
 }));
 
+// Mock react-hotkeys-hook so fireEvent.keyDown works in tests
+jest.mock("react-hotkeys-hook", () => {
+  // eslint-disable-next-line global-require
+  const MockReact = require("react");
+  return {
+    useHotkeys: (
+      keys: string,
+      callback: () => void,
+      options?: Record<string, unknown>,
+    ) => {
+      MockReact.useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+          keys
+            .split(",")
+            .map((k: string) => k.trim().toLowerCase())
+            .some((combo: string) => {
+              const parts = combo.split("+");
+              const key = parts.pop()!;
+              const needsMeta = parts.includes("meta");
+              const needsCtrl = parts.includes("ctrl");
+              if (
+                e.key.toLowerCase() === key &&
+                (!needsMeta || e.metaKey) &&
+                (!needsCtrl || e.ctrlKey)
+              ) {
+                if (options?.preventDefault) {
+                  e.preventDefault();
+                }
+                callback();
+                return true;
+              }
+              return false;
+            });
+        };
+        globalThis.document.addEventListener("keydown", handler);
+        return () =>
+          globalThis.document.removeEventListener("keydown", handler);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+    },
+  };
+});
+
 // Mock useNavSearchItems to return static + dynamic items without Redux
 const mockDynamicItems: FlatNavItem[] = [];
 jest.mock("~/features/common/nav/useNavSearchItems", () => ({

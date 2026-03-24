@@ -1,8 +1,4 @@
 /* Expanded sidebar search */
-.expandedWrapper {
-  padding: 0 8px 12px;
-}
-
 .expandedAutoComplete {
   width: 100% !important;
 }
@@ -50,31 +46,6 @@
     &:hover {
       color: var(--fidesui-corinth) !important;
     }
-  }
-}
-
-/* Collapsed sidebar search */
-.collapsedWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 12px;
-}
-
-.collapsedButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: var(--fidesui-neutral-700);
   }
 }
 

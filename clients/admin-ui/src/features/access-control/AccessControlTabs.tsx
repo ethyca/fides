@@ -17,29 +17,14 @@ const AccessControlTabs = () => {
   const router = useRouter();
   const currentPath = router.pathname;
 
-  let selectedKey = "summary";
+  let selectedKey = ACCESS_CONTROL_SUMMARY_ROUTE;
   if (currentPath.startsWith(ACCESS_CONTROL_REQUEST_LOG_ROUTE)) {
-    selectedKey = "request-log";
-  } else if (currentPath.startsWith(ACCESS_CONTROL_SUMMARY_ROUTE)) {
-    selectedKey = "summary";
+    selectedKey = ACCESS_CONTROL_REQUEST_LOG_ROUTE;
   }
 
-  const menuItems = ACCESS_CONTROL_TAB_ITEMS.map((tab) => ({
-    key: tab.path === ACCESS_CONTROL_SUMMARY_ROUTE ? "summary" : "request-log",
+  const items = ACCESS_CONTROL_TAB_ITEMS.map((tab) => ({
+    key: tab.path,
     label: tab.title,
-    path: tab.path,
-  }));
-
-  const handleMenuClick = (key: string) => {
-    const item = menuItems.find((i) => i.key === key);
-    if (item) {
-      router.push(item.path);
-    }
-  };
-
-  const items = menuItems.map((item) => ({
-    label: item.label,
-    key: item.key,
   }));
 
   return (
@@ -47,7 +32,7 @@ const AccessControlTabs = () => {
       <Menu
         mode="horizontal"
         selectedKeys={[selectedKey]}
-        onClick={({ key }) => handleMenuClick(key)}
+        onClick={({ key }) => router.push(key)}
         items={items}
       />
     </div>
