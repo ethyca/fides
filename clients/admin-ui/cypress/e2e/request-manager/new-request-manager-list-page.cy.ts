@@ -358,7 +358,7 @@ describe("New Privacy Requests", () => {
           },
         }).as("postPrivacyRequest");
         cy.getByTestId("submit-btn").click();
-        cy.getByTestId("toast-success-msg").should("exist");
+        cy.shouldShowMessage("success");
         cy.wait("@postPrivacyRequest");
         cy.wait("@getPrivacyRequests");
       });

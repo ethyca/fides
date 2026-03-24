@@ -4,7 +4,7 @@ import {
   ChakraHStack as HStack,
   ChakraStack as Stack,
   ChakraText as Text,
-  useChakraDisclosure as useDisclosure,
+  useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -16,7 +16,6 @@ import ColumnDropdown, {
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import WarningModal from "~/features/common/modals/WarningModal";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
@@ -40,11 +39,7 @@ const ScanResults = () => {
   const router = useRouter();
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
 
-  const {
-    isOpen: isWarningOpen,
-    onOpen: onWarningOpen,
-    onClose: onWarningClose,
-  } = useDisclosure();
+  const modal = useModal();
   const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
   const [selectedColumns, setSelectedColumns] =
@@ -75,7 +70,20 @@ const ScanResults = () => {
 
   const handleSubmit = () => {
     if (systems.length > selectedSystems.length) {
-      onWarningOpen();
+      modal.confirm({
+        title: "Warning",
+        content: (
+          <Text color="gray.500" mb={3}>
+            You&apos;re registering {selectedSystems.length} of {systems.length}{" "}
+            systems available. Do you want to continue with registration or
+            cancel and register all systems now?
+          </Text>
+        ),
+        okText: "Continue",
+        cancelText: "Cancel",
+        centered: true,
+        onOk: confirmRegisterSelectedSystems,
+      });
     } else {
       confirmRegisterSelectedSystems();
     }
@@ -84,14 +92,6 @@ const ScanResults = () => {
   const handleCancel = () => {
     dispatch(changeStep(2));
   };
-
-  const warningMessage = (
-    <Text color="gray.500" mb={3}>
-      You’re registering {selectedSystems.length} of {systems.length} systems
-      available. Do you want to continue with registration or cancel and
-      register all systems now?
-    </Text>
-  );
 
   return (
     <Box maxW="full">
@@ -160,14 +160,6 @@ const ScanResults = () => {
           </>
         )}
       </Stack>
-
-      <WarningModal
-        title="Warning"
-        message={warningMessage}
-        handleConfirm={confirmRegisterSelectedSystems}
-        isOpen={isWarningOpen}
-        onClose={onWarningClose}
-      />
     </Box>
   );
 };

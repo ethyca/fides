@@ -1,11 +1,4 @@
-import {
-  ChakraDrawer as Drawer,
-  ChakraDrawerBody as DrawerBody,
-  ChakraDrawerCloseButton as DrawerCloseButton,
-  ChakraDrawerContent as DrawerContent,
-  ChakraDrawerHeader as DrawerHeader,
-  ChakraDrawerOverlay as DrawerOverlay,
-} from "fidesui";
+import { Drawer } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
 import { StagedResourceAPIResponse } from "~/types/api";
@@ -17,22 +10,19 @@ const CatalogDatasetDetailDrawer = ({
   dataset?: StagedResourceAPIResponse;
   onClose: () => void;
 }) => (
-  <Drawer isOpen={!!dataset} onClose={onClose} size="md">
-    <DrawerOverlay />
-    <DrawerContent>
-      <DrawerHeader>{dataset?.name || dataset?.urn}</DrawerHeader>
-      <DrawerCloseButton />
-      <DrawerBody>
-        <InfoHeading text="Title" mt={0} />
-        <InfoText>{dataset?.name ?? dataset?.urn}</InfoText>
-        {dataset?.description && (
-          <>
-            <InfoHeading text="Description" />
-            <InfoText>{dataset?.description}</InfoText>
-          </>
-        )}
-      </DrawerBody>
-    </DrawerContent>
+  <Drawer
+    open={!!dataset}
+    onClose={onClose}
+    title={dataset?.name || dataset?.urn}
+  >
+    <InfoHeading text="Title" mt={0} />
+    <InfoText>{dataset?.name ?? dataset?.urn}</InfoText>
+    {dataset?.description && (
+      <>
+        <InfoHeading text="Description" />
+        <InfoText>{dataset?.description}</InfoText>
+      </>
+    )}
   </Drawer>
 );
 

@@ -129,7 +129,7 @@ describe("Privacy Requests", () => {
         cy.get("[data-testid=log-drawer]").should("exist");
 
         // Close drawer
-        cy.getByTestId("log-drawer-close").click();
+        cy.getAntDrawerClose().click();
         cy.get("[data-testid=log-drawer]").should("not.exist");
       });
     });

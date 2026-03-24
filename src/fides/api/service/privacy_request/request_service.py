@@ -681,11 +681,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # A pending task that hasn't been dispatched to Celery yet will
-                            # never have a cache key — this is not a stuck state. Only pending
-                            # tasks can legitimately lack a cache key; in_processing tasks
-                            # without one are genuinely stuck and should be canceled below.
-                            # Checked before the async query to avoid an unnecessary DB hit.
+                            # A pending task awaiting upstream is not stuck — it was
+                            # never dispatched because its prerequisites aren't done.
+                            # Skip it and continue checking other tasks. (ENG-2756)
                             if (
                                 task_status == ExecutionLogStatus.pending
                                 and awaiting_upstream
@@ -697,10 +695,24 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 continue
 
-                            # Check if the request has async tasks awaiting external completion
-                            if _has_async_tasks_awaiting_external_completion(
-                                db, privacy_request.id
-                            ):
+                            # If the privacy request has async tasks awaiting an external
+                            # event (webhook callback, polling), don't requeue or cancel —
+                            # the request is intentionally waiting for that event.
+                            try:
+                                has_async = (
+                                    _has_async_tasks_awaiting_external_completion(
+                                        db, privacy_request.id
+                                    )
+                                )
+                            except Exception as async_exc:
+                                # DB error checking async tasks — fail safe: skip this PR.
+                                logger.warning(
+                                    f"Error checking async tasks for privacy request "
+                                    f"{privacy_request.id}, skipping watchdog pass for this request: {async_exc}"
+                                )
+                                should_requeue = False
+                                break
+                            if has_async:
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) contains async tasks awaiting "
@@ -709,14 +721,31 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # For other statuses, cancel the entire privacy request
-                            _cancel_interrupted_tasks_and_error_privacy_request(
-                                db,
-                                privacy_request,
-                                f"No task ID found for request task {request_task_id} "
-                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
-                            )
-                            should_requeue = False
+                            # All remaining no-subtask_id cases route through the retry
+                            # mechanism. Covers three scenarios:
+                            #   - pending + no upstream (root task): never dispatched
+                            #   - pending + upstream_complete: parent died before dispatch
+                            #   - in_processing + no_cache: cache evicted / worker crashed
+                            # _handle_privacy_request_requeue applies the retry limit;
+                            # cancellation only happens when the limit is exhausted.
+                            if task_status == ExecutionLogStatus.pending:
+                                # awaiting_upstream=True cases were already skipped via
+                                # `continue` above, so all pending tasks reaching here have
+                                # upstream complete (or no upstream). Both cases mean the
+                                # parent task died before dispatching this task.
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending with no "
+                                    f"subtask_id (upstream complete or no upstream) — "
+                                    f"parent task died before dispatch, requeueing"
+                                )
+                            else:
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is in_processing with no "
+                                    f"cache key - possible cache eviction or worker crash, requeueing"
+                                )
+                            should_requeue = True
                             break
 
                         if (
@@ -773,26 +802,21 @@ def requeue_polling_tasks(self: DatabaseTask) -> None:
 EMBEDDED_EXECUTION_LOG_LIMIT = 1000
 
 
-def execution_and_audit_logs_by_dataset_name(
-    self: PrivacyRequest,
-) -> DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]:
+def batch_execution_and_audit_logs_by_dataset(
+    db: Session,
+    privacy_request_ids: List[str],
+) -> Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]]:
     """
-    Returns a combined mapping of execution and audit logs for the given privacy request.
+    Returns a mapping of privacy_request_id → {dataset_name → [logs]} for all
+    given privacy requests in a single query.
 
-    Audit Logs are for the entire privacy request as a whole, while execution logs are created for specific collections.
-    Logs here are grouped by dataset, but if it is an audit log, it is just given a fake dataset name, here "Request + status"
-    ExecutionLogs for each dataset are truncated.
-
-    Added as a conditional property to the PrivacyRequest class at runtime to
-    show optionally embedded execution and audit logs.
-
-    An example response might include your execution logs from your mongo db in one group, and execution logs from
-    your postgres db in a different group, plus audit logs for when the request was approved and denied.
+    Audit Logs are for the entire privacy request as a whole, while execution logs
+    are created for specific collections. Logs are grouped by dataset, but if it is
+    an audit log, it is given a fake dataset name, "Request + status".
+    ExecutionLogs for each dataset are truncated at EMBEDDED_EXECUTION_LOG_LIMIT.
     """
-    db: Session = Session.object_session(self)
-    all_logs: DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]] = defaultdict(
-        list
-    )
+    if not privacy_request_ids:
+        return {}
 
     execution_log_query: Query = db.query(
         ExecutionLog.id,
@@ -809,7 +833,8 @@ def execution_and_audit_logs_by_dataset_name(
         ExecutionLog.fields_affected,
         ExecutionLog.action_type,
         null().label("user_id"),
-    ).filter(ExecutionLog.privacy_request_id == self.id)
+        ExecutionLog.saas_version,
+    ).filter(ExecutionLog.privacy_request_id.in_(privacy_request_ids))
 
     audit_log_query: Query = db.query(
         AuditLog.id,
@@ -826,17 +851,27 @@ def execution_and_audit_logs_by_dataset_name(
         null().label("fields_affected"),
         null().label("action_type"),
         AuditLog.user_id,
-    ).filter(AuditLog.privacy_request_id == self.id)
+        null().label("saas_version"),
+    ).filter(AuditLog.privacy_request_id.in_(privacy_request_ids))
 
     combined: Query = execution_log_query.union_all(audit_log_query)
 
+    result: Dict[
+        str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]
+    ] = {}
+
     for log in combined.order_by(ExecutionLog.updated_at.asc()):
+        pr_id = log.privacy_request_id
+        if pr_id not in result:
+            result[pr_id] = defaultdict(list)
+
         dataset_name: str = log.dataset_name or f"Request {log.status}"
 
-        if len(all_logs[dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
+        if len(result[pr_id][dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
             continue
-        all_logs[dataset_name].append(log)
-    return all_logs
+        result[pr_id][dataset_name].append(log)
+
+    return result
 
 
 # Priority order for "worst" status per dataset — lower number = higher priority.
@@ -849,24 +884,29 @@ _STATUS_PRIORITY: Dict[ExecutionLogStatus, int] = {
 }
 
 
-def task_status_by_dataset_name(
-    self: PrivacyRequest,
-) -> Dict[str, str]:
+def batch_task_status_by_dataset(
+    db: Session,
+    privacy_request_ids: List[str],
+) -> Dict[str, Dict[str, str]]:
     """
-    Returns a mapping of dataset name → "worst" RequestTask status for that dataset.
+    Returns a mapping of privacy_request_id → {dataset_name → "worst" status}
+    for all given privacy requests in a single query.
 
     Only datasets that have a noteworthy status (error, awaiting_processing, polling,
     retrying, skipped) are included. Datasets where all tasks are complete, pending,
     or in_processing are omitted.
-
-    Added as a conditional property to the PrivacyRequest class at runtime alongside
-    execution_and_audit_logs_by_dataset when verbose=True.
     """
-    db: Session = Session.object_session(self)
+    if not privacy_request_ids:
+        return {}
+
     tasks = (
-        db.query(RequestTask.dataset_name, RequestTask.status)
+        db.query(
+            RequestTask.privacy_request_id,
+            RequestTask.dataset_name,
+            RequestTask.status,
+        )
         .filter(
-            RequestTask.privacy_request_id == self.id,
+            RequestTask.privacy_request_id.in_(privacy_request_ids),
             RequestTask.collection_address.notin_(
                 [
                     ROOT_COLLECTION_ADDRESS.value,
@@ -877,16 +917,21 @@ def task_status_by_dataset_name(
         .all()
     )
 
-    worst_by_dataset: Dict[str, str] = {}
-    worst_priority: Dict[str, int] = {}
+    result: Dict[str, Dict[str, str]] = {}
+    worst_priority: Dict[str, Dict[str, int]] = {}
 
-    for dataset_name, status in tasks:
+    for pr_id, dataset_name, status in tasks:
         priority = _STATUS_PRIORITY.get(status)
         if priority is None:
             continue
-        current_priority = worst_priority.get(dataset_name)
-        if current_priority is None or priority < current_priority:
-            worst_priority[dataset_name] = priority
-            worst_by_dataset[dataset_name] = status.name
 
-    return worst_by_dataset
+        if pr_id not in result:
+            result[pr_id] = {}
+            worst_priority[pr_id] = {}
+
+        current_priority = worst_priority[pr_id].get(dataset_name)
+        if current_priority is None or priority < current_priority:
+            worst_priority[pr_id][dataset_name] = priority
+            result[pr_id][dataset_name] = status.name
+
+    return result

@@ -1,7 +1,6 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ChakraBox as Box } from "fidesui";
+import { Modal } from "fidesui";
 
-import FormModal from "~/features/common/modals/FormModal";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { Dataset } from "~/types/api";
 
 import YamlEditor from "./YamlEditor";
@@ -13,7 +12,6 @@ interface Props {
   onSubmit?: () => void;
   title?: string;
   isLoading?: boolean;
-  returnFocusOnClose?: boolean;
   isDatasetSelected: boolean;
   dataset?: Dataset;
 }
@@ -22,21 +20,21 @@ const YamlEditorModal = ({
   onClose,
   title,
   isLoading,
-  returnFocusOnClose,
   isDatasetSelected,
   dataset,
   onChange,
   onSubmit,
 }: Props) => (
-  <FormModal
-    isOpen={isOpen}
-    onClose={onClose}
-    size="3xl"
-    returnFocusOnClose={returnFocusOnClose ?? true}
-    isCentered
+  <Modal
+    open={isOpen}
+    onCancel={onClose}
+    centered
+    destroyOnClose
+    width={MODAL_SIZE.lg}
     title={title ?? "Edit Dataset"}
+    footer={null}
   >
-    <Box data-testid="yaml-editor-section">
+    <div data-testid="yaml-editor-section">
       <YamlEditor
         data={dataset ? [dataset] : []}
         onSubmit={onSubmit}
@@ -46,8 +44,8 @@ const YamlEditorModal = ({
         isLoading={isLoading}
         onCancel={onClose}
       />
-    </Box>
-  </FormModal>
+    </div>
+  </Modal>
 );
 
 export default YamlEditorModal;

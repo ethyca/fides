@@ -9,7 +9,7 @@ import {
   ChakraText as Text,
   Tag,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -23,7 +23,6 @@ import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectPlusSecuritySettings,
   useGetConfigurationSettingsQuery,
@@ -100,7 +99,7 @@ export interface UserFormProps {
 const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
   // Hooks
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
 
@@ -179,17 +178,15 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
 
     const result = await onSubmit(payload);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
-    toast(
-      successToastParams(
-        `${
-          isNewUser
-            ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
-            : "User updated."
-        }`,
-      ),
+    message.success(
+      `${
+        isNewUser
+          ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
+          : "User updated."
+      }`,
     );
     if (result?.data) {
       dispatch(setActiveUserId(result.data.id));

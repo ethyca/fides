@@ -10,6 +10,7 @@ export enum ConnectionType {
   BIGQUERY = "bigquery",
   DATAHUB = "datahub",
   DYNAMODB = "dynamodb",
+  ENTRA = "entra",
   FIDES = "fides",
   GENERIC_CONSENT_EMAIL = "generic_consent_email",
   GENERIC_ERASURE_EMAIL = "generic_erasure_email",

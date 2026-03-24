@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated 44 modal components from Chakra UI to Ant Design
+pr: 7651
+labels: []

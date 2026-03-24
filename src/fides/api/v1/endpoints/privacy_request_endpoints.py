@@ -105,8 +105,8 @@ from fides.api.schemas.privacy_request import (
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.service.privacy_request.email_batch_service import send_email_batch
 from fides.api.service.privacy_request.request_service import (
-    execution_and_audit_logs_by_dataset_name,
-    task_status_by_dataset_name,
+    batch_execution_and_audit_logs_by_dataset,
+    batch_task_status_by_dataset,
 )
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
@@ -289,6 +289,8 @@ def create_privacy_request_authenticated(
     )
 
 
+
+
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     """
     Temporarily update a paused/errored/requires_input privacy request object with instructions from the Redis cache
@@ -407,20 +409,19 @@ def _shared_privacy_request_search(
             )
         query = query.options(*eager_load_options)
 
-    # Conditionally embed execution log details in the response.
-    if filters.verbose:
-        logger.info("Finding execution and audit log details")
-        PrivacyRequest.execution_and_audit_logs_by_dataset = property(
-            execution_and_audit_logs_by_dataset_name
-        )
-        PrivacyRequest.task_status_by_dataset = property(task_status_by_dataset_name)
-    else:
-        PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
-        PrivacyRequest.task_status_by_dataset = property(lambda self: None)
-
     paginated = paginate(query, params)
 
+    if filters.verbose:
+        logger.info("Finding execution and audit log details")
+        pr_ids = [item.id for item in paginated.items]  # type: ignore
+        all_logs = batch_execution_and_audit_logs_by_dataset(db, pr_ids)
+        task_statuses = batch_task_status_by_dataset(db, pr_ids)
+
     for item in paginated.items:  # type: ignore
+        if filters.verbose:
+            item.execution_and_audit_logs_by_dataset = all_logs.get(item.id, {})
+            item.task_status_by_dataset = task_statuses.get(item.id, {})
+
         if filters.include_identities:
             item.identity = item.get_persisted_identity().labeled_dict(
                 include_default_labels=True

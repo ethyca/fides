@@ -162,7 +162,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     <Box width="100%">
       <List
         className="!border-none"
-        bordered={false}
         split={false}
         data-testid="activity-timeline-list"
       >

@@ -1,10 +1,4 @@
-import {
-  Button,
-  ChakraModalProps as ModalProps,
-  ChakraText as Text,
-  Flex,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, ChakraText as Text, Flex, Modal, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
@@ -16,8 +10,6 @@ import {
   isErrorResult,
 } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
-import FormModal from "~/features/common/modals/FormModal";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddSystemAssetMutation,
   useUpdateSystemAssetsMutation,
@@ -25,7 +17,9 @@ import {
 import WrappedDataUseSelect from "~/features/system/tabs/system-assets/WrappedDataUseSelect";
 import { Asset } from "~/types/api";
 
-interface AddEditAssetModalProps extends Omit<ModalProps, "children"> {
+interface AddEditAssetModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   systemKey: string;
   asset?: Asset;
 }
@@ -68,7 +62,6 @@ const AddEditAssetModal = ({
   onClose,
   systemKey,
   asset,
-  ...props
 }: AddEditAssetModalProps) => {
   const isCreate = !asset;
 
@@ -76,7 +69,7 @@ const AddEditAssetModal = ({
     useAddSystemAssetMutation();
   const [updateSystemAsset, { isLoading: updateIsLoading }] =
     useUpdateSystemAssetsMutation();
-  const toast = useToast();
+  const message = useMessage();
 
   const handleCreateNew = async (values: Asset) => {
     const result = await addSystemAsset({ systemKey, asset: values });
@@ -85,9 +78,9 @@ const AddEditAssetModal = ({
         result.error,
         "An unexpected error occurred while saving this asset. Please try again.",
       );
-      toast(errorToastParams(errorMsg));
+      message.error(errorMsg);
     } else {
-      toast(successToastParams("Asset added successfully"));
+      message.success("Asset added successfully");
       onClose();
     }
   };
@@ -99,9 +92,9 @@ const AddEditAssetModal = ({
         result.error,
         "An unexpected error occurred while saving this asset. Please try again.",
       );
-      toast(errorToastParams(errorMsg));
+      message.error(errorMsg);
     } else {
-      toast(successToastParams("Asset updated successfully"));
+      message.success("Asset updated successfully");
       onClose();
     }
   };
@@ -117,11 +110,14 @@ const AddEditAssetModal = ({
   const initialValues = asset ?? DEFAULT_VALUES;
 
   return (
-    <FormModal
+    <Modal
       title={isCreate ? "Add asset" : "Edit asset"}
-      onClose={onClose}
-      isOpen={isOpen}
-      {...props}
+      onCancel={onClose}
+      open={isOpen}
+      centered
+      destroyOnClose
+      footer={null}
+      data-testid="add-modal-content"
     >
       <Formik
         initialValues={initialValues}
@@ -214,7 +210,7 @@ const AddEditAssetModal = ({
           );
         }}
       </Formik>
-    </FormModal>
+    </Modal>
   );
 };
 
