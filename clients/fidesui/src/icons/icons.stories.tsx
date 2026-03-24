@@ -17,13 +17,15 @@ const icons = [
   { name: "SparkleIcon", component: SparkleIcon },
 ];
 
-const meta = {
+type IconArgs = { size: number };
+
+const meta: Meta<IconArgs> = {
   title: "General/Custom Icons",
   tags: ["autodocs"],
-} satisfies Meta;
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<IconArgs>;
 
 export const Gallery: Story = {
   render: () => (
