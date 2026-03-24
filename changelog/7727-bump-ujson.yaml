@@ -1,0 +1,4 @@
+type: Security
+description: Bumped ujson to 5.12.0 (CVE-2026-32874, CVE-2026-32875)
+pr: 7727
+labels: []
