@@ -2,8 +2,6 @@ import {
   ArrowDownRightIcon,
   ColumnsType,
   CUSTOM_TAG_COLOR,
-  GreenCheckCircleIcon,
-  Icons,
   Layout,
   SparkleIcon as FidesUISparkleIcon,
   Table,
@@ -29,7 +27,6 @@ type IconEntry = {
   currentIcon: React.ReactNode;
   iconType: IconType;
   source: "fidesui" | "admin-ui";
-  suggestedCarbon: string | null;
   notes: string;
 };
 
@@ -41,17 +38,7 @@ const ICON_DATA: IconEntry[] = [
     currentIcon: <ArrowDownRightIcon boxSize={5} />,
     iconType: "createIcon",
     source: "fidesui",
-    suggestedCarbon: null,
     notes: "Used as child/sub-item indicator in ConsentAutomationForm",
-  },
-  {
-    key: "fidesui-GreenCheckCircleIcon",
-    currentName: "GreenCheckCircleIcon",
-    currentIcon: <GreenCheckCircleIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "fidesui",
-    suggestedCarbon: "CheckmarkFilled",
-    notes: "Uses green fill color",
   },
   {
     key: "fidesui-SparkleIcon",
@@ -59,7 +46,6 @@ const ICON_DATA: IconEntry[] = [
     currentIcon: <FidesUISparkleIcon width={20} height={20} />,
     iconType: "custom-svg",
     source: "fidesui",
-    suggestedCarbon: "MagicWandFilled",
     notes: "Plus-only, AI/magic indicator",
   },
 
@@ -70,7 +56,6 @@ const ICON_DATA: IconEntry[] = [
     currentIcon: <CompassIcon boxSize={5} />,
     iconType: "createIcon",
     source: "admin-ui",
-    suggestedCarbon: null,
     notes: "",
   },
   {
@@ -79,7 +64,6 @@ const ICON_DATA: IconEntry[] = [
     currentIcon: <ManualSetupIcon boxSize={5} />,
     iconType: "createIcon",
     source: "admin-ui",
-    suggestedCarbon: "WebServicesDefinition",
     notes: "",
   },
   {
@@ -88,35 +72,9 @@ const ICON_DATA: IconEntry[] = [
     currentIcon: <MonitorIcon boxSize={5} />,
     iconType: "createIcon",
     source: "admin-ui",
-    suggestedCarbon: "Dashboard",
     notes: "",
   },
 ];
-
-const IconsRecord = Icons as Record<
-  string,
-  React.ComponentType<{ size?: number }>
->;
-
-const renderCarbonIcon = (name: string | null) => {
-  if (!name) {
-    return <Text type="secondary">No equivalent</Text>;
-  }
-  const CarbonIcon = IconsRecord[name];
-  if (!CarbonIcon) {
-    return (
-      <Text type="warning">
-        {name} <Text type="secondary">(not found)</Text>
-      </Text>
-    );
-  }
-  return (
-    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <CarbonIcon size={20} />
-      <Text code>{name}</Text>
-    </span>
-  );
-};
 
 const columns: ColumnsType<IconEntry> = [
   {
@@ -174,11 +132,6 @@ const columns: ColumnsType<IconEntry> = [
       const { text, color } = labels[iconType];
       return <Tag color={color}>{text}</Tag>;
     },
-  },
-  {
-    title: "Suggested Carbon Equivalent",
-    dataIndex: "suggestedCarbon",
-    render: renderCarbonIcon,
   },
   {
     title: "Notes",

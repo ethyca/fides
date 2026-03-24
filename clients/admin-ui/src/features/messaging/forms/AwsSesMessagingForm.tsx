@@ -5,11 +5,12 @@ import {
   ChakraHeading as Heading,
   ChakraHStack as HStack,
   Form,
-  GreenCheckCircleIcon,
+  Icons,
   Input,
   Select,
   useMessage,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -563,7 +564,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <GreenCheckCircleIcon />
+                        <Icons.CheckmarkFilled color={palette.FIDESUI_SUCCESS} />
                       ) : undefined
                     }
                   >
