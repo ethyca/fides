@@ -4,17 +4,14 @@ import { useGetViolationLogsQuery } from "../access-control.slice";
 import type { PolicyViolationLog } from "../types";
 import type { RequestLogFilters } from "./useRequestLogFilters";
 
-const LIVE_TAIL_POLL_MS = 5000;
 const PAGE_SIZE = 25;
 
 interface UseInfiniteViolationLogsOptions {
   filters: RequestLogFilters;
-  liveTail: boolean;
 }
 
 export const useInfiniteViolationLogs = ({
   filters,
-  liveTail,
 }: UseInfiniteViolationLogsOptions) => {
   const [cursor, setCursor] = useState<string | null>(null);
   const [allItems, setAllItems] = useState<PolicyViolationLog[]>([]);
@@ -29,9 +26,7 @@ export const useInfiniteViolationLogs = ({
     [cursor, filters],
   );
 
-  const { data, isFetching } = useGetViolationLogsQuery(queryParams, {
-    pollingInterval: liveTail ? LIVE_TAIL_POLL_MS : 0,
-  });
+  const { data, isFetching } = useGetViolationLogsQuery(queryParams);
 
   // Accumulate fetched pages into allItems
   useEffect(() => {

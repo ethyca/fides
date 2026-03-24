@@ -38,7 +38,9 @@ const AccessControlPage: NextPage = () => {
   const { filters, dateRange, setDateRange, searchValues, setSearchValues } =
     filterState;
 
-  const { data: facetOptions } = useGetFiltersQuery(filters);
+  const { data: facetOptions } = useGetFiltersQuery(filters, {
+    skip: !flags.alphaPurposeBasedAccessControl,
+  });
 
   const facets: FacetDefinition[] = useMemo(
     () =>

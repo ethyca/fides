@@ -35,8 +35,6 @@ export interface RequestLogFilterState {
   setDateRange: (range: [dayjs.Dayjs, dayjs.Dayjs] | null) => void;
   searchValues: string[];
   setSearchValues: (values: string[]) => void;
-  liveTail: boolean;
-  setLiveTail: (value: boolean) => void;
   onChartIntervalChange: (intervalHours: number) => void;
   applyFacets: (facets: Record<string, string>) => void;
 }
@@ -61,16 +59,18 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
 
   const router = useRouter();
 
-  const [searchValues, setSearchValues] = useState<string[]>(() => {
+  const [searchValues, setSearchValues] = useState<string[]>([]);
+
+  // Read URL facets after hydration (router.query is empty on first render)
+  useEffect(() => {
+    if (!router.isReady) return;
     const { facets } = router.query;
     if (typeof facets === "string" && facets) {
-      return facets.split(",");
+      setSearchValues(facets.split(","));
+    } else if (Array.isArray(facets)) {
+      setSearchValues(facets.filter(Boolean) as string[]);
     }
-    if (Array.isArray(facets)) {
-      return facets.filter(Boolean) as string[];
-    }
-    return [];
-  });
+  }, [router.isReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const skipUrlSyncRef = useRef(false);
 
@@ -96,16 +96,9 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValues]);
 
-  const [liveTail, setLiveTail] = useState(false);
   const [intervalHours, setIntervalHours] = useState<number | undefined>();
 
   const dateParams = useMemo(() => {
-    if (liveTail) {
-      return {
-        start_date: dayjs().subtract(12, "hour").toISOString(),
-        end_date: dayjs().toISOString(),
-      };
-    }
     if (!dateRange) {
       return {
         start_date: dayjs().subtract(1, "day").toISOString(),
@@ -116,7 +109,7 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
       start_date: dateRange[0].toISOString(),
       end_date: dateRange[1].toISOString(),
     };
-  }, [dateRange, liveTail]);
+  }, [dateRange]);
 
   const facetFilters = useMemo(() => {
     const result: Partial<Record<FacetKey, string | string[]>> = {};
@@ -186,8 +179,6 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     setDateRange,
     searchValues,
     setSearchValues,
-    liveTail,
-    setLiveTail,
     onChartIntervalChange,
     applyFacets,
   };

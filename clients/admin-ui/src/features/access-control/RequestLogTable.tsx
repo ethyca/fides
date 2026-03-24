@@ -15,10 +15,9 @@ interface RequestLogTableProps {
 }
 
 export const RequestLogTable = ({ onRowClick }: RequestLogTableProps) => {
-  const { filters, liveTail } = useRequestLogFilterContext();
+  const { filters } = useRequestLogFilterContext();
   const { items, isFetching, hasMore, loadMore } = useInfiniteViolationLogs({
     filters,
-    liveTail,
   });
 
   const sentinelRef = useRef<HTMLDivElement>(null);
