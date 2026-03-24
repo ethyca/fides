@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.2b2.dev15+g81e267100"
+    "version": "2.81.2b2.dev16+gc40fcdf5f"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -32718,6 +32718,20 @@
             },
             "type": "object",
             "title": "Results"
+          },
+          "task_status_by_dataset": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Status By Dataset"
           }
         },
         "type": "object",
