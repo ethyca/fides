@@ -30,7 +30,6 @@ jobs:
           fail-on-severity: high
           show-openssf-scorecard: false
           show-patched-versions: true
-          retry-on-snapshot-warnings: true
-          retry-on-snapshot-warnings-timeout: 60
+          retry-on-snapshot-warnings: false
           license-check: false
         continue-on-error: true
