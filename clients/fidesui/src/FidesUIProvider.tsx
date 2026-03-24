@@ -13,7 +13,13 @@ import type {
   ArgsProps as MessageArgsProps,
   TypeOpen as MessageTypeOpen,
 } from "antd/lib/message/interface";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 
 import { defaultAntTheme } from "./ant-theme";
 import { theme as defaultTheme } from "./FidesUITheme";
@@ -23,6 +29,10 @@ import {
   getDefaultModalIcon,
   getDefaultNotificationIcon,
 } from "./lib/carbon-icon-defaults";
+import {
+  getGlobalMessageApi,
+  setGlobalMessageApi,
+} from "./lib/globalMessageApi";
 
 const isMessageArgsProps = (content: unknown): content is MessageArgsProps =>
   typeof content === "object" && content !== null && "content" in content;
@@ -143,6 +153,17 @@ export const FidesUIProvider = ({
     }),
     [notificationApi],
   );
+
+  useEffect(() => {
+    setGlobalMessageApi(wrappedMessageApi);
+    return () => {
+      // Only clear the global ref if we were the last provider to set it,
+      // to avoid clobbering a ref set by a different FidesUIProvider instance.
+      if (getGlobalMessageApi() === wrappedMessageApi) {
+        setGlobalMessageApi(null);
+      }
+    };
+  }, [wrappedMessageApi]);
 
   const value = useMemo(
     () => ({

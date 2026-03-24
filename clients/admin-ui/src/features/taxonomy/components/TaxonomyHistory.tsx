@@ -55,7 +55,7 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
   const dataSource = data?.items ?? [];
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="medium">
       <List size="small" itemLayout="vertical">
         {dataSource.map((item) => {
           const distance = formatDistance(

@@ -1,6 +1,5 @@
 import {
   Button,
-  ChakraChevronDownIcon as ChevronDownIcon,
   ConfirmationModal,
   Empty,
   Flex,
@@ -12,7 +11,7 @@ import {
   Space,
   Text,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikState, useFormikContext } from "formik";
 import { useEffect, useMemo, useState } from "react";
@@ -67,7 +66,7 @@ export const CustomReportTemplates = ({
     ScopeRegistryEnum.CUSTOM_REPORT_DELETE,
   ]);
 
-  const toast = useToast({ id: "custom-report-toast" });
+  const message = useMessage();
 
   const { data: customReportsList, isLoading: isCustomReportsLoading } =
     useGetMinimalCustomReportsQuery({ report_type: reportType });
@@ -125,7 +124,7 @@ export const CustomReportTemplates = ({
       if (errorMsg.includes("not found")) {
         onSavedReportDeleted();
       }
-      toast({ status: "error", description: errorMsg });
+      message.error(errorMsg);
     } else {
       setFetchedReport(data);
     }
@@ -387,7 +386,7 @@ export const CustomReportTemplates = ({
       >
         <Button
           className="max-w-40"
-          icon={<ChevronDownIcon />}
+          icon={<Icons.ChevronDown size={14} />}
           iconPosition="end"
           data-testid="custom-reports-trigger"
         >

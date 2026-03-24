@@ -1,12 +1,6 @@
-import {
-  ChakraBox as Box,
-  ChakraHeading as Heading,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-} from "fidesui";
+import { Modal } from "fidesui";
+
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
 type DataUseFormModalProps = {
   isOpen: boolean;
@@ -26,29 +20,15 @@ export const PrivacyDeclarationFormModal = ({
   children,
 }: DataUseFormModalProps) => (
   <Modal
-    isOpen={isOpen}
-    onClose={onClose}
-    isCentered={isCentered}
-    scrollBehavior="inside"
-    size="3xl"
+    open={isOpen}
+    onCancel={onClose}
+    centered={isCentered}
+    destroyOnHidden
+    width={MODAL_SIZE.lg}
+    data-testid={testId}
+    title={heading}
+    footer={null}
   >
-    <ModalOverlay />
-    <ModalContent textAlign="left" p={0} data-testid={testId}>
-      <ModalHeader p={0}>
-        <Box
-          backgroundColor="gray.50"
-          px={6}
-          py={4}
-          border="1px"
-          borderColor="gray.200"
-          borderTopRadius={6}
-        >
-          <Heading as="h3" size="sm">
-            {heading}
-          </Heading>
-        </Box>
-      </ModalHeader>
-      <ModalBody pb={4}>{children}</ModalBody>
-    </ModalContent>
+    {children}
   </Modal>
 );

@@ -5,7 +5,7 @@ version of a SaaS integration config was active when a DSR collection was proces
 Only populated for SaaS connectors (connection_type = 'saas'); null for all others.
 
 Revision ID: a1ca9ddf3c3c
-Revises: ea20059aee77
+Revises: ad1bb600715b
 Create Date: 2026-03-11
 
 """
@@ -15,7 +15,8 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a1ca9ddf3c3c"
-down_revision = "ea20059aee77"
+down_revision = "ad1bb600715b"
+
 branch_labels = None
 depends_on = None
 

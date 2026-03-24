@@ -1,0 +1,4 @@
+type: Added
+description: Add dashboard infrastructure including feature flag, RTK Query API slice with mock data handlers, and conditional rendering gate for the new Ant Design dashboard
+pr: 7628
+labels: []

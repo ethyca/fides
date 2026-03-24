@@ -155,7 +155,7 @@ const IntegrationLinkedSystems = ({
   }
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="medium">
       <Typography.Title level={5}>Linked systems</Typography.Title>
       <Paragraph className="mt-2 w-2/3" type="secondary">
         Link a system to automatically surface discovered assets and enable DSR
@@ -186,9 +186,9 @@ const IntegrationLinkedSystems = ({
           </Button>
         }
         width={520}
-        data-testid="link-system-modal"
+        wrapProps={{ "data-testid": "link-system-modal" }}
       >
-        <Flex vertical gap="middle" className="max-h-96">
+        <Flex vertical gap="medium" className="max-h-96">
           <Input.Search
             placeholder="Search..."
             allowClear

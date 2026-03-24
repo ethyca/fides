@@ -11,14 +11,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const TABLE_SIZE: Record<
-  NonNullable<TableProps["size"]>,
-  TableProps["size"]
-> = {
-  large: "large",
-  middle: "middle",
-  small: "small",
-};
+const TABLE_SIZE: TableProps["size"][] = ["small", "medium", "large"];
 
 export const Primary: Story = {
   args: {
@@ -52,7 +45,7 @@ export const Primary: Story = {
   argTypes: {
     size: {
       control: "select",
-      options: Object.values(TABLE_SIZE),
+      options: TABLE_SIZE,
     },
     bordered: {
       control: "boolean",

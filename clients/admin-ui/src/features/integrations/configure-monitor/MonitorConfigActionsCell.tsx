@@ -5,12 +5,12 @@ import {
   Spin,
   Text,
   Tooltip,
-  useChakraDisclosure as useDisclosure,
+  useMessage,
+  useModal,
 } from "fidesui";
 import { useCallback } from "react";
 
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
   type MonitorDeletionImpact,
@@ -102,19 +102,11 @@ const MonitorConfigActionsCell = ({
   isOktaMonitor?: boolean;
   onEditClick: () => void;
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const modal = useModal();
+  const message = useMessage();
 
-  const [deleteMonitor, { isLoading: isDeleting }] =
-    useDeleteDiscoveryMonitorMutation();
-  const [
-    fetchDeletionImpact,
-    { data: deletionImpact, isLoading: isLoadingImpact },
-  ] = useLazyGetMonitorDeletionImpactQuery();
-
-  const { toastResult: toastDeleteResult } = useQueryResultToast({
-    defaultErrorMsg: "A problem occurred deleting this monitor",
-    defaultSuccessMsg: "Monitor deleted successfully",
-  });
+  const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
+  const [fetchDeletionImpact] = useLazyGetMonitorDeletionImpactQuery();
 
   // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
   const [executeRegularMonitor, { isLoading: executeRegularIsLoading }] =
@@ -127,83 +119,89 @@ const MonitorConfigActionsCell = ({
     ? executeOktaIsLoading
     : executeRegularIsLoading;
 
-  const { toastResult: toastExecuteResult } = useQueryResultToast({
-    defaultErrorMsg: "A problem occurred initiating monitor execution",
-    defaultSuccessMsg: isWebsiteMonitor
-      ? WEBSITE_SCAN_SUCCESS_MESSAGE
-      : "Monitor execution successfully started",
-  });
-
-  const handleOpenDeleteModal = useCallback(() => {
+  const handleOpenDeleteModal = useCallback(async () => {
     if (!monitorId) {
       return;
     }
-    fetchDeletionImpact({ monitor_config_id: monitorId });
-    onOpen();
-  }, [monitorId, onOpen, fetchDeletionImpact]);
+    const { data } = await fetchDeletionImpact({
+      monitor_config_id: monitorId,
+    });
+    modal.confirm({
+      title: "Delete monitor",
+      content: (
+        <DeleteMonitorMessage deletionImpact={data} isLoadingImpact={false} />
+      ),
+      okText: "Delete",
+      centered: true,
+      icon: null,
+      onOk: async () => {
+        const result = await deleteMonitor({
+          monitor_config_id: monitorId,
+        });
+        if (isErrorResult(result)) {
+          message.error(
+            getErrorMessage(
+              result.error,
+              "A problem occurred deleting this monitor",
+            ),
+          );
+        } else {
+          message.success("Monitor deleted successfully");
+        }
+      },
+    });
+  }, [monitorId, modal, fetchDeletionImpact, deleteMonitor, message]);
 
   if (!monitorId) {
     return null;
   }
 
-  const handleDelete = async () => {
-    const result = await deleteMonitor({
-      monitor_config_id: monitorId,
-    });
-    toastDeleteResult(result);
-    onClose();
-  };
-
   const handleExecute = async () => {
     const result = isOktaMonitor
       ? await executeOktaMonitor({ monitor_config_key: monitorId })
       : await executeRegularMonitor({ monitor_config_id: monitorId });
-    toastExecuteResult(result);
+    if (isErrorResult(result)) {
+      message.error(
+        getErrorMessage(
+          result.error,
+          "A problem occurred initiating monitor execution",
+        ),
+      );
+    } else {
+      message.success(
+        isWebsiteMonitor
+          ? WEBSITE_SCAN_SUCCESS_MESSAGE
+          : "Monitor execution successfully started",
+      );
+    }
   };
 
   return (
-    <>
-      <ConfirmationModal
-        isOpen={isOpen}
-        onClose={onClose}
-        onConfirm={handleDelete}
-        title="Delete monitor"
-        message={
-          <DeleteMonitorMessage
-            deletionImpact={deletionImpact}
-            isLoadingImpact={isLoadingImpact}
-          />
-        }
-        continueButtonText="Delete"
-        isCentered
-        isLoading={isDeleting}
-      />
-      <Flex gap={8}>
-        <Tooltip title="Edit">
-          <Button
-            onClick={onEditClick}
-            size="small"
-            icon={<Icons.Edit />}
-            data-testid="edit-monitor-btn"
-            aria-label="Edit monitor"
-          />
-        </Tooltip>
-        <Tooltip title="Delete">
-          <Button
-            onClick={handleOpenDeleteModal}
-            size="small"
-            icon={<Icons.TrashCan />}
-            aria-label="Delete monitor"
-            data-testid="delete-monitor-btn"
-          />
-        </Tooltip>
-        <ActionButton
-          onClick={handleExecute}
-          title="Scan"
-          loading={executeIsLoading}
+    <Flex gap={8}>
+      <Tooltip title="Edit">
+        <Button
+          onClick={onEditClick}
+          size="small"
+          icon={<Icons.Edit />}
+          data-testid="edit-monitor-btn"
+          aria-label="Edit monitor"
         />
-      </Flex>
-    </>
+      </Tooltip>
+      <Tooltip title="Delete">
+        <Button
+          onClick={handleOpenDeleteModal}
+          size="small"
+          icon={<Icons.TrashCan />}
+          aria-label="Delete monitor"
+          data-testid="delete-monitor-btn"
+        />
+      </Tooltip>
+      <ActionButton
+        onClick={handleExecute}
+        title="Scan"
+        loading={executeIsLoading}
+      />
+    </Flex>
   );
 };
 

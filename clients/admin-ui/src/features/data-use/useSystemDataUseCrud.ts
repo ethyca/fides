@@ -1,10 +1,9 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useBulkUpdateCustomFieldsMutation } from "~/features/plus/plus.slice";
 import { useUpdateSystemMutation } from "~/features/system";
 import {
@@ -53,7 +52,7 @@ const buildCustomFieldsPayload = (
 };
 
 const useSystemDataUseCrud = (system: SystemResponse) => {
-  const toast = useToast();
+  const message = useMessage();
   const [updateSystem] = useUpdateSystemMutation();
 
   const [bulkUpdateCustomFields] = useBulkUpdateCustomFieldsMutation();
@@ -64,10 +63,8 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
         (d) => d.data_use === values.data_use && d.name === values.name,
       )
     ) {
-      toast(
-        errorToastParams(
-          "A declaration already exists with that data use in this system. Please supply a different data use.",
-        ),
+      message.error(
+        "A declaration already exists with that data use in this system. Please supply a different data use.",
       );
       return true;
     }
@@ -85,7 +82,7 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
         "An unexpected error occurred while updating the system. Please try again.",
       );
 
-      toast(errorToastParams(errorMsg));
+      message.error(errorMsg);
       return undefined;
     }
     if (customFieldsResult && isErrorResult(customFieldsResult)) {
@@ -93,10 +90,10 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
         customFieldsResult.error,
         "Data use was updated, but an error occurred while updating custom fields. Please try again.",
       );
-      toast(errorToastParams(errorMsg));
+      message.error(errorMsg);
       return undefined;
     }
-    toast(successToastParams(isDelete ? "Data use deleted" : "Data use saved"));
+    message.success(isDelete ? "Data use deleted" : "Data use saved");
     return systemResult.data.privacy_declarations;
   };
 
@@ -153,7 +150,6 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
 
     const { customFieldValues, ...newDeclaration } = values;
 
-    toast.closeAll();
     const updatedDeclarations = [
       ...system.privacy_declarations,
       newDeclaration,

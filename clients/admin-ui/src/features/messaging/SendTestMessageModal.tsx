@@ -8,11 +8,8 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 
 import { messagingProviders } from "./constants";
 import { useCreateTestConnectionMessageMutation } from "./messaging.slice";
@@ -33,19 +30,9 @@ export const SendTestMessageModal = ({
   const [form] = Form.useForm();
 
   const message = useMessage();
+  const { handleError } = useAPIHelper();
 
   const isSMSProvider = serviceType === messagingProviders.twilio_text;
-
-  // Helper function to extract error message using the same logic as useAPIHelper
-  const getErrorMessage = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    return errorMsg;
-  };
 
   const handleSendTestMessage = async (values: any) => {
     setIsLoading(true);
@@ -60,13 +47,13 @@ export const SendTestMessageModal = ({
       });
 
       if (isErrorResult(result)) {
-        message.error(getErrorMessage(result.error));
+        handleError(result.error);
       } else {
         message.success("Test message sent successfully!");
         onClose();
       }
     } catch (error) {
-      message.error(getErrorMessage(error));
+      handleError(error);
     } finally {
       setIsLoading(false);
     }

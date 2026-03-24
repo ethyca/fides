@@ -2,7 +2,7 @@ import {
   ChakraText as Text,
   ConfirmationModal,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -12,7 +12,6 @@ import EditDrawer, {
   EditDrawerHeader,
 } from "~/features/common/EditDrawer";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import YamlEditorModal from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/YamlEditorModal";
 import { Dataset } from "~/types/api";
 
@@ -34,7 +33,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   const [updateDataset, { isLoading }] = useUpdateDatasetMutation();
   const [deleteDataset] = useDeleteDatasetMutation();
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
   const {
     isOpen: deleteIsOpen,
     onOpen: onDeleteOpen,
@@ -55,12 +54,12 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     try {
       const result = await updateDataset(updatedDataset);
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
       } else {
-        toast(successToastParams("Successfully modified dataset"));
+        message.success("Successfully modified dataset");
       }
     } catch (error) {
-      toast(errorToastParams(error as string));
+      message.error(error as string);
     }
     onClose();
   };
@@ -70,9 +69,9 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     const result = await deleteDataset(fidesKey);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(successToastParams("Successfully deleted dataset"));
+      message.success("Successfully deleted dataset");
     }
     setActiveDatasetFidesKey(undefined);
     router.push("/dataset");
@@ -89,7 +88,6 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         header={<EditDrawerHeader title={`Edit: ${dataset?.name}`} />}
         footer={
           <EditDrawerFooter
-            onClose={onClose}
             onDelete={onDeleteOpen}
             onEditYaml={() => onYamlOpen()}
             formId={FORM_ID}
@@ -106,7 +104,9 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
           isDatasetSelected={false}
           dataset={dataset}
         />
-        <EditDatasetForm values={dataset!} onSubmit={handleSubmit} />
+        {dataset && (
+          <EditDatasetForm values={dataset} onSubmit={handleSubmit} />
+        )}
       </EditDrawer>
       <ConfirmationModal
         isOpen={deleteIsOpen}

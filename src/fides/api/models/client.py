@@ -35,6 +35,24 @@ DEFAULT_CONNECTIONS: list[str] = []
 DEFAULT_MONITORS: list[str] = []
 
 
+def _generate_and_hash_secret(
+    length_bytes: int, encoding: str = "UTF-8"
+) -> tuple[str, str, str]:
+    """Generate a random secret and return (plaintext, salt, hashed_secret).
+
+    This is the single canonical path for producing a storable client credential.
+    Both initial creation and rotation go through here so the hashing approach
+    stays consistent across the codebase.
+    """
+    secret = generate_secure_random_string(length_bytes)
+    salt = generate_salt()
+    hashed_secret = hash_credential_with_salt(
+        secret.encode(encoding),
+        salt.encode(encoding),
+    )
+    return secret, salt, hashed_secret
+
+
 class ClientDetail(Base):
     """The persisted details about a client in the system"""
 
@@ -51,6 +69,8 @@ class ClientDetail(Base):
         ARRAY(String), nullable=False, server_default="{}", default=dict
     )
     monitors = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
+    name = Column(String, nullable=True)
+    description = Column(String, nullable=True)
     fides_key = Column(String, index=True, unique=True, nullable=True)
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
@@ -65,6 +85,8 @@ class ClientDetail(Base):
         client_secret_byte_length: int,
         *,
         scopes: list[str] | None = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
         fides_key: Optional[str] = None,
         user_id: Optional[str] = None,
         encoding: str = "UTF-8",
@@ -79,7 +101,9 @@ class ClientDetail(Base):
         """
 
         client_id = generate_secure_random_string(client_id_byte_length)
-        secret = generate_secure_random_string(client_secret_byte_length)
+        secret, salt, hashed_secret = _generate_and_hash_secret(
+            client_secret_byte_length, encoding
+        )
 
         if not scopes:
             scopes = DEFAULT_SCOPES
@@ -96,17 +120,13 @@ class ClientDetail(Base):
         if not monitors:
             monitors = DEFAULT_MONITORS
 
-        salt = generate_salt()
-        hashed_secret = hash_credential_with_salt(
-            secret.encode(encoding),
-            salt.encode(encoding),
-        )
-
         data = {
             "id": client_id,
             "salt": salt,
             "hashed_secret": hashed_secret,
             "scopes": scopes,
+            "name": name,
+            "description": description,
             "fides_key": fides_key,
             "user_id": user_id,
             "roles": roles,
@@ -123,6 +143,7 @@ class ClientDetail(Base):
             client = super().create(
                 db,
                 data=data,
+                check_name=False,
             )
         return client, secret  # type: ignore
 
@@ -161,6 +182,21 @@ class ClientDetail(Base):
             JWE_PAYLOAD_MONITORS: self.monitors,
         }
         return generate_jwe(json.dumps(payload), encryption_key)
+
+    def rotate_secret(
+        self, db: Session, secret_length_bytes: int, encoding: str = "UTF-8"
+    ) -> str:
+        """Generates a new secret, persists its hash, and returns the plaintext secret."""
+        new_secret, new_salt, new_hashed_secret = _generate_and_hash_secret(
+            secret_length_bytes, encoding
+        )
+        self.update(db, data={"hashed_secret": new_hashed_secret, "salt": new_salt})
+        return new_secret
+
+    @property
+    def client_id(self) -> str:
+        """Alias for id, used for API serialization via ClientResponse."""
+        return self.id
 
     def credentials_valid(self, provided_secret: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided secret is correct."""

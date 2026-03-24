@@ -1,10 +1,10 @@
-import { useAlert } from "common/hooks";
 import {
   Button,
   ChakraBox as Box,
   ChakraHStack as HStack,
   ChakraVStack as VStack,
   TrashCanSolidIcon,
+  useMessage,
 } from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 import React from "react";
@@ -35,12 +35,12 @@ const DSRCustomizationForm = ({
   const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
   const allDataCategories = useAppSelector(selectDataCategories);
 
-  const { errorAlert } = useAlert();
+  const message = useMessage();
 
   const handleSubmit = (values: any, actions: any) => {
     const uniqueValues = new Set(values.fields.map((f: Field) => f.pii_field));
     if (uniqueValues.size < values.fields.length) {
-      errorAlert("PII Field must be unique");
+      message.error("PII Field must be unique");
       return;
     }
     onSaveClick(values, actions);
