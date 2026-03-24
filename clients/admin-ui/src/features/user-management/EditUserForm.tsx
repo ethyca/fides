@@ -1,10 +1,16 @@
-import { Alert, Button, ChakraBox as Box, Modal, Text } from "fidesui";
+import {
+  Alert,
+  Button,
+  ChakraBox as Box,
+  Modal,
+  Text,
+  useMessage,
+} from "fidesui";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import UserManagementTabs from "user-management/UserManagementTabs";
 
 import { selectUser } from "~/features/auth";
-import { useAlert } from "~/features/common/hooks/useAlert";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -61,7 +67,7 @@ const ReinviteSection = ({ user }: ReinviteSectionProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reinviteUser, { isLoading }] = useReinviteUserMutation();
   const { handleError } = useAPIHelper();
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const canReinvite = useHasPermission([ScopeRegistryEnum.USER_CREATE]);
 
   if (!user.has_invite || !canReinvite) {
@@ -71,7 +77,7 @@ const ReinviteSection = ({ user }: ReinviteSectionProps) => {
   const handleReinvite = async () => {
     try {
       await reinviteUser(user.id).unwrap();
-      successAlert(
+      message.success(
         "User reinvited successfully. A new invitation email has been sent.",
       );
       setIsModalOpen(false);
