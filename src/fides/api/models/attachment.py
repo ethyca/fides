@@ -104,6 +104,9 @@ class Attachment(Base):
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
     )
+    # Not all users in the system have a username, and users can be deleted.
+    # Store a non-normalized copy of username for these cases.
+    username = Column(String, nullable=True)
     file_name = Column(String, nullable=False)
     attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
     storage_key = Column(

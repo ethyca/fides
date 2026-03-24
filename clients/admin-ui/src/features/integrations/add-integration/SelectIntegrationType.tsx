@@ -21,7 +21,12 @@ export const useIntegrationFilters = () => {
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { newIntegrationManagement, webMonitor, alphaJiraIntegration },
+    flags: {
+      entraMonitor,
+      newIntegrationManagement,
+      webMonitor,
+      alphaJiraIntegration,
+    },
   } = useFlags();
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -33,6 +38,15 @@ export const useIntegrationFilters = () => {
   const allIntegrationTypes = useMemo(() => {
     let staticIntegrations = INTEGRATION_TYPE_LIST;
 
+    // Filter out Entra when entraMonitor flag is disabled
+    if (!entraMonitor) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !== ConnectionType.ENTRA,
+      );
+    }
+
+    // Filter out SaaS integrations if the new integration management flag is disabled
     if (!newIntegrationManagement) {
       staticIntegrations = staticIntegrations.filter(
         (integration) =>
@@ -72,7 +86,12 @@ export const useIntegrationFilters = () => {
       : [];
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [connectionTypes, newIntegrationManagement, alphaJiraIntegration]);
+  }, [
+    connectionTypes,
+    entraMonitor,
+    alphaJiraIntegration,
+    newIntegrationManagement,
+  ]);
 
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
@@ -109,6 +128,14 @@ export const useIntegrationFilters = () => {
       );
     }
 
+    // Filter out Entra when entraMonitor flag is disabled
+    if (!entraMonitor) {
+      filtered = filtered.filter(
+        (i) => i.placeholder.connection_type !== ConnectionType.ENTRA,
+      );
+    }
+
+    // Filter by search term (name only)
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter((i) =>
@@ -121,7 +148,13 @@ export const useIntegrationFilters = () => {
       const nameB = b.placeholder.name || "";
       return nameA.localeCompare(nameB);
     });
-  }, [searchTerm, selectedCategory, webMonitor, allIntegrationTypes]);
+  }, [
+    searchTerm,
+    selectedCategory,
+    webMonitor,
+    entraMonitor,
+    allIntegrationTypes,
+  ]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);

@@ -11,7 +11,9 @@ export const useAddManualTaskStep = ({
   const { data: manualFields } = useGetManualFieldsQuery(
     { connectionKey: connection ? connection.key : "" },
     {
-      skip: !connection,
+      skip:
+        !connection ||
+        connectionOption?.identifier !== ConnectionType.MANUAL_TASK,
     },
   );
 

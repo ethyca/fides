@@ -95,6 +95,16 @@ export const Banner: Story = {
     description: PARAGRAPH_LOREM,
     banner: true,
   },
+  argTypes: {
+    type: {
+      control: "select",
+      options: Object.values(ALERT_TYPE),
+    },
+    showIcon: {
+      control: "boolean",
+    },
+    icon: iconControl,
+  },
 };
 
 export const Compact: Story = {

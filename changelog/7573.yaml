@@ -1,4 +1,0 @@
-type: Security
-description: Replaced python-jose with joserfc to address CVE-2024-23342
-pr: 7573
-labels: []

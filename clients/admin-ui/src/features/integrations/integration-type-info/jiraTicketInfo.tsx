@@ -5,7 +5,7 @@ import { ConnectionType } from "~/types/api/models/ConnectionType";
 import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const JIRA_TICKET_PLACEHOLDER = {
-  name: "Jira",
+  name: "Jira for Ticketing",
   key: "jira_ticket_placeholder",
   connection_type: ConnectionType.JIRA_TICKET,
   access: AccessLevel.WRITE,
@@ -28,7 +28,7 @@ const JiraTicketOverview = () => (
   </>
 );
 
-const JIRA_TICKET_TAGS = ["DSR", "Ticketing"];
+const JIRA_TICKET_TAGS = ["Ticketing"];
 
 const JIRA_TICKET_TYPE_INFO = {
   placeholder: JIRA_TICKET_PLACEHOLDER,

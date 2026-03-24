@@ -62,6 +62,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "dataCatalog",
         requiresPlus: true,
       },
+      {
+        title: "Access control",
+        path: routes.ACCESS_CONTROL_ROUTE,
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        requiresPlus: true,
+      },
     ],
   },
   {
@@ -123,7 +130,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Policies",
         path: routes.POLICIES_ROUTE,
-        requiresFlag: "alphaPolicies",
+        requiresFlag: "policies",
         scopes: [ScopeRegistryEnum.POLICY_READ],
       },
     ],
@@ -136,7 +143,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Assessments",
         path: routes.PRIVACY_ASSESSMENTS_ROUTE,
         scopes: [],
-        requiresFlag: "alphaDataProtectionAssessments",
+        requiresFlag: "privacyAssessments",
       },
     ],
   },
@@ -234,6 +241,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.CONFIG_UPDATE,
         ],
       },
+      {
+        title: "Access policies",
+        path: routes.ACCESS_POLICIES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [],
+      },
     ],
   },
   {
@@ -284,6 +298,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.USER_DETAIL_ROUTE,
         hidden: true, // Don't show in nav but allow access
         scopes: [], // Any authenticated user can access their own profile
+      },
+      {
+        title: "Role Management",
+        path: routes.RBAC_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaRbac",
+        scopes: [
+          // Only Owners can access Role Management - they have assign_owners scope
+          ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+        ],
       },
       {
         title: "Organization",

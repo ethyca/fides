@@ -330,7 +330,7 @@ const CustomFieldForm = ({
                             label={index === 0 ? "Options" : ""}
                             data-testid="options-form-item"
                           >
-                            <Flex gap="middle">
+                            <Flex gap="medium">
                               <Form.Item
                                 {...field}
                                 validateTrigger={["onChange", "onBlur"]}

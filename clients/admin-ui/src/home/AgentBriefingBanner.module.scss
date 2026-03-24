@@ -1,0 +1,26 @@
+.alertSm {
+  :global(.ant-alert-message) {
+    font-size: var(--ant-font-size-sm);
+  }
+}
+
+.quickActionLink {
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &.error {
+    color: var(--ant-color-error);
+  }
+
+  &.warning {
+    color: var(--ant-color-warning);
+  }
+
+  &.info {
+    color: var(--ant-color-info);
+  }
+}

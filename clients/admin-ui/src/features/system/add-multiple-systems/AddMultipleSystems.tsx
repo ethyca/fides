@@ -28,7 +28,6 @@ import {
   TableSkeletonLoader,
   useClientSidePagination,
 } from "common/table/v2";
-import { errorToastParams, successToastParams } from "common/toast";
 import {
   Button,
   ChakraBox as Box,
@@ -40,13 +39,13 @@ import {
   Tag,
   Tooltip,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
+  useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
@@ -111,7 +110,7 @@ const EmptyTableNotice = () => (
 const SYSTEM_TEXT = "Vendor";
 
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
-  const toast = useToast();
+  const message = useMessage();
   const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const router = useRouter();
@@ -130,7 +129,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     onOpen: onOpenFilter,
     onClose: onCloseFilter,
   } = useDisclosure();
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const modal = useModal();
   const [isRowSelectionBarOpen, setIsRowSelectionBarOpen] =
     useState<boolean>(false);
 
@@ -266,14 +265,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       const result = await postVendorIds(vendorIds);
       router.push(redirectRoute);
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
       } else {
-        toast(
-          successToastParams(
-            `Successfully added ${
-              vendorIds.length
-            } ${SYSTEM_TEXT.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
-          ),
+        message.success(
+          `Successfully added ${
+            vendorIds.length
+          } ${SYSTEM_TEXT.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
         );
       }
     }
@@ -322,19 +319,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       overflow="auto"
       data-testid="add-multiple-systems-tbl"
     >
-      <ConfirmationModal
-        isOpen={isOpen}
-        isCentered
-        onCancel={onClose}
-        onClose={onClose}
-        onConfirm={addVendors}
-        title="Confirmation"
-        message={`You are about to add ${totalSelectSystemsLength.toLocaleString(
-          "en",
-        )} ${SYSTEM_TEXT.toLocaleLowerCase()}${
-          totalSelectSystemsLength > 1 ? "s" : ""
-        }`}
-      />
       <MultipleSystemsFilterModal
         isOpen={isFilterOpen}
         onClose={onCloseFilter}
@@ -356,7 +340,19 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               </Text>
               <Tooltip title={toolTipText}>
                 <Button
-                  onClick={onOpen}
+                  onClick={() => {
+                    modal.confirm({
+                      title: "Confirmation",
+                      content: `You are about to add ${totalSelectSystemsLength.toLocaleString(
+                        "en",
+                      )} ${SYSTEM_TEXT.toLocaleLowerCase()}${
+                        totalSelectSystemsLength > 1 ? "s" : ""
+                      }`,
+                      centered: true,
+                      icon: null,
+                      onOk: addVendors,
+                    });
+                  }}
                   data-testid="add-multiple-systems-btn"
                   disabled={!anyNewSelectedRows}
                   className="ml-4"

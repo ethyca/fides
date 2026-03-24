@@ -37,9 +37,6 @@ import {
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   SystemPurposeSummary,
-  SystemScannerStatus,
-  SystemScanResponse,
-  SystemsDiff,
   TCFPurposeOverrideSchema,
 } from "~/types/api";
 import {
@@ -47,10 +44,6 @@ import {
   Page_DataUseDeclaration_,
   Page_Vendor_,
 } from "~/types/dictionary-api";
-
-interface ScanParams {
-  classify?: boolean;
-}
 
 interface ClassifyInstancesParams {
   fides_keys?: string[];
@@ -132,24 +125,6 @@ const plusApi = baseApi.injectEndpoints({
         params: { resource_type: GenerateTypes.SYSTEMS },
       }),
       providesTags: ["Classify Instances Systems"],
-    }),
-
-    // Kubernetes Cluster Scanner
-    updateScan: build.mutation<SystemScanResponse, ScanParams>({
-      query: (params: ScanParams) => ({
-        url: `plus/scan`,
-        params,
-        method: "PUT",
-      }),
-      invalidatesTags: ["Classify Instances Systems", "Latest Scan"],
-    }),
-    getLatestScanDiff: build.query<SystemsDiff, void>({
-      query: () => ({
-        url: `plus/scan/latest`,
-        params: { diff: true },
-        method: "GET",
-      }),
-      providesTags: ["Latest Scan"],
     }),
 
     // Custom Metadata Allow List
@@ -597,11 +572,8 @@ export const {
   useGetCustomFieldDefinitionByIdQuery,
   useGetCustomFieldsForResourceQuery,
   useGetHealthQuery,
-  useGetLatestScanDiffQuery,
-  useLazyGetLatestScanDiffQuery,
   useUpdateClassifyInstanceMutation,
   useUpdateCustomFieldDefinitionMutation,
-  useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
   useBulkUpdateCustomFieldsMutation,
@@ -632,13 +604,6 @@ export const {
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
-
-export const selectDataFlowScannerStatus: (
-  state: RootState,
-) => SystemScannerStatus | undefined = createSelector(
-  plusApi.endpoints.getHealth.select(),
-  ({ data }) => data?.system_scanner,
-);
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(

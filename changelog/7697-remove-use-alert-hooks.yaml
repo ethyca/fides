@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Replaced useAlert and useQueryResultToast hooks with Ant Design useMessage
+pr: 7697
+labels: []
