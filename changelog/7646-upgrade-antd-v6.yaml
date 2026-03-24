@@ -1,0 +1,4 @@
+type: Changed
+description: Upgraded Ant Design from v5 to v6 in the admin UI
+pr: 7646
+labels: []

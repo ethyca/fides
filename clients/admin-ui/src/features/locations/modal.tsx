@@ -1,30 +1,11 @@
 import {
-  Button,
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraFlex as Flex,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
   ChakraText as Text,
   Tag,
 } from "fidesui";
 import { ReactNode } from "react";
-
-export const Header = ({ title }: { title: string }) => (
-  <ModalHeader
-    fontSize="lg"
-    fontWeight="semibold"
-    pt={5}
-    paddingInline={6}
-    pb={5}
-    backgroundColor="gray.50"
-    borderTopRadius="md"
-    borderBottom="1px solid"
-    borderColor="gray.200"
-  >
-    {title}
-  </ModalHeader>
-);
 
 export const HeaderCheckboxRow = ({
   title,
@@ -60,23 +41,4 @@ export const HeaderCheckboxRow = ({
     </Box>
     {children}
   </Flex>
-);
-
-export const Footer = ({
-  onApply,
-  onClose,
-}: {
-  onApply: () => void;
-  onClose: () => void;
-}) => (
-  <ModalFooter justifyContent="center">
-    <div className="flex w-full justify-between">
-      <Button onClick={onClose} data-testid="cancel-btn">
-        Cancel
-      </Button>
-      <Button type="primary" onClick={onApply} data-testid="apply-btn">
-        Apply
-      </Button>
-    </div>
-  </ModalFooter>
 );

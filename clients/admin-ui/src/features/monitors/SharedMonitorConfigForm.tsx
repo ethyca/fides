@@ -9,7 +9,7 @@ import {
   Upload,
   UploadChangeParam,
   UploadFile,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 import { parse } from "papaparse";
@@ -18,7 +18,6 @@ import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { BackButtonNonLink } from "~/features/common/nav/BackButton";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useCreateSharedMonitorConfigMutation,
   useUpdateSharedMonitorConfigMutation,
@@ -51,7 +50,7 @@ const SharedMonitorConfigForm = ({
   onBackClick: () => void;
 }) => {
   const [form] = Form.useForm<SharedMonitorConfigFormValues>();
-  const toast = useToast();
+  const message = useMessage();
 
   const [createMonitorTemplate, { isLoading: createIsLoading }] =
     useCreateSharedMonitorConfigMutation();
@@ -89,16 +88,12 @@ const SharedMonitorConfigForm = ({
 
   const handleResult = (result: RTKResult, isCreate: boolean) => {
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(getErrorMessage(result.error, "A problem occurred")),
-      );
+      message.error(getErrorMessage(result.error, "A problem occurred"));
     } else {
-      toast(
-        successToastParams(
-          isCreate
-            ? "Monitor config created successfully"
-            : "Monitor config updated successfully",
-        ),
+      message.success(
+        isCreate
+          ? "Monitor config created successfully"
+          : "Monitor config updated successfully",
       );
       onBackClick();
     }
@@ -138,9 +133,9 @@ const SharedMonitorConfigForm = ({
 
         // Update form with new rules
         form.setFieldValue("rules", rules);
-        toast(successToastParams("CSV patterns imported successfully"));
+        message.success("CSV patterns imported successfully");
       } catch (error) {
-        toast(errorToastParams("Failed to parse CSV file"));
+        message.error("Failed to parse CSV file");
       }
     };
     reader.readAsText(file as any);

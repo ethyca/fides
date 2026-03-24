@@ -27,6 +27,7 @@ SCOPE = "/oauth/scope"
 ROLE = "/oauth/role"
 CLIENT_BY_ID = "/oauth/client/{client_id}"
 CLIENT_SCOPE = "/oauth/client/{client_id}/scope"
+CLIENT_SECRET = "/oauth/client/{client_id}/secret"
 OAUTH_CALLBACK = "/oauth/callback"
 
 # Encryption URLs

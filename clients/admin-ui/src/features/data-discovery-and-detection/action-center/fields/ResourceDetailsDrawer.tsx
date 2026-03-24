@@ -66,7 +66,7 @@ export const ResourceDetailsDrawer = ({
               key: "details",
               label: "Details",
               children: (
-                <Flex gap="middle" vertical>
+                <Flex gap="medium" vertical>
                   <Descriptions
                     bordered
                     size="small"
@@ -152,7 +152,7 @@ export const ResourceDetailsDrawer = ({
                                 <Avatar icon={<SparkleIcon color="black" />} />
                               }
                               title={
-                                <Flex align="center" gap="middle">
+                                <Flex align="center" gap="medium">
                                   <div>{item.label}</div>
                                   {severity && (
                                     <SeverityGauge severity={severity} />

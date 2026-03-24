@@ -9,7 +9,7 @@ import {
   ChakraHeading as Heading,
   ChakraStack as Stack,
   useChakraPrefersReducedMotion as usePrefersReducedMotion,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Formik } from "formik";
 // Framer is bundled as part of chakra. TODO: had trouble with package.json's when
@@ -107,7 +107,7 @@ const useLogin = () => {
   // If the user prefers no motion, don't show the animation
   const reduceMotion = usePrefersReducedMotion();
   const token = useSelector(selectToken);
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const dispatch = useDispatch();
   const { username, inviteCode, redirect } = parseQueryParam(router.query);
@@ -147,10 +147,7 @@ const useLogin = () => {
         error as RTKErrorResult["error"],
         defaultErrorMsg,
       );
-      toast({
-        status: "error",
-        description: errorMsg,
-      });
+      message.error(errorMsg);
     }
   };
 
