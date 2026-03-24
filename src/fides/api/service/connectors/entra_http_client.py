@@ -18,7 +18,7 @@ GRAPH_DEFAULT_SCOPE = "https://graph.microsoft.com/.default"
 DEFAULT_REQUEST_TIMEOUT = 30
 # Max page size for applications list (Microsoft Graph limit)
 APPLICATIONS_PAGE_SIZE = 100
-# $select fields for IDP monitor discovery
+# $select fields used for both connection test and IDP monitor discovery
 APPLICATIONS_SELECT = (
     "id,appId,displayName,createdDateTime,description,signInAudience,isDisabled,web"
 )
