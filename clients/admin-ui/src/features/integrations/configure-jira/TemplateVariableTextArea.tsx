@@ -85,21 +85,33 @@ const TemplateVariableTextArea = ({
 
     // Find the most recent trigger (`/` or `__`) before the cursor and check
     // whether the text typed after it is still a valid partial variable name.
+    // Only match `/` when it immediately precedes the current word (no
+    // intervening alphanumeric text), to avoid false positives on prose like
+    // "access/erasure" where the cursor happens to be in "erasure".
+    const slashPos = /\/([A-Za-z_]*)$/.exec(beforeCursor);
+    const doubleUnderscorePos = beforeCursor.lastIndexOf("__");
+
     const candidates: { pos: number; len: number }[] = [
-      { pos: beforeCursor.lastIndexOf("/"), len: 1 },
-      { pos: beforeCursor.lastIndexOf("__"), len: 2 },
+      ...(slashPos ? [{ pos: slashPos.index, len: 1 }] : []),
+      ...(doubleUnderscorePos !== -1
+        ? [{ pos: doubleUnderscorePos, len: 2 }]
+        : []),
     ];
 
-    for (const { pos, len } of candidates.sort((a, b) => b.pos - a.pos)) {
-      if (pos === -1) continue;
-      const afterTrigger = beforeCursor.slice(pos + len);
-      if (/^[A-Za-z_]*$/.test(afterTrigger)) {
-        setTriggerIndex(pos);
-        setFilterText(afterTrigger.toUpperCase());
-        setActiveIndex(0);
-        onChange?.(text);
-        return;
-      }
+    const match = candidates
+      .sort((a, b) => b.pos - a.pos)
+      .find(({ pos, len }) => {
+        const afterTrigger = beforeCursor.slice(pos + len);
+        return /^[A-Za-z_]*$/.test(afterTrigger);
+      });
+
+    if (match) {
+      const afterTrigger = beforeCursor.slice(match.pos + match.len);
+      setTriggerIndex(match.pos);
+      setFilterText(afterTrigger.toUpperCase());
+      setActiveIndex(0);
+      onChange?.(text);
+      return;
     }
 
     closeDropdown();

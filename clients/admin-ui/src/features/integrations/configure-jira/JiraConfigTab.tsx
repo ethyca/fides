@@ -19,6 +19,9 @@ import { ConnectionConfigurationResponse } from "~/types/api";
 
 import TemplateVariableTextArea from "./TemplateVariableTextArea";
 
+const DUE_DATE_TYPE_NONE = "none";
+const DUE_DATE_TYPE_FIXED_DAYS = "fixed_days";
+
 interface JiraConfigTabProps {
   connection: ConnectionConfigurationResponse;
 }
@@ -49,7 +52,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
         issue_type: secrets.issue_type || undefined,
         summary_template: secrets.summary_template || undefined,
         description_template: secrets.description_template || undefined,
-        due_date_type: secrets.due_date_config?.type || "none",
+        due_date_type: secrets.due_date_config?.type || DUE_DATE_TYPE_NONE,
         due_date_days: secrets.due_date_config?.days || undefined,
       });
     }
@@ -90,7 +93,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
       description_template: values.description_template,
     };
 
-    if (values.due_date_type && values.due_date_type !== "none") {
+    if (values.due_date_type && values.due_date_type !== DUE_DATE_TYPE_NONE) {
       secretsPayload.due_date_config = {
         type: values.due_date_type,
         days: values.due_date_days,
@@ -123,6 +126,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           rules={[{ required: true, message: "Select a Jira project" }]}
         >
           <Select
+            aria-label="Project"
             placeholder="Select a project"
             loading={projectsLoading}
             onChange={handleProjectChange}
@@ -140,6 +144,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           rules={[{ required: true, message: "Select an issue type" }]}
         >
           <Select
+            aria-label="Issue type"
             placeholder={
               selectedProject
                 ? "Select an issue type"
@@ -187,16 +192,17 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           className="mt-4"
         >
           <Select
+            aria-label="Due date calculation"
             options={[
-              { value: "none", label: "No due date" },
+              { value: DUE_DATE_TYPE_NONE, label: "No due date" },
               {
-                value: "fixed_days",
+                value: DUE_DATE_TYPE_FIXED_DAYS,
                 label: "Fixed number of days after approval",
               },
             ]}
           />
         </Form.Item>
-        {dueDateType === "fixed_days" && (
+        {dueDateType === DUE_DATE_TYPE_FIXED_DAYS && (
           <Form.Item
             name="due_date_days"
             label="Days after approval"

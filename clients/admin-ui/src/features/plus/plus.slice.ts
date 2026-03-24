@@ -580,29 +580,6 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/connection/${connectionKey}/jira/template-variables`,
       }),
     }),
-    previewJiraTicket: build.mutation<
-      {
-        project_key: string;
-        issue_type: string;
-        summary: string;
-        description: string;
-        due_date?: string;
-      },
-      {
-        connectionKey: string;
-        body: {
-          summary_template?: string;
-          description_template?: string;
-          privacy_request_id?: string;
-        };
-      }
-    >({
-      query: ({ connectionKey, body }) => ({
-        url: `plus/connection/${connectionKey}/jira/preview`,
-        method: "POST",
-        body,
-      }),
-    }),
   }),
 });
 
@@ -651,7 +628,6 @@ export const {
   useGetJiraProjectsQuery,
   useGetJiraIssueTypesQuery,
   useGetJiraTemplateVariablesQuery,
-  usePreviewJiraTicketMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
