@@ -1,5 +1,5 @@
 import { theme } from "antd/lib";
-import { useId, useMemo, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import {
   Area,
   AreaChart as RechartsAreaChart,
@@ -21,7 +21,6 @@ import {
   calcTickInterval,
   deriveInterval,
   formatTimestamp,
-  HOUR_MS,
   pickIntervalHours,
   useChartAnimation,
   useContainerSize,
@@ -43,6 +42,10 @@ export interface AreaChartDataPoint {
 export interface AreaChartProps {
   data?: AreaChartDataPoint[];
   series: AreaChartSeries[];
+  /** Total time span of the data in milliseconds. Used to compute the ideal interval. */
+  rangeMs?: number;
+  /** Called when the ideal fetch interval changes (e.g. on container resize). */
+  onIntervalChange?: (intervalHours: number) => void;
   animationDuration?: number;
   showTooltip?: boolean;
   showGrid?: boolean;
@@ -51,6 +54,8 @@ export interface AreaChartProps {
 export const AreaChart = ({
   data,
   series,
+  rangeMs,
+  onIntervalChange,
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   showGrid = true,
@@ -62,55 +67,15 @@ export const AreaChart = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const { width: containerWidth } = useContainerSize(containerRef);
 
-  const rawData = data ?? [];
-  const seriesKeys = useMemo(() => series.map((s) => s.key), [series]);
+  const chartData = data ?? [];
 
-  const chartData = useMemo(() => {
-    if (containerWidth <= 0 || rawData.length < 2) {
-      return rawData;
-    }
-
-    const timestamps = rawData.map((point) => new Date(point.label).getTime());
-    const minTs = timestamps.reduce((a, b) => Math.min(a, b), Infinity);
-    const maxTs = timestamps.reduce((a, b) => Math.max(a, b), -Infinity);
-    const rangeMs = maxTs - minTs;
-    if (rangeMs <= 0) {
-      return rawData;
-    }
-
-    const intervalMs =
-      pickIntervalHours(rangeMs, containerWidth, MIN_PX_PER_POINT) * HOUR_MS;
-    const flooredStart = Math.floor(minTs / intervalMs) * intervalMs;
-    const bucketCount = Math.max(
-      1,
-      Math.ceil((maxTs - flooredStart) / intervalMs),
-    );
-
-    const buckets: AreaChartDataPoint[] = Array.from(
-      { length: bucketCount },
-      (_, index) => {
-        const point: AreaChartDataPoint = {
-          label: new Date(flooredStart + index * intervalMs).toISOString(),
-        };
-        seriesKeys.forEach((key) => {
-          point[key] = 0;
-        });
-        return point;
-      },
-    );
-
-    timestamps.forEach((ts, idx) => {
-      const bucketIndex = Math.min(
-        Math.floor((ts - flooredStart) / intervalMs),
-        bucketCount - 1,
+  useEffect(() => {
+    if (onIntervalChange && rangeMs && rangeMs > 0 && containerWidth > 0) {
+      onIntervalChange(
+        pickIntervalHours(rangeMs, containerWidth, MIN_PX_PER_POINT),
       );
-      seriesKeys.forEach((key) => {
-        (buckets[bucketIndex][key] as number) += Number(rawData[idx][key] ?? 0);
-      });
-    });
-
-    return buckets;
-  }, [rawData, seriesKeys, containerWidth]);
+    }
+  }, [onIntervalChange, rangeMs, containerWidth]);
 
   const intervalMs = deriveInterval(chartData);
   const tickInterval = calcTickInterval(

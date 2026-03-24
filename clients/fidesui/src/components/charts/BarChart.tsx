@@ -1,5 +1,5 @@
 import { theme } from "antd/lib";
-import { useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -18,7 +18,6 @@ import {
   calcTickInterval,
   deriveInterval,
   formatTimestamp,
-  HOUR_MS,
   pickIntervalHours,
   useChartAnimation,
   useContainerSize,
@@ -33,6 +32,10 @@ export interface BarChartDataPoint {
 export interface BarChartProps {
   data?: BarChartDataPoint[];
   color?: AntColorTokenKey;
+  /** Total time span of the data in milliseconds. Used to compute the ideal interval. */
+  rangeMs?: number;
+  /** Called when the ideal fetch interval changes (e.g. on container resize). */
+  onIntervalChange?: (intervalHours: number) => void;
   animationDuration?: number;
   showTooltip?: boolean;
   size?: BarSize;
@@ -41,6 +44,8 @@ export interface BarChartProps {
 export const BarChart = ({
   data,
   color = "colorText",
+  rangeMs,
+  onIntervalChange,
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   size = "md",
@@ -53,47 +58,15 @@ export const BarChart = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const { width: containerWidth } = useContainerSize(containerRef);
 
-  const rawData = data ?? [];
+  const chartData = data ?? [];
 
-  const chartData = useMemo(() => {
-    if (containerWidth <= 0 || rawData.length < 2) {
-      return rawData;
-    }
-
-    const timestamps = rawData.map((d) => new Date(d.label).getTime());
-    const minTs = timestamps.reduce((a, b) => Math.min(a, b), Infinity);
-    const maxTs = timestamps.reduce((a, b) => Math.max(a, b), -Infinity);
-    const rangeMs = maxTs - minTs;
-    if (rangeMs <= 0) {
-      return rawData;
-    }
-
-    const intervalMs =
-      pickIntervalHours(rangeMs, containerWidth, barWidth) * HOUR_MS;
-    const flooredStart = Math.floor(minTs / intervalMs) * intervalMs;
-    const bucketCount = Math.max(
-      1,
-      Math.ceil((maxTs - flooredStart) / intervalMs),
-    );
-
-    const buckets: BarChartDataPoint[] = Array.from(
-      { length: bucketCount },
-      (_, i) => ({
-        label: new Date(flooredStart + i * intervalMs).toISOString(),
-        value: 0,
-      }),
-    );
-
-    timestamps.forEach((ts, idx) => {
-      const bucketIndex = Math.min(
-        Math.floor((ts - flooredStart) / intervalMs),
-        bucketCount - 1,
+  useEffect(() => {
+    if (onIntervalChange && rangeMs && rangeMs > 0 && containerWidth > 0) {
+      onIntervalChange(
+        pickIntervalHours(rangeMs, containerWidth, barWidth),
       );
-      buckets[bucketIndex].value += rawData[idx].value;
-    });
-
-    return buckets;
-  }, [rawData, containerWidth, barWidth]);
+    }
+  }, [onIntervalChange, rangeMs, containerWidth, barWidth]);
 
   const intervalMs = deriveInterval(chartData);
   const tickInterval = calcTickInterval(
