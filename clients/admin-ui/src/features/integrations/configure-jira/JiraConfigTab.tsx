@@ -7,7 +7,6 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useEffect } from "react";
 
 import { usePatchDatastoreConnectionSecretsMutation } from "~/features/datastore-connections";
 import {
@@ -39,24 +38,9 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   const [form] = Form.useForm<JiraConfigFormValues>();
   const message = useMessage();
 
-  // Read saved config from connection secrets
   const secrets = (connection as any)?.secrets as
     | Record<string, any>
     | undefined;
-
-  // Pre-populate form from saved secrets
-  useEffect(() => {
-    if (secrets) {
-      form.setFieldsValue({
-        project_key: secrets.project_key || undefined,
-        issue_type: secrets.issue_type || undefined,
-        summary_template: secrets.summary_template || undefined,
-        description_template: secrets.description_template || undefined,
-        due_date_type: secrets.due_date_config?.type || DUE_DATE_TYPE_NONE,
-        due_date_days: secrets.due_date_config?.days || undefined,
-      });
-    }
-  }, [secrets, form]);
 
   const selectedProject = Form.useWatch("project_key", form);
   const dueDateType = Form.useWatch("due_date_type", form);
@@ -119,7 +103,19 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
         Configure how Fides creates Jira tickets for privacy requests.
       </Typography.Paragraph>
 
-      <Form form={form} layout="vertical" onFinish={handleSave}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSave}
+        initialValues={{
+          project_key: secrets?.project_key || undefined,
+          issue_type: secrets?.issue_type || undefined,
+          summary_template: secrets?.summary_template || undefined,
+          description_template: secrets?.description_template || undefined,
+          due_date_type: secrets?.due_date_config?.type || DUE_DATE_TYPE_NONE,
+          due_date_days: secrets?.due_date_config?.days || undefined,
+        }}
+      >
         <Form.Item
           name="project_key"
           label="Project"
