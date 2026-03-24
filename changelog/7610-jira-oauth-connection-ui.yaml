@@ -1,0 +1,4 @@
+type: Added
+description: Added Jira OAuth Connection UI for authorizing, testing, and managing Jira integrations
+pr: 7610
+labels: []
