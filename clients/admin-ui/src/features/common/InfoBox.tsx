@@ -1,10 +1,10 @@
 import {
-  ChakraCloseIcon as CloseIcon,
+  ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraHStack as HStack,
   ChakraText as Text,
-  ChakraWarningTwoIcon as WarningTwoIcon,
+  Icons,
 } from "fidesui";
 
 const InfoBox = ({
@@ -29,8 +29,9 @@ const InfoBox = ({
     position="relative"
   >
     {onClose && (
-      <CloseIcon
-        boxSize={5}
+      <Box
+        as="span"
+        display="flex"
         position="absolute"
         right={3}
         top={3}
@@ -38,9 +39,13 @@ const InfoBox = ({
         cursor="pointer"
         p={1}
         onClick={onClose}
-      />
+      >
+        <Icons.Close size={12} />
+      </Box>
     )}
-    <WarningTwoIcon alignSelf="start" color="minos" mt={0.5} flexGrow={0} />
+    <Box as="span" alignSelf="start" color="minos" mt={0.5} flexGrow={0}>
+      <Icons.WarningAltFilled size={16} />
+    </Box>
     <Flex direction="column" gap={2} flexGrow={1}>
       <Heading fontSize="md">{title}</Heading>
       <Text fontSize="sm" color="gray.600" lineHeight="5">

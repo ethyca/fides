@@ -1,8 +1,6 @@
 import {
   Button,
   Card,
-  ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraCloseIcon as CloseIcon,
   ChakraInputGroup as InputGroup,
   ChakraSkeleton as Skeleton,
   ChakraText as Text,
@@ -169,7 +167,7 @@ const DropdownContent = ({
           type="text"
           size="small"
           aria-label="Close"
-          icon={<CloseIcon />}
+          icon={<Icons.Close />}
           onClick={() => setDropdownOpen(false)}
           data-testid="close-config-dropdown"
         />
@@ -324,7 +322,7 @@ export const TCFConfigurationDropdown = ({
         }
       >
         <Button
-          icon={<ChevronDownIcon />}
+          icon={<Icons.ChevronDown />}
           iconPosition="end"
           data-testid="tcf-config-dropdown-trigger"
         >
