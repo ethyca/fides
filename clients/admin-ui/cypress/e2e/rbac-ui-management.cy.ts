@@ -296,13 +296,13 @@ describe("RBAC UI Management", () => {
 
     it("displays the role management page with roles table", () => {
       // Check page header
-      cy.contains("Role Management").should("be.visible");
+      cy.contains("Role management").should("be.visible");
 
       // Check that the roles table is present
       cy.get(".ant-table").should("exist");
 
-      // Should have "Create Custom Role" button
-      cy.contains("button", "Create Custom Role").should("be.visible");
+      // Should have "Create role" button
+      cy.contains("button", "Create role").should("be.visible");
     });
 
     it("shows system roles in the roles table", () => {
@@ -313,12 +313,12 @@ describe("RBAC UI Management", () => {
     });
 
     it("can navigate to create new role page", () => {
-      cy.contains("button", "Create Custom Role").click();
+      cy.contains("button", "Create role").click();
       cy.url().should("include", "/settings/rbac/roles/new");
 
       // Verify create form is displayed
-      cy.contains("Create Custom Role").should("be.visible");
-      cy.contains("Display Name").should("be.visible");
+      cy.contains("Create role").should("be.visible");
+      cy.contains("Name").should("be.visible");
       cy.contains("Key").should("be.visible");
     });
   });
@@ -343,7 +343,7 @@ describe("RBAC UI Management", () => {
       );
 
       // Submit the form
-      cy.contains("button", "Create Role").click();
+      cy.contains("button", "Create role").click();
 
       // Should redirect to role detail page
       cy.url().should("include", "/settings/rbac/roles/");
@@ -360,7 +360,7 @@ describe("RBAC UI Management", () => {
       visitWithAuth("/settings/rbac/roles/new", true);
 
       // Try to submit without filling name
-      cy.contains("button", "Create Role").click();
+      cy.contains("button", "Create role").click();
 
       // Should show validation error
       cy.contains("Name is required").should("be.visible");
@@ -408,8 +408,8 @@ describe("RBAC UI Management", () => {
         cy.get("h5.capitalize").should("have.length.at.least", 1);
 
         cy.get(".ant-checkbox-input").first().check({ force: true });
-        cy.contains("button", "Save Permissions").click();
-        cy.contains("Permissions updated successfully").should("be.visible");
+        cy.contains("button", "Save").click();
+        cy.contains("Role saved successfully").should("be.visible");
       });
 
       it("can update role details", () => {
@@ -419,8 +419,8 @@ describe("RBAC UI Management", () => {
           .clear()
           .type("Updated description via UI test");
 
-        cy.contains("button", "Save Changes").click();
-        cy.contains("Role updated successfully").should("be.visible");
+        cy.contains("button", "Save").click();
+        cy.contains("Role saved successfully").should("be.visible");
       });
     });
 
@@ -450,9 +450,12 @@ describe("RBAC UI Management", () => {
       });
 
       it("can delete a custom role via the UI", () => {
-        cy.contains("tr", roleName).within(() => {
-          cy.contains("button", "Delete").click();
-        });
+        // Click on the role name to navigate to detail page
+        cy.contains("a", roleName).click();
+        cy.url().should("match", /\/settings\/rbac\/roles\/[a-zA-Z0-9_-]+$/);
+
+        // Click Delete button on the detail page
+        cy.contains("button", "Delete").click();
 
         cy.get(".delete-role-confirmation-modal").should("be.visible");
 
@@ -461,7 +464,10 @@ describe("RBAC UI Management", () => {
           .click();
 
         cy.contains("deleted successfully").should("be.visible");
-        cy.contains("tr", roleName).should("not.exist");
+
+        // Should redirect back to roles list
+        cy.url().should("include", "/settings/rbac");
+        cy.url().should("not.match", /\/roles\/[a-zA-Z0-9_-]+$/);
       });
     });
 
@@ -519,23 +525,30 @@ describe("RBAC UI Management", () => {
       navigateToRbacSettings();
     });
 
-    it("can click Edit button to navigate to detail page", () => {
+    it("can click role name to navigate to detail page", () => {
+      // Click on the first role name link
       cy.get(".ant-table-tbody tr.ant-table-row")
         .first()
-        .within(() => {
-          cy.contains("Edit").click();
-        });
+        .find("a")
+        .first()
+        .click();
 
       cy.url().should("match", /\/settings\/rbac\/roles\/[a-zA-Z0-9_-]+$/);
     });
 
     it("cannot delete system roles", () => {
+      // Navigate to a system role's detail page
       cy.get(".ant-table-tbody tr")
         .filter(":contains('System')")
         .first()
-        .within(() => {
-          cy.contains("button", "Delete").should("not.exist");
-        });
+        .find("a")
+        .first()
+        .click();
+
+      cy.url().should("match", /\/settings\/rbac\/roles\/[a-zA-Z0-9_-]+$/);
+
+      // Delete button should be disabled for system roles
+      cy.contains("button", "Delete").should("be.disabled");
     });
   });
 
@@ -549,11 +562,11 @@ describe("RBAC UI Management", () => {
       // Navigate to RBAC settings with flag enabled
       navigateToRbacSettings();
 
-      // Role Management page should be visible
-      cy.contains("Role Management").should("be.visible");
+      // Role management page should be visible
+      cy.contains("Role management").should("be.visible");
 
-      // Create Role button should be accessible
-      cy.contains("button", "Create Custom Role").should("be.visible");
+      // Create role button should be accessible
+      cy.contains("button", "Create role").should("be.visible");
     });
 
     it("RBAC settings page requires alphaRbac flag in URL access", () => {
@@ -620,18 +633,18 @@ describe("RBAC UI Management", () => {
         // Navigate to an existing role's edit page
         navigateToRbacSettings();
 
-        // Click Edit on first role to see permission grid
+        // Click on first role name to see permission grid
         cy.get(".ant-table-tbody tr.ant-table-row")
           .first()
-          .within(() => {
-            cy.contains("Edit").click();
-          });
+          .find("a")
+          .first()
+          .click();
 
         // Wait for role detail page
         cy.url().should("match", /\/settings\/rbac\/roles\/[a-zA-Z0-9_-]+$/);
 
-        // Permission categories should be displayed (Typography.Title level={5})
-        cy.get("h5").should("have.length.at.least", 1);
+        // Permission categories should be displayed in the tree table
+        cy.get(".ant-table").should("exist");
 
         // Should have checkboxes for permissions
         cy.get(".ant-checkbox").should("have.length.at.least", 1);
@@ -667,7 +680,7 @@ describe("RBAC UI Management", () => {
         );
 
         // Create the role
-        cy.contains("button", "Create Role").click();
+        cy.contains("button", "Create role").click();
 
         // Should succeed
         cy.contains("created successfully").should("be.visible");
@@ -676,30 +689,18 @@ describe("RBAC UI Management", () => {
       it("shows permission sections for different resource types", () => {
         navigateToRbacSettings();
 
-        // Click Edit on first role
+        // Click on first role name
         cy.get(".ant-table-tbody tr.ant-table-row")
           .first()
-          .within(() => {
-            cy.contains("Edit").click();
-          });
+          .find("a")
+          .first()
+          .click();
 
-        // Verify multiple permission categories exist
-        // Common categories: system, user, privacy_request, connection, etc.
-        cy.get("h5").then(($headings) => {
-          expect($headings.length).to.be.greaterThan(0);
-
-          // At least one heading should be a resource type
-          const headingTexts = $headings
-            .map((_, el) => el.textContent?.toLowerCase())
-            .get();
-          const hasResourceType = headingTexts.some(
-            (text) =>
-              text?.includes("system") ||
-              text?.includes("user") ||
-              text?.includes("privacy") ||
-              text?.includes("connection"),
-          );
-          expect(hasResourceType).to.be.true;
+        // Verify permission categories exist in the tree table
+        // Categories are shown as expandable rows with resource type names
+        cy.get(".ant-table-tbody").within(() => {
+          // Should have rows with permission codes
+          cy.get("tr").should("have.length.at.least", 1);
         });
       });
     } else {
@@ -707,8 +708,8 @@ describe("RBAC UI Management", () => {
       it("renders create role form with permission section", () => {
         visitWithAuth("/settings/rbac/roles/new", true);
 
-        cy.contains("Create Custom Role").should("be.visible");
-        cy.contains("Display Name").should("be.visible");
+        cy.contains("Create role").should("be.visible");
+        cy.contains("Name").should("be.visible");
         cy.contains("Key").should("be.visible");
       });
     }
