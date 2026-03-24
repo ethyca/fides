@@ -3,7 +3,8 @@
 /* eslint-disable */
 
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
-import type { fides__api__schemas__privacy_request__IdentityValue } from "./fides__api__schemas__privacy_request__IdentityValue";
+import type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from "./fides__api__schemas__redis_cache__CustomPrivacyRequestField";
+import type { IdentityValue } from "./IdentityValue";
 import type { JiraTicketSummary } from "./JiraTicketSummary";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
@@ -33,9 +34,9 @@ export type PrivacyRequestResponseExtended = {
   external_id?: string | null;
   identity?: Record<
     string,
-    string | fides__api__schemas__privacy_request__IdentityValue | null
+    string | IdentityValue | null
   > | null;
-  custom_privacy_request_fields?: null;
+  custom_privacy_request_fields?: Record<string, fides__api__schemas__redis_cache__CustomPrivacyRequestField> | null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
   resume_endpoint?: string | null;
