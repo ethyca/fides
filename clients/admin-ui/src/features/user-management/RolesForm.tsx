@@ -16,7 +16,7 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useRouter } from "next/router";
+import NextLink from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -58,7 +58,6 @@ const ROLES_WITHOUT_SYSTEM_ASSIGNMENT = [
 
 const RolesForm = () => {
   const message = useMessage();
-  const router = useRouter();
   const activeUserId = useAppSelector(selectActiveUserId);
   const [isAssignSystemsModalOpen, setIsAssignSystemsModalOpen] =
     useState(false);
@@ -350,8 +349,12 @@ const RolesForm = () => {
               style={{
                 cursor: isDisabled ? "not-allowed" : "pointer",
                 opacity: isDisabled ? 0.6 : 1,
-                borderColor: isSelected ? "#1890ff" : undefined,
-                backgroundColor: isSelected ? "#e6f7ff" : undefined,
+                borderColor: isSelected
+                  ? "var(--ant-color-primary)"
+                  : undefined,
+                backgroundColor: isSelected
+                  ? "var(--ant-color-primary-bg)"
+                  : undefined,
               }}
               onClick={() => !isDisabled && handleRoleToggle(role.id)}
             >
@@ -378,7 +381,10 @@ const RolesForm = () => {
                       {!role.is_system_role && (
                         <Text
                           type="secondary"
-                          style={{ fontSize: 12, color: "#52c41a" }}
+                          style={{
+                            fontSize: 12,
+                            color: "var(--fidesui-success)",
+                          }}
                         >
                           Custom role
                         </Text>
@@ -439,9 +445,9 @@ const RolesForm = () => {
       )}
 
       <Flex gap={12}>
-        <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
-          Cancel
-        </Button>
+        <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
+          <Button>Cancel</Button>
+        </NextLink>
         <Button
           type="primary"
           onClick={handleSave}

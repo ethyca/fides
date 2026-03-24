@@ -10,13 +10,16 @@ import {
   useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useCreateRoleMutation, useGetRolesQuery } from "~/features/rbac";
 import type { RBACRoleCreate } from "~/types/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 const NewRolePage: NextPage = () => {
   const router = useRouter();
@@ -43,11 +46,7 @@ const NewRolePage: NextPage = () => {
       message.success(`Role "${newRole.name}" created successfully`);
       router.push(`/settings/rbac/roles/${newRole.id}`);
     } catch (err: unknown) {
-      const errorMessage =
-        err && typeof err === "object" && "data" in err
-          ? (err as { data?: { detail?: string } }).data?.detail
-          : "Failed to create role";
-      message.error(errorMessage || "Failed to create role");
+      message.error(getErrorMessage(err as RTKErrorResult["error"]));
     }
   };
 
@@ -145,7 +144,9 @@ const NewRolePage: NextPage = () => {
               <Button type="primary" htmlType="submit" loading={isLoading}>
                 Create role
               </Button>
-              <Button onClick={() => router.push(RBAC_ROUTE)}>Cancel</Button>
+              <NextLink href={RBAC_ROUTE} passHref>
+                <Button>Cancel</Button>
+              </NextLink>
             </Space>
           </Form.Item>
         </Form>

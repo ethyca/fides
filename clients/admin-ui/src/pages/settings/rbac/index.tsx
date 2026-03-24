@@ -1,7 +1,7 @@
 import Layout from "common/Layout";
 import { Button, Flex, Space, Table, Tag, Typography } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
+import NextLink from "next/link";
 import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -12,7 +12,6 @@ import { useGetRolesQuery } from "~/features/rbac";
 import type { RBACRole } from "~/types/api";
 
 const RBACPage: NextPage = () => {
-  const router = useRouter();
   const {
     data: roles,
     isLoading,
@@ -86,12 +85,9 @@ const RBACPage: NextPage = () => {
         isSticky={false}
         className="pb-0"
         rightContent={
-          <Button
-            type="primary"
-            onClick={() => router.push(RBAC_ROLE_NEW_ROUTE)}
-          >
-            Create role
-          </Button>
+          <NextLink href={RBAC_ROLE_NEW_ROUTE} passHref>
+            <Button type="primary">Create role</Button>
+          </NextLink>
         }
       >
         <Typography.Paragraph className="max-w-screen-sm">

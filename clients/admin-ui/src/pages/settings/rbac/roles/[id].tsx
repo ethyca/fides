@@ -18,12 +18,12 @@ import {
   useMessage,
   useModal,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import { getErrorMessage } from "~/features/common/helpers";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
@@ -35,6 +35,7 @@ import {
   useUpdateRolePermissionsMutation,
 } from "~/features/rbac";
 import type { RBACPermission, RBACRole } from "~/types/api";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 /**
  * Get all descendant role IDs for a given role.
@@ -69,6 +70,26 @@ const getDescendantRoleIds = (
   collectDescendants([roleId]);
   return descendants;
 };
+
+interface PermissionRowLeaf {
+  key: string;
+  code: string;
+  description: string | null;
+  isGroup: false;
+  id: string;
+  isInherited: boolean;
+  isSelected: boolean;
+}
+
+interface PermissionRowGroup {
+  key: string;
+  code: string;
+  description: null;
+  isGroup: true;
+  children: PermissionRowLeaf[];
+}
+
+type PermissionRow = PermissionRowGroup | PermissionRowLeaf;
 
 // Scopes that are seeded in the database but have no corresponding endpoint.
 // These are hidden from the UI to avoid confusion.
@@ -160,17 +181,17 @@ const RoleDetailPage: NextPage = () => {
   }, [permissions]);
 
   // Transform grouped permissions into tree data structure
-  const permissionTreeData = useMemo(() => {
+  const permissionTreeData = useMemo((): PermissionRowGroup[] => {
     return Object.entries(groupedPermissions).map(([resourceType, perms]) => ({
       key: resourceType,
       code: resourceType.replace(/_/g, " "),
       description: null,
-      isGroup: true,
+      isGroup: true as const,
       children: perms.map((perm) => ({
         key: perm.id,
         code: perm.code,
-        description: perm.description,
-        isGroup: false,
+        description: perm.description ?? null,
+        isGroup: false as const,
         id: perm.id,
         isInherited: role?.inherited_permissions.includes(perm.code) ?? false,
         isSelected: selectedPermissions.includes(perm.code),
@@ -207,8 +228,8 @@ const RoleDetailPage: NextPage = () => {
         }).unwrap(),
       ]);
       message.success("Role saved successfully");
-    } catch (err) {
-      message.error("Failed to save role");
+    } catch (err: unknown) {
+      message.error(getErrorMessage(err as RTKErrorResult["error"]));
     }
   };
 
@@ -226,8 +247,8 @@ const RoleDetailPage: NextPage = () => {
       await deleteRole(id as string).unwrap();
       message.success(`Role "${role.name}" deleted successfully`);
       router.push(RBAC_ROUTE);
-    } catch (err) {
-      message.error("Failed to delete role");
+    } catch (err: unknown) {
+      message.error(getErrorMessage(err as RTKErrorResult["error"]));
     }
   };
 
@@ -277,13 +298,16 @@ const RoleDetailPage: NextPage = () => {
       dataIndex: "code",
       key: "code",
       width: 300,
-      onFilter: (value: any, record: any) => {
+      onFilter: (
+        value: boolean | string | number | bigint,
+        record: PermissionRow,
+      ): boolean => {
         const searchLower = String(value).toLowerCase();
         if (record.isGroup) {
           // Show group only if it has matching children
           return (
             record.children?.some(
-              (child: any) =>
+              (child) =>
                 child.code.toLowerCase().includes(searchLower) ||
                 child.description?.toLowerCase().includes(searchLower),
             ) ?? false
@@ -291,11 +315,11 @@ const RoleDetailPage: NextPage = () => {
         }
         return (
           record.code.toLowerCase().includes(searchLower) ||
-          record.description?.toLowerCase().includes(searchLower)
+          (record.description?.toLowerCase().includes(searchLower) ?? false)
         );
       },
       filteredValue: permissionSearch ? [permissionSearch] : [],
-      render: (code: string, record: any) => {
+      render: (code: string, record: PermissionRow) => {
         if (record.isGroup) {
           const warning = RESOURCE_TYPE_WARNINGS[record.key];
           return (
@@ -305,10 +329,8 @@ const RoleDetailPage: NextPage = () => {
                 <Tooltip title={warning.description}>
                   <Icons.WarningAltFilled
                     size={16}
-                    style={{
-                      color: palette.FIDESUI_WARNING,
-                      cursor: "pointer",
-                    }}
+                    fill="var(--fidesui-warning)"
+                    style={{ cursor: "pointer" }}
                   />
                 </Tooltip>
               )}
@@ -327,10 +349,10 @@ const RoleDetailPage: NextPage = () => {
       title: "Assigned",
       key: "assigned",
       width: 125,
-      render: (_: unknown, record: any) => {
+      render: (_: unknown, record: PermissionRow) => {
         if (record.isGroup) {
           const assignedCount = record.children.filter(
-            (child: any) => child.isSelected || child.isInherited,
+            (child) => child.isSelected || child.isInherited,
           ).length;
           const totalCount = record.children.length;
           const allAssigned = assignedCount === totalCount;
@@ -342,7 +364,7 @@ const RoleDetailPage: NextPage = () => {
               setSelectedPermissions((prev) =>
                 prev.filter((code) =>
                   record.children.every(
-                    (child: any) => child.code !== code || child.isInherited,
+                    (child) => child.code !== code || child.isInherited,
                   ),
                 ),
               );
@@ -350,8 +372,8 @@ const RoleDetailPage: NextPage = () => {
               // Select all non-inherited
               setSelectedPermissions((prev) => {
                 const nonInheritedCodes = record.children
-                  .filter((child: any) => !child.isInherited)
-                  .map((child: any) => child.code);
+                  .filter((child) => !child.isInherited)
+                  .map((child) => child.code);
                 return [...new Set([...prev, ...nonInheritedCodes])];
               });
             }
@@ -482,7 +504,7 @@ const RoleDetailPage: NextPage = () => {
             />
           </div>
           <Table
-            dataSource={permissionTreeData}
+            dataSource={permissionTreeData as PermissionRow[]}
             columns={permissionColumns}
             rowKey="key"
             pagination={false}
