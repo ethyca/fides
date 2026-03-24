@@ -10,8 +10,10 @@ const useClipboardButton = (copyText: string) => {
   const [tooltipText, setTooltipText] = useState(TooltipText.COPY);
 
   const handleClick = () => {
-    setTooltipText(TooltipText.COPIED);
-    navigator.clipboard.writeText(copyText);
+    navigator.clipboard.writeText(copyText).then(
+      () => setTooltipText(TooltipText.COPIED),
+      () => setTooltipText(TooltipText.COPY),
+    );
   };
 
   return {
