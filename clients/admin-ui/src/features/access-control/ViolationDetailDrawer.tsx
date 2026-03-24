@@ -11,6 +11,7 @@ import {
   Tag,
   Typography,
 } from "fidesui";
+import { format } from "date-fns";
 import { useMemo } from "react";
 
 import { Editor } from "~/features/common/yaml/helpers";
@@ -111,10 +112,7 @@ export const ViolationDetailDrawer = ({
                 <Text type="secondary" className="mb-1 block">
                   Timestamp
                 </Text>
-                <Text>
-                  {timestamp.toISOString().slice(0, 10)}{" "}
-                  {timestamp.toISOString().slice(11, 19)}
-                </Text>
+                <Text>{format(timestamp, "yyyy-MM-dd HH:mm:ss")}</Text>
               </Card>
               <Card size="small">
                 <Text type="secondary" className="mb-1 block">
