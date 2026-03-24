@@ -15,9 +15,13 @@ import { useListOAuthClientsQuery } from "./oauth-clients.slice";
 
 const { Text } = Typography;
 
-const ClientListItem = ({ client }: { client: ClientResponse }) => {
-  const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
-
+const ClientListItem = ({
+  client,
+  canUpdate,
+}: {
+  client: ClientResponse;
+  canUpdate: boolean;
+}) => {
   return (
     <List.Item data-testid={`client-list-item-${client.client_id}`}>
       <List.Item.Meta
@@ -89,6 +93,7 @@ const useOAuthClientsList = () => {
 const OAuthClientsList = () => {
   const { data, total, isLoading, page, pageSize, setPage, setPageSize } =
     useOAuthClientsList();
+  const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
 
   return (
     <div>
@@ -107,7 +112,9 @@ const OAuthClientsList = () => {
             </div>
           ),
         }}
-        renderItem={(client) => <ClientListItem client={client} />}
+        renderItem={(client) => (
+          <ClientListItem client={client} canUpdate={canUpdate} />
+        )}
       />
       <Flex justify="end" className="mt-4">
         <Pagination
