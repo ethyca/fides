@@ -72,7 +72,7 @@ const ConsentItem = ({
                 >
                   Find out more about this consent
                 </Text>
-                <Box as="span" color="complimentary.500" className="mx-0.5">
+                <Box as="span" color="complimentary.500" mx="2px">
                   <Icons.Launch size={14} />
                 </Box>
               </HStack>

@@ -90,10 +90,9 @@ export const GpcBanner = () => {
       data-testid="gpc-banner"
     >
       <Stack direction="row">
-        <Icons.WarningAltFilled
-          style={{ color: "var(--chakra-colors-blue-400)" }}
-          size={16}
-        />
+        <Box as="span" color="blue.400">
+          <Icons.WarningAltFilled size={16} />
+        </Box>
         <Text fontSize="sm" fontWeight="bold" data-testid="gpc.banner.title">
           {i18n.t("exp.gpc_title")}
         </Text>
