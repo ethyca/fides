@@ -856,9 +856,7 @@ def batch_execution_and_audit_logs_by_dataset(
 
     combined: Query = execution_log_query.union_all(audit_log_query)
 
-    result: Dict[
-        str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]
-    ] = {}
+    result: Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]] = {}
 
     for log in combined.order_by(ExecutionLog.updated_at.asc()):
         pr_id = log.privacy_request_id

@@ -289,8 +289,6 @@ def create_privacy_request_authenticated(
     )
 
 
-
-
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     """
     Temporarily update a paused/errored/requires_input privacy request object with instructions from the Redis cache
