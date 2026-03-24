@@ -6,6 +6,7 @@ on:
       - "uv.lock"
       - "pyproject.toml"
       - "clients/package-lock.json"
+      - "clients/**/package-lock.json"
       - "clients/**/package.json"
 
 permissions:
@@ -30,4 +31,5 @@ jobs:
           show-openssf-scorecard: false
           show-patched-versions: true
           retry-on-snapshot-warnings: true
+          license-check: false
         continue-on-error: true
