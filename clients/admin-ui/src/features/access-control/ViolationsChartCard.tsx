@@ -38,6 +38,12 @@ export const ViolationsChartCard = () => {
 
   const loading = timeseriesLoading || summaryLoading;
 
+  const rangeMs = useMemo(() => {
+    const start = new Date(timeseriesFilters.start_date).getTime();
+    const end = new Date(timeseriesFilters.end_date).getTime();
+    return end - start;
+  }, [timeseriesFilters.start_date, timeseriesFilters.end_date]);
+
   const areaChartData = useMemo(
     () =>
       timeseriesData?.items.map((d) => ({
@@ -99,11 +105,17 @@ export const ViolationsChartCard = () => {
       cover={
         <div className="h-[120px] w-full">
           {mode === "line" ? (
-            <AreaChart data={areaChartData} series={AREA_SERIES} />
+            <AreaChart
+              data={areaChartData}
+              series={AREA_SERIES}
+              rangeMs={rangeMs}
+              onIntervalChange={onChartIntervalChange}
+            />
           ) : (
             <BarChart
               data={barChartData}
-              size="lg"
+              size="sm"
+              rangeMs={rangeMs}
               onIntervalChange={onChartIntervalChange}
             />
           )}

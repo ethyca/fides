@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import type { ChartDataRequest } from "fidesui";
 import { useRouter } from "next/router";
 import {
   createContext,
@@ -38,7 +37,7 @@ export interface RequestLogFilterState {
   setSearchValues: (values: string[]) => void;
   liveTail: boolean;
   setLiveTail: (value: boolean) => void;
-  onChartIntervalChange: (request: ChartDataRequest) => void;
+  onChartIntervalChange: (intervalHours: number) => void;
   applyFacets: (facets: Record<string, string>) => void;
 }
 
@@ -151,8 +150,8 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
     [filters, intervalHours],
   );
 
-  const onChartIntervalChange = useCallback((request: ChartDataRequest) => {
-    setIntervalHours(request.interval);
+  const onChartIntervalChange = useCallback((interval: number) => {
+    setIntervalHours(interval);
   }, []);
 
   const applyFacets = useCallback(
