@@ -40,7 +40,7 @@ export const BAR_SIZE_TOKEN: Record<BarSize, AntSizeTokenKey> = {
   lg: "sizeLG",
 } as const;
 
-export const LABEL_WIDTH = 120;
+export const LABEL_WIDTH = 110;
 
 export const MIN_PX_PER_POINT = 12;
 
