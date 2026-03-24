@@ -1,7 +1,7 @@
 """drop legacy userregistration table
 
 Revision ID: 25ffa8bf6a95
-Revises: 94273d7e8319
+Revises: a1ca9ddf3c3c
 Create Date: 2026-03-23 12:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "25ffa8bf6a95"
-down_revision = "94273d7e8319"
+down_revision = "a1ca9ddf3c3c"
 branch_labels = None
 depends_on = None
 
