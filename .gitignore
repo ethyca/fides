@@ -5,10 +5,6 @@ ui-build/
 coverage/
 cc-test-reporter
 
-# Personal/dev config
-.mcp.json
-CLAUDE.md
-
 ## generic files to ignore
 *~
 *.lock
@@ -272,6 +268,3 @@ multilang_migration_backup_*
 # Cline
 .cline/*
 .clinerules/*
-
-# Git worktrees
-.worktrees/

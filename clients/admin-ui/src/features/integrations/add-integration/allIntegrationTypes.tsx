@@ -58,18 +58,6 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
   [ConnectionType.MANUAL_TASK]: MANUAL_TYPE_INFO,
-  [ConnectionType.TEST_DATASTORE]: {
-    placeholder: {
-      name: "Mock query log",
-      key: "test_datastore_placeholder",
-      connection_type: ConnectionType.TEST_DATASTORE,
-      access: AccessLevel.READ,
-      created_at: "",
-    },
-    category: ConnectionCategory.DATA_WAREHOUSE,
-    tags: ["Query Logging", "Mock"],
-    enabledFeatures: [IntegrationFeature.QUERY_LOGGING],
-  },
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [

@@ -55,15 +55,13 @@ export const CustomTable = <RecordType = any,>({
     return columns.map((column) => ({
       ...column,
       onHeaderCell: (data: any, index: number) => {
+        // Get existing onHeaderCell props if they exist
         const existingProps = column.onHeaderCell?.(data, index) || {};
 
+        // Merge with our menu prop
         return {
           ...existingProps,
           menu: column.menu,
-          style: {
-            whiteSpace: "nowrap" as const,
-            ...(existingProps as Record<string, any>).style,
-          },
         };
       },
     }));
