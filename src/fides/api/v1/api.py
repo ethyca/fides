@@ -20,7 +20,6 @@ from fides.api.v1.endpoints import (
     pre_approval_webhook_endpoints,
     privacy_request_endpoints,
     privacy_request_redaction_patterns_endpoints,
-
     saas_config_endpoints,
     storage_endpoints,
     user_endpoints,

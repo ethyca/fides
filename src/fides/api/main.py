@@ -36,6 +36,7 @@ from fides.api.migrations.post_upgrade_backfill import (
 from fides.api.migrations.post_upgrade_index_creation import (
     initiate_post_upgrade_index_creation,
 )
+
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,

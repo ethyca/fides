@@ -72,7 +72,6 @@ from fides.api.models.privacy_request.duplicate_group import (
     generate_rule_version,
 )
 from fides.api.models.property import Property
-
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.sql_models import Organization, PrivacyDeclaration, System
@@ -3120,7 +3119,6 @@ def short_redis_cache_expiration():
     )
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
-
 
 
 @pytest.fixture(scope="function")
