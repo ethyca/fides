@@ -11,6 +11,7 @@ export interface SeedTasksConfig {
   email_templates?: boolean;
   discovery_monitors?: boolean;
   pbac?: boolean;
+  dashboard?: boolean;
 }
 
 export interface SeedRequest {
@@ -60,6 +61,11 @@ const SEED_TASK_INVALIDATION_TAGS: Record<keyof SeedTasksConfig, string[]> = {
   discovery_monitors: ["Discovery Monitor Configs", "Datastore Connection"],
   messaging_mailgun: ["Messaging Config"],
   storage_s3: ["Configuration Settings"],
+  dashboard: [
+    "System",
+    "Privacy Requests",
+    "Fides Dashboard",
+  ],
 };
 
 const seedDataApi = baseApi.injectEndpoints({

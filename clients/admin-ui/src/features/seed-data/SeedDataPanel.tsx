@@ -33,6 +33,12 @@ const SEED_SCENARIOS: SeedScenario[] = [
     description:
       "Seed data purposes, data consumers, datasets, a mock query log integration, and 60 days of access control history.",
   },
+  {
+    key: "dashboard",
+    label: "Dashboard (Landing Page)",
+    description:
+      "Populate the landing page dashboard with privacy requests, system coverage metrics, audit activity, staged resources, and 30 days of trend history.",
+  },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
