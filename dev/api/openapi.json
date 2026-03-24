@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.2b2.dev13+gdd4a90388"
+    "version": "2.81.2b2.dev14+g15bfeb3de"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -26671,6 +26671,17 @@
               }
             ],
             "title": "User Id"
+          },
+          "saas_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saas Version"
           }
         },
         "type": "object",
@@ -26814,6 +26825,17 @@
               }
             ],
             "title": "Dataset Name"
+          },
+          "saas_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saas Version"
           }
         },
         "type": "object",
