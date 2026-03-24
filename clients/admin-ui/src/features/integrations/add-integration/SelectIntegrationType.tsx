@@ -21,7 +21,12 @@ export const useIntegrationFilters = () => {
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { entraMonitor, newIntegrationManagement, webMonitor },
+    flags: {
+      entraMonitor,
+      newIntegrationManagement,
+      webMonitor,
+      alphaJiraIntegration,
+    },
   } = useFlags();
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -49,6 +54,14 @@ export const useIntegrationFilters = () => {
       );
     }
 
+    if (!alphaJiraIntegration) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !==
+          ConnectionType.JIRA_TICKET,
+      );
+    }
+
     const existingSaasTypes = new Set(
       staticIntegrations
         .filter(
@@ -73,7 +86,12 @@ export const useIntegrationFilters = () => {
       : [];
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [connectionTypes, entraMonitor, newIntegrationManagement]);
+  }, [
+    connectionTypes,
+    entraMonitor,
+    alphaJiraIntegration,
+    newIntegrationManagement,
+  ]);
 
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
