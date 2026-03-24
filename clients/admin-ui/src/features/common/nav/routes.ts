@@ -106,6 +106,7 @@ export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
 export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
 export const TEST_MONITORS_ROUTE = "/poc/test-monitors";
+export const ICON_MIGRATION_ROUTE = "/poc/icon-migration";
 
 // RBAC routes
 export const RBAC_ROUTE = "/settings/rbac";
