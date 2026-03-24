@@ -1,7 +1,5 @@
-import { Input, Typography } from "fidesui";
+import { antTheme, Input, Typography } from "fidesui";
 import { KeyboardEvent, useRef, useState } from "react";
-
-import styles from "./TemplateVariableTextArea.module.scss";
 
 interface TemplateVariable {
   name: string;
@@ -24,10 +22,11 @@ const TemplateVariableTextArea = ({
   rows = 4,
   placeholder,
 }: TemplateVariableTextAreaProps) => {
+  const { token } = antTheme.useToken();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<number>(0);
 
-  // Index of the `{{` that triggered the dropdown, or null if not open
+  // Index of the `__` that triggered the dropdown, or null if not open
   const [triggerIndex, setTriggerIndex] = useState<number | null>(null);
   const [filterText, setFilterText] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -61,7 +60,7 @@ const TemplateVariableTextArea = ({
 
     const before = value.slice(0, triggerIndex);
     const after = value.slice(cursor);
-    const insertion = `{{ ${varName} }}`;
+    const insertion = `__${varName.toUpperCase()}__`;
     const newValue = `${before}${insertion}${after}`;
     const newCursor = triggerIndex + insertion.length;
 
@@ -82,15 +81,21 @@ const TemplateVariableTextArea = ({
     const cursor = e.target.selectionStart ?? text.length;
     cursorRef.current = cursor;
 
-    // Look for an unclosed `{{` before the cursor
     const beforeCursor = text.slice(0, cursor);
-    const triggerPos = beforeCursor.lastIndexOf("{{");
 
-    if (triggerPos !== -1) {
-      const afterTrigger = beforeCursor.slice(triggerPos + 2);
-      if (!afterTrigger.includes("}}")) {
-        setTriggerIndex(triggerPos);
-        setFilterText(afterTrigger.trimStart());
+    // Find the most recent trigger (`/` or `__`) before the cursor and check
+    // whether the text typed after it is still a valid partial variable name.
+    const candidates: { pos: number; len: number }[] = [
+      { pos: beforeCursor.lastIndexOf("/"), len: 1 },
+      { pos: beforeCursor.lastIndexOf("__"), len: 2 },
+    ];
+
+    for (const { pos, len } of candidates.sort((a, b) => b.pos - a.pos)) {
+      if (pos === -1) continue;
+      const afterTrigger = beforeCursor.slice(pos + len);
+      if (/^[A-Za-z_]*$/.test(afterTrigger)) {
+        setTriggerIndex(pos);
+        setFilterText(afterTrigger.toUpperCase());
         setActiveIndex(0);
         onChange?.(text);
         return;
@@ -152,7 +157,13 @@ const TemplateVariableTextArea = ({
         <div
           ref={listboxRef}
           role="listbox"
-          className={`absolute inset-x-0 top-full z-[1000] max-h-[220px] overflow-y-auto ${styles.dropdown}`}
+          className="absolute inset-x-0 top-full z-[1000] max-h-[220px] overflow-y-auto"
+          style={{
+            background: token.colorBgContainer,
+            border: `1px solid ${token.colorBorder}`,
+            borderRadius: token.borderRadiusLG,
+            boxShadow: token.boxShadowSecondary,
+          }}
         >
           {filteredVars.map((v, i) => (
             <div
@@ -166,9 +177,21 @@ const TemplateVariableTextArea = ({
                 selectVariable(v.name);
               }}
               onMouseEnter={() => setActiveIndex(i)}
-              className={`flex cursor-pointer items-baseline gap-2 px-3 py-[7px] ${styles.option} ${i === activeIndex ? styles.optionActive : ""}`}
+              className="flex cursor-pointer items-baseline gap-2 px-3 py-[7px]"
+              style={{
+                background:
+                  i === activeIndex
+                    ? token.colorFillAlter
+                    : token.colorBgContainer,
+                borderBottom:
+                  i < filteredVars.length - 1
+                    ? `1px solid ${token.colorBorderSecondary}`
+                    : undefined,
+              }}
             >
-              <Typography.Text code>{`{{ ${v.name} }}`}</Typography.Text>
+              <Typography.Text
+                code
+              >{`__${v.name.toUpperCase()}__`}</Typography.Text>
               {v.description && (
                 <Typography.Text type="secondary" className="text-xs">
                   {v.description}

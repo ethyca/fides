@@ -192,7 +192,7 @@ export const useFeatureBasedTabs = ({
 
     if (enabledFeatures?.includes(IntegrationFeature.DSR_AUTOMATION)) {
       tabItems.push({
-        label: "Configuration",
+        label: "Ticket setup",
         key: "configuration",
         children: <JiraConfigTab connection={connection!} />,
       });
