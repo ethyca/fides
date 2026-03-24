@@ -64,22 +64,27 @@ export const transformOrganizationToFormValues = (
   openIDProvider: OpenIDProvider,
 ): SSOProviderFormValues => ({ ...openIDProvider });
 
-const SSOProviderFormValidationSchema = Yup.object().shape({
-  provider: Yup.string().required().label("Provider"),
-  name: Yup.string().required().label("Name"),
-  client_id: Yup.string().required().label("Client ID"),
-  client_secret: Yup.string().required().label("Client Secret"),
-  scopes: Yup.array().of(Yup.string()).label("Scopes"),
-  verify_email: Yup.boolean().optional().label("Verify Email"),
-  verify_email_field: Yup.string()
-    .optional()
-    .nullable()
-    .label("Userinfo object verify email field"),
-  email_field: Yup.string()
-    .optional()
-    .nullable()
-    .label("Userinfo object email field"),
-});
+const getSSOProviderFormValidationSchema = (isEditMode: boolean) =>
+  Yup.object().shape({
+    provider: Yup.string().required().label("Provider"),
+    name: Yup.string().required().label("Name"),
+    client_id: isEditMode
+      ? Yup.string().optional().label("Client ID")
+      : Yup.string().required().label("Client ID"),
+    client_secret: isEditMode
+      ? Yup.string().optional().label("Client Secret")
+      : Yup.string().required().label("Client Secret"),
+    scopes: Yup.array().of(Yup.string()).label("Scopes"),
+    verify_email: Yup.boolean().optional().label("Verify Email"),
+    verify_email_field: Yup.string()
+      .optional()
+      .nullable()
+      .label("Userinfo object verify email field"),
+    email_field: Yup.string()
+      .optional()
+      .nullable()
+      .label("Userinfo object email field"),
+  });
 
 const CustomProviderExtraFields = () => {
   const {
@@ -183,6 +188,7 @@ const SSOProviderForm = ({
   onSuccess,
   onClose,
 }: SSOProviderFormProps) => {
+  const isEditMode = !!openIDProvider;
   const [createOpenIDProviderMutationTrigger] =
     useCreateOpenIDProviderMutation();
   const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
@@ -221,8 +227,17 @@ const SSOProviderForm = ({
         }
       }
     };
-    if (initialValues.id) {
-      const result = await updateOpenIDProviderMutation(values);
+    if (isEditMode) {
+      // Strip empty credential fields — the backend preserves existing encrypted
+      // values when client_id / client_secret are absent from the payload.
+      const payload = { ...values };
+      if (!payload.client_id) {
+        delete payload.client_id;
+      }
+      if (!payload.client_secret) {
+        delete payload.client_secret;
+      }
+      const result = await updateOpenIDProviderMutation(payload);
       handleResult(result);
     } else {
       const result = await createOpenIDProviderMutationTrigger(values);
@@ -274,7 +289,7 @@ const SSOProviderForm = ({
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
-      validationSchema={SSOProviderFormValidationSchema}
+      validationSchema={getSSOProviderFormValidationSchema(isEditMode)}
     >
       {({ dirty, isValid, values }) => (
         <Form data-testid="openIDProvider-form">
@@ -310,7 +325,7 @@ const SSOProviderForm = ({
               type="password"
               tooltip="Client ID for your provider"
               variant="stacked"
-              isRequired
+              isRequired={!isEditMode}
             />
             <CustomTextInput
               id="client_secret"
@@ -319,7 +334,7 @@ const SSOProviderForm = ({
               type="password"
               tooltip="Client secret for your provider"
               variant="stacked"
-              isRequired
+              isRequired={!isEditMode}
             />
             {values.provider === "azure" && renderAzureProviderExtraFields()}
             {values.provider === "okta" && renderOktaProviderExtraFields()}
