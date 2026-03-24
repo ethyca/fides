@@ -1,0 +1,4 @@
+type: Added
+description: Added saas_version field to ExecutionLog to record integration version at request execution time
+pr: 7650
+labels: ["db-migration"]

@@ -1,0 +1,4 @@
+type: Added
+description: Add reusable BarChart component and time-series chart utilities to fidesui
+pr: 7699
+labels: []
