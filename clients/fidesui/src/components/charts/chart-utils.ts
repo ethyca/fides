@@ -1,6 +1,6 @@
-import { theme } from "antd/lib";
-import type { CSSProperties, RefObject } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { format, isValid } from "date-fns";
+import type { RefObject } from "react";
+import { useEffect, useState } from "react";
 
 export const HOUR_MS = 3_600_000;
 export const DAY_MS = 86_400_000;
@@ -30,63 +30,43 @@ export const useContainerSize = (
 };
 
 export const useChartAnimation = (animationDuration: number): boolean => {
-  const [active, setActive] = useState(true);
+  const [animationActive, setAnimationActive] = useState(true);
   useEffect(() => {
     if (animationDuration <= 0) {
-      setActive(false);
       return undefined;
     }
-    const id = setTimeout(() => setActive(false), animationDuration);
-    return () => clearTimeout(id);
+    const startTime = performance.now();
+    let animationId: number;
+    const tick = (now: number) => {
+      if (now - startTime >= animationDuration) {
+        setAnimationActive(false);
+      } else {
+        animationId = requestAnimationFrame(tick);
+      }
+    };
+    animationId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationId);
   }, [animationDuration]);
-  return active;
+  return animationActive;
 };
 
-/**
- * Format a timestamp for display on chart axes or tooltips.
- * When `verbose` is true (tooltips), includes more context like year or AM/PM.
- */
+/** Format a timestamp for chart axes (verbose=false) or tooltips (verbose=true). */
 export const formatTimestamp = (
   timestamp: string,
   intervalMs: number,
   verbose = false,
 ): string => {
   const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) {
+  if (!isValid(date)) {
     return timestamp;
   }
-  if (verbose) {
-    if (intervalMs < DAY_MS) {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      });
-    }
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  if (intervalMs >= DAY_MS) {
+    return format(date, verbose ? "MMM d, yyyy" : "MMM d");
   }
-  if (intervalMs <= HOUR_MS) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+  if (intervalMs > HOUR_MS) {
+    return format(date, verbose ? "MMM d, h:mm a" : "MMM d, HH:mm");
   }
-  if (intervalMs < DAY_MS) {
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  }
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return format(date, verbose ? "MMM d, h:mm a" : "HH:mm");
 };
 
 /** Infer the interval between data points from the first two labels. */
@@ -123,20 +103,3 @@ export const calcTickInterval = (
   return Math.max(0, Math.ceil(labelWidth / slotWidth) - 1);
 };
 
-export const useTooltipContentStyle = (): CSSProperties => {
-  const { token } = theme.useToken();
-  return useMemo(
-    () => ({
-      backgroundColor: token.colorBgElevated,
-      border: `1px solid ${token.colorBorder}`,
-      borderRadius: token.borderRadiusLG,
-      boxShadow: token.boxShadowSecondary,
-    }),
-    [
-      token.colorBgElevated,
-      token.colorBorder,
-      token.borderRadiusLG,
-      token.boxShadowSecondary,
-    ],
-  );
-};

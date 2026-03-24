@@ -354,7 +354,6 @@ export {
   HOUR_MS,
   pickIntervalHours,
   useContainerSize,
-  useTooltipContentStyle,
 } from "./components/charts/chart-utils";
 export type { ChartGradientProps } from "./components/charts/ChartGradient";
 export { ChartGradient } from "./components/charts/ChartGradient";
