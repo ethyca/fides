@@ -77,7 +77,7 @@ const AddSystem = () => {
             <CalloutNavCard
               title="Add a system"
               color={palette.FIDESUI_SANDSTONE}
-              icon={<ManualSetupIcon boxSize={6} />}
+              icon={<ManualSetupIcon size={24} />}
               description="Manually add a system for services not covered by AWS or Okta discovery"
             />
           </button>
@@ -112,7 +112,7 @@ const AddSystem = () => {
             <CalloutNavCard
               title="Add multiple systems"
               color={palette.FIDESUI_OLIVE}
-              icon={<ManualSetupIcon boxSize={6} />}
+              icon={<ManualSetupIcon size={24} />}
               description="Choose vendors and automatically populate system details"
             />
           </button>
@@ -136,7 +136,7 @@ const AddSystem = () => {
               title="Scan your infrastructure (AWS)"
               color={palette.FIDESUI_TERRACOTTA}
               description="Automatically discover new systems in your AWS infrastructure"
-              icon={<AWSLogo boxSize={6} />}
+              icon={<AWSLogo size={24} />}
             />
           </button>
           <button
@@ -153,7 +153,7 @@ const AddSystem = () => {
               title="Scan your Sign On Provider (Okta)"
               color={palette.FIDESUI_MINOS}
               description="Automatically discover new systems in your Okta infrastructure"
-              icon={<OktaLogo boxSize={6} />}
+              icon={<OktaLogo size={24} />}
             />
           </button>
         </SimpleGrid>
