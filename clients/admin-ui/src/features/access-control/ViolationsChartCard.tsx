@@ -1,9 +1,9 @@
 import {
   antTheme,
+  AreaChart,
   BarChart,
   Card,
   Flex,
-  AreaChart,
   Segmented,
   Statistic,
   Text,

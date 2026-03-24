@@ -4,11 +4,11 @@ import { useMemo } from "react";
 
 import { useGetFiltersQuery } from "~/features/access-control/access-control.slice";
 import { AccessControlTableTabs } from "~/features/access-control/AccessControlTableTabs";
+import { DataConsumersCard } from "~/features/access-control/DataConsumersCard";
 import {
   type FacetDefinition,
   FacetedSearchInput,
 } from "~/features/access-control/FacetedSearchInput";
-import { DataConsumersCard } from "~/features/access-control/DataConsumersCard";
 import {
   RequestLogFilterContext,
   useRequestLogFilters,
