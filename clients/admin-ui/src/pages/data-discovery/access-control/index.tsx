@@ -1,4 +1,4 @@
-import { Col, DatePicker, Flex, Row } from "fidesui";
+import { Col, DatePicker, Flex, Result, Row } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 
@@ -16,6 +16,7 @@ import {
 import type { FiltersResponse } from "~/features/access-control/types";
 import { ViolationRateCard } from "~/features/access-control/ViolationRateCard";
 import { ViolationsChartCard } from "~/features/access-control/ViolationsChartCard";
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 
@@ -32,6 +33,7 @@ const FACET_CONFIG: {
 ];
 
 const AccessControlPage: NextPage = () => {
+  const { flags } = useFeatures();
   const filterState = useRequestLogFilters();
   const { filters, dateRange, setDateRange, searchValues, setSearchValues } =
     filterState;
@@ -51,6 +53,17 @@ const AccessControlPage: NextPage = () => {
       }),
     [facetOptions],
   );
+
+  if (!flags.alphaPurposeBasedAccessControl) {
+    return (
+      <Layout title="Access control">
+        <Result
+          status="error"
+          title="Access control feature is not enabled"
+        />
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Access control">
