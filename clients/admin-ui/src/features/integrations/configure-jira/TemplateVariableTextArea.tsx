@@ -7,12 +7,14 @@ interface TemplateVariable {
   example_value?: string;
 }
 
-interface TemplateVariableTextAreaProps {
-  value?: string;
-  onChange?: (value: string) => void;
+interface TemplateVariableTextAreaProps
+  extends Omit<
+    React.ComponentPropsWithoutRef<typeof Input.TextArea>,
+    "onChange" | "value"
+  > {
   variables: TemplateVariable[];
-  rows?: number;
-  placeholder?: string;
+  onChange?: (value: string) => void;
+  value?: string;
 }
 
 const TemplateVariableTextArea = ({
@@ -21,6 +23,7 @@ const TemplateVariableTextArea = ({
   variables,
   rows = 4,
   placeholder,
+  ...props
 }: TemplateVariableTextAreaProps) => {
   const { token } = antTheme.useToken();
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -89,12 +92,12 @@ const TemplateVariableTextArea = ({
     // intervening alphanumeric text), to avoid false positives on prose like
     // "access/erasure" where the cursor happens to be in "erasure".
     const slashPos = /\/([A-Za-z_]*)$/.exec(beforeCursor);
-    const doubleUnderscorePos = beforeCursor.lastIndexOf("__");
+    const doubleUnderscorePos = /__([A-Za-z_]*)$/.exec(beforeCursor);
 
     const candidates: { pos: number; len: number }[] = [
       ...(slashPos ? [{ pos: slashPos.index, len: 1 }] : []),
-      ...(doubleUnderscorePos !== -1
-        ? [{ pos: doubleUnderscorePos, len: 2 }]
+      ...(doubleUnderscorePos
+        ? [{ pos: doubleUnderscorePos.index, len: 2 }]
         : []),
     ];
 
@@ -156,6 +159,7 @@ const TemplateVariableTextArea = ({
   return (
     <div ref={wrapperRef} className="relative">
       <Input.TextArea
+        {...props}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
