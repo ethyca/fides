@@ -143,9 +143,9 @@ export const ChatConfigurations = () => {
           const getProviderIcon = () => {
             switch (record.provider_type) {
               case "slack":
-                return <SlackLogo />;
+                return <SlackLogo size={20} />;
               default:
-                return <SlackLogo />;
+                return <SlackLogo size={20} />;
             }
           };
 

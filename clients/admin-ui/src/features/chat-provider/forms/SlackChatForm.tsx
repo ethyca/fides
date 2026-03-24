@@ -159,7 +159,7 @@ const SlackChatForm = ({ configId }: SlackChatFormProps) => {
     >
       <ConfigurationCard
         title="Slack chat provider configuration"
-        icon={<SlackLogo />}
+        icon={<SlackLogo size={20} />}
       >
         <Form.Item
           name="workspace_url"
