@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import {
   antTheme,
   Button,
@@ -11,7 +12,6 @@ import {
   Tag,
   Typography,
 } from "fidesui";
-import { format } from "date-fns";
 import { useMemo } from "react";
 
 import { Editor } from "~/features/common/yaml/helpers";

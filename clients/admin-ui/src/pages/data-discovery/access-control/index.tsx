@@ -20,14 +20,16 @@ import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 
-const FACET_LABELS: Record<keyof FiltersResponse, { key: string; label: string }> =
-  {
-    consumers: { key: "consumer", label: "Consumer" },
-    policies: { key: "policy", label: "Policy" },
-    datasets: { key: "dataset", label: "Dataset" },
-    data_uses: { key: "data_use", label: "Data use" },
-    controls: { key: "control", label: "Control" },
-  };
+const FACET_LABELS: Record<
+  keyof FiltersResponse,
+  { key: string; label: string }
+> = {
+  consumers: { key: "consumer", label: "Consumer" },
+  policies: { key: "policy", label: "Policy" },
+  datasets: { key: "dataset", label: "Dataset" },
+  data_uses: { key: "data_use", label: "Data use" },
+  controls: { key: "control", label: "Control" },
+};
 
 const AccessControlPage: NextPage = () => {
   const { flags } = useFeatures();
@@ -60,10 +62,7 @@ const AccessControlPage: NextPage = () => {
   if (!flags.alphaPurposeBasedAccessControl) {
     return (
       <Layout title="Access control">
-        <Result
-          status="error"
-          title="Access control feature is not enabled"
-        />
+        <Result status="error" title="Access control feature is not enabled" />
       </Layout>
     );
   }

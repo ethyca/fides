@@ -50,10 +50,7 @@ export const DataConsumersCard = () => {
               {item.requests.toLocaleString()}
             </Col>
             <Col flex="none" className="ml-4 text-right">
-              <Text
-                strong
-                type={item.violations > 0 ? "danger" : "success"}
-              >
+              <Text strong type={item.violations > 0 ? "danger" : "success"}>
                 {item.violations.toLocaleString()}
               </Text>
             </Col>

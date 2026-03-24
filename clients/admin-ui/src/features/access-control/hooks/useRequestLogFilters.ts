@@ -63,7 +63,9 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
 
   // Read URL facets after hydration (router.query is empty on first render)
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady) {
+      return;
+    }
     const { facets } = router.query;
     if (typeof facets === "string" && facets) {
       setSearchValues(facets.split(","));
