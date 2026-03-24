@@ -9,7 +9,7 @@ import cardStyles from "./dashboard-card.module.scss";
 type StatType = "number" | "percent";
 
 const TREND_METRIC_CONFIG = {
-  gps_score: { label: "GPS Score", statType: "number" },
+  gps_score: { label: "Governance Posture", statType: "number" },
   dsr_volume: { label: "DSR Volume", statType: "number" },
   system_coverage: { label: "System Coverage", statType: "percent" },
   classification_health: {

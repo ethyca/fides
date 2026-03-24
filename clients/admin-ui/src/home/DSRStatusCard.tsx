@@ -79,7 +79,7 @@ export const DSRStatusCard = () => {
                   {SUB_STATS.map(({ key, title }) => (
                     <Flex key={key} className={styles.subStat}>
                       <Statistic
-                        value={data?.statuses[key] ?? 0}
+                        value={data?.statuses?.[key] ?? 0}
                         title={title}
                         valueStyle={{
                           fontSize: token.fontSize,
