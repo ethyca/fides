@@ -4,8 +4,8 @@ import {
   ChakraHStack as HStack,
   ChakraStack as Stack,
   ChakraText as Text,
-  ChakraWarningTwoIcon as WarningTwoIcon,
   CUSTOM_TAG_COLOR,
+  Icons,
   Tag,
 } from "fidesui";
 
@@ -90,7 +90,7 @@ export const GpcBanner = () => {
       data-testid="gpc-banner"
     >
       <Stack direction="row">
-        <WarningTwoIcon color="blue.400" />
+        <Icons.WarningAltFilled style={{ color: "var(--chakra-colors-blue-400)" }} size={16} />
         <Text fontSize="sm" fontWeight="bold" data-testid="gpc.banner.title">
           {i18n.t("exp.gpc_title")}
         </Text>

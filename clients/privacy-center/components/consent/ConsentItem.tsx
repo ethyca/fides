@@ -1,13 +1,13 @@
 import { GpcStatus } from "fides-js";
 import {
   ChakraBox as Box,
-  ChakraExternalLinkIcon as ExternalLinkIcon,
   ChakraFlex as Flex,
   ChakraHStack as HStack,
   ChakraLink as Link,
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
   ChakraText as Text,
+  Icons,
 } from "fidesui";
 import React from "react";
 
@@ -72,7 +72,7 @@ const ConsentItem = ({
                 >
                   Find out more about this consent
                 </Text>
-                <ExternalLinkIcon mx="2px" color="complimentary.500" />
+                <Icons.Launch className="mx-0.5" style={{ color: "var(--chakra-colors-complimentary-500)" }} size={14} />
               </HStack>
             </Link>
           ) : null}
