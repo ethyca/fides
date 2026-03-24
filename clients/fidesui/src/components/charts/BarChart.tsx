@@ -62,9 +62,7 @@ export const BarChart = ({
 
   useEffect(() => {
     if (onIntervalChange && rangeMs && rangeMs > 0 && containerWidth > 0) {
-      onIntervalChange(
-        pickIntervalHours(rangeMs, containerWidth, barWidth),
-      );
+      onIntervalChange(pickIntervalHours(rangeMs, containerWidth, barWidth));
     }
   }, [onIntervalChange, rangeMs, containerWidth, barWidth]);
 

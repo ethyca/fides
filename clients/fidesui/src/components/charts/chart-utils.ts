@@ -102,4 +102,3 @@ export const calcTickInterval = (
       : labelWidth;
   return Math.max(0, Math.ceil(labelWidth / slotWidth) - 1);
 };
-
