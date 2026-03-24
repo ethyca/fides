@@ -112,11 +112,10 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   ] = useRefreshJiraTicketMutation();
 
   const handleRetry = async (ticket: JiraTicketResult) => {
-    const instanceId = ticket.instance_id ?? ticket.ticket_id;
     try {
       await retryJiraTicket({
         privacy_request_id: subjectRequest.id,
-        instance_id: instanceId,
+        instance_id: ticket.instance_id,
       }).unwrap();
       message.success(
         `Jira ticket ${ticket.ticket_key} creation retried successfully.`,
@@ -132,11 +131,10 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   };
 
   const handleRefresh = async (ticket: JiraTicketResult) => {
-    const instanceId = ticket.instance_id ?? ticket.ticket_id;
     try {
       await refreshJiraTicket({
         privacy_request_id: subjectRequest.id,
-        instance_id: instanceId,
+        instance_id: ticket.instance_id,
       }).unwrap();
       message.success(`Jira ticket ${ticket.ticket_key} status refreshed.`);
     } catch (error) {
@@ -168,13 +166,11 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
                 onRefresh={() => handleRefresh(ticket)}
                 isRetrying={
                   isRetrying &&
-                  retryArgs?.instance_id ===
-                    (ticket.instance_id ?? ticket.ticket_id)
+                  retryArgs?.instance_id === ticket.instance_id
                 }
                 isRefreshing={
                   isRefreshing &&
-                  refreshArgs?.instance_id ===
-                    (ticket.instance_id ?? ticket.ticket_id)
+                  refreshArgs?.instance_id === ticket.instance_id
                 }
               />
             ))
