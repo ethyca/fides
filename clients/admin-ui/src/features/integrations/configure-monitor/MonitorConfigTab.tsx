@@ -4,11 +4,11 @@ import {
   Table,
   Tooltip,
   Typography,
+  MonitorIcon,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useState } from "react";
 
-import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import { useMonitorConfigTable } from "~/features/integrations/hooks/useMonitorConfigTable";
 import {

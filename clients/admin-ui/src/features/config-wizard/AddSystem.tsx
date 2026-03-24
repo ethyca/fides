@@ -4,6 +4,7 @@ import {
   ChakraSimpleGrid as SimpleGrid,
   ChakraStack as Stack,
   ChakraText as Text,
+  ManualSetupIcon,
   useModal,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -11,7 +12,6 @@ import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { ManualSetupIcon } from "~/features/common/Icon";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,

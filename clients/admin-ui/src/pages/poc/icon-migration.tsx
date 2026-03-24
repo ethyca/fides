@@ -1,9 +1,12 @@
 import {
   ArrowDownRightIcon,
   ColumnsType,
+  CompassIcon,
   CUSTOM_TAG_COLOR,
   Layout,
-  SparkleIcon as FidesUISparkleIcon,
+  ManualSetupIcon,
+  MonitorIcon,
+  SparkleIcon,
   Table,
   Tag,
   Typography,
@@ -11,9 +14,6 @@ import {
 import type { NextPage } from "next";
 import React from "react";
 
-import { ManualSetupIcon } from "~/features/common/Icon";
-import { CompassIcon } from "~/features/common/Icon/CompassIcon";
-import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import PageHeader from "~/features/common/PageHeader";
 
 const { Content } = Layout;
@@ -31,48 +31,45 @@ type IconEntry = {
 };
 
 const ICON_DATA: IconEntry[] = [
-  // fidesui icons
   {
     key: "fidesui-ArrowDownRightIcon",
     currentName: "ArrowDownRightIcon",
-    currentIcon: <ArrowDownRightIcon boxSize={5} />,
-    iconType: "createIcon",
+    currentIcon: <ArrowDownRightIcon width={20} height={20} />,
+    iconType: "custom-svg",
     source: "fidesui",
     notes: "Used as child/sub-item indicator in ConsentAutomationForm",
   },
   {
+    key: "fidesui-CompassIcon",
+    currentName: "CompassIcon",
+    currentIcon: <CompassIcon width={20} height={20} />,
+    iconType: "custom-svg",
+    source: "fidesui",
+    notes: "",
+  },
+  {
+    key: "fidesui-ManualSetupIcon",
+    currentName: "ManualSetupIcon",
+    currentIcon: <ManualSetupIcon width={20} height={20} />,
+    iconType: "custom-svg",
+    source: "fidesui",
+    notes: "",
+  },
+  {
+    key: "fidesui-MonitorIcon",
+    currentName: "MonitorIcon",
+    currentIcon: <MonitorIcon width={20} height={20} />,
+    iconType: "custom-svg",
+    source: "fidesui",
+    notes: "",
+  },
+  {
     key: "fidesui-SparkleIcon",
     currentName: "SparkleIcon",
-    currentIcon: <FidesUISparkleIcon width={20} height={20} />,
+    currentIcon: <SparkleIcon width={20} height={20} />,
     iconType: "custom-svg",
     source: "fidesui",
     notes: "Plus-only, AI/magic indicator",
-  },
-
-  // admin-ui custom icons
-  {
-    key: "admin-CompassIcon",
-    currentName: "CompassIcon",
-    currentIcon: <CompassIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    notes: "",
-  },
-  {
-    key: "admin-ManualSetupIcon",
-    currentName: "ManualSetupIcon",
-    currentIcon: <ManualSetupIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    notes: "",
-  },
-  {
-    key: "admin-MonitorIcon",
-    currentName: "MonitorIcon",
-    currentIcon: <MonitorIcon boxSize={5} />,
-    iconType: "createIcon",
-    source: "admin-ui",
-    notes: "",
   },
 ];
 

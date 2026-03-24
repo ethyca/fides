@@ -8,6 +8,7 @@ import {
   ChakraVStack as VStack,
   Dropdown,
   MenuProps,
+  CompassIcon,
   Select,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
@@ -19,7 +20,6 @@ import {
   ErrorMessage,
   Label,
 } from "~/features/common/form/inputs";
-import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
