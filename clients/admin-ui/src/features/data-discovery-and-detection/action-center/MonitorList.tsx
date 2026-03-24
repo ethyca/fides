@@ -11,7 +11,6 @@ import { useEffect } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
-import { ConnectionType } from "~/types/api";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -20,6 +19,7 @@ import useSearchForm from "~/features/data-discovery-and-detection/action-center
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetUserMonitorsQuery } from "~/features/user-management";
+import { ConnectionType } from "~/types/api";
 
 import MonitorListSearchForm from "./forms/MonitorListSearchForm";
 import {
