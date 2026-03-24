@@ -18,6 +18,10 @@ const COLLAPSED_ICON_STYLE = {
   fontSize: 16,
   color: palette.FIDESUI_CORINTH,
 };
+const isMac =
+  typeof navigator !== "undefined" &&
+  /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
 const DEBOUNCE_MS = 200;
 
 /** Unique key for a nav item, handling duplicate paths via title suffix. */
@@ -84,8 +88,8 @@ const NavSearchModal = ({ groups }: NavSearchModalProps) => {
     setSearchValue("");
   }, []);
 
-  // Cmd+K / Ctrl+K global shortcut
-  useHotkeys("meta+k, ctrl+k", () => setOpen(true), {
+  // Cmd+K on Mac, Ctrl+K elsewhere
+  useHotkeys(isMac ? "meta+k" : "ctrl+k", () => setOpen(true), {
     enableOnFormTags: true,
     preventDefault: true,
   });

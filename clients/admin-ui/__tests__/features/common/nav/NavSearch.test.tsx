@@ -372,17 +372,7 @@ describe("NavSearch", () => {
   });
 
   describe("keyboard shortcuts", () => {
-    it("opens search on Cmd+K", async () => {
-      const NavSearch = getNavSearch();
-      render(<NavSearch groups={MOCK_GROUPS} />);
-
-      fireEvent.keyDown(document, { key: "k", metaKey: true });
-
-      await waitFor(() => {
-        expect(getAutoCompleteProps().open).toBe(true);
-      });
-    });
-
+    // jsdom has no Mac navigator, so isMac is false and only Ctrl+K is bound
     it("opens search on Ctrl+K", async () => {
       const NavSearch = getNavSearch();
       render(<NavSearch groups={MOCK_GROUPS} />);
@@ -392,6 +382,15 @@ describe("NavSearch", () => {
       await waitFor(() => {
         expect(getAutoCompleteProps().open).toBe(true);
       });
+    });
+
+    it("does not open on Cmd+K in non-Mac environment", () => {
+      const NavSearch = getNavSearch();
+      render(<NavSearch groups={MOCK_GROUPS} />);
+
+      fireEvent.keyDown(document, { key: "k", metaKey: true });
+
+      expect(getAutoCompleteProps().open).toBeFalsy();
     });
 
     it("does not open on K without modifier key", () => {

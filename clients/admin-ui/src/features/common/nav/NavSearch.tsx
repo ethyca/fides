@@ -101,9 +101,9 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
     }
   }, []);
 
-  // Cmd+K / Ctrl+K global shortcut
+  // Cmd+K on Mac, Ctrl+K elsewhere
   useHotkeys(
-    "meta+k, ctrl+k",
+    isMac ? "meta+k" : "ctrl+k",
     () => {
       setOpen(true);
       requestAnimationFrame(() => {
