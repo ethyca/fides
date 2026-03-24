@@ -351,15 +351,10 @@ export {
   CHART_STROKE,
   CHART_TYPOGRAPHY,
 } from "./components/charts/chart-constants";
-export type { ContainerSize } from "./components/charts/chart-utils";
 export {
-  calcTickInterval,
   DAY_MS,
-  deriveInterval,
   formatTimestamp,
   HOUR_MS,
-  pickIntervalHours,
-  useContainerSize,
 } from "./components/charts/chart-utils";
 export type { ChartGradientProps } from "./components/charts/ChartGradient";
 export { ChartGradient } from "./components/charts/ChartGradient";

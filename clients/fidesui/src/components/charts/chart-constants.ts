@@ -44,6 +44,8 @@ export const LABEL_WIDTH = 110;
 
 export const MIN_PX_PER_POINT = 12;
 
+export const MAX_INTERVAL_HOURS = 72;
+
 export const COLOR_OPTIONS = [
   "colorPrimary",
   "colorSuccess",
