@@ -34,6 +34,7 @@ interface ConsumersByViolationsParams extends FacetFilters {
   start_date: string;
   end_date: string;
   order_by?: "violation_count" | "request_count";
+  size?: number;
 }
 
 interface SummaryParams extends FacetFilters {

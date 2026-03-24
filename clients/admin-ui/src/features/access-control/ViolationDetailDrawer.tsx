@@ -6,8 +6,8 @@ import {
   Drawer,
   Flex,
   Icons,
+  PageSpinner,
   Result,
-  Spin,
   Tag,
   Typography,
 } from "fidesui";
@@ -56,7 +56,6 @@ export const ViolationDetailDrawer = ({
       placement="right"
       onClose={onClose}
       open={open}
-      width={480}
       footer={
         <Flex gap="small" justify="flex-end">
           <Button disabled>Edit policy</Button>
@@ -66,11 +65,7 @@ export const ViolationDetailDrawer = ({
         </Flex>
       }
     >
-      {isLoading && (
-        <Flex justify="center" align="center" className="py-16">
-          <Spin />
-        </Flex>
-      )}
+      {isLoading && <PageSpinner />}
       {error && (
         <Result
           status="error"
