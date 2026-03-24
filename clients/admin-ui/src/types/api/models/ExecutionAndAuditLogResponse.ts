@@ -20,4 +20,5 @@ export type ExecutionAndAuditLogResponse = {
   status?: ExecutionLogStatus | AuditLogAction | string | null;
   updated_at?: string | null;
   user_id?: string | null;
+  saas_version?: string | null;
 };

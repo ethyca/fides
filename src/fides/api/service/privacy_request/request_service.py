@@ -676,11 +676,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # A pending task that hasn't been dispatched to Celery yet will
-                            # never have a cache key — this is not a stuck state. Only pending
-                            # tasks can legitimately lack a cache key; in_processing tasks
-                            # without one are genuinely stuck and should be canceled below.
-                            # Checked before the async query to avoid an unnecessary DB hit.
+                            # A pending task awaiting upstream is not stuck — it was
+                            # never dispatched because its prerequisites aren't done.
+                            # Skip it and continue checking other tasks. (ENG-2756)
                             if (
                                 task_status == ExecutionLogStatus.pending
                                 and awaiting_upstream
@@ -692,10 +690,24 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 continue
 
-                            # Check if the request has async tasks awaiting external completion
-                            if _has_async_tasks_awaiting_external_completion(
-                                db, privacy_request.id
-                            ):
+                            # If the privacy request has async tasks awaiting an external
+                            # event (webhook callback, polling), don't requeue or cancel —
+                            # the request is intentionally waiting for that event.
+                            try:
+                                has_async = (
+                                    _has_async_tasks_awaiting_external_completion(
+                                        db, privacy_request.id
+                                    )
+                                )
+                            except Exception as async_exc:
+                                # DB error checking async tasks — fail safe: skip this PR.
+                                logger.warning(
+                                    f"Error checking async tasks for privacy request "
+                                    f"{privacy_request.id}, skipping watchdog pass for this request: {async_exc}"
+                                )
+                                should_requeue = False
+                                break
+                            if has_async:
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) contains async tasks awaiting "
@@ -704,14 +716,31 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # For other statuses, cancel the entire privacy request
-                            _cancel_interrupted_tasks_and_error_privacy_request(
-                                db,
-                                privacy_request,
-                                f"No task ID found for request task {request_task_id} "
-                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
-                            )
-                            should_requeue = False
+                            # All remaining no-subtask_id cases route through the retry
+                            # mechanism. Covers three scenarios:
+                            #   - pending + no upstream (root task): never dispatched
+                            #   - pending + upstream_complete: parent died before dispatch
+                            #   - in_processing + no_cache: cache evicted / worker crashed
+                            # _handle_privacy_request_requeue applies the retry limit;
+                            # cancellation only happens when the limit is exhausted.
+                            if task_status == ExecutionLogStatus.pending:
+                                # awaiting_upstream=True cases were already skipped via
+                                # `continue` above, so all pending tasks reaching here have
+                                # upstream complete (or no upstream). Both cases mean the
+                                # parent task died before dispatching this task.
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending with no "
+                                    f"subtask_id (upstream complete or no upstream) — "
+                                    f"parent task died before dispatch, requeueing"
+                                )
+                            else:
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is in_processing with no "
+                                    f"cache key - possible cache eviction or worker crash, requeueing"
+                                )
+                            should_requeue = True
                             break
 
                         if (

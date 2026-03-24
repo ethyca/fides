@@ -328,6 +328,7 @@ def execution_and_audit_logs_by_dataset_name(
         ExecutionLog.fields_affected,
         ExecutionLog.action_type,
         null().label("user_id"),
+        ExecutionLog.saas_version,
     ).filter(ExecutionLog.privacy_request_id == self.id)
 
     audit_log_query: Query = db.query(
@@ -345,6 +346,7 @@ def execution_and_audit_logs_by_dataset_name(
         null().label("fields_affected"),
         null().label("action_type"),
         AuditLog.user_id,
+        null().label("saas_version"),
     ).filter(AuditLog.privacy_request_id == self.id)
 
     combined: Query = execution_log_query.union_all(audit_log_query)

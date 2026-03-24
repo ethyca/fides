@@ -39,14 +39,13 @@ const TwilioEmailMessagingForm = ({
   configKey,
 }: TwilioEmailMessagingFormProps) => {
   const router = useRouter();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
   const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [form] = Form.useForm();
-
-  const message = useMessage();
 
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();

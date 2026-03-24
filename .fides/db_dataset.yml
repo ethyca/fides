@@ -445,6 +445,12 @@ dataset:
     - name: monitors
       data_categories:
         - system.operations
+    - name: name
+      data_categories:
+        - system.operations
+    - name: description
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
@@ -1371,6 +1377,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_request_id
       data_categories: [system.operations]
+    - name: saas_version
+      data_categories: [system.operations]
     - name: status
       data_categories: [system.operations]
     - name: updated_at
@@ -1602,6 +1610,12 @@ dataset:
     - name: privacy_assessment_task_id
       data_categories:
       - system.operations
+    - name: context_snapshot
+      data_categories:
+      - system.operations
+    - name: last_evaluated_at
+      data_categories:
+      - system.operations
   - name: privacy_assessment_config
     description: 'Global configuration for privacy assessments (single-row table)'
     fields:
@@ -1681,6 +1695,9 @@ dataset:
       data_categories:
       - system.operations
     - name: llm_model
+      data_categories:
+      - system.operations
+    - name: high_risk_only
       data_categories:
       - system.operations
   - name: policy

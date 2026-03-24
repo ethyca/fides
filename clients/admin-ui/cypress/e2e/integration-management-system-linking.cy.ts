@@ -98,7 +98,7 @@ describe("Integration management system linking", () => {
 
       cy.getByTestId("unlink-demo_analytics_system").click();
       cy.contains("Unlink system").should("exist");
-      cy.get(".ant-modal-content").within(() => {
+      cy.get(".ant-modal-container").within(() => {
         cy.contains("button", "Unlink").click({ force: true });
       });
       cy.wait("@deleteSystemLink");

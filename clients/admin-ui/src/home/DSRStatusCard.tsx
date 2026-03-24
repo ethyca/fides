@@ -61,7 +61,7 @@ export const DSRStatusCard = () => {
         variant="borderless"
         className={styles.cardContainer}
       >
-        <Flex vertical gap="middle">
+        <Flex vertical gap="medium">
           <Flex>
             <Flex
               vertical
@@ -69,7 +69,7 @@ export const DSRStatusCard = () => {
               className="w-[180px] shrink-0 border-r border-solid border-r-[var(--ant-color-border)] pr-5"
             >
               <div>
-                <Flex align="baseline" gap="middle">
+                <Flex align="baseline" gap="medium">
                   <Statistic value={data?.active_count ?? 0} />
                   <Text type="secondary" className="text-xs">
                     Active Requests

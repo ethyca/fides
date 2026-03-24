@@ -1,7 +1,7 @@
-import { useAPIHelper } from "common/hooks";
 import { Modal, Typography } from "fidesui";
 import React, { useState } from "react";
 
+import { useAPIHelper } from "~/features/common/hooks";
 import { ConditionLeaf } from "~/types/api";
 
 import AddConditionForm from "./AddConditionForm";

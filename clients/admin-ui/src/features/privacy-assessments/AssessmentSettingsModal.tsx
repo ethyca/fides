@@ -216,7 +216,7 @@ const AssessmentSettingsModal = ({
                     .toLowerCase()
                     .includes(input.toLowerCase())
                 }
-                onDropdownVisibleChange={(visible) => {
+                onOpenChange={(visible) => {
                   if (visible) {
                     refetchChannels();
                   }
