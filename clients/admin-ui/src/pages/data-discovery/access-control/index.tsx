@@ -20,17 +20,14 @@ import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 
-const FACET_CONFIG: {
-  responseKey: keyof FiltersResponse;
-  facetKey: string;
-  label: string;
-}[] = [
-  { responseKey: "consumers", facetKey: "consumer", label: "Consumer" },
-  { responseKey: "policies", facetKey: "policy", label: "Policy" },
-  { responseKey: "datasets", facetKey: "dataset", label: "Dataset" },
-  { responseKey: "data_uses", facetKey: "data_use", label: "Data use" },
-  { responseKey: "controls", facetKey: "control", label: "Control" },
-];
+const FACET_LABELS: Record<keyof FiltersResponse, { key: string; label: string }> =
+  {
+    consumers: { key: "consumer", label: "Consumer" },
+    policies: { key: "policy", label: "Policy" },
+    datasets: { key: "dataset", label: "Dataset" },
+    data_uses: { key: "data_use", label: "Data use" },
+    controls: { key: "control", label: "Control" },
+  };
 
 const AccessControlPage: NextPage = () => {
   const { flags } = useFeatures();
@@ -42,19 +39,23 @@ const AccessControlPage: NextPage = () => {
     skip: !flags.alphaPurposeBasedAccessControl,
   });
 
-  const facets: FacetDefinition[] = useMemo(
-    () =>
-      FACET_CONFIG.map(({ responseKey, facetKey, label }) => {
-        const raw = facetOptions?.[responseKey] ?? [];
+  const facets: FacetDefinition[] = useMemo(() => {
+    if (!facetOptions) {
+      return [];
+    }
+    return (Object.keys(FACET_LABELS) as (keyof FiltersResponse)[])
+      .filter((responseKey) => facetOptions[responseKey]?.length > 0)
+      .map((responseKey) => {
+        const { key, label } = FACET_LABELS[responseKey];
+        const raw = facetOptions[responseKey];
         const hasEmpty = raw.some((v) => !v);
         const options = raw.filter(Boolean) as string[];
         if (hasEmpty) {
           options.push("");
         }
-        return { key: facetKey, label, options };
-      }),
-    [facetOptions],
-  );
+        return { key, label, options };
+      });
+  }, [facetOptions]);
 
   if (!flags.alphaPurposeBasedAccessControl) {
     return (

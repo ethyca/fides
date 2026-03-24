@@ -65,6 +65,7 @@ export const FacetedSearchInput = ({
           .toLowerCase()
           .includes(input.toLowerCase())
       }
+      notFoundContent="No search options"
       className="w-full [&_.ant-select-selection-overflow]:gap-1"
     />
   );
