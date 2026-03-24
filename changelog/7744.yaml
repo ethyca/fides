@@ -1,0 +1,3 @@
+type: changed
+description: Gate all Entra UI content behind entraMonitor feature flag across integration list, detail page, and action center
+pr: 7744
