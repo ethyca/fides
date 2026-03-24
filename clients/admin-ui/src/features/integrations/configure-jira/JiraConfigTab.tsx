@@ -1,6 +1,5 @@
 import {
   Button,
-  Card,
   Flex,
   Form,
   InputNumber,
@@ -8,18 +7,16 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { usePatchDatastoreConnectionSecretsMutation } from "~/features/datastore-connections";
 import {
   useGetJiraIssueTypesQuery,
   useGetJiraProjectsQuery,
   useGetJiraTemplateVariablesQuery,
-  usePreviewJiraTicketMutation,
 } from "~/features/plus/plus.slice";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
-import JiraTicketPreviewCard from "./JiraTicketPreviewCard";
 import TemplateVariableTextArea from "./TemplateVariableTextArea";
 
 interface JiraConfigTabProps {
@@ -60,7 +57,6 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
 
   const selectedProject = Form.useWatch("project_key", form);
   const dueDateType = Form.useWatch("due_date_type", form);
-
   // RTK Query hooks
   const { data: projects, isLoading: projectsLoading } =
     useGetJiraProjectsQuery(
@@ -74,36 +70,16 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
       { skip: !connection.key || !selectedProject },
     );
 
-  const { data: templateVariables } =
-    useGetJiraTemplateVariablesQuery(
-      { connectionKey: connection.key },
-      { skip: !connection.key },
-    );
+  const { data: templateVariables } = useGetJiraTemplateVariablesQuery(
+    { connectionKey: connection.key },
+    { skip: !connection.key },
+  );
 
-  const [previewJiraTicket] = usePreviewJiraTicketMutation();
   const [patchSecrets, { isLoading: isSaving }] =
     usePatchDatastoreConnectionSecretsMutation();
 
-  const [previewData, setPreviewData] = useState<any>(null);
-
   const handleProjectChange = () => {
     form.setFieldValue("issue_type", undefined);
-  };
-
-  const handlePreview = async () => {
-    const values = form.getFieldsValue();
-    try {
-      const result = await previewJiraTicket({
-        connectionKey: connection.key,
-        body: {
-          summary_template: values.summary_template,
-          description_template: values.description_template,
-        },
-      }).unwrap();
-      setPreviewData(result);
-    } catch {
-      message.error("Failed to preview ticket. Check your templates.");
-    }
   };
 
   const handleSave = async (values: JiraConfigFormValues) => {
@@ -135,111 +111,102 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   };
 
   return (
-    <Flex vertical gap="middle" style={{ paddingTop: 16 }}>
+    <Flex vertical gap="middle" className="max-w-screen-md pt-4">
       <Typography.Paragraph type="secondary">
         Configure how Fides creates Jira tickets for privacy requests.
       </Typography.Paragraph>
 
       <Form form={form} layout="vertical" onFinish={handleSave}>
-        <Card title="Project & Issue Type" size="small">
-          <Form.Item
-            name="project_key"
-            label="Project"
-            rules={[{ required: true, message: "Select a Jira project" }]}
-          >
-            <Select
-              placeholder="Select a project"
-              loading={projectsLoading}
-              onChange={handleProjectChange}
-              showSearch
-              optionFilterProp="label"
-              options={projects?.map((p) => ({
-                value: p.key,
-                label: `${p.name} (${p.key})`,
-              }))}
-            />
-          </Form.Item>
-          <Form.Item
-            name="issue_type"
-            label="Issue type"
-            rules={[{ required: true, message: "Select an issue type" }]}
-          >
-            <Select
-              placeholder={
-                selectedProject
-                  ? "Select an issue type"
-                  : "Select a project first"
-              }
-              loading={issueTypesLoading}
-              disabled={!selectedProject}
-              options={issueTypes
-                ?.filter((t) => !t.subtask)
-                .map((t) => ({
-                  value: t.name,
-                  label: t.name,
-                }))}
-            />
-          </Form.Item>
-        </Card>
-
-        <Card
-          title="Ticket Templates"
-          size="small"
-          style={{ marginTop: 16 }}
+        <Form.Item
+          name="project_key"
+          label="Project"
+          rules={[{ required: true, message: "Select a Jira project" }]}
         >
+          <Select
+            placeholder="Select a project"
+            loading={projectsLoading}
+            onChange={handleProjectChange}
+            showSearch
+            optionFilterProp="label"
+            options={projects?.map((p) => ({
+              value: p.key,
+              label: `${p.name} (${p.key})`,
+            }))}
+          />
+        </Form.Item>
+        <Form.Item
+          name="issue_type"
+          label="Issue type"
+          rules={[{ required: true, message: "Select an issue type" }]}
+        >
+          <Select
+            placeholder={
+              selectedProject
+                ? "Select an issue type"
+                : "Select a project first"
+            }
+            loading={issueTypesLoading}
+            disabled={!selectedProject}
+            options={issueTypes
+              ?.filter((t) => !t.subtask)
+              .map((t) => ({
+                value: t.name,
+                label: t.name,
+              }))}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="summary_template"
+          label="Summary template"
+          rules={[{ required: true, message: "Enter a summary template" }]}
+          tooltip="Insert template variables with /"
+        >
+          <TemplateVariableTextArea
+            variables={templateVariables ?? []}
+            rows={2}
+            placeholder={`e.g. "DSR: __REQUEST_TYPE__ for __EMAIL__"; Enter / for variables`}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="description_template"
+          label="Description template"
+          tooltip="Insert template variables with /"
+        >
+          <TemplateVariableTextArea
+            variables={templateVariables ?? []}
+            rows={6}
+            placeholder={`e.g. "Privacy request __REQUEST_ID__ submitted on __SUBMISSION_DATE__"; Enter / for variables`}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="due_date_type"
+          label="Due date calculation"
+          className="mt-4"
+        >
+          <Select
+            options={[
+              { value: "none", label: "No due date" },
+              {
+                value: "fixed_days",
+                label: "Fixed number of days after approval",
+              },
+            ]}
+          />
+        </Form.Item>
+        {dueDateType === "fixed_days" && (
           <Form.Item
-            name="summary_template"
-            label="Summary template"
-            rules={[{ required: true, message: "Enter a summary template" }]}
+            name="due_date_days"
+            label="Days after approval"
+            rules={[{ required: true, message: "Enter number of days" }]}
           >
-            <TemplateVariableTextArea
-              variables={templateVariables ?? []}
-              rows={2}
-              placeholder="e.g. DSR: {{ request_type }} for {{ email }}"
-            />
+            <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
+        )}
 
-          <Form.Item
-            name="description_template"
-            label="Description template"
-          >
-            <TemplateVariableTextArea
-              variables={templateVariables ?? []}
-              rows={6}
-              placeholder="e.g. Privacy request {{ request_id }} submitted on {{ submission_date }}."
-            />
-          </Form.Item>
-
-          <Button onClick={handlePreview}>Preview ticket</Button>
-          {previewData && <JiraTicketPreviewCard data={previewData} />}
-        </Card>
-
-        <Card title="Due Date" size="small" style={{ marginTop: 16 }}>
-          <Form.Item name="due_date_type" label="Due date calculation">
-            <Select
-              options={[
-                { value: "none", label: "No due date" },
-                {
-                  value: "fixed_days",
-                  label: "Fixed number of days after approval",
-                },
-              ]}
-            />
-          </Form.Item>
-          {dueDateType === "fixed_days" && (
-            <Form.Item
-              name="due_date_days"
-              label="Days after approval"
-              rules={[
-                { required: true, message: "Enter number of days" },
-              ]}
-            >
-              <InputNumber min={1} style={{ width: "100%" }} />
-            </Form.Item>
-          )}
-        </Card>
-
-        <Flex justify="end" gap="middle" style={{ marginTop: 16 }}>
+        <Flex justify="end" gap="middle" className="mt-4">
           <Button type="primary" htmlType="submit" loading={isSaving}>
             Save configuration
           </Button>
