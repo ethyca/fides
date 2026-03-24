@@ -63,6 +63,7 @@ from fides.api.schemas.user import (
     UserUpdate,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.errors import FidesError, MessageDispatchException
 from fides.api.util.rate_limit import fides_limiter
 from fides.api.v1.endpoints.user_permission_endpoints import validate_user_id
 from fides.common import urn_registry as urls
@@ -612,24 +613,25 @@ def reinvite_user(
             detail="User is disabled for a reason other than a pending invitation.",
         )
 
-    user_service.reinvite_user(user)
+    try:
+        user_service.reinvite_user(user)
+    except MessageDispatchException as exc:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
+    except FidesError as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
 
 
-def attach_invite_status(
-    db: Session, user: FidesUser, user_invite: Optional[FidesUserInvite] = None
-) -> None:
-    """Attach invite status fields to a user."""
+def _get_invite_for_user(db: Session, user: FidesUser) -> Optional[FidesUserInvite]:
+    """Look up the invite record for a user, if any."""
     if user.username:
-        user_invite_record = user_invite or FidesUserInvite.get_by(
-            db, field="username", value=user.username
-        )
-        if user_invite_record:
-            user.has_invite = True
-            user.invite_expired = user_invite_record.is_expired()
-            return
-
-    user.has_invite = False
-    user.invite_expired = None
+        return FidesUserInvite.get_by(db, field="username", value=user.username)
+    return None
 
 
 @router.get(
@@ -644,7 +646,7 @@ def get_user(
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
-) -> FidesUser:
+) -> UserResponse:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
     # Resolve Depends if called directly (not via FastAPI DI)
     permission_checker = _resolve_depends(permission_checker, get_permission_checker)
@@ -663,8 +665,8 @@ def get_user(
         permission_checker=permission_checker,
     ):
         logger.debug("Returning user with id: '{}'.", user_id)
-        attach_invite_status(db, user)
-        return user
+        invite = _get_invite_for_user(db, user)
+        return UserResponse.from_user(user, invite)
 
     # User has USER_READ_OWN scope, check if they're accessing their own data
     if user.id != client.user_id:
@@ -674,8 +676,8 @@ def get_user(
         )
 
     logger.debug("Returning user with id: '{}'.", user_id)
-    attach_invite_status(db, user)
-    return user
+    invite = _get_invite_for_user(db, user)
+    return UserResponse.from_user(user, invite)
 
 
 @router.get(
@@ -754,13 +756,14 @@ def get_users(
             invite.username: invite for invite in invite_records
         }
 
-    # Attach invite status to each user without per-user invite queries.
-    for user in user_records:
-        attach_invite_status(
-            db,
+    # Build UserResponse with invite status for each user.
+    paginated_result.items = [
+        UserResponse.from_user(
             user,
             invite_records_by_username.get(user.username) if user.username else None,
         )
+        for user in user_records
+    ]
 
     return paginated_result
 

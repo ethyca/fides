@@ -2,13 +2,8 @@ import uuid
 from datetime import datetime
 from typing import Optional, Tuple
 
-from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_500_INTERNAL_SERVER_ERROR,
-)
 
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.db.encryption_utils import get_encryption_key
@@ -21,6 +16,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.util.errors import FidesError, MessageDispatchException
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
@@ -160,16 +156,16 @@ class UserService:
         """
         Reinvites a user who has a pending invitation by generating a new invite code
         and sending a new invitation email.
+
+        Raises:
+            FidesError: If the user has no pending invitation or the email fails to send.
         """
         user_invite = FidesUserInvite.get_by(
             self.db, field="username", value=user.username
         )
 
         if not user_invite:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail="User does not have a pending invitation.",
-            )
+            raise FidesError("User does not have a pending invitation.")
 
         new_invite_code = str(uuid.uuid4())
         user_invite.renew_invite(self.db, new_invite_code)
@@ -185,11 +181,9 @@ class UserService:
                 ),
             )
         except Exception as exc:
-            self.db.rollback()
             logger.exception("Failed to dispatch reinvite email")
-            raise HTTPException(
-                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to send invitation email. Please try again.",
+            raise MessageDispatchException(
+                "Failed to send invitation email. Please try again."
             ) from exc
 
         logger.info("Reinvite email dispatched for pending user")

@@ -3027,10 +3027,14 @@ class TestReinviteUser:
         db.refresh(invite)
         assert not invite.invite_code_valid("original_code")
 
-    def test_reinvite_rolls_back_on_message_failure(
+    def test_reinvite_rotates_code_even_on_message_failure(
         self, db, api_client, generate_auth_header, invited_user
     ):
-        """Test that invite rotation is rolled back if message dispatch fails."""
+        """Test that the invite code is rotated even if message dispatch fails.
+
+        renew_invite() commits the new code before dispatch_message runs,
+        so a failed email cannot roll back the code rotation.
+        """
         url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
         auth_header = generate_auth_header(scopes=[USER_CREATE])
 
@@ -3053,8 +3057,8 @@ class TestReinviteUser:
         )
 
         db.refresh(invite)
-        assert invite.hashed_invite_code == original_hashed_code
-        assert invite.invite_code_valid("original_code")
+        assert invite.hashed_invite_code != original_hashed_code
+        assert not invite.invite_code_valid("original_code")
 
     def test_reinvite_sends_email(
         self, db, api_client, generate_auth_header, invited_user
