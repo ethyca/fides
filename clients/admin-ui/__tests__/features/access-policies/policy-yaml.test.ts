@@ -15,8 +15,6 @@ import {
   GeoOperator,
 } from "~/features/access-policies/types";
 
-// ─── parseYaml ───────────────────────────────────────────────────────────────
-
 describe("parseYaml", () => {
   it("returns null for empty string", () => {
     expect(parseYaml("")).toBeNull();
@@ -67,8 +65,6 @@ match:
     expect(result?.match?.data_use?.any).toEqual(["essential"]);
   });
 });
-
-// ─── yamlToNodesAndEdges ─────────────────────────────────────────────────────
 
 describe("yamlToNodesAndEdges", () => {
   it("returns null for invalid YAML", () => {
@@ -150,7 +146,10 @@ match:
     const result = yamlToNodesAndEdges(yamlStr);
     const condNode = result!.nodes.find((n) => n.id === "condition-1")!;
     expect(condNode.data.operator).toBe(ConditionOperator.ALL);
-    expect(condNode.data.values).toEqual(["user.contact", "user.contact.email"]);
+    expect(condNode.data.values).toEqual([
+      "user.contact",
+      "user.contact.email",
+    ]);
   });
 
   it("chains multiple conditions: first with when, rest with vertical and", () => {
@@ -370,8 +369,6 @@ action:
     );
   });
 });
-
-// ─── nodesToYaml ─────────────────────────────────────────────────────────────
 
 describe("nodesToYaml", () => {
   it("returns empty string when no policy node", () => {
@@ -937,10 +934,7 @@ describe("nodesToYaml", () => {
           constraintType: ConstraintType.DATA_FLOW,
           dataFlowDirection: DataFlowDirection.INGRESS,
           dataFlowOperator: DataFlowOperator.NONE_OF,
-          dataFlowSystems: [
-            "third_party_data_broker",
-            "external_data_vendor",
-          ],
+          dataFlowSystems: ["third_party_data_broker", "external_data_vendor"],
         },
       },
     ];
@@ -1172,8 +1166,6 @@ describe("nodesToYaml", () => {
   });
 });
 
-// ─── deriveLayoutEdges ───────────────────────────────────────────────────────
-
 describe("deriveLayoutEdges", () => {
   it("fans out conditions from action for same dagre rank", () => {
     const nodes = [
@@ -1276,8 +1268,6 @@ describe("deriveLayoutEdges", () => {
     expect(fromCond1).toHaveLength(2);
   });
 });
-
-// ─── Round-trip tests (PRD examples) ─────────────────────────────────────────
 
 describe("round-trip: yamlToNodesAndEdges → nodesToYaml", () => {
   const roundTrip = (yamlStr: string) => {

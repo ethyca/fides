@@ -21,8 +21,6 @@ import {
   UnlessItem,
 } from "./types";
 
-// ─── YAML parsing ────────────────────────────────────────────────────────────
-
 export const parseYaml = (yamlString: string): AccessPolicyYaml | null => {
   if (!yamlString.trim()) {
     return null;
@@ -42,8 +40,6 @@ export const parseYaml = (yamlString: string): AccessPolicyYaml | null => {
     return null;
   }
 };
-
-// ─── YAML → Nodes + Edges ────────────────────────────────────────────────────
 
 const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
   ConditionProperty.DATA_CATEGORIES,
@@ -246,8 +242,6 @@ export const yamlToNodesAndEdges = (
   return { nodes, edges };
 };
 
-// ─── Nodes + Edges → YAML ────────────────────────────────────────────────────
-
 /**
  * Collect all conditionNode nodes reachable from actionNodeId via BFS.
  * Works with both fan-out and chain topologies.
@@ -433,8 +427,6 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
 
   return yaml.dump(policyYaml, { lineWidth: -1 });
 };
-
-// ─── Layout helpers ──────────────────────────────────────────────────────────
 
 /**
  * Derive fan-out edges from display edges for dagre positioning.

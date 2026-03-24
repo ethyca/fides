@@ -1,4 +1,4 @@
-import { useMessage } from "fidesui";
+import { Spin, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -20,7 +20,9 @@ const EditAccessPolicyPage: NextPage = () => {
   const { id } = router.query;
   const policyId = id as string;
 
-  const { data } = useGetAccessPolicyQuery(policyId, { skip: !policyId });
+  const { data, isLoading } = useGetAccessPolicyQuery(policyId, {
+    skip: !policyId,
+  });
   const [updateAccessPolicy] = useUpdateAccessPolicyMutation();
   const [deleteAccessPolicy] = useDeleteAccessPolicyMutation();
 
@@ -41,6 +43,10 @@ const EditAccessPolicyPage: NextPage = () => {
       messageApi.error(getErrorMessage((error as RTKErrorResult).error));
     }
   };
+
+  if (isLoading || !data) {
+    return <Spin />;
+  }
 
   return (
     <AccessPolicyEditor

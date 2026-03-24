@@ -5,6 +5,8 @@ import {
   getBezierPath,
 } from "@xyflow/react";
 
+import styles from "./LabeledEdge.module.scss";
+
 interface LabeledEdgeData {
   label?: string;
 }
@@ -38,25 +40,11 @@ const LabeledEdge = (props: EdgeProps) => {
         <EdgeLabelRenderer>
           <div
             style={{
-              position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              pointerEvents: "all",
             }}
-            className="nodrag nopan"
+            className={`nodrag nopan ${styles.labelWrapper}`}
           >
-            <span
-              style={{
-                fontSize: "var(--ant-font-size-sm)",
-                fontWeight: 500,
-                padding: "2px 8px",
-                borderRadius: "var(--ant-border-radius)",
-                backgroundColor: "var(--ant-color-bg-container)",
-                border: "1px solid var(--ant-color-border)",
-                color: "var(--ant-color-text-secondary)",
-              }}
-            >
-              {label}
-            </span>
+            <span className={styles.label}>{label}</span>
           </div>
         </EdgeLabelRenderer>
       )}

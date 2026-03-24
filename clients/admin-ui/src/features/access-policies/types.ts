@@ -1,11 +1,7 @@
-// ─── Decision ────────────────────────────────────────────────────────────────
-
 export enum ActionType {
   ALLOW = "ALLOW",
   DENY = "DENY",
 }
-
-// ─── Match block ─────────────────────────────────────────────────────────────
 
 export enum ConditionProperty {
   DATA_USE = "data_use",
@@ -31,8 +27,6 @@ export interface MatchBlock {
   /** Custom taxonomy dimensions use their taxonomy_type as key */
   [key: string]: MatchDimension | undefined;
 }
-
-// ─── Unless block ────────────────────────────────────────────────────────────
 
 export enum ConstraintType {
   CONSENT = "consent",
@@ -87,13 +81,9 @@ export type UnlessItem =
   | GeoLocationUnlessItem
   | DataFlowUnlessItem;
 
-// ─── Action block ────────────────────────────────────────────────────────────
-
 export interface ActionBlock {
   message?: string;
 }
-
-// ─── Full policy YAML schema (PRD §2.1) ──────────────────────────────────────
 
 export interface AccessPolicyYaml {
   fides_key?: string;

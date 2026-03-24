@@ -18,10 +18,11 @@ import {
   Button,
   Flex,
   Icons,
-  notification,
+  Popconfirm,
   Radio,
   SelectProps,
   Space,
+  useMessage,
 } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -92,7 +93,6 @@ interface PolicyCanvasPanelProps {
   controls: string[];
   controlOptions: NonNullable<SelectProps["options"]>;
   onControlsChange: (value: string[]) => void;
-  onAddNode?: () => void;
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
   syncKey?: number;
@@ -192,12 +192,9 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       onPriorityChange: () => {},
       onControlsChange: props.onControlsChange,
       onActionMessageChange: () => {},
-      onAddNode: props.onAddNode,
     },
   } satisfies PolicyNodeType,
 ];
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 /** Find the last node in a vertical chain of a given type. */
 const findLastInChain = (
@@ -240,14 +237,11 @@ const findFirstOfType = (
   );
 };
 
-// ─── PolicyCanvasPanel ──────────────────────────────────────────────────────
-
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
     controls,
     controlOptions,
     onControlsChange,
-    onAddNode,
     onYamlChange,
     initialYaml,
     syncKey,
@@ -301,8 +295,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     },
     [setNodes],
   );
-
-  // ─── Delete handlers (chain surgery) ────────────────────────────────
 
   const deleteConditionNode = useCallback(
     (nodeId: string) => {
@@ -399,8 +391,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [nodes, edges, setNodes, setEdges],
   );
 
-  // ─── Field change handlers ──────────────────────────────────────────
-
   const handleNameChange = useCallback(
     (value: string) => updateNodeData(POLICY_NODE_ID, { name: value }),
     [updateNodeData],
@@ -443,8 +433,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     onYamlChange(derived);
   }, [nodes, edges, onYamlChange]);
 
-  // ─── Layout: use fan-out edges for dagre, display edges for render ──
-
   const layoutEdges = useMemo(
     () => deriveLayoutEdges(nodes, edges),
     [nodes, edges],
@@ -474,8 +462,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       }),
     [nodes, layoutEdges, nodeSizes],
   );
-
-  // ─── Add condition (chain from last condition) ────────────────────
 
   const handleAddCondition = useCallback(() => {
     const actionNode = nodes.find((n) => n.type === "actionNode");
@@ -527,8 +513,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     setLastCreatedNodeId(conditionId);
   }, [nodes, edges, setNodes, setEdges]);
 
-  // ─── Add action (from policy) ─────────────────────────────────────
-
   const handleAddActionFromNode = useCallback(
     (sourceNodeId: string) => {
       const sourceNode = nodes.find((n) => n.id === sourceNodeId);
@@ -560,8 +544,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     },
     [nodes, setNodes, setEdges],
   );
-
-  // ─── Add constraint (chain from last constraint, or first from cond1) ─
 
   const handleAddConstraint = useCallback(() => {
     const constraintCount = nodes.filter(
@@ -610,8 +592,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     setLastCreatedNodeId(constraintId);
   }, [nodes, edges, setNodes, setEdges]);
 
-  // ─── Node callbacks ───────────────────────────────────────────────
-
   const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
   const constraintsExist = nodes.some((n) => n.type === "constraintNode");
   const firstConditionId = findFirstOfType("conditionNode", nodes, edges)?.id;
@@ -635,7 +615,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onEnabledChange: handleEnabledChange,
               onPriorityChange: handlePriorityChange,
               onControlsChange: handleControlsChange,
-              onAddNode,
               onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
             },
@@ -647,7 +626,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
-              onAddNode,
               onAddCondition: handleAddCondition,
               hasChildren,
               onActionTypeChange: (value: ActionType) =>
@@ -664,7 +642,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               ...node.data,
               isFirstOfType: node.id === firstConditionId,
               isLastOfType: node.id === lastConditionId,
-              onAddNode,
               onAddCondition: handleAddCondition,
               onAddConstraint: handleAddConstraint,
               onDelete: () => deleteConditionNode(node.id),
@@ -735,7 +712,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       handleEnabledChange,
       handlePriorityChange,
       handleControlsChange,
-      onAddNode,
       handleAddCondition,
       handleAddActionFromNode,
       handleAddConstraint,
@@ -790,6 +766,7 @@ const AccessPolicyEditor = ({
   onDelete,
 }: AccessPolicyEditorProps) => {
   const isNew = !policyId;
+  const messageApi = useMessage();
 
   const { data: controlGroups = [] } = useGetControlGroupsQuery();
 
@@ -823,7 +800,7 @@ const AccessPolicyEditor = ({
     const parsed = parseYaml(yamlValue);
     const name = parsed?.name ?? "";
     if (!name.trim()) {
-      notification.error({ message: "Name is required." });
+      messageApi.error("Name is required.");
       return;
     }
     onSave?.(
@@ -840,10 +817,6 @@ const AccessPolicyEditor = ({
     (value: string[]) => setControls(value),
     [],
   );
-
-  const handleAddNode = useCallback(() => {
-    // TODO: implement add node logic
-  }, []);
 
   const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
   const displayName = parsedForDisplay?.name ?? "";
@@ -868,7 +841,6 @@ const AccessPolicyEditor = ({
       controls={controls}
       controlOptions={controlOptions}
       onControlsChange={handleControlsChange}
-      onAddNode={handleAddNode}
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
@@ -887,13 +859,21 @@ const AccessPolicyEditor = ({
         rightContent={
           <Space>
             {!isNew && (
-              <Button
-                icon={<Icons.TrashCan />}
-                onClick={onDelete}
-                danger
-                aria-label="Delete policy"
-                data-testid="delete-btn"
-              />
+              <Popconfirm
+                title="Delete policy"
+                description="Are you sure you want to delete this policy?"
+                onConfirm={onDelete}
+                okText="Delete"
+                okButtonProps={{ danger: true }}
+                cancelText="Cancel"
+              >
+                <Button
+                  icon={<Icons.TrashCan />}
+                  danger
+                  aria-label="Delete policy"
+                  data-testid="delete-btn"
+                />
+              </Popconfirm>
             )}
             <Button
               icon={<Icons.Download />}
