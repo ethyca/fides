@@ -11,6 +11,8 @@ import pytest
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
 
+_TTL = 3600  # Test TTL
+
 
 # Test data factories
 def make_dsr_id() -> str:
@@ -47,27 +49,29 @@ class TestLegacyKeyMigration:
         ],
     )
     def test_legacy_keys_readable(
-        self, mock_redis, dsr_store, dsr_id, field_type, getter, field_key, value
+        self, mock_redis, manager, dsr_id, field_type, getter, field_key, value
     ):
         """Legacy keys are readable via store convenience methods."""
+        store = DSRCacheStore(dsr_id, manager)
         legacy_key = make_legacy_key(dsr_id, field_type, field_key)
         mock_redis.set(legacy_key, value)
 
         # Call appropriate getter
         if getter == "get_masking_secret":
-            result = dsr_store.get_masking_secret(dsr_id, "hash", field_key)
+            result = store.get_masking_secret("hash", field_key)
         elif field_key:
-            result = getattr(dsr_store, getter)(dsr_id, field_key)
+            result = getattr(store, getter)(field_key)
         else:
-            result = getattr(dsr_store, getter)(dsr_id)
+            result = getattr(store, getter)()
 
         assert result == value
 
-    def test_legacy_key_migrated_on_read(self, mock_redis, dsr_store, dsr_id):
+    def test_legacy_key_migrated_on_read(self, mock_redis, manager, dsr_id):
         """Legacy key is migrated to new format on first read."""
+        store = DSRCacheStore(dsr_id, manager)
         mock_redis.set(make_legacy_key(dsr_id, "identity", "email"), "migrate@test.com")
 
-        email = dsr_store.get_identity(dsr_id, "email")
+        email = store.get_identity("email")
         assert email == "migrate@test.com"
 
         # New key exists, legacy deleted, index updated
@@ -79,10 +83,11 @@ class TestLegacyKeyMigration:
             f"__idx:dsr:{dsr_id}"
         )
 
-    def test_new_writes_create_indexed_keys_only(self, mock_redis, dsr_store, dsr_id):
+    def test_new_writes_create_indexed_keys_only(self, mock_redis, manager, dsr_id):
         """New writes create new-format keys and index them; no legacy keys written."""
-        dsr_store.write_identity(dsr_id, "email", "new@example.com")
-        dsr_store.write_custom_field(dsr_id, "department", "Sales")
+        store = DSRCacheStore(dsr_id, manager)
+        store.write_identity("email", "new@example.com", _TTL)
+        store.write_custom_field("department", "Sales", _TTL)
 
         assert (
             mock_redis.get(make_new_key(dsr_id, "identity:email")) == "new@example.com"
@@ -98,14 +103,15 @@ class TestLegacyKeyMigration:
             is None
         )
 
-    def test_clear_removes_mixed_keys(self, mock_redis, dsr_store, dsr_id):
+    def test_clear_removes_mixed_keys(self, mock_redis, manager, dsr_id):
         """clear() removes both legacy and new keys using SCAN."""
+        store = DSRCacheStore(dsr_id, manager)
         mock_redis.set(make_legacy_key(dsr_id, "identity", "email"), "legacy@test.com")
         mock_redis.set(make_legacy_key(dsr_id, "encryption", "key"), "legacy-key")
-        dsr_store.write_identity(dsr_id, "phone_number", "+1234567890")
-        dsr_store.write_custom_field(dsr_id, "department", "Engineering")
+        store.write_identity("phone_number", "+1234567890", _TTL)
+        store.write_custom_field("department", "Engineering", _TTL)
 
-        dsr_store.clear(dsr_id)
+        store.clear()
 
         assert len(mock_redis.keys(f"*{dsr_id}*")) == 0
 
@@ -117,9 +123,11 @@ class TestLegacyKeyMigration:
         )
 
         store = DSRCacheStore(
-            RedisCacheManager(mock_redis), backfill_index_on_legacy_read=True
+            dsr_id,
+            RedisCacheManager(mock_redis),
+            backfill_index_on_legacy_read=True,
         )
-        keys = store.get_all_keys(dsr_id)
+        keys = store.get_all_keys()
 
         assert len(keys) == 2
         assert len(mock_redis.smembers(f"__idx:dsr:{dsr_id}")) == 2
@@ -132,36 +140,41 @@ class TestMultipleRequestIsolation:
     def test_mixed_dsr_states(self, mock_redis):
         """Operations on one DSR don't affect others (legacy, new, mixed)."""
         dsr1, dsr2, dsr3 = make_dsr_id(), make_dsr_id(), make_dsr_id()
-        store = DSRCacheStore(RedisCacheManager(mock_redis))
+        mgr = RedisCacheManager(mock_redis)
+        store1 = DSRCacheStore(dsr1, mgr)
+        store2 = DSRCacheStore(dsr2, mgr)
+        store3 = DSRCacheStore(dsr3, mgr)
 
         # DSR1: legacy, DSR2: new, DSR3: mixed
         mock_redis.set(make_legacy_key(dsr1, "identity", "email"), "dsr1@test.com")
-        store.write_identity(dsr2, "email", "dsr2@test.com")
+        store2.write_identity("email", "dsr2@test.com", _TTL)
         mock_redis.set(make_legacy_key(dsr3, "identity", "email"), "dsr3@test.com")
-        store.write_identity(dsr3, "phone_number", "+1234567890")
+        store3.write_identity("phone_number", "+1234567890", _TTL)
 
         # Verify all readable
-        assert store.get_identity(dsr1, "email") == "dsr1@test.com"
-        assert store.get_identity(dsr2, "email") == "dsr2@test.com"
-        assert store.get_identity(dsr3, "email") == "dsr3@test.com"
-        assert store.get_identity(dsr3, "phone_number") == "+1234567890"
+        assert store1.get_identity("email") == "dsr1@test.com"
+        assert store2.get_identity("email") == "dsr2@test.com"
+        assert store3.get_identity("email") == "dsr3@test.com"
+        assert store3.get_identity("phone_number") == "+1234567890"
 
         # Clear DSR2 doesn't affect others
-        store.clear(dsr2)
-        assert store.get_identity(dsr1, "email") == "dsr1@test.com"
-        assert store.get_identity(dsr3, "email") == "dsr3@test.com"
-        assert store.get_identity(dsr2, "email") is None
-        assert store.get_all_keys(dsr2) == []
+        store2.clear()
+        assert store1.get_identity("email") == "dsr1@test.com"
+        assert store3.get_identity("email") == "dsr3@test.com"
+        assert store2.get_identity("email") is None
+        assert store2.get_all_keys() == []
 
     def test_clear_isolation(self, mock_redis):
         """Clearing one DSR doesn't delete another's keys."""
         dsr1, dsr2 = make_dsr_id(), make_dsr_id()
-        store = DSRCacheStore(RedisCacheManager(mock_redis))
+        mgr = RedisCacheManager(mock_redis)
+        store1 = DSRCacheStore(dsr1, mgr)
+        store2 = DSRCacheStore(dsr2, mgr)
 
-        store.write_identity(dsr1, "email", "dsr1@test.com")
-        store.write_identity(dsr2, "email", "dsr2@test.com")
+        store1.write_identity("email", "dsr1@test.com", _TTL)
+        store2.write_identity("email", "dsr2@test.com", _TTL)
 
-        store.clear(dsr1)
+        store1.clear()
 
         assert mock_redis.get(make_new_key(dsr1, "identity:email")) is None
         assert mock_redis.get(make_new_key(dsr2, "identity:email")) == "dsr2@test.com"

@@ -8,53 +8,60 @@ import json
 
 import pytest
 
+from fides.common.cache.dsr_store import DSRCacheStore
+
 # Mark all tests as unit tests
 pytestmark = pytest.mark.unit
+
+_TTL = 3600  # Test TTL
 
 
 class TestDSRCacheStoreCustomFields:
     """Test custom fields cache operations in DSRCacheStore."""
 
-    def test_cache_custom_fields_writes_all_fields(self, dsr_store, pr_id):
+    def test_cache_custom_fields_writes_all_fields(self, manager, mock_redis, pr_id):
         """cache_custom_fields writes all fields to new-format keys."""
+        store = DSRCacheStore(pr_id, manager)
         custom_fields = {
             "department": json.dumps("Engineering"),
             "employee_id": json.dumps("E12345"),
         }
 
-        dsr_store.cache_custom_fields(pr_id, custom_fields, expire_seconds=3600)
+        store.cache_custom_fields(custom_fields, expire_seconds=3600)
 
         # All keys written in new format
-        assert dsr_store._redis.get(
-            f"dsr:{pr_id}:custom_field:department"
-        ) == json.dumps("Engineering")
-        assert dsr_store._redis.get(
-            f"dsr:{pr_id}:custom_field:employee_id"
-        ) == json.dumps("E12345")
+        assert mock_redis.get(f"dsr:{pr_id}:custom_field:department") == json.dumps(
+            "Engineering"
+        )
+        assert mock_redis.get(f"dsr:{pr_id}:custom_field:employee_id") == json.dumps(
+            "E12345"
+        )
 
         # Legacy keys do NOT exist
         assert (
-            dsr_store._redis.get(f"id-{pr_id}-custom-privacy-request-field-department")
+            mock_redis.get(f"id-{pr_id}-custom-privacy-request-field-department")
             is None
         )
 
-    def test_get_cached_custom_fields_reads_all_fields(self, dsr_store, pr_id):
+    def test_get_cached_custom_fields_reads_all_fields(self, manager, pr_id):
         """get_cached_custom_fields reads all fields from new-format keys."""
+        store = DSRCacheStore(pr_id, manager)
         custom_fields = {
             "department": json.dumps("Engineering"),
             "employee_id": json.dumps("E12345"),
         }
-        dsr_store.cache_custom_fields(pr_id, custom_fields)
+        store.cache_custom_fields(custom_fields, _TTL)
 
-        result = dsr_store.get_cached_custom_fields(pr_id)
+        result = store.get_cached_custom_fields()
 
         assert result["department"] == json.dumps("Engineering")
         assert result["employee_id"] == json.dumps("E12345")
 
     def test_get_cached_custom_fields_migrates_legacy_keys(
-        self, dsr_store, mock_redis, pr_id
+        self, manager, mock_redis, pr_id
     ):
         """get_cached_custom_fields reads and migrates legacy keys on first access."""
+        store = DSRCacheStore(pr_id, manager)
         # Write legacy format
         mock_redis.set(
             f"id-{pr_id}-custom-privacy-request-field-department",
@@ -64,7 +71,7 @@ class TestDSRCacheStoreCustomFields:
             f"id-{pr_id}-custom-privacy-request-field-employee_id", json.dumps("E12345")
         )
 
-        result = dsr_store.get_cached_custom_fields(pr_id)
+        result = store.get_cached_custom_fields()
 
         # Values are returned correctly
         assert result["department"] == json.dumps("Engineering")
@@ -78,49 +85,49 @@ class TestDSRCacheStoreCustomFields:
         )
 
     def test_has_cached_custom_fields_detects_both_formats(
-        self, dsr_store, mock_redis, pr_id
+        self, manager, mock_redis, pr_id
     ):
         """has_cached_custom_fields detects fields in both legacy and new formats."""
+        store = DSRCacheStore(pr_id, manager)
         # Empty initially
-        assert dsr_store.has_cached_custom_fields(pr_id) is False
+        assert store.has_cached_custom_fields() is False
 
         # Add legacy key
         mock_redis.set(
             f"id-{pr_id}-custom-privacy-request-field-department",
             json.dumps("Engineering"),
         )
-        assert dsr_store.has_cached_custom_fields(pr_id) is True
+        assert store.has_cached_custom_fields() is True
 
         # Clear and test new format
-        dsr_store.clear(pr_id)
-        dsr_store.write_custom_field(pr_id, "department", json.dumps("Engineering"))
-        assert dsr_store.has_cached_custom_fields(pr_id) is True
+        store.clear()
+        store.write_custom_field("department", json.dumps("Engineering", _TTL))
+        assert store.has_cached_custom_fields() is True
 
 
 class TestDSRCacheStoreEncryption:
     """Test encryption key cache operations in DSRCacheStore."""
 
-    def test_write_encryption_writes_key(self, dsr_store, pr_id):
+    def test_write_encryption_writes_key(self, manager, mock_redis, pr_id):
         """write_encryption writes encryption key to new-format key."""
-        dsr_store.write_encryption(
-            pr_id, "key", "test-encryption-key-12345", expire_seconds=3600
-        )
+        store = DSRCacheStore(pr_id, manager)
+        store.write_encryption("key", "test-encryption-key-12345", expire_seconds=3600)
 
         assert (
-            dsr_store._redis.get(f"dsr:{pr_id}:encryption:key")
-            == "test-encryption-key-12345"
+            mock_redis.get(f"dsr:{pr_id}:encryption:key") == "test-encryption-key-12345"
         )
 
         # Legacy key does NOT exist
-        assert dsr_store._redis.get(f"id-{pr_id}-encryption-key") is None
+        assert mock_redis.get(f"id-{pr_id}-encryption-key") is None
 
-    def test_get_encryption_migrates_legacy_key(self, dsr_store, mock_redis, pr_id):
+    def test_get_encryption_migrates_legacy_key(self, manager, mock_redis, pr_id):
         """get_encryption reads and migrates legacy encryption keys."""
+        store = DSRCacheStore(pr_id, manager)
         # Write legacy format
         mock_redis.set(f"id-{pr_id}-encryption-key", "test-encryption-key-12345")
 
         # Read via store
-        value = dsr_store.get_encryption(pr_id, "key")
+        value = store.get_encryption("key")
 
         assert value == "test-encryption-key-12345"
 

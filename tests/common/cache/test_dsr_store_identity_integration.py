@@ -8,6 +8,8 @@ import json
 
 import pytest
 
+from fides.common.cache.dsr_store import DSRCacheStore
+
 
 @pytest.fixture
 def identity_data():
@@ -21,52 +23,59 @@ def identity_data():
 # Mark all tests as unit tests
 pytestmark = pytest.mark.unit
 
+_TTL = 3600  # Test TTL
+
 
 class TestDSRCacheStoreIdentity:
     """Test identity cache operations in DSRCacheStore."""
 
-    def test_cache_identity_data_writes_all_attributes(self, dsr_store, pr_id):
+    def test_cache_identity_data_writes_all_attributes(
+        self, manager, mock_redis, pr_id
+    ):
         """cache_identity_data writes all identity attributes to new-format keys."""
+        store = DSRCacheStore(pr_id, manager)
         identity_data = {
             "email": json.dumps("user@example.com"),
             "phone_number": json.dumps("+1234567890"),
         }
 
-        dsr_store.cache_identity_data(pr_id, identity_data, expire_seconds=3600)
+        store.cache_identity_data(identity_data, expire_seconds=3600)
 
         # All keys written in new format
-        assert dsr_store._redis.get(f"dsr:{pr_id}:identity:email") == json.dumps(
+        assert mock_redis.get(f"dsr:{pr_id}:identity:email") == json.dumps(
             "user@example.com"
         )
-        assert dsr_store._redis.get(f"dsr:{pr_id}:identity:phone_number") == json.dumps(
+        assert mock_redis.get(f"dsr:{pr_id}:identity:phone_number") == json.dumps(
             "+1234567890"
         )
 
         # Legacy keys do NOT exist
-        assert dsr_store._redis.get(f"id-{pr_id}-identity-email") is None
+        assert mock_redis.get(f"id-{pr_id}-identity-email") is None
 
     def test_get_cached_identity_data_reads_all_attributes(
-        self, dsr_store, pr_id, identity_data
+        self, manager, pr_id, identity_data
     ):
         """get_cached_identity_data reads all identity attributes from new-format keys."""
+        store = DSRCacheStore(pr_id, manager)
         # Write via store
         encoded_data = {k: json.dumps(v) for k, v in identity_data.items()}
-        dsr_store.cache_identity_data(pr_id, encoded_data)
+        store.cache_identity_data(encoded_data, _TTL)
 
-        result = dsr_store.get_cached_identity_data(pr_id)
+        result = store.get_cached_identity_data()
 
         assert result["email"] == json.dumps("user@example.com")
         assert result["phone_number"] == json.dumps("+1234567890")
 
     def test_get_cached_identity_data_migrates_legacy_keys(
-        self, dsr_store, mock_redis, pr_id, identity_data
+        self, manager, mock_redis, pr_id, identity_data
     ):
         """get_cached_identity_data reads and migrates legacy keys on first access."""
+        store = DSRCacheStore(pr_id, manager)
         # Write legacy format with JSON encoding
         for key, value in identity_data.items():
             mock_redis.set(f"id-{pr_id}-identity-{key}", json.dumps(value))
 
-        result = dsr_store.get_cached_identity_data(pr_id)
+        result = store.get_cached_identity_data()
 
         # Values are returned correctly
         assert result["email"] == json.dumps("user@example.com")
@@ -77,17 +86,18 @@ class TestDSRCacheStoreIdentity:
         assert mock_redis.get(f"id-{pr_id}-identity-email") is None
 
     def test_has_cached_identity_data_detects_both_formats(
-        self, dsr_store, mock_redis, pr_id
+        self, manager, mock_redis, pr_id
     ):
         """has_cached_identity_data detects identity data in both legacy and new formats."""
+        store = DSRCacheStore(pr_id, manager)
         # Empty initially
-        assert dsr_store.has_cached_identity_data(pr_id) is False
+        assert store.has_cached_identity_data() is False
 
         # Add legacy key
         mock_redis.set(f"id-{pr_id}-identity-email", json.dumps("test@example.com"))
-        assert dsr_store.has_cached_identity_data(pr_id) is True
+        assert store.has_cached_identity_data() is True
 
         # Clear and test new format
-        dsr_store.clear(pr_id)
-        dsr_store.write_identity(pr_id, "email", json.dumps("test@example.com"))
-        assert dsr_store.has_cached_identity_data(pr_id) is True
+        store.clear()
+        store.write_identity("email", json.dumps("test@example.com", _TTL))
+        assert store.has_cached_identity_data() is True

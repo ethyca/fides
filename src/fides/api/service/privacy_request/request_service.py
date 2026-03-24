@@ -332,10 +332,10 @@ def get_cached_task_id(entity_id: str) -> Optional[str]:
     Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
     """
     try:
-        store = get_dsr_cache_store()
-        task_id = store.get_async_execution(entity_id)
+        store = get_dsr_cache_store(entity_id)
+        task_id = store.get_async_execution()
         if isinstance(task_id, bytes):
-            return task_id.decode("utf-8")
+            return task_id.decode(CONFIG.security.encoding)
         return task_id
     except Exception as exc:
         logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")

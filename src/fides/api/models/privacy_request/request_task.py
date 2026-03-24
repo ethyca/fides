@@ -245,10 +245,10 @@ class RequestTask(WorkerTask, Base):
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached celery task ID for this request task."""
-        store = get_dsr_cache_store()
-        task_id = store.get_async_execution(self.id)
+        store = get_dsr_cache_store(self.id)
+        task_id = store.get_async_execution()
         if isinstance(task_id, bytes):
-            return task_id.decode("utf-8")
+            return task_id.decode(CONFIG.security.encoding)
         return task_id
 
     def cleanup_external_storage(self) -> None:

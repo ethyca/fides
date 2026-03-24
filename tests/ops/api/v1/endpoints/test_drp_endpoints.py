@@ -75,14 +75,14 @@ class TestCreateDrpPrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
-        store = get_dsr_cache_store()
-        meta_value = store.get_drp(pr.id, "meta")
+        store = get_dsr_cache_store(pr.id)
+        meta_value = store.get_drp("meta")
         assert meta_value == "DrpMeta(version='0.5')"
-        regime_value = store.get_drp(pr.id, "regime")
+        regime_value = store.get_drp("regime")
         assert regime_value == "ccpa"
-        exercise_value = store.get_drp(pr.id, "exercise")
+        exercise_value = store.get_drp("exercise")
         assert exercise_value == "['access']"
-        identity_value = store.get_drp(pr.id, "identity")
+        identity_value = store.get_drp("identity")
         assert identity_value == encoded_identity
         assert pr.get_cached_identity_data()["email"] == identity["email"]
 
@@ -123,14 +123,14 @@ class TestCreateDrpPrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
-        store = get_dsr_cache_store()
-        meta_value = store.get_drp(pr.id, "meta")
+        store = get_dsr_cache_store(pr.id)
+        meta_value = store.get_drp("meta")
         assert meta_value == "DrpMeta(version='0.5')"
-        regime_value = store.get_drp(pr.id, "regime")
+        regime_value = store.get_drp("regime")
         assert regime_value == "ccpa"
-        exercise_value = store.get_drp(pr.id, "exercise")
+        exercise_value = store.get_drp("exercise")
         assert exercise_value == "['access']"
-        identity_value = store.get_drp(pr.id, "identity")
+        identity_value = store.get_drp("identity")
         assert identity_value == encoded_identity
         assert pr.get_cached_identity_data()["email"] == identity["email"]
         assert "address" not in pr.get_cached_identity_data().keys()
@@ -332,14 +332,14 @@ class TestCreateDrpPrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
-        store = get_dsr_cache_store()
-        meta_value = store.get_drp(pr.id, "meta")
+        store = get_dsr_cache_store(pr.id)
+        meta_value = store.get_drp("meta")
         assert meta_value == "DrpMeta(version='0.5')"
-        regime_value = store.get_drp(pr.id, "regime")
+        regime_value = store.get_drp("regime")
         assert regime_value == "ccpa"
-        exercise_value = store.get_drp(pr.id, "exercise")
+        exercise_value = store.get_drp("exercise")
         assert exercise_value == "['access']"
-        identity_value = store.get_drp(pr.id, "identity")
+        identity_value = store.get_drp("identity")
         assert identity_value == encoded_identity
         assert pr.get_cached_identity_data()["email"] == identity["email"]
 

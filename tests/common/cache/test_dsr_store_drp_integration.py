@@ -9,15 +9,20 @@ Focuses on service-layer methods for DRP data management, including:
 
 import pytest
 
+from fides.common.cache.dsr_store import DSRCacheStore
+
 # Mark all tests as unit tests
 pytestmark = pytest.mark.unit
+
+_TTL = 3600  # Test TTL
 
 
 class TestDSRCacheStoreDRP:
     """Test DSRCacheStore DRP request body methods."""
 
-    def test_cache_drp_request_body_writes_all_fields(self, dsr_store, pr_id):
+    def test_cache_drp_request_body_writes_all_fields(self, manager, pr_id):
         """cache_drp_request_body writes all fields to new-format keys."""
+        store = DSRCacheStore(pr_id, manager)
         drp_body = {
             "meta": "metadata_value",
             "regime": "gdpr",
@@ -25,39 +30,41 @@ class TestDSRCacheStoreDRP:
             "identity": '{"email": "user@example.com"}',
         }
 
-        dsr_store.cache_drp_request_body(pr_id, drp_body, expire_seconds=3600)
+        store.cache_drp_request_body(drp_body, expire_seconds=3600)
 
         # Verify all fields written to new format
-        assert dsr_store.get_drp(pr_id, "meta") == "metadata_value"
-        assert dsr_store.get_drp(pr_id, "regime") == "gdpr"
-        assert dsr_store.get_drp(pr_id, "exercise") == "access"
-        assert dsr_store.get_drp(pr_id, "identity") == '{"email": "user@example.com"}'
+        assert store.get_drp("meta") == "metadata_value"
+        assert store.get_drp("regime") == "gdpr"
+        assert store.get_drp("exercise") == "access"
+        assert store.get_drp("identity") == '{"email": "user@example.com"}'
 
-    def test_cache_drp_request_body_skips_none_values(self, dsr_store, pr_id):
+    def test_cache_drp_request_body_skips_none_values(self, manager, pr_id):
         """cache_drp_request_body skips None values."""
+        store = DSRCacheStore(pr_id, manager)
         drp_body = {
             "meta": "metadata_value",
             "regime": None,
             "exercise": "access",
         }
 
-        dsr_store.cache_drp_request_body(pr_id, drp_body)
+        store.cache_drp_request_body(drp_body, _TTL)
 
         # Only non-None fields should be written
-        assert dsr_store.get_drp(pr_id, "meta") == "metadata_value"
-        assert dsr_store.get_drp(pr_id, "regime") is None
-        assert dsr_store.get_drp(pr_id, "exercise") == "access"
+        assert store.get_drp("meta") == "metadata_value"
+        assert store.get_drp("regime") is None
+        assert store.get_drp("exercise") == "access"
 
-    def test_get_cached_drp_request_body_reads_all_fields(self, dsr_store, pr_id):
+    def test_get_cached_drp_request_body_reads_all_fields(self, manager, pr_id):
         """get_cached_drp_request_body reads all fields from new-format keys."""
+        store = DSRCacheStore(pr_id, manager)
         drp_body = {
             "meta": "metadata_value",
             "regime": "gdpr",
             "exercise": "access",
         }
-        dsr_store.cache_drp_request_body(pr_id, drp_body)
+        store.cache_drp_request_body(drp_body, _TTL)
 
-        result = dsr_store.get_cached_drp_request_body(pr_id)
+        result = store.get_cached_drp_request_body()
 
         assert result == {
             "meta": "metadata_value",
@@ -66,14 +73,15 @@ class TestDSRCacheStoreDRP:
         }
 
     def test_get_cached_drp_request_body_migrates_legacy_keys(
-        self, dsr_store, mock_redis, pr_id
+        self, manager, mock_redis, pr_id
     ):
         """get_cached_drp_request_body reads and migrates legacy keys on first access."""
+        store = DSRCacheStore(pr_id, manager)
         # Write legacy format directly
         mock_redis.set(f"id-{pr_id}-drp-meta", "legacy_metadata")
         mock_redis.set(f"id-{pr_id}-drp-regime", "ccpa")
 
-        result = dsr_store.get_cached_drp_request_body(pr_id)
+        result = store.get_cached_drp_request_body()
 
         assert result == {
             "meta": "legacy_metadata",
@@ -87,51 +95,54 @@ class TestDSRCacheStoreDRP:
         assert mock_redis.get(f"id-{pr_id}-drp-regime") is None
 
     def test_has_cached_drp_request_body_detects_both_formats(
-        self, dsr_store, mock_redis, pr_id
+        self, manager, mock_redis, pr_id
     ):
         """has_cached_drp_request_body detects DRP data in both legacy and new formats."""
+        store = DSRCacheStore(pr_id, manager)
         # Empty initially
-        assert dsr_store.has_cached_drp_request_body(pr_id) is False
+        assert store.has_cached_drp_request_body() is False
 
         # Write new format
-        dsr_store.write_drp(pr_id, "meta", "metadata")
-        assert dsr_store.has_cached_drp_request_body(pr_id) is True
+        store.write_drp("meta", "metadata", _TTL)
+        assert store.has_cached_drp_request_body() is True
 
         # Clear and test legacy format
-        dsr_store.clear(pr_id)
-        assert dsr_store.has_cached_drp_request_body(pr_id) is False
+        store.clear()
+        assert store.has_cached_drp_request_body() is False
 
         mock_redis.set(f"id-{pr_id}-drp-regime", "gdpr")
-        assert dsr_store.has_cached_drp_request_body(pr_id) is True
+        assert store.has_cached_drp_request_body() is True
 
     def test_get_cached_drp_request_body_returns_empty_dict_when_no_data(
-        self, dsr_store, pr_id
+        self, manager, pr_id
     ):
         """get_cached_drp_request_body returns empty dict when no DRP data cached."""
-        result = dsr_store.get_cached_drp_request_body(pr_id)
+        store = DSRCacheStore(pr_id, manager)
+        result = store.get_cached_drp_request_body()
         assert result == {}
 
-    def test_drp_migration_then_new_writes(self, dsr_store, mock_redis, pr_id):
+    def test_drp_migration_then_new_writes(self, manager, mock_redis, pr_id):
         """After migrating legacy keys, new writes use indexed format."""
+        store = DSRCacheStore(pr_id, manager)
         # Start with legacy keys
         mock_redis.set(f"id-{pr_id}-drp-meta", "legacy_metadata")
 
         # Read triggers migration
-        result1 = dsr_store.get_cached_drp_request_body(pr_id)
+        result1 = store.get_cached_drp_request_body()
         assert result1["meta"] == "legacy_metadata"
 
         # Now write new fields - should use indexed format
-        dsr_store.write_drp(pr_id, "regime", "gdpr")
-        dsr_store.write_drp(pr_id, "exercise", "access")
+        store.write_drp("regime", "gdpr", _TTL)
+        store.write_drp("exercise", "access", _TTL)
 
         # Read all - should get both migrated and new
-        result2 = dsr_store.get_cached_drp_request_body(pr_id)
+        result2 = store.get_cached_drp_request_body()
         assert result2["meta"] == "legacy_metadata"
         assert result2["regime"] == "gdpr"
         assert result2["exercise"] == "access"
 
         # Verify all keys are now indexed
-        all_keys = dsr_store.get_all_keys(pr_id)
+        all_keys = store.get_all_keys()
         assert f"dsr:{pr_id}:drp:meta" in all_keys
         assert f"dsr:{pr_id}:drp:regime" in all_keys
         assert f"dsr:{pr_id}:drp:exercise" in all_keys

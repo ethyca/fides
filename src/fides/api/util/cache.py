@@ -325,9 +325,13 @@ def get_redis_cache_manager() -> RedisCacheManager:
     return RedisCacheManager(get_cache())
 
 
-def get_dsr_cache_store() -> DSRCacheStore:
-    """Return a DSRCacheStore for privacy request cache operations."""
-    return DSRCacheStore(get_redis_cache_manager())
+def get_dsr_cache_store(dsr_id: str) -> DSRCacheStore:
+    """Return a DSRCacheStore scoped to a single privacy request."""
+    return DSRCacheStore(
+        dsr_id,
+        get_redis_cache_manager(),
+        default_ttl_seconds=CONFIG.redis.default_ttl_seconds,
+    )
 
 
 def get_read_only_cache() -> FidesopsRedis:
@@ -420,7 +424,7 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
     """Return the *legacy* Redis key for async-execution tracking.
 
-    Prefer ``get_dsr_cache_store().get_async_execution()`` for reads and
+    Prefer ``get_dsr_cache_store(dsr_id).get_async_execution()`` for reads and
     ``cache_task_tracking_key()`` for writes — both route through the
     DSRCacheStore which handles legacy fallback automatically.
     """
@@ -441,9 +445,8 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
     """
 
     try:
-        store = get_dsr_cache_store()
+        store = get_dsr_cache_store(request_id)
         store.write_async_execution(
-            request_id,
             celery_task_id,
             expire_seconds=CONFIG.redis.default_ttl_seconds,
         )

@@ -465,8 +465,8 @@ class PrivacyRequest(
         Clears all cached values associated with this privacy request from Redis.
         """
         logger.info(f"Clearing cached values for privacy request {self.id}")
-        store = get_dsr_cache_store()
-        store.clear(self.id)
+        store = get_dsr_cache_store(self.id)
+        store.clear()
 
     def delete(self, db: Session) -> None:
         """
@@ -503,7 +503,7 @@ class PrivacyRequest(
 
         identity_dict: Dict[str, Any] = identity.labeled_dict()
 
-        store = get_dsr_cache_store()
+        store = get_dsr_cache_store(self.id)
         # Encode values for Redis storage
         encoded_dict = {
             key: FidesopsRedis.encode_obj(value)
@@ -511,7 +511,6 @@ class PrivacyRequest(
             if value is not None
         }
         store.cache_identity_data(
-            self.id,
             encoded_dict,
             expire_seconds=CONFIG.redis.default_ttl_seconds,
         )
@@ -530,7 +529,7 @@ class PrivacyRequest(
             return
 
         if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
-            store = get_dsr_cache_store()
+            store = get_dsr_cache_store(self.id)
             # Encode values for Redis storage
             encoded_fields = {
                 key: json.dumps(item.value, cls=CustomJSONEncoder)
@@ -538,7 +537,6 @@ class PrivacyRequest(
                 if item is not None
             }
             store.cache_custom_fields(
-                self.id,
                 encoded_fields,
                 expire_seconds=CONFIG.redis.default_ttl_seconds,
             )
@@ -682,8 +680,8 @@ class PrivacyRequest(
 
     def get_cached_encryption_key(self) -> Optional[str]:
         """Gets the cached encryption key for this privacy request."""
-        store = get_dsr_cache_store()
-        raw = store.get_encryption(self.id, "key")
+        store = get_dsr_cache_store(self.id)
+        raw = store.get_encryption("key")
         if raw is None:
             return None
         if isinstance(raw, bytes):
@@ -692,8 +690,8 @@ class PrivacyRequest(
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
-        store = get_dsr_cache_store()
-        task_id = store.get_async_execution(self.id)
+        store = get_dsr_cache_store(self.id)
+        task_id = store.get_async_execution()
         if isinstance(task_id, bytes):
             return task_id.decode(CONFIG.security.encoding)
         return task_id
@@ -718,9 +716,8 @@ class PrivacyRequest(
                 else:
                     serialized_body[key] = value
 
-        store = get_dsr_cache_store()
+        store = get_dsr_cache_store(self.id)
         store.cache_drp_request_body(
-            self.id,
             serialized_body,
             expire_seconds=CONFIG.redis.default_ttl_seconds,
         )
@@ -730,9 +727,8 @@ class PrivacyRequest(
         if not encryption_key:
             return
 
-        store = get_dsr_cache_store()
+        store = get_dsr_cache_store(self.id)
         store.write_encryption(
-            self.id,
             "key",
             encryption_key,
             expire_seconds=CONFIG.redis.default_ttl_seconds,
@@ -759,19 +755,19 @@ class PrivacyRequest(
 
     def verify_cache_for_identity_data(self) -> bool:
         """Verifies if the identity data is cached for this request"""
-        store = get_dsr_cache_store()
-        return store.has_cached_identity_data(self.id)
+        store = get_dsr_cache_store(self.id)
+        return store.has_cached_identity_data()
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
-        store = get_dsr_cache_store()
-        result = store.get_cached_identity_data(self.id)
+        store = get_dsr_cache_store(self.id)
+        result = store.get_cached_identity_data()
 
         if not result:
             logger.debug(f"Cache miss for request {self.id}, falling back to DB")
             identity = self.get_persisted_identity()
             self.cache_identity(identity)
-            result = store.get_cached_identity_data(self.id)
+            result = store.get_cached_identity_data()
 
         # Parse JSON values for backward compatibility
         parsed_result: Dict[str, Any] = {}
@@ -790,8 +786,8 @@ class PrivacyRequest(
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
-        store = get_dsr_cache_store()
-        result = store.get_cached_custom_fields(self.id)
+        store = get_dsr_cache_store(self.id)
+        result = store.get_cached_custom_fields()
 
         if not result:
             logger.debug(f"Cache miss for request {self.id}, falling back to DB")
@@ -804,7 +800,7 @@ class PrivacyRequest(
                     for key, value in custom_privacy_request_fields.items()
                 }
             )
-            result = store.get_cached_custom_fields(self.id)
+            result = store.get_cached_custom_fields()
 
         # Parse JSON values
         parsed_result: Dict[str, Any] = {}

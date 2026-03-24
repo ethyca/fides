@@ -27,6 +27,8 @@ from fides.api.util.cache import (
     get_identity_cache_key,
 )
 
+_TTL = 3600  # Test TTL
+
 
 @pytest.mark.unit
 class TestInFlightDSRLifecycle:
@@ -110,13 +112,13 @@ class TestInFlightDSRLifecycle:
             assert encrypted != "sensitive data"  # Actually encrypted
 
             # Read custom fields (triggers migration)
-            store = get_dsr_cache_store()
-            custom_fields = store.get_cached_custom_fields(pr_id)
+            store = get_dsr_cache_store(pr_id)
+            custom_fields = store.get_cached_custom_fields()
             assert custom_fields["department"] == json.dumps("Engineering")
             assert custom_fields["tenant_id"] == json.dumps("tenant-42")
 
             # Read DRP body (triggers migration)
-            drp_body = store.get_cached_drp_request_body(pr_id)
+            drp_body = store.get_cached_drp_request_body()
             assert drp_body["meta"] == "DrpMeta(version='0.5')"
             assert drp_body["regime"] == "ccpa"
 
@@ -130,11 +132,11 @@ class TestInFlightDSRLifecycle:
             )
 
             # New-format keys should exist
-            assert store.get_identity(pr_id, "email") == json.dumps("user@example.com")
-            assert store.get_encryption(pr_id, "key") == "0123456789abcdef"
+            assert store.get_identity("email") == json.dumps("user@example.com")
+            assert store.get_encryption("key") == "0123456789abcdef"
 
             # --- Phase 4: "Request complete" — clear the cache ---
-            store.clear(pr_id)
+            store.clear()
 
             # Everything gone
             all_keys = [k for k in mock_redis.keys("*") if pr_id in k]
@@ -166,16 +168,17 @@ class TestInFlightDSRLifecycle:
             )
 
             # Request 2: fully new format
-            store = get_dsr_cache_store()
-            store.write_identity(new_id, "email", json.dumps("new@example.com"))
-            store.write_encryption(new_id, "key", "new-key-123456789")
+            store_new = get_dsr_cache_store(new_id)
+            store_new.write_identity("email", json.dumps("new@example.com"), _TTL)
+            store_new.write_encryption("key", "new-key-123456789", _TTL)
 
             # Request 3: mixed (legacy identity, new encryption)
             cache.set_with_autoexpire(
                 get_identity_cache_key(mixed_id, "email"),
                 json.dumps("mixed@example.com"),
             )
-            store.write_encryption(mixed_id, "key", "mixed-key-12345678")
+            store_mixed = get_dsr_cache_store(mixed_id)
+            store_mixed.write_encryption("key", "mixed-key-12345678", _TTL)
 
         # --- "New code deployed" — read all three ---
         with (
@@ -195,8 +198,8 @@ class TestInFlightDSRLifecycle:
                 assert enc_key == expected_key, f"Failed for {pr_id}"
 
             # Clear one, others unaffected
-            store = get_dsr_cache_store()
-            store.clear(legacy_id)
+            store_legacy = get_dsr_cache_store(legacy_id)
+            store_legacy.clear()
 
             pr_new = MagicMock()
             pr_new.id = new_id
@@ -213,4 +216,4 @@ class TestInFlightDSRLifecycle:
             )
 
             # Legacy request fully cleared
-            assert store.get_all_keys(legacy_id) == []
+            assert store_legacy.get_all_keys() == []

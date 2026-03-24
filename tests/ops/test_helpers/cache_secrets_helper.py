@@ -31,9 +31,9 @@ def clear_cache_identities(request_id: str) -> None:
     this clears them using the DSR cache store. The get_cached_identity_data
     call migrates any legacy keys before deletion.
     """
-    store = get_dsr_cache_store()
+    store = get_dsr_cache_store(request_id)
     # get_cached_identity_data triggers migration (legacy → new), so all
     # identity keys will be in new format after this call.
-    identity_data = store.get_cached_identity_data(request_id)
+    identity_data = store.get_cached_identity_data()
     for attr in identity_data:
-        store.delete(request_id, f"identity:{attr}")
+        store.delete(f"identity:{attr}")

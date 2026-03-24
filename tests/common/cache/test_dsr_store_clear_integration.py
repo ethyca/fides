@@ -14,6 +14,8 @@ from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
 from tests.common.cache.mock_redis import create_mock_redis
 
+_TTL = 3600  # Test TTL
+
 
 @pytest.mark.unit
 class TestPrivacyRequestClearCachedValues:
@@ -48,9 +50,9 @@ class TestPrivacyRequestClearCachedValues:
 
         # Simulate new cached data via store
         manager = RedisCacheManager(mock_redis)
-        store = DSRCacheStore(manager)
-        store.write_identity(pr_id, "email", "test@example.com")
-        store.write_encryption(pr_id, "key", "encryption-key")
+        store = DSRCacheStore(pr_id, manager)
+        store.write_identity("email", "test@example.com", _TTL)
+        store.write_encryption("key", "encryption-key", _TTL)
 
         pr = MagicMock()
         pr.id = pr_id
@@ -70,9 +72,9 @@ class TestPrivacyRequestClearCachedValues:
         mock_redis.set(f"id-{pr_id}-custom-privacy-request-field-dept", "Engineering")
 
         manager = RedisCacheManager(mock_redis)
-        store = DSRCacheStore(manager)
-        store.write_encryption(pr_id, "key", "new-encryption-key")
-        store.write_async_execution(pr_id, "task-123")
+        store = DSRCacheStore(pr_id, manager)
+        store.write_encryption("key", "new-encryption-key", _TTL)
+        store.write_async_execution("task-123", _TTL)
 
         pr = MagicMock()
         pr.id = pr_id
@@ -88,8 +90,8 @@ class TestPrivacyRequestClearCachedValues:
         pr_id = f"test-pr-{uuid.uuid4()}"
 
         manager = RedisCacheManager(mock_redis)
-        store = DSRCacheStore(manager)
-        store.write_identity(pr_id, "email", "test@example.com")
+        store = DSRCacheStore(pr_id, manager)
+        store.write_identity("email", "test@example.com", _TTL)
 
         # Verify index exists
         assert len(mock_redis.smembers(f"__idx:dsr:{pr_id}")) > 0

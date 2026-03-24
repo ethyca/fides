@@ -29,8 +29,8 @@ def manager(mock_redis) -> RedisCacheManager:
 
 @pytest.fixture
 def dsr_store(manager: RedisCacheManager) -> DSRCacheStore:
-    """DSRCacheStore backed by mock Redis."""
-    return DSRCacheStore(manager)
+    """DSRCacheStore backed by mock Redis, scoped to default 'pr-1' ID."""
+    return DSRCacheStore("pr-1", manager)
 
 
 @pytest.fixture
