@@ -215,10 +215,7 @@ const BIGQUERY_TYPE_INFO = {
   overview: <BigQueryOverview />,
   instructions: <BigQueryInstructions />,
   tags: BIGQUERY_TAGS,
-  enabledFeatures: [
-    IntegrationFeature.DATA_DISCOVERY,
-    IntegrationFeature.QUERY_LOGGING,
-  ],
+  enabledFeatures: [IntegrationFeature.DATA_DISCOVERY],
 };
 
 export default BIGQUERY_TYPE_INFO;
