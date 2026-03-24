@@ -11,6 +11,7 @@ import {
   useCreateOAuthClientMutation,
   useUpdateOAuthClientMutation,
 } from "./oauth-clients.slice";
+import ScopePicker from "./ScopePicker";
 
 export interface OAuthClientFormValues {
   name: string;
@@ -29,6 +30,20 @@ interface OAuthClientFormProps {
   /** Called with the new client_id + plaintext secret after successful creation. */
   onCreated?: (clientId: string, secret: string) => void;
 }
+
+/**
+ * Thin Formik connector for ScopePicker. Lives outside the main form render
+ * function so useCallback produces a stable reference — preventing ScopePicker
+ * from re-rendering on every keystroke in unrelated fields.
+ */
+const ScopePickerField = () => {
+  const { values, setFieldValue } = useFormikContext<OAuthClientFormValues>();
+  const handleChange = useCallback(
+    (scopes: string[]) => setFieldValue("scopes", scopes),
+    [setFieldValue],
+  );
+  return <ScopePicker value={values.scopes} onChange={handleChange} />;
+};
 
 const OAuthClientForm = ({
   client,
@@ -106,6 +121,11 @@ const OAuthClientForm = ({
               data-testid="client-description-input"
               disabled={!canUpdate}
             />
+            <div>
+              <p className="text-sm font-medium mb-2">Scopes</p>
+              <hr className="mb-3" />
+              <ScopePickerField />
+            </div>
             <div className="flex justify-end gap-3">
               <Button
                 htmlType="button"
