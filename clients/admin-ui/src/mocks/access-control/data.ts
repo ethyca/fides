@@ -87,15 +87,26 @@ const CONTROLS: Record<string, string[]> = {
   ],
 };
 
+const seededRandom = (seed: number) => {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+};
+
 const generateViolations = (): PolicyViolationAggregate[] => {
   const baseTime = new Date("2026-03-11T14:23:00Z").getTime();
+  const rand = seededRandom(13);
 
   return POLICIES.flatMap((policy) =>
-    CONTROLS[policy].map((control, i) => ({
+    CONTROLS[policy].map((control, index) => ({
       policy,
       control,
-      violation_count: Math.floor(Math.random() * 40) + 2,
-      last_violation: new Date(baseTime - i * 2 * 60 * 60 * 1000).toISOString(),
+      violation_count: Math.floor(rand() * 40) + 2,
+      last_violation: new Date(
+        baseTime - index * 2 * 60 * 60 * 1000,
+      ).toISOString(),
     })),
   ).sort((a, b) => b.violation_count - a.violation_count);
 };
@@ -191,13 +202,6 @@ const AI_REASONS = [
   "Bulk export of PII fields detected without anonymization transformation applied.",
 ];
 
-const seededRandom = (seed: number) => {
-  let s = seed;
-  return () => {
-    s = (s * 16807 + 0) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
-};
 
 const generateStableLogs = (): PolicyViolationLog[] => {
   const now = new Date("2026-03-13T12:00:00Z").getTime();
@@ -205,15 +209,15 @@ const generateStableLogs = (): PolicyViolationLog[] => {
   const rand = seededRandom(42);
   const LOG_COUNT = 2000;
 
-  return Array.from({ length: LOG_COUNT }, (_, i) => {
+  return Array.from({ length: LOG_COUNT }, (_, index) => {
     const gap = 3 * 60_000 + Math.floor(rand() * 12 * 60_000);
     const consumer = LOG_CONSUMERS[Math.floor(rand() * LOG_CONSUMERS.length)];
     const policy = allPolicies[Math.floor(rand() * allPolicies.length)];
     const controls = CONTROLS[policy];
     const control = controls[Math.floor(rand() * controls.length)];
     return {
-      id: `viol-${String(i).padStart(4, "0")}`,
-      timestamp: new Date(now - i * gap).toISOString(),
+      id: `viol-${String(index).padStart(4, "0")}`,
+      timestamp: new Date(now - index * gap).toISOString(),
       consumer,
       consumer_email: `${consumer.toLowerCase().replace(/\s+/g, "-")}@company.com`,
       policy,
@@ -299,8 +303,8 @@ export const aggregateLogsToTimeseries = (
 
   const buckets: TimeseriesBucket[] = Array.from(
     { length: bucketCount },
-    (_, i) => ({
-      label: new Date(flooredStart + i * interval).toISOString(),
+    (_, index) => ({
+      label: new Date(flooredStart + index * interval).toISOString(),
       requests: 0,
       violations: 0,
     }),

@@ -1,1 +1,0 @@
-fideslang @ git+https://github.com/ethyca/fideslang.git@feat/add-data-purposes-to-dataset-models
