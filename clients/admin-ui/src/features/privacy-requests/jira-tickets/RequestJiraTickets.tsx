@@ -8,13 +8,20 @@ import {
   Title,
   Tooltip,
   Typography,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import LinkJiraTicketModal from "./LinkJiraTicketModal";
-import { useGetJiraTicketsQuery } from "./privacy-request-jira-tickets.slice";
+import {
+  useGetJiraTicketsQuery,
+  useRefreshJiraTicketMutation,
+  useRetryJiraTicketMutation,
+} from "./privacy-request-jira-tickets.slice";
 import { JiraTicketResult } from "./types";
 
 const statusColorMap: Record<string, CUSTOM_TAG_COLOR> = {
@@ -26,11 +33,25 @@ const statusColorMap: Record<string, CUSTOM_TAG_COLOR> = {
 const getStatusColor = (status: string): CUSTOM_TAG_COLOR =>
   statusColorMap[status.toLowerCase()] ?? CUSTOM_TAG_COLOR.DEFAULT;
 
-const JiraTicketRow = ({ ticket }: { ticket: JiraTicketResult }) => (
+interface JiraTicketRowProps {
+  ticket: JiraTicketResult;
+  onRetry: () => void;
+  onRefresh: () => void;
+  isRetrying: boolean;
+  isRefreshing: boolean;
+}
+
+const JiraTicketRow = ({
+  ticket,
+  onRetry,
+  onRefresh,
+  isRetrying,
+  isRefreshing,
+}: JiraTicketRowProps) => (
   <Flex justify="space-between" align="center" gap={8}>
     <Flex align="center" gap={8} className="min-w-0">
       <Typography.Link
-        href={ticket.ticket_url}
+        href={ticket.ticket_url || undefined}
         target="_blank"
         rel="noopener noreferrer"
         data-testid={`jira-ticket-link-${ticket.ticket_key}`}
@@ -45,20 +66,24 @@ const JiraTicketRow = ({ ticket }: { ticket: JiraTicketResult }) => (
       </Tag>
     </Flex>
     <Flex gap={4} className="shrink-0">
-      <Tooltip title="Retry not yet available">
+      <Tooltip title="Retry ticket creation">
         <Button
           size="small"
           icon={<Icons.Undo />}
-          disabled
+          onClick={onRetry}
+          loading={isRetrying}
+          disabled={isRefreshing}
           data-testid={`jira-ticket-retry-${ticket.ticket_key}`}
           aria-label="Retry ticket creation"
         />
       </Tooltip>
-      <Tooltip title="Refresh not yet available">
+      <Tooltip title="Refresh ticket status">
         <Button
           size="small"
           icon={<Icons.Renew />}
-          disabled
+          onClick={onRefresh}
+          loading={isRefreshing}
+          disabled={isRetrying}
           data-testid={`jira-ticket-refresh-${ticket.ticket_key}`}
           aria-label="Refresh ticket status"
         />
@@ -73,10 +98,56 @@ interface RequestJiraTicketsProps {
 
 const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const message = useMessage();
 
   const { data: tickets, isLoading } = useGetJiraTicketsQuery({
     privacy_request_id: subjectRequest.id,
   });
+
+  const [retryJiraTicket, { isLoading: isRetrying, originalArgs: retryArgs }] =
+    useRetryJiraTicketMutation();
+  const [
+    refreshJiraTicket,
+    { isLoading: isRefreshing, originalArgs: refreshArgs },
+  ] = useRefreshJiraTicketMutation();
+
+  const handleRetry = async (ticket: JiraTicketResult) => {
+    const instanceId = ticket.instance_id ?? ticket.ticket_id;
+    try {
+      await retryJiraTicket({
+        privacy_request_id: subjectRequest.id,
+        instance_id: instanceId,
+      }).unwrap();
+      message.success(
+        `Jira ticket ${ticket.ticket_key} creation retried successfully.`,
+      );
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          `Failed to retry Jira ticket ${ticket.ticket_key} creation.`,
+        ),
+      );
+    }
+  };
+
+  const handleRefresh = async (ticket: JiraTicketResult) => {
+    const instanceId = ticket.instance_id ?? ticket.ticket_id;
+    try {
+      await refreshJiraTicket({
+        privacy_request_id: subjectRequest.id,
+        instance_id: instanceId,
+      }).unwrap();
+      message.success(`Jira ticket ${ticket.ticket_key} status refreshed.`);
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          `Failed to refresh Jira ticket ${ticket.ticket_key} status.`,
+        ),
+      );
+    }
+  };
 
   return (
     <div className="mt-6">
@@ -90,7 +161,22 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
         <Flex vertical gap={8}>
           {tickets && tickets.length > 0 ? (
             tickets.map((ticket) => (
-              <JiraTicketRow key={ticket.ticket_id} ticket={ticket} />
+              <JiraTicketRow
+                key={ticket.ticket_id}
+                ticket={ticket}
+                onRetry={() => handleRetry(ticket)}
+                onRefresh={() => handleRefresh(ticket)}
+                isRetrying={
+                  isRetrying &&
+                  retryArgs?.instance_id ===
+                    (ticket.instance_id ?? ticket.ticket_id)
+                }
+                isRefreshing={
+                  isRefreshing &&
+                  refreshArgs?.instance_id ===
+                    (ticket.instance_id ?? ticket.ticket_id)
+                }
+              />
             ))
           ) : (
             <Typography.Text type="secondary">
