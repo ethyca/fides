@@ -21,7 +21,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import RelationshipProperty, backref, relationship
 
 from fides.api.db.base_class import Base
 
@@ -140,7 +140,7 @@ class RBACUserRole(Base):
     user: RelationshipProperty["FidesUser"] = relationship(
         "FidesUser",
         foreign_keys=[user_id],
-        backref="rbac_role_assignments",
+        backref=backref("rbac_role_assignments", passive_deletes=True),
         passive_deletes=True,  # Let database handle CASCADE delete
     )
     role: RelationshipProperty["RBACRole"] = relationship(

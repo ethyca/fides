@@ -71,7 +71,6 @@ export const dashboardHandlers = () => {
       res(ctx.status(200), ctx.json(mockAgentBriefing)),
     ),
 
-    // GET /api/v1/plus/dashboard/trends
     rest.get(`${apiBase}/plus/dashboard/trends`, (_req, res, ctx) =>
       res(ctx.status(200), ctx.json(mockTrends)),
     ),
