@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import MailgunLogo from "~/features/common/logos/MailgunLogo";
+import { MailgunLogo } from "~/features/common/logos/MailgunLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,

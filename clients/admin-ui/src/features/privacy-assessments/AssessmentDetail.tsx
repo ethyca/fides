@@ -19,7 +19,7 @@ import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RTKErrorResult } from "~/types/errors/api";
 
-import SlackLogo from "../common/logos/SlackLogo";
+import { SlackLogo } from "../common/logos/SlackLogo";
 import styles from "./AssessmentDetail.module.scss";
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import {

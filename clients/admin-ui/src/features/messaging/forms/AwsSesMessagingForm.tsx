@@ -17,7 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import AwsSesLogo from "~/features/common/logos/AwsSesLogo";
+import { AwsSesLogo } from "~/features/common/logos/AwsSesLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,

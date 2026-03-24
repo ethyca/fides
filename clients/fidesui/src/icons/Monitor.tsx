@@ -23,4 +23,6 @@ const MonitorIcon = React.forwardRef<SVGSVGElement, MonitorIconProps>(
   ),
 );
 
+MonitorIcon.displayName = "MonitorIcon";
+
 export default MonitorIcon;

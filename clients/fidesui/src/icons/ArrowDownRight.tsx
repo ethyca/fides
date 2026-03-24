@@ -24,4 +24,6 @@ const ArrowDownRightIcon = React.forwardRef<
   </svg>
 ));
 
+ArrowDownRightIcon.displayName = "ArrowDownRightIcon";
+
 export default ArrowDownRightIcon;

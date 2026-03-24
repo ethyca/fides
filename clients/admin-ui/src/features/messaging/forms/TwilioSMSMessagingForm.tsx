@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import TwilioLogo from "~/features/common/logos/TwilioLogo";
+import { TwilioLogo } from "~/features/common/logos/TwilioLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,

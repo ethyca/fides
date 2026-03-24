@@ -1,4 +1,4 @@
-const AWSLogo = ({ size = 24 }: { size?: number }) => (
+export const AWSLogo = ({ size = 24 }: { size?: number }) => (
   <svg
     width={size}
     height={size}
@@ -13,4 +13,3 @@ const AWSLogo = ({ size = 24 }: { size?: number }) => (
   </svg>
 );
 
-export default AWSLogo;

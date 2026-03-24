@@ -19,8 +19,8 @@ import {
 import { ValidTargets } from "~/types/api";
 
 import CalloutNavCard from "../common/CalloutNavCard";
-import AWSLogo from "../common/logos/AWSLogo";
-import OktaLogo from "../common/logos/OktaLogo";
+import { AWSLogo } from "../common/logos/AWSLogo";
+import { OktaLogo } from "../common/logos/OktaLogo";
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { SystemMethods } from "./types";
 

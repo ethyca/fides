@@ -23,4 +23,6 @@ const CompassIcon = React.forwardRef<SVGSVGElement, CompassIconProps>(
   ),
 );
 
+CompassIcon.displayName = "CompassIcon";
+
 export default CompassIcon;

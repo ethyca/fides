@@ -1,4 +1,4 @@
-const SlackLogo = ({ size = 24 }: { size?: number }) => (
+export const SlackLogo = ({ size = 24 }: { size?: number }) => (
   <svg
     width={size}
     height={size}
@@ -25,4 +25,3 @@ const SlackLogo = ({ size = 24 }: { size?: number }) => (
   </svg>
 );
 
-export default SlackLogo;

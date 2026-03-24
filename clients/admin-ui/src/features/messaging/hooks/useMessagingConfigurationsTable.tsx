@@ -24,9 +24,9 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-import AwsSesLogo from "../../common/logos/AwsSesLogo";
-import MailgunLogo from "../../common/logos/MailgunLogo";
-import TwilioLogo from "../../common/logos/TwilioLogo";
+import { AwsSesLogo } from "../../common/logos/AwsSesLogo";
+import { MailgunLogo } from "../../common/logos/MailgunLogo";
+import { TwilioLogo } from "../../common/logos/TwilioLogo";
 import { useHasPermission } from "../../common/Restrict";
 import {
   useDeleteMessagingConfigurationByKeyMutation,

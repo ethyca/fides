@@ -1,4 +1,4 @@
-const OktaLogo = ({ size = 22 }: { size?: number }) => (
+export const OktaLogo = ({ size = 22 }: { size?: number }) => (
   <svg
     width={size}
     height={size}
@@ -28,4 +28,3 @@ const OktaLogo = ({ size = 22 }: { size?: number }) => (
   </svg>
 );
 
-export default OktaLogo;
