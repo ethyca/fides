@@ -181,22 +181,27 @@ const RoleDetailPage: NextPage = () => {
   }, [permissions]);
 
   // Transform grouped permissions into tree data structure
-  const permissionTreeData = useMemo((): PermissionRowGroup[] => {
-    return Object.entries(groupedPermissions).map(([resourceType, perms]) => ({
-      key: resourceType,
-      code: resourceType.replace(/_/g, " "),
-      description: null,
-      isGroup: true as const,
-      children: perms.map((perm) => ({
-        key: perm.id,
-        code: perm.code,
-        description: perm.description ?? null,
-        isGroup: false as const,
-        id: perm.id,
-        isInherited: role?.inherited_permissions.includes(perm.code) ?? false,
-        isSelected: selectedPermissions.includes(perm.code),
-      })),
-    }));
+  const permissionTreeData = useMemo(() => {
+    return Object.entries(groupedPermissions).map(
+      ([resourceType, perms]): PermissionRowGroup => ({
+        key: resourceType,
+        code: resourceType.replace(/_/g, " "),
+        description: null,
+        isGroup: true,
+        children: perms.map(
+          (perm): PermissionRowLeaf => ({
+            key: perm.id,
+            code: perm.code,
+            description: perm.description ?? null,
+            isGroup: false,
+            id: perm.id,
+            isInherited:
+              role?.inherited_permissions.includes(perm.code) ?? false,
+            isSelected: selectedPermissions.includes(perm.code),
+          }),
+        ),
+      }),
+    );
   }, [groupedPermissions, role?.inherited_permissions, selectedPermissions]);
 
   // Filter out current role and its descendants from parent options
