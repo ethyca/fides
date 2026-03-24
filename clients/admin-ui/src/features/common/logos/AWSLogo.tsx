@@ -12,4 +12,3 @@ export const AWSLogo = ({ size = 24 }: { size?: number }) => (
     />
   </svg>
 );
-

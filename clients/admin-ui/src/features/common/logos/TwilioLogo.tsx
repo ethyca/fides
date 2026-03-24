@@ -14,4 +14,3 @@ export const TwilioLogo = ({ size = 20 }: { size?: number }) => {
     </svg>
   );
 };
-

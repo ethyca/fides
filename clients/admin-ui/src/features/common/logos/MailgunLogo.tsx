@@ -16,4 +16,3 @@ export const MailgunLogo = ({ size = 20 }: { size?: number }) => {
     </svg>
   );
 };
-

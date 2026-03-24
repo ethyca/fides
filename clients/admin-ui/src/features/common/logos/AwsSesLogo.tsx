@@ -46,4 +46,3 @@ export const AwsSesLogo = ({ size = 20 }: { size?: number }) => {
     </svg>
   );
 };
-

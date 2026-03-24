@@ -27,4 +27,3 @@ export const OktaLogo = ({ size = 22 }: { size?: number }) => (
     </defs>
   </svg>
 );
-
