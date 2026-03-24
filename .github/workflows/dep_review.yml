@@ -27,4 +27,7 @@ jobs:
         with:
           comment-summary-in-pr: always
           fail-on-severity: high
+          show-openssf-scorecard: false
+          show-patched-versions: true
+          retry-on-snapshot-warnings: true
         continue-on-error: true
