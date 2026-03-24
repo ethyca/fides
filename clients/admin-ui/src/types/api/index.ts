@@ -441,7 +441,6 @@ export type { Page_TCFConfigurationResponse_ } from "./models/Page_TCFConfigurat
 export type { Page_TCFPublisherRestrictionResponse_ } from "./models/Page_TCFPublisherRestrictionResponse_";
 export type { Page_TemplateResponse_ } from "./models/Page_TemplateResponse_";
 export type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "./models/Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__";
-export type { Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ } from "./models/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__";
 export type { Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__ } from "./models/Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__";
 export type { Page_UserResponse_ } from "./models/Page_UserResponse_";
 export type { ParamValue } from "./models/ParamValue";

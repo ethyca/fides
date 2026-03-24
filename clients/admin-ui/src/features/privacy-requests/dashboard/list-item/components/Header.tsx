@@ -51,6 +51,7 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
           ))}
         </Flex>
       )}
+      {/* Only the first ticket is shown — at most one Jira ticket per request is supported today */}
       {flags.alphaJiraIntegration && privacyRequest.jira_tickets?.[0] && (
         <Flex gap={4} align="center">
           <Typography.Link
