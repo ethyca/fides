@@ -16,8 +16,10 @@ interface RequestLogTableProps {
 
 export const RequestLogTable = ({ onRowClick }: RequestLogTableProps) => {
   const { filters, liveTail } = useRequestLogFilterContext();
-  const { items, isFetching, highlightedIds, loadMore } =
-    useInfiniteViolationLogs({ filters, liveTail });
+  const { items, isFetching, hasMore, loadMore } = useInfiniteViolationLogs({
+    filters,
+    liveTail,
+  });
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +31,7 @@ export const RequestLogTable = ({ onRowClick }: RequestLogTableProps) => {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && items.length > 0) {
           loadMore();
         }
       },
@@ -38,7 +40,7 @@ export const RequestLogTable = ({ onRowClick }: RequestLogTableProps) => {
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [loadMore, items.length]);
 
   return (
     <Flex vertical className="max-h-[calc(100vh-48px)] overflow-auto">
@@ -50,17 +52,12 @@ export const RequestLogTable = ({ onRowClick }: RequestLogTableProps) => {
         rowKey={getRowKey}
         onRow={(record) => ({
           onClick: () => onRowClick?.(record),
-          className: [
-            onRowClick ? "cursor-pointer" : "",
-            highlightedIds.has(record.id) ? "live-tail-row" : "",
-          ]
-            .filter(Boolean)
-            .join(" "),
+          className: onRowClick ? "cursor-pointer" : undefined,
         })}
         size="small"
         sticky
       />
-      <div ref={sentinelRef} className="h-px shrink-0" />
+      {hasMore && <div ref={sentinelRef} className="h-px shrink-0" />}
       {isFetching && (
         <Flex justify="center" className="py-4">
           <Spin size="small" />

@@ -15,6 +15,7 @@ import {
   useGetRequestsTimeseriesQuery,
 } from "./access-control.slice";
 import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
+import { getTrendColor, getTrendPrefix } from "./trendUtils";
 
 type ChartMode = "line" | "bar";
 
@@ -66,26 +67,6 @@ export const ViolationsChartCard = () => {
   const totalViolations = summaryData?.violations ?? 0;
   const trend = summaryData?.trend ?? 0;
 
-  const getTrendPrefix = () => {
-    if (trend < 0) {
-      return "-";
-    }
-    if (trend > 0) {
-      return "+";
-    }
-    return "";
-  };
-
-  const getTrendColor = () => {
-    if (trend < 0) {
-      return token.colorSuccess;
-    }
-    if (trend > 0) {
-      return token.colorError;
-    }
-    return token.colorTextSecondary;
-  };
-
   return (
     <Card
       loading={loading}
@@ -132,10 +113,10 @@ export const ViolationsChartCard = () => {
         <Statistic
           value={Math.abs(trend * 100)}
           precision={1}
-          prefix={getTrendPrefix()}
+          prefix={getTrendPrefix(trend)}
           suffix="% vs last mo"
           valueStyle={{
-            color: getTrendColor(),
+            color: getTrendColor(trend, token),
             fontSize: token.fontSizeSM,
           }}
         />

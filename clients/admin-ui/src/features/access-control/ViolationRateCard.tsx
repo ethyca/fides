@@ -2,29 +2,7 @@ import { antTheme, Card, DonutChart, Flex, Statistic, Text } from "fidesui";
 
 import { useGetAccessControlSummaryQuery } from "./access-control.slice";
 import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
-
-const getTrendColor = (
-  trend: number,
-  token: ReturnType<typeof antTheme.useToken>["token"],
-) => {
-  if (trend < 0) {
-    return token.colorSuccess;
-  }
-  if (trend > 0) {
-    return token.colorErrorText;
-  }
-  return token.colorTextSecondary;
-};
-
-const getTrendPrefix = (trend: number) => {
-  if (trend < 0) {
-    return "-";
-  }
-  if (trend > 0) {
-    return "+";
-  }
-  return "";
-};
+import { getTrendColor, getTrendPrefix } from "./trendUtils";
 
 export const ViolationRateCard = () => {
   const { token } = antTheme.useToken();

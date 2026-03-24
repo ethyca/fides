@@ -14,7 +14,7 @@ interface FindingsTableProps {
 
 export const FindingsTable = ({ onRowClick }: FindingsTableProps) => {
   const { filters } = useRequestLogFilterContext();
-  const { pageIndex, pageSize } = useAntPagination({
+  const { pageIndex, pageSize, paginationProps } = useAntPagination({
     pageQueryKey: "findings_page",
     sizeQueryKey: "findings_size",
   });
@@ -42,6 +42,7 @@ export const FindingsTable = ({ onRowClick }: FindingsTableProps) => {
       rowKey={(record) => `${record.policy}-${record.control}`}
       size="small"
       bordered={false}
+      pagination={{ ...paginationProps, total: data?.total }}
       onRow={(record) => ({
         className: onRowClick ? "cursor-pointer" : undefined,
         onClick: onRowClick ? () => handleRowClick(record) : undefined,

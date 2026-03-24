@@ -145,7 +145,7 @@ export const useRequestLogFilters = (): RequestLogFilterState => {
   const timeseriesFilters: TimeseriesFilters = useMemo(
     () => ({
       ...filters,
-      ...(intervalHours !== null ? { interval: intervalHours } : {}),
+      ...(intervalHours !== undefined ? { interval: intervalHours } : {}),
     }),
     [filters, intervalHours],
   );
