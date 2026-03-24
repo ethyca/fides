@@ -72,11 +72,9 @@ const ConsentItem = ({
                 >
                   Find out more about this consent
                 </Text>
-                <Icons.Launch
-                  className="mx-0.5"
-                  style={{ color: "var(--chakra-colors-complimentary-500)" }}
-                  size={14}
-                />
+                <Box as="span" color="complimentary.500" className="mx-0.5">
+                  <Icons.Launch size={14} />
+                </Box>
               </HStack>
             </Link>
           ) : null}

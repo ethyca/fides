@@ -5,7 +5,7 @@ import { useState } from "react";
 import * as CarbonIcons from "./carbon";
 
 const iconEntries = Object.entries(CarbonIcons).filter(
-  ([key, value]) => key !== "CarbonIconType" && value != null,
+  ([, value]) => value != null,
 ) as [string, React.ComponentType<{ size?: number }>][];
 
 const meta: Meta = {

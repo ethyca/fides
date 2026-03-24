@@ -40,7 +40,7 @@ const InfoBox = ({
         p={1}
         onClick={onClose}
       >
-        <Icons.Close size={12} />
+        <Icons.Close size={20} />
       </Box>
     )}
     <Box as="span" alignSelf="start" color="minos" mt={0.5} flexGrow={0}>
