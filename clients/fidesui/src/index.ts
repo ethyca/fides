@@ -405,7 +405,7 @@ export {
  * prefixed icons from Carbon Icons
  * @example <Icons.download size={14} />
  */
-export * as Icons from "@carbon/icons-react";
+export * as Icons from "./icons/carbon";
 /* end prefixed icons */
 
 export {
