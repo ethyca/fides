@@ -23,6 +23,7 @@ export const ChartText = ({
       textAnchor="middle"
       verticalAnchor="middle"
       width={90}
+      maxLines={1}
       fontSize={token.fontSizeSM}
       fontFamily={fontFamily ?? token.fontFamilyCode}
       fontWeight={CHART_TYPOGRAPHY.fontWeight}
