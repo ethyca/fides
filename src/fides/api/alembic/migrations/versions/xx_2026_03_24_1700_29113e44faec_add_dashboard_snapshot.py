@@ -12,14 +12,14 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "29113e44faec"
-down_revision = "94273d7e8319"
+down_revision = "190e4603ad38"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     op.create_table(
-        "dashboardsnapshot",
+        "dashboard_snapshot",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -50,18 +50,18 @@ def upgrade():
         ),
     )
     op.create_index(
-        "ix_dashboardsnapshot_snapshot_date",
-        "dashboardsnapshot",
+        "ix_dashboard_snapshot_snapshot_date",
+        "dashboard_snapshot",
         ["snapshot_date"],
     )
     op.create_index(
-        "ix_dashboardsnapshot_metric_key",
-        "dashboardsnapshot",
+        "ix_dashboard_snapshot_metric_key",
+        "dashboard_snapshot",
         ["metric_key"],
     )
 
 
 def downgrade():
-    op.drop_index("ix_dashboardsnapshot_metric_key", table_name="dashboardsnapshot")
-    op.drop_index("ix_dashboardsnapshot_snapshot_date", table_name="dashboardsnapshot")
-    op.drop_table("dashboardsnapshot")
+    op.drop_index("ix_dashboard_snapshot_metric_key", table_name="dashboard_snapshot")
+    op.drop_index("ix_dashboard_snapshot_snapshot_date", table_name="dashboard_snapshot")
+    op.drop_table("dashboard_snapshot")
