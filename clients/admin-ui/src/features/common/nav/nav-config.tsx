@@ -395,11 +395,6 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         scopes: [],
       },
       {
-        title: "Icon Migration",
-        path: routes.ICON_MIGRATION_ROUTE,
-        scopes: [],
-      },
-      {
         title: "Error Test",
         path: routes.ERRORS_POC_ROUTE,
         scopes: [],
