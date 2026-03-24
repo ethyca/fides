@@ -64,9 +64,9 @@ export const formatTimestamp = (
     return format(date, verbose ? "MMM d, yyyy" : "MMM d");
   }
   if (intervalMs > HOUR_MS) {
-    return format(date, verbose ? "MMM d, h:mm a" : "MMM d, HH:mm");
+    return format(date, verbose ? "MMM d, HH:mm" : "MMM d, HH:mm");
   }
-  return format(date, verbose ? "MMM d, h:mm a" : "HH:mm");
+  return format(date, verbose ? "MMM d, HH:mm" : "HH:mm");
 };
 
 /** Infer the interval between data points from the first two labels. */
@@ -79,6 +79,8 @@ export const deriveInterval = (data: { label: string }[]): number => {
   return gap > 0 ? gap : HOUR_MS;
 };
 
+const MAX_INTERVAL_HOURS = 72;
+
 /** Pick a bucket size (in hours) that fits the data range into the container. */
 export const pickIntervalHours = (
   rangeMs: number,
@@ -87,7 +89,7 @@ export const pickIntervalHours = (
 ): number => {
   const maxBuckets = Math.max(1, Math.floor(containerWidth / minPointWidth));
   const idealHours = Math.ceil(rangeMs / HOUR_MS / maxBuckets);
-  return Math.max(1, Math.min(idealHours, 72));
+  return Math.max(1, Math.min(idealHours, MAX_INTERVAL_HOURS));
 };
 
 /** Calculate how many ticks to skip so labels don't overlap. */

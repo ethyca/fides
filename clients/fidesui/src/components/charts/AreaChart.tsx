@@ -67,15 +67,20 @@ export const AreaChart = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const { width: containerWidth } = useContainerSize(containerRef);
 
+  const onIntervalChangeRef = useRef(onIntervalChange);
+  useEffect(() => {
+    onIntervalChangeRef.current = onIntervalChange;
+  });
+
   const chartData = data ?? [];
 
   useEffect(() => {
-    if (onIntervalChange && rangeMs && rangeMs > 0 && containerWidth > 0) {
-      onIntervalChange(
+    if (onIntervalChangeRef.current && rangeMs && rangeMs > 0 && containerWidth > 0) {
+      onIntervalChangeRef.current(
         pickIntervalHours(rangeMs, containerWidth, MIN_PX_PER_POINT),
       );
     }
-  }, [onIntervalChange, rangeMs, containerWidth]);
+  }, [rangeMs, containerWidth]);
 
   const intervalMs = deriveInterval(chartData);
   const tickInterval = calcTickInterval(

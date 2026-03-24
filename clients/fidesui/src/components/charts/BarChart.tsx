@@ -58,13 +58,20 @@ export const BarChart = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const { width: containerWidth } = useContainerSize(containerRef);
 
+  const onIntervalChangeRef = useRef(onIntervalChange);
+  useEffect(() => {
+    onIntervalChangeRef.current = onIntervalChange;
+  });
+
   const chartData = data ?? [];
 
   useEffect(() => {
-    if (onIntervalChange && rangeMs && rangeMs > 0 && containerWidth > 0) {
-      onIntervalChange(pickIntervalHours(rangeMs, containerWidth, barWidth));
+    if (onIntervalChangeRef.current && rangeMs && rangeMs > 0 && containerWidth > 0) {
+      onIntervalChangeRef.current(
+        pickIntervalHours(rangeMs, containerWidth, barWidth),
+      );
     }
-  }, [onIntervalChange, rangeMs, containerWidth, barWidth]);
+  }, [rangeMs, containerWidth, barWidth]);
 
   const intervalMs = deriveInterval(chartData);
   const tickInterval = calcTickInterval(
@@ -111,6 +118,7 @@ export const BarChart = ({
             <Bar
               dataKey="value"
               fill={fill}
+              barSize={barWidth}
               radius={[1, 1, 0, 0]}
               isAnimationActive={animationActive}
               animationDuration={animationDuration}
