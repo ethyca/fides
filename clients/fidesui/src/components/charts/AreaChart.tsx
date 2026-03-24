@@ -25,7 +25,6 @@ import {
   pickIntervalHours,
   useChartAnimation,
   useContainerSize,
-  useTooltipContentStyle,
 } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 import { XAxisTick } from "./XAxisTick";
@@ -57,7 +56,6 @@ export const AreaChart = ({
   showGrid = true,
 }: AreaChartProps) => {
   const { token } = theme.useToken();
-  const tooltipContentStyle = useTooltipContentStyle();
   const animationActive = useChartAnimation(animationDuration);
   const gradientPrefix = `area-gradient-${useId()}`;
 
@@ -165,7 +163,12 @@ export const AreaChart = ({
             />
             {showTooltip && (
               <Tooltip
-                contentStyle={tooltipContentStyle}
+                contentStyle={{
+                  backgroundColor: token.colorBgElevated,
+                  border: `1px solid ${token.colorBorder}`,
+                  borderRadius: token.borderRadiusLG,
+                  boxShadow: token.boxShadowSecondary,
+                }}
                 labelFormatter={(label) =>
                   formatTimestamp(String(label), intervalMs, true)
                 }
