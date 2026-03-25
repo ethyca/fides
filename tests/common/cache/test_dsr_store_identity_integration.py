@@ -99,5 +99,5 @@ class TestDSRCacheStoreIdentity:
 
         # Clear and test new format
         store.clear()
-        store.write_identity("email", json.dumps("test@example.com", _TTL))
+        store.write_identity("email", json.dumps("test@example.com"), _TTL)
         assert store.has_cached_identity_data() is True

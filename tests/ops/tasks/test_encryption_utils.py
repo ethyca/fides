@@ -24,7 +24,7 @@ def test_encrypt_access_request_results_no_encryption_key(mock_cache):
     result = encrypt_access_request_results(test_data, request_id)
 
     assert result == test_data
-    mock_cache.get_encryption.assert_called_once_with(request_id, "key")
+    mock_cache.get_encryption.assert_called_once_with("key")
 
 
 def test_encrypt_access_request_results_with_encryption_key(mock_cache):
@@ -40,7 +40,7 @@ def test_encrypt_access_request_results_with_encryption_key(mock_cache):
     # The result should be a base64 encoded string containing the nonce and encrypted data
     assert isinstance(result, str)
     assert len(result) > 0
-    mock_cache.get_encryption.assert_called_once_with(request_id, "key")
+    mock_cache.get_encryption.assert_called_once_with("key")
 
 
 def test_encrypt_access_request_results_with_bytes_input(mock_cache):
@@ -54,7 +54,7 @@ def test_encrypt_access_request_results_with_bytes_input(mock_cache):
 
     assert isinstance(result, str)
     assert len(result) > 0
-    mock_cache.get_encryption.assert_called_once_with(request_id, "key")
+    mock_cache.get_encryption.assert_called_once_with("key")
 
 
 def test_encrypt_access_request_results_empty_data(mock_cache):
@@ -68,7 +68,7 @@ def test_encrypt_access_request_results_empty_data(mock_cache):
 
     assert isinstance(result, str)
     assert len(result) > 0
-    mock_cache.get_encryption.assert_called_once_with(request_id, "key")
+    mock_cache.get_encryption.assert_called_once_with("key")
 
 
 def test_encrypt_access_request_results_special_characters(mock_cache):
@@ -82,4 +82,4 @@ def test_encrypt_access_request_results_special_characters(mock_cache):
 
     assert isinstance(result, str)
     assert len(result) > 0
-    mock_cache.get_encryption.assert_called_once_with(request_id, "key")
+    mock_cache.get_encryption.assert_called_once_with("key")

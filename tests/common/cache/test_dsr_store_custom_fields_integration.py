@@ -101,7 +101,7 @@ class TestDSRCacheStoreCustomFields:
 
         # Clear and test new format
         store.clear()
-        store.write_custom_field("department", json.dumps("Engineering", _TTL))
+        store.write_custom_field("department", json.dumps("Engineering"), _TTL)
         assert store.has_cached_custom_fields() is True
 
 
