@@ -330,13 +330,34 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
-export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export type {
+  AreaChartDataPoint,
+  AreaChartProps,
+  AreaChartSeries,
+} from "./components/charts/AreaChart";
+export { AreaChart } from "./components/charts/AreaChart";
+export type {
+  BarChartDataPoint,
+  BarChartProps,
+} from "./components/charts/BarChart";
+export { BarChart } from "./components/charts/BarChart";
+export type {
+  AntColorTokenKey,
+  BarSize,
+} from "./components/charts/chart-constants";
 export {
   CHART_ANIMATION,
   CHART_GRADIENT,
   CHART_STROKE,
   CHART_TYPOGRAPHY,
 } from "./components/charts/chart-constants";
+export {
+  DAY_MS,
+  formatTimestamp,
+  HOUR_MS,
+} from "./components/charts/chart-utils";
+export type { ChartGradientProps } from "./components/charts/ChartGradient";
+export { ChartGradient } from "./components/charts/ChartGradient";
 export type { ChartTextProps } from "./components/charts/ChartText";
 export { ChartText } from "./components/charts/ChartText";
 export type {
@@ -359,6 +380,7 @@ export type {
   StackedBarSegment,
 } from "./components/charts/StackedBarChart";
 export { StackedBarChart } from "./components/charts/StackedBarChart";
+export { XAxisTick } from "./components/charts/XAxisTick";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";

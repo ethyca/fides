@@ -108,6 +108,12 @@ export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
 export const SEED_DATA_ROUTE = "/poc/seed-data";
 export const TEST_MONITORS_ROUTE = "/poc/test-monitors";
 
+// RBAC routes
+export const RBAC_ROUTE = "/settings/rbac";
+export const RBAC_ROLES_ROUTE = "/settings/rbac/roles";
+export const RBAC_ROLE_DETAIL_ROUTE = "/settings/rbac/roles/[id]";
+export const RBAC_ROLE_NEW_ROUTE = "/settings/rbac/roles/new";
+
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
 
@@ -133,7 +139,3 @@ export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
-export const ACCESS_CONTROL_SUMMARY_ROUTE =
-  "/data-discovery/access-control/summary";
-export const ACCESS_CONTROL_REQUEST_LOG_ROUTE =
-  "/data-discovery/access-control/request-log";
