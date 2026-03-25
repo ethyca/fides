@@ -1,11 +1,11 @@
 import React from "react";
 
-const MailgunIcon = () => {
+export const MailgunLogo = ({ size = 20 }: { size?: number }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
+      width={size}
+      height={size}
       preserveAspectRatio="xMidYMid"
       viewBox="-0.5 0 257 257"
     >
@@ -16,5 +16,3 @@ const MailgunIcon = () => {
     </svg>
   );
 };
-
-export default MailgunIcon;

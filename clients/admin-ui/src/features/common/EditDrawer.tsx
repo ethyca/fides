@@ -1,7 +1,5 @@
-import { Button, Drawer, Flex } from "fidesui";
+import { Button, Drawer, Flex, Icons } from "fidesui";
 import type { ReactNode } from "react";
-
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 
 interface Props {
   title?: ReactNode;
@@ -39,7 +37,7 @@ export const EditDrawerFooter = ({
     {onDelete ? (
       <Button
         aria-label="delete"
-        icon={<TrashCanOutlineIcon fontSize="small" />}
+        icon={<Icons.TrashCan />}
         onClick={onDelete}
         data-testid="delete-btn"
       />
