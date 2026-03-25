@@ -65,8 +65,10 @@ const computeProgress = (steps: Record<string, SeedStepStatus>): number => {
     return 0;
   }
   const done = entries.filter(
-    (s) =>
-      s.status === "complete" || s.status === "skipped" || s.status === "error",
+    (step) =>
+      step.status === "complete" ||
+      step.status === "skipped" ||
+      step.status === "error",
   ).length;
   return Math.round((done / entries.length) * 100);
 };
@@ -76,11 +78,13 @@ const SeedDataPanel = () => {
     Set<keyof SeedTasksConfig>
   >(new Set());
   const [executionId, setExecutionId] = useState<string | null>(null);
-  const [triggerSeed, { isLoading: isTriggering }] = useTriggerSeedMutation();
+  const [triggerSeed, { isLoading: isTriggering, isError: isTriggerError }] =
+    useTriggerSeedMutation();
 
   // Poll for status when an execution is in progress
   const { data: statusData } = useGetSeedStatusQuery(executionId!, {
     skip: !executionId,
+    // Seed tasks complete within seconds; 2s polling is intentional for this dev-only tool.
     pollingInterval: 2000,
   });
 
@@ -112,11 +116,11 @@ const SeedDataPanel = () => {
       tasks[key] = true;
     });
 
-    try {
-      const result = await triggerSeed({ tasks }).unwrap();
+    const result = await triggerSeed({ tasks })
+      .unwrap()
+      .catch(() => null);
+    if (result) {
       setExecutionId(result.execution_id);
-    } catch {
-      // Error is shown via the status polling
     }
   }, [selectedTasks, triggerSeed]);
 
@@ -156,8 +160,17 @@ const SeedDataPanel = () => {
         </Button>
       </Flex>
 
+      {isTriggerError ? (
+        <Alert
+          type="error"
+          message="Failed to start seed. Please try again."
+          className="mt-4"
+          showIcon
+        />
+      ) : null}
+
       {showStatus ? (
-        <div className="mt-4">
+        <Flex vertical gap="small" className="mt-4">
           <Progress
             percent={computeProgress(statusData.steps)}
             status={statusData.status === "error" ? "exception" : undefined}
@@ -186,7 +199,7 @@ const SeedDataPanel = () => {
               showIcon
             />
           ) : null}
-        </div>
+        </Flex>
       ) : null}
     </Card>
   );
