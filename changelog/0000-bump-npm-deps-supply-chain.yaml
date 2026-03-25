@@ -1,0 +1,4 @@
+type: Changed
+description: Bumped swagger-ui-react and validator to fix known vulnerabilities in transitive npm dependencies
+pr: 0000
+labels: []
