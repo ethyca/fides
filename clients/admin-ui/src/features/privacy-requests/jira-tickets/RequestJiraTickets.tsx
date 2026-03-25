@@ -174,8 +174,7 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
                 onRetry={() => handleRetry(ticket)}
                 onRefresh={() => handleRefresh(ticket)}
                 isRetrying={
-                  isRetrying &&
-                  retryArgs?.instance_id === ticket.instance_id
+                  isRetrying && retryArgs?.instance_id === ticket.instance_id
                 }
                 isRefreshing={
                   isRefreshing &&
