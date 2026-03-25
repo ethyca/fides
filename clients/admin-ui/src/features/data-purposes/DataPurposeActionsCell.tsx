@@ -1,7 +1,5 @@
 import { Button, Flex, Icons } from "fidesui";
 import { useRouter } from "next/router";
-
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { DataPurpose } from "~/features/data-purposes/data-purpose.slice";
@@ -37,7 +35,7 @@ const DataPurposeActionsCell = ({ purpose }: Props) => {
             aria-label="Delete data purpose"
             data-testid="delete-data-purpose-button"
             size="small"
-            icon={<TrashCanOutlineIcon />}
+            icon={<Icons.TrashCan />}
           />
         }
       />

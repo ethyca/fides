@@ -1,8 +1,7 @@
-import { Button, useMessage, useModal } from "fidesui";
+import { Button, Icons, useMessage, useModal } from "fidesui";
 import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
@@ -48,7 +47,7 @@ const DeleteDataConsumerModal = ({ consumer }: Props) => {
       aria-label="Delete data consumer"
       data-testid="delete-data-consumer-button"
       size="small"
-      icon={<TrashCanOutlineIcon />}
+      icon={<Icons.TrashCan />}
       onClick={handleDelete}
     />
   );
