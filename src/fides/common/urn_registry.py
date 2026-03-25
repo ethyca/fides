@@ -203,8 +203,12 @@ CONNECTOR_TEMPLATES_REGISTER = "/connector-templates/register"
 CONNECTOR_TEMPLATES_CONFIG = "/connector-templates/{connector_template_type}/config"
 CONNECTOR_TEMPLATES_DATASET = "/connector-templates/{connector_template_type}/dataset"
 CONNECTOR_TEMPLATES_VERSIONS = "/connector-templates/{connector_template_type}/versions"
-CONNECTOR_TEMPLATES_VERSION_CONFIG = "/connector-templates/{connector_template_type}/versions/{version}/config"
-CONNECTOR_TEMPLATES_VERSION_DATASET = "/connector-templates/{connector_template_type}/versions/{version}/dataset"
+CONNECTOR_TEMPLATES_VERSION_CONFIG = (
+    "/connector-templates/{connector_template_type}/versions/{version}/config"
+)
+CONNECTOR_TEMPLATES_VERSION_DATASET = (
+    "/connector-templates/{connector_template_type}/versions/{version}/dataset"
+)
 DELETE_CUSTOM_TEMPLATE = "/connector-templates/{connector_template_type}"
 
 # Deprecated: Old connector template register URL
