@@ -20,7 +20,7 @@ const icons = [
 type IconArgs = { size: number };
 
 const meta: Meta<IconArgs> = {
-  title: "General/Custom Icons",
+  title: "General/Icons/Custom Icons",
   tags: ["autodocs"],
 };
 

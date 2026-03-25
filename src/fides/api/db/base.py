@@ -91,7 +91,6 @@ from fides.api.models.property import (
     Property,
 )
 from fides.api.models.questionnaire import ChatMessage, Questionnaire
-from fides.api.models.registration import UserRegistration
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
