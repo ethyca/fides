@@ -43,7 +43,7 @@ const SEED_SCENARIOS: SeedScenario[] = [
 
 const STATUS_COLORS = {
   pending: "default",
-  in_progress: "processing",
+  in_progress: "info",
   complete: "success",
   skipped: "warning",
   error: "error",
@@ -52,12 +52,7 @@ const STATUS_COLORS = {
 const StepStatusTag = ({ status }: { status: SeedStepStatus }) => {
   const color =
     STATUS_COLORS[status.status as keyof typeof STATUS_COLORS] ?? "default";
-  const style = color === "processing" ? { color: "white" } : undefined;
-  return (
-    <Tag color={color} style={style}>
-      {status.status.replace("_", " ")}
-    </Tag>
-  );
+  return <Tag color={color}>{status.status.replace("_", " ")}</Tag>;
 };
 
 const computeProgress = (steps: Record<string, SeedStepStatus>): number => {

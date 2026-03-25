@@ -39,35 +39,6 @@ export interface SeedStatusResponse {
   error?: string;
 }
 
-/**
- * Cache tags to invalidate when seeding completes.
- * Maps each seed task to the tags it affects.
- */
-const SEED_TASK_INVALIDATION_TAGS: Record<keyof SeedTasksConfig, string[]> = {
-  pbac: [
-    "DataPurpose",
-    "DataConsumer",
-    "QueryLogConfig",
-    "Datastore Connection",
-    "Dataset",
-    "Datasets",
-  ],
-  sample_resources: ["System", "Dataset", "Datasets", "Policies"],
-  linked_connections: ["Datastore Connection"],
-  consent_notices: ["Privacy Notices"],
-  consent_experiences: ["Privacy Experience Configs"],
-  compass_vendors: ["System", "Dictionary", "System Vendors"],
-  email_templates: ["Messaging Templates"],
-  discovery_monitors: ["Discovery Monitor Configs", "Datastore Connection"],
-  messaging_mailgun: ["Messaging Config"],
-  storage_s3: ["Configuration Settings"],
-  dashboard: [
-    "System",
-    "Privacy Requests",
-    "Fides Dashboard",
-  ],
-};
-
 const seedDataApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     triggerSeed: build.mutation<SeedResponse, SeedRequest>({
@@ -76,19 +47,28 @@ const seedDataApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      // Invalidate tags for all enabled tasks so cached data refreshes
+      // Invalidate all potentially affected tags so cached data refreshes
       // after the user navigates to the seeded pages.
-      invalidatesTags: (_result, _error, arg) => {
-        const tags: string[] = [];
-        const { tasks } = arg;
-        (Object.keys(tasks) as (keyof SeedTasksConfig)[]).forEach((key) => {
-          if (tasks[key] && SEED_TASK_INVALIDATION_TAGS[key]) {
-            tags.push(...SEED_TASK_INVALIDATION_TAGS[key]);
-          }
-        });
-        // Deduplicate and cast to satisfy RTK Query's TagDescription type
-        return [...new Set(tags)] as typeof tags;
-      },
+      invalidatesTags: [
+        "DataPurpose",
+        "DataConsumer",
+        "QueryLogConfig",
+        "Datastore Connection",
+        "Dataset",
+        "Datasets",
+        "System",
+        "Policies",
+        "Privacy Notices",
+        "Privacy Experience Configs",
+        "Dictionary",
+        "System Vendors",
+        "Messaging Templates",
+        "Discovery Monitor Configs",
+        "Messaging Config",
+        "Configuration Settings",
+        "Request",
+        "Fides Dashboard",
+      ],
     }),
     getSeedStatus: build.query<SeedStatusResponse, string>({
       query: (executionId) => ({
