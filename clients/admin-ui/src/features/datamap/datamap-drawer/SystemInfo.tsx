@@ -1,9 +1,9 @@
 import {
   ChakraBox as Box,
-  ChakraExternalLinkIcon as ExternalLinkIcon,
   ChakraFlex as Flex,
   ChakraSpacer as Spacer,
   ChakraText as Text,
+  Icons,
   SecondaryLink,
   useMessage,
 } from "fidesui";
@@ -83,7 +83,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
         <Spacer />
         <SecondaryLink color="complimentary.500" href={systemHref}>
           View more
-          <ExternalLinkIcon ml={2} />
+          <Icons.Launch className="ml-2 inline" size={14} />
         </SecondaryLink>
       </Flex>
       <Box

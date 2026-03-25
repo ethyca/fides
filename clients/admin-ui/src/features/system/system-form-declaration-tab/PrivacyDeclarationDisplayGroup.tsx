@@ -1,16 +1,15 @@
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraDivider as Divider,
   ChakraHeading as Heading,
   ChakraHStack as HStack,
   ChakraLinkBox as LinkBox,
   ChakraLinkOverlay as LinkOverlay,
-  ChakraSmallAddIcon as SmallAddIcon,
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
   ChakraText as Text,
+  Icons,
   useModal,
 } from "fidesui";
 
@@ -76,7 +75,7 @@ const PrivacyDeclarationRow = ({
                 }}
                 data-testid="delete-btn"
               >
-                <DeleteIcon />
+                <Icons.TrashCan />
               </Button>
             ) : null}
           </HStack>
@@ -161,7 +160,7 @@ export const PrivacyDeclarationDisplayGroup = ({
           <Button
             onClick={handleAdd}
             size="small"
-            icon={<SmallAddIcon boxSize={4} />}
+            icon={<Icons.Add size={16} />}
             iconPosition="end"
             data-testid="add-btn"
           >

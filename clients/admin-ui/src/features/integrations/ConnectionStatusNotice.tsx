@@ -1,9 +1,4 @@
-import {
-  ChakraCheckCircleIcon as CheckCircleIcon,
-  ChakraFlex as Flex,
-  ChakraText as Text,
-  ChakraWarningTwoIcon as WarningTwoIcon,
-} from "fidesui";
+import { ChakraFlex as Flex, ChakraText as Text, Icons } from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
 import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
@@ -56,12 +51,12 @@ const ConnectionStatusNotice = ({
       align="center"
       data-testid="connection-status"
     >
-      <CheckCircleIcon mr={2} boxSize={4} />
+      <Icons.CheckmarkFilled size={16} className="mr-2" />
       <Text>Last connected {testDate}</Text>
     </Flex>
   ) : (
     <Flex color="error-text.900" align="center" data-testid="connection-status">
-      <WarningTwoIcon mr={2} boxSize={4} />
+      <Icons.WarningAltFilled size={16} className="mr-2" />
       <Text>Last connection failed {testDate}</Text>
     </Flex>
   );

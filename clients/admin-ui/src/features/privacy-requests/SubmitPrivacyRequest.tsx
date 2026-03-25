@@ -1,5 +1,4 @@
 import {
-  ChakraChevronDownIcon as ChevronDownIcon,
   ChakraStack as Stack,
   Dropdown,
   Icons,
@@ -155,7 +154,7 @@ const SubmitPrivacyRequest = () => {
             },
           ],
         }}
-        icon={<ChevronDownIcon />}
+        icon={<Icons.ChevronDown />}
       >
         Create request
       </Dropdown.Button>

@@ -406,6 +406,7 @@ class Dataset(Base, FidesBase):
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
+    data_purposes = Column(ARRAY(String))
     collections = Column(JSON)
     fides_meta = Column(JSON)
 
