@@ -13,8 +13,7 @@ import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
 
-import HomeBanner from "./HomeBanner";
-import HomeContent from "./HomeContent";
+import HomeDashboard from "./dashboard/HomeDashboard";
 
 const HomeContainerInner = () => {
   const { resolvedMode } = useThemeMode();
@@ -26,23 +25,17 @@ const HomeContainerInner = () => {
   const bgColor =
     resolvedMode === "dark"
       ? palette.FIDESUI_BG_MINOS
-      : palette.FIDESUI_FULL_WHITE;
+      : palette.FIDESUI_CORINTH;
 
   return (
     <ConfigProvider theme={activeTheme}>
       {/* this wrapping div can be removed once global theming is applied */}
       <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
         <Layout title="Home" padded={false}>
-          <Flex vertical gap={40} className="pb-6">
-            {/* NOTE: temporary button placement for testing */}
-            {alphaDarkMode && (
-              <Flex className="absolute pl-2 pt-2">
-                <ThemeModeSegmented />
-              </Flex>
-            )}
-
-            <HomeBanner />
-            <HomeContent />
+          <Flex vertical gap={0} className="pb-6">
+            <HomeDashboard
+              themeToggle={alphaDarkMode ? <ThemeModeSegmented /> : undefined}
+            />
           </Flex>
         </Layout>
       </div>

@@ -21,6 +21,9 @@ export const darkAntTheme: ThemeConfig = {
     colorPrimary: palette.FIDESUI_CORINTH,
     colorBgContainer: palette.FIDESUI_BG_MINOS,
     colorBorder: "#3a3a3a",
+    colorBorderSecondary: "#3a3a3a",
+    colorTextDescription: "#9a9da3",
+    colorWarningBg: "#3d3528",
   },
   components: {
     ...defaultAntTheme.components,
@@ -29,6 +32,10 @@ export const darkAntTheme: ThemeConfig = {
     },
     Card: {
       colorBgContainer: palette.FIDESUI_MINOS,
+    },
+    Tag: {
+      defaultBg: "#333640",
+      defaultColor: "#fafafa",
     },
   },
 };

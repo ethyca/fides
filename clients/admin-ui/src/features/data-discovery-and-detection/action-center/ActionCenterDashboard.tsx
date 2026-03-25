@@ -1,7 +1,8 @@
-import { Typography } from "fidesui";
+import { Flex, Typography } from "fidesui";
 import { ConnectionType } from "~/types/api";
 import { useFeatures } from "~/features/common/features";
 
+import DataStoreSlimCard from "./DataStoreSlimCard";
 import MonitorSummaryCard from "./MonitorSummaryCard";
 import type { CardLayout } from "./MonitorSummaryCard";
 import { MonitorAggregatedResults } from "./types";
@@ -208,6 +209,20 @@ const ActionCenterDashboard = ({
             />
           ))}
         </div>
+        <Flex vertical gap={8} className="mt-3">
+          <DataStoreSlimCard
+            monitors={monitorsByType(FAKE_MONITORS, MONITOR_TYPES.DATASTORE)}
+            variant="A"
+          />
+          <DataStoreSlimCard
+            monitors={monitorsByType(FAKE_MONITORS, MONITOR_TYPES.DATASTORE)}
+            variant="B"
+          />
+          <DataStoreSlimCard
+            monitors={monitorsByType(FAKE_MONITORS, MONITOR_TYPES.DATASTORE)}
+            variant="C"
+          />
+        </Flex>
       </div>
 
       {/* Low data */}
