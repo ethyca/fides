@@ -56,7 +56,7 @@
     "redux-persist": "^6.0.0",
     "sanitize-html": "^2.17.0",
     "uuid": "^9.0.0",
-    "validator": "^13.15.15",
+    "validator": "^13.15.22",
     "yup": "^0.32.11"
   },
   "devDependencies": {
