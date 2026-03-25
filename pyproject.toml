@@ -248,7 +248,6 @@ module = [
   "dask.*",
   "deepdiff.*",
   "defusedxml.ElementTree.*",
-
   "firebase_admin.*",
   "google.api_core.*",
   "joblib.*",

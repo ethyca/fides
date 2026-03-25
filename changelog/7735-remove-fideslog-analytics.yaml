@@ -1,0 +1,4 @@
+type: Removed
+description: Removed analytics/telemetry integration (fideslog dependency, analytics middleware, `@with_analytics` CLI decorator, registration endpoints, and related config)
+pr: 7735
+labels: []

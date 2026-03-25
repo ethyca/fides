@@ -112,10 +112,7 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
 @click.command()  # type: ignore
 @click.pass_context
 @click.argument("fides_dir", default=".", type=click.Path(exists=True))
-@click.option(
-    "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
-)
-def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
+def init(ctx: click.Context, fides_dir: str) -> None:
     """
     Initializes a Fides instance by creating the default directory and
     configuration file if not present.
@@ -127,7 +124,7 @@ def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
     click.echo("Initializing fides...")
 
     config, config_path = create_and_update_config_file(
-        config, fides_dir, opt_in=opt_in
+        config, fides_dir
     )
 
     print_divider()

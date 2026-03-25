@@ -1,4 +1,0 @@
-type: Fixed
-description: Dropped unnecessary `[speedups]` extra from `aiohttp` dependency to fix Python 3.13 compatibility
-pr: 7735
-labels: []

@@ -252,7 +252,6 @@ def create_config_file(config: FidesConfig, fides_directory_location: str = ".")
 def create_and_update_config_file(
     config: FidesConfig,
     fides_directory_location: str = ".",
-    opt_in: bool = False,
 ) -> Tuple[FidesConfig, str]:
     config_path = create_config_file(
         config=config, fides_directory_location=fides_directory_location
