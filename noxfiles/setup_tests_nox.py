@@ -462,6 +462,7 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "tests/service/",
         "tests/system_integration_link/",
         "tests/task/",
+        "tests/unit/",
         "tests/util/",
         "-m",
         "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
