@@ -33,6 +33,14 @@ const statusColorMap: Record<string, CUSTOM_TAG_COLOR> = {
 const getStatusColor = (status: string): CUSTOM_TAG_COLOR =>
   statusColorMap[status.toLowerCase()] ?? CUSTOM_TAG_COLOR.DEFAULT;
 
+const LINK_ALLOWED_STATUSES = new Set([
+  "approved",
+  "in_processing",
+  "paused",
+  "pending_external",
+  "requires_input",
+]);
+
 interface JiraTicketRowProps {
   ticket: JiraTicketResult;
   onRetry: () => void;
@@ -186,6 +194,7 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
         <Button
           icon={<Icons.Add />}
           onClick={() => setIsLinkModalOpen(true)}
+          disabled={!LINK_ALLOWED_STATUSES.has(subjectRequest.status)}
           data-testid="link-jira-ticket-btn"
         >
           Link ticket
