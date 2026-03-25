@@ -17,9 +17,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Drop table first; this also drops dependent indexes.
-    op.execute("DROP TABLE IF EXISTS userregistration CASCADE")
     op.execute("DROP INDEX IF EXISTS ix_userregistration_id")
+    op.execute("DROP TABLE IF EXISTS userregistration CASCADE")
 
 
 def downgrade() -> None:
