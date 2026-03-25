@@ -1,0 +1,4 @@
+type: Added
+description: Add PBAC management UI for data purposes, consumers, and query log configuration
+pr: 7700
+labels: []

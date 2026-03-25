@@ -255,6 +255,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Data purposes",
+        path: routes.DATA_PURPOSES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
+      },
+      {
+        title: "Data consumers",
+        path: routes.DATA_CONSUMERS_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
+      },
+      {
         title: "Access policies",
         path: routes.ACCESS_POLICIES_ROUTE,
         requiresPlus: true,
@@ -389,6 +403,12 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Prompt explorer",
         path: routes.PROMPT_EXPLORER_ROUTE,
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "Seed Data",
+        path: routes.SEED_DATA_ROUTE,
         scopes: [ScopeRegistryEnum.DEVELOPER_READ],
         requiresPlus: true,
       },
