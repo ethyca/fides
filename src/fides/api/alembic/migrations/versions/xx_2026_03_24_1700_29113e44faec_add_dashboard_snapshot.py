@@ -1,7 +1,7 @@
 """add dashboard_snapshot table
 
 Revision ID: 29113e44faec
-Revises: c7e3a9b1d4f2
+Revises: 94273d7e8319
 Create Date: 2026-03-24 17:00:00.000000
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "29113e44faec"
-down_revision = "c7e3a9b1d4f2"
+down_revision = "190e4603ad38"
 branch_labels = None
 depends_on = None
 
