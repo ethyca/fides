@@ -76,6 +76,7 @@ export interface ExecutionLog {
   action_type: string;
   status: ExecutionLogStatus;
   updated_at: string;
+  saas_version?: string | null;
 }
 
 export type GetUploadedManualWebhookDataRequest = {
@@ -100,6 +101,7 @@ export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
 export interface PrivacyRequestEntity {
   status: PrivacyRequestStatus;
   results?: PrivacyRequestResults;
+  task_status_by_dataset?: Record<string, string>;
   identity: {
     [key: string]: { label: string; value: string | null };
   };

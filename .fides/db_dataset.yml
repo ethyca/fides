@@ -445,6 +445,12 @@ dataset:
     - name: monitors
       data_categories:
         - system.operations
+    - name: name
+      data_categories:
+        - system.operations
+    - name: description
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
@@ -1371,6 +1377,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_request_id
       data_categories: [system.operations]
+    - name: saas_version
+      data_categories: [system.operations]
     - name: status
       data_categories: [system.operations]
     - name: updated_at
@@ -1602,6 +1610,12 @@ dataset:
     - name: privacy_assessment_task_id
       data_categories:
       - system.operations
+    - name: context_snapshot
+      data_categories:
+      - system.operations
+    - name: last_evaluated_at
+      data_categories:
+      - system.operations
   - name: privacy_assessment_config
     description: 'Global configuration for privacy assessments (single-row table)'
     fields:
@@ -1681,6 +1695,9 @@ dataset:
       data_categories:
       - system.operations
     - name: llm_model
+      data_categories:
+      - system.operations
+    - name: high_risk_only
       data_categories:
       - system.operations
   - name: policy
@@ -2462,35 +2479,6 @@ dataset:
     - name: updated_at
       data_categories:
       - system.operations
-  - name: userregistration
-    description: 'Records the registration status of this Fides deployment'
-    data_categories: null
-    fields:
-    - name: id
-      data_categories:
-      - system.operations
-    - name: created_at
-      data_categories:
-      - system.operations
-    - name: updated_at
-      data_categories:
-      - system.operations
-    - name: analytics_id
-      description: 'The identifier for this Fides deployment within Fideslog'
-      data_categories:
-      - system.operations
-    - name: opt_in
-      description: 'Whether the user has opted to share analytics data'
-      data_categories:
-      - system.operations
-    - name: user_email
-      description: 'The email of the user setting this opt_in preference'
-      data_categories:
-      - user.contact.email
-    - name: user_organization
-      description: 'The name of the organization this Fides deployment belongs to'
-      data_categories:
-      - user.workplace
   - name: cookies
     description: 'Fides Generated Description for Table: cookies'
     data_categories: []
@@ -2829,6 +2817,8 @@ dataset:
     - name: property_id
       data_categories: [system.operations]
     - name: is_hash_migrated
+      data_categories: [system.operations]
+    - name: received_at
       data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'
@@ -3946,3 +3936,18 @@ dataset:
         data_categories: [system.operations]
       - name: question_index
         data_categories: [system.operations]
+  - name: encryption_keys
+    description: 'Store encrypted Data Encryption Keys'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: wrapped_dek
+      data_categories: [system.operations]
+    - name: kek_id_hash
+      data_categories: [system.operations]
+    - name: provider
+      data_categories: [system.operations]

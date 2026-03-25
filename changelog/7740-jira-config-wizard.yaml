@@ -1,0 +1,4 @@
+type: Added
+description: Added Jira ticket configuration wizard for setting up project, issue type, and templates
+pr: 7740
+labels: []

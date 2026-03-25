@@ -17,16 +17,12 @@ import {
 } from "common/table/v2";
 import {
   Button,
-  ChakraChevronDownIcon as ChevronDownIcon,
   ChakraFlex as Flex,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuItemOption as MenuItemOption,
-  ChakraMenuList as MenuList,
-  MoreIcon,
+  CheckOutlined,
+  Dropdown,
+  Icons,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikState } from "formik";
 import { debounce } from "lodash";
@@ -35,7 +31,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { ExportFormat } from "~/features/datamap/constants";
@@ -87,6 +82,10 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
+const checkIcon = (isSelected: boolean) => (
+  <CheckOutlined style={{ visibility: isSelected ? "visible" : "hidden" }} />
+);
+
 export const DatamapReportTable = ({
   onError,
 }: {
@@ -113,7 +112,7 @@ export const DatamapReportTable = ({
     setTotalPages,
     resetPageIndexToDefault,
   } = useServerSidePagination();
-  const toast = useToast({ id: "datamap-report-toast" });
+  const message = useMessage();
 
   const {
     isOpen: isFilterModalOpen,
@@ -433,10 +432,7 @@ export const DatamapReportTable = ({
         setColumnNameMapOverrides({});
         resetColumnNameForm({ values: {} });
       } catch (error: any) {
-        toast({
-          status: "error",
-          description: "There was a problem resetting the report.",
-        });
+        message.error("There was a problem resetting the report.");
       }
       return;
     }
@@ -484,15 +480,9 @@ export const DatamapReportTable = ({
         resetColumnNameForm({ values: columnNameMap });
       }
       setSavedCustomReportId(savedReport.id);
-      toast({
-        status: "success",
-        description: "Report applied successfully.",
-      });
+      message.success("Report applied successfully.");
     } catch (error: any) {
-      toast({
-        status: "error",
-        description: "There was a problem applying report.",
-      });
+      message.error("There was a problem applying report.");
     }
   };
 
@@ -569,49 +559,49 @@ export const DatamapReportTable = ({
                   }}
                 />
               )}
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  icon={<ChevronDownIcon />}
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: DATAMAP_GROUPING.SYSTEM_DATA_USE,
+                      label: "System",
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE),
+                    },
+                    {
+                      key: DATAMAP_GROUPING.DATA_USE_SYSTEM,
+                      label: "Data use",
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM),
+                    },
+                    {
+                      key: DATAMAP_GROUPING.SYSTEM_GROUP,
+                      label: getSystemGroupOptionName(),
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_GROUP === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP),
+                    },
+                  ],
+                }}
+                overlayClassName="group-by-menu-list"
+              >
+                <Button
+                  icon={<Icons.ChevronDown size={14} />}
                   iconPosition="end"
                   loading={groupChangeStarted}
                   data-testid="group-by-menu"
                 >
                   Group by {getMenuDisplayValue()}
-                </MenuButton>
-                <MenuList zIndex={11} data-testid="group-by-menu-list">
-                  <MenuItemOption
-                    onClick={() => {
-                      onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
-                    }}
-                    isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
-                    value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
-                    data-testid="group-by-system-data-use"
-                  >
-                    System
-                  </MenuItemOption>
-                  <MenuItemOption
-                    onClick={() => {
-                      onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
-                    }}
-                    isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
-                    value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
-                    data-testid="group-by-data-use-system"
-                  >
-                    Data use
-                  </MenuItemOption>
-                  <MenuItemOption
-                    onClick={() => {
-                      onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP);
-                    }}
-                    isChecked={DATAMAP_GROUPING.SYSTEM_GROUP === groupBy}
-                    value={DATAMAP_GROUPING.SYSTEM_GROUP}
-                    data-testid="group-by-system-group"
-                  >
-                    {getSystemGroupOptionName()}
-                  </MenuItemOption>
-                </MenuList>
-              </Menu>
+                </Button>
+              </Dropdown>
               <Button
                 data-testid="filter-multiple-systems-btn"
                 onClick={onFilterModalOpen}
@@ -622,31 +612,35 @@ export const DatamapReportTable = ({
                 aria-label="Export report"
                 data-testid="export-btn"
                 onClick={onExportReportOpen}
-                icon={<DownloadLightIcon ml="1.5px" />}
+                icon={<Icons.Download />}
               />
-              <Menu placement="bottom-end">
-                <MenuButton
-                  as={Button}
-                  icon={<MoreIcon className="rotate-90" />}
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: "edit-columns",
+                      label: (
+                        <span data-testid="edit-columns-btn">Edit columns</span>
+                      ),
+                      onClick: onColumnSettingsOpen,
+                    },
+                    {
+                      key: "rename-columns",
+                      label: "Rename columns",
+                      onClick: () => setIsRenamingColumns(true),
+                    },
+                  ],
+                }}
+                placement="bottomRight"
+                overlayClassName="more-menu-list"
+              >
+                <Button
+                  icon={<Icons.OverflowMenuVertical />}
                   data-testid="more-menu"
                   aria-label="More options"
                   className="w-6 gap-0"
                 />
-                <MenuList data-testid="more-menu-list">
-                  <MenuItem
-                    onClick={onColumnSettingsOpen}
-                    data-testid="edit-columns-btn"
-                  >
-                    Edit columns
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => setIsRenamingColumns(true)}
-                    data-testid="rename-columns-btn"
-                  >
-                    Rename columns
-                  </MenuItem>
-                </MenuList>
-              </Menu>
+              </Dropdown>
               {isRenamingColumns && (
                 <RenameColumnsButtons
                   columnNameMapOverrides={columnNameMapOverrides}

@@ -13,8 +13,9 @@ import {
   ChakraHeading as Heading,
   ChakraStack as Stack,
   ChakraText as Text,
-  GreenCheckCircleIcon,
+  Icons,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
@@ -259,7 +260,7 @@ export const usePrivacyDeclarationForm = ({
       ) : null}
       {!hideSaved && showSaved && !dirty && initialValues.data_use ? (
         <Text fontSize="sm" data-testid="saved-indicator">
-          <GreenCheckCircleIcon /> Saved
+          <Icons.CheckmarkFilled color={palette.FIDESUI_SUCCESS} /> Saved
         </Text>
       ) : null}
     </Box>

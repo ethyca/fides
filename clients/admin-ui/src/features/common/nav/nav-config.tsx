@@ -308,6 +308,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [], // Any authenticated user can access their own profile
       },
       {
+        title: "Role Management",
+        path: routes.RBAC_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaRbac",
+        scopes: [
+          // Only Owners can access Role Management - they have assign_owners scope
+          ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+        ],
+      },
+      {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
         scopes: [

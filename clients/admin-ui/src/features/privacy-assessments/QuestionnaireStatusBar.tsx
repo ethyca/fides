@@ -28,7 +28,7 @@ export const QuestionnaireStatusBar = ({
   return (
     <div className={classNames(styles.container, className)} {...props}>
       <Flex justify="space-between" align="center">
-        <Flex align="center" gap="middle">
+        <Flex align="center" gap="medium">
           <Flex align="center" gap="small">
             <Icons.CheckmarkFilled size={16} className={styles.checkIcon} />
             <Text strong size="sm">

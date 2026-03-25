@@ -3,16 +3,15 @@ import {
   ChakraCollapse as Collapse,
   ChakraText as Text,
   Flex,
+  Modal,
   Tooltip,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { isErrorResult } from "~/features/common/helpers";
-import FormModal from "~/features/common/modals/FormModal";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   TCFPublisherRestrictionRequest,
   TCFRestrictionType,
@@ -64,7 +63,7 @@ export const PurposeRestrictionFormModal = ({
   restrictionId,
   configurationId,
 }: PurposeRestrictionFormModalProps) => {
-  const toast = useToast();
+  const message = useMessage();
   const [createRestriction] = useCreatePublisherRestrictionMutation();
   const [updateRestriction] = useUpdatePublisherRestrictionMutation();
   const isPurposeFlexible = !(
@@ -195,29 +194,36 @@ export const PurposeRestrictionFormModal = ({
           restriction: request,
         });
         if (isErrorResult(result)) {
-          toast(errorToastParams("Failed to update restriction"));
+          message.error("Failed to update restriction");
           return;
         }
-        toast(successToastParams("Restriction updated successfully"));
+        message.success("Restriction updated successfully");
       } else {
         const result = await createRestriction({
           configuration_id: configurationId,
           restriction: requestWithPurposeId,
         });
         if (isErrorResult(result)) {
-          toast(errorToastParams("Failed to create restriction"));
+          message.error("Failed to create restriction");
           return;
         }
-        toast(successToastParams("Restriction created successfully"));
+        message.success("Restriction created successfully");
       }
       onClose();
     } catch (error) {
-      toast(errorToastParams("Failed to save restriction"));
+      message.error("Failed to save restriction");
     }
   };
 
   return (
-    <FormModal isOpen={isOpen} onClose={onClose} title="Edit restriction">
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      title="Edit restriction"
+      footer={null}
+    >
       <Formik
         initialValues={{
           ...initialValues,
@@ -320,6 +326,6 @@ export const PurposeRestrictionFormModal = ({
           </Form>
         )}
       </Formik>
-    </FormModal>
+    </Modal>
   );
 };

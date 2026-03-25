@@ -20,10 +20,11 @@ import getIntegrationTypeInfo, {
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
+import { useJiraAuthorization } from "~/features/integrations/hooks/useJiraAuthorization";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 const IntegrationBox = ({
   integration,
@@ -66,11 +67,22 @@ const IntegrationBox = ({
     integration?.saas_config?.type as SaasConnectionTypes,
   );
 
-  const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
+  const isJira = integration?.connection_type === ConnectionType.JIRA_TICKET;
+
+  const defaultAuth = useIntegrationAuthorization({
     connection: integration,
     connectionOption,
     testData,
   });
+
+  const jiraAuth = useJiraAuthorization({
+    connection: integration,
+    testData,
+  });
+
+  const { handleAuthorize, needsAuthorization } = isJira
+    ? jiraAuth
+    : defaultAuth;
 
   return (
     <Box
@@ -102,6 +114,7 @@ const IntegrationBox = ({
             <ConnectionStatusNotice
               testData={testData}
               connectionOption={connectionOption}
+              connectionType={integration?.connection_type}
             />
           ) : (
             <Text color="gray.700" fontSize="sm" fontWeight="semibold" mt={1}>
@@ -111,17 +124,15 @@ const IntegrationBox = ({
         </Flex>
         <Flex marginLeft="auto" gap={4} flexShrink={0}>
           {showDeleteButton && integration && (
-            <DeleteConnectionModal
-              showMenu={false}
-              connection_key={integration.key}
-            />
+            <DeleteConnectionModal connection_key={integration.key} />
           )}
           {showTestNotice && needsAuthorization && (
             <Button
               onClick={handleAuthorize}
+              loading={isJira ? jiraAuth.isLoading : undefined}
               data-testid="authorize-integration-btn"
             >
-              Authorize integration
+              {isJira ? "Authorize with Jira" : "Authorize integration"}
             </Button>
           )}
           {showTestNotice && !needsAuthorization && (

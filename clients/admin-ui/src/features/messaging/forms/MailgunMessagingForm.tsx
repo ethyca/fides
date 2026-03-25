@@ -5,21 +5,22 @@ import {
   ChakraHeading as Heading,
   ChakraHStack as HStack,
   Form,
-  GreenCheckCircleIcon,
+  Icons,
   Input,
   useMessage,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import { MailgunLogo } from "~/features/common/logos/MailgunLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import MailgunIcon from "~/features/messaging/icons/MailgunIcon";
 
 import { messagingProviders } from "../constants";
 import {
@@ -37,6 +38,7 @@ interface MailgunMessagingFormProps {
 
 const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
   const router = useRouter();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
@@ -50,8 +52,6 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
     useUpdateMessagingConfigurationByKeyMutation();
   const [updateMessagingSecrets] =
     useUpdateMessagingConfigurationSecretsByKeyMutation();
-
-  const message = useMessage();
 
   const isEditMode = !!configKey;
 
@@ -313,7 +313,7 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
             borderTopRadius={6}
           >
             <HStack>
-              <MailgunIcon />
+              <MailgunLogo />
               <Heading as="h3" size="xs">
                 Mailgun email messaging configuration
               </Heading>
@@ -369,7 +369,9 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <GreenCheckCircleIcon />
+                        <Icons.CheckmarkFilled
+                          color={palette.FIDESUI_SUCCESS}
+                        />
                       ) : undefined
                     }
                   >

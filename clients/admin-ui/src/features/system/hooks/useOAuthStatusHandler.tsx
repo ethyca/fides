@@ -1,8 +1,6 @@
-import { useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 interface UseOAuthStatusHandlerProps {
   setActiveTab: (tab: string) => void;
@@ -22,7 +20,7 @@ const useOAuthStatusHandler = ({
   setActiveTab,
 }: UseOAuthStatusHandlerProps) => {
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
 
   useEffect(() => {
     const { status } = router.query;
@@ -32,9 +30,9 @@ const useOAuthStatusHandler = ({
 
       // Show appropriate toast message
       if (status === "succeeded") {
-        toast(successToastParams(`Integration successfully authorized.`));
+        message.success("Integration successfully authorized.");
       } else {
-        toast(errorToastParams(`Failed to authorize integration.`));
+        message.error("Failed to authorize integration.");
       }
 
       // Single URL update: remove status query and add integrations hash
@@ -51,7 +49,7 @@ const useOAuthStatusHandler = ({
         { shallow: true },
       );
     }
-  }, [router.query, setActiveTab, router, toast]);
+  }, [router.query, setActiveTab, router, message]);
 };
 
 export default useOAuthStatusHandler;

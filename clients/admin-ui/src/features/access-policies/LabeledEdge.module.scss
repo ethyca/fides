@@ -1,0 +1,14 @@
+.labelWrapper {
+  position: absolute;
+  pointer-events: all;
+}
+
+.label {
+  font-size: var(--ant-font-size-sm);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--ant-border-radius);
+  background-color: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+  color: var(--ant-color-text-secondary);
+}

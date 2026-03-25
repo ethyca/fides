@@ -164,38 +164,8 @@ export type {
  */
 export { isNumeric as isChakraNumeric } from "@chakra-ui/utils";
 
-/**
- * @deprecated Chakra UI icons are deprecated and will be removed in a future release.
- * Please use Carbon icons (Icons.*) instead.
- */
-export {
-  ArrowBackIcon as ChakraArrowBackIcon,
-  ArrowDownIcon as ChakraArrowDownIcon,
-  ArrowForwardIcon as ChakraArrowForwardIcon,
-  ArrowUpIcon as ChakraArrowUpIcon,
-  BellIcon as ChakraBellIcon,
-  CheckCircleIcon as ChakraCheckCircleIcon,
-  CheckIcon as ChakraCheckIcon,
-  ChevronDownIcon as ChakraChevronDownIcon,
-  ChevronLeftIcon as ChakraChevronLeftIcon,
-  ChevronRightIcon as ChakraChevronRightIcon,
-  ChevronUpIcon as ChakraChevronUpIcon,
-  CloseIcon as ChakraCloseIcon,
-  DeleteIcon as ChakraDeleteIcon,
-  DragHandleIcon as ChakraDragHandleIcon,
-  EditIcon as ChakraEditIcon,
-  ExternalLinkIcon as ChakraExternalLinkIcon,
-  RepeatClockIcon as ChakraRepeatClockIcon,
-  RepeatIcon as ChakraRepeatIcon,
-  SmallAddIcon as ChakraSmallAddIcon,
-  SmallCloseIcon as ChakraSmallCloseIcon,
-  ViewOffIcon as ChakraViewOffIcon,
-  WarningTwoIcon as ChakraWarningTwoIcon,
-  // Icon utilities
-  createIcon as createChakraIcon,
-} from "@chakra-ui/icons";
-
 // Unmodified component exported directly from Ant Design
+export type { DisplayValueType } from "@rc-component/select/lib/interface";
 export type { ThemeConfig } from "antd/es";
 export type {
   FilterValue,
@@ -208,7 +178,6 @@ export type {
   CheckboxProps,
   CollapseProps,
   DatePickerProps,
-  DrawerProps,
   DropdownProps,
   FlexProps,
   FormInstance,
@@ -246,8 +215,6 @@ export {
   DatePicker,
   Descriptions,
   Divider,
-  Drawer,
-  Dropdown,
   Empty,
   Flex,
   Form,
@@ -258,6 +225,7 @@ export {
   Modal,
   notification,
   Pagination,
+  Popconfirm,
   Popover,
   Progress,
   Radio,
@@ -283,13 +251,13 @@ export type {
 export type { ListItemProps } from "antd/lib/list";
 export type { BaseOptionType, DefaultOptionType } from "antd/lib/select";
 export type { UploadChangeParam } from "antd/lib/upload";
-export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
 export type {
   CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
   CustomCardProps as CardProps,
+  DrawerProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
@@ -302,6 +270,8 @@ export {
   CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
+  CustomDrawer as Drawer,
+  CustomDropdown as Dropdown,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
@@ -330,23 +300,57 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
-export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export type {
+  AreaChartDataPoint,
+  AreaChartProps,
+  AreaChartSeries,
+} from "./components/charts/AreaChart";
+export { AreaChart } from "./components/charts/AreaChart";
+export type {
+  BarChartDataPoint,
+  BarChartProps,
+} from "./components/charts/BarChart";
+export { BarChart } from "./components/charts/BarChart";
+export type {
+  AntColorTokenKey,
+  BarSize,
+} from "./components/charts/chart-constants";
 export {
   CHART_ANIMATION,
   CHART_GRADIENT,
   CHART_STROKE,
   CHART_TYPOGRAPHY,
 } from "./components/charts/chart-constants";
+export {
+  DAY_MS,
+  formatTimestamp,
+  HOUR_MS,
+} from "./components/charts/chart-utils";
+export type { ChartGradientProps } from "./components/charts/ChartGradient";
+export { ChartGradient } from "./components/charts/ChartGradient";
 export type { ChartTextProps } from "./components/charts/ChartText";
 export { ChartText } from "./components/charts/ChartText";
+export type {
+  DonutChartProps,
+  DonutChartSegment,
+  DonutChartVariant,
+} from "./components/charts/DonutChart";
+export { DonutChart } from "./components/charts/DonutChart";
 export type {
   RadarChartDataPoint,
   RadarChartProps,
   RadarPointStatus,
 } from "./components/charts/RadarChart";
 export { RadarChart } from "./components/charts/RadarChart";
+export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
 export type { SparklineProps } from "./components/charts/Sparkline";
 export { Sparkline } from "./components/charts/Sparkline";
+export type {
+  StackedBarChartProps,
+  StackedBarSegment,
+} from "./components/charts/StackedBarChart";
+export { StackedBarChart } from "./components/charts/StackedBarChart";
+export { XAxisTick } from "./components/charts/XAxisTick";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
@@ -387,7 +391,6 @@ export const { Text, Title, Paragraph, Link } = CustomTypography;
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
-export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 export {
   CarryOutOutlined,
@@ -403,7 +406,7 @@ export {
  * prefixed icons from Carbon Icons
  * @example <Icons.download size={14} />
  */
-export * as Icons from "@carbon/icons-react";
+export * as Icons from "./icons/carbon";
 /* end prefixed icons */
 
 export {
@@ -413,6 +416,7 @@ export {
   useNotification,
 } from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
+export { getGlobalMessageApi } from "./lib/globalMessageApi";
 
 /**
  * Ant Design Theme System
@@ -429,10 +433,7 @@ export { theme as antTheme } from "antd";
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/chakra-base/checkbox-tree";
-export type { ColumnMetadata } from "./components/chakra-base/column-dropdown";
-export { ColumnDropdown } from "./components/chakra-base/column-dropdown";
 export { ConfirmationModal } from "./components/chakra-base/confirmation-modal";
-export { DataCategoryDropdown } from "./components/chakra-base/data-category-dropdown";
 export { ExampleComponent } from "./components/chakra-base/example-component";
 export { PrimaryLink, SecondaryLink } from "./components/chakra-base/links";
 export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-table";

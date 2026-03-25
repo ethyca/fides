@@ -1,5 +1,6 @@
 import { Alert, Button, Flex, Modal, Table, Typography } from "fidesui";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 import { useConsentBreakdownTable } from "./hooks/useConsentBreakdownTable";
@@ -26,7 +27,7 @@ export const ConsentBreakdownModal = ({
   return (
     <Modal
       title="Compliance issues"
-      width={768}
+      width={MODAL_SIZE.lg}
       open={isOpen}
       onCancel={onCancel}
       footer={[

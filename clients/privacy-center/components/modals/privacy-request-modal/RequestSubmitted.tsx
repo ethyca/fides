@@ -2,7 +2,7 @@ import { Flex, Image, Text } from "fidesui";
 import React from "react";
 
 const RequestSubmitted = () => (
-  <Flex gap="middle" align="center">
+  <Flex gap="medium" align="center">
     <Image
       src="/green-check.svg"
       alt="green-checkmark"

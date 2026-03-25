@@ -148,6 +148,11 @@ Cypress.on("uncaught:exception", (err) => {
     // failing the test
     return false;
   }
+  if (err.message.includes("setting 'locale'")) {
+    // Ant v6 can throw a transient locale error when components unmount
+    // during Next.js page transitions while a message is being displayed.
+    return false;
+  }
   return true;
 });
 

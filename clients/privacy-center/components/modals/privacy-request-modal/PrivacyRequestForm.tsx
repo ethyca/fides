@@ -59,7 +59,7 @@ const PrivacyRequestForm = ({
   }
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="medium">
       <Text type="secondary">{action.description}</Text>
       <Form
         onFinish={handleSubmit}
@@ -187,7 +187,7 @@ const PrivacyRequestForm = ({
               </Form.Item>
             ) : null;
           })}
-        <Flex justify="stretch" gap="middle">
+        <Flex justify="stretch" gap="medium">
           <Button type="default" variant="outlined" onClick={onExit} block>
             {action.cancelButtonText || "Cancel"}
           </Button>

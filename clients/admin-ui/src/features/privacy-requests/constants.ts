@@ -16,6 +16,7 @@ export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.DUPLICATE, "Duplicate"],
   [PrivacyRequestStatus.AWAITING_PRE_APPROVAL, "Awaiting external review"],
   [PrivacyRequestStatus.PRE_APPROVAL_NOT_ELIGIBLE, "Manual review required"],
+  [PrivacyRequestStatus.PENDING_EXTERNAL, "Pending external"],
 ]);
 
 export const SubjectRequestStatusOptions = [...SubjectRequestStatusMap].map(

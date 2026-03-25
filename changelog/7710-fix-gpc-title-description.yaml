@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed GPC title and description showing i18n keys instead of default values in the Privacy Center consent page.
+pr: 7710
+labels: []

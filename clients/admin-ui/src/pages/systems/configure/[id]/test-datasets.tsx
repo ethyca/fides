@@ -55,11 +55,11 @@ const TestDatasetPage: NextPage = () => {
           { title: "Test datasets" },
         ]}
       />
-      <Flex align="stretch" flex="1" gap="middle" vertical>
+      <Flex align="stretch" flex="1" gap="medium" vertical>
         <Flex
           align="stretch"
           flex="1"
-          gap="middle"
+          gap="medium"
           className="max-h-[60vh] min-h-0"
         >
           <EditorSection connectionKey={connectionKey} />

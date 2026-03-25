@@ -10,10 +10,10 @@ import {
 import {
   Button,
   ChakraBox as Box,
-  ChakraEditIcon as EditIcon,
   ChakraHStack as HStack,
   ChakraText as Text,
   ChakraVStack as VStack,
+  Icons,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -91,7 +91,7 @@ const DatasetDetailPage: NextPage = () => {
             <HStack spacing={0} data-testid={`collection-${collection.name}`}>
               <Button
                 size="small"
-                icon={<EditIcon />}
+                icon={<Icons.Edit />}
                 onClick={() => {
                   setSelectedCollectionForEditing(collection);
                   setIsEditingCollection(true);
