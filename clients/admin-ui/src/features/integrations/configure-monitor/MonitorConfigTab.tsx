@@ -1,6 +1,7 @@
 import {
   Button,
   Flex,
+  MonitorIcon,
   Table,
   Tooltip,
   Typography,
@@ -8,7 +9,6 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import { useMonitorConfigTable } from "~/features/integrations/hooks/useMonitorConfigTable";
 import {
