@@ -37,7 +37,10 @@ import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
+import {
+  PrivacyExperienceForm,
+  TCF_PLACEHOLDER_ID,
+} from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import {
@@ -140,7 +143,7 @@ const ConfigurePrivacyExperience = ({
     // Ignore placeholder TCF notice. It is used only as a UX cue that TCF purposes will always exist
     // eslint-disable-next-line no-param-reassign
     values.privacy_notice_ids = values.privacy_notice_ids?.filter(
-      (item) => item !== "tcf_purposes_placeholder",
+      (item) => item !== TCF_PLACEHOLDER_ID,
     );
     if (initialValues.tcf_configuration_id && !values.tcf_configuration_id) {
       // If the TCF configuration gets cleared, set the TCF configuration ID to null to remove it on the DB side
