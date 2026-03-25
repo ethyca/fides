@@ -211,7 +211,9 @@ export const StackedBarChart = ({
 
   // Compute YAxis width dynamically from the longest label
   const yAxisWidth = useMemo(() => {
-    if (sortedData.length === 0) return 80;
+    if (sortedData.length === 0) {
+      return 80;
+    }
     const longestLabel = sortedData.reduce(
       (max, entry) =>
         entry.category.length > max.length ? entry.category : max,
