@@ -42,7 +42,7 @@ export const DaysLeft = ({
       <div>
         <Tag color={color} variant="filled">
           <Tooltip title={formatDate(dayjs().add(daysLeft, "day").toDate())}>
-            <>{label}</>
+            {label}
           </Tooltip>
         </Tag>
       </div>
