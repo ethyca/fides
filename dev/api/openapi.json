@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.2b2.dev32+gadfbc7c2c"
+    "version": "2.81.2b2.dev33+g2296a858b"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -25497,6 +25497,21 @@
             "title": "Data Categories",
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
           },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to all collections in the Dataset."
+          },
           "fides_meta": {
             "anyOf": [
               {
@@ -25558,6 +25573,21 @@
             ],
             "title": "Data Categories",
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection."
+          },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to all fields in the collection."
           },
           "fields": {
             "items": {
@@ -25669,6 +25699,21 @@
             ],
             "title": "Data Categories",
             "description": "Arrays of Data Categories, identified by `fides_key`, that applies to this field."
+          },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to this field."
           },
           "fides_meta": {
             "anyOf": [
@@ -25871,6 +25916,21 @@
             ],
             "title": "Data Categories",
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
+          },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to all collections in the Dataset."
           },
           "fides_meta": {
             "anyOf": [
