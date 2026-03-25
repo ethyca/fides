@@ -1102,7 +1102,7 @@ requires-dist = [
     { name = "fastapi", extras = ["all"], specifier = "==0.123.3" },
     { name = "fastapi-cli", specifier = "~=0.0.16" },
     { name = "fastapi-pagination", extras = ["sqlalchemy"], specifier = "==0.15.0" },
-    { name = "fideslang", specifier = "==3.1.3" }
+    { name = "fideslang", specifier = "==3.1.3" },
     { name = "filelock", specifier = "~=3.20.0" },
     { name = "firebase-admin", specifier = "==5.3.0" },
     { name = "flower", specifier = "==2.0.1" },
