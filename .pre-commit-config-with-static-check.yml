@@ -50,16 +50,9 @@ repos:
         language: system
         types: [python]
 
-      - id: npm-run-format
-        name: npm-run-format
-        description: Check for frontend linting errors
-        entry: sh -c 'cd clients; npm run format'
-        language: system
-        types: [javascript, jsx, ts, tsx]
-
-      - id: npm-run-lint
-        name: npm-run-lint
-        description: Check for frontend linting errors
-        entry: sh -c 'cd clients; npm run lint:fix'
+      - id: npm-run-check
+        name: npm-run-check
+        description: Run lint, format, and typecheck for frontend
+        entry: sh -c 'cd clients; npm run check'
         language: system
         types: [javascript, jsx, ts, tsx]
