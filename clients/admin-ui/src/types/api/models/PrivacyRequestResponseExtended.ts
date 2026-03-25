@@ -32,11 +32,11 @@ export type PrivacyRequestResponseExtended = {
   paused_at?: string | null;
   status: PrivacyRequestStatus;
   external_id?: string | null;
-  identity?: Record<
+  identity?: Record<string, string | IdentityValue | null> | null;
+  custom_privacy_request_fields?: Record<
     string,
-    string | IdentityValue | null
+    fides__api__schemas__redis_cache__CustomPrivacyRequestField
   > | null;
-  custom_privacy_request_fields?: Record<string, fides__api__schemas__redis_cache__CustomPrivacyRequestField> | null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
   resume_endpoint?: string | null;
