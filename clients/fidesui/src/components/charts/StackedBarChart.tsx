@@ -161,6 +161,62 @@ const ClickableTick = ({
   );
 };
 
+/** Rounded rect that only rounds the outermost corners of a stacked bar row. */
+const RoundedBarCell = ({
+  x = 0,
+  y = 0,
+  width = 0,
+  height = 0,
+  fill,
+  radius: r,
+  segmentKey,
+  segmentKeys,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  fill?: string;
+  radius: number;
+  segmentKey: string;
+  segmentKeys: string[];
+  payload?: ChartEntry;
+}) => {
+  if (width <= 0 || height <= 0) {
+    return null;
+  }
+
+  const firstKey = segmentKeys.find((k) => (payload?.[k] as number) > 0);
+  const lastKey = [...segmentKeys]
+    .reverse()
+    .find((k) => (payload?.[k] as number) > 0);
+  const isFirst = segmentKey === firstKey;
+  const isLast = segmentKey === lastKey;
+
+  const tl = isFirst ? r : 0;
+  const bl = isFirst ? r : 0;
+  const tr = isLast ? r : 0;
+  const br = isLast ? r : 0;
+
+  const d = [
+    `M${x + tl},${y}`,
+    `H${x + width - tr}`,
+    tr ? `A${tr},${tr},0,0,1,${x + width},${y + tr}` : `H${x + width}`,
+    `V${y + height - br}`,
+    br
+      ? `A${br},${br},0,0,1,${x + width - br},${y + height}`
+      : `V${y + height}`,
+    `H${x + bl}`,
+    bl ? `A${bl},${bl},0,0,1,${x},${y + height - bl}` : `H${x}`,
+    `V${y + tl}`,
+    tl ? `A${tl},${tl},0,0,1,${x + tl},${y}` : `V${y}`,
+    "Z",
+  ].join(" ");
+
+  return <path d={d} fill={fill} />;
+};
+
 export const StackedBarChart = ({
   data,
   segments,
@@ -170,8 +226,8 @@ export const StackedBarChart = ({
   const { token } = theme.useToken();
   const animationActive = useChartAnimation(animationDuration);
 
-  const barHeight = token.sizeLG;
-  const rowGap = token.sizeXS;
+  const barHeight = token.sizeSM;
+  const rowGap = token.sizeSM;
 
   const colorMap = useMemo(
     () =>
@@ -252,8 +308,14 @@ export const StackedBarChart = ({
             isAnimationActive={animationDuration > 0 && animationActive}
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
-            radius={0}
             fill={colorMap[segment.key]}
+            shape={
+              <RoundedBarCell
+                radius={token.borderRadiusSM}
+                segmentKey={segment.key}
+                segmentKeys={segments.map((s) => s.key)}
+              />
+            }
           />
         ))}
       </BarChart>

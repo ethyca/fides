@@ -1,5 +1,14 @@
 import type { RadarChartDataPoint } from "fidesui";
-import { Alert, Card, Flex, Icons, RadarChart, Statistic, Tag } from "fidesui";
+import {
+  Alert,
+  Card,
+  Flex,
+  Icons,
+  RadarChart,
+  SparkleIcon,
+  Statistic,
+  Tag,
+} from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { BAND_CONFIG, BAND_STATUS } from "~/features/dashboard/constants";
@@ -21,15 +30,7 @@ function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
   return <Icons.ArrowUp size={12} />;
 }
 
-function getPostureAlertType(score: number): "error" | "warning" | "success" {
-  if (score < 40) {
-    return "error";
-  }
-  if (score < 80) {
-    return "warning";
-  }
-  return "success";
-}
+
 
 export const PostureCard = () => {
   const { data: posture, isLoading } = useGetDashboardPostureQuery();
@@ -138,7 +139,9 @@ export const PostureCard = () => {
       </div>
       {posture?.agent_annotation && (
         <Alert
-          type={getPostureAlertType(postureScore)}
+          type="info"
+          showIcon
+          icon={<SparkleIcon size={14} />}
           message={posture.agent_annotation}
           className={styles.alertSm}
         />

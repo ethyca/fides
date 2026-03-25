@@ -1,16 +1,16 @@
 import {
-  Avatar,
   Button,
   Card,
   CheckOutlined,
+  CUSTOM_TAG_COLOR,
   Flex,
-  Icons,
   List,
   Tag,
   Text,
 } from "fidesui";
+import dayjs from "dayjs";
 import NextLink from "next/link";
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   ACTION_CTA,
@@ -20,20 +20,34 @@ import {
 } from "~/features/dashboard/constants";
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 import type { PriorityAction } from "~/features/dashboard/types";
-import { ActionType } from "~/features/dashboard/types";
+import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./PriorityActionsCard.module.scss";
 import { clearDimensionFilter, useDimensionFilter } from "./useDimensionFilter";
 
-const ACTION_TYPE_ICON: Record<ActionType, ReactNode> = {
-  [ActionType.CLASSIFICATION_REVIEW]: <Icons.Tag size={16} />,
-  [ActionType.DSR_ACTION]: <Icons.Time size={16} />,
-  [ActionType.SYSTEM_REVIEW]: <Icons.DataBase size={16} />,
-  [ActionType.STEWARD_ASSIGNMENT]: <Icons.UserAvatar size={16} />,
-  [ActionType.CONSENT_ANOMALY]: <Icons.WarningAlt size={16} />,
-  [ActionType.POLICY_VIOLATION]: <Icons.Policy size={16} />,
-  [ActionType.PIA_UPDATE]: <Icons.Document size={16} />,
+const SEVERITY_TAG_COLOR: Record<string, CUSTOM_TAG_COLOR> = {
+  [ActionSeverity.CRITICAL]: CUSTOM_TAG_COLOR.ERROR,
+  [ActionSeverity.HIGH]: CUSTOM_TAG_COLOR.WARNING,
+  [ActionSeverity.MEDIUM]: CUSTOM_TAG_COLOR.DEFAULT,
+  [ActionSeverity.LOW]: CUSTOM_TAG_COLOR.DEFAULT,
 };
+
+function getDaysRemaining(dueDate: string | null): {
+  label: string;
+  color: CUSTOM_TAG_COLOR;
+} | null {
+  if (!dueDate) {
+    return null;
+  }
+  const days = dayjs(dueDate).diff(dayjs(), "day");
+  if (days < 0) {
+    return { label: `${Math.abs(days)}d overdue`, color: CUSTOM_TAG_COLOR.ERROR };
+  }
+  if (days <= 3) {
+    return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.WARNING };
+  }
+  return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.DEFAULT };
+}
 
 export const PriorityActionsCard = () => {
   const dimensionFilter = useDimensionFilter();
@@ -110,6 +124,7 @@ export const PriorityActionsCard = () => {
         size="small"
         renderItem={(action: PriorityAction) => {
           const cta = ACTION_CTA[action.type];
+          const daysInfo = getDaysRemaining(action.due_date);
           return (
             <List.Item
               key={action.id}
@@ -124,15 +139,22 @@ export const PriorityActionsCard = () => {
               ]}
             >
               <List.Item.Meta
-                avatar={
-                  <Avatar
-                    size={32}
-                    icon={ACTION_TYPE_ICON[action.type]}
-                    className={styles.actionIcon}
-                  />
+                title={
+                  <Flex gap={6} align="center">
+                    {action.title}
+                    <Tag color={SEVERITY_TAG_COLOR[action.severity]}>
+                      {action.severity}
+                    </Tag>
+                    {daysInfo && (
+                      <Tag color={daysInfo.color}>{daysInfo.label}</Tag>
+                    )}
+                  </Flex>
                 }
-                title={action.title}
-                description={action.message}
+                description={
+                  <Text type="secondary" ellipsis={{ tooltip: true }}>
+                    {action.message}
+                  </Text>
+                }
               />
             </List.Item>
           );

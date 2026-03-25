@@ -1,30 +1,21 @@
-import classNames from "classnames";
-import { Alert, Flex } from "fidesui";
+import { Alert, Flex, SparkleIcon } from "fidesui";
 import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { ACTION_CTA } from "~/features/dashboard/constants";
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
-import type { QuickAction } from "~/features/dashboard/types";
 import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
 
 const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
 
-function getAlertType(
-  quickActions: QuickAction[],
-): "error" | "warning" | "info" {
-  const has = (severity: ActionSeverity) =>
-    quickActions.some((action) => action.severity === severity);
-  if (has(ActionSeverity.CRITICAL) || has(ActionSeverity.HIGH)) {
-    return "error";
-  }
-  if (has(ActionSeverity.MEDIUM)) {
-    return "warning";
-  }
-  return "info";
-}
+const SEVERITY_STYLE: Record<string, string> = {
+  [ActionSeverity.CRITICAL]: styles.error,
+  [ActionSeverity.HIGH]: styles.error,
+  [ActionSeverity.MEDIUM]: styles.warning,
+  [ActionSeverity.LOW]: styles.info,
+};
 
 export const AgentBriefingBanner = () => {
   const { data: briefing } = useGetAgentBriefingQuery();
@@ -46,11 +37,12 @@ export const AgentBriefingBanner = () => {
   }
 
   const { briefing: text, quick_actions: quickActions } = briefing;
-  const alertType = getAlertType(quickActions);
 
   return (
     <Alert
-      type={alertType}
+      type="info"
+      showIcon
+      icon={<SparkleIcon size={14} />}
       closable
       onClose={dismiss}
       message={
@@ -66,10 +58,7 @@ export const AgentBriefingBanner = () => {
                 <NextLink
                   key={`${action.action_type}-${action.label}`}
                   href={cta.route(action.action_data)}
-                  className={classNames(
-                    styles.quickActionLink,
-                    styles[alertType],
-                  )}
+                  className={`${styles.quickActionLink} ${SEVERITY_STYLE[action.severity] ?? styles.info}`}
                 >
                   {action.label}
                 </NextLink>

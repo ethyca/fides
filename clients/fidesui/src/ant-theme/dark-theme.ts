@@ -43,6 +43,18 @@ export const darkAntTheme: ThemeConfig = {
   },
   components: {
     ...defaultAntTheme.components,
+    Alert: {
+      ...defaultAntTheme.components?.Alert,
+      colorInfo: palette.FIDESUI_CORINTH,
+      colorInfoBg: generate(palette.FIDESUI_MINOS, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[1],
+      colorInfoBorder: generate(palette.FIDESUI_MINOS, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[3],
+    },
     Layout: {
       bodyBg: palette.FIDESUI_BG_MINOS,
     },
