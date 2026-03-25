@@ -1102,7 +1102,7 @@ requires-dist = [
     { name = "fastapi", extras = ["all"], specifier = "==0.123.3" },
     { name = "fastapi-cli", specifier = "~=0.0.16" },
     { name = "fastapi-pagination", extras = ["sqlalchemy"], specifier = "==0.15.0" },
-    { name = "fideslang", specifier = "==3.1.4a1" },
+    { name = "fideslang", specifier = "==3.1.3" },
     { name = "filelock", specifier = "~=3.20.0" },
     { name = "firebase-admin", specifier = "==5.3.0" },
     { name = "flower", specifier = "==2.0.1" },
@@ -1400,16 +1400,16 @@ wheels = [
 
 [[package]]
 name = "fideslang"
-version = "3.1.4a1"
+version = "3.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/25/f40b2357daf0ebefa234b301a0c33154ea3f76030b82dffa5b39f5e44067/fideslang-3.1.4a1.tar.gz", hash = "sha256:d03f07f4a83fa3ef733c17d2e4891611beec9598288a17e2371403240b5412c4", size = 201457, upload-time = "2025-12-18T02:01:27.318Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/b3/7f7867a074975af22b4f48f19fac52ef1eda362cef74ea00285bc73324d2/fideslang-3.1.3.tar.gz", hash = "sha256:e1a1b377da21b7521df3aeacaadd0c19c3f6367d65a5f97291f9aefcf498fed2", size = 201399, upload-time = "2026-03-25T17:36:28.501Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/12/9563420acabd163519bac3a735ea9776ed2c0e87463742c5a3626045509f/fideslang-3.1.4a1-py3-none-any.whl", hash = "sha256:0f82282593a6ebcef0965e66b9296fbf89a42b2177e77a8252ee755f18013813", size = 47723, upload-time = "2025-12-18T02:01:25.959Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/3a/8882bada1bf5c65909e5db43bdebcf57db9bded8677a4129b4a1fe382a7a/fideslang-3.1.3-py3-none-any.whl", hash = "sha256:6741f88b05c924beb103a1a2cd742f64749145f5fe706dcd2b150fafa9cf6365", size = 47592, upload-time = "2026-03-25T17:36:27.121Z" },
 ]
 
 [[package]]

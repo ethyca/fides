@@ -2,9 +2,17 @@ import { Icons } from "fidesui";
 import { ReactNode } from "react";
 
 import { FlagNames } from "~/features/common/features";
+import { NOTIFICATION_TAB_ITEMS } from "~/features/common/NotificationTabs";
+import { ACTION_CENTER_TAB_ITEMS } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { PRIVACY_REQUEST_TAB_ITEMS } from "~/features/privacy-requests/hooks/usePrivacyRequestTabs";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import * as routes from "./routes";
+
+export interface NavConfigTab {
+  title: string;
+  path: string;
+}
 
 export interface NavConfigRoute {
   title?: string;
@@ -24,6 +32,8 @@ export interface NavConfigRoute {
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
   routes?: NavConfigRoute[];
+  /** Tabs within this page that should appear in search */
+  tabs?: NavConfigTab[];
 }
 
 export interface NavConfigGroup {
@@ -54,6 +64,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
+        tabs: ACTION_CENTER_TAB_ITEMS,
       },
       {
         title: "Data catalog",
@@ -126,9 +137,10 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
           ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
+        tabs: PRIVACY_REQUEST_TAB_ITEMS,
       },
       {
-        title: "Policies",
+        title: "DSR policies",
         path: routes.POLICIES_ROUTE,
         requiresFlag: "policies",
         scopes: [ScopeRegistryEnum.POLICY_READ],
@@ -211,6 +223,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.DIGEST_CONFIG_READ,
           ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
         ],
+        tabs: NOTIFICATION_TAB_ITEMS,
       },
       {
         title: "Custom fields",
@@ -296,6 +309,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+        tabs: [
+          {
+            title: "Redaction patterns",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
+          {
+            title: "Duplicate detection",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
+        ],
       },
       {
         title: "Users",
@@ -378,23 +401,23 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     icon: <Icons.Code />,
     routes: [
       {
-        title: "Prompt Explorer",
+        title: "Prompt explorer",
         path: routes.PROMPT_EXPLORER_ROUTE,
         scopes: [ScopeRegistryEnum.DEVELOPER_READ],
         requiresPlus: true,
       },
       {
-        title: "Test Monitors",
+        title: "Test monitors",
         path: routes.TEST_MONITORS_ROUTE,
         scopes: [ScopeRegistryEnum.DEVELOPER_READ],
       },
       {
-        title: "Ant Design POC",
+        title: "Ant design POC",
         path: routes.ANT_POC_ROUTE,
         scopes: [],
       },
       {
-        title: "Fides JS Docs",
+        title: "Fides JS docs",
         path: routes.FIDES_JS_DOCS,
         scopes: [],
       },
@@ -404,12 +427,7 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         scopes: [],
       },
       {
-        title: "Table Migration POC",
-        path: routes.TABLE_MIGRATION_POC_ROUTE,
-        scopes: [],
-      },
-      {
-        title: "Error Test",
+        title: "Error test",
         path: routes.ERRORS_POC_ROUTE,
         scopes: [],
       },
@@ -423,6 +441,7 @@ export interface NavGroupChild {
   exact?: boolean;
   hidden?: boolean;
   children: Array<NavGroupChild>;
+  tabs?: NavConfigTab[];
 }
 
 export interface NavGroup {
@@ -580,6 +599,7 @@ const configureNavRoute = ({
     exact: route.exact,
     hidden: route.hidden,
     children,
+    tabs: route.tabs,
   };
 
   return groupChild;
