@@ -13,7 +13,7 @@ class DashboardSnapshot(Base):
     data; a future Celery beat task will append daily snapshots.
     """
 
-    __tablename__ = "dashboard_snapshot"
+    __tablename__ = "dashboard_snapshot"  # type: ignore[assignment]
 
     snapshot_date = Column(Date, nullable=False, index=True)
     metric_key = Column(String, nullable=False, index=True)

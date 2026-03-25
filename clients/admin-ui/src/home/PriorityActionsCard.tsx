@@ -139,6 +139,7 @@ export const PriorityActionsCard = () => {
                 title={action.title}
                 description={
                   action.action_data?.status &&
+                  typeof action.action_data.status === "string" &&
                   action.action_data.status in statusPropMap ? (
                     <Flex vertical gap={2}>
                       <Flex gap={4} align="center">

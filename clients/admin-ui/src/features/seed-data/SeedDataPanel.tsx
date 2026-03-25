@@ -41,16 +41,17 @@ const SEED_SCENARIOS: SeedScenario[] = [
   },
 ];
 
-const STATUS_COLORS: Record<string, string> = {
+const STATUS_COLORS = {
   pending: "default",
   in_progress: "processing",
   complete: "success",
   skipped: "warning",
   error: "error",
-};
+} as const;
 
 const StepStatusTag = ({ status }: { status: SeedStepStatus }) => {
-  const color = STATUS_COLORS[status.status] ?? "default";
+  const color =
+    STATUS_COLORS[status.status as keyof typeof STATUS_COLORS] ?? "default";
   const style = color === "processing" ? { color: "white" } : undefined;
   return (
     <Tag color={color} style={style}>

@@ -86,8 +86,8 @@ const seedDataApi = baseApi.injectEndpoints({
             tags.push(...SEED_TASK_INVALIDATION_TAGS[key]);
           }
         });
-        // Deduplicate
-        return [...new Set(tags)];
+        // Deduplicate and cast to satisfy RTK Query's TagDescription type
+        return [...new Set(tags)] as typeof tags;
       },
     }),
     getSeedStatus: build.query<SeedStatusResponse, string>({
