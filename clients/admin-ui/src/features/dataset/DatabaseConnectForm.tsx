@@ -3,7 +3,7 @@ import {
   ChakraBox as Box,
   ChakraText as Text,
   ChakraVStack as VStack,
-  useChakraToast as useToast,
+  useMessage,
   useModal,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -15,7 +15,6 @@ import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
@@ -47,7 +46,7 @@ const DatabaseConnectForm = () => {
     useCreateClassifyInstanceMutation();
   const isLoading = isGenerating || isCreating || isClassifying;
 
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const features = useFeatures();
   const dispatch = useDispatch();
@@ -167,7 +166,7 @@ const DatabaseConnectForm = () => {
   const doSubmit = async (values: FormValues) => {
     const generateResult = await generate(values);
     if ("error" in generateResult) {
-      toast(errorToastParams(generateResult.error));
+      message.error(generateResult.error);
       return;
     }
 
@@ -178,15 +177,13 @@ const DatabaseConnectForm = () => {
     const createResult =
       createResults.find((result) => "error" in result) ?? createResults[0];
     if ("error" in createResult) {
-      toast(errorToastParams(createResult.error));
+      message.error(createResult.error);
       return;
     }
 
     // Default generate flow:
     if (!values.classify) {
-      toast(
-        successToastParams(`Generated ${createResult.dataset.name} dataset`),
-      );
+      message.success(`Generated ${createResult.dataset.name} dataset`);
       router.push({
         pathname: DATASET_DETAIL_ROUTE,
         query: { datasetId: createResult.dataset.fides_key },
@@ -200,11 +197,11 @@ const DatabaseConnectForm = () => {
       datasets: generateResult.datasets,
     });
     if ("error" in classifyResult) {
-      toast(errorToastParams(classifyResult.error));
+      message.error(classifyResult.error);
       return;
     }
 
-    toast(successToastParams(`Generate and classify are now in progress`));
+    message.success(`Generate and classify are now in progress`);
     dispatch(setActiveDatasetFidesKey(createResult.dataset.fides_key));
     router.push(`/dataset`);
   };

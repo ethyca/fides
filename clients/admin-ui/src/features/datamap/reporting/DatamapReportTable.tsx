@@ -23,7 +23,7 @@ import {
   Icons,
   MoreIcon,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikState } from "formik";
 import { debounce } from "lodash";
@@ -114,7 +114,7 @@ export const DatamapReportTable = ({
     setTotalPages,
     resetPageIndexToDefault,
   } = useServerSidePagination();
-  const toast = useToast({ id: "datamap-report-toast" });
+  const message = useMessage();
 
   const {
     isOpen: isFilterModalOpen,
@@ -434,10 +434,7 @@ export const DatamapReportTable = ({
         setColumnNameMapOverrides({});
         resetColumnNameForm({ values: {} });
       } catch (error: any) {
-        toast({
-          status: "error",
-          description: "There was a problem resetting the report.",
-        });
+        message.error("There was a problem resetting the report.");
       }
       return;
     }
@@ -485,15 +482,9 @@ export const DatamapReportTable = ({
         resetColumnNameForm({ values: columnNameMap });
       }
       setSavedCustomReportId(savedReport.id);
-      toast({
-        status: "success",
-        description: "Report applied successfully.",
-      });
+      message.success("Report applied successfully.");
     } catch (error: any) {
-      toast({
-        status: "error",
-        description: "There was a problem applying report.",
-      });
+      message.error("There was a problem applying report.");
     }
   };
 

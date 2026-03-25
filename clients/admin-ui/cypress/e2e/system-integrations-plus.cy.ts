@@ -111,7 +111,7 @@ describe("System integrations", () => {
           expect(interception.request.body).to.deep.equal(expected);
         });
       });
-      cy.getByTestId("toast-success-msg").should("exist");
+      cy.shouldShowMessage("success");
     });
   });
 });

@@ -191,6 +191,10 @@ class ConnectionConfig(Base):
     description = Column(String, index=True, nullable=True)
     connection_type = Column(Enum(ConnectionType), nullable=False)
     access = Column(Enum(AccessLevel), nullable=False)
+    # NOTE: fidesplus registers SQLAlchemy attribute events on this column
+    # for cross-connection credential sync (Jira SaaS → jira_ticket).
+    # Avoid bulk/raw SQL updates to secrets; use ORM instance-level updates
+    # to ensure events fire. See fidesplus/jira/jira_credential_sync.py
     secrets = Column(
         MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
@@ -296,6 +300,9 @@ class ConnectionConfig(Base):
     @property
     def authorized(self) -> bool:
         """Returns True if the connection config has an access token, used for OAuth2 connections"""
+
+        if self.connection_type == ConnectionType.jira_ticket:
+            return bool(self.secrets and "access_token" in self.secrets)
 
         saas_config = self.get_saas_config()
         if not saas_config:

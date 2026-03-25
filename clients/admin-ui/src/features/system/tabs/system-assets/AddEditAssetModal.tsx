@@ -1,10 +1,4 @@
-import {
-  Button,
-  ChakraText as Text,
-  Flex,
-  Modal,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, ChakraText as Text, Flex, Modal, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
@@ -16,7 +10,6 @@ import {
   isErrorResult,
 } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddSystemAssetMutation,
   useUpdateSystemAssetsMutation,
@@ -76,7 +69,7 @@ const AddEditAssetModal = ({
     useAddSystemAssetMutation();
   const [updateSystemAsset, { isLoading: updateIsLoading }] =
     useUpdateSystemAssetsMutation();
-  const toast = useToast();
+  const message = useMessage();
 
   const handleCreateNew = async (values: Asset) => {
     const result = await addSystemAsset({ systemKey, asset: values });
@@ -85,9 +78,9 @@ const AddEditAssetModal = ({
         result.error,
         "An unexpected error occurred while saving this asset. Please try again.",
       );
-      toast(errorToastParams(errorMsg));
+      message.error(errorMsg);
     } else {
-      toast(successToastParams("Asset added successfully"));
+      message.success("Asset added successfully");
       onClose();
     }
   };
@@ -99,9 +92,9 @@ const AddEditAssetModal = ({
         result.error,
         "An unexpected error occurred while saving this asset. Please try again.",
       );
-      toast(errorToastParams(errorMsg));
+      message.error(errorMsg);
     } else {
-      toast(successToastParams("Asset updated successfully"));
+      message.success("Asset updated successfully");
       onClose();
     }
   };
