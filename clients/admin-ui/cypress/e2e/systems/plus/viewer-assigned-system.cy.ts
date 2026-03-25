@@ -21,6 +21,7 @@ import { RoleRegistryEnum } from "~/types/api";
 describe("ENG-3137: Viewer with assigned system should be able to edit", () => {
   beforeEach(() => {
     cy.login();
+    cy.overrideFeatureFlag("alphaRbac", true);
     stubSystemCrud();
     stubTaxonomyEntities();
     stubPlus(true);
