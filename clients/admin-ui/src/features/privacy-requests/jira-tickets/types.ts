@@ -2,6 +2,7 @@ export interface JiraTicketResult {
   ticket_id: string;
   /** ManualTaskInstance ID — used as the `instance_id` path param for retry/refresh. */
   instance_id: string;
+  instance_status: string | null;
   ticket_key: string;
   ticket_url: string;
   status: string;

@@ -72,7 +72,7 @@ const JiraTicketRow = ({
           icon={<Icons.Undo />}
           onClick={onRetry}
           loading={isRetrying}
-          disabled={isRefreshing}
+          disabled={ticket.instance_status !== "failed" || isRefreshing}
           data-testid={`jira-ticket-retry-${ticket.ticket_key}`}
           aria-label="Retry ticket creation"
         />
