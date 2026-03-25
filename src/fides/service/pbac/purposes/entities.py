@@ -6,8 +6,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from fides.api.models.data_purpose import (
-        DataPurpose,  # type: ignore[import-not-found]
+    from fides.api.models.data_purpose import (  # type: ignore[import-not-found]
+        DataPurpose,
     )
 
 
