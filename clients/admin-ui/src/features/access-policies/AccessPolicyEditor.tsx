@@ -19,9 +19,9 @@ import {
   Flex,
   Icons,
   Popconfirm,
-  Radio,
   SelectProps,
   Space,
+  Tabs,
   useMessage,
 } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -919,64 +919,66 @@ const AccessPolicyEditor = ({
         }
       />
 
-      <Flex vertical gap="middle">
-        <Radio.Group
-          value={mode}
-          onChange={(e) => handleModeChange(e.target.value)}
-          optionType="button"
-          buttonStyle="solid"
-          options={[
-            { label: "Builder", value: EditorMode.Builder },
-            ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
-              ? [{ label: "Split (dev only)", value: EditorMode.Split }]
-              : []),
-            { label: "Code", value: EditorMode.Code },
-          ]}
-          data-testid="mode-toggle"
-        />
-
-        {mode === EditorMode.Code && (
-          <Editor
-            defaultLanguage="yaml"
-            value={yamlValue}
-            height="calc(100vh - 220px)"
-            onChange={(val) => setYamlValue(val ?? "")}
-            options={{
-              fontFamily: "Menlo",
-              fontSize: 13,
-              minimap: { enabled: false },
-            }}
-            theme="light"
-          />
-        )}
-
-        {mode === EditorMode.Builder && (
-          <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
-        )}
-
-        {mode === EditorMode.Split && (
-          <Flex gap="middle">
-            <div style={{ flex: "0 0 60%" }}>
-              <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
-            </div>
-            <div style={{ flex: "0 0 calc(40% - 8px)" }}>
+      <Tabs
+        activeKey={mode}
+        onChange={(key) => handleModeChange(key as EditorMode)}
+        data-testid="mode-toggle"
+        items={[
+          {
+            key: EditorMode.Builder,
+            label: "Builder",
+            children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
+          },
+          ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
+            ? [
+                {
+                  key: EditorMode.Split,
+                  label: "Split (dev only)",
+                  children: (
+                    <Flex gap="middle">
+                      <div style={{ flex: "0 0 60%" }}>
+                        <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
+                      </div>
+                      <div style={{ flex: "0 0 calc(40% - 8px)" }}>
+                        <Editor
+                          defaultLanguage="yaml"
+                          value={yamlValue}
+                          height="calc(100vh - 220px)"
+                          options={{
+                            fontFamily: "Menlo",
+                            fontSize: 13,
+                            minimap: { enabled: false },
+                            readOnly: true,
+                            domReadOnly: true,
+                          }}
+                          theme="light"
+                        />
+                      </div>
+                    </Flex>
+                  ),
+                },
+              ]
+            : []),
+          {
+            key: EditorMode.Code,
+            label: "Code",
+            children: (
               <Editor
                 defaultLanguage="yaml"
                 value={yamlValue}
                 height="calc(100vh - 220px)"
+                onChange={(val) => setYamlValue(val ?? "")}
                 options={{
                   fontFamily: "Menlo",
                   fontSize: 13,
                   minimap: { enabled: false },
-                  readOnly: true,
-                  domReadOnly: true,
                 }}
                 theme="light"
               />
-            </div>
-          </Flex>
-        )}
-      </Flex>
+            ),
+          },
+        ]}
+      />
     </Layout>
   );
 };
