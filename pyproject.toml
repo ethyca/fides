@@ -31,7 +31,7 @@ dependencies = [
     "aiohappyeyeballs~=2.6.1",
     "alembic==1.8.1",
     "anyascii==0.3.2",
-    "aiohttp==3.12.15",
+    "aiohttp==3.13.3",
     "anyio==3.7.1",
     "asyncpg==0.30.0",
     "attrs~=25.4.0",
