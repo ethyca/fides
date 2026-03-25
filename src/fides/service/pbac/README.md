@@ -121,7 +121,8 @@ The system resolves who is running a query by matching the user identity against
 
 1. **contact_email** -- exact match on the consumer's contact email
 2. **external_id** -- match on the consumer's external identifier (group name, role ID, etc.)
-3. **members** -- match if the user email appears in the consumer's members list
+
+> **Note:** Members-based resolution (matching by members list) is not yet implemented in the OSS path. The `RedisIdentityResolver` currently supports steps 1 and 2 only.
 
 If no consumer matches, the user is marked as "unresolved" with no declared purposes, which means all dataset accesses are violations.
 

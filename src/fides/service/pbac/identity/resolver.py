@@ -10,6 +10,7 @@ from typing import Optional
 
 from loguru import logger
 
+from fides.api.util.cache import get_cache
 from fides.service.pbac.consumers.entities import DataConsumerEntity
 from fides.service.pbac.consumers.repository import DataConsumerRedisRepository
 from fides.service.pbac.purposes.repository import DataPurposeRedisRepository
@@ -106,8 +107,6 @@ def build_identity_resolver(
     purpose_repo: DataPurposeRedisRepository,
 ) -> RedisIdentityResolver:
     """Factory to create a RedisIdentityResolver with proper dependencies."""
-    from fides.api.util.cache import get_cache
-
     cache = get_cache()
     consumer_repo = DataConsumerRedisRepository(cache, purpose_repo)
     return RedisIdentityResolver(consumer_repo)

@@ -6,13 +6,17 @@ RawQueryLogEntry ready for the PBACEvaluationService.
 
 from __future__ import annotations
 
+import logging
+import re
 from datetime import datetime, timezone
 from uuid import uuid4
 
-import sqlglot  # type: ignore[import-not-found]
-import sqlglot.expressions as exp  # type: ignore[import-not-found]
+import sqlglot
+import sqlglot.expressions as exp
 
 from fides.service.pbac.types import RawQueryLogEntry, TableRef
+
+logger = logging.getLogger(__name__)
 
 
 def parse_query(
@@ -46,6 +50,7 @@ def extract_table_refs(query_text: str) -> list[TableRef]:
     try:
         parsed = sqlglot.parse(query_text)
     except Exception:
+        logger.warning("Failed to parse SQL query for PBAC evaluation", exc_info=True)
         return refs
 
     for statement in parsed:
@@ -67,8 +72,6 @@ def extract_table_refs(query_text: str) -> list[TableRef]:
 
 def detect_statement_type(query_text: str) -> str:
     """Detect the SQL statement type from the query text."""
-    import re
-
     # Strip leading single-line comments (-- ...) and block comments (/* ... */)
     normalized = query_text.strip()
     normalized = re.sub(r"^(--[^\n]*\n\s*)+", "", normalized, flags=re.MULTILINE)

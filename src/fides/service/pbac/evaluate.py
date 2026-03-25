@@ -87,7 +87,10 @@ def _check_access(
 ) -> Violation | None:
     """Check a single dataset/collection access against consumer purposes."""
 
-    # Rule 1: consumer has no purposes at all
+    # Rule 1: consumer has no purposes at all.
+    # This is intentionally asymmetric with Rule 3: a consumer with no purposes
+    # is always a violation (even if the dataset also has no purposes), because
+    # an unregistered consumer should never silently pass evaluation.
     if not consumer.purpose_keys:
         effective = (
             ds_purposes.effective_purposes(collection) if ds_purposes else frozenset()

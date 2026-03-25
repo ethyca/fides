@@ -37,6 +37,8 @@ from fides.service.pbac.types import (
     Violation,
 )
 
+PBAC_CONTROL_TYPE = "purpose_restriction"
+
 
 @runtime_checkable
 class PBACEvaluationService(Protocol):
@@ -88,6 +90,7 @@ class InProcessPBACEvaluationService:
         self,
         cache: Optional[FidesopsRedis] = None,
         policy_evaluator: Optional[AccessPolicyEvaluator] = None,
+        dataset_purposes: dict[str, DatasetPurposes] | None = None,
     ) -> None:
         if cache is None:
             cache = get_cache()
@@ -99,6 +102,7 @@ class InProcessPBACEvaluationService:
         self._policy_evaluator: AccessPolicyEvaluator = (
             policy_evaluator or NoOpPolicyEvaluator()
         )
+        self._dataset_purposes = dataset_purposes or {}
 
     def evaluate(
         self,
@@ -124,11 +128,13 @@ class InProcessPBACEvaluationService:
 
         if dataset_purpose_overrides:
             ds_purposes_map = {
-                dk: DatasetPurposes(
-                    dataset_key=dk,
-                    purpose_keys=frozenset(dataset_purpose_overrides.get(dk, [])),
+                dataset_key: DatasetPurposes(
+                    dataset_key=dataset_key,
+                    purpose_keys=frozenset(
+                        dataset_purpose_overrides.get(dataset_key, [])
+                    ),
                 )
-                for dk in dataset_keys
+                for dataset_key in dataset_keys
             }
         else:
             ds_purposes_map = self._build_dataset_purposes(dataset_keys)
@@ -186,12 +192,14 @@ class InProcessPBACEvaluationService:
         dataset_keys: list[str],
     ) -> dict[str, DatasetPurposes]:
         result: dict[str, DatasetPurposes] = {}
-        for dk in dataset_keys:
-            result[dk] = DatasetPurposes(
-                dataset_key=dk,
-                purpose_keys=frozenset(),
-                collection_purposes={},
-            )
+        for dataset_key in dataset_keys:
+            if dataset_key in self._dataset_purposes:
+                result[dataset_key] = self._dataset_purposes[dataset_key]
+            else:
+                result[dataset_key] = DatasetPurposes(
+                    dataset_key=dataset_key,
+                    purpose_keys=frozenset(),
+                )
         return result
 
     def _filter_violations_through_policies(
@@ -262,24 +270,24 @@ class InProcessPBACEvaluationService:
         validation_result: ValidationResult,
     ) -> tuple[EvaluationViolation, ...]:
         violations: list[EvaluationViolation] = []
-        for v in validation_result.violations:
+        for violation in validation_result.violations:
             # Resolve data_use from dataset purposes
             data_use = None
-            for pk in v.dataset_purposes:
-                purpose = self._purpose_repo.get(pk)
+            for purpose_key in violation.dataset_purposes:
+                purpose = self._purpose_repo.get(purpose_key)
                 if purpose and purpose.data_use:
                     data_use = purpose.data_use
                     break
 
             violations.append(
                 EvaluationViolation(
-                    dataset_key=v.dataset_key,
-                    collection=v.collection,
-                    consumer_purposes=tuple(sorted(v.consumer_purposes)),
-                    dataset_purposes=tuple(sorted(v.dataset_purposes)),
+                    dataset_key=violation.dataset_key,
+                    collection=violation.collection,
+                    consumer_purposes=tuple(sorted(violation.consumer_purposes)),
+                    dataset_purposes=tuple(sorted(violation.dataset_purposes)),
                     data_use=data_use,
-                    reason=v.reason,
-                    control="purpose_restriction",
+                    reason=violation.reason,
+                    control=PBAC_CONTROL_TYPE,
                 )
             )
         return tuple(violations)

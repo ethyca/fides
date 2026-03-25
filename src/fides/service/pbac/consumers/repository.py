@@ -207,4 +207,4 @@ class DataConsumerRedisRepository(RedisRepository[DataConsumerEntity]):
         """Check that all purpose fides_keys exist in the purpose repo."""
         for fk in fides_keys:
             if not self._purpose_repo.exists(fk):
-                raise ValueError(f"DataPurpose '{fk}' not found")
+                raise ResourceNotFoundError("DataPurpose", fk)
