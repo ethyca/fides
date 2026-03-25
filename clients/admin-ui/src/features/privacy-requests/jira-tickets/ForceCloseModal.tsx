@@ -28,14 +28,16 @@ const ForceCloseModal = ({
         privacy_request_id: privacyRequestId,
         reason: reason.trim() || null,
       }).unwrap();
-      message.success("Privacy request Jira gates force-closed successfully.");
+      message.success(
+        "Jira ticket checks force-closed. This request will resume processing.",
+      );
       setReason("");
       onClose();
     } catch (error) {
       message.error(
         getErrorMessage(
           error as RTKErrorResult["error"],
-          "Failed to force close Jira gates.",
+          "Failed to force close Jira ticket checks.",
         ),
       );
     }
@@ -57,8 +59,9 @@ const ForceCloseModal = ({
       data-testid="force-close-modal"
     >
       <div className="mb-2 text-sm text-gray-500">
-        Force closing will complete all pending Jira gates for this request,
-        unblocking the DSR runner. This cannot be undone.
+        Force closing will mark all pending Jira ticket checks as complete,
+        allowing this request to resume processing. The Jira tickets themselves
+        will not be modified. This cannot be undone.
       </div>
       <Typography.Text className="mb-1 block text-sm">
         Reason (optional)

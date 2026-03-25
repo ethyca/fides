@@ -1,7 +1,7 @@
 import { Button, Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
-import { useFeatures } from "~/features/common/features";
+import { useFeatures, useFlags } from "~/features/common/features";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
@@ -19,6 +19,9 @@ type RequestDetailsProps = {
 
 const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   const { plus: hasPlus } = useFeatures();
+  const {
+    flags: { alphaJiraIntegration },
+  } = useFlags();
   const {
     id,
     status,
@@ -108,7 +111,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Form.Item>
       </Form>
       <RequestAttachments subjectRequest={subjectRequest} />
-      {hasPlus && <RequestJiraTickets subjectRequest={subjectRequest} />}
+      {hasPlus && alphaJiraIntegration && (
+        <RequestJiraTickets subjectRequest={subjectRequest} />
+      )}
     </div>
   );
 };
