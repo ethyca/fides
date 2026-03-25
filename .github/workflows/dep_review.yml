@@ -24,9 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      # NOTE: GitHub's dependency graph does not yet parse uv.lock, so Python
-      # vulnerabilities won't appear in the PR comment for now. Node deps are
-      # fully supported. See: https://github.com/dependabot/dependabot-core/issues/11913
+      # NOTE: uv.lock is not in GitHub's official supported ecosystems list, but
+      # appears to work in practice. Coverage of transitive Python deps should
+      # be verified. See: https://github.com/dependabot/dependabot-core/issues/11913
       - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           # Only post a comment when vulnerabilities are found
