@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.2b2.dev34+ga1b674faa"
+    "version": "2.81.2b2.dev35+g56ff0df72"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -31859,6 +31859,17 @@
             ],
             "title": "Include Deleted Requests",
             "default": false
+          },
+          "is_overdue": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Overdue"
           },
           "download_csv": {
             "anyOf": [
