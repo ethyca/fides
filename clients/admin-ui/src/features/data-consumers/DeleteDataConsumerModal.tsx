@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { getErrorMessage } from "~/features/common/helpers";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import {
   DataConsumer,
@@ -36,7 +37,7 @@ const DeleteDataConsumerModal = ({ consumer }: Props) => {
           );
           router.push(DATA_CONSUMERS_ROUTE);
         } catch (error) {
-          message.error(getErrorMessage(error as any));
+          message.error(getErrorMessage(error as RTKErrorResult["error"]));
         }
       },
     });
