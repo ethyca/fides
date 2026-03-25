@@ -1,4 +1,4 @@
 type: Developer Experience
-description: Add combined `check`/`check:ci` scripts and standardize lint naming convention in client workspaces
+description: Added combined check and check:ci scripts for lint, format, and typecheck
 pr: 7755
 labels: []
