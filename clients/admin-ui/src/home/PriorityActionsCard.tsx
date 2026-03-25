@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import NextLink from "next/link";
 import { useMemo, useState } from "react";
 
+import { capitalize } from "~/features/common/utils";
 import {
   ACTION_CTA,
   DIMENSION_LABELS,
@@ -143,7 +144,7 @@ export const PriorityActionsCard = () => {
                   <Flex gap={6} align="center">
                     {action.title}
                     <Tag color={SEVERITY_TAG_COLOR[action.severity]}>
-                      {action.severity}
+                      {capitalize(action.severity)}
                     </Tag>
                     {daysInfo && (
                       <Tag color={daysInfo.color}>{daysInfo.label}</Tag>

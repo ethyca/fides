@@ -9,6 +9,15 @@ import { defaultAntTheme } from "./default-theme";
  * Uses Ant Design's built-in darkAlgorithm for automatic dark color generation,
  * with custom overrides to match the Fides brand palette.
  */
+
+/** Generate a 10-shade dark palette for a base color against the dark background. */
+const dark = (color: string) =>
+  generate(color, { theme: "dark", backgroundColor: palette.FIDESUI_BG_MINOS });
+
+const minosDark = dark(palette.FIDESUI_MINOS);
+const errorDark = dark(palette.FIDESUI_ERROR);
+const warningDark = dark(palette.FIDESUI_WARNING);
+
 export const darkAntTheme: ThemeConfig = {
   ...defaultAntTheme,
   algorithm: theme.darkAlgorithm,
@@ -20,40 +29,19 @@ export const darkAntTheme: ThemeConfig = {
     colorTextHeading: palette.FIDESUI_CORINTH,
     colorPrimary: palette.FIDESUI_CORINTH,
     colorBgContainer: palette.FIDESUI_BG_MINOS,
-    colorBorder: generate(palette.FIDESUI_MINOS, {
-      theme: "dark",
-      backgroundColor: palette.FIDESUI_BG_MINOS,
-    })[4],
-    colorErrorBg: generate(palette.FIDESUI_ERROR, {
-      theme: "dark",
-      backgroundColor: palette.FIDESUI_BG_MINOS,
-    })[1],
-    colorErrorBorder: generate(palette.FIDESUI_ERROR, {
-      theme: "dark",
-      backgroundColor: palette.FIDESUI_BG_MINOS,
-    })[3],
-    colorWarningBg: generate(palette.FIDESUI_WARNING, {
-      theme: "dark",
-      backgroundColor: palette.FIDESUI_BG_MINOS,
-    })[1],
-    colorWarningBorder: generate(palette.FIDESUI_WARNING, {
-      theme: "dark",
-      backgroundColor: palette.FIDESUI_BG_MINOS,
-    })[3],
+    colorBorder: minosDark[4],
+    colorErrorBg: errorDark[1],
+    colorErrorBorder: errorDark[3],
+    colorWarningBg: warningDark[1],
+    colorWarningBorder: warningDark[3],
   },
   components: {
     ...defaultAntTheme.components,
     Alert: {
       ...defaultAntTheme.components?.Alert,
       colorInfo: palette.FIDESUI_CORINTH,
-      colorInfoBg: generate(palette.FIDESUI_MINOS, {
-        theme: "dark",
-        backgroundColor: palette.FIDESUI_BG_MINOS,
-      })[1],
-      colorInfoBorder: generate(palette.FIDESUI_MINOS, {
-        theme: "dark",
-        backgroundColor: palette.FIDESUI_BG_MINOS,
-      })[3],
+      colorInfoBg: minosDark[1],
+      colorInfoBorder: minosDark[3],
     },
     Layout: {
       bodyBg: palette.FIDESUI_BG_MINOS,
