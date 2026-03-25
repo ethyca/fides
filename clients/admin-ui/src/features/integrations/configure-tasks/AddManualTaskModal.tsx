@@ -7,6 +7,7 @@ import {
 import React, { useState } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import {
   useCreateManualFieldMutation,
   useUpdateManualFieldMutation,
@@ -102,7 +103,7 @@ const AddManualTaskModal = ({
       onCancel={onClose}
       destroyOnHidden
       wrapProps={{ "data-testid": "add-manual-task-modal" }}
-      styles={{ body: { minWidth: "775px" } }}
+      width={MODAL_SIZE.lg}
       title={isEditing ? "Edit manual task" : "Add manual task"}
       footer={null}
     >

@@ -1,9 +1,9 @@
-import { ChevronDown } from "@carbon/icons-react";
 import type { PopoverProps, TreeProps } from "antd/lib";
 import { Button, Divider, Flex, Input, Popover, Space, Tree } from "antd/lib";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 
+import { ChevronDown } from "../../icons/carbon";
 import { filterTreeData, getAllTreeKeys } from "./filter.utils";
 
 export interface FilterProps {

@@ -2,8 +2,8 @@ import {
   Button,
   ChakraBox as Box,
   chakraForwardRef as forwardRef,
-  ChakraRepeatClockIcon as RepeatClockIcon,
   ChakraText as Text,
+  Icons,
   useMessage,
 } from "fidesui";
 import { ForwardedRef, useState } from "react";
@@ -96,7 +96,7 @@ const ReprocessButton = forwardRef(
         }
         ref={ref}
         size="small"
-        icon={<RepeatClockIcon />}
+        icon={<Icons.RetryFailed />}
       >
         Reprocess
       </Button>
