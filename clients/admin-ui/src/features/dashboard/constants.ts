@@ -74,8 +74,11 @@ export const ACTION_CTA: Record<
   },
   [ActionType.DSR_ACTION]: {
     label: "View request",
-    route: (d) =>
-      d.request_id ? `/privacy-requests/${d.request_id}` : "/privacy-requests",
+    route: (d) => {
+      if (d.request_id) return `/privacy-requests/${d.request_id}`;
+      if (d.is_overdue) return "/privacy-requests?is_overdue=true";
+      return "/privacy-requests";
+    },
   },
   [ActionType.SYSTEM_REVIEW]: {
     label: "Review system",
