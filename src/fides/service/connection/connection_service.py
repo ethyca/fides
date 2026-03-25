@@ -248,7 +248,8 @@ class ConnectionService:
     ) -> TestStatusMessage:
         """Connect, verify with a trivial query or API request, and report the status."""
 
-        # Test connection types always succeed (no real connector to test)
+        # Synthetic test connection types (test_datastore, test_website) have no
+        # real connector behind them, so we short-circuit to success.
         if connection_config.connection_type in (
             ConnectionType.test_datastore,
             ConnectionType.test_website,

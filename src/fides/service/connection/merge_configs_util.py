@@ -328,14 +328,17 @@ def merge_datasets(
     """
     stored_dataset_copy = copy.deepcopy(stored_dataset)
     upcoming_dataset_copy = copy.deepcopy(upcoming_dataset)
+    customer_dataset_copy = copy.deepcopy(customer_dataset)
 
     normalized_stored_dataset = normalize_dataset(stored_dataset_copy, "stored")
     normalized_upcoming_dataset = normalize_dataset(upcoming_dataset_copy, "upcoming")
+    normalized_customer_dataset = normalize_dataset(customer_dataset_copy, "customer")
     if normalized_stored_dataset is None or normalized_upcoming_dataset is None:
         return upcoming_dataset
 
     stored_dataset_copy = normalized_stored_dataset
     upcoming_dataset_copy = normalized_upcoming_dataset
+    customer_dataset = normalized_customer_dataset or customer_dataset
 
     # convert dataset to yaml string and then replace the instance key placeholder
     wrapped_dataset = {"dataset": [stored_dataset_copy]}

@@ -12,7 +12,7 @@ import {
   ChakraBox as Box,
   ChakraBoxProps as BoxProps,
   ChakraCheckbox as Checkbox,
-  ChakraChevronDownIcon as ChevronDownIcon,
+  Icons,
 } from "fidesui";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
@@ -116,7 +116,7 @@ const CheckboxItem = ({
           <Button
             data-testid={`expand-${label}`}
             aria-label={isExpanded ? "collapse" : "expand"}
-            icon={<ChevronDownIcon boxSize={5} />}
+            icon={<Icons.ChevronDown size={20} />}
             type="text"
             onClick={() => onExpanded(node)}
             className={isExpanded ? "rotate-180" : undefined}

@@ -4,11 +4,11 @@ import type { NextPage } from "next";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
+import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpose.slice";
 import DataPurposesTable from "~/features/data-purposes/DataPurposesTable";
-import useDataPurposesTable from "~/features/data-purposes/useDataPurposesTable";
 
 const DataPurposesPage: NextPage = () => {
-  const { error } = useDataPurposesTable();
+  const { error } = useGetAllDataPurposesQuery({});
 
   if (error) {
     return (

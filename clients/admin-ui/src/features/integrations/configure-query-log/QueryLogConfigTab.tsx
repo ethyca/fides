@@ -13,7 +13,7 @@ import { useCallback, useMemo } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { RTKErrorResult } from "~/types/errors/api";
 
-import { POLL_INTERVAL_OPTIONS } from "./constants";
+import { POLL_INTERVAL_OPTIONS, PollInterval } from "./constants";
 import {
   useCreateQueryLogConfigMutation,
   useGetQueryLogConfigsQuery,
@@ -29,7 +29,7 @@ interface FormValues {
 
 const DEFAULT_VALUES: FormValues = {
   enabled: false,
-  poll_interval_seconds: 300,
+  poll_interval_seconds: PollInterval.FIVE_MINUTES,
 };
 
 interface QueryLogConfigTabProps {

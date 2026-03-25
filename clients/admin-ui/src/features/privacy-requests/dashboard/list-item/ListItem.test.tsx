@@ -20,6 +20,11 @@ jest.mock("nuqs", () => ({
   })),
 }));
 
+// Mock useFlags to avoid Redux Provider requirement
+jest.mock("~/features/common/features", () => ({
+  useFlags: () => ({ flags: {} }),
+}));
+
 // Mock next/router
 jest.mock("next/router", () => ({
   useRouter: () => ({

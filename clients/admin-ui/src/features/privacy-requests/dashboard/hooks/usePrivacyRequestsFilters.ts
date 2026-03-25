@@ -7,6 +7,7 @@ import {
 } from "nuqs";
 import { useEffect, useMemo } from "react";
 
+import { useFlags } from "~/features/common/features";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
@@ -39,7 +40,12 @@ interface UsePrivacyRequestsFiltersProps {
 const usePrivacyRequestsFilters = ({
   pagination,
 }: UsePrivacyRequestsFiltersProps) => {
-  const allowedStatusFilterOptions = [...SubjectRequestStatusMap.keys()];
+  const { flags } = useFlags();
+  const allowedStatusFilterOptions = [...SubjectRequestStatusMap.keys()].filter(
+    (status) =>
+      status !== PrivacyRequestStatus.PENDING_EXTERNAL ||
+      flags.alphaJiraIntegration,
+  );
 
   const [filters, setFilters] = useQueryStates(
     {

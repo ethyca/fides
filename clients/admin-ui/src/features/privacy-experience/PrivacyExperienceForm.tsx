@@ -1,7 +1,6 @@
 import {
   Alert,
   Button,
-  ChakraArrowForwardIcon as ArrowForwardIcon,
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraCheckboxGroup as CheckboxGroup,
@@ -12,6 +11,7 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
   formatIsoLocation,
+  Icons,
   isoStringToEntry,
   SelectProps,
 } from "fidesui";
@@ -654,7 +654,7 @@ export const PrivacyExperienceForm = ({
         </>
       ) : (
         <Button
-          icon={<ArrowForwardIcon />}
+          icon={<Icons.ArrowRight />}
           iconPosition="end"
           onClick={() => onSelectTranslation(values.translations![0])}
           data-testid="edit-experience-btn"
