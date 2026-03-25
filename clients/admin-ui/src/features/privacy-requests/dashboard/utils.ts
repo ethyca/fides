@@ -109,8 +109,11 @@ export const getCustomFields = (
 
   return customFields
     ? Object.entries(customFields)
-        .filter(([, field]) => !isNil(field.value) && field.value !== "")
-        .map(([key, field]) => ({
+        .filter(
+          ([, field]: [string, any]) =>
+            !isNil(field.value) && field.value !== "",
+        )
+        .map(([key, field]: [string, any]) => ({
           key,
           label: field.label,
           value: field.value,

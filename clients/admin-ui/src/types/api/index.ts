@@ -716,6 +716,7 @@ export * from "./models/ReportType";
 export * from "./models/RequestOrigin";
 export type * from "./models/RequestTaskCallbackRequest";
 export type * from "./models/ResourceError";
+export * from "./models/ResurfaceBehavior";
 export type * from "./models/ResourceFilter";
 export * from "./models/ResourceTypes";
 export * from "./models/ResponseFormat";
@@ -910,6 +911,15 @@ export type * from "./models/WorkerInfo";
 export type * from "./models/workersHealthHealthWorkersGetData";
 export type * from "./models/workersHealthHealthWorkersGetErrors";
 export type * from "./models/workersHealthHealthWorkersGetResponse";
+
+// -- Backward-compatible aliases for renamed types --
+// These map old type names to the new generated equivalents.
+// When regenerating types, these aliases must be preserved.
+export type { fides__api__schemas__privacy_request__IdentityValue as IdentityValue } from "./models/fides__api__schemas__privacy_request__IdentityValue";
+export type { Page_DigestConfigResponse_ as DigestConfigListResponse } from "./models/Page_DigestConfigResponse_";
+export type { CreateAssessmentTaskRequest as CreateAssessmentRequest } from "./models/CreateAssessmentTaskRequest";
+export type { PrivacyRequestCreateExtended as PrivacyRequestCreate } from "./models/PrivacyRequestCreateExtended";
+export type { fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig } from "./models/fides__api__schemas__privacy_center_config__PrivacyCenterConfig";
 export type * from "./models/workersHealthHealthWorkersGetResponses";
 export type * from "./models/WorkerStats";
 export type * from "./types";

@@ -42,7 +42,7 @@ const SubmitPrivacyRequestModal = ({
     const { is_verified, ...rest } = values;
     const customFields = rest.custom_privacy_request_fields
       ? Object.entries(rest.custom_privacy_request_fields)
-          .map(([fieldName, fieldInfo]) =>
+          .map(([fieldName, fieldInfo]: [string, any]) =>
             fieldInfo.value ? { [fieldName]: fieldInfo } : {},
           )
           .reduce((acc, next) => ({ ...acc, ...next }), {})

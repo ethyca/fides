@@ -130,7 +130,7 @@ export const InProgressMonitorTaskItem = ({
 
   const monitorName = task.monitor_name || "Unknown monitor";
 
-  const getStatusColor = (status?: string) => {
+  const getStatusColor = (status?: string | null) => {
     switch (status) {
       case "pending":
         return CUSTOM_TAG_COLOR.DEFAULT;
@@ -151,7 +151,7 @@ export const InProgressMonitorTaskItem = ({
     }
   };
 
-  const formatText = (text?: string) => {
+  const formatText = (text?: string | null) => {
     if (!text) {
       return "Unknown";
     }

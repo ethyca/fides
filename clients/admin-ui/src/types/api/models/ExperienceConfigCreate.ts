@@ -81,4 +81,8 @@ export type ExperienceConfigCreate = {
    * Properties
    */
   properties?: Array<MinimalProperty>;
+  /**
+   * Resurface behavior options (fidesplus)
+   */
+  resurface_behavior?: Array<"reject" | "dismiss"> | null;
 };

@@ -84,4 +84,8 @@ export type ExperienceConfigUpdate = {
    * Determines the behavior of the reject all button
    */
   reject_all_mechanism?: RejectAllMechanism | null;
+  /**
+   * Resurface behavior options (fidesplus)
+   */
+  resurface_behavior?: Array<"reject" | "dismiss"> | null;
 };

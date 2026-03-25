@@ -52,7 +52,7 @@ const createMockOktaApp = (
     created: "2023-06-15T09:00:00Z",
     sign_on_url: `https://company.okta.com/app/app${index}/sso/saml`,
     vendor_match_confidence: VendorMatchConfidence.MEDIUM,
-    vendor_logo_url: `https://logo.clearbit.com/app${index}.com`,
+    domain: `app${index}.com`,
   },
   vendor_id: overrides?.vendor_id || `fds.${index}`,
   system_id: "okta_system_001",

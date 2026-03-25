@@ -125,48 +125,8 @@ export type Field = {
    * Sub Fields
    */
   sub_fields?: Array<Field> | null;
-  [key: string]:
-    | unknown
-    | string
-    | Array<string>
-    | null
-    | Array<string>
-    | null
-    | string
-    | null
-    | string
-    | null
-    | string
-    | null
-    | string
-    | null
-    | string
-    | null
-    | string
-    | null
-    | DiffStatus
-    | null
-    | StagedResourceTypeValue
-    | null
-    | Array<string>
-    | null
-    | Array<ResourceError>
-    | string
-    | null
-    | Array<ClassificationWithConfidence>
-    | string
-    | null
-    | string
-    | null
-    | Array<string>
-    | Array<string>
-    | string
-    | null
-    | string
-    | null
-    | string
-    | null
-    | Array<Field>
-    | null
-    | undefined;
+  /**
+   * Computed: field_data_categories (fidesplus)
+   */
+  preferred_data_categories?: Array<string> | null;
 };

@@ -6,6 +6,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
+  ColumnSort,
   Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
   PrivacyCenterConfig,
   PrivacyRequestAccessResults,
@@ -118,8 +119,11 @@ interface DateRangeParams {
 }
 
 export interface SearchFilterParams
-  extends Partial<PrivacyRequestFilter>,
-    Partial<DateRangeParams> {}
+  extends Omit<Partial<PrivacyRequestFilter>, "sort_field" | "sort_direction">,
+    Partial<DateRangeParams> {
+  sort_field?: string | null;
+  sort_direction?: ColumnSort | null;
+}
 
 const processFilterParams = ({ from, to, ...filters }: SearchFilterParams) => ({
   // Include identities and custom privacy request fields by default

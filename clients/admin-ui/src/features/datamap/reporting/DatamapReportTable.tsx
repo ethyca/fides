@@ -31,6 +31,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomReportColumn } from "~/features/common/custom-reports/types";
+import {
+  CustomReportTableState,
+  DatamapReportFilterSelections,
+} from "~/features/datamap/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -447,7 +451,7 @@ export const DatamapReportTable = ({
           groupBy: savedGroupBy,
           filters: savedFilters,
           columnOrder: savedColumnOrder,
-        } = savedReport.config.table_state;
+        } = savedReport.config.table_state as CustomReportTableState;
         const savedColumnVisibility: Record<string, boolean> = {};
 
         Object.entries(savedReport.config.column_map ?? {}).forEach(
@@ -461,7 +465,7 @@ export const DatamapReportTable = ({
           setGroupBy(savedGroupBy);
         }
         if (savedFilters) {
-          setSelectedFilters(savedFilters);
+          setSelectedFilters(savedFilters as DatamapReportFilterSelections);
         }
         if (savedColumnOrder) {
           setColumnOrder(savedColumnOrder);

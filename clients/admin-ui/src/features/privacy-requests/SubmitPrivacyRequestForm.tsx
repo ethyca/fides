@@ -194,7 +194,7 @@ const SubmitPrivacyRequestForm = ({
     >
       {({ values, dirty, isValid, isSubmitting, setFieldValue }) => {
         const currentAction = findActionFromPolicyKey(
-          values.policy_key,
+          values.policy_key ?? "",
           config?.actions,
         );
 

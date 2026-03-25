@@ -50,6 +50,51 @@ export default defineConfig({
             });
           }
         },
+        // -- Fidesplus computed properties not in base OpenAPI spec --
+        StagedResourceAPIResponse: (schema: any) => {
+          schema.properties.preferred_data_uses = {
+            type: "array",
+            items: { type: "string" },
+            nullable: true,
+            description:
+              "Computed: user_assigned_data_uses ?? data_uses (fidesplus)",
+          };
+        },
+        Field: (schema: any) => {
+          schema.properties.preferred_data_categories = {
+            type: "array",
+            items: { type: "string" },
+            nullable: true,
+            description: "Computed: field_data_categories (fidesplus)",
+          };
+          // Remove additionalProperties to prevent catch-all index signature
+          // that causes TypeScript to resolve all properties to `{}`
+          delete schema.additionalProperties;
+        },
+        ExperienceConfigCreate: (schema: any) => {
+          schema.properties.resurface_behavior = {
+            type: "array",
+            items: { type: "string", enum: ["reject", "dismiss"] },
+            nullable: true,
+            description: "Resurface behavior options (fidesplus)",
+          };
+        },
+        ExperienceConfigUpdate: (schema: any) => {
+          schema.properties.resurface_behavior = {
+            type: "array",
+            items: { type: "string", enum: ["reject", "dismiss"] },
+            nullable: true,
+            description: "Resurface behavior options (fidesplus)",
+          };
+        },
+        SystemStagedResourcesAggregateRecord: (schema: any) => {
+          schema.properties.metadata = {
+            $ref: "#/components/schemas/IdentityProviderApplicationMetadata",
+            nullable: true,
+            description:
+              "Okta application metadata for identity provider resources (fidesplus)",
+          };
+        },
       },
     },
     hooks: {

@@ -222,4 +222,8 @@ export type StagedResourceAPIResponse = {
    * Okta application metadata for identity provider resources (app_type, status, created, sign_on_url, etc.)
    */
   metadata?: IdentityProviderApplicationMetadata | null;
+  /**
+   * Computed: user_assigned_data_uses ?? data_uses (fidesplus)
+   */
+  preferred_data_uses?: Array<string> | null;
 };
