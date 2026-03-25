@@ -1,4 +1,4 @@
-import { Button, Card, DonutChart, Flex, Text } from "fidesui";
+import { Card, DonutChart, Flex, Text } from "fidesui";
 import NextLink from "next/link";
 
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
@@ -17,7 +17,16 @@ export const SystemCoverageCard = () => {
   const percentage = coverage?.coverage_percentage ?? 0;
 
   return (
-    <Card title="System Coverage" variant="borderless" loading={isLoading}>
+    <Card
+      title="System Coverage"
+      variant="borderless"
+      loading={isLoading}
+      extra={
+        <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref>
+          Connect systems
+        </NextLink>
+      }
+    >
       <Flex vertical gap="large" className="h-full">
         <Flex gap="large" align="start">
           <div className="size-[100px] shrink-0">
@@ -56,11 +65,6 @@ export const SystemCoverageCard = () => {
             ))}
           </Flex>
         </Flex>
-        <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref>
-          <Button type="default" block>
-            + Connect More Systems
-          </Button>
-        </NextLink>
       </Flex>
     </Card>
   );

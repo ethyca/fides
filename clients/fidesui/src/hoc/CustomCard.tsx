@@ -22,6 +22,7 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
         className,
         styles: stylesProp,
         title,
+        tabList,
         size,
         ...props
       },
@@ -40,10 +41,19 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
         headerStyle.padding = `${hPad}px ${hPad}px 0`;
       }
 
+      const resolvedTabList = tabList?.map((tab) => ({
+        ...tab,
+        label: (
+          <Typography.Text style={{ fontSize: token.fontSize }}>
+            {tab.label}
+          </Typography.Text>
+        ),
+      }));
+
       const resolvedTitle = isStringTitle ? (
-        <Typography.Title level={5} style={{ margin: 0 }}>
+        <Typography.Text strong style={{ fontSize: token.fontSize }}>
           {title}
-        </Typography.Title>
+        </Typography.Text>
       ) : (
         title
       );
@@ -59,10 +69,11 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
           ref={ref}
           className={classNames(
             { [styles.bottomCover]: coverPosition === "bottom" },
-            { [styles.inlineHeader]: !!props.tabList },
+            { [styles.inlineHeader]: !!tabList },
             { [styles.stringTitle]: isStringTitle },
             className,
           )}
+          tabList={resolvedTabList}
           title={resolvedTitle}
           size={size}
           styles={{
