@@ -1,4 +1,4 @@
-import { Button, Flex, Modal, Typography, useMessage } from "fidesui";
+import { Button, Flex, Modal, useMessage } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -22,7 +22,9 @@ const LinkJiraTicketModal = ({
   const message = useMessage();
 
   const handleSubmit = async () => {
-    if (!ticketKey.trim()) return;
+    if (!ticketKey.trim()) {
+      return;
+    }
     try {
       await linkJiraTicket({
         privacy_request_id: privacyRequestId,

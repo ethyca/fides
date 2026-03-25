@@ -18,7 +18,6 @@ import { PrivacyRequestStatus, StatusType } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import ForceCloseModal from "./ForceCloseModal";
-import ForceCloseModal from "./ForceCloseModal";
 import LinkJiraTicketModal from "./LinkJiraTicketModal";
 import {
   useGetJiraTicketsQuery,
@@ -132,7 +131,9 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   ] = useRefreshJiraTicketMutation();
 
   const handleRetry = async (ticket: JiraTicketResult) => {
-    if (!ticket.instance_id) return;
+    if (!ticket.instance_id) {
+      return;
+    }
     try {
       await retryJiraTicket({
         privacy_request_id: subjectRequest.id,
@@ -152,7 +153,9 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   };
 
   const handleRefresh = async (ticket: JiraTicketResult) => {
-    if (!ticket.instance_id) return;
+    if (!ticket.instance_id) {
+      return;
+    }
     try {
       await refreshJiraTicket({
         privacy_request_id: subjectRequest.id,
