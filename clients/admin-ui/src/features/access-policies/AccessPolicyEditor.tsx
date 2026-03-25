@@ -267,6 +267,32 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [],
   );
 
+  /** Monotonic counters — only ever increment so deleted IDs are never reused. */
+  const nextIdRef = useRef({ action: 1, condition: 1, constraint: 1 });
+
+  /** Scan node IDs and bump counters above the highest existing index. */
+  const syncCounters = useCallback((nodeList: Node[]) => {
+    const max = { action: 0, condition: 0, constraint: 0 };
+    nodeList.forEach((n) => {
+      const match = n.id.match(/^(action|condition|constraint)-(\d+)$/);
+      if (match) {
+        const key = match[1] as keyof typeof max;
+        max[key] = Math.max(max[key], parseInt(match[2], 10));
+      }
+    });
+    nextIdRef.current = {
+      action: max.action + 1,
+      condition: max.condition + 1,
+      constraint: max.constraint + 1,
+    };
+  }, []);
+
+  // Sync counters on initial mount
+  useEffect(() => {
+    syncCounters(initialResult?.nodes ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // When syncKey increments (Code → Builder switch), re-parse initialYaml
   const prevSyncKeyRef = useRef<number | undefined>(undefined);
   useEffect(() => {
@@ -278,9 +304,11 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     if (parsed) {
       setNodes(parsed.nodes);
       setEdges(parsed.edges);
+      syncCounters(parsed.nodes);
     } else {
       setNodes(createPolicyNode(props));
       setEdges([]);
+      nextIdRef.current = { action: 1, condition: 1, constraint: 1 };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncKey]);
@@ -472,7 +500,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     const conditionCount = nodes.filter(
       (n) => n.type === "conditionNode",
     ).length;
-    const conditionId = `condition-${conditionCount + 1}`;
+    const conditionId = `condition-${nextIdRef.current.condition}`;
+    nextIdRef.current.condition += 1;
 
     const newNode: ConditionNodeType = {
       id: conditionId,
@@ -520,8 +549,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         return;
       }
 
-      const actionCount = nodes.filter((n) => n.type === "actionNode").length;
-      const actionId = `action-${actionCount + 1}`;
+      const actionId = `action-${nextIdRef.current.action}`;
+      nextIdRef.current.action += 1;
 
       const newNode: ActionNodeType = {
         id: actionId,
@@ -549,7 +578,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     const constraintCount = nodes.filter(
       (n) => n.type === "constraintNode",
     ).length;
-    const constraintId = `constraint-${constraintCount + 1}`;
+    const constraintId = `constraint-${nextIdRef.current.constraint}`;
+    nextIdRef.current.constraint += 1;
 
     const newNode: ConstraintNodeType = {
       id: constraintId,
