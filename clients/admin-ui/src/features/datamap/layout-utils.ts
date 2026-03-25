@@ -67,11 +67,6 @@ const alignRankTops = <T extends { position: { x: number; y: number } }>(
   });
 };
 
-// The dagre layout algorithm needs a graph instance with nodes and edges
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-// Function to generate positions from a dagre layout
 export const getLayoutedElements = (
   nodes: Node[],
   edges: Edge[],
@@ -80,7 +75,8 @@ export const getLayoutedElements = (
 ) => {
   const opts = { ...DEFAULT_OPTIONS, ...options, rankdir: direction };
 
-  // Clear the layout
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
   dagreGraph.setGraph({
     rankdir: opts.rankdir,
     ranksep: opts.ranksep,
