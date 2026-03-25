@@ -1,16 +1,4 @@
-import {
-  Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  Input,
-  Space,
-  Typography,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Modal, Typography, useMessage } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -34,6 +22,7 @@ const LinkJiraTicketModal = ({
   const message = useMessage();
 
   const handleSubmit = async () => {
+    if (!ticketKey.trim()) return;
     try {
       await linkJiraTicket({
         privacy_request_id: privacyRequestId,
@@ -58,46 +47,45 @@ const LinkJiraTicketModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
-      <ModalOverlay />
-      <ModalContent maxWidth="456px" data-testid="link-jira-ticket-modal">
-        <ModalHeader>
-          <Typography.Title level={4}>Link Jira ticket</Typography.Title>
-        </ModalHeader>
-        <ModalBody className="flex flex-col gap-4">
-          <Typography.Text>
-            Enter the Jira ticket key to link to this privacy request (e.g.
-            PRIV-123).
-          </Typography.Text>
-          <Input
-            placeholder="PRIV-123"
-            value={ticketKey}
-            onChange={(e) => setTicketKey(e.target.value)}
-            onPressEnter={handleSubmit}
-            data-testid="link-jira-ticket-input"
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Space>
-            <Button
-              onClick={handleCancel}
-              disabled={isLoading}
-              data-testid="link-jira-ticket-cancel"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              onClick={handleSubmit}
-              loading={isLoading}
-              disabled={!ticketKey.trim()}
-              data-testid="link-jira-ticket-confirm"
-            >
-              Link ticket
-            </Button>
-          </Space>
-        </ModalFooter>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={handleCancel}
+      centered
+      destroyOnHidden
+      title="Link Jira ticket"
+      footer={null}
+      data-testid="link-jira-ticket-modal"
+    >
+      <div className="mb-2 text-sm text-gray-500">
+        Enter the Jira ticket key to link to this privacy request (e.g.
+        PRIV-123).
+      </div>
+      <input
+        className="w-full rounded border border-gray-300 p-2 text-sm"
+        placeholder="PRIV-123"
+        value={ticketKey}
+        onChange={(e) => setTicketKey(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        data-testid="link-jira-ticket-input"
+      />
+      <Flex justify="flex-end" className="mt-4" gap="small">
+        <Button
+          disabled={isLoading}
+          onClick={handleCancel}
+          data-testid="link-jira-ticket-cancel"
+        >
+          Cancel
+        </Button>
+        <Button
+          type="primary"
+          loading={isLoading}
+          disabled={!ticketKey.trim()}
+          onClick={handleSubmit}
+          data-testid="link-jira-ticket-confirm"
+        >
+          Link ticket
+        </Button>
+      </Flex>
     </Modal>
   );
 };

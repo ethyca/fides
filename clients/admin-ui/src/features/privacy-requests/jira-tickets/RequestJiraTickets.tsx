@@ -14,9 +14,11 @@ import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestStatus, StatusType } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors/api";
 
+import ForceCloseModal from "./ForceCloseModal";
+import ForceCloseModal from "./ForceCloseModal";
 import LinkJiraTicketModal from "./LinkJiraTicketModal";
 import {
   useGetJiraTicketsQuery,
@@ -40,6 +42,12 @@ const LINK_ALLOWED_STATUSES = new Set<string>([
   PrivacyRequestStatus.PAUSED,
   PrivacyRequestStatus.PENDING_EXTERNAL,
   PrivacyRequestStatus.REQUIRES_INPUT,
+]);
+
+const FORCE_CLOSE_REJECTED_STATUSES = new Set<string>([
+  PrivacyRequestStatus.COMPLETE,
+  PrivacyRequestStatus.DENIED,
+  PrivacyRequestStatus.CANCELED,
 ]);
 
 interface JiraTicketRowProps {
@@ -81,7 +89,9 @@ const JiraTicketRow = ({
           icon={<Icons.Undo />}
           onClick={onRetry}
           loading={isRetrying}
-          disabled={ticket.instance_status !== "failed" || isRefreshing}
+          disabled={
+            ticket.instance_status !== StatusType.FAILED || isRefreshing
+          }
           data-testid={`jira-ticket-retry-${ticket.ticket_key}`}
           aria-label="Retry ticket creation"
         />
@@ -107,6 +117,7 @@ interface RequestJiraTicketsProps {
 
 const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isForceCloseModalOpen, setIsForceCloseModalOpen] = useState(false);
   const message = useMessage();
 
   const { data: tickets, isLoading } = useGetJiraTicketsQuery({
@@ -121,6 +132,7 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   ] = useRefreshJiraTicketMutation();
 
   const handleRetry = async (ticket: JiraTicketResult) => {
+    if (!ticket.instance_id) return;
     try {
       await retryJiraTicket({
         privacy_request_id: subjectRequest.id,
@@ -140,6 +152,7 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
   };
 
   const handleRefresh = async (ticket: JiraTicketResult) => {
+    if (!ticket.instance_id) return;
     try {
       await refreshJiraTicket({
         privacy_request_id: subjectRequest.id,
@@ -199,17 +212,25 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
         >
           Link ticket
         </Button>
-        <Tooltip title="Force close not yet available">
-          <Button danger disabled data-testid="force-close-btn">
-            Force close
-          </Button>
-        </Tooltip>
+        <Button
+          danger
+          onClick={() => setIsForceCloseModalOpen(true)}
+          disabled={FORCE_CLOSE_REJECTED_STATUSES.has(subjectRequest.status)}
+          data-testid="force-close-btn"
+        >
+          Force close
+        </Button>
       </Flex>
 
       <LinkJiraTicketModal
         privacyRequestId={subjectRequest.id}
         isOpen={isLinkModalOpen}
         onClose={() => setIsLinkModalOpen(false)}
+      />
+      <ForceCloseModal
+        privacyRequestId={subjectRequest.id}
+        isOpen={isForceCloseModalOpen}
+        onClose={() => setIsForceCloseModalOpen(false)}
       />
     </div>
   );

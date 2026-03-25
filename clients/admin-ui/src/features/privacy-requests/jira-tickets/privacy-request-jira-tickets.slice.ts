@@ -12,6 +12,16 @@ interface TicketInstanceRequest {
   instance_id: string;
 }
 
+interface ForceCloseRequest {
+  privacy_request_id: string;
+  reason?: string | null;
+}
+
+interface ForceCloseResponse {
+  privacy_request_id: string;
+  status: string;
+}
+
 const privacyRequestJiraTicketsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getJiraTickets: build.query<
@@ -46,6 +56,17 @@ const privacyRequestJiraTicketsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Jira Tickets"],
     }),
+    forceCloseJiraTickets: build.mutation<
+      ForceCloseResponse,
+      ForceCloseRequest
+    >({
+      query: ({ privacy_request_id, reason }) => ({
+        url: `plus/privacy-request/${privacy_request_id}/jira-tickets/force-close`,
+        method: "POST",
+        body: { reason },
+      }),
+      invalidatesTags: ["Jira Tickets"],
+    }),
   }),
 });
 
@@ -54,4 +75,5 @@ export const {
   useLinkJiraTicketMutation,
   useRetryJiraTicketMutation,
   useRefreshJiraTicketMutation,
+  useForceCloseJiraTicketsMutation,
 } = privacyRequestJiraTicketsApi;
