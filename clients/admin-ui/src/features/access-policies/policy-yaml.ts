@@ -384,7 +384,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
   }
 
   if (!actionNode) {
-    return yaml.dump(policyYaml, { lineWidth: -1 });
+    return yaml.dump(policyYaml, { lineWidth: 120 });
   }
 
   const { actionType } = actionNode.data as ActionNodeData;
@@ -425,7 +425,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     policyYaml.action = { message: actionMessage } satisfies ActionBlock;
   }
 
-  return yaml.dump(policyYaml, { lineWidth: -1 });
+  return yaml.dump(policyYaml, { lineWidth: 120 });
 };
 
 /**
