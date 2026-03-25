@@ -16,7 +16,7 @@ import {
 } from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
-import { RoleRegistryEnum } from "~/types/api";
+import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 describe("ENG-3137: Viewer with assigned system should be able to edit", () => {
   beforeEach(() => {
@@ -48,12 +48,12 @@ describe("ENG-3137: Viewer with assigned system should be able to edit", () => {
           roles: [RoleRegistryEnum.VIEWER],
           total_scopes: [
             // Standard viewer scopes
-            "system:read",
-            "system_manager:read",
-            "system_manager:update",
+            ScopeRegistryEnum.SYSTEM_READ,
+            ScopeRegistryEnum.SYSTEM_MANAGER_READ,
+            ScopeRegistryEnum.SYSTEM_MANAGER_UPDATE,
             // Other viewer scopes
-            "user:read",
-            "organization:read",
+            ScopeRegistryEnum.USER_READ,
+            ScopeRegistryEnum.ORGANIZATION_READ,
           ],
         },
       }).as("getUserPermission");
@@ -65,10 +65,10 @@ describe("ENG-3137: Viewer with assigned system should be able to edit", () => {
     // The form should NOT be read-only for a viewer with system_manager:update
     cy.getByTestId("input-name").should("exist");
 
-    // BUG: The read-only alert should NOT appear
+    // Regression guard (ENG-3137): read-only alert should NOT appear
     cy.contains("Read-only access").should("not.exist");
 
-    // BUG: The form fields should be editable, not disabled
+    // Regression guard (ENG-3137): form fields should be editable, not disabled
     cy.get("fieldset[disabled]").should("not.exist");
   });
 
