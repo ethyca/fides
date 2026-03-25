@@ -38,21 +38,15 @@ export const DSRStatusCard = () => {
 
   const handleTypeClick = useCallback(
     (type: string) => {
-      router.push(
-        `${PRIVACY_REQUESTS_ROUTE}?action_type=${type.toLowerCase()}`,
-      );
+      router.push(`${PRIVACY_REQUESTS_ROUTE}?action_type=${type}`);
     },
     [router],
   );
 
-  const handleOverdueClick = useCallback(() => {
-    router.push(`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`);
-  }, [router]);
-
   return (
-    <Spin spinning={isLoading} wrapperClassName={styles.spinWrapper}>
+    <Spin spinning={isLoading}>
       <Card
-        title="DSR status"
+        title="DSR Status"
         extra={
           <NextLink
             href={PRIVACY_REQUESTS_ROUTE}
@@ -85,7 +79,7 @@ export const DSRStatusCard = () => {
                   {SUB_STATS.map(({ key, title }) => (
                     <Flex key={key} className={styles.subStat}>
                       <Statistic
-                        value={data?.statuses?.[key] ?? 0}
+                        value={data?.statuses[key] ?? 0}
                         title={title}
                         valueStyle={{
                           fontSize: token.fontSize,
@@ -97,9 +91,8 @@ export const DSRStatusCard = () => {
                 </Flex>
               </div>
               {(data?.overdue_count ?? 0) > 0 && (
-                <button
-                  type="button"
-                  onClick={handleOverdueClick}
+                <NextLink
+                  href={PRIVACY_REQUESTS_ROUTE}
                   className={styles.overdueLink}
                 >
                   <Flex align="center" gap={4}>
@@ -108,13 +101,13 @@ export const DSRStatusCard = () => {
                     </Text>
                     <Icons.ArrowRight size={12} />
                   </Flex>
-                </button>
+                </NextLink>
               )}
             </Flex>
 
             <Flex vertical className="min-w-0 flex-1 pl-5">
               <Text strong className="mb-3 text-xs">
-                SLA health
+                SLA Health
               </Text>
               <Flex className="flex-1">
                 {sla && (

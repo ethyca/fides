@@ -560,7 +560,6 @@ TEST_DIRECTORY_COVERAGE = {
         "misc-integration-external",
     ],
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/unit/": ["misc-unit"],
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/integration/": ["ops-integration"],  # Workflow integration tests

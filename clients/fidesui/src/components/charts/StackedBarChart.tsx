@@ -203,36 +203,17 @@ export const StackedBarChart = ({
       .filter((entry): entry is ChartEntry => entry !== null);
   }, [data, segments]);
 
-  // Sort alphabetically so ordering is deterministic (e.g. Access before Erasure)
-  const sortedData = useMemo(
-    () => [...chartData].sort((a, b) => a.category.localeCompare(b.category)),
-    [chartData],
-  );
-
-  // Compute YAxis width dynamically from the longest label
-  const yAxisWidth = useMemo(() => {
-    if (sortedData.length === 0) return 80;
-    const longestLabel = sortedData.reduce(
-      (max, entry) =>
-        entry.category.length > max.length ? entry.category : max,
-      "",
-    );
-    const charWidth = token.fontSizeSM * 0.65;
-    const iconSpace = onCategoryClick ? ICON_SIZE + ICON_GAP + 8 : 8;
-    return Math.ceil(longestLabel.length * charWidth + iconSpace);
-  }, [sortedData, token.fontSizeSM, onCategoryClick]);
-
-  if (sortedData.length === 0) {
+  if (chartData.length === 0) {
     return null;
   }
 
   const chartHeight =
-    sortedData.length * barHeight + (sortedData.length - 1) * rowGap + rowGap;
+    chartData.length * barHeight + (chartData.length - 1) * rowGap + rowGap;
 
   return (
     <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart
-        data={sortedData}
+        data={chartData}
         layout="vertical"
         margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
         barCategoryGap={rowGap}
@@ -241,7 +222,7 @@ export const StackedBarChart = ({
         <YAxis
           type="category"
           dataKey="category"
-          width={yAxisWidth}
+          width={80}
           interval={0}
           tick={
             <ClickableTick
@@ -249,7 +230,7 @@ export const StackedBarChart = ({
               textColor={token.colorTextSecondary}
               linkColor={token.colorPrimary}
               fontSize={token.fontSizeSM}
-              chartData={sortedData}
+              chartData={chartData}
             />
           }
           tickLine={false}

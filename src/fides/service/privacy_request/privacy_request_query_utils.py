@@ -1,5 +1,4 @@
 # pylint: disable=too-many-branches, too-many-statements
-from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -15,7 +14,6 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
-    ACTIVE_REQUEST_STATUSES,
     MAX_BULK_FILTER_RESULTS,
     PrivacyRequestBulkSelection,
     PrivacyRequestFilter,
@@ -224,20 +222,6 @@ def filter_privacy_request_queryset(
             .distinct()
         )
         query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
-
-    if filters.is_overdue is True:
-        query = query.filter(
-            PrivacyRequest.due_date.isnot(None),
-            PrivacyRequest.due_date < datetime.now(timezone.utc),
-            PrivacyRequest.status.in_(list(ACTIVE_REQUEST_STATUSES)),
-        )
-    elif filters.is_overdue is False:
-        query = query.filter(
-            or_(
-                PrivacyRequest.due_date.is_(None),
-                PrivacyRequest.due_date >= datetime.now(timezone.utc),
-            )
-        )
 
     if not include_consent_webhook_requests:
         query = query.filter(

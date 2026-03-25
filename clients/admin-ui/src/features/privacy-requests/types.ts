@@ -130,7 +130,6 @@ export interface PrivacyRequestParams {
   id: string;
   from: string;
   to: string;
-  is_overdue?: boolean;
   page: number;
   size: number;
   verbose?: boolean;

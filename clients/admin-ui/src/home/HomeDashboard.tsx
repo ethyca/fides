@@ -70,14 +70,14 @@ export const HomeDashboard = () => {
           </Col>
         ))}
       </Row>
-      <div className="flex gap-6">
-        <div className="w-1/3 min-w-0 [&>*]:h-full">
+      <Row gutter={24}>
+        <Col xs={24} md={8}>
           <SystemCoverageCard />
-        </div>
-        <div className="w-2/3 min-w-0 [&>*]:h-full">
+        </Col>
+        <Col xs={24} md={16}>
           <DSRStatusCard />
-        </div>
-      </div>
+        </Col>
+      </Row>
       <DashboardDrawer />
     </Flex>
   );
