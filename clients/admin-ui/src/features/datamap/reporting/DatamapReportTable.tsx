@@ -21,7 +21,6 @@ import {
   CheckOutlined,
   Dropdown,
   Icons,
-  MoreIcon,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -32,7 +31,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { ExportFormat } from "~/features/datamap/constants";
@@ -614,7 +612,7 @@ export const DatamapReportTable = ({
                 aria-label="Export report"
                 data-testid="export-btn"
                 onClick={onExportReportOpen}
-                icon={<DownloadLightIcon ml="1.5px" />}
+                icon={<Icons.Download />}
               />
               <Dropdown
                 menu={{
@@ -637,7 +635,7 @@ export const DatamapReportTable = ({
                 overlayClassName="more-menu-list"
               >
                 <Button
-                  icon={<MoreIcon className="rotate-90" />}
+                  icon={<Icons.OverflowMenuVertical />}
                   data-testid="more-menu"
                   aria-label="More options"
                   className="w-6 gap-0"

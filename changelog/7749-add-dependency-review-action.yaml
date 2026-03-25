@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Added Dependency Review GitHub Actions workflow to surface new dependency vulnerabilities in PR comments
+pr: 7749
+labels: []

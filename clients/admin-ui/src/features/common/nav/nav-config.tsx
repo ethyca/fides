@@ -1,7 +1,6 @@
 import { Icons } from "fidesui";
 import { ReactNode } from "react";
 
-import { ACCESS_CONTROL_TAB_ITEMS } from "~/features/access-control/AccessControlTabs";
 import { FlagNames } from "~/features/common/features";
 import { NOTIFICATION_TAB_ITEMS } from "~/features/common/NotificationTabs";
 import { ACTION_CENTER_TAB_ITEMS } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
@@ -80,7 +79,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresFlag: "alphaPurposeBasedAccessControl",
         requiresPlus: true,
-        tabs: ACCESS_CONTROL_TAB_ITEMS,
       },
     ],
   },

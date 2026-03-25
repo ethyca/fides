@@ -29,14 +29,13 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
-  MoreIcon,
+  Icons,
   Spin,
   theme,
 } from "fidesui";
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
-import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 import {
   COLUMN_VERSION_DELIMITER,
@@ -154,7 +153,7 @@ const HeaderContent = <T,>({
         rightIcon={
           <HStack>
             {sortingDisplay[header.column.getIsSorted() as string]?.icon}
-            <MoreIcon transform="rotate(90deg)" />
+            <Icons.OverflowMenuVertical />
           </HStack>
         }
         title="Column options"
@@ -180,14 +179,14 @@ const HeaderContent = <T,>({
             color={isExpandAll ? "complimentary.500" : undefined}
             onClick={() => onExpandAll(header.id)}
           >
-            <DisplayAllIcon /> Expand all
+            <Icons.ExpandAll /> Expand all
           </MenuItem>
           <MenuItem
             gap={2}
             color={!isExpandAll ? "complimentary.500" : undefined}
             onClick={() => onGroupAll(header.id)}
           >
-            <GroupedIcon /> Collapse all
+            <Icons.CollapseAll /> Collapse all
           </MenuItem>
           {enableSorting && header.column.getCanSort() && (
             <MenuItem gap={2} onClick={header.column.getToggleSortingHandler()}>
