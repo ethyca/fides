@@ -29,8 +29,8 @@ jobs:
       # be verified. See: https://github.com/dependabot/dependabot-core/issues/11913
       - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
-          # Only post a comment when vulnerabilities are found
-          comment-summary-in-pr: on-failure
+          # Always post so that a clean push overwrites any previous warning
+          comment-summary-in-pr: always
           # fail-on-severity causes the step to fail on HIGH+, but
           # continue-on-error ensures the workflow never blocks merging.
           # The intent is visibility (PR comment) only, not enforcement.
