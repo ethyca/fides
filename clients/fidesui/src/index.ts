@@ -256,6 +256,7 @@ export {
   Modal,
   notification,
   Pagination,
+  Popconfirm,
   Popover,
   Progress,
   Radio,
@@ -421,7 +422,6 @@ export const { Text, Title, Paragraph, Link } = CustomTypography;
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
-export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 export {
   CarryOutOutlined,

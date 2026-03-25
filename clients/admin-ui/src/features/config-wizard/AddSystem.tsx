@@ -4,6 +4,7 @@ import {
   ChakraSimpleGrid as SimpleGrid,
   ChakraStack as Stack,
   ChakraText as Text,
+  ManualSetupIcon,
   useModal,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -12,17 +13,14 @@ import { useRouter } from "next/router";
 import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import {
-  AWSLogoIcon,
-  ManualSetupIcon,
-  OktaLogoIcon,
-} from "~/features/common/Icon";
-import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
 } from "~/features/common/nav/routes";
 import { ValidTargets } from "~/types/api";
 
 import CalloutNavCard from "../common/CalloutNavCard";
+import { AWSLogo } from "../common/logos/AWSLogo";
+import { OktaLogo } from "../common/logos/OktaLogo";
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { SystemMethods } from "./types";
 
@@ -79,7 +77,7 @@ const AddSystem = () => {
             <CalloutNavCard
               title="Add a system"
               color={palette.FIDESUI_SANDSTONE}
-              icon={<ManualSetupIcon boxSize={6} />}
+              icon={<ManualSetupIcon size={24} />}
               description="Manually add a system for services not covered by AWS or Okta discovery"
             />
           </button>
@@ -114,7 +112,7 @@ const AddSystem = () => {
             <CalloutNavCard
               title="Add multiple systems"
               color={palette.FIDESUI_OLIVE}
-              icon={<ManualSetupIcon boxSize={6} />}
+              icon={<ManualSetupIcon size={24} />}
               description="Choose vendors and automatically populate system details"
             />
           </button>
@@ -138,7 +136,7 @@ const AddSystem = () => {
               title="Scan your infrastructure (AWS)"
               color={palette.FIDESUI_TERRACOTTA}
               description="Automatically discover new systems in your AWS infrastructure"
-              icon={<AWSLogoIcon boxSize={6} />}
+              icon={<AWSLogo size={24} />}
             />
           </button>
           <button
@@ -155,7 +153,7 @@ const AddSystem = () => {
               title="Scan your Sign On Provider (Okta)"
               color={palette.FIDESUI_MINOS}
               description="Automatically discover new systems in your Okta infrastructure"
-              icon={<OktaLogoIcon boxSize={6} />}
+              icon={<OktaLogo size={24} />}
             />
           </button>
         </SimpleGrid>

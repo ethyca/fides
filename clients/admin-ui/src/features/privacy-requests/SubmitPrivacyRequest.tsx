@@ -2,7 +2,7 @@ import {
   ChakraChevronDownIcon as ChevronDownIcon,
   ChakraStack as Stack,
   Dropdown,
-  LinkIcon,
+  Icons,
   Modal,
   useMessage,
 } from "fidesui";
@@ -149,7 +149,7 @@ const SubmitPrivacyRequest = () => {
             {
               label: "Create request link",
               key: "create-request-link",
-              icon: <LinkIcon />,
+              icon: <Icons.Link />,
               onClick: handleCreateLinkOpen,
               disabled: !hasPrivacyCenterUrl,
             },

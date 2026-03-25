@@ -1,0 +1,4 @@
+type: Changed
+description: Added isDisabled and web fields to Entra Graph API application queries
+pr: 7734
+labels: []

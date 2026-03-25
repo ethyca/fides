@@ -1,0 +1,4 @@
+type: Changed
+description: Consolidate custom icons to Carbon design system equivalents and clean up unused icon components
+pr: 7738
+labels: []
