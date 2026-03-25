@@ -1246,6 +1246,23 @@ dataset:
     - name: replaceable
       description: 'Fides Generated Description for Column: replaceable'
       data_categories: [system.operations]
+  - name: dashboard_snapshot
+    data_categories: [system.operations]
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: metadata
+      data_categories: [system.operations]
+    - name: metric_key
+      data_categories: [system.operations]
+    - name: snapshot_date
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: value
+      data_categories: [system.operations]
   - name: datasetconfig
     data_categories: []
     fields:
