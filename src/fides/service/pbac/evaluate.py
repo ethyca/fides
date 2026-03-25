@@ -41,7 +41,7 @@ def evaluate_access(
 
     for dataset_key in query.dataset_keys:
         ds_purposes = datasets.get(dataset_key)
-        collections = query.collections.get(dataset_key, [])
+        collections: list[str] = query.collections.get(dataset_key, [])
 
         if collections:
             # Check each collection individually

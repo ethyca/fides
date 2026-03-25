@@ -9,8 +9,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-import sqlglot
-import sqlglot.expressions as exp
+import sqlglot  # type: ignore[import-not-found]
+import sqlglot.expressions as exp  # type: ignore[import-not-found]
 
 from fides.service.pbac.types import RawQueryLogEntry, TableRef
 

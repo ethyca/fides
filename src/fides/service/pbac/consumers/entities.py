@@ -8,7 +8,9 @@ from typing import TYPE_CHECKING, Any, Optional
 from fides.service.pbac.purposes.entities import DataPurposeEntity
 
 if TYPE_CHECKING:
-    from fides.api.models.data_consumer import DataConsumer
+    from fides.api.models.data_consumer import (
+        DataConsumer,  # type: ignore[import-not-found]
+    )
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
