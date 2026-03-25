@@ -6,9 +6,10 @@ import {
   ChakraFlex as Flex,
   ChakraStack as Stack,
   ChakraText as Text,
-  GreenCheckCircleIcon,
+  Icons,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useFormikContext } from "formik";
 import React from "react";
 
@@ -63,7 +64,7 @@ const RoleOption = ({
           <Text fontSize="md" fontWeight="semibold">
             {label}
           </Text>
-          <GreenCheckCircleIcon />
+          <Icons.CheckmarkFilled color={palette.FIDESUI_SUCCESS} />
         </Flex>
         {/* The approver and respondent roles cannot be assigned systems */}
         {roleKey !== RoleRegistryEnum.APPROVER &&

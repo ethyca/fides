@@ -64,6 +64,10 @@ export const statusPropMap: {
     colorScheme: CUSTOM_TAG_COLOR.DEFAULT,
     label: "Duplicate",
   },
+  pending_external: {
+    colorScheme: CUSTOM_TAG_COLOR.MARBLE,
+    label: "Pending External",
+  },
 };
 
 export const RequestStatusBadgeCell = ({

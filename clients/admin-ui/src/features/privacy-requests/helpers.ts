@@ -42,6 +42,7 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
   ],
   [PrivacyRequestStatus.CANCELED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.ERROR]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.PENDING_EXTERNAL]: [BulkActionType.DELETE],
 } as const;
 
 /**

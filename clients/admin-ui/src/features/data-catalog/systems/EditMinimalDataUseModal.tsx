@@ -1,10 +1,10 @@
 import {
   Button,
-  ChakraChevronDownIcon as ChevronDownIcon,
   ChakraCollapse as Collapse,
   ChakraStack as Stack,
   ChakraText as Text,
   Flex,
+  Icons,
   Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -120,7 +120,7 @@ const EditMinimalDataUseModal = ({
                   onClick={onToggleAdvancedSettings}
                 >
                   <Text fontSize="xs">Advanced settings</Text>
-                  <ChevronDownIcon
+                  <Icons.ChevronDown
                     className={
                       isAdvancedSettingsOpen ? "rotate-180" : undefined
                     }

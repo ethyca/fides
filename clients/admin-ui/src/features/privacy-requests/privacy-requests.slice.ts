@@ -6,7 +6,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
-  Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
+  Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
   PrivacyCenterConfig,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
@@ -405,7 +405,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       },
     }),
     searchPrivacyRequests: build.query<
-      Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
+      Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
       SearchFilterParams & { page: number; size: number }
     >({
       providesTags: () => ["Request"],
