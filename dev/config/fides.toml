@@ -43,10 +43,6 @@ healthcheck_ping_timeout = 2.0 # number
 #--------------------------------------------------------------------#
 [cli] # Configuration settings for the command-line application.
 
-# A fully anonymized unique identifier that is automatically generated
-# by the application. Used for anonymous analytics when opted-in.
-analytics_id = "fc94905fa19aad37722e349ea01c03de" # string
-
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
 local_mode = false # boolean
@@ -548,8 +544,8 @@ bastion_server_ssh_tunnel_timeout = 10 # number
 #--------------------------------------------------------------------#
 [user] # Configuration settings that apply to the current user as opposed to the entire application instance.
 
-# When set to true, prevents sending privacy-respecting anonymous
-# analytics data to Ethyca.
+# Deprecated. Previously controlled anonymous analytics. Retained for
+# backwards compatibility only.
 analytics_opt_out = true # boolean
 
 # An arbitrary string used to encrypt the user data stored in the

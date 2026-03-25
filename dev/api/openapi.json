@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.2b2.dev31+g27b946119"
+    "version": "2.81.2b2.dev32+gadfbc7c2c"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18844,68 +18844,6 @@
         ]
       }
     },
-    "/api/v1/registration": {
-      "get": {
-        "tags": [
-          "Registration"
-        ],
-        "summary": "Get Registration Status",
-        "description": "Return the registration status of this Fides deployment.",
-        "operationId": "get_registration_status_api_v1_registration_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetRegistrationStatusResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Registration"
-        ],
-        "summary": "Update Registration Status",
-        "description": "Return the registration status of this Fides deployment.",
-        "operationId": "update_registration_status_api_v1_registration_put",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Registration"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registration"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/worker-stats": {
       "get": {
         "tags": [
@@ -27334,19 +27272,6 @@
         "title": "GenerateTypes",
         "description": "Generate Type Enum to capture the discrete possible values\nfor a valid type of resource to generate."
       },
-      "GetRegistrationStatusResponse": {
-        "properties": {
-          "opt_in": {
-            "type": "boolean",
-            "title": "Opt In",
-            "default": false
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "GetRegistrationStatusResponse",
-        "description": "Reflects the registration status of a Fides deployment."
-      },
       "GoogleCloudSQLIPType": {
         "type": "string",
         "enum": [
@@ -33292,51 +33217,6 @@
         ],
         "title": "RedshiftDocsSchema",
         "description": "Redshift Secrets Schema for API Docs"
-      },
-      "Registration": {
-        "properties": {
-          "opt_in": {
-            "type": "boolean",
-            "title": "Opt In"
-          },
-          "analytics_id": {
-            "type": "string",
-            "title": "Analytics Id"
-          },
-          "user_email": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "email"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "User Email"
-          },
-          "user_organization": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "User Organization"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "opt_in",
-          "analytics_id",
-          "user_email",
-          "user_organization"
-        ],
-        "title": "Registration",
-        "description": "Describes a Fides registration."
       },
       "RequestTaskCallbackRequest": {
         "properties": {

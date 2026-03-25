@@ -1151,34 +1151,6 @@ You're not viewing the latest version.
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../development/fideslog/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    User Analytics
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2261,11 +2233,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">562</span>
 <span class="normal">563</span>
 <span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">565</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2309,10 +2277,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1">#-- CLI --#</span>
 <span class="c1">#--------------------------------------------------------------------#</span>
 <span class="k">[cli]</span><span class="w"> </span><span class="c1"># Configuration settings for the command-line application.</span>
-
-<span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
-<span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fc94905fa19aad37722e349ea01c03de&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2815,8 +2779,8 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1">#--------------------------------------------------------------------#</span>
 <span class="k">[user]</span><span class="w"> </span><span class="c1"># Configuration settings that apply to the current user as opposed to the entire application instance.</span>
 
-<span class="c1"># When set to true, prevents sending privacy-respecting anonymous</span>
-<span class="c1"># analytics data to Ethyca.</span>
+<span class="c1"># Deprecated. Previously controlled anonymous analytics. Retained for</span>
+<span class="c1"># backwards compatibility only.</span>
 <span class="n">analytics_opt_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># An arbitrary string used to encrypt the user data stored in the</span>
