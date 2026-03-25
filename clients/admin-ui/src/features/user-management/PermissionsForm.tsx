@@ -1,17 +1,16 @@
 import { useHasPermission } from "common/Restrict";
 import {
   Button,
-  ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
-  ChakraStack as Stack,
-  ChakraText as Text,
+  Flex,
+  Spin,
   Tooltip,
+  Typography,
   useMessage,
   useModal,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -36,10 +35,19 @@ const defaultInitialValues = {
 
 export type FormValues = typeof defaultInitialValues;
 
+/**
+ * Legacy permissions form for non-RBAC mode.
+ *
+ * When RBAC is enabled (alphaRbac flag), UserManagementTabs renders RolesForm
+ * instead of this component. This component only handles legacy permissions.
+ */
+const { Text } = Typography;
+
 const PermissionsForm = () => {
   const message = useMessage();
   const router = useRouter();
   const modal = useModal();
+
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
@@ -55,6 +63,7 @@ const PermissionsForm = () => {
     setAssignedSystems(initialManagedSystems);
   }, [initialManagedSystems]);
 
+  // Legacy permission hooks
   const { data: userPermissions, isLoading } = useGetUserPermissionsQuery(
     activeUserId ?? "",
     {
@@ -66,9 +75,22 @@ const PermissionsForm = () => {
     useUpdateUserPermissionsMutation();
 
   // Check if the current user is an external respondent
-  const isExternalRespondent = Boolean(
-    userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
-  );
+  const isExternalRespondent = useMemo(() => {
+    return Boolean(
+      userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
+    );
+  }, [userPermissions?.roles]);
+
+  const initialValues = useMemo(() => {
+    return userPermissions?.roles
+      ? { roles: userPermissions.roles }
+      : defaultInitialValues;
+  }, [userPermissions?.roles]);
+
+  // Check if target user is an owner
+  const targetUserIsOwner = useMemo(() => {
+    return userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
+  }, [userPermissions?.roles]);
 
   const updatePermissions = async (values: FormValues) => {
     if (!activeUserId) {
@@ -143,13 +165,10 @@ const PermissionsForm = () => {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
-  if (
-    !canAssignOwner &&
-    userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
-  ) {
+  if (!canAssignOwner && targetUserIsOwner) {
     return (
       <Text data-testid="insufficient-access">
         You do not have sufficient access to change this user&apos;s
@@ -157,10 +176,6 @@ const PermissionsForm = () => {
       </Text>
     );
   }
-
-  const initialValues = userPermissions?.roles
-    ? { roles: userPermissions.roles }
-    : defaultInitialValues;
 
   // Filter roles based on whether the user is external respondent
   const availableRoles = ROLES.filter((role) => {
@@ -187,12 +202,10 @@ const PermissionsForm = () => {
     >
       {({ values, isSubmitting, dirty }) => (
         <Form>
-          <Stack spacing={7}>
-            <Stack spacing={3} data-testid="role-options">
-              <Flex alignItems="center">
-                <Text fontSize="sm" fontWeight="semibold" mr={1}>
-                  User role
-                </Text>
+          <Flex vertical gap={28}>
+            <Flex vertical gap={12} data-testid="role-options">
+              <Flex align="center">
+                <Text className="mr-1 text-sm font-semibold">User role</Text>
                 <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
               {availableRoles.map((role) => {
@@ -224,7 +237,7 @@ const PermissionsForm = () => {
                   </Button>
                 </Tooltip>
               )}
-            </Stack>
+            </Flex>
             <div>
               <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
                 Cancel
@@ -245,7 +258,7 @@ const PermissionsForm = () => {
                 </Button>
               </Tooltip>
             </div>
-          </Stack>
+          </Flex>
         </Form>
       )}
     </Formik>
