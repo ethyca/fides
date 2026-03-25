@@ -1,0 +1,4 @@
+type: Changed
+description: Updated fideslang to 3.1.3 to add `data_purposes` support at dataset, collection, field, and sub-field levels
+pr: 7674
+labels: []

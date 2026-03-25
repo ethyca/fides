@@ -697,6 +697,9 @@ dataset:
     - name: data_categories
       data_categories:
       - system.operations
+    - name: data_purposes
+      data_categories:
+      - system.operations
     - name: description
       data_categories:
       - system.operations
