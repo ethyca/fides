@@ -30,11 +30,11 @@
       "outputs": [".next/*", "!.next/cache/*"]
     },
     "check": {
-      "dependsOn": [],
+      "dependsOn": ["^build"],
       "cache": false
     },
     "check:ci": {
-      "dependsOn": []
+      "dependsOn": ["^build"]
     },
     "lint": {
       "dependsOn": [],
