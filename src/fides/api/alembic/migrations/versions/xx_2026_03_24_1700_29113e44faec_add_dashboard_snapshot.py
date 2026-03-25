@@ -49,6 +49,7 @@ def upgrade():
             name="uq_dashboard_snapshot_date_metric",
         ),
     )
+    op.create_index("ix_dashboard_snapshot_id", "dashboard_snapshot", ["id"])
     op.create_index(
         "ix_dashboard_snapshot_snapshot_date",
         "dashboard_snapshot",
@@ -64,4 +65,5 @@ def upgrade():
 def downgrade():
     op.drop_index("ix_dashboard_snapshot_metric_key", table_name="dashboard_snapshot")
     op.drop_index("ix_dashboard_snapshot_snapshot_date", table_name="dashboard_snapshot")
+    op.drop_index("ix_dashboard_snapshot_id", table_name="dashboard_snapshot")
     op.drop_table("dashboard_snapshot")
