@@ -11,10 +11,10 @@ import {
 import {
   Button,
   ChakraBox as Box,
-  ChakraEditIcon as EditIcon,
   ChakraHStack as HStack,
   ChakraText as Text,
   ChakraVStack as VStack,
+  Icons,
 } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
@@ -171,7 +171,7 @@ const DataSets: NextPage = () => {
               <HStack spacing={0} data-testid={`dataset-${dataset.fides_key}`}>
                 <Button
                   size="small"
-                  icon={<EditIcon />}
+                  icon={<Icons.Edit />}
                   onClick={() => {
                     setSelectedDatasetForEditing(dataset);
                     setIsEditingDataset(true);

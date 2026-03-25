@@ -1,14 +1,13 @@
 import { Table as TableInstance, Updater } from "@tanstack/react-table";
 import {
   Button,
-  ChakraChevronLeftIcon as ChevronLeftIcon,
-  ChakraChevronRightIcon as ChevronRightIcon,
   ChakraHStack as HStack,
   ChakraMenu as Menu,
   ChakraMenuButton as MenuButton,
   ChakraMenuItem as MenuItem,
   ChakraMenuList as MenuList,
   ChakraText as Text,
+  Icons,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
@@ -155,14 +154,14 @@ export const PaginationBar = ({
       </MenuList>
     </Menu>
     <Button
-      icon={<ChevronLeftIcon />}
+      icon={<Icons.ChevronLeft />}
       size="small"
       aria-label="previous page"
       onClick={onPreviousPageClick}
       disabled={isPreviousPageDisabled}
     />
     <Button
-      icon={<ChevronRightIcon />}
+      icon={<Icons.ChevronRight />}
       size="small"
       aria-label="next page"
       onClick={onNextPageClick}

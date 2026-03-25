@@ -7,8 +7,6 @@ import {
   Table as TableInstance,
 } from "@tanstack/react-table";
 import {
-  ChakraArrowDownIcon as ArrowDownIcon,
-  ChakraArrowUpIcon as ArrowUpIcon,
   ChakraBox as Box,
   ChakraButton as Button,
   ChakraCheckbox as Checkbox,
@@ -19,7 +17,6 @@ import {
   ChakraMenuItem as MenuItem,
   ChakraMenuList as MenuList,
   ChakraPortal as Portal,
-  ChakraSmallCloseIcon as SmallCloseIcon,
   ChakraTable as Table,
   ChakraTableCellProps as TableCellProps,
   ChakraTableContainer as TableContainer,
@@ -69,8 +66,8 @@ declare module "@tanstack/table-core" {
 export const sortingDisplay: {
   [key: string]: { icon: JSX.Element; title: string };
 } = {
-  asc: { icon: <ArrowUpIcon />, title: "Sort ascending" },
-  desc: { icon: <ArrowDownIcon />, title: "Sort descending" },
+  asc: { icon: <Icons.ArrowUp />, title: "Sort ascending" },
+  desc: { icon: <Icons.ArrowDown />, title: "Sort descending" },
 };
 
 const tableHeaderButtonStyles = {
@@ -191,7 +188,7 @@ const HeaderContent = <T,>({
           {enableSorting && header.column.getCanSort() && (
             <MenuItem gap={2} onClick={header.column.getToggleSortingHandler()}>
               {sortingDisplay[header.column.getNextSortingOrder() as string]
-                ?.icon ?? <SmallCloseIcon />}
+                ?.icon ?? <Icons.Close />}
               {sortingDisplay[header.column.getNextSortingOrder() as string]
                 ?.title ?? "Clear sort"}
             </MenuItem>
