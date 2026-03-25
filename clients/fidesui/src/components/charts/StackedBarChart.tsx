@@ -73,10 +73,7 @@ const StackedBarTooltipContent = ({
       {segments
         .filter((segment) => (entry[`raw_${segment.key}`] as number) > 0)
         .map((segment) => (
-          <Text
-            key={segment.key}
-            style={{ color: token.colorTextSecondary }}
-          >
+          <Text key={segment.key} style={{ color: token.colorTextSecondary }}>
             {segment.label}: {entry[`raw_${segment.key}`]}
           </Text>
         ))}

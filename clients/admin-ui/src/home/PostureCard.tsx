@@ -12,9 +12,7 @@ import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 import { setDimensionFilter } from "./useDimensionFilter";
 
-function getDiffPrefix(
-  direction: DiffDirection,
-): React.ReactNode | undefined {
+function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
   if (direction === DiffDirection.UNCHANGED) {
     return undefined;
   }

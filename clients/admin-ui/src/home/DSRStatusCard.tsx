@@ -1,5 +1,5 @@
-import { Card, Flex, Icons, StackedBarChart, Statistic, Text } from "fidesui";
 import { theme } from "antd/lib";
+import { Card, Flex, Icons, StackedBarChart, Statistic, Text } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
@@ -46,7 +46,7 @@ export const DSRStatusCard = () => {
       title="DSR Status"
       extra={
         <NextLink href={PRIVACY_REQUESTS_ROUTE} className={styles.viewAllLink}>
-          <Flex align="center" gap={4} className="text-xs">
+          <Flex align="center" gap={4}>
             View all requests
             <Icons.ArrowRight size={12} />
           </Flex>

@@ -21,9 +21,10 @@ export const SystemCoverageCard = () => {
       title="System Coverage"
       variant="borderless"
       loading={isLoading}
+      className="h-full"
       extra={
         <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref>
-          Connect systems
+          Connect more systems
         </NextLink>
       }
     >

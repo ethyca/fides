@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useCallback, useState } from "react";
 
-import { RadarChart, RadarChartProps } from "../../index";
+import { RadarChart } from "../../index";
 import { COLOR_OPTIONS } from "./chart-constants";
 
 const sampleData = [
@@ -21,21 +20,6 @@ const sampleDataNoStatus = [
   { subject: "Enforcement", value: 70 },
   { subject: "Assessments", value: 55 },
 ];
-
-const AnimatedRadarChart = (props: RadarChartProps) => {
-  const [animationKey, setAnimationKey] = useState(0);
-
-  const handleClick = useCallback(() => {
-    setAnimationKey((prev) => prev + 1);
-  }, []);
-
-  return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-    <div className="h-full w-full cursor-pointer" onClick={handleClick}>
-      <RadarChart key={animationKey} {...props} />
-    </div>
-  );
-};
 
 const meta = {
   title: "Charts/RadarChart",
@@ -74,18 +58,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const WithStatus: Story = {
-  args: {
-    data: sampleData,
-  },
-  render: (args) => <AnimatedRadarChart {...args} />,
-};
-
 export const Default: Story = {
   args: {
     data: sampleDataNoStatus,
   },
-  render: (args) => <AnimatedRadarChart {...args} />,
+};
+
+export const WithStatus: Story = {
+  args: {
+    data: sampleData,
+  },
+};
+
+export const WithTooltip: Story = {
+  args: {
+    data: sampleData,
+    tooltipContent: (point) => `${point.subject}: ${point.value}%`,
+  },
 };
 
 export const WithWeights: Story = {
@@ -96,10 +85,14 @@ export const WithWeights: Story = {
       { subject: "Consent", value: 50, weight: 15, status: "warning" as const },
       { subject: "DSR", value: 30, weight: 10, status: "error" as const },
       { subject: "Enforcement", value: 70, weight: 15 },
-      { subject: "Assessments", value: 45, weight: 15, status: "warning" as const },
+      {
+        subject: "Assessments",
+        value: 45,
+        weight: 15,
+        status: "warning" as const,
+      },
     ],
   },
-  render: (args) => <AnimatedRadarChart {...args} />,
 };
 
 export const NoData: Story = {

@@ -34,10 +34,14 @@ const SafeHydrate = ({ children }: { children: ReactNode }) => (
 );
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
-  const [mswReady, setMswReady] = React.useState(!process.env.NEXT_PUBLIC_MOCK_API);
+  const [mswReady, setMswReady] = React.useState(
+    !process.env.NEXT_PUBLIC_MOCK_API,
+  );
 
   React.useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_MOCK_API) return;
+    if (!process.env.NEXT_PUBLIC_MOCK_API) {
+      return;
+    }
     import("../mocks")
       .then(({ initMocks }) => initMocks())
       .then(() => setMswReady(true));
@@ -51,7 +55,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     }
   }, []);
 
-  if (!mswReady) return null;
+  if (!mswReady) {
+    return null;
+  }
 
   return (
     <SafeHydrate>

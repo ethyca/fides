@@ -1,7 +1,7 @@
 import { theme } from "antd/lib";
 import classNames from "classnames";
 import type { ReactNode } from "react";
-import { useId, useMemo } from "react";
+import { useCallback, useId, useMemo } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -34,7 +34,7 @@ function catmullRomClosedPath(
   }
 
   const segments: string[] = [];
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < n; i += 1) {
     const p0 = points[(i - 1 + n) % n];
     const p1 = points[i];
     const p2 = points[(i + 1) % n];
@@ -88,14 +88,8 @@ export interface RadarChartDataPoint {
   status?: RadarPointStatus;
 }
 
-const EMPTY_PLACEHOLDER_DATA: RadarChartDataPoint[] = [
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-];
+/** Minimal data so Recharts renders the PolarGrid when there's no real data. */
+const EMPTY_GRID_DATA = [{ value: 100 }, { value: 100 }, { value: 100 }];
 
 const TICK_HIT_WIDTH = 80;
 const TICK_HIT_HEIGHT = 20;
@@ -223,6 +217,24 @@ const RadarDot = ({
   );
 };
 
+interface WeightShapeProps {
+  points: { x: number; y: number }[];
+  chartColor: string;
+  gradientId: string;
+}
+
+const WeightShape = ({ points, chartColor, gradientId }: WeightShapeProps) => (
+  <path
+    d={catmullRomClosedPath(points)}
+    stroke={chartColor}
+    strokeWidth={CHART_STROKE.strokeWidth * 0.5}
+    strokeOpacity={0.15}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    fill={`url(#${gradientId})`}
+  />
+);
+
 export const RadarChart = ({
   data,
   color,
@@ -243,6 +255,17 @@ export const RadarChart = ({
 
   const animationActive = useChartAnimation(animationDuration);
 
+  const renderWeightShape = useCallback(
+    (props: { points: { x: number; y: number }[] }) => (
+      <WeightShape
+        points={props.points}
+        chartColor={chartColor}
+        gradientId={weightGradientId}
+      />
+    ),
+    [chartColor, weightGradientId],
+  );
+
   const STATUS_COLORS = useMemo<Record<RadarPointStatus, string>>(
     () => ({
       success: token.colorSuccess,
@@ -262,7 +285,7 @@ export const RadarChart = ({
     >
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart
-          data={empty ? EMPTY_PLACEHOLDER_DATA : data}
+          data={empty ? EMPTY_GRID_DATA : data}
           cx="50%"
           cy="50%"
           outerRadius={outerRadius}
@@ -290,7 +313,9 @@ export const RadarChart = ({
             />
           )}
 
-          <PolarRadiusAxis tick={false} axisLine={false} />
+          <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
+
+          {empty && <Radar dataKey="value" fill="none" stroke="none" />}
 
           {hasWeights && (
             <Radar
@@ -306,17 +331,7 @@ export const RadarChart = ({
               isAnimationActive={animationDuration > 0 && animationActive}
               animationDuration={animationDuration}
               animationEasing={CHART_ANIMATION.easing}
-              shape={(props: { points: { x: number; y: number }[] }) => (
-                <path
-                  d={catmullRomClosedPath(props.points)}
-                  stroke={chartColor}
-                  strokeWidth={CHART_STROKE.strokeWidth * 0.5}
-                  strokeOpacity={0.15}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill={`url(#${weightGradientId})`}
-                />
-              )}
+              shape={renderWeightShape}
             />
           )}
 
@@ -345,13 +360,6 @@ export const RadarChart = ({
             />
           )}
 
-          {interactive && !empty && (
-            <Tooltip
-              cursor={false}
-              content={<RadarTooltipContent tooltipContent={tooltipContent} />}
-            />
-          )}
-
           {!empty && (
             <PolarAngleAxis
               dataKey="subject"
@@ -363,6 +371,13 @@ export const RadarChart = ({
                   onDimensionClick={onDimensionClick}
                 />
               }
+            />
+          )}
+
+          {interactive && !empty && (
+            <Tooltip
+              cursor={false}
+              content={<RadarTooltipContent tooltipContent={tooltipContent} />}
             />
           )}
         </RechartsRadarChart>

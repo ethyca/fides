@@ -41,11 +41,7 @@ export const HomeDashboard = () => {
   }, []);
 
   return (
-    <Flex
-      vertical
-      gap={24}
-      className="mx-auto w-full max-w-[1600px] px-10 py-6"
-    >
+    <Flex vertical gap={24} className="mx-auto w-full max-w-[1600px] py-6">
       {briefing && showBriefing && (
         <AgentBriefingBanner
           briefing={briefing.briefing}

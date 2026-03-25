@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp } from "@carbon/icons-react";
-import { Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
 import { theme } from "antd/lib";
+import { Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
 
 import { nFormatter } from "~/features/common/utils";
 import type { TrendMetric } from "~/features/dashboard/types";
@@ -79,7 +79,7 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
     <Card
       variant="borderless"
       title={config?.label ?? metricKey}
-      className="overflow-clip h-full"
+      className="h-full text-clip"
       cover={
         !isLoading ? (
           <div className="h-16">

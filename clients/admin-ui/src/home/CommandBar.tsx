@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowRight, ArrowUp } from "@carbon/icons-react";
-import { Flex, Statistic, Text } from "fidesui";
 import { theme } from "antd/lib";
+import { Flex, Statistic, Text } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
