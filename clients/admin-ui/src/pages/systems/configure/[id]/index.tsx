@@ -1,4 +1,4 @@
-import { Button, ChakraText as Text, PageSpinner, Tabs } from "fidesui";
+import { Button, Icons, PageSpinner, Tabs } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
-import { GearLightIcon } from "~/features/common/Icon";
 import Layout from "~/features/common/Layout";
 import {
   INTEGRATION_MANAGEMENT_ROUTE,
@@ -104,13 +103,13 @@ const ConfigureSystem: NextPage = () => {
         tabBarExtraContent={
           isPlusEnabled && (
             <Button
-              size="small"
-              className="absolute right-2 top-2"
+              className="absolute right-0 top-2"
               data-testid="integration-page-btn"
+              iconPlacement="end"
+              icon={<Icons.Settings />}
               onClick={() => router.push(INTEGRATION_MANAGEMENT_ROUTE)}
             >
-              <Text>Integrations</Text>
-              <GearLightIcon marginLeft={2} />
+              Integrations
             </Button>
           )
         }
