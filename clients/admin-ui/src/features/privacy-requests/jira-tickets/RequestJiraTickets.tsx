@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestStatus } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import LinkJiraTicketModal from "./LinkJiraTicketModal";
@@ -33,12 +34,12 @@ const statusColorMap: Record<string, CUSTOM_TAG_COLOR> = {
 const getStatusColor = (status: string): CUSTOM_TAG_COLOR =>
   statusColorMap[status.toLowerCase()] ?? CUSTOM_TAG_COLOR.DEFAULT;
 
-const LINK_ALLOWED_STATUSES = new Set([
-  "approved",
-  "in_processing",
-  "paused",
-  "pending_external",
-  "requires_input",
+const LINK_ALLOWED_STATUSES = new Set<string>([
+  PrivacyRequestStatus.APPROVED,
+  PrivacyRequestStatus.IN_PROCESSING,
+  PrivacyRequestStatus.PAUSED,
+  PrivacyRequestStatus.PENDING_EXTERNAL,
+  PrivacyRequestStatus.REQUIRES_INPUT,
 ]);
 
 interface JiraTicketRowProps {
