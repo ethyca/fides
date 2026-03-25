@@ -6,12 +6,12 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { useFlags } from "~/features/common/features";
 import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
+import { useFlags } from "~/features/common/features";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
