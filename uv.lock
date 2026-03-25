@@ -917,18 +917,6 @@ wheels = [
 ]
 
 [[package]]
-name = "ecdsa"
-version = "0.18.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "six" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ff/7b/ba6547a76c468a0d22de93e89ae60d9561ec911f59532907e72b0d8bc0f1/ecdsa-0.18.0.tar.gz", hash = "sha256:190348041559e21b22a1d65cee485282ca11a6f81d503fddb84d5017e9ed1e49", size = 197938, upload-time = "2022-07-09T13:02:49.468Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/d4/4f05f5d16a4863b30ba96c23b23e942da8889abfa1cdbabf2a0df12a4532/ecdsa-0.18.0-py2.py3-none-any.whl", hash = "sha256:80600258e7ed2f16b9aa1d7c295bd70194109ad5a30fdee0eaeefef1d4c559dd", size = 142915, upload-time = "2022-07-09T13:02:46.354Z" },
-]
-
-[[package]]
 name = "email-validator"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -981,7 +969,6 @@ dependencies = [
     { name = "dask" },
     { name = "deepdiff" },
     { name = "defusedxml" },
-    { name = "ecdsa" },
     { name = "email-validator" },
     { name = "expandvars" },
     { name = "fastapi", extra = ["all"] },
@@ -1145,7 +1132,6 @@ requires-dist = [
     { name = "dask", specifier = "==2025.11.0" },
     { name = "deepdiff", specifier = "==8.6.2" },
     { name = "defusedxml", specifier = "==0.7.1" },
-    { name = "ecdsa", specifier = "==0.18.0" },
     { name = "email-validator", specifier = "~=2.3.0" },
     { name = "expandvars", specifier = "==0.9.0" },
     { name = "fastapi", extras = ["all"], specifier = "==0.123.3" },
