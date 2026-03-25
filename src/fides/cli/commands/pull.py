@@ -4,7 +4,7 @@ import rich_click as click
 from click_default_group import DefaultGroup
 
 from fides.cli.options import fides_key_argument, manifests_dir_argument
-from fides.cli.utils import with_analytics, with_server_health_check
+from fides.cli.utils import with_server_health_check
 from fides.common.utils import echo_green, echo_red
 from fides.core import parse as _parse
 from fides.core import pull as _pull
@@ -30,7 +30,6 @@ def pull(ctx: click.Context) -> None:
     default=None,
     help="Pulls all locally missing resources from the server into this file.",
 )
-@with_analytics
 @with_server_health_check
 def pull_all(
     ctx: click.Context,
@@ -77,7 +76,6 @@ def pull_all(
     default=False,
     help="Write each dataset to a separate file named after its fides_key.",
 )
-@with_analytics
 @with_server_health_check
 def pull_dataset(
     ctx: click.Context,

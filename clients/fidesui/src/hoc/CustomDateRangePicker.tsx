@@ -1,7 +1,8 @@
-import { ArrowRight, Calendar } from "@carbon/icons-react";
 import { RangePickerProps } from "antd/es/date-picker";
 import { DatePicker } from "antd/lib";
 import React from "react";
+
+import { ArrowRight, Calendar } from "../icons/carbon";
 
 const withCustomProps = (WrappedComponent: typeof DatePicker.RangePicker) => {
   const WrappedSelect = ({

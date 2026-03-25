@@ -1,4 +1,3 @@
-import { ArrowRight } from "@carbon/icons-react";
 import { Flex, theme, Typography } from "antd/lib";
 import React, { type ReactNode, useCallback, useMemo } from "react";
 import {
@@ -10,6 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { ArrowRight } from "../../icons/carbon";
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";

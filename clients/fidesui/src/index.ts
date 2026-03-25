@@ -164,37 +164,6 @@ export type {
  */
 export { isNumeric as isChakraNumeric } from "@chakra-ui/utils";
 
-/**
- * @deprecated Chakra UI icons are deprecated and will be removed in a future release.
- * Please use Carbon icons (Icons.*) instead.
- */
-export {
-  ArrowBackIcon as ChakraArrowBackIcon,
-  ArrowDownIcon as ChakraArrowDownIcon,
-  ArrowForwardIcon as ChakraArrowForwardIcon,
-  ArrowUpIcon as ChakraArrowUpIcon,
-  BellIcon as ChakraBellIcon,
-  CheckCircleIcon as ChakraCheckCircleIcon,
-  CheckIcon as ChakraCheckIcon,
-  ChevronDownIcon as ChakraChevronDownIcon,
-  ChevronLeftIcon as ChakraChevronLeftIcon,
-  ChevronRightIcon as ChakraChevronRightIcon,
-  ChevronUpIcon as ChakraChevronUpIcon,
-  CloseIcon as ChakraCloseIcon,
-  DeleteIcon as ChakraDeleteIcon,
-  DragHandleIcon as ChakraDragHandleIcon,
-  EditIcon as ChakraEditIcon,
-  ExternalLinkIcon as ChakraExternalLinkIcon,
-  RepeatClockIcon as ChakraRepeatClockIcon,
-  RepeatIcon as ChakraRepeatIcon,
-  SmallAddIcon as ChakraSmallAddIcon,
-  SmallCloseIcon as ChakraSmallCloseIcon,
-  ViewOffIcon as ChakraViewOffIcon,
-  WarningTwoIcon as ChakraWarningTwoIcon,
-  // Icon utilities
-  createIcon as createChakraIcon,
-} from "@chakra-ui/icons";
-
 // Unmodified component exported directly from Ant Design
 export type { DisplayValueType } from "@rc-component/select/lib/interface";
 export type { ThemeConfig } from "antd/es";
@@ -438,7 +407,7 @@ export {
  * prefixed icons from Carbon Icons
  * @example <Icons.download size={14} />
  */
-export * as Icons from "@carbon/icons-react";
+export * as Icons from "./icons/carbon";
 /* end prefixed icons */
 
 export {
