@@ -3,7 +3,6 @@ from typing import List, Optional
 from zipfile import BadZipFile, ZipFile
 
 import yaml
-
 from fastapi import Body, Depends, HTTPException
 from fastapi.params import Security
 from fastapi.responses import JSONResponse, Response
@@ -309,7 +308,7 @@ def list_connector_template_versions(
         .order_by(SaaSConfigVersion.created_at.desc())
         .all()
     )
-    return rows
+    return [SaaSConfigVersionResponse.model_validate(row) for row in rows]
 
 
 @router.get(

@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import FidesBase
-from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.db.ctl_session import sync_session
 from fides.api.db.system import upsert_system
 from fides.api.models.application_config import ApplicationConfig
@@ -22,6 +21,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset,
     Organization,
@@ -333,6 +333,9 @@ def sync_oob_saas_config_versions(session: Session) -> None:
     Rows are immutable once written, so this is safe to call repeatedly.
     """
     # Import here to avoid circular imports at module load time
+    from fides.api.schemas.saas.saas_config import (
+        SaaSConfig,  # pylint: disable=import-outside-toplevel
+    )
     from fides.api.service.connectors.saas.connector_registry_service import (  # pylint: disable=import-outside-toplevel
         FileConnectorTemplateLoader,
     )
@@ -340,7 +343,6 @@ def sync_oob_saas_config_versions(session: Session) -> None:
         load_config_from_string,
         load_dataset_from_string,
     )
-    from fides.api.schemas.saas.saas_config import SaaSConfig  # pylint: disable=import-outside-toplevel
 
     templates = FileConnectorTemplateLoader.get_connector_templates()
     for connector_type, template in templates.items():

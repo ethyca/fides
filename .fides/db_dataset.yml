@@ -1163,6 +1163,24 @@ dataset:
     - name: enabled_actions
       description: 'The privacy actions that are enabled for this connection'
       data_categories: [system.operations]
+  - name: connection_config_saas_history
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: connection_config_id
+        data_categories: [system.operations]
+      - name: connection_key
+        data_categories: [system.operations]
+      - name: version
+        data_categories: [system.operations]
+      - name: config
+        data_categories: [system.operations]
+      - name: dataset
+        data_categories: [system.operations]
   - name: consent
     description: 'A database table used to map consent preference to identities'
     data_categories: []
@@ -3869,6 +3887,24 @@ dataset:
       - name: created_by
         data_categories: [user.unique_id]
       - name: is_default
+        data_categories: [system.operations]
+  - name: saas_config_version
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: connector_type
+        data_categories: [system.operations]
+      - name: version
+        data_categories: [system.operations]
+      - name: config
+        data_categories: [system.operations]
+      - name: dataset
+        data_categories: [system.operations]
+      - name: is_custom
         data_categories: [system.operations]
   - name: saas_template_dataset
     fields:
