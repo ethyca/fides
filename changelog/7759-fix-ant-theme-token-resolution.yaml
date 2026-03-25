@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed antd theme token resolution by aligning antTheme export to antd/lib
+pr: 7759
+labels: []
