@@ -225,6 +225,7 @@ export {
   Modal,
   notification,
   Pagination,
+  Popconfirm,
   Popover,
   Progress,
   Radio,
