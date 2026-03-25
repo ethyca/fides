@@ -28,7 +28,6 @@ nav:
           - Releases: development/releases.md
           - Using Postman: development/postman/using_postman.md
           - Updating the Database Diagram: development/update_erd_diagram.md
-          - User Analytics: development/fideslog.md
       - Community:
           - Github, Slack, and Discord: community/overview.md
           - Community Hints and Tips: community/hints_tips.md
