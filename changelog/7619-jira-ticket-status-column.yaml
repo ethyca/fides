@@ -1,0 +1,4 @@
+type: Added
+description: Added Jira ticket status and link to privacy request cards, and pending_external request status
+pr: 7619
+labels: []

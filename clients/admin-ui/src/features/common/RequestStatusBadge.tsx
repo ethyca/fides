@@ -60,6 +60,10 @@ export const statusPropMap: {
     color: CUSTOM_TAG_COLOR.DEFAULT,
     label: "Duplicate",
   },
+  pending_external: {
+    color: CUSTOM_TAG_COLOR.MARBLE,
+    label: "Pending External",
+  },
 };
 
 interface RequestBadgeProps {
