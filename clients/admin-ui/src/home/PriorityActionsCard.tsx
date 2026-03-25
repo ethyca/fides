@@ -12,9 +12,6 @@ import {
 import NextLink from "next/link";
 import { type ReactNode, useMemo, useState } from "react";
 
-import RequestStatusBadge, {
-  statusPropMap,
-} from "~/features/common/RequestStatusBadge";
 import {
   ACTION_CTA,
   DIMENSION_LABELS,
@@ -137,27 +134,7 @@ export const PriorityActionsCard = () => {
                   />
                 }
                 title={action.title}
-                description={
-                  action.action_data?.status &&
-                  typeof action.action_data.status === "string" &&
-                  action.action_data.status in statusPropMap ? (
-                    <Flex vertical gap={2}>
-                      <Flex gap={4} align="center">
-                        <RequestStatusBadge
-                          status={
-                            action.action_data
-                              .status as keyof typeof statusPropMap
-                          }
-                        />
-                        <Text type="secondary" className="text-xs">
-                          {action.message}
-                        </Text>
-                      </Flex>
-                    </Flex>
-                  ) : (
-                    action.message
-                  )
-                }
+                description={action.message}
               />
             </List.Item>
           );

@@ -1,18 +1,9 @@
-.spinWrapper {
-  height: 100%;
-
-  :global(.ant-spin-container) {
-    height: 100%;
-  }
-}
-
 .cardContainer {
   height: 100%;
 
   :global(.ant-card-body) {
     display: flex;
     flex-direction: column;
-    flex: 1;
   }
 
   :global(.ant-statistic) {

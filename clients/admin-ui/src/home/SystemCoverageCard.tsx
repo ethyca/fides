@@ -18,7 +18,7 @@ export const SystemCoverageCard = () => {
 
   return (
     <Spin spinning={isLoading}>
-      <Card title="System coverage" variant="borderless">
+      <Card title="System Coverage" variant="borderless">
         <Flex vertical gap="large" className="h-full">
           <Flex gap="large" align="start">
             <div className="size-[100px] shrink-0">
@@ -59,7 +59,7 @@ export const SystemCoverageCard = () => {
           </Flex>
           <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref>
             <Button type="default" block>
-              + Connect more systems
+              + Connect More Systems
             </Button>
           </NextLink>
         </Flex>

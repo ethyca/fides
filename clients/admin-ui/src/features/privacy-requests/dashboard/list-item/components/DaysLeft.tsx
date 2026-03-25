@@ -29,20 +29,14 @@ export const DaysLeft = ({
     !DAY_IRRELEVANT_STATUSES.includes(status);
 
   if (showBadge) {
-    const isOverdue = daysLeft < 0;
     const percentage = (100 * daysLeft) / timeframe;
     const color =
-      isOverdue || percentage < 25
-        ? CUSTOM_TAG_COLOR.ERROR
-        : CUSTOM_TAG_COLOR.DEFAULT;
-    const label = isOverdue
-      ? `${Math.abs(daysLeft)} days overdue`
-      : `${daysLeft} days left`;
+      percentage < 25 ? CUSTOM_TAG_COLOR.ERROR : CUSTOM_TAG_COLOR.DEFAULT;
     return (
       <div>
         <Tag color={color} variant="filled">
           <Tooltip title={formatDate(dayjs().add(daysLeft, "day").toDate())}>
-            <>{label}</>
+            <>{daysLeft} days left</>
           </Tooltip>
         </Tag>
       </div>
