@@ -123,9 +123,7 @@ def init(ctx: click.Context, fides_dir: str) -> None:
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
-    config, config_path = create_and_update_config_file(
-        config, fides_dir
-    )
+    config, config_path = create_and_update_config_file(config, fides_dir)
 
     print_divider()
 
