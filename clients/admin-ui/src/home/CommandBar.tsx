@@ -86,11 +86,7 @@ export const CommandBar = () => {
   }, []);
 
   return (
-    <Flex
-      align="center"
-      className="h-12 shrink-0 select-none px-10"
-      // style={{ backgroundColor: token.colorBgLayout }}
-    >
+    <Flex align="center" className="h-12 shrink-0 select-none px-10">
       <div className="mx-auto flex w-full max-w-[1600px] items-center">
         <Flex align="center" gap="large" className="flex-1">
           <Flex
@@ -109,8 +105,6 @@ export const CommandBar = () => {
           >
             <Statistic
               value={animatedScore}
-              // valueStyle={{ color: token.colorSuccess }}
-              // size="lg"
               className={styles.scoreStatistic}
             />
             <Statistic

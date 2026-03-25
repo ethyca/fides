@@ -92,8 +92,8 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
 
 /**
  * Extends Ant Design's Card. The header divider is always removed. String titles
- * are wrapped in `<Typography.Title level={5}>` with collapsed padding. JSX titles
- * pass through unchanged. Tabs are always rendered inline with the title.
+ * are wrapped in `<Typography.Text strong>` at `token.fontSize`. JSX titles
+ * pass through unchanged. Tab labels are wrapped at `token.fontSizeSM`.
  *
  * @param {"top" | "bottom"} [coverPosition="top"] - Position of the `cover` content
  *   relative to the card body.

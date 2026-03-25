@@ -31,7 +31,7 @@ const SLA_SEGMENTS = [
 export const DSRStatusCard = () => {
   const { token } = antTheme.useToken();
   const router = useRouter();
-  const { data } = useGetPrivacyRequestsQuery();
+  const { data, isLoading } = useGetPrivacyRequestsQuery();
 
   const sla = useMemo(() => {
     if (!data?.sla_health) {
@@ -51,6 +51,7 @@ export const DSRStatusCard = () => {
   return (
     <Card
       title="DSR Status"
+      loading={isLoading}
       extra={
         <NextLink href={PRIVACY_REQUESTS_ROUTE} className={styles.viewAllLink}>
           <Flex align="center" gap={4}>

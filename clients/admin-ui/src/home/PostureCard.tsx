@@ -131,7 +131,6 @@ export const PostureCard = () => {
           <RadarChart
             data={radarData}
             outerRadius="80%"
-            // showGrid={false}
             onDimensionClick={handleDimensionClick}
             tooltipContent={renderTooltip}
           />

@@ -1,18 +1,16 @@
 import classNames from "classnames";
 import { Alert, Flex } from "fidesui";
 import NextLink from "next/link";
+import { useCallback, useEffect, useState } from "react";
 
 import { ACTION_CTA } from "~/features/dashboard/constants";
+import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 import type { QuickAction } from "~/features/dashboard/types";
 import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
 
-interface AgentBriefingBannerProps {
-  briefing: string;
-  quickActions: QuickAction[];
-  onClose: () => void;
-}
+const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
 
 function getAlertType(
   quickActions: QuickAction[],
@@ -28,21 +26,36 @@ function getAlertType(
   return "info";
 }
 
-export const AgentBriefingBanner = ({
-  briefing,
-  quickActions,
-  onClose,
-}: AgentBriefingBannerProps) => {
+export const AgentBriefingBanner = () => {
+  const { data: briefing } = useGetAgentBriefingQuery();
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    if (sessionStorage.getItem(BRIEFING_DISMISSED_KEY) === "true") {
+      setVisible(false);
+    }
+  }, []);
+
+  const dismiss = useCallback(() => {
+    setVisible(false);
+    sessionStorage.setItem(BRIEFING_DISMISSED_KEY, "true");
+  }, []);
+
+  if (!briefing || !visible) {
+    return null;
+  }
+
+  const { briefing: text, quick_actions: quickActions } = briefing;
   const alertType = getAlertType(quickActions);
 
   return (
     <Alert
       type={alertType}
       closable
-      onClose={onClose}
+      onClose={dismiss}
       message={
         <>
-          {briefing}
+          {text}
           <Flex gap={16} className="mt-3">
             {quickActions.map((action) => {
               const cta = ACTION_CTA[action.action_type];
