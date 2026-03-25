@@ -1,5 +1,12 @@
-import { theme } from "antd/lib";
-import { Card, Flex, Icons, StackedBarChart, Statistic, Text } from "fidesui";
+import {
+  antTheme,
+  Card,
+  Flex,
+  Icons,
+  StackedBarChart,
+  Statistic,
+  Text,
+} from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
@@ -22,7 +29,7 @@ const SLA_SEGMENTS = [
 ] as const;
 
 export const DSRStatusCard = () => {
-  const { token } = theme.useToken();
+  const { token } = antTheme.useToken();
   const router = useRouter();
   const { data } = useGetPrivacyRequestsQuery();
 

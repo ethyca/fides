@@ -1,6 +1,12 @@
-import { ArrowDown, ArrowUp } from "@carbon/icons-react";
-import { theme } from "antd/lib";
-import { Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
+import {
+  antTheme,
+  Card,
+  Flex,
+  Icons,
+  Skeleton,
+  Sparkline,
+  Statistic,
+} from "fidesui";
 
 import { nFormatter } from "~/features/common/utils";
 import type { TrendMetric } from "~/features/dashboard/types";
@@ -37,7 +43,7 @@ const formatMetric = (value: number, statType: StatType) => {
 };
 
 export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
-  const { token } = theme.useToken();
+  const { token } = antTheme.useToken();
   const config = TREND_METRIC_CONFIG[metricKey];
   const statType = config?.statType ?? "number";
   const suffix = statType === "percent" ? "%" : undefined;
@@ -66,7 +72,11 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
             value={formattedDiff}
             suffix={suffix}
             prefix={
-              metric.diff > 0 ? <ArrowUp size={12} /> : <ArrowDown size={12} />
+              metric.diff > 0 ? (
+                <Icons.ArrowUp size={12} />
+              ) : (
+                <Icons.ArrowDown size={12} />
+              )
             }
             size="sm"
           />

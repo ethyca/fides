@@ -1,6 +1,4 @@
-import { ArrowDown, ArrowRight, ArrowUp } from "@carbon/icons-react";
-import { theme } from "antd/lib";
-import { Flex, Statistic, Text } from "fidesui";
+import { antTheme, Flex, Icons, Statistic, Text } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -24,16 +22,16 @@ import { openDashboardDrawer } from "./useDashboardDrawer";
 
 function getDiffArrow(direction: DiffDirection): React.ReactNode {
   if (direction === DiffDirection.DOWN) {
-    return <ArrowDown size={12} />;
+    return <Icons.ArrowDown size={12} />;
   }
   if (direction === DiffDirection.UP) {
-    return <ArrowUp size={12} />;
+    return <Icons.ArrowUp size={12} />;
   }
-  return <ArrowRight size={12} />;
+  return <Icons.ArrowRight size={12} />;
 }
 
 export const CommandBar = () => {
-  const { token } = theme.useToken();
+  const { token } = antTheme.useToken();
   const {
     flags: { alphaDarkMode },
   } = useFlags();

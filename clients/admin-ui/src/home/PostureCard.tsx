@@ -1,6 +1,5 @@
-import { ArrowDown, ArrowUp } from "@carbon/icons-react";
 import type { RadarChartDataPoint } from "fidesui";
-import { Alert, Card, Flex, RadarChart, Statistic, Tag } from "fidesui";
+import { Alert, Card, Flex, Icons, RadarChart, Statistic, Tag } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { BAND_CONFIG, BAND_STATUS } from "~/features/dashboard/constants";
@@ -17,9 +16,9 @@ function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
     return undefined;
   }
   if (direction === DiffDirection.DOWN) {
-    return <ArrowDown size={12} />;
+    return <Icons.ArrowDown size={12} />;
   }
-  return <ArrowUp size={12} />;
+  return <Icons.ArrowUp size={12} />;
 }
 
 function getPostureAlertType(score: number): "error" | "warning" | "success" {

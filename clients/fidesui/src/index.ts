@@ -427,7 +427,7 @@ export {
   darkAntTheme,
   defaultAntTheme,
 } from "./ant-theme";
-export { theme as antTheme } from "antd";
+export { theme as antTheme } from "antd/lib";
 
 /**
  * Custom ChakraUI Components (deprecated)
