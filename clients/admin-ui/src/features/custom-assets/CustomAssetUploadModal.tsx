@@ -4,7 +4,7 @@ import {
   ChakraBox as Box,
   ChakraText as Text,
   Modal,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -12,7 +12,6 @@ import { useDropzone } from "react-dropzone";
 import DocsLink from "~/features/common/DocsLink";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useUpdateCustomAssetMutation } from "~/features/plus/plus.slice";
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";
 
@@ -30,14 +29,14 @@ const CustomAssetUploadModal = ({
   assetType,
 }: RequestModalProps) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const toast = useToast();
+  const message = useMessage();
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
       if (fileExtension !== "css") {
-        toast(errorToastParams("Only css files are allowed."));
+        message.error("Only css files are allowed.");
         return;
       }
 
@@ -54,10 +53,10 @@ const CustomAssetUploadModal = ({
         file: uploadedFile,
       });
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
         return;
       }
-      toast(successToastParams("Stylesheet uploaded successfully"));
+      message.success("Stylesheet uploaded successfully");
       onClose();
     }
   };

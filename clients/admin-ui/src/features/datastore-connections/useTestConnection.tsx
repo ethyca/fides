@@ -1,4 +1,4 @@
-import { useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { formatDate } from "~/features/common/utils";
@@ -14,7 +14,7 @@ const useTestConnection = (
     { data, fulfilledTimeStamp, isLoading: queryIsLoading, isFetching },
   ] = useLazyGetDatastoreConnectionStatusQuery();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const testConnection = async () => {
     if (!integration) {
@@ -22,21 +22,20 @@ const useTestConnection = (
     }
     const result = await connectionTestTrigger(integration.key);
     if (result.isError) {
-      toast({
-        status: "error",
-        description: getErrorMessage(
+      message.error(
+        getErrorMessage(
           result.error,
           "Unable to test connection. Please try again.",
         ),
-      });
+      );
     } else if (result.data?.test_status === "succeeded") {
-      toast({ status: "success", description: "Connected successfully" });
+      message.success("Connected successfully");
     } else if (result.data?.test_status === "failed") {
       let description = "Connection test failed.";
       if (result.data?.failure_reason) {
         description += ` ${result.data?.failure_reason}`;
       }
-      toast({ status: "warning", description });
+      message.warning(description);
     }
   };
 

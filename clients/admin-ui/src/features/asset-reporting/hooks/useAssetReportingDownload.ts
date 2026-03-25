@@ -1,4 +1,4 @@
-import { useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 
@@ -6,18 +6,18 @@ import type { AssetReportingFilters } from "../asset-reporting.slice";
 import { useLazyDownloadAssetReportQuery } from "../asset-reporting.slice";
 
 const useAssetReportingDownload = () => {
-  const toast = useToast();
+  const message = useMessage();
   const [downloadTrigger, { isFetching }] = useLazyDownloadAssetReportQuery();
 
   const downloadReport = async (filters: AssetReportingFilters) => {
     const result = await downloadTrigger(filters);
 
     if (result.isError) {
-      const message = getErrorMessage(
+      const errorMsg = getErrorMessage(
         result.error,
         "A problem occurred while generating your asset report. Please try again.",
       );
-      toast({ status: "error", description: message });
+      message.error(errorMsg);
     } else {
       const csvBlob = new Blob([result.data ?? ""], { type: "text/csv" });
       const csvUrl = window.URL.createObjectURL(csvBlob);
@@ -27,10 +27,7 @@ const useAssetReportingDownload = () => {
       a.click();
       window.URL.revokeObjectURL(csvUrl);
 
-      toast({
-        status: "success",
-        description: "Asset report downloaded successfully.",
-      });
+      message.success("Asset report downloaded successfully.");
     }
   };
 

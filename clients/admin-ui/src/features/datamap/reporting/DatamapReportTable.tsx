@@ -21,9 +21,8 @@ import {
   CheckOutlined,
   Dropdown,
   Icons,
-  MoreIcon,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikState } from "formik";
 import { debounce } from "lodash";
@@ -36,7 +35,6 @@ import {
   DatamapReportFilterSelections,
 } from "~/features/datamap/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { ExportFormat } from "~/features/datamap/constants";
@@ -118,7 +116,7 @@ export const DatamapReportTable = ({
     setTotalPages,
     resetPageIndexToDefault,
   } = useServerSidePagination();
-  const toast = useToast({ id: "datamap-report-toast" });
+  const message = useMessage();
 
   const {
     isOpen: isFilterModalOpen,
@@ -438,10 +436,7 @@ export const DatamapReportTable = ({
         setColumnNameMapOverrides({});
         resetColumnNameForm({ values: {} });
       } catch (error: any) {
-        toast({
-          status: "error",
-          description: "There was a problem resetting the report.",
-        });
+        message.error("There was a problem resetting the report.");
       }
       return;
     }
@@ -489,15 +484,9 @@ export const DatamapReportTable = ({
         resetColumnNameForm({ values: columnNameMap });
       }
       setSavedCustomReportId(savedReport.id);
-      toast({
-        status: "success",
-        description: "Report applied successfully.",
-      });
+      message.success("Report applied successfully.");
     } catch (error: any) {
-      toast({
-        status: "error",
-        description: "There was a problem applying report.",
-      });
+      message.error("There was a problem applying report.");
     }
   };
 
@@ -627,7 +616,7 @@ export const DatamapReportTable = ({
                 aria-label="Export report"
                 data-testid="export-btn"
                 onClick={onExportReportOpen}
-                icon={<DownloadLightIcon ml="1.5px" />}
+                icon={<Icons.Download />}
               />
               <Dropdown
                 menu={{
@@ -650,7 +639,7 @@ export const DatamapReportTable = ({
                 overlayClassName="more-menu-list"
               >
                 <Button
-                  icon={<MoreIcon className="rotate-90" />}
+                  icon={<Icons.OverflowMenuVertical />}
                   data-testid="more-menu"
                   aria-label="More options"
                   className="w-6 gap-0"

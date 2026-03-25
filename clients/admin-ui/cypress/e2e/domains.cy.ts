@@ -160,7 +160,7 @@ describe("Domains page", () => {
         "have.value",
         "https://www.example.com",
       );
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it("can remove an existing domain", () => {
@@ -192,7 +192,7 @@ describe("Domains page", () => {
         "have.value",
         "https://app.example.com",
       );
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it("can validate domains", () => {

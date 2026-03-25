@@ -93,7 +93,7 @@ describe("Organization page", () => {
           });
         },
       );
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
   });
 });

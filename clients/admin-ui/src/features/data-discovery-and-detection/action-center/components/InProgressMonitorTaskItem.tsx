@@ -10,7 +10,7 @@ import {
   Spin,
   Tag,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -50,7 +50,7 @@ export const InProgressMonitorTaskItem = ({
   task,
   ...props
 }: InProgressMonitorTaskItemProps) => {
-  const toast = useToast();
+  const message = useMessage();
   const [retryMonitorTask, { isLoading: isRetrying }] =
     useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] =
@@ -161,34 +161,22 @@ export const InProgressMonitorTaskItem = ({
   const handleRetryTask = async () => {
     try {
       await retryMonitorTask({ taskId: task.id }).unwrap();
-      toast({
-        status: "success",
-        description: "Task retry initiated successfully",
-      });
+      message.success("Task retry initiated successfully");
     } catch (error: any) {
       const errorMessage =
         error?.data?.detail || error?.message || "Unknown error occurred";
-      toast({
-        status: "error",
-        description: `Failed to retry task: ${errorMessage}`,
-      });
+      message.error(`Failed to retry task: ${errorMessage}`);
     }
   };
 
   const handleDismissTask = async () => {
     try {
       await dismissMonitorTask({ taskId: task.id }).unwrap();
-      toast({
-        status: "success",
-        description: "Task dismissed successfully",
-      });
+      message.success("Task dismissed successfully");
     } catch (error: any) {
       const errorMessage =
         error?.data?.detail || error?.message || "Unknown error occurred";
-      toast({
-        status: "error",
-        description: `Failed to dismiss task: ${errorMessage}`,
-      });
+      message.error(`Failed to dismiss task: ${errorMessage}`);
     }
   };
 

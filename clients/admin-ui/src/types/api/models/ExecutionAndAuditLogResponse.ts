@@ -41,4 +41,5 @@ export type ExecutionAndAuditLogResponse = {
    * User Id
    */
   user_id?: string | null;
+  saas_version?: string | null;
 };

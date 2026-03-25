@@ -1,10 +1,4 @@
-import {
-  Button,
-  Flex,
-  Modal,
-  Paragraph,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, Flex, Modal, Paragraph, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -36,7 +30,7 @@ export const CustomReportCreationModal = ({
   unavailableNames,
   onCreateCustomReport,
 }: CustomReportCreationModalProps) => {
-  const toast = useToast();
+  const message = useMessage();
 
   const [postCustomReportMutationTrigger] = usePostCustomReportMutation();
 
@@ -95,7 +89,7 @@ export const CustomReportCreationModal = ({
         error,
         "A problem occurred while creating the report.",
       );
-      toast({ status: "error", description: errorMsg });
+      message.error(errorMsg);
     }
   };
 

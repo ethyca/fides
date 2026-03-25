@@ -22,12 +22,12 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { TableSkeletonLoader } from "~/features/common/table/v2";
 import { ChatConfigResponse, ScopeRegistryEnum } from "~/types/api";
 
+import { SlackLogo } from "../common/logos/SlackLogo";
 import {
   useDeleteChatConfigMutation,
   useEnableChatConfigMutation,
   useGetChatConfigsQuery,
 } from "./chatProvider.slice";
-import SlackIcon from "./icons/SlackIcon";
 
 const { Text } = Typography;
 
@@ -143,9 +143,9 @@ export const ChatConfigurations = () => {
           const getProviderIcon = () => {
             switch (record.provider_type) {
               case "slack":
-                return <SlackIcon />;
+                return <SlackLogo size={20} />;
               default:
-                return <SlackIcon />;
+                return <SlackLogo size={20} />;
             }
           };
 

@@ -72,7 +72,7 @@ describe("Experience editor", () => {
         });
       });
       cy.url().should("match", /privacy-experience$/);
-      cy.getByTestId("toast-success-msg").should("exist");
+      cy.shouldShowMessage("success");
     });
 
     it("doesn't show a preview for a privacy center", () => {
@@ -283,7 +283,7 @@ describe("Experience editor", () => {
           const { body } = interception.request;
           expect(body.tcf_configuration_id).to.eql("tcf_config_2");
         });
-        cy.getByTestId("toast-success-msg").should("exist");
+        cy.shouldShowMessage("success");
 
         // Clear the TCF config
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`); // Re-visit to reset state
@@ -299,7 +299,7 @@ describe("Experience editor", () => {
           // Depending on backend behavior, this might be null or undefined
           expect(body.tcf_configuration_id).to.be.oneOf([null, undefined]);
         });
-        cy.getByTestId("toast-success-msg").should("exist");
+        cy.shouldShowMessage("success");
       });
 
       it("disables the TCF Publisher Override configuration when the consent override is disabled", () => {

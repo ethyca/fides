@@ -4,7 +4,6 @@ import {
   ChakraDivider as Divider,
   ChakraFlex as Flex,
   ChakraVStack as VStack,
-  useChakraToast as useToast,
   useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
@@ -13,7 +12,6 @@ import { useRef, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
 import { Dataset } from "~/types/api";
@@ -43,7 +41,6 @@ const DatasetYamlForm = () => {
   const [isTouched, setIsTouched] = useState(false);
   const monacoRef = useRef(null);
   const router = useRouter();
-  const toast = useToast();
   const message = useMessage();
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException,
@@ -86,7 +83,7 @@ const DatasetYamlForm = () => {
   };
 
   const handleSuccess = (newDataset: Dataset) => {
-    toast(successToastParams("Successfully loaded new dataset YAML"));
+    message.success("Successfully loaded new dataset YAML");
     setActiveDatasetFidesKey(newDataset.fides_key);
     router.push({
       pathname: DATASET_DETAIL_ROUTE,
@@ -100,7 +97,7 @@ const DatasetYamlForm = () => {
     const yamlDoc = yaml.load(value, { json: true });
     const result = await handleCreate(yamlDoc);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else if ("data" in result) {
       handleSuccess(result.data);
     }
