@@ -13,7 +13,8 @@ import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
-import BrandLink from "./BrandLink";
+import { AttributionLink } from "./AttributionLink";
+import { BrandLink } from "./BrandLink";
 import Button from "./Button";
 import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -55,7 +56,9 @@ export const ConsentButtons = ({
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
     messageExists(i18n, "exp.privacy_policy_url");
-  const includeBrandLink = isInModal && options.showFidesBrandLink;
+  const includeAttributionLink = !!options.attribution;
+  const includeBrandLink =
+    !includeAttributionLink && isInModal && options.showFidesBrandLink;
 
   return (
     // The id="fides-button-group" is used by mobile SDKs (FidesPlus JanusSDK Android)
@@ -157,6 +160,11 @@ export const ConsentButtons = ({
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
         {includeBrandLink && <BrandLink />}
       </div>
+      {includeAttributionLink && (
+        <div className="fides-attribution-row">
+          <AttributionLink attribution={options.attribution!} />
+        </div>
+      )}
     </div>
   );
 };

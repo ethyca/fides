@@ -3,7 +3,8 @@ import {
   ChakraBox as Box,
   ChakraText as Text,
   ChakraVStack as VStack,
-  useChakraToast as useToast,
+  useMessage,
+  useModal,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -13,9 +14,7 @@ import * as Yup from "yup";
 import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
@@ -29,19 +28,13 @@ import {
 const isDataset = (sd: System | Dataset): sd is Dataset =>
   !("system_type" in sd);
 
-const initialValues = { url: "", classify: false, classifyConfirmed: false };
+const initialValues = { url: "", classify: false };
 
 type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
   url: Yup.string().required().label("Database URL"),
   classify: Yup.boolean(),
-  // If classify is true, then the choice must be confirmed. The URL is also tested so that we don't
-  // show the confirmation modal if the form is invalid.
-  classifyConfirmed: Yup.boolean().when(["url", "classify"], {
-    is: (url: string, classify: boolean) => url && classify,
-    then: () => Yup.boolean().equals([true]),
-  }),
 });
 
 const DatabaseConnectForm = () => {
@@ -53,10 +46,11 @@ const DatabaseConnectForm = () => {
     useCreateClassifyInstanceMutation();
   const isLoading = isGenerating || isCreating || isClassifying;
 
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const features = useFeatures();
   const dispatch = useDispatch();
+  const confirmModal = useModal();
 
   /**
    * Trigger the generate mutation and pick out the result dataset or the error if generate failed.
@@ -169,10 +163,10 @@ const DatabaseConnectForm = () => {
     };
   };
 
-  const handleSubmit = async (values: FormValues) => {
+  const doSubmit = async (values: FormValues) => {
     const generateResult = await generate(values);
     if ("error" in generateResult) {
-      toast(errorToastParams(generateResult.error));
+      message.error(generateResult.error);
       return;
     }
 
@@ -183,15 +177,13 @@ const DatabaseConnectForm = () => {
     const createResult =
       createResults.find((result) => "error" in result) ?? createResults[0];
     if ("error" in createResult) {
-      toast(errorToastParams(createResult.error));
+      message.error(createResult.error);
       return;
     }
 
     // Default generate flow:
     if (!values.classify) {
-      toast(
-        successToastParams(`Generated ${createResult.dataset.name} dataset`),
-      );
+      message.success(`Generated ${createResult.dataset.name} dataset`);
       router.push({
         pathname: DATASET_DETAIL_ROUTE,
         query: { datasetId: createResult.dataset.fides_key },
@@ -205,13 +197,28 @@ const DatabaseConnectForm = () => {
       datasets: generateResult.datasets,
     });
     if ("error" in classifyResult) {
-      toast(errorToastParams(classifyResult.error));
+      message.error(classifyResult.error);
       return;
     }
 
-    toast(successToastParams(`Generate and classify are now in progress`));
+    message.success(`Generate and classify are now in progress`);
     dispatch(setActiveDatasetFidesKey(createResult.dataset.fides_key));
     router.push(`/dataset`);
+  };
+
+  const handleSubmit = async (values: FormValues) => {
+    if (values.classify) {
+      confirmModal.confirm({
+        title: "Generate and classify this dataset",
+        content:
+          "You have chosen to generate and classify this dataset. This process may take several minutes. In the meantime you can continue using Fides. You will receive a notification when the process is complete.",
+        centered: true,
+        icon: null,
+        onOk: () => doSubmit(values),
+      });
+    } else {
+      await doSubmit(values);
+    }
   };
 
   return (
@@ -222,14 +229,7 @@ const DatabaseConnectForm = () => {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({
-        isSubmitting,
-        errors,
-        values,
-        submitForm,
-        resetForm,
-        setFieldValue,
-      }) => (
+      {({ isSubmitting }) => (
         <Form>
           <VStack spacing={8} align="left">
             <Text size="sm" color="gray.700">
@@ -261,23 +261,6 @@ const DatabaseConnectForm = () => {
               </Button>
             </Box>
           </VStack>
-          <ConfirmationModal
-            title="Generate and classify this dataset"
-            message="You have chosen to generate and classify this dataset. This process may take several minutes. In the meantime you can continue using Fides. You will receive a notification when the process is complete."
-            isOpen={errors.classifyConfirmed !== undefined}
-            onClose={() => {
-              resetForm({ values: { ...values, classifyConfirmed: false } });
-            }}
-            onConfirm={() => {
-              setFieldValue("classifyConfirmed", true);
-
-              // Formik needs a moment after setting the field before it can submit.
-              // https://github.com/jaredpalmer/formik/issues/529#issuecomment-740042815
-              setTimeout(() => {
-                submitForm();
-              }, 0);
-            }}
-          />
         </Form>
       )}
     </Formik>

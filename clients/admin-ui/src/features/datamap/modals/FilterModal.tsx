@@ -2,18 +2,12 @@ import { Header } from "@tanstack/react-table";
 import {
   Button,
   ChakraBox as Box,
-  ChakraDivider as Divider,
   ChakraHeading as Heading,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
+  Modal,
 } from "fidesui";
 import React, { ReactNode, useContext, useMemo } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { DatamapRow } from "~/features/datamap";
 import {
   DATA_CATEGORY_COLUMN_ID,
@@ -72,42 +66,39 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Filters</ModalHeader>
-        <ModalCloseButton />
-        <Divider />
-        <ModalBody maxH="85vh" padding="0px" overflowX="auto">
-          {anyFiltersActive(headers, [
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      title="Filters"
+      width={MODAL_SIZE.lg}
+      footer={
+        <Box display="flex" justifyContent="flex-end" gap={3}>
+          <Button onClick={resetFilters}>Reset Filters</Button>
+          <Button onClick={onClose} type="primary">
+            Done
+          </Button>
+        </Box>
+      }
+    >
+      {anyFiltersActive(headers, [
+        SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
+        DATA_CATEGORY_COLUMN_ID,
+        SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
+      ]) ? (
+        <FilterSection heading="Privacy attributes">
+          {renderHeaderFilter(
+            headers,
             SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-            DATA_CATEGORY_COLUMN_ID,
+          )}
+          {renderHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
+          {renderHeaderFilter(
+            headers,
             SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
-          ]) ? (
-            <FilterSection heading="Privacy attributes">
-              {renderHeaderFilter(
-                headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-              )}
-              {renderHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
-              {renderHeaderFilter(
-                headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
-              )}
-            </FilterSection>
-          ) : null}
-        </ModalBody>
-        <ModalFooter>
-          <Box display="flex" justifyContent="space-between" width="100%">
-            <Button onClick={resetFilters} className="mr-3 grow">
-              Reset Filters
-            </Button>
-            <Button onClick={onClose} type="primary" className="grow">
-              Done
-            </Button>
-          </Box>
-        </ModalFooter>
-      </ModalContent>
+          )}
+        </FilterSection>
+      ) : null}
     </Modal>
   );
 };

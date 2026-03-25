@@ -34,8 +34,6 @@ const DatamapDrawer = ({
     <Drawer
       open={isOpen}
       onClose={resetSelectedSystemId}
-      placement="right"
-      width={480}
       title={system?.name ?? "System Information"}
       loading={isFetching}
     >

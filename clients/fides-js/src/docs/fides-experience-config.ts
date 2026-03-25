@@ -88,6 +88,20 @@ export interface FidesExperienceConfig {
   reject_all_mechanism: string;
 
   /**
+   * This corresponds with the "Resurface banner" configuration option.
+   * Controls when to show the consent banner again after the user has interacted with it.
+   * Can include "reject", "dismiss", both, or be empty/null for default behavior (only resurface on cookie expiration or vendor changes).
+   * @example
+   * ```ts
+   * ["reject"]  // Resurface only on reject
+   * ["dismiss"]  // Resurface only on dismiss
+   * ["reject", "dismiss"]  // Resurface on both
+   * null  // Default behavior (no resurfacing)
+   * ```
+   */
+  resurface_behavior?: Array<string>;
+
+  /**
    * @internal
    */
   disabled?: boolean;

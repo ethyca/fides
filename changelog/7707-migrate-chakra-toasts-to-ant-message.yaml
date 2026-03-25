@@ -1,0 +1,4 @@
+type: Changed
+description: Migrate Chakra UI toast notifications to Ant Design message API across the admin UI
+pr: 7707
+labels: []

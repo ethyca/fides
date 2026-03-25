@@ -12,6 +12,7 @@ from fides.api.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     DynamoDBConnector,
+    EntraConnector,
     FidesConnector,
     GoogleCloudSQLMySQLConnector,
     GoogleCloudSQLPostgresConnector,
@@ -22,6 +23,8 @@ from fides.api.service.connectors import (
     MySQLConnector,
     OktaConnector,
     PostgreSQLConnector,
+    RDSMySQLConnector,
+    RDSPostgresConnector,
     RedshiftConnector,
     SaaSConnector,
     ScyllaConnector,
@@ -78,6 +81,8 @@ class Connections:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.dynamodb:
             return DynamoDBConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.entra:
+            return EntraConnector(connection_config)
         if connection_config.connection_type == ConnectionType.google_cloud_sql_mysql:
             return GoogleCloudSQLMySQLConnector(connection_config)
         if (
@@ -89,9 +94,16 @@ class Connections:
             return FidesConnector(connection_config)
         if connection_config.connection_type == ConnectionType.s3:
             return S3Connector(connection_config)
+        if connection_config.connection_type == ConnectionType.rds_mysql:
+            return RDSMySQLConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.rds_postgres:
+            return RDSPostgresConnector(connection_config)
         if connection_config.connection_type == ConnectionType.scylla:
             return ScyllaConnector(connection_config)
-        if connection_config.connection_type == ConnectionType.manual_task:
+        if connection_config.connection_type in (
+            ConnectionType.manual_task,
+            ConnectionType.jira_ticket,
+        ):
             return ManualTaskConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"

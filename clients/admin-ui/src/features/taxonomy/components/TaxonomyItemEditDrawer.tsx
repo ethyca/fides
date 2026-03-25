@@ -1,15 +1,15 @@
 import {
   Button,
-  ChakraDrawerFooter as DrawerFooter,
   ChakraStack as Stack,
   ChakraText as Text,
   ConfirmationModal,
   EyeIcon,
+  Flex,
   Form,
   Tooltip,
   Typography,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
@@ -17,7 +17,6 @@ import EditDrawer, { EditDrawerHeader } from "~/features/common/EditDrawer";
 import { getErrorMessage } from "~/features/common/helpers";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { taxonomyKeyToScopeRegistryEnum } from "~/features/taxonomy/constants";
 import { taxonomyTypeToResourceType } from "~/features/taxonomy/helpers";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
@@ -47,7 +46,7 @@ const TaxonomyItemEditDrawer = ({
   const CUSTOM_FIELDS_FORM_ID = "custom-fields-form";
   const [customFieldsForm] = Form.useForm();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const {
     isOpen: deleteIsOpen,
@@ -73,7 +72,7 @@ const TaxonomyItemEditDrawer = ({
   const handleEdit = async (formValues: TaxonomyEntity) => {
     const result = await updateTrigger(formValues);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
 
@@ -85,7 +84,7 @@ const TaxonomyItemEditDrawer = ({
       });
     }
 
-    toast(successToastParams("Taxonomy successfully updated"));
+    message.success("Taxonomy successfully updated");
     closeDrawer();
   };
 
@@ -111,7 +110,7 @@ const TaxonomyItemEditDrawer = ({
         onClose={closeDrawer}
         header={<EditDrawerHeader title={taxonomyItem?.name || ""} />}
         footer={
-          <DrawerFooter justifyContent="space-between">
+          <Flex justify="space-between" align="center">
             {taxonomyItem?.active && canUserDeleteTaxonomy && (
               <Tooltip title="Delete label">
                 <Button
@@ -145,7 +144,7 @@ const TaxonomyItemEditDrawer = ({
                 </Button>
               )}
             </div>
-          </DrawerFooter>
+          </Flex>
         }
       >
         <div className="mb-4">

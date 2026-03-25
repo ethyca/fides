@@ -128,7 +128,7 @@ export const FormikControlledPOC = () => (
                   <DatePicker
                     id="date"
                     onChange={(date) =>
-                      setFieldValue("date", date.toISOString())
+                      setFieldValue("date", date?.toISOString())
                     }
                   />
                 </div>

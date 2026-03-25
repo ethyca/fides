@@ -203,8 +203,11 @@ describe("Digests", () => {
       cy.wait("@getDigestDetail");
 
       cy.getByTestId("delete-btn").click();
-      cy.contains("Delete digest configuration").should("be.visible");
-      cy.getByTestId("continue-btn").click();
+      cy.contains(
+        ".ant-modal-confirm-title",
+        "Delete digest configuration",
+      ).should("be.visible");
+      cy.getAntModalConfirmButtons().contains("Delete").click();
 
       cy.wait("@deleteDigestConfig").then((interception) => {
         expect(interception.request.url).to.contain(
@@ -268,7 +271,7 @@ describe("Digests", () => {
 
       cy.getByTestId("input-name").type("Weekly Test");
       cy.getByTestId("select-frequency")
-        .find(".ant-select-selection-item")
+        .find(".ant-select-content")
         .should("contain", "Weekly");
       cy.getByTestId("submit-btn").click();
       cy.wait("@createDigestConfig").then((interception) => {

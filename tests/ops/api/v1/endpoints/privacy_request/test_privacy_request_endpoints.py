@@ -41,6 +41,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+    RequestTask,
     generate_request_task_callback_jwe,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -66,6 +67,9 @@ from fides.api.schemas.redis_cache import (
     Identity,
     LabeledIdentity,
 )
+from fides.api.service.privacy_request.request_service import (
+    EMBEDDED_EXECUTION_LOG_LIMIT,
+)
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
@@ -76,7 +80,6 @@ from fides.api.util.fuzzy_search_utils import (
     remove_refresh_automaton_signal,
 )
 from fides.api.v1.endpoints.privacy_request_endpoints import (
-    EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
 from fides.common.scope_registry import (
@@ -2019,6 +2022,8 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
 
         resp = response.json()
+        # Verify task_status_by_dataset is present, then remove for full dict comparison
+        assert resp["items"][0].pop("task_status_by_dataset") == {}
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
@@ -2057,6 +2062,7 @@ class TestGetPrivacyRequests:
                                 "status": "approved",
                                 "updated_at": stringify_date(audit_log.updated_at),
                                 "user_id": "system",
+                                "saas_version": None,
                             }
                         ],
                         "my-mongo-db": [
@@ -2077,6 +2083,7 @@ class TestGetPrivacyRequests:
                                     mongo_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                         "my-postgres-db": [
@@ -2097,6 +2104,7 @@ class TestGetPrivacyRequests:
                                     postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                             {
                                 "connection_key": None,
@@ -2124,6 +2132,7 @@ class TestGetPrivacyRequests:
                                     second_postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                         ],
                         "my-async-connector": [
@@ -2153,6 +2162,7 @@ class TestGetPrivacyRequests:
                                     async_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                     },
@@ -2164,6 +2174,132 @@ class TestGetPrivacyRequests:
             "size": page_size,
         }
         assert resp == expected_resp
+
+    def test_verbose_task_status_by_dataset(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request: PrivacyRequest,
+        url,
+        db,
+    ):
+        """Test that task_status_by_dataset returns the worst status per dataset,
+        excluding ROOT and TERMINATOR tasks."""
+        root_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "complete",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "__ROOT__:__ROOT__",
+                "dataset_name": "__ROOT__",
+                "collection_name": "__ROOT__",
+                "upstream_tasks": [],
+                "downstream_tasks": [
+                    "dataset_a:collection_1",
+                    "dataset_a:collection_2",
+                    "dataset_b:collection_1",
+                ],
+                "all_descendant_tasks": [],
+            },
+        )
+        # dataset_a: one complete, one error -> worst = error
+        task_a1 = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "complete",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset_a:collection_1",
+                "dataset_name": "dataset_a",
+                "collection_name": "collection_1",
+                "upstream_tasks": ["__ROOT__:__ROOT__"],
+                "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+                "all_descendant_tasks": [],
+            },
+        )
+        task_a2 = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "error",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset_a:collection_2",
+                "dataset_name": "dataset_a",
+                "collection_name": "collection_2",
+                "upstream_tasks": ["__ROOT__:__ROOT__"],
+                "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+                "all_descendant_tasks": [],
+            },
+        )
+        # dataset_b: one task polling -> worst = polling
+        task_b1 = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "polling",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset_b:collection_1",
+                "dataset_name": "dataset_b",
+                "collection_name": "collection_1",
+                "upstream_tasks": ["__ROOT__:__ROOT__"],
+                "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+                "all_descendant_tasks": [],
+            },
+        )
+        # dataset_c: one task awaiting_processing (DB value is "paused")
+        task_c1 = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "paused",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset_c:collection_1",
+                "dataset_name": "dataset_c",
+                "collection_name": "collection_1",
+                "upstream_tasks": ["__ROOT__:__ROOT__"],
+                "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+                "all_descendant_tasks": [],
+            },
+        )
+        terminator_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "pending",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "__TERMINATE__:__TERMINATE__",
+                "dataset_name": "__TERMINATE__",
+                "collection_name": "__TERMINATE__",
+                "upstream_tasks": [
+                    "dataset_a:collection_1",
+                    "dataset_a:collection_2",
+                    "dataset_b:collection_1",
+                    "dataset_c:collection_1",
+                ],
+                "downstream_tasks": [],
+                "all_descendant_tasks": [],
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + "?verbose=True", headers=auth_header)
+        assert 200 == response.status_code
+
+        resp = response.json()
+        task_status = resp["items"][0]["task_status_by_dataset"]
+
+        # error wins for dataset_a (error > complete)
+        assert task_status["dataset_a"] == "error"
+        # polling is the only noteworthy status for dataset_b
+        assert task_status["dataset_b"] == "polling"
+        # awaiting_processing returned by name, not DB value "paused"
+        assert task_status["dataset_c"] == "awaiting_processing"
+        # ROOT and TERMINATOR should not appear
+        assert "__ROOT__" not in task_status
+        assert "__TERMINATE__" not in task_status
+        # Datasets where all tasks are complete/pending/in_processing are omitted
+        assert len(task_status) == 3
 
     def test_verbose_privacy_request_embed_limit(
         self,
@@ -3185,6 +3321,8 @@ class TestPrivacyRequestSearch:
         assert 200 == response.status_code
 
         resp = response.json()
+        # Verify task_status_by_dataset is present, then remove for full dict comparison
+        assert resp["items"][0].pop("task_status_by_dataset") == {}
         assert (
             postgres_execution_log.updated_at < second_postgres_execution_log.updated_at
         )
@@ -3223,6 +3361,7 @@ class TestPrivacyRequestSearch:
                                 "status": "approved",
                                 "updated_at": stringify_date(audit_log.updated_at),
                                 "user_id": "system",
+                                "saas_version": None,
                             }
                         ],
                         "my-mongo-db": [
@@ -3243,6 +3382,7 @@ class TestPrivacyRequestSearch:
                                     mongo_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                         "my-postgres-db": [
@@ -3263,6 +3403,7 @@ class TestPrivacyRequestSearch:
                                     postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                             {
                                 "connection_key": None,
@@ -3290,6 +3431,7 @@ class TestPrivacyRequestSearch:
                                     second_postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                         ],
                         "my-async-connector": [
@@ -3319,6 +3461,7 @@ class TestPrivacyRequestSearch:
                                     async_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                     },
@@ -3744,6 +3887,7 @@ class TestGetExecutionLogs:
                         }
                     ],
                     "message": None,
+                    "saas_version": None,
                     "action_type": "access",
                     "status": "pending",
                     "updated_at": stringify_date(postgres_execution_log.updated_at),
@@ -3760,6 +3904,7 @@ class TestGetExecutionLogs:
                         }
                     ],
                     "message": None,
+                    "saas_version": None,
                     "action_type": "access",
                     "status": "in_processing",
                     "updated_at": stringify_date(mongo_execution_log.updated_at),
@@ -3781,6 +3926,7 @@ class TestGetExecutionLogs:
                         },
                     ],
                     "message": "Database timed out.",
+                    "saas_version": None,
                     "action_type": "access",
                     "status": "error",
                     "updated_at": stringify_date(
@@ -3804,6 +3950,7 @@ class TestGetExecutionLogs:
                         },
                     ],
                     "message": None,
+                    "saas_version": None,
                     "action_type": "access",
                     "status": "awaiting_processing",
                     "updated_at": stringify_date(async_execution_log.updated_at),
@@ -3844,7 +3991,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == 'SELECT email, id FROM "subscriptions" WHERE (email = ?)'
+            == 'SELECT email, id FROM "subscriptions" WHERE ("email" = ?)'
         )
 
     def test_request_preview_incorrect_body(
@@ -3920,7 +4067,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == 'SELECT email, id FROM "subscriptions" WHERE (email = ?)'
+            == 'SELECT email, id FROM "subscriptions" WHERE ("email" = ?)'
         )
         assert (
             next(
