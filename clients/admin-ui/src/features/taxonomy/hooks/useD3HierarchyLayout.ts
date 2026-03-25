@@ -8,13 +8,15 @@ interface UseTreeLayoutProps {
   options: {
     direction: "TB" | "LR";
     stableOrder?: boolean;
+    nodeWidth?: number;
+    nodeHeight?: number;
   };
 }
 
 // The dimensions of the node are larger than the actual
 // node size to add spacing between the different nodes
-const NODE_WIDTH = 320;
-const NODE_HEIGHT = 35;
+const DEFAULT_NODE_WIDTH = 320;
+const DEFAULT_NODE_HEIGHT = 35;
 
 const g = tree<Node>();
 
@@ -36,11 +38,14 @@ const useD3HierarchyLayout = ({
 
     const root = hierarchy(nodes);
 
+    const nodeWidth = options.nodeWidth ?? DEFAULT_NODE_WIDTH;
+    const nodeHeight = options.nodeHeight ?? DEFAULT_NODE_HEIGHT;
+
     // For horizontal left-right tree, we swap the width and height
     const nodeSizes: [number, number] =
       options.direction === "LR"
-        ? [NODE_HEIGHT, NODE_WIDTH]
-        : [NODE_WIDTH, NODE_HEIGHT];
+        ? [nodeHeight, nodeWidth]
+        : [nodeWidth, nodeHeight];
 
     const layout = g
       .nodeSize(nodeSizes)

@@ -8,6 +8,10 @@ module.exports = {
   rules: {
     // since we are using static site export
     "@next/next/no-img-element": "off",
+    "tailwindcss/no-custom-classname": [
+      "warn",
+      { whitelist: ["nodrag", "nopan", "nowheel"] },
+    ],
     eqeqeq: ["error", "always"],
     "import/no-extraneous-dependencies": [
       "error",

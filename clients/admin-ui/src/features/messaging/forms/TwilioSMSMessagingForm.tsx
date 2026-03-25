@@ -5,21 +5,22 @@ import {
   ChakraHeading as Heading,
   ChakraHStack as HStack,
   Form,
-  GreenCheckCircleIcon,
+  Icons,
   Input,
   useMessage,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import { TwilioLogo } from "~/features/common/logos/TwilioLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import TwilioIcon from "~/features/messaging/icons/TwilioIcon";
 
 import { messagingProviders } from "../constants";
 import {
@@ -336,7 +337,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
             borderTopRadius={6}
           >
             <HStack>
-              <TwilioIcon />
+              <TwilioLogo />
               <Heading as="h3" size="xs">
                 Twilio SMS messaging configuration
               </Heading>
@@ -434,7 +435,9 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <GreenCheckCircleIcon />
+                        <Icons.CheckmarkFilled
+                          color={palette.FIDESUI_SUCCESS}
+                        />
                       ) : undefined
                     }
                   >

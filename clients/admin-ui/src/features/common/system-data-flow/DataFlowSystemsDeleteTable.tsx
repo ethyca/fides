@@ -7,11 +7,11 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
+  Icons,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 
-import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { DataFlow, System } from "~/types/api";
 
 type Props = {
@@ -62,7 +62,7 @@ export const DataFlowSystemsDeleteTable = ({
               <Td textAlign="end">
                 <Button
                   aria-label="Unassign data flow from system"
-                  icon={<TrashCanSolidIcon />}
+                  icon={<Icons.TrashCan />}
                   onClick={() => onDelete(system)}
                   data-testid="unassign-btn"
                 />

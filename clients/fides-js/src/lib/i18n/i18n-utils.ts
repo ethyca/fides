@@ -26,6 +26,19 @@ import type {
 import { LOCALE_LANGUAGE_MAP, STATIC_MESSAGES } from "./locales";
 
 /**
+ * GPC fields that should fall back to static messages when the API doesn't
+ * provide them (e.g. when the experience was created without GPC text).
+ * Maps experience keys to their corresponding static message keys.
+ */
+export const GPC_FALLBACKS: Record<string, string> = {
+  "exp.gpc_label": "static.gpc",
+  "exp.gpc_title": "static.gpc.title",
+  "exp.gpc_description": "static.gpc.description",
+  "exp.gpc_status_applied_label": "static.gpc.status.applied",
+  "exp.gpc_status_overridden_label": "static.gpc.status.overridden",
+};
+
+/**
  * Performs an equality comparison between two locales.
  *
  * Returns true if the two locale strings are:
@@ -276,9 +289,20 @@ export function loadMessagesFromExperience(
     });
   }
 
-  // Load all the extracted messages into the i18n module
+  // Load all the extracted messages into the i18n module, falling back to
+  // static messages for any missing GPC fields
   availableLocales.forEach((locale) => {
-    i18n.load(locale, allMessages[locale]);
+    const messages = allMessages[locale] || {};
+    const gpcDefaults: Record<string, string> = {};
+    Object.entries(GPC_FALLBACKS).forEach(([expKey, staticKey]) => {
+      if (messages[expKey] == null) {
+        const localeStaticMessages =
+          STATIC_MESSAGES[locale] ?? STATIC_MESSAGES[DEFAULT_LOCALE] ?? {};
+        gpcDefaults[expKey] =
+          (localeStaticMessages as Messages)[staticKey] ?? staticKey;
+      }
+    });
+    i18n.load(locale, { ...messages, ...gpcDefaults });
   });
 }
 
