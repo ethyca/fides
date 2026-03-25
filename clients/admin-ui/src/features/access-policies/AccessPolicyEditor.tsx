@@ -180,7 +180,7 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       name: "",
       description: "",
       fidesKey: "",
-      enabled: true,
+      enabled: false,
       priority: 0,
       controls: props.controls,
       controlOptions: props.controlOptions,
