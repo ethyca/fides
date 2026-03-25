@@ -22,7 +22,6 @@ export enum ConnectionType {
   MANUAL = "manual",
   MANUAL_WEBHOOK = "manual_webhook",
   MANUAL_TASK = "manual_task",
-  JIRA_TICKET = "jira_ticket",
   MARIADB = "mariadb",
   MONGODB = "mongodb",
   MSSQL = "mssql",

@@ -20,5 +20,4 @@ export enum PrivacyRequestStatus {
   CANCELED = "canceled",
   ERROR = "error",
   DUPLICATE = "duplicate",
-  PENDING_EXTERNAL = "pending_external",
 }
