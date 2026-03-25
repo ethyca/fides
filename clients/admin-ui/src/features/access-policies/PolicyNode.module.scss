@@ -1,0 +1,45 @@
+.node {
+  position: relative;
+  background: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius-lg);
+  width: 100%;
+  min-width: 150px;
+  box-sizing: border-box;
+}
+
+.header {
+  padding: 12px 16px;
+}
+
+.avatar {
+  background-color: var(--ant-color-text) !important;
+  border-radius: var(--ant-border-radius) !important;
+}
+
+.body {
+  padding: 12px 16px;
+  border-top: 1px solid var(--ant-color-border);
+
+  :global(.ant-collapse-content-box) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  :global(.ant-collapse-body) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  :global(.ant-collapse-header) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+.handle {
+  background: var(--ant-color-text-quaternary);
+  border: none;
+  width: 8px;
+  height: 8px;
+}

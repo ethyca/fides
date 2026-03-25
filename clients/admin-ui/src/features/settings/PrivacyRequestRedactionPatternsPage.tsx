@@ -1,9 +1,9 @@
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraText as Text,
+  Icons,
   Typography,
   useMessage,
 } from "fidesui";
@@ -126,7 +126,7 @@ const PrivacyRequestRedactionPatternsPage = () => {
                           <Button
                             aria-label="remove-pattern"
                             className="z-[2] ml-4"
-                            icon={<DeleteIcon />}
+                            icon={<Icons.TrashCan />}
                             onClick={() => {
                               arrayHelpers.remove(index);
                             }}
