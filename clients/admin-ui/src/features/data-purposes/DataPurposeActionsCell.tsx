@@ -1,5 +1,6 @@
 import { Button, Flex, Icons } from "fidesui";
 import { useRouter } from "next/router";
+
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { DataPurpose } from "~/features/data-purposes/data-purpose.slice";
