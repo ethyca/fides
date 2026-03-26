@@ -104,6 +104,7 @@ dependencies = [
     "sqlalchemy-redshift==0.8.11",
     "sqlalchemy-stubs==0.4",
     "sqlalchemy[asyncio]==1.4.27",
+    "sqlglot~=30.0.3",
     "sshtunnel==0.4.0",
     "starlette~=0.50.0",
     "stream-zip==0.0.83",

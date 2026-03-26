@@ -1006,6 +1006,7 @@ dependencies = [
     { name = "sqlalchemy-redshift" },
     { name = "sqlalchemy-stubs" },
     { name = "sqlalchemy-utils" },
+    { name = "sqlglot" },
     { name = "sshtunnel" },
     { name = "starlette" },
     { name = "stream-zip" },
@@ -1170,6 +1171,7 @@ requires-dist = [
     { name = "sqlalchemy-redshift", specifier = "==0.8.11" },
     { name = "sqlalchemy-stubs", specifier = "==0.4" },
     { name = "sqlalchemy-utils", specifier = "==0.38.3" },
+    { name = "sqlglot", specifier = "~=30.0.3" },
     { name = "sshtunnel", specifier = "==0.4.0" },
     { name = "starlette", specifier = "~=0.50.0" },
     { name = "stream-zip", specifier = "==0.0.83" },
@@ -4275,6 +4277,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b4/43/b8f78428a33410ea3d12cafe6bc3fb359fbebaa2a90c5cc90c766956fa87/SQLAlchemy-Utils-0.38.3.tar.gz", hash = "sha256:9f9afba607a40455cf703adfa9846584bf26168a0c5a60a70063b70d65051f4d", size = 137517, upload-time = "2022-07-11T07:32:24.866Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/90/6ff1829b55cf752994be76bdf5f718db053dcb8d738f9df5b622207a4ab8/SQLAlchemy_Utils-0.38.3-py3-none-any.whl", hash = "sha256:5c13b5d08adfaa85f3d4e8ec09a75136216fad41346980d02974a70a77988bf9", size = 100264, upload-time = "2022-07-12T05:08:31.496Z" },
+]
+
+[[package]]
+name = "sqlglot"
+version = "30.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/7a/3b6a8853fc2fa166f785a8ea4fecde46f70588e35471bc7811373da31a49/sqlglot-30.0.3.tar.gz", hash = "sha256:35ba7514c132b54f87fd1732a65a73615efa9fd83f6e1eed0a315bc9ee3e1027", size = 5802632, upload-time = "2026-03-19T16:51:39.166Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c6/13/b57ab75b0f60b5ee8cb8924bc01a5c419ed3221e00f8f11f8c059a707eb7/sqlglot-30.0.3-py3-none-any.whl", hash = "sha256:5489cc98b5666f1fafc21e0304ca286e513e142aa054ee5760806a2139d07a05", size = 651853, upload-time = "2026-03-19T16:51:36.241Z" },
 ]
 
 [[package]]

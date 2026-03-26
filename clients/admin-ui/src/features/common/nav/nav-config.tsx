@@ -407,7 +407,7 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         requiresPlus: true,
       },
       {
-        title: "Seed Data",
+        title: "Seed data",
         path: routes.SEED_DATA_ROUTE,
         scopes: [ScopeRegistryEnum.DEVELOPER_READ],
         requiresPlus: true,
