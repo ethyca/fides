@@ -1,0 +1,3 @@
+type: Fixed
+description: Add ssl_check_hostname Redis config option to fix SSL hostname verification failures after redis-py upgrade from 3.5.3 to 7.2.0
+pr: 7763
