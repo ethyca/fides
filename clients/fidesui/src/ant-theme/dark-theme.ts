@@ -45,6 +45,9 @@ export const darkAntTheme: ThemeConfig = {
       colorInfoBg: minosDark[1],
       colorInfoBorder: minosDark[3],
     },
+    Button: {
+      defaultBg: palette.FIDESUI_BG_MINOS,
+    },
     Layout: {
       bodyBg: palette.FIDESUI_BG_MINOS,
     },
