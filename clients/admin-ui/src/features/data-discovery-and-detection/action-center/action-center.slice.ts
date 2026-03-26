@@ -531,10 +531,10 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: ["Monitor Tasks"],
     }),
 
-    getAggretateStatistics: build.query<
+    getAggregateStatistics: build.query<
       AggregateStatisticsResponse,
       {
-        monitor_type?: "website" | "datastore" | "infrastructure";
+        monitor_type: "website" | "datastore" | "infrastructure";
         monitor_config_id?: string;
       }
     >({
@@ -639,6 +639,6 @@ export const {
   useGetStagedResourceDetailsQuery,
   useLazyGetStagedResourceDetailsQuery,
   usePromoteRemovalStagedResourcesMutation,
-  useLazyGetAggretateStatisticsQuery,
-  useGetAggretateStatisticsQuery,
+  useLazyGetAggregateStatisticsQuery,
+  useGetAggregateStatisticsQuery,
 } = actionCenterApi;

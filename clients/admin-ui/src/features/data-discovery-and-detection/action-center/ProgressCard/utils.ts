@@ -40,7 +40,7 @@ export const MONITOR_TYPE_TO_EMPTY_TEXT: Record<APIMonitorType, string> = {
   infrastructure:
     "Connect an identity provider or cloud environment to populate the system inventory.",
   website:
-    "Add a web monitor to start tracking cookies, tags, and other resources accross your sites.",
+    "Add a web monitor to start tracking cookies, tags, and other resources across your sites.",
 };
 
 const MONITOR_TYPE_TO_PRIMARY_STATISTIC: Record<APIMonitorType, string> = {
@@ -67,7 +67,7 @@ const MONITOR_TYPE_TO_PERCENT_STATISTIC_KEY: Record<
   website: "data_uses",
 };
 
-const MONITOR_TYPE_TO_PERECENT_STATISTIC_LABEL: Record<APIMonitorType, string> =
+const MONITOR_TYPE_TO_PERCENT_STATISTIC_LABEL: Record<APIMonitorType, string> =
   {
     datastore: "Data categories",
     infrastructure: "Data uses",
@@ -97,7 +97,7 @@ export const transformStatisticsResponseToCardProps = (
     ),
   },
   percentageStats: {
-    label: MONITOR_TYPE_TO_PERECENT_STATISTIC_LABEL[response.monitor_type],
+    label: MONITOR_TYPE_TO_PERCENT_STATISTIC_LABEL[response.monitor_type],
     data: (
       response?.top_classifications?.[
         MONITOR_TYPE_TO_PERCENT_STATISTIC_KEY[response.monitor_type]

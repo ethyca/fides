@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useFlags } from "~/features/common/features";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
-import { useGetAggretateStatisticsQuery } from "./action-center.slice";
+import { useGetAggregateStatisticsQuery } from "./action-center.slice";
 import { ProgressCard } from "./ProgressCard/ProgressCard";
 import {
   MONITOR_TYPE_TO_EMPTY_TEXT,
@@ -18,12 +18,17 @@ export interface MonitorStatsProps {
   monitorId?: string;
 }
 
+const renderIcon = (icon: Icons.CarbonIconType) => {
+  const Icon = icon;
+  return <Icon size={33} />;
+};
+
 const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
   const {
     flags: { heliosInsights },
   } = useFlags();
 
-  const { data: websiteStatistics } = useGetAggretateStatisticsQuery(
+  const { data: websiteStatistics } = useGetAggregateStatisticsQuery(
     {
       monitor_type: "website",
       monitor_config_id: monitorId,
@@ -31,7 +36,7 @@ const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
     { refetchOnMountOrArgChange: true },
   );
 
-  const { data: datastoreStatistics } = useGetAggretateStatisticsQuery(
+  const { data: datastoreStatistics } = useGetAggregateStatisticsQuery(
     {
       monitor_type: "datastore",
       monitor_config_id: monitorId,
@@ -39,7 +44,7 @@ const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
     { refetchOnMountOrArgChange: true },
   );
 
-  const { data: infrastructureStatistics } = useGetAggretateStatisticsQuery(
+  const { data: infrastructureStatistics } = useGetAggregateStatisticsQuery(
     {
       monitor_type: "infrastructure",
       monitor_config_id: monitorId,
@@ -55,16 +60,12 @@ const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
     !monitorId || total_monitors > 0 ? [{ total_monitors, ...response }] : [],
   ); // filtering out statistics without monitors when on a specific monitor screen
 
-  const renderIcon = (icon: Icons.CarbonIconType) => {
-    const Icon = icon;
-    return <Icon size={33} />;
-  };
-
   return (
     heliosInsights && (
       <div
         className={classNames(
-          ...["w-full", ...(!monitorId ? ["grid grid-cols-3 gap-4 pb-4"] : [])],
+          "w-full",
+          !monitorId && "grid grid-cols-3 gap-4 pb-4",
         )}
       >
         {statistics.map(({ total_monitors = 0, monitor_type, ...response }) =>

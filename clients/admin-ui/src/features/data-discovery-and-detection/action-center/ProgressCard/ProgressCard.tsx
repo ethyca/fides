@@ -93,25 +93,21 @@ export const ProgressCard = ({
     >
       <div
         className={classNames(
-          ...[
-            `grid overflow-hidden w-full gap-2 xl:gap-4`,
-            compact
-              ? "grid-cols-[1fr,min-content,1fr,min-content,1fr]"
-              : "grid-cols-1 xl:grid-cols-[auto,1fr,1fr]",
-          ],
+          `grid overflow-hidden w-full gap-2 xl:gap-4`,
+          compact
+            ? "grid-cols-[1fr,min-content,1fr,min-content,1fr]"
+            : "grid-cols-1 xl:grid-cols-[auto,1fr,1fr]",
         )}
       >
         <Flex
           vertical={!compact}
           className={classNames([
             "gap-0 xl:gap-1",
-            ...(compact ? [] : ["content-center justify-center text-center"]),
+            !compact && "content-center justify-center text-center",
           ])}
         >
           <div
-            className={classNames(
-              ...[compact ? "h-full" : "min-h-[80px] w-full"],
-            )}
+            className={classNames(compact ? "h-full" : "min-h-[80px] w-full")}
           >
             <DonutChart
               centerLabel={
@@ -154,10 +150,8 @@ export const ProgressCard = ({
         </Flex>
         <div
           className={classNames(
-            ...[
-              "grid grid-cols-1 grid-rows-[1fr,min-content,1fr,min-content] col-span-2 gap-2",
-              ...(compact ? ["contents"] : []),
-            ],
+            "grid grid-cols-1 grid-rows-[1fr,min-content,1fr,min-content] col-span-2 gap-2",
+            !!compact && "contents",
           )}
         >
           {numericStats && (
@@ -258,10 +252,8 @@ export const ProgressCard = ({
           <Paragraph
             type="secondary"
             className={classNames(
-              ...[
-                "text-xs w-full text-right self-end !my-0",
-                ...(compact ? ["hidden"] : []),
-              ],
+              "text-xs w-full text-right self-end !my-0",
+              !!compact && "hidden",
             )}
             ellipsis={{
               rows: 1,
