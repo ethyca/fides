@@ -9,6 +9,7 @@ import {
   TagList,
   Text,
   Title,
+  Tooltip,
 } from "fidesui";
 import { PropsWithChildren } from "react";
 
@@ -25,10 +26,10 @@ type PercentStat = {
   value: number;
 };
 
-export interface MonitorStatCardProps {
+export interface ProgressCardProps {
   title: string;
   subtitle: string;
-  primaryStat: {
+  progress: {
     label: string;
     percent?: number;
     numerator?: number;
@@ -57,15 +58,15 @@ const getProgressColor = (percent: number) => {
   }
 };
 
-export const MonitorStatCard = ({
+export const ProgressCard = ({
   title,
   subtitle,
-  primaryStat,
+  progress,
   numericStats,
   percentageStats,
   lastUpdated,
   compact,
-}: PropsWithChildren<MonitorStatCardProps>) => {
+}: PropsWithChildren<ProgressCardProps>) => {
   const relativeTime = useRelativeTime(
     lastUpdated ? new Date(lastUpdated) : new Date(),
   );
@@ -117,18 +118,18 @@ export const MonitorStatCard = ({
                 <Title
                   level={compact ? 3 : 5}
                   rootClassName={compact ? "!text-xs" : ""}
-                >{`${nFormatter(primaryStat.percent)}%`}</Title>
+                >{`${nFormatter(progress.percent)}%`}</Title>
               }
               variant={compact ? "thin" : "default"}
               fit={compact ? "fill" : "contain"}
               segments={[
                 {
-                  color: getProgressColor(primaryStat.percent ?? 0),
-                  value: primaryStat.percent ?? 0,
+                  color: getProgressColor(progress.percent ?? 0),
+                  value: progress.percent ?? 0,
                 },
                 {
                   color: "colorPrimaryBg",
-                  value: 100 - (primaryStat.percent ?? 0),
+                  value: 100 - (progress.percent ?? 0),
                 },
               ]}
             />
@@ -143,11 +144,11 @@ export const MonitorStatCard = ({
               strong={compact}
               className={compact ? "whitespace-nowrap text-xs" : undefined}
             >
-              {primaryStat.label}
+              {progress.label}
             </Text>
             <Text strong>
-              {nFormatter(primaryStat.numerator)} of{" "}
-              {nFormatter(primaryStat.denominator)}
+              {nFormatter(progress.numerator)} of{" "}
+              {nFormatter(progress.denominator)}
             </Text>
           </Flex>
         </Flex>
@@ -218,14 +219,36 @@ export const MonitorStatCard = ({
                   {percentageStats.label}
                 </Text>
                 {percentageStats.data.length > 0 ? (
-                  <TagList
-                    maxTags={undefined}
-                    className="flex flex-nowrap gap-1"
-                    tags={percentageStats.data?.map(({ label, value }) => ({
-                      label: <span>{`${nFormatter(value)}% ${label}`}</span>,
-                      value: `${value}%`,
-                    }))}
-                  />
+                  <Tooltip
+                    color="white"
+                    styles={{
+                      root: {
+                        maxWidth: 400,
+                      },
+                    }}
+                    title={
+                      <Descriptions size="small" column={1} layout="horizontal">
+                        {percentageStats.data?.map(({ label, value }) => (
+                          <Descriptions.Item label={label} key={label}>
+                            {nFormatter(value)}%
+                          </Descriptions.Item>
+                        ))}
+                      </Descriptions>
+                    }
+                  >
+                    <span>
+                      <TagList
+                        maxTags={undefined}
+                        className="flex flex-nowrap gap-1"
+                        tags={percentageStats.data?.map(({ label, value }) => ({
+                          label: (
+                            <span>{`${nFormatter(value)}% ${label}`}</span>
+                          ),
+                          value: `${value}%`,
+                        }))}
+                      />
+                    </span>
+                  </Tooltip>
                 ) : (
                   <div className="text-xs">None</div>
                 )}
@@ -240,14 +263,12 @@ export const MonitorStatCard = ({
                 ...(compact ? ["hidden"] : []),
               ],
             )}
-            ellipsis={{ rows: 1 }}
+            ellipsis={{
+              rows: 1,
+              tooltip: { title: <>Updated: {relativeTime}</> },
+            }}
           >
-            <>
-              Updated: {relativeTime}
-              {
-                // <Button icon={<Icons.Renew />} size="small" type="text" />
-              }
-            </>
+            <>Updated: {relativeTime}</>
           </Paragraph>
         </div>
       </div>
