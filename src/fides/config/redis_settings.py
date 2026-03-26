@@ -70,8 +70,8 @@ class RedisSettings(FidesSettings):
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate.",
     )
     ssl_check_hostname: bool = Field(
-        default=False,
-        description="Whether to verify that the Redis server's certificate hostname matches the server's hostname. Set to True for stricter security if your certificates include the correct CN/SAN.",
+        default=True,
+        description="Whether to verify that the Redis server's certificate hostname matches the server's hostname. Set to False if your Redis certificate does not match the connection hostname (e.g., behind proxies, load balancers, or managed Redis with internal cert hostnames).",
     )
     socket_connect_timeout: float = Field(
         default=10.0,

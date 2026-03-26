@@ -18,14 +18,23 @@ class TestBuildingRedisURLs:
         redis_settings = RedisSettings(ssl=True, ssl_cert_reqs="none")
         assert (
             redis_settings.connection_url
-            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=none&ssl_check_hostname=False"
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=none"
         )
 
     def test_tls_custom_ca(self) -> None:
         redis_settings = RedisSettings(ssl=True, ssl_ca_certs="/path/to/my/cert.crt")
         assert (
             redis_settings.connection_url
-            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_check_hostname=False&ssl_ca_certs=/path/to/my/cert.crt"
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/my/cert.crt"
+        )
+
+    def test_tls_check_hostname_disabled(self) -> None:
+        redis_settings = RedisSettings(
+            ssl=True, ssl_cert_reqs="required", ssl_check_hostname=False
+        )
+        assert (
+            redis_settings.connection_url
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_check_hostname=False"
         )
 
     def test_read_only_generic(self) -> None:
@@ -62,7 +71,7 @@ class TestBuildingRedisURLs:
         )
         assert (
             redis_settings.read_only_connection_url
-            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=none&ssl_check_hostname=False"
+            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=none"
         )
 
     def test_read_only_tls_custom_ca(self) -> None:
@@ -75,7 +84,7 @@ class TestBuildingRedisURLs:
         )
         assert (
             redis_settings.read_only_connection_url
-            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=required&ssl_check_hostname=False&ssl_ca_certs=/path/to/readonly/cert.crt"
+            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/readonly/cert.crt"
         )
 
 
