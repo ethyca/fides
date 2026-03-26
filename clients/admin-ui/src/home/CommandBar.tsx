@@ -48,12 +48,11 @@ export const CommandBar = () => {
   const animatedScore = useCountUp(score);
 
   const bandStatus = BAND_STATUS[band];
-  const valueColor =
-    bandStatus === "warning"
-      ? token.colorWarning
-      : bandStatus === "error"
-        ? token.colorError
-        : undefined;
+  const statusTokenMap = {
+    warning: token.colorWarning,
+    error: token.colorError,
+  };
+  const valueColor = bandStatus ? statusTokenMap[bandStatus] : undefined;
 
   const stats = useMemo(() => {
     const items = actions?.items ?? [];

@@ -9,7 +9,7 @@ import {
 } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import { useGetPrivacyRequestsQuery } from "~/features/dashboard/dashboard.slice";

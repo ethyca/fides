@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import {
   Button,
   Card,
@@ -8,7 +9,6 @@ import {
   Tag,
   Text,
 } from "fidesui";
-import dayjs from "dayjs";
 import NextLink from "next/link";
 import { useMemo, useState } from "react";
 
@@ -42,7 +42,10 @@ function getDaysRemaining(dueDate: string | null): {
   }
   const days = dayjs(dueDate).diff(dayjs(), "day");
   if (days < 0) {
-    return { label: `${Math.abs(days)}d overdue`, color: CUSTOM_TAG_COLOR.ERROR };
+    return {
+      label: `${Math.abs(days)}d overdue`,
+      color: CUSTOM_TAG_COLOR.ERROR,
+    };
   }
   if (days <= 3) {
     return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.WARNING };
