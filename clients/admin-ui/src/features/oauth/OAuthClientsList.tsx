@@ -74,7 +74,7 @@ const OAuthClientsList = () => {
   const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
 
   return (
-    <div>
+    <Flex vertical>
       <List
         loading={isLoading}
         itemLayout="horizontal"
@@ -101,7 +101,7 @@ const OAuthClientsList = () => {
           showTotal={(totalItems) => `Total ${totalItems} items`}
         />
       </Flex>
-    </div>
+    </Flex>
   );
 };
 
