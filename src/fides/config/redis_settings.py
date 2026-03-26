@@ -301,15 +301,14 @@ class RedisSettings(FidesSettings):
                 else info.data.get("ssl_ca_certs", "")
             )
             ssl_check_hostname = (
-                info.data.get("read_only_ssl_check_hostname", False)
+                info.data["read_only_ssl_check_hostname"]
                 if is_read_only
-                else info.data.get("ssl_check_hostname", False)
+                else info.data["ssl_check_hostname"]
             )
 
             # Build SSL parameters
             params = {"ssl_cert_reqs": quote_plus(ssl_cert_reqs or "none")}
-            if not ssl_check_hostname:
-                params["ssl_check_hostname"] = "False"
+            params["ssl_check_hostname"] = str(ssl_check_hostname)
             if ssl_ca_certs:
                 params["ssl_ca_certs"] = quote(ssl_ca_certs, safe="/")
             params_str = "?" + urlencode(params, quote_via=quote, safe="/")

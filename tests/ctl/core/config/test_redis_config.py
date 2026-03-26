@@ -18,14 +18,14 @@ class TestBuildingRedisURLs:
         redis_settings = RedisSettings(ssl=True, ssl_cert_reqs="none")
         assert (
             redis_settings.connection_url
-            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=none"
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=none&ssl_check_hostname=True"
         )
 
     def test_tls_custom_ca(self) -> None:
         redis_settings = RedisSettings(ssl=True, ssl_ca_certs="/path/to/my/cert.crt")
         assert (
             redis_settings.connection_url
-            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/my/cert.crt"
+            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_check_hostname=True&ssl_ca_certs=/path/to/my/cert.crt"
         )
 
     def test_tls_check_hostname_disabled(self) -> None:
@@ -71,7 +71,7 @@ class TestBuildingRedisURLs:
         )
         assert (
             redis_settings.read_only_connection_url
-            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=none"
+            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=none&ssl_check_hostname=True"
         )
 
     def test_read_only_tls_custom_ca(self) -> None:
@@ -84,7 +84,21 @@ class TestBuildingRedisURLs:
         )
         assert (
             redis_settings.read_only_connection_url
-            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/readonly/cert.crt"
+            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=required&ssl_check_hostname=True&ssl_ca_certs=/path/to/readonly/cert.crt"
+        )
+
+    def test_read_only_tls_check_hostname_disabled(self) -> None:
+        redis_settings = RedisSettings(
+            read_only_enabled=True,
+            read_only_host="readonly-redis",
+            read_only_password="readonlypassword",
+            read_only_ssl=True,
+            read_only_ssl_cert_reqs="required",
+            read_only_ssl_check_hostname=False,
+        )
+        assert (
+            redis_settings.read_only_connection_url
+            == "rediss://:readonlypassword@readonly-redis:6379/?ssl_cert_reqs=required&ssl_check_hostname=False"
         )
 
 
