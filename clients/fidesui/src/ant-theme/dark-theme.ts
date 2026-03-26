@@ -17,6 +17,7 @@ const dark = (color: string) =>
 const minosDark = dark(palette.FIDESUI_MINOS);
 const errorDark = dark(palette.FIDESUI_ERROR);
 const warningDark = dark(palette.FIDESUI_WARNING);
+const corinthDark = dark(palette.FIDESUI_CORINTH);
 
 export const darkAntTheme: ThemeConfig = {
   ...defaultAntTheme,
@@ -26,6 +27,7 @@ export const darkAntTheme: ThemeConfig = {
     colorBgBase: palette.FIDESUI_BG_MINOS,
     colorTextBase: palette.FIDESUI_CORINTH,
     colorText: palette.FIDESUI_CORINTH,
+    colorTextDescription: corinthDark[4],
     colorTextHeading: palette.FIDESUI_CORINTH,
     colorPrimary: palette.FIDESUI_CORINTH,
     colorBgContainer: palette.FIDESUI_BG_MINOS,
