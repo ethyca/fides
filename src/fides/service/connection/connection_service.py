@@ -32,7 +32,6 @@ from fides.api.models.manual_task import (
     ManualTaskParentEntityType,
     ManualTaskType,
 )
-from fides.api.schemas.policy import ActionType
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.connection_configuration import (
     connection_secrets_schemas,
@@ -55,6 +54,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_saas import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
@@ -638,15 +638,13 @@ class ConnectionService:
         return ConnectionConfigurationResponse.model_validate(connection_config)
 
     def _create_default_jira_configs(self, manual_task: ManualTask) -> None:
-        """Create a default access config with a 'complete' checkbox for Jira tasks.
+        """Create default access + erasure configs with a 'complete' checkbox for Jira tasks.
 
-        Only an access config is needed. For access DSRs, this blocks the
-        graph until the Jira ticket is closed. For erasure DSRs, the access
-        phase of the manual task auto-completes (no data collection needed),
-        and the erasure node finds no erasure config so it completes immediately.
-        The Jira ticket tracks the whole request, not individual action types.
+        Both configs are needed so the DSR graph blocks for either request type.
+        The Jira ticket tracks the whole request; the graph task decides which
+        config to use based on the policy's action type.
         """
-        for action_type in (ActionType.access,):
+        for action_type in (ActionType.access, ActionType.erasure):
             config = ManualTaskConfig.create(
                 db=self.db,
                 data={
