@@ -1,4 +1,0 @@
-type: Removed
-description: Removed the fideslog analytics dependency
-pr: 7735
-labels: [db-migration]

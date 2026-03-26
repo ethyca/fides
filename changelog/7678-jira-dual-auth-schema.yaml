@@ -1,4 +1,0 @@
-type: Added
-description: Added API key authentication fields to JiraTicketSchema, enabling jira_ticket connections to use either OAuth 2.0 or API key (email + token) credentials
-pr: 7678
-labels: []

@@ -11,6 +11,7 @@ import {
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
+import { useFlags } from "~/features/common/features";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
@@ -86,10 +87,16 @@ const SystemInformationForm = ({
 }: Props) => {
   const { data: systems = [] } = useGetAllSystemsQuery();
   const { plus: systemGroupsEnabled } = useFeatures();
+  const { flags } = useFlags();
 
-  // Check if user has permission to update systems
-  const canUpdateSystems = useHasPermission([ScopeRegistryEnum.SYSTEM_UPDATE]);
-  const isReadOnly = passedInSystem && !canUpdateSystems;
+  // Check if user has permission to update systems (only when RBAC is enabled)
+  // Checks both global SYSTEM_UPDATE and per-system SYSTEM_MANAGER_UPDATE
+  // so that viewers with assigned systems can still edit them
+  const canUpdateSystems = useHasPermission([
+    ScopeRegistryEnum.SYSTEM_UPDATE,
+    ScopeRegistryEnum.SYSTEM_MANAGER_UPDATE,
+  ]);
+  const isReadOnly = flags.alphaRbac && passedInSystem && !canUpdateSystems;
 
   const dispatch = useAppDispatch();
 

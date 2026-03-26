@@ -1,4 +1,0 @@
-type: Changed
-description: Migrate Chakra UI Menu components to Ant Design Dropdown/Popover across the admin-ui
-pr: 7681
-labels: []
