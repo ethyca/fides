@@ -325,6 +325,19 @@ class PrivacyRequestStatus(StrEnum):
     duplicate = "duplicate"  # Request identified as duplicate of another request
 
 
+ACTIVE_REQUEST_STATUSES = frozenset(
+    {
+        PrivacyRequestStatus.in_processing,
+        PrivacyRequestStatus.pending,
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.paused,
+        PrivacyRequestStatus.requires_input,
+        PrivacyRequestStatus.requires_manual_finalization,
+        PrivacyRequestStatus.pending_external,
+    }
+)
+
+
 class IdentityValue(BaseModel):
     """Represents an identity value with a label in API responses.
 
