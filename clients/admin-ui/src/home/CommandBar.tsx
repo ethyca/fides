@@ -1,4 +1,4 @@
-import { antTheme, Flex, Icons, Statistic, Text } from "fidesui";
+import { antTheme, Divider, Flex, Icons, Statistic, Text } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -114,15 +114,11 @@ export const CommandBar = () => {
             />
           </Flex>
 
-          <Text style={{ color: token.colorBorder }}>·</Text>
+          <Divider type="vertical" />
 
           {stats.map((stat, i) => (
             <Flex key={stat.label} align="center" gap={4}>
-              {i > 0 && (
-                <Text className="mr-2" style={{ color: token.colorBorder }}>
-                  ·
-                </Text>
-              )}
+              {i > 0 && <Divider type="vertical" />}
               <Statistic
                 value={stat.value}
                 suffix={stat.label}

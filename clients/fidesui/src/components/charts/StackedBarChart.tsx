@@ -161,7 +161,6 @@ const ClickableTick = ({
   );
 };
 
-/** Rounded rect that only rounds the outermost corners of a stacked bar row. */
 const RoundedBarCell = ({
   x = 0,
   y = 0,
@@ -262,13 +261,11 @@ export const StackedBarChart = ({
       .filter((entry): entry is ChartEntry => entry !== null);
   }, [data, segments]);
 
-  // Sort alphabetically so ordering is deterministic (e.g. Access before Erasure)
   const sortedData = useMemo(
     () => [...chartData].sort((a, b) => a.category.localeCompare(b.category)),
     [chartData],
   );
 
-  // Compute YAxis width dynamically from the longest label
   const yAxisWidth = useMemo(() => {
     if (sortedData.length === 0) {
       return 80;

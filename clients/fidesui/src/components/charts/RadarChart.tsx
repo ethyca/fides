@@ -29,7 +29,6 @@ export interface RadarChartDataPoint {
   status?: RadarPointStatus;
 }
 
-/** Minimal data so Recharts renders the PolarGrid when there's no real data. */
 const EMPTY_GRID_DATA = [{ value: 100 }, { value: 100 }, { value: 100 }];
 
 const TICK_HIT_WIDTH = 80;
@@ -97,6 +96,7 @@ const RadarTick = ({
         y={y}
         fill={statusColor ?? chartColor}
         fillOpacity={statusColor ? 1 : 0.75}
+        maxLines={2}
       >
         {payload.value}
       </ChartText>
