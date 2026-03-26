@@ -1,6 +1,4 @@
-import { generate } from "@ant-design/colors";
 import { ThemeConfig } from "antd/es";
-
 import palette from "../palette/palette.module.scss";
 
 /**
@@ -32,10 +30,10 @@ export const defaultAntTheme: ThemeConfig = {
     borderRadiusSM: 4,
     borderRadius: 6,
     borderRadiusLG: 6,
-    colorErrorBg: generate(palette.FIDESUI_ERROR)[2],
-    colorErrorBorder: generate(palette.FIDESUI_ERROR)[3],
-    colorWarningBg: generate(palette.FIDESUI_WARNING)[2],
-    colorWarningBorder: generate(palette.FIDESUI_WARNING)[3],
+    colorErrorBg: "#ffdcd6", // custom override
+    colorErrorBorder: "#f2aca5", // custom override
+    colorWarningBg: "#ffecc9", // custom override
+    colorWarningBorder: "#ffdba1", // custom override
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
     colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,
@@ -56,6 +54,7 @@ export const defaultAntTheme: ThemeConfig = {
       primaryShadow: undefined,
       defaultShadow: undefined,
       dangerShadow: undefined,
+      defaultBg: palette.FIDESUI_FULL_WHITE,
       textHoverBg: undefined,
       textTextHoverColor: palette.FIDESUI_NEUTRAL_600,
     },
