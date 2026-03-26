@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Added author_association guard to Claude Code Review workflow to prevent non-collaborator PRs from triggering the review
+pr: 7761
+labels: []
