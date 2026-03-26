@@ -68,7 +68,6 @@ export const ACTION_CTA: Record<
   ActionType,
   { label: string; route: (data: Record<string, unknown>) => string }
 > = {
-  // TODO: Determine correct url route for each of these actions
   [ActionType.CLASSIFICATION_REVIEW]: {
     label: "Review classifications",
     route: () => "/data-discovery/action-center",

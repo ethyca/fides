@@ -1,4 +1,4 @@
-import { antTheme, Divider, Flex, Icons, Statistic, Text } from "fidesui";
+import { antTheme, Divider, Flex, Icons, Statistic } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
