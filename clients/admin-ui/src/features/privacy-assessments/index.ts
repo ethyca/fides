@@ -6,7 +6,7 @@ export { default as AssessmentSettingsModal } from "./AssessmentSettingsModal";
 export * from "./AssessmentTaskPopoverContent";
 export * from "./AssessmentTaskStatusIndicator";
 export * from "./constants";
-export * from "./EditableTextBlock";
+export { EditableTextBlock } from "~/features/common/EditableTextBlock";
 export * from "./EmptyState";
 export * from "./EvidenceDrawer";
 export * from "./EvidenceSection";

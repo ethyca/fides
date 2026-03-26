@@ -118,5 +118,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "dataPurposes": {
+    "label": "Data purposes",
+    "description": "Purpose-based configuration view for systems and datasets",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
