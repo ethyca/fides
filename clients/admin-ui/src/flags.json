@@ -118,5 +118,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaMonitorProgress": {
+    "label": "Alpha monitor progress",
+    "description": "Enable the new monitor progress widgets for the action center",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

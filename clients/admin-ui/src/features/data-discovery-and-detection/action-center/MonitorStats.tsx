@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { Button, Card, Flex, Icons, Text } from "fidesui";
 import Link from "next/link";
 
+import { useFlags } from "~/features/common/features";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 import { useGetAggretateStatisticsQuery } from "./action-center.slice";
@@ -18,6 +19,10 @@ export interface MonitorStatsProps {
 }
 
 const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
+  const {
+    flags: { alphaMonitorProgress },
+  } = useFlags();
+
   const { data: websiteStatistics } = useGetAggretateStatisticsQuery(
     {
       monitor_type: "website",
@@ -56,41 +61,43 @@ const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
   };
 
   return (
-    <div
-      className={classNames(
-        ...["w-full", ...(!monitorId ? ["grid grid-cols-3 gap-4 pb-4"] : [])],
-      )}
-    >
-      {statistics.map(({ total_monitors = 0, monitor_type, ...response }) =>
-        total_monitors > 0 ? (
-          <ProgressCard
-            {...transformStatisticsResponseToCardProps({
-              total_monitors,
-              monitor_type,
-              ...response,
-            })}
-            key={monitor_type}
-            compact={!!monitorId}
-          />
-        ) : (
-          <Card
-            title={<span>{MONITOR_TYPE_TO_LABEL[monitor_type]}</span>}
-            key={monitor_type}
-            size="small"
-          >
-            <Flex vertical gap="middle" align="center" justify="center">
-              <Text>{renderIcon(MONITOR_TYPE_TO_ICON[monitor_type])}</Text>
-              <Text type="secondary" className="text-center">
-                {MONITOR_TYPE_TO_EMPTY_TEXT[monitor_type]}
-              </Text>
-              <Link href={INTEGRATION_MANAGEMENT_ROUTE}>
-                <Button type="primary">Create</Button>
-              </Link>
-            </Flex>
-          </Card>
-        ),
-      )}
-    </div>
+    alphaMonitorProgress && (
+      <div
+        className={classNames(
+          ...["w-full", ...(!monitorId ? ["grid grid-cols-3 gap-4 pb-4"] : [])],
+        )}
+      >
+        {statistics.map(({ total_monitors = 0, monitor_type, ...response }) =>
+          total_monitors > 0 ? (
+            <ProgressCard
+              {...transformStatisticsResponseToCardProps({
+                total_monitors,
+                monitor_type,
+                ...response,
+              })}
+              key={monitor_type}
+              compact={!!monitorId}
+            />
+          ) : (
+            <Card
+              title={<span>{MONITOR_TYPE_TO_LABEL[monitor_type]}</span>}
+              key={monitor_type}
+              size="small"
+            >
+              <Flex vertical gap="middle" align="center" justify="center">
+                <Text>{renderIcon(MONITOR_TYPE_TO_ICON[monitor_type])}</Text>
+                <Text type="secondary" className="text-center">
+                  {MONITOR_TYPE_TO_EMPTY_TEXT[monitor_type]}
+                </Text>
+                <Link href={INTEGRATION_MANAGEMENT_ROUTE}>
+                  <Button type="primary">Create</Button>
+                </Link>
+              </Flex>
+            </Card>
+          ),
+        )}
+      </div>
+    )
   );
 };
 
