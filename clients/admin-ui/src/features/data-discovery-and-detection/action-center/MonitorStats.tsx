@@ -20,7 +20,7 @@ export interface MonitorStatsProps {
 
 const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
   const {
-    flags: { alphaMonitorProgress },
+    flags: { heliosInsights },
   } = useFlags();
 
   const { data: websiteStatistics } = useGetAggretateStatisticsQuery(
@@ -61,7 +61,7 @@ const MonitorStats = ({ monitorId }: MonitorStatsProps) => {
   };
 
   return (
-    alphaMonitorProgress && (
+    heliosInsights && (
       <div
         className={classNames(
           ...["w-full", ...(!monitorId ? ["grid grid-cols-3 gap-4 pb-4"] : [])],

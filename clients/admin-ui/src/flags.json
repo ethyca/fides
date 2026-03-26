@@ -119,9 +119,9 @@
     "test": false,
     "production": false
   },
-  "alphaMonitorProgress": {
-    "label": "Alpha monitor progress",
-    "description": "Enable the new monitor progress widgets for the action center",
+  "heliosInsights": {
+    "label": "heliosInsights",
+    "description": "Enable the new monitor progress widgets for the action center in Helios",
     "development": true,
     "test": true,
     "production": false
