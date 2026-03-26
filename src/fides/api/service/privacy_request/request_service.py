@@ -679,7 +679,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) in {privacy_request.status.value} status - "
-                                    f"keeping request in current status as it may be waiting for manual input"
+                                    f"keeping request in current status as it may be waiting for input or an external system"
                                 )
                                 should_requeue = False
                                 break
