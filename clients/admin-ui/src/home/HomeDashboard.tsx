@@ -25,7 +25,7 @@ export const HomeDashboard = () => {
     <Flex
       vertical
       gap={24}
-      className="mx-auto w-full max-w-[1600px] px-10 lg:px-0 py-6"
+      className="mx-auto w-full max-w-[1600px] px-10 py-6"
     >
       <AgentBriefingBanner />
       <Row

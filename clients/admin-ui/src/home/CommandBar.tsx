@@ -86,7 +86,7 @@ export const CommandBar = () => {
 
   return (
     <Flex align="center" className="h-12 shrink-0 select-none px-10">
-      <div className="mx-auto flex w-full max-w-[1600px] items-center">
+      <div className="mx-auto flex w-full items-center">
         <Flex align="center" gap="large" className="flex-1">
           <Flex
             align="center"
