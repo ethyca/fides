@@ -4,6 +4,14 @@ import OAuthClientsList from "./OAuthClientsList";
 
 // --- Module mocks ---
 
+jest.mock("~/features/common/pagination/useAntPagination", () => ({
+  useAntPagination: () => ({
+    paginationProps: { current: 1, pageSize: 25, onChange: jest.fn() },
+    pageIndex: 1,
+    pageSize: 25,
+  }),
+}));
+
 const mockUseHasPermission = jest.fn();
 jest.mock("~/features/common/Restrict", () => ({
   useHasPermission: () => mockUseHasPermission(),
