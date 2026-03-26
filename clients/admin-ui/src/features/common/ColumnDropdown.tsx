@@ -99,7 +99,7 @@ const ColumnDropdown = <T extends Record<string, unknown>>({
       trigger="click"
       open={open}
       onOpenChange={setOpen}
-      styles={{ body: { padding: 0 } }}
+      styles={{ content: { padding: 0 } }}
     >
       <Button
         icon={<Icons.ChevronDown />}

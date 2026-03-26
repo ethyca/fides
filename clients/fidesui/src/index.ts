@@ -262,7 +262,6 @@ export type {
   ICustomSelectProps,
   CustomInputProps as InputProps,
   CustomStatisticProps as StatisticProps,
-  StatisticSize,
   StatisticTrend,
 } from "./hoc";
 export {
@@ -427,7 +426,7 @@ export {
   darkAntTheme,
   defaultAntTheme,
 } from "./ant-theme";
-export { theme as antTheme } from "antd/lib";
+export { theme as antTheme } from "antd";
 
 /**
  * Custom ChakraUI Components (deprecated)
