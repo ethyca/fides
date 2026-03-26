@@ -26,9 +26,13 @@ from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.manual_task import (
     ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigField,
+    ManualTaskFieldType,
     ManualTaskParentEntityType,
     ManualTaskType,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.connection_configuration import (
     connection_secrets_schemas,
@@ -620,7 +624,7 @@ class ConnectionService:
             connection_config.connection_type.value  # type: ignore
         )
         if auto_task_type and not connection_config.manual_task:
-            ManualTask.create(
+            manual_task = ManualTask.create(
                 db=self.db,
                 data={
                     "task_type": auto_task_type,
@@ -628,8 +632,43 @@ class ConnectionService:
                     "parent_entity_type": ManualTaskParentEntityType.connection_config,
                 },
             )
+            if auto_task_type == ManualTaskType.jira_ticket:
+                self._create_default_jira_configs(manual_task)
 
         return ConnectionConfigurationResponse.model_validate(connection_config)
+
+    def _create_default_jira_configs(self, manual_task: ManualTask) -> None:
+        """Create a default access config with a 'complete' checkbox for Jira tasks.
+
+        Only an access config is needed. For access DSRs, this blocks the
+        graph until the Jira ticket is closed. For erasure DSRs, the access
+        phase of the manual task auto-completes (no data collection needed),
+        and the erasure node finds no erasure config so it completes immediately.
+        The Jira ticket tracks the whole request, not individual action types.
+        """
+        for action_type in (ActionType.access,):
+            config = ManualTaskConfig.create(
+                db=self.db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_type": action_type,
+                    "version": 1,
+                    "is_current": True,
+                },
+            )
+            ManualTaskConfigField.create(
+                db=self.db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_id": config.id,
+                    "field_key": "complete",
+                    "field_type": ManualTaskFieldType.checkbox,
+                    "field_metadata": {
+                        "label": "Mark as complete",
+                        "required": True,
+                    },
+                },
+            )
 
     def update_saas_instance(
         self,
