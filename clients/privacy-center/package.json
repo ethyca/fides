@@ -32,6 +32,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource/inter": "^4.5.15",
     "@pgrabovets/json-view": "^2.7.6",
     "@reduxjs/toolkit": "^2.6.0",
     "@types/react-dom": "^19.0.4",
