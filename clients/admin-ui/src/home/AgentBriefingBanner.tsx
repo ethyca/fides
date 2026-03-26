@@ -1,14 +1,12 @@
 import { Alert, Flex, SparkleIcon } from "fidesui";
 import NextLink from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { ACTION_CTA } from "~/features/dashboard/constants";
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
-
-const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
 
 const SEVERITY_STYLE: Record<string, string> = {
   [ActionSeverity.CRITICAL]: styles.error,
@@ -21,15 +19,8 @@ export const AgentBriefingBanner = () => {
   const { data: briefing } = useGetAgentBriefingQuery();
   const [visible, setVisible] = useState(true);
 
-  useEffect(() => {
-    if (sessionStorage.getItem(BRIEFING_DISMISSED_KEY) === "true") {
-      setVisible(false);
-    }
-  }, []);
-
   const dismiss = useCallback(() => {
     setVisible(false);
-    sessionStorage.setItem(BRIEFING_DISMISSED_KEY, "true");
   }, []);
 
   if (!briefing || !visible) {
