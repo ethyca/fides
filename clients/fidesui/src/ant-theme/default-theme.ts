@@ -110,7 +110,7 @@ export const defaultAntTheme: ThemeConfig = {
       fontSizeHeading2: 20,
       fontSizeHeading3: 16,
       titleMarginBottom: 0,
-      fontSizeXL: 48,
+      fontSizeXL: 24,
       fontSizeLG: 18,
       fontSizeSM: 12,
     },
