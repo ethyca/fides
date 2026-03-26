@@ -7,7 +7,7 @@ import { PrivacyNoticesTable } from "~/features/privacy-notices/table/PrivacyNot
 
 const PrivacyNoticesPage = () => (
   <FixedLayout title="Privacy notices">
-    <PageHeader heading="Privacy Notices">
+    <PageHeader heading="Privacy notices">
       <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
         Manage the privacy notices and mechanisms that are displayed to your
         users based on their location, what information you collect about them,

@@ -8,7 +8,7 @@ import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
 const NewPrivacyNoticePage = () => (
   <Layout title="New privacy notice">
     <PageHeader
-      heading="Privacy Notices"
+      heading="Privacy notices"
       breadcrumbItems={[
         { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
         { title: "New privacy notice" },

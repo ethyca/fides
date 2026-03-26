@@ -1006,6 +1006,7 @@ dependencies = [
     { name = "sqlalchemy-redshift" },
     { name = "sqlalchemy-stubs" },
     { name = "sqlalchemy-utils" },
+    { name = "sqlglot" },
     { name = "sshtunnel" },
     { name = "starlette" },
     { name = "stream-zip" },
@@ -1102,7 +1103,7 @@ requires-dist = [
     { name = "fastapi", extras = ["all"], specifier = "==0.123.3" },
     { name = "fastapi-cli", specifier = "~=0.0.16" },
     { name = "fastapi-pagination", extras = ["sqlalchemy"], specifier = "==0.15.0" },
-    { name = "fideslang", specifier = "==3.1.4a1" },
+    { name = "fideslang", specifier = "==3.1.3" },
     { name = "filelock", specifier = "~=3.20.0" },
     { name = "firebase-admin", specifier = "==5.3.0" },
     { name = "flower", specifier = "==2.0.1" },
@@ -1170,6 +1171,7 @@ requires-dist = [
     { name = "sqlalchemy-redshift", specifier = "==0.8.11" },
     { name = "sqlalchemy-stubs", specifier = "==0.4" },
     { name = "sqlalchemy-utils", specifier = "==0.38.3" },
+    { name = "sqlglot", specifier = "~=30.0.3" },
     { name = "sshtunnel", specifier = "==0.4.0" },
     { name = "starlette", specifier = "~=0.50.0" },
     { name = "stream-zip", specifier = "==0.0.83" },
@@ -1400,16 +1402,16 @@ wheels = [
 
 [[package]]
 name = "fideslang"
-version = "3.1.4a1"
+version = "3.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/25/f40b2357daf0ebefa234b301a0c33154ea3f76030b82dffa5b39f5e44067/fideslang-3.1.4a1.tar.gz", hash = "sha256:d03f07f4a83fa3ef733c17d2e4891611beec9598288a17e2371403240b5412c4", size = 201457, upload-time = "2025-12-18T02:01:27.318Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/b3/7f7867a074975af22b4f48f19fac52ef1eda362cef74ea00285bc73324d2/fideslang-3.1.3.tar.gz", hash = "sha256:e1a1b377da21b7521df3aeacaadd0c19c3f6367d65a5f97291f9aefcf498fed2", size = 201399, upload-time = "2026-03-25T17:36:28.501Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/12/9563420acabd163519bac3a735ea9776ed2c0e87463742c5a3626045509f/fideslang-3.1.4a1-py3-none-any.whl", hash = "sha256:0f82282593a6ebcef0965e66b9296fbf89a42b2177e77a8252ee755f18013813", size = 47723, upload-time = "2025-12-18T02:01:25.959Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/3a/8882bada1bf5c65909e5db43bdebcf57db9bded8677a4129b4a1fe382a7a/fideslang-3.1.3-py3-none-any.whl", hash = "sha256:6741f88b05c924beb103a1a2cd742f64749145f5fe706dcd2b150fafa9cf6365", size = 47592, upload-time = "2026-03-25T17:36:27.121Z" },
 ]
 
 [[package]]
@@ -4275,6 +4277,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b4/43/b8f78428a33410ea3d12cafe6bc3fb359fbebaa2a90c5cc90c766956fa87/SQLAlchemy-Utils-0.38.3.tar.gz", hash = "sha256:9f9afba607a40455cf703adfa9846584bf26168a0c5a60a70063b70d65051f4d", size = 137517, upload-time = "2022-07-11T07:32:24.866Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/90/6ff1829b55cf752994be76bdf5f718db053dcb8d738f9df5b622207a4ab8/SQLAlchemy_Utils-0.38.3-py3-none-any.whl", hash = "sha256:5c13b5d08adfaa85f3d4e8ec09a75136216fad41346980d02974a70a77988bf9", size = 100264, upload-time = "2022-07-12T05:08:31.496Z" },
+]
+
+[[package]]
+name = "sqlglot"
+version = "30.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/7a/3b6a8853fc2fa166f785a8ea4fecde46f70588e35471bc7811373da31a49/sqlglot-30.0.3.tar.gz", hash = "sha256:35ba7514c132b54f87fd1732a65a73615efa9fd83f6e1eed0a315bc9ee3e1027", size = 5802632, upload-time = "2026-03-19T16:51:39.166Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c6/13/b57ab75b0f60b5ee8cb8924bc01a5c419ed3221e00f8f11f8c059a707eb7/sqlglot-30.0.3-py3-none-any.whl", hash = "sha256:5489cc98b5666f1fafc21e0304ca286e513e142aa054ee5760806a2139d07a05", size = 651853, upload-time = "2026-03-19T16:51:36.241Z" },
 ]
 
 [[package]]

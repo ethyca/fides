@@ -1,0 +1,4 @@
+type: Added
+description: Add search to the Admin UI sidebar navigation for quickly finding pages, tabs, systems, integrations, and taxonomy types
+pr: 7723
+labels: []

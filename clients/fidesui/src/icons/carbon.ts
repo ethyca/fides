@@ -69,6 +69,8 @@ export {
   Share,
   ShowDataCards,
   Shuffle,
+  SidePanelClose,
+  SidePanelOpen,
   SortAscending,
   SortDescending,
   Stamp,
