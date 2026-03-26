@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
+import { BAND_STATUS } from "~/features/dashboard/constants";
 import {
   useGetDashboardPostureQuery,
   useGetPriorityActionsQuery,
@@ -46,14 +47,13 @@ export const CommandBar = () => {
 
   const animatedScore = useCountUp(score);
 
-  const valueColorMap: Record<PostureBand, string | undefined> = {
-    [PostureBand.EXCELLENT]: undefined,
-    [PostureBand.GOOD]: undefined,
-    [PostureBand.AT_RISK]: token.colorWarning,
-    [PostureBand.CRITICAL]: token.colorError,
-  };
-
-  const valueColor = valueColorMap[band];
+  const bandStatus = BAND_STATUS[band];
+  const valueColor =
+    bandStatus === "warning"
+      ? token.colorWarning
+      : bandStatus === "error"
+        ? token.colorError
+        : undefined;
 
   const stats = useMemo(() => {
     const items = actions?.items ?? [];

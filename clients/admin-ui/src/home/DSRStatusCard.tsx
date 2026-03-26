@@ -33,14 +33,6 @@ export const DSRStatusCard = () => {
   const router = useRouter();
   const { data, isLoading } = useGetPrivacyRequestsQuery();
 
-  const sla = useMemo(() => {
-    if (!data?.sla_health) {
-      return undefined;
-    }
-    const { update, ...rest } = data.sla_health;
-    return rest;
-  }, [data?.sla_health]);
-
   const handleTypeClick = useCallback(
     (type: string) => {
       router.push(
@@ -113,26 +105,28 @@ export const DSRStatusCard = () => {
             <Text strong className="mb-3 text-xs">
               SLA Health
             </Text>
-            <Flex className="flex-1">
-              {sla && (
-                <StackedBarChart
-                  data={sla}
-                  segments={SLA_SEGMENTS}
-                  onCategoryClick={handleTypeClick}
-                />
-              )}
-            </Flex>
-            <Flex gap={10} className="mt-2">
-              {SLA_SEGMENTS.map(({ color, label }) => (
-                <Flex key={label} align="center" gap={4}>
-                  <div
-                    className="size-2 rounded-sm"
-                    style={{ backgroundColor: token[color] }}
+            {data?.sla_health && (
+              <>
+                <Flex className="flex-1">
+                  <StackedBarChart
+                    data={data?.sla_health}
+                    segments={SLA_SEGMENTS}
+                    onCategoryClick={handleTypeClick}
                   />
-                  <Text type="secondary">{label}</Text>
                 </Flex>
-              ))}
-            </Flex>
+                <Flex gap={10} className="mt-2">
+                  {SLA_SEGMENTS.map(({ color, label }) => (
+                    <Flex key={label} align="center" gap={4}>
+                      <div
+                        className="size-2 rounded-sm"
+                        style={{ backgroundColor: token[color] }}
+                      />
+                      <Text type="secondary">{label}</Text>
+                    </Flex>
+                  ))}
+                </Flex>
+              </>
+            )}
           </Flex>
         </Flex>
       </Flex>

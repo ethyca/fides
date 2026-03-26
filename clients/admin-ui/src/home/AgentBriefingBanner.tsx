@@ -8,7 +8,7 @@ import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
 
-const SEVERITY_STYLE: Record<string, string> = {
+const SEVERITY_STYLE: Record<ActionSeverity, string> = {
   [ActionSeverity.CRITICAL]: styles.error,
   [ActionSeverity.HIGH]: styles.error,
   [ActionSeverity.MEDIUM]: styles.warning,

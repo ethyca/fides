@@ -261,11 +261,6 @@ export const RadarChart = ({
           {hasWeights && (
             <Radar
               dataKey="weight"
-              stroke={chartColor}
-              strokeWidth={CHART_STROKE.strokeWidth * 0.5}
-              strokeOpacity={0.15}
-              strokeLinecap="round"
-              strokeLinejoin="round"
               fill={`url(#${weightGradientId})`}
               dot={false}
               activeDot={false}
