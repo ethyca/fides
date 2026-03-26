@@ -1,4 +1,0 @@
-type: Added
-description: Added dataLayer and gtag stubbing logic to Fides.gcm method when gtag isn't already defined.
-pr: 7543
-labels: []

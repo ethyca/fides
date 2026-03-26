@@ -1,4 +1,0 @@
-type: Security
-description: Removed unused ecdsa dependency (CVE-2024-23342)
-pr: 7731
-labels: []

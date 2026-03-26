@@ -1,4 +1,0 @@
-type: Added
-description: Added X-Request-ID header support for correlating logs across a single API request
-pr: 7691
-labels: []
