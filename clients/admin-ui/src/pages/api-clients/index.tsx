@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import OAuthClientsList from "~/features/oauth/OAuthClientsTable";
+import OAuthClientsList from "~/features/oauth/OAuthClientsList";
 
 const ApiClientsPage: NextPage = () => {
   return (

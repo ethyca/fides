@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 
-import OAuthClientsList from "./OAuthClientsTable";
+import OAuthClientsList from "./OAuthClientsList";
 
 // --- Module mocks ---
 
