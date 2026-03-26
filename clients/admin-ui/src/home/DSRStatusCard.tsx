@@ -50,10 +50,6 @@ export const DSRStatusCard = () => {
     [router],
   );
 
-  const handleOverdueClick = useCallback(() => {
-    router.push(`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`);
-  }, [router]);
-
   return (
     <Card
       title="DSR Status"
@@ -62,7 +58,7 @@ export const DSRStatusCard = () => {
         <NextLink href={PRIVACY_REQUESTS_ROUTE} className={styles.viewAllLink}>
           <Flex align="center" gap={4}>
             View all requests
-            <Icons.ArrowRight size={12} />
+            <Icons.ArrowRight size={14} />
           </Flex>
         </NextLink>
       }
@@ -99,18 +95,17 @@ export const DSRStatusCard = () => {
               </Flex>
             </div>
             {(data?.overdue_count ?? 0) > 0 && (
-              <button
-                type="button"
-                onClick={handleOverdueClick}
+              <NextLink
+                href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
                 className={styles.overdueLink}
               >
                 <Flex align="center" gap={4}>
-                  <Text type="danger" className="text-xs font-semibold">
+                  <Text strong type="danger">
                     {data?.overdue_count} overdue
                   </Text>
-                  <Icons.ArrowRight size={12} />
+                  <Icons.ArrowRight size={14} color={token.colorError} />
                 </Flex>
-              </button>
+              </NextLink>
             )}
           </Flex>
 
