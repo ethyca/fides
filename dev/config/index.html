@@ -2233,7 +2233,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">562</span>
 <span class="normal">563</span>
 <span class="normal">564</span>
-<span class="normal">565</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2658,6 +2664,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># If using TLS encryption rooted with a custom Certificate Authority,</span>
 <span class="c1"># set this to the path of the CA certificate.</span>
 <span class="n">ssl_ca_certs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Whether to verify that the Redis server&#39;s certificate hostname</span>
+<span class="c1"># matches the server&#39;s hostname. Set to False if your Redis certificate</span>
+<span class="c1"># does not match the connection hostname (e.g., behind proxies, load</span>
+<span class="c1"># balancers, or managed Redis with internal cert hostnames).</span>
+<span class="n">ssl_check_hostname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># Timeout in seconds for establishing a connection to Redis.</span>
 <span class="n">socket_connect_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10.0</span><span class="w"> </span><span class="c1"># number</span>
