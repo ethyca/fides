@@ -426,7 +426,9 @@ export {
   darkAntTheme,
   defaultAntTheme,
 } from "./ant-theme";
-export { theme as antTheme } from "antd";
+// Use antd/lib (CJS) rather than antd (ESM) to prevent dual module instances
+// that break ConfigProvider context and cause useToken() to return default tokens.
+export { theme as antTheme } from "antd/lib";
 
 /**
  * Custom ChakraUI Components (deprecated)
