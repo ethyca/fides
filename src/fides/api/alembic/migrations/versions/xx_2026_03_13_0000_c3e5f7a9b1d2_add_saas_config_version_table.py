@@ -7,7 +7,7 @@ PATCH.  Rows are never deleted so that execution logs can always resolve the
 config/dataset that was active when a DSR ran.
 
 Revision ID: c3e5f7a9b1d2
-Revises: a1ca9ddf3c3c
+Revises: 29113e44faec
 Create Date: 2026-03-13
 
 """
@@ -18,7 +18,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "c3e5f7a9b1d2"
-down_revision = "a1ca9ddf3c3c"
+down_revision = "29113e44faec"
 branch_labels = None
 depends_on = None
 
