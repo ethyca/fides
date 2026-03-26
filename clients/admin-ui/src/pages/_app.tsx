@@ -1,7 +1,3 @@
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
 import "fidesui/src/tailwind.css";
 import "fidesui/src/ant-theme/global.scss";
 

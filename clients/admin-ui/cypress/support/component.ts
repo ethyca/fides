@@ -15,10 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import "./commands";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
+import "fidesui/src/ant-theme/global.scss";
 
 import { EnhancedStore } from "@reduxjs/toolkit";
 // Alternatively you can use CommonJS syntax:
