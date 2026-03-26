@@ -51,7 +51,7 @@ export const DonutChart = ({
   return (
     <div
       ref={containerRef}
-      className="flex relative h-full w-full content-center justify-center"
+      className="flex relative h-full w-full justify-center items-center"
     >
       {size > 0 && (
         <PieChart width={size} height={size}>
