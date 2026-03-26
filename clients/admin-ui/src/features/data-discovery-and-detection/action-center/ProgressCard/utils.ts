@@ -31,7 +31,7 @@ export const MONITOR_TYPE_TO_ICON: Record<
 > = {
   datastore: Icons.DataBase,
   infrastructure: Icons.TransformInstructions,
-  website: Icons.Globe,
+  website: Icons.Wikis,
 };
 
 export const MONITOR_TYPE_TO_EMPTY_TEXT: Record<APIMonitorType, string> = {
