@@ -92,6 +92,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed viewer users being unable to edit systems assigned to them due to an ungated read-only permission check [#7754](https://github.com/ethyca/fides/pull/7754)
 - Fixed DSR watchdog incorrectly cancelling in_processing tasks with missing cache keys; now requeues through retry mechanism [#7684](https://github.com/ethyca/fides/pull/7684)
 - Fixed manual task modal content overflowing modal boundaries [#7748](https://github.com/ethyca/fides/pull/7748)
+- Fixed SSL hostname verification failures after redis-py upgrade by exposing `ssl_check_hostname` as a configurable Redis setting [#7763](https://github.com/ethyca/fides/pull/7763)
 
 ### Removed
 - Removed Pixie/PXL runtime system scanner from Admin UI and client (config wizard data-flow option, plus/scan API hooks, health types). AWS and Okta discovery flows unchanged. [#7704](https://github.com/ethyca/fides/pull/7704)
