@@ -1,14 +1,10 @@
 import { Flex, List, Pagination, Tag, Tooltip, Typography } from "fidesui";
-import { useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
+import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useHasPermission } from "~/features/common/Restrict";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import {
-  DEFAULT_PAGE_SIZE,
-  DEFAULT_PAGE_SIZES,
-} from "~/features/common/table/constants";
 import { ClientResponse, ScopeRegistryEnum } from "~/types/api";
 
 import { useListOAuthClientsQuery } from "./oauth-clients.slice";
@@ -69,30 +65,12 @@ const ClientListItem = ({
   );
 };
 
-const useOAuthClientsList = () => {
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-
-  const { data, isLoading, error } = useListOAuthClientsQuery({
-    page,
+const OAuthClientsList = () => {
+  const { paginationProps, pageIndex, pageSize } = useAntPagination();
+  const { data, isLoading } = useListOAuthClientsQuery({
+    page: pageIndex,
     size: pageSize,
   });
-
-  return {
-    data: data?.items ?? [],
-    total: data?.total ?? 0,
-    isLoading,
-    error,
-    page,
-    pageSize,
-    setPage,
-    setPageSize,
-  };
-};
-
-const OAuthClientsList = () => {
-  const { data, total, isLoading, page, pageSize, setPage, setPageSize } =
-    useOAuthClientsList();
   const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
 
   return (
@@ -100,7 +78,7 @@ const OAuthClientsList = () => {
       <List
         loading={isLoading}
         itemLayout="horizontal"
-        dataSource={data}
+        dataSource={data?.items ?? []}
         rowKey={(client) => client.client_id}
         locale={{
           emptyText: (
@@ -118,19 +96,8 @@ const OAuthClientsList = () => {
       />
       <Flex justify="end" className="mt-4">
         <Pagination
-          current={page}
-          total={total}
-          pageSize={pageSize}
-          onChange={(newPage, newPageSize) => {
-            if (newPageSize !== pageSize) {
-              setPageSize(newPageSize);
-              setPage(1);
-            } else {
-              setPage(newPage);
-            }
-          }}
-          showSizeChanger
-          pageSizeOptions={DEFAULT_PAGE_SIZES}
+          {...paginationProps}
+          total={data?.total ?? 0}
           showTotal={(totalItems) => `Total ${totalItems} items`}
         />
       </Flex>
