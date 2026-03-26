@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed viewer users being unable to edit systems assigned to them due to an ungated read-only permission check
+pr: 7754
+labels: []
