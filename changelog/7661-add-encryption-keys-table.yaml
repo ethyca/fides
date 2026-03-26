@@ -1,4 +1,0 @@
-type: Added
-description: Added encryption_keys table for envelope encryption
-pr: 7661
-labels: ["db-migration"]
