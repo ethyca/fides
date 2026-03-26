@@ -7,6 +7,7 @@ import {
   ChakraHStack as HStack,
   ChakraStack as Stack,
   ChakraText as Text,
+  Icons,
   Tag,
   useChakraDisclosure as useDisclosure,
   useMessage,
@@ -21,7 +22,6 @@ import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import {
   selectPlusSecuritySettings,
@@ -236,7 +236,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                       <Box>
                         <Button
                           aria-label="delete"
-                          icon={<TrashCanSolidIcon />}
+                          icon={<Icons.TrashCan />}
                           onClick={deleteModal.onOpen}
                           data-testid="delete-user-btn"
                         />

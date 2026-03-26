@@ -4,10 +4,10 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraSpinner as Spinner,
   ChakraText as Text,
+  Icons,
   useMessage,
 } from "fidesui";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
@@ -206,7 +206,7 @@ const CORSConfigurationPage: NextPage = () => {
                                 <Button
                                   aria-label="delete-domain"
                                   className="z-[2] ml-4"
-                                  icon={<DeleteIcon />}
+                                  icon={<Icons.TrashCan />}
                                   onClick={() => {
                                     arrayHelpers.remove(index);
                                   }}

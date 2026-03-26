@@ -16,6 +16,7 @@ from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.custom_report import CustomReport
+from fides.api.models.dashboard_snapshot import DashboardSnapshot
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.db_cache import DBCache
 from fides.api.models.detection_discovery.core import MonitorConfig, StagedResource
@@ -91,7 +92,6 @@ from fides.api.models.property import (
     Property,
 )
 from fides.api.models.questionnaire import ChatMessage, Questionnaire
-from fides.api.models.registration import UserRegistration
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync

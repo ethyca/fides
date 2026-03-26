@@ -1,4 +1,3 @@
-import { ArrowRight } from "@carbon/icons-react";
 import { Flex, theme, Typography } from "antd/lib";
 import React, { type ReactNode, useCallback, useMemo } from "react";
 import {
@@ -10,6 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { ArrowRight } from "../../icons/carbon";
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";
@@ -203,17 +203,38 @@ export const StackedBarChart = ({
       .filter((entry): entry is ChartEntry => entry !== null);
   }, [data, segments]);
 
-  if (chartData.length === 0) {
+  // Sort alphabetically so ordering is deterministic (e.g. Access before Erasure)
+  const sortedData = useMemo(
+    () => [...chartData].sort((a, b) => a.category.localeCompare(b.category)),
+    [chartData],
+  );
+
+  // Compute YAxis width dynamically from the longest label
+  const yAxisWidth = useMemo(() => {
+    if (sortedData.length === 0) {
+      return 80;
+    }
+    const longestLabel = sortedData.reduce(
+      (max, entry) =>
+        entry.category.length > max.length ? entry.category : max,
+      "",
+    );
+    const charWidth = token.fontSizeSM * 0.65;
+    const iconSpace = onCategoryClick ? ICON_SIZE + ICON_GAP + 8 : 8;
+    return Math.ceil(longestLabel.length * charWidth + iconSpace);
+  }, [sortedData, token.fontSizeSM, onCategoryClick]);
+
+  if (sortedData.length === 0) {
     return null;
   }
 
   const chartHeight =
-    chartData.length * barHeight + (chartData.length - 1) * rowGap + rowGap;
+    sortedData.length * barHeight + (sortedData.length - 1) * rowGap + rowGap;
 
   return (
     <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart
-        data={chartData}
+        data={sortedData}
         layout="vertical"
         margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
         barCategoryGap={rowGap}
@@ -222,7 +243,7 @@ export const StackedBarChart = ({
         <YAxis
           type="category"
           dataKey="category"
-          width={80}
+          width={yAxisWidth}
           interval={0}
           tick={
             <ClickableTick
@@ -230,7 +251,7 @@ export const StackedBarChart = ({
               textColor={token.colorTextSecondary}
               linkColor={token.colorPrimary}
               fontSize={token.fontSizeSM}
-              chartData={chartData}
+              chartData={sortedData}
             />
           }
           tickLine={false}
