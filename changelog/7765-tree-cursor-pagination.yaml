@@ -1,0 +1,4 @@
+type: Changed
+description: Updated Action Center tree to use improved cursor pagination, skipping total count queries for faster navigation. Changed monitor failure log drawer title to include the monitor name.
+pr: 7765
+labels: []
