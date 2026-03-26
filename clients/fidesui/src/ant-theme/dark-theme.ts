@@ -8,9 +8,9 @@ import { defaultAntTheme } from "./default-theme";
  * Dark mode theme for Ant Design components.
  * Uses Ant Design's built-in darkAlgorithm for automatic dark color generation,
  * with custom overrides to match the Fides brand palette.
- */
-
-/** Generate a 10-shade dark palette for a base color against the dark background. */
+ * The generate function creates a 10-shade dark palette for a base color against the dark background.
+ * Lower index returns a darker variant.
+ * */
 const dark = (color: string) =>
   generate(color, { theme: "dark", backgroundColor: palette.FIDESUI_BG_MINOS });
 
