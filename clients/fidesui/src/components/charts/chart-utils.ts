@@ -92,66 +92,6 @@ export const pickIntervalHours = (
   return Math.max(1, Math.min(idealHours, MAX_INTERVAL_HOURS));
 };
 
-/**
- * Build a smooth closed Catmull-Rom spline SVG path through `points`.
- * `alpha` controls curve tightness (0 = uniform, 0.5 = centripetal, 1 = chordal).
- */
-export function catmullRomClosedPath(
-  points: { x: number; y: number }[],
-  alpha = 0.5,
-): string {
-  const n = points.length;
-  if (n < 3) {
-    return "";
-  }
-
-  const eps = 1e-6;
-  const segments: string[] = [];
-  for (let i = 0; i < n; i += 1) {
-    const p0 = points[(i - 1 + n) % n];
-    const p1 = points[i];
-    const p2 = points[(i + 1) % n];
-    const p3 = points[(i + 2) % n];
-
-    const d1 = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-    const d0 = Math.hypot(p1.x - p0.x, p1.y - p0.y);
-    const d2 = Math.hypot(p3.x - p2.x, p3.y - p2.y);
-
-    const a0 = Math.max(d0 ** alpha, eps);
-    const a1 = Math.max(d1 ** alpha, eps);
-    const a2 = Math.max(d2 ** alpha, eps);
-
-    const cp1x =
-      (a0 * a0 * p2.x -
-        a1 * a1 * p0.x +
-        (2 * a0 * a0 + 3 * a0 * a1 + a1 * a1) * p1.x) /
-      (3 * a0 * (a0 + a1));
-    const cp1y =
-      (a0 * a0 * p2.y -
-        a1 * a1 * p0.y +
-        (2 * a0 * a0 + 3 * a0 * a1 + a1 * a1) * p1.y) /
-      (3 * a0 * (a0 + a1));
-
-    const cp2x =
-      (a2 * a2 * p1.x -
-        a1 * a1 * p3.x +
-        (2 * a2 * a2 + 3 * a2 * a1 + a1 * a1) * p2.x) /
-      (3 * a2 * (a2 + a1));
-    const cp2y =
-      (a2 * a2 * p1.y -
-        a1 * a1 * p3.y +
-        (2 * a2 * a2 + 3 * a2 * a1 + a1 * a1) * p2.y) /
-      (3 * a2 * (a2 + a1));
-
-    if (i === 0) {
-      segments.push(`M${p1.x},${p1.y}`);
-    }
-    segments.push(`C${cp1x},${cp1y},${cp2x},${cp2y},${p2.x},${p2.y}`);
-  }
-  segments.push("Z");
-  return segments.join(" ");
-}
-
 /** Calculate how many ticks to skip so labels don't overlap. */
 export const calcTickInterval = (
   pointCount: number,

@@ -22,7 +22,11 @@ export const HomeDashboard = () => {
   const metrics = trends?.metrics;
 
   return (
-    <Flex vertical gap={24} className="mx-auto w-full max-w-[1600px] py-6">
+    <Flex
+      vertical
+      gap={24}
+      className="mx-auto w-full max-w-[1600px] px-10 lg:px-0 py-6"
+    >
       <AgentBriefingBanner />
       <Row
         gutter={ROW_GUTTER}

@@ -42,18 +42,15 @@ export const PostureCard = () => {
     openDashboardDrawer({ type: "posture" });
   }, []);
 
-  const radarData = useMemo(() => {
-    if (!posture?.dimensions) {
-      return undefined;
-    }
-    const maxWeight = Math.max(...posture.dimensions.map((d) => d.weight));
-    return posture.dimensions.map((dimension) => ({
-      subject: dimension.label,
-      value: dimension.score,
-      weight: maxWeight > 0 ? (dimension.weight / maxWeight) * 100 : 0,
-      status: BAND_STATUS[dimension.band],
-    }));
-  }, [posture?.dimensions]);
+  const radarData = useMemo(
+    () =>
+      posture?.dimensions.map((dimension) => ({
+        subject: dimension.label,
+        value: dimension.score,
+        status: BAND_STATUS[dimension.band],
+      })),
+    [posture?.dimensions],
+  );
 
   const handleDimensionClick = useCallback(
     (index: number) => {
@@ -80,11 +77,6 @@ export const PostureCard = () => {
               </Tag>
             )}
           </Flex>
-          {dim && (
-            <span className="text-xs opacity-65">
-              {Math.round(dim.weight * 100)}% weight
-            </span>
-          )}
         </Flex>
       );
     },

@@ -77,24 +77,6 @@ export const WithTooltip: Story = {
   },
 };
 
-export const WithWeights: Story = {
-  args: {
-    data: [
-      { subject: "Coverage", value: 80, weight: 25 },
-      { subject: "Classification", value: 65, weight: 20 },
-      { subject: "Consent", value: 50, weight: 15, status: "warning" as const },
-      { subject: "DSR", value: 30, weight: 10, status: "error" as const },
-      { subject: "Enforcement", value: 70, weight: 15 },
-      {
-        subject: "Assessments",
-        value: 45,
-        weight: 15,
-        status: "warning" as const,
-      },
-    ],
-  },
-};
-
 export const NoData: Story = {
   args: {
     data: null,

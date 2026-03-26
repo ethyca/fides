@@ -1,7 +1,7 @@
 import { theme } from "antd/lib";
 import classNames from "classnames";
 import type { ReactNode } from "react";
-import { useCallback, useId, useMemo } from "react";
+import { useId, useMemo } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -14,7 +14,7 @@ import {
 
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
-import { catmullRomClosedPath, useChartAnimation } from "./chart-utils";
+import { useChartAnimation } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 import { ChartText } from "./ChartText";
 import styles from "./RadarChart.module.scss";
@@ -25,7 +25,6 @@ export type RadarPointStatus = "success" | "warning" | "error";
 export interface RadarChartDataPoint {
   subject: string;
   value: number;
-  weight?: number;
   status?: RadarPointStatus;
 }
 
@@ -158,24 +157,6 @@ const RadarDot = ({
   );
 };
 
-interface WeightShapeProps {
-  points: { x: number; y: number }[];
-  chartColor: string;
-  gradientId: string;
-}
-
-const WeightShape = ({ points, chartColor, gradientId }: WeightShapeProps) => (
-  <path
-    d={catmullRomClosedPath(points)}
-    stroke={chartColor}
-    strokeWidth={CHART_STROKE.strokeWidth * 0.5}
-    strokeOpacity={0.15}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    fill={`url(#${gradientId})`}
-  />
-);
-
 export const RadarChart = ({
   data,
   color,
@@ -191,21 +172,8 @@ export const RadarChart = ({
   const chartColor = color ? token[color] : token.colorText;
 
   const gradientId = `radar-gradient-${useId()}`;
-  const weightGradientId = `radar-weight-gradient-${useId()}`;
-  const hasWeights = !empty && data!.some((d) => d.weight != null);
 
   const animationActive = useChartAnimation(animationDuration);
-
-  const renderWeightShape = useCallback(
-    (props: { points: { x: number; y: number }[] }) => (
-      <WeightShape
-        points={props.points}
-        chartColor={chartColor}
-        gradientId={weightGradientId}
-      />
-    ),
-    [chartColor, weightGradientId],
-  );
 
   const STATUS_COLORS = useMemo<Record<RadarPointStatus, string>>(
     () => ({
@@ -237,14 +205,6 @@ export const RadarChart = ({
             type="radial"
             inverse
           />
-          {hasWeights && (
-            <ChartGradient
-              id={weightGradientId}
-              color={chartColor}
-              type="radial"
-            />
-          )}
-
           {showGrid && (
             <PolarGrid
               stroke={chartColor}
@@ -257,19 +217,6 @@ export const RadarChart = ({
           <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
 
           {empty && <Radar dataKey="value" fill="none" stroke="none" />}
-
-          {hasWeights && (
-            <Radar
-              dataKey="weight"
-              fill={`url(#${weightGradientId})`}
-              dot={false}
-              activeDot={false}
-              isAnimationActive={animationDuration > 0 && animationActive}
-              animationDuration={animationDuration}
-              animationEasing={CHART_ANIMATION.easing}
-              shape={renderWeightShape}
-            />
-          )}
 
           {!empty && (
             <Radar
