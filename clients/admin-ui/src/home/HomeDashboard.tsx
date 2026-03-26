@@ -46,14 +46,14 @@ export const HomeDashboard = () => {
           </Col>
         ))}
       </Row>
-      <Row gutter={ROW_GUTTER} className="items-stretch">
-        <Col xs={24} md={8}>
+      <div className="flex gap-6">
+        <div className="w-1/3 min-w-0 [&>*]:h-full">
           <SystemCoverageCard />
-        </Col>
-        <Col xs={24} md={16}>
+        </div>
+        <div className="w-2/3 min-w-0 [&>*]:h-full">
           <DSRStatusCard />
-        </Col>
-      </Row>
+        </div>
+      </div>
       <DashboardDrawer />
     </Flex>
   );

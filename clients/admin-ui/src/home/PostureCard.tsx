@@ -30,8 +30,6 @@ function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
   return <Icons.ArrowUp size={12} />;
 }
 
-
-
 export const PostureCard = () => {
   const { data: posture, isLoading } = useGetDashboardPostureQuery();
   const postureScore = posture?.score ?? 0;

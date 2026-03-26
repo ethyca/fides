@@ -14,11 +14,11 @@ import type { TrendMetric } from "~/features/dashboard/types";
 type StatType = "number" | "percent";
 
 const TREND_METRIC_CONFIG = {
-  gps_score: { label: "GPS Score", statType: "number" },
-  dsr_volume: { label: "DSR Volume", statType: "number" },
-  system_coverage: { label: "System Coverage", statType: "percent" },
+  gps_score: { label: "Governance posture", statType: "number" },
+  dsr_volume: { label: "DSR volume", statType: "number" },
+  system_coverage: { label: "System coverage", statType: "percent" },
   classification_health: {
-    label: "Classification Health",
+    label: "Classification health",
     statType: "percent",
   },
 } satisfies Record<string, { label: string; statType: StatType }>;
