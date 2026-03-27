@@ -3,6 +3,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 from fideslang.models import FidesDatasetReference
 from loguru import logger
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.orm import Query, Session
 
@@ -64,7 +65,13 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
     config: DynamicErasureEmailSchema
 
     def get_config(self, configuration: ConnectionConfig) -> DynamicErasureEmailSchema:
-        return DynamicErasureEmailSchema(**configuration.secrets or {})
+        try:
+            return DynamicErasureEmailSchema(**configuration.secrets or {})
+        except PydanticValidationError as exc:
+            raise DynamicErasureEmailConnectorException(
+                f"Dynamic erasure email connector '{configuration.key}' "
+                f"is incorrectly configured: {exc}"
+            ) from exc
 
     def batch_email_send(self, privacy_requests: Query, batch_id: str) -> None:
         logger.debug(

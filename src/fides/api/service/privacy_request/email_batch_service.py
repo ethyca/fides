@@ -4,7 +4,6 @@ from enum import Enum
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 
-from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType, CurrentStep
@@ -77,32 +76,45 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
                 )
                 return EmailExitState.no_applicable_connectors
 
-            try:
-                # erasure
-                for connection_config in erasure_configs:
+            has_failure = False
+
+            # erasure
+            for connection_config in erasure_configs:
+                try:
                     get_connector(connection_config).batch_email_send(  # type: ignore
                         filter_privacy_requests_by_action_type(
                             privacy_requests, ActionType.erasure
                         ),
                         batch_id,
                     )
+                except Exception as exc:
+                    logger.error(
+                        "Batch erasure email send for connector '{}' failed with exception: '{}'",
+                        connection_config.key,
+                        exc,
+                    )
+                    has_failure = True
 
-                # consent
-                for connection_config in consent_configs:
+            # consent
+            for connection_config in consent_configs:
+                try:
                     get_connector(connection_config).batch_email_send(  # type: ignore
                         filter_privacy_requests_by_action_type(
                             privacy_requests, ActionType.consent
                         ),
                         batch_id,
                     )
-            except MessageDispatchException as exc:
-                logger.error(
-                    "Batch email send for connector failed with exception: '{}'",
-                    exc,
-                )
-                return EmailExitState.email_send_failed
+                except Exception as exc:
+                    logger.error(
+                        "Batch consent email send for connector '{}' failed with exception: '{}'",
+                        connection_config.key,
+                        exc,
+                    )
+                    has_failure = True
 
         requeue_privacy_requests_after_email_send(privacy_requests, session)
+        if has_failure:
+            return EmailExitState.email_send_failed
         return EmailExitState.complete
 
 
