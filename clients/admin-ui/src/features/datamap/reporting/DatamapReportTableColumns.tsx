@@ -4,6 +4,7 @@ import {
   Form,
   FormInstance,
   Input,
+  MenuProps,
 } from "fidesui";
 import { isArray, snakeCase } from "lodash";
 import { ReactNode } from "react";
@@ -24,6 +25,9 @@ import {
 
 import { COLUMN_IDS, DEFAULT_COLUMN_NAMES } from "./constants";
 import { DatamapReportRow, getGroupKey } from "./groupDatamapRows";
+import { getColKey } from "./utils";
+
+type MenuClickInfo = Parameters<NonNullable<MenuProps["onClick"]>>[0];
 
 const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
 const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
@@ -43,6 +47,27 @@ export interface DatamapReportColumnProps {
   expandedColumns: Record<string, boolean>;
   onToggleColumnExpand: (columnId: string, expanded: boolean) => void;
 }
+
+/**
+ * Returns the expand/collapse header menu for a column, or an empty object
+ * when column renaming is active (menus are hidden during rename).
+ */
+const expandCollapseMenu = (
+  columnId: string,
+  isRenaming: boolean,
+  onToggleColumnExpand: (id: string, expanded: boolean) => void,
+) =>
+  !isRenaming
+    ? {
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e: MenuClickInfo) => {
+            e.domEvent.stopPropagation();
+            onToggleColumnExpand(columnId, e.key === "expand-all");
+          },
+        },
+      }
+    : {};
 
 /**
  * Get the display title for a column, supporting inline renaming via Ant Form.
@@ -122,16 +147,8 @@ const getCustomFieldColumns = (
           </EllipsisCell>
         );
       },
-      ...(isArrayField && !isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(key, e.key === "expand-all");
-              },
-            },
-          }
+      ...(isArrayField
+        ? expandCollapseMenu(key, isRenaming, onToggleColumnExpand)
         : {}),
     };
   });
@@ -187,6 +204,9 @@ export const getDatamapReportColumns = ({
 
   const title = (id: string) =>
     getColumnTitle(id, columnNameMap, isRenaming, form);
+
+  const menu = (columnId: string) =>
+    expandCollapseMenu(columnId, isRenaming, onToggleColumnExpand);
 
   const baseColumns: ColumnsType<DatamapReportRow> = [
     {
@@ -247,20 +267,7 @@ export const getDatamapReportColumns = ({
           />
         );
       },
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.DATA_CATEGORY,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.DATA_CATEGORY),
       className: `column-${COLUMN_IDS.DATA_CATEGORY}`,
     },
     {
@@ -287,20 +294,7 @@ export const getDatamapReportColumns = ({
           />
         );
       },
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.DATA_SUBJECT,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.DATA_SUBJECT),
       className: `column-${COLUMN_IDS.DATA_SUBJECT}`,
     },
     {
@@ -406,20 +400,7 @@ export const getDatamapReportColumns = ({
           }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.DATA_STEWARDS,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.DATA_STEWARDS),
     },
     {
       title: title(COLUMN_IDS.DECLARATION_NAME),
@@ -456,20 +437,7 @@ export const getDatamapReportColumns = ({
           }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.DESTINATIONS,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.DESTINATIONS),
     },
     {
       title: title(COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS),
@@ -488,20 +456,7 @@ export const getDatamapReportColumns = ({
           columnState={{ isExpanded: expandedColumns[COLUMN_IDS.FEATURES] }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.FEATURES,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.FEATURES),
     },
     {
       title: title(COLUMN_IDS.FIDES_KEY),
@@ -538,20 +493,7 @@ export const getDatamapReportColumns = ({
           columnState={{ isExpanded: expandedColumns[COLUMN_IDS.SOURCES] }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.SOURCES,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.SOURCES),
     },
     {
       title: title(COLUMN_IDS.JOINT_CONTROLLER_INFO),
@@ -574,20 +516,7 @@ export const getDatamapReportColumns = ({
           }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING),
     },
     {
       title: title(COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS),
@@ -602,20 +531,7 @@ export const getDatamapReportColumns = ({
           }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS),
     },
     {
       title: title(COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL),
@@ -658,20 +574,7 @@ export const getDatamapReportColumns = ({
           }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.RESPONSIBILITY,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.RESPONSIBILITY),
     },
     {
       title: title(COLUMN_IDS.RETENTION_PERIOD),
@@ -703,20 +606,7 @@ export const getDatamapReportColumns = ({
           />
         );
       },
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.SHARED_CATEGORIES,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.SHARED_CATEGORIES),
     },
     {
       title: title(COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS),
@@ -756,20 +646,7 @@ export const getDatamapReportColumns = ({
           />
         );
       },
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES),
     },
     {
       title: title(COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES),
@@ -793,20 +670,7 @@ export const getDatamapReportColumns = ({
           />
         );
       },
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES),
     },
     {
       title: title(COLUMN_IDS.COOKIES),
@@ -819,20 +683,7 @@ export const getDatamapReportColumns = ({
           columnState={{ isExpanded: expandedColumns[COLUMN_IDS.COOKIES] }}
         />
       ),
-      ...(!isRenaming
-        ? {
-            menu: {
-              items: expandCollapseAllMenuItems,
-              onClick: (e) => {
-                e.domEvent.stopPropagation();
-                onToggleColumnExpand(
-                  COLUMN_IDS.COOKIES,
-                  e.key === "expand-all",
-                );
-              },
-            },
-          }
-        : {}),
+      ...menu(COLUMN_IDS.COOKIES),
     },
     {
       title: title(COLUMN_IDS.USES_COOKIES),
@@ -917,20 +768,7 @@ export const getDatamapReportColumns = ({
             />
           );
         },
-        ...(!isRenaming
-          ? {
-              menu: {
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  onToggleColumnExpand(
-                    COLUMN_IDS.SYSTEM_GROUP,
-                    e.key === "expand-all",
-                  );
-                },
-              },
-            }
-          : {}),
+        ...menu(COLUMN_IDS.SYSTEM_GROUP),
       },
       {
         title: title(COLUMN_IDS.SYSTEM_GROUP_DATA_USES),
@@ -956,20 +794,7 @@ export const getDatamapReportColumns = ({
             />
           );
         },
-        ...(!isRenaming
-          ? {
-              menu: {
-                items: expandCollapseAllMenuItems,
-                onClick: (e) => {
-                  e.domEvent.stopPropagation();
-                  onToggleColumnExpand(
-                    COLUMN_IDS.SYSTEM_GROUP_DATA_USES,
-                    e.key === "expand-all",
-                  );
-                },
-              },
-            }
-          : {}),
+        ...menu(COLUMN_IDS.SYSTEM_GROUP_DATA_USES),
       },
     );
   }
@@ -987,7 +812,7 @@ export const getDatamapReportColumns = ({
 
   // Inject data-testid attributes and rowSpan for the grouping column
   return allColumns.map((col) => {
-    const colKey = (col as { key?: string }).key;
+    const colKey = getColKey(col);
     if (!colKey) {
       return col;
     }

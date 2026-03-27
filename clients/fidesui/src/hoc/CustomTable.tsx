@@ -49,7 +49,7 @@ export const CustomTable = <RecordType = any,>({
         pagination.pageSizeOptions?.[0]?.toString(), // Hide pagination if there's only one page
       ...pagination,
     };
-  }, [pagination, dataSource]);
+  }, [pagination]);
 
   const customColumns = React.useMemo(() => {
     return columns.map((column) => {
@@ -79,12 +79,13 @@ export const CustomTable = <RecordType = any,>({
       dataSource={dataSource}
       scroll={scroll}
       {...props}
+      // Spread consumer components first so our CustomTableHeaderCell always wins
       components={{
+        ...components,
         header: {
           ...components?.header,
           cell: CustomTableHeaderCell,
         },
-        ...components,
       }}
       columns={customColumns as ColumnsType<RecordType>}
     />

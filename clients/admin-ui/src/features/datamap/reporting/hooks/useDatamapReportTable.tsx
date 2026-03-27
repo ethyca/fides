@@ -140,10 +140,8 @@ export const useDatamapReportTable = (form?: FormInstance) => {
   } = useGetMinimalDatamapReportQuery(reportQuery);
 
   // Export mutation
-  const [
-    exportMinimalDatamapReport,
-    { isLoading: isExportingReport, isError: isExportReportError },
-  ] = useExportMinimalDatamapReportMutation();
+  const [exportMinimalDatamapReport, { isLoading: isExportingReport }] =
+    useExportMinimalDatamapReportMutation();
 
   // Process data
   const { dataSource, totalRows } = useMemo(() => {
@@ -406,7 +404,6 @@ export const useDatamapReportTable = (form?: FormInstance) => {
     // Export
     onExport,
     isExportingReport,
-    isExportReportError,
 
     // System drawer
     selectedSystemId,

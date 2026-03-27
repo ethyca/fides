@@ -1,6 +1,15 @@
+import { ColumnsType } from "fidesui";
+
 import { DATAMAP_GROUPING } from "~/types/api";
 
 import { COLUMN_IDS } from "./constants";
+
+/**
+ * Extract the `key` from an Ant Design column definition, returning an empty
+ * string when the key is absent.
+ */
+export const getColKey = (col: ColumnsType[number]): string =>
+  String((col as { key?: string }).key ?? "");
 
 export const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
   let columnOrder: string[] = [];

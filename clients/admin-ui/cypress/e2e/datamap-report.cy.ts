@@ -69,9 +69,11 @@ describe("Data map report table", () => {
     // Pokemon party is multi-select, so we should have a menu to allow expanding/collapsing all
     cy.getByTestId("row-0-col-system_pokemon_party").contains("3");
     cy.getByTestId("system_pokemon_party-header-menu").click();
-    cy.get(".system_pokemon_party-header-menu-list").within(() => {
-      cy.get("button").contains("Expand all").click();
-    });
+    cy.getAntDropdownOverlay("system_pokemon_party-header-menu-list").within(
+      () => {
+        cy.get("button").contains("Expand all").click();
+      },
+    );
     ["eevee", "pikachu", "articuno"].forEach((pokemon) => {
       cy.getByTestId("row-0-col-system_pokemon_party").contains(pokemon);
     });
@@ -168,7 +170,7 @@ describe("Data map report table", () => {
     it("should reorder columns", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
-      cy.get(".more-menu-list").should("not.be.visible");
+      cy.getAntDropdownOverlay("more-menu-list").should("not.be.visible");
       cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
       cy.getByTestId("column-dragger-data_categories").trigger("dragenter");
       cy.getByTestId("column-dragger-data_categories").trigger("dragover");
@@ -197,11 +199,11 @@ describe("Data map report table", () => {
       cy.getByTestId("save-button").click();
 
       cy.getByTestId("system_undeclared_data_categories-header-menu").click();
-      cy.get(".system_undeclared_data_categories-header-menu-list").within(
-        () => {
-          cy.get("button").contains("Expand all").click();
-        },
-      );
+      cy.getAntDropdownOverlay(
+        "system_undeclared_data_categories-header-menu-list",
+      ).within(() => {
+        cy.get("button").contains("Expand all").click();
+      });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
           pokemon,
@@ -209,11 +211,11 @@ describe("Data map report table", () => {
       });
 
       cy.getByTestId("data_use_undeclared_data_categories-header-menu").click();
-      cy.get(".data_use_undeclared_data_categories-header-menu-list").within(
-        () => {
-          cy.get("button").contains("Expand all").click();
-        },
-      );
+      cy.getAntDropdownOverlay(
+        "data_use_undeclared_data_categories-header-menu-list",
+      ).within(() => {
+        cy.get("button").contains("Expand all").click();
+      });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId(
           "row-0-col-data_use_undeclared_data_categories",
@@ -508,9 +510,11 @@ describe("Data map report table", () => {
       cy.wait("@getCustomReportById");
       cy.getByTestId("apply-report-button").click();
       cy.getByTestId("data_categories-header-menu").click();
-      cy.get(".data_categories-header-menu-list").within(() => {
-        cy.get("button").contains("Expand all").click();
-      });
+      cy.getAntDropdownOverlay("data_categories-header-menu-list").within(
+        () => {
+          cy.get("button").contains("Expand all").click();
+        },
+      );
       cy.getByTestId("custom-reports-trigger").should(
         "contain.text",
         "My Custom Report",

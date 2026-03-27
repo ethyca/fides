@@ -64,9 +64,12 @@ export const groupDatamapRows = (
   const result: DatamapReportRow[] = [];
   groups.forEach((groupItems, key) => {
     groupItems.forEach((item, idx) => {
+      const itemKey = item.fides_key
+        ? `${item.fides_key}-${item.declaration_name ?? "none"}-${idx}`
+        : `${key}-${idx}`;
       result.push({
         ...item,
-        rowKey: `${key}-${idx}`,
+        rowKey: itemKey,
         ...(idx === 0
           ? { groupRowSpan: groupItems.length }
           : { groupRowHidden: true }),

@@ -7,7 +7,7 @@ const ITEM_TYPE = "DraggableColumnListItem";
 
 type DragItem = {
   index: number;
-  id: number;
+  id: string;
   type: string;
 };
 

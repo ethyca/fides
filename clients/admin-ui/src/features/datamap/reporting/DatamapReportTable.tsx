@@ -28,6 +28,10 @@ import {
 
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
 import { COLUMN_IDS } from "./constants";
+import {
+  DEFAULT_COLUMN_FILTERS,
+  DEFAULT_COLUMN_VISIBILITY,
+} from "./datamap-report-context";
 import { useDatamapReportTable } from "./hooks/useDatamapReportTable";
 import { RenameColumnsButtons } from "./RenameColumnsButtons";
 import { getPrefixColumns } from "./utils";
@@ -69,15 +73,12 @@ export const DatamapReportTable = ({
     handleColumnRenaming,
     onExport,
     isExportingReport,
-    isExportReportError,
     selectedSystemId,
     setSelectedSystemId,
     savedCustomReportId,
     setSavedCustomReportId,
     userCanSeeReports,
     setGroupBy,
-    DEFAULT_COLUMN_VISIBILITY,
-    DEFAULT_COLUMN_FILTERS,
   } = useDatamapReportTable(form);
 
   const message = useMessage();
@@ -114,26 +115,26 @@ export const DatamapReportTable = ({
 
   const handleExport = useCallback(
     (downloadType: ExportFormat) => {
-      onExport(downloadType).then(() => {
-        if (!isExportReportError) {
+      onExport(downloadType).then((result) => {
+        if (!("error" in result)) {
           onExportReportClose();
         }
       });
     },
-    [onExport, isExportReportError, onExportReportClose],
+    [onExport, onExportReportClose],
   );
 
   // System group option name for dropdown
-  const getSystemGroupOptionName = () => {
+  const getSystemGroupOptionName = useCallback(() => {
     const customSystemGroupName =
       columnNameMapOverrides[COLUMN_IDS.SYSTEM_GROUP];
     if (customSystemGroupName) {
       return customSystemGroupName;
     }
     return "System group";
-  };
+  }, [columnNameMapOverrides]);
 
-  const getMenuDisplayValue = () => {
+  const getMenuDisplayValue = useCallback(() => {
     switch (groupBy) {
       case DATAMAP_GROUPING.SYSTEM_DATA_USE:
         return "system";
@@ -148,7 +149,7 @@ export const DatamapReportTable = ({
       default:
         return "system";
     }
-  };
+  }, [groupBy, getSystemGroupOptionName]);
 
   const handleSavedReport = useCallback(
     (savedReport: CustomReportResponse | null) => {
@@ -225,8 +226,6 @@ export const DatamapReportTable = ({
       setColumnNameMapOverrides,
       form,
       message,
-      DEFAULT_COLUMN_VISIBILITY,
-      DEFAULT_COLUMN_FILTERS,
     ],
   );
 

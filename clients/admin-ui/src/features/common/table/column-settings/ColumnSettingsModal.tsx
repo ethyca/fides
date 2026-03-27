@@ -10,18 +10,13 @@ import {
   useEditableColumns,
 } from "./DraggableColumnList";
 
-export type ColumnDescriptor = {
-  id: string;
-  isVisible: boolean;
-};
-
 type ColumnSettingsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   headerText: string;
   columnNameMap: Record<string, string>;
   prefixColumns: string[];
-  columns: ColumnDescriptor[];
+  columns: Pick<DraggableColumn, "id" | "isVisible">[];
   savedCustomReportId: string;
   onColumnOrderChange: (columns: string[]) => void;
   onColumnVisibilityChange: (columnVisibility: Record<string, boolean>) => void;
