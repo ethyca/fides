@@ -1,4 +1,0 @@
-type: Added
-description: Added retry and refresh actions for Jira tickets in the privacy request detail view
-pr: 7742
-labels: []

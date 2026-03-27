@@ -100,12 +100,16 @@ export const ACTION_CTA: Record<
   [ActionType.POLICY_VIOLATION]: {
     label: "Review violation",
     route: (d) =>
-      d.system_id ? `/systems/configure/${d.system_id}` : "/systems",
+      d.system_id
+        ? `/data-discovery/access-control?tab=log&violationId=${d.system_id}`
+        : "/data-discovery/access-control",
   },
   [ActionType.PIA_UPDATE]: {
     label: "View assessment",
     route: (d) =>
-      d.system_id ? `/systems/configure/${d.system_id}` : "/systems",
+      d.assessment_id
+        ? `/privacy-assessments/${d.assessment_id}`
+        : "/privacy-assessments",
   },
 };
 

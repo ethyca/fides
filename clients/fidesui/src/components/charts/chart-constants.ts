@@ -13,7 +13,7 @@ export const CHART_ANIMATION = {
 } as const;
 
 export const CHART_STROKE = {
-  strokeWidth: 2,
+  strokeWidth: 1.5,
   strokeOpacity: 0.8,
   dotRadius: 3.5,
   strokeLinecap: "round" as const,
