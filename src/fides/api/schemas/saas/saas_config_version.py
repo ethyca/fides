@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -16,5 +16,5 @@ class SaaSConfigVersionResponse(FidesSchema):
 class SaaSConfigVersionDetailResponse(SaaSConfigVersionResponse):
     """Full detail for a single version, including config and dataset as raw dicts."""
 
-    config: dict
-    dataset: Optional[dict] = None
+    config: Dict[str, Any]
+    dataset: Optional[Dict[str, Any]] = None

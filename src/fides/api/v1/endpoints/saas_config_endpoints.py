@@ -192,9 +192,8 @@ def patch_saas_config(
     )
 
     existing_saas_config = connection_config.get_saas_config()
-    template = None
+    template = ConnectorRegistry.get_connector_template(saas_config.type)
     if not existing_saas_config:
-        template = ConnectorRegistry.get_connector_template(saas_config.type)
         if template:
             existing_saas_config = SaaSConfig(
                 **load_config_from_string(template.config)
@@ -218,8 +217,6 @@ def patch_saas_config(
         )
 
     connection_config.update_saas_config(db, saas_config=saas_config)
-    if not template:
-        template = ConnectorRegistry.get_connector_template(saas_config.type)
     SaaSConfigVersion.upsert(
         db=db,
         connector_type=saas_config.type,
