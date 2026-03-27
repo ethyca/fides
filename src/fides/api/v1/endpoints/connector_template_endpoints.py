@@ -27,7 +27,6 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     CustomConnectorTemplateLoader,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
 from fides.common.scope_registry import (
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
