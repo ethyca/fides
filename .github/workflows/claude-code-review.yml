@@ -86,6 +86,8 @@ jobs:
         with:
           app-id: ${{ vars.CROSS_REPO_APP_ID }}
           private-key: ${{ secrets.CROSS_REPO_APP_PRIVATE_KEY }}
+          owner: ethyca
+          repositories: talos
 
       - name: Checkout talos Claude config
         uses: actions/checkout@v4
