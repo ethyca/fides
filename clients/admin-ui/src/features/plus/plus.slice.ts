@@ -37,9 +37,6 @@ import {
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   SystemPurposeSummary,
-  SystemScannerStatus,
-  SystemScanResponse,
-  SystemsDiff,
   TCFPurposeOverrideSchema,
 } from "~/types/api";
 import {
@@ -47,10 +44,6 @@ import {
   Page_DataUseDeclaration_,
   Page_Vendor_,
 } from "~/types/dictionary-api";
-
-interface ScanParams {
-  classify?: boolean;
-}
 
 interface ClassifyInstancesParams {
   fides_keys?: string[];
@@ -132,24 +125,6 @@ const plusApi = baseApi.injectEndpoints({
         params: { resource_type: GenerateTypes.SYSTEMS },
       }),
       providesTags: ["Classify Instances Systems"],
-    }),
-
-    // Kubernetes Cluster Scanner
-    updateScan: build.mutation<SystemScanResponse, ScanParams>({
-      query: (params: ScanParams) => ({
-        url: `plus/scan`,
-        params,
-        method: "PUT",
-      }),
-      invalidatesTags: ["Classify Instances Systems", "Latest Scan"],
-    }),
-    getLatestScanDiff: build.query<SystemsDiff, void>({
-      query: () => ({
-        url: `plus/scan/latest`,
-        params: { diff: true },
-        method: "GET",
-      }),
-      providesTags: ["Latest Scan"],
     }),
 
     // Custom Metadata Allow List
@@ -536,6 +511,50 @@ const plusApi = baseApi.injectEndpoints({
         body: { dataset_ids: datasetIds },
       }),
     }),
+    initiateJiraOAuth: build.mutation<
+      { authorization_url: string },
+      { connection_key: string }
+    >({
+      query: (body) => ({
+        url: `plus/oauth/jira/initiate`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Datastore Connection"],
+    }),
+    getJiraProjects: build.query<
+      Array<{ id: string; key: string; name: string }>,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/projects`,
+      }),
+    }),
+    getJiraIssueTypes: build.query<
+      Array<{
+        id: string;
+        name: string;
+        description?: string;
+        subtask: boolean;
+      }>,
+      { connectionKey: string; projectKey: string }
+    >({
+      query: ({ connectionKey, projectKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/projects/${projectKey}/issuetypes`,
+      }),
+    }),
+    getJiraTemplateVariables: build.query<
+      Array<{
+        name: string;
+        description: string;
+        example_value?: string;
+      }>,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/template-variables`,
+      }),
+    }),
   }),
 });
 
@@ -553,11 +572,8 @@ export const {
   useGetCustomFieldDefinitionByIdQuery,
   useGetCustomFieldsForResourceQuery,
   useGetHealthQuery,
-  useGetLatestScanDiffQuery,
-  useLazyGetLatestScanDiffQuery,
   useUpdateClassifyInstanceMutation,
   useUpdateCustomFieldDefinitionMutation,
-  useUpdateScanMutation,
   useUpsertAllowListMutation,
   useUpsertCustomFieldMutation,
   useBulkUpdateCustomFieldsMutation,
@@ -580,17 +596,14 @@ export const {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
   useSyncDatahubConnectionMutation,
+  useInitiateJiraOAuthMutation,
+  useGetJiraProjectsQuery,
+  useGetJiraIssueTypesQuery,
+  useGetJiraTemplateVariablesQuery,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
-
-export const selectDataFlowScannerStatus: (
-  state: RootState,
-) => SystemScannerStatus | undefined = createSelector(
-  plusApi.endpoints.getHealth.select(),
-  ({ data }) => data?.system_scanner,
-);
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(

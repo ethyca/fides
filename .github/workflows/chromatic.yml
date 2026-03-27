@@ -9,6 +9,10 @@ on:
       - "main"
       - "release-**"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 env:
   NODE_VERSION: 24.X
 
@@ -39,14 +43,16 @@ jobs:
   chromatic:
     name: Run Chromatic
     needs: check-fidesui-changes
-    if: needs.check-fidesui-changes.outputs.has_fidesui_changes == 'true'
+    # Skip on merge_group — these checks already passed on the PR
+    if: needs.check-fidesui-changes.outputs.has_fidesui_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
+          # 👇 Tells the checkout which commit hash to reference
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v5
         with:
@@ -63,3 +69,8 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           zip: true
           onlyChanged: true # 👈 Required option to enable TurboSnap
+        env:
+          CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          CHROMATIC_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
+          CHROMATIC_SLUG: ${{ github.repository }}
+

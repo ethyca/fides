@@ -6,6 +6,7 @@ dataset:
    fides_meta:
      resource_id: enterprise_dsr_testing.prj-sandbox-55855.enterprise_dsr_testing
      namespace:
+       connection_type: bigquery
        dataset_id: enterprise_dsr_testing
        project_id: prj-sandbox-55855
    collections:

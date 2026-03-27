@@ -2,10 +2,16 @@ import { act, renderHook } from "@testing-library/react";
 
 import { ConsentStatus } from "~/types/api";
 
-// Mock the toast hook
-const mockToast = jest.fn();
+// Mock the message hook
+const mockMessage = {
+  success: jest.fn(),
+  error: jest.fn(),
+  warning: jest.fn(),
+  info: jest.fn(),
+  destroy: jest.fn(),
+};
 jest.mock("fidesui", () => ({
-  useChakraToast: () => mockToast,
+  useMessage: () => mockMessage,
 }));
 
 // Mock the RTK Query lazy query hook
@@ -35,7 +41,8 @@ describe("useAssetReportingDownload", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockDownloadTrigger.mockReset();
-    mockToast.mockReset();
+    mockMessage.success.mockReset();
+    mockMessage.error.mockReset();
   });
 
   it("returns downloadReport function and loading state", () => {
@@ -57,12 +64,10 @@ describe("useAssetReportingDownload", () => {
       await result.current.downloadReport({});
     });
 
-    // Verify error toast was shown
-    expect(mockToast).toHaveBeenCalledWith({
-      status: "error",
-      description:
-        "A problem occurred while generating your asset report. Please try again.",
-    });
+    // Verify error message was shown
+    expect(mockMessage.error).toHaveBeenCalledWith(
+      "A problem occurred while generating your asset report. Please try again.",
+    );
   });
 
   it("passes filters to the download trigger", async () => {

@@ -7,7 +7,7 @@ import {
   Switch,
   theme,
   Tooltip,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -17,7 +17,6 @@ import * as Yup from "yup";
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   defaultInitialValues,
@@ -38,7 +37,10 @@ import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
+import {
+  PrivacyExperienceForm,
+  TCF_PLACEHOLDER_ID,
+} from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import {
@@ -110,7 +112,7 @@ const ConfigurePrivacyExperience = ({
   const [postExperienceConfigMutation] = usePostExperienceConfigMutation();
   const [patchExperienceConfigMutation] = usePatchExperienceConfigMutation();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const [mockGpcEnabled, setMockGpcEnabled] = useState(false);
@@ -141,7 +143,7 @@ const ConfigurePrivacyExperience = ({
     // Ignore placeholder TCF notice. It is used only as a UX cue that TCF purposes will always exist
     // eslint-disable-next-line no-param-reassign
     values.privacy_notice_ids = values.privacy_notice_ids?.filter(
-      (item) => item !== "tcf_purposes_placeholder",
+      (item) => item !== TCF_PLACEHOLDER_ID,
     );
     if (initialValues.tcf_configuration_id && !values.tcf_configuration_id) {
       // If the TCF configuration gets cleared, set the TCF configuration ID to null to remove it on the DB side
@@ -167,16 +169,18 @@ const ConfigurePrivacyExperience = ({
     }
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          `Privacy experience successfully ${
-            passedInExperience ? "updated" : "created"
-          }`,
-        ),
+      message.success(
+        `Privacy experience successfully ${
+          passedInExperience ? "updated" : "created"
+        }`,
       );
-      router.push(PRIVACY_EXPERIENCE_ROUTE);
+      // Defer navigation to the next microtask so the message re-render
+      // completes before the page transition starts unmounting components.
+      // Without this, Ant v6 can throw a locale error when the message
+      // state update overlaps with component unmounting.
+      queueMicrotask(() => router.push(PRIVACY_EXPERIENCE_ROUTE));
     }
   };
 

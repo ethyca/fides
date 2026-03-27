@@ -1,4 +1,5 @@
-import FormModal from "~/features/common/modals/FormModal";
+import { Modal } from "fidesui";
+
 import SSOProviderForm from "~/features/openid-authentication/SSOProviderForm";
 import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
@@ -11,9 +12,16 @@ const EditSSOProviderModal = ({
   onClose: () => void;
   openIDProvider: OpenIDProvider;
 }) => (
-  <FormModal isOpen={isOpen} onClose={onClose} title="Edit SSO Provider">
+  <Modal
+    open={isOpen}
+    onCancel={onClose}
+    centered
+    destroyOnClose
+    title="Edit SSO Provider"
+    footer={null}
+  >
     <SSOProviderForm openIDProvider={openIDProvider} onClose={onClose} />
-  </FormModal>
+  </Modal>
 );
 
 export default EditSSOProviderModal;

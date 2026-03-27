@@ -7,21 +7,17 @@ import {
   ChakraAccordionItem as AccordionItem,
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraSpacer as Spacer,
   ChakraSpinner as Spinner,
   Flex,
+  Modal,
   Space,
   Tag,
   Typography,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { useGetSystemPurposeSummaryQuery } from "~/features/plus/plus.slice";
 
 const { Text, Title } = Typography;
@@ -63,90 +59,81 @@ export const ConsentManagementModal = ({
 
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="xxl"
-      returnFocusOnClose={false}
-      isCentered
-    >
-      <ModalOverlay />
-      <ModalContent maxWidth="800px">
-        <ModalHeader>
-          {systemPurposeSummary ? systemPurposeSummary?.name : "Vendor"}
-        </ModalHeader>
-        <ModalBody>
-          {isLoading ? (
-            <Flex className="h-80 w-full" align="center" justify="center">
-              <Spinner />
-            </Flex>
-          ) : (
-            !!systemPurposeSummary && (
-              <Typography>
-                <Title level={5}>Purposes</Title>
-                {Object.entries(systemPurposeSummary.purposes || {}).length >
-                0 ? (
-                  <Accordion allowMultiple>
-                    {Object.entries(systemPurposeSummary.purposes).map(
-                      ([purposeName], index: number) => (
-                        <AccordionItem key={index}>
-                          {({ isExpanded }) => (
-                            <>
-                              <AccordionButton
-                                backgroundColor={
-                                  isExpanded ? "gray.50" : "unset"
-                                }
-                              >
-                                <Box flex="1" textAlign="left">
-                                  {purposeName}
-                                </Box>
-                                <AccordionIcon />
-                              </AccordionButton>
-                              <AccordionPanel backgroundColor="gray.50">
-                                <Flex className="my-4" vertical>
-                                  {listRender(
-                                    "Data uses",
-                                    systemPurposeSummary.purposes[purposeName]
-                                      .data_uses,
-                                  )}
-                                </Flex>
-                                <Flex className="my-4" vertical>
-                                  {listRender(
-                                    "Legal basis",
-                                    systemPurposeSummary.purposes[purposeName]
-                                      .legal_bases,
-                                  )}
-                                </Flex>
-                              </AccordionPanel>
-                            </>
-                          )}
-                        </AccordionItem>
-                      ),
-                    )}
-                  </Accordion>
-                ) : (
-                  <Text italic>no known purposes</Text>
-                )}
-                <div className="my-4">
-                  {listRender("Features", systemPurposeSummary.features)}
-                </div>
-                <div className="my-4">
-                  {listRender(
-                    "Data categories",
-                    systemPurposeSummary.data_categories,
-                  )}
-                </div>
-              </Typography>
-            )
-          )}
-        </ModalBody>
-
-        <ModalFooter>
+      open={isOpen}
+      onCancel={onClose}
+      width={MODAL_SIZE.lg}
+      centered
+      destroyOnHidden
+      title={systemPurposeSummary ? systemPurposeSummary?.name : "Vendor"}
+      footer={
+        <>
           <Button size="small" onClick={onClose}>
             Close
           </Button>
           <Spacer />
-        </ModalFooter>
-      </ModalContent>
+        </>
+      }
+    >
+      {isLoading ? (
+        <Flex className="h-80 w-full" align="center" justify="center">
+          <Spinner />
+        </Flex>
+      ) : (
+        !!systemPurposeSummary && (
+          <Typography>
+            <Title level={5}>Purposes</Title>
+            {Object.entries(systemPurposeSummary.purposes || {}).length > 0 ? (
+              <Accordion allowMultiple>
+                {Object.entries(systemPurposeSummary.purposes).map(
+                  ([purposeName], index: number) => (
+                    <AccordionItem key={index}>
+                      {({ isExpanded }) => (
+                        <>
+                          <AccordionButton
+                            backgroundColor={isExpanded ? "gray.50" : "unset"}
+                          >
+                            <Box flex="1" textAlign="left">
+                              {purposeName}
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
+                          <AccordionPanel backgroundColor="gray.50">
+                            <Flex className="my-4" vertical>
+                              {listRender(
+                                "Data uses",
+                                systemPurposeSummary.purposes[purposeName]
+                                  .data_uses,
+                              )}
+                            </Flex>
+                            <Flex className="my-4" vertical>
+                              {listRender(
+                                "Legal basis",
+                                systemPurposeSummary.purposes[purposeName]
+                                  .legal_bases,
+                              )}
+                            </Flex>
+                          </AccordionPanel>
+                        </>
+                      )}
+                    </AccordionItem>
+                  ),
+                )}
+              </Accordion>
+            ) : (
+              <Text italic>no known purposes</Text>
+            )}
+            <div className="my-4">
+              {listRender("Features", systemPurposeSummary.features)}
+            </div>
+            <div className="my-4">
+              {listRender(
+                "Data categories",
+                systemPurposeSummary.data_categories,
+              )}
+            </div>
+          </Typography>
+        )
+      )}
     </Modal>
   );
 };

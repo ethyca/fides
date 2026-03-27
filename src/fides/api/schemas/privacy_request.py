@@ -215,6 +215,7 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
 
     connection_key: Optional[str] = None
     dataset_name: Optional[str] = None
+    saas_version: Optional[str] = None
 
 
 class ExecutionAndAuditLogResponse(FidesSchema):
@@ -229,6 +230,7 @@ class ExecutionAndAuditLogResponse(FidesSchema):
     status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]] = None
     updated_at: Optional[datetime] = None
     user_id: Optional[str] = None
+    saas_version: Optional[str] = None
     model_config = ConfigDict(populate_by_name=True)
 
     @field_serializer("status")
@@ -323,6 +325,19 @@ class PrivacyRequestStatus(StrEnum):
     duplicate = "duplicate"  # Request identified as duplicate of another request
 
 
+ACTIVE_REQUEST_STATUSES = frozenset(
+    {
+        PrivacyRequestStatus.in_processing,
+        PrivacyRequestStatus.pending,
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.paused,
+        PrivacyRequestStatus.requires_input,
+        PrivacyRequestStatus.requires_manual_finalization,
+        PrivacyRequestStatus.pending_external,
+    }
+)
+
+
 class IdentityValue(BaseModel):
     """Represents an identity value with a label in API responses.
 
@@ -385,6 +400,7 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     execution_and_audit_logs_by_dataset: Dict[
         str, List[ExecutionAndAuditLogResponse]
     ] = Field(alias="results")
+    task_status_by_dataset: Optional[Dict[str, str]] = None
     model_config = ConfigDict(populate_by_name=True)
 
 
@@ -573,6 +589,7 @@ class PrivacyRequestFilter(FidesSchema):
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
     include_deleted_requests: Optional[bool] = False
+    is_overdue: Optional[bool] = None
     download_csv: Optional[bool] = False
     sort_field: str = "created_at"
     sort_direction: ColumnSort = ColumnSort.DESC

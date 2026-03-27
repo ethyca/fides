@@ -1,5 +1,6 @@
 import pytest
 
+from fides.api.common_exceptions import DomainValidationError
 from fides.api.graph.config import (
     Collection,
     FieldAddress,
@@ -10,7 +11,10 @@ from fides.api.graph.config import (
 )
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
-from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.domain_util import (
+    get_domain_validation_mode,
+    validate_value_against_allowed_list,
+)
 from fides.api.util.saas_util import (
     assign_placeholders,
     check_dataset_missing_reference_values,
@@ -18,9 +22,33 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
+    should_ignore_error,
     validate_connector_param_constraints_not_modified,
     validate_host_references_domain_restricted_params,
 )
+from fides.config import CONFIG
+from fides.config.security_settings import DomainValidationMode
+
+
+@pytest.mark.unit_saas
+class TestShouldIgnoreError:
+    """Tests for shared should_ignore_error used by AuthenticatedClient and polling."""
+
+    def test_ignore_all_when_true(self):
+        assert should_ignore_error(400, True) is True
+        assert should_ignore_error(500, True) is True
+
+    def test_ignore_none_when_false(self):
+        assert should_ignore_error(400, False) is False
+        assert should_ignore_error(404, False) is False
+
+    def test_ignore_only_listed_codes(self):
+        assert should_ignore_error(409, [409]) is True
+        assert should_ignore_error(404, [404, 409]) is True
+        assert should_ignore_error(500, [404, 409]) is False
+
+    def test_none_treated_as_do_not_ignore(self):
+        assert should_ignore_error(400, None) is False
 
 
 @pytest.mark.unit_saas
@@ -880,16 +908,25 @@ class TestValidateValueAgainstAllowedList:
     )
     def test_value_validation(self, value, allowed, should_pass):
         if should_pass:
-            validate_value_against_allowed_list(value, allowed, "domain")
+            validate_value_against_allowed_list(
+                value, allowed, "domain", mode=DomainValidationMode.enabled
+            )
         else:
-            with pytest.raises(ValueError):
-                validate_value_against_allowed_list(value, allowed, "domain")
+            with pytest.raises(DomainValidationError):
+                validate_value_against_allowed_list(
+                    value, allowed, "domain", mode=DomainValidationMode.enabled
+                )
 
     def test_error_message_includes_param_name(self):
         """Error message should include the param name and value."""
-        with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
+        with pytest.raises(
+            DomainValidationError, match="The value 'evil.com' for 'domain'"
+        ):
             validate_value_against_allowed_list(
-                "evil.com", ["api.stripe.com"], "domain"
+                "evil.com",
+                ["api.stripe.com"],
+                "domain",
+                mode=DomainValidationMode.enabled,
             )
 
     def test_empty_allowed_values_permits_any_value(self):
@@ -897,6 +934,41 @@ class TestValidateValueAgainstAllowedList:
         validate_value_against_allowed_list(
             "literally-anything.example.com", [], "domain"
         )
+
+
+@pytest.mark.unit_saas
+class TestGetDomainValidationMode:
+    """Tests for get_domain_validation_mode dev_mode behaviour."""
+
+    @pytest.fixture(autouse=True)
+    def _clean_env(self, monkeypatch):
+        monkeypatch.delenv("FIDES__SECURITY__DOMAIN_VALIDATION_MODE", raising=False)
+
+    def test_dev_mode_defaults_to_enabled(self, monkeypatch):
+        """In dev mode, domain validation should default to enabled."""
+        monkeypatch.setattr(CONFIG, "dev_mode", True)
+        assert get_domain_validation_mode() == DomainValidationMode.enabled
+
+    def test_dev_mode_respects_explicit_env_override(self, monkeypatch):
+        """Explicit env var should override the dev_mode default."""
+        monkeypatch.setattr(CONFIG, "dev_mode", True)
+        monkeypatch.setenv("FIDES__SECURITY__DOMAIN_VALIDATION_MODE", "monitor")
+        monkeypatch.setattr(
+            CONFIG.security,
+            "domain_validation_mode",
+            DomainValidationMode.monitor,
+        )
+        assert get_domain_validation_mode() == DomainValidationMode.monitor
+
+    def test_non_dev_mode_uses_configured_value(self, monkeypatch):
+        """Outside dev mode, the configured value is used as-is."""
+        monkeypatch.setattr(CONFIG, "dev_mode", False)
+        monkeypatch.setattr(
+            CONFIG.security,
+            "domain_validation_mode",
+            DomainValidationMode.monitor,
+        )
+        assert get_domain_validation_mode() == DomainValidationMode.monitor
 
 
 @pytest.mark.unit_saas

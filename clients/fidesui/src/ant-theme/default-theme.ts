@@ -13,7 +13,6 @@ import palette from "../palette/palette.module.scss";
  */
 
 export const defaultAntTheme: ThemeConfig = {
-  cssVar: true,
   token: {
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
     fontFamilyCode: `"Basier Square Mono", 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`,
@@ -48,8 +47,9 @@ export const defaultAntTheme: ThemeConfig = {
       colorTextPlaceholder: palette.FIDESUI_BG_DEFAULT,
     },
     Alert: {
-      colorInfoBg: palette.FIDESUI_FULL_WHITE,
-      colorInfo: palette.FIDESUI_NEUTRAL_500,
+      colorInfo: palette.FIDESUI_MINOS,
+      colorInfoBg: palette.FIDESUI_NEUTRAL_50,
+      colorInfoBorder: palette.FIDESUI_NEUTRAL_100,
     },
     Button: {
       primaryShadow: undefined,
@@ -87,6 +87,9 @@ export const defaultAntTheme: ThemeConfig = {
       darkSubMenuItemBg: palette.FIDESUI_MINOS,
       darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
     },
+    Popover: {
+      colorText: "inherit", // Ant v6 Popover gets its text color from the Tooltip component, which we have set to a dark background and light text. Popovers typically use light backgrounds, so we need to override the text color to ensure readability. For some reason, using `palette.FIDESUI_MINOS` here will not work??
+    },
     Table: {
       cellPaddingBlockSM: 8,
       cellPaddingInlineSM: 16,
@@ -106,10 +109,10 @@ export const defaultAntTheme: ThemeConfig = {
       fontSizeHeading1: 24,
       fontSizeHeading2: 20,
       fontSizeHeading3: 16,
+      titleMarginBottom: 0,
       fontSizeXL: 24,
       fontSizeLG: 18,
       fontSizeSM: 12,
-      titleMarginBottom: 0,
     },
     Tag: {
       colorText: palette.FIDESUI_NEUTRAL_900,

@@ -8,7 +8,7 @@ from fides.api.util.consent_encryption_migration import (
 )
 from fides.cli.core import api as _api
 from fides.cli.options import yes_flag
-from fides.cli.utils import with_analytics, with_server_health_check
+from fides.cli.utils import with_server_health_check
 from fides.common.utils import echo_red, handle_cli_response
 
 
@@ -22,7 +22,6 @@ def database(ctx: click.Context) -> None:
 
 @database.command(name="init", deprecated=True)
 @click.pass_context
-@with_analytics
 @with_server_health_check
 def db_init(ctx: click.Context) -> None:
     """
@@ -44,7 +43,6 @@ def db_init(ctx: click.Context) -> None:
 
 @database.command(name="upgrade")
 @click.pass_context
-@with_analytics
 @with_server_health_check
 def db_upgrade(ctx: click.Context) -> None:
     """
@@ -65,7 +63,6 @@ def db_upgrade(ctx: click.Context) -> None:
 @database.command(name="reset")
 @click.pass_context
 @yes_flag
-@with_analytics
 @with_server_health_check
 def db_reset(ctx: click.Context, yes: bool) -> None:
     """

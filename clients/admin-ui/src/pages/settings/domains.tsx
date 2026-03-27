@@ -4,11 +4,11 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraSpinner as Spinner,
   ChakraText as Text,
-  useChakraToast as useToast,
+  Icons,
+  useMessage,
 } from "fidesui";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
 import type { NextPage } from "next";
@@ -21,7 +21,6 @@ import { CustomTextInput, TextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   CORSOrigins,
   selectApplicationConfig,
@@ -51,7 +50,7 @@ const CORSConfigurationPage: NextPage = () => {
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
     usePutConfigurationSettingsMutation();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const isValidURL = (value: string | undefined) => {
     if (
@@ -126,15 +125,14 @@ const CORSConfigurationPage: NextPage = () => {
         | { data: object }
         | { error: FetchBaseQueryError | SerializedError },
     ) => {
-      toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
           `An unexpected error occurred while saving domains. Please try again.`,
         );
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
       } else {
-        toast(successToastParams("Domains saved successfully"));
+        message.success("Domains saved successfully");
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
       }
@@ -208,7 +206,7 @@ const CORSConfigurationPage: NextPage = () => {
                                 <Button
                                   aria-label="delete-domain"
                                   className="z-[2] ml-4"
-                                  icon={<DeleteIcon />}
+                                  icon={<Icons.TrashCan />}
                                   onClick={() => {
                                     arrayHelpers.remove(index);
                                   }}

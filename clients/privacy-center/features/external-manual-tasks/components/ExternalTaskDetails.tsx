@@ -49,7 +49,7 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
     task.privacy_request.request_type.slice(1);
 
   return (
-    <Flex vertical gap="middle" data-testid="task-details-container">
+    <Flex vertical gap="medium" data-testid="task-details-container">
       <TaskInfoRow label="Name">
         <Typography.Text data-testid="task-details-name">
           {task.name}

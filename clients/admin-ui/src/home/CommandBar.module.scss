@@ -1,0 +1,19 @@
+.scoreStatistic :global(.ant-statistic-content) {
+  line-height: 1;
+}
+
+.diffStatistic :global(.ant-statistic-content) {
+  font-weight: normal;
+  line-height: 1;
+  color: var(--ant-color-text-secondary);
+}
+
+.barStatistic :global(.ant-statistic-content) {
+  font-size: var(--ant-font-size);
+  line-height: 1;
+}
+
+.barStatistic :global(.ant-statistic-content-suffix) {
+  font-weight: normal;
+  color: var(--ant-color-text-secondary);
+}

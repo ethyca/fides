@@ -57,11 +57,6 @@ describe("Plus Bulk Vendor Add", () => {
     stubPlus(true, {
       core_fides_version: "2.2.0",
       fidesplus_server: "healthy",
-      system_scanner: {
-        enabled: true,
-        cluster_health: null,
-        cluster_error: null,
-      },
       dictionary: {
         enabled: false,
         service_health: null,
@@ -77,8 +72,10 @@ describe("Plus Bulk Vendor Add", () => {
     });
     cy.visit(ADD_SYSTEMS_ROUTE);
     cy.getByTestId("multiple-btn").click();
-    cy.getByTestId("confirmation-modal");
-    cy.getByTestId("cancel-btn").click();
+    cy.get(".ant-modal-confirm");
+    cy.getAntModalConfirmButtons()
+      .find(".ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous)")
+      .click();
     cy.url().should("include", ADD_SYSTEMS_MANUAL_ROUTE);
   });
 
@@ -95,8 +92,8 @@ describe("Plus Bulk Vendor Add", () => {
     cy.getByTestId("add-multiple-systems-btn")
       .should("exist")
       .click({ force: true });
-    cy.getByTestId("confirmation-modal");
-    cy.getByTestId("continue-btn").click({ force: true });
+    cy.get(".ant-modal-confirm");
+    cy.getAntModalConfirmButtons().contains("OK").click({ force: true });
     cy.wait("@postSystemVendors");
     cy.url().should("include", DATAMAP_ROUTE);
   });
@@ -140,11 +137,6 @@ describe("Plus Bulk Vendor Add", () => {
     stubPlus(true, {
       core_fides_version: "2.2.0",
       fidesplus_server: "healthy",
-      system_scanner: {
-        enabled: true,
-        cluster_health: null,
-        cluster_error: null,
-      },
       dictionary: {
         enabled: true,
         service_health: null,
@@ -195,11 +187,6 @@ describe("Plus Bulk Vendor Add", () => {
     stubPlus(true, {
       core_fides_version: "2.2.0",
       fidesplus_server: "healthy",
-      system_scanner: {
-        enabled: true,
-        cluster_health: null,
-        cluster_error: null,
-      },
       dictionary: {
         enabled: false,
         service_health: null,

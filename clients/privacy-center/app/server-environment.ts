@@ -7,6 +7,7 @@
  *
  * During server-side rendering, call loadPrivacyCenterEnvironment() to initialize the environment values for the App.
  */
+import type { AttributionOptions } from "fides-js";
 import { URL } from "url";
 
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
@@ -73,6 +74,10 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING"
   | "FIDES_COOKIE_SUFFIX"
   | "FIDES_COOKIE_COMPRESSION"
+  | "ATTRIBUTION_ENABLED"
+  | "ATTRIBUTION_ANCHOR_TEXT"
+  | "ATTRIBUTION_DESTINATION_URL"
+  | "ATTRIBUTION_NOFOLLOW"
 >;
 
 export type Styles = string;
@@ -348,7 +353,22 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
       settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
     FIDES_COOKIE_SUFFIX: settings.FIDES_COOKIE_SUFFIX,
     FIDES_COOKIE_COMPRESSION: settings.FIDES_COOKIE_COMPRESSION,
+    ATTRIBUTION_ENABLED: settings.ATTRIBUTION_ENABLED,
+    ATTRIBUTION_ANCHOR_TEXT: settings.ATTRIBUTION_ANCHOR_TEXT,
+    ATTRIBUTION_DESTINATION_URL: settings.ATTRIBUTION_DESTINATION_URL,
+    ATTRIBUTION_NOFOLLOW: settings.ATTRIBUTION_NOFOLLOW,
   };
 
   return clientSettings;
 };
+
+export const buildAttributionOptions = (
+  settings: PrivacyCenterClientSettings,
+): AttributionOptions | undefined =>
+  settings.ATTRIBUTION_ENABLED
+    ? {
+        anchorText: settings.ATTRIBUTION_ANCHOR_TEXT,
+        destinationUrl: settings.ATTRIBUTION_DESTINATION_URL,
+        nofollow: settings.ATTRIBUTION_NOFOLLOW,
+      }
+    : undefined;

@@ -9,6 +9,15 @@ on:
       - "main"
       - "release-**"
 
+# Merge queue strategy: only run container startup + migration checks on
+# merge_group events as a lightweight sanity check.  The full test suite
+# runs on pull_request and push to main/release branches.  This keeps the
+# queue fast while still catching migration head conflicts.
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 permissions:
   checks: write
   pull-requests: write
@@ -56,7 +65,7 @@ jobs:
 
   Collect-Tests:
     needs: Check-Backend-Changes
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -270,7 +279,7 @@ jobs:
 
   Misc-Tests:
     needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     strategy:
       matrix:
         test_selection:
@@ -339,7 +348,7 @@ jobs:
   ################
   Safe-Tests:
     needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     strategy:
       fail-fast: false
       matrix:
@@ -422,7 +431,7 @@ jobs:
 
   Pytest-Redis-Cluster:
     needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -430,6 +439,7 @@ jobs:
         run: |
           docker pull postgres:16 > /dev/null 2>&1 &
           docker pull redis:8.0-alpine > /dev/null 2>&1 &
+          docker pull valkey/valkey:9.0.3-alpine > /dev/null 2>&1 &
           echo "Docker pull initiated in background."
         shell: bash
 
@@ -475,7 +485,7 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: Run Redis cluster tests
+      - name: Run Redis and Valkey cache tests (cluster + standalone)
         run: uv run nox -s pytest_redis_cluster_docker
 
   ##################
@@ -485,7 +495,7 @@ jobs:
 
   Pytest-Ctl-External:
     needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
     runs-on: ubuntu-latest

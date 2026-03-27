@@ -51,7 +51,7 @@ def run_all_backfills(...):
 ```python
 def downgrade():
     op.drop_column("my_table", "my_column")
-    op.execute("DELETE FROM backfill_history WHERE backfill_name = 'my_table-my_column'")
+    op.execute("DELETE FROM post_upgrade_background_migration_tasks WHERE key = 'my_table-my_column' AND task_type = 'backfill'")
 ```
 
 This ensures the backfill re-runs if the migration is rolled back and re-applied.
@@ -70,7 +70,7 @@ pending_count={
 
 - Backfills run automatically at startup via the scheduler
 - Uses Redis lock to prevent concurrent execution
-- Tracks completed backfills in `backfill_history` table to prevent re-execution
+- Tracks completed backfills in `post_upgrade_background_migration_tasks` table (with `task_type='backfill'`) to prevent re-execution
 - Processes in batches with delays to minimize database impact
 
 ## Why Track Completed Backfills?
@@ -83,13 +83,13 @@ Checking pending rows alone is not enough. Consider this scenario:
 4. New rows are added with NULL values (by design)
 5. Old backfill detects NULL rows and overwrites them - **unintended behavior**
 
-The `backfill_history` table prevents this by marking a backfill as "done" permanently, regardless of future data changes.
+The `post_upgrade_background_migration_tasks` table prevents this by setting `completed_at` to a non-NULL timestamp when done. A NULL `completed_at` means the task is registered but still in progress; a non-NULL value means it has completed and won't re-run.
 
 ## API Endpoints
 
 If a backfill fails or you need to run it manually:
 
-- **`POST /api/v1/admin/backfill`** - Runs all pending backfills (those not yet in `backfill_history`)
+- **`POST /api/v1/admin/backfill`** - Runs all pending backfills (those not yet completed in `post_upgrade_background_migration_tasks`)
 - **`GET /api/v1/admin/backfill`** - Check backfill status and pending row counts
 
 Both endpoints require the `BACKFILL_EXEC` scope.

@@ -1,15 +1,5 @@
 import { Dayjs } from "dayjs";
-import {
-  Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  Flex,
-  Typography,
-} from "fidesui";
+import { Button, Flex, Modal, Typography } from "fidesui";
 
 import useConsentReportingDownload from "./hooks/useConsentReportingDownload";
 
@@ -37,40 +27,33 @@ const ConsentReportDownloadModal = ({
 
   return (
     <Modal
-      id="consent-report-download-modal"
-      isOpen={isOpen}
-      onClose={onClose}
-      size="xl"
-      returnFocusOnClose={false}
-      isCentered
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      title="Download consent report"
+      footer={null}
     >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalCloseButton />
-        <ModalHeader pb={2}>Download consent report</ModalHeader>
-        <ModalBody>
-          <Typography.Paragraph>
-            The downloaded CSV may differ from the UI in Fides, including column
-            order and naming.
-          </Typography.Paragraph>
-          <Typography.Paragraph>
-            For large datasets, file generation may take a few minutes after
-            selecting &quot;Download&quot;.
-          </Typography.Paragraph>
+      <Typography.Paragraph>
+        The downloaded CSV may differ from the UI in Fides, including column
+        order and naming.
+      </Typography.Paragraph>
+      <Typography.Paragraph>
+        For large datasets, file generation may take a few minutes after
+        selecting &quot;Download&quot;.
+      </Typography.Paragraph>
 
-          <Flex justify="flex-end">
-            <Button
-              loading={isDownloadingReport}
-              onClick={handleDownloadClicked}
-              data-testid="download-report-btn"
-              type="primary"
-              className="mb-2"
-            >
-              Download
-            </Button>
-          </Flex>
-        </ModalBody>
-      </ModalContent>
+      <Flex justify="flex-end">
+        <Button
+          loading={isDownloadingReport}
+          onClick={handleDownloadClicked}
+          data-testid="download-report-btn"
+          type="primary"
+          className="mb-2"
+        >
+          Download
+        </Button>
+      </Flex>
     </Modal>
   );
 };

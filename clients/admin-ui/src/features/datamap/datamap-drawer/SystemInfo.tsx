@@ -1,11 +1,11 @@
 import {
   ChakraBox as Box,
-  ChakraExternalLinkIcon as ExternalLinkIcon,
   ChakraFlex as Flex,
   ChakraSpacer as Spacer,
   ChakraText as Text,
+  Icons,
   SecondaryLink,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React from "react";
@@ -14,7 +14,6 @@ import * as Yup from "yup";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { SystemInfoFormValues } from "~/features/datamap/datamap-drawer/types";
 import { useUpsertSystemsMutation } from "~/features/system/system.slice";
 import { System } from "~/types/api";
@@ -26,7 +25,7 @@ type SystemInfoProps = {
 
 const useSystemInfo = (system: System) => {
   const [upsertSystem] = useUpsertSystemsMutation();
-  const toast = useToast();
+  const message = useMessage();
   const handleUpsertSystem = async (
     values: SystemInfoFormValues,
     helpers: FormikHelpers<SystemInfoFormValues>,
@@ -41,9 +40,9 @@ const useSystemInfo = (system: System) => {
 
     const result = await upsertSystem(requestBody);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(successToastParams("Successfully saved system info"));
+      message.success("Successfully saved system info");
       // this is required so the initial state doesn't flash
       helpers.resetForm({ values });
     }
@@ -84,7 +83,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
         <Spacer />
         <SecondaryLink color="complimentary.500" href={systemHref}>
           View more
-          <ExternalLinkIcon ml={2} />
+          <Icons.Launch className="ml-2 inline" size={14} />
         </SecondaryLink>
       </Flex>
       <Box

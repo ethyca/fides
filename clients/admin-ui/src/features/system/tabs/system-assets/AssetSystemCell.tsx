@@ -3,13 +3,13 @@ import {
   Icons,
   Tag,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import { truncate } from "lodash";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 import { useUpdateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { Asset } from "~/types/api";
@@ -40,7 +40,7 @@ const AssetSystemCell = ({
   >();
   const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
   const [updateAsset, { isLoading }] = useUpdateSystemAssetsMutation();
-  const { successAlert, errorAlert } = useAlert();
+  const message = useMessage();
 
   const confirmationModal = useDisclosure();
 
@@ -63,9 +63,9 @@ const AssetSystemCell = ({
       assets: [{ id: asset.id, system_key: newSystemKey }],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      message.error(getErrorMessage(result.error));
     } else {
-      successAlert(
+      message.success(
         isNewSystem
           ? `${truncatedNewSystemName} has been added to your system inventory and the ${assetType} "${truncatedAssetName}" has been assigned to that system.`
           : `${assetType} "${truncatedAssetName}" has been assigned to ${truncatedNewSystemName}`,

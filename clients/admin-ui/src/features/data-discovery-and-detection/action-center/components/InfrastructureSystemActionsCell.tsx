@@ -22,7 +22,7 @@ interface InfrastructureSystemActionsCellProps {
   allowIgnore?: boolean;
   allowRestore?: boolean;
   activeTab?: ActionCenterTabHash | null;
-  addIcon?: React.ReactNode;
+  approveIcon?: React.ReactNode;
   ignoreIcon?: React.ReactNode;
   onPromoteSuccess?: () => void;
 }
@@ -33,7 +33,7 @@ export const InfrastructureSystemActionsCell = ({
   allowIgnore,
   allowRestore,
   activeTab,
-  addIcon = <Icons.Checkmark />,
+  approveIcon = <Icons.Checkmark />,
   ignoreIcon = <Icons.ViewOff />,
   onPromoteSuccess,
 }: InfrastructureSystemActionsCellProps) => {
@@ -52,7 +52,7 @@ export const InfrastructureSystemActionsCell = ({
 
   const messageApi = useMessage();
 
-  const handleAdd = async () => {
+  const handleApprove = async () => {
     if (!system.urn) {
       messageApi.error("Cannot promote: system URN is missing");
       return;
@@ -125,20 +125,20 @@ export const InfrastructureSystemActionsCell = ({
 
   const getActionTooltip = (
     action:
-      | InfrastructureSystemBulkActionType.ADD
+      | InfrastructureSystemBulkActionType.APPROVE
       | InfrastructureSystemBulkActionType.RESTORE,
   ) => {
-    const isAdd = action === InfrastructureSystemBulkActionType.ADD;
+    const isApprove = action === InfrastructureSystemBulkActionType.APPROVE;
     if (!system.urn) {
-      return `This system cannot be ${isAdd ? "promoted" : "restored"}: URN is missing.`;
+      return `This system cannot be ${isApprove ? "promoted" : "restored"}: URN is missing.`;
     }
-    if (isAdd && isIgnored) {
+    if (isApprove && isIgnored) {
       return "Restore systems before adding to the inventory";
     }
-    if (!isAdd && !isIgnored) {
+    if (!isApprove && !isIgnored) {
       return "You can only restore ignored systems";
     }
-    return isAdd ? "Add" : "Restore";
+    return isApprove ? "Approve" : "Restore";
   };
 
   return (
@@ -174,17 +174,19 @@ export const InfrastructureSystemActionsCell = ({
         </Tooltip>
       )}
 
-      <Tooltip title={getActionTooltip(InfrastructureSystemBulkActionType.ADD)}>
+      <Tooltip
+        title={getActionTooltip(InfrastructureSystemBulkActionType.APPROVE)}
+      >
         <Button
-          data-testid="add-btn"
+          data-testid="approve-btn"
           size="small"
-          onClick={handleAdd}
+          onClick={handleApprove}
           disabled={!system.urn || isIgnored || isActionInProgress}
           loading={isPromoting}
-          icon={addIcon}
-          aria-label="Add"
+          icon={approveIcon}
+          aria-label="Approve"
         >
-          {!addIcon && "Add"}
+          {!approveIcon && "Approve"}
         </Button>
       </Tooltip>
     </Space>

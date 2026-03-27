@@ -6,7 +6,7 @@ import {
   ChakraHeading as Heading,
   ChakraInput as Input,
   ChakraStack as Stack,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
@@ -48,7 +48,7 @@ const useOrganizationInfoForm = () => {
     }
   }, [isLoadingOrganization, existingOrg, dispatch, hasSubmitted]);
 
-  const toast = useToast();
+  const message = useMessage();
   const formik = useFormik({
     initialValues: {
       name: existingOrg?.name ?? "",
@@ -70,13 +70,9 @@ const useOrganizationInfoForm = () => {
         if (isErrorResult(createOrganizationResult)) {
           const errorMsg = getErrorMessage(createOrganizationResult.error);
 
-          toast({
-            status: "error",
-            description: errorMsg,
-          });
+          message.error(errorMsg);
           return;
         }
-        toast.closeAll();
         handleSuccess(organizationBody);
       } else {
         const updateOrganizationResult =
@@ -85,13 +81,9 @@ const useOrganizationInfoForm = () => {
         if (isErrorResult(updateOrganizationResult)) {
           const errorMsg = getErrorMessage(updateOrganizationResult.error);
 
-          toast({
-            status: "error",
-            description: errorMsg,
-          });
+          message.error(errorMsg);
           return;
         }
-        toast.closeAll();
         handleSuccess(organizationBody);
       }
     },

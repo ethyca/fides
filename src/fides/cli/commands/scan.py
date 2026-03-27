@@ -22,7 +22,6 @@ from fides.cli.utils import (
     handle_aws_credentials_options,
     handle_database_credentials_options,
     handle_okta_credentials_options,
-    with_analytics,
 )
 
 
@@ -48,7 +47,6 @@ def scan_dataset(ctx: click.Context) -> None:
 @credentials_id_option
 @connection_string_option
 @coverage_threshold_option
-@with_analytics
 def scan_dataset_db(
     ctx: click.Context,
     manifests_dir: str,
@@ -96,7 +94,6 @@ def scan_system(ctx: click.Context) -> None:
 @okta_private_key_option
 @organization_fides_key_option
 @coverage_threshold_option
-@with_analytics
 def scan_system_okta(
     ctx: click.Context,
     manifests_dir: str,
@@ -140,7 +137,6 @@ def scan_system_okta(
 @aws_region_option
 @organization_fides_key_option
 @coverage_threshold_option
-@with_analytics
 def scan_system_aws(
     ctx: click.Context,
     manifests_dir: str,

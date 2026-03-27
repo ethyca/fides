@@ -1,14 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import {
-  Button,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuList as MenuList,
-  MoreIcon,
-} from "fidesui";
+import { Button, Dropdown, Icons, MenuProps } from "fidesui";
 import { useMemo } from "react";
 
 import { DefaultCell } from "~/features/common/table/v2";
@@ -25,23 +18,28 @@ const CatalogDatasetActionsCell = ({
 }: {
   onDetailClick?: () => void;
 }) => {
+  const items: MenuProps["items"] = useMemo(
+    () => [
+      {
+        key: "view-details",
+        label: "View details",
+        onClick: onDetailClick,
+      },
+    ],
+    [onDetailClick],
+  );
+
   return (
-    <Menu>
-      <MenuButton
-        as={Button}
+    <Dropdown menu={{ items }}>
+      <Button
         size="small"
-        // @ts-expect-error - Ant type, not Chakra type because of `as` prop
         type="text"
-        icon={<MoreIcon transform="rotate(90deg)" />}
+        icon={<Icons.OverflowMenuVertical />}
         className="w-6 gap-0"
         data-testid="dataset-actions"
+        aria-label="Dataset actions"
       />
-      <MenuList>
-        <MenuItem data-testid="view-dataset-details" onClick={onDetailClick}>
-          View details
-        </MenuItem>
-      </MenuList>
-    </Menu>
+    </Dropdown>
   );
 };
 

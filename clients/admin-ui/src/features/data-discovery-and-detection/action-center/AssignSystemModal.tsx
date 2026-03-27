@@ -1,27 +1,23 @@
-import {
-  Button,
-  ChakraModalProps as ModalProps,
-  DefaultOptionType,
-  Flex,
-  Typography,
-} from "fidesui";
+import { Button, DefaultOptionType, Flex, Modal, Typography } from "fidesui";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
-import FormModal from "~/features/common/modals/FormModal";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 
 const { Text } = Typography;
 
-interface AssignSystemModalProps extends Omit<ModalProps, "children"> {
+interface AssignSystemModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onSave: (selectedSystem?: DefaultOptionType) => void;
   isSaving?: boolean;
 }
 
 export const AssignSystemModal = ({
+  isOpen,
   onSave,
   isSaving,
-  ...props
+  onClose,
 }: AssignSystemModalProps) => {
   const [selectedSystem, setSelectedSystem] = useState<DefaultOptionType>();
   const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
@@ -37,11 +33,19 @@ export const AssignSystemModal = ({
 
   const handleClose = () => {
     setSelectedSystem(undefined);
-    props.onClose();
+    onClose();
   };
 
   return (
-    <FormModal title="Assign system" {...props} onClose={handleClose}>
+    <Modal
+      title="Assign system"
+      open={isOpen}
+      onCancel={handleClose}
+      centered
+      destroyOnClose
+      footer={null}
+      data-testid="add-modal-content"
+    >
       <Flex vertical gap={20} className="pb-6 pt-4">
         <Text>
           Assign a system to the selected assets. If no system exists, select
@@ -85,6 +89,6 @@ export const AssignSystemModal = ({
           toastOnSuccess
         />
       )}
-    </FormModal>
+    </Modal>
   );
 };
