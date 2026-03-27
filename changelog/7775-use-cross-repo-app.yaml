@@ -1,0 +1,4 @@
+type: Changed
+description: Replace TALOS_READ_TOKEN PAT with ethyca-cross-repo GitHub App token in Claude Code Review workflow
+pr: 7775
+labels: []
