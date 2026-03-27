@@ -135,7 +135,7 @@ export const MonitorResult = ({
                 type="link"
                 className="p-0"
                 icon={<OpenCloseArrow isOpen={isConfidenceRowExpanded} />}
-                iconPosition="end"
+                iconPlacement="end"
                 onClick={() =>
                   setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
                 }
