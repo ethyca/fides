@@ -2,6 +2,7 @@ export * from "./CopyTooltip";
 export * from "./CustomAlert";
 export * from "./CustomAvatar";
 export * from "./CustomCard";
+export * from "./CustomTabs";
 export * from "./CustomDateRangePicker";
 export * from "./CustomDrawer";
 export * from "./CustomDropdown";

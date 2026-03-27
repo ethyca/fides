@@ -1,11 +1,14 @@
 import {
+  Alert,
   antTheme,
   Card,
   Flex,
   Icons,
   Skeleton,
+  SparkleIcon,
   Sparkline,
   Statistic,
+  Text,
 } from "fidesui";
 
 import { nFormatter } from "~/features/common/utils";
@@ -88,8 +91,22 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
   return (
     <Card
       variant="borderless"
-      title={config?.label ?? metricKey}
+      title={
+        <Text
+          type="secondary"
+          style={{
+            fontFamily: token.fontFamilyCode,
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+          }}
+        >
+          {config?.label ?? metricKey}
+        </Text>
+      }
       className="h-full text-clip"
+      styles={{ body: { paddingTop: 0 } }}
       cover={
         !isLoading ? (
           <div className="h-16">
@@ -100,6 +117,15 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
       coverPosition="bottom"
     >
       {renderStats()}
+      {metric?.agent_summary && (
+        <Alert
+          type="info"
+          showIcon
+          icon={<SparkleIcon size={12} style={{ color: "var(--fidesui-terracotta)" }} />}
+          message={metric.agent_summary}
+          className="mt-2"
+        />
+      )}
     </Card>
   );
 };

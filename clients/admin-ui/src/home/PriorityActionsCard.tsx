@@ -7,7 +7,6 @@ import {
   Flex,
   List,
   Tabs,
-  TabsProps,
   Tag,
   Text,
 } from "fidesui";
@@ -101,14 +100,20 @@ export const PriorityActionsCard = () => {
   return (
     <Flex vertical>
       {/* Header: section label + tabs */}
-      <Text
-        type="secondary"
-        className={styles.sectionLabel}
-        style={{ fontFamily: token.fontFamilyCode }}
-      >
-        Priority Actions
-      </Text>
       <Tabs
+        title={
+          <Text
+            type="secondary"
+            className={styles.sectionLabel}
+            style={{ fontFamily: token.fontFamilyCode }}
+          >
+
+            Total Actions:{" "}
+            <Tag color="default" className="!ml-1">
+              {totalCount}
+            </Tag>
+          </Text>
+        }
         activeKey={activeTab}
         onChange={(key: string) => {
           setActiveTab(key);
@@ -203,12 +208,9 @@ export const PriorityActionsCard = () => {
 
       {/* Expand button */}
       {!expanded && hiddenCount > 0 && (
-        <Flex justify="center" className="mt-4">
-          <Button onClick={() => setExpanded(true)}>
-            Show all actions
-            <Tag color="default" className="!ml-2">
-              {totalCount}
-            </Tag>
+        <Flex justify="flex-start" className="mt-4 mb-2">
+          <Button type="text" size="small" onClick={() => setExpanded(true)}>
+            Show all actions &rarr;
           </Button>
         </Flex>
       )}

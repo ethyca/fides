@@ -26,7 +26,7 @@ export const HomeDashboard = () => {
       {/* Tier 1: Hero — Score + Radar centered vertically, agent card absolute under score */}
       <Row
         gutter={48}
-        className="relative min-h-[70vh] items-center pb-16 pt-14 pl-16"
+        className="relative min-h-[50vh] items-center pb-16 pt-14 pl-16"
       >
         <Col xs={24} md={12}>
           <PostureScore></PostureScore>
@@ -38,8 +38,6 @@ export const HomeDashboard = () => {
           <PostureRadar />
         </Col>
       </Row>
-      <Divider className="!my-0" />
-
       {/* Tier 2: Priority Actions — full width, capped list */}
       <div className="py-9">
         <PriorityActionsCard />

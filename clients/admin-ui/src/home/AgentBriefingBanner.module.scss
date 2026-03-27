@@ -1,12 +1,11 @@
 .astralisAlert {
-  background: var(--fidesui-limestone) !important;
   border: none !important;
   border-radius: 8px !important;
 
   :global(.ant-alert-message) {
     font-size: 13px;
     line-height: 1.6;
-    color: var(--fidesui-neutral-700);
+    color: var(--ant-color-text-description);
   }
 
   :global(.ant-alert-icon) {
@@ -22,17 +21,5 @@
 
   &:hover {
     text-decoration: underline;
-  }
-
-  &.error {
-    color: var(--fidesui-terracotta);
-  }
-
-  &.warning {
-    color: var(--fidesui-terracotta);
-  }
-
-  &.info {
-    color: var(--fidesui-terracotta);
   }
 }

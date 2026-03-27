@@ -1,4 +1,4 @@
-import { antTheme, DonutChart, Flex, Text } from "fidesui";
+import { Alert, antTheme, DonutChart, Flex, SparkleIcon, Text } from "fidesui";
 import NextLink from "next/link";
 
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
@@ -125,6 +125,16 @@ export const SystemCoverageCard = () => {
           </Flex>
         ))}
       </Flex>
+
+      {coverage?.agent_summary && (
+        <Alert
+          type="info"
+          showIcon
+          icon={<SparkleIcon size={12} style={{ color: "var(--fidesui-terracotta)" }} />}
+          message={coverage.agent_summary}
+          className="mt-4"
+        />
+      )}
     </Flex>
   );
 };

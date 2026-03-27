@@ -1,7 +1,9 @@
 import {
+  Alert,
   antTheme,
   Flex,
   Skeleton,
+  SparkleIcon,
   StackedBarChart,
   Statistic,
   Text,
@@ -170,6 +172,16 @@ export const DSRStatusCard = () => {
             ))}
           </Flex>
         </>
+      )}
+
+      {data?.agent_summary && (
+        <Alert
+          type="info"
+          showIcon
+          icon={<SparkleIcon size={12} style={{ color: "var(--fidesui-terracotta)" }} />}
+          message={data.agent_summary}
+          className="mt-4"
+        />
       )}
     </Flex>
   );

@@ -195,7 +195,6 @@ export type {
   SelectProps,
   SwitchProps,
   TableProps,
-  TabsProps,
   TooltipProps,
   TreeDataNode,
   TreeProps,
@@ -238,7 +237,7 @@ export {
   Splitter,
   Steps,
   Switch,
-  Tabs,
+  Tabs as AntTabs,
   TimePicker,
   Tree,
   TreeSelect,
@@ -262,6 +261,7 @@ export type {
   ICustomSelectProps,
   CustomInputProps as InputProps,
   CustomStatisticProps as StatisticProps,
+  CustomTabsProps as TabsProps,
   StatisticTrend,
 } from "./hoc";
 export {
@@ -277,6 +277,7 @@ export {
   CustomSelect as Select,
   CustomStatistic as Statistic,
   CustomTable as Table,
+  CustomTabs as Tabs,
   CustomTag as Tag,
   CustomTooltip as Tooltip,
   CustomTypography as Typography,
