@@ -67,9 +67,19 @@ def upgrade() -> None:
         ["connection_config_id"],
         unique=False,
     )
+    op.create_index(
+        op.f("ix_connection_config_saas_history_connection_key"),
+        "connection_config_saas_history",
+        ["connection_key"],
+        unique=False,
+    )
 
 
 def downgrade() -> None:
+    op.drop_index(
+        op.f("ix_connection_config_saas_history_connection_key"),
+        table_name="connection_config_saas_history",
+    )
     op.drop_index(
         op.f("ix_connection_config_saas_history_connection_config_id"),
         table_name="connection_config_saas_history",
