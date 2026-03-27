@@ -345,9 +345,17 @@ def sync_oob_saas_config_versions(session: Session) -> None:
     )
 
     templates = FileConnectorTemplateLoader.get_connector_templates()
+    existing = {
+        (row.connector_type, row.version)
+        for row in session.query(
+            SaaSConfigVersion.connector_type, SaaSConfigVersion.version
+        ).filter(SaaSConfigVersion.is_custom == False)  # noqa: E712
+    }
     for connector_type, template in templates.items():
         try:
             saas_config = SaaSConfig(**load_config_from_string(template.config))
+            if (connector_type, saas_config.version) in existing:
+                continue
             dataset = load_dataset_from_string(template.dataset)
             SaaSConfigVersion.upsert(
                 db=session,
