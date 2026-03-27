@@ -217,14 +217,15 @@ def patch_saas_config(
         )
 
     connection_config.update_saas_config(db, saas_config=saas_config)
-    patched_template = ConnectorRegistry.get_connector_template(saas_config.type)
+    if not template:
+        template = ConnectorRegistry.get_connector_template(saas_config.type)
     SaaSConfigVersion.upsert(
         db=db,
         connector_type=saas_config.type,
         version=saas_config.version,
         config=saas_config.model_dump(mode="json"),
         dataset=None,  # PATCH only updates the config; dataset is managed separately
-        is_custom= saas_config.type == "custom"
+        is_custom=template.custom if template else False,
     )
 
     # Create audit event for SaaS config update
