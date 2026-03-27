@@ -23,13 +23,12 @@ export const HomeDashboard = () => {
 
   return (
     <Flex vertical className="mx-auto w-full max-w-[1600px] px-10">
-      {/* Tier 1: Hero — Score + Radar centered vertically, agent card absolute under score */}
       <Row
         gutter={48}
         className="relative min-h-[80vh] items-center pb-16 pt-14 pl-16"
       >
         <Col xs={24} md={12}>
-          <PostureScore></PostureScore>
+          <PostureScore />
           <div className="absolute left-0 right-0 pr-6">
             <AgentBriefingBanner />
           </div>
@@ -38,13 +37,12 @@ export const HomeDashboard = () => {
           <PostureRadar />
         </Col>
       </Row>
-      {/* Tier 2: Priority Actions — full width, capped list */}
+      <Divider />
       <div className="py-9">
         <PriorityActionsCard />
       </div>
-      <Divider className="!my-0" />
+      <Divider />
 
-      {/* Tier 3: Dimension Trend Cards */}
       <Row gutter={TREND_GUTTER} className="py-8">
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>
@@ -56,18 +54,16 @@ export const HomeDashboard = () => {
           </Col>
         ))}
       </Row>
-      <Divider className="!my-0" />
+      <Divider />
 
-      {/* Tier 4: System Coverage (narrow) + DSR Status (wide) */}
-      <Row gutter={0} className="py-10">
-        <Col
-          xs={24}
-          md={7}
-          className="border-r border-solid border-neutral-100 pr-10"
-        >
+      <Row gutter={20} className="py-10">
+        <Col xs={24} md={7}>
           <SystemCoverageCard />
         </Col>
-        <Col xs={24} md={17} className="pl-10">
+        <Col md={1} className="flex justify-center">
+          <Divider vertical className="h-full" />
+        </Col>
+        <Col xs={24} md={16}>
           <DSRStatusCard />
         </Col>
       </Row>

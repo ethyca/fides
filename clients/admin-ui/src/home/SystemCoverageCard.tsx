@@ -23,7 +23,6 @@ export const SystemCoverageCard = () => {
 
   return (
     <Flex vertical>
-      {/* Header */}
       <Flex align="center" justify="space-between" className="mb-5">
         <Text
           type="secondary"
@@ -51,7 +50,6 @@ export const SystemCoverageCard = () => {
         </NextLink>
       </Flex>
 
-      {/* Donut + summary — centered */}
       <Flex vertical align="center" className="mb-5 text-center">
         <div className="mb-3 size-[140px]">
           <DonutChart
@@ -103,7 +101,6 @@ export const SystemCoverageCard = () => {
         </Text>
       </Flex>
 
-      {/* Breakdown */}
       <Flex vertical gap={4}>
         {BREAKDOWN_ITEMS.map(({ key, label, color }) => (
           <Flex key={key} align="center" gap={8} className="text-xs">

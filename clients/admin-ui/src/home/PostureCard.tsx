@@ -29,10 +29,6 @@ function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
   return <Icons.ArrowUp size={12} />;
 }
 
-/**
- * Left column of the hero: score, trend, narrative.
- * Accepts children to render content below (e.g. AgentBriefingBanner).
- */
 export const PostureScore = ({
   children,
 }: {
@@ -122,9 +118,6 @@ export const PostureScore = ({
   );
 };
 
-/**
- * Right column of the hero: radar chart.
- */
 export const PostureRadar = () => {
   const { data: posture, isLoading } = useGetDashboardPostureQuery();
 

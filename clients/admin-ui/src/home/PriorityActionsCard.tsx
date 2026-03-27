@@ -21,7 +21,6 @@ import {
 } from "~/features/dashboard/constants";
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 import type { PriorityAction } from "~/features/dashboard/types";
-import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./PriorityActionsCard.module.scss";
 import { clearDimensionFilter, useDimensionFilter } from "./useDimensionFilter";
@@ -99,7 +98,6 @@ export const PriorityActionsCard = () => {
 
   return (
     <Flex vertical>
-      {/* Header: section label + tabs */}
       <Tabs
         title={
           <Text
@@ -140,7 +138,6 @@ export const PriorityActionsCard = () => {
         </Flex>
       )}
 
-      {/* Action list — no Card wrapper */}
       <List
         dataSource={visibleActions}
         loading={isLoading}
@@ -206,7 +203,6 @@ export const PriorityActionsCard = () => {
         }}
       />
 
-      {/* Expand button */}
       {!expanded && hiddenCount > 0 && (
         <Flex justify="flex-start" className="mt-4 mb-2">
           <Button type="text" size="small" onClick={() => setExpanded(true)}>

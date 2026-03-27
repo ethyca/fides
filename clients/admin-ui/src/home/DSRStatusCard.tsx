@@ -6,6 +6,7 @@ import {
   SparkleIcon,
   StackedBarChart,
   Statistic,
+  Divider,
   Text,
 } from "fidesui";
 import NextLink from "next/link";
@@ -47,7 +48,6 @@ export const DSRStatusCard = () => {
 
   return (
     <Flex vertical>
-      {/* Header */}
       <Flex align="center" justify="space-between" className="mb-5">
         <Text
           type="secondary"
@@ -74,12 +74,7 @@ export const DSRStatusCard = () => {
         </NextLink>
       </Flex>
 
-      {/* Hero stat row */}
-      <Flex
-        align="baseline"
-        gap={32}
-        className="mb-6 border-b border-solid border-neutral-100 pb-6"
-      >
+      <Flex align="baseline" gap={32} className="pb-6">
         <Flex align="baseline" gap={10}>
           <Statistic
             value={data?.active_count ?? 0}
@@ -124,18 +119,15 @@ export const DSRStatusCard = () => {
                   color: token.colorError,
                 }}
               />
-              <Text
-                type="danger"
-                className="mt-0.5 text-[11px]"
-              >
+              <Text type="danger" className="mt-0.5 text-[11px]">
                 Overdue
               </Text>
             </NextLink>
           )}
         </Flex>
       </Flex>
+      <Divider dashed />
 
-      {/* SLA Health */}
       <Text
         type="secondary"
         style={{
@@ -178,7 +170,12 @@ export const DSRStatusCard = () => {
         <Alert
           type="info"
           showIcon
-          icon={<SparkleIcon size={12} style={{ color: "var(--fidesui-terracotta)" }} />}
+          icon={
+            <SparkleIcon
+              size={12}
+              style={{ color: "var(--fidesui-terracotta)" }}
+            />
+          }
           message={data.agent_summary}
           className="mt-4"
         />

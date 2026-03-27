@@ -5,11 +5,6 @@ import React from "react";
 import styles from "./CustomTabs.module.scss";
 
 export interface CustomTabsProps extends Omit<TabsProps, "title"> {
-  /**
-   * When provided, renders a title inline to the left of the tabs
-   * with the tab bar pushed to the right. The title sits inside
-   * the tab nav so it shares the bottom border.
-   */
   title?: React.ReactNode;
 }
 
@@ -34,7 +29,6 @@ const withCustomProps = (WrappedComponent: typeof Tabs) => {
           title
         );
 
-      // Merge with any existing tabBarExtraContent
       const existingExtra =
         typeof tabBarExtraContent === "object" &&
         tabBarExtraContent !== null &&
@@ -65,9 +59,4 @@ const withCustomProps = (WrappedComponent: typeof Tabs) => {
   return WrappedTabs;
 };
 
-/**
- * Extends Ant Design's Tabs. When a `title` prop is provided the title is
- * rendered inside the tab bar on the left, sharing the bottom border, with
- * the tab items pushed to the right.
- */
 export const CustomTabs = withCustomProps(Tabs);
