@@ -75,6 +75,7 @@ class OnePasswordClient:
             "id": item.id,
             "title": item.title,
             "category": item.category,
+            "notes": getattr(item, "notes", None),
             "fields": [],
         }
 
@@ -150,6 +151,11 @@ class OnePasswordClient:
         if not item:
             return None
 
+        # SDK 0.3.0+ exposes notes as a top-level attribute
+        if item.get("notes"):
+            return item["notes"]
+
+        # Older SDK versions stored notes as a field entry
         for field in item.get("fields", []):
             if field.get("purpose") == "NOTES" or field.get("id") == "notesPlain":
                 return field.get("value")
