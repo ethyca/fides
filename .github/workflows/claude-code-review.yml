@@ -10,8 +10,10 @@
 #   - Comment containing "/code-review" on a PR (trusted users only)
 #
 # Required secrets:
-#   CLAUDE_CODE_OAUTH_TOKEN — Claude Code OAuth token
-#   TALOS_READ_TOKEN        — PAT with read access to ethyca/talos
+#   CLAUDE_CODE_OAUTH_TOKEN    — Claude Code OAuth token
+#   CROSS_REPO_APP_PRIVATE_KEY — GitHub App private key (ethyca-cross-repo)
+# Required vars:
+#   CROSS_REPO_APP_ID          — GitHub App ID (ethyca-cross-repo)
 
 name: Claude Code Review
 
@@ -78,11 +80,18 @@ jobs:
           echo "::error::Debug mode is disabled on this workflow to protect private talos content"
           exit 1
 
+      - name: Generate cross-repo token
+        id: cross-repo-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.CROSS_REPO_APP_ID }}
+          private-key: ${{ secrets.CROSS_REPO_APP_PRIVATE_KEY }}
+
       - name: Checkout talos Claude config
         uses: actions/checkout@v4
         with:
           repository: ethyca/talos
-          token: ${{ secrets.TALOS_READ_TOKEN }}
+          token: ${{ steps.cross-repo-token.outputs.token }}
           path: .talos
           sparse-checkout: .claude
 
