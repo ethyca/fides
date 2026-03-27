@@ -1,6 +1,5 @@
 import { debounce } from "common/utils";
 import {
-  ArrowDownLineIcon,
   Button,
   ChakraBox as Box,
   ChakraFlex as Flex,
@@ -10,9 +9,9 @@ import {
   ChakraText as Text,
   Icons,
   Popover,
-  SearchLineIcon,
   Tooltip,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -220,7 +219,7 @@ const ConnectionListDropdown = ({
       <Box px="8px" mt={2}>
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">
-            <SearchLineIcon color="gray.300" h="17px" w="17px" />
+            <Icons.Search color={palette.FIDESUI_NEUTRAL_500} />
           </InputLeftElement>
           <Input
             data-testid="input-search-integrations"
@@ -305,12 +304,12 @@ const ConnectionListDropdown = ({
           setTimeout(() => inputRef.current?.focus(), 0);
         }
       }}
-      styles={{ body: { padding: 0 } }}
+      styles={{ content: { padding: 0 } }}
     >
       <Button
         aria-label={selectedText ?? label}
         disabled={disabled}
-        icon={<ArrowDownLineIcon />}
+        icon={<Icons.ChevronDown />}
         iconPosition="end"
         data-testid="select-dropdown-btn"
         className="w-[272px]"

@@ -7,7 +7,9 @@ import {
   mockAgentBriefing,
   mockPosture,
   mockPriorityActions,
+  mockPrivacyRequests,
   mockSystemCoverage,
+  mockTrends,
 } from "./data";
 
 const DIMENSION_ACTION_TYPES: Record<string, ActionType[]> = {
@@ -61,9 +63,16 @@ export const dashboardHandlers = () => {
       res(ctx.status(200), ctx.json(mockSystemCoverage)),
     ),
 
-    // GET /api/v1/plus/dashboard/agent-briefing
+    rest.get(`${apiBase}/plus/dashboard/privacy-requests`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockPrivacyRequests)),
+    ),
+
     rest.get(`${apiBase}/plus/dashboard/agent-briefing`, (_req, res, ctx) =>
       res(ctx.status(200), ctx.json(mockAgentBriefing)),
+    ),
+
+    rest.get(`${apiBase}/plus/dashboard/trends`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockTrends)),
     ),
 
     rest.patch(

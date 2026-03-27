@@ -42,7 +42,7 @@ export const PostureBreakdownContent = () => {
               <Flex justify="space-between" align="flex-start" gap={12}>
                 <Flex vertical gap="small" className="min-w-0 flex-1">
                   {description && <Text type="secondary">{description}</Text>}
-                  <Flex align="center" gap="middle">
+                  <Flex align="center" gap="small">
                     <Text>{dim.score} / 100</Text>
                     {band && <Tag color={band.color}>{band.label}</Tag>}
                     <Text type="secondary">

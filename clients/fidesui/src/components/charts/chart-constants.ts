@@ -13,7 +13,7 @@ export const CHART_ANIMATION = {
 } as const;
 
 export const CHART_STROKE = {
-  strokeWidth: 2,
+  strokeWidth: 1.5,
   strokeOpacity: 0.8,
   dotRadius: 3.5,
   strokeLinecap: "round" as const,
@@ -29,6 +29,22 @@ export const DONUT_THICKNESS = {
   default: 8,
   thick: 16,
 } as const;
+
+export type BarSize = "sm" | "md" | "lg";
+
+export type AntSizeTokenKey = Extract<keyof GlobalToken, `size${string}`>;
+
+export const BAR_SIZE_TOKEN: Record<BarSize, AntSizeTokenKey> = {
+  sm: "sizeXS",
+  md: "sizeSM",
+  lg: "sizeLG",
+} as const;
+
+export const LABEL_WIDTH = 110;
+
+export const MIN_PX_PER_POINT = 12;
+
+export const MAX_INTERVAL_HOURS = 72;
 
 export const COLOR_OPTIONS = [
   "colorPrimary",

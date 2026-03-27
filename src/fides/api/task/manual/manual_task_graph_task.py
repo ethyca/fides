@@ -11,6 +11,7 @@ from fides.api.models.manual_task import (
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
+    ManualTaskType,
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
@@ -316,9 +317,14 @@ class ManualTaskGraphTask(GraphTask):
                 f"cannot proceed without intervention"
             )
 
-        # Set privacy request status to requires_input if not already set
-        if self.resources.request.status != PrivacyRequestStatus.requires_input:
-            self.resources.request.status = PrivacyRequestStatus.requires_input
+        # Set privacy request status based on task type
+        awaiting_status = (
+            PrivacyRequestStatus.pending_external
+            if manual_task.task_type == ManualTaskType.jira_ticket
+            else PrivacyRequestStatus.requires_input
+        )
+        if self.resources.request.status != awaiting_status:
+            self.resources.request.status = awaiting_status
             self.resources.request.save(self.resources.session)
 
         # This will trigger log_awaiting_processing via the @retry decorator; include conditional details

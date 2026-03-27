@@ -118,7 +118,9 @@ const ConfigureIntegrationForm = ({
 
   const [setSystemLinks] = useSetSystemLinksMutation();
 
-  const hasSecrets = connectionOption.identifier !== ConnectionType.MANUAL_TASK;
+  const hasSecrets =
+    connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+    connectionOption.identifier !== ConnectionType.JIRA_TICKET;
 
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier, {
@@ -446,6 +448,7 @@ const ConfigureIntegrationForm = ({
                   variant="stacked"
                 />
                 {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+                  connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
                   connectionOption.identifier !== ConnectionType.WEBSITE && (
                     <ControlledSelect
                       id="system_fides_key"

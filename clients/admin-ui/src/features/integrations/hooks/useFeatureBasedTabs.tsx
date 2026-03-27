@@ -9,7 +9,9 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
+import { JiraConfigTab } from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
+import QueryLogConfigTab from "~/features/integrations/configure-query-log/QueryLogConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import TaskConditionsTab from "~/features/integrations/configure-tasks/TaskConditionsTab";
 import TaskConfigTab from "~/features/integrations/configure-tasks/TaskConfigTab";
@@ -18,7 +20,11 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
-import { ConnectionSystemTypeMap, IntegrationFeature } from "~/types/api";
+import {
+  ConnectionSystemTypeMap,
+  ConnectionType,
+  IntegrationFeature,
+} from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
   connection: any;
@@ -88,22 +94,26 @@ export const useFeatureBasedTabs = ({
         label: "Connection",
         key: "connection",
         children: (
-          <Flex vertical gap="middle">
+          <Flex vertical gap="medium">
             {supportsConnectionTest && (
               <Card size="small">
                 <Flex>
                   <ConnectionStatusNotice
                     testData={testData}
                     connectionOption={integrationOption}
+                    connectionType={connection?.connection_type}
                   />
                   <Spacer />
-                  <Flex gap="middle">
+                  <Flex gap="medium">
                     {needsAuthorization && (
                       <Button
                         onClick={handleAuthorize}
                         data-testid="authorize-integration-btn"
                       >
-                        Authorize integration
+                        {connection?.connection_type ===
+                        ConnectionType.JIRA_TICKET
+                          ? "Authorize with Jira"
+                          : "Authorize integration"}
                       </Button>
                     )}
                     {!needsAuthorization && (
@@ -165,6 +175,14 @@ export const useFeatureBasedTabs = ({
       });
     }
 
+    if (enabledFeatures?.includes(IntegrationFeature.QUERY_LOGGING)) {
+      tabItems.push({
+        label: "Query logging",
+        key: "query-logging",
+        children: <QueryLogConfigTab integration={connection!} />,
+      });
+    }
+
     if (enabledFeatures?.includes(IntegrationFeature.TASKS)) {
       tabItems.push({
         label: "Manual tasks",
@@ -178,6 +196,14 @@ export const useFeatureBasedTabs = ({
         label: "Conditions",
         key: "conditions",
         children: <TaskConditionsTab connectionKey={connection!.key} />,
+      });
+    }
+
+    if (enabledFeatures?.includes(IntegrationFeature.DSR_AUTOMATION)) {
+      tabItems.push({
+        label: "Ticket setup",
+        key: "configuration",
+        children: <JiraConfigTab connection={connection!} />,
       });
     }
 

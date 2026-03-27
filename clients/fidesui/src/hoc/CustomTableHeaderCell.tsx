@@ -1,6 +1,6 @@
-import { OverflowMenuVertical } from "@carbon/icons-react";
 import { Button, Dropdown, MenuProps } from "antd/lib";
 
+import { OverflowMenuVertical } from "../icons/carbon";
 import styles from "./CustomTableHeaderCell.module.scss";
 
 export const CustomTableHeaderCell = (

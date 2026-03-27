@@ -1,4 +1,0 @@
-type: Changed
-description: Domain validation now defaults to enabled in dev mode so SaaS connector violations are caught during local development
-pr: 7677
-labels: []

@@ -1,17 +1,9 @@
-import {
-  Button,
-  Form,
-  Input,
-  Modal,
-  Typography,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, Form, Input, Modal, Typography, useMessage } from "fidesui";
 import Link from "next/link";
 import { useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { useCreateExternalUserMutation } from "./external-user.slice";
 
@@ -37,7 +29,7 @@ const CreateExternalUserModal = ({
   const [form] = Form.useForm<FormData>();
   const [isLoading, setIsLoading] = useState(false);
   const [createExternalUser] = useCreateExternalUserMutation();
-  const toast = useToast();
+  const message = useMessage();
 
   const generateUsername = (email: string) => {
     // Generate username from email address (part before @)
@@ -59,22 +51,18 @@ const CreateExternalUserModal = ({
       });
 
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
         return;
       }
 
-      toast(
-        successToastParams(
-          `External respondent user created successfully. The user will receive a welcome email with access instructions.`,
-        ),
+      message.success(
+        "External respondent user created successfully. The user will receive a welcome email with access instructions.",
       );
 
       form.resetFields();
       onUserCreated();
     } catch (error) {
-      toast(
-        errorToastParams("Failed to create external user. Please try again."),
-      );
+      message.error("Failed to create external user. Please try again.");
     } finally {
       setIsLoading(false);
     }

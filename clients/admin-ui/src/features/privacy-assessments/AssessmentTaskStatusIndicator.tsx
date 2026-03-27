@@ -104,7 +104,7 @@ export const AssessmentTaskStatusIndicator = ({
     ) {
       notificationApi.success({
         message: "New assessment results are available",
-        btn: onTaskFinish ? (
+        actions: onTaskFinish ? (
           <Button
             size="small"
             onClick={() => {
@@ -136,7 +136,7 @@ export const AssessmentTaskStatusIndicator = ({
       } else {
         notificationApi.success({
           message: "New assessment results are available",
-          btn: onTaskFinish ? (
+          actions: onTaskFinish ? (
             <Button
               size="small"
               onClick={() => {

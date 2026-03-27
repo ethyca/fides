@@ -1,10 +1,10 @@
 import {
-  ArrowDownLineIcon,
   Button,
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraCheckboxGroup as CheckboxGroup,
   ChakraStack as Stack,
+  Icons,
   Popover,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
@@ -99,10 +99,10 @@ const ColumnDropdown = <T extends Record<string, unknown>>({
       trigger="click"
       open={open}
       onOpenChange={setOpen}
-      styles={{ body: { padding: 0 } }}
+      styles={{ content: { padding: 0 } }}
     >
       <Button
-        icon={<ArrowDownLineIcon />}
+        icon={<Icons.ChevronDown />}
         className="!font-normal"
         data-testid="column-dropdown"
       >

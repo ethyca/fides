@@ -1,9 +1,9 @@
 import {
   Button,
-  ChakraArrowBackIcon as ArrowBackIcon,
   ChakraFlex as Flex,
   ChakraFlexProps as FlexProps,
   ChakraText as Text,
+  Icons,
 } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,7 +22,7 @@ const BackButton = ({
       <Button
         onClick={() => nextRouter.push(backPath)}
         aria-label="Back"
-        icon={<ArrowBackIcon />}
+        icon={<Icons.ArrowLeft />}
         className="mr-2"
         size="small"
       />
@@ -53,7 +53,7 @@ export const BackButtonNonLink = ({
   >
     <Button
       aria-label="Back"
-      icon={<ArrowBackIcon />}
+      icon={<Icons.ArrowLeft />}
       className="mr-2"
       size="small"
     />

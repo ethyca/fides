@@ -6,6 +6,7 @@ import {
   ChakraHStack as HStack,
   ChakraSpacer as Spacer,
   ChakraVStack as VStack,
+  CompassIcon,
   Dropdown,
   MenuProps,
   Select,
@@ -19,7 +20,6 @@ import {
   ErrorMessage,
   Label,
 } from "~/features/common/form/inputs";
-import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
@@ -54,7 +54,7 @@ const CompassButton = ({
       <Spacer minHeight="18px" />
       <Dropdown menu={{ items }} disabled={disabled}>
         <Button
-          icon={<CompassIcon boxSize={4} />}
+          icon={<CompassIcon />}
           aria-label="Update information from Compass"
           data-testid="refresh-suggestions-btn"
           disabled={disabled}

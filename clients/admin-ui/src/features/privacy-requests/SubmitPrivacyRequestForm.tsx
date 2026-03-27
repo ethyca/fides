@@ -3,10 +3,10 @@ import {
   ChakraStack as Stack,
   Checkbox,
   Form,
-  LinkIcon,
+  Icons,
   LocationSelect,
   useChakraClipboard as useClipboard,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form as FormikForm, Formik, useField } from "formik";
 import { lazy } from "yup";
@@ -273,7 +273,7 @@ export const CopyPrivacyRequestLinkForm = ({
   privacyCenterUrl: string;
 }) => {
   const { onCopy } = useClipboard("");
-  const toast = useToast();
+  const message = useMessage();
   return (
     <Formik
       initialValues={{ identity: { email: "" } }}
@@ -282,7 +282,7 @@ export const CopyPrivacyRequestLinkForm = ({
           `${privacyCenterUrl}?email=${encodeURIComponent(values.identity.email)}`,
         );
         onSubmit(values);
-        toast({ status: "success", description: "DSR Link Copied!" });
+        message.success("DSR Link Copied!");
       }}
       validationSchema={() => {
         return Yup.object().shape({
@@ -304,7 +304,7 @@ export const CopyPrivacyRequestLinkForm = ({
                   type="primary"
                   disabled={!dirty || !isValid}
                   data-testid="submit-btn"
-                  icon={<LinkIcon />}
+                  icon={<Icons.Link />}
                 >
                   Copy
                 </Button>

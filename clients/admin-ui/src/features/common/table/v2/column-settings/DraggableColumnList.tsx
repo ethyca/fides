@@ -6,7 +6,7 @@ import {
   ChakraList as List,
   ChakraListIcon as ListIcon,
   ChakraListItem as ListItem,
-  GripDotsVerticalIcon,
+  Icons,
   Switch,
 } from "fidesui";
 import produce from "immer";
@@ -155,7 +155,7 @@ const DraggableColumnListItem = ({
         data-testid={`column-dragger-${id}`}
       >
         <ListIcon
-          as={GripDotsVerticalIcon}
+          as={Icons.Draggable}
           color="gray.300"
           flexShrink={0}
           height="20px"

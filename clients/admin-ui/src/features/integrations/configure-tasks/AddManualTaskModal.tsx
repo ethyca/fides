@@ -1,7 +1,13 @@
-import { useAlert, useAPIHelper } from "common/hooks";
-import { ChakraBox as Box, ChakraVStack as VStack, Modal } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraVStack as VStack,
+  Modal,
+  useMessage,
+} from "fidesui";
 import React, { useState } from "react";
 
+import { useAPIHelper } from "~/features/common/hooks";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import {
   useCreateManualFieldMutation,
   useUpdateManualFieldMutation,
@@ -30,7 +36,7 @@ const AddManualTaskModal = ({
   onTaskAdded,
   editingTask,
 }: Props) => {
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,7 +64,7 @@ const AddManualTaskModal = ({
           body: updatedField,
         }).unwrap();
 
-        successAlert("Manual task updated successfully!");
+        message.success("Manual task updated successfully!");
       } else {
         // Create new field
         const newField: ManualFieldCreate = {
@@ -74,7 +80,7 @@ const AddManualTaskModal = ({
           body: newField,
         }).unwrap();
 
-        successAlert("Manual task added successfully!");
+        message.success("Manual task added successfully!");
       }
 
       onTaskAdded();
@@ -97,7 +103,7 @@ const AddManualTaskModal = ({
       onCancel={onClose}
       destroyOnHidden
       wrapProps={{ "data-testid": "add-manual-task-modal" }}
-      styles={{ body: { minWidth: "775px" } }}
+      width={MODAL_SIZE.lg}
       title={isEditing ? "Edit manual task" : "Add manual task"}
       footer={null}
     >

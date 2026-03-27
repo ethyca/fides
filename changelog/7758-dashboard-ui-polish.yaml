@@ -1,0 +1,4 @@
+type: Changed
+description: Polished dashboard UI with theme token fixes, smaller card fonts, and improved component architecture
+pr: 7758
+labels: []

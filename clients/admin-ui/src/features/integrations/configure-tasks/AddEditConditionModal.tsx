@@ -1,7 +1,8 @@
-import { useAPIHelper } from "common/hooks";
 import { Modal, Typography } from "fidesui";
 import React, { useState } from "react";
 
+import { useAPIHelper } from "~/features/common/hooks";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { ConditionLeaf } from "~/types/api";
 
 import AddConditionForm from "./AddConditionForm";
@@ -69,7 +70,7 @@ const AddEditConditionModal = ({
       onCancel={onClose}
       destroyOnHidden
       data-testid="add-edit-condition-modal"
-      styles={{ body: { minWidth: "650px" } }}
+      width={MODAL_SIZE.lg}
       title={isEditing ? "Edit condition" : "Add condition"}
       footer={null}
     >

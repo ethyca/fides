@@ -3,7 +3,8 @@ import {
   Icons,
   Space,
   Tooltip,
-  useChakraToast as useToast,
+  useMessage,
+  useNotification,
 } from "fidesui";
 import { truncate } from "lodash";
 import { useRouter } from "next/router";
@@ -11,7 +12,7 @@ import { useRouter } from "next/router";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import ToastLink from "~/features/common/ToastLink";
 import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
@@ -21,7 +22,6 @@ import {
   useRestoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
-import { SuccessToastContent } from "../../SuccessToastContent";
 import hasConsentComplianceIssue from "../../utils/hasConsentComplianceIssue";
 
 interface DiscoveredAssetActionsCellProps {
@@ -48,7 +48,8 @@ export const DiscoveredAssetActionsCell = ({
     { isLoading: isRestoringResults },
   ] = useRestoreMonitorResultAssetsMutation();
 
-  const toast = useToast();
+  const message = useMessage();
+  const notification = useNotification();
 
   const router = useRouter();
 
@@ -76,18 +77,17 @@ export const DiscoveredAssetActionsCell = ({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
       const systemToLink = userAssignedSystemKey || systemKey;
       const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
-      toast(
-        successToastParams(
-          SuccessToastContent(
-            `${type} "${truncatedAssetName}" has been added to the system inventory.`,
-            systemToLink ? () => router.push(href) : undefined,
-          ),
-        ),
-      );
+      notification.success({
+        message: "Added to inventory",
+        description: `${type} "${truncatedAssetName}" has been added to the system inventory.`,
+        actions: systemToLink ? (
+          <ToastLink onClick={() => router.push(href)}>View</ToastLink>
+        ) : undefined,
+      });
     }
   };
 
@@ -96,18 +96,21 @@ export const DiscoveredAssetActionsCell = ({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          SuccessToastContent(
-            `${type} "${truncatedAssetName}" has been ignored and will not appear in future scans.`,
-            async () => {
+      notification.success({
+        message: "Asset ignored",
+        description: `${type} "${truncatedAssetName}" has been ignored and will not appear in future scans.`,
+        actions: (
+          <ToastLink
+            onClick={async () => {
               await onTabChange(ActionCenterTabHash.IGNORED);
-            },
-          ),
+            }}
+          >
+            View
+          </ToastLink>
         ),
-      );
+      });
     }
   };
 
@@ -116,12 +119,10 @@ export const DiscoveredAssetActionsCell = ({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          `${type} "${truncatedAssetName}" is no longer ignored and will appear in future scans.`,
-        ),
+      message.success(
+        `${type} "${truncatedAssetName}" is no longer ignored and will appear in future scans.`,
       );
     }
   };
