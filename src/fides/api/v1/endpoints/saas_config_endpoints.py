@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
+from fideslang.models import Dataset as FideslangDataset
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError
@@ -27,7 +28,7 @@ from fides.api.models.connection_config_saas_history import ConnectionConfigSaaS
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
-from fides.api.models.saas_config_version import SaaSConfigVersion
+from fides.api.service.saas_config_version_service import SaaSConfigVersionService
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -216,13 +217,17 @@ def patch_saas_config(
             detail=str(exc),
         )
 
-    connection_config.update_saas_config(db, saas_config=saas_config)
-    SaaSConfigVersion.upsert(
+    datasets = [
+        FideslangDataset.model_validate(dc.ctl_dataset).model_dump(mode="json")
+        for dc in db.query(DatasetConfig)
+        .filter(DatasetConfig.connection_config_id == connection_config.id)
+        .all()
+        if dc.ctl_dataset
+    ]
+    connection_config.update_saas_config(db, saas_config=saas_config, datasets=datasets)
+    SaaSConfigVersionService.record_template_version(
         db=db,
-        connector_type=saas_config.type,
-        version=saas_config.version,
-        config=saas_config.model_dump(mode="json"),
-        dataset=None,  # PATCH only updates the config; dataset is managed separately
+        saas_config=saas_config,
         is_custom=template.custom if template else False,
     )
 

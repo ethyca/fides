@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
 from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
@@ -353,17 +353,20 @@ class ConnectionConfig(Base):
         self,
         db: Session,
         saas_config: SaaSConfig,
+        datasets: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         """
         Updates the SaaS config and initializes any empty secrets with
-        connector param default values if available (will not override any existing secrets)
-        """
-        from fideslang.models import Dataset as FideslangDataset
+        connector param default values if available (will not override any existing secrets).
 
+        The optional ``datasets`` argument is a pre-fetched list of dataset dicts
+        associated with this connection.  Callers that want a history snapshot to
+        include dataset context should query DatasetConfig themselves and pass the
+        result here.
+        """
         from fides.api.models.connection_config_saas_history import (
             ConnectionConfigSaaSHistory,
         )
-        from fides.api.models.datasetconfig import DatasetConfig
 
         default_secrets = {
             connector_param.name: connector_param.default_value
@@ -374,13 +377,6 @@ class ConnectionConfig(Base):
         self.secrets = updated_secrets
         self.saas_config = saas_config.model_dump(mode="json")
 
-        datasets = [
-            FideslangDataset.model_validate(dc.ctl_dataset).model_dump(mode="json")
-            for dc in db.query(DatasetConfig)
-            .filter(DatasetConfig.connection_config_id == self.id)
-            .all()
-            if dc.ctl_dataset
-        ]
         ConnectionConfigSaaSHistory.create_snapshot(
             db=db,
             connection_config_id=self.id,
