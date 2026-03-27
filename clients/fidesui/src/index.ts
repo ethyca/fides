@@ -202,6 +202,7 @@ export type {
   UploadProps,
 } from "antd/lib";
 export {
+  Tabs as AntTabs,
   AutoComplete,
   Badge,
   Breadcrumb,
@@ -237,7 +238,6 @@ export {
   Splitter,
   Steps,
   Switch,
-  Tabs as AntTabs,
   TimePicker,
   Tree,
   TreeSelect,
@@ -261,8 +261,8 @@ export type {
   ICustomSelectProps,
   CustomInputProps as InputProps,
   CustomStatisticProps as StatisticProps,
-  CustomTabsProps as TabsProps,
   StatisticTrend,
+  CustomTabsProps as TabsProps,
 } from "./hoc";
 export {
   CustomAlert as Alert,

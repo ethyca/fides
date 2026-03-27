@@ -33,7 +33,10 @@ const withCustomProps = (WrappedComponent: typeof Tabs) => {
         typeof tabBarExtraContent === "object" &&
         tabBarExtraContent !== null &&
         !React.isValidElement(tabBarExtraContent)
-          ? (tabBarExtraContent as { left?: React.ReactNode; right?: React.ReactNode })
+          ? (tabBarExtraContent as {
+              left?: React.ReactNode;
+              right?: React.ReactNode;
+            })
           : { right: tabBarExtraContent };
 
       return (

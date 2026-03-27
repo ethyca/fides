@@ -29,11 +29,7 @@ function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
   return <Icons.ArrowUp size={12} />;
 }
 
-export const PostureScore = ({
-  children,
-}: {
-  children?: React.ReactNode;
-}) => {
+export const PostureScore = ({ children }: { children?: React.ReactNode }) => {
   const { token } = antTheme.useToken();
   const { data: posture, isLoading } = useGetDashboardPostureQuery();
   const postureScore = posture?.score ?? 0;

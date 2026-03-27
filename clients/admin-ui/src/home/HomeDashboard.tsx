@@ -25,11 +25,11 @@ export const HomeDashboard = () => {
     <Flex vertical className="mx-auto w-full max-w-[1600px] px-10">
       <Row
         gutter={48}
-        className="relative min-h-[80vh] items-center pb-16 pt-14 pl-16"
+        className="relative min-h-[80vh] items-center pb-16 pl-16 pt-14"
       >
         <Col xs={24} md={12}>
           <PostureScore />
-          <div className="absolute left-0 right-0 pr-6">
+          <div className="absolute inset-x-0 pr-6">
             <AgentBriefingBanner />
           </div>
         </Col>

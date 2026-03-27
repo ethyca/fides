@@ -6,7 +6,11 @@ import { useGetSystemCoverageQuery } from "~/features/dashboard/dashboard.slice"
 
 const BREAKDOWN_ITEMS = [
   { key: "fully_classified", label: "Fully classified", color: "colorSuccess" },
-  { key: "partially_classified", label: "Partially classified", color: "colorWarning" },
+  {
+    key: "partially_classified",
+    label: "Partially classified",
+    color: "colorWarning",
+  },
   { key: "unclassified", label: "Unclassified", color: "colorBorder" },
   { key: "without_steward", label: "Without steward", color: "colorError" },
 ] as const;
@@ -83,10 +87,7 @@ export const SystemCoverageCard = () => {
                 >
                   {percentage}%
                 </Text>
-                <Text
-                  type="secondary"
-                  className="text-[11px]"
-                >
+                <Text type="secondary" className="text-[11px]">
                   covered
                 </Text>
               </Flex>
@@ -97,7 +98,9 @@ export const SystemCoverageCard = () => {
           {coverage?.total_systems ?? 0} systems known
         </Text>
         <Text type="secondary" className="text-[13px]">
-          {coverage?.fully_classified ?? 0} governed, {(coverage?.total_systems ?? 0) - (coverage?.fully_classified ?? 0)} need attention
+          {coverage?.fully_classified ?? 0} governed,{" "}
+          {(coverage?.total_systems ?? 0) - (coverage?.fully_classified ?? 0)}{" "}
+          need attention
         </Text>
       </Flex>
 
@@ -106,7 +109,9 @@ export const SystemCoverageCard = () => {
           <Flex key={key} align="center" gap={8} className="text-xs">
             <div
               className="size-[7px] shrink-0 rounded-sm"
-              style={{ backgroundColor: token[color as keyof typeof token] as string }}
+              style={{
+                backgroundColor: token[color as keyof typeof token] as string,
+              }}
             />
             <Text
               strong
@@ -127,7 +132,12 @@ export const SystemCoverageCard = () => {
         <Alert
           type="info"
           showIcon
-          icon={<SparkleIcon size={12} style={{ color: "var(--fidesui-terracotta)" }} />}
+          icon={
+            <SparkleIcon
+              size={12}
+              style={{ color: "var(--fidesui-terracotta)" }}
+            />
+          }
           message={coverage.agent_summary}
           className="mt-4"
         />

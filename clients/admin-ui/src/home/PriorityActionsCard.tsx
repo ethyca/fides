@@ -49,9 +49,17 @@ function getDaysRemaining(dueDate: string | null): {
     };
   }
   if (days <= 3) {
-    return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.WARNING, urgency: "approaching" };
+    return {
+      label: `${days}d left`,
+      color: CUSTOM_TAG_COLOR.WARNING,
+      urgency: "approaching",
+    };
   }
-  return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.DEFAULT, urgency: "ok" };
+  return {
+    label: `${days}d left`,
+    color: CUSTOM_TAG_COLOR.DEFAULT,
+    urgency: "ok",
+  };
 }
 
 export const PriorityActionsCard = () => {
@@ -105,7 +113,6 @@ export const PriorityActionsCard = () => {
             className={styles.sectionLabel}
             style={{ fontFamily: token.fontFamilyCode }}
           >
-
             Total Actions:{" "}
             <Tag color="default" className="!ml-1">
               {totalCount}
@@ -173,8 +180,11 @@ export const PriorityActionsCard = () => {
                         className={styles.dueText}
                         style={{
                           fontFamily: token.fontFamilyCode,
-                          color: DUE_COLORS[daysInfo.urgency] ?? token.colorTextDisabled,
-                          fontWeight: daysInfo.urgency === "overdue" ? 600 : 500,
+                          color:
+                            DUE_COLORS[daysInfo.urgency] ??
+                            token.colorTextDisabled,
+                          fontWeight:
+                            daysInfo.urgency === "overdue" ? 600 : 500,
                         }}
                       >
                         {daysInfo.label}
@@ -204,7 +214,7 @@ export const PriorityActionsCard = () => {
       />
 
       {!expanded && hiddenCount > 0 && (
-        <Flex justify="flex-start" className="mt-4 mb-2">
+        <Flex justify="flex-start" className="mb-2 mt-4">
           <Button type="text" size="small" onClick={() => setExpanded(true)}>
             Show all actions &rarr;
           </Button>

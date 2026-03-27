@@ -1,12 +1,12 @@
 import {
   Alert,
   antTheme,
+  Divider,
   Flex,
   Skeleton,
   SparkleIcon,
   StackedBarChart,
   Statistic,
-  Divider,
   Text,
 } from "fidesui";
 import NextLink from "next/link";
