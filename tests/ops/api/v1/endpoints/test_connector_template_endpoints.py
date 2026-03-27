@@ -8,6 +8,7 @@ from starlette.testclient import TestClient
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
@@ -24,6 +25,8 @@ from fides.common.urn_registry import (
     CONNECTOR_TEMPLATES_CONFIG,
     CONNECTOR_TEMPLATES_DATASET,
     CONNECTOR_TEMPLATES_REGISTER,
+    CONNECTOR_TEMPLATES_VERSION_CONFIG,
+    CONNECTOR_TEMPLATES_VERSION_DATASET,
     DELETE_CUSTOM_TEMPLATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
@@ -835,3 +838,188 @@ class TestDeleteCustomConnectorTemplate:
             connection_config.description == "Test HubSpot ConnectionConfig description"
         )
         assert connection_config.secrets["private_app_token"] == "test_hubspot_token"
+
+
+class TestGetConnectorTemplateVersionConfig:
+    @pytest.fixture
+    def version_config_url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATES_VERSION_CONFIG
+
+    @pytest.fixture
+    def stripe_version(self, db: Session, stripe_config, stripe_dataset):
+        row = SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version=stripe_config["version"],
+            config=stripe_config,
+            dataset=stripe_dataset,
+            is_custom=False,
+        )
+        yield row
+        row.delete(db)
+
+    def test_get_connector_template_version_config_success(
+        self,
+        version_config_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        stripe_config,
+        stripe_version,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = version_config_url.format(
+            connector_template_type=stripe_config["type"],
+            version=stripe_config["version"],
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert "text/yaml" in response.headers["content-type"]
+        assert "saas_config:" in response.text
+        assert stripe_config["type"] in response.text
+
+    def test_get_connector_template_version_config_reflects_update(
+        self,
+        db: Session,
+        version_config_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        stripe_config,
+        stripe_dataset,
+    ) -> None:
+        """Upserting a custom version twice should update config in place."""
+        updated_config = {**stripe_config, "description": "updated-description"}
+        row = SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version=stripe_config["version"],
+            config=stripe_config,
+            dataset=stripe_dataset,
+            is_custom=True,
+        )
+        SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version=stripe_config["version"],
+            config=updated_config,
+            dataset=stripe_dataset,
+            is_custom=True,
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = version_config_url.format(
+            connector_template_type=stripe_config["type"],
+            version=stripe_config["version"],
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert "updated-description" in response.text
+
+        row.delete(db)
+
+
+class TestGetConnectorTemplateVersionDataset:
+    @pytest.fixture
+    def version_dataset_url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATES_VERSION_DATASET
+
+    @pytest.fixture
+    def stripe_version_with_dataset(self, db: Session, stripe_config, stripe_dataset):
+        row = SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version=stripe_config["version"],
+            config=stripe_config,
+            dataset=stripe_dataset,
+            is_custom=False,
+        )
+        yield row
+        row.delete(db)
+
+    @pytest.fixture
+    def stripe_version_no_dataset(self, db: Session, stripe_config):
+        row = SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version="0.0.0-no-dataset",
+            config=stripe_config,
+            dataset=None,
+            is_custom=False,
+        )
+        yield row
+        row.delete(db)
+
+    def test_get_connector_template_version_dataset_no_dataset(
+        self,
+        version_dataset_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        stripe_config,
+        stripe_version_no_dataset,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = version_dataset_url.format(
+            connector_template_type=stripe_config["type"],
+            version="0.0.0-no-dataset",
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 404
+        assert "No dataset stored" in response.json()["detail"]
+
+    def test_get_connector_template_version_dataset_success(
+        self,
+        version_dataset_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        stripe_config,
+        stripe_dataset,
+        stripe_version_with_dataset,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = version_dataset_url.format(
+            connector_template_type=stripe_config["type"],
+            version=stripe_config["version"],
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert "text/yaml" in response.headers["content-type"]
+        assert "dataset:" in response.text
+        assert stripe_dataset["fides_key"] in response.text
+
+    def test_get_connector_template_version_dataset_reflects_update(
+        self,
+        db: Session,
+        version_dataset_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        stripe_config,
+        stripe_dataset,
+    ) -> None:
+        """Upserting a custom version twice should update the stored dataset in place."""
+        updated_dataset = {**stripe_dataset, "description": "updated-dataset-description"}
+        row = SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version=stripe_config["version"],
+            config=stripe_config,
+            dataset=stripe_dataset,
+            is_custom=True,
+        )
+        SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version=stripe_config["version"],
+            config=stripe_config,
+            dataset=updated_dataset,
+            is_custom=True,
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = version_dataset_url.format(
+            connector_template_type=stripe_config["type"],
+            version=stripe_config["version"],
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert "updated-dataset-description" in response.text
+
+        row.delete(db)
