@@ -14,6 +14,7 @@ export const ChartText = ({
   fill,
   fillOpacity,
   children,
+  maxLines = 1,
   ...props
 }: ChartTextProps) => {
   const { token } = theme.useToken();
@@ -24,7 +25,7 @@ export const ChartText = ({
       textAnchor="middle"
       verticalAnchor="middle"
       width={width}
-      maxLines={1}
+      maxLines={maxLines}
       fontSize={token.fontSizeSM}
       fontFamily={fontFamily ?? token.fontFamilyCode}
       fontWeight={CHART_TYPOGRAPHY.fontWeight}

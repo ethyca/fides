@@ -64,13 +64,16 @@ const StackedBarTooltipContent = ({
         padding: `${token.paddingXXS}px ${token.paddingXS}px`,
         boxShadow: token.boxShadow,
         fontSize: token.fontSizeSM,
+        color: token.colorText,
       }}
     >
-      <Text strong>{entry.category}</Text>
+      <Text strong style={{ color: token.colorText }}>
+        {entry.category}
+      </Text>
       {segments
         .filter((segment) => (entry[`raw_${segment.key}`] as number) > 0)
         .map((segment) => (
-          <Text key={segment.key} type="secondary">
+          <Text key={segment.key} style={{ color: token.colorTextSecondary }}>
             {segment.label}: {entry[`raw_${segment.key}`]}
           </Text>
         ))}
@@ -158,6 +161,61 @@ const ClickableTick = ({
   );
 };
 
+const RoundedBarCell = ({
+  x = 0,
+  y = 0,
+  width = 0,
+  height = 0,
+  fill,
+  radius: r,
+  segmentKey,
+  segmentKeys,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  fill?: string;
+  radius: number;
+  segmentKey: string;
+  segmentKeys: string[];
+  payload?: ChartEntry;
+}) => {
+  if (width <= 0 || height <= 0) {
+    return null;
+  }
+
+  const firstKey = segmentKeys.find((k) => (payload?.[k] as number) > 0);
+  const lastKey = [...segmentKeys]
+    .reverse()
+    .find((k) => (payload?.[k] as number) > 0);
+  const isFirst = segmentKey === firstKey;
+  const isLast = segmentKey === lastKey;
+
+  const tl = isFirst ? r : 0;
+  const bl = isFirst ? r : 0;
+  const tr = isLast ? r : 0;
+  const br = isLast ? r : 0;
+
+  const d = [
+    `M${x + tl},${y}`,
+    `H${x + width - tr}`,
+    tr ? `A${tr},${tr},0,0,1,${x + width},${y + tr}` : `H${x + width}`,
+    `V${y + height - br}`,
+    br
+      ? `A${br},${br},0,0,1,${x + width - br},${y + height}`
+      : `V${y + height}`,
+    `H${x + bl}`,
+    bl ? `A${bl},${bl},0,0,1,${x},${y + height - bl}` : `H${x}`,
+    `V${y + tl}`,
+    tl ? `A${tl},${tl},0,0,1,${x + tl},${y}` : `V${y}`,
+    "Z",
+  ].join(" ");
+
+  return <path d={d} fill={fill} />;
+};
+
 export const StackedBarChart = ({
   data,
   segments,
@@ -167,8 +225,8 @@ export const StackedBarChart = ({
   const { token } = theme.useToken();
   const animationActive = useChartAnimation(animationDuration);
 
-  const barHeight = token.sizeLG;
-  const rowGap = token.sizeXS;
+  const barHeight = token.sizeSM;
+  const rowGap = token.sizeSM;
 
   const colorMap = useMemo(
     () =>
@@ -203,13 +261,11 @@ export const StackedBarChart = ({
       .filter((entry): entry is ChartEntry => entry !== null);
   }, [data, segments]);
 
-  // Sort alphabetically so ordering is deterministic (e.g. Access before Erasure)
   const sortedData = useMemo(
     () => [...chartData].sort((a, b) => a.category.localeCompare(b.category)),
     [chartData],
   );
 
-  // Compute YAxis width dynamically from the longest label
   const yAxisWidth = useMemo(() => {
     if (sortedData.length === 0) {
       return 80;
@@ -270,8 +326,14 @@ export const StackedBarChart = ({
             isAnimationActive={animationDuration > 0 && animationActive}
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
-            radius={0}
             fill={colorMap[segment.key]}
+            shape={
+              <RoundedBarCell
+                radius={token.borderRadiusSM}
+                segmentKey={segment.key}
+                segmentKeys={segments.map((s) => s.key)}
+              />
+            }
           />
         ))}
       </BarChart>
