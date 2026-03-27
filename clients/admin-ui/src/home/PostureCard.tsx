@@ -37,7 +37,7 @@ export const PostureScore = ({ children }: { children?: React.ReactNode }) => {
   const postureScore = posture?.score ?? 0;
   const postureDiff = posture?.diff_percent ?? 0;
   const diffDirection = posture?.diff_direction ?? DiffDirection.UNCHANGED;
-  const bandConfig = posture?.band ? BAND_CONFIG[posture.band] : undefined;
+
 
   const animatedScore = useCountUp(postureScore);
 
@@ -97,19 +97,6 @@ export const PostureScore = ({ children }: { children?: React.ReactNode }) => {
           from last period
         </Text>
       </Flex>
-
-      {bandConfig && (
-        <Text type="secondary" className={styles.heroNarrative}>
-          {posture?.band === "excellent" &&
-            "Strong governance posture across your data estate."}
-          {posture?.band === "good" &&
-            "Solid governance posture with opportunities to strengthen."}
-          {posture?.band === "at_risk" &&
-            "Key areas need improvement to meet compliance obligations."}
-          {posture?.band === "critical" &&
-            "Significant governance gaps require immediate attention."}
-        </Text>
-      )}
 
       {posture?.agent_annotation && (
         <Alert

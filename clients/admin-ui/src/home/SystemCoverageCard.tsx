@@ -1,4 +1,13 @@
-import { Alert, antTheme, DonutChart, Flex, SparkleIcon, Text } from "fidesui";
+import {
+  Alert,
+  antTheme,
+  Divider,
+  DonutChart,
+  Flex,
+  Icons,
+  SparkleIcon,
+  Text,
+} from "fidesui";
 import NextLink from "next/link";
 
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
@@ -50,12 +59,12 @@ export const SystemCoverageCard = () => {
             textDecoration: "none",
           }}
         >
-          Connect more &rarr;
+          Connect more <Icons.ArrowRight size={12} />
         </NextLink>
       </Flex>
 
-      <Flex vertical align="center" className="mb-5 text-center">
-        <div className="mb-3 size-[140px]">
+      <Flex align="center" gap={20} className="mb-5">
+        <div className="size-[140px] shrink-0">
           <DonutChart
             variant="thick"
             segments={[
@@ -94,15 +103,19 @@ export const SystemCoverageCard = () => {
             }
           />
         </div>
-        <Text strong className="text-[15px]">
-          {coverage?.total_systems ?? 0} systems known
-        </Text>
-        <Text type="secondary" className="text-[13px]">
-          {coverage?.fully_classified ?? 0} governed,{" "}
-          {(coverage?.total_systems ?? 0) - (coverage?.fully_classified ?? 0)}{" "}
-          need attention
-        </Text>
+        <Flex vertical>
+          <Text strong className="text-[15px]">
+            {coverage?.total_systems ?? 0} systems known
+          </Text>
+          <Text type="secondary" className="text-[13px]">
+            {coverage?.fully_classified ?? 0} governed,{" "}
+            {(coverage?.total_systems ?? 0) - (coverage?.fully_classified ?? 0)}{" "}
+            need attention
+          </Text>
+        </Flex>
       </Flex>
+
+      <Divider dashed />
 
       <Flex vertical gap={4}>
         {BREAKDOWN_ITEMS.map(({ key, label, color }) => (

@@ -9,13 +9,8 @@ import styles from "./AgentBriefingBanner.module.scss";
 
 export const AgentBriefingBanner = () => {
   const { data: briefing } = useGetAgentBriefingQuery();
-  const [visible, setVisible] = useState(true);
 
-  const dismiss = useCallback(() => {
-    setVisible(false);
-  }, []);
-
-  if (!briefing || !visible) {
+  if (!briefing) {
     return null;
   }
 
@@ -27,7 +22,6 @@ export const AgentBriefingBanner = () => {
       showIcon
       icon={<SparkleIcon size={14} />}
       closable
-      onClose={dismiss}
       message={
         <>
           {text}

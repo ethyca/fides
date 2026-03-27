@@ -107,7 +107,7 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
       className="h-full text-clip"
       styles={{ body: { paddingTop: 0 } }}
       cover={
-        !isLoading ? (
+        !isLoading && (metric?.history?.length ?? 0) > 1 ? (
           <div className="h-16">
             <Sparkline data={metric?.history} />
           </div>

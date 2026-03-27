@@ -23,15 +23,12 @@ export const HomeDashboard = () => {
 
   return (
     <Flex vertical className="mx-auto w-full max-w-[1600px] px-10">
-      <Row
-        gutter={48}
-        className="relative min-h-[80vh] items-center pb-16 pl-16 pt-14"
-      >
+      <div className="pt-10">
+        <AgentBriefingBanner />
+      </div>
+      <Row gutter={48} className="min-h-[80vh] items-center pb-16 pl-16">
         <Col xs={24} md={12}>
           <PostureScore />
-          <div className="absolute inset-x-0 pr-6">
-            <AgentBriefingBanner />
-          </div>
         </Col>
         <Col xs={24} md={12}>
           <PostureRadar />
