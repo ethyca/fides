@@ -1,0 +1,39 @@
+# Trigger a codegraph snapshot rebuild whenever fides main gets a new commit.
+# The codegraph snapshot is used by CI code-review workflows for structural
+# analysis (callers, dependents, impact, architecture violations).
+
+name: Trigger Codegraph Snapshot
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  trigger-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate cross-repo token
+        id: cross-repo-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.CROSS_REPO_APP_ID }}
+          private-key: ${{ secrets.CROSS_REPO_APP_PRIVATE_KEY }}
+          owner: ethyca
+          repositories: codegraph
+
+      - name: Trigger codegraph snapshot rebuild
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ steps.cross-repo-token.outputs.token }}
+          repository: ethyca/codegraph
+          event-type: new-fides-main-commit
+          client-payload: |
+            {
+              "repo": "fides",
+              "commit_sha": "${{ github.sha }}",
+              "triggered_by": "fides_main_push"
+            }
+
+      - name: Summary
+        run: echo "Triggered codegraph snapshot rebuild for fides commit ${{ github.sha }}"
