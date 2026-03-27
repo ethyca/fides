@@ -74,7 +74,7 @@ const getSSOProviderFormValidationSchema = (isEditMode: boolean) =>
     client_secret: isEditMode
       ? Yup.string().optional().label("Client Secret")
       : Yup.string().required().label("Client Secret"),
-    scopes: Yup.array().of(Yup.string()).label("Scopes"),
+    scopes: Yup.array().of(Yup.string()).nullable().label("Scopes"),
     verify_email: Yup.boolean().optional().label("Verify Email"),
     verify_email_field: Yup.string()
       .optional()
