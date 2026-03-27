@@ -41,7 +41,7 @@ const PrivacyPolicySection = ({
               }
             >
               <input {...getInputProps()} />
-              <Icons.DocumentImport size={24} className="mb-2 text-neutral-6" />
+              <Icons.Upload size={24} className="mb-2 text-neutral-6" />
               <div className="text-sm font-semibold">Upload policy</div>
               <div className="text-xs text-neutral-6">PDF, DOCX up to 10MB</div>
             </div>
