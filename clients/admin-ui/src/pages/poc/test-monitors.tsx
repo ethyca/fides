@@ -11,7 +11,7 @@ const { Paragraph } = Typography;
 const TestMonitors: NextPage = () => {
   return (
     <Content className="overflow-auto px-10 py-6">
-      <PageHeader heading="Test Monitors" />
+      <PageHeader heading="Test monitors" />
       <Paragraph type="secondary">
         Developer tool for seeding test data via the configurable test monitors.
       </Paragraph>

@@ -1,6 +1,8 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import type { NavConfigTab } from "~/features/common/nav/nav-config";
+import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -8,6 +10,18 @@ export const PRIVACY_REQUEST_TABS = {
   REQUEST: "request",
   MANUAL_TASK: "manual-tasks",
 } as const;
+
+/** Shared tab definitions used by both the tab bar and nav search. */
+export const PRIVACY_REQUEST_TAB_ITEMS: NavConfigTab[] = [
+  {
+    title: "Requests",
+    path: `${PRIVACY_REQUESTS_ROUTE}?tab=${PRIVACY_REQUEST_TABS.REQUEST}`,
+  },
+  {
+    title: "Manual tasks",
+    path: `${PRIVACY_REQUESTS_ROUTE}?tab=${PRIVACY_REQUEST_TABS.MANUAL_TASK}`,
+  },
+];
 
 export type PrivacyRequestTabKey =
   (typeof PRIVACY_REQUEST_TABS)[keyof typeof PRIVACY_REQUEST_TABS];

@@ -1,4 +1,0 @@
-type: Changed
-description: Use RequestTask.status for activity timeline task indicators instead of execution logs.
-pr: 7680
-labels: []

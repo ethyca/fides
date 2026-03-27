@@ -1,4 +1,0 @@
-type: Removed
-description: Removed Pixie/PXL runtime system scanner from Admin UI and client (config wizard data-flow option, plus/scan API hooks, health types). AWS and Okta discovery flows unchanged.
-pr: 7704
-labels: []

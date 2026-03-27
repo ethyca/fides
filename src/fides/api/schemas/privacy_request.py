@@ -329,6 +329,19 @@ class PrivacyRequestStatus(StrEnum):
     pre_approval_not_eligible = "pre_approval_not_eligible"  # Pre-approval webhook(s) responded not eligible; manual review required
 
 
+ACTIVE_REQUEST_STATUSES = frozenset(
+    {
+        PrivacyRequestStatus.in_processing,
+        PrivacyRequestStatus.pending,
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.paused,
+        PrivacyRequestStatus.requires_input,
+        PrivacyRequestStatus.requires_manual_finalization,
+        PrivacyRequestStatus.pending_external,
+    }
+)
+
+
 class IdentityValue(BaseModel):
     """Represents an identity value with a label in API responses.
 
@@ -580,6 +593,7 @@ class PrivacyRequestFilter(FidesSchema):
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
     include_deleted_requests: Optional[bool] = False
+    is_overdue: Optional[bool] = None
     download_csv: Optional[bool] = False
     sort_field: str = "created_at"
     sort_direction: ColumnSort = ColumnSort.DESC
