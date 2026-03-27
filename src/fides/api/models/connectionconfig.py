@@ -358,6 +358,8 @@ class ConnectionConfig(Base):
         Updates the SaaS config and initializes any empty secrets with
         connector param default values if available (will not override any existing secrets)
         """
+        from fideslang.models import Dataset as FideslangDataset
+
         from fides.api.models.connection_config_saas_history import (
             ConnectionConfigSaaSHistory,
         )
@@ -373,7 +375,7 @@ class ConnectionConfig(Base):
         self.saas_config = saas_config.model_dump(mode="json")
 
         datasets = [
-            dc.ctl_dataset.dict()
+            FideslangDataset.model_validate(dc.ctl_dataset).model_dump(mode="json")
             for dc in db.query(DatasetConfig)
             .filter(DatasetConfig.connection_config_id == self.id)
             .all()
