@@ -1,3 +1,27 @@
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
+export interface PolicyItem {
+  id: string;
+  title: string;
+  description: string;
+  isRecommendation: boolean;
+  isNew?: boolean;
+  isEnabled: boolean;
+  violationCount: number;
+  dataUseTags: string[];
+  lastUpdated: string;
+}
+
+export interface PolicyCategory {
+  id: string;
+  title: string;
+  drivenBy: string;
+  policies: PolicyItem[];
+}
+
 export enum ActionType {
   ALLOW = "ALLOW",
   DENY = "DENY",
