@@ -1,11 +1,23 @@
-.alertSm {
+.astralisAlert {
+  background: var(--fidesui-limestone) !important;
+  border: none !important;
+  border-radius: 8px !important;
+
   :global(.ant-alert-message) {
-    font-size: var(--ant-font-size-sm);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--fidesui-neutral-700);
+  }
+
+  :global(.ant-alert-icon) {
+    color: var(--fidesui-terracotta);
   }
 }
 
 .quickActionLink {
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fidesui-terracotta);
   text-decoration: none;
 
   &:hover {
@@ -13,14 +25,14 @@
   }
 
   &.error {
-    color: var(--ant-color-error);
+    color: var(--fidesui-terracotta);
   }
 
   &.warning {
-    color: var(--ant-color-warning);
+    color: var(--fidesui-terracotta);
   }
 
   &.info {
-    color: var(--ant-color-info);
+    color: var(--fidesui-terracotta);
   }
 }

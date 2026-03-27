@@ -39,7 +39,7 @@ export const AgentBriefingBanner = () => {
       message={
         <>
           {text}
-          <Flex gap={16} className="mt-3">
+          <Flex gap={16} className="mt-3" wrap="wrap">
             {quickActions.map((action) => {
               const cta = ACTION_CTA[action.action_type];
               if (!cta) {
@@ -51,14 +51,14 @@ export const AgentBriefingBanner = () => {
                   href={cta.route(action.action_data)}
                   className={`${styles.quickActionLink} ${SEVERITY_STYLE[action.severity] ?? styles.info}`}
                 >
-                  {action.label}
+                  {action.label} &rarr;
                 </NextLink>
               );
             })}
           </Flex>
         </>
       }
-      className={styles.alertSm}
+      className={styles.astralisAlert}
     />
   );
 };

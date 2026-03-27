@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fides Dashboard - v4 Ant Design Realistic</title>
+<style>
+  /* ============================
+     REAL BRAND FONTS
+     Using Google Fonts as stand-in for Basier Square (geometric sans)
+     In production: "Basier Square" from @font-face
+     ============================ */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    /* Fides palette - exact values from palette.module.scss */
+    --minos: #2B2E35;
+    --corinth: #FAFAFA;
+    --terracotta: #B9704B;
+    --terracotta-bg: #F1B193;
+    --olive: #999B83;
+    --olive-bg: #D4D5C8;
+    --marble: #CDD2D3;
+    --sandstone: #CECAC2;
+    --sandstone-bg: #E3E0D9;
+    --nectar: #F0EBC1;
+    --limestone: #F1EFEE;
+    --full-white: #FFFFFF;
+    --neutral-50: #FAFAFA;
+    --neutral-75: #F5F5F5;
+    --neutral-100: #E6E6E8;
+    --neutral-200: #D4D5D8;
+    --neutral-300: #B4B5BA;
+    --neutral-400: #9B9CA0;
+    --neutral-500: #7A7B80;
+    --neutral-600: #5E5F64;
+    --neutral-700: #47484D;
+    --neutral-800: #393A3F;
+    --neutral-900: #2B2E35;
+    --error: #D9534F;
+    --error-bg: #F7C2C2;
+    --warning: #E59D47;
+    --warning-bg: #FBDDB5;
+    --success: #5A9A68;
+    --success-bg: #C3E6B2;
+    --info: #4A90E2;
+    --link: #2272CE;
+
+    /* Ant Design token overrides for this layout */
+    --ant-font-family: "DM Sans", "Basier Square", Helvetica, sans-serif;
+    --ant-font-family-code: "DM Mono", "Basier Square Mono", "Courier Prime", monospace;
+    --ant-border-radius: 6px;
+    --ant-border-radius-lg: 8px;
+    --ant-color-border: var(--neutral-100);
+    --ant-color-split: var(--neutral-100);
+  }
+
+  body {
+    font-family: var(--ant-font-family);
+    background: var(--neutral-50);
+    color: var(--minos);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ============================
+     ANNOTATIONS: What Ant/FidesUI
+     component maps to each element
+     ============================ */
+
+  /* ===== COMMAND BAR =====
+     Component: <Flex> with Tailwind classes
+     Uses: <Statistic> for GPS, custom quick-stats
+     This is CommandBar.tsx - stays mostly the same
+  */
+  .command-bar {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    border-bottom: 1px solid var(--neutral-100);
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    background: rgba(250,250,250,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .command-bar__inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  /* FidesUI <Statistic value={78} /> with custom valueStyle */
+  .stat-score {
+    font-family: var(--ant-font-family-code);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--minos);
+  }
+  /* FidesUI <Statistic trend="up" size="sm" /> */
+  .stat-diff {
+    font-family: var(--ant-font-family-code);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--success);
+  }
+  .bar-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--neutral-100);
+  }
+  /* Ant <Divider type="vertical" /> */
+  .bar-stat {
+    font-size: 13px;
+    color: var(--neutral-500);
+  }
+  .bar-stat strong {
+    font-family: var(--ant-font-family-code);
+    font-weight: 600;
+    color: var(--minos);
+  }
+  .bar-stat--danger strong { color: var(--error); }
+
+  /* ===== LAYOUT =====
+     Component: <Flex vertical gap={24}> with Tailwind max-w-[1600px] mx-auto px-10
+  */
+  .page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* ===== AGENT BRIEFING =====
+     Component: <Alert type="info" showIcon icon={<SparkleIcon />} closable />
+     Wrapped in AgentBriefingBanner.tsx
+     OVERRIDE: Strip the Ant Alert background/border, make it just a text row
+  */
+  .briefing {
+    /* Ant Alert override: transparent bg, only bottom border */
+    padding: 20px 0;
+    border-bottom: 1px solid var(--neutral-100);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: transparent;
+  }
+  .briefing__icon {
+    color: var(--terracotta);
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .briefing__body { flex: 1; }
+  /* Ant Typography.Text */
+  .briefing__text {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--neutral-600);
+  }
+  /* Ant Typography.Link variant="primary" */
+  .briefing__link {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--terracotta);
+    text-decoration: none;
+    cursor: pointer;
+    margin-right: 16px;
+    margin-top: 6px;
+    display: inline-block;
+  }
+  .briefing__link:hover { text-decoration: underline; }
+  /* Ant Alert closable button */
+  .briefing__close {
+    color: var(--neutral-400);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 16px;
+    padding: 0 4px;
+  }
+
+  /* ===== HERO POSTURE SECTION =====
+     Component: <Row gutter={[48, 0]}>
+       <Col span={12}> — score side
+       <Col span={12}> — radar chart side
+     Uses: <Statistic>, <RadarChart>, <Alert> for annotation
+     OVERRIDE: Statistic fontSize pushed to 96px+
+  */
+  .hero {
+    /* Ant Row: no card wrapper, just grid */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    padding: 56px 0 48px;
+    border-bottom: 1px solid var(--neutral-100);
+    align-items: start;
+  }
+
+  .hero__score-col {}
+
+  /* Section label: Typography.Text type="secondary" with mono font override */
+  .section-label {
+    font-family: var(--ant-font-family-code);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--neutral-400);
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  /* FidesUI <Statistic value={78} valueStyle={{ fontSize: 96, fontWeight: 200 }} />
+     OVERRIDE: Push size way beyond Ant defaults */
+  .hero-score {
+    font-family: var(--ant-font-family-code);
+    font-size: 96px;
+    font-weight: 200;
+    line-height: 0.95;
+    color: var(--minos);
+    letter-spacing: -3px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .hero-score:hover { opacity: 0.7; }
+  .hero-score__suffix {
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--neutral-400);
+    letter-spacing: 0;
+    margin-left: 2px;
+  }
+
+  /* FidesUI <Statistic trend="up" value={4} prefix={<ArrowUp/>} size="sm" />
+     inside an Ant <Tag color="success"> */
+  .hero-trend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+  /* Ant <Tag color="success"> override: pill shape */
+  .trend-tag {
+    font-family: var(--ant-font-family-code);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--success);
+    background: var(--success-bg);
+    padding: 2px 10px;
+    border-radius: 99px;
+    border: none;
+  }
+  .trend-context {
+    font-size: 13px;
+    color: var(--neutral-500);
+  }
+
+  /* Ant Typography.Paragraph / Typography.Text type="secondary" */
+  .hero-narrative {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--neutral-600);
+    margin-bottom: 28px;
+    max-width: 440px;
+  }
+
+  /* FidesUI <Alert type="info" showIcon icon={<SparkleIcon/>} />
+     OVERRIDE: Limestone background, no border, compact */
+  .astralis-card {
+    background: var(--limestone);
+    border: none;
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .astralis-card__icon {
+    color: var(--terracotta);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .astralis-card__text {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--neutral-600);
+  }
+  .astralis-card__link {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--terracotta);
+    text-decoration: none;
+  }
+  .astralis-card__link:hover { text-decoration: underline; }
+
+  /* FidesUI <RadarChart data={radarData} outerRadius="80%" />
+     OVERRIDE: Larger container, more whitespace around it */
+  .hero__radar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .radar-container {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 1.1;
+    position: relative;
+  }
+  /* This is the actual Recharts RadarChart rendered by FidesUI */
+  .radar-placeholder {
+    width: 100%;
+    height: 100%;
+  }
+  .radar-svg { width: 100%; height: 100%; }
+  .radar-grid { stroke: var(--neutral-100); fill: none; stroke-width: 1; }
+  .radar-grid--inner { stroke: var(--neutral-100); fill: none; stroke-width: 0.5; opacity: 0.4; }
+  .radar-axis { stroke: var(--neutral-100); stroke-width: 0.5; }
+  .radar-shape {
+    fill: var(--terracotta);
+    fill-opacity: 0.10;
+    stroke: var(--terracotta);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+  .radar-dot {
+    fill: var(--full-white);
+    stroke: var(--terracotta);
+    stroke-width: 2.5;
+    cursor: pointer;
+    transition: r 0.15s;
+  }
+  .radar-dot:hover { r: 8; }
+  .radar-lbl {
+    font-family: var(--ant-font-family-code);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    fill: var(--neutral-400);
+    text-anchor: middle;
+  }
+  .radar-val {
+    font-family: var(--ant-font-family-code);
+    font-size: 15px;
+    font-weight: 600;
+    fill: var(--minos);
+    text-anchor: middle;
+  }
+  .radar-val--warn { fill: var(--warning); }
+
+  .radar-hint {
+    font-size: 12px;
+    color: var(--neutral-400);
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* ===== MIDDLE SECTION: Actions + Dimensions =====
+     Component: <Row gutter={[0,0]}>
+       <Col flex="1"> — PriorityActionsCard (stripped of Card wrapper)
+       <Col flex="340px"> — Dimension sidebar
+     OVERRIDE: Remove Card entirely, just render content in flex layout
+  */
+  .middle {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--neutral-100);
+  }
+
+  .actions-col {
+    padding-right: 40px;
+    border-right: 1px solid var(--neutral-100);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  /* Ant <Segmented> component for tab switching */
+  .ant-segmented-mock {
+    display: inline-flex;
+    gap: 0;
+    background: var(--neutral-75);
+    padding: 2px;
+    border-radius: 6px;
+  }
+  .ant-segmented-mock__item {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 4px;
+    color: var(--neutral-500);
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: all 0.2s;
+  }
+  .ant-segmented-mock__item--active {
+    background: var(--full-white);
+    color: var(--minos);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* Ant <List> with custom renderItem — each action is a List.Item
+     OVERRIDE: Remove List chrome, pure minimal rows */
+  .action-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--neutral-100);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .action-row:last-child { border-bottom: none; }
+  .action-row:hover {
+    background: var(--neutral-75);
+    margin: 0 -12px;
+    padding: 12px;
+    border-radius: var(--ant-border-radius-lg);
+  }
+  /* Severity dot — could be a tiny Ant <Badge status="error" /> */
+  .severity-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+  .severity-dot--critical { background: var(--error); }
+  .severity-dot--high { background: var(--warning); }
+  .severity-dot--medium { background: var(--olive); }
+  .severity-dot--low { background: var(--info); }
+
+  .action-row__body { flex: 1; min-width: 0; }
+  /* Typography.Text strong */
+  .action-row__title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--minos);
+    margin-bottom: 1px;
+  }
+  /* Typography.Text type="secondary" size="sm" */
+  .action-row__meta {
+    font-size: 12px;
+    color: var(--neutral-500);
+  }
+  .meta-sep { color: var(--neutral-300); margin: 0 2px; }
+  /* Typography.Text type="secondary" size="sm" */
+  .action-row__due {
+    font-family: var(--ant-font-family-code);
+    font-size: 11px;
+    color: var(--neutral-400);
+    white-space: nowrap;
+    align-self: center;
+  }
+  .action-row__due--urgent { color: var(--error); font-weight: 600; }
+  /* Typography.Link — only visible on hover */
+  .action-row__cta {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--terracotta);
+    white-space: nowrap;
+    align-self: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .action-row:hover .action-row__cta { opacity: 1; }
+
+  /* ===== DIMENSIONS SIDEBAR =====
+     Component: Could be a custom component or Ant <List>
+     Each item: Statistic + Progress bar + Astralis annotation
+  */
+  .dims-col {
+    padding-left: 40px;
+  }
+  .dim-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--neutral-100);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .dim-item:last-child { border-bottom: none; }
+  .dim-item:hover {
+    background: var(--neutral-75);
+    margin: 0 -12px;
+    padding: 14px 12px;
+    border-radius: var(--ant-border-radius-lg);
+  }
+  /* FidesUI <Statistic value={92} valueStyle={{ fontSize: 26 }} /> */
+  .dim-score {
+    font-family: var(--ant-font-family-code);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--minos);
+    min-width: 44px;
+    text-align: right;
+  }
+  .dim-score--warn { color: var(--warning); }
+  .dim-body { flex: 1; min-width: 0; }
+  /* Typography.Text strong */
+  .dim-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--minos);
+    margin-bottom: 4px;
+  }
+  /* Ant <Progress percent={92} showInfo={false} size="small" />
+     OVERRIDE: 3px height, custom colors */
+  .dim-progress {
+    height: 3px;
+    background: var(--neutral-100);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .dim-progress__fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  /* SparkleIcon + Typography.Text type="secondary" size="sm" */
+  .dim-annotation {
+    font-size: 11px;
+    color: var(--neutral-500);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.4;
+  }
+  .dim-annotation__icon { color: var(--terracotta); flex-shrink: 0; }
+
+  /* ===== TREND METRICS STRIP =====
+     Component: <Row gutter={0}>
+       <Col span={6}> × 4 — each is a <TrendCard> (stripped of Card)
+     Uses: <Statistic>, <Sparkline>
+     OVERRIDE: No Card wrapper, just bare metrics in a grid
+  */
+  .trends {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--neutral-100);
+  }
+  .trend-cell {
+    padding: 28px 0;
+    padding-right: 28px;
+    border-right: 1px solid var(--neutral-100);
+  }
+  .trend-cell:last-child { border-right: none; padding-right: 0; }
+  .trend-cell:not(:first-child) { padding-left: 28px; }
+
+  /* FidesUI <Statistic value={78} /> + <Statistic trend="up" size="sm" /> */
+  .trend-val {
+    font-family: var(--ant-font-family-code);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--minos);
+  }
+  .trend-diff {
+    font-family: var(--ant-font-family-code);
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 6px;
+  }
+  .trend-diff--up { color: var(--success); }
+  .trend-diff--down { color: var(--error); }
+
+  /* FidesUI <Sparkline data={metric.history} /> — actual Recharts area chart */
+  .sparkline-mock {
+    height: 36px;
+    margin-top: 14px;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .spark {
+    flex: 1;
+    border-radius: 1px 1px 0 0;
+    background: var(--neutral-100);
+    min-width: 3px;
+  }
+  .spark--accent { background: var(--terracotta-bg); }
+  .spark--now { background: var(--terracotta); }
+
+  /* ===== BOTTOM: Coverage + DSR =====
+     Component: <Row gutter={[0, 0]}>
+       <Col span={8}> — SystemCoverageCard (stripped)
+       <Col span={16}> — DSRStatusCard (stripped)
+     OVERRIDE: No Card wrappers
+  */
+  .bottom {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    padding: 40px 0 64px;
+  }
+
+  /* SystemCoverageCard internals */
+  .coverage-col {
+    padding-right: 40px;
+    border-right: 1px solid var(--neutral-100);
+  }
+  .coverage-visual {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  /* FidesUI <DonutChart variant="thick" segments={...} centerLabel={...} /> */
+  .donut-mock {
+    width: 110px;
+    height: 110px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .donut-ring { fill: none; stroke-width: 14; stroke-linecap: round; }
+  .donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Typography.Text strong */
+  .donut-pct {
+    font-family: var(--ant-font-family-code);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--minos);
+  }
+  .donut-sub {
+    font-size: 10px;
+    color: var(--neutral-400);
+    letter-spacing: 0.5px;
+  }
+
+  .coverage-text {
+    font-size: 14px;
+    color: var(--neutral-600);
+    line-height: 1.6;
+  }
+  .coverage-text strong {
+    font-weight: 600;
+    color: var(--minos);
+  }
+
+  .breakdown { margin-top: 4px; }
+  .breakdown__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--neutral-600);
+  }
+  .breakdown__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .breakdown__num {
+    font-family: var(--ant-font-family-code);
+    font-weight: 600;
+    color: var(--minos);
+    min-width: 22px;
+    text-align: right;
+  }
+
+  /* DSRStatusCard internals */
+  .dsr-col {
+    padding-left: 40px;
+  }
+  /* FidesUI <Statistic value={18} valueStyle={{ fontSize: 42 }} /> */
+  .dsr-count {
+    font-family: var(--ant-font-family-code);
+    font-size: 42px;
+    font-weight: 200;
+    color: var(--minos);
+    margin-top: 16px;
+  }
+  .dsr-suffix {
+    font-family: var(--ant-font-family);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--neutral-500);
+    margin-left: 10px;
+  }
+
+  .dsr-substats {
+    display: flex;
+    gap: 20px;
+    margin: 4px 0 28px;
+    font-size: 13px;
+    color: var(--neutral-500);
+  }
+  .dsr-substats strong {
+    font-family: var(--ant-font-family-code);
+    font-weight: 600;
+    color: var(--minos);
+  }
+  .dsr-overdue {
+    color: var(--error);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  /* FidesUI <StackedBarChart> replacement visualization */
+  .sla-row { margin-bottom: 28px; }
+  .sla-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 10px 0 8px;
+  }
+  .sla-seg { transition: width 0.3s; }
+  .sla-legend {
+    display: flex;
+    gap: 16px;
+  }
+  .sla-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--neutral-500);
+  }
+  .sla-legend__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+  }
+
+  /* Per-type DSR cards — could be Ant <Card size="small"> or just divs */
+  .dsr-types {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .dsr-type-card {
+    background: var(--neutral-75);
+    border-radius: var(--ant-border-radius-lg);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+  }
+  .dsr-type-card:hover {
+    background: var(--limestone);
+    border-color: var(--neutral-100);
+  }
+  .dsr-type-card__name {
+    font-family: var(--ant-font-family-code);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--neutral-500);
+    margin-bottom: 2px;
+  }
+  .dsr-type-card__count {
+    font-family: var(--ant-font-family-code);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--minos);
+  }
+  .dsr-type-card__bar {
+    height: 3px;
+    border-radius: 2px;
+    margin-top: 10px;
+    display: flex;
+    gap: 2px;
+  }
+
+  /* Section link — Ant Typography.Link or NextLink */
+  .section-link {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--terracotta);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .section-link:hover { text-decoration: underline; }
+
+  /* Sparkle SVG helper */
+  .sparkle { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<!-- ==========================================
+     COMMAND BAR
+     CommandBar.tsx — mostly unchanged structure
+     <Flex align="center" className="h-12 px-10">
+       <Statistic value={animatedScore} />
+       <Statistic trend="up" value={diffPercent} size="sm" />
+       <Divider type="vertical" />
+       <Statistic value={3} suffix="DSRs pending" />
+       ...
+     </Flex>
+========================================== -->
+<div class="command-bar">
+  <div class="command-bar__inner">
+    <span class="stat-score">78</span>
+    <span class="stat-diff">&#8593; 4</span>
+    <div class="bar-sep"></div>
+    <span class="bar-stat"><strong>3</strong> DSRs pending</span>
+    <span class="bar-stat bar-stat--danger"><strong>1</strong> overdue</span>
+    <span class="bar-stat"><strong>47</strong> systems</span>
+    <span class="bar-stat"><strong>2</strong> violations</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ==========================================
+       AGENT BRIEFING
+       AgentBriefingBanner.tsx
+       <Alert type="info" showIcon icon={<SparkleIcon />} closable message={...} />
+       OVERRIDE: className to strip bg/border → just text with bottom rule
+  ========================================== -->
+  <div class="briefing">
+    <svg class="briefing__icon sparkle" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+    <div class="briefing__body">
+      <span class="briefing__text">Since your last login 14 hours ago: GPS improved +2 after Casey approved 34 classifications. 3 DSRs completed on time. 1 new critical risk &mdash; unclassified health data in BigQuery analytics-prod.</span>
+      <div>
+        <a class="briefing__link">Review unclassified data &rarr;</a>
+        <a class="briefing__link">Assign steward &rarr;</a>
+      </div>
+    </div>
+    <button class="briefing__close">&times;</button>
+  </div>
+
+  <!-- ==========================================
+       HERO: GOVERNANCE POSTURE
+       PostureCard.tsx — BUT extracted from Card wrapper
+       <Row gutter={48}>
+         <Col span={12}>
+           <Statistic value={animatedScore}
+             valueStyle={{ fontSize: 96, fontWeight: 200, letterSpacing: -3 }} />
+           <Statistic trend="up" value={4} size="sm" />
+           <Alert icon={<SparkleIcon />} message={annotation} />
+         </Col>
+         <Col span={12}>
+           <RadarChart data={radarData} outerRadius="80%"
+             onDimensionClick={handleDimensionClick}
+             tooltipContent={renderTooltip} />
+         </Col>
+       </Row>
+  ========================================== -->
+  <div class="hero">
+    <div class="hero__score-col">
+      <span class="section-label">Governance Posture</span>
+      <div class="hero-score">78<span class="hero-score__suffix">/100</span></div>
+      <div class="hero-trend">
+        <span class="trend-tag">&#8593; 4 pts</span>
+        <span class="trend-context">from last week</span>
+      </div>
+      <p class="hero-narrative">
+        Solid governance posture with opportunities to strengthen. Classification health and consent alignment are the primary areas for improvement.
+      </p>
+      <div class="astralis-card">
+        <svg class="astralis-card__icon sparkle" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+        <div>
+          <span class="astralis-card__text">Classification health dropped 3pts after 12 new Snowflake tables were detected without labels. Addressing this would recover ~2 GPS points.</span>
+          <a class="astralis-card__link">Review classifications &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__radar-col">
+      <div class="radar-container">
+        <svg class="radar-svg" viewBox="0 0 420 380">
+          <!-- Grid rings -->
+          <polygon class="radar-grid" points="210,30 370,110 370,270 210,350 50,270 50,110"/>
+          <polygon class="radar-grid--inner" points="210,80 325,135 325,245 210,300 95,245 95,135"/>
+          <polygon class="radar-grid--inner" points="210,130 280,160 280,220 210,250 140,220 140,160"/>
+          <!-- Axes -->
+          <line class="radar-axis" x1="210" y1="30" x2="210" y2="350"/>
+          <line class="radar-axis" x1="50" y1="110" x2="370" y2="270"/>
+          <line class="radar-axis" x1="370" y1="110" x2="50" y2="270"/>
+          <!-- Data shape -->
+          <polygon class="radar-shape" points="210,38 347,122 325,278 74,262"/>
+          <!-- Data dots -->
+          <circle class="radar-dot" cx="210" cy="38" r="6"/>
+          <circle class="radar-dot" cx="347" cy="122" r="6"/>
+          <circle class="radar-dot" cx="325" cy="278" r="6"/>
+          <circle class="radar-dot" cx="74" cy="262" r="6"/>
+          <!-- Labels + scores -->
+          <text class="radar-lbl" x="210" y="16">Coverage</text>
+          <text class="radar-val" x="210" y="5" dy="-3">92</text>
+          <text class="radar-lbl" x="398" y="108">Classification</text>
+          <text class="radar-val radar-val--warn" x="398" y="128">71</text>
+          <text class="radar-lbl" x="356" y="300">DSR Health</text>
+          <text class="radar-val" x="356" y="288">85</text>
+          <text class="radar-lbl" x="48" y="280">Consent</text>
+          <text class="radar-val radar-val--warn" x="48" y="268">68</text>
+        </svg>
+      </div>
+      <span class="radar-hint">Click a dimension to filter actions below</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MIDDLE: Actions + Dimensions
+       <Row gutter={0}>
+         <Col flex="1">
+           PriorityActionsCard — content only, no Card wrapper
+           <Segmented> for tabs
+           <List> with custom renderItem
+         </Col>
+         <Col flex="360px">
+           Dimension sidebar
+           Custom list with Statistic + Progress + SparkleIcon
+         </Col>
+       </Row>
+  ========================================== -->
+  <div class="middle">
+    <div class="actions-col">
+      <div class="section-header">
+        <span class="section-label">Priority Actions</span>
+        <div class="ant-segmented-mock">
+          <button class="ant-segmented-mock__item ant-segmented-mock__item--active">Act now</button>
+          <button class="ant-segmented-mock__item">This week</button>
+          <button class="ant-segmented-mock__item">When ready</button>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <div class="severity-dot severity-dot--critical"></div>
+        <div class="action-row__body">
+          <div class="action-row__title">Review unclassified health data in BigQuery</div>
+          <div class="action-row__meta">analytics-prod<span class="meta-sep">&middot;</span>Biometric data<span class="meta-sep">&middot;</span>BIPA exposure</div>
+        </div>
+        <div class="action-row__due action-row__due--urgent">2d overdue</div>
+        <div class="action-row__cta">Review &rarr;</div>
+      </div>
+      <div class="action-row">
+        <div class="severity-dot severity-dot--critical"></div>
+        <div class="action-row__body">
+          <div class="action-row__title">3 DSRs approaching SLA deadline</div>
+          <div class="action-row__meta">Access requests<span class="meta-sep">&middot;</span>2 pending manual<span class="meta-sep">&middot;</span>1 awaiting approval</div>
+        </div>
+        <div class="action-row__due action-row__due--urgent">1d left</div>
+        <div class="action-row__cta">Triage &rarr;</div>
+      </div>
+      <div class="action-row">
+        <div class="severity-dot severity-dot--high"></div>
+        <div class="action-row__body">
+          <div class="action-row__title">Assign steward to Snowflake warehouse</div>
+          <div class="action-row__meta">12 tables<span class="meta-sep">&middot;</span>Contains PII<span class="meta-sep">&middot;</span>No governance owner</div>
+        </div>
+        <div class="action-row__due">5d left</div>
+        <div class="action-row__cta">Assign &rarr;</div>
+      </div>
+      <div class="action-row">
+        <div class="severity-dot severity-dot--high"></div>
+        <div class="action-row__body">
+          <div class="action-row__title">Consent monitoring failure on checkout flow</div>
+          <div class="action-row__meta">web-storefront<span class="meta-sep">&middot;</span>TCF string missing for 3 vendors</div>
+        </div>
+        <div class="action-row__due">3d left</div>
+        <div class="action-row__cta">Investigate &rarr;</div>
+      </div>
+      <div class="action-row">
+        <div class="severity-dot severity-dot--medium"></div>
+        <div class="action-row__body">
+          <div class="action-row__title">34 classifications pending approval</div>
+          <div class="action-row__meta">Snowflake<span class="meta-sep">&middot;</span>High confidence (&gt;95%)<span class="meta-sep">&middot;</span>Auto-approve eligible</div>
+        </div>
+        <div class="action-row__due">When ready</div>
+        <div class="action-row__cta">Review &rarr;</div>
+      </div>
+    </div>
+
+    <div class="dims-col">
+      <div class="section-header">
+        <span class="section-label">Dimensions</span>
+      </div>
+      <div class="dim-item">
+        <div class="dim-score">92</div>
+        <div class="dim-body">
+          <div class="dim-name">Coverage</div>
+          <div class="dim-progress"><div class="dim-progress__fill" style="width:92%;background:var(--success)"></div></div>
+          <div class="dim-annotation">
+            <svg class="dim-annotation__icon sparkle" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+            3 systems detected, not yet reviewed
+          </div>
+        </div>
+      </div>
+      <div class="dim-item">
+        <div class="dim-score">85</div>
+        <div class="dim-body">
+          <div class="dim-name">DSR Compliance</div>
+          <div class="dim-progress"><div class="dim-progress__fill" style="width:85%;background:var(--success)"></div></div>
+          <div class="dim-annotation">
+            <svg class="dim-annotation__icon sparkle" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+            1 overdue request impacting score
+          </div>
+        </div>
+      </div>
+      <div class="dim-item">
+        <div class="dim-score dim-score--warn">71</div>
+        <div class="dim-body">
+          <div class="dim-name">Classification Health</div>
+          <div class="dim-progress"><div class="dim-progress__fill" style="width:71%;background:var(--warning)"></div></div>
+          <div class="dim-annotation">
+            <svg class="dim-annotation__icon sparkle" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+            12 new tables unclassified, dropped 3pts
+          </div>
+        </div>
+      </div>
+      <div class="dim-item">
+        <div class="dim-score dim-score--warn">68</div>
+        <div class="dim-body">
+          <div class="dim-name">Consent Alignment</div>
+          <div class="dim-progress"><div class="dim-progress__fill" style="width:68%;background:var(--warning)"></div></div>
+          <div class="dim-annotation">
+            <svg class="dim-annotation__icon sparkle" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+            TCF gaps on 3 high-volume vendors
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       TREND METRICS STRIP
+       4x TrendCard — content only, no Card wrapper
+       <Row gutter={0}>
+         <Col span={6}> ×4
+           <Statistic value={78} />
+           <Statistic trend="up" value={4} size="sm" />
+           <Sparkline data={metric.history} />
+       Uses: FidesUI <Sparkline> (Recharts AreaChart)
+  ========================================== -->
+  <div class="trends">
+    <div class="trend-cell">
+      <span class="section-label">GPS Score</span>
+      <div style="margin-top:6px">
+        <span class="trend-val">78</span>
+        <span class="trend-diff trend-diff--up">&#8593; 4</span>
+      </div>
+      <div class="sparkline-mock">
+        <div class="spark" style="height:45%"></div><div class="spark" style="height:48%"></div><div class="spark" style="height:52%"></div><div class="spark" style="height:50%"></div><div class="spark" style="height:55%"></div><div class="spark" style="height:60%"></div><div class="spark" style="height:58%"></div><div class="spark" style="height:62%"></div><div class="spark" style="height:65%"></div><div class="spark" style="height:64%"></div><div class="spark" style="height:68%"></div><div class="spark" style="height:72%"></div><div class="spark spark--accent" style="height:70%"></div><div class="spark spark--accent" style="height:75%"></div><div class="spark spark--now" style="height:78%"></div>
+      </div>
+    </div>
+    <div class="trend-cell">
+      <span class="section-label">DSR Volume</span>
+      <div style="margin-top:6px">
+        <span class="trend-val">142</span>
+        <span class="trend-diff trend-diff--up">&#8593; 12</span>
+      </div>
+      <div class="sparkline-mock">
+        <div class="spark" style="height:60%"></div><div class="spark" style="height:55%"></div><div class="spark" style="height:70%"></div><div class="spark" style="height:65%"></div><div class="spark" style="height:80%"></div><div class="spark" style="height:75%"></div><div class="spark" style="height:85%"></div><div class="spark" style="height:72%"></div><div class="spark" style="height:78%"></div><div class="spark" style="height:82%"></div><div class="spark" style="height:90%"></div><div class="spark" style="height:85%"></div><div class="spark spark--accent" style="height:88%"></div><div class="spark spark--accent" style="height:92%"></div><div class="spark spark--now" style="height:95%"></div>
+      </div>
+    </div>
+    <div class="trend-cell">
+      <span class="section-label">System Coverage</span>
+      <div style="margin-top:6px">
+        <span class="trend-val">92%</span>
+        <span class="trend-diff trend-diff--up">&#8593; 3%</span>
+      </div>
+      <div class="sparkline-mock">
+        <div class="spark" style="height:70%"></div><div class="spark" style="height:72%"></div><div class="spark" style="height:74%"></div><div class="spark" style="height:73%"></div><div class="spark" style="height:76%"></div><div class="spark" style="height:78%"></div><div class="spark" style="height:80%"></div><div class="spark" style="height:82%"></div><div class="spark" style="height:84%"></div><div class="spark" style="height:85%"></div><div class="spark" style="height:87%"></div><div class="spark" style="height:88%"></div><div class="spark spark--accent" style="height:90%"></div><div class="spark spark--accent" style="height:91%"></div><div class="spark spark--now" style="height:92%"></div>
+      </div>
+    </div>
+    <div class="trend-cell">
+      <span class="section-label">Classification</span>
+      <div style="margin-top:6px">
+        <span class="trend-val">71%</span>
+        <span class="trend-diff trend-diff--down">&#8595; 3%</span>
+      </div>
+      <div class="sparkline-mock">
+        <div class="spark" style="height:82%"></div><div class="spark" style="height:80%"></div><div class="spark" style="height:78%"></div><div class="spark" style="height:79%"></div><div class="spark" style="height:77%"></div><div class="spark" style="height:76%"></div><div class="spark" style="height:78%"></div><div class="spark" style="height:75%"></div><div class="spark" style="height:74%"></div><div class="spark" style="height:72%"></div><div class="spark" style="height:73%"></div><div class="spark" style="height:71%"></div><div class="spark spark--accent" style="height:70%"></div><div class="spark spark--accent" style="height:72%"></div><div class="spark spark--now" style="height:71%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       BOTTOM: Coverage + DSR
+       <Row gutter={0}>
+         <Col span={8}> SystemCoverageCard — stripped
+         <Col span={16}> DSRStatusCard — stripped
+       Uses: <DonutChart>, <StackedBarChart>, <Statistic>
+  ========================================== -->
+  <div class="bottom">
+    <div class="coverage-col">
+      <div class="section-header">
+        <span class="section-label">System Coverage</span>
+        <a class="section-link">Connect more &rarr;</a>
+      </div>
+      <div class="coverage-visual">
+        <div class="donut-mock">
+          <svg viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="42" class="donut-ring" stroke="var(--neutral-100)" transform="rotate(-90 55 55)"/>
+            <circle cx="55" cy="55" r="42" class="donut-ring" stroke="var(--success)" stroke-dasharray="264" stroke-dashoffset="21" transform="rotate(-90 55 55)"/>
+            <circle cx="55" cy="55" r="42" class="donut-ring" stroke="var(--warning)" stroke-dasharray="264" stroke-dashoffset="236" transform="rotate(-90 55 55)"/>
+          </svg>
+          <div class="donut-center">
+            <span class="donut-pct">92%</span>
+            <span class="donut-sub">covered</span>
+          </div>
+        </div>
+        <div class="coverage-text">
+          <strong>47 systems</strong> known.<br/>38 fully governed, 9 need attention.
+        </div>
+      </div>
+      <div class="breakdown">
+        <div class="breakdown__row"><div class="breakdown__dot" style="background:var(--success)"></div><span class="breakdown__num">38</span>Fully classified</div>
+        <div class="breakdown__row"><div class="breakdown__dot" style="background:var(--warning)"></div><span class="breakdown__num">5</span>Partially classified</div>
+        <div class="breakdown__row"><div class="breakdown__dot" style="background:var(--neutral-200)"></div><span class="breakdown__num">4</span>Unclassified</div>
+        <div class="breakdown__row"><div class="breakdown__dot" style="background:var(--terracotta)"></div><span class="breakdown__num">3</span>Without steward</div>
+      </div>
+      <div class="astralis-card" style="margin-top:20px">
+        <svg class="astralis-card__icon sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+        <div>
+          <span class="astralis-card__text">Connecting 4 unclassified systems would improve GPS by ~5pts.</span>
+          <a class="astralis-card__link">Start classification &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="dsr-col">
+      <div class="section-header">
+        <span class="section-label">DSR Status</span>
+        <a class="section-link">View all requests &rarr;</a>
+      </div>
+      <div>
+        <span class="dsr-count">18</span>
+        <span class="dsr-suffix">active requests</span>
+      </div>
+      <div class="dsr-substats">
+        <span><strong>8</strong> In Progress</span>
+        <span><strong>6</strong> Pending Action</span>
+        <span><strong>4</strong> Awaiting Approval</span>
+        <a class="dsr-overdue">1 overdue &rarr;</a>
+      </div>
+
+      <div class="sla-row">
+        <span class="section-label" style="font-size:9px">SLA Health</span>
+        <div class="sla-bar">
+          <div class="sla-seg" style="width:70%;background:var(--success)"></div>
+          <div class="sla-seg" style="width:20%;background:var(--warning)"></div>
+          <div class="sla-seg" style="width:10%;background:var(--error)"></div>
+        </div>
+        <div class="sla-legend">
+          <div class="sla-legend__item"><div class="sla-legend__dot" style="background:var(--success)"></div>On track</div>
+          <div class="sla-legend__item"><div class="sla-legend__dot" style="background:var(--warning)"></div>Approaching</div>
+          <div class="sla-legend__item"><div class="sla-legend__dot" style="background:var(--error)"></div>Overdue</div>
+        </div>
+      </div>
+
+      <div class="dsr-types">
+        <div class="dsr-type-card">
+          <div class="dsr-type-card__name">Access</div>
+          <div class="dsr-type-card__count">8</div>
+          <div class="dsr-type-card__bar">
+            <div style="flex:6;background:var(--success);border-radius:2px"></div>
+            <div style="flex:2;background:var(--warning);border-radius:2px"></div>
+          </div>
+        </div>
+        <div class="dsr-type-card">
+          <div class="dsr-type-card__name">Erasure</div>
+          <div class="dsr-type-card__count">6</div>
+          <div class="dsr-type-card__bar">
+            <div style="flex:4;background:var(--success);border-radius:2px"></div>
+            <div style="flex:1;background:var(--warning);border-radius:2px"></div>
+            <div style="flex:1;background:var(--error);border-radius:2px"></div>
+          </div>
+        </div>
+        <div class="dsr-type-card">
+          <div class="dsr-type-card__name">Portability</div>
+          <div class="dsr-type-card__count">4</div>
+          <div class="dsr-type-card__bar">
+            <div style="flex:3;background:var(--success);border-radius:2px"></div>
+            <div style="flex:1;background:var(--warning);border-radius:2px"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="astralis-card" style="margin-top:20px">
+        <svg class="astralis-card__icon sparkle" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>
+        <div>
+          <span class="astralis-card__text">Erasure requests are 40% higher than last month. Consider automating approval for verified identities.</span>
+          <a class="astralis-card__link">Configure auto-approve &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

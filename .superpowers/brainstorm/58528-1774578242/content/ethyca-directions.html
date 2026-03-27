@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Redesign — Ethyca Brand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --minos: #2b2e35;
+    --corinth: #fafafa;
+    --limestone: #f1efee;
+    --terracotta: #b9704b;
+    --terracotta-light: #f1b193;
+    --olive: #999b83;
+    --olive-light: #d4d5c8;
+    --marble: #cdd2d3;
+    --sandstone: #cecac2;
+    --sandstone-light: #e3e0d9;
+    --nectar: #f0ebc1;
+    --nectar-light: #f5f2d7;
+    --error: #d9534f;
+    --warning: #e59d47;
+    --success: #5a9a68;
+    --info: #4a90e2;
+    --neutral-100: #f5f5f5;
+    --neutral-200: #ebebeb;
+    --neutral-300: #d4d4d4;
+    --neutral-400: #a3a3a3;
+    --neutral-500: #737373;
+    --neutral-600: #525252;
+    --neutral-700: #404040;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--corinth);
+    color: var(--minos);
+    padding: 40px;
+    line-height: 1.5;
+  }
+
+  .page-header {
+    margin-bottom: 48px;
+  }
+  .page-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--terracotta);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .page-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--minos);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .page-subtitle {
+    font-size: 15px;
+    color: var(--neutral-500);
+    max-width: 640px;
+    line-height: 1.6;
+  }
+
+  .directions {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .direction {
+    border: 2px solid var(--neutral-200);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background: white;
+  }
+  .direction:hover {
+    border-color: var(--sandstone);
+    box-shadow: 0 4px 24px rgba(43,46,53,0.06);
+  }
+  .direction.selected {
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 1px var(--terracotta), 0 4px 24px rgba(185,112,75,0.12);
+  }
+
+  .dir-header {
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--neutral-200);
+    background: white;
+  }
+  .dir-letter {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .dir-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--minos);
+  }
+  .dir-tagline {
+    font-size: 13px;
+    color: var(--neutral-500);
+    margin-left: auto;
+  }
+  .dir-check {
+    display: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .direction.selected .dir-check {
+    display: flex;
+  }
+
+  .dir-body {
+    display: flex;
+  }
+  .mockup-area {
+    flex: 1;
+    padding: 32px;
+    background: var(--corinth);
+    min-height: 380px;
+  }
+  .info-area {
+    width: 300px;
+    padding: 28px;
+    background: white;
+    border-left: 1px solid var(--neutral-200);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .info-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--terracotta);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .info-text {
+    font-size: 13px;
+    color: var(--neutral-600);
+    line-height: 1.6;
+  }
+  .info-list {
+    list-style: none;
+    padding: 0;
+  }
+  .info-list li {
+    font-size: 12px;
+    color: var(--neutral-600);
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+  .info-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--terracotta);
+  }
+
+  /* ===== A: EDITORIAL ===== */
+  .ma {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .ma-hero {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding-bottom: 24px;
+  }
+  .ma-score {
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--minos);
+    line-height: 0.9;
+    letter-spacing: -3px;
+  }
+  .ma-score-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ma-score-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--neutral-500);
+    font-weight: 500;
+  }
+  .ma-score-trend {
+    font-size: 13px;
+    color: var(--success);
+    font-weight: 600;
+  }
+  .ma-sep {
+    width: 1px;
+    height: 80px;
+    background: var(--marble);
+    flex-shrink: 0;
+  }
+  .ma-radar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 1.5px solid var(--marble);
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ma-radar::before {
+    content: '';
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 1px solid var(--neutral-200);
+    position: absolute;
+  }
+  .ma-radar::after {
+    content: '';
+    width: 85px;
+    height: 55px;
+    border-radius: 40%;
+    background: var(--terracotta);
+    opacity: 0.12;
+    position: absolute;
+    transform: rotate(-15deg);
+  }
+
+  .ma-strip {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--neutral-200);
+    border-bottom: 1px solid var(--neutral-200);
+    margin: 0 -32px;
+    padding: 0 32px;
+  }
+  .ma-metric {
+    flex: 1;
+    padding: 16px 20px 16px 0;
+    border-right: 1px solid var(--neutral-200);
+    margin-right: 20px;
+  }
+  .ma-metric:last-child {
+    border-right: none;
+    margin-right: 0;
+    padding-right: 0;
+  }
+  .ma-metric-label {
+    font-size: 11px;
+    color: var(--neutral-500);
+    font-weight: 500;
+  }
+  .ma-metric-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--minos);
+    letter-spacing: -0.5px;
+    margin-top: 2px;
+  }
+  .ma-metric-spark {
+    height: 20px;
+    margin-top: 6px;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .ma-spark-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--neutral-300);
+  }
+  .ma-spark-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    opacity: 0.08;
+  }
+
+  .ma-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding-top: 24px;
+  }
+  .ma-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--neutral-400);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .ma-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--neutral-100);
+  }
+  .ma-action:last-child { border-bottom: none; }
+  .ma-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ma-action-text {
+    font-size: 13px;
+    color: var(--minos);
+    flex: 1;
+  }
+  .ma-action-tag {
+    font-size: 11px;
+    color: var(--neutral-500);
+    font-weight: 500;
+  }
+  .ma-bar-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .ma-bar-label {
+    font-size: 12px;
+    color: var(--neutral-500);
+  }
+  .ma-bar-val {
+    font-size: 12px;
+    color: var(--minos);
+    font-weight: 600;
+  }
+  .ma-bar {
+    height: 6px;
+    background: var(--neutral-100);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .ma-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  /* ===== B: BENTO ===== */
+  .mb {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .mb-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1.5px solid var(--neutral-200);
+  }
+  .mb-score {
+    font-size: 52px;
+    font-weight: 900;
+    color: var(--minos);
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .mb-score-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .mb-score-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--neutral-400);
+    font-weight: 500;
+  }
+  .mb-score-trend {
+    font-size: 13px;
+    color: var(--success);
+    font-weight: 600;
+  }
+  .mb-mini-stats {
+    display: flex;
+    gap: 20px;
+    margin-left: auto;
+  }
+  .mb-mini {
+    text-align: right;
+  }
+  .mb-mini-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--minos);
+  }
+  .mb-mini-label {
+    font-size: 10px;
+    color: var(--neutral-400);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .mb-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 3px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mb-cell {
+    background: white;
+    padding: 18px;
+  }
+  .mb-wide { grid-column: span 2; }
+  .mb-cell-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--neutral-400);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .mb-cell-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--minos);
+  }
+  .mb-cell-sub {
+    font-size: 11px;
+    color: var(--neutral-500);
+    margin-top: 2px;
+  }
+  .mb-list-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--neutral-100);
+    font-size: 12px;
+    color: var(--minos);
+  }
+  .mb-list-item:last-child { border-bottom: none; }
+  .mb-item-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .mb-item-meta {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--neutral-400);
+  }
+  .mb-radar-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 1.5px solid var(--marble);
+    margin: 6px auto 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mb-radar-placeholder::before {
+    content: '';
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--neutral-200);
+    position: absolute;
+  }
+  .mb-radar-placeholder::after {
+    content: '';
+    width: 56px;
+    height: 36px;
+    border-radius: 40%;
+    background: var(--terracotta);
+    opacity: 0.1;
+    transform: rotate(-15deg);
+    position: absolute;
+  }
+  .mb-chart-placeholder {
+    height: 40px;
+    margin-top: 10px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, transparent, var(--limestone));
+    border-bottom: 1px solid var(--sandstone);
+  }
+
+  /* ===== C: OPEN CANVAS ===== */
+  .mc {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .mc-hero {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    padding: 8px 0;
+  }
+  .mc-hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mc-score {
+    font-size: 88px;
+    font-weight: 900;
+    color: var(--minos);
+    line-height: 0.85;
+    letter-spacing: -4px;
+  }
+  .mc-score-caption {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--neutral-400);
+    font-weight: 500;
+    margin-top: 8px;
+  }
+  .mc-score-change {
+    font-size: 14px;
+    color: var(--success);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .mc-radar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 1.5px solid var(--marble);
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mc-radar::before {
+    content: '';
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 1px solid var(--neutral-200);
+    position: absolute;
+  }
+  .mc-radar::after {
+    content: '';
+    width: 120px;
+    height: 80px;
+    border-radius: 40%;
+    background: var(--terracotta);
+    opacity: 0.1;
+    transform: rotate(-15deg);
+    position: absolute;
+  }
+  .mc-actions {
+    flex: 1;
+    max-width: 340px;
+  }
+  .mc-actions-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--neutral-400);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .mc-action-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+  .mc-action-item:hover {
+    background: var(--limestone);
+  }
+  .mc-sev {
+    width: 3px;
+    height: 22px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .mc-action-text {
+    font-size: 13px;
+    color: var(--minos);
+    flex: 1;
+  }
+  .mc-action-meta {
+    font-size: 11px;
+    color: var(--neutral-400);
+    font-weight: 500;
+  }
+
+  .mc-metrics {
+    display: flex;
+    gap: 56px;
+    padding: 28px 0;
+    border-top: 1px solid var(--neutral-200);
+  }
+  .mc-m {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mc-m-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--neutral-400);
+    font-weight: 500;
+  }
+  .mc-m-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--minos);
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .mc-m-trend {
+    font-size: 12px;
+    color: var(--success);
+    font-weight: 600;
+  }
+  .mc-m-spark {
+    width: 72px;
+    height: 16px;
+    margin-top: 4px;
+    border-bottom: 1px solid var(--sandstone);
+    background: linear-gradient(90deg, transparent, rgba(185,112,75,0.06));
+  }
+
+  .mc-lower {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 48px;
+    padding-top: 4px;
+  }
+  .mc-lower-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--neutral-400);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .mc-ring {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    border: 7px solid var(--neutral-100);
+    border-top-color: var(--success);
+    border-right-color: var(--success);
+    border-bottom-color: var(--warning);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .mc-ring-val {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--minos);
+  }
+  .mc-ring-caption {
+    text-align: center;
+    font-size: 12px;
+    color: var(--neutral-500);
+  }
+  .mc-dsr {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+  .mc-dsr-num {
+    font-size: 44px;
+    font-weight: 900;
+    color: var(--minos);
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .mc-dsr-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--neutral-400);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .mc-dsr-bar-area {
+    flex: 1;
+  }
+  .mc-dsr-bar-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--neutral-400);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .mc-stacked {
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    display: flex;
+    background: var(--neutral-100);
+  }
+  .mc-seg { height: 100%; }
+  .mc-dsr-subs {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+  }
+  .mc-dsr-sub {
+    font-size: 11px;
+    color: var(--neutral-500);
+  }
+  .mc-dsr-sub strong {
+    color: var(--minos);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-label">Dashboard Redesign</div>
+  <h1 class="page-title">Three Directions, Ethyca DNA</h1>
+  <p class="page-subtitle">Each direction uses the Ethyca brand palette — Terracotta, Sandstone, Olive, Marble — with Inter typography on light backgrounds. Click to select.</p>
+</div>
+
+<div class="directions">
+
+  <!-- A: EDITORIAL -->
+  <div class="direction" data-choice="a" onclick="toggleSelect(this)">
+    <div class="dir-header">
+      <div class="dir-letter">A</div>
+      <div class="dir-title">Editorial</div>
+      <div class="dir-tagline">Magazine-style, full-bleed sections, horizontal rhythm</div>
+      <div class="dir-check">&#10003;</div>
+    </div>
+    <div class="dir-body">
+      <div class="mockup-area">
+        <div class="ma">
+          <div class="ma-hero">
+            <div>
+              <div class="ma-score">78</div>
+              <div class="ma-score-meta">
+                <div class="ma-score-label">Governance Posture</div>
+                <div class="ma-score-trend">+4.2% this month</div>
+              </div>
+            </div>
+            <div class="ma-sep"></div>
+            <div class="ma-radar"></div>
+          </div>
+
+          <div class="ma-strip">
+            <div class="ma-metric">
+              <div class="ma-metric-label">DSR Volume</div>
+              <div class="ma-metric-val">1,247</div>
+              <div class="ma-metric-spark">
+                <div class="ma-spark-fill" style="width:70%;background:var(--terracotta)"></div>
+                <div class="ma-spark-line"></div>
+              </div>
+            </div>
+            <div class="ma-metric">
+              <div class="ma-metric-label">System Coverage</div>
+              <div class="ma-metric-val">84%</div>
+              <div class="ma-metric-spark">
+                <div class="ma-spark-fill" style="width:84%;background:var(--success)"></div>
+                <div class="ma-spark-line"></div>
+              </div>
+            </div>
+            <div class="ma-metric">
+              <div class="ma-metric-label">Classification</div>
+              <div class="ma-metric-val">91%</div>
+              <div class="ma-metric-spark">
+                <div class="ma-spark-fill" style="width:91%;background:var(--success)"></div>
+                <div class="ma-spark-line"></div>
+              </div>
+            </div>
+            <div class="ma-metric">
+              <div class="ma-metric-label">Active DSRs</div>
+              <div class="ma-metric-val">23</div>
+              <div class="ma-metric-spark">
+                <div class="ma-spark-fill" style="width:38%;background:var(--warning)"></div>
+                <div class="ma-spark-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ma-grid">
+            <div>
+              <div class="ma-section-label">Priority Actions</div>
+              <div class="ma-action">
+                <div class="ma-dot" style="background:var(--error)"></div>
+                <div class="ma-action-text">Complete Salesforce data mapping</div>
+                <div class="ma-action-tag">2d overdue</div>
+              </div>
+              <div class="ma-action">
+                <div class="ma-dot" style="background:var(--warning)"></div>
+                <div class="ma-action-text">Review consent preferences</div>
+                <div class="ma-action-tag">3d left</div>
+              </div>
+              <div class="ma-action">
+                <div class="ma-dot" style="background:var(--warning)"></div>
+                <div class="ma-action-text">Assign system steward for Stripe</div>
+                <div class="ma-action-tag">5d left</div>
+              </div>
+              <div class="ma-action">
+                <div class="ma-dot" style="background:var(--info)"></div>
+                <div class="ma-action-text">Classify 12 new data fields</div>
+                <div class="ma-action-tag">When ready</div>
+              </div>
+            </div>
+            <div>
+              <div class="ma-section-label">Coverage & DSR Health</div>
+              <div class="ma-bar-row"><div class="ma-bar-label">Fully classified</div><div class="ma-bar-val">67%</div></div>
+              <div class="ma-bar"><div class="ma-bar-fill" style="width:67%;background:var(--success)"></div></div>
+              <div class="ma-bar-row"><div class="ma-bar-label">Partially classified</div><div class="ma-bar-val">17%</div></div>
+              <div class="ma-bar"><div class="ma-bar-fill" style="width:17%;background:var(--warning)"></div></div>
+              <div class="ma-bar-row"><div class="ma-bar-label">Unclassified</div><div class="ma-bar-val">16%</div></div>
+              <div class="ma-bar"><div class="ma-bar-fill" style="width:16%;background:var(--marble)"></div></div>
+              <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--neutral-200)">
+                <div class="ma-bar-row"><div class="ma-bar-label">SLA Health</div></div>
+                <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:6px;background:var(--neutral-100)">
+                  <div style="width:70%;background:var(--success)"></div>
+                  <div style="width:20%;background:var(--warning)"></div>
+                  <div style="width:10%;background:var(--error)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-area">
+        <div><div class="info-label">Philosophy</div><div class="info-text">Full-bleed horizontal sections on the open page background. No cards. Visual weight from typography scale and the Ethyca palette. Terracotta sparkline accents.</div></div>
+        <div><div class="info-label">Key Moves</div><ul class="info-list"><li>72px hero score as page anchor</li><li>Marble divider separating score from radar</li><li>Horizontal metrics strip with sparklines</li><li>Open two-column grid below</li><li>Sandstone/Limestone subtle accents</li></ul></div>
+        <div><div class="info-label">Feels Like</div><div class="info-text">A well-designed editorial report. Authoritative yet approachable. Stripe meets Ethyca.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B: BENTO -->
+  <div class="direction" data-choice="b" onclick="toggleSelect(this)">
+    <div class="dir-header">
+      <div class="dir-letter">B</div>
+      <div class="dir-title">Warm Bento</div>
+      <div class="dir-tagline">Ambient surfaces, tight grid, data-dense</div>
+      <div class="dir-check">&#10003;</div>
+    </div>
+    <div class="dir-body">
+      <div class="mockup-area" style="background:var(--limestone)">
+        <div class="mb">
+          <div class="mb-header">
+            <div class="mb-score">78</div>
+            <div class="mb-score-block">
+              <div class="mb-score-label">Posture Score</div>
+              <div class="mb-score-trend">+4.2% from last month</div>
+            </div>
+            <div class="mb-mini-stats">
+              <div class="mb-mini"><div class="mb-mini-val">1,247</div><div class="mb-mini-label">DSR Vol</div></div>
+              <div class="mb-mini"><div class="mb-mini-val">84%</div><div class="mb-mini-label">Coverage</div></div>
+              <div class="mb-mini"><div class="mb-mini-val">91%</div><div class="mb-mini-label">Classif.</div></div>
+            </div>
+          </div>
+
+          <div class="mb-grid">
+            <div class="mb-cell" style="background:white">
+              <div class="mb-cell-label">Posture Radar</div>
+              <div class="mb-radar-placeholder"></div>
+              <div style="text-align:center;font-size:10px;color:var(--neutral-400);margin-top:6px">6 dimensions</div>
+            </div>
+            <div class="mb-cell mb-wide" style="background:white">
+              <div class="mb-cell-label">Priority Actions</div>
+              <div class="mb-list-item"><div class="mb-item-dot" style="background:var(--error)"></div>Complete Salesforce data mapping<span class="mb-item-meta" style="color:var(--error)">2d overdue</span></div>
+              <div class="mb-list-item"><div class="mb-item-dot" style="background:var(--warning)"></div>Review consent preferences<span class="mb-item-meta">3d left</span></div>
+              <div class="mb-list-item"><div class="mb-item-dot" style="background:var(--warning)"></div>Assign system steward for Stripe<span class="mb-item-meta">5d left</span></div>
+              <div class="mb-list-item"><div class="mb-item-dot" style="background:var(--info)"></div>Classify 12 new data fields<span class="mb-item-meta">When ready</span></div>
+            </div>
+            <div class="mb-cell" style="background:white">
+              <div class="mb-cell-label">Coverage</div>
+              <div class="mb-cell-value">84%</div>
+              <div class="mb-cell-sub">142 of 169 systems</div>
+              <div class="mb-chart-placeholder"></div>
+            </div>
+            <div class="mb-cell mb-wide" style="background:white">
+              <div class="mb-cell-label">DSR Health</div>
+              <div style="display:flex;gap:20px;align-items:flex-end">
+                <div><div class="mb-cell-value">23</div><div class="mb-cell-sub">Active requests</div></div>
+                <div style="flex:1">
+                  <div style="font-size:10px;color:var(--neutral-400);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">SLA Status</div>
+                  <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--neutral-100)">
+                    <div style="width:70%;background:var(--success)"></div>
+                    <div style="width:20%;background:var(--warning)"></div>
+                    <div style="width:10%;background:var(--error)"></div>
+                  </div>
+                  <div style="display:flex;gap:14px;margin-top:5px">
+                    <span style="font-size:10px;color:var(--success)">16 on track</span>
+                    <span style="font-size:10px;color:var(--warning)">5 approaching</span>
+                    <span style="font-size:10px;color:var(--error)">2 overdue</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-area">
+        <div><div class="info-label">Philosophy</div><div class="info-text">White cells on a Limestone (#f1efee) canvas. The warm off-white background is distinctly Ethyca. Cells float with 3px gaps — no borders, just ambient contrast.</div></div>
+        <div><div class="info-label">Key Moves</div><ul class="info-list"><li>Limestone background = Ethyca warmth</li><li>White cells with no borders</li><li>Score + inline stats as page header</li><li>3px-gap bento grid</li><li>Sandstone sparkline accents</li></ul></div>
+        <div><div class="info-label">Feels Like</div><div class="info-text">Apple's bento aesthetic with Ethyca's warm, earthy palette. Compact and confident.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C: OPEN CANVAS -->
+  <div class="direction" data-choice="c" onclick="toggleSelect(this)">
+    <div class="dir-header">
+      <div class="dir-letter">C</div>
+      <div class="dir-title">Open Canvas</div>
+      <div class="dir-tagline">Maximum whitespace, floating elements, Swiss typography</div>
+      <div class="dir-check">&#10003;</div>
+    </div>
+    <div class="dir-body">
+      <div class="mockup-area">
+        <div class="mc">
+          <div class="mc-hero">
+            <div class="mc-hero-left">
+              <div class="mc-score">78</div>
+              <div class="mc-score-caption">Governance Posture</div>
+              <div class="mc-score-change">+4.2% this month</div>
+            </div>
+            <div class="mc-radar"></div>
+            <div class="mc-actions">
+              <div class="mc-actions-title">Needs Attention</div>
+              <div class="mc-action-item">
+                <div class="mc-sev" style="background:var(--error)"></div>
+                <div class="mc-action-text">Complete Salesforce data mapping</div>
+                <div class="mc-action-meta">2d overdue</div>
+              </div>
+              <div class="mc-action-item">
+                <div class="mc-sev" style="background:var(--warning)"></div>
+                <div class="mc-action-text">Review consent preferences</div>
+                <div class="mc-action-meta">3d left</div>
+              </div>
+              <div class="mc-action-item">
+                <div class="mc-sev" style="background:var(--warning)"></div>
+                <div class="mc-action-text">Assign steward for Stripe</div>
+                <div class="mc-action-meta">5d left</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mc-metrics">
+            <div class="mc-m">
+              <div class="mc-m-label">DSR Volume</div>
+              <div class="mc-m-value">1,247</div>
+              <div class="mc-m-trend">+12%</div>
+              <div class="mc-m-spark"></div>
+            </div>
+            <div class="mc-m">
+              <div class="mc-m-label">Coverage</div>
+              <div class="mc-m-value">84%</div>
+              <div class="mc-m-trend">+3%</div>
+              <div class="mc-m-spark"></div>
+            </div>
+            <div class="mc-m">
+              <div class="mc-m-label">Classification</div>
+              <div class="mc-m-value">91%</div>
+              <div class="mc-m-trend">+7%</div>
+              <div class="mc-m-spark"></div>
+            </div>
+            <div class="mc-m">
+              <div class="mc-m-label">Active DSRs</div>
+              <div class="mc-m-value">23</div>
+              <div class="mc-m-trend" style="color:var(--warning)">5 approaching</div>
+              <div class="mc-m-spark"></div>
+            </div>
+          </div>
+
+          <div class="mc-lower">
+            <div>
+              <div class="mc-lower-label">System Coverage</div>
+              <div class="mc-ring"><div class="mc-ring-val">84%</div></div>
+              <div class="mc-ring-caption">142 of 169 systems classified</div>
+            </div>
+            <div>
+              <div class="mc-lower-label">DSR Status</div>
+              <div class="mc-dsr">
+                <div>
+                  <div class="mc-dsr-num">23</div>
+                  <div class="mc-dsr-label">Active</div>
+                </div>
+                <div class="mc-dsr-bar-area">
+                  <div class="mc-dsr-bar-title">SLA Health</div>
+                  <div class="mc-stacked">
+                    <div class="mc-seg" style="width:70%;background:var(--success)"></div>
+                    <div class="mc-seg" style="width:20%;background:var(--warning)"></div>
+                    <div class="mc-seg" style="width:10%;background:var(--error)"></div>
+                  </div>
+                  <div class="mc-dsr-subs">
+                    <div class="mc-dsr-sub"><strong>16</strong> on track</div>
+                    <div class="mc-dsr-sub"><strong>5</strong> approaching</div>
+                    <div class="mc-dsr-sub"><strong>2</strong> overdue</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-area">
+        <div><div class="info-label">Philosophy</div><div class="info-text">Everything floats on the Corinth (#fafafa) canvas. No containers, no borders except one thin rule separating the metrics row. Hierarchy is pure typography and space.</div></div>
+        <div><div class="info-label">Key Moves</div><ul class="info-list"><li>88px hero score — the page anchor</li><li>Score + radar + actions in one hero zone</li><li>Generous 56px gaps between metrics</li><li>Zero containers, one horizontal rule</li><li>Terracotta radar fill as warm accent</li></ul></div>
+        <div><div class="info-label">Feels Like</div><div class="info-text">Swiss typography meets Ethyca warmth. The page breathes. Confident and considered, like a gallery exhibition.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('selected'));
+  el.classList.toggle('selected');
+  if (typeof reportChoice === 'function') {
+    reportChoice(el.dataset.choice, el.querySelector('.dir-title').textContent);
+  }
+}
+</script>
+
+</body>
+</html>
