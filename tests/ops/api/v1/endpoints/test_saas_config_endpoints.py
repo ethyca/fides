@@ -512,7 +512,7 @@ class TestPatchSaaSConfigAllowedValuesAfterDelete:
         with mock.patch(
             "fides.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
         ) as mock_template:
-            mock_template.return_value = MagicMock(config=_template_yaml)
+            mock_template.return_value = MagicMock(config=_template_yaml, custom=True)
             response = api_client.patch(
                 url, headers=auth_header, json=_config_with_allowed_values
             )

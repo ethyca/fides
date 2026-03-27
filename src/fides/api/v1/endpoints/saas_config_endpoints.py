@@ -192,6 +192,7 @@ def patch_saas_config(
     )
 
     existing_saas_config = connection_config.get_saas_config()
+    template = None
     if not existing_saas_config:
         template = ConnectorRegistry.get_connector_template(saas_config.type)
         if template:
