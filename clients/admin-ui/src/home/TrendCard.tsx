@@ -1,5 +1,4 @@
 import {
-  Alert,
   antTheme,
   Card,
   Flex,
@@ -118,13 +117,15 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
     >
       {renderStats()}
       {metric?.agent_summary && (
-        <Alert
-          type="info"
-          showIcon
-          icon={<SparkleIcon size={12} style={{ color: "var(--fidesui-terracotta)" }} />}
-          message={metric.agent_summary}
-          className="mt-2"
-        />
+        <Flex align="center" gap={6} className="mt-2">
+          <SparkleIcon
+            size={12}
+            style={{ color: "var(--fidesui-terracotta)" }}
+          />
+          <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
+            {metric.agent_summary}
+          </Text>
+        </Flex>
       )}
     </Card>
   );

@@ -26,7 +26,7 @@ export const HomeDashboard = () => {
       {/* Tier 1: Hero — Score + Radar centered vertically, agent card absolute under score */}
       <Row
         gutter={48}
-        className="relative min-h-[50vh] items-center pb-16 pt-14 pl-16"
+        className="relative min-h-[80vh] items-center pb-16 pt-14 pl-16"
       >
         <Col xs={24} md={12}>
           <PostureScore></PostureScore>
