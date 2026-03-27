@@ -1,10 +1,12 @@
 import type { RadarChartDataPoint } from "fidesui";
 import {
+  Alert,
   antTheme,
   Flex,
   Icons,
   RadarChart,
   Skeleton,
+  SparkleIcon,
   Statistic,
   Tag,
   Text,
@@ -107,6 +109,21 @@ export const PostureScore = ({ children }: { children?: React.ReactNode }) => {
           {posture?.band === "critical" &&
             "Significant governance gaps require immediate attention."}
         </Text>
+      )}
+
+      {posture?.agent_annotation && (
+        <Alert
+          type="info"
+          showIcon
+          icon={
+            <SparkleIcon
+              size={12}
+              style={{ color: "var(--fidesui-terracotta)" }}
+            />
+          }
+          message={posture.agent_annotation}
+          className="mt-4"
+        />
       )}
 
       {children}

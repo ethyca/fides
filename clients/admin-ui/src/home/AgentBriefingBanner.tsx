@@ -4,16 +4,8 @@ import { useCallback, useState } from "react";
 
 import { ACTION_CTA } from "~/features/dashboard/constants";
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
-import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
-
-const SEVERITY_STYLE: Record<ActionSeverity, string> = {
-  [ActionSeverity.CRITICAL]: styles.error,
-  [ActionSeverity.HIGH]: styles.error,
-  [ActionSeverity.MEDIUM]: styles.warning,
-  [ActionSeverity.LOW]: styles.info,
-};
 
 export const AgentBriefingBanner = () => {
   const { data: briefing } = useGetAgentBriefingQuery();
@@ -49,7 +41,7 @@ export const AgentBriefingBanner = () => {
                 <NextLink
                   key={`${action.action_type}-${action.label}`}
                   href={cta.route(action.action_data)}
-                  className={`${styles.quickActionLink} ${SEVERITY_STYLE[action.severity] ?? styles.info}`}
+                  className={styles.quickActionLink}
                 >
                   {action.label} &rarr;
                 </NextLink>
