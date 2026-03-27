@@ -1,20 +1,20 @@
 import { Card, Icons } from "fidesui";
 
 const ICON_MAP: Record<string, Icons.CarbonIconType> = {
-  Security: Icons.Security,
-  ChartBar: Icons.ChartBar,
-  Analytics: Icons.Analytics,
-  Building: Icons.Building,
-  Health: Icons.HealthCross,
+  Security: Icons.Locked,
+  ChartBar: Icons.DataAnalytics,
+  Analytics: Icons.DataAnalytics,
+  Building: Icons.DataBase,
+  Health: Icons.Chemistry,
   Search: Icons.Search,
-  Receipt: Icons.Receipt,
-  UserProfile: Icons.UserProfile,
-  GroupPresentation: Icons.GroupPresentation,
-  Chat: Icons.Chat,
+  Receipt: Icons.Document,
+  UserProfile: Icons.UserAvatar,
+  GroupPresentation: Icons.User,
+  Chat: Icons.MessageQueue,
   Document: Icons.Document,
-  Task: Icons.Task,
+  Task: Icons.RuleDraft,
   Warning: Icons.WarningAlt,
-  Folder: Icons.Folder,
+  Folder: Icons.Layers,
 };
 
 interface DataUseCardProps {
@@ -30,7 +30,7 @@ const DataUseCard = ({
   isSelected,
   onClick,
 }: DataUseCardProps) => {
-  const IconComponent = ICON_MAP[iconName] ?? Icons.Category;
+  const IconComponent = ICON_MAP[iconName] ?? Icons.DataAnalytics;
 
   return (
     <Card
