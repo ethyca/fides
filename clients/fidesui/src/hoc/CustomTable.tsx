@@ -52,19 +52,23 @@ export const CustomTable = <RecordType = any,>({
   }, [pagination, dataSource]);
 
   const customColumns = React.useMemo(() => {
-    return columns.map((column) => ({
-      ...column,
-      onHeaderCell: (data: any, index: number) => {
-        // Get existing onHeaderCell props if they exist
-        const existingProps = column.onHeaderCell?.(data, index) || {};
+    return columns.map((column) => {
+      const columnKey = "key" in column ? (column.key as string) : undefined;
+      return {
+        ...column,
+        onHeaderCell: (data: any, index: number) => {
+          // Get existing onHeaderCell props if they exist
+          const existingProps = column.onHeaderCell?.(data, index) || {};
 
-        // Merge with our menu prop
-        return {
-          ...existingProps,
-          menu: column.menu,
-        };
-      },
-    }));
+          // Merge with our menu prop and column key for test IDs
+          return {
+            ...existingProps,
+            menu: column.menu,
+            columnKey: column.menu ? columnKey : undefined,
+          };
+        },
+      };
+    });
   }, [columns]);
 
   return (
