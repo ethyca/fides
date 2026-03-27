@@ -27,6 +27,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.api.db.ctl_session import get_async_db
+from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.deps import get_db
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -249,9 +250,7 @@ def _get_webhook_jwe_or_error(
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
-        token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
-        )
+        token_data = json.loads(extract_payload(authorization, get_encryption_key()))
     except JoseError:
         raise AuthorizationError(detail="Not Authorized for this action")
 
@@ -277,9 +276,7 @@ def _get_request_task_jwe_or_error(
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
-        token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
-        )
+        token_data = json.loads(extract_payload(authorization, get_encryption_key()))
     except JoseError:
         raise AuthorizationError(detail="Not Authorized for this action")
 
@@ -321,9 +318,7 @@ def validate_download_token(token: str, privacy_request_id: str) -> DownloadToke
         raise AuthenticationError(detail="Invalid download token format")
 
     try:
-        token_data = json.loads(
-            extract_payload(token, CONFIG.security.app_encryption_key)
-        )
+        token_data = json.loads(extract_payload(token, get_encryption_key()))
     except JoseError:
         raise AuthenticationError(detail="Invalid download token format")
 
@@ -559,9 +554,7 @@ def extract_token_and_load_client(
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
-        token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
-        )
+        token_data = json.loads(extract_payload(authorization, get_encryption_key()))
     except (JoseError, ValueError) as exc:
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
@@ -632,9 +625,7 @@ async def extract_token_and_load_client_async(
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
-        token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
-        )
+        token_data = json.loads(extract_payload(authorization, get_encryption_key()))
     except (JoseError, ValueError) as exc:
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc

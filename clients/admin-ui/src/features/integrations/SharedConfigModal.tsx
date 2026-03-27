@@ -1,6 +1,7 @@
 import { Button, Icons, Modal } from "fidesui";
 import { useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import SharedMonitorConfigForm from "~/features/monitors/SharedMonitorConfigForm";
 import SharedMonitorConfigTable from "~/features/monitors/SharedMonitorConfigTable";
 import { SharedMonitorConfig } from "~/types/api";
@@ -52,7 +53,7 @@ const SharedConfigModal = () => {
         onCancel={handleCancel}
         destroyOnHidden
         centered
-        width={768}
+        width={MODAL_SIZE.lg}
         footer={null}
       >
         {modalState === SharedConfigModalState.FORM_VIEW && (

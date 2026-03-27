@@ -105,7 +105,14 @@ export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
 export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
+export const SEED_DATA_ROUTE = "/poc/seed-data";
 export const TEST_MONITORS_ROUTE = "/poc/test-monitors";
+
+// RBAC routes
+export const RBAC_ROUTE = "/settings/rbac";
+export const RBAC_ROLES_ROUTE = "/settings/rbac/roles";
+export const RBAC_ROLE_DETAIL_ROUTE = "/settings/rbac/roles/[id]";
+export const RBAC_ROLE_NEW_ROUTE = "/settings/rbac/roles/new";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
@@ -113,6 +120,16 @@ export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
 // Privacy Assessments routes
 export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
 export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
+
+// Data Purposes (Core Configuration)
+export const DATA_PURPOSES_ROUTE = "/data-purposes";
+export const DATA_PURPOSES_NEW_ROUTE = "/data-purposes/new";
+export const DATA_PURPOSES_EDIT_ROUTE = "/data-purposes/[fidesKey]";
+
+// Data Consumers (Core Configuration)
+export const DATA_CONSUMERS_ROUTE = "/data-consumers";
+export const DATA_CONSUMERS_NEW_ROUTE = "/data-consumers/new";
+export const DATA_CONSUMERS_EDIT_ROUTE = "/data-consumers/[id]";
 
 // Access Policies (Core Configuration)
 export const ACCESS_POLICIES_ROUTE = "/access-policies";
@@ -122,7 +139,3 @@ export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
-export const ACCESS_CONTROL_SUMMARY_ROUTE =
-  "/data-discovery/access-control/summary";
-export const ACCESS_CONTROL_REQUEST_LOG_ROUTE =
-  "/data-discovery/access-control/request-log";

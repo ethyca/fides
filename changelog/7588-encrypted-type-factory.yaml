@@ -1,4 +1,0 @@
-type: Changed
-description: Centralized encryption column definitions behind an encrypted_type() factory with callable key
-pr: 7588
-labels: []

@@ -1,4 +1,6 @@
 import { theme } from "antd/lib";
+import classNames from "classnames";
+import type { ReactNode } from "react";
 import { useId, useMemo } from "react";
 import {
   PolarAngleAxis,
@@ -7,6 +9,7 @@ import {
   Radar,
   RadarChart as RechartsRadarChart,
   ResponsiveContainer,
+  Tooltip,
 } from "recharts";
 
 import type { AntColorTokenKey } from "./chart-constants";
@@ -14,6 +17,8 @@ import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 import { ChartText } from "./ChartText";
+import styles from "./RadarChart.module.scss";
+import { RadarTooltipContent } from "./RadarTooltipContent";
 
 export type RadarPointStatus = "success" | "warning" | "error";
 
@@ -23,19 +28,21 @@ export interface RadarChartDataPoint {
   status?: RadarPointStatus;
 }
 
-const EMPTY_PLACEHOLDER_DATA: RadarChartDataPoint[] = [
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-  { subject: "", value: 10 },
-];
+const EMPTY_GRID_DATA = [{ value: 100 }, { value: 100 }, { value: 100 }];
+
+const TICK_HIT_WIDTH = 80;
+const TICK_HIT_HEIGHT = 20;
+const DOT_HIT_RADIUS = 20;
 
 export interface RadarChartProps {
   data?: RadarChartDataPoint[] | null;
   color?: AntColorTokenKey;
   animationDuration?: number;
+  outerRadius?: string;
+  showGrid?: boolean;
+  onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
+  tooltipContent?: (point: RadarChartDataPoint) => ReactNode;
+  className?: string;
 }
 
 interface RadarTickProps {
@@ -45,6 +52,7 @@ interface RadarTickProps {
   data: RadarChartDataPoint[];
   statusColors: Record<RadarPointStatus, string>;
   chartColor: string;
+  onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
 }
 
 const RadarTick = ({
@@ -54,22 +62,44 @@ const RadarTick = ({
   data,
   statusColors,
   chartColor,
+  onDimensionClick,
 }: RadarTickProps) => {
   if (!payload) {
     return null;
   }
   const point = data[payload.index];
   const statusColor = point?.status ? statusColors[point.status] : undefined;
+  const interactive = !!onDimensionClick;
 
   return (
-    <ChartText
-      x={x}
-      y={y}
-      fill={statusColor ?? chartColor}
-      fillOpacity={statusColor ? 1 : 0.75}
+    <g
+      className={classNames({
+        "radar-status-error": point?.status === "error",
+        [styles.interactive]: interactive,
+      })}
+      onClick={
+        interactive ? () => onDimensionClick(payload.index, point) : undefined
+      }
     >
-      {payload.value}
-    </ChartText>
+      {interactive && (
+        <rect
+          x={x - TICK_HIT_WIDTH / 2}
+          y={y - TICK_HIT_HEIGHT / 2}
+          width={TICK_HIT_WIDTH}
+          height={TICK_HIT_HEIGHT}
+          fill="transparent"
+        />
+      )}
+      <ChartText
+        x={x}
+        y={y}
+        fill={statusColor ?? chartColor}
+        fillOpacity={statusColor ? 1 : 0.75}
+        maxLines={2}
+      >
+        {payload.value}
+      </ChartText>
+    </g>
   );
 };
 
@@ -81,6 +111,7 @@ interface RadarDotProps {
   statusColors: Record<RadarPointStatus, string>;
   chartColor: string;
   bgColor: string;
+  onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
 }
 
 const RadarDot = ({
@@ -91,24 +122,50 @@ const RadarDot = ({
   statusColors,
   chartColor,
   bgColor,
+  onDimensionClick,
 }: RadarDotProps) => {
   const point = data[index];
+  const interactive = !!onDimensionClick;
   return (
-    <circle
-      cx={dotCx}
-      cy={dotCy}
-      r={CHART_STROKE.dotRadius}
-      fill={point?.status ? statusColors[point.status] : chartColor}
-      stroke={bgColor}
-      strokeWidth={CHART_STROKE.strokeWidth}
-    />
+    <g
+      className={classNames({
+        "radar-status-error": point?.status === "error",
+        [styles.interactive]: interactive,
+      })}
+    >
+      <circle
+        cx={dotCx}
+        cy={dotCy}
+        r={CHART_STROKE.dotRadius}
+        fill={point?.status ? statusColors[point.status] : chartColor}
+        stroke={bgColor}
+        strokeWidth={CHART_STROKE.strokeWidth}
+        pointerEvents="none"
+      />
+      {interactive && (
+        <circle
+          cx={dotCx}
+          cy={dotCy}
+          r={DOT_HIT_RADIUS}
+          fill="transparent"
+          stroke="none"
+          pointerEvents="all"
+          onClick={() => onDimensionClick(index, point)}
+        />
+      )}
+    </g>
   );
 };
 
 export const RadarChart = ({
   data,
   color,
+  outerRadius = "70%",
+  showGrid = true,
   animationDuration = CHART_ANIMATION.defaultDuration,
+  onDimensionClick,
+  tooltipContent,
+  className,
 }: RadarChartProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
@@ -127,15 +184,20 @@ export const RadarChart = ({
     [token],
   );
 
+  const interactive = !!onDimensionClick || !!tooltipContent;
+
   return (
-    // The chart is not interactive, so pointer events are turned off to avoid rendering a misleading outline
-    <div className="w-full h-full pointer-events-none">
+    <div
+      className={classNames("w-full h-full", className, {
+        "pointer-events-none": !interactive,
+      })}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart
-          data={empty ? EMPTY_PLACEHOLDER_DATA : data}
+          data={empty ? EMPTY_GRID_DATA : data}
           cx="50%"
           cy="50%"
-          outerRadius="70%"
+          outerRadius={outerRadius}
         >
           <ChartGradient
             id={gradientId}
@@ -143,42 +205,43 @@ export const RadarChart = ({
             type="radial"
             inverse
           />
+          {showGrid && (
+            <PolarGrid
+              stroke={chartColor}
+              strokeWidth={CHART_STROKE.strokeWidth * 0.25}
+              strokeOpacity={CHART_STROKE.strokeOpacity * 0.25}
+              gridType="circle"
+            />
+          )}
 
-          <PolarGrid
-            stroke={chartColor}
-            strokeWidth={CHART_STROKE.strokeWidth * 0.25}
-            strokeOpacity={CHART_STROKE.strokeOpacity * 0.25}
-          />
+          <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
 
-          <PolarRadiusAxis tick={false} axisLine={false} />
+          {empty && <Radar dataKey="value" fill="none" stroke="none" />}
 
-          <Radar
-            dataKey="value"
-            stroke={chartColor}
-            strokeWidth={CHART_STROKE.strokeWidth}
-            strokeOpacity={CHART_STROKE.strokeOpacity}
-            strokeLinecap={CHART_STROKE.strokeLinecap}
-            strokeLinejoin={CHART_STROKE.strokeLinejoin}
-            fill={`url(#${gradientId})`}
-            dot={
-              !empty ? (
+          {!empty && (
+            <Radar
+              dataKey="value"
+              stroke={chartColor}
+              strokeWidth={CHART_STROKE.strokeWidth}
+              strokeOpacity={CHART_STROKE.strokeOpacity}
+              strokeLinecap={CHART_STROKE.strokeLinecap}
+              strokeLinejoin={CHART_STROKE.strokeLinejoin}
+              fill={`url(#${gradientId})`}
+              dot={
                 <RadarDot
                   data={data!}
                   statusColors={STATUS_COLORS}
                   chartColor={chartColor}
                   bgColor={token.colorBgContainer}
+                  onDimensionClick={onDimensionClick}
                 />
-              ) : (
-                false
-              )
-            }
-            activeDot={false}
-            isAnimationActive={
-              !empty && animationDuration > 0 && animationActive
-            }
-            animationDuration={animationDuration}
-            animationEasing={CHART_ANIMATION.easing}
-          />
+              }
+              activeDot={false}
+              isAnimationActive={animationDuration > 0 && animationActive}
+              animationDuration={animationDuration}
+              animationEasing={CHART_ANIMATION.easing}
+            />
+          )}
 
           {!empty && (
             <PolarAngleAxis
@@ -188,8 +251,16 @@ export const RadarChart = ({
                   data={data!}
                   statusColors={STATUS_COLORS}
                   chartColor={chartColor}
+                  onDimensionClick={onDimensionClick}
                 />
               }
+            />
+          )}
+
+          {interactive && !empty && (
+            <Tooltip
+              cursor={false}
+              content={<RadarTooltipContent tooltipContent={tooltipContent} />}
             />
           )}
         </RechartsRadarChart>

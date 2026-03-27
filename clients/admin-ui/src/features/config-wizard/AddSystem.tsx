@@ -4,7 +4,8 @@ import {
   ChakraSimpleGrid as SimpleGrid,
   ChakraStack as Stack,
   ChakraText as Text,
-  useChakraDisclosure as useDisclosure,
+  ManualSetupIcon,
+  useModal,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
@@ -12,20 +13,15 @@ import { useRouter } from "next/router";
 import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import {
-  AWSLogoIcon,
-  ManualSetupIcon,
-  OktaLogoIcon,
-} from "~/features/common/Icon";
-import { UpgradeModal } from "~/features/common/modals/UpgradeModal";
-import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
 } from "~/features/common/nav/routes";
 import { ValidTargets } from "~/types/api";
 
 import CalloutNavCard from "../common/CalloutNavCard";
+import { AWSLogo } from "../common/logos/AWSLogo";
+import { OktaLogo } from "../common/logos/OktaLogo";
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
-import DataFlowScannerOption from "./DataFlowScannerOption";
 import { SystemMethods } from "./types";
 
 const SectionTitle = ({ children }: { children: string }) => (
@@ -44,7 +40,7 @@ const SectionTitle = ({ children }: { children: string }) => (
 const AddSystem = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const modal = useModal();
   const { dictionaryService: isCompassEnabled } = useFeatures();
 
   return (
@@ -61,21 +57,10 @@ const AddSystem = () => {
 
         <Text>
           Fides can automatically discover new systems in your AWS
-          infrastructure or Okta accounts. For services not covered by the
-          automated scanners or analog processes, you may also manually add new
-          systems to your map.
+          infrastructure or Okta accounts. For everything else, you may manually
+          add systems to your map.
         </Text>
       </Stack>
-      <UpgradeModal
-        isOpen={isOpen}
-        onConfirm={() => {
-          window.open("https://ethyca.com/speak-with-us");
-        }}
-        onCancel={() => {
-          router.push(ADD_SYSTEMS_MANUAL_ROUTE);
-        }}
-        onClose={onClose}
-      />
       <Box data-testid="manual-options">
         <SectionTitle>Manually add systems</SectionTitle>
         <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
@@ -92,8 +77,8 @@ const AddSystem = () => {
             <CalloutNavCard
               title="Add a system"
               color={palette.FIDESUI_SANDSTONE}
-              icon={<ManualSetupIcon boxSize={6} />}
-              description="Manually add a system for services not covered by automated scanners"
+              icon={<ManualSetupIcon size={24} />}
+              description="Manually add a system for services not covered by AWS or Okta discovery"
             />
           </button>
           <button
@@ -105,7 +90,21 @@ const AddSystem = () => {
                 dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
                 router.push(ADD_SYSTEMS_MULTIPLE_ROUTE);
               } else {
-                onOpen();
+                modal.confirm({
+                  title: "Upgrade to choose vendors",
+                  content:
+                    "To choose vendors and have system information auto-populated using Fides Compass, you will need to upgrade Fides. Meanwhile, you can manually add individual systems using the button below.",
+                  okText: "Upgrade",
+                  cancelText: "Add vendors manually",
+                  centered: true,
+                  icon: null,
+                  onOk: () => {
+                    window.open("https://ethyca.com/speak-with-us");
+                  },
+                  onCancel: () => {
+                    router.push(ADD_SYSTEMS_MANUAL_ROUTE);
+                  },
+                });
               }
             }}
             data-testid="multiple-btn"
@@ -113,7 +112,7 @@ const AddSystem = () => {
             <CalloutNavCard
               title="Add multiple systems"
               color={palette.FIDESUI_OLIVE}
-              icon={<ManualSetupIcon boxSize={6} />}
+              icon={<ManualSetupIcon size={24} />}
               description="Choose vendors and automatically populate system details"
             />
           </button>
@@ -137,7 +136,7 @@ const AddSystem = () => {
               title="Scan your infrastructure (AWS)"
               color={palette.FIDESUI_TERRACOTTA}
               description="Automatically discover new systems in your AWS infrastructure"
-              icon={<AWSLogoIcon boxSize={6} />}
+              icon={<AWSLogo size={24} />}
             />
           </button>
           <button
@@ -154,15 +153,9 @@ const AddSystem = () => {
               title="Scan your Sign On Provider (Okta)"
               color={palette.FIDESUI_MINOS}
               description="Automatically discover new systems in your Okta infrastructure"
-              icon={<OktaLogoIcon boxSize={6} />}
+              icon={<OktaLogo size={24} />}
             />
           </button>
-          <DataFlowScannerOption
-            onClick={() => {
-              dispatch(changeStep());
-              dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
-            }}
-          />
         </SimpleGrid>
       </Box>
     </Stack>

@@ -73,6 +73,9 @@ class ExecutionLog(TaskExecutionLog, Base):
         index=True,
         nullable=False,
     )
+    # Version of the SaaS integration config at the time of execution (e.g. "2.0.0").
+    # Null for non-SaaS connectors. Useful for troubleshooting OOB and custom integration issues.
+    saas_version = Column(String, nullable=True)
 
     privacy_request_id = Column(
         String,

@@ -1,10 +1,10 @@
 import {
   Button,
   ChakraUseDisclosureReturn as UseDisclosureReturn,
+  Modal,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import FormModal from "~/features/common/modals/FormModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
@@ -69,10 +69,12 @@ const ConfigureIntegrationModal = ({
   );
 
   return (
-    <FormModal
+    <Modal
       title={`Manage ${connection?.name} integration`}
-      isOpen={isOpen}
-      onClose={onClose}
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
       footer={modalFooter}
     >
       <ConfigureIntegrationForm
@@ -83,7 +85,7 @@ const ConfigureIntegrationModal = ({
         onFormStateChange={setFormState}
         initialSystemFidesKey={initialSystemFidesKey}
       />
-    </FormModal>
+    </Modal>
   );
 };
 

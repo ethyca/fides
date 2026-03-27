@@ -2,10 +2,9 @@ import {
   Button,
   ChakraBox as Box,
   ChakraHStack as HStack,
-  ChakraSmallAddIcon as SmallAddIcon,
   ChakraStack as Stack,
   ChakraText as Text,
-  ChakraWarningTwoIcon as WarningTwoIcon,
+  Icons,
 } from "fidesui";
 import { ReactNode } from "react";
 
@@ -27,7 +26,9 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
     data-testid="empty-state"
   >
     <HStack>
-      <WarningTwoIcon alignSelf="start" color="blue.400" mt={0.5} />
+      <Box as="span" alignSelf="start" color="blue.400" mt={0.5}>
+        <Icons.WarningAltFilled size={16} />
+      </Box>
 
       <Box>
         <Text fontWeight="bold" fontSize="sm" mb={1}>
@@ -43,7 +44,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
             type="primary"
             data-testid="add-btn"
             onClick={handleAdd}
-            icon={<SmallAddIcon boxSize={4} />}
+            icon={<Icons.Add size={16} />}
             iconPosition="end"
           >
             Add data use

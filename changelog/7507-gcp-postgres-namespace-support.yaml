@@ -1,4 +1,0 @@
-type: Added
-description: Added namespace metadata support for Google Cloud SQL Postgres connector
-pr: 7507
-labels: []

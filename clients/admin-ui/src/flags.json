@@ -70,8 +70,8 @@
     "test": false,
     "production": false
   },
-  "alphaPolicies": {
-    "label": "Alpha DSR Policies",
+  "policies": {
+    "label": "DSR Policies",
     "description": "Privacy request policies management",
     "development": true,
     "test": true,
@@ -80,6 +80,20 @@
   "alphaDarkMode": {
     "label": "Alpha light and dark theme",
     "description": "Enable switching themes on Home page",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaRbac": {
+    "label": "Alpha RBAC",
+    "description": "Dynamic role-based access control system for roles, permissions, and user assignments",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaDashboard": {
+    "label": "Alpha new dashboard",
+    "description": "Enable the new Ant Design-only home dashboard",
     "development": true,
     "test": false,
     "production": false
@@ -94,6 +108,13 @@
   "alphaPurposeBasedAccessControl": {
     "label": "Alpha purpose-based access control",
     "description": "Enable purpose-based access control feature",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "entraMonitor": {
+    "label": "Entra monitor",
+    "description": "Enable Microsoft Entra ID (Azure AD) identity provider monitoring",
     "development": true,
     "test": false,
     "production": false

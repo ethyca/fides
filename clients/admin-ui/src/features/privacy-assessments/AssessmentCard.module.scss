@@ -20,6 +20,12 @@
   background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
 }
 
+.titleLink {
+  --ant-color-link: var(--ant-color-text);
+  --ant-color-link-hover: var(--ant-color-text-secondary);
+  --ant-color-link-active: var(--ant-color-text);
+}
+
 .textWithTags {
   line-height: 2em;
 }

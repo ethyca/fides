@@ -22,12 +22,12 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { TableSkeletonLoader } from "~/features/common/table/v2";
 import { ChatProviderSettingsResponse, ScopeRegistryEnum } from "~/types/api";
 
+import { SlackLogo } from "../common/logos/SlackLogo";
 import {
   useDeleteChatConfigMutation,
   useEnableChatConfigMutation,
   useGetChatConfigsQuery,
 } from "./chatProvider.slice";
-import SlackIcon from "./icons/SlackIcon";
 
 const { Text } = Typography;
 
@@ -143,9 +143,9 @@ export const ChatConfigurations = () => {
           const getProviderIcon = () => {
             switch (record.provider_type) {
               case "slack":
-                return <SlackIcon />;
+                return <SlackLogo size={20} />;
               default:
-                return <SlackIcon />;
+                return <SlackLogo size={20} />;
             }
           };
 
@@ -313,7 +313,7 @@ export const ChatConfigurations = () => {
 
   return (
     <>
-      <Flex vertical gap="middle">
+      <Flex vertical gap="medium">
         <Text style={{ maxWidth: "70%" }}>
           Configure chat providers to enable notifications, alerts, and
           AI-powered privacy assessment questionnaires through platforms like

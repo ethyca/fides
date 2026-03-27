@@ -1,18 +1,8 @@
 import { Table as TableInstance } from "@tanstack/react-table";
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraText as Text,
-  Flex,
-} from "fidesui";
+import { Button, ChakraText as Text, Flex, Modal } from "fidesui";
 import { useCallback, useMemo } from "react";
+
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
 import { getColumnHeaderText } from "../util";
 import {
@@ -107,39 +97,39 @@ export const ColumnSettingsModal = <T,>({
   ]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader pb={0}>{headerText}</ModalHeader>
-        <ModalCloseButton data-testid="column-settings-close-button" />
-        <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
-            You can toggle columns on and off to hide or show them in the table.
-            Additionally, you can drag columns up or down to change the order
-          </Text>
-          <Flex className="max-h-96 overflow-y-auto">
-            <DraggableColumnList
-              columns={columnEditor.columns}
-              columnEditor={columnEditor}
-            />
-          </Flex>
-        </ModalBody>
-        <ModalFooter>
-          <Box display="flex" justifyContent="space-between" width="100%">
-            <Button onClick={onClose} className="mr-3 grow">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              type="primary"
-              className="grow"
-              data-testid="save-button"
-            >
-              Save
-            </Button>
-          </Box>
-        </ModalFooter>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      width={MODAL_SIZE.md}
+      centered
+      destroyOnHidden
+      title={headerText}
+      footer={
+        <div className="flex justify-between">
+          <Button onClick={onClose} className="mr-3 grow">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            type="primary"
+            className="grow"
+            data-testid="save-button"
+          >
+            Save
+          </Button>
+        </div>
+      }
+    >
+      <Text fontSize="sm" color="gray.500" mb={4}>
+        You can toggle columns on and off to hide or show them in the table.
+        Additionally, you can drag columns up or down to change the order
+      </Text>
+      <Flex className="max-h-96 overflow-y-auto">
+        <DraggableColumnList
+          columns={columnEditor.columns}
+          columnEditor={columnEditor}
+        />
+      </Flex>
     </Modal>
   );
 };

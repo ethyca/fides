@@ -1,4 +1,0 @@
-type: Changed
-description: Changed System.connection_configs from scalar to list for many:one support
-pr: 7555
-labels: []

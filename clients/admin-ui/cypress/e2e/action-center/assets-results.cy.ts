@@ -62,8 +62,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.wait("@patchAssets");
       cy.getByTestId("system-select").should("not.exist");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Browser request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
       );
     });
@@ -138,8 +138,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.wait("@patchAssets");
       cy.getByTestId("system-select").should("not.exist");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Browser request "destination" has been assigned to Fidesctl System.',
       );
 
@@ -158,10 +158,10 @@ describe("Action center Asset Results", () => {
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("system-select").antSelect("Demo Marketing System");
       cy.wait("@patchAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.shouldShowMessage("success");
       cy.getByTestId("system-select").should("not.exist");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Browser request "collect" has been assigned to Demo Marketing System.',
       );
     });
@@ -180,8 +180,8 @@ describe("Action center Asset Results", () => {
       cy.wait("@postSystemVendors");
       // assigns asset to new system
       cy.wait("@patchAssets");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Test System has been added to your system inventory and the Browser request "gtm.js" has been assigned to that system.',
       );
     });
@@ -190,8 +190,8 @@ describe("Action center Asset Results", () => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowNotification(
+        "success",
         'Browser request "11020051272" has been added to the system inventory.',
       );
     });
@@ -200,8 +200,8 @@ describe("Action center Asset Results", () => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowNotification(
+        "success",
         'Browser request "11020051272" has been ignored and will not appear in future scans.',
       );
     });
@@ -211,8 +211,8 @@ describe("Action center Asset Results", () => {
         cy.getByTestId("restore-btn").click({ force: true });
       });
       cy.wait("@restoreAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Browser request "697301175" is no longer ignored and will appear in future scans.',
       );
     });
@@ -226,8 +226,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.get(".ant-dropdown-menu-item").contains("Add").click();
       cy.wait("@addAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowNotification(
+        "success",
         "3 assets from Google Tag Manager have been added to the system inventory.",
       );
     });
@@ -241,8 +241,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.get(".ant-dropdown-menu-item").contains("Ignore").click();
       cy.wait("@ignoreAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         "3 assets from Google Tag Manager have been ignored and will not appear in future scans.",
       );
     });
@@ -264,8 +264,8 @@ describe("Action center Asset Results", () => {
         cy.findByRole("menuitem", { name: "Restore" }).click({ force: true });
       });
       cy.wait("@restoreAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         "2 assets have been restored and will appear in future scans.",
       );
     });
@@ -284,8 +284,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
       cy.wait("@slowRequest");
       cy.url().should("not.contain", systemId);
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         "11 assets from Google Tag Manager have been added to the system inventory.",
       );
     });
@@ -303,8 +303,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.getByTestId("save-btn").click();
       cy.wait("@patchAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         "3 assets have been assigned to Fidesctl System.",
       );
     });
@@ -324,8 +324,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("taxonomy-select").antSelect("essential");
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@patchAssets");
-      cy.getByTestId("toast-success-msg").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
       cy.getAntTableRow(rowUrns[0]).within(() => {
@@ -762,8 +762,8 @@ describe("Action center Asset Results", () => {
           },
         ]);
       });
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Consent category added to Browser request "11020051272"',
       );
     });
@@ -788,8 +788,8 @@ describe("Action center Asset Results", () => {
           },
         ]);
       });
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Consent category removed from Browser request "anchor"',
       );
 
@@ -812,8 +812,8 @@ describe("Action center Asset Results", () => {
           },
         ]);
       });
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Consent category removed from Browser request "697301175_with_a_really_long_name_that_should_b..."',
       );
     });

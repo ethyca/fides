@@ -1,11 +1,11 @@
 import { Option } from "common/form/inputs";
-import { useAlert } from "common/hooks";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
   usePutDatasetConfigsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
+import { useMessage } from "fidesui";
 import { useMemo } from "react";
 
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
@@ -22,13 +22,17 @@ export const useDatasetConfigField = ({
 }: UseDatasetConfigField) => {
   const [putDatasetConfig] = usePutDatasetConfigsMutation();
 
-  const { data } = useGetConnectionConfigDatasetConfigsQuery(
-    connectionConfig?.key ?? "",
+  const connectionKey = connectionConfig?.key ?? "";
+  const { currentData } = useGetConnectionConfigDatasetConfigsQuery(
+    connectionKey,
+    {
+      skip: !connectionKey,
+    },
   );
 
-  const initialDatasets = data?.items?.map((d) => d.fides_key) ?? [];
+  const initialDatasets = currentData?.items?.map((d) => d.fides_key) ?? [];
   const initialDatasetOptions =
-    data?.items?.map((d) => ({
+    currentData?.items?.map((d) => ({
       value: d.fides_key,
       label: d.ctl_dataset.name || d.fides_key,
     })) ?? [];
@@ -47,7 +51,7 @@ export const useDatasetConfigField = ({
     [unlinkedDatasets],
   );
 
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
 
   const patchConnectionDatasetConfig = async (
     values: ConnectionConfigFormValues,
@@ -67,9 +71,9 @@ export const useDatasetConfigField = ({
 
     const payload = await putDatasetConfig(params).unwrap();
     if (payload.failed?.length > 0) {
-      errorAlert(payload.failed[0].message);
+      message.error(payload.failed[0].message);
     } else if (showSuccessAlert) {
-      successAlert("Dataset successfully updated!");
+      message.success("Dataset successfully updated!");
     }
   };
 

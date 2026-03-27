@@ -1,7 +1,0 @@
-type: Fixed
-description: >
-  Fixed consent status tracking to key per-connection (connection_config.key)
-  instead of per-system (system.fides_key). This changes the key shape in the
-  affected_system_status JSONB column; existing rows are not backfilled.
-pr: 7557
-labels: []

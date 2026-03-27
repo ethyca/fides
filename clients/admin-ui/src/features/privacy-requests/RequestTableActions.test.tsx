@@ -79,6 +79,12 @@ jest.mock("fidesui", () => {
         onClose: () => setIsOpen(false),
       };
     },
+    useModal: () => ({
+      confirm: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+      error: jest.fn(),
+    }),
   };
 });
 
@@ -115,25 +121,6 @@ jest.mock("./DenyPrivacyRequestModal", () => ({
           type="button"
         >
           Confirm Deny
-        </button>
-      </div>
-    ) : null,
-}));
-
-jest.mock("~/features/common/modals/ConfirmationModal", () => ({
-  __esModule: true,
-  default: ({ isOpen, onConfirm, onClose }: any) =>
-    isOpen ? (
-      <div data-testid="confirmation-modal">
-        <button
-          data-testid="confirmation-modal-confirm"
-          onClick={() => {
-            onConfirm();
-            onClose();
-          }}
-          type="button"
-        >
-          Confirm
         </button>
       </div>
     ) : null,

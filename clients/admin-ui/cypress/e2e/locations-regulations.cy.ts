@@ -108,7 +108,7 @@ describe("Locations and regulations", () => {
       });
 
       // Clear search should reset to initial state
-      cy.get("button.ant-input-clear-icon").click();
+      cy.getByTestId("search-bar").clear();
       cy.getByTestId("picker-card-Europe");
       cy.getByTestId("picker-card-North America");
       cy.getByTestId("picker-card-South America");
@@ -198,7 +198,7 @@ describe("Locations and regulations", () => {
       });
 
       cy.getByTestId("save-btn").click();
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("OK").click();
       cy.wait("@patchLocations").then((interception) => {
         const { body } = interception.request;
         // No changes to regulations
@@ -408,7 +408,7 @@ describe("Locations and regulations", () => {
       });
 
       cy.getByTestId("save-btn").click();
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("OK").click();
       cy.wait("@patchLocations").then((interception) => {
         const { body } = interception.request;
         // No changes to locations

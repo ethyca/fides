@@ -9,6 +9,7 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
+  CUSTOM_TAG_COLOR,
   Tag,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -265,6 +266,22 @@ const EventLog = ({
           </Text>
         </Td>
       )}
+      {hasDatasetEntries && !isRequestFinishedView && (
+        <Td>
+          {detail.saas_version ? (
+            <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+          ) : (
+            <Text
+              color="gray.600"
+              fontSize="xs"
+              lineHeight="4"
+              fontWeight="medium"
+            >
+              -
+            </Text>
+          )}
+        </Td>
+      )}
     </Tr>
   ));
 
@@ -337,6 +354,18 @@ const EventLog = ({
                     fontWeight="medium"
                   >
                     Collection
+                  </Text>
+                </Th>
+              )}
+              {hasDatasetEntries && !isRequestFinishedView && (
+                <Th>
+                  <Text
+                    color="black"
+                    fontSize="xs"
+                    lineHeight="4"
+                    fontWeight="medium"
+                  >
+                    Version
                   </Text>
                 </Th>
               )}

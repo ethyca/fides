@@ -1,4 +1,4 @@
-import { Card, CardProps } from "antd/lib";
+import { Card, CardProps, theme, Typography } from "antd/lib";
 import classNames from "classnames";
 import React from "react";
 
@@ -12,31 +12,78 @@ export interface CustomCardProps extends CardProps {
    * @default "top"
    */
   coverPosition?: "top" | "bottom";
-  /**
-   * Layout of the card header when both a `title` and `tabList` are provided.
-   * - `"stacked"`: default Ant Design behaviour (title above tabs)
-   * - `"inline"`: title and tabs rendered on the same row, with tabs right-aligned
-   * @default "stacked"
-   */
-  headerLayout?: "stacked" | "inline";
 }
 
 const withCustomProps = (WrappedComponent: typeof Card) => {
   const WrappedCard = React.forwardRef<HTMLDivElement, CustomCardProps>(
     (
-      { coverPosition = "top", headerLayout = "stacked", className, ...props },
+      {
+        coverPosition = "top",
+        className,
+        styles: stylesProp,
+        title,
+        tabList,
+        size,
+        ...props
+      },
       ref,
-    ) => (
-      <WrappedComponent
-        ref={ref}
-        className={classNames(
-          { [styles.bottomCover]: coverPosition === "bottom" },
-          { [styles.inlineHeader]: headerLayout === "inline" },
-          className,
-        )}
-        {...props}
-      />
-    ),
+    ) => {
+      const { token } = theme.useToken();
+
+      // String titles get heading treatment (Typography.Title, collapsed padding).
+      // JSX titles pass through unchanged. Header divider is always removed.
+      const isStringTitle = typeof title === "string";
+
+      const headerStyle: React.CSSProperties = { borderBottom: "none" };
+      if (isStringTitle) {
+        const hPad = size === "small" ? token.paddingSM : token.paddingLG;
+        headerStyle.minHeight = "unset";
+        headerStyle.padding = `${hPad}px ${hPad}px 0`;
+      }
+
+      const resolvedTabList = tabList?.map((tab) => ({
+        ...tab,
+        label: (
+          <Typography.Text style={{ fontSize: token.fontSize }}>
+            {tab.label}
+          </Typography.Text>
+        ),
+      }));
+
+      const resolvedTitle = isStringTitle ? (
+        <Typography.Text strong style={{ fontSize: token.fontSize }}>
+          {title}
+        </Typography.Text>
+      ) : (
+        title
+      );
+
+      // styles prop can be an object or a function; only spread if it's an object
+      const stylesObj =
+        typeof stylesProp === "object" && !Array.isArray(stylesProp)
+          ? stylesProp
+          : undefined;
+
+      return (
+        <WrappedComponent
+          ref={ref}
+          className={classNames(
+            { [styles.bottomCover]: coverPosition === "bottom" },
+            { [styles.inlineHeader]: !!tabList },
+            { [styles.stringTitle]: isStringTitle },
+            className,
+          )}
+          tabList={resolvedTabList}
+          title={resolvedTitle}
+          size={size}
+          styles={{
+            ...stylesObj,
+            header: { ...headerStyle, ...(stylesObj?.header ?? {}) },
+          }}
+          {...props}
+        />
+      );
+    },
   );
 
   WrappedCard.displayName = "CustomCard";
@@ -44,39 +91,12 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
 };
 
 /**
- * Higher-order component that extends Ant Design's Card with additional layout options.
+ * Extends Ant Design's Card. The header divider is always removed. String titles
+ * are wrapped in `<Typography.Text strong>` at `token.fontSize`. JSX titles
+ * pass through unchanged. Tab labels are wrapped at `token.fontSize`.
  *
- * Additional props:
- * @param {"top" | "bottom"} [coverPosition="top"] - Controls where the `cover` content is
- *   displayed relative to the card body. Use `"bottom"` to place a sparkline or chart
- *   below the card content.
- * @param {"stacked" | "inline"} [headerLayout="stacked"] - Controls how the card header is
- *   laid out when both a `title` and `tabList` are provided. Use `"inline"` to place the
- *   title and tab bar on the same row, with the tabs right-aligned.
- *
- * @example
- * // Card with a sparkline at the bottom
- * <CustomCard
- *   variant="borderless"
- *   cover={<Sparkline data={data} />}
- *   coverPosition="bottom"
- * >
- *   <Statistic title="Data Sharing" value="15,112,893" />
- * </CustomCard>
- *
- * @example
- * // Card with title left and tabs right-aligned on the same row
- * const [activeTab, setActiveTab] = useState("a");
- * <CustomCard
- *   variant="borderless"
- *   title="Overview"
- *   headerLayout="inline"
- *   tabList={[{ key: "a", label: "Tab A" }, { key: "b", label: "Tab B" }]}
- *   activeTabKey={activeTab}
- *   onTabChange={setActiveTab}
- * >
- *   <div>Tab content here</div>
- * </CustomCard>
+ * @param {"top" | "bottom"} [coverPosition="top"] - Position of the `cover` content
+ *   relative to the card body.
  */
 export const CustomCard = Object.assign(withCustomProps(Card), {
   Meta: Card.Meta,
