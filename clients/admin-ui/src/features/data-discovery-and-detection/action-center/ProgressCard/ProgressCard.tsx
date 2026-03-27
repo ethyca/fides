@@ -102,7 +102,7 @@ export const ProgressCard = ({
         <Flex
           vertical={!compact}
           className={classNames([
-            "gap-0 xl:gap-1",
+            compact ? "gap-2 xl:gap-4" : "gap-0 xl:gap-1",
             !compact && "content-center justify-center text-center",
           ])}
         >
