@@ -7,6 +7,7 @@ import {
   WebMonitorUpdates,
 } from "~/types/api";
 import { InfrastructureMonitorUpdates } from "~/types/api/models/InfrastructureMonitorUpdates";
+import { StatusCounts } from "~/types/api/models/StatusCounts";
 
 import { ActionCenterTabHash } from "./hooks/useActionCenterTabs";
 
@@ -77,28 +78,34 @@ export const MONITOR_UPDATES_TO_IGNORE = [
   | keyof WebMonitorUpdates
 )[];
 
-export const MONITOR_UPDATE_NAMES = new Map<
+export const MONITOR_UPDATE_LABELS: Record<
   | keyof WebMonitorUpdates
   | keyof Omit<
       DatastoreMonitorUpdates,
       (typeof MONITOR_UPDATES_TO_IGNORE)[number]
     >
-  | keyof InfrastructureMonitorUpdates,
+  | keyof InfrastructureMonitorUpdates
+  | keyof StatusCounts,
   [string, string]
->([
-  ["cookie", ["Cookie", "Cookies"]],
-  ["browser_request", ["Browser request", "Browser requests"]],
-  ["image", ["Image", "Images"]],
-  ["iframe", ["iFrame", "iFrames"]],
-  ["javascript_tag", ["JavaScript tag", "JavaScript tags"]],
-  ["unlabeled", ["Unlabeled", "Unlabeled"]],
-  ["in_review", ["Classified", "Classified"]],
-  ["classifying", ["Classifying", "Classifying"]],
-  ["removals", ["Removal", "Removals"]],
-  ["reviewed", ["Reviewed", "Reviewed"]],
-  ["known", ["Known System", "Known Systems"]],
-  ["unknown", ["Unknown System", "Unknown Systems"]],
-]);
+> = {
+  addition: ["Added", "Added"],
+  classified: ["Classified", "Classified"],
+  removal: ["Removal", "Removals"],
+  monitored: ["Monitored", "Monitored"],
+  approved: ["Approved", "Approved"],
+  cookie: ["Cookie", "Cookies"],
+  browser_request: ["Browser request", "Browser requests"],
+  image: ["Image", "Images"],
+  iframe: ["iFrame", "iFrames"],
+  javascript_tag: ["JavaScript tag", "JavaScript tags"],
+  unlabeled: ["Unlabeled", "Unlabeled"],
+  in_review: ["Classified", "Classified"],
+  classifying: ["Classifying", "Classifying"],
+  removals: ["Removal", "Removals"],
+  reviewed: ["Reviewed", "Reviewed"],
+  known: ["Known system", "Known systems"],
+  unknown: ["Unknown system", "Unknown systems"],
+};
 
 export const MONITOR_UPDATE_ORDER = [
   "cookie",
