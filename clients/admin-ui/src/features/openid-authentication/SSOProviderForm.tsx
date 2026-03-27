@@ -3,10 +3,10 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraStack as Stack,
-  useChakraToast as useToast,
+  Icons,
+  useMessage,
 } from "fidesui";
 import {
   FieldArray,
@@ -24,7 +24,6 @@ import {
   Label,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useCreateOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,
@@ -153,7 +152,7 @@ const CustomProviderExtraFields = () => {
                 />
                 <Button
                   aria-label="delete-scope"
-                  icon={<DeleteIcon />}
+                  icon={<Icons.TrashCan />}
                   className="z-[2] ml-4"
                   onClick={() => {
                     arrayHelpers.remove(index);
@@ -196,7 +195,7 @@ const SSOProviderForm = ({
     [openIDProvider],
   );
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (
     values: SSOProviderFormValues,
@@ -212,9 +211,9 @@ const SSOProviderForm = ({
           result.error,
           "An unexpected error occurred while editing the SSO provider. Please try again.",
         );
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
       } else {
-        toast(successToastParams("SSO provider configuration saved."));
+        message.success("SSO provider configuration saved.");
         onClose();
         formikHelpers.resetForm({});
         if (onSuccess) {

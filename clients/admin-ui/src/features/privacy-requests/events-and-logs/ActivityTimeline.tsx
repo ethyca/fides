@@ -41,7 +41,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const { commentItems, isLoading: isCommentsLoading } =
     usePrivacyRequestComments(privacyRequestId);
   const { eventItems, isLoading: isResultsLoading } =
-    usePrivacyRequestEventLogs(results);
+    usePrivacyRequestEventLogs(results, subjectRequest.task_status_by_dataset);
   const {
     manualTaskItems,
     taskCommentIds,
@@ -162,7 +162,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     <Box width="100%">
       <List
         className="!border-none"
-        bordered={false}
         split={false}
         data-testid="activity-timeline-list"
       >

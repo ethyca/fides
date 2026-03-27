@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Optional, Set, Tuple
 
 import yaml
@@ -25,6 +26,9 @@ from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.manual_task import (
     ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigField,
+    ManualTaskFieldType,
     ManualTaskParentEntityType,
     ManualTaskType,
 )
@@ -50,6 +54,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_saas import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.event_audit_util import (
@@ -246,6 +251,20 @@ class ConnectionService:
         self, connection_config: ConnectionConfig, msg: str
     ) -> TestStatusMessage:
         """Connect, verify with a trivial query or API request, and report the status."""
+
+        # Synthetic test connection types (test_datastore, test_website) have no
+        # real connector behind them, so we short-circuit to success.
+        if connection_config.connection_type in (
+            ConnectionType.test_datastore,
+            ConnectionType.test_website,
+        ):
+            connection_config.update_test_status(
+                test_status=ConnectionTestStatus.succeeded, db=self.db
+            )
+            return TestStatusMessage(
+                msg=msg,
+                test_status=ConnectionTestStatus.succeeded,
+            )
 
         connector = get_connector(connection_config)
 
@@ -605,7 +624,7 @@ class ConnectionService:
             connection_config.connection_type.value  # type: ignore
         )
         if auto_task_type and not connection_config.manual_task:
-            ManualTask.create(
+            manual_task = ManualTask.create(
                 db=self.db,
                 data={
                     "task_type": auto_task_type,
@@ -613,20 +632,60 @@ class ConnectionService:
                     "parent_entity_type": ManualTaskParentEntityType.connection_config,
                 },
             )
+            if auto_task_type == ManualTaskType.jira_ticket:
+                self._create_default_jira_configs(manual_task)
 
         return ConnectionConfigurationResponse.model_validate(connection_config)
+
+    def _create_default_jira_configs(self, manual_task: ManualTask) -> None:
+        """Create default access + erasure configs with a 'complete' checkbox for Jira tasks.
+
+        Both configs are needed so the DSR graph blocks for either request type.
+        The Jira ticket tracks the whole request; the graph task decides which
+        config to use based on the policy's action type.
+        """
+        for action_type in (ActionType.access, ActionType.erasure):
+            config = ManualTaskConfig.create(
+                db=self.db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_type": action_type,
+                    "version": 1,
+                    "is_current": True,
+                },
+            )
+            ManualTaskConfigField.create(
+                db=self.db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_id": config.id,
+                    "field_key": "complete",
+                    "field_type": ManualTaskFieldType.checkbox,
+                    "field_metadata": {
+                        "label": "Mark as complete",
+                        "required": True,
+                    },
+                },
+            )
 
     def update_saas_instance(
         self,
         connection_config: ConnectionConfig,
         template: ConnectorTemplate,
         saas_config_instance: SaaSConfig,
+        stored_dataset_json: Optional[dict] = None,
     ) -> None:
         """
         Replace in the DB the existing SaaS instance configuration data
         (SaaSConfig, DatasetConfig) associated with the given ConnectionConfig
         with new instance configuration data based on the given ConnectorTemplate.
         Preserves monitored staged resources by merging them into the new configuration.
+
+        Args:
+            stored_dataset_json: Pre-read baseline template dataset to use for the 3-way
+                merge. When provided, skips the DB read of SaasTemplateDataset. Pass this
+                when updating multiple connection configs in a batch to avoid the baseline
+                being overwritten mid-loop by a previous iteration.
         """
 
         template_vals = SaasConnectionTemplateValues(
@@ -662,7 +721,10 @@ class ConnectionService:
 
         # Update dataset config with merge logic for monitored resources
         self.upsert_dataset_config_from_template(
-            connection_config, template, template_vals
+            connection_config,
+            template,
+            template_vals,
+            stored_dataset_json=stored_dataset_json,
         )
 
     def create_connection_config_from_template_no_save(
@@ -688,6 +750,7 @@ class ConnectionService:
         connection_config: ConnectionConfig,
         template: ConnectorTemplate,
         template_values: SaasConnectionTemplateValues,
+        stored_dataset_json: Optional[dict] = None,
     ) -> DatasetConfig:
         """
         Creates a `DatasetConfig` from a template
@@ -696,6 +759,12 @@ class ConnectionService:
         then the existing record is updated.
 
         Automatically preserves any monitored staged resources during the update.
+
+        Args:
+            stored_dataset_json: Pre-read baseline template dataset to use for the 3-way
+                merge. When provided, skips the DB read of SaasTemplateDataset. Pass this
+                when updating multiple connection configs in a batch to avoid the baseline
+                being overwritten mid-loop by a previous iteration.
         """
         # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
@@ -720,10 +789,23 @@ class ConnectionService:
         )
         stored_dataset_template = (
             SaasTemplateDataset.get_by(
-                self.db, field="connection_type", value=connector_type
+                self.db, field="connection_type", value=connector_type.lower()
             )
             if connector_type
             else None
+        )
+        # Use the pre-read snapshot if provided, otherwise fall back to what's in the DB.
+        # The snapshot path is used by batch callers to prevent a mid-loop write from
+        # corrupting the merge baseline for subsequent iterations.
+        effective_stored_dataset_json = (
+            stored_dataset_json
+            if stored_dataset_json is not None
+            else (
+                stored_dataset_template.dataset_json
+                if stored_dataset_template
+                and isinstance(stored_dataset_template.dataset_json, dict)
+                else None
+            )
         )
 
         # Get endpoint resources and preserve monitored collections in the dataset
@@ -758,11 +840,7 @@ class ConnectionService:
                 "fides_meta": ctl_dataset.fides_meta,
             }
 
-            if stored_dataset_template and isinstance(
-                stored_dataset_template.dataset_json, dict
-            ):
-                stored_dataset = stored_dataset_template.dataset_json
-
+            if effective_stored_dataset_json is not None:
                 # Extract protected fields from SaaS config to prevent deletion
                 # of fields that are referenced in param_values or postprocessors
                 saas_config = connection_config.get_saas_config()
@@ -776,7 +854,7 @@ class ConnectionService:
 
                 final_dataset = merge_datasets(
                     customer_dataset,
-                    stored_dataset,
+                    effective_stored_dataset_json,
                     upcoming_dataset,
                     template_values.instance_key,
                     protected_fields=protected_fields,
@@ -818,6 +896,20 @@ class ConnectionService:
             connector_type,
         )
 
+        # Snapshot the stored baseline before the loop. upsert_dataset_config_from_template
+        # writes back to SaasTemplateDataset on every call, so without this snapshot the
+        # first iteration would overwrite the row and corrupt the merge baseline for all
+        # subsequent iterations.
+        stored_dataset_template = SaasTemplateDataset.get_by(
+            self.db, field="connection_type", value=connector_type.lower()
+        )
+        stored_dataset_json_snapshot: Optional[dict] = (
+            copy.deepcopy(stored_dataset_template.dataset_json)
+            if stored_dataset_template
+            and isinstance(stored_dataset_template.dataset_json, dict)
+            else None
+        )
+
         for connection_config in connection_configs:
             saas_config_instance = SaaSConfig.model_validate(
                 connection_config.saas_config
@@ -827,6 +919,7 @@ class ConnectionService:
                     connection_config,
                     template,
                     saas_config_instance,
+                    stored_dataset_json=stored_dataset_json_snapshot,
                 )
                 logger.info(
                     "Updated SaaS config instance '{}' of type '{}'",

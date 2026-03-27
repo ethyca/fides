@@ -103,17 +103,11 @@ SYSTEM_CONNECTION_INSTANTIATE_ROUTER = APIRouter(
     ],
     status_code=HTTP_200_OK,
     response_model=Page[ConnectionConfigurationResponse],
-    deprecated=True,
 )
 def get_system_connections(
     fides_key: str, params: Params = Depends(), db: Session = Depends(deps.get_db)
 ) -> AbstractPage[ConnectionConfigurationResponse]:
-    """
-    Return all the connection configs related to a system.
-
-    Deprecated: Use GET /connection with `linked_systems` in the response,
-    or GET /connection/{connection_key}/system-links to manage links directly.
-    """
+    """Return all the connection configs related to a system."""
     system = get_system(db, fides_key)
     query = (
         ConnectionConfig.query(db)
@@ -196,12 +190,20 @@ def patch_connection_secrets(
     will differ from Dynamo DB.
 
     Deprecated: Use PATCH /connection/{connection_key}/secret instead.
+
+    Note: if multiple integrations are linked to this system, this operates on
+    the one with the earliest created_at timestamp (i.e. the oldest integration).
     """
 
     system = get_system(db, fides_key)
+    if not system.connection_configs:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No integration found linked to this system",
+        )
     return update_connection_secrets(
         connection_service,
-        system.connection_configs.key,
+        system.connection_configs[0].key,
         unvalidated_secrets,
         verify,
         merge_with_existing=True,
@@ -225,17 +227,18 @@ def delete_connection(fides_key: str, *, db: Session = Depends(deps.get_db)) -> 
     Deprecated: Use DELETE /connection/{connection_key} to delete a connection
     config, or DELETE /connection/{connection_key}/system-links/{system_fides_key}
     to unlink it from a system without deleting it.
+
+    Note: if multiple integrations are linked to this system, this deletes
+    the one with the earliest created_at timestamp (i.e. the oldest integration).
     """
     system = get_system(db, fides_key)
-    if system.connection_configs is None:
+    if not system.connection_configs:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="No integration found linked to this system",
         )
 
-    # system.connection_configs will temporarily only have one config
-    # it will be updated to have multiple configs in the future
-    delete_connection_config(db, system.connection_configs.key)
+    delete_connection_config(db, system.connection_configs[0].key)
 
 
 @SYSTEM_ROUTER.put(

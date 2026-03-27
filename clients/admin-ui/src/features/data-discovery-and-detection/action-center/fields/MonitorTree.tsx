@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Tree,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -22,7 +23,6 @@ import {
 } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { Node } from "~/features/common/hooks/useNodeMap";
 import { CursorPaginationState } from "~/features/common/pagination";
 import { pluralize } from "~/features/common/utils";
@@ -271,7 +271,7 @@ const MonitorTree = forwardRef<
     ref,
   ) => {
     const router = useRouter();
-    const { errorAlert } = useAlert();
+    const message = useMessage();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
     const [trigger] = useLazyGetMonitorTreeQuery({});
     const [triggerAncestorsStatuses] =
@@ -532,10 +532,7 @@ const MonitorTree = forwardRef<
             });
 
             if (result.error) {
-              errorAlert(
-                getErrorMessage(result.error),
-                "Failed to get schema explorer ancestors statuses",
-              );
+              message.error(getErrorMessage(result.error));
               return;
             }
 
@@ -567,7 +564,7 @@ const MonitorTree = forwardRef<
               ),
             );
           } catch (error) {
-            errorAlert(
+            message.error(
               "An unexpected error occurred while refreshing the schema explorer",
             );
           }
@@ -585,7 +582,7 @@ const MonitorTree = forwardRef<
         triggerAncestorsStatuses,
         monitorId,
         collapseNodeAndRemoveChildren,
-        errorAlert,
+        message,
       ],
     );
 
@@ -658,7 +655,7 @@ const MonitorTree = forwardRef<
     ]);
 
     return (
-      <Flex gap="middle" vertical className="h-full">
+      <Flex gap="medium" vertical className="h-full">
         <Title level={3} className="sticky top-0" ellipsis>
           Schema explorer
         </Title>

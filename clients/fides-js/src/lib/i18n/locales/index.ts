@@ -19,6 +19,7 @@ import el from "./el/messages.json";
 import en from "./en/messages.json";
 import es from "./es/messages.json";
 import esMX from "./es-MX/messages.json";
+import esUS from "./es-US/messages.json";
 import et from "./et/messages.json";
 import eu from "./eu/messages.json";
 import fi from "./fi/messages.json";
@@ -62,6 +63,7 @@ export const STATIC_MESSAGES: Record<Locale, Messages> = {
   en: en,
   es: es,
   "es-MX": esMX,
+  "es-US": esUS,
   et: et,
   eu: eu,
   fi: fi,
@@ -109,6 +111,11 @@ export const LOCALE_LANGUAGE_MAP: Language[] = [
     locale: "es-MX",
     label_en: "Spanish (Mexico)",
     label_original: "Español - MX",
+  },
+  {
+    locale: "es-US",
+    label_en: "Spanish (United States)",
+    label_original: "Español - US",
   },
   { locale: "et", label_en: "Estonian", label_original: "Eesti" },
   { locale: "eu", label_en: "Basque", label_original: "euskara" },

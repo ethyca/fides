@@ -1,12 +1,7 @@
-import {
-  ChakraCheckCircleIcon as CheckCircleIcon,
-  ChakraFlex as Flex,
-  ChakraText as Text,
-  ChakraWarningTwoIcon as WarningTwoIcon,
-} from "fidesui";
+import { ChakraFlex as Flex, ChakraText as Text, Icons } from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
-import { ConnectionSystemTypeMap } from "~/types/api";
+import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
 
 export type ConnectionStatusData = {
   timestamp?: string | null;
@@ -18,15 +13,25 @@ export type ConnectionStatusData = {
 const ConnectionStatusNotice = ({
   testData,
   connectionOption,
+  connectionType,
 }: {
   testData: ConnectionStatusData;
   connectionOption?: ConnectionSystemTypeMap;
+  connectionType?: ConnectionType;
 }) => {
-  // Show authorization text if required and not authorized
-  if (connectionOption?.authorization_required && !testData.authorized) {
+  const isJiraTicket = connectionType === ConnectionType.JIRA_TICKET;
+  const requiresAuth =
+    (connectionOption?.authorization_required || isJiraTicket) &&
+    !testData.authorized;
+
+  if (requiresAuth) {
     return (
       <Flex align="center" data-testid="connection-status">
-        <Text color="error-text.900">Authorization required</Text>
+        <Text color="error-text.900">
+          {isJiraTicket
+            ? "Connection not authorized"
+            : "Authorization required"}
+        </Text>
       </Flex>
     );
   }
@@ -46,12 +51,12 @@ const ConnectionStatusNotice = ({
       align="center"
       data-testid="connection-status"
     >
-      <CheckCircleIcon mr={2} boxSize={4} />
+      <Icons.CheckmarkFilled size={16} className="mr-2" />
       <Text>Last connected {testDate}</Text>
     </Flex>
   ) : (
     <Flex color="error-text.900" align="center" data-testid="connection-status">
-      <WarningTwoIcon mr={2} boxSize={4} />
+      <Icons.WarningAltFilled size={16} className="mr-2" />
       <Text>Last connection failed {testDate}</Text>
     </Flex>
   );

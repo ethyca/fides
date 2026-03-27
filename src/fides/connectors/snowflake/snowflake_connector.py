@@ -4,6 +4,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import text
+from sqlalchemy.engine import Engine  # type: ignore
 from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
@@ -93,7 +94,9 @@ class SnowflakeConnector(SQLConnector):
         query_config = self.query_config(node)
         return query_config.generate_table_name()
 
-    def table_exists(self, qualified_table_name: str) -> bool:
+    def table_exists(
+        self, qualified_table_name: str, engine: Engine | None = None
+    ) -> bool:
         """
         Check if table exists in Snowflake using the proper three-part naming convention.
 

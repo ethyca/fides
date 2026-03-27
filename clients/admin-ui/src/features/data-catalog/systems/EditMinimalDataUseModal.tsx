@@ -1,10 +1,11 @@
 import {
   Button,
-  ChakraChevronDownIcon as ChevronDownIcon,
   ChakraCollapse as Collapse,
   ChakraStack as Stack,
   ChakraText as Text,
   Flex,
+  Icons,
+  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -13,7 +14,6 @@ import * as Yup from "yup";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import FormModal from "~/features/common/modals/FormModal";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
 import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
 import { PrivacyDeclarationResponse } from "~/types/api";
@@ -74,7 +74,14 @@ const EditMinimalDataUseModal = ({
       validationSchema={validationSchema}
     >
       {({ dirty, isValid, values, resetForm }) => (
-        <FormModal title="Edit data use" isOpen={isOpen} onClose={onClose}>
+        <Modal
+          title="Edit data use"
+          open={isOpen}
+          onCancel={onClose}
+          centered
+          destroyOnClose
+          footer={null}
+        >
           <Form>
             <Flex vertical className="gap-6 py-4">
               <ControlledSelect
@@ -113,7 +120,7 @@ const EditMinimalDataUseModal = ({
                   onClick={onToggleAdvancedSettings}
                 >
                   <Text fontSize="xs">Advanced settings</Text>
-                  <ChevronDownIcon
+                  <Icons.ChevronDown
                     className={
                       isAdvancedSettingsOpen ? "rotate-180" : undefined
                     }
@@ -205,7 +212,7 @@ const EditMinimalDataUseModal = ({
               </Button>
             </div>
           </Form>
-        </FormModal>
+        </Modal>
       )}
     </Formik>
   );

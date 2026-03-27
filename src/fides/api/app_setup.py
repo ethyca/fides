@@ -18,7 +18,6 @@ from slowapi.middleware import SlowAPIMiddleware  # type: ignore
 
 import fides
 from fides.api.asgi_middleware import (
-    AnalyticsLoggingMiddleware,
     AuditLogMiddleware,
     LogRequestMiddleware,
     ProfileRequestMiddleware,
@@ -128,9 +127,6 @@ def create_fides_app(
     # These are high-performance replacements for BaseHTTPMiddleware-based versions
     if CONFIG.dev_mode:
         fastapi_app.add_middleware(ProfileRequestMiddleware)
-
-    if not CONFIG.user.analytics_opt_out:
-        fastapi_app.add_middleware(AnalyticsLoggingMiddleware)
 
     fastapi_app.add_middleware(LogRequestMiddleware)
 

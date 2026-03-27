@@ -4,20 +4,15 @@ import {
   ChakraFlex as Flex,
   ChakraFormControl as FormControl,
   ChakraFormLabel as FormLabel,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraModalProps as ModalProps,
   ChakraStack as Stack,
   ChakraText as Text,
+  Modal,
   Switch,
   Tag,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import SearchInput from "~/features/common/SearchInput";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { System } from "~/types/api";
@@ -33,7 +28,9 @@ const AssignSystemsModal = ({
   onClose,
   assignedSystems,
   onAssignedSystemChange,
-}: Pick<ModalProps, "isOpen" | "onClose"> & {
+}: {
+  isOpen: boolean;
+  onClose: () => void;
   assignedSystems: System[];
   onAssignedSystemChange: (systems: System[]) => void;
 }) => {
@@ -74,79 +71,76 @@ const AssignSystemsModal = ({
   }, [filteredSystems, selectedSystems]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-      <ModalOverlay />
-      <ModalContent p={8} data-testid="confirmation-modal">
-        <ModalHeader
-          fontWeight="medium"
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Text>Assign systems</Text>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      data-testid="confirmation-modal"
+      title={
+        <Flex align="center" justify="space-between" className="pr-6">
+          <span>Assign systems</span>
           <Tag color="success">
             Assigned to {assignedSystems.length} systems
           </Tag>
-        </ModalHeader>
-        <ModalBody data-testid="assign-systems-modal-body">
-          {emptySystems ? (
-            <Text>No systems found</Text>
-          ) : (
-            <Stack spacing={4}>
-              <Flex justifyContent="space-between">
-                <Text fontSize="sm" flexGrow={1} fontWeight="medium">
-                  Assign systems in your organization to this user
-                </Text>
-                <Box>
-                  <FormControl display="flex" alignItems="center">
-                    <FormLabel
-                      fontSize="sm"
-                      htmlFor="assign-all-systems"
-                      mb="0"
-                    >
-                      Assign all systems
-                    </FormLabel>
-                    <Switch
-                      size="small"
-                      id="assign-all-systems"
-                      checked={allSystemsAssigned}
-                      onChange={handleToggleAllSystems}
-                      data-testid="assign-all-systems-toggle"
-                    />
-                  </FormControl>
-                </Box>
-              </Flex>
-              <SearchInput
-                value={searchFilter}
-                onChange={setSearchFilter}
-                placeholder="Search for systems"
-                data-testid="system-search"
-              />
-              <AssignSystemsTable
-                allSystems={filteredSystems}
-                assignedSystems={selectedSystems}
-                onChange={setSelectedSystems}
-              />
-            </Stack>
-          )}
-        </ModalBody>
-        <ModalFooter justifyContent="flex-start">
-          <div>
-            <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
-              Cancel
+        </Flex>
+      }
+      centered
+      destroyOnHidden
+      width={MODAL_SIZE.md}
+      footer={
+        <div>
+          <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
+            Cancel
+          </Button>
+          {!emptySystems ? (
+            <Button
+              type="primary"
+              onClick={handleConfirm}
+              data-testid="confirm-btn"
+            >
+              Confirm
             </Button>
-            {!emptySystems ? (
-              <Button
-                type="primary"
-                onClick={handleConfirm}
-                data-testid="confirm-btn"
-              >
-                Confirm
-              </Button>
-            ) : null}
-          </div>
-        </ModalFooter>
-      </ModalContent>
+          ) : null}
+        </div>
+      }
+    >
+      <div data-testid="assign-systems-modal-body">
+        {emptySystems ? (
+          <Text>No systems found</Text>
+        ) : (
+          <Stack spacing={4}>
+            <Flex justifyContent="space-between">
+              <Text fontSize="sm" flexGrow={1} fontWeight="medium">
+                Assign systems in your organization to this user
+              </Text>
+              <Box>
+                <FormControl display="flex" alignItems="center">
+                  <FormLabel fontSize="sm" htmlFor="assign-all-systems" mb="0">
+                    Assign all systems
+                  </FormLabel>
+                  <Switch
+                    size="small"
+                    id="assign-all-systems"
+                    checked={allSystemsAssigned}
+                    onChange={handleToggleAllSystems}
+                    data-testid="assign-all-systems-toggle"
+                  />
+                </FormControl>
+              </Box>
+            </Flex>
+            <SearchInput
+              value={searchFilter}
+              onChange={setSearchFilter}
+              placeholder="Search for systems"
+              data-testid="system-search"
+            />
+            <AssignSystemsTable
+              allSystems={filteredSystems}
+              assignedSystems={selectedSystems}
+              onChange={setSelectedSystems}
+            />
+          </Stack>
+        )}
+      </div>
     </Modal>
   );
 };

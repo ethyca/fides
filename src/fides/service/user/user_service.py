@@ -6,6 +6,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import AuthorizationError
+from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
@@ -142,7 +143,7 @@ class UserService:
 
         logger.info("Creating login access token")
         access_code = client.create_access_code_jwe(
-            self.config.security.app_encryption_key,
+            get_encryption_key(),
             token_expire_minutes=self.config.security.oauth_access_token_expire_minutes,
         )
 

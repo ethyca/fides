@@ -1,10 +1,10 @@
-import { useAlert } from "common/hooks";
 import {
   Button,
   ChakraBox as Box,
   ChakraHStack as HStack,
   ChakraVStack as VStack,
-  TrashCanSolidIcon,
+  Icons,
+  useMessage,
 } from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 import React from "react";
@@ -35,12 +35,12 @@ const DSRCustomizationForm = ({
   const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
   const allDataCategories = useAppSelector(selectDataCategories);
 
-  const { errorAlert } = useAlert();
+  const message = useMessage();
 
   const handleSubmit = (values: any, actions: any) => {
     const uniqueValues = new Set(values.fields.map((f: Field) => f.pii_field));
     if (uniqueValues.size < values.fields.length) {
-      errorAlert("PII Field must be unique");
+      message.error("PII Field must be unique");
       return;
     }
     onSaveClick(values, actions);
@@ -108,7 +108,7 @@ const DSRCustomizationForm = ({
                       <Box w="416px">DSR Package Label</Box>
                       <Box w="416px">Data Categories</Box>
                       <Box visibility="hidden">
-                        <TrashCanSolidIcon />
+                        <Icons.TrashCan />
                       </Box>
                     </HStack>
                     <Box>
@@ -151,9 +151,9 @@ const DSRCustomizationForm = ({
                                 h="57px"
                                 visibility={index > 0 ? "visible" : "hidden"}
                               >
-                                <TrashCanSolidIcon
+                                <Icons.TrashCan
                                   onClick={() => fieldArrayProps.remove(index)}
-                                  _hover={{ cursor: "pointer" }}
+                                  className="cursor-pointer"
                                 />
                               </Box>
                             </HStack>

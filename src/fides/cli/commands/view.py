@@ -3,7 +3,6 @@
 import rich_click as click
 from toml import dumps
 
-from fides.cli.utils import with_analytics
 from fides.common.credentials import get_credentials_path, read_credentials_file
 from fides.common.utils import echo_red, print_divider
 
@@ -24,7 +23,6 @@ def view(ctx: click.Context) -> None:
     is_flag=True,
     help="Only print configuration values explicitly set by the user.",
 )
-@with_analytics
 def view_config(
     ctx: click.Context, section: str = "", exclude_unset: bool = False
 ) -> None:
@@ -44,7 +42,6 @@ def view_config(
 
 @view.command(name="credentials")
 @click.pass_context
-@with_analytics
 def view_credentials(ctx: click.Context) -> None:
     """
     Prints the credentials file.

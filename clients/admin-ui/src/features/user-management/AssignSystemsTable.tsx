@@ -7,12 +7,12 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
+  Icons,
   Switch,
 } from "fidesui";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { System } from "~/types/api";
 
 import {
@@ -63,7 +63,7 @@ export const AssignSystemsDeleteTable = ({
             <Td textAlign="end">
               <Button
                 aria-label="Unassign system from user"
-                icon={<TrashCanSolidIcon />}
+                icon={<Icons.TrashCan />}
                 onClick={() => onDelete(system)}
                 data-testid="unassign-btn"
               />

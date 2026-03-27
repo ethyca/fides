@@ -1,11 +1,9 @@
-import { Button, Space, useChakraToast as useToast } from "fidesui";
+import { Button, Space, useMessage, useModal } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
-import ConfirmationModal from "../../common/modals/ConfirmationModal";
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { useDeletePublisherRestrictionMutation } from "./tcf-config.slice";
 import { PurposeRestriction } from "./types";
@@ -19,10 +17,10 @@ export const PublisherRestrictionActionCell = ({
   currentValues,
   existingRestrictions,
 }: PublisherRestrictionActionCellProps) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
+  const modal = useModal();
 
   const [deleteRestriction] = useDeletePublisherRestrictionMutation();
 
@@ -43,14 +41,26 @@ export const PublisherRestrictionActionCell = ({
         restriction_id: currentValues.id,
       });
       if (isErrorResult(result)) {
-        toast(errorToastParams("Failed to delete publisher restriction"));
+        message.error("Failed to delete publisher restriction");
         return;
       }
-      setIsDeleteModalOpen(false);
-      toast(successToastParams("Publisher restriction deleted successfully"));
+      message.success("Publisher restriction deleted successfully");
     } catch (error) {
-      toast(errorToastParams("Failed to delete publisher restriction"));
+      message.error("Failed to delete publisher restriction");
     }
+  };
+
+  const handleDeleteClick = () => {
+    modal.confirm({
+      title: "Confirm deletion",
+      content:
+        "Are you sure you want to delete this publisher restriction? This action cannot be undone.",
+      okText: "Delete",
+      cancelText: "Cancel",
+      centered: true,
+      icon: null,
+      onOk: handleDelete,
+    });
   };
 
   return (
@@ -65,7 +75,7 @@ export const PublisherRestrictionActionCell = ({
         </Button>
         <Button
           size="small"
-          onClick={() => setIsDeleteModalOpen(true)}
+          onClick={handleDeleteClick}
           data-testid="delete-restriction-button"
         >
           Delete
@@ -80,16 +90,6 @@ export const PublisherRestrictionActionCell = ({
         purposeId={purposeId}
         restrictionId={currentValues?.id}
         configurationId={configurationId}
-      />
-
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDelete}
-        title="Confirm deletion"
-        message="Are you sure you want to delete this publisher restriction? This action cannot be undone."
-        cancelButtonText="Cancel"
-        continueButtonText="Delete"
       />
     </>
   );

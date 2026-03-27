@@ -5,7 +5,6 @@ Contains the code that sets up the API.
 import os
 import re
 import sys
-from datetime import datetime, timezone
 from logging import WARNING
 from time import perf_counter
 from typing import AsyncGenerator
@@ -15,7 +14,6 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
-from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -38,7 +36,6 @@ from fides.api.migrations.post_upgrade_backfill import (
 from fides.api.migrations.post_upgrade_index_creation import (
     initiate_post_upgrade_index_creation,
 )
-from fides.api.schemas.analytics import Event
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.ui import (
     get_admin_index_as_response,
@@ -107,18 +104,6 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_bcrypt_migration_task()
     initiate_post_upgrade_index_creation()
     initiate_post_upgrade_backfill()
-
-    logger.debug("Sending startup analytics events...")
-    # Avoid circular imports
-    from fides.api.analytics import in_docker_container, send_analytics_event
-
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
-        )
-    )
 
     # It's just a random bunch of strings when serialized
     if not CONFIG.logging.serialization:

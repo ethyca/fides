@@ -1,16 +1,9 @@
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraMenuItem as MenuItem,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   ChakraText as Text,
+  Modal,
   Switch,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -27,7 +20,6 @@ type DataConnectionProps = {
   name: string;
   access_type: AccessLevel;
   connection_type: ConnectionType;
-  isSwitch: boolean;
 };
 
 const DisableConnectionModal = ({
@@ -36,7 +28,6 @@ const DisableConnectionModal = ({
   name,
   access_type,
   connection_type,
-  isSwitch,
 }: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [patchConnection, patchConnectionResult] =
@@ -62,46 +53,22 @@ const DisableConnectionModal = ({
 
   return (
     <>
-      {isSwitch ? (
-        <Flex justifyContent="space-between" alignItems="center">
-          <Text fontSize="sm">Enable integration</Text>
-          <Switch
-            className="ml-2"
-            checked={!disabled}
-            onChange={() => onOpen()}
-          />
-        </Flex>
-      ) : (
-        <MenuItem
-          _focus={{ color: "complimentary.500", bg: "gray.100" }}
-          onClick={onOpen}
-        >
-          <Text fontSize="sm">{disabled ? "Enable" : "Disable"}</Text>
-        </MenuItem>
-      )}
-      <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {disabled ? "Enable" : "Disable"} Connection
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
-              <Text
-                color="gray.600"
-                fontSize="sm"
-                fontWeight="sm"
-                lineHeight="20px"
-              >
-                {disabled ? "Enabling" : "Disabling"} a connection may impact
-                any privacy request that is currently in progress. Do you wish
-                to proceed?
-              </Text>
-            </Stack>
-          </ModalBody>
-
-          <ModalFooter className="flex gap-4">
+      <Flex justifyContent="space-between" alignItems="center">
+        <Text fontSize="sm">Enable integration</Text>
+        <Switch
+          className="ml-2"
+          checked={!disabled}
+          onChange={() => onOpen()}
+        />
+      </Flex>
+      <Modal
+        centered
+        destroyOnHidden
+        open={isOpen}
+        onCancel={closeIfComplete}
+        title={`${disabled ? "Enable" : "Disable"} Connection`}
+        footer={
+          <div className="flex gap-4">
             <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
@@ -110,10 +77,23 @@ const DisableConnectionModal = ({
               loading={patchConnectionResult.isLoading}
               className="w-1/2"
             >
-              {disabled ? "Enable" : "Disable"} Connection
+              {disabled ? "Enable" : "Disable"} connection
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </div>
+        }
+      >
+        <Stack direction="column" spacing="15px">
+          <Text
+            color="gray.600"
+            fontSize="sm"
+            fontWeight="sm"
+            lineHeight="20px"
+          >
+            {disabled ? "Enabling" : "Disabling"} a connection may impact any
+            privacy request that is currently in progress. Do you wish to
+            proceed?
+          </Text>
+        </Stack>
       </Modal>
     </>
   );

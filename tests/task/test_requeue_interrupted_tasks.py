@@ -9,21 +9,119 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.util.cache import cache_task_tracking_key, get_cache
+from fides.api.util.cache import (
+    cache_task_tracking_key,
+    get_cache,
+    get_privacy_request_retry_count,
+    increment_privacy_request_retry_count,
+    reset_privacy_request_retry_count,
+)
+from fides.config import CONFIG
 from fides.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
     requeue_interrupted_tasks,
 )
 
+# Mock target paths — centralised to avoid string duplication
+_CANCEL = "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+_REQUEUE = (
+    "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+)
+_QUEUE = "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
+_IN_FLIGHT = "fides.service.privacy_request.request_service.celery_tasks_in_flight"
+
+
+# ---------------------------------------------------------------------------
+# Shared fixtures
+# ---------------------------------------------------------------------------
+
 
 @pytest.fixture
+def make_privacy_request(db, policy):
+    """Factory: create privacy requests with automatic teardown.
+
+    Usage::
+        pr = make_privacy_request()                          # in_processing, cached
+        pr = make_privacy_request(status=requires_input)    # different status
+        pr = make_privacy_request(cached=False)             # no PR-level cache key
+    """
+    created = []
+
+    def _make(status=PrivacyRequestStatus.in_processing, cached=True):
+        pr = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{uuid.uuid4()}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": status,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        if cached:
+            cache_task_tracking_key(pr.id, f"pr_task_{pr.id}")
+        created.append(pr)
+        return pr
+
+    yield _make
+    for pr in created:
+        pr.delete(db)
+
+
+@pytest.fixture
+def make_request_task(db):
+    """Factory: create request tasks with automatic teardown.
+
+    Usage::
+        task = make_request_task(pr, ExecutionLogStatus.pending)
+        task = make_request_task(pr, ExecutionLogStatus.in_processing,
+                                 collection="orders", cached_subtask_id="celery-id-123")
+        task = make_request_task(pr, ExecutionLogStatus.pending,
+                                 upstream=[other_task.collection_address],
+                                 async_type=AsyncTaskType.callback)
+    """
+    created = []
+
+    def _make(
+        privacy_request,
+        status,
+        collection="customer",
+        upstream=None,
+        async_type=None,
+        cached_subtask_id=None,
+    ):
+        data = {
+            "action_type": ActionType.access,
+            "status": status,
+            "privacy_request_id": privacy_request.id,
+            "collection_address": f"test_dataset:{collection}",
+            "dataset_name": "test_dataset",
+            "collection_name": collection,
+            "upstream_tasks": upstream or [],
+            "downstream_tasks": [],
+        }
+        if async_type is not None:
+            data["async_type"] = async_type
+        task = RequestTask.create(db, data=data)
+        if cached_subtask_id:
+            cache_task_tracking_key(task.id, cached_subtask_id)
+        created.append(task)
+        return task
+
+    yield _make
+    for task in reversed(created):
+        task.delete(db)
+
+
+# Legacy fixtures used by tests that reference specific cache key names in mocks.
+@pytest.fixture
 def in_progress_privacy_request(db, policy):
-    """Create a privacy request in the in_processing state"""
-    # Create the privacy request
-    privacy_request = PrivacyRequest.create(
+    pr = PrivacyRequest.create(
         db=db,
         data={
-            "external_id": f"ext-{str(uuid.uuid4())}",
+            "external_id": f"ext-{uuid.uuid4()}",
             "started_processing_at": datetime.utcnow(),
             "requested_at": datetime.utcnow() - timedelta(days=1),
             "status": PrivacyRequestStatus.in_processing,
@@ -32,21 +130,14 @@ def in_progress_privacy_request(db, policy):
             "client_id": policy.client_id,
         },
     )
-
-    # Cache the task ID for the privacy request
-    cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
-
-    yield privacy_request
-
-    # Clean up
-    privacy_request.delete(db)
+    cache_task_tracking_key(pr.id, "privacy_request_task_id")
+    yield pr
+    pr.delete(db)
 
 
 @pytest.fixture
 def in_progress_request_task(db, in_progress_privacy_request):
-    """Create a request task in the in_processing state for an existing privacy request"""
-    # Create a single request task for the privacy request
-    request_task = RequestTask.create(
+    task = RequestTask.create(
         db,
         data={
             "action_type": ActionType.access,
@@ -59,587 +150,218 @@ def in_progress_request_task(db, in_progress_privacy_request):
             "downstream_tasks": [],
         },
     )
+    cache_task_tracking_key(task.id, "request_task_id")
+    yield task
+    task.delete(db)
 
-    # Cache the task ID for the request task
-    cache_task_tracking_key(request_task.id, "request_task_id")
 
-    yield request_task
-
-    # Clean up
-    request_task.delete(db)
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
 
 
 class TestRequeueInterruptedTasks:
     @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=True,
-    )
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=True)
     def test_active_request_task_is_not_requeued(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
+        self, mock_in_flight, mock_queue, mock_requeue
     ):
-        """Test that active request tasks are not requeued.
-
-        When a privacy request task is active (in flight), even if not in the queue,
-        the privacy request should not be requeued.
-        """
+        """Active (in-flight) subtask — privacy request must not be requeued."""
         requeue_interrupted_tasks.apply().get()
-        mock_requeue_privacy_request.assert_not_called()
+        mock_requeue.assert_not_called()
 
     @pytest.mark.usefixtures("in_progress_privacy_request")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_interrupted_privacy_request_with_no_request_tasks_is_requeued(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
+        self, mock_in_flight, mock_queue, mock_requeue
     ):
-        """Test that interrupted privacy requests without request tasks are requeued.
-
-        When a privacy request has no request tasks but has a cached task ID,
-        indicating it was interrupted, it should be requeued.
-        """
+        """Privacy request with a cached PR-level task ID but no subtasks is requeued."""
         requeue_interrupted_tasks.apply().get()
-        mock_requeue_privacy_request.assert_called_once()
+        mock_requeue.assert_called_once()
 
     @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=["request_task_id"],  # Mock the task as being in the queue
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=["request_task_id"])
+    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_interrupted_privacy_request_with_active_request_tasks_is_not_requeued(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
+        self, mock_in_flight, mock_queue, mock_requeue
     ):
-        """Test that privacy requests with active request tasks are not requeued.
-
-        When a privacy request has request tasks that are still in the queue,
-        the privacy request should not be requeued.
-        """
+        """Subtask still in the queue — privacy request must not be requeued."""
         requeue_interrupted_tasks.apply().get()
-        # The request task is in the queue, so it should not be requeued
-        mock_requeue_privacy_request.assert_not_called()
+        mock_requeue.assert_not_called()
 
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_interrupted_privacy_request_with_inactive_request_tasks_is_requeued(
         self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-        db,
-        policy,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        make_privacy_request,
+        make_request_task,
     ):
-        """Test that interrupted privacy requests with inactive request tasks are requeued.
-
-        When a privacy request has request tasks that are no longer active,
-        the privacy request should be requeued.
-        """
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
+        """Subtask found neither in queue nor in-flight — privacy request is requeued."""
+        pr = make_privacy_request()
+        make_request_task(
+            pr, ExecutionLogStatus.pending, cached_subtask_id="subtask_id"
         )
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
 
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
-
-        # Create a request task that is not active (not in in_processing status)
-        request_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.pending,  # Not in_processing
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:customer",
-                "dataset_name": "test_dataset",
-                "collection_name": "customer",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-            },
-        )
-
-        # Cache the task ID for the request task
-        cache_task_tracking_key(request_task.id, "request_task_id")
-
-        try:
-            requeue_interrupted_tasks.apply().get()
-            mock_requeue_privacy_request.assert_called_once()
-        finally:
-            # Clean up
-            request_task.delete(db)
-            privacy_request.delete(db)
-
-    @mock.patch(
-        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_privacy_request_with_no_cached_task_id_is_skipped(
         self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-        mock_cancel_interrupted_tasks,
-        db,
-        policy,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
     ):
-        """Test that privacy requests without cached task IDs are canceled.
+        """No PR-level cached task ID — watchdog cancels the privacy request."""
+        make_privacy_request(cached=False)
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_called_once()
 
-        When a privacy request doesn't have a cached task ID, it should be canceled.
-        """
-        # Create a privacy request without caching a task ID
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-
-        try:
-            requeue_interrupted_tasks.apply().get()
-            # Should not requeue since there's no cached task ID
-            mock_requeue_privacy_request.assert_not_called()
-            # Should cancel the privacy request instead
-            mock_cancel_interrupted_tasks.assert_called_once()
-        finally:
-            # Clean up
-            privacy_request.delete(db)
-
-    @mock.patch(
-        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    def test_request_task_with_no_cached_subtask_id_is_skipped(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_requeue_privacy_request,
-        mock_cancel_interrupted_tasks,
-        db,
-        policy,
-    ):
-        """Test that request tasks without cached subtask IDs cause cancellation.
-
-        When a request task doesn't have a cached subtask ID, the privacy request should be canceled.
-        """
-        # Create a privacy request and request task without caching subtask IDs
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
-
-        request_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.in_processing,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:customer",
-                "dataset_name": "test_dataset",
-                "collection_name": "customer",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-            },
-        )
-        # Do NOT cache the subtask ID for the request task
-
-        try:
-            requeue_interrupted_tasks.apply().get()
-            # Should not requeue since there's no cached subtask ID
-            mock_requeue_privacy_request.assert_not_called()
-            # Should cancel the privacy request instead
-            mock_cancel_interrupted_tasks.assert_called_once()
-        finally:
-            # Clean up
-            request_task.delete(db)
-            privacy_request.delete(db)
-
-    @mock.patch(
-        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_requires_input_privacy_request_with_stuck_subtask_is_not_canceled(
         self,
-        mock_celery_tasks_in_flight,
-        mock_requeue_privacy_request,
-        mock_cancel_interrupted_tasks,
-        db,
-        policy,
+        mock_in_flight,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
     ):
-        """Test that requires_input privacy requests with stuck subtasks are not automatically canceled.
-
-        When a privacy request is in requires_input status and has a stuck subtask (no cached subtask ID),
-        it should NOT be automatically moved to error status since it's intentionally waiting for user input.
-        """
-        # Create a privacy request in requires_input status
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.requires_input,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
-
-        request_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.in_processing,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:customer",
-                "dataset_name": "test_dataset",
-                "collection_name": "customer",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-            },
-        )
-        # Do NOT cache the subtask ID for the request task
-
-        try:
-            requeue_interrupted_tasks.apply().get()
-            # Should not requeue since there's no cached subtask ID
-            mock_requeue_privacy_request.assert_not_called()
-            # Should NOT cancel the privacy request since it's in requires_input status
-            mock_cancel_interrupted_tasks.assert_not_called()
-        finally:
-            # Clean up
-            request_task.delete(db)
-            privacy_request.delete(db)
-
-    @mock.patch(
-        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    def test_in_processing_with_callback_async_task_and_stuck_subtask_is_not_canceled(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-        mock_cancel_interrupted_tasks,
-        db,
-        policy,
-    ):
-        """Request with callback (webhook) async task and stuck subtask is not canceled.
-
-        When a privacy request is in_processing and has a request task with async_type
-        callback (awaiting webhook), a pending request task with no cached subtask ID
-        should NOT cause cancellation since we may be awaiting external callback.
-        """
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
-
-        # Stuck-looking task (pending, no subtask ID) plus callback async_type so we skip erroring
-        request_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.pending,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "gateway_api:users",
-                "dataset_name": "gateway_api",
-                "collection_name": "users",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-                "async_type": AsyncTaskType.callback,
-            },
-        )
-        try:
-            requeue_interrupted_tasks.apply().get()
-            mock_get_task_ids_from_dsr_queue.assert_called_once()
-            mock_requeue_privacy_request.assert_not_called()
-            mock_cancel_interrupted_tasks.assert_not_called()
-        finally:
-            request_task.delete(db)
-            privacy_request.delete(db)
-
-    @mock.patch(
-        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    def test_in_processing_with_polling_async_task_and_stuck_subtask_is_not_canceled(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-        mock_cancel_interrupted_tasks,
-        db,
-        policy,
-    ):
-        """Request with polling async task and stuck subtask is not canceled.
-
-        When a privacy request is in_processing and has a request task with async_type
-        polling, a pending request task with no cached subtask ID should NOT cause
-        cancellation (unified helper preserves existing polling behavior).
-        """
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
-
-        request_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.pending,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "polling_api:users",
-                "dataset_name": "polling_api",
-                "collection_name": "users",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-                "async_type": AsyncTaskType.polling,
-            },
-        )
-        try:
-            requeue_interrupted_tasks.apply().get()
-            mock_get_task_ids_from_dsr_queue.assert_called_once()
-            mock_requeue_privacy_request.assert_not_called()
-            mock_cancel_interrupted_tasks.assert_not_called()
-        finally:
-            request_task.delete(db)
-            privacy_request.delete(db)
-
-    @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    def test_task_in_queue_is_not_requeued(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-    ):
-        """Test that tasks already in the queue are not requeued.
-
-        When a privacy request's task ID is found in the queue,
-        the privacy request should not be requeued, regardless of in-flight status.
-        """
-        # The task is in the queue
-        mock_get_task_ids_from_dsr_queue.return_value = ["privacy_request_task_id"]
-
+        """requires_input status — watchdog leaves it alone (intentionally waiting for input)."""
+        pr = make_privacy_request(status=PrivacyRequestStatus.requires_input)
+        make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
         requeue_interrupted_tasks.apply().get()
-        mock_requeue_privacy_request.assert_not_called()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
 
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    @pytest.mark.parametrize(
+        "async_type",
+        [
+            pytest.param(AsyncTaskType.callback, id="callback"),
+            pytest.param(AsyncTaskType.polling, id="polling"),
+        ],
     )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    def test_pending_task_awaiting_upstream_is_not_canceled(
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_task_with_async_type_and_stuck_subtask_is_not_canceled(
         self,
-        mock_celery_tasks_in_flight,
-        mock_requeue_privacy_request,
-        mock_cancel_interrupted_tasks,
-        db,
-        policy,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+        async_type,
     ):
-        """Pending task with incomplete upstream deps is not canceled.
+        """Async task (callback/polling) present — watchdog skips the whole request."""
+        pr = make_privacy_request()
+        make_request_task(pr, ExecutionLogStatus.pending, async_type=async_type)
+        requeue_interrupted_tasks.apply().get()
+        mock_queue.assert_called_once()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
 
-        A pending request task that has never been dispatched to Celery because its
-        upstream tasks are not yet complete should not trigger cancellation — it is
-        legitimately waiting, not stuck.
-
-        The upstream task's celery ID must be in the queue so the watchdog passes over
-        it (active, not stuck) and proceeds to evaluate the downstream pending task.
-        """
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_in_processing_task_with_no_cache_key_and_async_task_is_not_canceled(
+        self,
+        mock_in_flight,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """in_processing+no_cache alongside an async callback task — async guard wins, skips."""
+        pr = make_privacy_request()
+        make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
+        make_request_task(
+            pr,
+            ExecutionLogStatus.pending,
+            collection="gateway_api",
+            async_type=AsyncTaskType.callback,
         )
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
 
-        upstream_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.in_processing,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:upstream",
-                "dataset_name": "test_dataset",
-                "collection_name": "upstream",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-            },
-        )
-        # Cache the upstream task's celery ID and put it in the queue so the watchdog
-        # treats it as active and continues past it to the downstream pending task.
-        cache_task_tracking_key(upstream_task.id, "upstream_task_celery_id")
-
-        # Pending task waiting on upstream_task — no cache key because it hasn't been queued
-        downstream_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.pending,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:downstream",
-                "dataset_name": "test_dataset",
-                "collection_name": "downstream",
-                "upstream_tasks": [upstream_task.collection_address],
-                "downstream_tasks": [],
-            },
-        )
-        # Do NOT cache a subtask ID — it hasn't been dispatched yet
-
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_async_check_db_error_skips_request(
+        self,
+        mock_in_flight,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """DB error in async-task check — watchdog fails safe and skips the request."""
+        pr = make_privacy_request()
+        make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
         with mock.patch(
-            "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-            return_value=["upstream_task_celery_id"],
+            "fides.service.privacy_request.request_service._has_async_tasks_awaiting_external_completion",
+            side_effect=Exception("db error"),
         ):
             requeue_interrupted_tasks.apply().get()
-            mock_cancel_interrupted_tasks.assert_not_called()
-            mock_requeue_privacy_request.assert_not_called()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
+
+    @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
+    @mock.patch(_REQUEUE)
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_task_in_queue_is_not_requeued(self, mock_in_flight, mock_requeue):
+        """Subtask found in the queue — not requeued."""
+        with mock.patch(_QUEUE, return_value=["privacy_request_task_id"]):
+            requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_pending_task_awaiting_upstream_is_not_canceled(
+        self,
+        mock_in_flight,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """Pending task still waiting on upstream deps — not stuck, watchdog skips it."""
+        pr = make_privacy_request()
+        upstream = make_request_task(
+            pr,
+            ExecutionLogStatus.in_processing,
+            collection="upstream",
+            cached_subtask_id="upstream_celery_id",
+        )
+        make_request_task(
+            pr,
+            ExecutionLogStatus.pending,
+            collection="downstream",
+            upstream=[upstream.collection_address],
+        )
+        with mock.patch(_QUEUE, return_value=["upstream_celery_id"]):
+            requeue_interrupted_tasks.apply().get()
+        mock_cancel.assert_not_called()
+        mock_requeue.assert_not_called()
 
     @pytest.mark.parametrize(
         "has_upstream",
@@ -648,351 +370,160 @@ class TestRequeueInterruptedTasks:
             pytest.param(False, id="root_task_no_upstream"),
         ],
     )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    def test_pending_task_with_no_cache_key_is_canceled(
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_pending_task_with_no_cache_key_is_requeued(
         self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-        mock_cancel_interrupted_tasks,
-        db,
-        policy,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
         has_upstream,
     ):
-        """Pending task with no cache key is canceled when not legitimately waiting.
-
-        Covers two stuck scenarios:
-        - A task whose upstream deps are all complete but it was never dispatched
-        - A root task (no upstream deps) that was never dispatched
-        Both should trigger cancellation.
-        """
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
+        """Pending task with no subtask_id is requeued — parent died before dispatch."""
+        pr = make_privacy_request()
+        upstream = (
+            make_request_task(pr, ExecutionLogStatus.complete, collection="upstream")
+            if has_upstream
+            else None
         )
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
-
-        upstream_task = None
-        if has_upstream:
-            upstream_task = RequestTask.create(
-                db,
-                data={
-                    "action_type": ActionType.access,
-                    "status": ExecutionLogStatus.complete,
-                    "privacy_request_id": privacy_request.id,
-                    "collection_address": "test_dataset:upstream",
-                    "dataset_name": "test_dataset",
-                    "collection_name": "upstream",
-                    "upstream_tasks": [],
-                    "downstream_tasks": [],
-                },
-            )
-
-        stuck_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.pending,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:stuck",
-                "dataset_name": "test_dataset",
-                "collection_name": "stuck",
-                "upstream_tasks": [upstream_task.collection_address]
-                if has_upstream
-                else [],
-                "downstream_tasks": [],
-            },
+        make_request_task(
+            pr,
+            ExecutionLogStatus.pending,
+            collection="undispatched",
+            upstream=[upstream.collection_address] if upstream else [],
         )
-        # Do NOT cache a subtask ID
-
         requeue_interrupted_tasks.apply().get()
-        mock_cancel_interrupted_tasks.assert_called_once()
+        mock_cancel.assert_not_called()
+        mock_requeue.assert_called_once()
 
-    def test_aquired_locks_prevent_duplicate_runs(self, loguru_caplog):
-        """Test that multiple instances of the task do not run simultaneously.
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_in_processing_task_with_no_cache_key_is_requeued(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """in_processing+no_cache routes through retry mechanism — requeues at retry_count=0."""
+        pr = make_privacy_request()
+        make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
+        requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_called_once()
+        mock_cancel.assert_not_called()
 
-        When the task is already running, another instance should not acquire the lock.
-        """
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_in_processing_task_with_no_cache_key_over_retry_limit_is_canceled(
+        self,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """in_processing+no_cache cancels once retry_count exceeds the configured limit."""
+        pr = make_privacy_request()
+        for _ in range(4):  # default limit is 3
+            increment_privacy_request_retry_count(pr.id)
+        make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
+        requeue_interrupted_tasks.apply().get()
+        mock_cancel.assert_called_once()
+        mock_requeue.assert_not_called()
 
+    def test_acquired_locks_prevent_duplicate_runs(self, loguru_caplog):
+        """Concurrent watchdog invocations are serialised via Redis lock."""
         redis_conn = get_cache()
         lock = redis_conn.lock(REQUEUE_INTERRUPTED_TASKS_LOCK, timeout=600)
         lock.acquire(blocking=False)
-
         requeue_interrupted_tasks.apply().get()
         assert (
             "Another process is already running for lock 'requeue_interrupted_tasks_lock'. Skipping this execution."
             in loguru_caplog.text
         )
-
-        # Only release if we still own the lock
         if lock.owned():
             lock.release()
 
     def test_lock_is_released_after_execution(self):
-        """Test that the lock is released after the task is executed.
-
-        When the task is executed, the lock should be released.
-        """
+        """Lock is always released after a watchdog run completes."""
         redis_conn = get_cache()
         lock = redis_conn.lock(REQUEUE_INTERRUPTED_TASKS_LOCK, timeout=600)
-
         requeue_interrupted_tasks.apply().get()
         assert not lock.owned()
 
+    # ------------------------------------------------------------------
+    # Retry limit behaviour
+    # ------------------------------------------------------------------
 
-class TestEnhancedRequeueInterruptedTasks:
-    """Test the enhanced requeue functionality with retry limits and cancellation."""
-
-    @pytest.fixture
-    def privacy_request_with_high_retry_count(self, db, policy):
-        """Create a privacy request that has already been retried multiple times."""
-        from fides.api.util.cache import increment_privacy_request_retry_count
-
-        # Create the privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "high_retry_task_id")
-
-        # Increment retry count to near the limit (2 is near limit of 3)
-        for _ in range(2):  # Set to 2, limit is 3
-            increment_privacy_request_retry_count(privacy_request.id)
-
-        yield privacy_request
-
-        # Clean up
-        privacy_request.delete(db)
-
-    @pytest.fixture
-    def privacy_request_over_retry_limit(self, db, policy):
-        """Create a privacy request that has exceeded the retry limit."""
-        from fides.api.util.cache import increment_privacy_request_retry_count
-
-        # Create the privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "over_limit_task_id")
-
-        # Increment retry count beyond the limit (4 is over limit of 3)
-        for _ in range(4):  # Set to 4, limit is 3
-            increment_privacy_request_retry_count(privacy_request.id)
-
-        yield privacy_request
-
-        # Clean up
-        privacy_request.delete(db)
-
-    @pytest.mark.usefixtures("privacy_request_with_high_retry_count")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_privacy_request_near_retry_limit_is_requeued(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
+        self, mock_in_flight, mock_queue, mock_requeue, make_privacy_request
     ):
-        """Test that privacy requests near but not over the retry limit are still requeued."""
+        """Request at retry_count=2 (below default limit of 3) is still requeued."""
+        pr = make_privacy_request()
+        for _ in range(2):
+            increment_privacy_request_retry_count(pr.id)
         requeue_interrupted_tasks.apply().get()
-        mock_requeue_privacy_request.assert_called_once()
+        mock_requeue.assert_called_once()
 
-    @pytest.mark.usefixtures("privacy_request_over_retry_limit")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_QUEUE, return_value=[])
+    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_privacy_request_over_retry_limit_is_canceled(
         self,
-        mock_cancel_interrupted_tasks,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
+        mock_in_flight,
+        mock_queue,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
     ):
-        """Test that privacy requests over the retry limit are canceled instead of requeued."""
+        """Request at retry_count=4 (above default limit of 3) is cancelled, not requeued."""
+        pr = make_privacy_request()
+        for _ in range(4):
+            increment_privacy_request_retry_count(pr.id)
         requeue_interrupted_tasks.apply().get()
-
-        # Should not requeue
-        mock_requeue_privacy_request.assert_not_called()
-
-        # Should cancel the tasks and error the request
-        mock_cancel_interrupted_tasks.assert_called_once()
-
-    @mock.patch("fides.service.privacy_request.request_service.logger")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    def test_requeue_with_retry_count_logging(
-        self,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-        mock_logger,
-        db,
-        policy,
-    ):
-        """Test that retry count is logged during requeue operations."""
-        from fides.api.util.cache import cache_task_tracking_key
-
-        # Create a privacy request to test with
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
-
-        # Cache the task ID so it gets processed
-        cache_task_tracking_key(privacy_request.id, "task_id_123")
-
-        try:
-            requeue_interrupted_tasks.apply().get()
-
-            # Should log retry count information
-            info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
-            retry_log_found = any("attempt" in str(call).lower() for call in info_calls)
-            assert retry_log_found, "Expected retry attempt count to be logged"
-        finally:
-            # Clean up
-            privacy_request.delete(db)
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_called_once()
 
     def test_retry_limit_configuration(self):
-        """Test that retry limit configuration changes are respected."""
-        from fides.config import CONFIG
-
-        # Test default value
-        original_value = CONFIG.execution.privacy_request_requeue_retry_count
-        assert original_value == 3
-
-        # Test that we can change the configuration
+        """privacy_request_requeue_retry_count config is mutable and respected."""
+        original = CONFIG.execution.privacy_request_requeue_retry_count
+        assert original == 3
         try:
-            # Temporarily change the config value
             CONFIG.execution.privacy_request_requeue_retry_count = 5
             assert CONFIG.execution.privacy_request_requeue_retry_count == 5
-
-            # Change it again to verify it's truly configurable
             CONFIG.execution.privacy_request_requeue_retry_count = 1
             assert CONFIG.execution.privacy_request_requeue_retry_count == 1
-
         finally:
-            # Always restore the original value
-            CONFIG.execution.privacy_request_requeue_retry_count = original_value
+            CONFIG.execution.privacy_request_requeue_retry_count = original
 
-    def test_integration_privacy_request_retry_workflow(self, db, policy):
-        """Test the complete workflow of privacy request retry management."""
-        from fides.api.util.cache import (
-            get_privacy_request_retry_count,
-            increment_privacy_request_retry_count,
-            reset_privacy_request_retry_count,
-        )
+    def test_integration_privacy_request_retry_workflow(self, make_privacy_request):
+        """Retry counter increments, reads back correctly, and resets to zero."""
+        pr = make_privacy_request()
+        assert get_privacy_request_retry_count(pr.id) == 0
 
-        # Create a privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow(),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.in_processing,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
+        count = increment_privacy_request_retry_count(pr.id)
+        assert count == 1
+        assert get_privacy_request_retry_count(pr.id) == 1
 
-        try:
-            # Test initial state
-            assert get_privacy_request_retry_count(privacy_request.id) == 0
+        for i in range(2, 4):
+            count = increment_privacy_request_retry_count(pr.id)
+            assert count == i
 
-            # Test incrementing
-            count = increment_privacy_request_retry_count(privacy_request.id)
-            assert count == 1
-            assert get_privacy_request_retry_count(privacy_request.id) == 1
-
-            # Test multiple increments up to limit
-            for i in range(2, 4):  # Increment to 3 (the limit)
-                count = increment_privacy_request_retry_count(privacy_request.id)
-                assert count == i
-
-            # Test reset
-            reset_privacy_request_retry_count(privacy_request.id)
-            assert get_privacy_request_retry_count(privacy_request.id) == 0
-
-        finally:
-            # Clean up
-            privacy_request.delete(db)
+        reset_privacy_request_retry_count(pr.id)
+        assert get_privacy_request_retry_count(pr.id) == 0

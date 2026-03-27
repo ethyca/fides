@@ -29,6 +29,7 @@ from fides.connectors.email.erasure_email_connector import (
     GenericErasureEmailConnector,
 )
 from fides.connectors.email.sovrn_connector import SovrnConnector
+from fides.connectors.entra_connector import EntraConnector as EntraConnector
 from fides.connectors.fides.fides_connector import (
     FidesConnector as FidesConnector,
 )
@@ -89,6 +90,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.datahub.value: DatahubConnector,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailConnector,
     ConnectionType.dynamodb.value: DynamoDBConnector,
+    ConnectionType.entra.value: EntraConnector,
     ConnectionType.fides.value: FidesConnector,
     ConnectionType.generic_consent_email.value: GenericConsentEmailConnector,
     ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,

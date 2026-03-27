@@ -9,10 +9,6 @@ from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, backref, declared_attr, relationship  # type: ignore
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api import common_exceptions
 from fides.api.common_exceptions import (
@@ -20,6 +16,7 @@ from fides.api.common_exceptions import (
     WebhookOrderException,
 )
 from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import DataCategory  # type: ignore
@@ -306,14 +303,7 @@ class Rule(Base):
         nullable=False,
     )
     masking_strategy = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
     )  # Type bytea in the db
     storage_destination_id = Column(

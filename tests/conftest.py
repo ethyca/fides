@@ -1016,15 +1016,6 @@ def consent_runner_tester(
         return privacy_request.get_consent_results()
 
 
-@pytest.fixture(scope="session")
-def analytics_opt_out():
-    """Disable sending analytics when running tests."""
-    original_value = CONFIG.user.analytics_opt_out
-    CONFIG.user.analytics_opt_out = True
-    yield
-    CONFIG.user.analytics_opt_out = original_value
-
-
 @pytest.fixture
 def automatically_approved(db):
     """Do not require manual request approval"""

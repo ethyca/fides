@@ -6,14 +6,10 @@ from urllib.parse import unquote_to_bytes
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.util.custom_json_encoder import ENCODED_BYTES_PREFIX
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request import PrivacyRequest
@@ -30,12 +26,7 @@ class MaskingSecret(Base):
         String, ForeignKey("privacyrequest.id", ondelete="CASCADE"), nullable=False
     )
     secret = Column(
-        StringEncryptedType(
-            JSONTypeOverride,
-            CONFIG.security.app_encryption_key,
-            AesGcmEngine,
-            "pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
         nullable=False,
     )
     masking_strategy = Column(String, nullable=False)

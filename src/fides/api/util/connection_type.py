@@ -286,6 +286,7 @@ def get_connection_types(
                     ConnectionType.sovrn,
                     ConnectionType.test_website,
                 ]
+                and conn_type.system_type != SystemType.system
                 and _is_match(conn_type.value, search)
             ],
             key=lambda x: x.value,
@@ -301,6 +302,28 @@ def get_connection_types(
                 for item in database_types
             ]
         )
+    if system_type == SystemType.system or system_type is None:
+        system_types: list[ConnectionType] = sorted(
+            [
+                conn_type
+                for conn_type in ConnectionType
+                if conn_type.system_type == SystemType.system
+                and _is_match(conn_type.value, search)
+            ],
+            key=lambda x: x.value,
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(
+                    identifier=item,
+                    type=SystemType.system,
+                    human_readable=item.human_readable,
+                    supported_actions=[],
+                )
+                for item in system_types
+            ]
+        )
+
     if system_type == SystemType.saas or system_type is None:
         saas_connection_types = get_saas_connection_types(
             action_types=action_types, search=search

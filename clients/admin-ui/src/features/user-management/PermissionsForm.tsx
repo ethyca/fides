@@ -1,24 +1,21 @@
 import { useHasPermission } from "common/Restrict";
 import {
   Button,
-  ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
-  ChakraStack as Stack,
-  ChakraText as Text,
+  Flex,
+  Spin,
   Tooltip,
-  useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  Typography,
+  useMessage,
+  useModal,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -38,18 +35,23 @@ const defaultInitialValues = {
 
 export type FormValues = typeof defaultInitialValues;
 
+/**
+ * Legacy permissions form for non-RBAC mode.
+ *
+ * When RBAC is enabled (alphaRbac flag), UserManagementTabs renders RolesForm
+ * instead of this component. This component only handles legacy permissions.
+ */
+const { Text } = Typography;
+
 const PermissionsForm = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
+  const modal = useModal();
+
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
-  const {
-    isOpen: chooseApproverIsOpen,
-    onOpen: chooseApproverOpen,
-    onClose: chooseApproverClose,
-  } = useDisclosure();
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
     initialManagedSystems,
@@ -61,6 +63,7 @@ const PermissionsForm = () => {
     setAssignedSystems(initialManagedSystems);
   }, [initialManagedSystems]);
 
+  // Legacy permission hooks
   const { data: userPermissions, isLoading } = useGetUserPermissionsQuery(
     activeUserId ?? "",
     {
@@ -72,14 +75,24 @@ const PermissionsForm = () => {
     useUpdateUserPermissionsMutation();
 
   // Check if the current user is an external respondent
-  const isExternalRespondent = Boolean(
-    userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
-  );
+  const isExternalRespondent = useMemo(() => {
+    return Boolean(
+      userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
+    );
+  }, [userPermissions?.roles]);
+
+  const initialValues = useMemo(() => {
+    return userPermissions?.roles
+      ? { roles: userPermissions.roles }
+      : defaultInitialValues;
+  }, [userPermissions?.roles]);
+
+  // Check if target user is an owner
+  const targetUserIsOwner = useMemo(() => {
+    return userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
+  }, [userPermissions?.roles]);
 
   const updatePermissions = async (values: FormValues) => {
-    if (chooseApproverIsOpen) {
-      chooseApproverClose();
-    }
     if (!activeUserId) {
       return;
     }
@@ -97,7 +110,7 @@ const PermissionsForm = () => {
     });
 
     if (isErrorResult(userPermissionsResult)) {
-      toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
+      message.error(getErrorMessage(userPermissionsResult.error));
       return;
     }
     if (!skipAssigningSystems) {
@@ -107,11 +120,11 @@ const PermissionsForm = () => {
         fidesKeys,
       });
       if (isErrorResult(userSystemsResult)) {
-        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        message.error(getErrorMessage(userSystemsResult.error));
         return;
       }
     }
-    toast(successToastParams("Permissions updated"));
+    message.success("Permissions updated");
   };
 
   const handleSubmit = async (values: FormValues) => {
@@ -123,7 +136,20 @@ const PermissionsForm = () => {
       values.roles.includes(RoleRegistryEnum.APPROVER)
     ) {
       // approvers cannot be system managers on back-end
-      chooseApproverOpen();
+      modal.confirm({
+        title: "Change role to Approver",
+        content: (
+          <Text>
+            Switching to an approver role will remove all assigned systems. Do
+            you wish to proceed?
+          </Text>
+        ),
+        okText: "Yes",
+        centered: true,
+        icon: null,
+        onOk: () => updatePermissions(values),
+        className: "downgrade-to-approver-confirmation-modal",
+      });
     } else {
       await updatePermissions(values);
     }
@@ -139,13 +165,10 @@ const PermissionsForm = () => {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
-  if (
-    !canAssignOwner &&
-    userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
-  ) {
+  if (!canAssignOwner && targetUserIsOwner) {
     return (
       <Text data-testid="insufficient-access">
         You do not have sufficient access to change this user&apos;s
@@ -153,10 +176,6 @@ const PermissionsForm = () => {
       </Text>
     );
   }
-
-  const initialValues = userPermissions?.roles
-    ? { roles: userPermissions.roles }
-    : defaultInitialValues;
 
   // Filter roles based on whether the user is external respondent
   const availableRoles = ROLES.filter((role) => {
@@ -183,12 +202,10 @@ const PermissionsForm = () => {
     >
       {({ values, isSubmitting, dirty }) => (
         <Form>
-          <Stack spacing={7}>
-            <Stack spacing={3} data-testid="role-options">
-              <Flex alignItems="center">
-                <Text fontSize="sm" fontWeight="semibold" mr={1}>
-                  User role
-                </Text>
+          <Flex vertical gap={28}>
+            <Flex vertical gap={12} data-testid="role-options">
+              <Flex align="center">
+                <Text className="mr-1 text-sm font-semibold">User role</Text>
                 <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
               {availableRoles.map((role) => {
@@ -220,7 +237,7 @@ const PermissionsForm = () => {
                   </Button>
                 </Tooltip>
               )}
-            </Stack>
+            </Flex>
             <div>
               <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
                 Cancel
@@ -241,21 +258,7 @@ const PermissionsForm = () => {
                 </Button>
               </Tooltip>
             </div>
-          </Stack>
-          <ConfirmationModal
-            isOpen={chooseApproverIsOpen}
-            onClose={chooseApproverClose}
-            onConfirm={() => updatePermissions(values)}
-            title="Change role to Approver"
-            testId="downgrade-to-approver-confirmation-modal"
-            continueButtonText="Yes"
-            message={
-              <Text>
-                Switching to an approver role will remove all assigned systems.
-                Do you wish to proceed?
-              </Text>
-            }
-          />
+          </Flex>
         </Form>
       )}
     </Formik>

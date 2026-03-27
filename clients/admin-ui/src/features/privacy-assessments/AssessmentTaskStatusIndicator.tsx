@@ -3,10 +3,10 @@ import {
   Button,
   Flex,
   Icons,
-  notification,
   Popover,
   Spin,
   Text,
+  useNotification,
 } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -30,7 +30,7 @@ export const AssessmentTaskStatusIndicator = ({
   onTaskFinish,
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
-  const [notificationApi, notificationHolder] = notification.useNotification();
+  const notificationApi = useNotification();
 
   // Fetch once on mount; derive activeTask first without polling so we can
   // use it to gate the polling interval on the same query subscription.
@@ -90,25 +90,21 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
-  // Detect active → idle transition and fire the completion notification
-  const hadActiveTaskRef = useRef(false);
+  const completedCount = activeTask?.completed_count ?? 0;
+
+  const prevCompletedCountRef = useRef<number | null>(null);
   useEffect(() => {
-    if (hadActiveTaskRef.current && !activeTask) {
-      const isError = lastCompletedTask?.status === TaskStatus.ERROR;
-
-      if (isError) {
-        notificationApi.error({
-          message: "Assessment evaluation failed",
-          description: "An error occurred during evaluation",
-          duration: 0,
-        });
-        hadActiveTaskRef.current = false;
-        return;
-      }
-
+    if (!activeTask) {
+      prevCompletedCountRef.current = null;
+      return;
+    }
+    if (
+      prevCompletedCountRef.current !== null &&
+      completedCount > prevCompletedCountRef.current
+    ) {
       notificationApi.success({
         message: "New assessment results are available",
-        btn: onTaskFinish ? (
+        actions: onTaskFinish ? (
           <Button
             size="small"
             onClick={() => {
@@ -121,6 +117,39 @@ export const AssessmentTaskStatusIndicator = ({
         ) : undefined,
         duration: 0,
       });
+    }
+    prevCompletedCountRef.current = completedCount;
+  }, [activeTask, completedCount, notificationApi, onTaskFinish]);
+
+  // Detect active → idle transition for the final completion or error
+  const hadActiveTaskRef = useRef(false);
+  useEffect(() => {
+    if (hadActiveTaskRef.current && !activeTask) {
+      const isError = lastCompletedTask?.status === TaskStatus.ERROR;
+
+      if (isError) {
+        notificationApi.error({
+          message: "Assessment evaluation failed",
+          description: "An error occurred during evaluation",
+          duration: 0,
+        });
+      } else {
+        notificationApi.success({
+          message: "New assessment results are available",
+          actions: onTaskFinish ? (
+            <Button
+              size="small"
+              onClick={() => {
+                onTaskFinish();
+                notificationApi.destroy();
+              }}
+            >
+              Reload results
+            </Button>
+          ) : undefined,
+          duration: 0,
+        });
+      }
     }
     hadActiveTaskRef.current = activeTask !== null;
   }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
@@ -167,24 +196,21 @@ export const AssessmentTaskStatusIndicator = ({
   }
 
   return (
-    <>
-      {notificationHolder}
-      <Popover
-        content={
-          <AssessmentTaskPopoverContent
-            activeTask={activeTask}
-            lastCompletedTask={lastCompletedTask}
-            templateNamesMap={templateNamesMap}
-          />
-        }
-        title="Evaluation details"
-        trigger="hover"
-        placement="bottom"
-      >
-        <div className={classNames("cursor-pointer", className)}>
-          {inlineContent}
-        </div>
-      </Popover>
-    </>
+    <Popover
+      content={
+        <AssessmentTaskPopoverContent
+          activeTask={activeTask}
+          lastCompletedTask={lastCompletedTask}
+          templateNamesMap={templateNamesMap}
+        />
+      }
+      title="Evaluation details"
+      trigger="hover"
+      placement="bottom"
+    >
+      <div className={classNames("cursor-pointer", className)}>
+        {inlineContent}
+      </div>
+    </Popover>
   );
 };

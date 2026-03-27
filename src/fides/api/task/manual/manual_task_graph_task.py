@@ -11,6 +11,7 @@ from fides.api.models.manual_task import (
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
+    ManualTaskType,
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
@@ -270,7 +271,19 @@ class ManualTaskGraphTask(GraphTask):
         awaiting_detail_message: Optional[str] = None,
     ) -> Optional[list[Row]]:
         """
-        Set submitted data for a manual task and raise AwaitingAsyncTaskCallback if all instances are not completed
+        Set submitted data for a manual task and raise AwaitingAsyncTaskCallback if all instances are not completed.
+
+        Order of checks matters:
+        1. Submitted data check first — if the user has already submitted data,
+           the task is complete regardless of instance status. A ``failed`` status
+           set by an external process (e.g. Jira poller) is superseded by explicit
+           user submission.
+        2. Failed-instance check — only fires when no data has been submitted
+           AND all instances for this task/action are failed. If a replacement
+           ticket has been linked (creating a new active instance), we wait for
+           that instead. Only when every instance is failed do we error, since
+           no input can ever arrive.
+        3. Fall through to AwaitingAsyncTask if neither condition is met.
         """
         # Check if all manual task instances have submissions for this action type
         submitted_data = self._get_submitted_data(
@@ -286,9 +299,32 @@ class ManualTaskGraphTask(GraphTask):
 
             return result
 
-        # Set privacy request status to requires_input if not already set
-        if self.resources.request.status != PrivacyRequestStatus.requires_input:
-            self.resources.request.status = PrivacyRequestStatus.requires_input
+        # Check if all instances for this task/action have been marked as failed
+        # by an external process (e.g. poller detected a deleted Jira ticket
+        # with no data). Only error when there are no active instances — if a
+        # replacement ticket has been linked, a new active instance will exist
+        # alongside the old failed one, and we should wait for that instead.
+        matching_instances = [
+            inst
+            for inst in self.resources.request.manual_task_instances
+            if inst.task_id == manual_task.id and inst.config.config_type == action_type
+        ]
+        if matching_instances and all(
+            inst.status == StatusType.failed for inst in matching_instances
+        ):
+            raise ValueError(
+                f"Manual task for {self.connection_key} has failed instances — "
+                f"cannot proceed without intervention"
+            )
+
+        # Set privacy request status based on task type
+        awaiting_status = (
+            PrivacyRequestStatus.pending_external
+            if manual_task.task_type == ManualTaskType.jira_ticket
+            else PrivacyRequestStatus.requires_input
+        )
+        if self.resources.request.status != awaiting_status:
+            self.resources.request.status = awaiting_status
             self.resources.request.save(self.resources.session)
 
         # This will trigger log_awaiting_processing via the @retry decorator; include conditional details

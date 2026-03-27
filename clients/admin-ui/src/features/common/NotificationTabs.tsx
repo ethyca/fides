@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
+import type { NavConfigTab } from "~/features/common/nav/nav-config";
 import {
   CHAT_PROVIDERS_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
@@ -12,6 +13,14 @@ import {
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { selectThisUsersScopes } from "../user-management";
+
+/** Shared tab definitions used by both the tab bar and nav search. */
+export const NOTIFICATION_TAB_ITEMS: NavConfigTab[] = [
+  { title: "Messaging templates", path: NOTIFICATIONS_TEMPLATES_ROUTE },
+  { title: "Digests", path: NOTIFICATIONS_DIGESTS_ROUTE },
+  { title: "Email providers", path: MESSAGING_PROVIDERS_ROUTE },
+  { title: "Chat providers", path: CHAT_PROVIDERS_ROUTE },
+];
 
 const NotificationTabs = () => {
   const router = useRouter();
@@ -33,7 +42,7 @@ const NotificationTabs = () => {
   let menuItems = [
     {
       key: "templates",
-      label: "Templates",
+      label: "Messaging templates",
       requiresPlus: true,
       scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
       path: NOTIFICATIONS_TEMPLATES_ROUTE,
@@ -56,7 +65,7 @@ const NotificationTabs = () => {
       key: "chat-providers",
       label: "Chat providers",
       requiresPlus: true,
-      requiresFlag: "alphaDataProtectionAssessments" as const,
+      requiresFlag: "privacyAssessments" as const,
       scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       path: CHAT_PROVIDERS_ROUTE,
     },
@@ -71,8 +80,7 @@ const NotificationTabs = () => {
   menuItems = menuItems.filter(
     (item) =>
       !("requiresFlag" in item) ||
-      (item.requiresFlag === "alphaDataProtectionAssessments" &&
-        flags?.alphaDataProtectionAssessments),
+      (item.requiresFlag === "privacyAssessments" && flags?.privacyAssessments),
   );
 
   // Filter scopes

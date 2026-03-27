@@ -15,15 +15,23 @@ from requests import PreparedRequest, Request, Response, Session
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
+    DomainValidationError,
     FidesopsException,
 )
-from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.domain_util import (
+    get_domain_validation_mode,
+    validate_value_against_allowed_list,
+)
 from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts, is_domain_validation_disabled
+from fides.api.util.saas_util import (
+    deny_unsafe_hosts,
+    should_ignore_error,
+)
 from fides.config import CONFIG
+from fides.config.security_settings import DomainValidationMode
 from fides.connectors.utils.rate_limiter import (
     RateLimiter,
     RateLimiterPeriod,
@@ -65,6 +73,7 @@ class AuthenticatedClient:
         self.rate_limit_config = rate_limit_config
         self.connect_timeout = connect_timeout
         self.read_timeout = read_timeout
+        self._domain_validation_mode = get_domain_validation_mode()
         self._allowed_hosts: Optional[List[str]] = self._extract_allowed_hosts()
 
     def _extract_allowed_hosts(self) -> Optional[List[str]]:
@@ -75,7 +84,7 @@ class AuthenticatedClient:
         is self-hosted with an empty allowed_values list).  A non-None list
         means every outbound host must match at least one entry.
         """
-        if is_domain_validation_disabled():
+        if self._domain_validation_mode == DomainValidationMode.disabled:
             return None
 
         saas_config = self.configuration.get_saas_config()
@@ -109,7 +118,10 @@ class AuthenticatedClient:
 
         host_without_port = host.split(":")[0] if ":" in host else host
         validate_value_against_allowed_list(
-            host_without_port, self._allowed_hosts, "host"
+            host_without_port,
+            self._allowed_hosts,
+            "host",
+            mode=self._domain_validation_mode,
         )
 
     def get_authenticated_request(
@@ -174,7 +186,7 @@ class AuthenticatedClient:
                         response: Response = exc.response
                         status_code: int = response.status_code
                         last_exception = ClientUnsuccessfulException(
-                            status_code=status_code
+                            status_code=status_code, response=response
                         )
 
                         if status_code not in retry_status_codes:
@@ -185,6 +197,12 @@ class AuthenticatedClient:
                         sleep_time = (
                             retry_after_time if retry_after_time else sleep_time
                         )
+                    except DomainValidationError as exc:
+                        last_exception = ConnectionException(str(exc))
+                        logger.bind(
+                            **connection_exception_details(exc, self.uri)
+                        ).error("Connector request failed.")
+                        break
                     except Exception as exc:  # pylint: disable=W0703
                         dev_mode_log = f" with error: {exc}" if CONFIG.dev_mode else ""
                         last_exception = ConnectionException(
@@ -228,29 +246,6 @@ class AuthenticatedClient:
         ]
         return rate_limit_requests
 
-    def _should_ignore_error(
-        self,
-        status_code: int,
-        errors_to_ignore: Optional[Union[bool, List[int]]] = False,
-    ) -> bool:
-        """Should an error of `status_code` be ignored?"""
-        if errors_to_ignore is False:
-            # `errors_to_ignore` is a bool and explicitly set to False so Fides should not
-            # ignore any errors
-            return False
-
-        if errors_to_ignore is True:
-            # `errors_to_ignore` is a bool and explicitly set to True so Fides should ignore
-            # all errors
-            return True
-
-        if isinstance(errors_to_ignore, list):
-            # `errors_to_ignore` is a list of status codes so Fides should ignore the error
-            # if the status code is within the list
-            return status_code in errors_to_ignore
-
-        return False
-
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
         self,
@@ -283,12 +278,11 @@ class AuthenticatedClient:
         # utf-8 encode the body before sending
         if isinstance(prepared_request.body, str):
             prepared_request.body = prepared_request.body.encode("utf-8")
-
         response = self.session.send(
             prepared_request, timeout=(self.connect_timeout, self.read_timeout)
         )
-        ignore_error = self._should_ignore_error(
-            status_code=response.status_code, errors_to_ignore=ignore_errors
+        ignore_error = should_ignore_error(
+            status_code=response.status_code, ignore_errors=ignore_errors
         )
         context_logger = logger.bind(
             **request_details(prepared_request, response, ignore_error)

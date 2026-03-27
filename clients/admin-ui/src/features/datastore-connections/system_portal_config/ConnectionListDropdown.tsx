@@ -1,21 +1,17 @@
 import { debounce } from "common/utils";
 import {
-  ArrowDownLineIcon,
   Button,
   ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraInput as Input,
   ChakraInputGroup as InputGroup,
   ChakraInputLeftElement as InputLeftElement,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuList as MenuList,
   ChakraText as Text,
   Icons,
-  SearchLineIcon,
+  Popover,
   Tooltip,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -178,9 +174,6 @@ const ConnectionListDropdown = ({
     setSearchTerm("");
     handleClose();
   };
-  const handleOpen = () => {
-    setIsOpen(true);
-  };
 
   const selectedText = [...list].find(
     ([, option]) => option.value.identifier === selectedValue?.identifier,
@@ -209,24 +202,117 @@ const ConnectionListDropdown = ({
     [list, searchTerm],
   );
 
-  return (
-    <Menu
-      isLazy
-      onClose={handleClose}
-      onOpen={handleOpen}
-      strategy="fixed"
-      matchWidth
+  const handleItemClick = (value: ConnectionSystemTypeMap) => {
+    onChange(value);
+    handleClose();
+  };
+
+  const content = (
+    <Box
+      lineHeight="1rem"
+      p="0"
+      maxHeight="400px"
+      overflow="hidden"
+      data-testid="select-dropdown-list"
+      width="272px"
     >
-      <MenuButton
+      <Box px="8px" mt={2}>
+        <InputGroup size="sm">
+          <InputLeftElement pointerEvents="none">
+            <Icons.Search color={palette.FIDESUI_NEUTRAL_500} />
+          </InputLeftElement>
+          <Input
+            data-testid="input-search-integrations"
+            ref={inputRef}
+            autoComplete="off"
+            borderRadius="md"
+            name="search"
+            onChange={debounceHandleSearchChange}
+            placeholder="Search integrations"
+            size="sm"
+            type="search"
+          />
+        </InputGroup>
+      </Box>
+      {hasClear && (
+        <Flex borderBottom="1px" borderColor="gray.200" cursor="auto" p="8px">
+          <Button onClick={handleClear} size="small">
+            Clear
+          </Button>
+        </Flex>
+      )}
+      <Box overflowY="auto" maxHeight="272px">
+        {filteredListItems.map(([key, option]) => (
+          <Tooltip
+            title={option.toolTip}
+            key={key}
+            placement="rightTop"
+            mouseEnterDelay={0.5}
+          >
+            <Flex
+              alignItems="center"
+              cursor={option.isDisabled ? "not-allowed" : "pointer"}
+              opacity={option.isDisabled ? 0.4 : 1}
+              onClick={
+                option.isDisabled
+                  ? undefined
+                  : () => handleItemClick(option.value)
+              }
+              paddingTop="10px"
+              paddingRight="8.5px"
+              paddingBottom="10px"
+              paddingLeft="8.5px"
+              _hover={{ bg: option.isDisabled ? undefined : "gray.100" }}
+              color={
+                selectedValue === option.value ? "complimentary.500" : undefined
+              }
+              data-testid={`dropdown-item-${option.value.identifier}`}
+            >
+              <ConnectionTypeLogo
+                data={connectionLogoFromSystemType(option.value)}
+              />
+              <Text
+                ml={2}
+                fontSize="0.75rem"
+                noOfLines={1}
+                wordBreak="break-all"
+              >
+                {key}
+              </Text>
+              {option.value.custom && (
+                <Tooltip title="Custom integration" placement="top">
+                  <Box as="span" ml={2} display="inline-flex" cursor="pointer">
+                    <Icons.SettingsCheck size={16} />
+                  </Box>
+                </Tooltip>
+              )}
+            </Flex>
+          </Tooltip>
+        ))}
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Popover
+      content={content}
+      trigger="click"
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      afterOpenChange={(visible) => {
+        if (visible) {
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }
+      }}
+      styles={{ content: { padding: 0 } }}
+    >
+      <Button
         aria-label={selectedText ?? label}
-        as={Button}
-        color={selectedText ? "complimentary.500" : undefined}
         disabled={disabled}
-        icon={<ArrowDownLineIcon />}
+        icon={<Icons.ChevronDown />}
         iconPosition="end"
-        className="!bg-transparent text-left hover:bg-transparent active:bg-transparent"
         data-testid="select-dropdown-btn"
-        width="272px"
+        className="w-[272px]"
       >
         <Flex alignItems="center" gap={1}>
           <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
@@ -240,103 +326,8 @@ const ConnectionListDropdown = ({
             </Tooltip>
           )}
         </Flex>
-      </MenuButton>
-      {isOpen ? (
-        <MenuList
-          id="MENU_LIST"
-          lineHeight="1rem"
-          p="0"
-          maxHeight="400px"
-          overflow="hidden"
-          data-testid="select-dropdown-list"
-          width="272px"
-        >
-          <Box px="8px" mt={2}>
-            <InputGroup size="sm">
-              <InputLeftElement pointerEvents="none">
-                <SearchLineIcon color="gray.300" h="17px" w="17px" />
-              </InputLeftElement>
-              <Input
-                data-testid="input-search-integrations"
-                ref={inputRef}
-                autoComplete="off"
-                autoFocus
-                borderRadius="md"
-                name="search"
-                onChange={debounceHandleSearchChange}
-                placeholder="Search integrations"
-                size="sm"
-                type="search"
-              />
-            </InputGroup>
-          </Box>
-          {hasClear && (
-            <Flex
-              borderBottom="1px"
-              borderColor="gray.200"
-              cursor="auto"
-              p="8px"
-            >
-              <Button onClick={handleClear} size="small">
-                Clear
-              </Button>
-            </Flex>
-          )}
-          {/* MenuItems are not rendered unless Menu is open */}
-          <Box overflowY="auto" maxHeight="272px">
-            {filteredListItems.map(([key, option]) => (
-              <Tooltip
-                title={option.toolTip}
-                key={key}
-                placement="rightTop"
-                mouseEnterDelay={0.5}
-              >
-                <MenuItem
-                  color={
-                    selectedValue === option.value
-                      ? "complimentary.500"
-                      : undefined
-                  }
-                  isDisabled={option.isDisabled}
-                  onClick={() => onChange(option.value)}
-                  paddingTop="10px"
-                  paddingRight="8.5px"
-                  paddingBottom="10px"
-                  paddingLeft="8.5px"
-                  _focus={{
-                    bg: "gray.100",
-                  }}
-                >
-                  <ConnectionTypeLogo
-                    data={connectionLogoFromSystemType(option.value)}
-                  />
-                  <Text
-                    ml={2}
-                    fontSize="0.75rem"
-                    noOfLines={1}
-                    wordBreak="break-all"
-                  >
-                    {key}
-                  </Text>
-                  {option.value.custom && (
-                    <Tooltip title="Custom integration" placement="top">
-                      <Box
-                        as="span"
-                        ml={2}
-                        display="inline-flex"
-                        cursor="pointer"
-                      >
-                        <Icons.SettingsCheck size={16} />
-                      </Box>
-                    </Tooltip>
-                  )}
-                </MenuItem>
-              </Tooltip>
-            ))}
-          </Box>
-        </MenuList>
-      ) : null}
-    </Menu>
+      </Button>
+    </Popover>
   );
 };
 

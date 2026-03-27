@@ -1,6 +1,7 @@
 .cardWrapper {
   display: flex;
   flex-direction: column;
+  height: 100%;
 
   :global(.ant-card-body) {
     display: flex;
@@ -17,6 +18,12 @@
   border-radius: var(--ant-border-radius-lg);
   padding: var(--ant-padding-sm);
   background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
+}
+
+.titleLink {
+  --ant-color-link: var(--ant-color-text);
+  --ant-color-link-hover: var(--ant-color-text-secondary);
+  --ant-color-link-active: var(--ant-color-text);
 }
 
 .textWithTags {

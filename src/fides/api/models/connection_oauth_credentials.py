@@ -3,17 +3,13 @@ import enum
 from sqlalchemy import Column, Enum, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.db.base_class import Base
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.connectionconfig import ConnectionConfig
 
 # pylint: disable=unused-import
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.config import CONFIG
 
 
 class OAuthGrantType(enum.Enum):
@@ -42,12 +38,7 @@ class OAuthConfig(Base):
     scope = Column(String, nullable=True)
     client_id = Column(String, nullable=False)
     client_secret = Column(
-        StringEncryptedType(
-            String,
-            CONFIG.security.app_encryption_key,
-            AesGcmEngine,
-            "pkcs5",
-        ),
+        encrypted_type(type_in=String()),
         nullable=False,
     )
 

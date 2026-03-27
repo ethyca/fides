@@ -2010,7 +2010,9 @@ class TestConsentEmailStep:
 
         assert privacy_request_with_consent_policy.privacy_preferences[
             0
-        ].affected_system_status == {system.fides_key: "skipped"}
+        ].affected_system_status == {
+            sovrn_email_connection_config.consent_tracking_key: "skipped"
+        }
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_needs_batch_email_send_new_workflow(

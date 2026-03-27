@@ -60,6 +60,7 @@ class SQLConnector(BaseConnector[Engine]):
                 "SQL Connectors must define their secrets schema class"
             )
         self.ssh_server: sshtunnel._ForwardServer = None
+        self._current_namespace_meta: Optional[Dict[str, Any]] = None
 
     def should_dry_run(self, mode_to_check: SqlDryRunMode) -> bool:
         """
@@ -102,10 +103,14 @@ class SQLConnector(BaseConnector[Engine]):
         return rows
 
     @staticmethod
-    def get_namespace_meta(db: Session, dataset: str) -> Optional[Dict[str, Any]]:
+    def get_namespace_meta(
+        db: Optional[Session], dataset: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Util function to return the namespace meta for a given ctl_dataset.
         """
+        if db is None:
+            return None
 
         return db.scalar(
             select(CtlDataset.fides_meta["namespace"].cast(JSONB)).where(
@@ -116,6 +121,15 @@ class SQLConnector(BaseConnector[Engine]):
     @abstractmethod
     def build_uri(self) -> Optional[str]:
         """Build a database specific uri connection string"""
+
+    def client_for_node(self, node: ExecutionNode) -> Engine:
+        """Return the engine appropriate for the given execution node.
+
+        The default implementation returns the shared engine from client().
+        Subclasses (e.g. PostgreSQLConnector) can override this to select a
+        different database based on the dataset's namespace_meta.
+        """
+        return self.client()
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
@@ -153,7 +167,7 @@ class SQLConnector(BaseConnector[Engine]):
             )
             return []
 
-        client = self.client()
+        client = self.client_for_node(node)
         query_config = self.query_config(node)
         query = query_config.generate_raw_query(fields, filters)
 
@@ -179,7 +193,7 @@ class SQLConnector(BaseConnector[Engine]):
     ) -> List[Row]:
         """Retrieve sql data"""
         query_config = self.query_config(node)
-        client = self.client()
+        client = self.client_for_node(node)
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
@@ -202,7 +216,7 @@ class SQLConnector(BaseConnector[Engine]):
             except Exception as exc:
                 # Check if table exists using qualified table name
                 qualified_table_name = self.get_qualified_table_name(node)
-                if not self.table_exists(qualified_table_name):
+                if not self.table_exists(qualified_table_name, engine=client):
                     # Central decision point - will raise TableNotFound or ConnectionException
                     self.handle_table_not_found(
                         node=node,
@@ -225,7 +239,7 @@ class SQLConnector(BaseConnector[Engine]):
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
         update_ct = 0
-        client = self.client()
+        client = self.client_for_node(node)
 
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
@@ -245,7 +259,9 @@ class SQLConnector(BaseConnector[Engine]):
                         except Exception as exc:
                             # Check if table exists using qualified table name
                             qualified_table_name = self.get_qualified_table_name(node)
-                            if not self.table_exists(qualified_table_name):
+                            if not self.table_exists(
+                                qualified_table_name, engine=client
+                            ):
                                 # Central decision point - will raise TableNotFound or ConnectionException
                                 self.handle_table_not_found(
                                     node=node,
@@ -326,12 +342,29 @@ class SQLConnector(BaseConnector[Engine]):
         """
         Get the fully qualified table name for this database.
 
-        Default: Returns the simple collection name
-        Override: Database-specific connectors can implement namespace resolution
+        Uses the query_config's parsed namespace_meta (if present) to build
+        a qualified name like ``schema.table`` or ``database.schema.table``.
+        Returns unquoted names because table_exists() uses split(".") +
+        inspector.has_table().
         """
-        return node.collection.name
+        query_config = self.query_config(node)
+        meta = query_config.namespace_meta
+        if not meta:
+            return node.collection.name
 
-    def table_exists(self, qualified_table_name: str) -> bool:
+        schema = getattr(meta, "schema", None)
+        if not schema:
+            return node.collection.name
+
+        qualified = f"{schema}.{node.collection.name}"
+        database_name = getattr(meta, "database_name", None)
+        if database_name:
+            return f"{database_name}.{qualified}"
+        return qualified
+
+    def table_exists(
+        self, qualified_table_name: str, engine: Engine | None = None
+    ) -> bool:
         """
         Check if table exists using SQLAlchemy introspection.
 
@@ -339,7 +372,7 @@ class SQLConnector(BaseConnector[Engine]):
         Override: Connectors can implement database-specific table existence checking
         """
         try:
-            client = self.create_client()
+            client = engine or self.create_client()
             with client.connect() as connection:
                 inspector = inspect(connection)
 

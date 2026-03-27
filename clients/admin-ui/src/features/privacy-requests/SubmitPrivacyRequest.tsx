@@ -1,20 +1,15 @@
 import {
-  ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   Dropdown,
-  LinkIcon,
-  useChakraToast as useToast,
+  Icons,
+  Modal,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import InfoBox from "~/features/common/InfoBox";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { usePostPrivacyRequestMutation } from "~/features/privacy-requests/privacy-requests.slice";
 import SubmitPrivacyRequestForm, {
@@ -36,7 +31,7 @@ const SubmitPrivacyRequestModal = ({
 }) => {
   const [postPrivacyRequestMutationTrigger] = usePostPrivacyRequestMutation();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (values: PrivacyRequestSubmitFormValues) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -54,39 +49,36 @@ const SubmitPrivacyRequestModal = ({
     };
     const result = await postPrivacyRequestMutationTrigger([payload]);
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          getErrorMessage(
-            result.error,
-            "An error occurred while creating this privacy request. Please try again",
-          ),
+      message.error(
+        getErrorMessage(
+          result.error,
+          "An error occurred while creating this privacy request. Please try again",
         ),
       );
     } else {
-      toast(successToastParams("Privacy request created"));
+      message.success("Privacy request created");
     }
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
-      <ModalOverlay />
-      <ModalContent
-        data-testid="submit-request-modal"
-        maxHeight="80%"
-        overflowY="auto"
-      >
-        <ModalHeader>Create privacy request</ModalHeader>
-        <ModalBody>
-          <Stack spacing={4}>
-            <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
-            <SubmitPrivacyRequestForm
-              onSubmit={handleSubmit}
-              onCancel={() => onClose()}
-            />
-          </Stack>
-        </ModalBody>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      data-testid="submit-request-modal"
+      width={MODAL_SIZE.md}
+      title="Create privacy request"
+      footer={null}
+    >
+      <Stack spacing={4}>
+        <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
+        <SubmitPrivacyRequestForm
+          onSubmit={handleSubmit}
+          onCancel={() => onClose()}
+        />
+      </Stack>
     </Modal>
   );
 };
@@ -101,19 +93,20 @@ const PrivacyRequestLinkModal = ({
   privacyCenterUrl: string;
 }) => {
   return (
-    <Modal size="md" isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Create a Privacy Request Link</ModalHeader>
-        <ModalBody>
-          <Stack spacing={4} />
-          <CopyPrivacyRequestLinkForm
-            privacyCenterUrl={privacyCenterUrl}
-            onSubmit={onClose}
-            onCancel={onClose}
-          />
-        </ModalBody>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      title="Create a Privacy Request Link"
+      footer={null}
+    >
+      <Stack spacing={4} />
+      <CopyPrivacyRequestLinkForm
+        privacyCenterUrl={privacyCenterUrl}
+        onSubmit={onClose}
+        onCancel={onClose}
+      />
     </Modal>
   );
 };
@@ -155,13 +148,13 @@ const SubmitPrivacyRequest = () => {
             {
               label: "Create request link",
               key: "create-request-link",
-              icon: <LinkIcon />,
+              icon: <Icons.Link />,
               onClick: handleCreateLinkOpen,
               disabled: !hasPrivacyCenterUrl,
             },
           ],
         }}
-        icon={<ChevronDownIcon />}
+        icon={<Icons.ChevronDown />}
       >
         Create request
       </Dropdown.Button>

@@ -97,8 +97,8 @@ describe("Taxonomy management page", () => {
 
     it("Edit drawer displays details", () => {
       cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getAntDrawerHeader().should("contain", "User Content");
       cy.getByTestId("edit-drawer-content").within(() => {
-        cy.contains("header", "User Content");
         cy.getByTestId("edit-drawer-fides-key").should(
           "contain",
           "user.content",
@@ -140,6 +140,8 @@ describe("Taxonomy management page", () => {
           cy.getByTestId("edit-taxonomy-form_description")
             .clear()
             .type("New description");
+        });
+        cy.getAntDrawerFooter().within(() => {
           cy.getByTestId("save-btn").click();
         });
         cy.wait(data.updateRequest).then((interception) => {
@@ -278,7 +280,7 @@ describe("Taxonomy management page", () => {
 
     it("Delete button triggers confirmation", () => {
       cy.getByTestId(`taxonomy-node-user.content`).click();
-      cy.getByTestId("edit-drawer-content").within(() => {
+      cy.getAntDrawerFooter().within(() => {
         cy.getByTestId("delete-btn").click();
       });
       cy.getByTestId("confirmation-modal").should("be.visible");
@@ -290,7 +292,7 @@ describe("Taxonomy management page", () => {
       );
 
       cy.getByTestId(`taxonomy-node-user.content`).click();
-      cy.getByTestId("edit-drawer-content").within(() => {
+      cy.getAntDrawerFooter().within(() => {
         cy.getByTestId("delete-btn").click();
       });
       cy.getByTestId("confirmation-modal").within(() => {
@@ -318,7 +320,7 @@ describe("Taxonomy management page", () => {
 
     it("Edit tray doesn't show save button and delete button", () => {
       cy.getByTestId(`taxonomy-node-user.content`).click();
-      cy.getByTestId("edit-drawer-content").within(() => {
+      cy.getAntDrawerFooter().within(() => {
         cy.getByTestId("save-btn").should("not.exist");
         cy.getByTestId("delete-btn").should("not.exist");
       });
@@ -358,7 +360,7 @@ describe("Taxonomy management page", () => {
       }).as("putDataCategory");
 
       cy.getByTestId(`taxonomy-node-user.device.cookie_id`).click();
-      cy.getByTestId("edit-drawer-content").within(() => {
+      cy.getAntDrawerFooter().within(() => {
         cy.getByTestId("enable-btn").click();
       });
 

@@ -50,7 +50,7 @@ const PrivacyNoticeDetailPage = () => {
   return (
     <Layout title={`Privacy notice ${data.name}`}>
       <PageHeader
-        heading="Privacy Notices"
+        heading="Privacy notices"
         breadcrumbItems={[
           { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
           { title: data.name },

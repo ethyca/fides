@@ -27,6 +27,7 @@ SCOPE = "/oauth/scope"
 ROLE = "/oauth/role"
 CLIENT_BY_ID = "/oauth/client/{client_id}"
 CLIENT_SCOPE = "/oauth/client/{client_id}/scope"
+CLIENT_SECRET = "/oauth/client/{client_id}/secret"
 OAUTH_CALLBACK = "/oauth/callback"
 
 # Encryption URLs
@@ -235,6 +236,3 @@ DRP_EXERCISE = "/drp/exercise"
 DRP_STATUS = "/drp/status"
 DRP_DATA_RIGHTS = "/drp/data-rights"
 DRP_REVOKE = "/drp/revoke"
-
-# Registration
-REGISTRATION = "/registration"

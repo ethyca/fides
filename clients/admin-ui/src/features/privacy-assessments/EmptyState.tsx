@@ -1,9 +1,10 @@
 import { Avatar, Button, Icons, Result } from "fidesui";
-import NextLink from "next/link";
 
-import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
+interface EmptyStateProps {
+  onRunAssessment: () => void;
+}
 
-export const EmptyState = () => (
+export const EmptyState = ({ onRunAssessment }: EmptyStateProps) => (
   <Result
     icon={
       <Avatar
@@ -13,14 +14,12 @@ export const EmptyState = () => (
         icon={<Icons.Document size={32} />}
       />
     }
-    title="No assessments run yet"
-    subTitle="Run assessments to evaluate your systems against regulatory frameworks and identify compliance gaps."
+    title="Assess your privacy compliance"
+    subTitle="Scan your systems, data maps, and policies to automatically generate assessments against regulatory frameworks."
     extra={
-      <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
-        <Button type="primary" icon={<Icons.Add />}>
-          Run assessment
-        </Button>
-      </NextLink>
+      <Button type="primary" icon={<Icons.Add />} onClick={onRunAssessment}>
+        Scan &amp; generate assessments
+      </Button>
     }
     className="mt-20"
   />

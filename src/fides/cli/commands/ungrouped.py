@@ -1,7 +1,5 @@
 """Contains all of the ungrouped CLI commands for fides."""
 
-from datetime import datetime, timezone
-
 import rich_click as click
 import yaml
 
@@ -23,8 +21,6 @@ from fides.cli.options import (
 from fides.cli.utils import (
     FIDES_ASCII_ART,
     check_server,
-    send_init_analytics,
-    with_analytics,
     with_server_health_check,
 )
 from fides.common.utils import (
@@ -40,7 +36,6 @@ from fides.common.utils import (
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
-@with_analytics
 def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     Delete an object from the server.
@@ -64,7 +59,6 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
-@with_analytics
 @with_server_health_check
 def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
@@ -84,7 +78,6 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
 @click.command(name="ls")  # type: ignore
 @click.pass_context
 @resource_type_argument
-@with_analytics
 @with_server_health_check
 @click.option(
     "--verbose", "-v", is_flag=True, help="Displays the entire object list as YAML."
@@ -119,34 +112,26 @@ def list_resources(ctx: click.Context, verbose: bool, resource_type: str) -> Non
 @click.command()  # type: ignore
 @click.pass_context
 @click.argument("fides_dir", default=".", type=click.Path(exists=True))
-@click.option(
-    "--opt-in", is_flag=True, help="Automatically opt-in to anonymous usage analytics."
-)
-def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
+def init(ctx: click.Context, fides_dir: str) -> None:
     """
     Initializes a Fides instance by creating the default directory and
     configuration file if not present.
     """
 
-    executed_at = datetime.now(timezone.utc)
     config = ctx.obj["CONFIG"]
 
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
 
-    config, config_path = create_and_update_config_file(
-        config, fides_dir, opt_in=opt_in
-    )
+    config, config_path = create_and_update_config_file(config, fides_dir)
 
     print_divider()
 
-    send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
 
 
 @click.command()
 @click.pass_context
-@with_analytics
 def status(ctx: click.Context) -> None:
     """
     Check Fides server availability.
@@ -192,7 +177,6 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
     type=str,
     help="Directories to watch for changes (can be specified multiple times). Defaults to 'src' and 'data'.",
 )
-@with_analytics
 def worker(
     ctx: click.Context,
     queues: str = "",
@@ -223,7 +207,6 @@ def worker(
     help="Print any diffs between the local & server objects",
 )
 @manifests_dir_argument
-@with_analytics
 @with_server_health_check
 def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
@@ -265,7 +248,6 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     is_flag=True,
     help="Do not upload objects or results to the Fides webserver.",
 )
-@with_analytics
 def evaluate(
     ctx: click.Context,
     manifests_dir: str,
@@ -325,7 +307,6 @@ def evaluate(
 @click.pass_context
 @manifests_dir_argument
 @verbose_flag
-@with_analytics
 def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None:
     """
     Parse all Fides objects located in the supplied directory.
