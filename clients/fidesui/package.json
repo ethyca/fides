@@ -5,8 +5,10 @@
   "types": "src/index.ts",
   "type": "module",
   "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "check": "npm run lint && npm run format && npm run typecheck",
+    "check:ci": "npm run lint:ci && npm run format:ci && npm run typecheck",
+    "lint": "eslint --fix .",
+    "lint:ci": "eslint .",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "typecheck": "tsc --noEmit",
