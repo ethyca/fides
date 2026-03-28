@@ -10,7 +10,7 @@ from fides.api.schemas.saas.async_polling_configuration import (
     PollingResult,
     PollingResultType,
 )
-from fides.api.service.async_dsr.handlers.polling_response_handler import (
+from fides.service.privacy_request.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
 )
 

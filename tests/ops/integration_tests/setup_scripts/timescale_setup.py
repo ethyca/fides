@@ -14,8 +14,8 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.privacy_experience import PrivacyExperienceConfig
-from fides.api.service.connectors.timescale_connector import TimescaleConnector
 from fides.config import CONFIG
+from fides.connectors.timescale.timescale_connector import TimescaleConnector
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 

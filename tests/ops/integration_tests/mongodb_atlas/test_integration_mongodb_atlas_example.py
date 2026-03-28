@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.models.connectionconfig import ConnectionTestStatus
-from fides.api.service.connectors import MongoDBConnector
+from fides.connectors import MongoDBConnector
 
 
 @pytest.mark.integration_mongodb_atlas

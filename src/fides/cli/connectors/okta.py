@@ -5,14 +5,14 @@ from typing import List, Optional
 from fideslang.models import System, SystemMetadata
 
 from fides.api.common_exceptions import ConnectionException
-from fides.api.service.connectors.okta_http_client import (
-    OktaApplication,
-    OktaHttpClient,
-)
 from fides.config.schemas.credentials import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
     OktaConfig,
+)
+from fides.connectors.okta.okta_http_client import (
+    OktaApplication,
+    OktaHttpClient,
 )
 
 

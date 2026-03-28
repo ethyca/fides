@@ -12,8 +12,8 @@ from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_gra
 from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
     SnowflakeNamespaceMeta,
 )
-from fides.api.service.connectors import SnowflakeConnector
-from fides.api.service.connectors.query_configs.snowflake_query_config import (
+from fides.connectors import SnowflakeConnector
+from fides.connectors.snowflake.snowflake_query_config import (
     SnowflakeQueryConfig,
 )
 

@@ -96,6 +96,7 @@ REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
 PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
 PRIVACY_REQUEST_RESUBMIT = "/privacy-request/{privacy_request_id}/resubmit"
 REQUEST_TASK_CALLBACK = "/request-task/callback"
+
 PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-results"
 PRIVACY_REQUEST_DIAGNOSTICS = "/privacy-request/{privacy_request_id}/diagnostics"
 PRIVACY_REQUEST_FILTERED_RESULTS = (
@@ -156,11 +157,13 @@ WEBHOOK_PRE_APPROVAL_DETAIL = "/dsr/webhook/pre_approval/{webhook_key}"
 
 # Connection Type URLs
 CONNECTION_TYPES = "/connection_type"
+
 CONNECTION_TYPE_SECRETS = "/connection_type/{connection_type}/secret"
 
 # Connection Configurations URLs
 CONNECTIONS = "/connection"
 CONNECTION_BY_KEY = "/connection/{connection_key}"
+
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
 CONNECTION_OAUTH = "/connection/{connection_key}/oauth"
 CONNECTION_TEST = "/connection/{connection_key}/test"
@@ -193,6 +196,7 @@ YAML_DATASETS = YAML + CONNECTION_DATASETS
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
+
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{connector_template_type}"
 
 # Connector Template URLs

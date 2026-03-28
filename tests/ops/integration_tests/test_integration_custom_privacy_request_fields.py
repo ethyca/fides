@@ -82,7 +82,7 @@ class TestCustomPrivacyRequestFields:
         "allow_custom_privacy_request_field_collection_enabled",
         "allow_custom_privacy_request_fields_in_request_execution_enabled",
     )
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_access(
         self,
         mock_send,
@@ -137,7 +137,7 @@ class TestCustomPrivacyRequestFields:
         "allow_custom_privacy_request_field_collection_enabled",
         "allow_custom_privacy_request_fields_in_request_execution_enabled",
     )
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_erasure(
         self,
         mock_send,

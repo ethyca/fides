@@ -10,8 +10,8 @@ from requests import PreparedRequest, Request
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.saas_util import should_ignore_error
+from fides.connectors.saas.authenticated_client import AuthenticatedClient
 
 
 @dataclass

@@ -9,10 +9,6 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.privacy_request.request_service import (
-    REQUEUE_INTERRUPTED_TASKS_LOCK,
-    requeue_interrupted_tasks,
-)
 from fides.api.util.cache import (
     cache_task_tracking_key,
     get_cache,
@@ -21,16 +17,18 @@ from fides.api.util.cache import (
     reset_privacy_request_retry_count,
 )
 from fides.config import CONFIG
+from fides.service.privacy_request.request_service import (
+    REQUEUE_INTERRUPTED_TASKS_LOCK,
+    requeue_interrupted_tasks,
+)
 
 # Mock target paths — centralised to avoid string duplication
-_CANCEL = "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+_CANCEL = "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
 _REQUEUE = (
     "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
 )
-_QUEUE = (
-    "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
-)
-_IN_FLIGHT = "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
+_QUEUE = "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
+_IN_FLIGHT = "fides.service.privacy_request.request_service.celery_tasks_in_flight"
 
 
 # ---------------------------------------------------------------------------
@@ -319,7 +317,7 @@ class TestRequeueInterruptedTasks:
         pr = make_privacy_request()
         make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
         with mock.patch(
-            "fides.api.service.privacy_request.request_service._has_async_tasks_awaiting_external_completion",
+            "fides.service.privacy_request.request_service._has_async_tasks_awaiting_external_completion",
             side_effect=Exception("db error"),
         ):
             requeue_interrupted_tasks.apply().get()

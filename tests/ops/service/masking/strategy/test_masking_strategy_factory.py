@@ -1,12 +1,16 @@
 import pytest
 
 from fides.api.common_exceptions import NoSuchStrategyException
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fides.service.privacy_request.masking.strategy.masking_strategy import (
+    MaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
-from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.service.privacy_request.masking.strategy.masking_strategy_hash import (
+    HashMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 

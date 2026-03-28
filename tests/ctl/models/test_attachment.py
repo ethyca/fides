@@ -20,8 +20,8 @@ from fides.api.models.attachment import (
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageDetails
-from fides.api.service.storage.util import get_local_filename
-from fides.service.attachment_service import AttachmentService
+from fides.service.attachment.attachment_service import AttachmentService
+from fides.service.storage.util import get_local_filename
 
 
 @pytest.fixture(
@@ -164,7 +164,7 @@ class TestAttachmentCreation:
 
         # Patch the GCS client in the provider
         with patch(
-            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            "fides.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
             attachment = AttachmentService(db).create_and_upload(
@@ -276,7 +276,7 @@ class TestAttachmentRetrieval:
 
         # Patch the GCS client in the provider
         with patch(
-            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            "fides.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
             attachment = AttachmentService(db).create_and_upload(
@@ -364,7 +364,7 @@ class TestAttachmentDeletion:
 
         # Patch the GCS client in the provider
         with patch(
-            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            "fides.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
             attachment = AttachmentService(db).create_and_upload(
@@ -718,7 +718,7 @@ class TestAttachmentContentRetrieval:
 
         # Patch the GCS client in the provider
         with patch(
-            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            "fides.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
             attachment = AttachmentService(db).create_and_upload(
@@ -867,7 +867,7 @@ class TestRetrieveUrlNullSafety:
 
     def test_retrieve_url_raises_on_none_size(self, db, attachment_data, monkeypatch):
         """Verify retrieve_url raises ValueError when provider returns None size."""
-        from fides.api.service.storage.providers.local_provider import (
+        from fides.service.storage.providers.local_provider import (
             LocalStorageProvider,
         )
 

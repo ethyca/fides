@@ -20,8 +20,10 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import parse_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.saas_util import merge_datasets
+from fides.service.privacy_request.masking.strategy.masking_strategy import (
+    MaskingStrategy,
+)
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,

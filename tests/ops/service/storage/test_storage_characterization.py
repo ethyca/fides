@@ -25,8 +25,8 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.service.storage.gcs import get_gcs_client
-from fides.api.service.storage.s3 import (
+from fides.service.storage.gcs import get_gcs_client
+from fides.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_delete_from_s3,
     generic_retrieve_from_s3,
@@ -34,7 +34,7 @@ from fides.api.service.storage.s3 import (
     get_file_size,
     maybe_get_s3_client,
 )
-from fides.api.service.storage.util import (
+from fides.service.storage.util import (
     LARGE_FILE_THRESHOLD,
     AllowedFileType,
     get_allowed_file_type_or_raise,
@@ -328,7 +328,7 @@ class TestStorageCharacterization:
 
     def test_gcs_client_adc_auth_method(self):
         """Verify GCS client creation with ADC auth method."""
-        with patch("fides.api.service.storage.gcs.Client") as mock_client:
+        with patch("fides.service.storage.gcs.Client") as mock_client:
             mock_client.return_value = MagicMock()
             client = get_gcs_client(GCSAuthMethod.ADC.value, None)
             mock_client.assert_called_once()
@@ -382,7 +382,7 @@ class TestStorageCharacterization:
                 "GetObject",
             )
 
-        with patch("fides.api.service.storage.s3.get_s3_client", raise_client_error):
+        with patch("fides.service.storage.s3.get_s3_client", raise_client_error):
             with pytest.raises(ClientError):
                 maybe_get_s3_client("test_auth", {})
 
@@ -392,7 +392,7 @@ class TestStorageCharacterization:
         def raise_param_error(auth_method, storage_secrets):
             raise ParamValidationError(report="Invalid parameters")
 
-        with patch("fides.api.service.storage.s3.get_s3_client", raise_param_error):
+        with patch("fides.service.storage.s3.get_s3_client", raise_param_error):
             with pytest.raises(ValueError) as exc_info:
                 maybe_get_s3_client("test_auth", {})
             assert "parameters you provided are incorrect" in str(exc_info.value)

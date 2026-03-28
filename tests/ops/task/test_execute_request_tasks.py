@@ -24,7 +24,6 @@ from fides.api.models.privacy_request import RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.connectors import PostgreSQLConnector
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     persist_new_access_request_tasks,
@@ -37,6 +36,7 @@ from fides.api.task.execute_request_tasks import (
 )
 from fides.api.task.graph_task import mark_current_and_downstream_nodes_as_failed
 from fides.api.task.task_resources import TaskResources
+from fides.connectors import PostgreSQLConnector
 
 
 def _collect_task_resources(

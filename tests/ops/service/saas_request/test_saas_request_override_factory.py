@@ -18,13 +18,13 @@ from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     PollingStatusResult,
 )
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.service.saas_request.saas_request_override_factory import (
+from fides.api.util.collection_util import Row
+from fides.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.service.privacy_request.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
     register,
 )
-from fides.api.util.collection_util import Row
 
 
 def uuid():

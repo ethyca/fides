@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session, relationship
 from typing_extensions import deprecated
 
 from fides.api.db.base_class import Base
-from fides.api.service.storage.util import AllowedFileType
+from fides.service.storage.util import AllowedFileType
 
 if TYPE_CHECKING:
     from fides.api.models.comment import Comment
@@ -94,7 +94,7 @@ class Attachment(Base):
     Stores information about an Attachment.
 
     Note: Storage operations (upload, download, delete) are handled by
-    fides.service.attachment_service.AttachmentService.
+    fides.service.attachment.attachment_service.AttachmentService.
     """
 
     created_at = Column(
