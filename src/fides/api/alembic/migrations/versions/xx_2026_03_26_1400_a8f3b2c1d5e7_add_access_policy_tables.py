@@ -1,7 +1,7 @@
 """add access_policy and access_policy_version tables
 
 Revision ID: a8f3b2c1d5e7
-Revises: c7e3a9b1d4f2
+Revises: 29113e44faec
 Create Date: 2026-03-26 14:00:00.000000
 
 """
@@ -78,11 +78,6 @@ def upgrade() -> None:
         "ix_plus_access_policy_version_id", "plus_access_policy_version", ["id"]
     )
     op.create_index(
-        "ix_plus_access_policy_version_access_policy_id",
-        "plus_access_policy_version",
-        ["access_policy_id"],
-    )
-    op.create_index(
         "ix_plus_access_policy_version_policy_version",
         "plus_access_policy_version",
         ["access_policy_id", "version"],
@@ -93,10 +88,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index(
         "ix_plus_access_policy_version_policy_version",
-        table_name="plus_access_policy_version",
-    )
-    op.drop_index(
-        "ix_plus_access_policy_version_access_policy_id",
         table_name="plus_access_policy_version",
     )
     op.drop_index(

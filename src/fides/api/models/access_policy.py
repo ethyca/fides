@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
@@ -20,23 +18,17 @@ class AccessPolicy(Base):
 
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
+    # Comma-separated control group keys, e.g. "eea_uk_gdpr,us_glba_ccpa"
     controls = Column(String, nullable=True)
-    enabled = Column(Boolean, nullable=False, server_default="t")
-    is_deleted = Column(Boolean, nullable=False, server_default="f")
+    enabled = Column(Boolean, nullable=False, default=True, server_default="t")
+    is_deleted = Column(Boolean, nullable=False, default=False, server_default="f")
 
     versions = relationship(
         "AccessPolicyVersion",
         back_populates="access_policy",
         cascade="all, delete-orphan",
         order_by="AccessPolicyVersion.version.desc()",
-        lazy="selectin",
     )
-
-    @property
-    def latest_version(self) -> Optional["AccessPolicyVersion"]:
-        if self.versions:
-            return self.versions[0]  # type: ignore[index]
-        return None
 
 
 class AccessPolicyVersion(Base):
@@ -57,7 +49,6 @@ class AccessPolicyVersion(Base):
             ondelete="CASCADE",
         ),
         nullable=False,
-        index=True,
     )
     version = Column(Integer, nullable=False, default=1)
     yaml = Column(Text, nullable=False)
