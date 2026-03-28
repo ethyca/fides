@@ -64,7 +64,7 @@ export const transformOrganizationToFormValues = (
   openIDProvider: OpenIDProvider,
 ): SSOProviderFormValues => ({ ...openIDProvider });
 
-const getSSOProviderFormValidationSchema = (isEditMode: boolean) =>
+export const getSSOProviderFormValidationSchema = (isEditMode: boolean) =>
   Yup.object().shape({
     provider: Yup.string().required().label("Provider"),
     name: Yup.string().required().label("Name"),
@@ -189,6 +189,10 @@ const SSOProviderForm = ({
   onClose,
 }: SSOProviderFormProps) => {
   const isEditMode = !!openIDProvider;
+  const validationSchema = useMemo(
+    () => getSSOProviderFormValidationSchema(isEditMode),
+    [isEditMode],
+  );
   const [createOpenIDProviderMutationTrigger] =
     useCreateOpenIDProviderMutation();
   const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
@@ -289,7 +293,7 @@ const SSOProviderForm = ({
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
-      validationSchema={getSSOProviderFormValidationSchema(isEditMode)}
+      validationSchema={validationSchema}
     >
       {({ dirty, isValid, values }) => (
         <Form data-testid="openIDProvider-form">
@@ -308,7 +312,7 @@ const SSOProviderForm = ({
               tooltip="Unique identifier for your provider"
               variant="stacked"
               isRequired
-              disabled={!!initialValues.id}
+              disabled={isEditMode}
             />
             <CustomTextInput
               id="name"
@@ -326,6 +330,7 @@ const SSOProviderForm = ({
               tooltip="Client ID for your provider"
               variant="stacked"
               isRequired={!isEditMode}
+              placeholder={isEditMode ? "Leave blank to keep existing" : undefined}
             />
             <CustomTextInput
               id="client_secret"
@@ -335,6 +340,7 @@ const SSOProviderForm = ({
               tooltip="Client secret for your provider"
               variant="stacked"
               isRequired={!isEditMode}
+              placeholder={isEditMode ? "Leave blank to keep existing" : undefined}
             />
             {values.provider === "azure" && renderAzureProviderExtraFields()}
             {values.provider === "okta" && renderOktaProviderExtraFields()}
