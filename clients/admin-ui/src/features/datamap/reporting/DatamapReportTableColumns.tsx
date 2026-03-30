@@ -29,8 +29,8 @@ import { getColKey } from "./utils";
 
 type MenuClickInfo = Parameters<NonNullable<MenuProps["onClick"]>>[0];
 
-const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
-const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
+export const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
+export const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
 
 export interface DatamapReportColumnProps {
   onSelectRow: (row: DatamapReportRow) => void;
@@ -128,7 +128,9 @@ const getCustomFieldColumns = (
     const isArrayField = customField?.field_type === "string[]";
 
     return {
-      title: getColumnTitle(key, columnNameMap, isRenaming, form),
+      title:
+        customField?.name ||
+        getColumnTitle(key, columnNameMap, isRenaming, form),
       dataIndex: key,
       key,
       render: (value: unknown) => {
