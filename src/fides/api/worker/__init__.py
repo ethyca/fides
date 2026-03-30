@@ -10,6 +10,7 @@ from watchfiles.filters import DefaultFilter
 from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import (
+    BULK_CONSENT_IMPORT_QUEUE_NAME,
     CONSENT_WEBHOOK_QUEUE_NAME,
     DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
     DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
@@ -80,6 +81,7 @@ def start_worker(
         DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
         DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
         DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
+        BULK_CONSENT_IMPORT_QUEUE_NAME,
     ]
 
     # Fall back to all queues if neither queues nor exclude_queues are provided.
