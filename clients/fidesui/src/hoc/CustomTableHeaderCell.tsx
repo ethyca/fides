@@ -9,13 +9,13 @@ export const CustomTableHeaderCell = (
     columnKey?: string;
   },
 ) => {
-  const { menu, columnKey, children, ...rest } = props;
+  const { menu, columnKey, ...rest } = props;
   if (menu) {
     return (
       <th {...rest}>
         <div className={styles.customTableHeaderCell}>
           <div className={styles.customTableHeaderCell__children}>
-            {children}
+            {rest.children}
           </div>
           <Dropdown
             trigger={["click"]}
@@ -44,5 +44,5 @@ export const CustomTableHeaderCell = (
       </th>
     );
   }
-  return <th {...props} />;
+  return <th {...rest} />;
 };
