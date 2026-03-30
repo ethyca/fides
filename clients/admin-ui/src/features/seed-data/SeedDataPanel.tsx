@@ -277,7 +277,7 @@ const SeedDataPanel = () => {
           ) : (
             <Alert
               type="info"
-              message="No seed profiles configured. Set FIDESPLUS__SEED__PROFILES to configure 1Password-backed profiles."
+              message="No seed profiles configured. Set FIDESPLUS__SAMPLE_DATA__PROFILES to configure 1Password-backed profiles."
               showIcon
             />
           )}
