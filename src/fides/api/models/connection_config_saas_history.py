@@ -32,7 +32,7 @@ class ConnectionConfigSaaSHistory(Base):
         nullable=True,
         index=True,
     )
-    connection_key = Column(String, nullable=False)
+    connection_key = Column(String, nullable=False, index=True)
     version = Column(String, nullable=False)
     config = Column(JSONB, nullable=False)
     dataset = Column(JSONB, nullable=True)
