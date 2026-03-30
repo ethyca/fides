@@ -29,7 +29,7 @@ from setup_tests_nox import (
     CoverageConfig,
     PytestConfig,
     ReportConfig,
-    XdistConfig,
+    SplitConfig,
     pytest_api,
     pytest_ctl,
     pytest_lib,
@@ -497,6 +497,11 @@ def pytest_redis_cluster_docker(session: nox.Session) -> None:
 ############
 ## Pytest ##
 ############
+
+# CI overrides these to shard slow test groups via pytest-split
+TOTAL_SPLITS = os.environ.get("TOTAL_SPLITS", "1")
+SPLIT_GROUP = os.environ.get("SPLIT_GROUP", "1")
+
 TEST_GROUPS = [
     nox.param("ctl-unit", id="ctl-unit"),
     nox.param("ctl-not-external", id="ctl-not-external"),
@@ -611,8 +616,16 @@ def pytest(session: nox.Session, test_group: str) -> None:
     session.notify("teardown")
 
     validate_test_matrix(session)
+
+    split_config = None
+    if TOTAL_SPLITS != "1":
+        split_config = SplitConfig(
+            total_splits=TOTAL_SPLITS,
+            split_group=SPLIT_GROUP,
+        )
+
     pytest_config = PytestConfig(
-        xdist_config=XdistConfig(parallel_runners="auto"),
+        split_config=split_config,
         coverage_config=CoverageConfig(
             report_format="xml",
             cov_name="fides",

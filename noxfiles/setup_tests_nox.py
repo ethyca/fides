@@ -75,8 +75,29 @@ class ReportConfig:
 
 
 @dataclass
+class SplitConfig:
+    """Configure pytest-split sharding for CI parallelism."""
+
+    total_splits: str = "1"
+    split_group: str = "1"
+
+    @property
+    def args(self) -> list[str]:
+        if self.total_splits == "1":
+            return []
+        return [
+            "--splits",
+            self.total_splits,
+            "--group",
+            self.split_group,
+            "--splitting-algorithm=least_duration",
+        ]
+
+
+@dataclass
 class PytestConfig:
     xdist_config: Optional[XdistConfig] = None
+    split_config: Optional[SplitConfig] = None
     coverage_config: Optional[CoverageConfig] = None
     report_config: Optional[ReportConfig] = None
     suppress_stdout: bool = True
@@ -84,10 +105,15 @@ class PytestConfig:
 
     @property
     def args(self) -> list[str]:
+        xdist_args = self.xdist_config.args if self.xdist_config else []
+        split_args = self.split_config.args if self.split_config else []
+        coverage_args = self.coverage_config.args if self.coverage_config else []
+        report_args = self.report_config.args if self.report_config else []
         return [
-            *self.xdist_config.args,
-            *self.coverage_config.args,
-            *self.report_config.args,
+            *xdist_args,
+            *split_args,
+            *coverage_args,
+            *report_args,
             "-x",
             "-s" if self.suppress_stdout else "",
             "-W ignore" if self.suppress_warnings else "",
@@ -180,7 +206,8 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
 
         # Don't use xdist for this one
         local_pytest_config = copy.copy(pytest_config)
-        local_pytest_config.xdist_config.parallel_runners = "0"
+        if local_pytest_config.xdist_config:
+            local_pytest_config.xdist_config.parallel_runners = "0"
 
         session.run(*START_APP, external=True)
         session.run(*LOGIN, external=True)
