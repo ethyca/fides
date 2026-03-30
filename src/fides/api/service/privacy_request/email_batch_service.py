@@ -112,9 +112,10 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
                     )
                     has_failure = True
 
-        requeue_privacy_requests_after_email_send(privacy_requests, session)
         if has_failure:
             return EmailExitState.email_send_failed
+
+        requeue_privacy_requests_after_email_send(privacy_requests, session)
         return EmailExitState.complete
 
 
