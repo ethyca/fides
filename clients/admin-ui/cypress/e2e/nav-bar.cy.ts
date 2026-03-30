@@ -8,8 +8,8 @@ describe("Nav Bar", () => {
   it("renders all navigation groups with links inside", () => {
     cy.visit("/");
 
-    // Without Plus: Overview, Data inventory, Privacy requests, Core configuration, Settings (Compliance hidden)
-    cy.get(".ant-menu-submenu-title").should("have.length", 5);
+    // Without Plus: Overview, Data inventory, Privacy requests, Settings
+    cy.get(".ant-menu-submenu-title").should("have.length", 4);
     cy.getByTestId("Overview-nav-group")
       .click()
       .parents(".ant-menu-submenu")
@@ -30,16 +30,11 @@ describe("Nav Bar", () => {
       .within(() => {
         cy.getByTestId("Request manager-nav-link");
       });
-    cy.getByTestId("Core configuration-nav-group")
-      .click()
-      .parents(".ant-menu-submenu")
-      .within(() => {
-        cy.getByTestId("Taxonomy-nav-link");
-      });
     cy.getByTestId("Settings-nav-group")
       .click()
       .parents(".ant-menu-submenu")
       .within(() => {
+        cy.getByTestId("Taxonomy-nav-link");
         cy.getByTestId("Privacy requests-nav-link");
         cy.getByTestId("Users-nav-link");
         cy.getByTestId("Organization-nav-link");
@@ -47,20 +42,20 @@ describe("Nav Bar", () => {
       });
   });
 
-  it("renders the Consent and Detection & Discovery navs with Plus", () => {
+  it("renders the Consent, Integrations, and Detection & Discovery navs with Plus", () => {
     stubPlus(true);
     cy.visit("/");
 
-    // With Plus: Overview, Detection & Discovery, Data inventory, Privacy requests, Consent, Core configuration, Compliance, Settings
-    cy.get(".ant-menu-submenu-title").should("have.length", 8);
+    // With Plus: Overview, Detection & Discovery, Data inventory, Privacy requests, Consent, Integrations, Settings
+    cy.get(".ant-menu-submenu-title").should("have.length", 7);
     cy.getByTestId("Detection & Discovery-nav-group")
       .click()
       .parents(".ant-menu-submenu")
       .within(() => {
         cy.getByTestId("Action center-nav-link").should("exist");
       });
-    cy.getByTestId("Core configuration-nav-group").should("exist");
-    cy.getByTestId("Compliance-nav-group").should("exist");
+    cy.getByTestId("Integrations-nav-group").should("exist");
+    cy.getByTestId("Settings-nav-group").should("exist");
   });
 
   it("styles the active navigation link based on the current route", () => {

@@ -34,6 +34,8 @@ export interface NavConfigRoute {
   routes?: NavConfigRoute[];
   /** Tabs within this page that should appear in search */
   tabs?: NavConfigTab[];
+  /** Sub-group label for organizing items within a nav group (rendered as a non-clickable header) */
+  subGroup?: string;
 }
 
 export interface NavConfigGroup {
@@ -187,21 +189,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
     ],
   },
   {
-    title: "Core configuration",
+    title: "Integrations",
     icon: <Icons.WorkflowAutomation />,
     routes: [
-      {
-        title: "Taxonomy",
-        path: routes.TAXONOMY_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.DATA_USE_READ,
-          ScopeRegistryEnum.DATA_CATEGORY_READ,
-          ScopeRegistryEnum.DATA_SUBJECT_READ,
-        ],
-      },
       {
         title: "Integrations",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
@@ -215,9 +214,55 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.CONNECTION_TYPE_READ,
         ],
       },
+    ],
+  },
+  {
+    title: "Settings",
+    icon: <Icons.Settings />,
+    routes: [
+      // General
+      {
+        title: "Organization",
+        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+        subGroup: "General",
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+        ],
+      },
+      {
+        title: "Users",
+        path: routes.USER_MANAGEMENT_ROUTE,
+        subGroup: "General",
+        scopes: [
+          ScopeRegistryEnum.USER_UPDATE,
+          ScopeRegistryEnum.USER_CREATE,
+          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+          ScopeRegistryEnum.USER_READ,
+        ],
+      },
+      {
+        title: "User detail",
+        path: routes.USER_DETAIL_ROUTE,
+        subGroup: "General",
+        hidden: true, // Don't show in nav but allow access
+        scopes: [], // Any authenticated user can access their own profile
+      },
+      {
+        title: "Role Management",
+        path: routes.RBAC_ROUTE,
+        subGroup: "General",
+        requiresPlus: true,
+        requiresFlag: "alphaRbac",
+        scopes: [
+          // Only Owners can access Role Management - they have assign_owners scope
+          ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+        ],
+      },
       {
         title: "Notifications",
         path: routes.NOTIFICATIONS_ROUTE,
+        subGroup: "General",
         scopes: [
           ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
           ScopeRegistryEnum.DIGEST_CONFIG_READ,
@@ -226,64 +271,27 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         tabs: NOTIFICATION_TAB_ITEMS,
       },
       {
-        title: "Custom fields",
-        path: routes.CUSTOM_FIELDS_ROUTE,
-        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
-        requiresPlus: true,
+        title: "Email templates",
+        path: routes.EMAIL_TEMPLATES_ROUTE,
+        subGroup: "General",
+        requiresOss: true,
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
+      // Data governance
       {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
-      },
-      {
-        title: "Domain verification",
-        path: routes.DOMAIN_RECORDS_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: true,
-        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
-      },
-      {
-        title: "Domains",
-        path: routes.DOMAIN_MANAGEMENT_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: false,
+        title: "Taxonomy",
+        path: routes.TAXONOMY_ROUTE,
+        subGroup: "Data governance",
         scopes: [
-          ScopeRegistryEnum.CONFIG_READ,
-          ScopeRegistryEnum.CONFIG_UPDATE,
+          ScopeRegistryEnum.DATA_USE_READ,
+          ScopeRegistryEnum.DATA_CATEGORY_READ,
+          ScopeRegistryEnum.DATA_SUBJECT_READ,
         ],
       },
       {
-        title: "Data purposes",
-        path: routes.DATA_PURPOSES_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
-      },
-      {
-        title: "Data consumers",
-        path: routes.DATA_CONSUMERS_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
-      },
-      {
-        title: "Access policies",
-        path: routes.ACCESS_POLICIES_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        scopes: [],
-      },
-    ],
-  },
-  {
-    title: "Compliance",
-    icon: <Icons.RuleDraft />,
-    routes: [
-      {
         title: "Locations",
         path: routes.LOCATIONS_ROUTE,
+        subGroup: "Data governance",
         scopes: [
           ScopeRegistryEnum.LOCATION_READ,
           ScopeRegistryEnum.LOCATION_UPDATE,
@@ -293,21 +301,68 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Regulations",
         path: routes.REGULATIONS_ROUTE,
+        subGroup: "Data governance",
         scopes: [
           ScopeRegistryEnum.LOCATION_READ,
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
       },
-    ],
-  },
-  {
-    title: "Settings",
-    icon: <Icons.Settings />,
-    routes: [
+      {
+        title: "Data purposes",
+        path: routes.DATA_PURPOSES_ROUTE,
+        subGroup: "Data governance",
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
+      },
+      {
+        title: "Data consumers",
+        path: routes.DATA_CONSUMERS_ROUTE,
+        subGroup: "Data governance",
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
+      },
+      {
+        title: "Access policies",
+        path: routes.ACCESS_POLICIES_ROUTE,
+        subGroup: "Data governance",
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [],
+      },
+      // Advanced
+      {
+        title: "Custom fields",
+        path: routes.CUSTOM_FIELDS_ROUTE,
+        subGroup: "Advanced",
+        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "Domain verification",
+        path: routes.DOMAIN_RECORDS_ROUTE,
+        subGroup: "Advanced",
+        requiresPlus: true,
+        requiresFidesCloud: true,
+        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
+      },
+      {
+        title: "Domains",
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
+        subGroup: "Advanced",
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+      },
       {
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+        subGroup: "Advanced",
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
         tabs: [
           {
@@ -321,48 +376,9 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Users",
-        path: routes.USER_MANAGEMENT_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.USER_UPDATE,
-          ScopeRegistryEnum.USER_CREATE,
-          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
-          ScopeRegistryEnum.USER_READ,
-        ],
-      },
-      {
-        title: "User detail",
-        path: routes.USER_DETAIL_ROUTE,
-        hidden: true, // Don't show in nav but allow access
-        scopes: [], // Any authenticated user can access their own profile
-      },
-      {
-        title: "Role Management",
-        path: routes.RBAC_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "alphaRbac",
-        scopes: [
-          // Only Owners can access Role Management - they have assign_owners scope
-          ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
-        ],
-      },
-      {
-        title: "Organization",
-        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.ORGANIZATION_READ,
-          ScopeRegistryEnum.ORGANIZATION_UPDATE,
-        ],
-      },
-      {
-        title: "Email templates",
-        path: routes.EMAIL_TEMPLATES_ROUTE,
-        requiresOss: true,
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
-      },
-      {
-        title: "Consent",
+        title: "Consent settings",
         path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        subGroup: "Advanced",
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [
@@ -373,6 +389,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
+        subGroup: "General",
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
       },
     ],
@@ -448,6 +465,7 @@ export interface NavGroupChild {
   hidden?: boolean;
   children: Array<NavGroupChild>;
   tabs?: NavConfigTab[];
+  subGroup?: string;
 }
 
 export interface NavGroup {
@@ -606,6 +624,7 @@ const configureNavRoute = ({
     hidden: route.hidden,
     children,
     tabs: route.tabs,
+    subGroup: route.subGroup,
   };
 
   return groupChild;

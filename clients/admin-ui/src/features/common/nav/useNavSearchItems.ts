@@ -86,7 +86,7 @@ const useNavSearchItems = (
   const taxonomyItems: FlatNavItem[] = useMemo(() => {
     const taxonomyGroupTitle =
       groups.find((g) => g.children.some((c) => c.path === "/taxonomy"))
-        ?.title ?? "Core configuration";
+        ?.title ?? "Settings";
 
     const coreKeys = new Set<string>(CORE_TAXONOMY_ITEMS.map((c) => c.key));
 
@@ -144,7 +144,7 @@ const useNavSearchItems = (
     const integrationGroup = groups.find((g) =>
       g.children.some((c) => c.path === "/integrations"),
     );
-    const groupTitle = integrationGroup?.title ?? "Core configuration";
+    const groupTitle = integrationGroup?.title ?? "Integrations";
 
     return connectionsData.items.map((conn) => ({
       title: conn.name || conn.key,

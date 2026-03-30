@@ -50,44 +50,97 @@ export const UnconnectedMainSideNav = ({
   collapsed = false,
   onCollapseToggle,
 }: UnconnectedMainSideNavProps) => {
+  const buildChildItems = (
+    visibleChildren: typeof groups[0]["children"],
+    groupTitle: string,
+  ) => {
+    const childItem = (child: typeof visibleChildren[0]) => ({
+      key: child.path,
+      label: (
+        <NextLink
+          href={child.path}
+          data-testid={`${child.title}-nav-link`}
+          className="ml-4 pl-0.5"
+        >
+          {child.title}
+        </NextLink>
+      ),
+    });
+
+    // Check if any visible children use subGroups
+    const hasSubGroups = visibleChildren.some((child) => child.subGroup);
+    if (!hasSubGroups) {
+      return visibleChildren.map(childItem);
+    }
+
+    // Group children by subGroup, preserving order of first appearance
+    const subGroupOrder: string[] = [];
+    const subGroupMap = new Map<string, typeof visibleChildren>();
+    visibleChildren.forEach((child) => {
+      const key = child.subGroup || "";
+      if (!subGroupMap.has(key)) {
+        subGroupOrder.push(key);
+        subGroupMap.set(key, []);
+      }
+      subGroupMap.get(key)!.push(child);
+    });
+
+    const items: Array<Record<string, unknown>> = [];
+    subGroupOrder.forEach((subGroupName) => {
+      const subGroupChildren = subGroupMap.get(subGroupName)!;
+      if (subGroupName) {
+        items.push({
+          type: "group" as const,
+          key: `${groupTitle}-${subGroupName}`,
+          label: subGroupName,
+          children: subGroupChildren.map(childItem),
+        });
+      } else {
+        subGroupChildren.forEach((child) => items.push(childItem(child)));
+      }
+    });
+
+    return items;
+  };
+
   const navMenuItems = groups
     .filter((group) => group.children.some((child) => !child.hidden)) // Only include groups with visible children
-    .map((group) => ({
-      key: group.title,
-      icon: group.icon,
-      popupClassName: styles.flyout,
-      popupOffset: [12, 0],
-      label: (
-        <span data-testid={`${group.title}-nav-group`}>{group.title}</span>
-      ),
-      children: [
-        ...(collapsed
-          ? [
-              {
-                key: `${group.title}-header`,
-                label: (
-                  <span className={styles.flyoutHeader}>{group.title}</span>
-                ),
-                disabled: true,
-              },
-            ]
-          : []),
-        ...group.children
-          .filter((child) => !child.hidden)
-          .map((child) => ({
-            key: child.path,
-            label: (
-              <NextLink
-                href={child.path}
-                data-testid={`${child.title}-nav-link`}
-                className="ml-4 pl-0.5"
-              >
-                {child.title}
-              </NextLink>
-            ),
-          })),
-      ],
-    }));
+    .map((group) => {
+      const visibleChildren = group.children.filter((child) => !child.hidden);
+      const hasSubGroups = visibleChildren.some((child) => child.subGroup);
+
+      return {
+        key: group.title,
+        icon: group.icon,
+        popupClassName: styles.flyout,
+        popupOffset: [12, 0],
+        // Multi-column flyout for groups with sub-groups when collapsed
+        ...(collapsed && hasSubGroups
+          ? {
+              popupRender: (menu: React.ReactNode) => (
+                <div className={styles.multiColumnFlyout}>{menu}</div>
+              ),
+            }
+          : {}),
+        label: (
+          <span data-testid={`${group.title}-nav-group`}>{group.title}</span>
+        ),
+        children: [
+          ...(collapsed
+            ? [
+                {
+                  key: `${group.title}-header`,
+                  label: (
+                    <span className={styles.flyoutHeader}>{group.title}</span>
+                  ),
+                  disabled: true,
+                },
+              ]
+            : []),
+          ...buildChildItems(visibleChildren, group.title),
+        ],
+      };
+    });
 
   const getActiveKeyFromUrl = () => {
     if (!active) {

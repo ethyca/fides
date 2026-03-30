@@ -139,11 +139,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: true,
       });
 
-      const coreConfigChildren = findGroup(
+      const settingsChildren = findGroup(
         navGroups,
-        "Core configuration",
+        "Settings",
       ).children.map((c) => c.title);
-      expect(coreConfigChildren).toContain("Domain verification");
+      expect(settingsChildren).toContain("Domain verification");
     });
 
     it("does not show domain verification page when fides cloud is disabled", () => {
@@ -155,11 +155,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfigChildren = findGroup(
+      const settingsChildren = findGroup(
         navGroups,
-        "Core configuration",
+        "Settings",
       ).children.map((c) => c.title);
-      expect(coreConfigChildren).not.toContain("Domain verification");
+      expect(settingsChildren).not.toContain("Domain verification");
     });
   });
 
@@ -176,11 +176,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfigChildren = findGroup(
+      const settingsChildren = findGroup(
         navGroups,
-        "Core configuration",
+        "Settings",
       ).children.map((c) => ({ title: c.title, path: c.path }));
-      expect(coreConfigChildren).toContainEqual({
+      expect(settingsChildren).toContainEqual({
         title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
       });
@@ -199,10 +199,8 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfig = navGroups.find(
-        (g) => g.title === "Core configuration",
-      );
-      expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
+      const settings = navGroups.find((g) => g.title === "Settings");
+      expect(settings?.children.map((c) => c.title) ?? []).not.toContain(
         "Domains",
       );
     });
@@ -219,10 +217,8 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfig = navGroups.find(
-        (g) => g.title === "Core configuration",
-      );
-      expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
+      const settings = navGroups.find((g) => g.title === "Settings");
+      expect(settings?.children.map((c) => c.title) ?? []).not.toContain(
         "Domains",
       );
     });

@@ -149,6 +149,35 @@
   :global(.ant-menu-submenu > .ant-menu-submenu-title) {
     transition: padding 0.35s ease;
   }
+
+  // Sub-group header labels within expanded menu
+  :global(.ant-menu-item-group-title) {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fidesui-neutral-400);
+    padding-left: 28px !important;
+    margin-top: 8px;
+  }
+
+  // Consistent selected state for all menu items (including those inside sub-groups)
+  :global(.ant-menu-item-selected) {
+    background-color: var(--fidesui-sandstone) !important;
+
+    a {
+      color: var(--fidesui-minos) !important;
+    }
+  }
+
+  // Hover state for all menu items in expanded mode
+  :global(.ant-menu-item:not(.ant-menu-item-selected):hover) {
+    background-color: var(--fidesui-neutral-700) !important;
+
+    a {
+      color: var(--fidesui-corinth) !important;
+    }
+  }
 }
 
 .menu:global(.ant-menu-inline-collapsed) {
@@ -214,6 +243,8 @@
     --ant-menu-item-margin-inline: 0 !important;
     --ant-menu-item-margin-block: 8px !important;
     padding-block: 8px !important;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
   }
 
   :global(.ant-menu-title-content) {
@@ -264,5 +295,43 @@
     &:hover {
       background-color: transparent !important;
     }
+  }
+}
+
+// Multi-column flyout for collapsed Settings (wraps around the .flyout popup)
+.multiColumnFlyout {
+  background-color: var(--fidesui-minos);
+  border-radius: 8px;
+
+  :global(.ant-menu) {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(160px, auto)) !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  // Header ("SETTINGS") spans all columns
+  :global(.ant-menu-item-disabled:first-child) {
+    grid-column: 1 / -1;
+  }
+
+  // Sub-group headers in the flyout columns
+  :global(.ant-menu-item-group-title) {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--fidesui-neutral-400);
+    padding-left: 12px !important;
+    padding-top: 8px;
+    padding-bottom: 4px;
+    white-space: nowrap;
+  }
+
+  // Items within flyout columns
+  :global(.ant-menu-item-group-list .ant-menu-item) {
+    padding-left: 12px !important;
+    padding-right: 16px !important;
+    white-space: nowrap;
   }
 }

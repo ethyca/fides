@@ -191,10 +191,8 @@ describe("Root User Access", () => {
       cy.getByTestId("About Fides-nav-link").should("be.visible");
     });
 
-    it("can see Core configuration nav group", () => {
-      cy.getByTestId("Core configuration-nav-group")
-        .should("be.visible")
-        .click();
+    it("can see Settings nav group with Taxonomy", () => {
+      cy.getByTestId("Settings-nav-group").should("be.visible").click();
       cy.getByTestId("Taxonomy-nav-link").should("be.visible");
     });
   });
@@ -233,7 +231,7 @@ describe("Root User Access", () => {
     });
 
     it("can navigate to Taxonomy page", () => {
-      cy.getByTestId("Core configuration-nav-group").click();
+      cy.getByTestId("Settings-nav-group").click();
       cy.getByTestId("Taxonomy-nav-link").click();
       cy.url().should("include", "/taxonomy");
       cy.url().should("not.include", "/login");

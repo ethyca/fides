@@ -573,7 +573,7 @@ describe("NavSearch", () => {
       mockDynamicItems.push({
         title: "Marketing",
         path: "/taxonomy/data_use",
-        groupTitle: "Core configuration",
+        groupTitle: "Settings",
         parentTitle: "Taxonomy",
       });
 
@@ -591,7 +591,7 @@ describe("NavSearch", () => {
       mockDynamicItems.push({
         title: "Stripe Production",
         path: "/integrations/stripe-prod",
-        groupTitle: "Core configuration",
+        groupTitle: "Integrations",
         parentTitle: "Integrations",
       });
 
@@ -611,7 +611,7 @@ describe("NavSearch", () => {
       mockDynamicItems.push({
         title: "Marketing",
         path: "/taxonomy/data_use",
-        groupTitle: "Core configuration",
+        groupTitle: "Settings",
         parentTitle: "Taxonomy",
       });
 
