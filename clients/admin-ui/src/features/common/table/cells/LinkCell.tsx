@@ -27,7 +27,7 @@ export const LinkCell = ({
               variant="primary"
               {...props}
             >
-              <Text unStyled ellipsis={{ tooltip: children }}>
+              <Text unStyled size="sm" ellipsis={{ tooltip: children }}>
                 {children}
               </Text>
             </LinkText>
