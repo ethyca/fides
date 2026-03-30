@@ -28,9 +28,6 @@ from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.privacy_request.duplication_detection import (
-    check_for_duplicates,
-)
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
@@ -426,17 +423,6 @@ def _handle_privacy_request_requeue(
     db: Session, privacy_request: PrivacyRequest
 ) -> None:
     """Handle retry logic for a privacy request - either requeue or cancel based on retry count."""
-    # ENG-2474: Run duplicate detection before requeuing. If the request is
-    # now a duplicate (e.g. another request for the same identity was verified
-    # while this one was stuck), mark it and skip the requeue entirely.
-    check_for_duplicates(db, privacy_request)
-    if privacy_request.status == PrivacyRequestStatus.duplicate:
-        logger.info(
-            "Privacy request {} is a duplicate, skipping requeue.",
-            privacy_request.id,
-        )
-        return
-
     try:
         # Check retry count and either requeue or cancel based on limit
         current_retry_count = get_privacy_request_retry_count(privacy_request.id)

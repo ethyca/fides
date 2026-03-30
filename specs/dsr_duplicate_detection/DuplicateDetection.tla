@@ -25,10 +25,15 @@
 (*   at creation/verify time doesn't catch all interleavings, and      *)
 (*   the requeue watchdog has no duplicate check at all.               *)
 (*                                                                     *)
-(* THREE BUGS FOUND:                                                   *)
-(*   1. Requeue watchdog has no dup check (FixedRequeue toggle)        *)
-(*   2. DupCheck has no tiebreaker when both verified (FixedDupCheck)  *)
-(*   3. Verification can overwrite "duplicate" status (FixedDupCheck)  *)
+(* TWO BUGS FOUND:                                                     *)
+(*   1. DupCheck has no tiebreaker when both verified (FixedDupCheck)  *)
+(*   2. Verification can overwrite "duplicate" status (FixedDupCheck)  *)
+(*                                                                     *)
+(* NOTE: The requeue watchdog does NOT need a dup check because        *)
+(* is_duplicate_request early-returns False for ACTIONED requests      *)
+(* (line 383 of duplication_detection.py). All requests selected by    *)
+(* requeue_interrupted_tasks are ACTIONED, so the check is a no-op.   *)
+(* The model captures this via the ACTIONED guard in DupCheckStatus.   *)
 (*                                                                     *)
 (* APPROACH: Use a single operator DupCheck(req) that models the       *)
 (*   check_for_duplicates logic as an atomic DB transaction. Each      *)
@@ -52,7 +57,6 @@ EXTENDS TLC, Integers, FiniteSets
 CONSTANTS
     NumRequests,        \* Number of DSRs the data subject can submit (2-3)
     MaxVerifyAttempts,  \* Max wrong codes before giving up on a request (1-2)
-    FixedRequeue,       \* TRUE = add dup check to requeue watchdog
     FixedDupCheck       \* TRUE = fix dup check tiebreaker + verify guard
 
 Requests == 1..NumRequests
@@ -79,6 +83,8 @@ ACTIONED == {"approved", "in_processing"}
 \* Returns the new status and canonical arrays after running the check.
 \*
 \* Logic (from duplication_detection.py:is_duplicate_request):
+\* 0a. If req is ACTIONED, return unchanged (early-return, line 383)
+\* 0b. If req is already duplicate, return unchanged (early-return, line 398)
 \* 1. Find "others" = submitted, non-duplicate, non-terminal requests
 \* 2. If any other is ACTIONED, mark req as duplicate
 \* 3. If any other is verified and req is not, mark req as duplicate
@@ -94,29 +100,41 @@ Others(req, st) ==
                       /\ st[r] /= "complete"}
 
 DupCheckStatus(req, st, ver, can) ==
-    LET oth == Others(req, st) IN
+    \* Rule 0a: ACTIONED requests are never duplicates (early-return, line 383)
+    IF st[req] \in ACTIONED THEN <<st, can>>
+    \* Rule 0b: Already-duplicate requests return early (line 398)
+    ELSE IF st[req] = "duplicate" THEN <<st, can>>
+    ELSE LET oth == Others(req, st) IN
     IF oth = {} THEN <<st, can>>
     \* Rule 1: other is actioned => this is duplicate
     ELSE IF \E r \in oth : st[r] \in ACTIONED THEN
         LET dup == CHOOSE r \in oth : st[r] \in ACTIONED IN
         << [st EXCEPT ![req] = "duplicate"],
-           [can EXCEPT ![req] = dup] >>
+           [r \in Requests |-> IF r = req THEN dup
+                               ELSE IF can[r] = req THEN dup
+                               ELSE can[r]] >>
     \* Rule 2: other is verified, this is not => this is duplicate
     ELSE IF \E r \in oth : ver[r] = TRUE /\ ver[req] = FALSE THEN
         LET dup == CHOOSE r \in oth : ver[r] = TRUE IN
         << [st EXCEPT ![req] = "duplicate"],
-           [can EXCEPT ![req] = dup] >>
+           [r \in Requests |-> IF r = req THEN dup
+                               ELSE IF can[r] = req THEN dup
+                               ELSE can[r]] >>
     \* Rule 3: this is verified, others are not => mark others as duplicate
     ELSE IF ver[req] = TRUE /\ \A r \in oth : ver[r] = FALSE THEN
         << [r \in Requests |-> IF r \in oth THEN "duplicate" ELSE st[r]],
-           [r \in Requests |-> IF r \in oth THEN req ELSE can[r]] >>
+           [r \in Requests |-> IF r \in oth THEN req
+                               ELSE IF can[r] /= 0 /\ can[r] \in oth THEN req
+                               ELSE can[r]] >>
     \* Rule 4: neither verified => oldest (smallest ID) wins
     ELSE IF ver[req] = FALSE /\ \A r \in oth : ver[r] = FALSE THEN
         LET all == oth \union {req} IN
         LET oldest == CHOOSE r \in all : \A r2 \in all : r <= r2 IN
         IF oldest /= req THEN
             << [st EXCEPT ![req] = "duplicate"],
-               [can EXCEPT ![req] = oldest] >>
+               [r \in Requests |-> IF r = req THEN oldest
+                                   ELSE IF can[r] = req THEN oldest
+                                   ELSE can[r]] >>
         ELSE <<st, can>>
     \* Rule 5 (FIX): both verified, neither actioned => oldest wins
     \* Without this, two simultaneously-verified requests both survive
@@ -125,7 +143,9 @@ DupCheckStatus(req, st, ver, can) ==
         LET oldest == CHOOSE r \in all : \A r2 \in all : r <= r2 IN
         IF oldest /= req THEN
             << [st EXCEPT ![req] = "duplicate"],
-               [can EXCEPT ![req] = oldest] >>
+               [r \in Requests |-> IF r = req THEN oldest
+                                   ELSE IF can[r] = req THEN oldest
+                                   ELSE can[r]] >>
         ELSE <<st, can>>
     ELSE <<st, can>>
 
@@ -218,27 +238,17 @@ end process;
 \* requests whose Celery tasks disappeared (worker crash, etc).
 \* We model it as nondeterministically picking any "stuck" request.
 \*
-\* BUGGY: requeues without duplicate check
-\* FIXED: runs duplicate check before requeue
+\* No duplicate check here: all requeued requests are ACTIONED,
+\* and is_duplicate_request early-returns False for ACTIONED
+\* requests (duplication_detection.py:383). The ACTIONED guard
+\* in DupCheckStatus captures this.
 \* ---------------------------------------------------------------
 fair process RequeueWatchdog = 200
 begin
     WatchdogLoop:
         while TRUE do
             WatchdogPick:
-                with stuckReqs = {r \in Requests : status[r] \in ACTIONED} do
-                    if stuckReqs /= {} then
-                        with req \in stuckReqs do
-                            if FixedRequeue then
-                                \* PROPOSED FIX: check for duplicates before requeue
-                                with result = DupCheckStatus(req, status, verified, canonical) do
-                                    status := result[1];
-                                    canonical := result[2];
-                                end with;
-                            end if;
-                        end with;
-                    end if;
-                end with;
+                skip;
         end while;
 end process;
 
@@ -371,20 +381,10 @@ WatchdogLoop == /\ pc[200] = "WatchdogLoop"
                                 submitted, nextReq, procReq >>
 
 WatchdogPick == /\ pc[200] = "WatchdogPick"
-                /\ LET stuckReqs == {r \in Requests : status[r] \in ACTIONED} IN
-                     IF stuckReqs /= {}
-                        THEN /\ \E req \in stuckReqs:
-                                  IF FixedRequeue
-                                     THEN /\ LET result == DupCheckStatus(req, status, verified, canonical) IN
-                                               /\ status' = result[1]
-                                               /\ canonical' = result[2]
-                                     ELSE /\ TRUE
-                                          /\ UNCHANGED << status, canonical >>
-                        ELSE /\ TRUE
-                             /\ UNCHANGED << status, canonical >>
+                /\ TRUE
                 /\ pc' = [pc EXCEPT ![200] = "WatchdogLoop"]
-                /\ UNCHANGED << verified, verifyAttempts, submitted, nextReq, 
-                                procReq >>
+                /\ UNCHANGED << status, verified, verifyAttempts, canonical,
+                                submitted, nextReq, procReq >>
 
 RequeueWatchdog == WatchdogLoop \/ WatchdogPick
 
