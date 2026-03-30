@@ -224,6 +224,7 @@ export const PrivacyRequestFieldPicker = ({
         loading={isLoading}
         allowClear
         showSearch
+        optionFilterProp="label"
         data-testid="privacy-request-field-select"
       />
       {showManualKeyInput && (

@@ -524,20 +524,23 @@ describe("Integration Management - Custom Identity Conditions", () => {
 
   it("should display custom identity fields in the field picker", () => {
     cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
 
     // Privacy request field should be selected by default
     cy.getByTestId("field-source-privacy-request").should("be.checked");
 
-    // Open the field picker dropdown
-    cy.getByTestId("privacy-request-field-select").click();
+    // Use the search feature to filter to custom identity options
+    cy.getByTestId("privacy-request-field-select")
+      .find("input")
+      .type("Customer");
+    cy.get(".ant-select-dropdown").should("be.visible");
 
-    // Verify Custom identities group appears
-    cy.get(".ant-select-dropdown").should("contain", "Custom identities");
-
-    // Verify the custom identity field appears
+    // Verify the custom identity field appears in filtered results
     cy.get(".ant-select-dropdown").should("contain", "Customer id");
 
-    // Verify the manual entry option appears
+    // Clear search and search for the manual entry option
+    cy.getByTestId("privacy-request-field-select").find("input").clear();
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
     cy.get(".ant-select-dropdown").should(
       "contain",
       "Other (enter custom key)",
@@ -546,9 +549,13 @@ describe("Integration Management - Custom Identity Conditions", () => {
 
   it("should add condition with a custom identity field from the dropdown", () => {
     cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
 
-    // Select the custom identity field
-    cy.getByTestId("privacy-request-field-select").antSelect("Customer id");
+    // Type to search and filter to the custom identity option
+    cy.getByTestId("privacy-request-field-select")
+      .find("input")
+      .type("Customer");
+    cy.getAntSelectOption("Customer id").should("be.visible").click();
 
     // Select operator
     cy.getByTestId("operator-select").antSelect("Equals");
@@ -575,11 +582,13 @@ describe("Integration Management - Custom Identity Conditions", () => {
 
   it("should allow manual entry of a custom identity key", () => {
     cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
 
-    // Select the manual entry option
-    cy.getByTestId("privacy-request-field-select").antSelect(
-      "Other (enter custom key)",
-    );
+    // Type to search and select the manual entry option
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
+    cy.getAntSelectOption("Other (enter custom key)")
+      .should("be.visible")
+      .click();
 
     // Verify manual key input appears below the select
     cy.getByTestId("manual-identity-key-input").should("exist");
@@ -610,15 +619,21 @@ describe("Integration Management - Custom Identity Conditions", () => {
 
   it("should hide manual key input when switching away from Other", () => {
     cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
 
-    // Enter manual entry mode
-    cy.getByTestId("privacy-request-field-select").antSelect(
-      "Other (enter custom key)",
-    );
+    // Enter manual entry mode by searching and selecting Other
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
+    cy.getAntSelectOption("Other (enter custom key)")
+      .should("be.visible")
+      .click();
     cy.getByTestId("manual-identity-key-input").should("exist");
 
-    // Switch to a different field
-    cy.getByTestId("privacy-request-field-select").antSelect("Customer id");
+    // Switch to a different field by searching and selecting Customer id
+    cy.getByTestId("privacy-request-field-select")
+      .find("input")
+      .clear()
+      .type("Customer");
+    cy.getAntSelectOption("Customer id").should("be.visible").click();
 
     // Manual key input should disappear
     cy.getByTestId("manual-identity-key-input").should("not.exist");
