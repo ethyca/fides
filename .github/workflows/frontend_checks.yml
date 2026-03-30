@@ -73,14 +73,8 @@ jobs:
             exit 1
           fi
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Format
-        run: npm run format:ci
+      - name: Check (lint, format, typecheck)
+        run: npm run check:ci
 
       - name: Unit tests
         run: npm run test
