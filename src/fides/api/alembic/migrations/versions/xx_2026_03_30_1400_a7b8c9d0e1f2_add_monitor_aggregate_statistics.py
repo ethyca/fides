@@ -1,0 +1,68 @@
+"""add monitor_aggregate_statistics table
+
+Revision ID: a7b8c9d0e1f2
+Revises: 29113e44faec
+Create Date: 2026-03-30 14:00:00.000000
+
+"""
+
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers, used by Alembic.
+revision = "a7b8c9d0e1f2"
+down_revision = "29113e44faec"
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    op.create_table(
+        "monitor_aggregate_statistics",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column("monitor_config_key", sa.String(), nullable=False),
+        sa.Column("monitor_type", sa.String(length=50), nullable=False),
+        sa.Column(
+            "statistics",
+            postgresql.JSONB(astext_type=sa.Text()),
+            server_default="{}",
+            nullable=False,
+        ),
+        sa.Column(
+            "computed_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "monitor_config_key",
+            name="uq_monitor_agg_stats_monitor_config_key",
+        ),
+    )
+    op.create_index(
+        "ix_monitor_agg_stats_type",
+        "monitor_aggregate_statistics",
+        ["monitor_type"],
+    )
+
+
+def downgrade():
+    op.drop_index(
+        "ix_monitor_agg_stats_type",
+        table_name="monitor_aggregate_statistics",
+    )
+    op.drop_table("monitor_aggregate_statistics")
