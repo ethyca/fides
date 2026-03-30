@@ -18,6 +18,7 @@ import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicke
 import { useCustomFieldMetadata } from "./hooks/useCustomFieldMetadata";
 import { FieldSource } from "./types";
 import {
+  CUSTOM_IDENTITY_MANUAL_ENTRY,
   getFieldType,
   getInitialFieldSource,
   getValueTooltip,
@@ -211,7 +212,17 @@ const AddConditionForm = ({
       <Form.Item
         name="fieldAddress"
         label="Field"
-        rules={[{ required: true, message: "Field is required" }]}
+        rules={[
+          { required: true, message: "Field is required" },
+          {
+            validator: (_, val) =>
+              val === CUSTOM_IDENTITY_MANUAL_ENTRY
+                ? Promise.reject(
+                    new Error("Please enter a custom identity key"),
+                  )
+                : Promise.resolve(),
+          },
+        ]}
         tooltip={
           fieldSource === FieldSource.DATASET
             ? "Select a field from your datasets to use in the condition"
