@@ -48,12 +48,12 @@ describe("Data map report table", () => {
             field_type: LegacyAllowedTypes.STRING_ARRAY,
           }),
           mockCustomField({
-            name: "color",
+            name: "Color",
             resource_type: LegacyResourceTypes.DATA_USE,
           }),
         ],
       },
-    );
+    ).as("getCustomFieldDefinitions");
     cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
       fixture: "custom-reports/minimal.json",
     }).as("getCustomReportsMinimal");
@@ -61,6 +61,7 @@ describe("Data map report table", () => {
   });
 
   it("can render custom fields", () => {
+    cy.wait("@getCustomFieldDefinitions");
     // Should render the custom fields as columns
     cy.getByTestId("column-system_starter_pokemon").contains("Starter pokemon");
     cy.getByTestId("column-system_pokemon_party").contains("Pokemon party");
@@ -71,7 +72,7 @@ describe("Data map report table", () => {
     cy.getByTestId("system_pokemon_party-header-menu").click();
     cy.getAntDropdownOverlay("system_pokemon_party-header-menu-list").within(
       () => {
-        cy.get("button").contains("Expand all").click();
+        cy.selectAntDropdownOption("Expand all");
       },
     );
     ["eevee", "pikachu", "articuno"].forEach((pokemon) => {
@@ -194,15 +195,25 @@ describe("Data map report table", () => {
     it("should expand/collapse columns", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
-      cy.contains("div", "System undeclared data categories").click();
-      cy.contains("div", "Data use undeclared data categories").click();
+      cy.getByTestId(
+        "column-list-item-system_undeclared_data_categories",
+      ).within(() => {
+        cy.get("button#system_undeclared_data_categories").click();
+      });
+      cy.getByTestId(
+        "column-list-item-data_use_undeclared_data_categories",
+      ).within(() => {
+        cy.get("button#data_use_undeclared_data_categories").click();
+      });
       cy.getByTestId("save-button").click();
 
-      cy.getByTestId("system_undeclared_data_categories-header-menu").click();
+      cy.getByTestId("system_undeclared_data_categories-header-menu")
+        .should("exist")
+        .click();
       cy.getAntDropdownOverlay(
         "system_undeclared_data_categories-header-menu-list",
       ).within(() => {
-        cy.get("button").contains("Expand all").click();
+        cy.selectAntDropdownOption("Expand all");
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
@@ -214,7 +225,7 @@ describe("Data map report table", () => {
       cy.getAntDropdownOverlay(
         "data_use_undeclared_data_categories-header-menu-list",
       ).within(() => {
-        cy.get("button").contains("Expand all").click();
+        cy.selectAntDropdownOption("Expand all");
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId(
@@ -242,9 +253,13 @@ describe("Data map report table", () => {
         cy.getByTestId("rename-columns-cancel-btn").should("exist");
         cy.getByTestId("rename-columns-apply-btn").should("exist");
         cy.getByTestId("column-data_categories-input")
+          .eq(0)
+          .should("be.visible")
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_categories-input").type("Custom Title");
+            cy.getByTestId("column-data_categories-input")
+              .eq(0)
+              .type("Custom Title");
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
@@ -284,9 +299,10 @@ describe("Data map report table", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("column-data_uses-input")
+          .eq(0)
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_uses-input").type("Custom Title");
+            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
           });
         cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
@@ -298,9 +314,10 @@ describe("Data map report table", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("column-data_uses-input")
+          .eq(0)
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_uses-input").type("Custom Title");
+            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("more-menu").click();
@@ -311,7 +328,9 @@ describe("Data map report table", () => {
       it("should support pressing the Enter key to apply renamed columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
-        cy.getByTestId("column-data_uses-input").type("Custom Title{enter}");
+        cy.getByTestId("column-data_uses-input")
+          .eq(0)
+          .type("Custom Title{enter}");
         cy.getByTestId("column-data_uses").should(
           "contain.text",
           "Custom Title",
@@ -512,7 +531,7 @@ describe("Data map report table", () => {
       cy.getByTestId("data_categories-header-menu").click();
       cy.getAntDropdownOverlay("data_categories-header-menu-list").within(
         () => {
-          cy.get("button").contains("Expand all").click();
+          cy.selectAntDropdownOption("Expand all");
         },
       );
       cy.getByTestId("custom-reports-trigger").should(

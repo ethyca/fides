@@ -99,7 +99,7 @@ export const ColumnSettingsModal = ({
         You can toggle columns on and off to hide or show them in the table.
         Additionally, you can drag columns up or down to change the order
       </Paragraph>
-      <Flex className="max-h-96 overflow-y-auto">
+      <Flex className="max-h-96 overflow-y-auto pr-3">
         <DraggableColumnList
           columns={columnEditor.columns}
           columnEditor={columnEditor}
