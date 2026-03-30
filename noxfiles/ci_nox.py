@@ -30,6 +30,7 @@ from setup_tests_nox import (
     PytestConfig,
     ReportConfig,
     SplitConfig,
+    XdistConfig,
     pytest_api,
     pytest_ctl,
     pytest_lib,
@@ -625,6 +626,7 @@ def pytest(session: nox.Session, test_group: str) -> None:
         )
 
     pytest_config = PytestConfig(
+        xdist_config=XdistConfig(parallel_runners="auto"),
         split_config=split_config,
         coverage_config=CoverageConfig(
             report_format="xml",
