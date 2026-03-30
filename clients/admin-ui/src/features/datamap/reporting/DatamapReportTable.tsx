@@ -7,7 +7,6 @@ import {
   Flex,
   Form,
   Icons,
-  Skeleton,
   Table,
   useChakraDisclosure as useDisclosure,
   useMessage,
@@ -229,10 +228,6 @@ export const DatamapReportTable = ({
     ],
   );
 
-  if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
-    return <Skeleton active paragraph={{ rows: 15 }} />;
-  }
-
   return (
     <Flex className="flex-1 flex-col overflow-auto">
       <DatamapReportFilterModal
@@ -388,7 +383,14 @@ export const DatamapReportTable = ({
           </Flex>
         </Flex>
 
-        <Table {...tableProps} columns={columns} data-testid="fidesTable" />
+        <Table
+          loading={
+            isReportLoading || isLoadingHealthCheck || isLoadingFidesLang
+          }
+          {...tableProps}
+          columns={columns}
+          data-testid="fidesTable"
+        />
       </Form>
 
       <DatamapDrawer
