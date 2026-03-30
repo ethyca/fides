@@ -25,7 +25,11 @@ export const SharedConfigSelect = ({
   );
 
   return (
-    <Form.Item label="Shared monitor config" {...itemProps}>
+    <Form.Item
+      label="Shared monitor config"
+      data-testid="controlled-select-shared_config_id"
+      {...itemProps}
+    >
       <Select options={sharedMonitorConfigOptions} {...selectProps} />
     </Form.Item>
   );
