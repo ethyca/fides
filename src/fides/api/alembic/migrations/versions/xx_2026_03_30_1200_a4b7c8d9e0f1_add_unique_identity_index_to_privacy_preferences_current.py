@@ -72,8 +72,18 @@ def upgrade() -> None:
             f"privacy_preferences_current has {table_size} rows, creating unique index directly"
         )
         op.execute(
-            f"CREATE UNIQUE INDEX {INDEX_NAME} "
-            "ON privacy_preferences_current ((search_data->'identity'))"
+            sa.text(
+                f"CREATE UNIQUE INDEX {INDEX_NAME} "
+                "ON privacy_preferences_current ((search_data->'identity'))"
+            )
+        )
+        # Mark as completed so the post-upgrade startup task doesn't re-check
+        op.execute(
+            sa.text(
+                "UPDATE post_upgrade_background_migration_tasks "
+                "SET completed_at = now() "
+                "WHERE key = :key AND task_type = 'index' AND completed_at IS NULL"
+            ).bindparams(key=MIGRATION_KEY)
         )
         logger.info(f"{INDEX_NAME} index created successfully")
     else:
@@ -85,7 +95,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute(f"DROP INDEX IF EXISTS {INDEX_NAME}")
+    op.execute(sa.text(f"DROP INDEX IF EXISTS {INDEX_NAME}"))
     op.execute(
         sa.text(
             "DELETE FROM post_upgrade_background_migration_tasks "
