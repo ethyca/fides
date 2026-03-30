@@ -449,6 +449,182 @@ describe("Integration Management - Manual Task Conditions", () => {
   });
 });
 
+describe("Integration Management - Custom Identity Conditions", () => {
+  beforeEach(() => {
+    cy.login();
+    stubPlus(true);
+
+    cy.intercept("GET", "/api/v1/config?api_set=false", {
+      body: {},
+    }).as("getConfig");
+
+    cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
+      fixture: "privacy-requests/privacy-center-config.json",
+    }).as("getPrivacyCenterConfig");
+
+    cy.intercept("GET", "/api/v1/plus/locations?all_locations=true", {
+      fixture: "locations/list.json",
+    }).as("getLocations");
+
+    cy.intercept("GET", "/api/v1/policy*", {
+      fixture: "policies/list.json",
+    }).as("getPolicies");
+
+    cy.intercept(
+      "GET",
+      "/api/v1/plus/connection/*/manual-task/dependency-conditions/privacy-request-fields",
+      {
+        fixture: "integration-management/privacy-request-fields.json",
+      },
+    ).as("getPrivacyRequestFields");
+
+    cy.intercept("GET", "/api/v1/connection/demo_manual_task_integration", {
+      fixture:
+        "integration-management/manual-tasks/manual-task-connection.json",
+    }).as("getConnection");
+
+    cy.intercept("GET", "/api/v1/connection_type?page=1&size=100", {
+      body: { items: [], total: 0, page: 1, size: 100 },
+    }).as("getConnectionTypes");
+
+    cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields", {
+      body: { items: [], total: 0, page: 1, size: 25 },
+    }).as("getManualFields");
+
+    cy.intercept("GET", "/api/v1/plus/connection/*/manual-task", {
+      fixture: "integration-management/manual-tasks/task-config.json",
+    }).as("getManualTask");
+
+    cy.intercept(
+      "PUT",
+      "/api/v1/plus/connection/*/manual-task/dependency-conditions",
+      {
+        body: {},
+      },
+    ).as("updateDependencyConditions");
+
+    cy.intercept(
+      "GET",
+      "/api/v1/dataset?minimal=true&exclude_saas_datasets=true",
+      {
+        fixture: "datasets.json",
+      },
+    ).as("getFilteredDatasets");
+
+    cy.intercept("GET", "/api/v1/dataset/*", {
+      fixture: "dataset.json",
+    }).as("getDatasetByKey");
+
+    cy.visitWithLanguage(
+      `${INTEGRATION_MANAGEMENT_ROUTE}/demo_manual_task_integration#conditions`,
+      "en-US",
+    );
+    cy.wait("@getConnection");
+  });
+
+  it("should display custom identity fields in the field picker", () => {
+    cy.getByTestId("add-condition-btn").click();
+
+    // Privacy request field should be selected by default
+    cy.getByTestId("field-source-privacy-request").should("be.checked");
+
+    // Open the field picker dropdown
+    cy.getByTestId("privacy-request-field-select").click();
+
+    // Verify Custom identities group appears
+    cy.get(".ant-select-dropdown").should("contain", "Custom identities");
+
+    // Verify the custom identity field appears
+    cy.get(".ant-select-dropdown").should("contain", "Customer id");
+
+    // Verify the manual entry option appears
+    cy.get(".ant-select-dropdown").should(
+      "contain",
+      "Other (enter custom key)",
+    );
+  });
+
+  it("should add condition with a custom identity field from the dropdown", () => {
+    cy.getByTestId("add-condition-btn").click();
+
+    // Select the custom identity field
+    cy.getByTestId("privacy-request-field-select").antSelect("Customer id");
+
+    // Select operator
+    cy.getByTestId("operator-select").antSelect("Equals");
+
+    // Enter value
+    cy.getByTestId("value-input").type("cust_12345");
+
+    // Submit the form
+    cy.getByTestId("save-btn").click();
+
+    // Verify API call was made with correct parameters
+    cy.wait("@updateDependencyConditions").then((interception) => {
+      const conditions = interception.request.body[0].conditions;
+      const newCondition = conditions[conditions.length - 1];
+      expect(newCondition.field_address).to.equal(
+        "privacy_request.identity.customer_id",
+      );
+      expect(newCondition.operator).to.equal("eq");
+      expect(newCondition.value).to.equal("cust_12345");
+    });
+
+    cy.contains("Condition added successfully!").should("be.visible");
+  });
+
+  it("should allow manual entry of a custom identity key", () => {
+    cy.getByTestId("add-condition-btn").click();
+
+    // Select the manual entry option
+    cy.getByTestId("privacy-request-field-select").antSelect(
+      "Other (enter custom key)",
+    );
+
+    // Verify manual key input appears below the select
+    cy.getByTestId("manual-identity-key-input").should("exist");
+    // The select should still be visible
+    cy.getByTestId("privacy-request-field-select").should("exist");
+
+    // Type a custom identity key
+    cy.getByTestId("manual-identity-key-input").type("loyalty_number");
+
+    // Select operator
+    cy.getByTestId("operator-select").antSelect("Exists");
+
+    // Submit the form
+    cy.getByTestId("save-btn").click();
+
+    // Verify API call was made with correct parameters
+    cy.wait("@updateDependencyConditions").then((interception) => {
+      const conditions = interception.request.body[0].conditions;
+      const newCondition = conditions[conditions.length - 1];
+      expect(newCondition.field_address).to.equal(
+        "privacy_request.identity.loyalty_number",
+      );
+      expect(newCondition.operator).to.equal("exists");
+    });
+
+    cy.contains("Condition added successfully!").should("be.visible");
+  });
+
+  it("should hide manual key input when switching away from Other", () => {
+    cy.getByTestId("add-condition-btn").click();
+
+    // Enter manual entry mode
+    cy.getByTestId("privacy-request-field-select").antSelect(
+      "Other (enter custom key)",
+    );
+    cy.getByTestId("manual-identity-key-input").should("exist");
+
+    // Switch to a different field
+    cy.getByTestId("privacy-request-field-select").antSelect("Customer id");
+
+    // Manual key input should disappear
+    cy.getByTestId("manual-identity-key-input").should("not.exist");
+  });
+});
+
 describe("Integration Management - Mixed Manual Task Conditions", () => {
   beforeEach(() => {
     cy.login();
