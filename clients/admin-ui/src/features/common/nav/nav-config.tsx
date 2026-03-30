@@ -96,6 +96,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "System inventory",
         path: routes.SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
+        hidesIfFlag: "systemInventoryV2",
+      },
+      {
+        title: "System inventory",
+        path: routes.SYSTEM_INVENTORY_ROUTE,
+        scopes: [ScopeRegistryEnum.SYSTEM_READ],
+        requiresFlag: "systemInventoryV2",
       },
       {
         title: "Add systems",

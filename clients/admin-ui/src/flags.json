@@ -118,5 +118,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "systemInventoryV2": {
+    "label": "System inventory v2",
+    "description": "Card-based system inventory with governance health dashboard",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

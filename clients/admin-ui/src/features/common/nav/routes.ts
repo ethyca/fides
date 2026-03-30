@@ -121,6 +121,9 @@ export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
 export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
 export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
 
+// System Inventory v2
+export const SYSTEM_INVENTORY_ROUTE = "/system-inventory";
+
 // Data Purposes (Core Configuration)
 export const DATA_PURPOSES_ROUTE = "/data-purposes";
 export const DATA_PURPOSES_NEW_ROUTE = "/data-purposes/new";
