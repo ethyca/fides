@@ -120,7 +120,7 @@
     "production": false
   },
   "heliosInsights": {
-    "label": "heliosInsights",
+    "label": "Helios insights",
     "description": "Enable the new monitor progress widgets for the action center in Helios",
     "development": true,
     "test": true,
