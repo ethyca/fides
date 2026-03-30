@@ -618,6 +618,9 @@ def pytest(session: nox.Session, test_group: str) -> None:
 
     validate_test_matrix(session)
 
+    # Only create SplitConfig when CI sets TOTAL_SPLITS > 1; None means
+    # no --splits/--group args are passed (same effect as SplitConfig("1","1")
+    # but avoids importing pytest-split when not needed).
     split_config = None
     if TOTAL_SPLITS != "1":
         split_config = SplitConfig(

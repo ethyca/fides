@@ -76,8 +76,13 @@ class ReportConfig:
 
 @dataclass
 class SplitConfig:
-    """Configure pytest-split sharding for CI parallelism."""
+    """Configure pytest-split sharding for CI parallelism.
 
+    xdist and split_config are complementary: split selects which tests
+    to run (inter-job), xdist parallelizes execution (intra-job).
+    """
+
+    # Typed as str because values come from env vars and are passed as CLI args
     total_splits: str = "1"
     split_group: str = "1"
 
@@ -204,8 +209,9 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
     else:
         import copy
 
-        # Don't use xdist for this one
-        local_pytest_config = copy.copy(pytest_config)
+        # Don't use xdist for this one — construct a new config to avoid
+        # mutating the caller's shared XdistConfig via shallow copy
+        local_pytest_config = copy.deepcopy(pytest_config)
         if local_pytest_config.xdist_config:
             local_pytest_config.xdist_config.parallel_runners = "0"
 
