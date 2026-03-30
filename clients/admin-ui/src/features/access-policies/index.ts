@@ -1,1 +1,1 @@
-export { default as PoliciesGrid } from "./PoliciesGrid";
+export { default as PoliciesContainer } from "./PoliciesContainer";

@@ -41,6 +41,48 @@ export const parseYaml = (yamlString: string): AccessPolicyYaml | null => {
   }
 };
 
+/**
+ * Extract top-level fields from a policy YAML string for list display.
+ * Avoids building the full node graph — just reads the scalar fields.
+ */
+export const extractPolicyFields = (
+  yamlString?: string,
+): { enabled: boolean; priority: number; decision?: "ALLOW" | "DENY" } => {
+  if (!yamlString) {
+    return { enabled: true, priority: 0 };
+  }
+  const parsed = parseYaml(yamlString);
+  if (!parsed) {
+    return { enabled: true, priority: 0 };
+  }
+  return {
+    enabled: parsed.enabled ?? true,
+    priority: parsed.priority ?? 0,
+    decision: parsed.decision,
+  };
+};
+
+/**
+ * Update a single field in a policy YAML string without disturbing the rest.
+ * Returns the modified YAML string.
+ */
+export const updateYamlField = (
+  yamlString: string,
+  field: string,
+  value: unknown,
+): string => {
+  try {
+    const parsed = yaml.load(yamlString) as Record<string, unknown> | null;
+    if (!parsed || typeof parsed !== "object") {
+      return yamlString;
+    }
+    parsed[field] = value;
+    return yaml.dump(parsed, { lineWidth: 120 });
+  } catch {
+    return yamlString;
+  }
+};
+
 const CONDITION_PROPERTY_KEYS: ConditionProperty[] = [
   ConditionProperty.DATA_CATEGORIES,
   ConditionProperty.DATA_USE,

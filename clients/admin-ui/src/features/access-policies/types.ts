@@ -1,25 +1,18 @@
+import { AccessPolicy } from "./access-policies.slice";
+
 export interface SelectOption {
   label: string;
   value: string;
 }
 
-export interface PolicyItem {
-  id: string;
-  title: string;
-  description: string;
-  isRecommendation: boolean;
-  isNew?: boolean;
-  isEnabled: boolean;
-  violationCount: number;
-  dataUseTags: string[];
-  lastUpdated: string;
-}
-
-export interface PolicyCategory {
-  id: string;
-  title: string;
-  drivenBy: string;
-  policies: PolicyItem[];
+/**
+ * AccessPolicy enriched with fields parsed from the embedded YAML.
+ * Used by the list page to avoid parsing YAML in every component.
+ */
+export interface AccessPolicyListItem extends AccessPolicy {
+  enabled: boolean;
+  priority: number;
+  decision?: "ALLOW" | "DENY";
 }
 
 export enum ActionType {

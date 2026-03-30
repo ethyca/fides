@@ -1,67 +1,53 @@
-import { useMemo, useState } from "react";
+import { Empty, Spin } from "fidesui";
 
-import { MOCK_POLICY_CATEGORIES } from "./mock-data";
-import PoliciesToolbar from "./PoliciesToolbar";
+import { ControlGroup } from "./access-policies.slice";
+import { PolicyGroup } from "./hooks";
 import PolicyCategoryGroup from "./PolicyCategoryGroup";
-import { PolicyCategory } from "./types";
+import { AccessPolicyListItem } from "./types";
 
-const PoliciesGrid = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [toggleStates, setToggleStates] = useState<Record<string, boolean>>(
-    () => {
-      const initial: Record<string, boolean> = {};
-      MOCK_POLICY_CATEGORIES.forEach((cat) =>
-        cat.policies.forEach((p) => {
-          initial[p.id] = p.isEnabled;
-        }),
-      );
-      return initial;
-    },
-  );
+interface PoliciesGridProps {
+  groups: PolicyGroup[];
+  controlGroups: ControlGroup[];
+  onTogglePolicy: (policy: AccessPolicyListItem) => void;
+  onEdit: (policy: AccessPolicyListItem) => void;
+  onDuplicate: (policy: AccessPolicyListItem) => void;
+  onDelete: (policy: AccessPolicyListItem) => void;
+  isLoading: boolean;
+}
 
-  const handleTogglePolicy = (id: string) => {
-    setToggleStates((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+const PoliciesGrid = ({
+  groups,
+  controlGroups,
+  onTogglePolicy,
+  onEdit,
+  onDuplicate,
+  onDelete,
+  isLoading,
+}: PoliciesGridProps) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
-  const filteredCategories: PolicyCategory[] = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return MOCK_POLICY_CATEGORIES.map((cat) => ({
-        ...cat,
-        policies: cat.policies.map((p) => ({
-          ...p,
-          isEnabled: toggleStates[p.id] ?? p.isEnabled,
-        })),
-      }));
-    }
-
-    const query = searchQuery.toLowerCase();
-    return MOCK_POLICY_CATEGORIES.map((cat) => ({
-      ...cat,
-      policies: cat.policies
-        .filter(
-          (p) =>
-            p.title.toLowerCase().includes(query) ||
-            p.description.toLowerCase().includes(query),
-        )
-        .map((p) => ({
-          ...p,
-          isEnabled: toggleStates[p.id] ?? p.isEnabled,
-        })),
-    })).filter((cat) => cat.policies.length > 0);
-  }, [searchQuery, toggleStates]);
+  if (groups.length === 0) {
+    return <Empty description="No policies found" className="py-12" />;
+  }
 
   return (
     <div>
-      <PoliciesToolbar
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-      />
-      {filteredCategories.map((category) => (
+      {groups.map((group) => (
         <PolicyCategoryGroup
-          key={category.id}
-          category={category}
-          industryLabel="Fintech"
-          onTogglePolicy={handleTogglePolicy}
+          key={group.controlGroup.key}
+          controlGroup={group.controlGroup}
+          policies={group.policies}
+          controlGroups={controlGroups}
+          onTogglePolicy={onTogglePolicy}
+          onEdit={onEdit}
+          onDuplicate={onDuplicate}
+          onDelete={onDelete}
         />
       ))}
     </div>

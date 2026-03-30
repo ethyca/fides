@@ -2,7 +2,7 @@ import { Button, Space, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
-import PoliciesGrid from "~/features/access-policies/PoliciesGrid";
+import PoliciesContainer from "~/features/access-policies/PoliciesContainer";
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -39,7 +39,7 @@ const AccessPoliciesPage: NextPage = () => {
           </Text>
         </div>
       </PageHeader>
-      <PoliciesGrid />
+      <PoliciesContainer />
     </Layout>
   );
 };
