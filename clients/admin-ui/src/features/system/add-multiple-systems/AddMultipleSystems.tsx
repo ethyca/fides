@@ -33,7 +33,7 @@ import {
   ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraHStack as HStack,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraText as Text,
   ChakraVStack as VStack,
   Tag,
@@ -288,7 +288,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   if (isPostLoading || isPostSuccess) {
     return (
       <Flex height="100%" justifyContent="center" alignItems="center">
-        <Spinner />
+        <Spin />
       </Flex>
     );
   }

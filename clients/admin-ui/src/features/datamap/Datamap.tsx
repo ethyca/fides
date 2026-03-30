@@ -7,7 +7,7 @@ import {
   ChakraBox as Box,
   ChakraCenter as Center,
   ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
+  Spin,
 } from "fidesui";
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
@@ -28,7 +28,7 @@ const SpatialDatamap = dynamic(
     ssr: false,
     loading: () => (
       <Center width="100%" flex="1">
-        <Spinner />
+        <Spin />
       </Center>
     ),
   },
@@ -80,7 +80,7 @@ const Datamap = () => {
   if (isLoading) {
     return (
       <Center width="100%" flex="1">
-        <Spinner />
+        <Spin />
       </Center>
     );
   }

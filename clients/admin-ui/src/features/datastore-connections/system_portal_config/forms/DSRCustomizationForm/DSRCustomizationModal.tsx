@@ -11,7 +11,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCenter as Center,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraVStack as VStack,
   Modal,
   Tooltip,
@@ -120,7 +120,7 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
           </Box>
           {(isFetching || isLoading) && (
             <Center>
-              <Spinner />
+              <Spin />
             </Center>
           )}
           {mounted.current && !isLoading ? (

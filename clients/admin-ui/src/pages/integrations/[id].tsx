@@ -1,6 +1,6 @@
 import {
   Button,
-  ChakraSpinner as Spinner,
+  Spin,
   Col,
   Row,
   Tabs,
@@ -216,7 +216,7 @@ const IntegrationDetailView: NextPage = () => {
           />
           {modalContext}
           {isLoading ? (
-            <Spinner />
+            <Spin />
           ) : (
             !!connection && (
               <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
@@ -229,7 +229,7 @@ const IntegrationDetailView: NextPage = () => {
           xxl={{ flex: "0 0 350px" }}
         >
           {isLoading ? (
-            <Spinner />
+            <Spin />
           ) : (
             !!connection && (
               <IntegrationSetupSteps

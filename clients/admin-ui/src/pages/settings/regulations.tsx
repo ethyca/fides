@@ -1,7 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraLink as Link,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraText as Text,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -47,7 +47,7 @@ const RegulationsPage: NextPage = () => {
         </Text>
         <Box>
           {isLoading ? (
-            <Spinner />
+            <Spin />
           ) : (
             <RegulationManagement data={locationsRegulations} />
           )}

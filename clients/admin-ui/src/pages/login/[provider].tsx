@@ -1,6 +1,6 @@
 import {
   ChakraCenter as Center,
-  ChakraSpinner as Spinner,
+  Spin,
   useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -49,7 +49,7 @@ const LoginWithOIDC: NextPage = () => {
 
   return (
     <Center h="100%" w="100%">
-      <Spinner color="primary" size="xl" />
+      <Spin size="large" />
     </Center>
   );
 };

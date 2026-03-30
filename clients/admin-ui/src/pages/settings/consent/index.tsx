@@ -5,7 +5,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraStack as Stack,
   ChakraText as Text,
   useMessage,
@@ -204,7 +204,7 @@ const ConsentConfigPage: NextPage = () => {
       isApiConfigSetLoading ||
       isConfigSetLoading ? (
         <Flex justifyContent="center" alignItems="center" height="100%">
-          <Spinner />
+          <Spin />
         </Flex>
       ) : (
         <Box data-testid="consent-configuration">

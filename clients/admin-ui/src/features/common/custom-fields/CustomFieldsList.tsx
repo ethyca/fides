@@ -1,7 +1,7 @@
 import {
   ChakraCenter as Center,
   ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
+  Spin,
 } from "fidesui";
 import { Field, FieldInputProps } from "formik";
 
@@ -45,7 +45,7 @@ export const CustomFieldsList = ({
         <Flex flexDir="column" gap="24px">
           {isLoading ? (
             <Center>
-              <Spinner />
+              <Spin />
             </Center>
           ) : (
             sortedCustomFieldDefinitionIds.length > 0 && (

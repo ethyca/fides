@@ -1,4 +1,4 @@
-import { ChakraCenter as Center, ChakraSpinner as Spinner } from "fidesui";
+import { ChakraCenter as Center, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -15,7 +15,7 @@ const ConsentPage = () => {
   return (
     <Layout title="Consent">
       <Center>
-        <Spinner />
+        <Spin />
       </Center>
     </Layout>
   );

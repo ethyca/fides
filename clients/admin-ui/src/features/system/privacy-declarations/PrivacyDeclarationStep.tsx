@@ -1,7 +1,7 @@
 import {
   ChakraHeading as Heading,
   ChakraLink as Link,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
@@ -55,7 +55,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         .
       </Text>
       {isLoading ? (
-        <Spinner />
+        <Spin />
       ) : (
         <PrivacyDeclarationFormTab
           system={system}

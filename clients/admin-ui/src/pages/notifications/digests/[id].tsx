@@ -1,4 +1,4 @@
-import { ChakraBox as Box, ChakraSpinner as Spinner } from "fidesui";
+import { ChakraBox as Box, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -25,7 +25,7 @@ const EditDigestPage: NextPage = () => {
     return (
       <Layout title="Edit digest">
         <Box className="flex justify-center py-12">
-          <Spinner />
+          <Spin />
         </Box>
       </Layout>
     );

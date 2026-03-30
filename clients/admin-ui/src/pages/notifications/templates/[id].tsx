@@ -1,7 +1,7 @@
 import { getErrorMessage } from "common/helpers";
 import {
   ChakraBox as Box,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraText as Text,
   ConfirmationModal,
   useChakraDisclosure as useDisclosure,
@@ -90,7 +90,7 @@ const EditNotificationTemplatePage: NextPage = () => {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
   if (error) {

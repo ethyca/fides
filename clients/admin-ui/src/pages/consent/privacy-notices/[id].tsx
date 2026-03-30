@@ -1,7 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraCenter as Center,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraText as Text,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -33,7 +33,7 @@ const PrivacyNoticeDetailPage = () => {
     return (
       <Layout title="Privacy notice">
         <Center>
-          <Spinner />
+          <Spin />
         </Center>
       </Layout>
     );

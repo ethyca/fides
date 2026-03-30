@@ -2,7 +2,7 @@ import { getErrorMessage } from "common/helpers";
 import { NOTIFICATIONS_TEMPLATES_ROUTE } from "common/nav/routes";
 import {
   ChakraBox as Box,
-  ChakraSpinner as Spinner,
+  Spin,
   useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -60,7 +60,7 @@ const AddNotificationTemplatePage: NextPage = () => {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
   return (

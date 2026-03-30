@@ -1,4 +1,4 @@
-import { Alert, ChakraSpinner as Spinner, Flex } from "fidesui";
+import { Alert, Flex, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";
@@ -71,7 +71,7 @@ const Profile = () => {
     <Layout title="Users - Edit a user">
       {isLoadingUser && (
         <Flex justify="center" align="center" className="h-full">
-          <Spinner color="primary.900" />
+          <Spin />
         </Flex>
       )}
       {!isLoadingUser && !existingUser && (

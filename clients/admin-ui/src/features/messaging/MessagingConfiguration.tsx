@@ -1,7 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraHeading as Heading,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraText as Text,
   Form,
   Select,
@@ -124,7 +124,7 @@ const MessagingConfiguration = ({
         alignItems="center"
         height="200px"
       >
-        <Spinner />
+        <Spin />
       </Box>
     );
   }

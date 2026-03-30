@@ -5,7 +5,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraText as Text,
   Icons,
   useMessage,
@@ -178,7 +178,7 @@ const CORSConfigurationPage: NextPage = () => {
           >
             {isLoadingGetQuery || isLoadingPutMutation ? (
               <Flex justifyContent="center">
-                <Spinner />
+                <Spin />
               </Flex>
             ) : (
               <Formik<FormValues>
@@ -255,7 +255,7 @@ const CORSConfigurationPage: NextPage = () => {
           >
             {isLoadingConfigSetQuery ? (
               <Flex justifyContent="center">
-                <Spinner />
+                <Spin />
               </Flex>
             ) : (
               <Flex flexDir="column">

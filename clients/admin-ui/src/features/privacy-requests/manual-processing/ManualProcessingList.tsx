@@ -3,7 +3,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCenter as Center,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -233,7 +233,7 @@ const ManualProcessingList = ({
       <Box>
         {(isFetching || isLoading) && (
           <Center>
-            <Spinner />
+            <Spin />
           </Center>
         )}
         {isSuccess && data ? (

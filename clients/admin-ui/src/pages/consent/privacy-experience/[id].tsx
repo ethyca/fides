@@ -1,7 +1,7 @@
 import {
   ChakraCenter as Center,
   ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
+  Spin,
   ChakraText as Text,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -32,7 +32,7 @@ const PrivacyExperienceDetailPage = () => {
       <Layout title="Privacy experience">
         <Flex className="size-full items-center justify-center overflow-scroll">
           <Center>
-            <Spinner />
+            <Spin />
           </Center>
         </Flex>
       </Layout>
