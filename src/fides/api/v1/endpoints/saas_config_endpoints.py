@@ -28,7 +28,6 @@ from fides.api.models.connection_config_saas_history import ConnectionConfigSaaS
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
-from fides.api.service.saas_config_version_service import SaaSConfigVersionService
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -55,6 +54,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
+from fides.api.service.saas_config_version_service import SaaSConfigVersionService
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details

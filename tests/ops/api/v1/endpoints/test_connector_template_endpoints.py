@@ -995,7 +995,10 @@ class TestGetConnectorTemplateVersionDataset:
         stripe_dataset,
     ) -> None:
         """Upserting a custom version twice should update the stored dataset in place."""
-        updated_dataset = {**stripe_dataset, "description": "updated-dataset-description"}
+        updated_dataset = {
+            **stripe_dataset,
+            "description": "updated-dataset-description",
+        }
         row = SaaSConfigVersion.upsert(
             db=db,
             connector_type=stripe_config["type"],
