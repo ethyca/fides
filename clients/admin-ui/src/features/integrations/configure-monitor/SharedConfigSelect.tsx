@@ -1,16 +1,17 @@
-import {
-  ControlledSelect,
-  ControlledSelectProps,
-} from "~/features/common/form/ControlledSelect";
+import { Form, FormItemProps, Select, SelectProps } from "fidesui";
+
+import {} from "~/features/common/form/ControlledSelect";
 import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
 
-interface SharedConfigSelectProps
-  extends Omit<ControlledSelectProps, "options"> {}
+interface SharedConfigSelectProps extends Omit<SelectProps, "options"> {}
 
 export const SharedConfigSelect = ({
-  layout = "stacked",
-  ...props
-}: SharedConfigSelectProps) => {
+  itemProps,
+  selectProps,
+}: {
+  selectProps: SharedConfigSelectProps;
+  itemProps: FormItemProps;
+}) => {
   const { data: sharedMonitorConfigs } = useGetSharedMonitorConfigsQuery({
     page: 1,
     size: 100,
@@ -24,12 +25,12 @@ export const SharedConfigSelect = ({
   );
 
   return (
-    <ControlledSelect
-      tooltip="If a shared monitor config is selected, the monitor will use the shared config to classify resources"
-      options={sharedMonitorConfigOptions}
-      label="Shared monitor config"
-      layout={layout}
-      {...props}
-    />
+    <Form.Item label="Shared monitor config" {...itemProps}>
+      <Select
+        data-testid="controlled-select-shared_config_id"
+        options={sharedMonitorConfigOptions}
+        {...selectProps}
+      />
+    </Form.Item>
   );
 };
