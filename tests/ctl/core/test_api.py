@@ -3485,6 +3485,7 @@ class TestHealthchecks:
                 "fidesplus.discovery_monitors_classification": 0,
                 "fidesplus.discovery_monitors_detection": 0,
                 "fidesplus.discovery_monitors_promotion": 0,
+                "fidesplus.bulk_consent_import": 0,
                 "fides": 0,
             },
         }
