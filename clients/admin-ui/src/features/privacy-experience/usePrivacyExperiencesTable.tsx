@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import React, { useMemo, useState } from "react";
 
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
-import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useHasPermission } from "~/features/common/Restrict";
 import { TagExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
@@ -61,7 +61,7 @@ const getRegionValues = (regions: PrivacyNoticeRegion[] | undefined) => {
     const isoEntry = isoStringToEntry(region);
     const label = isoEntry
       ? formatIsoLocation({ isoEntry, showFlag: true })
-      : PRIVACY_NOTICE_REGION_MAP.get(region);
+      : PRIVACY_NOTICE_REGION_RECORD[region];
     if (label === undefined) {
       return [];
     }
@@ -116,22 +116,21 @@ const usePrivacyExperiencesTable = () => {
         title: "Title",
         dataIndex: "name",
         key: "name",
-        render: (_, { id, name }) =>
-          userCanUpdate ? (
-            <LinkCell href={`${PRIVACY_EXPERIENCE_ROUTE}/${id}`}>
-              {name}
-            </LinkCell>
-          ) : (
-            <span>{name}</span>
-          ),
+        render: (_, { id, name }) => (
+          <LinkCell
+            href={
+              userCanUpdate ? `${PRIVACY_EXPERIENCE_ROUTE}/${id}` : undefined
+            }
+          >
+            {name}
+          </LinkCell>
+        ),
       },
       {
         title: "Component",
         dataIndex: "component",
         key: "component",
-        render: (_, { component }) => (
-          <Tag>{COMPONENT_MAP.get(component!) ?? component}</Tag>
-        ),
+        render: (_, { component }) => <Tag>{COMPONENT_MAP.get(component)}</Tag>,
       },
       {
         title: "Locations",

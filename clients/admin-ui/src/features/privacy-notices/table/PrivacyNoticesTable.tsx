@@ -7,8 +7,6 @@ import usePrivacyNoticesTable from "~/features/privacy-notices/table/usePrivacyN
 export const PrivacyNoticesTable = () => {
   const { tableProps, columns, userCanUpdate } = usePrivacyNoticesTable();
 
-  console.log(tableProps);
-
   const router = useRouter();
 
   return (
