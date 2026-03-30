@@ -29,6 +29,13 @@ CHANGELOG_FILE = Path("CHANGELOG.md")
 TEMPLATE_FILE_NAME = "TEMPLATE.yaml"
 GITHUB_REPO = "https://github.com/ethyca/fides"
 
+PLACEHOLDER_DESCRIPTIONS = {
+    "Short description of the change",
+    "Description of the change",
+}
+
+FILENAME_PATTERN = re.compile(r"^(\d+)-.+\.ya?ml$")
+
 
 class ChangelogEntry:
     """Represents a single changelog entry from a YAML fragment."""
@@ -47,12 +54,11 @@ class ChangelogEntry:
 
     def to_markdown(self) -> str:
         """Convert entry to markdown format."""
-        entry = f"- {self.description}"
+        entry = f"- {self.description.strip()}"
         if self.pr:
             entry += f" [#{self.pr}]({GITHUB_REPO}/pull/{self.pr})"
         for label in self.labels:
-            if label in LABEL_URLS:
-                entry += f" {LABEL_URLS[label]}"
+            entry += f" {LABEL_URLS[label]}"
         return entry
 
 
@@ -89,6 +95,13 @@ def validate_fragment_data(
     if missing:
         return None, f"Missing required fields in {filename}: {', '.join(missing)}"
 
+    # Validate pr is an integer
+    if not isinstance(data["pr"], int):
+        return None, (
+            f"'pr' must be an integer in {filename} (e.g., pr: 1234), "
+            f"got: {data['pr']!r}"
+        )
+
     entry_type = data["type"]
     if entry_type not in CHANGELOG_TYPES:
         return None, (
@@ -96,50 +109,89 @@ def validate_fragment_data(
             f"Must be one of: {', '.join(CHANGELOG_TYPES)}"
         )
 
+    # Validate description is not a placeholder
+    description = data["description"].strip()
+    if description in PLACEHOLDER_DESCRIPTIONS:
+        return None, (
+            f"Placeholder description in {filename}: '{description}'. "
+            f"Please write an actual description of the change."
+        )
+
+    # Validate filename format: <pr_number>-<slug>.yaml
+    match = FILENAME_PATTERN.match(filename)
+    if not match:
+        return None, (
+            f"Invalid filename '{filename}'. "
+            f"Expected format: <pr_number>-<short-description>.yaml "
+            f"(e.g., 1234-add-user-endpoint.yaml)"
+        )
+
+    # Validate filename PR number matches the pr field
+    filename_pr = int(match.group(1))
+    if filename_pr != data["pr"]:
+        return None, (
+            f"PR number mismatch in {filename}: "
+            f"filename has {filename_pr} but pr field is {data['pr']}"
+        )
+
+    # Validate labels are recognized
+    labels = data.get("labels", [])
+    if labels and not isinstance(labels, list):
+        return None, (
+            f"'labels' must be a list in {filename} (e.g., [high-risk, db-migration]), "
+            f"got: {labels!r}"
+        )
+    if labels:
+        invalid_labels = [label for label in labels if label not in LABEL_URLS]
+        if invalid_labels:
+            valid_labels = ", ".join(sorted(LABEL_URLS.keys()))
+            return None, (
+                f"Invalid label(s) in {filename}: {', '.join(invalid_labels)}. "
+                f"Valid labels are: {valid_labels}"
+            )
+
     entry = ChangelogEntry(
         entry_type=entry_type,
-        description=data["description"],
+        description=description,
         pr=data.get("pr"),
-        labels=data.get("labels", []),
+        labels=labels,
     )
     return entry, None
 
 
-def load_fragments() -> list[tuple[Path, ChangelogEntry]]:
-    """Load all changelog fragment files and return list of (path, entry) tuples."""
+def _load_and_validate_file(
+    path: Path,
+) -> tuple[Optional[ChangelogEntry], Optional[str]]:
+    """
+    Load and validate a single changelog fragment file.
+
+    Args:
+        path: Path to the YAML fragment file
+
+    Returns:
+        Tuple of (ChangelogEntry or None, error message or None)
+    """
     import yaml  # Import here since it's installed by the nox session
 
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except Exception as e:
+        return None, f"Error parsing {path.name}: {e}"
+
+    return validate_fragment_data(data, path.name)
+
+
+def load_fragments() -> list[tuple[Path, ChangelogEntry]]:
+    """Load all changelog fragment files and return list of (path, entry) tuples."""
     if not CHANGELOG_DIR.exists():
         return []
 
-    entries = []
-    errors = []
     # Look for both .yaml and .yml files
     yaml_files = list(CHANGELOG_DIR.glob("*.yaml")) + list(CHANGELOG_DIR.glob("*.yml"))
-    for yaml_file in yaml_files:
-        if yaml_file.name == TEMPLATE_FILE_NAME:
-            continue
+    file_paths = [str(f) for f in yaml_files if f.name != TEMPLATE_FILE_NAME]
 
-        try:
-            with open(yaml_file, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-
-            entry, error = validate_fragment_data(data, yaml_file.name)
-            if error:
-                errors.append(error)
-                continue
-            if entry:
-                entries.append((yaml_file, entry))
-        except Exception as e:
-            errors.append(f"Error parsing {yaml_file.name}: {e}")
-
-    if errors:
-        error_msg = "Found errors in changelog fragments:\n" + "\n".join(
-            f"  - {err}" for err in errors
-        )
-        raise ValueError(error_msg)
-
-    return entries
+    return validate_fragment_files(file_paths)
 
 
 def validate_fragment_files(
@@ -157,8 +209,6 @@ def validate_fragment_files(
     Raises:
         ValueError: If any validation errors are found
     """
-    import yaml  # Import here since it's installed by the nox session
-
     entries = []
     errors = []
 
@@ -186,18 +236,12 @@ def validate_fragment_files(
             )
             continue
 
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-
-            entry, error = validate_fragment_data(data, path.name)
-            if error:
-                errors.append(error)
-                continue
-            if entry:
-                entries.append((path, entry))
-        except Exception as e:
-            errors.append(f"Error parsing {path.name}: {e}")
+        entry, error = _load_and_validate_file(path)
+        if error:
+            errors.append(error)
+            continue
+        if entry:
+            entries.append((path, entry))
 
     if errors:
         error_msg = "Found errors in changelog fragments:\n" + "\n".join(
@@ -237,6 +281,49 @@ def generate_changelog_section(grouped_entries: dict[str, list[ChangelogEntry]])
             lines.append("")  # Empty line after section
 
     return "\n".join(lines).rstrip()
+
+
+def _find_unreleased_section_with_version(
+    content: str,
+) -> tuple[int, int, str]:
+    """
+    Find the Unreleased section boundaries and the previous version.
+
+    Args:
+        content: The full CHANGELOG.md content
+
+    Returns:
+        Tuple of (unreleased_start, unreleased_end, prev_version)
+
+    Raises:
+        ValueError: If Unreleased section or previous version not found
+    """
+    lines = content.split("\n")
+    unreleased_start = None
+    unreleased_end = None
+    prev_version = None
+
+    for i, line in enumerate(lines):
+        if line.startswith("## [Unreleased]"):
+            unreleased_start = i
+            for j in range(i + 1, len(lines)):
+                if lines[j].startswith("## ["):
+                    unreleased_end = j
+                    match = re.search(r"## \[([\d.]+)\]", lines[j])
+                    if match:
+                        prev_version = match.group(1)
+                    break
+            if unreleased_end is None:
+                unreleased_end = len(lines)
+            break
+
+    if unreleased_start is None:
+        raise ValueError("Could not find [Unreleased] section in CHANGELOG.md")
+
+    if prev_version is None:
+        raise ValueError("Could not find previous version for compare link")
+
+    return unreleased_start, unreleased_end, prev_version
 
 
 def find_unreleased_section(content: str) -> tuple[int, int]:
@@ -283,33 +370,9 @@ def insert_entries_into_changelog(content: str, new_entries: str) -> str:
 def finalize_release(content: str, version: str) -> str:
     """Create a new version section from Unreleased content and leave Unreleased empty."""
     lines = content.split("\n")
-
-    # Find Unreleased section boundaries
-    unreleased_start = None
-    unreleased_end = None
-    prev_version = None
-
-    for i, line in enumerate(lines):
-        if line.startswith("## [Unreleased]"):
-            unreleased_start = i
-            # Find the end of Unreleased section (next release section)
-            for j in range(i + 1, len(lines)):
-                if lines[j].startswith("## ["):
-                    unreleased_end = j
-                    # Extract version from next release line for compare link
-                    match = re.search(r"## \[([\d.]+)\]", lines[j])
-                    if match:
-                        prev_version = match.group(1)
-                    break
-            if unreleased_end is None:
-                unreleased_end = len(lines)
-            break
-
-    if unreleased_start is None:
-        raise ValueError("Could not find [Unreleased] section in CHANGELOG.md")
-
-    if prev_version is None:
-        raise ValueError("Could not find previous version for compare link")
+    unreleased_start, unreleased_end, prev_version = (
+        _find_unreleased_section_with_version(content)
+    )
 
     # Extract Unreleased content (skip the header line)
     unreleased_content = lines[unreleased_start + 1 : unreleased_end]
@@ -350,33 +413,9 @@ def finalize_patch_release(content: str, version: str, new_section: str) -> str:
     not all the Unreleased content.
     """
     lines = content.split("\n")
-
-    # Find Unreleased section boundaries
-    unreleased_start = None
-    unreleased_end = None
-    prev_version = None
-
-    for i, line in enumerate(lines):
-        if line.startswith("## [Unreleased]"):
-            unreleased_start = i
-            # Find the end of Unreleased section (next release section)
-            for j in range(i + 1, len(lines)):
-                if lines[j].startswith("## ["):
-                    unreleased_end = j
-                    # Extract version from next release line for compare link
-                    match = re.search(r"## \[([\d.]+)\]", lines[j])
-                    if match:
-                        prev_version = match.group(1)
-                    break
-            if unreleased_end is None:
-                unreleased_end = len(lines)
-            break
-
-    if unreleased_start is None:
-        raise ValueError("Could not find [Unreleased] section in CHANGELOG.md")
-
-    if prev_version is None:
-        raise ValueError("Could not find previous version for compare link")
+    unreleased_start, unreleased_end, prev_version = (
+        _find_unreleased_section_with_version(content)
+    )
 
     # Build new content:
     # 1. Everything before Unreleased section (including Unreleased header and existing content)
@@ -417,6 +456,19 @@ def _handle_validate(session: nox.Session) -> None:
         else:
             session.error("--files flag requires a comma-separated list of file paths")
 
+    # Check for PR number flag
+    expected_pr_number = None
+    if "--pr-number" in session.posargs:
+        pr_idx = session.posargs.index("--pr-number")
+        if pr_idx + 1 < len(session.posargs):
+            try:
+                expected_pr_number = int(session.posargs[pr_idx + 1])
+            except ValueError:
+                session.error("--pr-number flag requires an integer PR number")
+        else:
+            session.error("--pr-number flag requires a PR number")
+
+    validated: list = []
     try:
         if files_filter:
             # Validate specific files
@@ -435,6 +487,21 @@ def _handle_validate(session: nox.Session) -> None:
                 session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
     except ValueError as e:
         session.error(str(e))
+
+    # Validate PR number matches the current PR
+    if expected_pr_number is not None and validated:
+        mismatched = [
+            (path, entry) for path, entry in validated if entry.pr != expected_pr_number
+        ]
+        if mismatched:
+            error_lines = [
+                f"Changelog entry PR number does not match the current PR (#{expected_pr_number}):"
+            ]
+            for path, entry in mismatched:
+                error_lines.append(
+                    f"  - {path.name}: has pr: {entry.pr}, expected pr: {expected_pr_number}"
+                )
+            session.error("\n".join(error_lines))
 
 
 def _handle_dry(
@@ -686,18 +753,6 @@ def changelog(session: nox.Session, action: str) -> None:
 
     if not fragment_data:
         return
-
-    # Validate all entries have valid types (double-check)
-    invalid_entries = [
-        (path, entry)
-        for path, entry in fragment_data
-        if entry.type not in CHANGELOG_TYPES
-    ]
-    if invalid_entries:
-        error_msg = "Found entries with invalid types:\n"
-        for path, entry in invalid_entries:
-            error_msg += f"  - {path.name}: type '{entry.type}' is not valid. Must be one of: {', '.join(CHANGELOG_TYPES)}\n"
-        session.error(error_msg)
 
     # Generate the changelog section
     grouped = group_entries_by_type(list(entries))
