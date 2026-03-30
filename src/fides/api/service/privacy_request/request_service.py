@@ -39,6 +39,9 @@ from fides.api.util.cache import (
     increment_privacy_request_retry_count,
     reset_privacy_request_retry_count,
 )
+from fides.api.service.privacy_request.duplication_detection import (
+    check_for_duplicates,
+)
 from fides.api.util.lock import redis_lock
 from fides.config import CONFIG
 
@@ -423,6 +426,17 @@ def _handle_privacy_request_requeue(
     db: Session, privacy_request: PrivacyRequest
 ) -> None:
     """Handle retry logic for a privacy request - either requeue or cancel based on retry count."""
+    # ENG-2474: Run duplicate detection before requeuing. If the request is
+    # now a duplicate (e.g. another request for the same identity was verified
+    # while this one was stuck), mark it and skip the requeue entirely.
+    check_for_duplicates(db, privacy_request)
+    if privacy_request.status == PrivacyRequestStatus.duplicate:
+        logger.info(
+            "Privacy request {} is a duplicate, skipping requeue.",
+            privacy_request.id,
+        )
+        return
+
     try:
         # Check retry count and either requeue or cancel based on limit
         current_retry_count = get_privacy_request_retry_count(privacy_request.id)
