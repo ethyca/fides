@@ -28,6 +28,9 @@ from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.api.service.privacy_request.duplication_detection import (
+    check_for_duplicates,
+)
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
@@ -38,9 +41,6 @@ from fides.api.util.cache import (
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
     reset_privacy_request_retry_count,
-)
-from fides.api.service.privacy_request.duplication_detection import (
-    check_for_duplicates,
 )
 from fides.api.util.lock import redis_lock
 from fides.config import CONFIG
