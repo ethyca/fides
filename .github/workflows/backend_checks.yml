@@ -278,7 +278,7 @@ jobs:
         run: uv run nox -s "${{ matrix.test_selection }}"
 
   Misc-Tests:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
+    needs: [Check-Backend-Changes, Build]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     strategy:
       matrix:
@@ -347,20 +347,47 @@ jobs:
   ## Safe Tests ##
   ################
   Safe-Tests:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
+    needs: [Check-Backend-Changes, Build]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     strategy:
       fail-fast: false
       matrix:
-        test_selection:
-          - "ctl-not-external"
-          - "ops-unit-api"
-          - "ops-unit-non-api"
-          - "ops-integration"
-          - "api"
-          - "lib"
-          - "misc-unit"
-          - "misc-integration"
+        include:
+          # Sharded groups (2 shards each for the 3 slowest)
+          - test_selection: "ops-unit-api"
+            total_splits: "2"
+            split_group: "1"
+          - test_selection: "ops-unit-api"
+            total_splits: "2"
+            split_group: "2"
+          - test_selection: "ops-integration"
+            total_splits: "2"
+            split_group: "1"
+          - test_selection: "ops-integration"
+            total_splits: "2"
+            split_group: "2"
+          - test_selection: "ops-unit-non-api"
+            total_splits: "2"
+            split_group: "1"
+          - test_selection: "ops-unit-non-api"
+            total_splits: "2"
+            split_group: "2"
+          # Unsharded groups
+          - test_selection: "ctl-not-external"
+            total_splits: "1"
+            split_group: "1"
+          - test_selection: "api"
+            total_splits: "1"
+            split_group: "1"
+          - test_selection: "lib"
+            total_splits: "1"
+            split_group: "1"
+          - test_selection: "misc-unit"
+            total_splits: "1"
+            split_group: "1"
+          - test_selection: "misc-integration"
+            total_splits: "1"
+            split_group: "1"
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -415,6 +442,9 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
+        env:
+          TOTAL_SPLITS: ${{ matrix.total_splits }}
+          SPLIT_GROUP: ${{ matrix.split_group }}
         run: uv run nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Publish Test Report
@@ -430,7 +460,7 @@ jobs:
           fail_ci_if_error: false
 
   Pytest-Redis-Cluster:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
+    needs: [Check-Backend-Changes, Build]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -494,7 +524,7 @@ jobs:
   # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
   Pytest-Ctl-External:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
+    needs: [Check-Backend-Changes, Build]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
@@ -569,7 +599,7 @@ jobs:
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
   External-Datastores:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
+    needs: [Check-Backend-Changes, Build]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
@@ -687,7 +717,7 @@ jobs:
         run: uv run nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
+    needs: [Check-Backend-Changes, Build]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push')
     runs-on: ubuntu-latest
     timeout-minutes: 30

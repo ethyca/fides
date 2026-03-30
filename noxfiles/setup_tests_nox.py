@@ -281,11 +281,17 @@ def pytest_ops(
         session.run(*run_command, external=True)
     elif mark == "integration":
         # The coverage_arg is hardcoded in 'run_infrastructure.py'
+        split_args = (
+            " ".join(pytest_config.split_config.args)
+            if pytest_config.split_config
+            else ""
+        )
         run_infrastructure(
             run_tests=True,
             analytics_opt_out=True,
             datastores=[],
             pytest_path=f"{OPS_TEST_DIR} tests/integration/",
+            split_args=split_args,
         )
     elif mark == "external_datastores":
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
