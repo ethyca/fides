@@ -347,6 +347,7 @@ jobs:
   ## Safe Tests ##
   ################
   Safe-Tests:
+    name: "Safe-Tests (${{ matrix.test_selection }}${{ matrix.total_splits != '1' && format(', {0}', matrix.split_group) || '' }})"
     needs: [Check-Backend-Changes, Build]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     strategy:
