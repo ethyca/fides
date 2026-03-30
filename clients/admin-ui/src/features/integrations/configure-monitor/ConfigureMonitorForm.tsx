@@ -20,7 +20,7 @@ import {
 } from "~/types/api";
 
 import { START_TIME_TOOLTIP_COPY } from "./ConfigureWebsiteMonitorForm";
-import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
+import { SharedConfigSelect } from "./SharedConfigSelect";
 
 dayjs.extend(utc);
 
@@ -242,10 +242,9 @@ const ConfigureMonitorForm = ({
           options={enumToOptions(MonitorFrequency)}
         />
       </Form.Item>
-      <FormikSharedConfigSelect
-        name="shared_config_id"
-        onChange={(value) => form.setFieldValue("shared_config_id", value)}
-        value={form.getFieldValue("shared_config_id")}
+      <SharedConfigSelect
+        itemProps={{ name: "shared_config_id" }}
+        selectProps={{}}
       />
       <Form.Item
         label="Automatic execution start time"
