@@ -330,7 +330,9 @@ const SSOProviderForm = ({
               tooltip="Client ID for your provider"
               variant="stacked"
               isRequired={!isEditMode}
-              placeholder={isEditMode ? "Leave blank to keep existing" : undefined}
+              placeholder={
+                isEditMode ? "Leave blank to keep existing" : undefined
+              }
             />
             <CustomTextInput
               id="client_secret"
@@ -340,7 +342,9 @@ const SSOProviderForm = ({
               tooltip="Client secret for your provider"
               variant="stacked"
               isRequired={!isEditMode}
-              placeholder={isEditMode ? "Leave blank to keep existing" : undefined}
+              placeholder={
+                isEditMode ? "Leave blank to keep existing" : undefined
+              }
             />
             {values.provider === "azure" && renderAzureProviderExtraFields()}
             {values.provider === "okta" && renderOktaProviderExtraFields()}
