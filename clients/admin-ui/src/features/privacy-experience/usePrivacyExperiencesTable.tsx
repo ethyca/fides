@@ -30,26 +30,28 @@ import {
 const EmptyTableExperience = () => {
   const router = useRouter();
   return (
-    <Empty
-      image={Empty.PRESENTED_IMAGE_SIMPLE}
-      description={
-        <Flex vertical gap="small">
-          <div>No privacy experiences found.</div>
-          <div>
-            <Button
-              onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
-              type="primary"
-              size="small"
-              data-testid="add-privacy-experience-btn"
-              icon={<Icons.Add />}
-              iconPosition="end"
-            >
-              Create new experience
-            </Button>
-          </div>
-        </Flex>
-      }
-    />
+    <div data-testid="empty-state">
+      <Empty
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        description={
+          <Flex vertical gap="small">
+            <div>No privacy experiences found.</div>
+            <div>
+              <Button
+                onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
+                type="primary"
+                size="small"
+                data-testid="add-privacy-experience-btn"
+                icon={<Icons.Add />}
+                iconPosition="end"
+              >
+                Create new experience
+              </Button>
+            </div>
+          </Flex>
+        }
+      />
+    </div>
   );
 };
 

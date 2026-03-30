@@ -15,12 +15,14 @@ export const EnablePrivacyExperienceCell = ({
 
   const onToggle = async (toggle: boolean) => {
     setIsLoading(true);
-    const response = await limitedPatchExperienceMutationTrigger({
-      id: record.id,
-      disabled: !toggle,
-    });
-    setIsLoading(false);
-    return response;
+    try {
+      return await limitedPatchExperienceMutationTrigger({
+        id: record.id,
+        disabled: !toggle,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const { disabled, regions } = record;

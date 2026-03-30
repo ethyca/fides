@@ -102,8 +102,8 @@ describe("Privacy experiences", () => {
 
     it("should render a row for each privacy experience", () => {
       cy.fixture("privacy-experiences/list.json").then((data) => {
-        data.items.forEach((item, index) => {
-          cy.getByTestId(`row-${index}`);
+        data.items.forEach((item) => {
+          cy.get("table").contains("tr", item.name);
         });
       });
     });
