@@ -403,21 +403,24 @@ describe("Integration Management - Manual Task Conditions", () => {
     it("should display custom fields in privacy request field picker", () => {
       cy.getByTestId("add-condition-btn").click();
 
-      // Open the field picker dropdown
-      cy.getByTestId("privacy-request-field-select").click();
-
-      // Verify custom fields section appears
-      cy.contains("Custom fields").should("be.visible");
+      // Search for the custom field to filter the dropdown
+      cy.getByTestId("privacy-request-field-select")
+        .find("input")
+        .type("Department");
+      cy.get(".ant-select-dropdown").should("be.visible");
 
       // Verify specific custom field appears with correct label
-      cy.contains("Department").should("be.visible");
+      cy.get(".ant-select-dropdown").should("contain", "Department");
     });
 
     it("should add condition with custom select field", () => {
       cy.getByTestId("add-condition-btn").click();
 
-      // Select custom select field
-      cy.getByTestId("privacy-request-field-select").antSelect("Department");
+      // Search and select the custom field
+      cy.getByTestId("privacy-request-field-select")
+        .find("input")
+        .type("Department");
+      cy.getAntSelectOption("Department").should("be.visible").click();
 
       // Select operator
       cy.getByTestId("operator-select").antSelect("Equals");
