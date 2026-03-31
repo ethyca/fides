@@ -1,0 +1,4 @@
+type: Changed
+description: Optimize DSR queries to only SELECT necessary columns
+pr: 7800
+labels: []
