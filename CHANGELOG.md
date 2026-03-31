@@ -19,7 +19,30 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.82.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.82.1..main)
+
+## [2.82.1](https://github.com/ethyca/fides/compare/2.82.0..2.82.1)
+
+### Added
+- Adding aggregate statistics widgets to action center [#7751](https://github.com/ethyca/fides/pull/7751)
+- Support Jira DSR lifecycle: auto-create ManualTaskConfig on jira_ticket
+connection setup, use pending_external status for Jira manual tasks,
+and treat pending_external equivalently to requires_input in watchdog
+and duplication detection. [#7772](https://github.com/ethyca/fides/pull/7772)
+- Added unique identity index to privacy_preferences_current partition [#7788](https://github.com/ethyca/fides/pull/7788) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Updated AgentBriefingBanner with theme-aware colors for dark/light mode [#7776](https://github.com/ethyca/fides/pull/7776)
+- Polished dashboard UI with theme token fixes, smaller card fonts, and improved component architecture [#7758](https://github.com/ethyca/fides/pull/7758)
+
+### Developer Experience
+- Added combined check and check:ci scripts for lint, format, and typecheck [#7755](https://github.com/ethyca/fides/pull/7755)
+
+### Fixed
+- shared monitor config select now works [#7786](https://github.com/ethyca/fides/pull/7786)
+
+### Security
+- Bumped pyOpenSSL to 26.0.0 (CVE-2026-27459, CVE-2026-27448) and snowflake-connector-python to 4.4.0 for compatibility [#7783](https://github.com/ethyca/fides/pull/7783)
 
 ## [2.82.0](https://github.com/ethyca/fides/compare/2.81.1..2.82.0)
 
