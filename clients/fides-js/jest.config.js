@@ -3,6 +3,7 @@ const { compilerOptions } = require("./tsconfig");
 
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
+  coverageReporters: ["json-summary"],
   preset: "ts-jest",
   testEnvironment: "jsdom",
   modulePaths: [compilerOptions.baseUrl],
