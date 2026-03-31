@@ -1,0 +1,4 @@
+type: Added
+description: Inject noindex meta tag in the head of all Privacy Center and Admin UI pages to prevent search engine indexing
+pr: 7798
+labels: []
