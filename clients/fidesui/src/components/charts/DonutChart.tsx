@@ -14,13 +14,14 @@ export interface DonutChartSegment {
   name?: string;
 }
 
-export type DonutChartVariant = "default" | "thick";
+export type DonutChartVariant = "default" | "thick" | "thin";
 
 export interface DonutChartProps {
   segments: DonutChartSegment[];
   centerLabel?: ReactNode;
   variant?: DonutChartVariant;
   animationDuration?: number;
+  fit?: "contain" | "fill";
 }
 
 export const DonutChart = ({
@@ -28,11 +29,13 @@ export const DonutChart = ({
   centerLabel,
   variant = "default",
   animationDuration = CHART_ANIMATION.defaultDuration,
+  fit = "contain",
 }: DonutChartProps) => {
   const { token } = theme.useToken();
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useContainerSize(containerRef);
-  const size = Math.min(width, height);
+  const size =
+    fit === "contain" ? Math.min(width, height) : Math.max(width, height);
   const animationActive = useChartAnimation(animationDuration);
 
   const thickness = DONUT_THICKNESS[variant];
@@ -46,7 +49,10 @@ export const DonutChart = ({
   }));
 
   return (
-    <div ref={containerRef} className="relative h-full w-full">
+    <div
+      ref={containerRef}
+      className="flex relative h-full w-full justify-center items-center"
+    >
       {size > 0 && (
         <PieChart width={size} height={size}>
           <Pie
