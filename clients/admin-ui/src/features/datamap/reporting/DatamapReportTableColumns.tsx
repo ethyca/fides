@@ -130,7 +130,7 @@ const getCustomFieldColumns = (
     return {
       title:
         customField?.name ||
-        getColumnTitle(key, columnNameMap, isRenaming, form),
+        getColumnTitle(key, columnNameMap, isRenaming, form), // Custom fields cannot be renamed, so we only care about the name and then we fall back to generating a title from the key if that's missing.
       dataIndex: key,
       key,
       render: (value: unknown) => {

@@ -4,6 +4,8 @@ import React from "react";
 
 import { CustomTableHeaderCell } from "./CustomTableHeaderCell";
 
+// The `any` type is used here to allow for flexibility in the record type, as the CustomTable component is designed to be reusable across different data structures. Consumers of this component can specify their own record type when using it, ensuring type safety while maintaining versatility. This matches Ant Design's native Table components.
+
 type CustomColumnType<RecordType = any> = ColumnsType<RecordType>[number] & {
   menu?: MenuProps;
 };
