@@ -138,9 +138,5 @@ export const ACCESS_POLICIES_ONBOARDING_ROUTE = "/access-policies/onboarding";
 export const ACCESS_POLICIES_NEW_ROUTE = "/access-policies/new";
 export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
 
-// Data Purposes (Core Configuration)
-export const DATA_PURPOSES_ROUTE = "/data-purposes";
-export const DATA_PURPOSES_NEW_ROUTE = "/data-purposes/new";
-
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";

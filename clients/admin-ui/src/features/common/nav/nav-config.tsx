@@ -233,13 +233,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Data purposes",
-        path: routes.DATA_PURPOSES_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "dataPurposes",
-        scopes: [ScopeRegistryEnum.DATA_USE_READ],
-      },
-      {
         title: "Notifications",
         path: routes.NOTIFICATIONS_ROUTE,
         scopes: [
