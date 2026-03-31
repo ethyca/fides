@@ -105,9 +105,22 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20.x
-          cache: "npm"
+
+      - name: Cache node_modules and Cypress binary
+        id: deps-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            clients/node_modules
+            clients/admin-ui/node_modules
+            clients/fides-js/node_modules
+            clients/fidesui/node_modules
+            clients/privacy-center/node_modules
+            ~/.cache/Cypress
+          key: cypress-deps-${{ runner.os }}-${{ hashFiles('clients/package-lock.json') }}
 
       - name: Install dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Build FidesJS
@@ -118,10 +131,10 @@ jobs:
         working-directory: clients/admin-ui
         run: npm run build:test
 
-      - name: Compress build artifacts
-        run: tar -czf /tmp/cypress-build.tar.gz node_modules admin-ui/.next admin-ui/node_modules fides-js/dist
+      - name: Compress build output
+        run: tar -czf /tmp/cypress-build.tar.gz admin-ui/.next fides-js/dist
 
-      - name: Upload build artifacts
+      - name: Upload build output
         uses: actions/upload-artifact@v4
         with:
           name: cypress-build
@@ -148,18 +161,27 @@ jobs:
         with:
           node-version: 20.x
 
-      - name: Download build artifacts
+      - name: Restore node_modules and Cypress binary
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            clients/node_modules
+            clients/admin-ui/node_modules
+            clients/fides-js/node_modules
+            clients/fidesui/node_modules
+            clients/privacy-center/node_modules
+            ~/.cache/Cypress
+          key: cypress-deps-${{ runner.os }}-${{ hashFiles('clients/package-lock.json') }}
+          fail-on-cache-miss: true
+
+      - name: Download build output
         uses: actions/download-artifact@v4
         with:
           name: cypress-build
           path: /tmp
 
-      - name: Extract build artifacts
+      - name: Extract build output
         run: tar -xzf /tmp/cypress-build.tar.gz
-
-      - name: Install Cypress binary
-        working-directory: clients/admin-ui
-        run: npx cypress install
 
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
