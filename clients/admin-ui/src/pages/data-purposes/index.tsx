@@ -1,32 +1,34 @@
-import { Button } from "fidesui";
-import { NextPage } from "next";
-import { useState } from "react";
+import { Typography } from "fidesui";
+import type { NextPage } from "next";
 
-import FixedLayout from "~/features/common/FixedLayout";
+import ErrorPage from "~/features/common/errors/ErrorPage";
+import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
-import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
+import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpose.slice";
+import DataPurposesTable from "~/features/data-purposes/DataPurposesTable";
 
 const DataPurposesPage: NextPage = () => {
-  const [modalOpen, setModalOpen] = useState(false);
+  const { error } = useGetAllDataPurposesQuery({});
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching data purposes"
+      />
+    );
+  }
 
   return (
-    <FixedLayout title="Data purposes">
-      <PageHeader
-        heading="Data purposes"
-        rightContent={
-          <Button type="primary" onClick={() => setModalOpen(true)}>
-            + New purpose
-          </Button>
-        }
-      />
-      <PurposeCardGrid />
-      <NewPurposeModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreated={() => setModalOpen(false)}
-      />
-    </FixedLayout>
+    <Layout title="Data Purposes">
+      <PageHeader heading="Data Purposes">
+        <Typography.Text>
+          Review and manage your data purposes below. Data purposes define the
+          reasons data is collected and processed within your organization.
+        </Typography.Text>
+      </PageHeader>
+      <DataPurposesTable />
+    </Layout>
   );
 };
 

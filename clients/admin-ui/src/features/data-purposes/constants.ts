@@ -1,3 +1,5 @@
+export const DATA_PURPOSE_FORM_ID = "data-purpose-form";
+
 export const LEGAL_BASIS_OPTIONS = [
   { label: "Consent", value: "consent" },
   { label: "Contract", value: "contract" },

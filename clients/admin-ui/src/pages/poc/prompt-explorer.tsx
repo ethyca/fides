@@ -275,7 +275,7 @@ const PromptExplorer: NextPage = () => {
   return (
     <Layout className="h-screen">
       <Content className="overflow-auto px-10 py-6">
-        <PageHeader heading="Prompt Explorer" />
+        <PageHeader heading="Prompt explorer" />
         <Paragraph type="secondary" className="mb-6">
           Developer tool for exploring and testing LLM prompts used in
           assessments and questionnaires.

@@ -280,20 +280,6 @@ export const truncateUrl = (url: string, limit: number): string => {
 };
 
 /**
- * Formats a number with a suffix for large numbers (K, M, etc.)
- * @param num - The number to format
- * @param digits - The number of digits to round to (default is 0)
- * @returns The formatted number as a string
- *
- * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
- *
- * @example
- * nFormatter(1111); // returns "1K"
- * nFormatter(1111, 0); // returns "1K"
- * nFormatter(1111, 1); // returns "1.1K"
- * nFormatter(1111, 2); // returns "1.11K"
- */
-/**
  * Converts a snake_case string into a human-readable title.
  * Known acronyms are uppercased; other words are title-cased.
  */
@@ -310,6 +296,20 @@ export const snakeCaseToTitleCase = (
     )
     .join(" ");
 
+/**
+ * Formats a number with a suffix for large numbers (K, M, etc.)
+ * @param num - The number to format
+ * @param digits - The number of digits to round to (default is 0)
+ * @returns The formatted number as a string
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
+ *
+ * @example
+ * nFormatter(1111); // returns "1K"
+ * nFormatter(1111, 0); // returns "1K"
+ * nFormatter(1111, 1); // returns "1.1K"
+ * nFormatter(1111, 2); // returns "1.11K"
+ */
 export const nFormatter = (num: number = 0, digits: number = 0) =>
   Intl.NumberFormat("en", {
     notation: "compact",
