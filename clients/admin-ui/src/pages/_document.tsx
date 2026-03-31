@@ -5,7 +5,9 @@ import React from "react";
 
 const MyDocument = () => (
   <Html lang="en">
-    <Head />
+    <Head>
+      <meta name="robots" content="noindex" />
+    </Head>
     <body>
       <Main />
       <NextScript />
