@@ -25,10 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Adding aggregate statistics widgets to action center [#7751](https://github.com/ethyca/fides/pull/7751)
-- Support Jira DSR lifecycle: auto-create ManualTaskConfig on jira_ticket
-connection setup, use pending_external status for Jira manual tasks,
-and treat pending_external equivalently to requires_input in watchdog
-and duplication detection. [#7772](https://github.com/ethyca/fides/pull/7772)
+- Added support for Jira DSR lifecycle [#7772](https://github.com/ethyca/fides/pull/7772)
 - Added unique identity index to privacy_preferences_current partition [#7788](https://github.com/ethyca/fides/pull/7788) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
