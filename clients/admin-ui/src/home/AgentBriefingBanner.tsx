@@ -11,8 +11,16 @@ import { useMemo } from "react";
 
 import { ACTION_CTA } from "~/features/dashboard/constants";
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
+import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
+
+const SEVERITY_STYLE: Record<ActionSeverity, string> = {
+  [ActionSeverity.CRITICAL]: styles.critical,
+  [ActionSeverity.HIGH]: styles.high,
+  [ActionSeverity.MEDIUM]: styles.medium,
+  [ActionSeverity.LOW]: styles.low,
+};
 
 export const AgentBriefingBanner = () => {
   const { data: briefing } = useGetAgentBriefingQuery();

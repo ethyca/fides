@@ -1,4 +1,4 @@
-.astralisAlert {
+.alertSm {
   border: none !important;
   border-radius: 8px !important;
 
@@ -16,10 +16,29 @@
 .quickActionLink {
   font-size: 13px;
   font-weight: 500;
-  color: var(--fidesui-terracotta);
   text-decoration: none;
 
   &:hover {
     text-decoration: underline;
   }
+}
+
+.info {
+  color: var(--fidesui-terracotta);
+}
+
+.critical {
+  color: var(--fidesui-error);
+}
+
+.high {
+  color: var(--fidesui-warning);
+}
+
+.medium {
+  color: var(--fidesui-success);
+}
+
+.low {
+  color: var(--ant-color-text-description);
 }
