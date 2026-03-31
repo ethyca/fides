@@ -59,7 +59,7 @@ def create_oauth_client():
     response = requests.post(
         url,
         headers=root_oauth_header,
-        json=SCOPE_REGISTRY,
+        json={"scopes": SCOPE_REGISTRY},
     )
 
     if response.ok:
