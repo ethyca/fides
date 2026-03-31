@@ -61,7 +61,7 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
         <Drawer
           open={isOpen}
           onClose={() => setIsOpen(false)}
-          title="Failure log"
+          title={`${monitor.name} - Failure log`}
         >
           <section data-testid="error-log-drawer">
             {executionRecord.completed && (
