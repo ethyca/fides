@@ -1103,7 +1103,7 @@ requires-dist = [
     { name = "expandvars", specifier = "==0.9.0" },
     { name = "fastapi", extras = ["all"], specifier = "==0.123.3" },
     { name = "fastapi-cli", specifier = "~=0.0.16" },
-    { name = "fastapi-pagination", extras = ["sqlalchemy"], specifier = "==0.15.0" },
+    { name = "fastapi-pagination", extras = ["sqlalchemy"], specifier = "==0.15.12" },
     { name = "fideslang", specifier = "==3.1.3" },
     { name = "filelock", specifier = "~=3.20.0" },
     { name = "firebase-admin", specifier = "==5.3.0" },
@@ -1331,16 +1331,16 @@ wheels = [
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.15.0"
+version = "0.15.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bc/db/8a3d097c491ad873574bd7295834ef89e16263ae9104855bbb5ee6d46e47/fastapi_pagination-0.15.0.tar.gz", hash = "sha256:11fe39cbe181ed3c18919b90faf6bfcbe40cb596aa9c52a98bbce85111a29a4f", size = 557472, upload-time = "2025-10-28T19:06:17.732Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/71/7381bf08f9fb6a890ec41a7ee5191ca564e0af94b899c2006fddaf07d78f/fastapi_pagination-0.15.12.tar.gz", hash = "sha256:914b41e07b8556de34c12d3568c9b7137eb62a3558420061a4acbebf7e729a08", size = 595227, upload-time = "2026-03-28T12:51:03.14Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/91/b835e07234170ba85473227aa107bcf1dc616ff6cb643c0bd9b8225a55f1/fastapi_pagination-0.15.0-py3-none-any.whl", hash = "sha256:ffef937e78903fcb6f356b8407ec1fb0620a06675087fa7d0c4e537a60aa0447", size = 52292, upload-time = "2025-10-28T19:06:16.371Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/2f/644fd77ecac100da965221751ae4f7604e149c58c46c1d96c37e828bb5f7/fastapi_pagination-0.15.12-py3-none-any.whl", hash = "sha256:758e21157b2844feecb2409072f1433e24f2dc9526ae7906aa1a1b28622a970a", size = 60921, upload-time = "2026-03-28T12:51:04.288Z" },
 ]
 
 [package.optional-dependencies]
