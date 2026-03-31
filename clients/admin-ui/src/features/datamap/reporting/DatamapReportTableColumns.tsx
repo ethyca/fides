@@ -15,6 +15,7 @@ import {
 } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
+import { InteractiveTextCell } from "~/features/common/table/cells/InteractiveTextCell";
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
 import {
   CustomFieldDefinitionWithId,
@@ -33,7 +34,7 @@ export const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
 export const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
 
 export interface DatamapReportColumnProps {
-  onSelectRow: (row: DatamapReportRow) => void;
+  onOpenSystemDrawer: (row: DatamapReportRow) => void;
   getDataUseDisplayName: (dataUseKey: string) => ReactNode;
   getDataCategoryDisplayName: (dataCategoryKey: string) => string | JSX.Element;
   getDataSubjectDisplayName: (dataSubjectKey: string) => ReactNode;
@@ -157,7 +158,7 @@ const getCustomFieldColumns = (
 };
 
 export const getDatamapReportColumns = ({
-  onSelectRow,
+  onOpenSystemDrawer,
   getDataUseDisplayName,
   getDataCategoryDisplayName,
   getDataSubjectDisplayName,
@@ -215,11 +216,11 @@ export const getDatamapReportColumns = ({
       title: title(COLUMN_IDS.SYSTEM_NAME),
       dataIndex: "system_name",
       key: COLUMN_IDS.SYSTEM_NAME,
-      render: (value: string) => <EllipsisCell>{value}</EllipsisCell>,
-      onCell: (record: DatamapReportRow) => ({
-        onClick: () => onSelectRow(record),
-        style: { cursor: "pointer" },
-      }),
+      render: (value: string, record: DatamapReportRow) => (
+        <InteractiveTextCell onClick={() => onOpenSystemDrawer(record)}>
+          {value}
+        </InteractiveTextCell>
+      ),
       className: `column-${COLUMN_IDS.SYSTEM_NAME}`,
     },
     {

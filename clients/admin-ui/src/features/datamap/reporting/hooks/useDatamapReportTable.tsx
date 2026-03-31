@@ -191,7 +191,7 @@ export const useDatamapReportTable = (form?: FormInstance) => {
       return [];
     }
     return getDatamapReportColumns({
-      onSelectRow: (row) => setSelectedSystemId(row.fides_key),
+      onOpenSystemDrawer: (row) => setSelectedSystemId(row.fides_key),
       getDataUseDisplayName,
       getDataCategoryDisplayName,
       getDataSubjectDisplayName,
