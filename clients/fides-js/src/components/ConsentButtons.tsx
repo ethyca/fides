@@ -133,7 +133,9 @@ export const ConsentButtons = ({
             : "fides-banner-button-group fides-banner-secondary-actions"
         }${includeLanguageSelector ? " fides-button-group-i18n" : ""}${
           includePrivacyPolicyLink ? " fides-button-group-privacy-policy" : ""
-        }${includeBrandLink ? " fides-button-group-brand" : ""}`}
+        }${includeBrandLink ? " fides-button-group-brand" : ""}${
+          includeAttributionLink ? " fides-button-group-attribution" : ""
+        }`}
       >
         {includeLanguageSelector && (
           <LanguageSelector
@@ -159,8 +161,11 @@ export const ConsentButtons = ({
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
         {includeBrandLink && <BrandLink />}
+        {isInModal && includeAttributionLink && (
+          <AttributionLink attribution={options.attribution!} />
+        )}
       </div>
-      {includeAttributionLink && (
+      {!isInModal && includeAttributionLink && (
         <div className="fides-attribution-row">
           <AttributionLink attribution={options.attribution!} />
         </div>
