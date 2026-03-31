@@ -43,10 +43,6 @@ healthcheck_ping_timeout = 2.0 # number
 #--------------------------------------------------------------------#
 [cli] # Configuration settings for the command-line application.
 
-# A fully anonymized unique identifier that is automatically generated
-# by the application. Used for anonymous analytics when opted-in.
-analytics_id = "51c24384f3032d6b27bea4d6bed175e8" # string
-
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
 local_mode = false # boolean
@@ -428,6 +424,12 @@ ssl_cert_reqs = "required" # string
 # set this to the path of the CA certificate.
 ssl_ca_certs = "" # string
 
+# Whether to verify that the Redis server's certificate hostname
+# matches the server's hostname. Set to False if your Redis certificate
+# does not match the connection hostname (e.g., behind proxies, load
+# balancers, or managed Redis with internal cert hostnames).
+ssl_check_hostname = true # boolean
+
 # Timeout in seconds for establishing a connection to Redis.
 socket_connect_timeout = 10.0 # number
 
@@ -548,8 +550,8 @@ bastion_server_ssh_tunnel_timeout = 10 # number
 #--------------------------------------------------------------------#
 [user] # Configuration settings that apply to the current user as opposed to the entire application instance.
 
-# When set to true, prevents sending privacy-respecting anonymous
-# analytics data to Ethyca.
+# Deprecated. Previously controlled anonymous analytics. Retained for
+# backwards compatibility only.
 analytics_opt_out = true # boolean
 
 # An arbitrary string used to encrypt the user data stored in the

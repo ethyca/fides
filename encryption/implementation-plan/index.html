@@ -954,34 +954,6 @@ You're not viewing the latest version.
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../development/fideslog/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    User Analytics
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1374,10 +1346,10 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pr-0a-migrate-organization-to-standard-encryption" class="md-nav__link">
+  <a href="#pr-1-migrate-organization-to-standard-encryption-done" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 0a: Migrate Organization to standard encryption
+        PR 1: Migrate Organization to standard encryption — ✅ Done
       
     </span>
   </a>
@@ -1385,10 +1357,38 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-0b-migrate-userregistration-to-standard-encryption" class="md-nav__link">
+  <a href="#pr-2-encrypted_type-factory-callable-key-pure-refactor-in-progress" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 0b: Migrate UserRegistration to standard encryption
+        PR 2: encrypted_type() factory + callable key (pure refactor) — 🔧 In progress
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PR 2: encrypted_type() factory + callable key (pure refactor) — 🔧 In progress">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#non-column-encryption-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-column encryption paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-3-encryption_keys-database-table-to-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 3: encryption_keys database table — 📋 To do
       
     </span>
   </a>
@@ -1396,10 +1396,10 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-1-encrypted_type-factory-callable-key-pure-refactor" class="md-nav__link">
+  <a href="#pr-4-new-config-fields-to-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 1: encrypted_type() factory + callable key (pure refactor)
+        PR 4: New config fields — 📋 To do
       
     </span>
   </a>
@@ -1407,10 +1407,10 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-2-keyprovider-abc-localkeyprovider" class="md-nav__link">
+  <a href="#pr-5-keyprovider-abc-localkeyprovider-to-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 2: KeyProvider ABC + LocalKeyProvider
+        PR 5: KeyProvider ABC + LocalKeyProvider — 📋 To do
       
     </span>
   </a>
@@ -1418,10 +1418,10 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-3-awskmskeyprovider-optional-can-be-deferred" class="md-nav__link">
+  <a href="#pr-6-awskmskeyprovider-optional-can-be-deferred-to-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 3: AwsKmsKeyProvider (optional, can be deferred)
+        PR 6: AwsKmsKeyProvider (optional, can be deferred) — 📋 To do
       
     </span>
   </a>
@@ -1429,10 +1429,22 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-4-encryption_keys-database-table" class="md-nav__link">
+  <a href="#pr-7-wire-get_encryption_key-to-envelope-mode-to-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 4: encryption_keys database table
+        PR 7: Wire get_encryption_key() to envelope mode — 📋 To do
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PR 7: Wire get_encryption_key() to envelope mode — 📋 To do">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#startup-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Startup task
       
     </span>
   </a>
@@ -1440,24 +1452,18 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-5-new-config-fields" class="md-nav__link">
+  <a href="#updated-get_encryption_key" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 5: New config fields
+        Updated get_encryption_key()
       
     </span>
   </a>
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#pr-6-wire-get_encryption_key-to-envelope-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PR 6: Wire get_encryption_key() to envelope mode
-      
-    </span>
-  </a>
+      </ul>
+    </nav>
   
 </li>
         
@@ -1600,7 +1606,7 @@ You're not viewing the latest version.
 │  ─────────────────────────                                   │
 │  = the current app_encryption_key value                      │
 │  Stored encrypted (wrapped) by the provider.                 │
-│  Unwrapped at runtime, cached in memory.                     │
+│  Unwrapped at runtime, cached in memory with a TTL.          │
 │                                                              │
 │  Used by all StringEncryptedType columns, AES-GCM utils,     │
 │  JWE tokens, etc. — the entire existing encryption surface.  │
@@ -1641,7 +1647,7 @@ You're not viewing the latest version.
                      │  get_encryption   │
                      │  _key()           │◄── called by StringEncryptedType
                      │  (callable, lazy, │    (on every encrypt/decrypt)
-                     │   cached)         │
+                     │   TTL-cached)     │
                      └────────┬─────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -1664,7 +1670,7 @@ You're not viewing the latest version.
                    │ Local        │  │ AWS KMS       │  │ Future       │
                    │ KeyProvider  │  │ KeyProvider   │  │ providers    │
                    │              │  │               │  │ (Vault, GCP, │
-                   │ Storage: DB  │  │ Storage: AWS  │  │  Azure, ...) │
+                   │ Storage: DB  │  │ Storage: DB   │  │  Azure, ...) │
                    │ Crypto: local│  │ Crypto: KMS   │  │              │
                    │ AES-GCM      │  │ API calls     │  │              │
                    └──────────────┘  └───────────────┘  └──────────────┘
@@ -1689,9 +1695,9 @@ You're not viewing the latest version.
 </tr>
 <tr>
 <td><code>AwsKmsKeyProvider</code></td>
-<td>AWS Secrets Manager (or Parameter Store)</td>
+<td><code>encryption_keys</code> DB table</td>
 <td>AWS KMS API (<code>kms:Encrypt</code> / <code>kms:Decrypt</code>)</td>
-<td>Inside AWS KMS (never leaves)</td>
+<td>Inside AWS KMS (never leaves the HSM)</td>
 </tr>
 </tbody>
 </table>
@@ -1735,7 +1741,7 @@ You're not viewing the latest version.
 <span class="c1"># Model usage becomes:</span>
 <span class="n">Column</span><span class="p">(</span><span class="n">MutableDict</span><span class="o">.</span><span class="n">as_mutable</span><span class="p">(</span><span class="n">encrypted_type</span><span class="p">(</span><span class="n">JSONTypeOverride</span><span class="p">)))</span>
 </code></pre></div></td></tr></table></div>
-<p><code>get_encryption_key()</code> is lazy and cached:</p>
+<p><code>get_encryption_key()</code> is lazy and cached with a configurable TTL (default 1 hour):</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1750,11 +1756,18 @@ You're not viewing the latest version.
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">_cached_dek</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">_cached_dek</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">_cached_at</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">_DEK_CACHE_TTL_SECONDS</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span>  <span class="c1"># 1 hour</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_encryption_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">global</span> <span class="n">_cached_dek</span>
-    <span class="k">if</span> <span class="n">_cached_dek</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">_cached_dek</span><span class="p">,</span> <span class="n">_cached_at</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">_cached_dek</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">_cached_at</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_DEK_CACHE_TTL_SECONDS</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_cached_dek</span>
 
     <span class="n">config</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span>
@@ -1764,12 +1777,13 @@ You're not viewing the latest version.
         <span class="n">provider</span> <span class="o">=</span> <span class="n">_build_key_provider</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="p">)</span>
         <span class="n">_cached_dek</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_dek</span><span class="p">()</span>
 
+    <span class="n">_cached_at</span> <span class="o">=</span> <span class="n">now</span>
     <span class="k">return</span> <span class="n">_cached_dek</span>
 </code></pre></div></td></tr></table></div>
-<p>This eliminates the import-time binding problem. The DEK is resolved on the first encrypt/decrypt operation — long after the app is fully started and the database is reachable.</p>
+<p>This eliminates the import-time binding problem. The DEK is resolved lazily on the first encrypt/decrypt operation — long after the app is fully started and the database is reachable. The TTL ensures that key rotations propagate without requiring a restart: after the cache expires, the next operation re-fetches and unwraps the DEK from the provider.</p>
 <hr />
 <h2 id="pr-breakdown">PR Breakdown</h2>
-<h3 id="pr-0a-migrate-organization-to-standard-encryption">PR 0a: Migrate <code>Organization</code> to standard encryption</h3>
+<h3 id="pr-1-migrate-organization-to-standard-encryption-done">PR 1: Migrate <code>Organization</code> to standard encryption — ✅ Done</h3>
 <p><strong>Goal:</strong> Replace the <code>PGEncryptedString</code> mechanism (PostgreSQL <code>pgcrypto</code>) with <code>StringEncryptedType(AesGcmEngine)</code> on the <code>Organization</code> model, unifying it with the rest of the codebase.</p>
 <p><strong>Context:</strong></p>
 <p><code>Organization</code> (<code>ctl_organizations</code> table) has 3 columns (<code>controller</code>, <code>data_protection_officer</code>, <code>representative</code>) using <code>PGEncryptedString</code> — a custom <code>TypeDecorator</code> that delegates to PostgreSQL's <code>pgp_sym_encrypt</code>/<code>pgp_sym_decrypt</code> via the <code>pgcrypto</code> extension. These columns use a different key (<code>CONFIG.user.encryption_key</code>) and a different algorithm (PGP symmetric) than everything else.</p>
@@ -1787,73 +1801,114 @@ You're not viewing the latest version.
 <li>The <code>PGEncryptedString</code> class and the <code>pgcrypto</code> extension dependency can be removed after this migration (or left as dead code and cleaned up separately).</li>
 <li>After this PR, <code>CONFIG.user.encryption_key</code> is no longer used by any model. It can be deprecated in a follow-up.</li>
 </ul>
+<p><strong>Note:</strong> <code>UserRegistration</code> (which uses <code>AesEngine</code> / AES-CBC) does not need a separate migration — the model will be removed entirely once fideslog is removed.</p>
 <hr />
-<h3 id="pr-0b-migrate-userregistration-to-standard-encryption">PR 0b: Migrate <code>UserRegistration</code> to standard encryption</h3>
-<p><strong>Goal:</strong> Replace the <code>AesEngine</code> (AES-CBC) mechanism with <code>AesGcmEngine</code> (AES-GCM) on the <code>UserRegistration</code> model, eliminating the last non-standard encryption engine.</p>
-<p><strong>Context:</strong></p>
-<p><code>UserRegistration</code> has 1 column (<code>user_email</code>) using <code>StringEncryptedType(AesEngine)</code> — AES-CBC instead of the AES-GCM used everywhere else.</p>
-<p><strong>Migration strategy (expand-contract):</strong></p>
-<p>Both <code>AesEngine</code> and <code>AesGcmEngine</code> use <code>app_encryption_key</code>, so no key change — only the cipher mode changes (CBC to GCM).</p>
-<ol>
-<li><strong>Expand:</strong> Add a new column <code>user_email_new</code> alongside the existing <code>user_email</code></li>
-<li><strong>Migrate:</strong> For each row, decrypt <code>user_email</code> using <code>AesEngine</code>, re-encrypt using <code>AesGcmEngine</code>, write to <code>user_email_new</code>. Skip <code>NULL</code> values.</li>
-<li><strong>Contract:</strong> Drop <code>user_email</code>, rename <code>user_email_new</code> to <code>user_email</code></li>
-</ol>
-<p><strong>Risk considerations:</strong></p>
-<ul>
-<li>The <code>userregistration</code> table typically contains a single row, so the migration is trivial.</li>
-<li><code>AesEngine</code> import can be removed from <code>registration.py</code> after this PR.</li>
-</ul>
-<p><strong>Independent of PR 0a.</strong> Can land before or after.</p>
-<hr />
-<h3 id="pr-1-encrypted_type-factory-callable-key-pure-refactor">PR 1: <code>encrypted_type()</code> factory + callable key (pure refactor)</h3>
+<h3 id="pr-2-encrypted_type-factory-callable-key-pure-refactor-in-progress">PR 2: <code>encrypted_type()</code> factory + callable key (pure refactor) — 🔧 In progress</h3>
 <p><strong>Goal:</strong> Centralize all <code>StringEncryptedType</code> construction and switch from import-time key binding to a callable key. Zero behavior change.</p>
-<p>Create a new <code>get_encryption_key()</code> function (initially just returns <code>CONFIG.security.app_encryption_key</code>) and an <code>encrypted_type()</code> factory that passes it as a callable to <code>StringEncryptedType</code>. Replace all 39 inline <code>StringEncryptedType(...)</code> calls across 18 model files with <code>encrypted_type(...)</code>. Update <code>optionally_encrypted_type()</code>, <code>_get_sqlalchemy_compatible_key()</code>, and <code>_make_encryptor()</code> to use <code>get_encryption_key()</code>.</p>
+<p>Create a new <code>get_encryption_key()</code> function (initially just returns <code>CONFIG.security.app_encryption_key</code>) and an <code>encrypted_type()</code> factory that passes it as a callable to <code>StringEncryptedType</code>. Replace all inline <code>StringEncryptedType(...)</code> calls across model files with <code>encrypted_type(...)</code>. Update <code>optionally_encrypted_type()</code>, <code>_get_sqlalchemy_compatible_key()</code>, and <code>_make_encryptor()</code> to use <code>get_encryption_key()</code>.</p>
 <p>Alembic migration files are frozen historical snapshots and are not modified.</p>
 <p><strong>Testing:</strong> All existing tests pass with zero config changes. Add unit test verifying <code>get_encryption_key()</code> returns <code>CONFIG.security.app_encryption_key</code> in legacy mode.</p>
+<h4 id="non-column-encryption-paths">Non-column encryption paths</h4>
+<p>In addition to the <code>StringEncryptedType</code> columns, several non-column code paths reference <code>CONFIG.security.app_encryption_key</code> directly. This PR updates them to use <code>get_encryption_key()</code> so that every encryption path benefits from envelope encryption once it is wired up in PR 7.</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>File(s)</th>
+<th>Current key source</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>JWE / OAuth tokens</strong> (create)</td>
+<td><code>fides: oauth_endpoints.py</code>, <code>user_endpoints.py</code></td>
+<td><code>CONFIG.security.app_encryption_key</code> passed to <code>create_access_code_jwe()</code></td>
+<td>Replace with <code>get_encryption_key()</code></td>
+</tr>
+<tr>
+<td><strong>JWE / OAuth tokens</strong> (verify)</td>
+<td><code>fides: oauth/utils.py</code> (5 call sites)</td>
+<td><code>CONFIG.security.app_encryption_key</code> passed to <code>extract_payload()</code></td>
+<td>Replace with <code>get_encryption_key()</code></td>
+</tr>
+<tr>
+<td><strong>OAuth state tokens</strong> (Jira, Slack, OpenID)</td>
+<td><code>fidesplus: jira_oauth_service.py</code>, <code>slack.py</code>, <code>openid_providers.py</code></td>
+<td><code>CONFIG.security.app_encryption_key</code> / <code>CONFIG.fides.security.app_encryption_key</code> passed to <code>generate_state_token()</code> / <code>validate_state_token()</code></td>
+<td>Replace with <code>get_encryption_key()</code></td>
+</tr>
+<tr>
+<td><strong>JWE token creation</strong> (fidesplus)</td>
+<td><code>fidesplus: external_login.py</code>, <code>connections.py</code>, <code>openid_providers.py</code></td>
+<td><code>config.security.app_encryption_key</code> passed to <code>create_access_code_jwe()</code></td>
+<td>Replace with <code>get_encryption_key()</code></td>
+</tr>
+<tr>
+<td><strong>Consent preferences encrypt/decrypt</strong></td>
+<td><code>fidesplus: preferences_util.py</code> (2 call sites)</td>
+<td><code>config.fides.security.app_encryption_key.encode()</code> used as raw AES-GCM key bytes</td>
+<td>Replace with <code>get_encryption_key().encode()</code></td>
+</tr>
+<tr>
+<td><strong>AES-GCM encryption scheme</strong> (fidesplus override)</td>
+<td><code>fidesplus: aes_gcm_overrides.py</code></td>
+<td>Validates key length against <code>config.fides.security.app_encryption_key</code></td>
+<td>Update <code>verify_app_encryption_key()</code> to use <code>get_encryption_key()</code></td>
+</tr>
+<tr>
+<td><strong>Chunked external storage</strong></td>
+<td><code>fides: aes_gcm_encryption_util.py</code></td>
+<td>Already uses <code>get_encryption_key()</code></td>
+<td>No change needed</td>
+</tr>
+<tr>
+<td><strong>SQLAlchemy-Utils external storage</strong></td>
+<td><code>fides: aes_gcm_encryption_util.py</code></td>
+<td>Already uses <code>get_encryption_key()</code></td>
+<td>No change needed</td>
+</tr>
+<tr>
+<td><strong>Privacy request result encryption</strong></td>
+<td><code>fides: tasks/encryption_utils.py</code></td>
+<td>Per-request key from Redis (not <code>app_encryption_key</code>)</td>
+<td>No change needed — independent key path</td>
+</tr>
+<tr>
+<td><strong>Database startup validation</strong></td>
+<td><code>fides: db/database.py</code></td>
+<td>Error message references <code>app_encryption_key</code></td>
+<td>Update error message only (cosmetic)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> The <code>aes_gcm_encryption_scheme.py</code> module in fides uses a <strong>different key derivation</strong> (raw <code>.encode()</code> instead of SHA256) and is called with per-request keys from Redis, not <code>app_encryption_key</code>. This path is unaffected by envelope encryption.</p>
 <hr />
-<h3 id="pr-2-keyprovider-abc-localkeyprovider">PR 2: <code>KeyProvider</code> ABC + <code>LocalKeyProvider</code></h3>
-<p><strong>Goal:</strong> Introduce the provider abstraction and the local (in-process) implementation. New code only — nothing wired up yet.</p>
-<p>Create a <code>KeyProvider</code> ABC with a <code>get_dek()</code> method, and a <code>LocalKeyProvider</code> implementation that reads the wrapped DEK from the <code>encryption_keys</code> DB table via raw SQL (not ORM) and decrypts it with AES-256-GCM using a KEK from config.</p>
-<p><strong>No behavioral change.</strong> Nothing calls these classes yet.</p>
-<hr />
-<h3 id="pr-3-awskmskeyprovider-optional-can-be-deferred">PR 3: <code>AwsKmsKeyProvider</code> (optional, can be deferred)</h3>
-<p><strong>Goal:</strong> Add the AWS KMS provider implementation.</p>
-<p>Create an <code>AwsKmsKeyProvider</code> that fetches the wrapped DEK from Secrets Manager and calls <code>kms:Decrypt</code> to unwrap it. The KEK never leaves AWS. No new dependencies — <code>boto3</code> is already in Fides's dependency tree.</p>
-<p><strong>Independent of PR 2.</strong> Can land before or after. Can also be deferred to a later phase.</p>
-<hr />
-<h3 id="pr-4-encryption_keys-database-table">PR 4: <code>encryption_keys</code> database table</h3>
-<p><strong>Goal:</strong> Create the database table used by <code>LocalKeyProvider</code> for wrapped DEK storage.</p>
+<h3 id="pr-3-encryption_keys-database-table-to-do">PR 3: <code>encryption_keys</code> database table — 📋 To do</h3>
+<p><strong>Goal:</strong> Create the database table used by both <code>LocalKeyProvider</code> and <code>AwsKmsKeyProvider</code> for wrapped DEK storage.</p>
 <p><strong>Table schema:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">encryption_keys</span><span class="w"> </span><span class="p">(</span>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">encryption_keys</span><span class="w"> </span><span class="p">(</span>
 <span class="w">    </span><span class="n">id</span><span class="w">          </span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">gen_random_uuid</span><span class="p">(),</span>
-<span class="w">    </span><span class="n">key_id</span><span class="w">      </span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">UNIQUE</span><span class="p">,</span><span class="w">      </span><span class="c1">-- version identifier (e.g. &quot;v1&quot;)</span>
 <span class="w">    </span><span class="n">wrapped_dek</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">                 </span><span class="c1">-- base64-encoded ciphertext</span>
+<span class="w">    </span><span class="n">kek_id_hash</span><span class="w">      </span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">             </span><span class="c1">-- identifies the KEK used to wrap (see below)</span>
 <span class="w">    </span><span class="n">provider</span><span class="w">    </span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;local&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="n">is_active</span><span class="w">   </span><span class="nb">BOOLEAN</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">true</span><span class="p">,</span>
-<span class="w">    </span><span class="n">created_at</span><span class="w">  </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">TIME</span><span class="w"> </span><span class="k">ZONE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span>
-<span class="w">    </span><span class="n">rotated_at</span><span class="w">  </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">TIME</span><span class="w"> </span><span class="k">ZONE</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w">  </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">TIME</span><span class="w"> </span><span class="k">ZONE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">()</span>
 <span class="p">);</span>
-
-<span class="k">CREATE</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_encryption_keys_active</span>
-<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">encryption_keys</span><span class="w"> </span><span class="p">(</span><span class="n">is_active</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">is_active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="p">;</span>
 </code></pre></div></td></tr></table></div>
-<p>The partial unique index on <code>is_active WHERE is_active = true</code> ensures at most one active key at any time.</p>
+<p>The <code>kek_id_hash</code> column identifies which KEK was used to wrap the DEK, allowing the startup logic to determine whether re-wrapping is needed without trial decryption:</p>
+<ul>
+<li><strong>Local provider:</strong> <code>HMAC-SHA256(key=b"fides-kek-id", msg=kek)[:16]</code> — a truncated HMAC that uniquely identifies the KEK without leaking key material. The fixed salt <code>"fides-kek-id"</code> provides domain separation.</li>
+<li><strong>AWS KMS provider:</strong> The KMS key ARN (e.g., <code>arn:aws:kms:us-east-1:123456789:key/abcd-...</code>), which is already a public identifier.</li>
+</ul>
 <p><strong>No behavioral change.</strong> The table exists but nothing reads from or writes to it yet.</p>
-<p><strong>Independent of PRs 2 and 3.</strong></p>
 <hr />
-<h3 id="pr-5-new-config-fields">PR 5: New config fields</h3>
+<h3 id="pr-4-new-config-fields-to-do">PR 4: New config fields — 📋 To do</h3>
 <p><strong>Goal:</strong> Add envelope encryption configuration to <code>SecuritySettings</code>. All fields are optional with backward-compatible defaults.</p>
 <p><strong>New fields in <code>SecuritySettings</code>:</strong></p>
 <table>
@@ -1876,41 +1931,128 @@ You're not viewing the latest version.
 <td><code>key_encryption_key</code></td>
 <td><code>str</code></td>
 <td><code>""</code></td>
-<td>KEK for local provider (32 chars)</td>
+<td>Current KEK for local provider (32 chars)</td>
+</tr>
+<tr>
+<td><code>key_encryption_key_previous</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>Previous KEK, set during rotation (see KEK Rotation below)</td>
 </tr>
 <tr>
 <td><code>aws_kms_key_arn</code></td>
 <td><code>str</code></td>
 <td><code>""</code></td>
-<td>KMS key ARN for AWS KMS provider</td>
+<td>ARN of the KMS key to use for wrapping/unwrapping (operator-provisioned)</td>
 </tr>
 <tr>
 <td><code>aws_kms_region</code></td>
 <td><code>str</code></td>
 <td><code>""</code></td>
-<td>AWS region</td>
-</tr>
-<tr>
-<td><code>aws_secrets_manager_secret_arn</code></td>
-<td><code>str</code></td>
-<td><code>""</code></td>
-<td>Secrets Manager ARN for wrapped DEK storage</td>
+<td>AWS region for the KMS key</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Validation logic:</strong></p>
 <ul>
 <li><code>key_provider = "none"</code>: require <code>app_encryption_key</code> (existing behavior)</li>
-<li><code>key_provider = "local"</code>: require <code>key_encryption_key</code> (32 chars)</li>
+<li><code>key_provider = "local"</code>: require <code>key_encryption_key</code> (32 chars); <code>key_encryption_key_previous</code> is optional</li>
 <li><code>key_provider = "aws_kms"</code>: require <code>aws_kms_key_arn</code> and <code>aws_kms_region</code></li>
 </ul>
 <p><strong>Update to <code>check_required_webserver_config_values</code>:</strong> <code>app_encryption_key</code> is no longer unconditionally required — it is only required when <code>key_provider = "none"</code>.</p>
 <p><strong>No behavioral change.</strong> The new settings exist but nothing reads them yet. Existing deployments have <code>key_provider = "none"</code> by default.</p>
 <hr />
-<h3 id="pr-6-wire-get_encryption_key-to-envelope-mode">PR 6: Wire <code>get_encryption_key()</code> to envelope mode</h3>
+<h3 id="pr-5-keyprovider-abc-localkeyprovider-to-do">PR 5: <code>KeyProvider</code> ABC + <code>LocalKeyProvider</code> — 📋 To do</h3>
+<p><strong>Goal:</strong> Introduce the provider abstraction and the local (in-process) implementation. New code only — nothing wired up yet.</p>
+<p>Create a <code>KeyProvider</code> ABC with a <code>get_dek()</code> method, and a <code>LocalKeyProvider</code> implementation that reads the wrapped DEK from the <code>encryption_keys</code> DB table via raw SQL (not ORM) and decrypts it with AES-256-GCM using a KEK from config.</p>
+<p><strong>Bootstrap:</strong> Handled automatically on startup (see PR 7). When <code>key_provider = "local"</code> and no row exists in <code>encryption_keys</code>, the startup task wraps the current <code>app_encryption_key</code> with the configured KEK and inserts the row. No CLI command needed.</p>
+<p><strong>No behavioral change.</strong> Nothing calls these classes yet.</p>
+<hr />
+<h3 id="pr-6-awskmskeyprovider-optional-can-be-deferred-to-do">PR 6: <code>AwsKmsKeyProvider</code> (optional, can be deferred) — 📋 To do</h3>
+<p><strong>Goal:</strong> Add the AWS KMS provider implementation.</p>
+<p>Create an <code>AwsKmsKeyProvider</code> that reads the wrapped DEK from the <code>encryption_keys</code> DB table (the same table used by <code>LocalKeyProvider</code>) and calls <code>kms:Decrypt</code> to unwrap it. The KEK never leaves the KMS HSM. No new dependencies — <code>boto3</code> is already in Fides's dependency tree.</p>
+<p><strong>How it works:</strong></p>
+<p>Both providers share the <code>encryption_keys</code> table for wrapped DEK storage. The only difference is who performs the wrap/unwrap:</p>
+<ul>
+<li><strong><code>LocalKeyProvider</code>:</strong> AES-256-GCM in-process using a KEK from an env var.</li>
+<li><strong><code>AwsKmsKeyProvider</code>:</strong> <code>kms:Decrypt(CiphertextBlob=wrapped_dek)</code> via boto3. KMS identifies the correct key and backing key version from metadata embedded in the ciphertext blob — no key ARN is needed at decrypt time, though we pass it for validation.</li>
+</ul>
+<p><strong>Bootstrap:</strong> Handled automatically on startup (see PR 7). When <code>key_provider = "aws_kms"</code> and no row exists in <code>encryption_keys</code>, the startup task calls <code>kms:Encrypt(KeyId=aws_kms_key_arn, Plaintext=app_encryption_key)</code> and stores the resulting <code>CiphertextBlob</code> in the <code>encryption_keys</code> table. After the first successful startup, <code>app_encryption_key</code> can be removed from the environment.</p>
+<p><strong>Required IAM permissions:</strong> <code>kms:Encrypt</code> (bootstrap only) and <code>kms:Decrypt</code> (runtime) on the configured KMS key ARN.</p>
+<p><strong>Independent of PR 5.</strong> Can land before or after. Can also be deferred to a later phase.</p>
+<hr />
+<h3 id="pr-7-wire-get_encryption_key-to-envelope-mode-to-do">PR 7: Wire <code>get_encryption_key()</code> to envelope mode — 📋 To do</h3>
 <p><strong>Goal:</strong> Connect the callable key resolver to the provider system. This is the PR that activates envelope encryption.</p>
-<p>Add the envelope resolution path to <code>get_encryption_key()</code> and a <code>_build_key_provider()</code> factory:</p>
-<p><strong>Updated <code>get_encryption_key()</code>:</strong></p>
+<h4 id="startup-task">Startup task</h4>
+<p>On application startup, before any request is served, a startup task runs the envelope encryption initialization. This handles three scenarios: first-time bootstrap, normal operation, and KEK rotation.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span></pre></div></td><td class="code"><div><pre><span></span><code>startup_envelope_encryption():
+  config = get_config()
+  if config.security.key_provider == &quot;none&quot;:
+      return  # legacy mode, nothing to do
+
+  provider = _build_key_provider(config.security)
+  row = read active row from encryption_keys table
+
+  if row is None:
+      # --- First-time bootstrap ---
+      # Wrap the existing app_encryption_key with the configured KEK
+      # and insert the first row. After this deploy succeeds,
+      # app_encryption_key can be removed from the environment.
+      wrapped_blob = provider.wrap(config.security.app_encryption_key)
+      insert row: wrapped_dek=wrapped_blob, kek_id_hash=provider.kek_id_hash(), provider=...
+      return
+
+  if row.kek_id_hash == provider.kek_id_hash():
+      # --- Normal operation ---
+      # KEK hasn&#39;t changed, nothing to do.
+      return
+
+  # --- KEK rotation detected ---
+  # The row was wrapped with a different KEK than the current one.
+  # Cache the DEK immediately (using the old KEK) so no request
+  # fails during the re-wrap.
+  old_kek = config.security.key_encryption_key_previous  # local provider
+  dek = provider.unwrap_with(row.wrapped_dek, old_kek)
+  _cache_dek(dek)  # warm the cache before re-wrapping
+
+  # Re-wrap with the current KEK and update the row.
+  new_blob = provider.wrap(dek)
+  update row: wrapped_dek=new_blob, kek_id_hash=provider.kek_id_hash()
+</code></pre></div></td></tr></table></div>
+<p>For the AWS KMS provider, KEK rotation is handled transparently by KMS (see KEK Rotation below), so the rotation branch only applies to the local provider.</p>
+<h4 id="updated-get_encryption_key">Updated <code>get_encryption_key()</code></h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1944,11 +2086,17 @@ You're not viewing the latest version.
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">_cached_dek</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">_cached_dek</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">_cached_at</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">_DEK_CACHE_TTL_SECONDS</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3600</span>  <span class="c1"># 1 hour</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_encryption_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">global</span> <span class="n">_cached_dek</span>
-    <span class="k">if</span> <span class="n">_cached_dek</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">_cached_dek</span><span class="p">,</span> <span class="n">_cached_at</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">_cached_dek</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">_cached_at</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_DEK_CACHE_TTL_SECONDS</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_cached_dek</span>
 
     <span class="n">config</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span>
@@ -1961,6 +2109,7 @@ You're not viewing the latest version.
         <span class="n">provider</span> <span class="o">=</span> <span class="n">_build_key_provider</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="p">)</span>
         <span class="n">_cached_dek</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_dek</span><span class="p">()</span>
 
+    <span class="n">_cached_at</span> <span class="o">=</span> <span class="n">now</span>
     <span class="k">return</span> <span class="n">_cached_dek</span>
 
 
@@ -1974,20 +2123,23 @@ You're not viewing the latest version.
         <span class="k">return</span> <span class="n">AwsKmsKeyProvider</span><span class="p">(</span>
             <span class="n">kms_key_arn</span><span class="o">=</span><span class="n">security</span><span class="o">.</span><span class="n">aws_kms_key_arn</span><span class="p">,</span>
             <span class="n">region</span><span class="o">=</span><span class="n">security</span><span class="o">.</span><span class="n">aws_kms_region</span><span class="p">,</span>
-            <span class="n">secret_arn</span><span class="o">=</span><span class="n">security</span><span class="o">.</span><span class="n">aws_secrets_manager_secret_arn</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown key_provider: </span><span class="si">{</span><span class="n">security</span><span class="o">.</span><span class="n">key_provider</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-<p><strong>Why this isn't breaking:</strong> The branch is determined by <code>key_provider</code>. Existing deployments have <code>key_provider = "none"</code> (the default), so they always hit the legacy path. The envelope path only activates when an operator explicitly configures a provider <em>and</em> has bootstrapped a wrapped DEK.</p>
+<p>The TTL-based cache ensures that after a DEK rotation (Phase 3), all pods converge to the new DEK within the TTL window without requiring restarts.</p>
+<p><strong>Why this isn't breaking:</strong> The branch is determined by <code>key_provider</code>. Existing deployments have <code>key_provider = "none"</code> (the default), so they always hit the legacy path. The envelope path only activates when an operator explicitly configures a provider.</p>
 <p><strong>Testing:</strong></p>
 <ul>
 <li>Unit test: legacy mode returns <code>app_encryption_key</code> directly</li>
 <li>Unit test: local provider mode reads from DB, unwraps, caches</li>
+<li>Unit test: TTL expiry triggers re-fetch</li>
+<li>Unit test: bootstrap creates row when <code>encryption_keys</code> is empty</li>
+<li>Unit test: KEK rotation detects <code>kek_id_hash</code> mismatch, re-wraps, and updates row</li>
 <li>Integration test: write and read an encrypted column with envelope mode enabled</li>
 <li>Integration test: verify backward compat — existing config with only <code>app_encryption_key</code> works identically</li>
 </ul>
-<p><strong>Depends on:</strong> PR 1 (callable key), PR 2 or 3 (at least one provider), PR 4 (DB table, if testing local provider), PR 5 (config fields).</p>
+<p><strong>Depends on:</strong> PR 2 (callable key), PR 3 (DB table), PR 4 (config fields), PR 5 or 6 (at least one provider).</p>
 <hr />
 <h2 id="pr-dependency-graph">PR Dependency Graph</h2>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2000,41 +2152,40 @@ You're not viewing the latest version.
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code>PR 0a (migrate Organization)    PR 0b (migrate UserRegistration)
-  │                                │
-  └────────────┬───────────────────┘
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>          PR 1 (migrate Organization)
                │
-          PR 1 (factory refactor)
+          PR 2 (factory refactor)
                │
-               │       PR 2 (LocalKeyProvider)      PR 3 (AwsKmsKeyProvider)
-               │           │                             │
-               │       PR 4 (DB table)             (no DB needed)
-               │           │                             │
-               │       PR 5 (config fields)              │
-               │           │                             │
-               └───────────┴─────────────────────────────┘
+               │     PR 3 (DB table)     PR 4 (config fields)
+               │         │                    │
+               │     PR 5 (LocalKeyProvider)  PR 6 (AwsKmsKeyProvider)
+               │         │                    │
+               └─────────┴────────────────────┘
                             │
-                       PR 6 (wire it together)
+                       PR 7 (wire it together)
 </code></pre></div></td></tr></table></div>
 <ul>
-<li>PRs 0a and 0b are independent of each other and can land in any order or in parallel.</li>
-<li>Both PRs 0a and 0b must land before PR 1 (PR 1 converts the migrated columns to use the factory).</li>
-<li>PRs 2, 3, 4, and 5 are independent of each other and can land in any order or in parallel.</li>
-<li>PR 1 must land before PR 6.</li>
-<li>All of PRs 2 (or 3), 4 (if using local), and 5 must land before PR 6.</li>
+<li>PR 1 must land before PR 2 (PR 2 converts the migrated columns to use the factory).</li>
+<li>PRs 3 and 4 are independent of each other and of PR 2. They can land in any order or in parallel.</li>
+<li>PRs 5 and 6 are independent of each other. Both depend on PR 3 (DB table). PR 6 is optional and can be deferred.</li>
+<li>PR 2 must land before PR 7.</li>
+<li>PRs 3, 4, and 5 (or 6) must all land before PR 7.</li>
 </ul>
 <hr />
 <h2 id="what-this-enables">What This Enables</h2>
 <h3 id="kek-rotation-immediate-benefit">KEK Rotation (immediate benefit)</h3>
-<p>With envelope encryption in place, the KEK can be rotated without touching any data:</p>
-<ul>
-<li><strong>Local provider:</strong> Generate new KEK, re-wrap the DEK with the new KEK, update the <code>encryption_keys</code> row. Zero data re-encryption.</li>
-<li><strong>AWS KMS:</strong> Use KMS automatic key rotation (built-in). No Fides changes needed.</li>
-</ul>
+<p>With envelope encryption in place, the KEK can be rotated without re-encrypting any application data — only the wrapped DEK blob in the <code>encryption_keys</code> table needs to be updated.</p>
+<p><strong>Local provider:</strong></p>
+<p>KEK rotation is config-driven and handled automatically by the startup task:</p>
+<ol>
+<li>The operator sets <code>key_encryption_key</code> to the new KEK and <code>key_encryption_key_previous</code> to the old KEK.</li>
+<li>On startup, the startup task compares <code>kek_id_hash</code> in the DB row against <code>HMAC(current KEK)</code>. If they don't match, it unwraps the DEK using <code>key_encryption_key_previous</code>, caches the plaintext DEK immediately, re-wraps with the new KEK, and updates the row.</li>
+<li>On subsequent deploys, the operator removes <code>key_encryption_key_previous</code>. The startup task sees <code>kek_id_hash</code> matches and skips rotation.</li>
+</ol>
+<p>Zero downtime. The DEK is cached before re-wrapping, so no request can fail during the transition. In a multi-pod deployment, each pod performs the same re-wrap idempotently — the result is deterministic since the same DEK is wrapped with the same new KEK.</p>
+<p><strong>AWS KMS provider:</strong></p>
+<p>KMS automatic key rotation generates new backing key material behind the same Key ARN. Existing wrapped DEK blobs remain decryptable because KMS embeds backing key version metadata in every ciphertext — <code>kms:Decrypt</code> automatically selects the correct version. No re-wrapping, restart, or Fides changes needed.</p>
+<p>To migrate to a <strong>different KMS key ARN</strong> entirely (e.g., cross-account move), the operator would need to manually unwrap with the old key and re-wrap with the new one. This can be supported via an admin API endpoint in a follow-up.</p>
 <h3 id="per-domain-deks-phase-2">Per-domain DEKs (Phase 2)</h3>
 <p>The <code>get_encryption_key()</code> callable could accept a context parameter (table name, data domain) and return different DEKs for different data:</p>
 <ul>
@@ -2043,11 +2194,12 @@ You're not viewing the latest version.
 </ul>
 <p>Each DEK is independently wrapped and stored. Compromising one doesn't expose the others.</p>
 <h3 id="dek-rotation-phase-3">DEK Rotation (Phase 3)</h3>
-<p>With key versioning in the <code>encryption_keys</code> table (or Secrets Manager versions):</p>
+<p>With key versioning in the <code>encryption_keys</code> table:</p>
 <ul>
 <li>New writes use the new DEK</li>
 <li>Reads try the active DEK first, fall back to previous versions</li>
 <li>A background task lazily re-encrypts old rows on read (read-old/write-new pattern)</li>
+<li>The TTL-based cache in <code>get_encryption_key()</code> ensures all pods converge to the new DEK without restarts</li>
 </ul>
 
 

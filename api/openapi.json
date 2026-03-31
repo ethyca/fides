@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.1"
+    "version": "2.82.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2496,6 +2496,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "tenant_id": {
+                        "type": "string",
+                        "title": "Tenant ID",
+                        "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                      },
+                      "client_id": {
+                        "type": "string",
+                        "title": "Client ID",
+                        "description": "Application (client) ID from your Entra app registration"
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "title": "Client Secret",
+                        "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                        "sensitive": true
+                      }
+                    },
+                    "required": [
+                      "tenant_id",
+                      "client_id",
+                      "client_secret"
+                    ],
+                    "title": "EntraDocsSchema",
+                    "description": "Entra Secrets Schema for API Docs."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "test_email_address": {
                         "anyOf": [
                           {
@@ -2851,10 +2879,44 @@
                           }
                         ],
                         "title": "Site Url"
+                      },
+                      "domain": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Domain"
+                      },
+                      "username": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Username"
+                      },
+                      "api_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Api Key"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
-                    "description": "Jira Ticket Secrets Schema for API Docs"
+                    "description": "Jira Ticket Secrets Schema for API Docs",
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -5305,6 +5367,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "tenant_id": {
+                        "type": "string",
+                        "title": "Tenant ID",
+                        "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                      },
+                      "client_id": {
+                        "type": "string",
+                        "title": "Client ID",
+                        "description": "Application (client) ID from your Entra app registration"
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "title": "Client Secret",
+                        "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                        "sensitive": true
+                      }
+                    },
+                    "required": [
+                      "tenant_id",
+                      "client_id",
+                      "client_secret"
+                    ],
+                    "title": "EntraDocsSchema",
+                    "description": "Entra Secrets Schema for API Docs."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "test_email_address": {
                         "anyOf": [
                           {
@@ -5660,10 +5750,44 @@
                           }
                         ],
                         "title": "Site Url"
+                      },
+                      "domain": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Domain"
+                      },
+                      "username": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Username"
+                      },
+                      "api_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Api Key"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
-                    "description": "Jira Ticket Secrets Schema for API Docs"
+                    "description": "Jira Ticket Secrets Schema for API Docs",
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -6719,6 +6843,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "tenant_id": {
+                        "type": "string",
+                        "title": "Tenant ID",
+                        "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                      },
+                      "client_id": {
+                        "type": "string",
+                        "title": "Client ID",
+                        "description": "Application (client) ID from your Entra app registration"
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "title": "Client Secret",
+                        "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                        "sensitive": true
+                      }
+                    },
+                    "required": [
+                      "tenant_id",
+                      "client_id",
+                      "client_secret"
+                    ],
+                    "title": "EntraDocsSchema",
+                    "description": "Entra Secrets Schema for API Docs."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "test_email_address": {
                         "anyOf": [
                           {
@@ -7074,10 +7226,44 @@
                           }
                         ],
                         "title": "Site Url"
+                      },
+                      "domain": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Domain"
+                      },
+                      "username": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Username"
+                      },
+                      "api_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Api Key"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
-                    "description": "Jira Ticket Secrets Schema for API Docs"
+                    "description": "Jira Ticket Secrets Schema for API Docs",
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -10352,16 +10538,26 @@
         "summary": "Create Client",
         "description": "Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint.",
         "operationId": "create_client_api_v1_oauth_client_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:create"
+            ]
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array",
-                "title": "Scopes",
-                "default": []
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreateRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
               }
             }
           }
@@ -10387,17 +10583,178 @@
               }
             }
           }
-        },
+        }
+      },
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "List Clients",
+        "description": "Returns a paginated list of all OAuth clients, excluding the root client and internal system clients.",
+        "operationId": "list_clients_api_v1_oauth_client_get",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "client:create"
+              "client:read"
             ]
           }
-        ]
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ClientResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/oauth/client/{client_id}": {
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Get Client",
+        "description": "Returns the OAuth client with the given id.",
+        "operationId": "get_client_api_v1_oauth_client__client_id__get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Client Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Update Client",
+        "description": "Updates name, description, and/or scopes of the given client.",
+        "operationId": "update_client_api_v1_oauth_client__client_id__put",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Client Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "OAuth"
@@ -10429,6 +10786,56 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oauth/client/{client_id}/secret": {
+      "post": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Rotate Client Secret",
+        "description": "Rotates the secret for the given client. Returns the new secret exactly once.",
+        "operationId": "rotate_client_secret_api_v1_oauth_client__client_id__secret_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Client Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientSecretRotateResponse"
+                }
               }
             }
           },
@@ -18437,68 +18844,6 @@
         ]
       }
     },
-    "/api/v1/registration": {
-      "get": {
-        "tags": [
-          "Registration"
-        ],
-        "summary": "Get Registration Status",
-        "description": "Return the registration status of this Fides deployment.",
-        "operationId": "get_registration_status_api_v1_registration_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetRegistrationStatusResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Registration"
-        ],
-        "summary": "Update Registration Status",
-        "description": "Return the registration status of this Fides deployment.",
-        "operationId": "update_registration_status_api_v1_registration_put",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Registration"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Registration"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/worker-stats": {
       "get": {
         "tags": [
@@ -21117,6 +21462,43 @@
         "title": "ClientConfig",
         "description": "Definition for an authenticated base HTTP client"
       },
+      "ClientCreateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "ClientCreateRequest",
+        "description": "Request schema for creating an OAuth client"
+      },
       "ClientCreatedResponse": {
         "properties": {
           "client_id": {
@@ -21135,6 +21517,112 @@
         ],
         "title": "ClientCreatedResponse",
         "description": "Response schema for client creation"
+      },
+      "ClientResponse": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id"
+        ],
+        "title": "ClientResponse",
+        "description": "Response schema for an OAuth client. Never includes the client secret."
+      },
+      "ClientSecretRotateResponse": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id",
+          "client_secret"
+        ],
+        "title": "ClientSecretRotateResponse",
+        "description": "Response schema for secret rotation. Secret is shown exactly once."
+      },
+      "ClientUpdateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scopes"
+          }
+        },
+        "type": "object",
+        "title": "ClientUpdateRequest",
+        "description": "Request schema for updating an OAuth client. All fields are optional."
       },
       "CollectionAddressResponse": {
         "properties": {
@@ -21831,6 +22319,7 @@
           "generic_consent_email",
           "generic_erasure_email",
           "dynamic_erasure_email",
+          "entra",
           "google_cloud_sql_mysql",
           "google_cloud_sql_postgres",
           "https",
@@ -22538,6 +23027,34 @@
               },
               {
                 "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "title": "Tenant ID",
+                    "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "title": "Client ID",
+                    "description": "Application (client) ID from your Entra app registration"
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "title": "Client Secret",
+                    "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                    "sensitive": true
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "tenant_id",
+                  "client_id",
+                  "client_secret"
+                ],
+                "title": "EntraDocsSchema",
+                "description": "Entra Secrets Schema for API Docs."
+              },
+              {
+                "properties": {
                   "test_email_address": {
                     "anyOf": [
                       {
@@ -22893,8 +23410,42 @@
                       }
                     ],
                     "title": "Site Url"
+                  },
+                  "domain": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Domain"
+                  },
+                  "username": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Username"
+                  },
+                  "api_key": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Api Key"
                   }
                 },
+                "additionalProperties": true,
                 "type": "object",
                 "title": "JiraTicketDocsSchema",
                 "description": "Jira Ticket Secrets Schema for API Docs"
@@ -24946,6 +25497,21 @@
             "title": "Data Categories",
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
           },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to all collections in the Dataset."
+          },
           "fides_meta": {
             "anyOf": [
               {
@@ -25007,6 +25573,21 @@
             ],
             "title": "Data Categories",
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all fields in the collection."
+          },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to all fields in the collection."
           },
           "fields": {
             "items": {
@@ -25118,6 +25699,21 @@
             ],
             "title": "Data Categories",
             "description": "Arrays of Data Categories, identified by `fides_key`, that applies to this field."
+          },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to this field."
           },
           "fides_meta": {
             "anyOf": [
@@ -25320,6 +25916,21 @@
             ],
             "title": "Data Categories",
             "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
+          },
+          "data_purposes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Purposes",
+            "description": "Array of Data Purpose resources, identified by `fides_key`, that apply to all collections in the Dataset."
           },
           "fides_meta": {
             "anyOf": [
@@ -25890,6 +26501,34 @@
         "title": "Endpoint",
         "description": "A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"
       },
+      "EntraDocsSchema": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant ID",
+            "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client ID",
+            "description": "Application (client) ID from your Entra app registration"
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret",
+            "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+            "sensitive": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "tenant_id",
+          "client_id",
+          "client_secret"
+        ],
+        "title": "EntraDocsSchema",
+        "description": "Entra Secrets Schema for API Docs."
+      },
       "ErrorNotificationMode": {
         "type": "string",
         "enum": [
@@ -26030,6 +26669,17 @@
               }
             ],
             "title": "User Id"
+          },
+          "saas_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saas Version"
           }
         },
         "type": "object",
@@ -26173,6 +26823,17 @@
               }
             ],
             "title": "Dataset Name"
+          },
+          "saas_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saas Version"
           }
         },
         "type": "object",
@@ -26671,19 +27332,6 @@
         "title": "GenerateTypes",
         "description": "Generate Type Enum to capture the discrete possible values\nfor a valid type of resource to generate."
       },
-      "GetRegistrationStatusResponse": {
-        "properties": {
-          "opt_in": {
-            "type": "boolean",
-            "title": "Opt In",
-            "default": false
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "GetRegistrationStatusResponse",
-        "description": "Reflects the registration status of a Fides deployment."
-      },
       "GoogleCloudSQLIPType": {
         "type": "string",
         "enum": [
@@ -27125,8 +27773,42 @@
               }
             ],
             "title": "Site Url"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "title": "JiraTicketDocsSchema",
         "description": "Jira Ticket Secrets Schema for API Docs"
@@ -28929,6 +29611,46 @@
           "pages"
         ],
         "title": "Page[BasicSystemResponse]"
+      },
+      "Page_ClientResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ClientResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "Page[ClientResponse]"
       },
       "Page_ConnectionConfigurationResponse_": {
         "properties": {
@@ -31138,6 +31860,17 @@
             "title": "Include Deleted Requests",
             "default": false
           },
+          "is_overdue": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Overdue"
+          },
           "download_csv": {
             "anyOf": [
               {
@@ -31981,6 +32714,20 @@
             },
             "type": "object",
             "title": "Results"
+          },
+          "task_status_by_dataset": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Status By Dataset"
           }
         },
         "type": "object",
@@ -32541,51 +33288,6 @@
         ],
         "title": "RedshiftDocsSchema",
         "description": "Redshift Secrets Schema for API Docs"
-      },
-      "Registration": {
-        "properties": {
-          "opt_in": {
-            "type": "boolean",
-            "title": "Opt In"
-          },
-          "analytics_id": {
-            "type": "string",
-            "title": "Analytics Id"
-          },
-          "user_email": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "email"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "User Email"
-          },
-          "user_organization": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "User Organization"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "opt_in",
-          "analytics_id",
-          "user_email",
-          "user_organization"
-        ],
-        "title": "Registration",
-        "description": "Describes a Fides registration."
       },
       "RequestTaskCallbackRequest": {
         "properties": {
@@ -33592,6 +34294,34 @@
               },
               {
                 "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "title": "Tenant ID",
+                    "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "title": "Client ID",
+                    "description": "Application (client) ID from your Entra app registration"
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "title": "Client Secret",
+                    "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                    "sensitive": true
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "tenant_id",
+                  "client_id",
+                  "client_secret"
+                ],
+                "title": "EntraDocsSchema",
+                "description": "Entra Secrets Schema for API Docs."
+              },
+              {
+                "properties": {
                   "test_email_address": {
                     "anyOf": [
                       {
@@ -33947,8 +34677,42 @@
                       }
                     ],
                     "title": "Site Url"
+                  },
+                  "domain": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Domain"
+                  },
+                  "username": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Username"
+                  },
+                  "api_key": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Api Key"
                   }
                 },
+                "additionalProperties": true,
                 "type": "object",
                 "title": "JiraTicketDocsSchema",
                 "description": "Jira Ticket Secrets Schema for API Docs"
