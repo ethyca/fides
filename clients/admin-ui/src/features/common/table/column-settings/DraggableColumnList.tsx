@@ -69,7 +69,7 @@ export const DraggableColumnList = ({
   columns,
   columnEditor,
 }: DraggableColumnListProps) => (
-  <Flex vertical gap="middle" className="w-full">
+  <Flex vertical className="w-full">
     {columns.map((column, index) => (
       <DraggableColumnListItem
         id={column.id}

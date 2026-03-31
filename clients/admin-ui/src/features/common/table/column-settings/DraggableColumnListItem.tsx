@@ -115,6 +115,7 @@ export const DraggableColumnListItem = ({
       style={{ opacity: isDragging ? 0.2 : 1 }}
       data-testid={`column-list-item-${id}`}
       gap="small"
+      className="py-1" // use padding instead of parent flex gap to better support dragging
     >
       <div
         ref={ref}
