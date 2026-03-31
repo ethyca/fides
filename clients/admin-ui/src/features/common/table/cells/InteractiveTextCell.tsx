@@ -19,7 +19,6 @@ export const InteractiveTextCell = ({
         <LinkText
           role="button"
           strong={strong}
-          ellipsis
           onClick={(e) => {
             e.stopPropagation();
             onClick(e);

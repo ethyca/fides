@@ -16,7 +16,7 @@ type DraggableColumnListItemProps = {
   id: string;
   isVisible: boolean;
   text: string;
-  moveColumn: (hoverIndex: number, dragIndex: number) => void;
+  moveColumn: (dragIndex: number, hoverIndex: number) => void;
   setColumnVisible: (column: number, isVisible: boolean) => void;
 };
 

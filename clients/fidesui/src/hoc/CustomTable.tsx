@@ -66,6 +66,7 @@ export const CustomTable = <RecordType = any,>({
           return {
             ...existingProps,
             menu: column.menu,
+            // Only pass columnKey when menu exists — it's used for header menu test IDs
             columnKey: column.menu ? columnKey : undefined,
           };
         },

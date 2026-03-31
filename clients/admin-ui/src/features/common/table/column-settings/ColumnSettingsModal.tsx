@@ -47,7 +47,7 @@ export const ColumnSettingsModal = ({
         })),
     // watch savedCustomReportId so that when a saved report is loaded, we can update these column definitions to match
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [savedCustomReportId, columnNameMap, columns],
+    [savedCustomReportId, columnNameMap, columns, prefixColumns],
   );
 
   const columnEditor = useEditableColumns({
