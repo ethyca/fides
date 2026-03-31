@@ -554,6 +554,7 @@ describe("Data map report table", () => {
     it("should allow an authorized user to create a new report", () => {
       cy.getByTestId("custom-reports-trigger").click();
       cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").should("be.visible");
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("create-report-button").click();
       });
@@ -563,6 +564,7 @@ describe("Data map report table", () => {
         cy.getByTestId("error-reportName").should("exist");
         cy.get("#reportName").clear();
       });
+      cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My new report");
         cy.getByTestId("error-reportName").should("not.exist");
@@ -573,6 +575,7 @@ describe("Data map report table", () => {
         expect(interception.request.body.type).to.equal(ReportType.DATAMAP);
         expect(interception.request.body.config).to.not.be.empty;
       });
+      cy.wait(["@getDatamapMinimal", "@getDatamapMinimal"]);
       cy.getByTestId("custom-reports-popover").should("be.visible");
     });
     it("should allow an authorized user to delete a report", () => {
