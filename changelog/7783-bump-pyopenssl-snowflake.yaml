@@ -1,0 +1,4 @@
+type: Security
+description: Bumped pyOpenSSL to 26.0.0 (CVE-2026-27459, CVE-2026-27448) and snowflake-connector-python to 4.4.0 for compatibility
+pr: 7783
+labels: []

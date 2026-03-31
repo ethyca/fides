@@ -1,0 +1,4 @@
+type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Adding aggregate statistics widgets to action center
+pr: 7751 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
