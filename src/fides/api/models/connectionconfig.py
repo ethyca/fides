@@ -353,9 +353,9 @@ class ConnectionConfig(Base):
     def update_saas_config(
         self,
         db: Session,
-        ## Consider making history creation opt-in (e.g., a record_history=True parameter) or at minimum document this behavior change clearly.
         saas_config: SaaSConfig,
         datasets: Optional[List[Dict[str, Any]]] = None,
+        record_history: bool = True,
     ) -> None:
         """
         Updates the SaaS config and initializes any empty secrets with
@@ -365,6 +365,9 @@ class ConnectionConfig(Base):
         associated with this connection.  Callers that want a history snapshot to
         include dataset context should query DatasetConfig themselves and pass the
         result here.
+
+        Set ``record_history=False`` to skip creating a ConnectionConfigSaaSHistory
+        snapshot (e.g. in tests or one-off migrations where audit history is not needed).
         """
         default_secrets = {
             connector_param.name: connector_param.default_value
@@ -375,14 +378,15 @@ class ConnectionConfig(Base):
         self.secrets = updated_secrets
         self.saas_config = saas_config.model_dump(mode="json")
 
-        ConnectionConfigSaaSHistory.create_snapshot(
-            db=db,
-            connection_config_id=self.id,
-            connection_key=self.key,
-            version=saas_config.version,
-            config=self.saas_config,
-            datasets=datasets,
-        )
+        if record_history:
+            ConnectionConfigSaaSHistory.create_snapshot(
+                db=db,
+                connection_config_id=self.id,
+                connection_key=self.key,
+                version=saas_config.version,
+                config=self.saas_config,
+                datasets=datasets,
+            )
 
         self.save(db)
 

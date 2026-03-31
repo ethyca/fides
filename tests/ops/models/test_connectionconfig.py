@@ -130,7 +130,7 @@ class TestConnectionConfigModel:
 
         # verify that setting the SaaS config for the first time populates
         # the secrets with default values
-        connection_config.update_saas_config(db, saas_config=saas_config)
+        connection_config.update_saas_config(db, saas_config=saas_config, record_history=False)
         assert connection_config.secrets == {"domain": "localhost"}
 
         # verify that a user-defined secret overrides the default value
@@ -139,7 +139,7 @@ class TestConnectionConfigModel:
 
         # verify that updating the SaaS config after configuring the secrets
         # does not override any user-defined values
-        connection_config.update_saas_config(db, saas_config=saas_config)
+        connection_config.update_saas_config(db, saas_config=saas_config, record_history=False)
         assert connection_config.secrets["domain"] == saas_example_secrets["domain"]
 
     def test_connection_type_human_readable(self):
@@ -214,7 +214,7 @@ class TestConnectionConfigModel:
 
         # set up the SaaS config with an OAuth2 authorization code strategy
         saas_config.client_config.authentication.strategy = "oauth2_authorization_code"
-        config.update_saas_config(db, saas_config=saas_config)
+        config.update_saas_config(db, saas_config=saas_config, record_history=False)
 
         # still not authorized because access_token is missing in secrets
         assert not config.authorized
