@@ -27,6 +27,7 @@ from fides.common.urn_registry import (
     CONNECTOR_TEMPLATES_REGISTER,
     CONNECTOR_TEMPLATES_VERSION_CONFIG,
     CONNECTOR_TEMPLATES_VERSION_DATASET,
+    CONNECTOR_TEMPLATES_VERSIONS,
     DELETE_CUSTOM_TEMPLATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
@@ -838,6 +839,73 @@ class TestDeleteCustomConnectorTemplate:
             connection_config.description == "Test HubSpot ConnectionConfig description"
         )
         assert connection_config.secrets["private_app_token"] == "test_hubspot_token"
+
+
+class TestListConnectorTemplateVersions:
+    @pytest.fixture
+    def versions_url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATES_VERSIONS
+
+    @pytest.fixture
+    def stripe_versions(self, db: Session, stripe_config, stripe_dataset):
+        v1 = SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version="0.0.1",
+            config=stripe_config,
+            dataset=stripe_dataset,
+            is_custom=False,
+        )
+        v2 = SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=stripe_config["type"],
+            version="0.0.2",
+            config=stripe_config,
+            dataset=stripe_dataset,
+            is_custom=False,
+        )
+        yield [v1, v2]
+        v1.delete(db)
+        v2.delete(db)
+
+    def test_list_connector_template_versions_empty(
+        self,
+        versions_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            versions_url.format(connector_template_type="nonexistent_connector"),
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.json() == []
+
+    def test_list_connector_template_versions_success(
+        self,
+        versions_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        stripe_config,
+        stripe_versions,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            versions_url.format(connector_template_type=stripe_config["type"]),
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        versions = [row["version"] for row in data]
+        assert "0.0.1" in versions
+        assert "0.0.2" in versions
+        for row in data:
+            assert row["connector_type"] == stripe_config["type"]
+            assert "is_custom" in row
+            assert "created_at" in row
 
 
 class TestGetConnectorTemplateVersionConfig:
