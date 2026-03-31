@@ -1,8 +1,4 @@
-import {
-  ChakraBox as Box,
-  Spin,
-  ChakraText as Text,
-} from "fidesui";
+import { ChakraBox as Box, ChakraText as Text, Spin } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";

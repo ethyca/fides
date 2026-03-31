@@ -1,9 +1,9 @@
 import {
   ChakraCloseButton as CloseButton,
   ChakraHStack as HStack,
-  Spin,
   ChakraStack as Stack,
   ChakraText as Text,
+  Spin,
   useModal,
 } from "fidesui";
 

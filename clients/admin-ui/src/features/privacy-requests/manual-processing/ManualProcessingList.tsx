@@ -3,7 +3,6 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCenter as Center,
-  Spin,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -14,6 +13,7 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   ChakraVStack as VStack,
+  Spin,
   useMessage,
 } from "fidesui";
 import {

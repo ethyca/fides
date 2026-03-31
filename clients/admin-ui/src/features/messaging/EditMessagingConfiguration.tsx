@@ -1,8 +1,8 @@
 import {
   ChakraBox as Box,
   ChakraHeading as Heading,
-  Spin,
   ChakraText as Text,
+  Spin,
 } from "fidesui";
 
 import { messagingProviders } from "./constants";

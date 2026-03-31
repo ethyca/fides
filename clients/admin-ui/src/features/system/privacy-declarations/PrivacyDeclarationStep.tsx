@@ -1,9 +1,9 @@
 import {
   ChakraHeading as Heading,
   ChakraLink as Link,
-  Spin,
   ChakraStack as Stack,
   ChakraText as Text,
+  Spin,
 } from "fidesui";
 import NextLink from "next/link";
 

@@ -1,8 +1,8 @@
 import {
   ChakraBox as Box,
   ChakraLink as Link,
-  Spin,
   ChakraText as Text,
+  Spin,
 } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";

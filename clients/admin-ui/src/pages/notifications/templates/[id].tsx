@@ -1,9 +1,9 @@
 import { getErrorMessage } from "common/helpers";
 import {
   ChakraBox as Box,
-  Spin,
   ChakraText as Text,
   ConfirmationModal,
+  Spin,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";

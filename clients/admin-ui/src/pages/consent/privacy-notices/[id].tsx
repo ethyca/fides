@@ -1,8 +1,8 @@
 import {
   ChakraBox as Box,
   ChakraCenter as Center,
-  Spin,
   ChakraText as Text,
+  Spin,
 } from "fidesui";
 import { useRouter } from "next/router";
 

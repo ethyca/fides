@@ -1,10 +1,10 @@
 import {
   ChakraBox as Box,
   ChakraHeading as Heading,
-  Spin,
   ChakraText as Text,
   Form,
   Select,
+  Spin,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
