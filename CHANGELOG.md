@@ -41,6 +41,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed sticky table toolbars being overlapped by fixed columns while scrolling [#7801](https://github.com/ethyca/fides/pull/7801)
 - shared monitor config select now works [#7786](https://github.com/ethyca/fides/pull/7786)
 - monitor config select is now clearable [#7799](https://github.com/ethyca/fides/pull/7799)
+- Fixed pagination ellipsis wrapping to the next line [#7803](https://github.com/ethyca/fides/pull/7803)
+
 
 ### Security
 - Bumped pyOpenSSL to 26.0.0 (CVE-2026-27459, CVE-2026-27448) and snowflake-connector-python to 4.4.0 for compatibility [#7783](https://github.com/ethyca/fides/pull/7783)
