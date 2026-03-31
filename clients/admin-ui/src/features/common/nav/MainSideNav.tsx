@@ -22,6 +22,7 @@ import { useNav } from "./hooks";
 import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
 import styles from "./NavMenu.module.scss";
+import NavSearch from "./NavSearch";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
 const NAV_WIDTH = "240px";
@@ -163,14 +164,13 @@ export const UnconnectedMainSideNav = ({
           >
             <button
               type="button"
-              className={`inline-flex cursor-pointer p-0 ${styles.collapseToggle}`}
+              className={styles.logoToggle}
               onClick={onCollapseToggle}
               aria-label={
                 collapsed
                   ? "Expand navigation menu"
                   : "Collapse navigation menu"
               }
-              data-testid="nav-collapse-toggle"
             >
               <div
                 className={styles.logoContainer}
@@ -206,6 +206,7 @@ export const UnconnectedMainSideNav = ({
               </div>
             </button>
           </div>
+          <NavSearch groups={groups} collapsed={collapsed} />
           <NavMenu
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}
@@ -217,17 +218,37 @@ export const UnconnectedMainSideNav = ({
         <div
           className={`${styles.bottomBar} ${collapsed ? styles.bottomBarCollapsed : styles.bottomBarExpanded}`}
         >
-          <Button
-            type="primary"
-            href="https://docs.ethyca.com"
-            target="_blank"
-            className={styles.helpButton}
-            icon={<Icons.Help />}
-            aria-label="Help"
-          />
-          <div className="inline-block">
-            <AccountDropdownMenu onLogout={handleLogout} />
+          <div className={styles.bottomBarLeft}>
+            <Button
+              type="primary"
+              href="https://docs.ethyca.com"
+              target="_blank"
+              className={styles.navBottomButton}
+              icon={<Icons.Help />}
+              aria-label="Help"
+            />
+            <div className="inline-block">
+              <AccountDropdownMenu
+                onLogout={handleLogout}
+                className={styles.navBottomButton}
+              />
+            </div>
           </div>
+          <button
+            type="button"
+            className={styles.collapseToggle}
+            onClick={onCollapseToggle}
+            aria-label={
+              collapsed ? "Expand navigation menu" : "Collapse navigation menu"
+            }
+            data-testid="nav-collapse-toggle"
+          >
+            {collapsed ? (
+              <Icons.SidePanelOpen size={20} />
+            ) : (
+              <Icons.SidePanelClose size={20} />
+            )}
+          </button>
         </div>
       </VStack>
     </div>

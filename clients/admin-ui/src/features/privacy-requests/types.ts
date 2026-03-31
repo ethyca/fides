@@ -85,6 +85,7 @@ export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
 export interface PrivacyRequestEntity {
   status: PrivacyRequestStatus;
   results?: PrivacyRequestResults;
+  task_status_by_dataset?: Record<string, string>;
   identity: {
     [key: string]: { label: string; value: string | null };
   };
@@ -129,6 +130,7 @@ export interface PrivacyRequestParams {
   id: string;
   from: string;
   to: string;
+  is_overdue?: boolean;
   page: number;
   size: number;
   verbose?: boolean;

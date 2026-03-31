@@ -1,0 +1,86 @@
+[
+  {
+    "id": "perm_user_read",
+    "code": "user:read",
+    "description": "View users",
+    "resource_type": "user"
+  },
+  {
+    "id": "perm_user_create",
+    "code": "user:create",
+    "description": "Create users",
+    "resource_type": "user"
+  },
+  {
+    "id": "perm_user_update",
+    "code": "user:update",
+    "description": "Update users",
+    "resource_type": "user"
+  },
+  {
+    "id": "perm_user_delete",
+    "code": "user:delete",
+    "description": "Delete users",
+    "resource_type": "user"
+  },
+  {
+    "id": "perm_system_read",
+    "code": "system:read",
+    "description": "View systems",
+    "resource_type": "system"
+  },
+  {
+    "id": "perm_system_create",
+    "code": "system:create",
+    "description": "Create systems",
+    "resource_type": "system"
+  },
+  {
+    "id": "perm_system_update",
+    "code": "system:update",
+    "description": "Update systems",
+    "resource_type": "system"
+  },
+  {
+    "id": "perm_system_delete",
+    "code": "system:delete",
+    "description": "Delete systems",
+    "resource_type": "system"
+  },
+  {
+    "id": "perm_privacy_request_read",
+    "code": "privacy-request:read",
+    "description": "View privacy requests",
+    "resource_type": "privacy_request"
+  },
+  {
+    "id": "perm_privacy_request_review",
+    "code": "privacy-request:review",
+    "description": "Review privacy requests",
+    "resource_type": "privacy_request"
+  },
+  {
+    "id": "perm_rbac_role_read",
+    "code": "rbac_role:read",
+    "description": "View RBAC roles",
+    "resource_type": "rbac_role"
+  },
+  {
+    "id": "perm_rbac_role_create",
+    "code": "rbac_role:create",
+    "description": "Create RBAC roles",
+    "resource_type": "rbac_role"
+  },
+  {
+    "id": "perm_rbac_role_update",
+    "code": "rbac_role:update",
+    "description": "Update RBAC roles",
+    "resource_type": "rbac_role"
+  },
+  {
+    "id": "perm_rbac_role_delete",
+    "code": "rbac_role:delete",
+    "description": "Delete RBAC roles",
+    "resource_type": "rbac_role"
+  }
+]

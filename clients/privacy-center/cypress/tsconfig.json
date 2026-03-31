@@ -3,6 +3,7 @@
     "jsx": "react",
     "target": "es5",
     "lib": ["es5", "dom"],
+    "resolveJsonModule": true,
     "types": ["cypress", "cypress-wait-until", "node"],
     "baseUrl": ".",
     "paths": {

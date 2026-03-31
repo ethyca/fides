@@ -31,7 +31,7 @@ class UserSettings(FidesSettings):
     )
     analytics_opt_out: bool = Field(
         default=True,
-        description="When set to true, prevents sending privacy-respecting anonymous analytics data to Ethyca.",
+        description="Deprecated. Previously controlled anonymous analytics. Retained for backwards compatibility only.",
     )
     encryption_key: str = Field(
         default="test_encryption_key",

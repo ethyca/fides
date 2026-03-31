@@ -1,12 +1,13 @@
-import type { CarbonIconType } from "@carbon/icons-react";
+import { Flex } from "antd/lib";
+import { ReactNode } from "react";
+
+import type { CarbonIconType } from "../icons/carbon";
 import {
   CheckmarkFilled,
   InformationFilled,
   Misuse,
   WarningFilled,
-} from "@carbon/icons-react";
-import { Flex } from "antd/lib";
-import { ReactNode } from "react";
+} from "../icons/carbon";
 
 export type FeedbackType = "info" | "success" | "warning" | "error";
 export type ModalType = FeedbackType | "confirm";

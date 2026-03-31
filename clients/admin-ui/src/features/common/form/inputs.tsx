@@ -24,8 +24,8 @@ import {
   ChakraTextareaProps as TextareaProps,
   ChakraVStack as VStack,
   DefaultOptionType,
-  EyeIcon,
   Flex,
+  Icons,
   Switch,
   SwitchProps,
 } from "fidesui";
@@ -131,12 +131,7 @@ export const TextInput = forwardRef(
                 size="small"
                 type="text"
                 aria-label="Reveal/Hide Secret"
-                icon={
-                  <EyeIcon
-                    boxSize="full"
-                    color={type === "password" ? "gray.400" : "gray.700"}
-                  />
-                }
+                icon={type === "password" ? <Icons.ViewOff /> : <Icons.View />}
                 onClick={handleClickReveal}
               />
             </InputRightElement>

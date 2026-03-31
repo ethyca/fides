@@ -5,7 +5,6 @@ import {
   ChakraAlertIcon as AlertIcon,
   ChakraStack as Stack,
   ChakraText as Text,
-  ChakraUseDisclosureReturn as UseDisclosureReturn,
   Flex,
   Modal,
   useMessage,
@@ -63,11 +62,13 @@ const useDeleteUserModal = ({
   };
 };
 
-const DeleteUserModal = ({
-  user,
-  ...modal
-}: { user: User } & UseDisclosureReturn) => {
-  const { isOpen, onClose } = modal;
+interface DeleteUserModalProps {
+  user: User;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const DeleteUserModal = ({ user, isOpen, onClose }: DeleteUserModalProps) => {
   const { handleDeleteUser, validationSchema } = useDeleteUserModal({
     id: user.id,
     username: user.username,
