@@ -362,7 +362,9 @@ export const getDatamapReportColumns = ({
       title: title(COLUMN_IDS.COOKIE_REFRESH),
       dataIndex: "cookie_refresh",
       key: COLUMN_IDS.COOKIE_REFRESH,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.DATA_SECURITY_PRACTICES),
@@ -417,7 +419,9 @@ export const getDatamapReportColumns = ({
       title: title(COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS),
       dataIndex: "does_international_transfers",
       key: COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.DPA_LOCATION),
@@ -446,7 +450,9 @@ export const getDatamapReportColumns = ({
       title: title(COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS),
       dataIndex: "exempt_from_privacy_regulations",
       key: COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.FEATURES),
@@ -548,7 +554,9 @@ export const getDatamapReportColumns = ({
       title: title(COLUMN_IDS.PROCESSES_PERSONAL_DATA),
       dataIndex: "processes_personal_data",
       key: COLUMN_IDS.PROCESSES_PERSONAL_DATA,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.REASON_FOR_EXEMPTION),
@@ -562,7 +570,9 @@ export const getDatamapReportColumns = ({
       title: title(COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS),
       dataIndex: "requires_data_protection_assessments",
       key: COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.RESPONSIBILITY),
@@ -692,19 +702,25 @@ export const getDatamapReportColumns = ({
       title: title(COLUMN_IDS.USES_COOKIES),
       dataIndex: "uses_cookies",
       key: COLUMN_IDS.USES_COOKIES,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.USES_NON_COOKIE_ACCESS),
       dataIndex: "uses_non_cookie_access",
       key: COLUMN_IDS.USES_NON_COOKIE_ACCESS,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.USES_PROFILING),
       dataIndex: "uses_profiling",
       key: COLUMN_IDS.USES_PROFILING,
-      render: (value: boolean | null) => <EllipsisCell>{String(value ?? "")}</EllipsisCell>,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
     },
     {
       title: title(COLUMN_IDS.SYSTEM_GROUPS),
