@@ -1,6 +1,13 @@
-import { Alert, Flex, SparkleIcon } from "fidesui";
+import {
+  Alert,
+  ConfigProvider,
+  Flex,
+  SparkleIcon,
+  useThemeMode,
+} from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
-import { useCallback, useState } from "react";
+import { useMemo } from "react";
 
 import { ACTION_CTA } from "~/features/dashboard/constants";
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
@@ -9,6 +16,25 @@ import styles from "./AgentBriefingBanner.module.scss";
 
 export const AgentBriefingBanner = () => {
   const { data: briefing } = useGetAgentBriefingQuery();
+  const { resolvedMode } = useThemeMode();
+
+  const alertTheme = useMemo(
+    () => ({
+      components: {
+        Alert: {
+          colorInfoBg:
+            resolvedMode === "dark"
+              ? palette.FIDESUI_MINOS
+              : palette.FIDESUI_LIMESTONE,
+          colorInfoBorder:
+            resolvedMode === "dark"
+              ? palette.FIDESUI_MINOS
+              : palette.FIDESUI_LIMESTONE,
+        },
+      },
+    }),
+    [resolvedMode],
+  );
 
   if (!briefing) {
     return null;
@@ -17,34 +43,36 @@ export const AgentBriefingBanner = () => {
   const { briefing: text, quick_actions: quickActions } = briefing;
 
   return (
-    <Alert
-      type="info"
-      showIcon
-      icon={<SparkleIcon size={14} />}
-      closable
-      message={
-        <>
-          {text}
-          <Flex gap={16} className="mt-3" wrap="wrap">
-            {quickActions.map((action) => {
-              const cta = ACTION_CTA[action.action_type];
-              if (!cta) {
-                return null;
-              }
-              return (
-                <NextLink
-                  key={`${action.action_type}-${action.label}`}
-                  href={cta.route(action.action_data)}
-                  className={styles.quickActionLink}
-                >
-                  {action.label} &rarr;
-                </NextLink>
-              );
-            })}
-          </Flex>
-        </>
-      }
-      className={styles.astralisAlert}
-    />
+    <ConfigProvider theme={alertTheme}>
+      <Alert
+        type="info"
+        showIcon
+        icon={<SparkleIcon size={14} />}
+        closable
+        message={
+          <>
+            {text}
+            <Flex gap={16} className="mt-3">
+              {quickActions.map((action) => {
+                const cta = ACTION_CTA[action.action_type];
+                if (!cta) {
+                  return null;
+                }
+                return (
+                  <NextLink
+                    key={`${action.action_type}-${action.label}`}
+                    href={cta.route(action.action_data)}
+                    className={`${styles.quickActionLink} ${SEVERITY_STYLE[action.severity] ?? styles.info}`}
+                  >
+                    {action.label}
+                  </NextLink>
+                );
+              })}
+            </Flex>
+          </>
+        }
+        className={styles.alertSm}
+      />
+    </ConfigProvider>
   );
 };

@@ -1,0 +1,4 @@
+type: Added
+description: Added unique identity index to privacy_preferences_current partition
+pr: 7788
+labels: ["db-migration"]
