@@ -15,9 +15,9 @@ export const AWS_INTEGRATION_PLACEHOLDER = {
 export const AWS_DESCRIPTION = (
   <>
     Amazon Web Services (AWS) cloud infrastructure integration allows you to
-    discover and monitor your AWS resources. Adding AWS as a data source enables
-    automated scanning of your cloud environment for better visibility and
-    control.
+    discover and monitor your AWS resources. Adding AWS as an integration
+    enables automated scanning of your cloud environment for better visibility
+    and control.
   </>
 );
 
