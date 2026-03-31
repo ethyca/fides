@@ -19,15 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.82.1..main)
-
-## [2.82.1](https://github.com/ethyca/fides/compare/2.82.0..2.82.1)
-
-### Added
-- Added unique identity index to privacy_preferences_current partition [#7788](https://github.com/ethyca/fides/pull/7788) https://github.com/ethyca/fides/labels/db-migration
-
-### Security
-- Bumped pyOpenSSL to 26.0.0 (CVE-2026-27459, CVE-2026-27448) and snowflake-connector-python to 4.4.0 for compatibility [#7783](https://github.com/ethyca/fides/pull/7783)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.82.0..main)
 
 ## [2.82.0](https://github.com/ethyca/fides/compare/2.81.1..2.82.0)
 
