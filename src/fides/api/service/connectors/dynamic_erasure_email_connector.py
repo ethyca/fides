@@ -84,12 +84,16 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         processed_config = self.process_connector_config(db, privacy_requests)
 
         skipped_privacy_requests: List[str] = []
+        all_pr_ids = [pr.id for pr in privacy_requests]
+        already_sent_ids = self.get_already_sent_privacy_request_ids(db, all_pr_ids)
 
         # We'll batch identities for each (email address, vendor_name) pair
         # the keys of the dictionary will be email_address:vendor_name
         batched_identities: Dict[str, BatchedIdentitiesData] = {}
 
         for privacy_request in privacy_requests:
+            if privacy_request.id in already_sent_ids:
+                continue
             try:
                 custom_field_data = (
                     self.get_email_and_vendor_from_custom_request_fields(
@@ -167,10 +171,11 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
             except MessageDispatchException as exc:
                 message = f"Dynamic batch erasure email {batch_id} for connector {self.configuration.key} failed with exception {exc}"
                 logger.error(message)
+                excluded_ids = set(skipped_privacy_requests) | already_sent_ids
                 self.error_all_privacy_requests(
                     db,
                     privacy_requests.filter(
-                        PrivacyRequest.id.notin_(skipped_privacy_requests)
+                        PrivacyRequest.id.notin_(list(excluded_ids))
                     ),
                     message,
                 )
@@ -178,7 +183,10 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
 
         # create an audit event for each privacy request ID
         for privacy_request in privacy_requests:
-            if privacy_request.id not in skipped_privacy_requests:
+            if (
+                privacy_request.id not in skipped_privacy_requests
+                and privacy_request.id not in already_sent_ids
+            ):
                 ExecutionLog.create(
                     db=db,
                     data={
