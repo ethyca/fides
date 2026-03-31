@@ -132,7 +132,7 @@ jobs:
         run: npm run build:test
 
       - name: Compress build output
-        run: tar -czf /tmp/cypress-build.tar.gz admin-ui/.next fides-js/dist
+        run: tar -czf /tmp/cypress-build.tar.gz admin-ui/.next admin-ui/public/lib fides-js/dist
 
       - name: Upload build output
         uses: actions/upload-artifact@v4
