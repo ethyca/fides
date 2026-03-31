@@ -94,24 +94,24 @@ class TestPostgresQueryConfig:
         [
             (
                 PostgresNamespaceMeta(schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 PostgresNamespaceMeta(database_name="example_db", schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"schema": "billing"},
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 {"schema": "billing", "connection_type": "postgres"},
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 None,
-                'SELECT address_id, created, email, id, name FROM "customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "customer" WHERE ("email" = :email)',
             ),
         ],
     )
