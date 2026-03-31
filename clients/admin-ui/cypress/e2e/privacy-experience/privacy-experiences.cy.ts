@@ -109,7 +109,7 @@ describe("Privacy experiences", () => {
     });
 
     it("can click the button to create a new experience", () => {
-      cy.getByTestId("add-privacy-experience-btn").click();
+      cy.getByTestId("add-privacy-experience-btn").first().click();
       cy.url().should("contain", "privacy-experience/new");
     });
 
