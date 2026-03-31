@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed pagination ellipsis wrapping to the next line
+pr: 7803
+labels: []
