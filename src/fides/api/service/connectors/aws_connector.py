@@ -30,7 +30,7 @@ class AWSConnector(BaseConnector):
         """Returns a boto3 session for AWS."""
         config = AWSSchema(**self.configuration.secrets or {})
         return get_aws_session(
-            auth_method=config.auth_method.value,  # pylint: disable=no-member
+            auth_method=config.auth_method.value,
             storage_secrets=config.model_dump(mode="json"),  # type: ignore
             assume_role_arn=config.aws_assume_role_arn,
         )

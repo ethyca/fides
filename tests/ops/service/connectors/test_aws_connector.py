@@ -62,15 +62,23 @@ class TestAWSConnector:
     def test_retrieve_data_returns_empty(self, aws_connection_config):
         """retrieve_data is a no-op since DSR is not supported."""
         connector = AWSConnector(aws_connection_config)
-        assert connector.retrieve_data(None, None, None, None, {}) == []
+        assert (
+            connector.retrieve_data(
+                MagicMock(), MagicMock(), MagicMock(), MagicMock(), {}
+            )
+            == []
+        )
 
     def test_mask_data_returns_zero(self, aws_connection_config):
         """mask_data is a no-op since DSR is not supported."""
         connector = AWSConnector(aws_connection_config)
-        assert connector.mask_data(None, None, None, None, []) == 0
+        assert (
+            connector.mask_data(MagicMock(), MagicMock(), MagicMock(), MagicMock(), [])
+            == 0
+        )
 
     def test_query_config_raises(self, aws_connection_config):
         """query_config raises NotImplementedError."""
         connector = AWSConnector(aws_connection_config)
         with pytest.raises(NotImplementedError):
-            connector.query_config(None)
+            connector.query_config(MagicMock())

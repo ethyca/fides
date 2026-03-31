@@ -34,7 +34,7 @@ const AWSIntegrationOverview = () => (
   </>
 );
 
-const AWS_TAGS = ["Discovery", "Inventory"];
+const AWS_TAGS = ["Detection", "Inventory"];
 
 const AWS_INTEGRATION_TYPE_INFO = {
   placeholder: AWS_INTEGRATION_PLACEHOLDER,
