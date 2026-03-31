@@ -5,7 +5,9 @@ import { extractStyleProps, ResponsiveValue, StyleProps } from "./styleProps";
 function baseColumns(
   v: ResponsiveValue<number | string> | undefined,
 ): number | string | undefined {
-  if (v == null) return undefined;
+  if (v == null) {
+    return undefined;
+  }
   if (Array.isArray(v)) {
     return (v[0] as number | string | null | undefined) ?? undefined;
   }
