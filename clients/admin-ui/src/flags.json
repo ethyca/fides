@@ -119,6 +119,13 @@
     "test": false,
     "production": false
   },
+  "awsMonitor": {
+    "label": "AWS monitor",
+    "description": "Enable AWS monitoring",
+    "development": true,
+    "test": false,
+    "production": false
+  },
   "heliosInsights": {
     "label": "Helios insights",
     "description": "Enable the new monitor progress widgets for the action center in Helios",

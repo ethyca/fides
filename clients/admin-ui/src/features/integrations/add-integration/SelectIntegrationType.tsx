@@ -22,6 +22,7 @@ export const useIntegrationFilters = () => {
 
   const {
     flags: {
+      awsMonitor,
       entraMonitor,
       newIntegrationManagement,
       webMonitor,
@@ -43,6 +44,14 @@ export const useIntegrationFilters = () => {
       staticIntegrations = staticIntegrations.filter(
         (integration) =>
           integration.placeholder.connection_type !== ConnectionType.ENTRA,
+      );
+    }
+
+    // Filter out AWS when awsMonitor flag is disabled
+    if (!awsMonitor) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !== ConnectionType.AWS,
       );
     }
 
@@ -88,6 +97,7 @@ export const useIntegrationFilters = () => {
     return [...staticIntegrations, ...dynamicSaasIntegrations];
   }, [
     connectionTypes,
+    awsMonitor,
     entraMonitor,
     alphaJiraIntegration,
     newIntegrationManagement,
@@ -135,6 +145,13 @@ export const useIntegrationFilters = () => {
       );
     }
 
+    // Filter out AWS when awsMonitor flag is disabled
+    if (!awsMonitor) {
+      filtered = filtered.filter(
+        (i) => i.placeholder.connection_type !== ConnectionType.AWS,
+      );
+    }
+
     // Filter by search term (name only)
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
@@ -153,6 +170,7 @@ export const useIntegrationFilters = () => {
     selectedCategory,
     webMonitor,
     entraMonitor,
+    awsMonitor,
     allIntegrationTypes,
   ]);
 

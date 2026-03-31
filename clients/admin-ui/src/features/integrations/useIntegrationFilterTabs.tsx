@@ -11,6 +11,7 @@ export enum IntegrationFilterTabs {
   DATA_WAREHOUSE = "Data Warehouse",
   IDENTITY_PROVIDER = "Identity Provider",
   WEBSITE = "Website",
+  CLOUD_INFRASTRUCTURE = "Cloud Infrastructure",
   MANUAL = "Manual",
 }
 
