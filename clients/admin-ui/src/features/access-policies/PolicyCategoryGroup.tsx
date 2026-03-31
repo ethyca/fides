@@ -9,7 +9,6 @@ const { Title } = Typography;
 interface PolicyCategoryGroupProps {
   controlGroup: ControlGroup;
   policies: AccessPolicyListItem[];
-  controlGroups: ControlGroup[];
   onTogglePolicy: (policy: AccessPolicyListItem) => void;
   onEdit: (policy: AccessPolicyListItem) => void;
   onDuplicate: (policy: AccessPolicyListItem) => void;
@@ -19,7 +18,6 @@ interface PolicyCategoryGroupProps {
 const PolicyCategoryGroup = ({
   controlGroup,
   policies,
-  controlGroups,
   onTogglePolicy,
   onEdit,
   onDuplicate,
@@ -41,7 +39,6 @@ const PolicyCategoryGroup = ({
         <Col key={policy.id} xs={24} md={8}>
           <PolicyCard
             policy={policy}
-            controlGroups={controlGroups}
             onToggle={onTogglePolicy}
             onEdit={onEdit}
             onDuplicate={onDuplicate}

@@ -12,7 +12,6 @@ import {
   Typography,
 } from "fidesui";
 
-import { ControlGroup } from "./access-policies.slice";
 import { AccessPolicyListItem } from "./types";
 
 const { Title } = Typography;
@@ -39,7 +38,6 @@ const formatRelativeTime = (isoDate?: string): string => {
 
 interface PolicyCardProps {
   policy: AccessPolicyListItem;
-  controlGroups: ControlGroup[];
   onToggle: (policy: AccessPolicyListItem) => void;
   onEdit: (policy: AccessPolicyListItem) => void;
   onDuplicate: (policy: AccessPolicyListItem) => void;
@@ -48,16 +46,11 @@ interface PolicyCardProps {
 
 const PolicyCard = ({
   policy,
-  controlGroups,
   onToggle,
   onEdit,
   onDuplicate,
   onDelete,
 }: PolicyCardProps) => {
-  const controlGroupMap = new Map(
-    controlGroups.map((cg) => [cg.key, cg.label]),
-  );
-
   const menuItems = {
     items: [
       { key: "edit", label: "Edit", onClick: () => onEdit(policy) },
@@ -106,15 +99,6 @@ const PolicyCard = ({
         <Paragraph type="secondary" className="!mb-0 line-clamp-3">
           {policy.description}
         </Paragraph>
-
-        {/* Controls tags */}
-        {policy.controls && policy.controls.length > 0 && (
-          <Flex wrap gap={4}>
-            {policy.controls.map((key) => (
-              <Tag key={key}>{controlGroupMap.get(key) ?? key}</Tag>
-            ))}
-          </Flex>
-        )}
 
         {/* Spacer to push footer to bottom */}
         <div className="mt-auto" />
