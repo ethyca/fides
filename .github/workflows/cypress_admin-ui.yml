@@ -157,6 +157,10 @@ jobs:
       - name: Extract build artifacts
         run: tar -xzf /tmp/cypress-build.tar.gz
 
+      - name: Install Cypress binary
+        working-directory: clients/admin-ui
+        run: npx cypress install
+
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
