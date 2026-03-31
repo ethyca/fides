@@ -49,9 +49,6 @@ export const DatamapReportTable = ({
     tableProps,
     columns,
     reportError,
-    isReportLoading,
-    isLoadingHealthCheck,
-    isLoadingFidesLang,
     searchQuery,
     updateSearch,
     groupBy,
@@ -229,7 +226,134 @@ export const DatamapReportTable = ({
   );
 
   return (
-    <Flex className="flex-1 flex-col overflow-auto">
+    <>
+      <Form
+        form={form}
+        initialValues={columnNameMapOverrides}
+        onFinish={handleColumnRenaming}
+      >
+        <Flex className="sticky -top-6 z-[100] bg-white py-4">
+          <Flex className="flex-1 items-center justify-between py-2">
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={updateSearch}
+              placeholder="System name, Fides key, or ID"
+            />
+            <Flex className="items-center gap-2">
+              {userCanSeeReports && (
+                <CustomReportTemplates
+                  reportType={ReportType.DATAMAP}
+                  savedReportId={savedCustomReportId}
+                  tableStateToSave={{
+                    groupBy,
+                    filters: selectedFilters,
+                    columnOrder,
+                    columnVisibility,
+                  }}
+                  currentColumnMap={columnNameMapOverrides}
+                  onCustomReportSaved={handleSavedReport}
+                  onSavedReportDeleted={() => {
+                    setSavedCustomReportId("");
+                  }}
+                />
+              )}
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: DATAMAP_GROUPING.SYSTEM_DATA_USE,
+                      label: "System",
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE),
+                    },
+                    {
+                      key: DATAMAP_GROUPING.DATA_USE_SYSTEM,
+                      label: "Data use",
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM),
+                    },
+                    {
+                      key: DATAMAP_GROUPING.SYSTEM_GROUP,
+                      label: getSystemGroupOptionName(),
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_GROUP === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP),
+                    },
+                  ],
+                }}
+                overlayClassName="group-by-menu-list"
+              >
+                <Button
+                  icon={<Icons.ChevronDown size={14} />}
+                  iconPosition="end"
+                  loading={groupChangeStarted}
+                  data-testid="group-by-menu"
+                >
+                  Group by {getMenuDisplayValue()}
+                </Button>
+              </Dropdown>
+              <Button
+                data-testid="filter-multiple-systems-btn"
+                onClick={onFilterModalOpen}
+              >
+                Filter
+              </Button>
+              <Button
+                aria-label="Export report"
+                data-testid="export-btn"
+                onClick={onExportReportOpen}
+                icon={<Icons.Download />}
+              />
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: "edit-columns",
+                      label: (
+                        <span data-testid="edit-columns-btn">Edit columns</span>
+                      ),
+                      onClick: onColumnSettingsOpen,
+                    },
+                    {
+                      key: "rename-columns",
+                      label: "Rename columns",
+                      onClick: () => setIsRenamingColumns(true),
+                    },
+                  ],
+                }}
+                placement="bottomRight"
+                overlayClassName="more-menu-list"
+              >
+                <Button
+                  icon={<Icons.OverflowMenuVertical />}
+                  data-testid="more-menu"
+                  aria-label="More options"
+                  className="w-6 gap-0"
+                />
+              </Dropdown>
+              {isRenamingColumns && (
+                <RenameColumnsButtons
+                  columnNameMapOverrides={columnNameMapOverrides}
+                  setColumnNameMapOverrides={setColumnNameMapOverrides}
+                  setSavedCustomReportId={setSavedCustomReportId}
+                  setIsRenamingColumns={setIsRenamingColumns}
+                />
+              )}
+            </Flex>
+          </Flex>
+        </Flex>
+
+        <Table {...tableProps} columns={columns} data-testid="fidesTable" />
+      </Form>
+
       <DatamapReportFilterModal
         columnNameMap={columnNameMap}
         selectedFilters={selectedFilters}
@@ -263,140 +387,10 @@ export const DatamapReportTable = ({
         onConfirm={handleExport}
         isLoading={isExportingReport}
       />
-
-      <Form
-        form={form}
-        initialValues={columnNameMapOverrides}
-        onFinish={handleColumnRenaming}
-      >
-        <Flex className="items-center justify-between border border-b-0 border-gray-200 p-2">
-          <DebouncedSearchInput
-            value={searchQuery}
-            onChange={updateSearch}
-            placeholder="System name, Fides key, or ID"
-          />
-          <Flex className="items-center gap-2">
-            {userCanSeeReports && (
-              <CustomReportTemplates
-                reportType={ReportType.DATAMAP}
-                savedReportId={savedCustomReportId}
-                tableStateToSave={{
-                  groupBy,
-                  filters: selectedFilters,
-                  columnOrder,
-                  columnVisibility,
-                }}
-                currentColumnMap={columnNameMapOverrides}
-                onCustomReportSaved={handleSavedReport}
-                onSavedReportDeleted={() => {
-                  setSavedCustomReportId("");
-                }}
-              />
-            )}
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: DATAMAP_GROUPING.SYSTEM_DATA_USE,
-                    label: "System",
-                    icon: checkIcon(
-                      DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy,
-                    ),
-                    onClick: () =>
-                      onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE),
-                  },
-                  {
-                    key: DATAMAP_GROUPING.DATA_USE_SYSTEM,
-                    label: "Data use",
-                    icon: checkIcon(
-                      DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy,
-                    ),
-                    onClick: () =>
-                      onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM),
-                  },
-                  {
-                    key: DATAMAP_GROUPING.SYSTEM_GROUP,
-                    label: getSystemGroupOptionName(),
-                    icon: checkIcon(DATAMAP_GROUPING.SYSTEM_GROUP === groupBy),
-                    onClick: () => onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP),
-                  },
-                ],
-              }}
-              overlayClassName="group-by-menu-list"
-            >
-              <Button
-                icon={<Icons.ChevronDown size={14} />}
-                iconPosition="end"
-                loading={groupChangeStarted}
-                data-testid="group-by-menu"
-              >
-                Group by {getMenuDisplayValue()}
-              </Button>
-            </Dropdown>
-            <Button
-              data-testid="filter-multiple-systems-btn"
-              onClick={onFilterModalOpen}
-            >
-              Filter
-            </Button>
-            <Button
-              aria-label="Export report"
-              data-testid="export-btn"
-              onClick={onExportReportOpen}
-              icon={<Icons.Download />}
-            />
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: "edit-columns",
-                    label: (
-                      <span data-testid="edit-columns-btn">Edit columns</span>
-                    ),
-                    onClick: onColumnSettingsOpen,
-                  },
-                  {
-                    key: "rename-columns",
-                    label: "Rename columns",
-                    onClick: () => setIsRenamingColumns(true),
-                  },
-                ],
-              }}
-              placement="bottomRight"
-              overlayClassName="more-menu-list"
-            >
-              <Button
-                icon={<Icons.OverflowMenuVertical />}
-                data-testid="more-menu"
-                aria-label="More options"
-                className="w-6 gap-0"
-              />
-            </Dropdown>
-            {isRenamingColumns && (
-              <RenameColumnsButtons
-                columnNameMapOverrides={columnNameMapOverrides}
-                setColumnNameMapOverrides={setColumnNameMapOverrides}
-                setSavedCustomReportId={setSavedCustomReportId}
-                setIsRenamingColumns={setIsRenamingColumns}
-              />
-            )}
-          </Flex>
-        </Flex>
-
-        <Table
-          loading={
-            isReportLoading || isLoadingHealthCheck || isLoadingFidesLang
-          }
-          {...tableProps}
-          columns={columns}
-          data-testid="fidesTable"
-        />
-      </Form>
-
       <DatamapDrawer
         selectedSystemId={selectedSystemId}
         resetSelectedSystemId={() => setSelectedSystemId(undefined)}
       />
-    </Flex>
+    </>
   );
 };

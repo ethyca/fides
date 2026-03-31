@@ -180,9 +180,6 @@ export const useDatamapReportTable = (form?: FormInstance) => {
     isLoading: isReportLoading || isLoadingHealthCheck || isLoadingFidesLang,
     isFetching: isReportFetching,
     getRowKey: (record) => record.rowKey,
-    customTableProps: {
-      scroll: { x: "max-content", scrollToFirstRowOnChange: true },
-    },
   });
 
   // Column definitions
