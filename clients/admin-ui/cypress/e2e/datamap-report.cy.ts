@@ -172,10 +172,19 @@ describe("Data map report table", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
       cy.getAntDropdownOverlay("more-menu-list").should("not.be.visible");
-      cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
-      cy.getByTestId("column-dragger-data_categories").trigger("dragenter");
-      cy.getByTestId("column-dragger-data_categories").trigger("dragover");
-      cy.getByTestId("column-dragger-data_categories").trigger("drop");
+      const dataTransfer = new DataTransfer();
+      cy.getByTestId("column-dragger-legal_name").trigger("dragstart", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-data_categories").trigger("dragenter", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-data_categories").trigger("dragover", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-data_categories").trigger("drop", {
+        dataTransfer,
+      });
       cy.getByTestId("save-button").click();
 
       // Verify the new order
