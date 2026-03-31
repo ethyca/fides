@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed sticky table toolbars being overlapped by fixed columns while scrolling
+pr: 7801
+labels: []
