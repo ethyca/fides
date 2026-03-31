@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from fides.api.models.connection_config_saas_history import ConnectionConfigSaaSHistory
 from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.schemas.saas.saas_config import SaaSConfig
 
@@ -72,5 +73,37 @@ class SaaSConfigVersionService:
                 SaaSConfigVersion.version == version,
             )
             .order_by(SaaSConfigVersion.created_at.desc())
+            .first()
+        )
+
+    @staticmethod
+    def list_connection_history(
+        db: Session,
+        connection_config_id: str,
+    ) -> List[ConnectionConfigSaaSHistory]:
+        """Return all per-connection SaaS config snapshots, ordered newest first."""
+        return (
+            db.query(ConnectionConfigSaaSHistory)
+            .filter(
+                ConnectionConfigSaaSHistory.connection_config_id == connection_config_id
+            )
+            .order_by(ConnectionConfigSaaSHistory.created_at.desc())
+            .all()
+        )
+
+    @staticmethod
+    def get_connection_history_by_version(
+        db: Session,
+        connection_config_id: str,
+        version: str,
+    ) -> Optional[ConnectionConfigSaaSHistory]:
+        """Return the most recent snapshot for a given connection and version."""
+        return (
+            db.query(ConnectionConfigSaaSHistory)
+            .filter(
+                ConnectionConfigSaaSHistory.connection_config_id == connection_config_id,
+                ConnectionConfigSaaSHistory.version == version,
+            )
+            .order_by(ConnectionConfigSaaSHistory.created_at.desc())
             .first()
         )

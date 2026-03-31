@@ -227,6 +227,16 @@ class DatasetConfigService:
 
         return True, None
 
+    def get_datasets_as_dicts(self, connection_config_id: str) -> List[Dict[str, Any]]:
+        """Return serialized datasets for a connection, suitable for history snapshots."""
+        return [
+            FideslangDataset.model_validate(dc.ctl_dataset).model_dump(mode="json")
+            for dc in self.db.query(DatasetConfig)
+            .filter(DatasetConfig.connection_config_id == connection_config_id)
+            .all()
+            if dc.ctl_dataset
+        ]
+
     def run_test_access_request(
         self,
         policy: Policy,

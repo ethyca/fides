@@ -13,6 +13,7 @@ from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride
 from fides.api.db.encryption_utils import encrypted_type
+from fides.api.models.connection_config_saas_history import ConnectionConfigSaaSHistory
 from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
@@ -352,6 +353,7 @@ class ConnectionConfig(Base):
     def update_saas_config(
         self,
         db: Session,
+        ## Consider making history creation opt-in (e.g., a record_history=True parameter) or at minimum document this behavior change clearly.
         saas_config: SaaSConfig,
         datasets: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
@@ -364,10 +366,6 @@ class ConnectionConfig(Base):
         include dataset context should query DatasetConfig themselves and pass the
         result here.
         """
-        from fides.api.models.connection_config_saas_history import (
-            ConnectionConfigSaaSHistory,
-        )
-
         default_secrets = {
             connector_param.name: connector_param.default_value
             for connector_param in saas_config.connector_params

@@ -3,7 +3,6 @@ from typing import List, Optional
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
-from fideslang.models import Dataset as FideslangDataset
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError
@@ -26,7 +25,6 @@ from fides.api.common_exceptions import (
 from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connection_config_saas_history import ConnectionConfigSaaSHistory
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
@@ -82,6 +80,7 @@ from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,
 )
+from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
@@ -180,6 +179,9 @@ def patch_saas_config(
     saas_config: SaaSConfig,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
 ) -> SaaSConfig:
     """
     Given a SaaS config element, update the corresponding ConnectionConfig object
@@ -217,13 +219,7 @@ def patch_saas_config(
             detail=str(exc),
         )
 
-    datasets = [
-        FideslangDataset.model_validate(dc.ctl_dataset).model_dump(mode="json")
-        for dc in db.query(DatasetConfig)
-        .filter(DatasetConfig.connection_config_id == connection_config.id)
-        .all()
-        if dc.ctl_dataset
-    ]
+    datasets = dataset_config_service.get_datasets_as_dicts(connection_config.id)
     connection_config.update_saas_config(db, saas_config=saas_config, datasets=datasets)
     SaaSConfigVersionService.record_template_version(
         db=db,
@@ -339,14 +335,7 @@ def list_saas_config_history(
     logger.info(
         "Listing SaaS config history for connection '{}'", connection_config.key
     )
-    return (
-        db.query(ConnectionConfigSaaSHistory)
-        .filter(
-            ConnectionConfigSaaSHistory.connection_config_id == connection_config.id
-        )
-        .order_by(ConnectionConfigSaaSHistory.created_at.desc())
-        .all()
-    )
+    return SaaSConfigVersionService.list_connection_history(db, connection_config.id)
 
 
 @router.get(
@@ -367,14 +356,8 @@ def get_saas_config_history_by_version(
         connection_config.key,
         version,
     )
-    snapshot = (
-        db.query(ConnectionConfigSaaSHistory)
-        .filter(
-            ConnectionConfigSaaSHistory.connection_config_id == connection_config.id,
-            ConnectionConfigSaaSHistory.version == version,
-        )
-        .order_by(ConnectionConfigSaaSHistory.created_at.desc())
-        .first()
+    snapshot = SaaSConfigVersionService.get_connection_history_by_version(
+        db, connection_config.id, version
     )
     if not snapshot:
         raise HTTPException(
