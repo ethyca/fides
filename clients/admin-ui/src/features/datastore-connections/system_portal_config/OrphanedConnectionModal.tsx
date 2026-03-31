@@ -145,10 +145,7 @@ const OrphanedConnectionModal = ({
                 flexDirection="row"
                 key={connectionConfig.key}
                 alignItems="center"
-                _hover={{
-                  bg: "gray.100",
-                  color: "gray.600",
-                }}
+                className="mb-2 hover:bg-gray-100 hover:text-gray-600"
                 bg={
                   selectedConnectionConfig?.key === connectionConfig.key
                     ? "gray.100"
@@ -163,7 +160,6 @@ const OrphanedConnectionModal = ({
                 onClick={() => {
                   setSelectedConnectionConfig(connectionConfig);
                 }}
-                className="mb-2"
               >
                 <ConnectionTypeLogo
                   data={connectionLogoFromConfiguration(connectionConfig)}

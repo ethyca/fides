@@ -482,7 +482,7 @@ export const TextWithInfoIconHeader = <T,>({
   helperText,
   ...props
 }: TextWithInfoIconHeaderProps<T>) => (
-  <Flex alignItems="center" gap={1} {...props}>
+  <Flex alignItems="center" gap={1} {...(props as unknown as FlexProps)}>
     <Text fontSize="xs" lineHeight={9} fontWeight="medium">
       {value}
     </Text>

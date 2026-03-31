@@ -40,7 +40,7 @@ const AccordionTree = ({
       justifyContent: "space-between",
       alignItems: "center",
       pl: level * 3,
-      _hover: { bg: "gray.50" },
+      className: "hover:bg-gray-50",
       onMouseEnter: () => {
         setHoverNode(node);
       },

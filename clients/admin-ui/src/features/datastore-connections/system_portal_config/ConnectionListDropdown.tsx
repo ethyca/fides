@@ -262,7 +262,7 @@ const ConnectionListDropdown = ({
               paddingRight="8.5px"
               paddingBottom="10px"
               paddingLeft="8.5px"
-              _hover={{ bg: option.isDisabled ? undefined : "gray.100" }}
+              className={option.isDisabled ? undefined : "hover:bg-gray-100"}
               color={
                 selectedValue === option.value ? "complimentary.500" : undefined
               }

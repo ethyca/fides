@@ -37,7 +37,7 @@ export const CheckboxItem = ({
       <Box
         display="flex"
         justifyContent="space-between"
-        _hover={{ backgroundColor: "gray.100", cursor: "pointer" }}
+        className="hover:bg-gray-100 hover:cursor-pointer"
         onClick={() => onExpanded(node)}
       >
         <Checkbox

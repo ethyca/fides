@@ -96,7 +96,7 @@ const CheckboxItem = ({
       <Box
         display="flex"
         justifyContent="space-between"
-        _hover={{ backgroundColor: "gray.100", cursor: "pointer" }}
+        className="cursor-pointer hover:bg-gray-100"
         onClick={() => onExpanded(node)}
         minHeight={8}
       >

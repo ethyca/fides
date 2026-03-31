@@ -23,19 +23,15 @@ export {
   AlertDialogOverlay as ChakraAlertDialogOverlay,
   AlertIcon as ChakraAlertIcon,
   AlertTitle as ChakraAlertTitle,
-  // Layout
-  Box as ChakraBox,
   // Forms
   Button as ChakraButton,
   ButtonGroup as ChakraButtonGroup,
-  Center as ChakraCenter,
   Checkbox as ChakraCheckbox,
   CheckboxGroup as ChakraCheckboxGroup,
   // Other
   CloseButton as ChakraCloseButton,
   Code as ChakraCode,
   Collapse as ChakraCollapse,
-  Container as ChakraContainer,
   Divider as ChakraDivider,
   Drawer as ChakraDrawer,
   DrawerBody as ChakraDrawerBody,
@@ -44,16 +40,13 @@ export {
   DrawerFooter as ChakraDrawerFooter,
   DrawerHeader as ChakraDrawerHeader,
   DrawerOverlay as ChakraDrawerOverlay,
-  Flex as ChakraFlex,
   FormControl as ChakraFormControl,
   FormErrorMessage as ChakraFormErrorMessage,
   FormHelperText as ChakraFormHelperText,
   FormLabel as ChakraFormLabel,
   // Utilities
   forwardRef as chakraForwardRef,
-  Grid as ChakraGrid,
   Heading as ChakraHeading,
-  HStack as ChakraHStack,
   IconButton as ChakraIconButton,
   // Data Display
   Image as ChakraImage,
@@ -90,11 +83,8 @@ export {
   NumberInputStepper as ChakraNumberInputStepper,
   OrderedList as ChakraOrderedList,
   Portal as ChakraPortal,
-  SimpleGrid as ChakraSimpleGrid,
   Skeleton as ChakraSkeleton,
-  Spacer as ChakraSpacer,
   Spinner as ChakraSpinner,
-  Stack as ChakraStack,
   StackDivider as ChakraStackDivider,
   Table as ChakraTable,
   TableContainer as ChakraTableContainer,
@@ -111,8 +101,6 @@ export {
   Thead as ChakraThead,
   Tr as ChakraTr,
   UnorderedList as ChakraUnorderedList,
-  VStack as ChakraVStack,
-  Wrap as ChakraWrap,
   createStandaloneToast as createChakraStandaloneToast,
   getCSSVar as getChakraCSSVar,
 } from "@chakra-ui/react";
@@ -135,11 +123,9 @@ export {
  */
 export type {
   AccordionItemProps as ChakraAccordionItemProps,
-  BoxProps as ChakraBoxProps,
   ButtonProps as ChakraButtonProps,
   ChakraProps as ChakraChakraProps,
   CheckboxProps as ChakraCheckboxProps,
-  FlexProps as ChakraFlexProps,
   FormErrorMessageProps as ChakraFormErrorMessageProps,
   FormLabelProps as ChakraFormLabelProps,
   HeadingProps as ChakraHeadingProps,
@@ -150,7 +136,6 @@ export type {
   ModalContentProps as ChakraModalContentProps,
   ModalProps as ChakraModalProps,
   SpinnerProps as ChakraSpinnerProps,
-  StackProps as ChakraStackProps,
   TableCellProps as ChakraTableCellProps,
   TableHeadProps as ChakraTableHeadProps,
   TextareaProps as ChakraTextareaProps,
@@ -163,6 +148,52 @@ export type {
  * @deprecated Chakra UI utils are deprecated and will be removed in a future release.
  */
 export { isNumeric as isChakraNumeric } from "@chakra-ui/utils";
+
+// Layout wrapper components — Chakra-compatible style props, no Chakra dependency.
+// Exported with Chakra* aliases for backward compatibility and without for new usage.
+export type {
+  BoxProps,
+  CenterProps,
+  BoxProps as ChakraBoxProps,
+  FlexProps as ChakraFlexProps,
+  GridProps as ChakraGridProps,
+  StackProps as ChakraStackProps,
+  ContainerProps,
+  HStackProps,
+  FlexProps as LayoutFlexProps,
+  GridProps as LayoutGridProps,
+  SimpleGridProps,
+  SpacerProps,
+  SpacingValue,
+  StackProps,
+  StyleProps,
+  VStackProps,
+  WrapProps,
+} from "./components/layout";
+export {
+  Box,
+  Center,
+  Box as ChakraBox,
+  Center as ChakraCenter,
+  Container as ChakraContainer,
+  Flex as ChakraFlex,
+  Grid as ChakraGrid,
+  HStack as ChakraHStack,
+  SimpleGrid as ChakraSimpleGrid,
+  Spacer as ChakraSpacer,
+  Stack as ChakraStack,
+  VStack as ChakraVStack,
+  Wrap as ChakraWrap,
+  Container,
+  HStack,
+  Flex as LayoutFlex,
+  Grid as LayoutGrid,
+  SimpleGrid,
+  Spacer,
+  Stack,
+  VStack,
+  Wrap,
+} from "./components/layout";
 
 // Unmodified component exported directly from Ant Design
 export type { DisplayValueType } from "@rc-component/select/lib/interface";

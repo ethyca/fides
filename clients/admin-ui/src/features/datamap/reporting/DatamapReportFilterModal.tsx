@@ -146,9 +146,15 @@ export const DatamapReportFilterModal = ({
       destroyOnClose
       data-testid="datamap-report-filter-modal"
       footer={
-        <Flex gap={3} sx={{ "& button": { width: "100%" } }}>
-          <Button onClick={resetFilters}>Reset filters</Button>
-          <Button type="primary" onClick={handleFilterChange}>
+        <Flex gap={3}>
+          <Button className="w-full" onClick={resetFilters}>
+            Reset filters
+          </Button>
+          <Button
+            className="w-full"
+            type="primary"
+            onClick={handleFilterChange}
+          >
             Done
           </Button>
         </Flex>

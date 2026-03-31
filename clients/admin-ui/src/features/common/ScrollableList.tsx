@@ -1,7 +1,7 @@
 import {
+  BoxProps,
   Button,
   ChakraBox as Box,
-  ChakraChakraProps as ChakraProps,
   ChakraFlex as Flex,
   ChakraList as List,
   ChakraText as Text,
@@ -51,11 +51,10 @@ const ScrollableListItem = <T extends unknown>({
       px={2}
       align="center"
       role="group"
-      className="group"
+      className={onRowClick ? "group hover:bg-gray-100" : "group"}
       borderY="1px"
       my="-1px"
       borderColor="gray.200"
-      _hover={onRowClick ? { bgColor: "gray.100" } : undefined}
       bgColor="white"
       position="relative"
     >
@@ -303,17 +302,21 @@ const ScrollableList = <T extends unknown>({
     }
   };
 
-  const listContainerProps = {
+  const listContainerProps: BoxProps = {
     border: "1px",
     borderColor: "gray.200",
     borderRadius: "md",
     w: "full",
     maxH: "8.5rem",
     overflowY: "auto",
-  } as ChakraProps;
+  };
 
   const innerList = draggable ? (
-    <Box as={motion.div} layoutScroll {...listContainerProps}>
+    <Box
+      as={motion.div}
+      {...listContainerProps}
+      {...({ layoutScroll: true } as object)}
+    >
       <Reorder.Group
         values={values}
         onReorder={(newValues) => setValues(newValues.slice())}
