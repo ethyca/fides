@@ -28,6 +28,7 @@ export const SharedConfigSelect = ({
     <Form.Item label="Shared monitor config" {...itemProps}>
       <Select
         data-testid="controlled-select-shared_config_id"
+        allowClear
         options={sharedMonitorConfigOptions}
         {...selectProps}
       />
