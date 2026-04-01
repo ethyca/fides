@@ -1,6 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
+from loguru import logger as log
 from sqlalchemy import engine_from_config, pool, text
 
 from fides.api.db.database import include_object
@@ -77,9 +78,9 @@ def run_migrations_online():
             # quoting (double-quotes, inner double-quotes escaped by doubling) to
             # safely handle role names. The value is operator-supplied config, not
             # end-user input.
-            quoted_role = '"{}"'.format(
-                fides_config.database.migration_role.replace('"', '""')
-            )
+            escaped_role = fides_config.database.migration_role.replace('"', '""')
+            quoted_role = f'"{escaped_role}"'
+            log.info(f"Setting migration role to: {quoted_role}")
             connection.execute(text(f"SET ROLE {quoted_role}"))
 
         context.configure(
