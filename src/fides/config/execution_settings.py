@@ -94,7 +94,7 @@ class ExecutionSettings(FidesSettings):
         description="When enabled, falls back to the legacy traversal algorithm. Intended as a temporary safety net in case of regressions with the optimized traversal.",
     )
     jira_polling_interval_minutes: int = Field(
-        default=10,
+        default=3,
         description="Minutes between polling Jira for ticket status updates.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
