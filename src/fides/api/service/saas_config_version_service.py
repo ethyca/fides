@@ -101,7 +101,8 @@ class SaaSConfigVersionService:
         return (
             db.query(ConnectionConfigSaaSHistory)
             .filter(
-                ConnectionConfigSaaSHistory.connection_config_id == connection_config_id,
+                ConnectionConfigSaaSHistory.connection_config_id
+                == connection_config_id,
                 ConnectionConfigSaaSHistory.version == version,
             )
             .order_by(ConnectionConfigSaaSHistory.created_at.desc())
