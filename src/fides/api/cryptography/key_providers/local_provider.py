@@ -38,29 +38,16 @@ class LocalKeyProvider(KeyProvider):
         ).hexdigest()
         return digest[:16]
 
-    def encrypt_dek(self, dek: str) -> str:
-        """Encrypt a DEK with the configured KEK using AES-256-GCM.
-
-        Returns ``base64(nonce[12] + tag[16] + ciphertext)``.
-        """
-        nonce = os.urandom(12)
-        cipher = Cipher(
-            algorithms.AES(self._kek.encode("UTF-8")),
-            modes.GCM(nonce),
-        )
-        encryptor = cipher.encryptor()
-        ciphertext = encryptor.update(dek.encode("UTF-8")) + encryptor.finalize()
-        return base64.b64encode(nonce + encryptor.tag + ciphertext).decode("UTF-8")
+    @staticmethod
+    def _pack(nonce: bytes, tag: bytes, ciphertext: bytes) -> str:
+        """Encode nonce + tag + ciphertext as a base64 string."""
+        return base64.b64encode(nonce + tag + ciphertext).decode("UTF-8")
 
     @staticmethod
-    def decrypt_with(wrapped_dek: str, kek: str) -> str:
-        """Unwrap a DEK using the given KEK.
-
-        This is public so that KEK rotation can unwrap with the previous
-        KEK before re-wrapping with the new one.
-        """
+    def _unpack(encoded: str) -> tuple[bytes, bytes, bytes]:
+        """Decode a base64 string into (nonce, tag, ciphertext)."""
         try:
-            raw = base64.b64decode(wrapped_dek)
+            raw = base64.b64decode(encoded)
         except Exception as exc:
             raise KeyProviderError("Invalid base64 in wrapped DEK") from exc
 
@@ -69,7 +56,37 @@ class LocalKeyProvider(KeyProvider):
                 "Wrapped DEK too short — expected at least 28 bytes (12 nonce + 16 tag)"
             )
 
-        nonce, tag, ciphertext = raw[:12], raw[12:28], raw[28:]
+        return raw[:12], raw[12:28], raw[28:]
+
+    def encrypt_dek(self, dek: str) -> str:
+        """Encrypt a DEK with the configured KEK using AES-256-GCM.
+
+        Returns base64(nonce[12] + tag[16] + ciphertext).
+        """
+        # 96-bit random nonce, as recommended for AES-GCM
+        nonce = os.urandom(12)
+
+        # Use the KEK directly as the AES-256 key (32 bytes from 32 UTF-8 chars).
+        # This differs from aes_gcm_encryption_util.py which SHA-256 hashes the
+        # key for SQLAlchemy-Utils compatibility — here we skip that step because
+        # the KEK is already the correct length.
+        cipher = Cipher(
+            algorithms.AES(self._kek.encode("UTF-8")),
+            modes.GCM(nonce),
+        )
+        encryptor = cipher.encryptor()
+        ciphertext = encryptor.update(dek.encode("UTF-8")) + encryptor.finalize()
+
+        return self._pack(nonce, encryptor.tag, ciphertext)
+
+    @staticmethod
+    def decrypt_with(encrypted_dek: str, kek: str) -> str:
+        """Decrypt an encrypted DEK using the given KEK.
+
+        This is public so that KEK rotation can decrypt with the previous
+        KEK before re-encrypting with the new one.
+        """
+        nonce, tag, ciphertext = LocalKeyProvider._unpack(encrypted_dek)
         try:
             cipher = Cipher(
                 algorithms.AES(kek.encode("UTF-8")),
@@ -80,8 +97,8 @@ class LocalKeyProvider(KeyProvider):
             return plaintext.decode("UTF-8")
         except Exception as exc:
             raise KeyProviderError(
-                "Failed to unwrap DEK — the KEK may be incorrect or the "
-                "wrapped DEK may be corrupt"
+                "Failed to decrypt DEK — the KEK may be incorrect or the "
+                "encrypted DEK may be corrupt"
             ) from exc
 
     def get_dek(self) -> str:

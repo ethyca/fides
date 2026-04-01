@@ -3,7 +3,6 @@
 import base64
 
 import pytest
-from sqlalchemy import text
 
 from fides.api.cryptography.key_providers import KeyProviderError, LocalKeyProvider
 from fides.api.models.encryption_key import EncryptionKey
@@ -14,10 +13,6 @@ TEST_KEK_ALT = "anothertestkeythatis32characters"
 TEST_DEK = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 
-# --- Pure crypto tests (no DB) ---
-
-
-@pytest.mark.unit
 class TestKekIdHash:
     def test_deterministic(self):
         h1 = LocalKeyProvider.kek_id_hash(TEST_KEK)
@@ -35,7 +30,6 @@ class TestKekIdHash:
         int(h, 16)  # valid hex
 
 
-@pytest.mark.unit
 class TestEncryptDecrypt:
     def test_encrypt_produces_valid_base64(self, db):
         provider = LocalKeyProvider(kek=TEST_KEK, session=db)
@@ -52,12 +46,12 @@ class TestEncryptDecrypt:
     def test_wrong_kek_raises(self, db):
         provider = LocalKeyProvider(kek=TEST_KEK, session=db)
         encrypted = provider.encrypt_dek(TEST_DEK)
-        with pytest.raises(KeyProviderError, match="Failed to unwrap"):
+        with pytest.raises(KeyProviderError, match="Failed to decrypt"):
             LocalKeyProvider.decrypt_with(encrypted, TEST_KEK_ALT)
 
     def test_corrupt_data_raises(self):
         corrupted = base64.b64encode(b"\x00" * 40).decode()
-        with pytest.raises(KeyProviderError, match="Failed to unwrap"):
+        with pytest.raises(KeyProviderError, match="Failed to decrypt"):
             LocalKeyProvider.decrypt_with(corrupted, TEST_KEK)
 
     def test_short_data_raises(self):
@@ -70,14 +64,11 @@ class TestEncryptDecrypt:
             LocalKeyProvider.decrypt_with("not-valid-base64!!!", TEST_KEK)
 
 
-# --- DB integration tests ---
-
-
 @pytest.fixture(autouse=False)
 def clean_encryption_keys(db):
     """Clean up encryption_keys table after each test that uses it."""
     yield
-    db.execute(text("DELETE FROM encryption_keys"))
+    db.query(EncryptionKey).delete()
     db.commit()
 
 
