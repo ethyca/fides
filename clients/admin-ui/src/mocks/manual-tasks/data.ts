@@ -5,6 +5,7 @@ import type {
   ManualFieldUser,
 } from "~/types/api";
 import {
+  CommentType,
   ManualFieldRequestType,
   ManualFieldStatus,
   ManualTaskFieldType,
@@ -218,7 +219,7 @@ export const generateMockManualTasks = (): ManualFieldListItem[] => {
               : status === ManualFieldStatus.SKIPPED
                 ? "Skipped - data not found"
                 : "In progress, awaiting review",
-          comment_type: "note",
+          comment_type: CommentType.NOTE,
         },
       ];
     }
