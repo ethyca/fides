@@ -106,9 +106,18 @@ export const useIntegrationFilters = () => {
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
       "ALL",
-      ...Object.values(ConnectionCategory).filter(
-        (category) => !!webMonitor || category !== ConnectionCategory.WEBSITE,
-      ),
+      ...Object.values(ConnectionCategory).filter((category) => {
+        if (!webMonitor && category === ConnectionCategory.WEBSITE) {
+          return false;
+        }
+        if (
+          !awsMonitor &&
+          category === ConnectionCategory.CLOUD_INFRASTRUCTURE
+        ) {
+          return false;
+        }
+        return true;
+      }),
     ];
 
     if (!newIntegrationManagement) {
@@ -123,7 +132,7 @@ export const useIntegrationFilters = () => {
     }
 
     return allCategories;
-  }, [newIntegrationManagement, webMonitor, allIntegrationTypes]);
+  }, [awsMonitor, newIntegrationManagement, webMonitor, allIntegrationTypes]);
 
   const filteredTypes = useMemo(() => {
     let filtered = allIntegrationTypes;
