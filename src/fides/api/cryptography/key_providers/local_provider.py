@@ -1,6 +1,7 @@
 """Local envelope encryption provider using in-process AES-256-GCM."""
 
 import base64
+import binascii
 import hashlib
 import hmac
 import os
@@ -22,11 +23,20 @@ class LocalKeyProvider(KeyProvider):
 
     The KEK is supplied at construction time (from config). The wrapped DEK
     is stored in the encryption_keys database table.
+
+    Note: get_dek() requires the encryption_keys table to be populated by the
+    startup bootstrap task (PR 6). Until that lands, this provider should not
+    be enabled in production.
     """
 
     def __init__(self, kek: str, session: Session) -> None:
-        self._kek = kek
+        if len(kek.encode("UTF-8")) != 32:
+            raise KeyProviderError("KEK must be exactly 32 bytes")
+        self._kek = kek.encode("UTF-8")
         self._session = session
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(kek=***, session={self._session!r})"
 
     @staticmethod
     def kek_id_hash(kek: str) -> str:
@@ -56,7 +66,7 @@ class LocalKeyProvider(KeyProvider):
         """Decode a base64 string into (nonce, tag, ciphertext)."""
         try:
             raw = base64.b64decode(encoded)
-        except Exception as exc:
+        except binascii.Error as exc:
             raise KeyProviderError("Invalid base64 in wrapped DEK") from exc
 
         if len(raw) <= 28:
@@ -79,7 +89,7 @@ class LocalKeyProvider(KeyProvider):
         # key for SQLAlchemy-Utils compatibility — here we skip that step because
         # the KEK is already the correct length.
         cipher = Cipher(
-            algorithms.AES(self._kek.encode("UTF-8")),
+            algorithms.AES(self._kek),
             modes.GCM(nonce),
         )
         encryptor = cipher.encryptor()
@@ -121,7 +131,7 @@ class LocalKeyProvider(KeyProvider):
 
         wrapped_dek = row.wrapped_dek
         stored_hash = row.kek_id_hash
-        expected_hash = self.kek_id_hash(self._kek)
+        expected_hash = self.kek_id_hash(self._kek.decode("UTF-8"))
 
         if stored_hash != expected_hash:
             raise KeyProviderError(
@@ -130,4 +140,4 @@ class LocalKeyProvider(KeyProvider):
                 "to the old KEK and restart."
             )
 
-        return self.decrypt_with(wrapped_dek, self._kek)
+        return self.decrypt_with(wrapped_dek, self._kek.decode("UTF-8"))

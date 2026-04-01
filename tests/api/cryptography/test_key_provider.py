@@ -13,6 +13,16 @@ TEST_KEK_ALT = "anothertestkeythatis32characters"
 TEST_DEK = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 
+class TestInit:
+    def test_rejects_short_kek(self, db):
+        with pytest.raises(KeyProviderError, match="32 bytes"):
+            LocalKeyProvider(kek="tooshort", session=db)
+
+    def test_rejects_long_kek(self, db):
+        with pytest.raises(KeyProviderError, match="32 bytes"):
+            LocalKeyProvider(kek="a" * 64, session=db)
+
+
 class TestKekIdHash:
     def test_deterministic(self):
         h1 = LocalKeyProvider.kek_id_hash(TEST_KEK)
