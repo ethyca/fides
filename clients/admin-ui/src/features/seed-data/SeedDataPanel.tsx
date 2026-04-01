@@ -262,6 +262,7 @@ const SeedDataPanel = () => {
           <Text strong>Seed profile</Text>
           {profiles && profiles.length > 0 ? (
             <Select
+              aria-label="Seed profile"
               placeholder="Select a seed profile..."
               value={selectedProfile}
               onChange={(value) => setSelectedProfile(value)}
