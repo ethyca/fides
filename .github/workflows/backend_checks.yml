@@ -354,7 +354,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Sharded groups (3 shards for the slowest, 2 for the next tier)
+          # Shard tiers based on .test_durations. Re-evaluate shard counts
+          # if total suite time shifts significantly.
+          # 3 shards for the slowest groups, 2 for the next tier.
           - test_selection: "ops-unit-api"
             total_splits: "3"
             split_group: "1"
@@ -403,7 +405,7 @@ jobs:
             split_group: "1"
 
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - name: Pull Docker images in background
         run: |
