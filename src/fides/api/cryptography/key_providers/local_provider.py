@@ -40,7 +40,11 @@ class LocalKeyProvider(KeyProvider):
 
     @staticmethod
     def _pack(nonce: bytes, tag: bytes, ciphertext: bytes) -> str:
-        """Encode nonce + tag + ciphertext as a base64 string."""
+        """Encode nonce + tag + ciphertext as a base64 string.
+
+        Base64 encoding is needed because the raw bytes may contain null bytes
+        or non-UTF-8 sequences that can't be stored safely in a TEXT column.
+        """
         return base64.b64encode(nonce + tag + ciphertext).decode("UTF-8")
 
     @staticmethod
