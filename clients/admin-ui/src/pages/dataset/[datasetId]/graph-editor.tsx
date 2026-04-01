@@ -1,0 +1,167 @@
+import {
+  Button,
+  Flex,
+  Icons,
+  Space,
+  Tooltip,
+  Typography,
+  useMessage,
+} from "fidesui";
+import type { NextPage } from "next";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import Layout from "~/features/common/Layout";
+import {
+  DATASET_DETAIL_ROUTE,
+  DATASET_ROUTE,
+} from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
+import {
+  useGetDatasetByKeyQuery,
+  useUpdateDatasetMutation,
+} from "~/features/dataset/dataset.slice";
+import DatasetNodeEditor from "~/features/test-datasets/DatasetNodeEditor";
+import { removeNulls } from "~/features/test-datasets/helpers";
+import { Dataset } from "~/types/api";
+
+const DatasetGraphEditorPage: NextPage = () => {
+  const router = useRouter();
+  const messageApi = useMessage();
+  const datasetId = router.query.datasetId as string;
+
+  const {
+    data: serverDataset,
+    isLoading,
+    refetch,
+  } = useGetDatasetByKeyQuery(datasetId, { skip: !datasetId });
+  const [updateDataset] = useUpdateDatasetMutation();
+
+  const [localDataset, setLocalDataset] = useState<Dataset | undefined>();
+  const savedDatasetJson = useRef<string>("");
+
+  // Initialize local state from server data
+  useEffect(() => {
+    if (serverDataset) {
+      const cleaned = removeNulls(serverDataset) as Dataset;
+      setLocalDataset(cleaned);
+      savedDatasetJson.current = JSON.stringify(cleaned);
+    }
+  }, [serverDataset]);
+
+  const isDirty = useMemo(() => {
+    if (!localDataset) {
+      return false;
+    }
+    return JSON.stringify(localDataset) !== savedDatasetJson.current;
+  }, [localDataset]);
+
+  const handleDatasetChange = useCallback((updated: Dataset) => {
+    setLocalDataset(updated);
+  }, []);
+
+  const handleSave = async () => {
+    if (!localDataset) {
+      return;
+    }
+
+    const result = await updateDataset(localDataset);
+
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+
+    const cleaned = removeNulls(result.data) as Dataset;
+    setLocalDataset(cleaned);
+    savedDatasetJson.current = JSON.stringify(cleaned);
+    messageApi.success("Successfully saved dataset");
+    await refetch();
+  };
+
+  const handleRefresh = async () => {
+    const { data } = await refetch();
+    if (data) {
+      const cleaned = removeNulls(data) as Dataset;
+      setLocalDataset(cleaned);
+      savedDatasetJson.current = JSON.stringify(cleaned);
+      messageApi.success("Successfully refreshed dataset");
+    }
+  };
+
+  const datasetName = serverDataset?.name || datasetId;
+
+  return (
+    <Layout title={`Edit ${datasetName}`}>
+      <PageHeader
+        heading="Datasets"
+        breadcrumbItems={[
+          { title: "All datasets", href: DATASET_ROUTE },
+          {
+            title: datasetName,
+            href: {
+              pathname: DATASET_DETAIL_ROUTE,
+              query: { datasetId: encodeURIComponent(datasetId) },
+            },
+          },
+          { title: "Graph editor" },
+        ]}
+        rightContent={
+          <Space>
+            {isDirty && (
+              <Typography.Text type="warning" style={{ fontSize: 12 }}>
+                Unsaved changes
+              </Typography.Text>
+            )}
+            <Tooltip
+              title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
+              placement="top"
+            >
+              <Button
+                size="small"
+                onClick={handleRefresh}
+                loading={isLoading}
+                icon={<Icons.Renew />}
+                aria-label="Refresh"
+              />
+            </Tooltip>
+            <Tooltip
+              title="Save your changes to update the dataset in the database."
+              placement="top"
+            >
+              <Button
+                size="small"
+                type={isDirty ? "primary" : "default"}
+                onClick={handleSave}
+              >
+                Save
+              </Button>
+            </Tooltip>
+          </Space>
+        }
+      />
+      <Flex
+        vertical
+        style={{
+          flex: "1 1 auto",
+          minHeight: 0,
+          height: "calc(100vh - 160px)",
+          borderRadius: 8,
+          overflow: "hidden",
+          border: "1px solid var(--fidesui-neutral-200)",
+        }}
+      >
+        {localDataset && (
+          <DatasetNodeEditor
+            dataset={localDataset}
+            onDatasetChange={handleDatasetChange}
+            allowAddCollection
+          />
+        )}
+      </Flex>
+    </Layout>
+  );
+};
+
+export default DatasetGraphEditorPage;
