@@ -2,6 +2,7 @@ import {
   Button,
   Flex,
   Icons,
+  PageSpinner,
   Space,
   Tooltip,
   Typography,
@@ -61,7 +62,7 @@ const DatasetGraphEditorPage: NextPage = () => {
     setLocalDataset(updated);
   }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!localDataset) {
       return;
     }
@@ -77,18 +78,21 @@ const DatasetGraphEditorPage: NextPage = () => {
     setLocalDataset(cleaned);
     savedDatasetJson.current = JSON.stringify(cleaned);
     messageApi.success("Successfully saved dataset");
-    await refetch();
-  };
+  }, [localDataset, updateDataset, messageApi]);
 
-  const handleRefresh = async () => {
-    const { data } = await refetch();
-    if (data) {
-      const cleaned = removeNulls(data) as Dataset;
-      setLocalDataset(cleaned);
-      savedDatasetJson.current = JSON.stringify(cleaned);
-      messageApi.success("Successfully refreshed dataset");
+  const handleRefresh = useCallback(async () => {
+    try {
+      const { data } = await refetch();
+      if (data) {
+        const cleaned = removeNulls(data) as Dataset;
+        setLocalDataset(cleaned);
+        savedDatasetJson.current = JSON.stringify(cleaned);
+        messageApi.success("Successfully refreshed dataset");
+      }
+    } catch (error) {
+      messageApi.error(getErrorMessage(error));
     }
-  };
+  }, [refetch, messageApi]);
 
   const datasetName = serverDataset?.name || datasetId;
 
@@ -146,18 +150,20 @@ const DatasetGraphEditorPage: NextPage = () => {
         style={{
           flex: "1 1 auto",
           minHeight: 0,
-          height: "calc(100vh - 160px)",
+          height: "100%",
           borderRadius: 8,
           overflow: "hidden",
           border: "1px solid var(--fidesui-neutral-200)",
         }}
       >
-        {localDataset && (
+        {localDataset ? (
           <DatasetNodeEditor
             dataset={localDataset}
             onDatasetChange={handleDatasetChange}
             allowAddCollection
           />
+        ) : (
+          <PageSpinner />
         )}
       </Flex>
     </Layout>
