@@ -1,4 +1,4 @@
-import { ColumnsType, FormInstance } from "fidesui";
+import { ColumnsType, Form } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -27,11 +27,7 @@ import {
 } from "~/types/api";
 
 import { DATAMAP_LOCAL_STORAGE_KEYS, DEFAULT_COLUMN_NAMES } from "../constants";
-import {
-  DEFAULT_COLUMN_FILTERS,
-  DEFAULT_COLUMN_VISIBILITY,
-  useDatamapReport,
-} from "../datamap-report-context";
+import { useDatamapReport } from "../datamap-report-context";
 import { getDatamapReportColumns } from "../DatamapReportTableColumns";
 import { DatamapReportRow, groupDatamapRows } from "../groupDatamapRows";
 import { getColKey, getColumnOrder, getPrefixColumns } from "../utils";
@@ -44,7 +40,8 @@ const emptyResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
-export const useDatamapReportTable = (form?: FormInstance) => {
+export const useDatamapReportTable = () => {
+  const [form] = Form.useForm();
   const userCanSeeReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_READ,
   ]);
@@ -359,6 +356,9 @@ export const useDatamapReportTable = (form?: FormInstance) => {
   }, [columns, groupBy, columnVisibility, columnOrder]);
 
   return {
+    // Form
+    form,
+
     // Table
     tableProps,
     columns: visibleColumns,

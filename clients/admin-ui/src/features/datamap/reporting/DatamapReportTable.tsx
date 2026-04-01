@@ -44,8 +44,8 @@ export const DatamapReportTable = ({
 }: {
   onError: (error: FetchBaseQueryError | SerializedError) => void;
 }) => {
-  const [form] = Form.useForm();
   const {
+    form,
     tableProps,
     columns,
     reportError,
@@ -75,7 +75,7 @@ export const DatamapReportTable = ({
     setSavedCustomReportId,
     userCanSeeReports,
     setGroupBy,
-  } = useDatamapReportTable(form);
+  } = useDatamapReportTable();
 
   const message = useMessage();
 
