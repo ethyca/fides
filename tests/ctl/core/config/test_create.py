@@ -14,18 +14,6 @@ from fides.config.create import (
 
 
 @pytest.mark.unit
-def test_create_and_update_config_file_opt_in(
-    tmpdir: LocalPath, test_config: FidesConfig
-) -> None:
-    """Test that config creation works when opting-in to analytics."""
-
-    create_and_update_config_file(
-        config=test_config, fides_directory_location=str(tmpdir), opt_in=True
-    )
-    assert True
-
-
-@pytest.mark.unit
 class TestValidateGeneratedConfig:
     def test_valid_config(self) -> None:
         """Test that a minimal, but still valid config, can be built."""

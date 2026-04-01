@@ -4,6 +4,7 @@ import {
   ChakraLink as Link,
   ChakraStack as Stack,
   ChakraText as Text,
+  Icons,
   Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -11,7 +12,6 @@ import { useMemo } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { useFeatures } from "~/features/common/features";
-import { GearLightIcon } from "~/features/common/Icon";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { Property } from "~/types/api";
 
@@ -54,7 +54,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
       <Button
         aria-label="Install property"
         size="small"
-        icon={<GearLightIcon />}
+        icon={<Icons.Settings />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();
           modal.onOpen();

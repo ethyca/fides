@@ -1,14 +1,13 @@
 import {
   Button,
   Card,
-  ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraCloseIcon as CloseIcon,
   ChakraInputGroup as InputGroup,
   ChakraSkeleton as Skeleton,
   ChakraText as Text,
   ConfirmationModal,
   Dropdown,
   Flex,
+  Icons,
   Input,
   Radio,
   Space,
@@ -18,7 +17,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -102,7 +100,7 @@ const ConfigurationList = ({
             type="text"
             size="small"
             aria-label="Delete"
-            icon={<TrashCanOutlineIcon fontSize={16} />}
+            icon={<Icons.TrashCan />}
             onClick={(e) => {
               e.stopPropagation();
               setConfigToDelete(config);
@@ -169,7 +167,7 @@ const DropdownContent = ({
           type="text"
           size="small"
           aria-label="Close"
-          icon={<CloseIcon />}
+          icon={<Icons.Close />}
           onClick={() => setDropdownOpen(false)}
           data-testid="close-config-dropdown"
         />
@@ -324,7 +322,7 @@ export const TCFConfigurationDropdown = ({
         }
       >
         <Button
-          icon={<ChevronDownIcon />}
+          icon={<Icons.ChevronDown />}
           iconPosition="end"
           data-testid="tcf-config-dropdown-trigger"
         >

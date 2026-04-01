@@ -50,12 +50,12 @@ const PrivacyRequests: NextPage = () => {
 
   return (
     <FixedLayout
-      title="Privacy Requests"
+      title="Privacy requests"
       mainProps={{ minWidth: "784px", overflowY: "scroll" }}
       fullHeight
     >
       <PageHeader
-        heading="Privacy Requests"
+        heading="Privacy requests"
         breadcrumbItems={[{ title: "All requests" }]}
         rightContent={
           <Space>

@@ -10,6 +10,7 @@ import {
   useAddManualTaskStep,
   useAssignTasksToUsersStep,
   useAuthorizeIntegrationStep,
+  useConfigureTicketsStep,
   useCreateIntegrationStep,
   useCreateMonitorStep,
 } from "./hooks";
@@ -31,6 +32,13 @@ export const IntegrationSetupSteps = ({
   const addIntegrationStep = useCreateIntegrationStep();
 
   const authorizeIntegrationStep = useAuthorizeIntegrationStep({
+    testData,
+    testIsLoading,
+    connection,
+    connectionOption,
+  });
+
+  const configureTicketsStep = useConfigureTicketsStep({
     testData,
     testIsLoading,
     connection,
@@ -63,6 +71,7 @@ export const IntegrationSetupSteps = ({
     const allSteps: (Step | null)[] = [
       addIntegrationStep,
       authorizeIntegrationStep,
+      configureTicketsStep,
       createMonitorStep,
       addManualTaskStep,
       assignTasksToUsersStep,
@@ -73,6 +82,7 @@ export const IntegrationSetupSteps = ({
   }, [
     addIntegrationStep,
     authorizeIntegrationStep,
+    configureTicketsStep,
     createMonitorStep,
     addManualTaskStep,
     assignTasksToUsersStep,

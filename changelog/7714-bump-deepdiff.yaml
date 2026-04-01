@@ -1,4 +1,0 @@
-type: Security
-description: Bumped deepdiff to 8.6.2 (CVE-2026-33155)
-pr: 7714
-labels: []

@@ -32,10 +32,14 @@
 
   :global(.ant-list-item) {
     align-items: flex-start;
-    padding-block: var(--ant-padding);
+    padding-block: var(--ant-padding-sm, 12px);
   }
 
   :global(.ant-list-item-meta) {
     align-items: flex-start;
+  }
+
+  :global(.ant-list-item-action) {
+    align-self: center;
   }
 }

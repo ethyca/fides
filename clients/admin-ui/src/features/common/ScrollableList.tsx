@@ -2,10 +2,8 @@ import {
   Button,
   ChakraBox as Box,
   ChakraChakraProps as ChakraProps,
-  ChakraDragHandleIcon as DragHandleIcon,
   ChakraFlex as Flex,
   ChakraList as List,
-  ChakraSmallAddIcon as SmallAddIcon,
   ChakraText as Text,
   Icons,
   Select,
@@ -14,7 +12,7 @@ import {
   Tooltip,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { Label, Option } from "~/features/common/form/inputs";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
@@ -62,10 +60,14 @@ const ScrollableListItem = <T extends unknown>({
       position="relative"
     >
       {draggable && (
-        <DragHandleIcon
-          onPointerDown={(e) => dragControls.start(e)}
+        <Box
+          as="span"
+          onPointerDown={(e: React.PointerEvent) => dragControls.start(e)}
           cursor="grab"
-        />
+          display="flex"
+        >
+          <Icons.Draggable />
+        </Box>
       )}
       <Flex
         direction="row"
@@ -188,7 +190,7 @@ const ScrollableListAdd = ({
       onClick={() => setIsAdding(true)}
       data-testid={`add-${baseTestId}`}
       block
-      icon={<SmallAddIcon boxSize={4} />}
+      icon={<Icons.Add size={16} />}
       iconPosition="end"
     >
       {label}

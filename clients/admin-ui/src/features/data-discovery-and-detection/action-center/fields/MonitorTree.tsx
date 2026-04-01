@@ -304,6 +304,7 @@ const MonitorTree = forwardRef<
           size: number;
           cursor?: string;
           diff_status?: DiffStatus[];
+          include_total?: boolean;
         };
         fastUpdateFn: (
           data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
@@ -377,6 +378,7 @@ const MonitorTree = forwardRef<
                 ...(showApproved ? intoDiffStatus("Approved") : []),
               ],
               size: TREE_PAGE_SIZE,
+              include_total: false,
             },
             fastUpdateFn: (data) => {
               setTreeData((origin) =>
@@ -432,6 +434,7 @@ const MonitorTree = forwardRef<
                 ...(showApproved ? intoDiffStatus("Approved") : []),
               ],
               size: TREE_PAGE_SIZE,
+              include_total: false,
               cursor: currentNodePagination.cursor_end,
             },
             fastUpdateFn: (data) => {
@@ -637,6 +640,7 @@ const MonitorTree = forwardRef<
               ...(showApproved ? intoDiffStatus("Approved") : []),
             ],
             size: TREE_PAGE_SIZE,
+            include_total: false,
           },
           fastUpdateFn: (data) => {
             setTreeData(mapResponseToTreeData(data));
