@@ -1,14 +1,13 @@
-import type { ManualFieldListItem } from "~/types/api";
+import type {
+  ManualFieldListItem,
+  ManualFieldSearchFilterOptions,
+  ManualFieldSystem,
+  ManualFieldUser,
+} from "~/types/api";
 import {
   ManualFieldRequestType,
   ManualFieldStatus,
   ManualTaskFieldType,
-} from "~/types/api";
-
-import type {
-  ManualFieldSearchFilterOptions,
-  ManualFieldSystem,
-  ManualFieldUser,
 } from "~/types/api";
 
 const mockUsers: ManualFieldUser[] = [
@@ -173,9 +172,7 @@ export const generateMockManualTasks = (): ManualFieldListItem[] => {
       8 + (i % 12),
       (i * 7) % 60,
     );
-    const updatedDate = new Date(
-      createdDate.getTime() + (i % 5) * 86400000,
-    );
+    const updatedDate = new Date(createdDate.getTime() + (i % 5) * 86400000);
 
     const item: ManualFieldListItem = {
       manual_field_id: `task_${String(i + 1).padStart(3, "0")}`,
@@ -198,7 +195,7 @@ export const generateMockManualTasks = (): ManualFieldListItem[] => {
     };
 
     if (status !== ManualFieldStatus.NEW && assignedUsers.length > 0) {
-      item.submission_user = assignedUsers[0];
+      [item.submission_user] = assignedUsers;
     }
 
     if (i % 8 === 0) {
@@ -215,6 +212,7 @@ export const generateMockManualTasks = (): ManualFieldListItem[] => {
           created_at: updatedDate.toISOString(),
           attachments: [],
           comment_text:
+            // eslint-disable-next-line no-nested-ternary
             status === ManualFieldStatus.COMPLETED
               ? "Task completed successfully"
               : status === ManualFieldStatus.SKIPPED

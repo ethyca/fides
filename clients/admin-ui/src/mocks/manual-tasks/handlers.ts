@@ -78,9 +78,7 @@ export const manualTasksHandlers = () => {
       `${apiBase}/privacy-request/:privacyRequestId/manual-field/:manualFieldId/complete`,
       (req, res, ctx) => {
         const { manualFieldId } = req.params;
-        const task = tasks.find(
-          (t) => t.manual_field_id === manualFieldId,
-        );
+        const task = tasks.find((t) => t.manual_field_id === manualFieldId);
 
         if (task) {
           task.status = "completed" as ManualFieldListItem["status"];
@@ -102,9 +100,7 @@ export const manualTasksHandlers = () => {
       `${apiBase}/privacy-request/:privacyRequestId/manual-field/:manualFieldId/skip`,
       (req, res, ctx) => {
         const { manualFieldId } = req.params;
-        const task = tasks.find(
-          (t) => t.manual_field_id === manualFieldId,
-        );
+        const task = tasks.find((t) => t.manual_field_id === manualFieldId);
 
         if (task) {
           task.status = "skipped" as ManualFieldListItem["status"];
