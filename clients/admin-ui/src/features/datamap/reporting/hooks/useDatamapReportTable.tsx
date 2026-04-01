@@ -34,7 +34,7 @@ import {
 } from "../datamap-report-context";
 import { getDatamapReportColumns } from "../DatamapReportTableColumns";
 import { DatamapReportRow, groupDatamapRows } from "../groupDatamapRows";
-import { getColumnOrder, getPrefixColumns } from "../utils";
+import { getColKey, getColumnOrder, getPrefixColumns } from "../utils";
 
 const emptyResponse: Page_DatamapReport_ = {
   items: [],
@@ -225,7 +225,7 @@ export const useDatamapReportTable = (form?: FormInstance) => {
 
     // Mark hidden columns via Ant Design's `hidden` property
     const withVisibility = columns.map((col) => {
-      const { key } = col as { key?: string };
+      const key = getColKey(col);
       if (!key) {
         return col;
       }
@@ -234,9 +234,7 @@ export const useDatamapReportTable = (form?: FormInstance) => {
 
     // Compute effective column order synchronously to avoid stale ordering
     // when groupBy changes before the useEffect below persists the new order.
-    const allColumnKeys = withVisibility.map(
-      (c) => (c as { key?: string }).key || "",
-    );
+    const allColumnKeys = withVisibility.map(getColKey);
     const effectiveOrder = groupBy
       ? getColumnOrder(
           groupBy,
@@ -246,11 +244,9 @@ export const useDatamapReportTable = (form?: FormInstance) => {
 
     if (effectiveOrder.length > 0) {
       const orderMap = new Map(effectiveOrder.map((id, idx) => [id, idx]));
-      withVisibility.sort((a, b) => {
-        const aKey = (a as { key?: string }).key || "";
-        const bKey = (b as { key?: string }).key || "";
-        const aIdx = orderMap.get(aKey) ?? Infinity;
-        const bIdx = orderMap.get(bKey) ?? Infinity;
+      return [...withVisibility].sort((a, b) => {
+        const aIdx = orderMap.get(getColKey(a)) ?? Infinity;
+        const bIdx = orderMap.get(getColKey(b)) ?? Infinity;
         return aIdx - bIdx;
       });
     }
@@ -261,9 +257,7 @@ export const useDatamapReportTable = (form?: FormInstance) => {
   // Update column order when groupBy or data changes
   useEffect(() => {
     if (groupBy && datamapReport) {
-      const allColumnKeys = columns.map(
-        (c) => (c as { key?: string }).key || "",
-      );
+      const allColumnKeys = columns.map(getColKey);
       if (columnOrder.length === 0) {
         setColumnOrder(getColumnOrder(groupBy, allColumnKeys));
       } else {
@@ -335,11 +329,11 @@ export const useDatamapReportTable = (form?: FormInstance) => {
     const prefixCols = getPrefixColumns(groupBy);
     return columns
       .filter((c) => {
-        const { key } = c as { key?: string };
+        const key = getColKey(c);
         return key && !prefixCols.includes(key);
       })
       .map((c) => {
-        const key = (c as { key?: string }).key || "";
+        const key = getColKey(c);
         return {
           id: key,
           isVisible: columnVisibility[key] !== false,
@@ -370,12 +364,7 @@ export const useDatamapReportTable = (form?: FormInstance) => {
     columns: visibleColumns,
 
     // Data
-    datamapReport,
     reportError,
-    isReportLoading,
-    isReportFetching,
-    isLoadingHealthCheck,
-    isLoadingFidesLang,
 
     // Search
     searchQuery: searchQuery || "",
@@ -405,10 +394,6 @@ export const useDatamapReportTable = (form?: FormInstance) => {
     setIsRenamingColumns,
     handleColumnRenaming,
 
-    // Expand/collapse
-    expandedColumns,
-    onToggleColumnExpand,
-
     // Export
     onExport,
     isExportingReport,
@@ -424,10 +409,5 @@ export const useDatamapReportTable = (form?: FormInstance) => {
 
     // Report reset/apply
     setGroupBy,
-    DEFAULT_COLUMN_VISIBILITY,
-    DEFAULT_COLUMN_FILTERS,
-
-    // System groups
-    systemGroups,
   };
 };

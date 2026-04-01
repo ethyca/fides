@@ -65,7 +65,7 @@ export const groupDatamapRows = (
   groups.forEach((groupItems, key) => {
     groupItems.forEach((item, idx) => {
       const itemKey = item.fides_key
-        ? `${item.fides_key}-${item.declaration_name ?? "none"}-${idx}`
+        ? `${key}-${item.fides_key}-${item.declaration_name ?? "none"}-${idx}`
         : `${key}-${idx}`;
       result.push({
         ...item,
