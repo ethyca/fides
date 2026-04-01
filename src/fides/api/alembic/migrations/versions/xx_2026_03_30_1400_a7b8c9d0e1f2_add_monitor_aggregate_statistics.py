@@ -54,7 +54,12 @@ def upgrade():
         ),
     )
     op.create_index(
-        "ix_monitor_agg_stats_type",
+        "ix_monitor_aggregate_statistics_id",
+        "monitor_aggregate_statistics",
+        ["id"],
+    )
+    op.create_index(
+        "ix_monitor_aggregate_statistics_monitor_type",
         "monitor_aggregate_statistics",
         ["monitor_type"],
     )
@@ -62,7 +67,11 @@ def upgrade():
 
 def downgrade():
     op.drop_index(
-        "ix_monitor_agg_stats_type",
+        "ix_monitor_aggregate_statistics_monitor_type",
+        table_name="monitor_aggregate_statistics",
+    )
+    op.drop_index(
+        "ix_monitor_aggregate_statistics_id",
         table_name="monitor_aggregate_statistics",
     )
     op.drop_table("monitor_aggregate_statistics")

@@ -3153,6 +3153,23 @@ dataset:
       data_categories: [user]
     - name: rows_masked
       data_categories: [system]
+  - name: monitor_aggregate_statistics
+    data_categories: [system.operations]
+    fields:
+    - name: computed_at
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: monitor_config_key
+      data_categories: [system.operations]
+    - name: monitor_type
+      data_categories: [system.operations]
+    - name: statistics
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: monitorconfig
     fields:
     - name: classify_params
