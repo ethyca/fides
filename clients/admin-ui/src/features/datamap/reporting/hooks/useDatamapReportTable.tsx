@@ -223,19 +223,19 @@ export const useDatamapReportTable = (form?: FormInstance) => {
       return columns;
     }
 
-    // Filter by visibility
-    const filtered = columns.filter((col) => {
+    // Mark hidden columns via Ant Design's `hidden` property
+    const withVisibility = columns.map((col) => {
       const { key } = col as { key?: string };
       if (!key) {
-        return true;
+        return col;
       }
-      return columnVisibility[key] !== false;
+      return columnVisibility[key] === false ? { ...col, hidden: true } : col;
     });
 
     // Sort by column order if we have one
     if (columnOrder.length > 0) {
       const orderMap = new Map(columnOrder.map((id, idx) => [id, idx]));
-      filtered.sort((a, b) => {
+      withVisibility.sort((a, b) => {
         const aKey = (a as { key?: string }).key || "";
         const bKey = (b as { key?: string }).key || "";
         const aIdx = orderMap.get(aKey) ?? Infinity;
@@ -244,7 +244,7 @@ export const useDatamapReportTable = (form?: FormInstance) => {
       });
     }
 
-    return filtered;
+    return withVisibility;
   }, [columns, columnVisibility, columnOrder]);
 
   // Update column order when groupBy or data changes
