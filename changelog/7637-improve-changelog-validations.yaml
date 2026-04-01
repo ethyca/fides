@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Improved changelog fragment validation with PR number matching, filename format enforcement, placeholder description detection, label validation, and trailing whitespace stripping.
-pr: 7637
-labels: []

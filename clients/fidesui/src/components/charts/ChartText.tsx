@@ -2,17 +2,19 @@ import { theme } from "antd/lib";
 import type { ComponentProps } from "react";
 import { Text } from "recharts";
 
-import { CHART_TYPOGRAPHY } from "./chart-constants";
+import { CHART_TYPOGRAPHY, LABEL_WIDTH } from "./chart-constants";
 
 export type ChartTextProps = ComponentProps<typeof Text>;
 
 export const ChartText = ({
   x,
   y,
+  width = LABEL_WIDTH,
   fontFamily,
   fill,
   fillOpacity,
   children,
+  maxLines = 1,
   ...props
 }: ChartTextProps) => {
   const { token } = theme.useToken();
@@ -22,7 +24,8 @@ export const ChartText = ({
       y={y}
       textAnchor="middle"
       verticalAnchor="middle"
-      width={90}
+      width={width}
+      maxLines={maxLines}
       fontSize={token.fontSizeSM}
       fontFamily={fontFamily ?? token.fontFamilyCode}
       fontWeight={CHART_TYPOGRAPHY.fontWeight}

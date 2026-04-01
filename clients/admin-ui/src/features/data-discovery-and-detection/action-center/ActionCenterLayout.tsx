@@ -19,6 +19,8 @@ import useActionCenterNavigation, {
   ActionCenterRouteConfig,
 } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 
+import MonitorStats from "./MonitorStats";
+
 export interface ActionCenterLayoutProps {
   monitorId?: string;
   routeConfig: ActionCenterRouteConfig;
@@ -68,6 +70,7 @@ const ActionCenterLayout = ({
           )
         }
       />
+      <MonitorStats monitorId={monitorId} />
       <Menu
         aria-label="Action center tabs"
         mode="horizontal"

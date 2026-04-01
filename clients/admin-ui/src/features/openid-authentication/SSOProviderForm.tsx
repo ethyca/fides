@@ -3,9 +3,9 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraStack as Stack,
+  Icons,
   useMessage,
 } from "fidesui";
 import {
@@ -152,7 +152,7 @@ const CustomProviderExtraFields = () => {
                 />
                 <Button
                   aria-label="delete-scope"
-                  icon={<DeleteIcon />}
+                  icon={<Icons.TrashCan />}
                   className="z-[2] ml-4"
                   onClick={() => {
                     arrayHelpers.remove(index);

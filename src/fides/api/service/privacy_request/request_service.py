@@ -1,19 +1,24 @@
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, Generator, List, Optional, Set
+from typing import Any, DefaultDict, Dict, Generator, List, Optional, Set, Union
 
+import sqlalchemy
 from httpx import AsyncClient
 from loguru import logger
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy import cast, null, text
+from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
+from fides.api.models.audit_log import AuditLog
 from fides.api.models.privacy_request import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
+    ExecutionLog,
     PrivacyRequest,
     RequestTask,
 )
@@ -143,6 +148,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                         PrivacyRequestStatus.in_processing,
                         PrivacyRequestStatus.approved,
                         PrivacyRequestStatus.requires_input,
+                        PrivacyRequestStatus.pending_external,
                     ]
                 )
             )
@@ -568,6 +574,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             PrivacyRequestStatus.in_processing,
                             PrivacyRequestStatus.approved,
                             PrivacyRequestStatus.requires_input,
+                            PrivacyRequestStatus.pending_external,
                         ]
                     )
                 )
@@ -662,16 +669,17 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         # This means the subtask is stuck - but we need to handle this differently
                         # based on the privacy request status
                         if not subtask_id:
-                            if (
-                                privacy_request.status
-                                == PrivacyRequestStatus.requires_input
+                            if privacy_request.status in (
+                                PrivacyRequestStatus.requires_input,
+                                PrivacyRequestStatus.pending_external,
                             ):
-                                # For requires_input status, don't automatically error the request
-                                # as it's intentionally waiting for user input
+                                # For requires_input / pending_external status, don't
+                                # automatically error the request as it's intentionally
+                                # waiting for user input or an external system (e.g. Jira)
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) in requires_input status - "
-                                    f"keeping request in current status as it may be waiting for manual input"
+                                    f"(privacy request {privacy_request.id}) in {privacy_request.status.value} status - "
+                                    f"keeping request in current status as it may be waiting for input or an external system"
                                 )
                                 should_requeue = False
                                 break
@@ -792,3 +800,139 @@ def requeue_polling_tasks(self: DatabaseTask) -> None:
                         f"Requeuing polling task {async_task.id} for processing"
                     )
                     queue_request_task(async_task, privacy_request_proceed=True)
+
+
+EMBEDDED_EXECUTION_LOG_LIMIT = 1000
+
+
+def batch_execution_and_audit_logs_by_dataset(
+    db: Session,
+    privacy_request_ids: List[str],
+) -> Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]]:
+    """
+    Returns a mapping of privacy_request_id → {dataset_name → [logs]} for all
+    given privacy requests in a single query.
+
+    Audit Logs are for the entire privacy request as a whole, while execution logs
+    are created for specific collections. Logs are grouped by dataset, but if it is
+    an audit log, it is given a fake dataset name, "Request + status".
+    ExecutionLogs for each dataset are truncated at EMBEDDED_EXECUTION_LOG_LIMIT.
+    """
+    if not privacy_request_ids:
+        return {}
+
+    execution_log_query: Query = db.query(
+        ExecutionLog.id,
+        ExecutionLog.created_at,
+        ExecutionLog.updated_at,
+        ExecutionLog.message,
+        cast(ExecutionLog.status, sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
+        ExecutionLog.privacy_request_id,
+        ExecutionLog.dataset_name,
+        ExecutionLog.collection_name,
+        ExecutionLog.connection_key,
+        ExecutionLog.fields_affected,
+        ExecutionLog.action_type,
+        null().label("user_id"),
+        ExecutionLog.saas_version,
+    ).filter(ExecutionLog.privacy_request_id.in_(privacy_request_ids))
+
+    audit_log_query: Query = db.query(
+        AuditLog.id,
+        AuditLog.created_at,
+        AuditLog.updated_at,
+        AuditLog.message,
+        cast(AuditLog.action.label("status"), sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
+        AuditLog.privacy_request_id,
+        null().label("dataset_name"),
+        null().label("collection_name"),
+        null().label("connection_key"),
+        null().label("fields_affected"),
+        null().label("action_type"),
+        AuditLog.user_id,
+        null().label("saas_version"),
+    ).filter(AuditLog.privacy_request_id.in_(privacy_request_ids))
+
+    combined: Query = execution_log_query.union_all(audit_log_query)
+
+    result: Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]] = {}
+
+    for log in combined.order_by(ExecutionLog.updated_at.asc()):
+        pr_id = log.privacy_request_id
+        if pr_id not in result:
+            result[pr_id] = defaultdict(list)
+
+        dataset_name: str = log.dataset_name or f"Request {log.status}"
+
+        if len(result[pr_id][dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
+            continue
+        result[pr_id][dataset_name].append(log)
+
+    return result
+
+
+# Priority order for "worst" status per dataset — lower number = higher priority.
+_STATUS_PRIORITY: Dict[ExecutionLogStatus, int] = {
+    ExecutionLogStatus.error: 0,
+    ExecutionLogStatus.awaiting_processing: 1,
+    ExecutionLogStatus.polling: 2,
+    ExecutionLogStatus.retrying: 3,
+    ExecutionLogStatus.skipped: 4,
+}
+
+
+def batch_task_status_by_dataset(
+    db: Session,
+    privacy_request_ids: List[str],
+) -> Dict[str, Dict[str, str]]:
+    """
+    Returns a mapping of privacy_request_id → {dataset_name → "worst" status}
+    for all given privacy requests in a single query.
+
+    Only datasets that have a noteworthy status (error, awaiting_processing, polling,
+    retrying, skipped) are included. Datasets where all tasks are complete, pending,
+    or in_processing are omitted.
+    """
+    if not privacy_request_ids:
+        return {}
+
+    tasks = (
+        db.query(
+            RequestTask.privacy_request_id,
+            RequestTask.dataset_name,
+            RequestTask.status,
+        )
+        .filter(
+            RequestTask.privacy_request_id.in_(privacy_request_ids),
+            RequestTask.collection_address.notin_(
+                [
+                    ROOT_COLLECTION_ADDRESS.value,
+                    TERMINATOR_ADDRESS.value,
+                ]
+            ),
+        )
+        .all()
+    )
+
+    result: Dict[str, Dict[str, str]] = {}
+    worst_priority: Dict[str, Dict[str, int]] = {}
+
+    for pr_id, dataset_name, status in tasks:
+        priority = _STATUS_PRIORITY.get(status)
+        if priority is None:
+            continue
+
+        if pr_id not in result:
+            result[pr_id] = {}
+            worst_priority[pr_id] = {}
+
+        current_priority = worst_priority[pr_id].get(dataset_name)
+        if current_priority is None or priority < current_priority:
+            worst_priority[pr_id][dataset_name] = priority
+            result[pr_id][dataset_name] = status.name
+
+    return result

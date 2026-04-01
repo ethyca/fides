@@ -10,8 +10,8 @@
 #   - Comment containing "/code-review" on a PR (trusted users only)
 #
 # Required secrets:
-#   CLAUDE_CODE_OAUTH_TOKEN — Claude Code OAuth token
-#   TALOS_READ_TOKEN        — PAT with read access to ethyca/talos
+#   ANTHROPIC_API_KEY — Anthropic API key for Claude
+#   TALOS_READ_TOKEN  — PAT with read access to ethyca/talos
 
 name: Claude Code Review
 
@@ -21,13 +21,12 @@ on:
   issue_comment:
     types: [created]
 
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
-
 jobs:
   claude-review:
     runs-on: ubuntu-latest
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
     if: >
       (
         github.event_name == 'pull_request'
@@ -116,7 +115,7 @@ jobs:
         timeout-minutes: 60
         uses: anthropics/claude-code-action@22891970a71915a0bff651b093e5be2b99f336ba # v1
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: >-
             --allowedTools
             "Bash(gh pr diff*),Bash(gh pr view*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git status*),Read,Grep,Glob,mcp__github__create_pending_pull_request_review,mcp__github__add_comment_to_pending_review,mcp__github__submit_pending_pull_request_review"
