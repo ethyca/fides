@@ -16,16 +16,22 @@ from typing import Any
 
 @dataclass
 class TableRef:
-    """A reference to a table in an external data platform."""
+    """A reference to a table in an external data platform.
 
-    project: str
-    dataset: str
+    Uses standard SQL catalog terminology:
+    - catalog: GCP project, Snowflake database, Databricks catalog
+    - schema: BQ dataset, Snowflake schema, Databricks schema
+    - table: table name
+    """
+
+    catalog: str
+    schema: str
     table: str
 
     @property
     def qualified_name(self) -> str:
         """Full dot-separated identifier."""
-        parts = [p for p in (self.project, self.dataset, self.table) if p]
+        parts = [p for p in (self.catalog, self.schema, self.table) if p]
         return ".".join(parts)
 
 
@@ -39,12 +45,11 @@ class RawQueryLogEntry:
 
     source_id: str
     external_job_id: str
-    user_email: str
     query_text: str
     statement_type: str
     referenced_tables: list[TableRef]
     timestamp: datetime
-    principal_subject: str | None = None
+    identity: str  # The user who ran the query (email, login name, IAM ARN)
     raw_payload: dict[str, Any] = field(default_factory=dict)
 
 

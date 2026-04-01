@@ -17,6 +17,7 @@ from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.service.pbac.consumers.entities import DataConsumerEntity
 from fides.service.pbac.consumers.repository import DataConsumerRedisRepository
 from fides.service.pbac.evaluate import evaluate_access
+from fides.service.pbac.identity.interface import IdentityResolver
 from fides.service.pbac.identity.resolver import DatasetResolver, RedisIdentityResolver
 from fides.service.pbac.policies import (
     AccessEvaluationRequest,
@@ -91,13 +92,17 @@ class InProcessPBACEvaluationService:
         cache: Optional[FidesopsRedis] = None,
         policy_evaluator: Optional[AccessPolicyEvaluator] = None,
         dataset_purposes: dict[str, DatasetPurposes] | None = None,
+        identity_resolver: IdentityResolver | None = None,
     ) -> None:
         if cache is None:
             cache = get_cache()
         self._cache = cache
         self._purpose_repo = DataPurposeRedisRepository(cache)
         self._consumer_repo = DataConsumerRedisRepository(cache, self._purpose_repo)
-        self._identity_resolver = RedisIdentityResolver(self._consumer_repo)
+        if identity_resolver is not None:
+            self._identity_resolver = identity_resolver
+        else:
+            self._identity_resolver = RedisIdentityResolver(self._consumer_repo)
         self._dataset_resolver = DatasetResolver()
         self._policy_evaluator: AccessPolicyEvaluator = (
             policy_evaluator or NoOpPolicyEvaluator()
@@ -112,8 +117,7 @@ class InProcessPBACEvaluationService:
         """Evaluate a query log entry for PBAC compliance."""
         # 1. Resolve consumer
         consumer = self._identity_resolver.resolve(
-            user_email=entry.user_email,
-            principal_subject=entry.principal_subject,
+            identity=entry.identity,
         )
 
         # 2. Resolve datasets
@@ -141,7 +145,7 @@ class InProcessPBACEvaluationService:
 
         query_access = QueryAccess(
             query_id=entry.external_job_id,
-            consumer_id=consumer.id if consumer else entry.user_email,
+            consumer_id=consumer.id if consumer else entry.identity,
             dataset_keys=tuple(dataset_keys),
             timestamp=entry.timestamp,
             raw_query=entry.query_text,
@@ -182,8 +186,8 @@ class InProcessPBACEvaluationService:
                 purpose_keys=frozenset(consumer.purpose_fides_keys),
             )
         return ConsumerPurposes(
-            consumer_id=entry.user_email,
-            consumer_name=entry.user_email,
+            consumer_id=entry.identity,
+            consumer_name=entry.identity,
             purpose_keys=frozenset(),
         )
 
@@ -257,8 +261,8 @@ class InProcessPBACEvaluationService:
             )
         return ResolvedConsumer(
             id=None,
-            name=entry.user_email,
-            email=entry.user_email,
+            name=entry.identity,
+            email=entry.identity,
             type="unresolved",
             external_id=None,
             system_fides_key=None,

@@ -38,6 +38,7 @@ class DataConsumerEntity:
     contact_email: Optional[str] = None
     contact_slack_channel: Optional[str] = None
     contact_details: Optional[dict[str, Any]] = None
+    connection_config_key: Optional[str] = None
 
     def to_dict(self) -> dict:
         d = dataclasses.asdict(self)

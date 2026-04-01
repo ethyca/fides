@@ -32,32 +32,20 @@ class RedisIdentityResolver:
 
     def resolve(
         self,
-        user_email: str,
-        principal_subject: str | None = None,
+        identity: str,
     ) -> Optional[DataConsumerEntity]:
         """Attempt to resolve a user identity to a DataConsumer."""
-
         # Strategy 1: match by contact_email
-        matches = self._consumer_repo.get_by_index("contact_email", user_email)
+        matches = self._consumer_repo.get_by_index("contact_email", identity)
         if matches:
             return matches[0]
 
-        # Strategy 2: match by external_id (e.g., "user:email@example.com")
-        if principal_subject:
-            matches = self._consumer_repo.get_by_index("external_id", principal_subject)
-            if matches:
-                return matches[0]
-
-        # Also try the email as external_id
-        matches = self._consumer_repo.get_by_index("external_id", user_email)
+        # Strategy 2: match by external_id
+        matches = self._consumer_repo.get_by_index("external_id", identity)
         if matches:
             return matches[0]
 
-        logger.debug(
-            "Could not resolve identity for user_email={}, principal_subject={}",
-            user_email,
-            principal_subject,
-        )
+        logger.debug("Could not resolve identity for user={}", identity)
         return None
 
 
@@ -86,17 +74,17 @@ class DatasetResolver:
         if table_ref.qualified_name in self._mappings:
             return self._mappings[table_ref.qualified_name]
 
-        # Try dataset.table (without project)
-        short_name = f"{table_ref.dataset}.{table_ref.table}"
+        # Try schema.table (without catalog)
+        short_name = f"{table_ref.schema}.{table_ref.table}"
         if short_name in self._mappings:
             return self._mappings[short_name]
 
-        # Try just the dataset name as fides_key
-        if table_ref.dataset in self._mappings:
-            return self._mappings[table_ref.dataset]
+        # Try just the schema name as fides_key
+        if table_ref.schema in self._mappings:
+            return self._mappings[table_ref.schema]
 
-        # Fall back to using the dataset name directly as fides_key
-        return table_ref.dataset
+        # Fall back to using the schema name directly as fides_key
+        return table_ref.schema
 
     def add_mapping(self, platform_ref: str, fides_key: str) -> None:
         """Add a table reference → fides_key mapping."""
