@@ -1,8 +1,8 @@
 import type { Identifier, XYCoord } from "dnd-core";
 import { Button, Dropdown, Icons, Switch, Table, Tag, Text } from "fidesui";
 import NextLink from "next/link";
-import React, { useCallback, useContext, useRef } from "react";
-import { ConnectDragSource, useDrag, useDrop } from "react-dnd";
+import React, { useCallback, useRef } from "react";
+import { useDrag, useDrop } from "react-dnd";
 
 import { ControlGroup } from "./access-policies.slice";
 import { AccessPolicyListItem } from "./types";
@@ -14,11 +14,6 @@ interface DragItem {
   id: string;
   type: string;
 }
-
-/**
- * React context to pass the drag handle ref from the row to the drag handle cell.
- */
-const DragHandleContext = React.createContext<ConnectDragSource | null>(null);
 
 interface DraggableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   index: number;
@@ -74,7 +69,7 @@ const DraggableRow = ({
     },
   });
 
-  const [{ isDragging }, drag, preview] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: ROW_TYPE,
     item: () => ({ id: rowKey, index }),
     collect: (monitor) => ({
@@ -82,20 +77,19 @@ const DraggableRow = ({
     }),
   });
 
-  preview(drop(ref));
+  // Make the row both the drag source and drop target (same pattern as DraggableColumnList)
+  drag(drop(ref));
 
   return (
-    <DragHandleContext.Provider value={drag}>
-      <tr
-        ref={ref}
-        className={className}
-        style={{ ...style, opacity: isDragging ? 0.4 : 1, cursor: "move" }}
-        data-handler-id={handlerId}
-        {...restProps}
-      >
-        {children}
-      </tr>
-    </DragHandleContext.Provider>
+    <tr
+      ref={ref}
+      className={className}
+      style={{ ...style, opacity: isDragging ? 0.4 : 1, cursor: "grab" }}
+      data-handler-id={handlerId}
+      {...restProps}
+    >
+      {children}
+    </tr>
   );
 };
 
@@ -119,21 +113,9 @@ const formatRelativeTime = (isoDate?: string): string => {
   return `${days}d ago`;
 };
 
-const DragHandle = () => {
-  const drag = useContext(DragHandleContext);
-  const ref = useRef<HTMLDivElement>(null);
-  if (drag) {
-    drag(ref);
-  }
-  return (
-    <div ref={ref} style={{ cursor: "grab" }}>
-      <Icons.Draggable
-        size={16}
-        style={{ color: "var(--fidesui-neutral-500)" }}
-      />
-    </div>
-  );
-};
+const DragHandle = () => (
+  <Icons.Draggable size={16} style={{ color: "var(--fidesui-neutral-500)" }} />
+);
 
 interface PoliciesTableProps {
   policies: AccessPolicyListItem[];
