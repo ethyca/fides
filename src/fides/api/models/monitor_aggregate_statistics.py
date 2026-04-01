@@ -15,11 +15,7 @@ class MonitorAggregateStatistics(Base):
     at read time by summing per-monitor stats.
 
     The JSONB shape varies by monitor_type and is validated via
-    entity dataclasses on write (see fidesplus entities.py).
-
-    A monitor_config_key uniquely identifies a monitor, which always
-    has exactly one type — so the unique constraint on key alone is
-    sufficient (no need to include monitor_type).
+    entity dataclasses on write.
 
     Uses ``updated_at`` (inherited from Base) to track when statistics
     were last computed. The staleness check and ``last_updated`` API
