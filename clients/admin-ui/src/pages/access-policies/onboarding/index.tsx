@@ -27,8 +27,9 @@ const AccessPoliciesOnboardingPage: NextPage = () => {
         <div className="max-w-3xl">
           <Text type="secondary">
             Specify the industry context and specific datasets to prioritize
-            during discovery. This ensures our AI focusing on the most relevant
-            signals for your environment.
+            during discovery. These parameters help Fides focus its scanning
+            engine on the most relevant signals for your environment and
+            auto-generate an initial draft of your access governance policies.
           </Text>
         </div>
       </PageHeader>

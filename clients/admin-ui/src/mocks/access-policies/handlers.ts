@@ -4,6 +4,7 @@ import { rest } from "msw";
 import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
 
 import { mockAccessPolicies, mockControlGroups } from "./data";
+import { mockDataUses } from "./onboarding-data";
 
 /**
  * MSW handlers for access policy endpoints
@@ -33,6 +34,28 @@ export const accessPoliciesHandlers = () => {
         }),
       );
     }),
+
+    // GET /api/v1/plus/access-policy/onboarding/data-uses - data uses by industry
+    // Must be registered before /:id to avoid the wildcard matching "onboarding"
+    rest.get(
+      `${apiBase}/plus/access-policy/onboarding/data-uses`,
+      (_req, res, ctx) => {
+        return res(ctx.status(200), ctx.json({ items: mockDataUses }));
+      },
+    ),
+
+    // POST /api/v1/plus/access-policy/onboarding/privacy-policy - submit policy doc or URL
+    rest.post(
+      `${apiBase}/plus/access-policy/onboarding/privacy-policy`,
+      async (req, res, ctx) => {
+        const contentType = req.headers.get("content-type") ?? "";
+        const source = contentType.includes("multipart") ? "document" : "url";
+        return res(
+          ctx.status(200),
+          ctx.json({ status: "received", source }),
+        );
+      },
+    ),
 
     // GET /api/v1/plus/access-policy/control-group - list control groups
     // Must be registered before /:id to avoid the wildcard matching "control-group"

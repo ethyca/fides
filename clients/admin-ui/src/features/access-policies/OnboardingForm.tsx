@@ -1,15 +1,15 @@
-import { Flex, Form } from "fidesui";
+import { Col, Flex, Form, Row, Select } from "fidesui";
 import { useState } from "react";
 
+import { useGetOnboardingDataUsesQuery } from "./access-policies.slice";
+import { GEOGRAPHY_OPTIONS, INDUSTRY_OPTIONS } from "./constants";
 import DataUseCardsSection from "./DataUseCardsSection";
-import IndustryGeographySection from "./IndustryGeographySection";
 import PrivacyPolicySection from "./PrivacyPolicySection";
-import RefiningScanInfoBox from "./RefiningScanInfoBox";
 import { OnboardingFormState } from "./types";
 
 const INITIAL_STATE: OnboardingFormState = {
   industry: null,
-  geography: null,
+  geographies: [],
   selectedDataUses: [],
   policyUrl: "",
 };
@@ -17,6 +17,11 @@ const INITIAL_STATE: OnboardingFormState = {
 const OnboardingForm = () => {
   const [formState, setFormState] =
     useState<OnboardingFormState>(INITIAL_STATE);
+
+  const { data, isLoading, isFetching } = useGetOnboardingDataUsesQuery(
+    { industry: formState.industry!, geographies: formState.geographies },
+    { skip: !formState.industry || formState.geographies.length === 0 },
+  );
 
   const handleToggleDataUse = (id: string) => {
     setFormState((prev) => ({
@@ -31,23 +36,63 @@ const OnboardingForm = () => {
     <div className="max-w-3xl">
       <Form layout="vertical">
         <Flex vertical gap={32}>
-          <IndustryGeographySection
-            industry={formState.industry}
-            geography={formState.geography}
-            onIndustryChange={(value) =>
-              setFormState((prev) => ({
-                ...prev,
-                industry: value,
-                selectedDataUses: [],
-              }))
-            }
-            onGeographyChange={(value) =>
-              setFormState((prev) => ({ ...prev, geography: value }))
-            }
-          />
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                label="Business vertical / industry"
+                required
+                htmlFor="industry-select"
+                className="!mb-0"
+              >
+                <Select
+                  id="industry-select"
+                  aria-label="Business vertical / industry"
+                  className="w-full"
+                  placeholder="Select industry"
+                  value={formState.industry}
+                  onChange={(value) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      industry: value,
+                      selectedDataUses: [],
+                    }))
+                  }
+                  options={INDUSTRY_OPTIONS}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Geography"
+                htmlFor="geography-select"
+                className="!mb-0"
+              >
+                <Select
+                  id="geography-select"
+                  aria-label="Geography"
+                  className="w-full"
+                  mode="multiple"
+                  placeholder="Select geographies"
+                  value={formState.geographies}
+                  onChange={(value) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      geographies: value,
+                      selectedDataUses: [],
+                    }))
+                  }
+                  options={GEOGRAPHY_OPTIONS}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <DataUseCardsSection
             industry={formState.industry}
+            dataUses={data?.items ?? []}
+            isLoading={isLoading || isFetching}
             selectedDataUses={formState.selectedDataUses}
             onToggleDataUse={handleToggleDataUse}
           />
@@ -58,8 +103,6 @@ const OnboardingForm = () => {
               setFormState((prev) => ({ ...prev, policyUrl: url }))
             }
           />
-
-          <RefiningScanInfoBox industry={formState.industry} />
         </Flex>
       </Form>
     </div>

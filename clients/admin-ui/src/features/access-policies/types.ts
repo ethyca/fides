@@ -11,9 +11,23 @@ export interface DataUseOption {
 
 export interface OnboardingFormState {
   industry: string | null;
-  geography: string | null;
+  geographies: string[];
   selectedDataUses: string[];
   policyUrl: string;
+}
+
+export interface OnboardingDataUsesResponse {
+  items: DataUseOption[];
+}
+
+export interface PrivacyPolicySubmission {
+  url?: string;
+  filename?: string;
+}
+
+export interface PrivacyPolicyResponse {
+  status: "received";
+  source: "url" | "document";
 }
 
 export interface PolicyItem {
