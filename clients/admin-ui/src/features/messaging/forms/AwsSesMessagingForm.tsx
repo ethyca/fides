@@ -5,22 +5,23 @@ import {
   ChakraHeading as Heading,
   ChakraHStack as HStack,
   Form,
-  GreenCheckCircleIcon,
+  Icons,
   Input,
   Select,
   useMessage,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import { AwsSesLogo } from "~/features/common/logos/AwsSesLogo";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import AwsIcon from "~/features/messaging/icons/AwsIcon";
 
 import { messagingProviders } from "../constants";
 import {
@@ -398,7 +399,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
             borderTopRadius={6}
           >
             <HStack>
-              <AwsIcon />
+              <AwsSesLogo />
               <Heading as="h3" size="xs">
                 AWS SES email messaging configuration
               </Heading>
@@ -563,7 +564,9 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <GreenCheckCircleIcon />
+                        <Icons.CheckmarkFilled
+                          color={palette.FIDESUI_SUCCESS}
+                        />
                       ) : undefined
                     }
                   >

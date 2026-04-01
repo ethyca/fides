@@ -1,9 +1,8 @@
 import {
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
-  ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraChevronUpIcon as ChevronUpIcon,
   ChakraIconButton as IconButton,
+  Icons,
 } from "fidesui";
 import React, { ReactNode } from "react";
 
@@ -61,9 +60,9 @@ export const CheckboxItem = ({
             size="sm"
             icon={
               isExpanded ? (
-                <ChevronUpIcon boxSize="90%" />
+                <Icons.ChevronUp style={{ width: "90%", height: "90%" }} />
               ) : (
-                <ChevronDownIcon boxSize="90%" />
+                <Icons.ChevronDown style={{ width: "90%", height: "90%" }} />
               )
             }
             onClick={() => onExpanded(node)}

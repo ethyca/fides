@@ -8,6 +8,7 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useDiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredSystemAggregateTable";
+import MonitorStats from "~/features/data-discovery-and-detection/action-center/MonitorStats";
 import { DiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredSystemAggregateTable";
 
 const MonitorFeatureError = () => (
@@ -53,6 +54,7 @@ const MonitorResultSystems: NextPage = () => {
         ]}
         isSticky={false}
       />
+      <MonitorStats monitorId={monitorId} />
       <DiscoveredSystemAggregateTable monitorId={monitorId} />
     </FixedLayout>
   ) : (

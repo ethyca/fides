@@ -13,6 +13,7 @@ import {
   ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraSpacer as Spacer,
+  Icons,
   useMessage,
 } from "fidesui";
 import router from "next/router";
@@ -21,7 +22,6 @@ import { useMemo, useState } from "react";
 import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
 import { useAPIHelper } from "~/features/common/hooks";
-import RightArrow from "~/features/common/Icon/RightArrow";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { TestData } from "~/features/datastore-connections/TestData";
@@ -436,7 +436,7 @@ export const ConnectorParameters = ({
         {connectionOption.user_guide && (
           <div style={{ marginTop: "12px" }}>
             <DocsLink href={connectionOption.user_guide}>
-              View docs for help with this integration <RightArrow />
+              View docs for help with this integration <Icons.ArrowRight />
             </DocsLink>
           </div>
         )}

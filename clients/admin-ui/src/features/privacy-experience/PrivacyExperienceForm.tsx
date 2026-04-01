@@ -1,7 +1,6 @@
 import {
   Alert,
   Button,
-  ChakraArrowForwardIcon as ArrowForwardIcon,
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraCheckboxGroup as CheckboxGroup,
@@ -12,6 +11,7 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
   formatIsoLocation,
+  Icons,
   isoStringToEntry,
   SelectProps,
 } from "fidesui";
@@ -141,7 +141,7 @@ const bannerButtonOptions: SelectProps["options"] = [
 
 const GPC_ADAPTIVE_TOOLTIP = `Enabling ${bannerButtonOptions.find((b) => b.value === Layer1ButtonOption.GPC_CONDITIONAL)?.label} will show the acknowledge button when GPC is on, and the opt in/opt out buttons when GPC is off.`;
 
-const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
+export const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
 const GPP_PLACEHOLDER_ID = "gpp_notices_not_supported_placeholder";
 const DISABLED_NOTICE_TOOLTIP =
   "This notice is disabled and will not display. Enable it or remove it from this experience.";
@@ -182,11 +182,10 @@ const privacyNoticeIdsWithTcfId = (
   if (!values.privacy_notice_ids) {
     return [TCF_PLACEHOLDER_ID];
   }
-  const noticeIdsWithTcfId = values.privacy_notice_ids;
-  if (!noticeIdsWithTcfId.includes(TCF_PLACEHOLDER_ID)) {
-    noticeIdsWithTcfId.push(TCF_PLACEHOLDER_ID);
+  if (values.privacy_notice_ids.includes(TCF_PLACEHOLDER_ID)) {
+    return values.privacy_notice_ids;
   }
-  return noticeIdsWithTcfId;
+  return [...values.privacy_notice_ids, TCF_PLACEHOLDER_ID];
 };
 
 export const PrivacyExperienceForm = ({
@@ -327,9 +326,6 @@ export const PrivacyExperienceForm = ({
   );
 
   const handleComponentChange = (value: ComponentType) => {
-    if (!values.component) {
-      return;
-    }
     const newComponent = value as ComponentType;
 
     // Reset common fields that might need to be unset
@@ -658,7 +654,7 @@ export const PrivacyExperienceForm = ({
         </>
       ) : (
         <Button
-          icon={<ArrowForwardIcon />}
+          icon={<Icons.ArrowRight />}
           iconPosition="end"
           onClick={() => onSelectTranslation(values.translations![0])}
           data-testid="edit-experience-btn"

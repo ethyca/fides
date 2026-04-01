@@ -1,4 +1,0 @@
-type: Added
-description: Added CRUD endpoints for OAuth clients with name/description fields and secret rotation
-pr: 7658
-labels: ["db-migration"]

@@ -4,7 +4,7 @@ import {
   ChakraHStack as HStack,
   ChakraTag as Tag,
   ChakraText as Text,
-  ErrorWarningIcon,
+  Icons,
 } from "fidesui";
 import yaml from "js-yaml";
 import * as React from "react";
@@ -33,7 +33,7 @@ const YamlError = ({ isEmptyState, yamlError }: YamlErrorProps) => (
       borderRadius="6px"
     >
       <HStack alignItems="flex-start" margin={["14px", "17px", "14px", "17px"]}>
-        <ErrorWarningIcon />
+        <Icons.Misuse />
         {isEmptyState && (
           <Box>
             <Heading as="h5" color="red.500" fontWeight="semibold" size="xs">

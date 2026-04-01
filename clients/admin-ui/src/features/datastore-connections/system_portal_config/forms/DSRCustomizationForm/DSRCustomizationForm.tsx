@@ -3,7 +3,7 @@ import {
   ChakraBox as Box,
   ChakraHStack as HStack,
   ChakraVStack as VStack,
-  TrashCanSolidIcon,
+  Icons,
   useMessage,
 } from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
@@ -108,7 +108,7 @@ const DSRCustomizationForm = ({
                       <Box w="416px">DSR Package Label</Box>
                       <Box w="416px">Data Categories</Box>
                       <Box visibility="hidden">
-                        <TrashCanSolidIcon />
+                        <Icons.TrashCan />
                       </Box>
                     </HStack>
                     <Box>
@@ -151,9 +151,9 @@ const DSRCustomizationForm = ({
                                 h="57px"
                                 visibility={index > 0 ? "visible" : "hidden"}
                               >
-                                <TrashCanSolidIcon
+                                <Icons.TrashCan
                                   onClick={() => fieldArrayProps.remove(index)}
-                                  _hover={{ cursor: "pointer" }}
+                                  className="cursor-pointer"
                                 />
                               </Box>
                             </HStack>

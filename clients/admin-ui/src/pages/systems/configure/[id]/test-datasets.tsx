@@ -7,8 +7,6 @@ import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import EditorSection from "~/features/test-datasets/DatasetEditorSection";
-import TestLogsSection from "~/features/test-datasets/TestLogsSection";
-import TestResultsSection from "~/features/test-datasets/TestRunnerSection";
 
 // Helper functions
 const getSystemId = (query: { id?: string | string[] }): string => {
@@ -58,21 +56,10 @@ const TestDatasetPage: NextPage = () => {
         ]}
       />
       <Flex align="stretch" flex="1" gap="medium" vertical>
-        <Flex
-          align="stretch"
-          flex="1"
-          gap="medium"
-          className="max-h-[60vh] min-h-0"
-        >
-          <EditorSection
-            connectionKey={connectionKey}
-            connectionType={connectionType}
-          />
-          <TestResultsSection connectionKey={connectionKey} />
-        </Flex>
-        <Flex vertical>
-          <TestLogsSection />
-        </Flex>
+        <EditorSection
+          connectionKey={connectionKey}
+          connectionType={connectionType}
+        />
       </Flex>
     </Layout>
   );

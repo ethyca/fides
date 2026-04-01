@@ -441,7 +441,7 @@ export type { Page_TCFConfigurationResponse_ } from "./models/Page_TCFConfigurat
 export type { Page_TCFPublisherRestrictionResponse_ } from "./models/Page_TCFPublisherRestrictionResponse_";
 export type { Page_TemplateResponse_ } from "./models/Page_TemplateResponse_";
 export type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "./models/Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__";
-export type { Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ } from "./models/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__";
+export type { Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__ } from "./models/Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__";
 export type { Page_UserResponse_ } from "./models/Page_UserResponse_";
 export type { ParamValue } from "./models/ParamValue";
 export type { PartialPrivacyCenterConfig } from "./models/PartialPrivacyCenterConfig";
@@ -495,12 +495,15 @@ export type { PrivacyRequestFilter } from "./models/PrivacyRequestFilter";
 export type { PrivacyRequestNotificationInfo } from "./models/PrivacyRequestNotificationInfo";
 export type { PrivacyRequestOption } from "./models/PrivacyRequestOption";
 export type { PrivacyRequestResponse } from "./models/PrivacyRequestResponse";
+export type { PrivacyRequestResponseExtended } from "./models/PrivacyRequestResponseExtended";
 export type { PrivacyRequestResumeFormat } from "./models/PrivacyRequestResumeFormat";
 export type { PrivacyRequestUser } from "./models/PrivacyRequestUser";
 export { PrivacyRequestSource } from "./models/PrivacyRequestSource";
 export { PrivacyRequestStatus } from "./models/PrivacyRequestStatus";
 export type { PrivacyRequestTaskSchema } from "./models/PrivacyRequestTaskSchema";
 export type { PrivacyRequestVerboseResponse } from "./models/PrivacyRequestVerboseResponse";
+export type { PrivacyRequestVerboseResponseExtended } from "./models/PrivacyRequestVerboseResponseExtended";
+export type { JiraTicketSummary } from "./models/JiraTicketSummary";
 export type { PrivacyRule } from "./models/PrivacyRule";
 export type { PromoteResourcesResponse } from "./models/PromoteResourcesResponse";
 export type { PropagationPolicyKey } from "./models/PropagationPolicyKey";
@@ -516,6 +519,24 @@ export type { RangeEntry } from "./models/RangeEntry";
 export type { RateLimit } from "./models/RateLimit";
 export type { RateLimitConfig } from "./models/RateLimitConfig";
 export { RateLimitPeriod } from "./models/RateLimitPeriod";
+export type {
+  RBACConstraint,
+  RBACConstraintCreate,
+  RBACConstraintUpdate,
+} from "./models/RBACConstraint";
+export { RBACConstraintType } from "./models/RBACConstraint";
+export type {
+  RBACEvaluateRequest,
+  RBACEvaluateResponse,
+} from "./models/RBACEvaluate";
+export type { RBACPermission } from "./models/RBACPermission";
+export type {
+  RBACRole,
+  RBACRoleCreate,
+  RBACRoleUpdate,
+  RBACRolePermissionsUpdate,
+} from "./models/RBACRole";
+export type { RBACUserRole, RBACUserRoleCreate } from "./models/RBACUserRole";
 export type { RDSMySQLDocsSchema } from "./models/RDSMySQLDocsSchema";
 export type { RDSPostgresDocsSchema } from "./models/RDSPostgresDocsSchema";
 export type { ReadSaaSRequest } from "./models/ReadSaaSRequest";
