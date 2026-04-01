@@ -1,4 +1,7 @@
-from .base_provider import KeyProvider, KeyProviderError
-from .local_provider import LocalKeyProvider
+from fides.api.cryptography.key_providers.base_provider import (
+    KeyProvider,
+    KeyProviderError,
+)
+from fides.api.cryptography.key_providers.local_provider import LocalKeyProvider
 
 __all__ = ["KeyProvider", "KeyProviderError", "LocalKeyProvider"]

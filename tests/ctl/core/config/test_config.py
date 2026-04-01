@@ -316,11 +316,11 @@ def test_config_app_encryption_key_validation_length_error(app_encryption_key) -
 
 @pytest.mark.unit
 def test_config_key_provider_defaults() -> None:
-    """Test key_provider defaults to 'none' and KEK fields default to empty."""
+    """Test key_provider defaults to 'none' and KEK fields default to None."""
     config = get_config()
     assert config.security.key_provider == "none"
-    assert config.security.key_encryption_key == ""
-    assert config.security.key_encryption_key_previous == ""
+    assert config.security.key_encryption_key is None
+    assert config.security.key_encryption_key_previous is None
 
 
 @pytest.mark.unit
@@ -378,7 +378,7 @@ def test_check_required_webserver_config_values_local_provider_missing_kek(
     """Test that key_encryption_key is required when key_provider is 'local'."""
     config = get_config()
     assert config.security.key_provider == "local"
-    assert config.security.key_encryption_key == ""
+    assert config.security.key_encryption_key is None
 
     with pytest.raises(SystemExit):
         check_required_webserver_config_values(config=config)

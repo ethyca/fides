@@ -45,15 +45,15 @@ class SecuritySettings(FidesSettings):
     )
     key_provider: Literal["none", "local"] = Field(
         default="none",
-        description="Envelope encryption provider. 'none' uses app_encryption_key directly (legacy). "
-        "'local' wraps the DEK with a KEK via in-process AES-256-GCM.",
+        description="Envelope encryption provider. 'none' disables envelope encryption and uses app_encryption_key directly (legacy). "
+        "'local' enables envelope encryption, wrapping the DEK with a KEK via in-process AES-256-GCM.",
     )
-    key_encryption_key: str = Field(
-        default="",
+    key_encryption_key: Optional[str] = Field(
+        default=None,
         description="The Key Encryption Key (KEK) for the local envelope encryption provider. Must be exactly 32 characters.",
     )
-    key_encryption_key_previous: str = Field(
-        default="",
+    key_encryption_key_previous: Optional[str] = Field(
+        default=None,
         description="Previous KEK, used during key rotation. Set this to the old KEK when rotating to a new one.",
     )
     cors_origins: SerializeAsAny[List[URLOriginString]] = Field(
@@ -228,7 +228,7 @@ class SecuritySettings(FidesSettings):
     ) -> Optional[str]:
         """Validate the KEK is exactly 32 characters when provided."""
         if not v:
-            return v or ""
+            return None
 
         if len(v.encode(info.data.get("encoding", "UTF-8"))) != 32:
             raise ValueError(

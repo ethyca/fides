@@ -6,8 +6,9 @@ import hmac
 import os
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from sqlalchemy import text
-from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
+from fides.api.models.encryption_key import EncryptionKey
 
 from .base_provider import KeyProvider, KeyProviderError
 
@@ -16,14 +17,12 @@ class LocalKeyProvider(KeyProvider):
     """Envelope encryption provider using in-process AES-256-GCM.
 
     The KEK is supplied at construction time (from config). The wrapped DEK
-    is stored in the ``encryption_keys`` database table.
+    is stored in the encryption_keys database table.
     """
 
-    def __init__(self, kek: str, engine: Engine) -> None:
-        if len(kek.encode("UTF-8")) != 32:
-            raise ValueError("KEK must be exactly 32 characters (32 bytes in UTF-8)")
+    def __init__(self, kek: str, session: Session) -> None:
         self._kek = kek
-        self._engine = engine
+        self._session = session
 
     @staticmethod
     def kek_id_hash(kek: str) -> str:
@@ -39,8 +38,8 @@ class LocalKeyProvider(KeyProvider):
         ).hexdigest()
         return digest[:16]
 
-    def wrap(self, dek: str) -> str:
-        """Wrap a DEK with the configured KEK using AES-256-GCM.
+    def encrypt_dek(self, dek: str) -> str:
+        """Encrypt a DEK with the configured KEK using AES-256-GCM.
 
         Returns ``base64(nonce[12] + tag[16] + ciphertext)``.
         """
@@ -54,7 +53,7 @@ class LocalKeyProvider(KeyProvider):
         return base64.b64encode(nonce + encryptor.tag + ciphertext).decode("UTF-8")
 
     @staticmethod
-    def unwrap_with(wrapped_dek: str, kek: str) -> str:
+    def decrypt_with(wrapped_dek: str, kek: str) -> str:
         """Unwrap a DEK using the given KEK.
 
         This is public so that KEK rotation can unwrap with the previous
@@ -86,18 +85,8 @@ class LocalKeyProvider(KeyProvider):
             ) from exc
 
     def get_dek(self) -> str:
-        """Read the wrapped DEK from the database and unwrap it."""
-        with self._engine.connect() as connection:
-            result = connection.execute(
-                text(
-                    "SELECT wrapped_dek, kek_id_hash "
-                    "FROM encryption_keys "
-                    "WHERE provider = :provider "
-                    "ORDER BY created_at DESC LIMIT 1"
-                ),
-                {"provider": "local"},
-            )
-            row = result.fetchone()
+        """Read the wrapped DEK from the database and decrypt it."""
+        row = EncryptionKey.get_by_provider(self._session, provider="local")
 
         if row is None:
             raise KeyProviderError(
@@ -105,9 +94,8 @@ class LocalKeyProvider(KeyProvider):
                 "Bootstrap has not run yet."
             )
 
-        row_mapping = row._mapping
-        wrapped_dek = row_mapping["wrapped_dek"]
-        stored_hash = row_mapping["kek_id_hash"]
+        wrapped_dek = row.wrapped_dek
+        stored_hash = row.kek_id_hash
         expected_hash = self.kek_id_hash(self._kek)
 
         if stored_hash != expected_hash:
@@ -117,4 +105,4 @@ class LocalKeyProvider(KeyProvider):
                 "to the old KEK and restart."
             )
 
-        return self.unwrap_with(wrapped_dek, self._kek)
+        return self.decrypt_with(wrapped_dek, self._kek)

@@ -16,9 +16,9 @@ class KeyProvider(ABC):
         ...
 
     @abstractmethod
-    def wrap(self, dek: str) -> str:
-        """Wrap (encrypt) a DEK for storage.
+    def encrypt_dek(self, dek: str) -> str:
+        """Encrypt a DEK for storage.
 
-        Returns the wrapped DEK as a base64-encoded string.
+        Returns the encrypted DEK as a base64-encoded string.
         """
         ...
