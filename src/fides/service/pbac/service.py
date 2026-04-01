@@ -9,16 +9,17 @@ purpose lookup, PBAC evaluation, and policy filtering.
 
 from __future__ import annotations
 
-from typing import Optional, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from loguru import logger
 
 from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.service.pbac.consumers.entities import DataConsumerEntity
 from fides.service.pbac.consumers.repository import DataConsumerRedisRepository
+from fides.service.pbac.dataset.resolver import DatasetResolver
 from fides.service.pbac.evaluate import evaluate_access
 from fides.service.pbac.identity.interface import IdentityResolver
-from fides.service.pbac.identity.resolver import DatasetResolver, RedisIdentityResolver
+from fides.service.pbac.identity.resolver import RedisIdentityResolver
 from fides.service.pbac.policies import (
     AccessEvaluationRequest,
     AccessPolicyEvaluator,
@@ -56,24 +57,22 @@ class InProcessPBACEvaluationService:
 
     def __init__(
         self,
-        cache: Optional[FidesopsRedis] = None,
-        policy_evaluator: Optional[AccessPolicyEvaluator] = None,
+        cache: FidesopsRedis | None = None,
+        policy_evaluator: AccessPolicyEvaluator | None = None,
         dataset_purposes: dict[str, DatasetPurposes] | None = None,
         identity_resolver: IdentityResolver | None = None,
+        dataset_resolver: DatasetResolver | None = None,
     ) -> None:
         if cache is None:
             cache = get_cache()
         self._cache = cache
         self._purpose_repo = DataPurposeRedisRepository(cache)
         self._consumer_repo = DataConsumerRedisRepository(cache, self._purpose_repo)
-        if identity_resolver is not None:
-            self._identity_resolver = identity_resolver
-        else:
-            self._identity_resolver = RedisIdentityResolver(self._consumer_repo)
-        self._dataset_resolver = DatasetResolver()
-        self._policy_evaluator: AccessPolicyEvaluator = (
-            policy_evaluator or NoOpPolicyEvaluator()
+        self._identity_resolver = identity_resolver or RedisIdentityResolver(
+            self._consumer_repo
         )
+        self._dataset_resolver = dataset_resolver or DatasetResolver()
+        self._policy_evaluator = policy_evaluator or NoOpPolicyEvaluator()
         self._dataset_purposes = dataset_purposes or {}
 
     def evaluate(
