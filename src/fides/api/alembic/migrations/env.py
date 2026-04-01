@@ -56,8 +56,8 @@ def run_migrations_offline():
     if fides_config.database.migration_role:
         log.warning(
             "FIDES__DATABASE__MIGRATION_ROLE is set but has no effect in offline "
-            "migration mode. Prepend 'SET ROLE \"<role>\";' to the generated SQL "
-            "script manually if needed."
+            f"migration mode. Prepend 'SET ROLE \"{fides_config.database.migration_role}\";' "
+            "to the generated SQL script manually if needed."
         )
 
     with context.begin_transaction():
@@ -88,7 +88,7 @@ def run_migrations_online():
             escaped_role = fides_config.database.migration_role.replace('"', '""')
             quoted_role = f'"{escaped_role}"'
             connection.execute(text(f"SET ROLE {quoted_role}"))
-            log.info(f"Migration role set to: {quoted_role}")
+            log.info(f"Migration role set to: {fides_config.database.migration_role!r}")
 
         context.configure(
             connection=connection,

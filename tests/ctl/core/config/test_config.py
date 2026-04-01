@@ -257,6 +257,31 @@ def test_database_settings_migration_role_from_env() -> None:
     assert db_settings.migration_role == "app_migration_role"
 
 
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("  app_role  ", "app_role"),
+        ("  ", None),
+        ("\t\n", None),
+        ("", None),
+    ],
+    ids=["strip_whitespace", "spaces_only", "tabs_newlines", "empty_string"],
+)
+def test_database_settings_migration_role_validator(
+    value: str, expected: str | None
+) -> None:
+    """validate_migration_role strips whitespace and rejects whitespace-only values."""
+    if expected is None:
+        with pytest.raises(ValidationError):
+            with patch.dict(os.environ, {"FIDES__DATABASE__MIGRATION_ROLE": value}):
+                DatabaseSettings()
+    else:
+        with patch.dict(os.environ, {"FIDES__DATABASE__MIGRATION_ROLE": value}):
+            db_settings = DatabaseSettings()
+        assert db_settings.migration_role == expected
+
+
 @patch.dict(
     os.environ,
     {
