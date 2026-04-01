@@ -32,7 +32,6 @@ class OnePasswordClient:
         self._client: Optional[Client] = None
         self._title_to_id: Dict[str, Dict[str, str]] = {}
         self._mappings_initialized = False
-        self._lock = asyncio.Lock()
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -41,13 +40,11 @@ class OnePasswordClient:
     async def _get_client(self) -> Client:
         """Lazily authenticate and return the 1Password SDK client."""
         if self._client is None:
-            async with self._lock:
-                if self._client is None:
-                    self._client = await Client.authenticate(
-                        auth=self._token,
-                        integration_name=self._integration_name,
-                        integration_version=self._integration_version,
-                    )
+            self._client = await Client.authenticate(
+                auth=self._token,
+                integration_name=self._integration_name,
+                integration_version=self._integration_version,
+            )
         return self._client
 
     async def _ensure_mappings(self) -> None:
@@ -55,31 +52,27 @@ class OnePasswordClient:
         if self._mappings_initialized:
             return
 
-        async with self._lock:
-            if self._mappings_initialized:
-                return
+        client = await self._get_client()
+        items = await client.items.list(vault_id=self._vault_id)
 
-            client = await self._get_client()
-            items = await client.items.list(vault_id=self._vault_id)
+        for item in items:
+            logger.debug(f"1PW: indexed item '{item.title}'")
+            if item.title in self._title_to_id:
+                logger.warning(
+                    f"1PW: duplicate vault item title '{item.title}' — "
+                    f"overwriting {self._title_to_id[item.title]['item_id']} "
+                    f"with {item.id}"
+                )
+            self._title_to_id[item.title] = {
+                "item_id": item.id,
+                "category": item.category,
+            }
 
-            for item in items:
-                logger.debug(f"1PW: indexed item '{item.title}'")
-                if item.title in self._title_to_id:
-                    logger.warning(
-                        f"1PW: duplicate vault item title '{item.title}' — "
-                        f"overwriting {self._title_to_id[item.title]['item_id']} "
-                        f"with {item.id}"
-                    )
-                self._title_to_id[item.title] = {
-                    "item_id": item.id,
-                    "category": item.category,
-                }
-
-            self._mappings_initialized = True
-            logger.info(
-                f"1PW: initialized mappings for {len(self._title_to_id)} items "
-                f"in vault {self._vault_id}"
-            )
+        self._mappings_initialized = True
+        logger.info(
+            f"1PW: initialized mappings for {len(self._title_to_id)} items "
+            f"in vault {self._vault_id}"
+        )
 
     @staticmethod
     def _item_to_dict(item: Any) -> Dict[str, Any]:
@@ -203,29 +196,9 @@ class OnePasswordClient:
     # ------------------------------------------------------------------
 
     def get_secrets_sync(self, title: str) -> Dict[str, str]:
-        """Synchronous wrapper around :meth:`get_secrets`.
-
-        Creates a new event loop per call. Safe when called from synchronous
-        contexts; will raise ``RuntimeError`` if called from within a running
-        event loop. The cached SDK client uses stateless HTTP so it is safe
-        to reuse across loops.
-        """
-        loop = asyncio.new_event_loop()
-        try:
-            return loop.run_until_complete(self.get_secrets(title))
-        finally:
-            loop.close()
+        """Synchronous wrapper around :meth:`get_secrets`."""
+        return asyncio.run(self.get_secrets(title))
 
     def get_item_notes_json_sync(self, title: str) -> Optional[Dict[str, Any]]:
-        """Synchronous wrapper around :meth:`get_item_notes_json`.
-
-        Creates a new event loop per call. Safe when called from synchronous
-        contexts; will raise ``RuntimeError`` if called from within a running
-        event loop. The cached SDK client uses stateless HTTP so it is safe
-        to reuse across loops.
-        """
-        loop = asyncio.new_event_loop()
-        try:
-            return loop.run_until_complete(self.get_item_notes_json(title))
-        finally:
-            loop.close()
+        """Synchronous wrapper around :meth:`get_item_notes_json`."""
+        return asyncio.run(self.get_item_notes_json(title))
