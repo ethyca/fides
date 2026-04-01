@@ -242,6 +242,21 @@ def test_get_alembic_config_with_special_char_in_database_url():
     get_alembic_config(database_url)
 
 
+@pytest.mark.unit
+def test_database_settings_migration_role_defaults_to_none() -> None:
+    """migration_role is optional and defaults to None."""
+    db_settings = DatabaseSettings()
+    assert db_settings.migration_role is None
+
+
+@pytest.mark.unit
+@patch.dict(os.environ, {"FIDES__DATABASE__MIGRATION_ROLE": "app_migration_role"})
+def test_database_settings_migration_role_from_env() -> None:
+    """FIDES__DATABASE__MIGRATION_ROLE is picked up and stored on the config."""
+    db_settings = DatabaseSettings()
+    assert db_settings.migration_role == "app_migration_role"
+
+
 @patch.dict(
     os.environ,
     {

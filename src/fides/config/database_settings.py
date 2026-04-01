@@ -155,6 +155,10 @@ class DatabaseSettings(FidesSettings):
         default={},  # Can't use the default_factory since it breaks docs generation
         description="Additional connection parameters used when connecting to the application database.",
     )
+    migration_role: Optional[str] = Field(
+        default=None,
+        description="If set, Fides will execute SET ROLE <migration_role> before running Alembic migrations. Use this when multiple DB login users (e.g. during blue-green password rotation) share a common permissions role — ensures all migrated objects are owned by that shared role rather than the individual login user.",
+    )
 
     # These must be at the end because they require other values to construct
     sqlalchemy_database_uri: str = Field(
