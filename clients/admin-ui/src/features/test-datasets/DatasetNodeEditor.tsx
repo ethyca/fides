@@ -16,13 +16,7 @@ import {
 import { Breadcrumb, Button, Flex, Icons, Select, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import yaml, { YAMLException } from "js-yaml";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Editor } from "~/features/common/yaml/helpers";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
@@ -31,13 +25,13 @@ import AddNodeModal from "./AddNodeModal";
 import DatasetEditorActionsContext, {
   DatasetEditorActions,
 } from "./context/DatasetEditorActionsContext";
+import { DatasetTreeHoverProvider } from "./context/DatasetTreeHoverContext";
 import {
   addNestedField,
   getFieldsAtPath,
   removeFieldAtPath,
   updateFieldAtPath,
 } from "./dataset-field-helpers";
-import { DatasetTreeHoverProvider } from "./context/DatasetTreeHoverContext";
 import DatasetNodeDetailPanel from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
 import { buildProtectedPathsByCollection, removeNulls } from "./helpers";
@@ -117,6 +111,10 @@ const DatasetNodeEditorInner = ({
     null,
   );
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep a ref to the latest dataset so callbacks avoid stale closures
+  const datasetRef = useRef(dataset);
+  datasetRef.current = dataset;
 
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
@@ -444,7 +442,7 @@ const DatasetNodeEditorInner = ({
 
   const handleUpdateCollection = useCallback(
     (collectionName: string, updates: Partial<DatasetCollection>) => {
-      const current = datasetRef.current;
+      const { current } = datasetRef;
       const updated: Dataset = {
         ...current,
         collections: current.collections.map((c) =>
@@ -462,7 +460,7 @@ const DatasetNodeEditorInner = ({
       fieldPath: string,
       updates: Partial<DatasetField>,
     ) => {
-      const current = datasetRef.current;
+      const { current } = datasetRef;
       const segments = fieldPath.split(".");
       const updated: Dataset = {
         ...current,
@@ -485,7 +483,7 @@ const DatasetNodeEditorInner = ({
 
   const handleAddCollection = useCallback(
     (name: string) => {
-      const current = datasetRef.current;
+      const { current } = datasetRef;
       const newCollection: DatasetCollection = {
         name,
         fields: [],
@@ -506,7 +504,7 @@ const DatasetNodeEditorInner = ({
       parentFieldPath?: string,
       fieldData?: Partial<DatasetField>,
     ) => {
-      const current = datasetRef.current;
+      const { current } = datasetRef;
       const newField: DatasetField = { name, ...fieldData };
       onDatasetChange({
         ...current,
@@ -532,7 +530,7 @@ const DatasetNodeEditorInner = ({
 
   const handleDeleteCollection = useCallback(
     (collectionName: string) => {
-      const current = datasetRef.current;
+      const { current } = datasetRef;
       onDatasetChange({
         ...current,
         collections: current.collections.filter(
@@ -549,7 +547,7 @@ const DatasetNodeEditorInner = ({
 
   const handleDeleteField = useCallback(
     (collectionName: string, fieldPath: string) => {
-      const current = datasetRef.current;
+      const { current } = datasetRef;
       const segments = fieldPath.split(".");
       onDatasetChange({
         ...current,
@@ -668,6 +666,7 @@ const DatasetNodeEditorInner = ({
                 mode="multiple"
                 allowClear
                 placeholder="Filter by category"
+                aria-label="Filter by data category"
                 options={categoryOptions}
                 value={categoryFilter}
                 onChange={(value) => setCategoryFilter(value ?? [])}

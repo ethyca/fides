@@ -8,8 +8,8 @@ import {
   useMessage,
 } from "fidesui";
 import { NextPage } from "next";
-import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useMemo, useRef } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
@@ -29,8 +29,8 @@ import { useJiraAuthorization } from "~/features/integrations/hooks/useJiraAutho
 import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
-import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 

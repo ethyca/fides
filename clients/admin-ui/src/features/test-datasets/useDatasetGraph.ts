@@ -132,20 +132,18 @@ export const collectDatasetCategories = (dataset: Dataset): string[] => {
   const categories = new Set<string>();
 
   const walkFields = (fields: DatasetField[]) => {
-    for (const field of fields ?? []) {
-      if (!field) continue;
+    (fields ?? []).filter(Boolean).forEach((field) => {
       field.data_categories?.forEach((c) => categories.add(c));
       if (field.fields?.length) {
         walkFields(field.fields);
       }
-    }
+    });
   };
 
-  for (const collection of dataset.collections ?? []) {
-    if (!collection) continue;
+  (dataset.collections ?? []).filter(Boolean).forEach((collection) => {
     collection.data_categories?.forEach((c) => categories.add(c));
     walkFields(collection.fields ?? []);
-  }
+  });
 
   return Array.from(categories).sort();
 };
