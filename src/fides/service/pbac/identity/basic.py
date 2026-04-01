@@ -8,20 +8,20 @@ Resolves user identities to consumers using:
 
 from __future__ import annotations
 
-from fides.service.pbac.types import ResolvedConsumer
+from fides.service.pbac.consumers.entities import DataConsumerEntity
 
 
 class BasicIdentityResolver:
     """Resolve user identities using in-memory consumer data.
 
     This is the OSS implementation. Consumers are loaded from a
-    consumer store (list of ResolvedConsumer) and matched against
+    consumer store (list of DataConsumerEntity) and matched against
     a user identity string.
     """
 
     def __init__(
         self,
-        consumers: list[ResolvedConsumer],
+        consumers: list[DataConsumerEntity],
         members_map: dict[str, list[str]] | None = None,
     ) -> None:
         """Initialize with a list of consumers.
@@ -35,18 +35,18 @@ class BasicIdentityResolver:
         self._members_map = members_map or {}
 
         # Build indexes for fast lookup
-        self._by_email: dict[str, ResolvedConsumer] = {}
-        self._by_external_id: dict[str, ResolvedConsumer] = {}
+        self._by_email: dict[str, DataConsumerEntity] = {}
+        self._by_external_id: dict[str, DataConsumerEntity] = {}
         for c in consumers:
-            if c.email:
-                self._by_email[c.email] = c
+            if c.contact_email:
+                self._by_email[c.contact_email] = c
             if c.external_id:
                 self._by_external_id[c.external_id] = c
 
     def resolve(
         self,
         identity: str,
-    ) -> ResolvedConsumer | None:
+    ) -> DataConsumerEntity | None:
         """Resolve a user identity to a consumer.
 
         Resolution chain:

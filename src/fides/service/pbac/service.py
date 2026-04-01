@@ -29,12 +29,10 @@ from fides.service.pbac.purposes.repository import DataPurposeRedisRepository
 from fides.service.pbac.types import (
     ConsumerPurposes,
     DatasetPurposes,
-    EvaluationGap,
     EvaluationResult,
     EvaluationViolation,
     QueryAccess,
     RawQueryLogEntry,
-    ResolvedConsumer,
     ValidationResult,
     Violation,
 )
@@ -44,49 +42,17 @@ PBAC_CONTROL_TYPE = "purpose_restriction"
 
 @runtime_checkable
 class PBACEvaluationService(Protocol):
-    """Service boundary for PBAC evaluation.
-
-    Implementations own the full evaluation pipeline:
-      1. Resolve consumer identity (email -> consumer + purposes)
-      2. Resolve datasets (table refs -> fides keys)
-      3. Build purpose maps
-      4. Run PBAC engine (purpose overlap check)
-      5. Run Policy v2 engine (override check)
-      6. Return flat EvaluationResult
-
-    To swap in a Go service later, implement this Protocol as a
-    gRPC/HTTP client.
-    """
+    """Service boundary for PBAC evaluation."""
 
     def evaluate(
         self,
         entry: RawQueryLogEntry,
         dataset_purpose_overrides: dict[str, list[str]] | None = None,
-    ) -> EvaluationResult:
-        """Evaluate a query log entry for PBAC compliance.
-
-        Args:
-            entry: Normalized query log entry (from SQL parser or connector).
-            dataset_purpose_overrides: Optional explicit dataset -> purpose
-                mapping.  When provided, overrides the default purpose lookup.
-
-        Returns:
-            EvaluationResult with compliance verdict and any violations.
-        """
-        ...
+    ) -> EvaluationResult: ...
 
 
 class InProcessPBACEvaluationService:
-    """In-process implementation of the PBAC evaluation service.
-
-    Owns the full evaluation pipeline:
-      1. Resolve consumer identity
-      2. Resolve datasets
-      3. Build purpose maps
-      4. Run PBAC engine
-      5. Filter through Policy v2
-      6. Return flat EvaluationResult
-    """
+    """In-process implementation of the PBAC evaluation service."""
 
     def __init__(
         self,
@@ -117,9 +83,7 @@ class InProcessPBACEvaluationService:
     ) -> EvaluationResult:
         """Evaluate a query log entry for PBAC compliance."""
         # 1. Resolve consumer
-        consumer = self._identity_resolver.resolve(
-            identity=entry.identity,
-        )
+        consumer = self._identity_resolver.resolve(identity=entry.identity)
 
         # 2. Resolve datasets
         dataset_keys: list[str] = []
@@ -161,25 +125,16 @@ class InProcessPBACEvaluationService:
         )
 
         # 6. Build flat EvaluationResult
-        resolved = self._build_resolved_consumer(consumer, entry)
         violations = self._build_evaluation_violations(filtered_result)
-        gaps = tuple(
-            EvaluationGap(
-                gap_type=g.gap_type,
-                identifier=g.identifier,
-                dataset_key=g.dataset_key,
-                reason=g.reason,
-            )
-            for g in output.gaps
-        )
 
         return EvaluationResult(
             query_id=entry.external_job_id,
-            consumer=resolved,
+            identity=entry.identity,
+            consumer=consumer,
             dataset_keys=tuple(dataset_keys),
             is_compliant=filtered_result.is_compliant,
             violations=violations,
-            gaps=gaps,
+            gaps=tuple(output.gaps),
             total_accesses=filtered_result.total_accesses,
             timestamp=entry.timestamp,
             query_text=entry.query_text,
@@ -257,38 +212,12 @@ class InProcessPBACEvaluationService:
             checked_at=validation_result.checked_at,
         )
 
-    def _build_resolved_consumer(
-        self,
-        consumer: DataConsumerEntity | None,
-        entry: RawQueryLogEntry,
-    ) -> ResolvedConsumer:
-        if consumer:
-            return ResolvedConsumer(
-                id=consumer.id,
-                name=consumer.name,
-                email=consumer.contact_email,
-                type=consumer.type,
-                external_id=consumer.external_id,
-                system_fides_key=consumer.system_fides_key,
-                purpose_fides_keys=tuple(consumer.purpose_fides_keys),
-            )
-        return ResolvedConsumer(
-            id=None,
-            name=entry.identity,
-            email=entry.identity,
-            type="unresolved",
-            external_id=None,
-            system_fides_key=None,
-            purpose_fides_keys=(),
-        )
-
     def _build_evaluation_violations(
         self,
         validation_result: ValidationResult,
     ) -> tuple[EvaluationViolation, ...]:
         violations: list[EvaluationViolation] = []
         for violation in validation_result.violations:
-            # Resolve data_use from dataset purposes
             data_use = None
             for purpose_key in violation.dataset_purposes:
                 purpose = self._purpose_repo.get(purpose_key)

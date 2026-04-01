@@ -6,9 +6,10 @@ Fidesplus extends with PlatformIdentityResolver (BigQuery IAM, Snowflake RBAC).
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from fides.service.pbac.types import ResolvedConsumer
+if TYPE_CHECKING:
+    from fides.service.pbac.consumers.entities import DataConsumerEntity
 
 
 @runtime_checkable
@@ -22,13 +23,13 @@ class IdentityResolver(Protocol):
     def resolve(
         self,
         identity: str,
-    ) -> ResolvedConsumer | None:
+    ) -> DataConsumerEntity | None:
         """Resolve a user identity to a consumer.
 
         Args:
             identity: The user who ran the query (email, login name, etc.).
 
         Returns:
-            ResolvedConsumer if matched, None if unresolved.
+            DataConsumerEntity if matched, None if unresolved.
         """
         ...

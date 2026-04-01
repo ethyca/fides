@@ -7,15 +7,15 @@ Import directly from the canonical modules instead of this shim.
 """
 
 from fides.service.pbac.types import (
+    EvaluationGap,
     EvaluationResult,
     EvaluationViolation,
-    ResolvedConsumer,
 )
 
 __all__ = [
+    "EvaluationGap",
     "EvaluationResult",
     "EvaluationViolation",
-    "ResolvedConsumer",
 ]
 
 

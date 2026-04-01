@@ -1,8 +1,9 @@
 """Purpose-based access control evaluation engine.
 
-This module has ZERO external dependencies.  Given a consumer's purposes,
-a map of dataset purposes, and a query access event, it determines whether
-the access is compliant and produces a list of violations and coverage gaps.
+Uses types from ``fides.service.pbac.types`` for all inputs and outputs.
+Given a consumer's purposes, a map of dataset purposes, and a query access
+event, it determines whether the access is compliant and produces violations
+and coverage gaps.
 """
 
 from __future__ import annotations
@@ -13,20 +14,12 @@ from datetime import datetime, timezone
 from fides.service.pbac.types import (
     ConsumerPurposes,
     DatasetPurposes,
+    EvaluationGap,
+    GapType,
     QueryAccess,
     ValidationResult,
     Violation,
 )
-
-
-@dataclass(frozen=True)
-class AccessGap:
-    """A coverage gap found during evaluation (not a violation)."""
-
-    gap_type: str  # "unresolved_identity" | "unconfigured_dataset"
-    identifier: str
-    dataset_key: str | None
-    reason: str
 
 
 @dataclass
@@ -34,7 +27,7 @@ class EvaluationOutput:
     """Full output from evaluate_access including both violations and gaps."""
 
     result: ValidationResult
-    gaps: list[AccessGap] = field(default_factory=list)
+    gaps: list[EvaluationGap] = field(default_factory=list)
 
 
 def evaluate_access(
@@ -55,7 +48,7 @@ def evaluate_access(
     Returns an EvaluationOutput containing both violations and gaps.
     """
     violations: list[Violation] = []
-    gaps: list[AccessGap] = []
+    gaps: list[EvaluationGap] = []
     total_accesses = 0
 
     # Rule 1: consumer has no purposes — record as identity gap
@@ -63,8 +56,8 @@ def evaluate_access(
         for dataset_key in query.dataset_keys:
             total_accesses += 1
             gaps.append(
-                AccessGap(
-                    gap_type="unresolved_identity",
+                EvaluationGap(
+                    gap_type=GapType.UNRESOLVED_IDENTITY,
                     identifier=consumer.consumer_id,
                     dataset_key=dataset_key,
                     reason="Consumer has no declared purposes",
@@ -73,7 +66,7 @@ def evaluate_access(
         return EvaluationOutput(
             result=ValidationResult(
                 violations=[],
-                is_compliant=True,  # gaps are not violations
+                is_compliant=True,
                 total_accesses=total_accesses,
                 checked_at=datetime.now(timezone.utc),
             ),
@@ -127,15 +120,15 @@ def _check_access(
     collection: str | None,
     query_id: str,
     violations: list[Violation],
-    gaps: list[AccessGap],
+    gaps: list[EvaluationGap],
 ) -> None:
     """Check a single dataset/collection access against consumer purposes."""
 
     # Dataset not registered or has no purposes — record as gap
     if ds_purposes is None:
         gaps.append(
-            AccessGap(
-                gap_type="unconfigured_dataset",
+            EvaluationGap(
+                gap_type=GapType.UNCONFIGURED_DATASET,
                 identifier=dataset_key,
                 dataset_key=dataset_key,
                 reason="Dataset is not registered in Fides",
@@ -147,8 +140,8 @@ def _check_access(
 
     if not effective:
         gaps.append(
-            AccessGap(
-                gap_type="unconfigured_dataset",
+            EvaluationGap(
+                gap_type=GapType.UNCONFIGURED_DATASET,
                 identifier=dataset_key,
                 dataset_key=dataset_key,
                 reason="Dataset has no declared purposes",

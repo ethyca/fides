@@ -1,15 +1,19 @@
 """All PBAC types: input types, engine types, and service boundary types.
 
-These types are plain dataclasses with zero external dependencies — directly
-serializable to JSON or protobuf.  They are the shared contract between the
-SQL parser, platform connectors, the evaluation engine, and the service layer.
+Plain dataclasses with minimal external dependencies — the shared contract
+between the SQL parser, platform connectors, the evaluation engine, and the
+service layer.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from fides.service.pbac.consumers.entities import DataConsumerEntity
 
 # ── Input types ────────────────────────────────────────────────────────
 
@@ -125,20 +129,31 @@ class ValidationResult:
     checked_at: datetime
 
 
+# ── Enums ─────────────────────────────────────────────────────────────
+
+
+class GapType(str, Enum):
+    """Types of PBAC coverage gaps."""
+
+    UNRESOLVED_IDENTITY = "unresolved_identity"
+    UNCONFIGURED_DATASET = "unconfigured_dataset"
+
+
+class ConsumerType(str, Enum):
+    """Standard consumer type discriminators."""
+
+    GROUP = "group"
+    GOOGLE_GROUP = "google_group"
+    IAM_ROLE = "iam_role"
+    SERVICE_ACCOUNT = "service_account"
+    SNOWFLAKE_ROLE = "snowflake_role"
+    SNOWFLAKE_DATABASE_ROLE = "snowflake_database_role"
+    SNOWFLAKE_SERVICE_USER = "snowflake_service_user"
+    SYSTEM = "system"
+    UNRESOLVED = "unresolved"
+
+
 # ── Service boundary types ─────────────────────────────────────────────
-
-
-@dataclass(frozen=True)
-class ResolvedConsumer:
-    """Consumer identity as resolved by the evaluation service."""
-
-    id: str | None  # None if unresolved
-    name: str  # email if unresolved
-    email: str | None
-    type: str  # "group", "project", "system", "unresolved"
-    external_id: str | None  # reference to outside user groups or roles
-    system_fides_key: str | None
-    purpose_fides_keys: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -164,7 +179,7 @@ class EvaluationGap:
     for auditability.
     """
 
-    gap_type: str  # "unresolved_identity" | "unconfigured_dataset"
+    gap_type: GapType
     identifier: str  # the user email or dataset key
     dataset_key: str | None
     reason: str
@@ -175,11 +190,12 @@ class EvaluationResult:
     """Complete result of evaluating a RawQueryLogEntry."""
 
     query_id: str
-    consumer: ResolvedConsumer
+    identity: str  # the user who ran the query
+    consumer: DataConsumerEntity | None  # None if unresolved
     dataset_keys: tuple[str, ...]
     is_compliant: bool
     violations: tuple[EvaluationViolation, ...]
-    gaps: tuple[EvaluationGap, ...]  # coverage gaps (not violations)
+    gaps: tuple[EvaluationGap, ...]
     total_accesses: int
     timestamp: datetime
     query_text: str | None
