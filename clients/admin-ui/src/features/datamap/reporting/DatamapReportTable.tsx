@@ -351,7 +351,12 @@ export const DatamapReportTable = ({
           </Flex>
         </Flex>
 
-        <Table {...tableProps} columns={columns} data-testid="fidesTable" />
+        <Table
+          key={groupBy}
+          {...tableProps}
+          columns={columns}
+          data-testid="fidesTable"
+        />
       </Form>
 
       <DatamapReportFilterModal
