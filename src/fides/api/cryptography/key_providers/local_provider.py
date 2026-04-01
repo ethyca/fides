@@ -1,40 +1,15 @@
-"""Key provider abstraction for envelope encryption.
-
-Defines the KeyProvider ABC and the LocalKeyProvider implementation that
-wraps/unwraps the Data Encryption Key (DEK) using AES-256-GCM with a
-Key Encryption Key (KEK) stored in config.
-"""
+"""Local envelope encryption provider using in-process AES-256-GCM."""
 
 import base64
 import hashlib
 import hmac
 import os
-from abc import ABC, abstractmethod
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
-
-class KeyProviderError(Exception):
-    """Raised when a key provider operation fails."""
-
-
-class KeyProvider(ABC):
-    """Abstract base class for envelope encryption key providers."""
-
-    @abstractmethod
-    def get_dek(self) -> str:
-        """Retrieve and unwrap the Data Encryption Key."""
-        ...
-
-    @abstractmethod
-    def wrap(self, dek: str) -> str:
-        """Wrap (encrypt) a DEK for storage.
-
-        Returns the wrapped DEK as a base64-encoded string.
-        """
-        ...
+from .base_provider import KeyProvider, KeyProviderError
 
 
 class LocalKeyProvider(KeyProvider):
@@ -82,8 +57,8 @@ class LocalKeyProvider(KeyProvider):
     def unwrap_with(wrapped_dek: str, kek: str) -> str:
         """Unwrap a DEK using the given KEK.
 
-        This is public so that KEK rotation (PR 7) can unwrap with the
-        previous KEK before re-wrapping with the new one.
+        This is public so that KEK rotation can unwrap with the previous
+        KEK before re-wrapping with the new one.
         """
         try:
             raw = base64.b64decode(wrapped_dek)

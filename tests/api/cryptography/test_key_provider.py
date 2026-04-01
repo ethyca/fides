@@ -6,10 +6,7 @@ import uuid
 import pytest
 from sqlalchemy import create_engine, text
 
-from fides.api.cryptography.key_provider import (
-    KeyProviderError,
-    LocalKeyProvider,
-)
+from fides.api.cryptography.key_providers import KeyProviderError, LocalKeyProvider
 
 # 32-character test keys
 TEST_KEK = "testkeythatisexactly32characters"
