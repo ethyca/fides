@@ -287,7 +287,9 @@ def delete_saas_config(
         )
 
     fides_key = saas_config.get("fides_key")
-    dataset = DatasetConfigService.get_config_from_fides_key(connection_config.id,fides_key)
+    dataset = DatasetConfigService.get_config_from_fides_key(
+        connection_config.id, fides_key
+    )
 
     warnings = []
 

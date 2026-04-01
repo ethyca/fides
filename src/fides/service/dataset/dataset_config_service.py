@@ -237,8 +237,10 @@ class DatasetConfigService:
             if dc.ctl_dataset
         ]
 
-    def get_config_from_fides_key(self, connection_config_id: str, fides_key: str) -> DatasetConfig :
-        "Return a Dataset Config By searching by key and config id "
+    def get_config_from_fides_key(
+        self, connection_config_id: str, fides_key: str
+    ) -> DatasetConfig:
+        "Return a Dataset Config By searching by key and config id"
         return DatasetConfig.filter(
             db=self.db,
             conditions=(
@@ -246,7 +248,6 @@ class DatasetConfigService:
                 & (DatasetConfig.fides_key == fides_key)
             ),
         ).first()
-
 
     def run_test_access_request(
         self,
