@@ -244,7 +244,7 @@ const SeedDataPanel = () => {
     if (result) {
       setExecutionId(result.execution_id);
     }
-  }, [selectedProfile, taskOverrides, resolvedTasks, triggerSeed]);
+  }, [selectedProfile, taskOverrides, triggerSeed]);
 
   const isRunning = !!executionId || isTriggering;
   const showStatus = statusData && statusData.status !== "pending";
@@ -252,9 +252,9 @@ const SeedDataPanel = () => {
   return (
     <Card title="Sample data seeding" style={{ maxWidth: 780 }}>
       <Paragraph type="secondary">
-        Select a seed profile to populate this environment with synthetic
-        sample data for demos and testing. Seeding is idempotent — it is
-        safe to run multiple times. Not for production use.
+        Select a seed profile to populate this environment with synthetic sample
+        data for demos and testing. Seeding is idempotent — it is safe to run
+        multiple times. Not for production use.
       </Paragraph>
 
       <Space direction="vertical" size="middle" className="mb-6 w-full">
@@ -316,11 +316,7 @@ const SeedDataPanel = () => {
               ),
               children: (
                 <Space direction="vertical" size="small" className="w-full">
-                  <Flex
-                    justify="space-between"
-                    align="center"
-                    className="mb-2"
-                  >
+                  <Flex justify="space-between" align="center" className="mb-2">
                     <Text type="secondary" style={{ fontSize: 12 }}>
                       Toggle scenarios on or off. Checked items match the
                       profile default unless overridden.
@@ -351,7 +347,11 @@ const SeedDataPanel = () => {
                       >
                         <Text strong>{scenario.label}</Text>
                         {isOverridden ? (
-                          <Tag color="blue" className="ml-2" style={{ fontSize: 11 }}>
+                          <Tag
+                            color="blue"
+                            className="ml-2"
+                            style={{ fontSize: 11 }}
+                          >
                             overridden
                           </Tag>
                         ) : (
