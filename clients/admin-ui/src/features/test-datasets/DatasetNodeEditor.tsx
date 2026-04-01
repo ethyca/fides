@@ -209,7 +209,7 @@ const DatasetNodeEditorInner = ({
 
   // Compute protected YAML line ranges for Monaco decorations
   const protectedRanges = useMemo((): MonacoDecorationOptions[] => {
-    if (!yamlPanelOpen || !protectedFields || !yamlContent) {
+    if (!yamlPanelOpen || !yamlContent) {
       return [];
     }
 
@@ -217,9 +217,11 @@ const DatasetNodeEditorInner = ({
     const ranges: MonacoDecorationOptions[] = [];
 
     // Build lookup: collection → Set of field paths (including ancestor paths)
-    const protectedPathsByCollection = buildProtectedPathsByCollection(
-      protectedFields.protected_collection_fields,
-    );
+    const protectedPathsByCollection = protectedFields
+      ? buildProtectedPathsByCollection(
+          protectedFields.protected_collection_fields,
+        )
+      : new Map<string, Set<string>>();
 
     let currentCollection = "";
     const fieldStack: [number, string][] = [];
