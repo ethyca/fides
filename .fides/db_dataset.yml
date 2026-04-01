@@ -3861,6 +3861,8 @@ dataset:
         data_categories: [user.unique_id]
       - name: is_default
         data_categories: [system.operations]
+      - name: case_sensitive
+        data_categories: [system.operations]
   - name: saas_template_dataset
     fields:
       - name: id
