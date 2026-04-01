@@ -155,6 +155,22 @@ class EvaluationViolation:
 
 
 @dataclass(frozen=True)
+class EvaluationGap:
+    """A gap in PBAC coverage — incomplete configuration, not a policy violation.
+
+    Gaps are immutable records. When the underlying configuration is
+    addressed (user mapped to consumer, dataset gets purposes), future
+    queries are evaluated correctly — but historical gaps remain as-is
+    for auditability.
+    """
+
+    gap_type: str  # "unresolved_identity" | "unconfigured_dataset"
+    identifier: str  # the user email or dataset key
+    dataset_key: str | None
+    reason: str
+
+
+@dataclass(frozen=True)
 class EvaluationResult:
     """Complete result of evaluating a RawQueryLogEntry."""
 
@@ -163,6 +179,7 @@ class EvaluationResult:
     dataset_keys: tuple[str, ...]
     is_compliant: bool
     violations: tuple[EvaluationViolation, ...]
+    gaps: tuple[EvaluationGap, ...]  # coverage gaps (not violations)
     total_accesses: int
     timestamp: datetime
     query_text: str | None

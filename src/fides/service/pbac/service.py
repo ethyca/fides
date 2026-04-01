@@ -29,6 +29,7 @@ from fides.service.pbac.purposes.repository import DataPurposeRedisRepository
 from fides.service.pbac.types import (
     ConsumerPurposes,
     DatasetPurposes,
+    EvaluationGap,
     EvaluationResult,
     EvaluationViolation,
     QueryAccess,
@@ -152,22 +153,34 @@ class InProcessPBACEvaluationService:
         )
 
         # 4. PBAC engine
-        result = evaluate_access(consumer_purposes, ds_purposes_map, query_access)
+        output = evaluate_access(consumer_purposes, ds_purposes_map, query_access)
 
         # 5. Filter through Policy v2
-        result = self._filter_violations_through_policies(result, consumer)
+        filtered_result = self._filter_violations_through_policies(
+            output.result, consumer
+        )
 
         # 6. Build flat EvaluationResult
         resolved = self._build_resolved_consumer(consumer, entry)
-        violations = self._build_evaluation_violations(result)
+        violations = self._build_evaluation_violations(filtered_result)
+        gaps = tuple(
+            EvaluationGap(
+                gap_type=g.gap_type,
+                identifier=g.identifier,
+                dataset_key=g.dataset_key,
+                reason=g.reason,
+            )
+            for g in output.gaps
+        )
 
         return EvaluationResult(
             query_id=entry.external_job_id,
             consumer=resolved,
             dataset_keys=tuple(dataset_keys),
-            is_compliant=result.is_compliant,
+            is_compliant=filtered_result.is_compliant,
             violations=violations,
-            total_accesses=result.total_accesses,
+            gaps=gaps,
+            total_accesses=filtered_result.total_accesses,
             timestamp=entry.timestamp,
             query_text=entry.query_text,
         )
