@@ -197,8 +197,12 @@ export const ManualTasks = () => {
       [newFilters.assignedUsers] = tableFilters.assigned_users as string[];
     }
 
-    setFilters(newFilters);
-    setPageIndex(1);
+    // Only reset to page 1 when filters actually changed, not on pagination events.
+    // Ant Design's Table.onChange fires for both filter changes AND pagination changes.
+    if (!isEqual(newFilters, filters)) {
+      setFilters(newFilters);
+      setPageIndex(1);
+    }
   };
 
   const onUserClick = (userId: string) => {
