@@ -37,28 +37,30 @@ export interface ProtectedFieldsInfo {
 }
 
 /**
- * Recursively check if a field or any of its descendants have a given category.
+ * Recursively check if a field or any of its descendants have any of the given categories.
  */
-const fieldHasCategory = (
+const fieldMatchesCategories = (
   field: DatasetField,
-  category: string,
+  categories: string[],
 ): boolean => {
-  if (field.data_categories?.includes(category)) {
+  if (field.data_categories?.some((c) => categories.includes(c))) {
     return true;
   }
   return (
-    field.fields?.some((child) => fieldHasCategory(child, category)) ?? false
+    field.fields?.some((child) => fieldMatchesCategories(child, categories)) ??
+    false
   );
 };
 
 /**
- * Check if a collection has any field (recursively) with the given category.
+ * Check if a collection has any field (recursively) matching any of the given categories.
  */
-const collectionHasCategory = (
+const collectionMatchesCategories = (
   collection: DatasetCollection,
-  category: string,
+  categories: string[],
 ): boolean =>
-  collection.fields?.some((f) => fieldHasCategory(f, category)) ?? false;
+  collection.fields?.some((f) => fieldMatchesCategories(f, categories)) ??
+  false;
 
 /**
  * Recursively build nodes and edges for a field and its nested sub-fields.
@@ -69,7 +71,7 @@ const buildFieldNodes = (
   collectionName: string,
   pathPrefix: string,
   protectedPaths: Set<string>,
-  categoryFilter: string | null,
+  categoryFilter: string[],
   nodes: Node[],
   edges: Edge[],
 ) => {
@@ -79,7 +81,10 @@ const buildFieldNodes = (
     const hasChildren = !!(field.fields && field.fields.length > 0);
 
     // When filtering by category, skip fields that don't match (including descendants)
-    if (categoryFilter && !fieldHasCategory(field, categoryFilter)) {
+    if (
+      categoryFilter.length > 0 &&
+      !fieldMatchesCategories(field, categoryFilter)
+    ) {
       return;
     }
 
@@ -150,13 +155,13 @@ export const collectDatasetCategories = (dataset: Dataset): string[] => {
  *
  * When `focusedCollection` is null, shows the overview: root → collection nodes.
  * When `focusedCollection` is set, shows drill-down: collection root → field nodes.
- * When `categoryFilter` is set, hides nodes that don't have the specified category.
+ * When `categoryFilter` is set, hides nodes that don't have any of the specified categories.
  */
 const useDatasetGraph = (
   dataset: Dataset | undefined,
   protectedFields?: ProtectedFieldsInfo,
   focusedCollection?: string | null,
-  categoryFilter?: string | null,
+  categoryFilter?: string[],
 ) => {
   return useMemo(() => {
     if (!dataset) {
@@ -165,7 +170,7 @@ const useDatasetGraph = (
 
     const nodes: Node[] = [];
     const edges: Edge[] = [];
-    const filter = categoryFilter ?? null;
+    const filter = categoryFilter ?? [];
 
     // Build protected paths lookup per collection
     const protectedByCollection = protectedFields
@@ -228,7 +233,10 @@ const useDatasetGraph = (
         .filter(Boolean)
         .forEach((collection) => {
           // In overview mode, hide collections that have no matching fields
-          if (filter && !collectionHasCategory(collection, filter)) {
+          if (
+            filter.length > 0 &&
+            !collectionMatchesCategories(collection, filter)
+          ) {
             return;
           }
 

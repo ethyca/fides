@@ -118,7 +118,7 @@ const DatasetNodeEditorInner = ({
   );
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   // --- YAML editor state ---
   const [yamlPanelOpen, setYamlPanelOpen] = useState(false);
@@ -663,12 +663,13 @@ const DatasetNodeEditorInner = ({
           <Flex align="center" gap="small">
             {availableCategories.length > 0 && (
               <Select
+                mode="multiple"
                 allowClear
                 placeholder="Filter by category"
                 options={categoryOptions}
                 value={categoryFilter}
-                onChange={(value) => setCategoryFilter(value ?? null)}
-                style={{ minWidth: 200 }}
+                onChange={(value) => setCategoryFilter(value ?? [])}
+                style={{ minWidth: 200, maxWidth: 400 }}
                 size="small"
                 showSearch
               />

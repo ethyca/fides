@@ -29,7 +29,7 @@ const DatasetRootNode = ({ data, id }: NodeProps) => {
         type="text"
         disabled={id === DATASET_ROOT_ID}
       >
-        <Icons.Layers size={14} />
+        <Icons.Layers size={14} style={{ flexShrink: 0 }} />
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>
