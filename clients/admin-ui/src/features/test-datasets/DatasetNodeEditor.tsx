@@ -12,7 +12,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import { Breadcrumb, Button, Flex, Icons, Typography } from "fidesui";
+import { Breadcrumb, Button, Flex, Icons, Select, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import yaml, { YAMLException } from "js-yaml";
 import {
@@ -44,6 +44,7 @@ import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
 import DatasetFieldNode from "./nodes/DatasetFieldNode";
 import DatasetRootNode from "./nodes/DatasetRootNode";
 import useDatasetGraph, {
+  collectDatasetCategories,
   COLLECTION_ROOT_PREFIX,
   CollectionNodeData,
   DATASET_ROOT_ID,
@@ -103,6 +104,8 @@ const DatasetNodeEditorInner = ({
     null,
   );
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   // --- YAML editor state ---
   const [yamlPanelOpen, setYamlPanelOpen] = useState(false);
@@ -189,10 +192,21 @@ const DatasetNodeEditorInner = ({
     [onDatasetChange],
   );
 
+  const availableCategories = useMemo(
+    () => collectDatasetCategories(dataset),
+    [dataset],
+  );
+
+  const categoryOptions = useMemo(
+    () => availableCategories.map((c) => ({ value: c, label: c })),
+    [availableCategories],
+  );
+
   const { nodes: rawNodes, edges } = useDatasetGraph(
     dataset,
     protectedFields,
     focusedCollection,
+    categoryFilter,
   );
   const { nodes: layoutedNodes, edges: layoutedEdges } = useDatasetNodeLayout({
     nodes: rawNodes,
@@ -496,15 +510,29 @@ const DatasetNodeEditorInner = ({
           ) : (
             <div />
           )}
-          <Button
-            type="text"
-            size="small"
-            icon={<Icons.Code />}
-            onClick={handleToggleYamlPanel}
-            aria-label="Toggle YAML editor"
-          >
-            YAML
-          </Button>
+          <Flex align="center" gap="small">
+            {availableCategories.length > 0 && (
+              <Select
+                allowClear
+                placeholder="Filter by category"
+                options={categoryOptions}
+                value={categoryFilter}
+                onChange={(value) => setCategoryFilter(value ?? null)}
+                style={{ minWidth: 200 }}
+                size="small"
+                showSearch
+              />
+            )}
+            <Button
+              type="text"
+              size="small"
+              icon={<Icons.Code />}
+              onClick={handleToggleYamlPanel}
+              aria-label="Toggle YAML editor"
+            >
+              YAML
+            </Button>
+          </Flex>
         </Flex>
         <div
           style={{

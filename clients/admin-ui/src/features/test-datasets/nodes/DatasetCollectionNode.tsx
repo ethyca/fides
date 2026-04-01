@@ -1,5 +1,5 @@
 import { NodeProps } from "@xyflow/react";
-import { Button, Typography } from "fidesui";
+import { Button, Icons, Typography } from "fidesui";
 import { useContext } from "react";
 
 import DatasetEditorActionsContext from "../context/DatasetEditorActionsContext";
@@ -19,6 +19,7 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
   );
   const actions = useContext(DatasetEditorActionsContext);
   const hoverStatus = getNodeHoverStatus(id);
+  const hasFields = (nodeData.collection.fields?.length ?? 0) > 0;
 
   return (
     <div
@@ -34,31 +35,36 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
         className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
         type="text"
       >
+        <Icons.Table size={14} />
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>
         <span className={styles.badge}>
+          <Icons.Column size={10} />
           {nodeData.collection.fields?.length ?? 0}
         </span>
       </Button>
       {nodeData.isRoot && (
-        <button
-          type="button"
-          className={styles["add-button"]}
-          onClick={(e) => {
-            e.stopPropagation();
-            actions.addField(nodeData.collection.name);
-          }}
-          title="Add field"
-          aria-label="Add field"
-        >
-          +
-        </button>
+        <div className={styles["add-button-container"]}>
+          <Button
+            type="default"
+            className={`${styles["add-button"]} ${hoverStatus === DatasetNodeHoverStatus.ACTIVE_HOVER ? styles["add-button--visible"] : ""}`}
+            icon={<Icons.Add size={16} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              actions.addField(nodeData.collection.name);
+            }}
+            size="small"
+            aria-label="Add field"
+          />
+        </div>
       )}
-      <DatasetNodeHandle
-        type="source"
-        inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
-      />
+      {hasFields && (
+        <DatasetNodeHandle
+          type="source"
+          inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
+        />
+      )}
     </div>
   );
 };

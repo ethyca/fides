@@ -12,7 +12,7 @@ import {
   useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -65,6 +65,7 @@ const EditorSection = ({
 
   const [localDataset, setLocalDataset] = useState<Dataset | undefined>();
   const [editorContent, setEditorContent] = useState<string>("");
+  const savedDatasetJson = useRef<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
@@ -121,11 +122,19 @@ const EditorSection = ({
       const cleaned = removeNulls(currentDataset.ctl_dataset);
       if (isSaas) {
         setLocalDataset(cleaned as Dataset);
+        savedDatasetJson.current = JSON.stringify(cleaned);
       } else {
         setEditorContent(yaml.dump(cleaned));
       }
     }
   }, [currentDataset, isSaas]);
+
+  const isDirty = useMemo(() => {
+    if (!isSaas || !localDataset) {
+      return false;
+    }
+    return JSON.stringify(localDataset) !== savedDatasetJson.current;
+  }, [isSaas, localDataset]);
 
   useEffect(() => {
     if (
@@ -196,6 +205,9 @@ const EditorSection = ({
         ctl_dataset: result.data,
       }),
     );
+    if (isSaas) {
+      savedDatasetJson.current = JSON.stringify(removeNulls(result.data));
+    }
     messageApi.success("Successfully modified dataset");
     await refetchDatasets();
     if (!isSaas) {
@@ -247,6 +259,11 @@ const EditorSection = ({
           />
         </Space>
         <Space>
+          {isDirty && (
+            <Typography.Text type="warning" style={{ fontSize: 12 }}>
+              Unsaved changes
+            </Typography.Text>
+          )}
           {!isSaas && <ClipboardButton copyText={editorContent} />}
           <Tooltip
             title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
@@ -265,7 +282,12 @@ const EditorSection = ({
             title="Save your changes to update the dataset in the database."
             placement="top"
           >
-            <Button htmlType="submit" size="small" onClick={handleSave}>
+            <Button
+              htmlType="submit"
+              size="small"
+              type={isDirty ? "primary" : "default"}
+              onClick={handleSave}
+            >
               Save
             </Button>
           </Tooltip>

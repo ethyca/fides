@@ -4,6 +4,7 @@ import {
   Drawer,
   Flex,
   Form,
+  Icons,
   Input,
   Select,
   Switch,
@@ -183,6 +184,11 @@ const DatasetNodeDetailPanel = ({
     <Drawer
       title={
         <Flex align="center" gap={8}>
+          {nodeData?.nodeType === "collection" ? (
+            <Icons.Table size={16} />
+          ) : (
+            <Icons.Column size={16} />
+          )}
           <Typography.Text strong>{nodeData?.label}</Typography.Text>
           <Tag
             color={nodeData?.nodeType === "collection" ? "minos" : "default"}

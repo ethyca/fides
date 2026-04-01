@@ -1,5 +1,5 @@
 import { NodeProps } from "@xyflow/react";
-import { Button, Typography } from "fidesui";
+import { Button, Icons, Typography } from "fidesui";
 import { useContext } from "react";
 
 import DatasetEditorActionsContext from "../context/DatasetEditorActionsContext";
@@ -15,6 +15,7 @@ import { getNodeHoverClass } from "./getNodeHoverClass";
 const DatasetFieldNode = ({ data, id }: NodeProps) => {
   const nodeData = data as FieldNodeData;
   const categories = nodeData.field.data_categories ?? [];
+  const hasCategories = categories.length > 0;
   const { onMouseEnter, onMouseLeave, getNodeHoverStatus } = useContext(
     DatasetTreeHoverContext,
   );
@@ -32,9 +33,10 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
         inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
       />
       <Button
-        className={`${styles.button} ${getNodeHoverClass(hoverStatus, { isProtected: nodeData.isProtected })} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
+        className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${!hasCategories && !nodeData.isProtected ? styles["button--no-categories"] : ""} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
         type="text"
       >
+        <Icons.Column size={14} />
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>
@@ -43,24 +45,25 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
             protected
           </span>
         )}
-        {categories.length > 0 && !nodeData.isProtected && (
+        {hasCategories && !nodeData.isProtected && (
           <span className={`${styles.badge} ${styles["badge--muted"]}`}>
             {categories.length}
           </span>
         )}
       </Button>
-      <button
-        type="button"
-        className={styles["add-button"]}
-        onClick={(e) => {
-          e.stopPropagation();
-          actions.addField(nodeData.collectionName, nodeData.fieldPath);
-        }}
-        title="Add nested field"
-        aria-label="Add nested field"
-      >
-        +
-      </button>
+      <div className={styles["add-button-container"]}>
+        <Button
+          type="default"
+          className={`${styles["add-button"]} ${hoverStatus === DatasetNodeHoverStatus.ACTIVE_HOVER ? styles["add-button--visible"] : ""}`}
+          icon={<Icons.Add size={16} />}
+          onClick={(e) => {
+            e.stopPropagation();
+            actions.addField(nodeData.collectionName, nodeData.fieldPath);
+          }}
+          size="small"
+          aria-label="Add nested field"
+        />
+      </div>
       {nodeData.hasChildren && (
         <DatasetNodeHandle
           type="source"
