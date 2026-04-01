@@ -3,12 +3,13 @@ import { useMemo } from "react";
 
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 
-import { usePurposes } from "./usePurposes";
+import type { DataPurpose } from "./types";
 
 interface NewPurposeModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: (id: string) => void;
+  createPurpose: (values: Omit<DataPurpose, "id">) => void;
 }
 
 const slugify = (text: string): string =>
@@ -17,9 +18,8 @@ const slugify = (text: string): string =>
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_|_$/g, "");
 
-const NewPurposeModal = ({ open, onClose, onCreated }: NewPurposeModalProps) => {
+const NewPurposeModal = ({ open, onClose, onCreated, createPurpose }: NewPurposeModalProps) => {
   const [form] = Form.useForm();
-  const { createPurpose } = usePurposes();
   const { data: dataUses } = useGetAllDataUsesQuery();
 
   const dataUseOptions = useMemo(

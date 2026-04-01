@@ -1,4 +1,4 @@
-import { Button } from "fidesui";
+import { Button, Flex } from "fidesui";
 import { NextPage } from "next";
 import { useState } from "react";
 
@@ -6,9 +6,12 @@ import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
 import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
+import PurposeSummaryRow from "~/features/data-purposes/PurposeSummaryRow";
+import { usePurposes } from "~/features/data-purposes/usePurposes";
 
 const DataPurposesPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
+  const { purposes, getSummaries, createPurpose } = usePurposes();
 
   return (
     <FixedLayout title="Data purposes">
@@ -20,11 +23,15 @@ const DataPurposesPage: NextPage = () => {
           </Button>
         }
       />
-      <PurposeCardGrid />
+      <Flex vertical gap={24}>
+        <PurposeSummaryRow purposes={purposes} summaries={getSummaries} />
+        <PurposeCardGrid purposes={purposes} summaries={getSummaries} />
+      </Flex>
       <NewPurposeModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onCreated={() => setModalOpen(false)}
+        createPurpose={createPurpose}
       />
     </FixedLayout>
   );

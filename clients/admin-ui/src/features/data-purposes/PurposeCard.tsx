@@ -1,8 +1,15 @@
-import { Card, Flex, Text } from "fidesui";
+import { Card, Flex, Progress, Tag, Text } from "fidesui";
 import { useRouter } from "next/router";
 
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 
+import {
+  getCompleteness,
+  getFeatureLabel,
+  getStrokeColor,
+  LEGAL_BASIS_LABELS,
+  LEGAL_BASIS_TAG_COLORS,
+} from "./purposeUtils";
 import type { DataPurpose, PurposeSummary } from "./types";
 
 interface PurposeCardProps {
@@ -25,19 +32,48 @@ const getRelativeTime = (dateStr: string): string => {
 
 const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
   const router = useRouter();
+  const completeness = getCompleteness(purpose);
+  const legalBasisColor = LEGAL_BASIS_TAG_COLORS[purpose.legal_basis];
+  const legalBasisLabel =
+    LEGAL_BASIS_LABELS[purpose.legal_basis] || purpose.legal_basis;
 
   return (
     <Card
       size="small"
-      style={{ backgroundColor: "#fafafa", cursor: "pointer", height: "100%" }}
+      style={{
+        backgroundColor: "#fafafa",
+        cursor: "pointer",
+        height: "100%",
+      }}
       className="transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
       onClick={() => router.push(`${DATA_PURPOSES_ROUTE}/${purpose.id}`)}
     >
       <Flex vertical gap={8} className="h-full">
-        <Text strong>{purpose.name}</Text>
+        <Flex justify="space-between" align="start">
+          <Text strong className="mr-2 flex-1">
+            {purpose.name}
+          </Text>
+          <Progress
+            type="circle"
+            size={32}
+            percent={completeness}
+            strokeColor={getStrokeColor(completeness)}
+            format={(p) => `${p}`}
+          />
+        </Flex>
         <Text type="secondary" className="line-clamp-2 text-xs">
           {purpose.description}
         </Text>
+        <Flex gap={4} wrap="wrap">
+          {legalBasisLabel && (
+            <Tag color={legalBasisColor}>{legalBasisLabel}</Tag>
+          )}
+          {purpose.features.map((f) => (
+            <Tag key={f} color="marble">
+              {getFeatureLabel(f)}
+            </Tag>
+          ))}
+        </Flex>
         <div className="mt-auto">
           <Text type="secondary" className="text-xs">
             {summary?.system_count ?? 0} data consumers &middot;{" "}

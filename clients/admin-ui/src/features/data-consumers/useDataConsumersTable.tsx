@@ -1,158 +1,149 @@
-import {
-  Button,
-  ColumnsType,
-  Empty,
-  Flex,
-  Space,
-  Tag,
-  Tooltip,
-  Typography,
-} from "fidesui";
-import { useRouter } from "next/router";
-import { useMemo } from "react";
+import { ColumnsType, CUSTOM_TAG_COLOR, Flex, Tag, Typography } from "fidesui";
+import { useMemo, useState } from "react";
 
-import { DATA_CONSUMERS_NEW_ROUTE } from "~/features/common/nav/routes";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import { useAntTable, useTableState } from "~/features/common/table/hooks";
 
-import { getDisplayNameForScope } from "./constants";
 import {
-  DataConsumer,
-  useGetAllDataConsumersQuery,
-} from "./data-consumer.slice";
-import DataConsumerActionsCell from "./DataConsumerActionsCell";
-import useConsumerTypeOptions from "./useConsumerTypeOptions";
+  CONSUMER_TYPE_UI_LABELS,
+  PLATFORM_LABELS,
+  type StatusFilterValue,
+} from "./constants";
+import type { ConsumerType, MockDataConsumer } from "./types";
+import { useDataConsumers } from "./useDataConsumers";
+
+const PURPOSE_DISPLAY_MAX = 2;
 
 const useDataConsumersTable = () => {
-  const router = useRouter();
-  const { getConsumerType } = useConsumerTypeOptions();
+  const { consumers, metrics, unresolvedCount } = useDataConsumers();
 
-  const tableState = useTableState({
-    pagination: {
-      defaultPageSize: 25,
-      pageSizeOptions: [25, 50, 100],
-    },
-    search: {
-      defaultSearchQuery: "",
-    },
-  });
-
-  const { pageIndex, pageSize, searchQuery, updateSearch } = tableState;
-
-  const { data, error, isLoading, isFetching } = useGetAllDataConsumersQuery({
-    page: pageIndex,
-    size: pageSize,
-    search: searchQuery,
-  });
-
-  const items = useMemo(() => data?.items ?? [], [data?.items]);
-  const totalRows = data?.total ?? 0;
-
-  const antTableConfig = useMemo(
-    () => ({
-      dataSource: items,
-      totalRows,
-      isLoading,
-      isFetching,
-      getRowKey: (record: DataConsumer) => record.id,
-      customTableProps: {
-        locale: {
-          emptyText: (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={
-                <Flex vertical gap="small" align="center">
-                  <Typography.Paragraph>
-                    No data consumers found.
-                  </Typography.Paragraph>
-                  <Flex>
-                    <Button
-                      type="primary"
-                      onClick={() => router.push(DATA_CONSUMERS_NEW_ROUTE)}
-                    >
-                      Add data consumer
-                    </Button>
-                  </Flex>
-                </Flex>
-              }
-              data-testid="no-results-notice"
-            />
-          ),
-        },
-      },
-    }),
-    [totalRows, isLoading, isFetching, items, router],
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<ConsumerType | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilterValue | null>(
+    null,
   );
+  const [platformFilter, setPlatformFilter] = useState<string | null>(null);
 
-  const { tableProps } = useAntTable(tableState, antTableConfig);
+  const filteredConsumers = useMemo(() => {
+    const lowerSearch = search.toLowerCase();
+    return consumers.filter((c) => {
+      if (
+        search &&
+        !c.name.toLowerCase().includes(lowerSearch) &&
+        !c.identifier.toLowerCase().includes(lowerSearch)
+      ) {
+        return false;
+      }
+      if (typeFilter && c.type !== typeFilter) {
+        return false;
+      }
+      if (statusFilter === "has_violations" && c.violationCount <= 0) {
+        return false;
+      }
+      if (statusFilter === "no_purposes" && c.purposes.length > 0) {
+        return false;
+      }
+      if (
+        statusFilter === "healthy" &&
+        (c.violationCount > 0 || c.purposes.length === 0)
+      ) {
+        return false;
+      }
+      if (platformFilter && c.platform !== platformFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [consumers, search, typeFilter, statusFilter, platformFilter]);
 
-  const columns: ColumnsType<DataConsumer> = useMemo(
+  const columns: ColumnsType<MockDataConsumer> = useMemo(
     () => [
       {
-        title: "Name",
-        dataIndex: "name",
+        title: "Consumer",
         key: "name",
-        render: (_, { name, id }) => (
-          <LinkCell href={`/data-consumers/${id}`}>{name}</LinkCell>
+        render: (_, { name, identifier, id }) => (
+          <Flex vertical gap={2}>
+            <LinkCell href={`/data-consumers/${id}`}>{name}</LinkCell>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {identifier}
+            </Typography.Text>
+          </Flex>
         ),
       },
       {
         title: "Type",
-        dataIndex: "type",
         key: "type",
-        render: (_, { type }) => {
-          const dynamicType = getConsumerType(type);
-          return <Tag>{dynamicType?.name ?? type}</Tag>;
-        },
+        width: 140,
+        render: (_, { type }) => (
+          <Tag>{CONSUMER_TYPE_UI_LABELS[type] ?? type}</Tag>
+        ),
       },
       {
-        title: "Scope",
-        dataIndex: "scope",
-        key: "scope",
-        render: (_, { scope, type }) => {
-          if (!scope || Object.keys(scope).length === 0) {
-            return "N/A";
+        title: "Platform",
+        key: "platform",
+        width: 140,
+        render: (_, { platform }) =>
+          platform ? (PLATFORM_LABELS[platform] ?? platform) : "—",
+      },
+      {
+        title: "Purposes",
+        key: "purposes",
+        render: (_, { purposes }) => {
+          if (purposes.length === 0) {
+            return (
+              <Typography.Text type="warning">
+                No purposes assigned
+              </Typography.Text>
+            );
           }
-          const ct = getConsumerType(type);
-          const displayName = getDisplayNameForScope(scope, ct?.display_key);
-          const fullScope = Object.entries(scope)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join(", ");
+          const displayed = purposes.slice(0, PURPOSE_DISPLAY_MAX);
+          const overflow = purposes.length - PURPOSE_DISPLAY_MAX;
           return (
-            <Tooltip title={fullScope}>
-              <Tag>{displayName}</Tag>
-            </Tooltip>
+            <Typography.Text>
+              {displayed.join(", ")}
+              {overflow > 0 && (
+                <Typography.Text type="secondary">
+                  {` +${overflow}`}
+                </Typography.Text>
+              )}
+            </Typography.Text>
           );
         },
       },
       {
-        title: "Purposes",
-        dataIndex: "purpose_fides_keys",
-        key: "purpose_fides_keys",
-        render: (_, { purpose_fides_keys }) =>
-          purpose_fides_keys && purpose_fides_keys.length > 0 ? (
-            <Space size={[0, 4]} wrap>
-              {purpose_fides_keys.map((key) => (
-                <Tag key={key}>{key}</Tag>
-              ))}
-            </Space>
-          ) : (
-            "N/A"
-          ),
-      },
-      {
-        title: "Actions",
-        dataIndex: "actions",
-        key: "actions",
-        render: (_, consumer) => (
-          <DataConsumerActionsCell consumer={consumer} />
-        ),
+        title: "Violations",
+        key: "violations",
+        width: 120,
+        render: (_, { violationCount, purposes }) => {
+          if (purposes.length === 0) {
+            return <Tag color={CUSTOM_TAG_COLOR.WARNING}>No purposes</Tag>;
+          }
+          if (violationCount > 0) {
+            return (
+              <Tag color={CUSTOM_TAG_COLOR.ERROR}>{violationCount}</Tag>
+            );
+          }
+          return <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>0</Tag>;
+        },
       },
     ],
-    [getConsumerType],
+    [],
   );
 
-  return { tableProps, columns, error, searchQuery, updateSearch };
+  return {
+    consumers,
+    filteredConsumers,
+    columns,
+    metrics,
+    unresolvedCount,
+    search,
+    setSearch,
+    typeFilter,
+    setTypeFilter,
+    statusFilter,
+    setStatusFilter,
+    platformFilter,
+    setPlatformFilter,
+  };
 };
 
 export default useDataConsumersTable;
