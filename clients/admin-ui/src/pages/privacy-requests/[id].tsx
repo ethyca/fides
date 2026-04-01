@@ -1,4 +1,4 @@
-import { ChakraCenter as Center, Spin } from "fidesui";
+import { CenteredSpinner } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -50,9 +50,7 @@ const PrivacyRequests: NextPage = () => {
         }
       />
       {isLoading && (
-        <Center>
-          <Spin />
-        </Center>
+        <CenteredSpinner />
       )}
       {!isLoading && privacyRequest && <PrivacyRequest data={privacyRequest} />}
     </Layout>

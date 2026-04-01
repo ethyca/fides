@@ -1,4 +1,4 @@
-import { Button, ChakraVStack as VStack, Spin } from "fidesui";
+import { Button, CenteredSpinner, ChakraVStack as VStack } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -127,9 +127,7 @@ const DataUsesForm = ({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center">
-        <Spin size="small" />
-      </div>
+      <CenteredSpinner size="small" />
     );
   }
 

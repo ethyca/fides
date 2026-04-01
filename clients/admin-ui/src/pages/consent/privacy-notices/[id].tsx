@@ -1,6 +1,6 @@
 import {
   ChakraBox as Box,
-  ChakraCenter as Center,
+  CenteredSpinner,
   ChakraText as Text,
   Spin,
 } from "fidesui";
@@ -32,9 +32,7 @@ const PrivacyNoticeDetailPage = () => {
   if (isLoading) {
     return (
       <Layout title="Privacy notice">
-        <Center>
-          <Spin />
-        </Center>
+        <CenteredSpinner />
       </Layout>
     );
   }

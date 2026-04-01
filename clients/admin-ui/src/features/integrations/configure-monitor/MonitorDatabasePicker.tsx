@@ -10,7 +10,7 @@ import {
   Button,
   ChakraFlex as Flex,
   ChakraText as Text,
-  PageSpinner,
+  CenteredSpinner,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -113,7 +113,7 @@ const MonitorDatabasePicker = ({
             <FidesTableFooter totalColumns={2}>
               <Flex justify="center">
                 {moreLoading ? (
-                  <PageSpinner size="small" />
+                  <CenteredSpinner size="small" />
                 ) : (
                   <Flex align="center">
                     <Text fontSize="xs" mr={4}>

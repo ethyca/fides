@@ -1,15 +1,15 @@
 import type { SpinProps } from "antd";
 import { Flex, Spin } from "antd/lib";
 
-interface PageSpinnerProps extends SpinProps {
+interface CenteredSpinnerProps extends SpinProps {
   alignment?: "center" | "start" | "end";
 }
 
-export const PageSpinner = ({
+export const CenteredSpinner = ({
   alignment = "center",
   size = "large",
   ...props
-}: PageSpinnerProps) => (
+}: CenteredSpinnerProps) => (
   <Flex className="size-full" align="center" justify={alignment}>
     <Spin size={size} {...props} />
   </Flex>

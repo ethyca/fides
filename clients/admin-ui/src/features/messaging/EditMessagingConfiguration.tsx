@@ -1,8 +1,8 @@
 import {
+  CenteredSpinner,
   ChakraBox as Box,
   ChakraHeading as Heading,
   ChakraText as Text,
-  Spin,
 } from "fidesui";
 
 import { messagingProviders } from "./constants";
@@ -21,14 +21,7 @@ export const EditMessagingConfiguration = ({
 
   if (isLoading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="200px"
-      >
-        <Spin />
-      </Box>
+      <CenteredSpinner />
     );
   }
 

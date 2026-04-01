@@ -2,7 +2,7 @@ import {
   Button,
   ChakraFlex as Flex,
   ChakraText as Text,
-  PageSpinner,
+  CenteredSpinner,
   Tooltip,
   useMessage,
 } from "fidesui";
@@ -78,7 +78,7 @@ const ConfigureMonitorDatabasesForm = ({
   const saveIsDisabled = !allSelected && selected.length === 0;
 
   if (initialIsLoading) {
-    return <PageSpinner className="my-12" />;
+    return <CenteredSpinner className="my-12" />;
   }
 
   return (

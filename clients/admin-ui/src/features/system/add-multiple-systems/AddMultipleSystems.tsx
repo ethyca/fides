@@ -34,8 +34,8 @@ import {
   ChakraFlex as Flex,
   ChakraHStack as HStack,
   ChakraText as Text,
+  CenteredSpinner,
   ChakraVStack as VStack,
-  Spin,
   Tag,
   Tooltip,
   useChakraDisclosure as useDisclosure,
@@ -287,9 +287,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
 
   if (isPostLoading || isPostSuccess) {
     return (
-      <Flex height="100%" justifyContent="center" alignItems="center">
-        <Spin />
-      </Flex>
+      <CenteredSpinner />
     );
   }
 

@@ -1,10 +1,10 @@
 import {
+  CenteredSpinner,
   ChakraBox as Box,
   ChakraHeading as Heading,
   ChakraText as Text,
   Form,
   Select,
-  Spin,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
@@ -118,14 +118,7 @@ const MessagingConfiguration = ({
   // Show loading state in edit mode
   if (isEditMode && isLoading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="200px"
-      >
-        <Spin />
-      </Box>
+      <CenteredSpinner />
     );
   }
 

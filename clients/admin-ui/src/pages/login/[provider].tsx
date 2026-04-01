@@ -1,4 +1,4 @@
-import { ChakraCenter as Center, Spin, useMessage } from "fidesui";
+import { CenteredSpinner, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -44,9 +44,7 @@ const LoginWithOIDC: NextPage = () => {
   }, [router, message, dispatch, router.query, loginRequest]);
 
   return (
-    <Center h="100%" w="100%">
-      <Spin size="large" />
-    </Center>
+    <CenteredSpinner size="large" />
   );
 };
 

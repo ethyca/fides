@@ -1,7 +1,7 @@
 import {
   ChakraUseDisclosureReturn as UseDisclosureReturn,
   Modal,
-  PageSpinner,
+  CenteredSpinner,
   useMessage,
 } from "fidesui";
 
@@ -161,7 +161,7 @@ const ConfigureMonitorModal = ({
             integrationKey={integration.key}
           />
         ) : (
-          <PageSpinner />
+          <CenteredSpinner />
         ))}
     </Modal>
   );

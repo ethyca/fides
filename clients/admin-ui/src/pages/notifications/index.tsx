@@ -1,4 +1,4 @@
-import { Spin } from "fidesui";
+import { CenteredSpinner } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -29,9 +29,7 @@ const NotificationsRedirect: NextPage = () => {
 
   return (
     <Layout title="Notifications">
-      <div className="flex h-screen items-center justify-center">
-        <Spin />
-      </div>
+      <CenteredSpinner />
     </Layout>
   );
 };

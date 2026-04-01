@@ -1,7 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraVStack as VStack,
-  PageSpinner,
+  CenteredSpinner,
   useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -392,7 +392,7 @@ const ConfigureIntegrationForm = ({
   const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
   if (secretsSchemaIsLoading) {
-    return <PageSpinner />;
+    return <CenteredSpinner />;
   }
 
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>

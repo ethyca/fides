@@ -376,7 +376,7 @@ export { LocationSelect } from "./components/data-entry/LocationSelect";
 export { SelectInline } from "./components/data-entry/SelectInline";
 
 // Export feedback components
-export { PageSpinner } from "./components/feedback/PageSpinner";
+export { CenteredSpinner } from "./components/feedback/CenteredSpinner";
 
 // Export navigation components
 export { FloatingMenu } from "./components/navigation/FloatingMenu";
