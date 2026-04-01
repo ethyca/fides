@@ -7,6 +7,7 @@ import {
   Icons,
   Select,
   Space,
+  Tag,
   Tooltip,
   Typography,
   useMessage,
@@ -85,11 +86,7 @@ const EditorSection = ({
         policyKey: currentPolicyKey,
       },
       {
-        skip:
-          isSaas ||
-          !connectionKey ||
-          !currentDataset?.fides_key ||
-          !currentPolicyKey,
+        skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
       },
     );
 
@@ -137,16 +134,10 @@ const EditorSection = ({
   }, [isSaas, localDataset]);
 
   useEffect(() => {
-    if (
-      !isSaas &&
-      currentPolicyKey &&
-      currentDataset?.fides_key &&
-      connectionKey
-    ) {
+    if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
       refetchReachability();
     }
   }, [
-    isSaas,
     currentPolicyKey,
     currentDataset?.fides_key,
     connectionKey,
@@ -210,9 +201,7 @@ const EditorSection = ({
     }
     messageApi.success("Successfully modified dataset");
     await refetchDatasets();
-    if (!isSaas) {
-      await refetchReachability();
-    }
+    await refetchReachability();
   };
 
   const handleRefresh = async () => {
@@ -259,6 +248,20 @@ const EditorSection = ({
           />
         </Space>
         <Space>
+          {reachability && (
+            <Tooltip
+              title={
+                reachability.reachable
+                  ? "Dataset is reachable"
+                  : `Not reachable: ${getReachabilityMessage(reachability.details)}`
+              }
+              placement="bottom"
+            >
+              <Tag color={reachability.reachable ? "success" : "error"}>
+                {reachability.reachable ? "Reachable" : "Not reachable"}
+              </Tag>
+            </Tooltip>
+          )}
           {isDirty && (
             <Typography.Text type="warning" style={{ fontSize: 12 }}>
               Unsaved changes
