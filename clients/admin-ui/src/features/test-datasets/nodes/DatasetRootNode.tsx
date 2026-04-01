@@ -1,5 +1,5 @@
 import { NodeProps } from "@xyflow/react";
-import { Button, Typography } from "fidesui";
+import { Button, Icons, Typography } from "fidesui";
 import { useContext } from "react";
 
 import {
@@ -29,6 +29,7 @@ const DatasetRootNode = ({ data, id }: NodeProps) => {
         type="text"
         disabled={id === DATASET_ROOT_ID}
       >
+        <Icons.Layers size={14} />
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>

@@ -1,5 +1,6 @@
-import { Button, ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
+import { Button, ChakraSpinner as Spinner, Col, Icons, Row, Tabs } from "fidesui";
 import { NextPage } from "next";
+import { useMemo } from "react";
 import { useRouter } from "next/router";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -19,6 +20,7 @@ import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRem
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
@@ -101,6 +103,17 @@ const IntegrationDetailView: NextPage = () => {
     supportsSystemLinking,
   });
 
+  const { data: systemLinksData } = useGetSystemLinksQuery(id, {
+    skip: !id,
+  });
+
+  const linkedSystemFidesKey = useMemo(() => {
+    if (!systemLinksData || systemLinksData.length === 0) {
+      return undefined;
+    }
+    return systemLinksData[0].system_fides_key;
+  }, [systemLinksData]);
+
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: tabs.map((tab) => tab.key),
   });
@@ -133,6 +146,21 @@ const IntegrationDetailView: NextPage = () => {
             title: connection?.name ?? connection?.key ?? "",
           },
         ]}
+        rightContent={
+          linkedSystemFidesKey ? (
+            <Button
+              icon={<Icons.Edit />}
+              onClick={() =>
+                router.push(
+                  `/systems/configure/${linkedSystemFidesKey}/test-datasets`,
+                )
+              }
+              data-testid="edit-dataset-btn"
+            >
+              Edit dataset
+            </Button>
+          ) : undefined
+        }
       />
       <Row wrap={false} gutter={24}>
         <Col flex="1 1 auto">
