@@ -8,7 +8,7 @@ import {
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
   ChakraSpacer as Spacer,
-  CenteredSpinner,
+  Spin,
   Flex,
   Modal,
   Space,
@@ -75,7 +75,7 @@ export const ConsentManagementModal = ({
       }
     >
       {isLoading ? (
-        <CenteredSpinner />
+        <Spin />
       ) : (
         !!systemPurposeSummary && (
           <Typography>

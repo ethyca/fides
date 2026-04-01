@@ -3,7 +3,7 @@ import {
   CUSTOM_TAG_COLOR,
   Flex,
   Icons,
-  CenteredSpinner,
+  Spin,
   Tag,
   Title,
   Tooltip,
@@ -179,7 +179,7 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
       </div>
 
       {isLoading ? (
-        <CenteredSpinner alignment="start" />
+        <Spin alignment="start" />
       ) : (
         <Flex vertical gap={8}>
           {tickets && tickets.length > 0 ? (

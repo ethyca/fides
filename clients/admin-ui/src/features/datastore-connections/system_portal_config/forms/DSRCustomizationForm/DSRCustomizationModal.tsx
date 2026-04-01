@@ -10,7 +10,7 @@ import {
 import {
   Button,
   ChakraBox as Box,
-  CenteredSpinner,
+  Spin,
   ChakraVStack as VStack,
   Modal,
   Tooltip,
@@ -118,7 +118,7 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
             label your user will see in their downloaded package.
           </Box>
           {(isFetching || isLoading) && (
-            <CenteredSpinner />
+            <Spin />
           )}
           {mounted.current && !isLoading ? (
             <DSRCustomizationForm

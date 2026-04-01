@@ -1,4 +1,4 @@
-import { CenteredSpinner } from "fidesui";
+import { Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -50,7 +50,7 @@ const PrivacyRequests: NextPage = () => {
         }
       />
       {isLoading && (
-        <CenteredSpinner />
+        <Spin />
       )}
       {!isLoading && privacyRequest && <PrivacyRequest data={privacyRequest} />}
     </Layout>

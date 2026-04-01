@@ -5,7 +5,7 @@
 
 import {
   ChakraBox as Box,
-  CenteredSpinner,
+  Spin,
   ChakraFlex as Flex,
 } from "fidesui";
 import dynamic from "next/dynamic";
@@ -26,7 +26,7 @@ const SpatialDatamap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <CenteredSpinner />
+      <Spin />
     ),
   },
 );
@@ -76,7 +76,7 @@ const Datamap = () => {
   const { isLoading } = useDatamapTable();
   if (isLoading) {
     return (
-      <CenteredSpinner />
+      <Spin />
     );
   }
 

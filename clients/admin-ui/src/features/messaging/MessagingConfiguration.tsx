@@ -1,5 +1,5 @@
 import {
-  CenteredSpinner,
+  Spin,
   ChakraBox as Box,
   ChakraHeading as Heading,
   ChakraText as Text,
@@ -118,7 +118,7 @@ const MessagingConfiguration = ({
   // Show loading state in edit mode
   if (isEditMode && isLoading) {
     return (
-      <CenteredSpinner />
+      <Spin />
     );
   }
 

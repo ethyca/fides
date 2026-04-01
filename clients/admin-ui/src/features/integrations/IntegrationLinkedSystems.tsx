@@ -4,7 +4,7 @@ import {
   Input,
   List,
   Modal,
-  CenteredSpinner,
+  Spin,
   Tag,
   Typography,
   useMessage,
@@ -149,7 +149,7 @@ const IntegrationLinkedSystems = ({
   if (isLoading) {
     return (
       <div className="h-96">
-        <CenteredSpinner />
+        <Spin />
       </div>
     );
   }

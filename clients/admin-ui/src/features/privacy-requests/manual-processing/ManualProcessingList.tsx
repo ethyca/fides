@@ -2,7 +2,7 @@ import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/da
 import {
   Button,
   ChakraBox as Box,
-  CenteredSpinner,
+  Spin,
   ChakraCenter as Center,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
@@ -232,7 +232,7 @@ const ManualProcessingList = ({
       </Box>
       <Box>
         {(isFetching || isLoading) && (
-          <CenteredSpinner />
+          <Spin />
         )}
         {isSuccess && data ? (
           <TableContainer>

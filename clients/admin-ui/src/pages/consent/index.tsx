@@ -1,4 +1,4 @@
-import { CenteredSpinner } from "fidesui";
+import { Spin } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -14,7 +14,7 @@ const ConsentPage = () => {
 
   return (
     <Layout title="Consent">
-      <CenteredSpinner />
+      <Spin />
     </Layout>
   );
 };

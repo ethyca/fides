@@ -4,7 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  CenteredSpinner,
+  Spin,
   ChakraStack as Stack,
   ChakraText as Text,
   useMessage,
@@ -202,7 +202,7 @@ const ConsentConfigPage: NextPage = () => {
       isTcfPurposeOverridesLoading ||
       isApiConfigSetLoading ||
       isConfigSetLoading ? (
-        <CenteredSpinner />
+        <Spin />
       ) : (
         <Box data-testid="consent-configuration">
           <PageHeader heading="Consent settings" />

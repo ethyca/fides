@@ -1,4 +1,4 @@
-import { CenteredSpinner } from "fidesui";
+import { Spin } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -25,7 +25,7 @@ const CatalogResourceView: NextPage = () => {
     ) ?? [];
 
   if (isLoading) {
-    return <CenteredSpinner />;
+    return <Spin />;
   }
 
   return (

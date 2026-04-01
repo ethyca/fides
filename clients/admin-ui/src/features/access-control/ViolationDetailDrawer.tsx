@@ -7,7 +7,7 @@ import {
   Drawer,
   Flex,
   Icons,
-  CenteredSpinner,
+  Spin,
   Result,
   Tag,
   Typography,
@@ -65,7 +65,7 @@ export const ViolationDetailDrawer = ({
         </Flex>
       }
     >
-      {isLoading && <CenteredSpinner />}
+      {isLoading && <Spin />}
       {error && (
         <Result
           status="error"

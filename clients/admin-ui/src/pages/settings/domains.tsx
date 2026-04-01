@@ -4,7 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  CenteredSpinner,
+  Spin,
   ChakraFlex as Flex,
   ChakraText as Text,
   Icons,
@@ -177,7 +177,7 @@ const CORSConfigurationPage: NextPage = () => {
             tooltip="Fides uses these domains to enforce cross-origin resource sharing (CORS), a browser-based security standard. Each domain must be a valid URL (e.g. https://example.com) without any wildcards '*' or paths '/blog'"
           >
             {isLoadingGetQuery || isLoadingPutMutation ? (
-              <CenteredSpinner />
+              <Spin />
             ) : (
               <Formik<FormValues>
                 initialValues={apiSettings}
@@ -252,7 +252,7 @@ const CORSConfigurationPage: NextPage = () => {
             tooltip="These domains are configured by an administrator with access to Fides security settings and can support more advanced options such as wildcards and regex."
           >
             {isLoadingConfigSetQuery ? (
-              <CenteredSpinner />
+              <Spin />
             ) : (
               <Flex flexDir="column">
                 {configSettings.cors_origins!.map((origin, index) => (

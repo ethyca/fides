@@ -1,4 +1,4 @@
-import { CenteredSpinner, useMessage } from "fidesui";
+import { Spin, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -44,7 +44,7 @@ const LoginWithOIDC: NextPage = () => {
   }, [router, message, dispatch, router.query, loginRequest]);
 
   return (
-    <CenteredSpinner size="large" />
+    <Spin size="large" />
   );
 };
 
