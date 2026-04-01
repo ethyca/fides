@@ -1,0 +1,6 @@
+type: Fixed
+description: |
+  Improved error messages for misconfigured dynamic erasure email connectors
+  to include the connector key, making it easier to identify and fix
+  configuration issues.
+pr: 7779
