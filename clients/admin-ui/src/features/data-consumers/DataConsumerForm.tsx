@@ -1,54 +1,58 @@
-import { Button, Flex, Form, Input, Select, Spin } from "fidesui";
+import { Button, Flex, Form, Input, Select } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
 
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
-import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpose.slice";
 
-import { CONSUMER_TYPE_OPTIONS } from "./constants";
-import { DataConsumer } from "./data-consumer.slice";
+import { CONSUMER_TYPE_UI_OPTIONS, PLATFORM_OPTIONS } from "./constants";
+import type { MockDataConsumer } from "./types";
 
 export interface DataConsumerFormValues {
   name: string;
   type: string;
-  contact_email: string;
+  identifier: string;
+  platform: string | null;
+  purposes: string[];
   description: string;
-  tags: string[];
-  purposeFidesKeys: string[];
 }
 
 interface DataConsumerFormProps {
-  consumer?: DataConsumer;
-  handleSubmit: (values: DataConsumerFormValues) => Promise<void>;
+  consumer?: MockDataConsumer;
+  onSubmit: (values: DataConsumerFormValues) => void;
 }
 
-const DataConsumerForm = ({
-  consumer,
-  handleSubmit,
-}: DataConsumerFormProps) => {
+const MOCK_PURPOSE_OPTIONS = [
+  { value: "Campaign targeting", label: "Campaign targeting" },
+  { value: "Audience segmentation", label: "Audience segmentation" },
+  { value: "Customer support", label: "Customer support" },
+  { value: "Ticket resolution", label: "Ticket resolution" },
+  { value: "Predictive analytics", label: "Predictive analytics" },
+  { value: "Fraud prevention", label: "Fraud prevention" },
+  { value: "Transaction monitoring", label: "Transaction monitoring" },
+  { value: "Profile unification", label: "Profile unification" },
+  { value: "Employee admin", label: "Employee admin" },
+  { value: "Payroll processing", label: "Payroll processing" },
+  { value: "Product improvement", label: "Product improvement" },
+  { value: "Usage analytics", label: "Usage analytics" },
+  { value: "Regulatory reporting", label: "Regulatory reporting" },
+  { value: "Transactional email", label: "Transactional email" },
+  { value: "Marketing email", label: "Marketing email" },
+  { value: "Personalization", label: "Personalization" },
+  { value: "Analytics", label: "Analytics" },
+];
+
+const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
   const [form] = Form.useForm<DataConsumerFormValues>();
   const router = useRouter();
-
-  const { data: purposesData, isLoading: purposesLoading } =
-    useGetAllDataPurposesQuery({ size: 200 });
-
-  const purposeOptions = useMemo(
-    () =>
-      (purposesData?.items ?? []).map((p) => ({
-        value: p.fides_key,
-        label: p.name || p.fides_key,
-      })),
-    [purposesData],
-  );
 
   const initialValues = useMemo<DataConsumerFormValues>(
     () => ({
       name: consumer?.name ?? "",
       type: consumer?.type ?? "",
-      contact_email: consumer?.contact_email ?? "",
-      description: consumer?.description ?? "",
-      tags: consumer?.tags ?? [],
-      purposeFidesKeys: consumer?.purpose_fides_keys ?? [],
+      identifier: consumer?.identifier ?? "",
+      platform: consumer?.platform ?? null,
+      purposes: consumer?.purposes ?? [],
+      description: "",
     }),
     [consumer],
   );
@@ -57,19 +61,11 @@ const DataConsumerForm = ({
     router.push(DATA_CONSUMERS_ROUTE);
   }, [router]);
 
-  if (purposesLoading) {
-    return (
-      <Flex justify="center" align="center" className="py-12">
-        <Spin />
-      </Flex>
-    );
-  }
-
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={handleSubmit}
+      onFinish={onSubmit}
       initialValues={initialValues}
       key={consumer?.id ?? "create"}
       data-testid="data-consumer-form"
@@ -80,85 +76,59 @@ const DataConsumerForm = ({
         label="Name"
         rules={[{ required: true, message: "Name is required" }]}
       >
-        <Input
-          placeholder="Enter consumer name"
-          data-testid="data-consumer-name-input"
-        />
+        <Input placeholder="Enter consumer name" />
       </Form.Item>
 
       <Form.Item
         name="type"
         label="Type"
         rules={[{ required: true, message: "Type is required" }]}
-        tooltip="The type of data consumer (service, application, group, or user)"
+        tooltip="The type of data consumer"
       >
         <Select
           placeholder="Select consumer type"
-          options={CONSUMER_TYPE_OPTIONS}
+          options={CONSUMER_TYPE_UI_OPTIONS}
           aria-label="Type"
-          data-testid="data-consumer-type-select"
         />
       </Form.Item>
 
       <Form.Item
-        name="contact_email"
-        label="Contact email"
-        tooltip="The email address used to identify this consumer in query logs"
+        name="identifier"
+        label="Identifier"
+        tooltip="Email address, service account ID, or agent identifier"
       >
-        <Input
-          placeholder="Enter contact email"
-          data-testid="data-consumer-contact-input"
+        <Input placeholder="e.g. team@acme.com or agent:name-v1" />
+      </Form.Item>
+
+      <Form.Item name="platform" label="Platform">
+        <Select
+          allowClear
+          placeholder="Select platform"
+          options={PLATFORM_OPTIONS}
+          aria-label="Platform"
         />
       </Form.Item>
 
       <Form.Item
-        name="purposeFidesKeys"
+        name="purposes"
         label="Assigned purposes"
         tooltip="Which data purposes is this consumer authorized for?"
       >
         <Select
           mode="multiple"
           placeholder="Select purposes"
-          options={purposeOptions}
+          options={MOCK_PURPOSE_OPTIONS}
           aria-label="Assigned purposes"
-          data-testid="data-consumer-purposes-select"
         />
       </Form.Item>
 
-      <Form.Item
-        name="description"
-        label="Description"
-        tooltip="An optional description of this data consumer"
-      >
-        <Input.TextArea
-          placeholder="Enter a description"
-          rows={3}
-          data-testid="data-consumer-description-input"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="tags"
-        label="Tags"
-        tooltip="Optional tags for organizing consumers"
-      >
-        <Select
-          mode="tags"
-          placeholder="Add tags"
-          aria-label="Tags"
-          data-testid="data-consumer-tags-select"
-        />
+      <Form.Item name="description" label="Description">
+        <Input.TextArea placeholder="Enter a description" rows={3} />
       </Form.Item>
 
       <Flex justify="space-between" className="pt-4">
-        <Button onClick={handleCancel} data-testid="cancel-button">
-          Cancel
-        </Button>
-        <Button
-          type="primary"
-          htmlType="submit"
-          data-testid="save-data-consumer-button"
-        >
+        <Button onClick={handleCancel}>Cancel</Button>
+        <Button type="primary" htmlType="submit">
           Save
         </Button>
       </Flex>

@@ -1,6 +1,6 @@
 import { Flex, Progress, Text } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
+import { getCompleteness, getStrokeColor } from "./purposeUtils";
 import type { DataPurpose, PurposeCoverage } from "./types";
 
 interface CoverageSectionProps {
@@ -9,26 +9,6 @@ interface CoverageSectionProps {
   systemCount?: number;
   datasetCount?: number;
 }
-
-const getCompleteness = (p: DataPurpose): number => {
-  const checks = [
-    !!p.description,
-    !!p.data_use,
-    p.data_categories.length > 0,
-    p.data_subjects.length > 0,
-    !!p.legal_basis,
-    p.retention_period_days !== null,
-    p.special_category_legal_basis !== null,
-    p.features.length > 0,
-  ];
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-};
-
-const getStrokeColor = (percent: number) => {
-  if (percent >= 80) return palette.FIDESUI_SUCCESS;
-  if (percent >= 50) return palette.FIDESUI_WARNING;
-  return palette.FIDESUI_ERROR;
-};
 
 const BORDER_COLOR = "#e8e8e8";
 
