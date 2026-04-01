@@ -288,3 +288,11 @@ h6 {
     width: 100%;
   }
 }
+
+.ant-pagination {
+  // fixes a bug where the ellipsis is too wide and wraps to the next line. Maybe they'll fix this.
+  &-item-ellipsis {
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+}
