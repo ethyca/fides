@@ -35,7 +35,7 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
         className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
         type="text"
       >
-        <Icons.Table size={14} />
+        <Icons.Table size={14} style={{ flexShrink: 0 }} />
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>

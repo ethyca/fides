@@ -36,7 +36,7 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
         className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${!hasCategories && !nodeData.isProtected ? styles["button--no-categories"] : ""} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
         type="text"
       >
-        <Icons.Column size={14} />
+        <Icons.Column size={14} style={{ flexShrink: 0 }} />
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>
