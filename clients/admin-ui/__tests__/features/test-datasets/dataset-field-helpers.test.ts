@@ -4,13 +4,9 @@ import {
   removeFieldAtPath,
   updateFieldAtPath,
 } from "~/features/test-datasets/dataset-field-helpers";
-
 import { DatasetField } from "~/types/api";
 
-const makeField = (
-  name: string,
-  children?: DatasetField[],
-): DatasetField => ({
+const makeField = (name: string, children?: DatasetField[]): DatasetField => ({
   name,
   ...(children ? { fields: children } : {}),
 });
@@ -122,9 +118,7 @@ describe("dataset-field-helpers", () => {
     });
 
     it("removes a nested field", () => {
-      const fields = [
-        makeField("a", [makeField("b"), makeField("c")]),
-      ];
+      const fields = [makeField("a", [makeField("b"), makeField("c")])];
       const result = removeFieldAtPath(fields, ["a", "b"]);
       expect(result[0].fields).toHaveLength(1);
       expect(result[0].fields![0].name).toBe("c");
