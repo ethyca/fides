@@ -232,9 +232,20 @@ export const useDatamapReportTable = (form?: FormInstance) => {
       return columnVisibility[key] === false ? { ...col, hidden: true } : col;
     });
 
-    // Sort by column order if we have one
-    if (columnOrder.length > 0) {
-      const orderMap = new Map(columnOrder.map((id, idx) => [id, idx]));
+    // Compute effective column order synchronously to avoid stale ordering
+    // when groupBy changes before the useEffect below persists the new order.
+    const allColumnKeys = withVisibility.map(
+      (c) => (c as { key?: string }).key || "",
+    );
+    const effectiveOrder = groupBy
+      ? getColumnOrder(
+          groupBy,
+          columnOrder.length > 0 ? columnOrder : allColumnKeys,
+        )
+      : columnOrder;
+
+    if (effectiveOrder.length > 0) {
+      const orderMap = new Map(effectiveOrder.map((id, idx) => [id, idx]));
       withVisibility.sort((a, b) => {
         const aKey = (a as { key?: string }).key || "";
         const bKey = (b as { key?: string }).key || "";
@@ -245,7 +256,7 @@ export const useDatamapReportTable = (form?: FormInstance) => {
     }
 
     return withVisibility;
-  }, [columns, columnVisibility, columnOrder]);
+  }, [columns, columnVisibility, columnOrder, groupBy]);
 
   // Update column order when groupBy or data changes
   useEffect(() => {
