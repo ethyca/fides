@@ -179,10 +179,16 @@ export const ManualTasks = () => {
     _pagination: TablePaginationConfig,
     tableFilters: Record<string, FilterValue | null>,
   ) => {
-    const newFilters: ManualTaskFilters = {
-      // Keep the privacy request ID filter if it exists
-      privacyRequestId: filters.privacyRequestId,
-    };
+    const newFilters: ManualTaskFilters = {};
+
+    // Only carry forward privacyRequestId when it has a value, so the
+    // shape stays consistent with defaultFilters (which omits the key
+    // entirely).  A key set to `undefined` vs a missing key makes
+    // lodash isEqual return false, which was causing a spurious
+    // page-reset on the first pagination click.
+    if (filters.privacyRequestId) {
+      newFilters.privacyRequestId = filters.privacyRequestId;
+    }
 
     if (tableFilters.status) {
       [newFilters.status] = tableFilters.status as string[];
