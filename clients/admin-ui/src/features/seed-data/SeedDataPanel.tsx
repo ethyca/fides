@@ -236,10 +236,6 @@ const SeedDataPanel = () => {
           request.tasks[key] = taskOverrides[key];
         }
       });
-    } else {
-      ALL_TASK_KEYS.forEach((key) => {
-        request.tasks[key] = resolvedTasks[key] ?? false;
-      });
     }
 
     const result = await triggerSeed(request)
