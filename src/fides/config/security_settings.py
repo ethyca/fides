@@ -232,7 +232,7 @@ class SecuritySettings(FidesSettings):
 
         if len(v.encode(info.data.get("encoding", "UTF-8"))) != 32:
             raise ValueError(
-                f"{info.field_name.upper()} value must be exactly 32 characters long"
+                f"{(info.field_name or '').upper()} value must be exactly 32 characters long"
             )
         return v
 

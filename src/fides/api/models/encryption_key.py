@@ -28,9 +28,9 @@ class EncryptionKey(Base):
     ) -> Optional["EncryptionKey"]:
         """Return the most recent encryption key row for the given provider."""
         stmt = (
-            select(cls)
+            select(cls)  # type: ignore[arg-type]
             .where(cls.provider == provider)
             .order_by(cls.created_at.desc())
             .limit(1)
         )
-        return session.scalars(stmt).first()
+        return session.execute(stmt).scalars().first()
