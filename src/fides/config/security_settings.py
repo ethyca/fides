@@ -221,7 +221,7 @@ class SecuritySettings(FidesSettings):
             )
         return v
 
-    @field_validator("key_encryption_key", mode="before")
+    @field_validator("key_encryption_key", "key_encryption_key_previous", mode="before")
     @classmethod
     def validate_kek_length(
         cls, v: Optional[str], info: ValidationInfo
@@ -232,7 +232,7 @@ class SecuritySettings(FidesSettings):
 
         if len(v.encode(info.data.get("encoding", "UTF-8"))) != 32:
             raise ValueError(
-                "KEY_ENCRYPTION_KEY value must be exactly 32 characters long"
+                f"{info.field_name.upper()} value must be exactly 32 characters long"
             )
         return v
 

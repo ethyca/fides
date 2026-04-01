@@ -12,6 +12,10 @@ from fides.api.models.encryption_key import EncryptionKey
 
 from .base_provider import KeyProvider, KeyProviderError
 
+# Fixed HMAC key for KEK identification. This is a protocol constant — changing
+# it would invalidate all existing kek_id_hash values in the database.
+_KEK_ID_HMAC_KEY = b"fides-kek-id"
+
 
 class LocalKeyProvider(KeyProvider):
     """Envelope encryption provider using in-process AES-256-GCM.
@@ -32,7 +36,7 @@ class LocalKeyProvider(KeyProvider):
         for a given KEK but reveals nothing about the key material.
         """
         digest = hmac.new(
-            key=b"fides-kek-id",
+            key=_KEK_ID_HMAC_KEY,
             msg=kek.encode("UTF-8"),
             digestmod=hashlib.sha256,
         ).hexdigest()
@@ -55,9 +59,9 @@ class LocalKeyProvider(KeyProvider):
         except Exception as exc:
             raise KeyProviderError("Invalid base64 in wrapped DEK") from exc
 
-        if len(raw) < 28:
+        if len(raw) <= 28:
             raise KeyProviderError(
-                "Wrapped DEK too short — expected at least 28 bytes (12 nonce + 16 tag)"
+                "Wrapped DEK too short — expected at least 29 bytes (12 nonce + 16 tag + ciphertext)"
             )
 
         return raw[:12], raw[12:28], raw[28:]

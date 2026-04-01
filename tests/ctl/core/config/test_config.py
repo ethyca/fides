@@ -363,6 +363,27 @@ def test_config_key_encryption_key_validation_length_error(
         assert "must be exactly 32 characters" in str(err.value)
 
 
+@pytest.mark.parametrize(
+    "key_encryption_key_previous",
+    ["tooshortkey", "muchmuchmuchmuchmuchmuchmuchmuchtoolongkey"],
+)
+def test_config_key_encryption_key_previous_validation_length_error(
+    key_encryption_key_previous,
+) -> None:
+    """Test KEY_ENCRYPTION_KEY_PREVIOUS is validated to be exactly 32 characters."""
+    with patch.dict(
+        os.environ,
+        {
+            **REQUIRED_ENV_VARS,
+            "FIDES__SECURITY__KEY_ENCRYPTION_KEY_PREVIOUS": key_encryption_key_previous,
+        },
+        clear=True,
+    ):
+        with pytest.raises(ValidationError) as err:
+            get_config()
+        assert "must be exactly 32 characters" in str(err.value)
+
+
 @patch.dict(
     os.environ,
     {

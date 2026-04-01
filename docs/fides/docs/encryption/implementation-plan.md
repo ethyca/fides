@@ -259,13 +259,13 @@ The `kek_id_hash` column identifies which KEK was used to wrap the DEK, allowing
 
 **Update to `check_required_webserver_config_values`:** `key_encryption_key` is required when `key_provider = "local"`. `app_encryption_key` remains required for all modes (needed for initial bootstrap wrap).
 
-**`KeyProvider` ABC** with `get_dek()` and `wrap()` abstract methods, plus `LocalKeyProvider` implementation:
+**`KeyProvider` ABC** with `get_dek()` and `encrypt_dek()` abstract methods, plus `LocalKeyProvider` implementation:
 
-- Reads the wrapped DEK from the `encryption_keys` DB table via raw SQL (not ORM, to avoid circular dependencies)
+- Reads the encrypted DEK from the `encryption_keys` DB table via `EncryptionKey.get_by_provider()`
 - Decrypts with AES-256-GCM using the KEK from config (raw key bytes, NOT SHA-256 hashed)
 - `kek_id_hash()`: `HMAC-SHA256(key=b"fides-kek-id", msg=kek)[:16]` for KEK identification
-- `unwrap_with()`: public method for KEK rotation (unwrap with a specific old KEK)
-- `wrap()`: wraps a DEK, returns `base64(nonce[12] + tag[16] + ciphertext)`
+- `decrypt_with()`: public static method for KEK rotation (decrypt with a specific old KEK)
+- `encrypt_dek()`: encrypts a DEK, returns `base64(nonce[12] + tag[16] + ciphertext)`
 
 **Bootstrap:** Handled automatically on startup (see PR 6). When `key_provider = "local"` and no row exists in `encryption_keys`, the startup task wraps the current `app_encryption_key` with the configured KEK and inserts the row. No CLI command needed.
 
