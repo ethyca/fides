@@ -1,9 +1,8 @@
 """Pre-computed per-monitor aggregate statistics for the action center dashboard."""
 
-from sqlalchemy import Column, DateTime, String, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base
 
@@ -15,24 +14,31 @@ class MonitorAggregateStatistics(Base):
     monitor_config_key. Cross-monitor aggregation is done in Python
     at read time by summing per-monitor stats.
 
-    The JSONB shape varies by monitor_type — validated with Pydantic
-    on write.
+    The JSONB shape varies by monitor_type and is validated via
+    entity dataclasses on write (see fidesplus entities.py).
+
+    A monitor_config_key uniquely identifies a monitor, which always
+    has exactly one type — so the unique constraint on key alone is
+    sufficient (no need to include monitor_type).
+
+    Uses ``updated_at`` (inherited from Base) to track when statistics
+    were last computed. The staleness check and ``last_updated`` API
+    field are derived from this timestamp.
     """
 
     __tablename__ = "monitor_aggregate_statistics"  # type: ignore[assignment]
 
-    monitor_config_key = Column(String, nullable=False)
+    monitor_config_key = Column(
+        String,
+        ForeignKey("monitorconfig.key", ondelete="CASCADE"),
+        nullable=False,
+    )
     monitor_type = Column(String(50), nullable=False, index=True)
     statistics = Column(
         MutableDict.as_mutable(JSONB),
         nullable=False,
         server_default="{}",
         default=dict,
-    )
-    computed_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        nullable=False,
     )
 
     __table_args__ = (

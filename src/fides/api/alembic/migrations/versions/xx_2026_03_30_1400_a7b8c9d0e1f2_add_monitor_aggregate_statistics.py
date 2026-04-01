@@ -41,11 +41,10 @@ def upgrade():
             server_default="{}",
             nullable=False,
         ),
-        sa.Column(
-            "computed_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
+        sa.ForeignKeyConstraint(
+            ["monitor_config_key"],
+            ["monitorconfig.key"],
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(
