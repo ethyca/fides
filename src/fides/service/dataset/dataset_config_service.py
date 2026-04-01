@@ -239,7 +239,7 @@ class DatasetConfigService:
 
     def get_config_from_fides_key(
         self, connection_config_id: str, fides_key: str
-    ) -> DatasetConfig:
+    ) -> Optional[DatasetConfig]:
         "Return a Dataset Config By searching by key and config id"
         return DatasetConfig.filter(
             db=self.db,

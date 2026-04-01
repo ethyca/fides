@@ -273,6 +273,9 @@ def get_saas_config(
 def delete_saas_config(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
 ) -> None:
     """Removes the SaaS config for the given connection config.
     The corresponding dataset and secrets must be deleted before deleting the SaaS config
@@ -287,7 +290,7 @@ def delete_saas_config(
         )
 
     fides_key = saas_config.get("fides_key")
-    dataset = DatasetConfigService.get_config_from_fides_key(
+    dataset = dataset_config_service.get_config_from_fides_key(
         connection_config.id, fides_key
     )
 
