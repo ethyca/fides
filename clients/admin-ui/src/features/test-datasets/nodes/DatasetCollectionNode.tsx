@@ -59,7 +59,7 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
           />
         </div>
       )}
-      {hasFields && (
+      {nodeData.isRoot && hasFields && (
         <DatasetNodeHandle
           type="source"
           inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
