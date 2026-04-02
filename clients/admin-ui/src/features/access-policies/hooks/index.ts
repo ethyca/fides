@@ -4,6 +4,7 @@ import {
   AccessPolicy,
   ControlGroup,
   useGetAccessPoliciesQuery,
+  useReorderAccessPolicyMutation,
   useUpdateAccessPolicyMutation,
 } from "../access-policies.slice";
 import { extractPolicyFields, updateYamlField } from "../policy-yaml";
@@ -110,12 +111,11 @@ export const useUpdatePolicyPriority = () => {
 };
 
 /**
- * Returns a callback that reorders policies by updating their priority
- * values in the YAML. Assigns sequential priorities (100, 200, 300, ...)
- * after the move.
+ * Returns a callback that reorders policies by sending a single reorder
+ * request to the backend. The backend handles priority reassignment atomically.
  */
 export const useReorderPolicies = () => {
-  const [updatePolicy] = useUpdateAccessPolicyMutation();
+  const [reorderPolicy] = useReorderAccessPolicyMutation();
 
   return (
     policies: AccessPolicyListItem[],
@@ -126,17 +126,7 @@ export const useReorderPolicies = () => {
     const [moved] = reordered.splice(fromIndex, 1);
     reordered.splice(toIndex, 0, moved);
 
-    // Reassign sequential priorities and update any that changed
-    reordered.forEach((policy, idx) => {
-      const newPriority = (idx + 1) * 100;
-      if (policy.priority !== newPriority && policy.yaml) {
-        const updatedYaml = updateYamlField(
-          policy.yaml,
-          "priority",
-          newPriority,
-        );
-        updatePolicy({ id: policy.id, yaml: updatedYaml });
-      }
-    });
+    const insertAfterId = toIndex > 0 ? reordered[toIndex - 1].id : null;
+    reorderPolicy({ id: moved.id, insert_after_id: insertAfterId });
   };
 };

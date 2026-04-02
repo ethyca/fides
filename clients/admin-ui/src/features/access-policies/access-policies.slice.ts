@@ -73,6 +73,17 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Access Policies"],
     }),
+    reorderAccessPolicy: build.mutation<
+      AccessPolicyListResponse,
+      { id: string; insert_after_id: string | null }
+    >({
+      query: ({ id, insert_after_id }) => ({
+        method: "POST",
+        url: `plus/access-policy/${id}/reorder`,
+        body: { insert_after_id },
+      }),
+      invalidatesTags: ["Access Policies"],
+    }),
     getControlGroups: build.query<ControlGroup[], void>({
       query: () => ({
         method: "GET",
@@ -89,5 +100,6 @@ export const {
   useCreateAccessPolicyMutation,
   useUpdateAccessPolicyMutation,
   useDeleteAccessPolicyMutation,
+  useReorderAccessPolicyMutation,
   useGetControlGroupsQuery,
 } = accessPoliciesApi;
