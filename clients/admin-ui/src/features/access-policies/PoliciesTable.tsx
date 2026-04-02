@@ -312,7 +312,7 @@ const PoliciesTable = ({
       title: "Controls",
       dataIndex: "controls",
       key: "controls",
-      width: 200,
+      width: 240,
       render: (_: unknown, record: AccessPolicyListItem) => (
         <TagExpandableCell
           values={record.controls?.map((key) => ({
