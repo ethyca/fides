@@ -45,9 +45,12 @@ export interface ProgressCardProps {
   };
   lastUpdated?: string;
   compact?: boolean;
+  borderless?: boolean;
 }
 
-const getProgressColor = (percent: number) => {
+type CardVariant = "outlined" | "borderless";
+
+export const getProgressColor = (percent: number) => {
   switch (true) {
     case percent > 80:
       return "colorSuccess";
@@ -66,16 +69,21 @@ export const ProgressCard = ({
   percentageStats,
   lastUpdated,
   compact,
+  borderless,
 }: PropsWithChildren<ProgressCardProps>) => {
   const relativeTime = useRelativeTime(
     lastUpdated ? new Date(lastUpdated) : new Date(),
   );
 
+  const variant: CardVariant = borderless ? "borderless" : "outlined";
+
   return (
     <Card
       size="small"
+      variant={variant}
       rootClassName={classNames(
         compact ? "w-full" : "h-full overflow-hidden w-full",
+        borderless && "!bg-transparent !shadow-none",
       )}
       classNames={{
         body: "h-full overflow-hidden",

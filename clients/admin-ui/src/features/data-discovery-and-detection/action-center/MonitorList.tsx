@@ -21,7 +21,7 @@ import {
   SearchFormQueryState,
 } from "./MonitorList.const";
 
-const MonitorList = () => {
+const MonitorList = ({ hideSearchForm }: { hideSearchForm?: boolean }) => {
   const message = useMessage();
   const {
     flags: { webMonitor: webMonitorEnabled },
@@ -92,14 +92,16 @@ const MonitorList = () => {
 
   return (
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="medium" vertical>
-      <MonitorListSearchForm
-        {...formProps}
-        onFinish={(values) => {
-          formProps.onFinish(values);
-          resetPagination();
-        }}
-        availableMonitorTypes={availableMonitorTypes}
-      />
+      {!hideSearchForm && (
+        <MonitorListSearchForm
+          {...formProps}
+          onFinish={(values) => {
+            formProps.onFinish(values);
+            resetPagination();
+          }}
+          availableMonitorTypes={availableMonitorTypes}
+        />
+      )}
       <List
         loading={isLoading}
         dataSource={results}

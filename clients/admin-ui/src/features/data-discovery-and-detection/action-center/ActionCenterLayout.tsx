@@ -7,9 +7,10 @@ import {
   Flex,
   Icons,
   Menu,
+  Tooltip,
 } from "fidesui";
 import _ from "lodash";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
@@ -28,6 +29,7 @@ export interface ActionCenterLayoutProps {
     dropdownProps?: DropdownProps;
     badgeProps?: BadgeProps;
   };
+  onRefresh?: () => void;
 }
 
 const ActionCenterLayout = ({
@@ -35,12 +37,33 @@ const ActionCenterLayout = ({
   monitorId,
   routeConfig,
   pageSettings,
+  onRefresh,
 }: PropsWithChildren<ActionCenterLayoutProps>) => {
+  const [statsExpanded, setStatsExpanded] = useState(false);
   const {
     items: menuItems,
     activeItem,
     setActiveItem,
   } = useActionCenterNavigation(routeConfig);
+
+  const tabs = (
+    <Menu
+      aria-label="Action center tabs"
+      mode="horizontal"
+      items={Object.values(menuItems)}
+      selectedKeys={_.compact([activeItem])}
+      onClick={async (menuInfo) => {
+        const validKey = Object.values(ActionCenterRoute).find(
+          (value) => value === menuInfo.key,
+        );
+        if (validKey) {
+          await setActiveItem(validKey);
+        }
+      }}
+      className="mb-4"
+      data-testid="action-center-tabs"
+    />
+  );
 
   return (
     <FixedLayout
@@ -56,38 +79,54 @@ const ActionCenterLayout = ({
         ]}
         isSticky={false}
         rightContent={
-          pageSettings && (
-            <Flex>
-              <Badge {...pageSettings.badgeProps}>
-                <Dropdown {...pageSettings.dropdownProps}>
+          (pageSettings || onRefresh) && (
+            <Flex gap="small">
+              {pageSettings && (
+                <Badge {...pageSettings.badgeProps}>
+                  <Dropdown {...pageSettings.dropdownProps}>
+                    <Button
+                      aria-label="Page settings"
+                      icon={<Icons.SettingsView />}
+                    />
+                  </Dropdown>
+                </Badge>
+              )}
+              {onRefresh && (
+                <Tooltip title="Refresh">
                   <Button
-                    aria-label="Page settings"
-                    icon={<Icons.SettingsView />}
+                    icon={<Icons.Renew />}
+                    onClick={onRefresh}
+                    aria-label="Refresh"
                   />
-                </Dropdown>
-              </Badge>
+                </Tooltip>
+              )}
             </Flex>
           )
         }
       />
-      <MonitorStats monitorId={monitorId} />
-      <Menu
-        aria-label="Action center tabs"
-        mode="horizontal"
-        items={Object.values(menuItems)}
-        selectedKeys={_.compact([activeItem])}
-        onClick={async (menuInfo) => {
-          const validKey = Object.values(ActionCenterRoute).find(
-            (value) => value === menuInfo.key,
-          );
-          if (validKey) {
-            await setActiveItem(validKey);
-          }
-        }}
-        className="mb-4"
-        data-testid="action-center-tabs"
-      />
-      {children}
+      {monitorId ? (
+        // Schema explorer: collapsible slim dashboard above content
+        <>
+          <MonitorStats
+            monitorId={monitorId}
+            isExpanded={statsExpanded}
+            onToggle={() => setStatsExpanded(!statsExpanded)}
+          />
+          {tabs}
+          {children}
+        </>
+      ) : (
+        // Root page: sidebar dashboard next to content
+        <Flex className="flex-1 overflow-hidden" gap={0}>
+          <div className="flex-none border-r border-solid border-gray-200 pr-3">
+            <MonitorStats />
+          </div>
+          <Flex vertical className="flex-1 overflow-hidden pl-4">
+            {tabs}
+            {children}
+          </Flex>
+        </Flex>
+      )}
     </FixedLayout>
   );
 };

@@ -1,0 +1,56 @@
+import { NextPage } from "next";
+import { useRouter } from "next/router";
+
+import ErrorPage from "~/features/common/errors/ErrorPage";
+import { useFeatures } from "~/features/common/features";
+import {
+  ACTION_CENTER_ACTIVITY_ROUTE,
+  ACTION_CENTER_ROUTE,
+} from "~/features/common/nav/routes";
+import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import ActionCenterLayoutOriginal from "~/features/data-discovery-and-detection/action-center/ActionCenterLayoutOriginal";
+import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import MonitorList from "~/features/data-discovery-and-detection/action-center/MonitorList";
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+
+export const ROOT_ACTION_CENTER_V2_CONFIG = {
+  [ActionCenterRoute.ACTIVITY]: ACTION_CENTER_ACTIVITY_ROUTE,
+  [ActionCenterRoute.ATTENTION_REQUIRED]: ACTION_CENTER_ROUTE,
+};
+
+const ActionCenterV2Page: NextPage = () => {
+  const router = useRouter();
+  const { flags } = useFeatures();
+  const { webMonitor: webMonitorEnabled } = flags;
+
+  const monitorTypes: MONITOR_TYPES[] = [
+    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
+    MONITOR_TYPES.DATASTORE,
+  ];
+
+  const { error } = useGetAggregateMonitorResultsQuery({
+    page: 1,
+    size: 20,
+    monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
+  });
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching your monitor results"
+      />
+    );
+  }
+
+  return (
+    <ActionCenterLayoutOriginal
+      routeConfig={ROOT_ACTION_CENTER_V2_CONFIG}
+      onRefresh={() => router.reload()}
+    >
+      <MonitorList hideSearchForm />
+    </ActionCenterLayoutOriginal>
+  );
+};
+
+export default ActionCenterV2Page;

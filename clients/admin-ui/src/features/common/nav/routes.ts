@@ -22,6 +22,7 @@ export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
 
 // Detection and discovery
 export const ACTION_CENTER_ROUTE = "/data-discovery/action-center";
+export const ACTION_CENTER_V2_ROUTE = "/data-discovery/action-center-v2";
 export const ACTION_CENTER_ACTIVITY_ROUTE =
   "/data-discovery/action-center/activity";
 export const ACTION_CENTER_WEBSITE_MONITOR_ROUTE =

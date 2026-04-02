@@ -1,6 +1,7 @@
 import { Icons } from "fidesui";
 import { NextPage } from "next";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 import {
@@ -17,6 +18,7 @@ export const MONITOR_ACTION_CENTER_CONFIG = {
 } as const;
 
 const DatastoreMonitorResultSystems: NextPage = () => {
+  const router = useRouter();
   const params = useParams<{ monitorId: string }>();
   const [pageSettings, setPageSettings] = useState({
     showIgnored: false,
@@ -32,6 +34,7 @@ const DatastoreMonitorResultSystems: NextPage = () => {
     <ActionCenterLayout
       monitorId={monitorId}
       routeConfig={MONITOR_ACTION_CENTER_CONFIG}
+      onRefresh={() => router.reload()}
       pageSettings={{
         badgeProps: {
           count: Object.values(pageSettings).flatMap((s) => (s ? [s] : []))

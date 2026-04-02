@@ -12,9 +12,9 @@ import { useGetAllUsersQuery } from "~/features/user-management";
 import { MonitorSearchForm } from "../MonitorList.const";
 
 const MONITOR_FILTER_LABEL: Record<MONITOR_TYPES, string> = {
-  [MONITOR_TYPES.DATASTORE]: "Data store monitors",
-  [MONITOR_TYPES.WEBSITE]: "Website monitors",
-  [MONITOR_TYPES.INFRASTRUCTURE]: "Infrastructure monitors",
+  [MONITOR_TYPES.DATASTORE]: "Monitored data stores",
+  [MONITOR_TYPES.WEBSITE]: "Monitored websites",
+  [MONITOR_TYPES.INFRASTRUCTURE]: "Monitored infrastructure",
 };
 
 const MonitorListSearchForm = ({

@@ -8,10 +8,13 @@ export const useCountUp = (target: number, duration = 800): number => {
   const [value, setValue] = useState(0);
   const rafRef = useRef<number>();
   const startRef = useRef<number>();
+  const fromRef = useRef(0);
 
   useEffect(() => {
-    if (target === 0) {
-      setValue(0);
+    const from = fromRef.current;
+
+    // If already at target, skip animation
+    if (from === target) {
       return undefined;
     }
 
@@ -23,10 +26,13 @@ export const useCountUp = (target: number, duration = 800): number => {
       }
       const elapsed = timestamp - startRef.current;
       const t = Math.min(elapsed / duration, 1);
-      setValue(Math.round(target * easeOut(t)));
+      const current = Math.round(from + (target - from) * easeOut(t));
+      setValue(current);
 
       if (t < 1) {
         rafRef.current = requestAnimationFrame(animate);
+      } else {
+        fromRef.current = target;
       }
     };
 
@@ -35,9 +41,11 @@ export const useCountUp = (target: number, duration = 800): number => {
     return () => {
       if (rafRef.current !== undefined) {
         cancelAnimationFrame(rafRef.current);
+        // Snapshot current displayed value as the new starting point
+        fromRef.current = value;
       }
     };
-  }, [target, duration]);
+  }, [target, duration]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return value;
 };

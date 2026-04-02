@@ -395,13 +395,6 @@ const ActionCenterFields = ({
                     Actions
                   </Button>
                 </Dropdown>
-                <Tooltip title="Refresh">
-                  <Button
-                    icon={<Icons.Renew />}
-                    onClick={() => listQueryMeta.refetch()}
-                    aria-label="Refresh"
-                  />
-                </Tooltip>
               </Flex>
             </Flex>
             <Flex gap="medium" align="center">
