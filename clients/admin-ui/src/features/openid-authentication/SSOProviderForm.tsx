@@ -235,7 +235,11 @@ const SSOProviderForm = ({
     if (isEditMode) {
       // Strip empty credential fields — the backend preserves existing encrypted
       // values when client_id / client_secret are absent from the payload.
-      const { client_id: clientId, client_secret: clientSecret, ...rest } = values;
+      const {
+        client_id: clientId,
+        client_secret: clientSecret,
+        ...rest
+      } = values;
       const payload = {
         ...rest,
         ...(clientId ? { client_id: clientId } : {}),
