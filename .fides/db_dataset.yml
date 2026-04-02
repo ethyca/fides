@@ -3156,8 +3156,6 @@ dataset:
   - name: monitor_aggregate_statistics
     data_categories: [system.operations]
     fields:
-    - name: computed_at
-      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: id
