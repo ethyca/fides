@@ -118,7 +118,7 @@ const PolicyCard = ({
                 onChange={() => onToggle(policy)}
                 size="small"
               />
-              <Text size="sm">Policy enabled</Text>
+              <Text size="sm">Enabled</Text>
             </Flex>
             <Flex gap="small" align="center">
               <Icons.Time size={14} />

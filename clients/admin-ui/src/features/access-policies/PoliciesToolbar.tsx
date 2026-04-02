@@ -63,8 +63,8 @@ const PoliciesToolbar = ({
       </Form.Item>
       <Form.Item className="!me-0 self-end">
         <Select
-          aria-label="Control"
-          placeholder="Control"
+          aria-label="Controls"
+          placeholder="Controls"
           options={controlOptions}
           value={controlFilter}
           onChange={onControlFilterChange}

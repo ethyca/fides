@@ -1,13 +1,24 @@
 import type { Identifier, XYCoord } from "dnd-core";
-import { Button, Dropdown, Icons, Switch, Table, Tag, Text } from "fidesui";
+import {
+  Button,
+  Dropdown,
+  Flex,
+  Icons,
+  Switch,
+  Table,
+  Tag,
+  Text,
+} from "fidesui";
 import NextLink from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 
 import { ControlGroup } from "./access-policies.slice";
+import { DECISION_LABELS } from "./constants";
 import { AccessPolicyListItem } from "./types";
 
 const ROW_TYPE = "PolicyTableRow";
@@ -204,7 +215,12 @@ const PoliciesTable = ({
       render: () => <DragHandle />,
     },
     {
-      title: "#",
+      title: (
+        <Flex align="center" gap={4}>
+          #
+          <InfoTooltip label="Priority — policies are evaluated in this order" />
+        </Flex>
+      ),
       dataIndex: "priority",
       key: "priority",
       width: 60,
@@ -260,7 +276,7 @@ const PoliciesTable = ({
       render: (_: unknown, record: AccessPolicyListItem) =>
         record.decision ? (
           <Tag color={record.decision === "ALLOW" ? "success" : "error"}>
-            {record.decision}
+            {DECISION_LABELS[record.decision] ?? record.decision}
           </Tag>
         ) : null,
     },
