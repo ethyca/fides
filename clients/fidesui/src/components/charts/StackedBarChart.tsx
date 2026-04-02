@@ -26,6 +26,7 @@ export interface StackedBarChartProps {
   segments: readonly StackedBarSegment[];
   onCategoryClick?: (category: string) => void;
   animationDuration?: number;
+  hideTooltip?: boolean;
 }
 
 interface ChartEntry {
@@ -221,6 +222,7 @@ export const StackedBarChart = ({
   segments,
   onCategoryClick,
   animationDuration = CHART_ANIMATION.defaultDuration,
+  hideTooltip = false,
 }: StackedBarChartProps) => {
   const { token } = theme.useToken();
   const animationActive = useChartAnimation(animationDuration);
@@ -301,6 +303,7 @@ export const StackedBarChart = ({
           dataKey="category"
           width={yAxisWidth}
           interval={0}
+          hide={Object.keys(data).length <= 1}
           tick={
             <ClickableTick
               onCategoryClick={onCategoryClick}
@@ -313,10 +316,12 @@ export const StackedBarChart = ({
           tickLine={false}
           axisLine={false}
         />
-        <Tooltip
-          cursor={false}
-          content={<StackedBarTooltipContent segments={segments} />}
-        />
+        {!hideTooltip && (
+          <Tooltip
+            cursor={false}
+            content={<StackedBarTooltipContent segments={segments} />}
+          />
+        )}
         {segments.map((segment) => (
           <Bar
             key={segment.key}

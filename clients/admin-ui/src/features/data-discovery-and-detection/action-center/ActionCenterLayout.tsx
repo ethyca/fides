@@ -9,7 +9,7 @@ import {
   Menu,
 } from "fidesui";
 import _ from "lodash";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
@@ -18,6 +18,7 @@ import useActionCenterNavigation, {
   ActionCenterRoute,
   ActionCenterRouteConfig,
 } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import MonitorStats from "./MonitorStats";
 
@@ -28,14 +29,19 @@ export interface ActionCenterLayoutProps {
     dropdownProps?: DropdownProps;
     badgeProps?: BadgeProps;
   };
+  refresh?: () => Promise<void>;
+  monitorType?: APIMonitorType;
 }
 
 const ActionCenterLayout = ({
   children,
   monitorId,
+  monitorType,
   routeConfig,
   pageSettings,
+  refresh,
 }: PropsWithChildren<ActionCenterLayoutProps>) => {
+  const [refreshing, setRefreshing] = useState(false);
   const {
     items: menuItems,
     activeItem,
@@ -56,21 +62,41 @@ const ActionCenterLayout = ({
         ]}
         isSticky={false}
         rightContent={
-          pageSettings && (
-            <Flex>
-              <Badge {...pageSettings.badgeProps}>
-                <Dropdown {...pageSettings.dropdownProps}>
-                  <Button
-                    aria-label="Page settings"
-                    icon={<Icons.SettingsView />}
-                  />
-                </Dropdown>
-              </Badge>
-            </Flex>
-          )
+          <Flex gap="small">
+            {pageSettings && (
+              <Flex>
+                <Badge {...pageSettings.badgeProps}>
+                  <Dropdown {...pageSettings.dropdownProps}>
+                    <Button
+                      aria-label="Page settings"
+                      icon={<Icons.SettingsView />}
+                    />
+                  </Dropdown>
+                </Badge>
+              </Flex>
+            )}
+            {refresh && (
+              <Button
+                aria-label="Page refresh"
+                icon={<Icons.Renew />}
+                onClick={async () => {
+                  setRefreshing(true);
+                  try {
+                    await refresh();
+                  } finally {
+                    setRefreshing(false);
+                  }
+                }}
+                disabled={refreshing}
+                loading={refreshing}
+              />
+            )}
+          </Flex>
         }
       />
-      <MonitorStats monitorId={monitorId} />
+      {monitorId && monitorType && (
+        <MonitorStats monitorId={monitorId} monitorType={monitorType} />
+      )}
       <Menu
         aria-label="Action center tabs"
         mode="horizontal"

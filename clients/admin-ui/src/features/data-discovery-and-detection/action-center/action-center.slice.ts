@@ -5,6 +5,7 @@ import {
   getQueryParamsFromArray,
 } from "~/features/common/utils";
 import {
+  ConnectionConfigurationResponseWithSystemKey,
   ConnectionType,
   ConsentStatus,
   DiffStatus,
@@ -18,6 +19,7 @@ import {
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
@@ -38,7 +40,7 @@ import {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
 } from "./types";
-import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
+import { getMonitorType } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -58,7 +60,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       MonitorSummaryPaginatedResponse,
       SearchQueryParams &
         PaginationQueryParams & {
-          monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+          monitor_type?: APIMonitorType[]; // defaults to all monitor types if not provided
           steward_user_id?: string[];
         }
     >({
@@ -528,8 +530,9 @@ const actionCenterApi = baseApi.injectEndpoints({
     getAggregateStatistics: build.query<
       AggregateStatisticsResponse,
       {
-        monitor_type: "website" | "datastore" | "infrastructure";
+        monitor_type: APIMonitorType;
         monitor_config_id?: string;
+        steward_user_id?: string[];
       }
     >({
       query: ({ monitor_type, ...params }) => {
@@ -538,7 +541,25 @@ const actionCenterApi = baseApi.injectEndpoints({
           params,
         };
       },
-      providesTags: ["Monitor Tasks"],
+      providesTags: ["Monitor Statistics"],
+    }),
+
+    calcAggregateStatistics: build.mutation<
+      AggregateStatisticsResponse,
+      {
+        monitor_type: APIMonitorType;
+        monitor_config_id?: string;
+        steward_user_id?: string[];
+      }
+    >({
+      query: ({ monitor_type, ...params }) => {
+        return {
+          url: `/plus/discovery-monitor/aggregate-results/summary/${monitor_type}/refresh`,
+          method: "POST",
+          params,
+        };
+      },
+      invalidatesTags: ["Monitor Statistics"],
     }),
 
     retryMonitorTask: build.mutation<
@@ -602,6 +623,15 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
+    getConnection: build.query<
+      ConnectionConfigurationResponseWithSystemKey,
+      { connection_key: string }
+    >({
+      query: ({ connection_key }) => ({
+        url: `/connection/${connection_key}`,
+      }),
+      providesTags: ["Connection Type"],
+    }),
   }),
 });
 
@@ -634,4 +664,7 @@ export const {
   usePromoteRemovalStagedResourcesMutation,
   useLazyGetAggregateStatisticsQuery,
   useGetAggregateStatisticsQuery,
+  useGetConnectionQuery,
+  useCalcAggregateStatisticsMutation,
+  util: actionCenterUtil,
 } = actionCenterApi;
