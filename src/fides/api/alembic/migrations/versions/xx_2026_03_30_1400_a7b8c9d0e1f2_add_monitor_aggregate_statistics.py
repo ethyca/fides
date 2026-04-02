@@ -1,7 +1,7 @@
 """add monitor_aggregate_statistics table
 
 Revision ID: a7b8c9d0e1f2
-Revises: a4b7c8d9e0f1
+Revises: c2d98bc00eeb
 Create Date: 2026-03-30 14:00:00.000000
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "a7b8c9d0e1f2"
-down_revision = "a4b7c8d9e0f1"
+down_revision = "c2d98bc00eeb"
 branch_labels = None
 depends_on = None
 
