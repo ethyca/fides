@@ -1,4 +1,5 @@
-import { GreenCheckCircleIcon, Space, Tag, Typography } from "fidesui";
+import { Icons, Space, Tag, Typography } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 const { Text } = Typography;
 
@@ -14,7 +15,7 @@ const AuthorizationStatus = ({ authorized }: AuthorizationStatusProps) => {
   if (authorized) {
     return (
       <Space data-testid="authorize-status">
-        <GreenCheckCircleIcon />
+        <Icons.CheckmarkFilled color={palette.FIDESUI_SUCCESS} />
         <Text type="success" strong>
           Authorized
         </Text>

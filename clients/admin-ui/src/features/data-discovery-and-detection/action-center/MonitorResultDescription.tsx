@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { nFormatter, pluralize } from "~/features/common/utils";
 
 import {
-  MONITOR_UPDATE_NAMES,
+  MONITOR_UPDATE_LABELS,
   MONITOR_UPDATE_ORDER,
   MONITOR_UPDATES_TO_IGNORE,
 } from "./constants";
@@ -12,12 +12,15 @@ import { MonitorUpdates } from "./types";
 type MonitorUpdateKey = keyof MonitorUpdates;
 
 const getMonitorUpdateName = (key: string, count: number) => {
-  const names = MONITOR_UPDATE_NAMES.get(key as MonitorUpdateKey);
+  const names = Object.entries(MONITOR_UPDATE_LABELS).find(
+    ([k]) => key === k,
+  )?.[1];
+
   if (!names) {
     return key;
   }
   // names is [singular, plural]
-  return pluralize(count, names[0], names[1]);
+  return pluralize(count, ...names);
 };
 
 export const MonitorResultDescription = ({

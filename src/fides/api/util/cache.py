@@ -255,6 +255,7 @@ def _build_redis_client(
             "ssl": CONFIG.redis.ssl,
             "ssl_ca_certs": CONFIG.redis.ssl_ca_certs or None,
             "ssl_cert_reqs": CONFIG.redis.ssl_cert_reqs,
+            "ssl_check_hostname": CONFIG.redis.ssl_check_hostname,
             "socket_connect_timeout": CONFIG.redis.socket_connect_timeout,
             "socket_timeout": CONFIG.redis.socket_timeout,
         }
@@ -280,6 +281,7 @@ def _build_redis_client(
         ssl=CONFIG.redis.ssl,
         ssl_ca_certs=CONFIG.redis.ssl_ca_certs or None,
         ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+        ssl_check_hostname=CONFIG.redis.ssl_check_hostname,
         socket_connect_timeout=CONFIG.redis.socket_connect_timeout,
         socket_timeout=CONFIG.redis.socket_timeout,
     )
@@ -351,6 +353,7 @@ def get_read_only_cache() -> FidesopsRedis:
                 ssl=CONFIG.redis.read_only_ssl,
                 ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs or None,
                 ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
+                ssl_check_hostname=CONFIG.redis.read_only_ssl_check_hostname,
             )
             _read_only_connection = FidesopsRedis(client)
 

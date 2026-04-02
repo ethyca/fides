@@ -75,8 +75,34 @@ class ReportConfig:
 
 
 @dataclass
+class SplitConfig:
+    """Configure pytest-split sharding for CI parallelism.
+
+    xdist and split_config are complementary: split selects which tests
+    to run (inter-job), xdist parallelizes execution (intra-job).
+    """
+
+    # Typed as str because values come from env vars and are passed as CLI args
+    total_splits: str = "1"
+    split_group: str = "1"
+
+    @property
+    def args(self) -> list[str]:
+        if self.total_splits == "1":
+            return []
+        return [
+            "--splits",
+            self.total_splits,
+            "--group",
+            self.split_group,
+            "--splitting-algorithm=least_duration",
+        ]
+
+
+@dataclass
 class PytestConfig:
     xdist_config: Optional[XdistConfig] = None
+    split_config: Optional[SplitConfig] = None
     coverage_config: Optional[CoverageConfig] = None
     report_config: Optional[ReportConfig] = None
     suppress_stdout: bool = True
@@ -84,10 +110,15 @@ class PytestConfig:
 
     @property
     def args(self) -> list[str]:
+        xdist_args = self.xdist_config.args if self.xdist_config else []
+        split_args = self.split_config.args if self.split_config else []
+        coverage_args = self.coverage_config.args if self.coverage_config else []
+        report_args = self.report_config.args if self.report_config else []
         return [
-            *self.xdist_config.args,
-            *self.coverage_config.args,
-            *self.report_config.args,
+            *xdist_args,
+            *split_args,
+            *coverage_args,
+            *report_args,
             "-x",
             "-s" if self.suppress_stdout else "",
             "-W ignore" if self.suppress_warnings else "",
@@ -178,9 +209,11 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
     else:
         import copy
 
-        # Don't use xdist for this one
-        local_pytest_config = copy.copy(pytest_config)
-        local_pytest_config.xdist_config.parallel_runners = "0"
+        # Don't use xdist for this one — construct a new config to avoid
+        # mutating the caller's shared XdistConfig via shallow copy
+        local_pytest_config = copy.deepcopy(pytest_config)
+        if local_pytest_config.xdist_config:
+            local_pytest_config.xdist_config.parallel_runners = "0"
 
         session.run(*START_APP, external=True)
         session.run(*LOGIN, external=True)
@@ -254,11 +287,17 @@ def pytest_ops(
         session.run(*run_command, external=True)
     elif mark == "integration":
         # The coverage_arg is hardcoded in 'run_infrastructure.py'
+        split_args = (
+            " ".join(pytest_config.split_config.args)
+            if pytest_config.split_config
+            else ""
+        )
         run_infrastructure(
             run_tests=True,
             analytics_opt_out=True,
             datastores=[],
             pytest_path=f"{OPS_TEST_DIR} tests/integration/",
+            split_args=split_args,
         )
     elif mark == "external_datastores":
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
@@ -462,6 +501,7 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "tests/service/",
         "tests/system_integration_link/",
         "tests/task/",
+        "tests/unit/",
         "tests/util/",
         "-m",
         "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",

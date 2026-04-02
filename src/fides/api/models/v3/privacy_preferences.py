@@ -34,6 +34,15 @@ class PrivacyPreferences(Base):
     def __tablename__(self) -> str:
         return "privacy_preferences"
 
+    # Partition-level index (not declarable on the parent table):
+    #
+    #   UNIQUE INDEX idx_privacy_preferences_current_unique_identity
+    #   ON privacy_preferences_current ((search_data->'identity'))
+    #
+    # Enforces at most one is_latest=true row per identity at the DB level.
+    # Lives on the _current partition only — the _historic partition allows
+    # multiple rows per identity. See migration a4b7c8d9e0f1.
+
     # Override the default id column from Base (which is a String UUID)
     # with a BigInteger identity column for this table
     id = Column(

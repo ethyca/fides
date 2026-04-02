@@ -7,29 +7,19 @@ performance overhead (see https://github.com/fastapi/fastapi/discussions/6985).
 
 from __future__ import annotations
 
-import asyncio
 import re
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
 from time import perf_counter
 from typing import Any, Awaitable, Callable, MutableMapping, Optional, Set
 from uuid import uuid4
 
-from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from pyinstrument import Profiler
 from starlette.requests import Request
 
-from fides.api.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
-)
 from fides.api.middleware import handle_audit_log_resource
 from fides.api.request_context import set_request_id
-from fides.api.schemas.analytics import Event, ExtraData
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.api.util.logger import _log_exception
 from fides.config import CONFIG
 
 # Type aliases for ASGI
@@ -226,107 +216,6 @@ class LogRequestMiddleware(BaseASGIMiddleware):
             path=path,
             fides_client=fides_client,
         ).info("Request received")
-
-
-class AnalyticsLoggingMiddleware(BaseASGIMiddleware):
-    """
-    Pure ASGI middleware that logs analytics events for each call to Fides endpoints.
-
-    Only logs for API endpoints (paths starting with API_PREFIX) and skips /health endpoints.
-    """
-
-    # Class-level set to hold references to pending tasks, preventing garbage collection
-    # before completion. Tasks remove themselves from this set when done.
-    _pending_tasks: set[asyncio.Task] = set()
-
-    def __init__(self, app: ASGIApp, api_prefix: str = API_PREFIX) -> None:
-        super().__init__(app)
-        self.api_prefix = api_prefix
-
-    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
-        path = self.get_path(scope)
-
-        # Skip non-API endpoints and health endpoints
-        if not path.startswith(self.api_prefix) or path.endswith("/health"):
-            await self.app(scope, receive, send)
-            return
-
-        method = self.get_method(scope)
-        fides_source: Optional[str] = self.get_header(scope, b"x-fides-source") or None
-        hostname = self.get_host(scope)
-        full_url = self.build_url(scope)
-
-        now = datetime.now(tz=timezone.utc)
-        endpoint = f"{method}: {full_url}"
-
-        # Capture status and detect HTTP errors
-        captured: dict[str, Any] = {"status": 500, "error_class": None}
-
-        async def send_wrapper(message: Message) -> None:
-            if message["type"] == "http.response.start":
-                status_code: int = message.get("status", 500)
-                captured["status"] = status_code
-                if status_code >= 400:
-                    captured["error_class"] = "HTTPException"
-            await send(message)
-
-        try:
-            await self.app(scope, receive, send_wrapper)
-        except Exception as e:
-            captured["status"] = 500
-            captured["error_class"] = e.__class__.__name__
-            _log_exception(e, CONFIG.dev_mode)
-            raise
-        finally:
-            # Schedule analytics logging as a background task.
-            # Store task reference to prevent garbage collection before completion.
-            task = asyncio.create_task(
-                self._log_analytics(
-                    endpoint,
-                    hostname,
-                    captured["status"],
-                    now,
-                    fides_source,
-                    captured["error_class"],
-                )
-            )
-            self._pending_tasks.add(task)
-            # Task will be passed as argument to discard when it completes
-            task.add_done_callback(self._pending_tasks.discard)
-
-    async def _log_analytics(
-        self,
-        endpoint: str,
-        hostname: Optional[str],
-        status_code: int,
-        event_created_at: datetime,
-        fides_source: Optional[str],
-        error_class: Optional[str],
-    ) -> None:
-        """Log analytics event if not opted out."""
-        if CONFIG.user.analytics_opt_out:
-            return
-
-        try:
-            await send_analytics_event(
-                AnalyticsEvent(
-                    docker=in_docker_container(),
-                    event=Event.endpoint_call.value,
-                    event_created_at=event_created_at,
-                    local_host=accessed_through_local_host(hostname),
-                    endpoint=endpoint,
-                    status_code=status_code,
-                    error=error_class or None,
-                    extra_data=(
-                        {ExtraData.fides_source.value: fides_source}
-                        if fides_source
-                        else None
-                    ),
-                )
-            )
-        except Exception:
-            # Analytics should never break the request
-            pass
 
 
 class AuditLogMiddleware(BaseASGIMiddleware):

@@ -30,6 +30,7 @@ ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.in_processing,
     PrivacyRequestStatus.requires_manual_finalization,
     PrivacyRequestStatus.requires_input,
+    PrivacyRequestStatus.pending_external,
     PrivacyRequestStatus.paused,
     PrivacyRequestStatus.awaiting_email_send,
     PrivacyRequestStatus.error,

@@ -37,6 +37,7 @@ class ConnectionType(enum.Enum):
     """
 
     attentive_email = "attentive_email"
+    aws = "aws"  # AWS for cloud infra discovery
     bigquery = "bigquery"
     datahub = "datahub"
     dynamodb = "dynamodb"
@@ -79,6 +80,7 @@ class ConnectionType(enum.Enum):
         """
         readable_mapping: dict[str, str] = {
             ConnectionType.attentive_email.value: "Attentive Email",
+            ConnectionType.aws.value: "Amazon Web Services",
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
@@ -128,6 +130,7 @@ class ConnectionType(enum.Enum):
 
         system_type_mapping: dict[str, SystemType] = {
             ConnectionType.attentive_email.value: SystemType.email,
+            ConnectionType.aws.value: SystemType.service,
             ConnectionType.bigquery.value: SystemType.database,
             ConnectionType.datahub.value: SystemType.data_catalog,
             ConnectionType.dynamic_erasure_email.value: SystemType.email,
@@ -191,6 +194,10 @@ class ConnectionConfig(Base):
     description = Column(String, index=True, nullable=True)
     connection_type = Column(Enum(ConnectionType), nullable=False)
     access = Column(Enum(AccessLevel), nullable=False)
+    # NOTE: fidesplus registers SQLAlchemy attribute events on this column
+    # for cross-connection credential sync (Jira SaaS → jira_ticket).
+    # Avoid bulk/raw SQL updates to secrets; use ORM instance-level updates
+    # to ensure events fire. See fidesplus/jira/jira_credential_sync.py
     secrets = Column(
         MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
@@ -296,6 +303,9 @@ class ConnectionConfig(Base):
     @property
     def authorized(self) -> bool:
         """Returns True if the connection config has an access token, used for OAuth2 connections"""
+
+        if self.connection_type == ConnectionType.jira_ticket:
+            return bool(self.secrets and "access_token" in self.secrets)
 
         saas_config = self.get_saas_config()
         if not saas_config:

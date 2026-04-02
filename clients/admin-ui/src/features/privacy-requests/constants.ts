@@ -14,6 +14,7 @@ export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.REQUIRES_INPUT, "Requires input"],
   [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION, "Requires finalization"],
   [PrivacyRequestStatus.DUPLICATE, "Duplicate"],
+  [PrivacyRequestStatus.PENDING_EXTERNAL, "Pending external"],
 ]);
 
 export const SubjectRequestStatusOptions = [...SubjectRequestStatusMap].map(

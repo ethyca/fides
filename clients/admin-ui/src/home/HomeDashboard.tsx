@@ -1,10 +1,6 @@
 import { Col, Flex, Row } from "fidesui";
-import { useCallback, useEffect, useState } from "react";
 
-import {
-  useGetAgentBriefingQuery,
-  useGetDashboardTrendsQuery,
-} from "~/features/dashboard/dashboard.slice";
+import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice";
 import { TrendPeriod } from "~/features/dashboard/types";
 
 import { AgentBriefingBanner } from "./AgentBriefingBanner";
@@ -15,18 +11,9 @@ import { PriorityActionsCard } from "./PriorityActionsCard";
 import { SystemCoverageCard } from "./SystemCoverageCard";
 import { TREND_METRIC_KEYS, TrendCard } from "./TrendCard";
 
-const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
+const ROW_GUTTER = 24;
 
 export const HomeDashboard = () => {
-  const [showBriefing, setShowBriefing] = useState(true);
-
-  useEffect(() => {
-    if (sessionStorage.getItem(BRIEFING_DISMISSED_KEY) === "true") {
-      setShowBriefing(false);
-    }
-  }, []);
-
-  const { data: briefing } = useGetAgentBriefingQuery();
   const { data: trends, isLoading: isTrendsLoading } =
     useGetDashboardTrendsQuery({
       period: TrendPeriod.THIRTY_DAYS,
@@ -34,22 +21,15 @@ export const HomeDashboard = () => {
 
   const metrics = trends?.metrics;
 
-  const dismissBriefing = useCallback(() => {
-    setShowBriefing(false);
-    sessionStorage.setItem(BRIEFING_DISMISSED_KEY, "true");
-  }, []);
-
   return (
-    <Flex vertical gap={24} className="px-10 py-6">
-      {briefing && showBriefing && (
-        <AgentBriefingBanner
-          briefing={briefing.briefing}
-          quickActions={briefing.quick_actions}
-          onClose={dismissBriefing}
-        />
-      )}
+    <Flex
+      vertical
+      gap={24}
+      className="mx-auto w-full max-w-[1600px] px-10 py-6"
+    >
+      <AgentBriefingBanner />
       <Row
-        gutter={24}
+        gutter={ROW_GUTTER}
         className="h-[350px] items-stretch lg:h-[400px] xl:h-[500px]"
       >
         <Col xs={24} md={8} lg={8} xxl={8} className="h-full">
@@ -59,7 +39,7 @@ export const HomeDashboard = () => {
           <PriorityActionsCard />
         </Col>
       </Row>
-      <Row gutter={24}>
+      <Row gutter={ROW_GUTTER}>
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>
             <TrendCard
@@ -70,7 +50,7 @@ export const HomeDashboard = () => {
           </Col>
         ))}
       </Row>
-      <Row gutter={24}>
+      <Row gutter={ROW_GUTTER} className="items-stretch">
         <Col xs={24} md={8}>
           <SystemCoverageCard />
         </Col>

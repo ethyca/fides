@@ -71,8 +71,12 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
         skipped_privacy_requests: List[str] = []
         batched_identities: List[str] = []
         db = Session.object_session(self.configuration)
+        all_pr_ids = [pr.id for pr in privacy_requests]
+        already_sent_ids = self.get_already_sent_privacy_request_ids(db, all_pr_ids)
 
         for privacy_request in privacy_requests:
+            if privacy_request.id in already_sent_ids:
+                continue
             user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
             filtered_user_identities: Dict[str, Any] = (
                 filter_user_identities_for_connector(self.config, user_identities)
@@ -109,18 +113,20 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
         except MessageDispatchException as exc:
             message = f"Batch erasure email {batch_id} for connector {self.configuration.key} failed with exception {exc}"
             logger.error(message)
+            excluded_ids = set(skipped_privacy_requests) | already_sent_ids
             self.error_all_privacy_requests(
                 db,
-                privacy_requests.filter(
-                    PrivacyRequest.id.notin_(skipped_privacy_requests)
-                ),
+                privacy_requests.filter(PrivacyRequest.id.notin_(list(excluded_ids))),
                 message,
             )
             raise
 
         # create an audit event for each privacy request ID
         for privacy_request in privacy_requests:
-            if privacy_request.id not in skipped_privacy_requests:
+            if (
+                privacy_request.id not in skipped_privacy_requests
+                and privacy_request.id not in already_sent_ids
+            ):
                 ExecutionLog.create(
                     db=db,
                     data={

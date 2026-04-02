@@ -69,6 +69,10 @@ class RedisSettings(FidesSettings):
         default="",
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate.",
     )
+    ssl_check_hostname: bool = Field(
+        default=True,
+        description="Whether to verify that the Redis server's certificate hostname matches the server's hostname. Set to False if your Redis certificate does not match the connection hostname (e.g., behind proxies, load balancers, or managed Redis with internal cert hostnames).",
+    )
     socket_connect_timeout: float = Field(
         default=10.0,
         description="Timeout in seconds for establishing a connection to Redis.",
@@ -120,6 +124,10 @@ class RedisSettings(FidesSettings):
     read_only_ssl_ca_certs: str = Field(  # type: ignore[assignment]
         default=None,
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate. If not provided, the `ssl_ca_certs` setting will be used.",
+    )
+    read_only_ssl_check_hostname: bool = Field(  # type: ignore[assignment]
+        default=None,
+        description="Whether to verify hostname for the read-only Redis TLS connection. If not provided, the `ssl_check_hostname` setting will be used.",
     )
 
     @field_validator("charset", mode="after")
@@ -194,6 +202,16 @@ class RedisSettings(FidesSettings):
         """Resolves the read-only ssl_ca_certs setting by falling back to the `ssl_ca_certs` value if no `read_only_ssl_ca_certs` is specified."""
         if v is None:
             return info.data["ssl_ca_certs"]
+        return v
+
+    @field_validator("read_only_ssl_check_hostname", mode="before")
+    @classmethod
+    def resolve_read_only_ssl_check_hostname(
+        cls, v: Optional[bool], info: ValidationInfo
+    ) -> bool:
+        """Resolves the read-only ssl_check_hostname setting by falling back to the `ssl_check_hostname` value if no `read_only_ssl_check_hostname` is specified."""
+        if v is None:
+            return info.data["ssl_check_hostname"]
         return v
 
     # This relies on other values to get built so must be last
@@ -282,9 +300,15 @@ class RedisSettings(FidesSettings):
                 if is_read_only
                 else info.data.get("ssl_ca_certs", "")
             )
+            ssl_check_hostname = (
+                info.data["read_only_ssl_check_hostname"]
+                if is_read_only
+                else info.data["ssl_check_hostname"]
+            )
 
             # Build SSL parameters
             params = {"ssl_cert_reqs": quote_plus(ssl_cert_reqs or "none")}
+            params["ssl_check_hostname"] = str(ssl_check_hostname)
             if ssl_ca_certs:
                 params["ssl_ca_certs"] = quote(ssl_ca_certs, safe="/")
             params_str = "?" + urlencode(params, quote_via=quote, safe="/")

@@ -1,0 +1,4 @@
+type: Added
+description: Added case_sensitive column to identity_definition model
+pr: 7814
+labels: ["db-migration"]

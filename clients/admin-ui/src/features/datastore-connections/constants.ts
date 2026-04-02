@@ -36,6 +36,7 @@ export const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
  */
 export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.ATTENTIVE_EMAIL, "attentive.svg"],
+  [ConnectionType.AWS, "aws.svg"],
   [ConnectionType.BIGQUERY, "bigquery.svg"],
   [ConnectionType.DATAHUB, "datahub.svg"],
   [ConnectionType.DYNAMODB, "dynamodb.svg"],
@@ -43,6 +44,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.GENERIC_ERASURE_EMAIL, "ethyca.svg"],
   [ConnectionType.GOOGLE_CLOUD_SQL_MYSQL, "google_cloud_sql.svg"],
   [ConnectionType.GOOGLE_CLOUD_SQL_POSTGRES, "google_cloud_sql.svg"],
+  [ConnectionType.JIRA_TICKET, "jira.svg"],
   [ConnectionType.MANUAL_TASK, "manual_tasks.svg"],
   [ConnectionType.MARIADB, "mariadb.svg"],
   [ConnectionType.MONGODB, "mongodb.svg"],

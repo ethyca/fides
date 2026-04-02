@@ -13,7 +13,7 @@ import {
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
-import { Form, Formik, FormikState, useFormikContext } from "formik";
+import { Form, Formik } from "formik";
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -42,12 +42,7 @@ interface CustomReportTemplatesProps {
   savedReportId: string; // from local storage
   tableStateToSave: CustomReportTableState | undefined;
   currentColumnMap?: Record<string, string>;
-  onCustomReportSaved: (
-    customReport: CustomReportResponse | null,
-    resetForm: (
-      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
-    ) => void,
-  ) => void;
+  onCustomReportSaved: (customReport: CustomReportResponse | null) => void;
   onSavedReportDeleted: () => void;
 }
 
@@ -95,7 +90,6 @@ export const CustomReportTemplates = ({
   const [reportToDelete, setReportToDelete] =
     useState<CustomReportResponseMinimal>();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
-  const { resetForm } = useFormikContext();
 
   const buttonLabel = useMemo(() => {
     const reportName = customReportsList?.items.find(
@@ -149,7 +143,7 @@ export const CustomReportTemplates = ({
     if (fetchedReport) {
       setShowSpinner(false);
       if (fetchedReport.id !== savedReportId) {
-        onCustomReportSaved(fetchedReport, resetForm);
+        onCustomReportSaved(fetchedReport);
       }
       popoverOnClose();
     } else if (selectedReportId) {
@@ -157,7 +151,7 @@ export const CustomReportTemplates = ({
       setShowSpinner(true);
     } else {
       // form was reset, apply the reset
-      onCustomReportSaved(null, resetForm);
+      onCustomReportSaved(null);
       popoverOnClose();
     }
   };
@@ -402,7 +396,7 @@ export const CustomReportTemplates = ({
           return customReport.name;
         })}
         onCreateCustomReport={(customReport) =>
-          onCustomReportSaved(customReport, resetForm)
+          onCustomReportSaved(customReport)
         }
       />
       <ConfirmationModal

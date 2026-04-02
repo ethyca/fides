@@ -6,7 +6,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
-  Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
+  Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
   PrivacyCenterConfig,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
@@ -146,6 +146,7 @@ export const selectPrivacyRequestFilters = createSelector(
     from: subjectRequests.from,
     id: subjectRequests.id,
     fuzzy_search_str: subjectRequests.fuzzy_search_str,
+    is_overdue: subjectRequests.is_overdue,
     page: subjectRequests.page,
     size: subjectRequests.size,
     sort_direction: subjectRequests.sort_direction,
@@ -175,6 +176,7 @@ type SubjectRequestsState = {
   from: string;
   id: string;
   fuzzy_search_str?: string;
+  is_overdue?: boolean;
   page: number;
   size: number;
   sort_direction?: string;
@@ -251,6 +253,11 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       action_type: action.payload,
     }),
+    setRequestOverdue: (state, action: PayloadAction<boolean | undefined>) => ({
+      ...state,
+      page: initialState.page,
+      is_overdue: action.payload,
+    }),
     setRequestTo: (state, action: PayloadAction<string>) => ({
       ...state,
       page: initialState.page,
@@ -289,6 +296,7 @@ export const {
   setRequestId,
   setRequestStatus,
   setRequestActionType,
+  setRequestOverdue,
   setRequestTo,
   setRetryRequests,
   setSortDirection,
@@ -405,7 +413,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       },
     }),
     searchPrivacyRequests: build.query<
-      Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
+      Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
       SearchFilterParams & { page: number; size: number }
     >({
       providesTags: () => ["Request"],
