@@ -10,6 +10,9 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.dynamic_erasure_email_connector import (
+    DynamicErasureEmailConnectorException,
+)
 from fides.api.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
     get_erasure_email_connection_configs,
@@ -77,33 +80,53 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
                 )
                 return EmailExitState.no_applicable_connectors
 
-            try:
-                # erasure
-                for connection_config in erasure_configs:
+            has_failure = False
+
+            # erasure
+            for connection_config in erasure_configs:
+                try:
                     get_connector(connection_config).batch_email_send(  # type: ignore
                         filter_privacy_requests_by_action_type(
                             privacy_requests, ActionType.erasure
                         ),
                         batch_id,
                     )
+                except (
+                    MessageDispatchException,
+                    DynamicErasureEmailConnectorException,
+                ) as exc:
+                    logger.error(
+                        "Batch erasure email send for connector '{}' failed with exception: '{}'",
+                        connection_config.key,
+                        exc,
+                    )
+                    has_failure = True
 
-                # consent
-                for connection_config in consent_configs:
+            # consent
+            for connection_config in consent_configs:
+                try:
                     get_connector(connection_config).batch_email_send(  # type: ignore
                         filter_privacy_requests_by_action_type(
                             privacy_requests, ActionType.consent
                         ),
                         batch_id,
                     )
-            except MessageDispatchException as exc:
-                logger.error(
-                    "Batch email send for connector failed with exception: '{}'",
-                    exc,
-                )
+                except (
+                    MessageDispatchException,
+                    DynamicErasureEmailConnectorException,
+                ) as exc:
+                    logger.error(
+                        "Batch consent email send for connector '{}' failed with exception: '{}'",
+                        connection_config.key,
+                        exc,
+                    )
+                    has_failure = True
+
+            if has_failure:
                 return EmailExitState.email_send_failed
 
-        requeue_privacy_requests_after_email_send(privacy_requests, session)
-        return EmailExitState.complete
+            requeue_privacy_requests_after_email_send(privacy_requests, session)
+            return EmailExitState.complete
 
 
 def filter_privacy_requests_by_action_type(
