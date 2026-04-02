@@ -68,7 +68,7 @@ const PoliciesToolbar = ({
           options={controlOptions}
           value={controlFilter}
           onChange={onControlFilterChange}
-          className="min-w-[280px]"
+          className="!w-[240px]"
           allowClear
         />
       </Form.Item>

@@ -5,6 +5,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
+import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
+
 import { ControlGroup } from "./access-policies.slice";
 import { AccessPolicyListItem } from "./types";
 
@@ -216,6 +218,7 @@ const PoliciesTable = ({
       title: "Name",
       dataIndex: "name",
       key: "name",
+      width: 220,
       ellipsis: true,
       render: (_: unknown, record: AccessPolicyListItem) => (
         <NextLink href={`/access-policies/edit/${record.id}`}>
@@ -227,6 +230,7 @@ const PoliciesTable = ({
       title: "Description",
       dataIndex: "description",
       key: "description",
+      minWidth: 160,
       ellipsis: true,
       render: (text: string) => (
         <Text size="sm" type="secondary">
@@ -239,12 +243,14 @@ const PoliciesTable = ({
       dataIndex: "controls",
       key: "controls",
       width: 200,
-      render: (_: unknown, record: AccessPolicyListItem) =>
-        record.controls?.map((key) => (
-          <Tag key={key} className="mb-1">
-            {controlGroupMap.get(key) ?? key}
-          </Tag>
-        )),
+      render: (_: unknown, record: AccessPolicyListItem) => (
+        <TagExpandableCell
+          values={record.controls?.map((key) => ({
+            key,
+            label: controlGroupMap.get(key) ?? key,
+          }))}
+        />
+      ),
     },
     {
       title: "Decision",
@@ -341,6 +347,8 @@ const PoliciesTable = ({
             onRowDragEnd: handleDragEnd,
           }) as unknown as React.HTMLAttributes<HTMLTableRowElement>
         }
+        tableLayout="fixed"
+        scroll={{ scrollToFirstRowOnChange: true }}
       />
     </DndProvider>
   );
