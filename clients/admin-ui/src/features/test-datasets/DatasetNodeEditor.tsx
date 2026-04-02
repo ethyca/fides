@@ -101,10 +101,6 @@ const DatasetNodeEditorInner = ({
   );
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keep a ref to the latest dataset so callbacks avoid stale closures
-  const datasetRef = useRef(dataset);
-  datasetRef.current = dataset;
-
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   // --- YAML editor state ---
