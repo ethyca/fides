@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Self
 
 from pydantic import ConfigDict, EmailStr, field_validator
 
@@ -113,7 +113,7 @@ class UserResponse(FidesSchema):
         cls,
         user: FidesUser,
         invite: FidesUserInvite | None = None,
-    ) -> UserResponse:
+    ) -> Self:
         """Build a UserResponse from a FidesUser, optionally enriching with invite status."""
         response = cls.model_validate(user)
         response.has_invite = invite is not None
