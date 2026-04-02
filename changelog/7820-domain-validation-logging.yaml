@@ -1,0 +1,4 @@
+type: Changed
+description: Improved domain validation log messages with consistent format, structured hints, and connector type context
+pr: 7820
+labels: []
