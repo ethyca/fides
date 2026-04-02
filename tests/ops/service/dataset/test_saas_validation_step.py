@@ -142,17 +142,21 @@ class TestResolveFieldPath:
         assert _resolve_field_path(fields, "user_id") is None
 
     def test_nested_field(self):
-        fields = _make_fields([
-            {"name": "address", "fields": ["street", "city"]},
-        ])
+        fields = _make_fields(
+            [
+                {"name": "address", "fields": ["street", "city"]},
+            ]
+        )
         resolved = _resolve_field_path(fields, "address.street")
         assert resolved is not None
         assert resolved.name == "street"
 
     def test_missing_nested_field(self):
-        fields = _make_fields([
-            {"name": "address", "fields": ["city"]},
-        ])
+        fields = _make_fields(
+            [
+                {"name": "address", "fields": ["city"]},
+            ]
+        )
         assert _resolve_field_path(fields, "address.street") is None
 
     def test_missing_intermediate(self):
@@ -160,14 +164,16 @@ class TestResolveFieldPath:
         assert _resolve_field_path(fields, "address.street") is None
 
     def test_deeply_nested_field(self):
-        fields = _make_fields([
-            {
-                "name": "address",
-                "fields": [
-                    {"name": "geo", "fields": ["lat", "lng"]},
-                ],
-            },
-        ])
+        fields = _make_fields(
+            [
+                {
+                    "name": "address",
+                    "fields": [
+                        {"name": "geo", "fields": ["lat", "lng"]},
+                    ],
+                },
+            ]
+        )
         resolved = _resolve_field_path(fields, "address.geo.lat")
         assert resolved is not None
         assert resolved.name == "lat"

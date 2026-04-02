@@ -61,7 +61,11 @@ class DatasetConfigService:
         self,
         connection_config: ConnectionConfig,
         dataset: Union[DatasetConfigCtlDataset, FideslangDataset],
-    ) -> Tuple[Optional[FideslangDataset], Optional[BulkUpdateFailed], List[DatasetFieldWarning]]:
+    ) -> Tuple[
+        Optional[FideslangDataset],
+        Optional[BulkUpdateFailed],
+        List[DatasetFieldWarning],
+    ]:
         """Create or update a single dataset. Returns (result, error, warnings)."""
         try:
             if isinstance(dataset, DatasetConfigCtlDataset):

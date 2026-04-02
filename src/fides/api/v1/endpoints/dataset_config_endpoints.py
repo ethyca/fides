@@ -39,13 +39,9 @@ from fides.api.schemas.dataset import (
     ProtectedCollectionField,
     ValidateDatasetResponse,
 )
-from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.service.connection.merge_configs_util import (
-    get_saas_config_referenced_field_paths,
-)
-from fides.service.dataset.validation_steps.saas import MUTABLE_DATASET_FIELDS
 from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import DatasetTestRequest
+from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.api_router import APIRouter
 from fides.common.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -68,8 +64,12 @@ from fides.common.urn_registry import (
     YAML_DATASETS,
 )
 from fides.config import CONFIG
+from fides.service.connection.merge_configs_util import (
+    get_saas_config_referenced_field_paths,
+)
 from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetNotFoundException
+from fides.service.dataset.validation_steps.saas import MUTABLE_DATASET_FIELDS
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -642,8 +642,7 @@ def get_dataset_protected_fields(
 
     return DatasetProtectedFields(
         immutable_fields=[
-            f for f in FideslangDataset.model_fields
-            if f not in MUTABLE_DATASET_FIELDS
+            f for f in FideslangDataset.model_fields if f not in MUTABLE_DATASET_FIELDS
         ],
         protected_collection_fields=[
             ProtectedCollectionField(collection=col, field=field_path)

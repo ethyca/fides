@@ -1,9 +1,10 @@
 from typing import List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
-from pydantic import ValidationError as PydanticValidationError
 from fideslang.models import DatasetField
 from loguru import logger
+from pydantic import ValidationError as PydanticValidationError
+
 from fides.api.common_exceptions import SaaSConfigNotFoundException, ValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import to_graph_field
@@ -209,9 +210,7 @@ def _restore_protected_structure(
     # Restore removed collections from the existing dataset
     removed = expected_collections - {col.name for col in dataset.collections}
     if removed and existing_dataset:
-        existing_by_name = {
-            col.name: col for col in existing_dataset.collections
-        }
+        existing_by_name = {col.name: col for col in existing_dataset.collections}
         for col_name in sorted(removed):
             if col_name in existing_by_name:
                 dataset.collections.append(existing_by_name[col_name])
@@ -322,9 +321,7 @@ class SaaSValidationStep(DatasetValidationStep):
             existing_dataset: Optional[FideslangDataset] = None
             if existing_record:
                 try:
-                    existing_dataset = FideslangDataset.model_validate(
-                        existing_record
-                    )
+                    existing_dataset = FideslangDataset.model_validate(existing_record)
                 except PydanticValidationError:
                     logger.warning(
                         "Could not parse existing dataset '{}' — "
