@@ -3171,6 +3171,21 @@ dataset:
       data_categories: [user]
     - name: rows_masked
       data_categories: [system]
+  - name: monitor_aggregate_statistics
+    data_categories: [system.operations]
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: monitor_config_key
+      data_categories: [system.operations]
+    - name: monitor_type
+      data_categories: [system.operations]
+    - name: statistics
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: monitorconfig
     fields:
     - name: classify_params
@@ -3879,6 +3894,7 @@ dataset:
         data_categories: [user.unique_id]
       - name: is_default
         data_categories: [system.operations]
+<<<<<<< ENG-567_pr2-saas-config-version
   - name: saas_config_version
     fields:
       - name: id
@@ -3896,6 +3912,9 @@ dataset:
       - name: dataset
         data_categories: [system.operations]
       - name: is_custom
+=======
+      - name: case_sensitive
+>>>>>>> main
         data_categories: [system.operations]
   - name: saas_template_dataset
     fields:

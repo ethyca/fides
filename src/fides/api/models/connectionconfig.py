@@ -38,6 +38,7 @@ class ConnectionType(enum.Enum):
     """
 
     attentive_email = "attentive_email"
+    aws = "aws"  # AWS for cloud infra discovery
     bigquery = "bigquery"
     datahub = "datahub"
     dynamodb = "dynamodb"
@@ -80,6 +81,7 @@ class ConnectionType(enum.Enum):
         """
         readable_mapping: dict[str, str] = {
             ConnectionType.attentive_email.value: "Attentive Email",
+            ConnectionType.aws.value: "Amazon Web Services",
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
@@ -129,6 +131,7 @@ class ConnectionType(enum.Enum):
 
         system_type_mapping: dict[str, SystemType] = {
             ConnectionType.attentive_email.value: SystemType.email,
+            ConnectionType.aws.value: SystemType.service,
             ConnectionType.bigquery.value: SystemType.database,
             ConnectionType.datahub.value: SystemType.data_catalog,
             ConnectionType.dynamic_erasure_email.value: SystemType.email,
