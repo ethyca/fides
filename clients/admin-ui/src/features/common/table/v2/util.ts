@@ -1,6 +1,11 @@
 import { theme } from "fidesui";
 import _ from "lodash";
 
+import {
+  CUSTOM_FIELD_DATA_USE_PREFIX,
+  CUSTOM_FIELD_SYSTEM_PREFIX,
+} from "~/features/datamap/reporting/DatamapReportTableColumns";
+
 export const COLUMN_VERSION_DELIMITER = "::";
 
 export const getTableTHandTDStyles = (noPadding?: boolean) =>
@@ -52,7 +57,9 @@ export const getColumnHeaderText = ({
     return "";
   }
   const keyWithoutPrefix = columnId.replace(
-    /^(system_|privacy_declaration_)/,
+    new RegExp(
+      `^(${CUSTOM_FIELD_SYSTEM_PREFIX}|${CUSTOM_FIELD_DATA_USE_PREFIX})`,
+    ),
     "",
   );
   const nameFromId = _.upperFirst(keyWithoutPrefix.replaceAll("_", " "));

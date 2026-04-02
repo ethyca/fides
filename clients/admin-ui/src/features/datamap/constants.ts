@@ -6,10 +6,6 @@ export const CELL_SIZE = 20;
 
 export const DATA_CATEGORY_COLUMN_ID = "unioned_data_categories";
 
-export const ItemTypes = {
-  DraggableColumnListItem: "DraggableColumnListItem",
-};
-
 export enum ExportFormat {
   csv = "csv",
   xlsx = "xlsx",
