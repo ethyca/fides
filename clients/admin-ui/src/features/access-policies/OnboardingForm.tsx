@@ -1,3 +1,4 @@
+import type { UploadFile } from "fidesui";
 import {
   Button,
   Col,
@@ -11,10 +12,11 @@ import {
   Upload,
   useMessage,
 } from "fidesui";
-import type { UploadFile } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { ACCESS_POLICIES_ROUTE } from "../common/nav/routes";
+import { useGetLocationsRegulationsQuery } from "../locations/locations.slice";
 import {
   useGeneratePoliciesMutation,
   useGetOnboardingDataUsesQuery,
@@ -22,8 +24,6 @@ import {
 import { INDUSTRY_OPTIONS } from "./constants";
 import DataUseCard from "./DataUseCard";
 import { OnboardingFormState } from "./types";
-import { ACCESS_POLICIES_ROUTE } from "../common/nav/routes";
-import { useGetLocationsRegulationsQuery } from "../locations/locations.slice";
 
 const INITIAL_STATE: OnboardingFormState = {
   industry: null,
@@ -126,12 +126,12 @@ const OnboardingForm = ({ onCanGenerateChange }: OnboardingFormProps) => {
       layout="vertical"
       className="max-w-3xl"
       onFinish={async () => {
-        if (!formState.industry || formState.geographies.length === 0) return;
+        if (!formState.industry || formState.geographies.length === 0) {
+          return;
+        }
         const formData = new FormData();
         formData.append("industry", formState.industry);
-        formState.geographies.forEach((g) =>
-          formData.append("geographies", g),
-        );
+        formState.geographies.forEach((g) => formData.append("geographies", g));
         formState.selectedDataUses.forEach((d) =>
           formData.append("selected_data_uses", d),
         );
@@ -218,6 +218,7 @@ const OnboardingForm = ({ onCanGenerateChange }: OnboardingFormProps) => {
         >
           <Flex gap={8} align="start">
             <Select
+              aria-label="Policy URLs"
               mode="tags"
               className="flex-1"
               placeholder="https://company.com/privacy"
@@ -233,7 +234,12 @@ const OnboardingForm = ({ onCanGenerateChange }: OnboardingFormProps) => {
               beforeUpload={() => false}
               onChange={handleFileChange}
             >
-              <Button icon={<Icons.Upload size={16} />}>Upload PDF or DOCX (max 10MB)</Button>
+              <Button
+                aria-label="Upload policy document"
+                icon={<Icons.Upload size={16} />}
+              >
+                Upload PDF or DOCX (max 10MB)
+              </Button>
             </Upload>
           </Flex>
         </Form.Item>

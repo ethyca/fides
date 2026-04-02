@@ -1,3 +1,4 @@
+import type { UploadFile } from "fidesui";
 import {
   Button,
   Flex,
@@ -10,14 +11,13 @@ import {
   Upload,
   useMessage,
 } from "fidesui";
-import type { UploadFile } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
+import { useGetLocationsRegulationsQuery } from "../locations/locations.slice";
 import {
   useGeneratePoliciesMutation,
   useGetOnboardingConfigQuery,
 } from "./access-policies.slice";
-import { useGetLocationsRegulationsQuery } from "../locations/locations.slice";
 
 interface PolicySettingsModalProps {
   open: boolean;
@@ -78,7 +78,9 @@ const PolicySettingsModal = ({ open, onClose }: PolicySettingsModalProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!config?.industry || geographies.length === 0) return;
+    if (!config?.industry || geographies.length === 0) {
+      return;
+    }
     const formData = new FormData();
     formData.append("industry", config.industry);
     geographies.forEach((g) => formData.append("geographies", g));
@@ -113,8 +115,8 @@ const PolicySettingsModal = ({ open, onClose }: PolicySettingsModalProps) => {
         <Form layout="vertical" className="!mb-0">
           <Text type="secondary" className="mb-5 block">
             If your operating regions or privacy policies have changed, update
-            them here and Fides will suggest additional policies to cover the new
-            requirements.
+            them here and Fides will suggest additional policies to cover the
+            new requirements.
           </Text>
 
           <Form.Item
@@ -142,6 +144,7 @@ const PolicySettingsModal = ({ open, onClose }: PolicySettingsModalProps) => {
           >
             <Flex gap={8} align="start">
               <Select
+                aria-label="Policy URLs"
                 mode="tags"
                 className="flex-1"
                 placeholder="https://company.com/privacy"
@@ -157,7 +160,10 @@ const PolicySettingsModal = ({ open, onClose }: PolicySettingsModalProps) => {
                 beforeUpload={() => false}
                 onChange={handleFileChange}
               >
-                <Button icon={<Icons.Upload size={16} />}>
+                <Button
+                  aria-label="Upload policy document"
+                  icon={<Icons.Upload size={16} />}
+                >
                   Upload document
                 </Button>
               </Upload>

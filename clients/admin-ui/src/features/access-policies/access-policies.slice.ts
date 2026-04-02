@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+
 import type {
   GeneratePoliciesResponse,
   OnboardingConfigResponse,

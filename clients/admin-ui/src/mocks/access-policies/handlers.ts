@@ -37,41 +37,32 @@ export const accessPoliciesHandlers = () => {
 
     // GET /api/v1/plus/access-policy/config - saved config (industry + geographies)
     // Must be registered before /:id to avoid the wildcard matching "config"
-    rest.get(
-      `${apiBase}/plus/access-policy/config`,
-      (_req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            industry: "fintech",
-            geographies: ["eea", "us"],
-          }),
-        );
-      },
-    ),
+    rest.get(`${apiBase}/plus/access-policy/config`, (_req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          industry: "fintech",
+          geographies: ["eea", "us"],
+        }),
+      );
+    }),
 
     // GET /api/v1/plus/access-policy/data-uses - data uses by industry
     // Must be registered before /:id to avoid the wildcard matching "data-uses"
-    rest.get(
-      `${apiBase}/plus/access-policy/data-uses`,
-      (_req, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ items: mockDataUseIds }));
-      },
-    ),
+    rest.get(`${apiBase}/plus/access-policy/data-uses`, (_req, res, ctx) => {
+      return res(ctx.status(200), ctx.json({ items: mockDataUseIds }));
+    }),
 
     // POST /api/v1/plus/access-policy/generate - generate policies
     // Accepts multipart/form-data with optional file + form fields
-    rest.post(
-      `${apiBase}/plus/access-policy/generate`,
-      (_req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            status: "success",
-          }),
-        );
-      },
-    ),
+    rest.post(`${apiBase}/plus/access-policy/generate`, (_req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "success",
+        }),
+      );
+    }),
 
     // GET /api/v1/plus/access-policy/control-group - list control groups
     // Must be registered before /:id to avoid the wildcard matching "control-group"
