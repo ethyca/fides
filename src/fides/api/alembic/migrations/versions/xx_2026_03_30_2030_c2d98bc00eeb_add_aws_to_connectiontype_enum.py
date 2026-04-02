@@ -1,7 +1,7 @@
 """Add aws to ConnectionType enum
 
 Revision ID: c2d98bc00eeb
-Revises: a4b7c8d9e0f1
+Revises: b5d8f2a3c6e9
 Create Date: 2026-03-30 20:30:29.871238
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c2d98bc00eeb"
-down_revision = "a4b7c8d9e0f1"
+down_revision = "b5d8f2a3c6e9"
 branch_labels = None
 depends_on = None
 
