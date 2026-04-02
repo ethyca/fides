@@ -3,12 +3,7 @@
  * For the Data Map Report component, see DatamapReportTable.tsx.
  */
 
-import {
-  ChakraBox as Box,
-  ChakraCenter as Center,
-  ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
-} from "fidesui";
+import { ChakraBox as Box, ChakraFlex as Flex, Spin } from "fidesui";
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
 
@@ -26,11 +21,7 @@ const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
   {
     ssr: false,
-    loading: () => (
-      <Center width="100%" flex="1">
-        <Spinner />
-      </Center>
-    ),
+    loading: () => <Spin />,
   },
 );
 
@@ -78,11 +69,7 @@ const Datamap = () => {
   } = useHome();
   const { isLoading } = useDatamapTable();
   if (isLoading) {
-    return (
-      <Center width="100%" flex="1">
-        <Spinner />
-      </Center>
-    );
+    return <Spin />;
   }
 
   if (isGettingStarted) {

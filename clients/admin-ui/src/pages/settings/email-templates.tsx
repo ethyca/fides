@@ -1,8 +1,4 @@
-import {
-  ChakraBox as Box,
-  ChakraSpinner as Spinner,
-  ChakraText as Text,
-} from "fidesui";
+import { ChakraBox as Box, ChakraText as Text, Spin } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
@@ -17,7 +13,7 @@ const EmailTemplates: NextPage = () => {
   if (isLoading) {
     return (
       <Layout title="Email templates">
-        <Spinner />
+        <Spin />
       </Layout>
     );
   }

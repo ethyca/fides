@@ -1,8 +1,4 @@
-import {
-  Button,
-  ChakraSpinner as Spinner,
-  ChakraVStack as VStack,
-} from "fidesui";
+import { Button, ChakraVStack as VStack, Spin } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -130,7 +126,7 @@ const DataUsesForm = ({
       ?.consent_use === EMPTY_DECLARATION.consent_use;
 
   if (isLoading) {
-    return <Spinner size="sm" alignSelf="center" />;
+    return <Spin size="small" />;
   }
 
   return (
