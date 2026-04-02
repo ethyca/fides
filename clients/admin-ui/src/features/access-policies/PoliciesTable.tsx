@@ -1,5 +1,5 @@
 import type { Identifier, XYCoord } from "dnd-core";
-import { Flex, Icons, Switch, Table, Tag, Text } from "fidesui";
+import { Flex, Icons, Input, Switch, Table, Tag, Text } from "fidesui";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -132,6 +132,72 @@ const DragHandle = () => (
   <Icons.Draggable size={16} style={{ color: "var(--fidesui-neutral-500)" }} />
 );
 
+interface EditablePriorityCellProps {
+  value: number;
+  onEdit: (newValue: number) => void;
+}
+
+const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(String(value));
+  const [isHovered, setIsHovered] = useState(false);
+
+  const commit = () => {
+    const parsed = parseInt(inputValue, 10);
+    if (!Number.isNaN(parsed) && parsed !== value) {
+      onEdit(parsed);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      commit();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Input
+        autoFocus
+        size="small"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onBlur={commit}
+        onKeyDown={handleKeyDown}
+        style={{ width: 56 }}
+        type="number"
+      />
+    );
+  }
+
+  return (
+    <Flex
+      align="center"
+      gap={4}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ cursor: "default" }}
+    >
+      <Text size="sm" type="secondary">
+        {value}
+      </Text>
+      <Icons.Edit
+        size={12}
+        onClick={() => setIsEditing(true)}
+        style={{
+          color: "var(--fidesui-neutral-500)",
+          cursor: "pointer",
+          visibility: isHovered ? "visible" : "hidden",
+          flexShrink: 0,
+        }}
+      />
+    </Flex>
+  );
+};
+
 interface PoliciesTableProps {
   policies: AccessPolicyListItem[];
   controlGroups: ControlGroup[];
@@ -141,6 +207,7 @@ interface PoliciesTableProps {
     fromIndex: number,
     toIndex: number,
   ) => void;
+  onPriorityEdit: (policy: AccessPolicyListItem, newPriority: number) => void;
   isLoading: boolean;
 }
 
@@ -149,6 +216,7 @@ const PoliciesTable = ({
   controlGroups,
   onToggle,
   onReorder,
+  onPriorityEdit,
   isLoading,
 }: PoliciesTableProps) => {
   const controlGroupMap = new Map(
@@ -208,11 +276,12 @@ const PoliciesTable = ({
       ),
       dataIndex: "priority",
       key: "priority",
-      width: 60,
+      width: 100,
       render: (_: unknown, record: AccessPolicyListItem) => (
-        <Text size="sm" type="secondary">
-          {record.priority}
-        </Text>
+        <EditablePriorityCell
+          value={record.priority}
+          onEdit={(newPriority) => onPriorityEdit(record, newPriority)}
+        />
       ),
     },
     {

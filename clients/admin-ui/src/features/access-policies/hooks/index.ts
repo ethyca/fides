@@ -85,7 +85,26 @@ export const useTogglePolicyEnabled = () => {
     if (!policy.yaml) {
       return;
     }
-    const updatedYaml = updateYamlField(policy.yaml, "enabled", !policy.enabled);
+    const updatedYaml = updateYamlField(
+      policy.yaml,
+      "enabled",
+      !policy.enabled,
+    );
+    updatePolicy({ id: policy.id, yaml: updatedYaml });
+  };
+};
+
+/**
+ * Returns a callback to directly set a policy's priority value in its YAML.
+ */
+export const useUpdatePolicyPriority = () => {
+  const [updatePolicy] = useUpdateAccessPolicyMutation();
+
+  return (policy: AccessPolicyListItem, newPriority: number) => {
+    if (!policy.yaml) {
+      return;
+    }
+    const updatedYaml = updateYamlField(policy.yaml, "priority", newPriority);
     updatePolicy({ id: policy.id, yaml: updatedYaml });
   };
 };

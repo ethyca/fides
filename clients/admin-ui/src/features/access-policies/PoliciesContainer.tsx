@@ -7,6 +7,7 @@ import {
   usePoliciesFilters,
   useReorderPolicies,
   useTogglePolicyEnabled,
+  useUpdatePolicyPriority,
 } from "./hooks";
 import PoliciesGrid from "./PoliciesGrid";
 import PoliciesTable from "./PoliciesTable";
@@ -17,6 +18,7 @@ const PoliciesContainer = () => {
   const { data: controlGroups } = useGetControlGroupsQuery();
   const toggleEnabled = useTogglePolicyEnabled();
   const reorderPolicies = useReorderPolicies();
+  const updatePriority = useUpdatePolicyPriority();
   const {
     searchQuery,
     setSearchQuery,
@@ -80,6 +82,7 @@ const PoliciesContainer = () => {
           controlGroups={controlGroups ?? []}
           onToggle={toggleEnabled}
           onReorder={reorderPolicies}
+          onPriorityEdit={updatePriority}
           isLoading={isLoading}
         />
       )}
