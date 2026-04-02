@@ -15,6 +15,7 @@ export type CollectionNodeData = {
   isProtected?: boolean;
   isRoot?: boolean;
   isHighlighted?: boolean;
+  filteredFieldCount?: number;
   [key: string]: unknown;
 };
 
@@ -69,6 +70,16 @@ const fieldMatchesCategories = (
     false
   );
 };
+
+/**
+ * Count top-level fields in a collection that match the filter (or have matching descendants).
+ */
+const countMatchingFields = (
+  collection: DatasetCollection,
+  categories: string[],
+): number =>
+  collection.fields?.filter((f) => fieldMatchesCategories(f, categories))
+    .length ?? 0;
 
 /**
  * Check if a collection has any field (recursively) matching any of the given categories.
@@ -221,6 +232,9 @@ const useDatasetGraph = (
           nodeType: "collection",
           isProtected: false,
           isRoot: true,
+          ...(filter.length > 0 && {
+            filteredFieldCount: countMatchingFields(collection, filter),
+          }),
         } satisfies CollectionNodeData,
       });
 
@@ -267,6 +281,9 @@ const useDatasetGraph = (
               collection,
               nodeType: "collection",
               isProtected: false,
+              ...(filter.length > 0 && {
+                filteredFieldCount: countMatchingFields(collection, filter),
+              }),
             } satisfies CollectionNodeData,
           });
 

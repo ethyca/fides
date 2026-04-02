@@ -41,7 +41,7 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
         </Typography.Text>
         <span className={styles.badge}>
           <Icons.Column size={10} />
-          {nodeData.collection.fields?.length ?? 0}
+          {nodeData.filteredFieldCount ?? nodeData.collection.fields?.length ?? 0}
         </span>
       </Button>
       {nodeData.isRoot && (
