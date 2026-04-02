@@ -48,6 +48,28 @@ class TestBuildingRedisURLs:
             == "rediss+cluster://:testpassword@redis:6379/0?ssl_cert_reqs=none&ssl_check_hostname=True"
         )
 
+    def test_cluster_non_tls(self) -> None:
+        redis_settings = RedisSettings(
+            cluster_enabled=True,
+            ssl=False,
+        )
+        assert (
+            redis_settings.get_cluster_connection_url()
+            == "redis+cluster://:testpassword@redis:6379/0"
+        )
+
+    def test_cluster_tls_with_auth(self) -> None:
+        redis_settings = RedisSettings(
+            cluster_enabled=True,
+            ssl=True,
+            password="secret",
+            user="admin",
+        )
+        assert (
+            redis_settings.get_cluster_connection_url()
+            == "rediss+cluster://admin:secret@redis:6379/0?ssl_cert_reqs=required&ssl_check_hostname=True"
+        )
+
     def test_cluster_tls_custom_ca(self) -> None:
         redis_settings = RedisSettings(
             cluster_enabled=True,
