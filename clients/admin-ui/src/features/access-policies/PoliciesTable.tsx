@@ -186,7 +186,10 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
       </Text>
       <Icons.Edit
         size={12}
-        onClick={() => setIsEditing(true)}
+        onClick={() => {
+          setInputValue(String(value));
+          setIsEditing(true);
+        }}
         style={{
           color: "var(--fidesui-neutral-500)",
           cursor: "pointer",
