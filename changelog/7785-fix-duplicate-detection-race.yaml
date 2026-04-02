@@ -1,4 +1,0 @@
-type: Fixed
-description: Fix duplicate detection race conditions where requeue watchdog could requeue duplicate requests, and verification could transition requests out of duplicate status
-pr: 7785
-labels: []
