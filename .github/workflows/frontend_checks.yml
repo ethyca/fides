@@ -116,7 +116,6 @@ jobs:
 
   Frontend-Coverage:
     runs-on: ubuntu-latest
-    if: always()
     needs:
       - Clients-Unit
     steps:
@@ -126,11 +125,6 @@ jobs:
         with:
           artifact-ids: ${{ steps.test-coverage-upload-step.outputs.artifact-id }}
           path: /tmp/test-coverage
-
-      - name: Debug
-        run: |
-          ls -al ${{ steps.test-coverage-download-step.outputs.download-path }}
-          ls -al ${{ steps.test-coverage-download-step.outputs.download-path }}/admin-ui/coverage
 
       - name: Jest Coverage Comment
         uses: MishaKav/jest-coverage-comment@main
