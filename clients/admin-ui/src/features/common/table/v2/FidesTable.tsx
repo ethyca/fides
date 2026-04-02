@@ -6,7 +6,6 @@ import {
   RowData,
   Table as TableInstance,
 } from "@tanstack/react-table";
-import { Spin } from "antd";
 import {
   ChakraBox as Box,
   ChakraButton as Button,
@@ -28,6 +27,7 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   Icons,
+  TableSpinner as Spin,
   theme,
 } from "fidesui";
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
