@@ -11,6 +11,7 @@ import { useMemo } from "react";
 
 import { JiraConfigTab } from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
+import QueryLogConfigTab from "~/features/integrations/configure-query-log/QueryLogConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import TaskConditionsTab from "~/features/integrations/configure-tasks/TaskConditionsTab";
 import TaskConfigTab from "~/features/integrations/configure-tasks/TaskConfigTab";
@@ -171,6 +172,14 @@ export const useFeatureBasedTabs = ({
             integrationOption={integrationOption}
           />
         ),
+      });
+    }
+
+    if (enabledFeatures?.includes(IntegrationFeature.QUERY_LOGGING)) {
+      tabItems.push({
+        label: "Query logging",
+        key: "query-logging",
+        children: <QueryLogConfigTab integration={connection!} />,
       });
     }
 

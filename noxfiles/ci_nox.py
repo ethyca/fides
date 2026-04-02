@@ -29,6 +29,7 @@ from setup_tests_nox import (
     CoverageConfig,
     PytestConfig,
     ReportConfig,
+    SplitConfig,
     XdistConfig,
     pytest_api,
     pytest_ctl,
@@ -497,6 +498,11 @@ def pytest_redis_cluster_docker(session: nox.Session) -> None:
 ############
 ## Pytest ##
 ############
+
+# CI overrides these to shard slow test groups via pytest-split
+TOTAL_SPLITS = os.environ.get("TOTAL_SPLITS", "1")
+SPLIT_GROUP = os.environ.get("SPLIT_GROUP", "1")
+
 TEST_GROUPS = [
     nox.param("ctl-unit", id="ctl-unit"),
     nox.param("ctl-not-external", id="ctl-not-external"),
@@ -560,6 +566,7 @@ TEST_DIRECTORY_COVERAGE = {
         "misc-integration-external",
     ],
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/unit/": ["misc-unit"],
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/integration/": ["ops-integration"],  # Workflow integration tests
@@ -610,8 +617,20 @@ def pytest(session: nox.Session, test_group: str) -> None:
     session.notify("teardown")
 
     validate_test_matrix(session)
+
+    # Only create SplitConfig when CI sets TOTAL_SPLITS > 1; None means
+    # no --splits/--group args are passed (same effect as SplitConfig("1","1")
+    # but avoids importing pytest-split when not needed).
+    split_config = None
+    if TOTAL_SPLITS != "1":
+        split_config = SplitConfig(
+            total_splits=TOTAL_SPLITS,
+            split_group=SPLIT_GROUP,
+        )
+
     pytest_config = PytestConfig(
         xdist_config=XdistConfig(parallel_runners="auto"),
+        split_config=split_config,
         coverage_config=CoverageConfig(
             report_format="xml",
             cov_name="fides",

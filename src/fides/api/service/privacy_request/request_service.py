@@ -148,6 +148,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                         PrivacyRequestStatus.in_processing,
                         PrivacyRequestStatus.approved,
                         PrivacyRequestStatus.requires_input,
+                        PrivacyRequestStatus.pending_external,
                     ]
                 )
             )
@@ -575,6 +576,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             PrivacyRequestStatus.in_processing,
                             PrivacyRequestStatus.approved,
                             PrivacyRequestStatus.requires_input,
+                            PrivacyRequestStatus.pending_external,
                         ]
                     )
                 )
@@ -669,16 +671,17 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         # This means the subtask is stuck - but we need to handle this differently
                         # based on the privacy request status
                         if not subtask_id:
-                            if (
-                                privacy_request.status
-                                == PrivacyRequestStatus.requires_input
+                            if privacy_request.status in (
+                                PrivacyRequestStatus.requires_input,
+                                PrivacyRequestStatus.pending_external,
                             ):
-                                # For requires_input status, don't automatically error the request
-                                # as it's intentionally waiting for user input
+                                # For requires_input / pending_external status, don't
+                                # automatically error the request as it's intentionally
+                                # waiting for user input or an external system (e.g. Jira)
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) in requires_input status - "
-                                    f"keeping request in current status as it may be waiting for manual input"
+                                    f"(privacy request {privacy_request.id}) in {privacy_request.status.value} status - "
+                                    f"keeping request in current status as it may be waiting for input or an external system"
                                 )
                                 should_requeue = False
                                 break

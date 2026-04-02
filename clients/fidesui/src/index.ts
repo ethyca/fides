@@ -164,37 +164,6 @@ export type {
  */
 export { isNumeric as isChakraNumeric } from "@chakra-ui/utils";
 
-/**
- * @deprecated Chakra UI icons are deprecated and will be removed in a future release.
- * Please use Carbon icons (Icons.*) instead.
- */
-export {
-  ArrowBackIcon as ChakraArrowBackIcon,
-  ArrowDownIcon as ChakraArrowDownIcon,
-  ArrowForwardIcon as ChakraArrowForwardIcon,
-  ArrowUpIcon as ChakraArrowUpIcon,
-  BellIcon as ChakraBellIcon,
-  CheckCircleIcon as ChakraCheckCircleIcon,
-  CheckIcon as ChakraCheckIcon,
-  ChevronDownIcon as ChakraChevronDownIcon,
-  ChevronLeftIcon as ChakraChevronLeftIcon,
-  ChevronRightIcon as ChakraChevronRightIcon,
-  ChevronUpIcon as ChakraChevronUpIcon,
-  CloseIcon as ChakraCloseIcon,
-  DeleteIcon as ChakraDeleteIcon,
-  DragHandleIcon as ChakraDragHandleIcon,
-  EditIcon as ChakraEditIcon,
-  ExternalLinkIcon as ChakraExternalLinkIcon,
-  RepeatClockIcon as ChakraRepeatClockIcon,
-  RepeatIcon as ChakraRepeatIcon,
-  SmallAddIcon as ChakraSmallAddIcon,
-  SmallCloseIcon as ChakraSmallCloseIcon,
-  ViewOffIcon as ChakraViewOffIcon,
-  WarningTwoIcon as ChakraWarningTwoIcon,
-  // Icon utilities
-  createIcon as createChakraIcon,
-} from "@chakra-ui/icons";
-
 // Unmodified component exported directly from Ant Design
 export type { DisplayValueType } from "@rc-component/select/lib/interface";
 export type { ThemeConfig } from "antd/es";
@@ -256,6 +225,7 @@ export {
   Modal,
   notification,
   Pagination,
+  Popconfirm,
   Popover,
   Progress,
   Radio,
@@ -421,7 +391,6 @@ export const { Text, Title, Paragraph, Link } = CustomTypography;
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
-export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 export {
   CarryOutOutlined,
@@ -437,7 +406,7 @@ export {
  * prefixed icons from Carbon Icons
  * @example <Icons.download size={14} />
  */
-export * as Icons from "@carbon/icons-react";
+export * as Icons from "./icons/carbon";
 /* end prefixed icons */
 
 export {
@@ -457,7 +426,9 @@ export {
   darkAntTheme,
   defaultAntTheme,
 } from "./ant-theme";
-export { theme as antTheme } from "antd";
+// Use antd/lib (CJS) rather than antd (ESM) to prevent dual module instances
+// that break ConfigProvider context and cause useToken() to return default tokens.
+export { theme as antTheme } from "antd/lib";
 
 /**
  * Custom ChakraUI Components (deprecated)

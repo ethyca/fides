@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 
+import AWS_TYPE_INFO from "~/features/integrations/integration-type-info/awsInfo";
 import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
 import DATAHUB_TYPE_INFO from "~/features/integrations/integration-type-info/datahubInfo";
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
@@ -39,6 +40,7 @@ export type IntegrationTypeInfo = {
 export const SAAS_INTEGRATIONS: IntegrationTypeInfo[] = [SALESFORCE_TYPE_INFO];
 
 const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
+  [ConnectionType.AWS]: AWS_TYPE_INFO,
   [ConnectionType.BIGQUERY]: BIGQUERY_TYPE_INFO,
   [ConnectionType.DATAHUB]: DATAHUB_TYPE_INFO,
   [ConnectionType.DYNAMODB]: DYNAMO_TYPE_INFO,
@@ -58,6 +60,18 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
   [ConnectionType.MANUAL_TASK]: MANUAL_TYPE_INFO,
+  [ConnectionType.TEST_DATASTORE]: {
+    placeholder: {
+      name: "Mock query log",
+      key: "test_datastore_placeholder",
+      connection_type: ConnectionType.TEST_DATASTORE,
+      access: AccessLevel.READ,
+      created_at: "",
+    },
+    category: ConnectionCategory.DATA_WAREHOUSE,
+    tags: ["Query Logging", "Mock"],
+    enabledFeatures: [IntegrationFeature.QUERY_LOGGING],
+  },
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [

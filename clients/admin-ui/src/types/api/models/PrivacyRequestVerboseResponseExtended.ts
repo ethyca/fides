@@ -1,0 +1,52 @@
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+
+import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
+import type { ExecutionAndAuditLogResponse } from "./ExecutionAndAuditLogResponse";
+import type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from "./fides__api__schemas__redis_cache__CustomPrivacyRequestField";
+import type { IdentityValue } from "./IdentityValue";
+import type { JiraTicketSummary } from "./JiraTicketSummary";
+import type { PolicyResponse } from "./PolicyResponse";
+import type { PrivacyRequestSource } from "./PrivacyRequestSource";
+import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
+import type { PrivacyRequestUser } from "./PrivacyRequestUser";
+
+/**
+ * Verbose variant with Jira ticket data.
+ */
+export type PrivacyRequestVerboseResponseExtended = {
+  id: string;
+  created_at?: string | null;
+  started_processing_at?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  submitted_by?: string | null;
+  reviewer?: PrivacyRequestUser | null;
+  submitter?: PrivacyRequestUser | null;
+  finished_processing_at?: string | null;
+  identity_verified_at?: string | null;
+  paused_at?: string | null;
+  status: PrivacyRequestStatus;
+  external_id?: string | null;
+  identity?: Record<string, string | IdentityValue | null> | null;
+  custom_privacy_request_fields?: Record<
+    string,
+    fides__api__schemas__redis_cache__CustomPrivacyRequestField
+  > | null;
+  policy: PolicyResponse;
+  action_required_details?: CheckpointActionRequiredDetails | null;
+  resume_endpoint?: string | null;
+  days_left?: number | null;
+  custom_privacy_request_fields_approved_by?: string | null;
+  custom_privacy_request_fields_approved_at?: string | null;
+  source?: PrivacyRequestSource | null;
+  location?: string | null;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
+  finalized_at?: string | null;
+  finalized_by?: string | null;
+  duplicate_request_group_id?: string | null;
+  results: Record<string, Array<ExecutionAndAuditLogResponse>>;
+  jira_tickets?: Array<JiraTicketSummary>;
+};
