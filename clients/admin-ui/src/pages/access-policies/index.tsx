@@ -14,7 +14,6 @@ const AccessPoliciesPage: NextPage = () => {
         heading="Access policies"
         rightContent={
           <Space>
-            <Button>Manage controls</Button>
             <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
               <Button type="primary">New policy</Button>
             </NextLink>
