@@ -113,16 +113,7 @@ export const accessPoliciesHandlers = () => {
           }
         });
 
-        return res(
-          ctx.status(200),
-          ctx.json({
-            items: policies,
-            total: policies.length,
-            page: 1,
-            size: policies.length,
-            pages: 1,
-          }),
-        );
+        return res(ctx.status(204));
       },
     ),
 

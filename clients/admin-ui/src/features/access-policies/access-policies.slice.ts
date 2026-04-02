@@ -74,7 +74,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       invalidatesTags: ["Access Policies"],
     }),
     reorderAccessPolicy: build.mutation<
-      AccessPolicyListResponse,
+      void,
       { id: string; insert_after_id: string | null }
     >({
       query: ({ id, insert_after_id }) => ({
