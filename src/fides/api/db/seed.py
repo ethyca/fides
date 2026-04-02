@@ -43,12 +43,20 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import MessagingSecretsMailgunDocs
 from fides.api.schemas.policy import ActionType, DrpAction
+from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.service.connectors.saas.connector_registry_service import (
+    FileConnectorTemplateLoader,
+)
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
 )
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.errors import AlreadyExistsError, QueryError
+from fides.api.util.saas_util import (
+    load_config_from_string,
+    load_dataset_from_string,
+)
 from fides.api.util.text import to_snake_case
 from fides.api.v1.endpoints.dataset_config_endpoints import patch_dataset_configs
 from fides.api.v1.endpoints.saas_config_endpoints import (
@@ -63,16 +71,6 @@ from .samples import (
     load_sample_connections_from_project,
     load_sample_resources_from_project,
 )
-from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.connectors.saas.connector_registry_service import (
-    FileConnectorTemplateLoader,
-)
-
-from fides.api.util.saas_util import (
-    load_config_from_string,
-    load_dataset_from_string,
-)
-
 
 DEFAULT_OAUTH_CLIENT_KEY = "default_oauth_client"
 DEFAULT_ACCESS_POLICY = "default_access_policy"
