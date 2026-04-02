@@ -308,7 +308,7 @@ const SeedDataPanel = () => {
                 <Text>
                   Scenario overrides
                   {overrideCount > 0 ? (
-                    <Tag color="blue" className="ml-2">
+                    <Tag color="info" className="ml-2">
                       {overrideCount}
                     </Tag>
                   ) : null}
@@ -348,7 +348,7 @@ const SeedDataPanel = () => {
                         <Text strong>{scenario.label}</Text>
                         {isOverridden ? (
                           <Tag
-                            color="blue"
+                            color="info"
                             className="ml-2"
                             style={{ fontSize: 11 }}
                           >
