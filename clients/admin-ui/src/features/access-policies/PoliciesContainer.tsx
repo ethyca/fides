@@ -1,12 +1,7 @@
-import { Modal } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
-import {
-  useCreateAccessPolicyMutation,
-  useDeleteAccessPolicyMutation,
-  useGetControlGroupsQuery,
-} from "./access-policies.slice";
+import { useGetControlGroupsQuery } from "./access-policies.slice";
 import {
   useAccessPoliciesList,
   useAccessPolicyGroups,
@@ -16,7 +11,6 @@ import {
 import PoliciesGrid from "./PoliciesGrid";
 import PoliciesTable from "./PoliciesTable";
 import PoliciesToolbar, { ViewMode } from "./PoliciesToolbar";
-import { AccessPolicyListItem } from "./types";
 
 const PoliciesContainer = () => {
   const router = useRouter();
@@ -24,8 +18,6 @@ const PoliciesContainer = () => {
   const { data: controlGroups } = useGetControlGroupsQuery();
   const toggleEnabled = useTogglePolicyEnabled();
   const reorderPolicies = useReorderPolicies();
-  const [deletePolicy] = useDeleteAccessPolicyMutation();
-  const [createPolicy] = useCreateAccessPolicyMutation();
 
   const viewMode: ViewMode = router.query.view === "table" ? "table" : "cards";
 
@@ -66,29 +58,6 @@ const PoliciesContainer = () => {
 
   const groups = useAccessPolicyGroups(filteredPolicies, controlGroups);
 
-  const handleEdit = (policy: AccessPolicyListItem) => {
-    router.push(`/access-policies/edit/${policy.id}`);
-  };
-
-  const handleDuplicate = (policy: AccessPolicyListItem) => {
-    createPolicy({
-      name: `${policy.name} (copy)`,
-      description: policy.description,
-      controls: policy.controls,
-      yaml: policy.yaml,
-    });
-  };
-
-  const handleDelete = (policy: AccessPolicyListItem) => {
-    Modal.confirm({
-      title: "Delete policy",
-      content: `Are you sure you want to delete "${policy.name}"? This action cannot be undone.`,
-      okText: "Delete",
-      okButtonProps: { danger: true },
-      onOk: () => deletePolicy(policy.id),
-    });
-  };
-
   return (
     <div>
       <PoliciesToolbar
@@ -107,9 +76,6 @@ const PoliciesContainer = () => {
           groups={groups}
           controlGroups={controlGroups ?? []}
           onTogglePolicy={toggleEnabled}
-          onEdit={handleEdit}
-          onDuplicate={handleDuplicate}
-          onDelete={handleDelete}
           isLoading={isLoading}
         />
       ) : (

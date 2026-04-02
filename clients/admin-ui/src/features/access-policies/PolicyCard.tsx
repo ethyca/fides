@@ -1,8 +1,6 @@
 import {
-  Button,
   Card,
   Divider,
-  Dropdown,
   Flex,
   Icons,
   Paragraph,
@@ -11,11 +9,12 @@ import {
   Text,
   Typography,
 } from "fidesui";
+import NextLink from "next/link";
 
 import { DECISION_LABELS } from "./constants";
 import { AccessPolicyListItem } from "./types";
 
-const { Title } = Typography;
+const { Link: LinkText } = Typography;
 
 const formatRelativeTime = (isoDate?: string): string => {
   if (!isoDate) {
@@ -40,35 +39,9 @@ const formatRelativeTime = (isoDate?: string): string => {
 interface PolicyCardProps {
   policy: AccessPolicyListItem;
   onToggle: (policy: AccessPolicyListItem) => void;
-  onEdit: (policy: AccessPolicyListItem) => void;
-  onDuplicate: (policy: AccessPolicyListItem) => void;
-  onDelete: (policy: AccessPolicyListItem) => void;
 }
 
-const PolicyCard = ({
-  policy,
-  onToggle,
-  onEdit,
-  onDuplicate,
-  onDelete,
-}: PolicyCardProps) => {
-  const menuItems = {
-    items: [
-      { key: "edit", label: "Edit", onClick: () => onEdit(policy) },
-      {
-        key: "duplicate",
-        label: "Duplicate",
-        onClick: () => onDuplicate(policy),
-      },
-      {
-        key: "delete",
-        label: "Delete",
-        danger: true,
-        onClick: () => onDelete(policy),
-      },
-    ],
-  };
-
+const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
   return (
     <Card
       className="flex h-full flex-col"
@@ -79,25 +52,29 @@ const PolicyCard = ({
           {/* Header */}
           <Flex justify="space-between" align="flex-start">
             <Flex gap="small" align="center" className="min-w-0">
-              <Title level={5} className="!m-0 truncate">
-                {policy.name}
-              </Title>
+              <NextLink
+                href={`/access-policies/edit/${policy.id}`}
+                passHref
+                legacyBehavior
+              >
+                <LinkText
+                  strong
+                  ellipsis
+                  variant="primary"
+                  className="!text-base"
+                >
+                  {policy.name}
+                </LinkText>
+              </NextLink>
             </Flex>
-            <Flex align="center" gap="small" className="shrink-0">
-              {policy.decision && (
-                <Tag color={policy.decision === "ALLOW" ? "success" : "error"}>
-                  {DECISION_LABELS[policy.decision] ?? policy.decision}
-                </Tag>
-              )}
-              <Dropdown menu={menuItems} trigger={["click"]}>
-                <Button
-                  aria-label="Policy actions"
-                  type="text"
-                  size="small"
-                  icon={<Icons.OverflowMenuVertical />}
-                />
-              </Dropdown>
-            </Flex>
+            {policy.decision && (
+              <Tag
+                color={policy.decision === "ALLOW" ? "success" : "error"}
+                className="shrink-0"
+              >
+                {DECISION_LABELS[policy.decision] ?? policy.decision}
+              </Tag>
+            )}
           </Flex>
 
           {/* Description */}

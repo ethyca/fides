@@ -10,18 +10,12 @@ interface PolicyCategoryGroupProps {
   controlGroup: ControlGroup;
   policies: AccessPolicyListItem[];
   onTogglePolicy: (policy: AccessPolicyListItem) => void;
-  onEdit: (policy: AccessPolicyListItem) => void;
-  onDuplicate: (policy: AccessPolicyListItem) => void;
-  onDelete: (policy: AccessPolicyListItem) => void;
 }
 
 const PolicyCategoryGroup = ({
   controlGroup,
   policies,
   onTogglePolicy,
-  onEdit,
-  onDuplicate,
-  onDelete,
 }: PolicyCategoryGroupProps) => (
   <div className="mb-8">
     <Flex align="center" gap="small">
@@ -37,13 +31,7 @@ const PolicyCategoryGroup = ({
     <Row gutter={[16, 16]}>
       {policies.map((policy) => (
         <Col key={policy.id} xs={24} md={8}>
-          <PolicyCard
-            policy={policy}
-            onToggle={onTogglePolicy}
-            onEdit={onEdit}
-            onDuplicate={onDuplicate}
-            onDelete={onDelete}
-          />
+          <PolicyCard policy={policy} onToggle={onTogglePolicy} />
         </Col>
       ))}
     </Row>

@@ -9,9 +9,6 @@ interface PoliciesGridProps {
   groups: PolicyGroup[];
   controlGroups: ControlGroup[];
   onTogglePolicy: (policy: AccessPolicyListItem) => void;
-  onEdit: (policy: AccessPolicyListItem) => void;
-  onDuplicate: (policy: AccessPolicyListItem) => void;
-  onDelete: (policy: AccessPolicyListItem) => void;
   isLoading: boolean;
 }
 
@@ -19,9 +16,6 @@ const PoliciesGrid = ({
   groups,
   controlGroups,
   onTogglePolicy,
-  onEdit,
-  onDuplicate,
-  onDelete,
   isLoading,
 }: PoliciesGridProps) => {
   if (isLoading) {
@@ -45,9 +39,6 @@ const PoliciesGrid = ({
           policies={group.policies}
           controlGroups={controlGroups}
           onTogglePolicy={onTogglePolicy}
-          onEdit={onEdit}
-          onDuplicate={onDuplicate}
-          onDelete={onDelete}
         />
       ))}
     </div>
