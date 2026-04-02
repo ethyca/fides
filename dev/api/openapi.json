@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.82.1b2.dev8+g05b82412f"
+    "version": "2.82.1b2.dev9+g20b27650d"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2429,6 +2429,58 @@
             "application/json": {
               "schema": {
                 "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "auth_method": {
+                        "$ref": "#/components/schemas/AWSAuthMethod",
+                        "title": "Authentication Method",
+                        "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                      },
+                      "aws_access_key_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Key ID",
+                        "description": "Part of the credentials that provide access to your AWS account."
+                      },
+                      "aws_secret_access_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Secret Access Key",
+                        "description": "Part of the credentials that provide access to your AWS account.",
+                        "sensitive": true
+                      },
+                      "aws_assume_role_arn": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Assume Role ARN",
+                        "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                      }
+                    },
+                    "required": [
+                      "auth_method"
+                    ],
+                    "title": "AWSDocsSchema",
+                    "description": "AWS Secrets Schema for API Docs"
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -5303,6 +5355,58 @@
                   {
                     "type": "object",
                     "properties": {
+                      "auth_method": {
+                        "$ref": "#/components/schemas/AWSAuthMethod",
+                        "title": "Authentication Method",
+                        "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                      },
+                      "aws_access_key_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Key ID",
+                        "description": "Part of the credentials that provide access to your AWS account."
+                      },
+                      "aws_secret_access_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Secret Access Key",
+                        "description": "Part of the credentials that provide access to your AWS account.",
+                        "sensitive": true
+                      },
+                      "aws_assume_role_arn": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Assume Role ARN",
+                        "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                      }
+                    },
+                    "required": [
+                      "auth_method"
+                    ],
+                    "title": "AWSDocsSchema",
+                    "description": "AWS Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "keyfile_creds": {
                         "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
                         "title": "Keyfile creds",
@@ -6776,6 +6880,58 @@
             "application/json": {
               "schema": {
                 "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "auth_method": {
+                        "$ref": "#/components/schemas/AWSAuthMethod",
+                        "title": "Authentication Method",
+                        "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                      },
+                      "aws_access_key_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Key ID",
+                        "description": "Part of the credentials that provide access to your AWS account."
+                      },
+                      "aws_secret_access_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Secret Access Key",
+                        "description": "Part of the credentials that provide access to your AWS account.",
+                        "sensitive": true
+                      },
+                      "aws_assume_role_arn": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Assume Role ARN",
+                        "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                      }
+                    },
+                    "required": [
+                      "auth_method"
+                    ],
+                    "title": "AWSDocsSchema",
+                    "description": "AWS Secrets Schema for API Docs"
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -20054,6 +20210,58 @@
         "title": "AWSConfig",
         "description": "The model for the connection config for AWS"
       },
+      "AWSDocsSchema": {
+        "properties": {
+          "auth_method": {
+            "$ref": "#/components/schemas/AWSAuthMethod",
+            "title": "Authentication Method",
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Key ID",
+            "description": "Part of the credentials that provide access to your AWS account."
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret Access Key",
+            "description": "Part of the credentials that provide access to your AWS account.",
+            "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role ARN",
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+          }
+        },
+        "type": "object",
+        "required": [
+          "auth_method"
+        ],
+        "title": "AWSDocsSchema",
+        "description": "AWS Secrets Schema for API Docs"
+      },
       "AccessLevel": {
         "type": "string",
         "enum": [
@@ -21856,6 +22064,7 @@
           "ANALYTICS",
           "ECOMMERCE",
           "COMMUNICATION",
+          "CLOUD_INFRASTRUCTURE",
           "CUSTOM"
         ],
         "title": "ConnectionCategory",
@@ -22312,6 +22521,7 @@
         "type": "string",
         "enum": [
           "attentive_email",
+          "aws",
           "bigquery",
           "datahub",
           "dynamodb",
@@ -22961,6 +23171,58 @@
           },
           "secrets": {
             "anyOf": [
+              {
+                "properties": {
+                  "auth_method": {
+                    "$ref": "#/components/schemas/AWSAuthMethod",
+                    "title": "Authentication Method",
+                    "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                  },
+                  "aws_access_key_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Key ID",
+                    "description": "Part of the credentials that provide access to your AWS account."
+                  },
+                  "aws_secret_access_key": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Secret Access Key",
+                    "description": "Part of the credentials that provide access to your AWS account.",
+                    "sensitive": true
+                  },
+                  "aws_assume_role_arn": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Assume Role ARN",
+                    "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "auth_method"
+                ],
+                "title": "AWSDocsSchema",
+                "description": "AWS Secrets Schema for API Docs"
+              },
               {
                 "properties": {
                   "keyfile_creds": {
@@ -34230,6 +34492,58 @@
             "anyOf": [
               {
                 "properties": {
+                  "auth_method": {
+                    "$ref": "#/components/schemas/AWSAuthMethod",
+                    "title": "Authentication Method",
+                    "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                  },
+                  "aws_access_key_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Key ID",
+                    "description": "Part of the credentials that provide access to your AWS account."
+                  },
+                  "aws_secret_access_key": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Secret Access Key",
+                    "description": "Part of the credentials that provide access to your AWS account.",
+                    "sensitive": true
+                  },
+                  "aws_assume_role_arn": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Assume Role ARN",
+                    "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "auth_method"
+                ],
+                "title": "AWSDocsSchema",
+                "description": "AWS Secrets Schema for API Docs"
+              },
+              {
+                "properties": {
                   "keyfile_creds": {
                     "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
                     "title": "Keyfile creds",
@@ -37439,6 +37753,7 @@
           "email",
           "manual",
           "saas",
+          "service",
           "system",
           "website"
         ],
