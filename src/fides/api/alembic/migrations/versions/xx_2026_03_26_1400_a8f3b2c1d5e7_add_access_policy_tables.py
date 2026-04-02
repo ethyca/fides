@@ -1,7 +1,7 @@
 """add access_policy and access_policy_version tables
 
 Revision ID: a8f3b2c1d5e7
-Revises: 29113e44faec
+Revises: a7b8c9d0e1f2
 Create Date: 2026-03-26 14:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a8f3b2c1d5e7"
-down_revision = "29113e44faec"
+down_revision = "a7b8c9d0e1f2"
 branch_labels = None
 depends_on = None
 
