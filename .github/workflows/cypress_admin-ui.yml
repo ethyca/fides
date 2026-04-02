@@ -143,7 +143,7 @@ jobs:
 
   Admin-UI-Cypress:
     needs: [Check-Admin-UI-Changes, build, prepare-matrix]
-    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true'
+    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true' && github.event_name != 'merge_group'
     strategy:
       fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
       matrix:
@@ -193,11 +193,13 @@ jobs:
           wait-on-timeout: 180
           spec: ${{ matrix.spec_group }}
 
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos-admin-ui-${{ strategy.job-index }}
-          path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
+      # Video recording is disabled (cypress.config.ts: video: false).
+      # Uncomment this step if you re-enable video for debugging.
+      # - uses: actions/upload-artifact@v4
+      #   if: failure()
+      #   with:
+      #     name: cypress-videos-admin-ui-${{ strategy.job-index }}
+      #     path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
 
   Admin-UI-Cypress-Summary:
     runs-on: ubuntu-latest
