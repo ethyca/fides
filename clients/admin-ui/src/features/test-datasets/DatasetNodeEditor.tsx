@@ -314,9 +314,16 @@ const DatasetNodeEditorInner = ({
           c.name === collectionName ? { ...c, ...updates } : c,
         ),
       };
+      // If the collection was renamed, update selectedNodeId to the new ID
+      if (updates.name && updates.name !== collectionName) {
+        setSelectedNodeId(`${COLLECTION_ROOT_PREFIX}${updates.name}`);
+        if (focusedCollection === collectionName) {
+          setFocusedCollection(updates.name);
+        }
+      }
       onDatasetChange(updated);
     },
-    [onDatasetChange],
+    [onDatasetChange, focusedCollection],
   );
 
   const handleUpdateField = useCallback(
@@ -339,6 +346,11 @@ const DatasetNodeEditorInner = ({
           };
         }),
       };
+      // If the field was renamed, update selectedNodeId to the new ID
+      if (updates.name && updates.name !== segments[segments.length - 1]) {
+        const newSegments = [...segments.slice(0, -1), updates.name];
+        setSelectedNodeId(`field-${collectionName}-${newSegments.join(".")}`);
+      }
       onDatasetChange(updated);
     },
     [onDatasetChange],
