@@ -234,13 +234,13 @@ export {
   Segmented,
   Skeleton,
   Space,
+  Splitter,
+  Steps,
+  Switch,
   // the HOC CustomSpin is incompatible with a handful of usages for loading
   // states on Chakra tables, so we re-export the base Spin.
   // TODO: remove when all FidesTableV2s are migrated to Ant
   Spin as TableSpinner,
-  Splitter,
-  Steps,
-  Switch,
   Tabs,
   TimePicker,
   Tree,
