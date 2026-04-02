@@ -1,4 +1,8 @@
+import { useMessage } from "fidesui";
 import { useCallback } from "react";
+
+import { getErrorMessage } from "~/features/common/helpers";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import { useUpdateAccessPolicyMutation } from "../access-policies.slice";
 import { updateYamlField } from "../policy-yaml";
@@ -6,15 +10,20 @@ import { AccessPolicyListItem } from "../types";
 
 export const useUpdatePolicyPriority = () => {
   const [updatePolicy] = useUpdateAccessPolicyMutation();
+  const message = useMessage();
 
   return useCallback(
-    (policy: AccessPolicyListItem, newPriority: number) => {
+    async (policy: AccessPolicyListItem, newPriority: number) => {
       if (!policy.yaml) {
         return;
       }
       const updatedYaml = updateYamlField(policy.yaml, "priority", newPriority);
-      updatePolicy({ id: policy.id, yaml: updatedYaml });
+      try {
+        await updatePolicy({ id: policy.id, yaml: updatedYaml }).unwrap();
+      } catch (error) {
+        message.error(getErrorMessage((error as RTKErrorResult["error"])));
+      }
     },
-    [updatePolicy],
+    [updatePolicy, message],
   );
 };

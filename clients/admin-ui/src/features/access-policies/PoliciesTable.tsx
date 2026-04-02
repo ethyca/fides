@@ -1,6 +1,13 @@
+import classNames from "classnames";
 import type { Identifier, XYCoord } from "dnd-core";
 import { Flex, Icons, Input, Switch, Table, Tag, Text } from "fidesui";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
@@ -10,7 +17,8 @@ import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCe
 
 import { ControlGroup } from "./access-policies.slice";
 import { DECISION_LABELS } from "./constants";
-import { AccessPolicyListItem } from "./types";
+import styles from "./PoliciesTable.module.scss";
+import { AccessPolicyListItem, ActionType } from "./types";
 import { formatRelativeTime } from "./utils";
 
 const ROW_TYPE = "PolicyTableRow";
@@ -99,12 +107,10 @@ const DraggableRow = ({
   return (
     <tr
       ref={ref}
-      className={className}
-      style={{
-        ...style,
-        opacity: isDragging ? 0.4 : 1,
-        cursor: isDragging ? "grabbing" : "grab",
-      }}
+      className={classNames(className, styles.draggableRow, {
+        [styles.isDragging]: isDragging,
+      })}
+      style={style}
       data-handler-id={handlerId}
       {...restProps}
     >
@@ -161,10 +167,10 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
   return (
     <Flex
       align="center"
-      gap={4}
+      gap="small"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ cursor: "default" }}
+      className={styles.priorityCellWrapper}
     >
       <Text size="sm" type="secondary">
         {value}
@@ -176,15 +182,9 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
           setInputValue(String(value));
           setIsEditing(true);
         }}
-        style={{
-          background: "none",
-          border: "none",
-          padding: 0,
-          display: "flex",
-          cursor: "pointer",
-          visibility: isHovered ? "visible" : "hidden",
-          flexShrink: 0,
-        }}
+        className={classNames(styles.editButton, {
+          [styles.visible]: isHovered,
+        })}
       >
         <Icons.Edit size={12} style={{ color: "var(--fidesui-neutral-500)" }} />
       </button>
@@ -213,8 +213,9 @@ const PoliciesTable = ({
   onPriorityEdit,
   isLoading,
 }: PoliciesTableProps) => {
-  const controlGroupMap = new Map(
-    controlGroups.map((cg) => [cg.key, cg.label]),
+  const controlGroupMap = useMemo(
+    () => new Map(controlGroups.map((cg) => [cg.key, cg.label])),
+    [controlGroups],
   );
 
   // Local state drives the visible order during drag; only synced from props
@@ -258,19 +259,19 @@ const PoliciesTable = ({
       title: "",
       dataIndex: "drag",
       key: "drag",
-      width: 40,
+      width: 50,
       render: () => <DragHandle />,
     },
     {
       title: (
-        <Flex align="center" gap={4}>
+        <Flex align="center" gap="small">
           #
           <InfoTooltip label="Priority — policies are evaluated in this order" />
         </Flex>
       ),
       dataIndex: "priority",
       key: "priority",
-      width: 100,
+      width: 90,
       render: (_: unknown, record: AccessPolicyListItem) => (
         <EditablePriorityCell
           value={record.priority}
@@ -323,7 +324,9 @@ const PoliciesTable = ({
       width: 100,
       render: (_: unknown, record: AccessPolicyListItem) =>
         record.decision ? (
-          <Tag color={record.decision === "ALLOW" ? "success" : "error"}>
+          <Tag
+            color={record.decision === ActionType.ALLOW ? "success" : "error"}
+          >
             {DECISION_LABELS[record.decision] ?? record.decision}
           </Tag>
         ) : null,
@@ -345,7 +348,7 @@ const PoliciesTable = ({
       title: "Updated",
       dataIndex: "updated_at",
       key: "updated_at",
-      width: 100,
+      width: 90,
       render: (text: string) => (
         <Text size="sm" type="secondary">
           {formatRelativeTime(text)}

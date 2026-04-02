@@ -14,7 +14,7 @@ export interface SelectOption {
 export interface AccessPolicyListItem extends AccessPolicy {
   enabled: boolean;
   priority: number;
-  decision?: "ALLOW" | "DENY";
+  decision?: ActionType;
 }
 
 export enum ActionType {
@@ -111,7 +111,7 @@ export interface AccessPolicyYaml {
   enabled?: boolean;
   priority?: number;
   controls?: string[];
-  decision: "ALLOW" | "DENY";
+  decision: ActionType;
   match: MatchBlock;
   unless?: UnlessItem[];
   action?: ActionBlock;

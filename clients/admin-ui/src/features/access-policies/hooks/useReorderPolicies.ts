@@ -1,13 +1,18 @@
+import { useMessage } from "fidesui";
 import { useCallback } from "react";
+
+import { getErrorMessage } from "~/features/common/helpers";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import { useReorderAccessPolicyMutation } from "../access-policies.slice";
 import { AccessPolicyListItem } from "../types";
 
 export const useReorderPolicies = () => {
   const [reorderPolicy] = useReorderAccessPolicyMutation();
+  const message = useMessage();
 
   return useCallback(
-    (
+    async (
       policies: AccessPolicyListItem[],
       fromIndex: number,
       toIndex: number,
@@ -17,8 +22,12 @@ export const useReorderPolicies = () => {
       reordered.splice(toIndex, 0, moved);
 
       const insertAfterId = toIndex > 0 ? reordered[toIndex - 1].id : null;
-      reorderPolicy({ id: moved.id, insert_after_id: insertAfterId });
+      try {
+        await reorderPolicy({ id: moved.id, insert_after_id: insertAfterId }).unwrap();
+      } catch (error) {
+        message.error(getErrorMessage((error as RTKErrorResult["error"])));
+      }
     },
-    [reorderPolicy],
+    [reorderPolicy, message],
   );
 };
