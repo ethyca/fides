@@ -53,6 +53,7 @@ from fides.api.models.manual_task import (
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
+from fides.api.models.monitor_aggregate_statistics import MonitorAggregateStatistics
 from fides.api.models.openid_provider import OpenIDProvider
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_assessment import (

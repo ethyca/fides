@@ -179,10 +179,16 @@ export const ManualTasks = () => {
     _pagination: TablePaginationConfig,
     tableFilters: Record<string, FilterValue | null>,
   ) => {
-    const newFilters: ManualTaskFilters = {
-      // Keep the privacy request ID filter if it exists
-      privacyRequestId: filters.privacyRequestId,
-    };
+    const newFilters: ManualTaskFilters = {};
+
+    // Only carry forward privacyRequestId when it has a value, so the
+    // shape stays consistent with defaultFilters (which omits the key
+    // entirely).  A key set to `undefined` vs a missing key makes
+    // lodash isEqual return false, which was causing a spurious
+    // page-reset on the first pagination click.
+    if (filters.privacyRequestId) {
+      newFilters.privacyRequestId = filters.privacyRequestId;
+    }
 
     if (tableFilters.status) {
       [newFilters.status] = tableFilters.status as string[];
@@ -197,8 +203,12 @@ export const ManualTasks = () => {
       [newFilters.assignedUsers] = tableFilters.assigned_users as string[];
     }
 
-    setFilters(newFilters);
-    setPageIndex(1);
+    // Only reset to page 1 when filters actually changed, not on pagination events.
+    // Ant Design's Table.onChange fires for both filter changes AND pagination changes.
+    if (!isEqual(newFilters, filters)) {
+      setFilters(newFilters);
+      setPageIndex(1);
+    }
   };
 
   const onUserClick = (userId: string) => {
