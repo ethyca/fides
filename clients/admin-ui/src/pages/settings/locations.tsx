@@ -27,7 +27,7 @@ const LocationsPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Locations" data-testid="location-management">
+    <Layout title="Locations">
       <PageHeader heading="Locations" />
       <Text fontSize="sm" maxWidth="720px" pb={6}>
         Select the locations that you operate in and Fides will make sure that
