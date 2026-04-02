@@ -71,7 +71,6 @@ const PoliciesContainer = () => {
       {viewMode === "cards" ? (
         <PoliciesGrid
           groups={groups}
-          controlGroups={controlGroups ?? []}
           onTogglePolicy={toggleEnabled}
           isLoading={isLoading}
         />
