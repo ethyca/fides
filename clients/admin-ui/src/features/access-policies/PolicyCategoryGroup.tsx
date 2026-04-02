@@ -30,7 +30,7 @@ const PolicyCategoryGroup = ({
 
     <Row gutter={[16, 16]}>
       {policies.map((policy) => (
-        <Col key={policy.id} xs={24} md={8}>
+        <Col key={policy.id} md={8} xxl={6}>
           <PolicyCard policy={policy} onToggle={onTogglePolicy} />
         </Col>
       ))}
