@@ -63,6 +63,7 @@ interface DatasetNodeEditorProps {
   dataset: Dataset;
   protectedFields?: ProtectedFieldsInfo;
   onDatasetChange: (dataset: Dataset) => void;
+  allowNameEditing?: boolean;
 }
 
 const nodeTypes: NodeTypes = {
@@ -95,6 +96,7 @@ const DatasetNodeEditorInner = ({
   dataset,
   protectedFields,
   onDatasetChange,
+  allowNameEditing = false,
 }: DatasetNodeEditorProps) => {
   const reactFlowInstance = useReactFlow();
   const reactFlowRef = useRef<HTMLDivElement>(null);
@@ -775,6 +777,7 @@ const DatasetNodeEditorInner = ({
           nodeData={selectedNodeData}
           onUpdateCollection={handleUpdateCollection}
           onUpdateField={handleUpdateField}
+          allowNameEditing={allowNameEditing}
         />
         <AddNodeModal
           open={addModal.open}
