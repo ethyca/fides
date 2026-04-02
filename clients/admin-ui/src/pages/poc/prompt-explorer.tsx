@@ -314,7 +314,7 @@ const PromptExplorer: NextPage = () => {
               }
             >
               {promptsLoading ? (
-                <Spin className="my-64" />
+                <Spin wrapperClassName="my-64" />
               ) : (
                 <Radio.Group
                   value={selectedPromptId}
