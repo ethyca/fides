@@ -11,7 +11,7 @@ export const usePoliciesFilters = () => {
     search: parseAsString.withOptions({ throttleMs: 300 }),
     control: parseAsString,
     status: parseAsString,
-    view: parseAsStringEnum<ViewMode>(["cards", "table"]),
+    view: parseAsStringEnum<ViewMode>([ViewMode.CARDS, ViewMode.TABLE]),
   });
 
   return {
@@ -23,7 +23,7 @@ export const usePoliciesFilters = () => {
     enabledFilter: filters.status ?? undefined,
     setEnabledFilter: (v: string | undefined) =>
       setFilters({ status: v ?? null }),
-    viewMode: filters.view ?? "cards",
+    viewMode: filters.view ?? ViewMode.CARDS,
     setViewMode: (v: ViewMode) => setFilters({ view: v }),
   };
 };

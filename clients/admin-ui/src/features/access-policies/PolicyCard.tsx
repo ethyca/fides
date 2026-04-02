@@ -26,10 +26,7 @@ interface PolicyCardProps {
 
 const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
   return (
-    <Card
-      className="flex h-full flex-col"
-      classNames={{ body: "flex flex-col flex-1" }}
-    >
+    <Card className={`flex h-full flex-col ${styles.card}`}>
       <Flex vertical justify="space-between" className="flex-1">
         <Flex vertical gap="small">
           {/* Header */}

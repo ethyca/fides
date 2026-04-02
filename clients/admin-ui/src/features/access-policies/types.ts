@@ -1,6 +1,9 @@
 import { AccessPolicy } from "./access-policies.slice";
 
-export type ViewMode = "cards" | "table";
+export enum ViewMode {
+  CARDS = "cards",
+  TABLE = "table",
+}
 
 export interface SelectOption {
   label: string;

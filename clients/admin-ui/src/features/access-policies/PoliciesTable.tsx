@@ -120,7 +120,7 @@ const DraggableRow = ({
 };
 
 const DragHandle = () => (
-  <Icons.Draggable size={16} style={{ color: "var(--fidesui-neutral-500)" }} />
+  <Icons.Draggable size={16} fill="var(--fidesui-neutral-500)" />
 );
 
 interface EditablePriorityCellProps {
@@ -186,7 +186,7 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
           [styles.visible]: isHovered,
         })}
       >
-        <Icons.Edit size={12} style={{ color: "var(--fidesui-neutral-500)" }} />
+        <Icons.Edit size={12} fill="var(--fidesui-neutral-500)" />
       </button>
     </Flex>
   );

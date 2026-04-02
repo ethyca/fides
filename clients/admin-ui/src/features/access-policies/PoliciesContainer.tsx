@@ -9,7 +9,7 @@ import { useTogglePolicyEnabled } from "./hooks/useTogglePolicyEnabled";
 import { useUpdatePolicyPriority } from "./hooks/useUpdatePolicyPriority";
 import PoliciesGrid from "./PoliciesGrid";
 import PoliciesTable from "./PoliciesTable";
-import PoliciesToolbar from "./PoliciesToolbar";
+import PoliciesToolbar, { ViewMode } from "./PoliciesToolbar";
 
 const PoliciesContainer = () => {
   const { policies, isLoading } = useAccessPoliciesList();
@@ -68,7 +68,7 @@ const PoliciesContainer = () => {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
-      {viewMode === "cards" ? (
+      {viewMode === ViewMode.CARDS ? (
         <PoliciesGrid
           groups={groups}
           onTogglePolicy={toggleEnabled}

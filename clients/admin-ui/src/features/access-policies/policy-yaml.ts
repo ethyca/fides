@@ -47,7 +47,7 @@ export const parseYaml = (yamlString: string): AccessPolicyYaml | null => {
  */
 export const extractPolicyFields = (
   yamlString?: string,
-): { enabled: boolean; priority: number; decision?: "ALLOW" | "DENY" } => {
+): { enabled: boolean; priority: number; decision?: ActionType } => {
   if (!yamlString) {
     return { enabled: true, priority: 0 };
   }

@@ -21,9 +21,9 @@ export const ACTION_TYPE_OPTIONS: RadioOption<ActionType>[] = [
   { value: ActionType.DENY, label: "Deny" },
 ];
 
-export const DECISION_LABELS: Record<string, string> = {
-  ALLOW: "Allow",
-  DENY: "Deny",
+export const DECISION_LABELS: Record<ActionType, string> = {
+  [ActionType.ALLOW]: "Allow",
+  [ActionType.DENY]: "Deny",
 };
 
 export const CONDITION_PROPERTY_OPTIONS: NonNullable<SelectProps["options"]> = [
