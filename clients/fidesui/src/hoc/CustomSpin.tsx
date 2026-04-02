@@ -9,7 +9,9 @@ const withCustomProps = (WrappedComponent: typeof Spin) => {
     centered = true,
     ...props
   }: CustomSpinProps) => {
-    if (!centered) return <WrappedComponent {...props} />;
+    if (!centered) {
+      return <WrappedComponent {...props} />;
+    }
     return (
       <Flex className="size-full" align="center" justify="center">
         <WrappedComponent {...props} />
