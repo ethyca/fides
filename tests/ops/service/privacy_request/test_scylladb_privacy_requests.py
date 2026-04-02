@@ -10,6 +10,9 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 
 @pytest.mark.integration
 @pytest.mark.integration_scylladb
+@pytest.mark.xfail(
+    reason="ScyllaDB container is unreliable in CI, frequently fails to accept connections before tests start"
+)
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_scylladb(
     trigger_webhook_mock,
@@ -77,6 +80,9 @@ def test_create_and_process_access_request_scylladb(
 
 @pytest.mark.integration
 @pytest.mark.integration_scylladb
+@pytest.mark.xfail(
+    reason="ScyllaDB container is unreliable in CI, frequently fails to accept connections before tests start"
+)
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_scylladb_no_keyspace(
     trigger_webhook_mock,

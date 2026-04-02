@@ -29,15 +29,23 @@
       "dependsOn": ["build"],
       "outputs": [".next/*", "!.next/cache/*"]
     },
-    "lint": {
-      "dependsOn": []
+    "check": {
+      "dependsOn": ["^build"],
+      "cache": false
     },
-    "lint:fix": {
+    "check:ci": {
+      "dependsOn": ["^build"]
+    },
+    "lint": {
       "dependsOn": [],
       "cache": false
     },
-    "format": {
+    "lint:ci": {
       "dependsOn": []
+    },
+    "format": {
+      "dependsOn": [],
+      "cache": false
     },
     "format:ci": {
       "dependsOn": []
@@ -47,6 +55,11 @@
     },
     "test": {
       "dependsOn": ["^typecheck"],
+      "cache": false,
+      "persistent": true
+    },
+    "test:ci": {
+      "dependsOn": [],
       "cache": false,
       "persistent": true
     },

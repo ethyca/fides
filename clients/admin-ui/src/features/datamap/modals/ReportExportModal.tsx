@@ -1,12 +1,4 @@
-import {
-  Button,
-  ChakraFlex as Flex,
-  ChakraFormControl as FormControl,
-  ChakraFormLabel as FormLabel,
-  ChakraText as Text,
-  Modal,
-  Select,
-} from "fidesui";
+import { Button, Flex, Form, Modal, Paragraph, Select } from "fidesui";
 import { useState } from "react";
 
 import { ExportFormat } from "~/features/datamap/constants";
@@ -37,7 +29,7 @@ const ReportExportModal = ({
       destroyOnClose
       data-testid="export-modal"
       footer={
-        <Flex gap={12} justify="flex-end">
+        <Flex gap="small" justify="flex-end">
           <Button onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
@@ -51,15 +43,14 @@ const ReportExportModal = ({
         </Flex>
       }
     >
-      <Flex direction="column" gap={3} pb={3}>
-        <Text textAlign="left">
+      <Flex vertical gap="small">
+        <Paragraph>
           Export your data map report using the options below. Depending on the
           number of rows, the file may take a few minutes to process.
-        </Text>
-        <FormControl>
-          <FormLabel htmlFor="format">Choose Format</FormLabel>
-          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+        </Paragraph>
+        <Form.Item label="Choose Format">
           <Select
+            aria-label="Choose Format"
             id="format"
             value={downloadType}
             onChange={setDownloadType}
@@ -70,7 +61,7 @@ const ReportExportModal = ({
             ]}
             className="w-full"
           />
-        </FormControl>
+        </Form.Item>
       </Flex>
     </Modal>
   );
