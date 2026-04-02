@@ -64,7 +64,9 @@ from .samples import (
     load_sample_resources_from_project,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.connectors.saas.connector_registry_service import FileConnectorTemplateLoader
+from fides.api.service.connectors.saas.connector_registry_service import (
+    FileConnectorTemplateLoader,
+)
 
 from fides.api.util.saas_util import (
     load_config_from_string,
