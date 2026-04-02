@@ -84,14 +84,15 @@ def validate_value_against_allowed_list(
 
     if mode == DomainValidationMode.monitor:
         logger.warning(
-            "Domain validation violation (monitor mode): {}",
-            violation_msg,
+            f"Domain validation violation (enforcement mode - monitor): {violation_msg}"
         )
         return
 
-    raise DomainValidationError(
-        f"{violation_msg} "
-        f"You may change the validation behavior by setting "
-        f"the environment variable FIDES__SECURITY__DOMAIN_VALIDATION_MODE "
-        f"to 'monitor' (log warnings only) or 'disabled' (skip validation)."
+    logger.error(
+        f"Domain validation violation (enforcement mode - enabled): {violation_msg}"
     )
+    logger.info(
+        "You may change the domain validation behavior by setting the environment variable "
+        f"{_DOMAIN_MODE_ENV_VAR} to 'monitor' (log warnings only) or 'disabled' (skip validation)."
+    )
+    raise DomainValidationError(violation_msg)
