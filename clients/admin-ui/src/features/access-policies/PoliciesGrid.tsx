@@ -1,6 +1,6 @@
 import { Empty, Spin } from "fidesui";
 
-import { PolicyGroup } from "./hooks";
+import { PolicyGroup } from "./hooks/useAccessPolicyGroups";
 import PolicyCategoryGroup from "./PolicyCategoryGroup";
 import { AccessPolicyListItem } from "./types";
 

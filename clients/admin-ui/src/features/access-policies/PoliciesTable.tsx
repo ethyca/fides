@@ -11,6 +11,7 @@ import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCe
 import { ControlGroup } from "./access-policies.slice";
 import { DECISION_LABELS } from "./constants";
 import { AccessPolicyListItem } from "./types";
+import { formatRelativeTime } from "./utils";
 
 const ROW_TYPE = "PolicyTableRow";
 
@@ -99,33 +100,17 @@ const DraggableRow = ({
     <tr
       ref={ref}
       className={className}
-      style={{ ...style, opacity: isDragging ? 0.4 : 1, cursor: "grab" }}
+      style={{
+        ...style,
+        opacity: isDragging ? 0.4 : 1,
+        cursor: isDragging ? "grabbing" : "grab",
+      }}
       data-handler-id={handlerId}
       {...restProps}
     >
       {children}
     </tr>
   );
-};
-
-const formatRelativeTime = (isoDate?: string): string => {
-  if (!isoDate) {
-    return "—";
-  }
-  const diff = Date.now() - new Date(isoDate).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) {
-    return "Just now";
-  }
-  if (minutes < 60) {
-    return `${minutes}m ago`;
-  }
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) {
-    return `${hours}h ago`;
-  }
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 };
 
 const DragHandle = () => (
@@ -184,19 +169,25 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
       <Text size="sm" type="secondary">
         {value}
       </Text>
-      <Icons.Edit
-        size={12}
+      <button
+        type="button"
+        aria-label="Edit priority"
         onClick={() => {
           setInputValue(String(value));
           setIsEditing(true);
         }}
         style={{
-          color: "var(--fidesui-neutral-500)",
+          background: "none",
+          border: "none",
+          padding: 0,
+          display: "flex",
           cursor: "pointer",
           visibility: isHovered ? "visible" : "hidden",
           flexShrink: 0,
         }}
-      />
+      >
+        <Icons.Edit size={12} style={{ color: "var(--fidesui-neutral-500)" }} />
+      </button>
     </Flex>
   );
 };

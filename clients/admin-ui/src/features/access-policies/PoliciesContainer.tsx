@@ -1,14 +1,12 @@
 import { useMemo } from "react";
 
 import { useGetControlGroupsQuery } from "./access-policies.slice";
-import {
-  useAccessPoliciesList,
-  useAccessPolicyGroups,
-  usePoliciesFilters,
-  useReorderPolicies,
-  useTogglePolicyEnabled,
-  useUpdatePolicyPriority,
-} from "./hooks";
+import { useAccessPoliciesList } from "./hooks/useAccessPoliciesList";
+import { useAccessPolicyGroups } from "./hooks/useAccessPolicyGroups";
+import { usePoliciesFilters } from "./hooks/usePoliciesFilters";
+import { useReorderPolicies } from "./hooks/useReorderPolicies";
+import { useTogglePolicyEnabled } from "./hooks/useTogglePolicyEnabled";
+import { useUpdatePolicyPriority } from "./hooks/useUpdatePolicyPriority";
 import PoliciesGrid from "./PoliciesGrid";
 import PoliciesTable from "./PoliciesTable";
 import PoliciesToolbar from "./PoliciesToolbar";

@@ -3,8 +3,9 @@ import { Flex, Form, Icons, Segmented, Select } from "fidesui";
 import SearchInput from "~/features/common/SearchInput";
 
 import { ControlGroup } from "./access-policies.slice";
+import { ViewMode } from "./types";
 
-export type ViewMode = "cards" | "table";
+export type { ViewMode };
 
 const STATUS_OPTIONS = [
   { label: "Enabled", value: "enabled" },

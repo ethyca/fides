@@ -91,6 +91,14 @@ export const accessPoliciesHandlers = () => {
           policies.unshift(moved);
         } else {
           const afterIdx = policies.findIndex((p) => p.id === insertAfterId);
+          if (afterIdx === -1) {
+            return res(
+              ctx.status(404),
+              ctx.json({
+                detail: `Access policy with id ${insertAfterId} not found`,
+              }),
+            );
+          }
           policies.splice(afterIdx + 1, 0, moved);
         }
 

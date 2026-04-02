@@ -1,5 +1,7 @@
 import { AccessPolicy } from "./access-policies.slice";
 
+export type ViewMode = "cards" | "table";
+
 export interface SelectOption {
   label: string;
   value: string;

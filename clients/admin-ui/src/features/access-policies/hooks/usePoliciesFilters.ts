@@ -1,6 +1,6 @@
 import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 
-import { ViewMode } from "../PoliciesToolbar";
+import { ViewMode } from "../types";
 
 /**
  * Manages all list-page filter state, synced to query params.
