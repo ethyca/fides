@@ -1,0 +1,4 @@
+type: Added
+description: Add PBAC onboarding form with dynamic data uses, policy config modal, and generate endpoint integration
+pr: 7818
+labels: []
