@@ -78,7 +78,7 @@ const ConfigureMonitorDatabasesForm = ({
   const saveIsDisabled = !allSelected && selected.length === 0;
 
   if (initialIsLoading) {
-    return <Spin wrapperClassName="my-12" />;
+    return <Spin rootClassName="my-12" />;
   }
 
   return (

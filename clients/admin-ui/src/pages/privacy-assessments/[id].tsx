@@ -114,7 +114,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     return (
       <Layout title="Privacy assessment">
         <PageHeader heading="Privacy assessments" isSticky />
-        <Spin />
+        <Spin size="large" />
       </Layout>
     );
   }

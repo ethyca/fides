@@ -1,22 +1,29 @@
 import { Flex, Spin, SpinProps } from "antd/lib";
+import classNames from "classnames";
 
 export interface CustomSpinProps extends SpinProps {
   centered?: boolean;
-  wrapperClassName?: string;
+  rootClassName?: string;
 }
 
 const withCustomProps = (WrappedComponent: typeof Spin) => {
   const CustomSpinComponent = ({
     centered = true,
-    wrapperClassName,
+    rootClassName,
     ...props
   }: CustomSpinProps) => {
+    const containerClassNames = [
+      "size-full",
+      "items-center",
+      "justify-center",
+      rootClassName,
+    ];
     if (!centered) {
-      return <WrappedComponent {...props} />;
+      containerClassNames.push("contents");
     }
     return (
       <Flex
-        className={`size-full${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
+        className={classNames(containerClassNames)}
         align="center"
         justify="center"
       >
@@ -28,4 +35,10 @@ const withCustomProps = (WrappedComponent: typeof Spin) => {
   return CustomSpinComponent;
 };
 
+/**
+ * A wrapper around Ant Design's `Spin` that centers the spinner in its
+ * container by default. Pass `centered={false}` to render inline without a
+ * wrapping flex container. Use `rootClassName` to apply additional classes to
+ * the outer wrapper.
+ */
 export const CustomSpin = withCustomProps(Spin);
