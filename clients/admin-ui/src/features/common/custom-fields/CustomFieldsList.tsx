@@ -1,4 +1,4 @@
-import { Spin, ChakraFlex as Flex } from "fidesui";
+import { ChakraFlex as Flex, Spin } from "fidesui";
 import { Field, FieldInputProps } from "formik";
 
 import {

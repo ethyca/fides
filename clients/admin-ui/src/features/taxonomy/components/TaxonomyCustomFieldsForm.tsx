@@ -1,4 +1,4 @@
-import { Form, FormInstance, Input, Spin, Select } from "fidesui";
+import { Form, FormInstance, Input, Select, Spin } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";

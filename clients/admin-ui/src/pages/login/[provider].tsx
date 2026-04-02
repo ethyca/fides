@@ -43,9 +43,7 @@ const LoginWithOIDC: NextPage = () => {
       });
   }, [router, message, dispatch, router.query, loginRequest]);
 
-  return (
-    <Spin size="large" />
-  );
+  return <Spin size="large" />;
 };
 
 export default LoginWithOIDC;

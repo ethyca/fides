@@ -24,9 +24,7 @@ const EditDigestPage: NextPage = () => {
   if (isLoading) {
     return (
       <Layout title="Edit digest">
-        <Box className="flex justify-center py-12">
-          <Spin />
-        </Box>
+        <Spin />
       </Layout>
     );
   }

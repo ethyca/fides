@@ -34,8 +34,8 @@ import {
   ChakraFlex as Flex,
   ChakraHStack as HStack,
   ChakraText as Text,
-  Spin,
   ChakraVStack as VStack,
+  Spin,
   Tag,
   Tooltip,
   useChakraDisclosure as useDisclosure,
@@ -286,9 +286,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   }
 
   if (isPostLoading || isPostSuccess) {
-    return (
-      <Spin />
-    );
+    return <Spin />;
   }
 
   if (isGetLoading) {

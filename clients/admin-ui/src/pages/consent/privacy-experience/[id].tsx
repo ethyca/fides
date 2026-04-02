@@ -1,4 +1,4 @@
-import { Spin, ChakraText as Text } from "fidesui";
+import { ChakraText as Text, Spin } from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";

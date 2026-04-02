@@ -1,4 +1,4 @@
-import { Alert, Spin, Flex } from "fidesui";
+import { Alert, Flex, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";
@@ -69,9 +69,7 @@ const Profile = () => {
 
   return (
     <Layout title="Users - Edit a user">
-      {isLoadingUser && (
-        <Spin />
-      )}
+      {isLoadingUser && <Spin />}
       {!isLoadingUser && !existingUser && (
         <Flex justify="center">
           <Alert

@@ -10,9 +10,9 @@ import {
 import {
   Button,
   ChakraBox as Box,
-  Spin,
   ChakraVStack as VStack,
   Modal,
+  Spin,
   Tooltip,
   useChakraDisclosure as useDisclosure,
   useMessage,
@@ -117,9 +117,7 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
             privacy request packages. This &quot;Package Label&quot; is the
             label your user will see in their downloaded package.
           </Box>
-          {(isFetching || isLoading) && (
-            <Spin />
-          )}
+          {(isFetching || isLoading) && <Spin />}
           {mounted.current && !isLoading ? (
             <DSRCustomizationForm
               data={fields}

@@ -49,9 +49,7 @@ const PrivacyRequests: NextPage = () => {
           )
         }
       />
-      {isLoading && (
-        <Spin />
-      )}
+      {isLoading && <Spin />}
       {!isLoading && privacyRequest && <PrivacyRequest data={privacyRequest} />}
     </Layout>
   );

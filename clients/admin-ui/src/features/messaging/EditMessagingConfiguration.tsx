@@ -1,8 +1,8 @@
 import {
-  Spin,
   ChakraBox as Box,
   ChakraHeading as Heading,
   ChakraText as Text,
+  Spin,
 } from "fidesui";
 
 import { messagingProviders } from "./constants";
@@ -20,9 +20,7 @@ export const EditMessagingConfiguration = ({
     useGetMessagingConfigurationByKeyQuery({ key: configKey });
 
   if (isLoading) {
-    return (
-      <Spin />
-    );
+    return <Spin />;
   }
 
   const serviceType = messagingConfig.service_type;

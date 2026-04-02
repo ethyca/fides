@@ -103,7 +103,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
           <Title level={3}>Attachments</Title>
         </div>
         {isLoadingStorage || isLoadingAttachments ? (
-          <Spin alignment="start" />
+          <Spin className="my-12" />
         ) : (
           <Upload
             name="attachment_file"

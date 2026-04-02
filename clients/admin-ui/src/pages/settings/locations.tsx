@@ -1,4 +1,4 @@
-import { ChakraBox as Box, ChakraText as Text, Spin } from "fidesui";
+import { ChakraText as Text, Spin } from "fidesui";
 import type { NextPage } from "next";
 
 import { useAppSelector } from "~/app/hooks";
@@ -27,22 +27,18 @@ const LocationsPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Locations">
-      <Box data-testid="location-management">
-        <PageHeader heading="Locations" />
-        <Text fontSize="sm" maxWidth="720px" pb={6}>
-          Select the locations that you operate in and Fides will make sure that
-          you are automatically presented with the relevant regulatory
-          guidelines and global frameworks for your locations.
-        </Text>
-        <Box>
-          {isLoading ? (
-            <Spin />
-          ) : (
-            <LocationManagement data={locationsRegulations} />
-          )}
-        </Box>
-      </Box>
+    <Layout title="Locations" data-testid="location-management">
+      <PageHeader heading="Locations" />
+      <Text fontSize="sm" maxWidth="720px" pb={6}>
+        Select the locations that you operate in and Fides will make sure that
+        you are automatically presented with the relevant regulatory guidelines
+        and global frameworks for your locations.
+      </Text>
+      {isLoading ? (
+        <Spin />
+      ) : (
+        <LocationManagement data={locationsRegulations} />
+      )}
     </Layout>
   );
 };

@@ -6,12 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Button,
-  ChakraFlex as Flex,
-  ChakraText as Text,
-  Spin,
-} from "fidesui";
+import { Button, ChakraFlex as Flex, ChakraText as Text, Spin } from "fidesui";
 import { useMemo } from "react";
 
 import {

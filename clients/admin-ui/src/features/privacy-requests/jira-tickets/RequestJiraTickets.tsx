@@ -179,7 +179,7 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
       </div>
 
       {isLoading ? (
-        <Spin alignment="start" />
+        <Spin className="my-12" />
       ) : (
         <Flex vertical gap={8}>
           {tickets && tickets.length > 0 ? (

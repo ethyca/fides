@@ -2,7 +2,6 @@ import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/da
 import {
   Button,
   ChakraBox as Box,
-  Spin,
   ChakraCenter as Center,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
@@ -14,6 +13,7 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   ChakraVStack as VStack,
+  Spin,
   useMessage,
 } from "fidesui";
 import {
@@ -231,9 +231,7 @@ const ManualProcessingList = ({
         </Text>
       </Box>
       <Box>
-        {(isFetching || isLoading) && (
-          <Spin />
-        )}
+        {(isFetching || isLoading) && <Spin />}
         {isSuccess && data ? (
           <TableContainer>
             <Table size="sm" variant="unstyled">

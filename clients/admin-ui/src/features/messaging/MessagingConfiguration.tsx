@@ -1,10 +1,10 @@
 import {
-  Spin,
   ChakraBox as Box,
   ChakraHeading as Heading,
   ChakraText as Text,
   Form,
   Select,
+  Spin,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
@@ -117,9 +117,7 @@ const MessagingConfiguration = ({
 
   // Show loading state in edit mode
   if (isEditMode && isLoading) {
-    return (
-      <Spin />
-    );
+    return <Spin />;
   }
 
   // Show error state in edit mode
