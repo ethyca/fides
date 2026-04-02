@@ -12,6 +12,7 @@ import {
   Typography,
 } from "fidesui";
 
+import { DECISION_LABELS } from "./constants";
 import { AccessPolicyListItem } from "./types";
 
 const { Title } = Typography;
@@ -85,7 +86,7 @@ const PolicyCard = ({
             <Flex align="center" gap="small" className="shrink-0">
               {policy.decision && (
                 <Tag color={policy.decision === "ALLOW" ? "success" : "error"}>
-                  {policy.decision}
+                  {DECISION_LABELS[policy.decision] ?? policy.decision}
                 </Tag>
               )}
               <Dropdown menu={menuItems} trigger={["click"]}>
