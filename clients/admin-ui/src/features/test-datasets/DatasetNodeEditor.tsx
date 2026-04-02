@@ -1,5 +1,5 @@
 import "@xyflow/react/dist/style.css";
-import "~/features/test-datasets/DatasetNodeEditor.module.scss";
+import "~/features/test-datasets/DatasetNodeEditor.scss";
 
 import type { OnMount } from "@monaco-editor/react";
 import {
