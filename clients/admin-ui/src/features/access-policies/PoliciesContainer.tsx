@@ -27,7 +27,13 @@ const PoliciesContainer = () => {
   const [deletePolicy] = useDeleteAccessPolicyMutation();
   const [createPolicy] = useCreateAccessPolicyMutation();
 
-  const [viewMode, setViewMode] = useState<ViewMode>("cards");
+  const viewMode: ViewMode = router.query.view === "table" ? "table" : "cards";
+
+  const setViewMode = (mode: ViewMode) => {
+    router.replace({ query: { ...router.query, view: mode } }, undefined, {
+      shallow: true,
+    });
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [controlFilter, setControlFilter] = useState<string | undefined>();
   const [enabledFilter, setEnabledFilter] = useState<string | undefined>();
