@@ -63,6 +63,18 @@ from .samples import (
     load_sample_connections_from_project,
     load_sample_resources_from_project,
 )
+# Import here to avoid circular imports at module load time
+from fides.api.schemas.saas.saas_config import (
+    SaaSConfig,  # pylint: disable=import-outside-toplevel
+)
+from fides.api.service.connectors.saas.connector_registry_service import (  # pylint: disable=import-outside-toplevel
+    FileConnectorTemplateLoader,
+)
+from fides.api.util.saas_util import (  # pylint: disable=import-outside-toplevel
+    load_config_from_string,
+    load_dataset_from_string,
+)
+
 
 DEFAULT_OAUTH_CLIENT_KEY = "default_oauth_client"
 DEFAULT_ACCESS_POLICY = "default_access_policy"
@@ -332,17 +344,6 @@ def sync_oob_saas_config_versions(session: Session) -> None:
     picks up new template versions automatically on each upgrade.
     Rows are immutable once written, so this is safe to call repeatedly.
     """
-    # Import here to avoid circular imports at module load time
-    from fides.api.schemas.saas.saas_config import (
-        SaaSConfig,  # pylint: disable=import-outside-toplevel
-    )
-    from fides.api.service.connectors.saas.connector_registry_service import (  # pylint: disable=import-outside-toplevel
-        FileConnectorTemplateLoader,
-    )
-    from fides.api.util.saas_util import (  # pylint: disable=import-outside-toplevel
-        load_config_from_string,
-        load_dataset_from_string,
-    )
 
     templates = FileConnectorTemplateLoader.get_connector_templates()
     existing = {

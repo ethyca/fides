@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fideslang.models import Dataset as FideslangDataset
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
@@ -232,6 +232,7 @@ class DatasetConfigService:
         return [
             FideslangDataset.model_validate(dc.ctl_dataset).model_dump(mode="json")
             for dc in self.db.query(DatasetConfig)
+            .options(selectinload(DatasetConfig.ctl_dataset))
             .filter(DatasetConfig.connection_config_id == connection_config_id)
             .all()
             if dc.ctl_dataset
@@ -240,7 +241,7 @@ class DatasetConfigService:
     def get_config_from_fides_key(
         self, connection_config_id: str, fides_key: str
     ) -> Optional[DatasetConfig]:
-        "Return a Dataset Config By searching by key and config id"
+        """Return a Dataset Config By searching by key and config id"""
         return DatasetConfig.filter(
             db=self.db,
             conditions=(
