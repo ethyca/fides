@@ -98,6 +98,7 @@ def run_infrastructure(
     run_create_test_data: bool = False,  # Should we run the create_test_data command?
     analytics_opt_out: bool = False,  # Should we opt out of analytics?
     remote_debug: bool = False,  # Should remote debugging be enabled?
+    split_args: str = "",  # pytest-split args for CI sharding
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -154,6 +155,7 @@ def run_infrastructure(
             docker_compose_path=path,
             pytest_path=pytest_path,
             analytics_opt_out=analytics_opt_out,
+            split_args=split_args,
         )
 
     if run_create_test_data:
@@ -273,6 +275,7 @@ def _run_tests(
     docker_compose_path: str,
     pytest_path: str = "",
     analytics_opt_out: bool = False,
+    split_args: str = "",
 ) -> None:
     """
     Runs unit tests against the specified datastores
@@ -311,7 +314,7 @@ def _run_tests(
     )
     coverage_arg = "--cov-report=xml"
     _run_cmd_or_err(
-        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} uv run --python /opt/fides/bin/python pytest {coverage_arg} {pytest_path}"
+        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} uv run --python /opt/fides/bin/python pytest {coverage_arg} {split_args} {pytest_path}"
     )
 
     # Now tear down the infrastructure
