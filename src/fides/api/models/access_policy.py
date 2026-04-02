@@ -18,8 +18,6 @@ class AccessPolicy(Base):
 
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    # Comma-separated control group keys, e.g. "eea_uk_gdpr,us_glba_ccpa"
-    controls = Column(String, nullable=True)
     enabled = Column(Boolean, nullable=False, default=True, server_default="t")
     is_deleted = Column(Boolean, nullable=False, default=False, server_default="f")
 

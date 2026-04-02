@@ -3375,8 +3375,6 @@ dataset:
         data_categories: [system.operations]
       - name: description
         data_categories: [system.operations]
-      - name: controls
-        data_categories: [system.operations]
       - name: enabled
         data_categories: [system.operations]
       - name: is_deleted
