@@ -1,4 +1,4 @@
-import { Button, Space, Text } from "fidesui";
+import { Button, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
@@ -13,11 +13,9 @@ const AccessPoliciesPage: NextPage = () => {
       <PageHeader
         heading="Access policies"
         rightContent={
-          <Space>
-            <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
-              <Button type="primary">New policy</Button>
-            </NextLink>
-          </Space>
+          <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
+            <Button type="primary">New policy</Button>
+          </NextLink>
         }
         isSticky
       >
