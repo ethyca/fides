@@ -1,8 +1,9 @@
 import type { Identifier, XYCoord } from "dnd-core";
 import { Button, Dropdown, Icons, Switch, Table, Tag, Text } from "fidesui";
 import NextLink from "next/link";
-import React, { useCallback, useRef } from "react";
-import { useDrag, useDrop } from "react-dnd";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 import { ControlGroup } from "./access-policies.slice";
 import { AccessPolicyListItem } from "./types";
@@ -11,6 +12,7 @@ const ROW_TYPE = "PolicyTableRow";
 
 interface DragItem {
   index: number;
+  originalIndex: number;
   id: string;
   type: string;
 }
@@ -18,12 +20,18 @@ interface DragItem {
 interface DraggableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   index: number;
   moveRow: (dragIndex: number, hoverIndex: number) => void;
+  onRowDragEnd: (
+    originalIndex: number,
+    finalIndex: number,
+    dropped: boolean,
+  ) => void;
   "data-row-key"?: string;
 }
 
 const DraggableRow = ({
   index,
   moveRow,
+  onRowDragEnd,
   className,
   style,
   children,
@@ -65,19 +73,22 @@ const DraggableRow = ({
       }
 
       moveRow(dragIndex, hoverIndex);
-      Object.assign(item, { index: hoverIndex });
+      // eslint-disable-next-line no-param-reassign
+      item.index = hoverIndex;
     },
   });
 
   const [{ isDragging }, drag] = useDrag({
     type: ROW_TYPE,
-    item: () => ({ id: rowKey, index }),
+    item: () => ({ id: rowKey, index, originalIndex: index }),
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      onRowDragEnd(item.originalIndex, item.index, monitor.didDrop());
+    },
   });
 
-  // Make the row both the drag source and drop target (same pattern as DraggableColumnList)
   drag(drop(ref));
 
   return (
@@ -146,9 +157,38 @@ const PoliciesTable = ({
     controlGroups.map((cg) => [cg.key, cg.label]),
   );
 
-  const moveRow = useCallback(
-    (dragIndex: number, hoverIndex: number) => {
-      onReorder(policies, dragIndex, hoverIndex);
+  // Local state drives the visible order during drag; only synced from props
+  // when not dragging so in-flight visual reorders aren't overwritten.
+  const [localPolicies, setLocalPolicies] = useState(policies);
+  const isDraggingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isDraggingRef.current) {
+      setLocalPolicies(policies);
+    }
+  }, [policies]);
+
+  // Called on every hover crossing — updates visual order only, no API calls.
+  const moveRow = useCallback((dragIndex: number, hoverIndex: number) => {
+    isDraggingRef.current = true;
+    setLocalPolicies((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex, 1);
+      next.splice(hoverIndex, 0, moved);
+      return next;
+    });
+  }, []);
+
+  // Called once when drag ends — fires the API only if position actually changed.
+  const handleDragEnd = useCallback(
+    (originalIndex: number, finalIndex: number, dropped: boolean) => {
+      isDraggingRef.current = false;
+      if (!dropped || originalIndex === finalIndex) {
+        // Drag was cancelled or dropped in the same spot — reset visual state.
+        setLocalPolicies(policies);
+        return;
+      }
+      onReorder(policies, originalIndex, finalIndex);
     },
     [policies, onReorder],
   );
@@ -282,24 +322,27 @@ const PoliciesTable = ({
   ];
 
   return (
-    <Table
-      dataSource={policies}
-      columns={columns}
-      rowKey="id"
-      loading={isLoading}
-      pagination={false}
-      components={{
-        body: {
-          row: DraggableRow,
-        },
-      }}
-      onRow={(_, index) =>
-        ({
-          index,
-          moveRow,
-        }) as React.HTMLAttributes<HTMLTableRowElement>
-      }
-    />
+    <DndProvider backend={HTML5Backend}>
+      <Table
+        dataSource={localPolicies}
+        columns={columns}
+        rowKey="id"
+        loading={isLoading}
+        pagination={false}
+        components={{
+          body: {
+            row: DraggableRow,
+          },
+        }}
+        onRow={(_, index) =>
+          ({
+            index,
+            moveRow,
+            onRowDragEnd: handleDragEnd,
+          }) as unknown as React.HTMLAttributes<HTMLTableRowElement>
+        }
+      />
+    </DndProvider>
   );
 };
 
