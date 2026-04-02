@@ -14,6 +14,7 @@ export type CollectionNodeData = {
   nodeType: "collection";
   isProtected?: boolean;
   isRoot?: boolean;
+  isHighlighted?: boolean;
   [key: string]: unknown;
 };
 
@@ -25,6 +26,7 @@ export type FieldNodeData = {
   nodeType: "field";
   isProtected?: boolean;
   hasChildren: boolean;
+  isHighlighted?: boolean;
   [key: string]: unknown;
 };
 
@@ -37,13 +39,29 @@ export interface ProtectedFieldsInfo {
 }
 
 /**
+ * Check if a data category matches any of the filter categories.
+ * Treats filter categories as prefixes: selecting "user" matches
+ * "user", "user.contact", "user.contact.address.city", etc.
+ */
+const categoryMatchesFilter = (
+  fieldCategory: string,
+  filterCategories: string[],
+): boolean =>
+  filterCategories.some(
+    (filter) =>
+      fieldCategory === filter || fieldCategory.startsWith(`${filter}.`),
+  );
+
+/**
  * Recursively check if a field or any of its descendants have any of the given categories.
  */
 const fieldMatchesCategories = (
   field: DatasetField,
   categories: string[],
 ): boolean => {
-  if (field.data_categories?.some((c) => categories.includes(c))) {
+  if (
+    field.data_categories?.some((c) => categoryMatchesFilter(c, categories))
+  ) {
     return true;
   }
   return (

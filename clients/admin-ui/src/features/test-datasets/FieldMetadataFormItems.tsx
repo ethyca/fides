@@ -17,6 +17,8 @@ export const DATA_TYPE_OPTIONS = [
   ...BASE_DATA_TYPES.map((t) => `${t}[]`),
 ].map((v) => ({ label: v, value: v }));
 
+// Only supported redact strategies per FidesMeta.redact: "" (none) or "name".
+// See src/fides/api/schemas/dataset.py FidesMeta if new strategies are added.
 export const REDACT_OPTIONS = [
   { label: "None", value: "" },
   { label: "name", value: "name" },

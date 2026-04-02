@@ -7,6 +7,7 @@ import {
   Icons,
   Select,
   Space,
+  Tag,
   Tooltip,
   Typography,
   useMessage,
@@ -88,11 +89,7 @@ const EditorSection = ({
         policyKey: currentPolicyKey,
       },
       {
-        skip:
-          isSaas ||
-          !connectionKey ||
-          !currentDataset?.fides_key ||
-          !currentPolicyKey,
+        skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
       },
     );
 
@@ -142,6 +139,10 @@ const EditorSection = ({
     }
   }, [currentDataset, isSaas]);
 
+  // Key-ordering stability: both savedDatasetJson and localDataset are produced
+  // through the same removeNulls → JSON.stringify path, so key order is consistent.
+  // If this assumption ever breaks (e.g., server returns keys in different order),
+  // replace with a structural deep-equal.
   const isDirty = useMemo(() => {
     if (!isSaas || !localDataset) {
       return false;
@@ -150,16 +151,10 @@ const EditorSection = ({
   }, [isSaas, localDataset]);
 
   useEffect(() => {
-    if (
-      !isSaas &&
-      currentPolicyKey &&
-      currentDataset?.fides_key &&
-      connectionKey
-    ) {
+    if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
       refetchReachability();
     }
   }, [
-    isSaas,
     currentPolicyKey,
     currentDataset?.fides_key,
     connectionKey,
@@ -273,9 +268,7 @@ const EditorSection = ({
     }
 
     await refetchDatasets();
-    if (!isSaas) {
-      await refetchReachability();
-    }
+    await refetchReachability();
   };
 
   const handleRefresh = async () => {
@@ -322,6 +315,20 @@ const EditorSection = ({
           />
         </Space>
         <Space>
+          {reachability && (
+            <Tooltip
+              title={
+                reachability.reachable
+                  ? "Dataset is reachable"
+                  : `Not reachable: ${getReachabilityMessage(reachability.details)}`
+              }
+              placement="bottom"
+            >
+              <Tag color={reachability.reachable ? "success" : "error"}>
+                {reachability.reachable ? "Reachable" : "Not reachable"}
+              </Tag>
+            </Tooltip>
+          )}
           {isDirty && (
             <Typography.Text type="warning" style={{ fontSize: 12 }}>
               Unsaved changes

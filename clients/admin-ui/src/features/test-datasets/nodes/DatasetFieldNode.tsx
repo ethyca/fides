@@ -33,7 +33,7 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
         inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
       />
       <Button
-        className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${!hasCategories && !nodeData.isProtected ? styles["button--no-categories"] : ""} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
+        className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${!hasCategories && !nodeData.isProtected ? styles["button--no-categories"] : ""} ${nodeData.isHighlighted ? styles["button--highlighted"] : ""}`}
         type="text"
       >
         <Icons.Column size={14} style={{ flexShrink: 0 }} />

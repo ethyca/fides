@@ -53,7 +53,7 @@ const useDatasetNodeLayout = ({
       }),
       edges,
     };
-  }, [nodes, edges, options]);
+  }, [nodes, edges, options.direction]);
 
   return layouted;
 };

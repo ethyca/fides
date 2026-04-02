@@ -386,7 +386,9 @@ export const ConnectorParameters = ({
   );
 
   const handleTestDatasetsClick = () => {
-    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
+    if (connectionConfig?.key) {
+      router.push(`/integrations/${connectionConfig.key}/edit-dataset`);
+    }
   };
 
   const {

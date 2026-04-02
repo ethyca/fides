@@ -32,7 +32,7 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
         inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
       />
       <Button
-        className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
+        className={`${styles.button} ${getNodeHoverClass(hoverStatus)} ${nodeData.isHighlighted ? styles["button--highlighted"] : ""}`}
         type="text"
       >
         <Icons.Table size={14} style={{ flexShrink: 0 }} />

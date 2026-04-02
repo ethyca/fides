@@ -9,7 +9,7 @@ import {
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
@@ -29,7 +29,6 @@ import { useJiraAuthorization } from "~/features/integrations/hooks/useJiraAutho
 import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
-import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
@@ -162,17 +161,6 @@ const IntegrationDetailView: NextPage = () => {
     supportsSystemLinking,
   });
 
-  const { data: systemLinksData } = useGetSystemLinksQuery(id, {
-    skip: !id,
-  });
-
-  const linkedSystemFidesKey = useMemo(() => {
-    if (!systemLinksData || systemLinksData.length === 0) {
-      return undefined;
-    }
-    return systemLinksData[0].system_fides_key;
-  }, [systemLinksData]);
-
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: tabs.map((tab) => tab.key),
   });
@@ -208,19 +196,15 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
         rightContent={
-          linkedSystemFidesKey ? (
-            <Button
-              icon={<Icons.Edit />}
-              onClick={() =>
-                router.push(
-                  `/systems/configure/${linkedSystemFidesKey}/test-datasets`,
-                )
-              }
-              data-testid="edit-dataset-btn"
-            >
-              Edit dataset
-            </Button>
-          ) : undefined
+          <Button
+            icon={<Icons.Edit />}
+            onClick={() =>
+              router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${id}/edit-dataset`)
+            }
+            data-testid="edit-dataset-btn"
+          >
+            Edit dataset
+          </Button>
         }
       />
       <Row wrap={false} gutter={24}>

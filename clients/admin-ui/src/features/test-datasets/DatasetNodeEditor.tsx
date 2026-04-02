@@ -123,11 +123,26 @@ const DatasetNodeEditorInner = ({
   const [yamlPanelOpen, setYamlPanelOpen] = useState(false);
   const [yamlContent, setYamlContent] = useState("");
   const [yamlError, setYamlError] = useState<string | null>(null);
-  // Tracks who initiated the last change to prevent sync loops
+  // Tracks who initiated the last change to prevent sync loops between the
+  // YAML panel and the graph. When YAML onChange fires, this is set to "yaml"
+  // so the dataset→YAML sync effect skips the redundant re-dump. Under rapid
+  // typing, a second debounced onDatasetChange may arrive after the ref is
+  // cleared, causing one extra (but idempotent) YAML re-dump — this is cosmetic.
   const changeSourceRef = useRef<"graph" | "yaml" | null>(null);
   const yamlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const yamlEditorRef = useRef<MonacoEditor | null>(null);
   const yamlDecorationsRef = useRef<MonacoDecorationsCollection | null>(null);
+
+  // Clean up YAML debounce timer on unmount to prevent firing against
+  // an unmounted component if the user navigates away while typing.
+  useEffect(
+    () => () => {
+      if (yamlDebounceRef.current) {
+        clearTimeout(yamlDebounceRef.current);
+      }
+    },
+    [],
+  );
 
   const highlightNode = useCallback((nodeId: string) => {
     if (highlightTimerRef.current) {

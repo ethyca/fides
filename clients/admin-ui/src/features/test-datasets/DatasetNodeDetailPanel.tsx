@@ -124,7 +124,11 @@ const DatasetNodeDetailPanel = ({
     [nodeData, onUpdateCollection, onUpdateField],
   );
 
-  // Flush pending debounced update when the panel closes
+  // Flush pending debounced update when the panel closes.
+  // flushUpdate captures nodeData via its closure from the last render before
+  // open flipped to false — this is intentional. Do NOT add nodeData to the
+  // deps array; doing so would cause a spurious flush with stale/null data
+  // when the panel re-opens for a different node.
   useEffect(() => {
     if (!open && debounceRef.current) {
       clearTimeout(debounceRef.current);
