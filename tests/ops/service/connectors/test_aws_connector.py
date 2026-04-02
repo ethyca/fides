@@ -25,6 +25,7 @@ def aws_connection_config(db):
             "auth_method": "secret_keys",
             "aws_access_key_id": "AKIAIOSFODNN7EXAMPLE",
             "aws_secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+            "aws_assume_role_arn": "arn:aws:iam::123456789012:role/MyRole",
         },
     )
     config.save(db)
@@ -32,6 +33,21 @@ def aws_connection_config(db):
 
 
 class TestAWSConnector:
+    def test_create_client(self, aws_connection_config):
+        """create_client passes secrets and auth_method to get_aws_session."""
+        connector = AWSConnector(aws_connection_config)
+        mock_session = MagicMock()
+        with patch(
+            "fides.api.service.connectors.aws_connector.get_aws_session",
+            return_value=mock_session,
+        ) as mock_get_session:
+            result = connector.create_client()
+        kwargs = mock_get_session.call_args.kwargs
+        assert kwargs["auth_method"] == "secret_keys"
+        assert kwargs["storage_secrets"]["aws_access_key_id"] == "AKIAIOSFODNN7EXAMPLE"
+        assert kwargs["assume_role_arn"] == "arn:aws:iam::123456789012:role/MyRole"
+        assert result is mock_session
+
     def test_test_connection_success(self, aws_connection_config):
         """test_connection returns succeeded when sts:GetCallerIdentity succeeds."""
         connector = AWSConnector(aws_connection_config)
