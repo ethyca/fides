@@ -29,7 +29,7 @@ const RegulationsPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Regulations" data-testid="regulation-management">
+    <Layout title="Regulations">
       <PageHeader heading="Regulations" />
       <Text pb={6} fontSize="sm" maxWidth="600px">
         Select the regulations that apply to your organizations compliance
