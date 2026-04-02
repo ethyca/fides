@@ -77,6 +77,8 @@ class OnePasswordClient:
     @staticmethod
     def _item_to_dict(item: Any) -> Dict[str, Any]:
         """Convert a 1Password SDK item object to a plain dict."""
+        # id, title, category are always present per SDK contract;
+        # notes was added in SDK 0.3.0 so we use getattr for compat
         item_dict: Dict[str, Any] = {
             "id": item.id,
             "title": item.title,

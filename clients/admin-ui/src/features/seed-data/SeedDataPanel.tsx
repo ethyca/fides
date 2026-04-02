@@ -197,7 +197,10 @@ const SeedDataPanel = () => {
     [resolvedTasks],
   );
 
-  const overrideCount = Object.keys(taskOverrides).length;
+  const overrideCount = useMemo(
+    () => Object.keys(taskOverrides).length,
+    [taskOverrides],
+  );
 
   const handleToggle = useCallback(
     (key: keyof SeedTasksConfig) => {
