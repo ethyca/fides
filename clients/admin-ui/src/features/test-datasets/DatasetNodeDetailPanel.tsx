@@ -36,6 +36,7 @@ interface DatasetNodeDetailPanelProps {
     fieldPath: string,
     updates: Partial<DatasetField>,
   ) => void;
+  allowNameEditing?: boolean;
 }
 
 const DatasetNodeDetailPanel = ({
@@ -44,6 +45,7 @@ const DatasetNodeDetailPanel = ({
   nodeData,
   onUpdateCollection,
   onUpdateField,
+  allowNameEditing = false,
 }: DatasetNodeDetailPanelProps) => {
   const [form] = Form.useForm();
   const modal = useModal();
@@ -90,7 +92,9 @@ const DatasetNodeDetailPanel = ({
       }
 
       const categories = allValues.data_categories as string[] | undefined;
+      const newName = allValues.name as string | undefined;
       const baseUpdates = {
+        ...(newName ? { name: newName } : {}),
         description: (allValues.description as string) || undefined,
         data_categories:
           categories && categories.length > 0 ? categories : undefined,
@@ -216,7 +220,7 @@ const DatasetNodeDetailPanel = ({
           size="small"
         >
           <Form.Item label="Name" name="name">
-            <Input disabled aria-label="Name" />
+            <Input disabled={!allowNameEditing} aria-label="Name" />
           </Form.Item>
 
           <Form.Item label="Description" name="description">
