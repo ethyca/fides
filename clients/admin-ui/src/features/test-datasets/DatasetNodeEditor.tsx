@@ -91,6 +91,10 @@ const DatasetNodeEditorInner = ({
   const reactFlowInstance = useReactFlow();
   const reactFlowRef = useRef<HTMLDivElement>(null);
 
+  // Keep a ref to the latest dataset so modal callbacks avoid stale closures
+  const datasetRef = useRef(dataset);
+  datasetRef.current = dataset;
+
   const [focusedCollection, setFocusedCollection] = useState<string | null>(
     null,
   );
