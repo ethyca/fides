@@ -24,6 +24,7 @@ class LoggerContextKeys(StrEnum):
     body = "body"
     collection = "collection"
     connection_key = "connection_key"
+    connector_type = "connector_type"
     error_details = "error_details"
     error_group = "error_group"
     method = "method"

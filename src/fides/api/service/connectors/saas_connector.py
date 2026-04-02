@@ -88,6 +88,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 else None
             ),
             LoggerContextKeys.connection_key: self.configuration.key,
+            LoggerContextKeys.connector_type: self.saas_config.type,
         }
 
     def __init__(self, configuration: ConnectionConfig):
