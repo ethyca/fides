@@ -25,7 +25,7 @@ import {
   useGetDatasetReachabilityQuery,
   usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { ConnectionType, Dataset } from "~/types/api";
+import { ConnectionType, Dataset, DatasetFieldWarning } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -205,7 +205,8 @@ const EditorSection = ({
       }
     }
 
-    let saasWarnings: Array<{ message: string }> = [];
+    let saasWarnings: DatasetFieldWarning[] = [];
+    let succeededDataset: Dataset | undefined;
 
     if (isSaas) {
       const result = await patchConnectionDatasets({
@@ -224,7 +225,7 @@ const EditorSection = ({
         return;
       }
 
-      const succeededDataset = result.data?.succeeded?.[0];
+      succeededDataset = result.data?.succeeded?.[0];
       if (succeededDataset) {
         dispatch(
           setCurrentDataset({
@@ -268,8 +269,7 @@ const EditorSection = ({
     }
 
     if (isSaas) {
-      const savedData = localDataset;
-      savedDatasetJson.current = JSON.stringify(removeNulls(savedData));
+      savedDatasetJson.current = JSON.stringify(removeNulls(succeededDataset));
     }
 
     await refetchDatasets();

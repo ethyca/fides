@@ -1,4 +1,5 @@
 import "@xyflow/react/dist/style.css";
+import "~/features/test-datasets/DatasetNodeEditor.module.scss";
 
 import type { OnMount } from "@monaco-editor/react";
 import {
@@ -252,10 +253,7 @@ const DatasetNodeEditorInner = ({
         const [, indent, name] = nameMatch;
         const indentLevel = indent.length;
 
-        if (
-          collectionIndent !== null &&
-          indentLevel <= collectionIndent
-        ) {
+        if (collectionIndent !== null && indentLevel <= collectionIndent) {
           currentCollection = name;
           fieldStack.length = 0;
         } else {
@@ -316,34 +314,6 @@ const DatasetNodeEditorInner = ({
   useEffect(() => {
     applyYamlDecorations();
   }, [applyYamlDecorations]);
-
-  // Inject immutable-line style with ref-counting so concurrent instances
-  // don't remove the style while another component still needs it.
-  useEffect(() => {
-    const styleId = "immutable-line-style";
-    let style = document.getElementById(styleId) as HTMLStyleElement | null;
-    if (!style) {
-      style = document.createElement("style");
-      style.id = styleId;
-      style.textContent = ".immutable-line { opacity: 0.5; }";
-      style.dataset.refCount = "0";
-      document.head.appendChild(style);
-    }
-    style.dataset.refCount = String(
-      Number(style.dataset.refCount || "0") + 1,
-    );
-    return () => {
-      const el = document.getElementById(styleId) as HTMLStyleElement | null;
-      if (el) {
-        const count = Number(el.dataset.refCount || "1") - 1;
-        if (count <= 0) {
-          el.remove();
-        } else {
-          el.dataset.refCount = String(count);
-        }
-      }
-    };
-  }, []);
 
   const availableCategories = useMemo(
     () => collectDatasetCategories(dataset),
