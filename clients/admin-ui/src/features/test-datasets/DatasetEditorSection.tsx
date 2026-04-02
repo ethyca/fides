@@ -126,6 +126,10 @@ const EditorSection = ({
     }
   }, [currentDataset, isSaas]);
 
+  // Key-ordering stability: both savedDatasetJson and localDataset are produced
+  // through the same removeNulls → JSON.stringify path, so key order is consistent.
+  // If this assumption ever breaks (e.g., server returns keys in different order),
+  // replace with a structural deep-equal.
   const isDirty = useMemo(() => {
     if (!isSaas || !localDataset) {
       return false;

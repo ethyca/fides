@@ -12,6 +12,7 @@ export type CollectionNodeData = {
   nodeType: "collection";
   isProtected?: boolean;
   isRoot?: boolean;
+  isHighlighted?: boolean;
   [key: string]: unknown;
 };
 
@@ -23,6 +24,7 @@ export type FieldNodeData = {
   nodeType: "field";
   isProtected?: boolean;
   hasChildren: boolean;
+  isHighlighted?: boolean;
   [key: string]: unknown;
 };
 

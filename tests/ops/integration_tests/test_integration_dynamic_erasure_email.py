@@ -15,9 +15,6 @@ from fides.api.schemas.privacy_request import (
     CustomPrivacyRequestField,
     PrivacyRequestStatus,
 )
-from fides.api.service.connectors.dynamic_erasure_email_connector import (
-    DynamicErasureEmailConnectorException,
-)
 from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
@@ -519,13 +516,9 @@ async def test_erasure_email_invalid_dataset(
     assert pr.awaiting_email_send_at is not None
 
     # execute send email batch job without waiting for it to be scheduled
-    # we expect the job to raise an exception because the connector is misconfigured
-    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
-        send_email_batch.delay().get()
-        assert (
-            str(exc.value)
-            == "DatasetConfig with key nonexistent_dataset not found. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config."
-        )
+    # the connector is misconfigured, so the batch should report failure
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.email_send_failed
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
@@ -609,13 +602,9 @@ async def test_erasure_email_invalid_field(
     assert pr.awaiting_email_send_at is not None
 
     # execute send email batch job without waiting for it to be scheduled
-    # we expect the job to raise an exception because the connector is misconfigured
-    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
-        send_email_batch.delay().get()
-        assert (
-            str(exc.value)
-            == "Invalid dataset reference field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config."
-        )
+    # the connector is misconfigured, so the batch should report failure
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.email_send_failed
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
@@ -700,14 +689,9 @@ async def test_erasure_email_mismatched_datasets(
     assert pr.awaiting_email_send_at is not None
 
     # execute send email batch job without waiting for it to be scheduled
-    # we expect the job to raise an exception because the connector is misconfigured
-    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
-        send_email_batch.delay().get()
-
-    assert (
-        str(exc.value)
-        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different datasets for email and vendor fields. Erasure emails not sent."
-    )
+    # the connector is misconfigured, so the batch should report failure
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.email_send_failed
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
@@ -791,14 +775,9 @@ async def test_erasure_email_mismatched_collections(
     assert pr.awaiting_email_send_at is not None
 
     # execute send email batch job without waiting for it to be scheduled
-    # we expect the job to raise an exception because the connector is misconfigured
-    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
-        send_email_batch.delay().get()
-
-    assert (
-        str(exc.value)
-        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different collections for email and vendor fields. Erasure emails not sent."
-    )
+    # the connector is misconfigured, so the batch should report failure
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.email_send_failed
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
