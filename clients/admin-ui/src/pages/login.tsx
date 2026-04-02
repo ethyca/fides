@@ -161,7 +161,6 @@ const useLogin = () => {
     setIsSubmitting(true);
     try {
       let user;
-      setShowAnimation(true);
       if (isFromInvite) {
         user = await acceptInviteRequest({
           ...credentials,
@@ -170,6 +169,7 @@ const useLogin = () => {
       } else {
         user = await loginRequest(credentials).unwrap();
       }
+      setShowAnimation(true);
       dispatch(login(user));
     } catch (error) {
       setShowAnimation(false);
@@ -356,7 +356,7 @@ const Login: NextPage = () => {
                             animate={
                               showAnimation
                                 ? { width: ["100%", "32px"] }
-                                : undefined
+                                : { width: ["32px", "100%"] }
                             }
                           >
                             <Button
