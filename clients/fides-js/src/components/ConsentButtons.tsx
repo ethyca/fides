@@ -161,11 +161,11 @@ export const ConsentButtons = ({
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
         {includeBrandLink && <BrandLink />}
-        {isInModal && includeAttributionLink && (
+        {!isMobile && isInModal && includeAttributionLink && (
           <AttributionLink attribution={options.attribution!} />
         )}
       </div>
-      {!isInModal && includeAttributionLink && (
+      {(!isInModal || isMobile) && includeAttributionLink && (
         <div className="fides-attribution-row">
           <AttributionLink attribution={options.attribution!} />
         </div>
