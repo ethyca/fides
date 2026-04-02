@@ -1,36 +1,33 @@
-import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { useGetControlGroupsQuery } from "./access-policies.slice";
 import {
   useAccessPoliciesList,
   useAccessPolicyGroups,
+  usePoliciesFilters,
   useReorderPolicies,
   useTogglePolicyEnabled,
 } from "./hooks";
 import PoliciesGrid from "./PoliciesGrid";
 import PoliciesTable from "./PoliciesTable";
-import PoliciesToolbar, { ViewMode } from "./PoliciesToolbar";
+import PoliciesToolbar from "./PoliciesToolbar";
 
 const PoliciesContainer = () => {
-  const router = useRouter();
   const { policies, isLoading } = useAccessPoliciesList();
   const { data: controlGroups } = useGetControlGroupsQuery();
   const toggleEnabled = useTogglePolicyEnabled();
   const reorderPolicies = useReorderPolicies();
+  const {
+    searchQuery,
+    setSearchQuery,
+    controlFilter,
+    setControlFilter,
+    enabledFilter,
+    setEnabledFilter,
+    viewMode,
+    setViewMode,
+  } = usePoliciesFilters();
 
-  const viewMode: ViewMode = router.query.view === "table" ? "table" : "cards";
-
-  const setViewMode = (mode: ViewMode) => {
-    router.replace({ query: { ...router.query, view: mode } }, undefined, {
-      shallow: true,
-    });
-  };
-  const [searchQuery, setSearchQuery] = useState("");
-  const [controlFilter, setControlFilter] = useState<string | undefined>();
-  const [enabledFilter, setEnabledFilter] = useState<string | undefined>();
-
-  // Client-side filtering
   const filteredPolicies = useMemo(() => {
     let result = policies;
 

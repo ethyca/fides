@@ -5,9 +5,11 @@ import {
   ControlGroup,
   useGetAccessPoliciesQuery,
   useUpdateAccessPolicyMutation,
-} from "./access-policies.slice";
-import { extractPolicyFields, updateYamlField } from "./policy-yaml";
-import { AccessPolicyListItem } from "./types";
+} from "../access-policies.slice";
+import { extractPolicyFields, updateYamlField } from "../policy-yaml";
+import { AccessPolicyListItem } from "../types";
+
+export { usePoliciesFilters } from "./usePoliciesFilters";
 
 /**
  * Enrich an AccessPolicy with fields parsed from its YAML.
@@ -83,11 +85,7 @@ export const useTogglePolicyEnabled = () => {
     if (!policy.yaml) {
       return;
     }
-    const updatedYaml = updateYamlField(
-      policy.yaml,
-      "enabled",
-      !policy.enabled,
-    );
+    const updatedYaml = updateYamlField(policy.yaml, "enabled", !policy.enabled);
     updatePolicy({ id: policy.id, yaml: updatedYaml });
   };
 };
