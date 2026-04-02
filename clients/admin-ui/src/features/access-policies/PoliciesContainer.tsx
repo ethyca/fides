@@ -118,9 +118,6 @@ const PoliciesContainer = () => {
           controlGroups={controlGroups ?? []}
           onToggle={toggleEnabled}
           onReorder={reorderPolicies}
-          onEdit={handleEdit}
-          onDuplicate={handleDuplicate}
-          onDelete={handleDelete}
           isLoading={isLoading}
         />
       )}

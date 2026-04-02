@@ -1,20 +1,11 @@
 import type { Identifier, XYCoord } from "dnd-core";
-import {
-  Button,
-  Dropdown,
-  Flex,
-  Icons,
-  Switch,
-  Table,
-  Tag,
-  Text,
-} from "fidesui";
-import NextLink from "next/link";
+import { Flex, Icons, Switch, Table, Tag, Text } from "fidesui";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 
 import { ControlGroup } from "./access-policies.slice";
@@ -150,9 +141,6 @@ interface PoliciesTableProps {
     fromIndex: number,
     toIndex: number,
   ) => void;
-  onEdit: (policy: AccessPolicyListItem) => void;
-  onDuplicate: (policy: AccessPolicyListItem) => void;
-  onDelete: (policy: AccessPolicyListItem) => void;
   isLoading: boolean;
 }
 
@@ -161,9 +149,6 @@ const PoliciesTable = ({
   controlGroups,
   onToggle,
   onReorder,
-  onEdit,
-  onDuplicate,
-  onDelete,
   isLoading,
 }: PoliciesTableProps) => {
   const controlGroupMap = new Map(
@@ -237,9 +222,9 @@ const PoliciesTable = ({
       width: 220,
       ellipsis: true,
       render: (_: unknown, record: AccessPolicyListItem) => (
-        <NextLink href={`/access-policies/edit/${record.id}`}>
-          <Text strong>{record.name}</Text>
-        </NextLink>
+        <LinkCell href={`/access-policies/edit/${record.id}`}>
+          {record.name}
+        </LinkCell>
       ),
     },
     {
@@ -302,43 +287,6 @@ const PoliciesTable = ({
         <Text size="sm" type="secondary">
           {formatRelativeTime(text)}
         </Text>
-      ),
-    },
-    {
-      title: "",
-      key: "actions",
-      width: 48,
-      render: (_: unknown, record: AccessPolicyListItem) => (
-        <Dropdown
-          menu={{
-            items: [
-              {
-                key: "edit",
-                label: "Edit",
-                onClick: () => onEdit(record),
-              },
-              {
-                key: "duplicate",
-                label: "Duplicate",
-                onClick: () => onDuplicate(record),
-              },
-              {
-                key: "delete",
-                label: "Delete",
-                danger: true,
-                onClick: () => onDelete(record),
-              },
-            ],
-          }}
-          trigger={["click"]}
-        >
-          <Button
-            aria-label="Policy actions"
-            type="text"
-            size="small"
-            icon={<Icons.OverflowMenuVertical />}
-          />
-        </Dropdown>
       ),
     },
   ];
