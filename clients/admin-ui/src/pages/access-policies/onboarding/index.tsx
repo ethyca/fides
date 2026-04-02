@@ -1,27 +1,28 @@
-import { Button, Space, Text } from "fidesui";
+import { Button, Text } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
+import { useState } from "react";
 
 import OnboardingForm from "~/features/access-policies/OnboardingForm";
 import Layout from "~/features/common/Layout";
-import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const AccessPoliciesOnboardingPage: NextPage = () => {
+  const [canGenerate, setCanGenerate] = useState(false);
+
   return (
     <Layout title="Policy configuration">
       <PageHeader
         heading="Policy configuration"
         isSticky={false}
         rightContent={
-          <Space>
-            <NextLink href={ACCESS_POLICIES_ROUTE} passHref>
-              <Button>View policies</Button>
-            </NextLink>
-            <NextLink href={ACCESS_POLICIES_ROUTE} passHref>
-              <Button type="primary">Generate policies</Button>
-            </NextLink>
-          </Space>
+          <Button
+            type="primary"
+            form="onboarding-form"
+            htmlType="submit"
+            disabled={!canGenerate}
+          >
+            Generate policies
+          </Button>
         }
       >
         <div className="max-w-3xl">
@@ -34,7 +35,7 @@ const AccessPoliciesOnboardingPage: NextPage = () => {
         </div>
       </PageHeader>
       <div className="mt-6">
-        <OnboardingForm />
+        <OnboardingForm onCanGenerateChange={setCanGenerate} />
       </div>
     </Layout>
   );

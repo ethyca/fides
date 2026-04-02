@@ -3,8 +3,7 @@ export interface SelectOption {
   value: string;
 }
 
-export interface DataUseOption {
-  id: string;
+export interface DataUseDisplayInfo {
   title: string;
   iconName: string;
 }
@@ -13,40 +12,19 @@ export interface OnboardingFormState {
   industry: string | null;
   geographies: string[];
   selectedDataUses: string[];
-  policyUrl: string;
 }
 
 export interface OnboardingDataUsesResponse {
-  items: DataUseOption[];
+  items: string[];
 }
 
-export interface PrivacyPolicySubmission {
-  url?: string;
-  filename?: string;
+export interface OnboardingConfigResponse {
+  industry: string;
+  geographies: string[];
 }
 
-export interface PrivacyPolicyResponse {
-  status: "received";
-  source: "url" | "document";
-}
-
-export interface PolicyItem {
-  id: string;
-  title: string;
-  description: string;
-  isRecommendation: boolean;
-  isNew?: boolean;
-  isEnabled: boolean;
-  violationCount: number;
-  dataUseTags: string[];
-  lastUpdated: string;
-}
-
-export interface PolicyCategory {
-  id: string;
-  title: string;
-  drivenBy: string;
-  policies: PolicyItem[];
+export interface GeneratePoliciesResponse {
+  status: "success" | "error";
 }
 
 export enum ActionType {

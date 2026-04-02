@@ -1,7 +1,8 @@
 import { baseApi } from "~/features/common/api.slice";
 import type {
+  GeneratePoliciesResponse,
+  OnboardingConfigResponse,
   OnboardingDataUsesResponse,
-  PrivacyPolicyResponse,
 } from "./types";
 
 export interface ControlGroup {
@@ -83,23 +84,29 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Access Policy Control Groups"],
     }),
+    getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/config",
+      }),
+    }),
     getOnboardingDataUses: build.query<
       OnboardingDataUsesResponse,
       { industry: string; geographies?: string[] }
     >({
       query: ({ industry, geographies }) => ({
         method: "GET",
-        url: "plus/access-policy/onboarding/data-uses",
+        url: "plus/access-policy/data-uses",
         params: { industry, geographies },
       }),
-      providesTags: () => ["Access Policies"],
     }),
-    submitPrivacyPolicy: build.mutation<PrivacyPolicyResponse, FormData>({
+    generatePolicies: build.mutation<GeneratePoliciesResponse, FormData>({
       query: (body) => ({
         method: "POST",
-        url: "plus/access-policy/onboarding/privacy-policy",
+        url: "plus/access-policy/generate",
         body,
       }),
+      invalidatesTags: ["Access Policies"],
     }),
   }),
 });
@@ -111,6 +118,7 @@ export const {
   useUpdateAccessPolicyMutation,
   useDeleteAccessPolicyMutation,
   useGetControlGroupsQuery,
+  useGetOnboardingConfigQuery,
   useGetOnboardingDataUsesQuery,
-  useSubmitPrivacyPolicyMutation,
+  useGeneratePoliciesMutation,
 } = accessPoliciesApi;

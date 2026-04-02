@@ -8,6 +8,7 @@ import {
   ConstraintType,
   DataFlowDirection,
   DataFlowOperator,
+  DataUseDisplayInfo,
   GeoOperator,
   SelectOption,
 } from "./types";
@@ -21,13 +22,45 @@ export const INDUSTRY_OPTIONS: SelectOption[] = [
   { label: "Government", value: "government" },
 ];
 
-export const GEOGRAPHY_OPTIONS: SelectOption[] = [
-  { label: "EEA (European Economic Area)", value: "eea" },
-  { label: "United States", value: "us" },
-  { label: "United Kingdom", value: "uk" },
-  { label: "Asia-Pacific (APAC)", value: "apac" },
-  { label: "Global", value: "global" },
-];
+export const DATA_USE_DISPLAY: Record<string, DataUseDisplayInfo> = {
+  fraud_detection: { title: "Fraud Detection", iconName: "Security" },
+  credit_scoring: { title: "Credit Scoring", iconName: "ChartBar" },
+  marketing_analytics: { title: "Marketing Analytics", iconName: "Analytics" },
+  regulatory_reporting: {
+    title: "Regulatory Reporting",
+    iconName: "Building",
+  },
+  patient_care: { title: "Patient Care Coordination", iconName: "Health" },
+  clinical_research: { title: "Clinical Research", iconName: "Search" },
+  billing: { title: "Billing & Claims", iconName: "Receipt" },
+  population_health: {
+    title: "Population Health Analytics",
+    iconName: "Analytics",
+  },
+  personalization: { title: "Personalization", iconName: "UserProfile" },
+  inventory_analytics: {
+    title: "Inventory Analytics",
+    iconName: "ChartBar",
+  },
+  fraud_prevention: { title: "Fraud Prevention", iconName: "Security" },
+  product_analytics: { title: "Product Analytics", iconName: "Analytics" },
+  user_segmentation: {
+    title: "User Segmentation",
+    iconName: "GroupPresentation",
+  },
+  support_automation: { title: "Support Automation", iconName: "Chat" },
+  underwriting: { title: "Underwriting", iconName: "Document" },
+  claims_processing: { title: "Claims Processing", iconName: "Task" },
+  risk_assessment: { title: "Risk Assessment", iconName: "Warning" },
+  citizen_services: { title: "Citizen Services", iconName: "UserProfile" },
+  public_safety: { title: "Public Safety", iconName: "Security" },
+  benefits_admin: {
+    title: "Benefits Administration",
+    iconName: "Document",
+  },
+  records_management: { title: "Records Management", iconName: "Folder" },
+  customer_support: { title: "Customer Support", iconName: "Chat" },
+};
 
 interface RadioOption<T> {
   value: T;

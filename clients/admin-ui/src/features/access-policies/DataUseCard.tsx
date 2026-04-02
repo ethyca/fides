@@ -1,4 +1,6 @@
-import { Card, Icons } from "fidesui";
+import { antTheme, Card, Icons } from "fidesui";
+
+import { DATA_USE_DISPLAY } from "./constants";
 
 const ICON_MAP: Record<string, Icons.CarbonIconType> = {
   Security: Icons.Locked,
@@ -18,19 +20,16 @@ const ICON_MAP: Record<string, Icons.CarbonIconType> = {
 };
 
 interface DataUseCardProps {
-  title: string;
-  iconName: string;
+  dataUseId: string;
   isSelected: boolean;
   onClick: () => void;
 }
 
-const DataUseCard = ({
-  title,
-  iconName,
-  isSelected,
-  onClick,
-}: DataUseCardProps) => {
-  const IconComponent = ICON_MAP[iconName] ?? Icons.DataAnalytics;
+const DataUseCard = ({ dataUseId, isSelected, onClick }: DataUseCardProps) => {
+  const { token } = antTheme.useToken();
+  const display = DATA_USE_DISPLAY[dataUseId];
+  const title = display?.title ?? dataUseId;
+  const IconComponent = ICON_MAP[display?.iconName] ?? Icons.DataAnalytics;
 
   return (
     <Card
@@ -39,8 +38,8 @@ const DataUseCard = ({
       size="small"
       style={{
         cursor: "pointer",
-        borderColor: isSelected ? "var(--fidesui-success)" : undefined,
-        backgroundColor: isSelected ? "var(--fidesui-success-bg)" : undefined,
+        borderColor: isSelected ? token.colorSuccess : undefined,
+        backgroundColor: isSelected ? token.colorSuccessBg : undefined,
       }}
     >
       <div className="flex items-center justify-between">
@@ -51,7 +50,7 @@ const DataUseCard = ({
         {isSelected && (
           <Icons.CheckmarkFilled
             size={16}
-            style={{ color: "var(--fidesui-success)" }}
+            style={{ color: token.colorSuccess }}
           />
         )}
       </div>

@@ -4,7 +4,7 @@ import { rest } from "msw";
 import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
 
 import { mockAccessPolicies, mockControlGroups } from "./data";
-import { mockDataUses } from "./onboarding-data";
+import { mockDataUseIds } from "./onboarding-data";
 
 /**
  * MSW handlers for access policy endpoints
@@ -35,24 +35,40 @@ export const accessPoliciesHandlers = () => {
       );
     }),
 
-    // GET /api/v1/plus/access-policy/onboarding/data-uses - data uses by industry
-    // Must be registered before /:id to avoid the wildcard matching "onboarding"
+    // GET /api/v1/plus/access-policy/config - saved config (industry + geographies)
+    // Must be registered before /:id to avoid the wildcard matching "config"
     rest.get(
-      `${apiBase}/plus/access-policy/onboarding/data-uses`,
+      `${apiBase}/plus/access-policy/config`,
       (_req, res, ctx) => {
-        return res(ctx.status(200), ctx.json({ items: mockDataUses }));
+        return res(
+          ctx.status(200),
+          ctx.json({
+            industry: "fintech",
+            geographies: ["eea", "us"],
+          }),
+        );
       },
     ),
 
-    // POST /api/v1/plus/access-policy/onboarding/privacy-policy - submit policy doc or URL
+    // GET /api/v1/plus/access-policy/data-uses - data uses by industry
+    // Must be registered before /:id to avoid the wildcard matching "data-uses"
+    rest.get(
+      `${apiBase}/plus/access-policy/data-uses`,
+      (_req, res, ctx) => {
+        return res(ctx.status(200), ctx.json({ items: mockDataUseIds }));
+      },
+    ),
+
+    // POST /api/v1/plus/access-policy/generate - generate policies
+    // Accepts multipart/form-data with optional file + form fields
     rest.post(
-      `${apiBase}/plus/access-policy/onboarding/privacy-policy`,
-      async (req, res, ctx) => {
-        const contentType = req.headers.get("content-type") ?? "";
-        const source = contentType.includes("multipart") ? "document" : "url";
+      `${apiBase}/plus/access-policy/generate`,
+      (_req, res, ctx) => {
         return res(
           ctx.status(200),
-          ctx.json({ status: "received", source }),
+          ctx.json({
+            status: "success",
+          }),
         );
       },
     ),

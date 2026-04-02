@@ -268,3 +268,6 @@ multilang_migration_backup_*
 # Cline
 .cline/*
 .clinerules/*
+
+# Superpowers
+.superpowers/
