@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed Edit SSO Provider Save button being permanently disabled after creating a provider
+pr: 7739
+labels: []
