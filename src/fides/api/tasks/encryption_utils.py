@@ -2,7 +2,7 @@ import secrets
 from typing import Optional, Union
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
-from fides.api.util.cache import get_cache, get_encryption_cache_key
+from fides.api.util.cache import get_dsr_cache_store
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
@@ -19,15 +19,17 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     Returns:
         str: The encrypted data as a string
     """
-    cache = get_cache()
-    encryption_cache_key = get_encryption_cache_key(
-        privacy_request_id=request_id,
-        encryption_attr="key",
-    )
     if isinstance(data, bytes):
         data = data.decode(CONFIG.security.encoding)
 
-    encryption_key: Optional[str] = cache.get(encryption_cache_key)
+    store = get_dsr_cache_store(request_id)
+    raw = store.get_encryption("key")
+    if raw is None:
+        return data
+    if isinstance(raw, bytes):
+        encryption_key = raw.decode(CONFIG.security.encoding)
+    else:
+        encryption_key = str(raw)
     if not encryption_key:
         return data
 
