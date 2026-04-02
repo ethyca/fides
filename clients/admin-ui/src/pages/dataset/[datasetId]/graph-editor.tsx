@@ -161,6 +161,7 @@ const DatasetGraphEditorPage: NextPage = () => {
             dataset={localDataset}
             onDatasetChange={handleDatasetChange}
             allowAddCollection
+            allowNameEditing
           />
         ) : (
           <PageSpinner />
