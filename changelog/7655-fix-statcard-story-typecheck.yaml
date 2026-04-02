@@ -1,4 +1,0 @@
-type: Fixed
-description: Removed obsolete headerLayout prop from StatCard story to fix typecheck
-pr: 7655
-labels: []

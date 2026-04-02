@@ -8,6 +8,7 @@ from typing import Any, Dict
 
 from fides.api.models.connectionconfig import ConnectionConfig as ConnectionConfig
 from fides.api.models.connectionconfig import ConnectionType as ConnectionType
+from fides.api.service.connectors.aws_connector import AWSConnector as AWSConnector
 from fides.api.service.connectors.base_connector import BaseConnector as BaseConnector
 from fides.api.service.connectors.bigquery_connector import (
     BigQueryConnector as BigQueryConnector,
@@ -88,6 +89,7 @@ from fides.api.service.connectors.website_connector import WebsiteConnector
 
 supported_connectors: Dict[str, Any] = {
     ConnectionType.attentive_email.value: AttentiveConnector,
+    ConnectionType.aws.value: AWSConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
     ConnectionType.datahub.value: DatahubConnector,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailConnector,

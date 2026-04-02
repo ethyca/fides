@@ -37,6 +37,7 @@ class ConnectionType(enum.Enum):
     """
 
     attentive_email = "attentive_email"
+    aws = "aws"  # AWS for cloud infra discovery
     bigquery = "bigquery"
     datahub = "datahub"
     dynamodb = "dynamodb"
@@ -79,6 +80,7 @@ class ConnectionType(enum.Enum):
         """
         readable_mapping: dict[str, str] = {
             ConnectionType.attentive_email.value: "Attentive Email",
+            ConnectionType.aws.value: "Amazon Web Services",
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
@@ -128,6 +130,7 @@ class ConnectionType(enum.Enum):
 
         system_type_mapping: dict[str, SystemType] = {
             ConnectionType.attentive_email.value: SystemType.email,
+            ConnectionType.aws.value: SystemType.service,
             ConnectionType.bigquery.value: SystemType.database,
             ConnectionType.datahub.value: SystemType.data_catalog,
             ConnectionType.dynamic_erasure_email.value: SystemType.email,
@@ -300,6 +303,9 @@ class ConnectionConfig(Base):
     @property
     def authorized(self) -> bool:
         """Returns True if the connection config has an access token, used for OAuth2 connections"""
+
+        if self.connection_type == ConnectionType.jira_ticket:
+            return bool(self.secrets and "access_token" in self.secrets)
 
         saas_config = self.get_saas_config()
         if not saas_config:

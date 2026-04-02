@@ -85,6 +85,7 @@ class TestGetReadOnlyCache:
             read_only_ssl=None,  # Should fallback to writer ssl
             read_only_ssl_cert_reqs=None,  # Should fallback to writer ssl_cert_reqs
             read_only_ssl_ca_certs=None,  # Should fallback to writer ssl_ca_certs
+            read_only_ssl_check_hostname=None,  # Should fallback to writer ssl_check_hostname
         )
 
         # Replace the redis settings in config
@@ -155,6 +156,7 @@ class TestGetReadOnlyCache:
                 ssl=config.redis.read_only_ssl,
                 ssl_ca_certs=config.redis.read_only_ssl_ca_certs or None,
                 ssl_cert_reqs=config.redis.read_only_ssl_cert_reqs,
+                ssl_check_hostname=config.redis.read_only_ssl_check_hostname,
             )
             # FidesopsRedis(client) wraps the Redis client
             MockFidesopsRedis.assert_called_once()
@@ -250,6 +252,7 @@ class TestGetReadOnlyCache:
                 ssl=config.redis.ssl,
                 ssl_ca_certs=config.redis.ssl_ca_certs or None,
                 ssl_cert_reqs=config.redis.ssl_cert_reqs,
+                ssl_check_hostname=config.redis.ssl_check_hostname,
             )
             MockFidesopsRedis.assert_called_once()
             assert MockFidesopsRedis.call_args[0][0] == mock_client

@@ -1,11 +1,3 @@
-.spinWrapper {
-  height: 100%;
-
-  :global(.ant-spin-container) {
-    height: 100%;
-  }
-}
-
 .cardContainer {
   height: 100%;
   display: flex;
@@ -20,6 +12,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    position: relative;
   }
 }
 
@@ -43,6 +36,14 @@
     opacity: 1 !important;
     font-weight: inherit !important;
   }
+}
+
+.scoreOverlay {
+  position: absolute;
+  top: var(--ant-padding-lg, 24px);
+  left: var(--ant-padding-lg, 24px);
+  z-index: 1;
+  pointer-events: auto;
 }
 
 .clickableScore {
@@ -75,9 +76,5 @@
 }
 
 .radarTooltip {
-  border-radius: var(--ant-border-radius);
-  padding: var(--ant-padding-xs) var(--ant-padding-sm);
-  font-size: var(--ant-font-size-sm);
-  background-color: var(--ant-color-bg-elevated);
-  box-shadow: var(--ant-box-shadow);
+  font-size: var(--ant-font-size-sm, 12px);
 }

@@ -8,10 +8,6 @@ import warnings
 # Ignore the UserWarning from the Snowflake module to keep CLI output clean
 warnings.filterwarnings("ignore", category=UserWarning, module="snowflake")
 
-from importlib.metadata import version
-from platform import system
-
-from fideslog.sdk.python.client import AnalyticsClient
 from rich_click import Context, echo, group, option, pass_context, secho, version_option
 
 import fides
@@ -58,8 +54,6 @@ API_COMMANDS = [
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 VERSION = fides.__version__
-APP = fides.__name__
-PACKAGE = "ethyca-fides"
 
 
 @group(  # type: ignore
@@ -105,17 +99,6 @@ def cli(ctx: Context, config_path: str, local: bool) -> None:
     # Run the help command if no subcommand is passed
     if not command:
         echo(cli.get_help(ctx))
-
-    # Analytics requires explicit opt-in
-    no_analytics = config.user.analytics_opt_out
-    if not no_analytics:
-        ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
-            client_id=config.cli.analytics_id,
-            developer_mode=config.test_mode,
-            os=system(),
-            product_name=APP + "-cli",
-            production_version=version(PACKAGE),
-        )
 
     # Setting the config context after all mutations
     ctx.obj["CONFIG"] = config

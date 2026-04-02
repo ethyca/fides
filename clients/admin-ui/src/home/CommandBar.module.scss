@@ -1,10 +1,8 @@
 .scoreStatistic :global(.ant-statistic-content) {
-  font-size: var(--ant-font-size-lg);
   line-height: 1;
 }
 
 .diffStatistic :global(.ant-statistic-content) {
-  font-size: var(--ant-font-size-sm);
   font-weight: normal;
   line-height: 1;
   color: var(--ant-color-text-secondary);

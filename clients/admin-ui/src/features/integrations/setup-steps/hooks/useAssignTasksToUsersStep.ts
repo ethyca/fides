@@ -11,7 +11,9 @@ export const useAssignTasksToUsersStep = ({
   const { data: manualTaskConfig } = useGetManualTaskConfigQuery(
     { connectionKey: connection ? connection.key : "" },
     {
-      skip: !connection,
+      skip:
+        !connection ||
+        connectionOption?.identifier !== ConnectionType.MANUAL_TASK,
     },
   );
 
