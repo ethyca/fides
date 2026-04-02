@@ -12,6 +12,8 @@ import {
 } from "fidesui";
 import NextLink from "next/link";
 
+import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
+
 import { DECISION_LABELS } from "./constants";
 import styles from "./PolicyCard.module.scss";
 import { AccessPolicyListItem, ActionType } from "./types";
@@ -35,7 +37,10 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
               {/* legacyBehavior is required: Typography.Link renders <a>, and
                   Next.js 13 Link also renders <a> — without it we'd get nested anchors */}
               <NextLink
-                href={`/access-policies/edit/${policy.id}`}
+                href={{
+                  pathname: ACCESS_POLICY_EDIT_ROUTE,
+                  query: { id: policy.id },
+                }}
                 passHref
                 legacyBehavior
               >

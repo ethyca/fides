@@ -26,7 +26,7 @@ export const useTogglePolicyEnabled = () => {
       try {
         await updatePolicy({ id: policy.id, yaml: updatedYaml }).unwrap();
       } catch (error) {
-        message.error(getErrorMessage((error as RTKErrorResult["error"])));
+        message.error(getErrorMessage(error as RTKErrorResult["error"]));
       }
     },
     [updatePolicy, message],

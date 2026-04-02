@@ -12,6 +12,7 @@ import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
+import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 
@@ -120,7 +121,7 @@ const DraggableRow = ({
 };
 
 const DragHandle = () => (
-  <Icons.Draggable size={16} fill="var(--fidesui-neutral-500)" />
+  <Icons.Draggable size={16} color="var(--fidesui-neutral-500)" />
 );
 
 interface EditablePriorityCellProps {
@@ -186,7 +187,7 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
           [styles.visible]: isHovered,
         })}
       >
-        <Icons.Edit size={12} fill="var(--fidesui-neutral-500)" />
+        <Icons.Edit size={12} color="var(--fidesui-neutral-500)" />
       </button>
     </Flex>
   );
@@ -287,7 +288,12 @@ const PoliciesTable = ({
         width: 220,
         ellipsis: true,
         render: (_: unknown, record: AccessPolicyListItem) => (
-          <LinkCell href={`/access-policies/edit/${record.id}`}>
+          <LinkCell
+            href={{
+              pathname: ACCESS_POLICY_EDIT_ROUTE,
+              query: { id: record.id },
+            }}
+          >
             {record.name}
           </LinkCell>
         ),
