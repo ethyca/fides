@@ -13,7 +13,8 @@ import {
 import NextLink from "next/link";
 
 import { DECISION_LABELS } from "./constants";
-import { AccessPolicyListItem } from "./types";
+import styles from "./PolicyCard.module.scss";
+import { AccessPolicyListItem, ActionType } from "./types";
 import { formatRelativeTime } from "./utils";
 
 const { Link: LinkText } = Typography;
@@ -34,6 +35,8 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
           {/* Header */}
           <Flex justify="space-between" align="flex-start">
             <Flex gap="small" align="center" className="min-w-0">
+              {/* legacyBehavior is required: Typography.Link renders <a>, and
+                  Next.js 13 Link also renders <a> — without it we'd get nested anchors */}
               <NextLink
                 href={`/access-policies/edit/${policy.id}`}
                 passHref
@@ -43,7 +46,7 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
                   strong
                   ellipsis
                   variant="primary"
-                  className="!text-base"
+                  className={styles.policyName}
                 >
                   {policy.name}
                 </LinkText>
@@ -56,7 +59,11 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
                 </Tooltip>
               )}
               {policy.decision && (
-                <Tag color={policy.decision === "ALLOW" ? "success" : "error"}>
+                <Tag
+                  color={
+                    policy.decision === ActionType.ALLOW ? "success" : "error"
+                  }
+                >
                   {DECISION_LABELS[policy.decision] ?? policy.decision}
                 </Tag>
               )}

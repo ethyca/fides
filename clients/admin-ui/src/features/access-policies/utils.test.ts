@@ -17,12 +17,16 @@ describe("formatRelativeTime", () => {
   });
 
   it("returns hours ago for dates within the day", () => {
-    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const threeHoursAgo = new Date(
+      Date.now() - 3 * 60 * 60 * 1000,
+    ).toISOString();
     expect(formatRelativeTime(threeHoursAgo)).toBe("3h ago");
   });
 
   it("returns days ago for older dates", () => {
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const twoDaysAgo = new Date(
+      Date.now() - 2 * 24 * 60 * 60 * 1000,
+    ).toISOString();
     expect(formatRelativeTime(twoDaysAgo)).toBe("2d ago");
   });
 });

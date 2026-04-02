@@ -23,9 +23,12 @@ export const useReorderPolicies = () => {
 
       const insertAfterId = toIndex > 0 ? reordered[toIndex - 1].id : null;
       try {
-        await reorderPolicy({ id: moved.id, insert_after_id: insertAfterId }).unwrap();
+        await reorderPolicy({
+          id: moved.id,
+          insert_after_id: insertAfterId,
+        }).unwrap();
       } catch (error) {
-        message.error(getErrorMessage((error as RTKErrorResult["error"])));
+        message.error(getErrorMessage(error as RTKErrorResult["error"]));
       }
     },
     [reorderPolicy, message],

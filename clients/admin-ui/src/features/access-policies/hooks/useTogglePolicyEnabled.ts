@@ -15,6 +15,7 @@ export const useTogglePolicyEnabled = () => {
   return useCallback(
     async (policy: AccessPolicyListItem) => {
       if (!policy.yaml) {
+        message.warning("Policy YAML is unavailable — cannot update.");
         return;
       }
       const updatedYaml = updateYamlField(

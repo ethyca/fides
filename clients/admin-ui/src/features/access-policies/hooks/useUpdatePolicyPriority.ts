@@ -15,13 +15,14 @@ export const useUpdatePolicyPriority = () => {
   return useCallback(
     async (policy: AccessPolicyListItem, newPriority: number) => {
       if (!policy.yaml) {
+        message.warning("Policy YAML is unavailable — cannot update.");
         return;
       }
       const updatedYaml = updateYamlField(policy.yaml, "priority", newPriority);
       try {
         await updatePolicy({ id: policy.id, yaml: updatedYaml }).unwrap();
       } catch (error) {
-        message.error(getErrorMessage((error as RTKErrorResult["error"])));
+        message.error(getErrorMessage(error as RTKErrorResult["error"]));
       }
     },
     [updatePolicy, message],

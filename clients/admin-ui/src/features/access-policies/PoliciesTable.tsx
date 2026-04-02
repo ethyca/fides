@@ -254,108 +254,111 @@ const PoliciesTable = ({
     [policies, onReorder],
   );
 
-  const columns = [
-    {
-      title: "",
-      dataIndex: "drag",
-      key: "drag",
-      width: 50,
-      render: () => <DragHandle />,
-    },
-    {
-      title: (
-        <Flex align="center" gap="small">
-          #
-          <InfoTooltip label="Priority — policies are evaluated in this order" />
-        </Flex>
-      ),
-      dataIndex: "priority",
-      key: "priority",
-      width: 90,
-      render: (_: unknown, record: AccessPolicyListItem) => (
-        <EditablePriorityCell
-          value={record.priority}
-          onEdit={(newPriority) => onPriorityEdit(record, newPriority)}
-        />
-      ),
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      width: 220,
-      ellipsis: true,
-      render: (_: unknown, record: AccessPolicyListItem) => (
-        <LinkCell href={`/access-policies/edit/${record.id}`}>
-          {record.name}
-        </LinkCell>
-      ),
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      minWidth: 160,
-      ellipsis: true,
-      render: (text: string) => (
-        <Text size="sm" type="secondary">
-          {text}
-        </Text>
-      ),
-    },
-    {
-      title: "Controls",
-      dataIndex: "controls",
-      key: "controls",
-      width: 240,
-      render: (_: unknown, record: AccessPolicyListItem) => (
-        <TagExpandableCell
-          values={record.controls?.map((key) => ({
-            key,
-            label: controlGroupMap.get(key) ?? key,
-          }))}
-        />
-      ),
-    },
-    {
-      title: "Decision",
-      dataIndex: "decision",
-      key: "decision",
-      width: 100,
-      render: (_: unknown, record: AccessPolicyListItem) =>
-        record.decision ? (
-          <Tag
-            color={record.decision === ActionType.ALLOW ? "success" : "error"}
-          >
-            {DECISION_LABELS[record.decision] ?? record.decision}
-          </Tag>
-        ) : null,
-    },
-    {
-      title: "Enabled",
-      dataIndex: "enabled",
-      key: "enabled",
-      width: 80,
-      render: (_: unknown, record: AccessPolicyListItem) => (
-        <Switch
-          size="small"
-          checked={record.enabled}
-          onChange={() => onToggle(record)}
-        />
-      ),
-    },
-    {
-      title: "Updated",
-      dataIndex: "updated_at",
-      key: "updated_at",
-      width: 90,
-      render: (text: string) => (
-        <Text size="sm" type="secondary">
-          {formatRelativeTime(text)}
-        </Text>
-      ),
-    },
-  ];
+  const columns = useMemo(
+    () => [
+      {
+        title: "",
+        dataIndex: "drag",
+        key: "drag",
+        width: 50,
+        render: () => <DragHandle />,
+      },
+      {
+        title: (
+          <Flex align="center" gap="small">
+            #
+            <InfoTooltip label="Priority — policies are evaluated in this order" />
+          </Flex>
+        ),
+        dataIndex: "priority",
+        key: "priority",
+        width: 90,
+        render: (_: unknown, record: AccessPolicyListItem) => (
+          <EditablePriorityCell
+            value={record.priority}
+            onEdit={(newPriority) => onPriorityEdit(record, newPriority)}
+          />
+        ),
+      },
+      {
+        title: "Name",
+        dataIndex: "name",
+        key: "name",
+        width: 220,
+        ellipsis: true,
+        render: (_: unknown, record: AccessPolicyListItem) => (
+          <LinkCell href={`/access-policies/edit/${record.id}`}>
+            {record.name}
+          </LinkCell>
+        ),
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        minWidth: 160,
+        ellipsis: true,
+        render: (text: string) => (
+          <Text size="sm" type="secondary">
+            {text}
+          </Text>
+        ),
+      },
+      {
+        title: "Controls",
+        dataIndex: "controls",
+        key: "controls",
+        width: 240,
+        render: (_: unknown, record: AccessPolicyListItem) => (
+          <TagExpandableCell
+            values={record.controls?.map((key) => ({
+              key,
+              label: controlGroupMap.get(key) ?? key,
+            }))}
+          />
+        ),
+      },
+      {
+        title: "Decision",
+        dataIndex: "decision",
+        key: "decision",
+        width: 100,
+        render: (_: unknown, record: AccessPolicyListItem) =>
+          record.decision ? (
+            <Tag
+              color={record.decision === ActionType.ALLOW ? "success" : "error"}
+            >
+              {DECISION_LABELS[record.decision] ?? record.decision}
+            </Tag>
+          ) : null,
+      },
+      {
+        title: "Enabled",
+        dataIndex: "enabled",
+        key: "enabled",
+        width: 80,
+        render: (_: unknown, record: AccessPolicyListItem) => (
+          <Switch
+            size="small"
+            checked={record.enabled}
+            onChange={() => onToggle(record)}
+          />
+        ),
+      },
+      {
+        title: "Updated",
+        dataIndex: "updated_at",
+        key: "updated_at",
+        width: 90,
+        render: (text: string) => (
+          <Text size="sm" type="secondary">
+            {formatRelativeTime(text)}
+          </Text>
+        ),
+      },
+    ],
+    [controlGroupMap, onToggle, onPriorityEdit],
+  );
 
   return (
     <DndProvider backend={HTML5Backend}>
