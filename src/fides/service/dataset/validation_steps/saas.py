@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
+from pydantic import ValidationError as PydanticValidationError
 from fideslang.models import DatasetField
 from loguru import logger
 from fides.api.common_exceptions import SaaSConfigNotFoundException, ValidationError
@@ -48,7 +49,7 @@ def _validate_saas_dataset(
                 )
 
 
-_MUTABLE_DATASET_FIELDS = {"collections"}
+MUTABLE_DATASET_FIELDS = {"collections"}
 
 
 def _restore_immutable_fields(
@@ -65,7 +66,7 @@ def _restore_immutable_fields(
 
     warnings: List[DatasetFieldWarning] = []
     for field_name in dataset.model_fields:
-        if field_name in _MUTABLE_DATASET_FIELDS:
+        if field_name in MUTABLE_DATASET_FIELDS:
             continue
         existing_value = getattr(existing_dataset, field_name)
         incoming_value = getattr(dataset, field_name)
@@ -226,6 +227,20 @@ def _restore_protected_structure(
                     col_name,
                     dataset.fides_key,
                 )
+            else:
+                warnings.append(
+                    DatasetFieldWarning(
+                        collection=col_name,
+                        message=f"Collection '{col_name}' is missing but could not "
+                        f"be restored (not found in existing dataset).",
+                    )
+                )
+                logger.warning(
+                    "Collection '{}' missing from SaaS dataset '{}' "
+                    "and not found in existing dataset for restoration",
+                    col_name,
+                    dataset.fides_key,
+                )
     elif removed and not existing_dataset:
         for col_name in sorted(removed):
             warnings.append(
@@ -304,11 +319,18 @@ class SaaSValidationStep(DatasetValidationStep):
                 .filter(CtlDataset.fides_key == context.dataset.fides_key)
                 .first()
             )
-            existing_dataset = (
-                FideslangDataset.model_validate(existing_record)
-                if existing_record
-                else None
-            )
+            existing_dataset: Optional[FideslangDataset] = None
+            if existing_record:
+                try:
+                    existing_dataset = FideslangDataset.model_validate(
+                        existing_record
+                    )
+                except PydanticValidationError:
+                    logger.warning(
+                        "Could not parse existing dataset '{}' — "
+                        "proceeding without existing record for validation",
+                        context.dataset.fides_key,
+                    )
 
             # Restore immutable fields and protected structure instead of rejecting
             context.warnings.extend(

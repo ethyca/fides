@@ -84,7 +84,9 @@ class DatasetConfigService:
                     "dataset": dataset.model_dump(mode="json"),
                 }
 
-            # Validate dataset — SaaS validation may restore fields and produce warnings
+            # Validate dataset — SaaS validation may restore fields and produce warnings.
+            # For non-SaaS connections, SaaSValidationStep is a no-op (no existing
+            # SaaS config to compare against).
             validation_response = DatasetValidator(
                 self.db,
                 dataset_to_validate,
