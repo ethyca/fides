@@ -1,0 +1,4 @@
+type: Added
+description: Added monitor_aggregate_statistics table for pre-computed dashboard stats
+pr: 7808
+labels: ["db-migration"]

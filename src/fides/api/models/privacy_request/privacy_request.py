@@ -664,10 +664,7 @@ class PrivacyRequest(
         """Verify the identification code supplied by the user
         If verified, change the status of the request to "pending", and set the datetime the identity was verified.
         """
-        if not self.status in [
-            PrivacyRequestStatus.identity_unverified,
-            PrivacyRequestStatus.duplicate,
-        ]:
+        if self.status != PrivacyRequestStatus.identity_unverified:
             raise IdentityVerificationException(
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )

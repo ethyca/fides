@@ -132,6 +132,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         include_descendant_details?: boolean;
         diff_status?: DiffStatus[];
         child_staged_resource_urns?: string[];
+        include_total?: boolean;
       }
     >({
       query: ({
@@ -142,6 +143,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         include_descendant_details,
         diff_status,
         child_staged_resource_urns,
+        include_total,
       }) => {
         const urlParams = buildArrayQueryParams({
           diff_status,
@@ -155,6 +157,7 @@ const actionCenterApi = baseApi.injectEndpoints({
             include_descendant_details,
             cursor,
             size,
+            include_total,
           },
         };
       },
