@@ -11,6 +11,7 @@ export interface AccessPolicy {
   description?: string;
   controls?: string[];
   yaml?: string;
+  is_recommendation?: boolean;
   created_at?: string;
   updated_at?: string;
 }

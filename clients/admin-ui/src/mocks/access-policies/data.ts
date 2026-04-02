@@ -66,6 +66,7 @@ export const mockAccessPolicies: AccessPolicy[] = [
     description:
       "Limits access to Know Your Customer identity documents and verification records to compliance and onboarding teams only",
     controls: ["eea_uk_gdpr", "us_glba_ccpa"],
+    is_recommendation: true,
     yaml: "fides_key: kyc_data_role_restriction\nname: KYC Data Role Restriction\ndescription: Limits access to KYC identity documents\nenabled: true\npriority: 150\ncontrols:\n  - eea_uk_gdpr\n  - us_glba_ccpa\ndecision: DENY\nmatch:\n  data_use:\n    any:\n      - essential.service.payment_processing\n  data_category:\n    any:\n      - user.government_id\n      - user.financial\naction:\n  message: KYC data access restricted to compliance team.\n",
     created_at: "2024-04-01T09:00:00Z",
     updated_at: "2024-04-15T16:20:00Z",
@@ -96,6 +97,7 @@ export const mockAccessPolicies: AccessPolicy[] = [
     description:
       "Blocks downstream queries on customer profiles where consent preferences have not been recorded or have expired",
     controls: ["eea_uk_gdpr"],
+    is_recommendation: true,
     yaml: "fides_key: consent_gated_profiles\nname: Consent-Gated Profile Access\ndescription: Blocks queries on profiles without valid consent\nenabled: false\npriority: 350\ncontrols:\n  - eea_uk_gdpr\ndecision: DENY\nmatch:\n  data_use:\n    any:\n      - marketing\n      - marketing.advertising\nunless:\n  - type: consent\n    privacy_notice_key: marketing_consent\n    requirement: opt_in\naction:\n  message: User has not provided valid marketing consent.\n",
     created_at: "2024-04-20T14:00:00Z",
     updated_at: "2024-06-01T09:30:00Z",
@@ -136,6 +138,7 @@ export const mockAccessPolicies: AccessPolicy[] = [
     description:
       "Enforces opt-in consent requirements for marketing communications to Singapore-based data subjects under PDPA",
     controls: ["apac_pdpa_app"],
+    is_recommendation: true,
     yaml: "fides_key: sg_pdpa_marketing\nname: Singapore PDPA Marketing Consent\ndescription: PDPA marketing consent enforcement for Singapore\nenabled: true\npriority: 900\ncontrols:\n  - apac_pdpa_app\ndecision: DENY\nmatch:\n  data_use:\n    any:\n      - marketing\n      - marketing.communications\nunless:\n  - type: consent\n    privacy_notice_key: sg_marketing_consent\n    requirement: opt_in\n  - type: geo_location\n    field: environment.geo_location\n    operator: in\n    values:\n      - SG\naction:\n  message: Marketing to SG residents requires explicit PDPA consent.\n",
     created_at: "2024-07-01T07:00:00Z",
     updated_at: "2024-09-15T14:00:00Z",

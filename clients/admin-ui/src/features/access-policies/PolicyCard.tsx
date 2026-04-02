@@ -7,6 +7,7 @@ import {
   Switch,
   Tag,
   Text,
+  Tooltip,
   Typography,
 } from "fidesui";
 import NextLink from "next/link";
@@ -67,14 +68,18 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
                 </LinkText>
               </NextLink>
             </Flex>
-            {policy.decision && (
-              <Tag
-                color={policy.decision === "ALLOW" ? "success" : "error"}
-                className="shrink-0"
-              >
-                {DECISION_LABELS[policy.decision] ?? policy.decision}
-              </Tag>
-            )}
+            <Flex gap="small" align="center" className="shrink-0">
+              {policy.is_recommendation && (
+                <Tooltip title="Recommended by Fides based on your configuration">
+                  <Tag color="sandstone" hasSparkle />
+                </Tooltip>
+              )}
+              {policy.decision && (
+                <Tag color={policy.decision === "ALLOW" ? "success" : "error"}>
+                  {DECISION_LABELS[policy.decision] ?? policy.decision}
+                </Tag>
+              )}
+            </Flex>
           </Flex>
 
           {/* Description */}
