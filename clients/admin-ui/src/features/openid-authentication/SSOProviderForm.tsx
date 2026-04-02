@@ -235,11 +235,11 @@ const SSOProviderForm = ({
     if (isEditMode) {
       // Strip empty credential fields — the backend preserves existing encrypted
       // values when client_id / client_secret are absent from the payload.
-      const { client_id, client_secret, ...rest } = values;
+      const { client_id: clientId, client_secret: clientSecret, ...rest } = values;
       const payload = {
         ...rest,
-        ...(client_id ? { client_id } : {}),
-        ...(client_secret ? { client_secret } : {}),
+        ...(clientId ? { client_id: clientId } : {}),
+        ...(clientSecret ? { client_secret: clientSecret } : {}),
       };
       const result = await updateOpenIDProviderMutation(payload);
       handleResult(result);
