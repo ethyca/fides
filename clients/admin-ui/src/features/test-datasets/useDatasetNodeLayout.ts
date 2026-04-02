@@ -11,7 +11,7 @@ interface UseDatasetNodeLayoutProps {
 }
 
 // Horizontal gap between parent→child ranks; vertical gap between siblings
-const NODE_WIDTH = 300;
+const NODE_WIDTH = 400;
 const NODE_HEIGHT = 44;
 
 const layoutTree = tree<Node>();
