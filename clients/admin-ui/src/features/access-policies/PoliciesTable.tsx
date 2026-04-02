@@ -146,6 +146,7 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
     if (e.key === "Enter") {
       commit();
     } else if (e.key === "Escape") {
+      setInputValue(String(value));
       setIsEditing(false);
     }
   };
