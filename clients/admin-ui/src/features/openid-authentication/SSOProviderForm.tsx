@@ -74,6 +74,7 @@ export const getSSOProviderFormValidationSchema = (isEditMode: boolean) =>
     client_secret: isEditMode
       ? Yup.string().optional().label("Client Secret")
       : Yup.string().required().label("Client Secret"),
+    // nullable — the API type allows null for scopes so that the form save button is not disabled (Array<string> | null)
     scopes: Yup.array().of(Yup.string()).nullable().label("Scopes"),
     verify_email: Yup.boolean().optional().label("Verify Email"),
     verify_email_field: Yup.string()
@@ -234,13 +235,12 @@ const SSOProviderForm = ({
     if (isEditMode) {
       // Strip empty credential fields — the backend preserves existing encrypted
       // values when client_id / client_secret are absent from the payload.
-      const payload = { ...values };
-      if (!payload.client_id) {
-        delete payload.client_id;
-      }
-      if (!payload.client_secret) {
-        delete payload.client_secret;
-      }
+      const { client_id, client_secret, ...rest } = values;
+      const payload = {
+        ...rest,
+        ...(client_id ? { client_id } : {}),
+        ...(client_secret ? { client_secret } : {}),
+      };
       const result = await updateOpenIDProviderMutation(payload);
       handleResult(result);
     } else {
