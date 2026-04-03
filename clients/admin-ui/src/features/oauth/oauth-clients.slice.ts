@@ -13,10 +13,14 @@ export interface ClientCreateParams {
 }
 
 export interface ClientUpdateParams {
-  client_id: string;
-  name?: string;
-  description?: string;
-  scopes?: string[];
+  path: {
+    client_id: string;
+  };
+  body: {
+    name?: string;
+    description?: string;
+    scopes?: string[];
+  };
 }
 
 const oauthClientsApi = baseApi.injectEndpoints({
@@ -49,7 +53,7 @@ const oauthClientsApi = baseApi.injectEndpoints({
       invalidatesTags: ["OAuth Client"],
     }),
     updateOAuthClient: build.mutation<ClientResponse, ClientUpdateParams>({
-      query: ({ client_id, ...body }) => ({
+      query: ({ path: { client_id }, body }) => ({
         url: `oauth/client/${client_id}`,
         method: "PUT",
         body,
