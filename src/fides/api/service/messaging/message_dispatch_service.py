@@ -492,6 +492,19 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
                 }
             ),
         )
+    if action_type == MessagingActionType.PASSWORD_RESET:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Fides Password Reset",
+            body=base_template.render(
+                {
+                    "admin_ui_url": config_proxy.admin_ui.url,
+                    "username": body_params.username,
+                    "reset_token": body_params.reset_token,
+                    "ttl_minutes": body_params.ttl_minutes,
+                }
+            ),
+        )
     if action_type == MessagingActionType.EXTERNAL_USER_WELCOME:
         # Generate display name for personalization
         display_name = body_params.username
