@@ -3924,7 +3924,8 @@ dataset:
         data_categories: [user.unique_id]
       - name: is_default
         data_categories: [system.operations]
-<<<<<<< ENG-567_pr2-saas-config-version
+      - name: case_sensitive
+        data_categories: [system.operations]
   - name: saas_config_version
     fields:
       - name: id
@@ -3942,9 +3943,6 @@ dataset:
       - name: dataset
         data_categories: [system.operations]
       - name: is_custom
-=======
-      - name: case_sensitive
->>>>>>> main
         data_categories: [system.operations]
   - name: saas_template_dataset
     fields:
