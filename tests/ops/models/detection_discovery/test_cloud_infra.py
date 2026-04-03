@@ -76,13 +76,6 @@ class TestCloudInfraStagedResourceModel:
         assert len(results) == 1
         assert results[0].urn == urns[0]
 
-    def test_mark_as_addition(
-        self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
-    ) -> None:
-        create_cloud_infra_resource.diff_status = DiffStatus.MUTED.value
-        create_cloud_infra_resource.mark_as_addition(db)
-        assert create_cloud_infra_resource.diff_status == DiffStatus.ADDITION.value
-
     def test_unique_constraint_monitor_config_and_source_id(
         self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
     ) -> None:

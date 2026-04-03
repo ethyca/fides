@@ -612,16 +612,6 @@ class StagedResourceBase(Base):
         )
         return results.scalars().all()
 
-    def mark_as_addition(
-        self,
-        db: Session,
-        parent_resource_urns: Iterable[str] = (),
-    ) -> None:
-        """
-        Marks the resource as an addition
-        """
-        self.diff_status = DiffStatus.ADDITION.value
-
 
 class StagedResource(StagedResourceBase):
     """

@@ -3,7 +3,6 @@ from __future__ import annotations
 from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.mutable import MutableDict
 
 from fides.api.models.detection_discovery.core import StagedResourceBase
 
@@ -29,9 +28,7 @@ class CloudInfraStagedResource(StagedResourceBase):
     )
 
     service = Column(String, nullable=False)  # e.g. "s3", "rds"
-    tags = Column(
-        MutableDict.as_mutable(JSONB), nullable=True
-    )  # cloud resource tags/labels
+    tags = Column(JSONB, nullable=True)  # cloud resource tags/labels
     location = Column(
         String, nullable=False, index=True
     )  # region/zone, e.g. "us-east-1"
