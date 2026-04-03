@@ -3,7 +3,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import React, { useCallback, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import FixedLayout from "~/features/common/FixedLayout";
+import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { DatamapReportProvider } from "~/features/datamap/reporting/datamap-report-context";
 import { DatamapReportTable } from "~/features/datamap/reporting/DatamapReportTable";
@@ -25,16 +25,18 @@ const DatamapReportingPage = () => {
       />
     );
   }
+
   return (
-    <FixedLayout title="Datamap Report">
+    <Layout title="Datamap Report">
       <PageHeader
-        data-testid="datamap-report-heading"
         heading="Data map report"
+        data-testid="datamap-report-heading"
+        isSticky={false}
       />
       <DatamapReportProvider>
         <DatamapReportTable onError={onError} />
       </DatamapReportProvider>
-    </FixedLayout>
+    </Layout>
   );
 };
 

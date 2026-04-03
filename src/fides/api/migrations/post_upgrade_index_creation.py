@@ -248,6 +248,14 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "migration_key": "ix_stagedresource_leaf_true_monitor_status_urn",
         },
     ],
+    "privacy_preferences_current": [
+        {
+            "name": "idx_privacy_preferences_current_unique_identity",
+            "statement": "CREATE UNIQUE INDEX CONCURRENTLY idx_privacy_preferences_current_unique_identity ON privacy_preferences_current ((search_data->'identity'))",
+            "type": "index",
+            "migration_key": "idx_privacy_preferences_current_unique_identity",
+        },
+    ],
 }
 
 
