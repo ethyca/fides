@@ -58,7 +58,7 @@ const oauthClientsApi = baseApi.injectEndpoints({
         method: "PUT",
         body,
       }),
-      invalidatesTags: (_result, _error, { client_id }) => [
+      invalidatesTags: (_result, _error, { path: { client_id } }) => [
         "OAuth Client",
         { type: "OAuth Client", id: client_id },
       ],
