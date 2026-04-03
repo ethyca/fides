@@ -1,9 +1,3 @@
-export interface ScopeTreeNode {
-  key: string;
-  title: string;
-  children?: ScopeTreeNode[];
-}
-
 /**
  * Groups an array of `resource:action` scope strings by their resource prefix.
  *
