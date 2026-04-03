@@ -2,26 +2,20 @@ import Head from "common/Head";
 import Image from "common/Image";
 import {
   Button,
-  chakra,
-  ChakraBox as Box,
-  ChakraCenter as Center,
-  ChakraFlex as Flex,
-  ChakraHeading as Heading,
-  ChakraStack as Stack,
-  useChakraPrefersReducedMotion as usePrefersReducedMotion,
+  Card,
+  Divider,
+  Flex,
+  Form,
+  Input,
+  Typography,
   useMessage,
 } from "fidesui";
-import { Formik } from "formik";
-// Framer is bundled as part of chakra. TODO: had trouble with package.json's when
-// trying to make framer a first level dev dependency
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import * as Yup from "yup";
 
 import {
   login,
@@ -30,8 +24,7 @@ import {
   useGetAuthenticationMethodsQuery,
   useLoginMutation,
 } from "~/features/auth";
-import { CustomTextInput } from "~/features/common/form/inputs";
-import { passwordValidation } from "~/features/common/form/validation";
+import { usePrefersReducedMotion } from "~/features/common/hooks";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
@@ -70,7 +63,7 @@ const Animation = () => {
     },
   };
   return (
-    <Center position="absolute">
+    <Flex justify="center" align="center" className="absolute">
       <motion.svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 64 64"
@@ -94,14 +87,21 @@ const Animation = () => {
           }}
         />
       </motion.svg>
-    </Center>
+    </Flex>
   );
 };
 
+interface LoginFormValues {
+  username: string;
+  password: string;
+}
+
 const useLogin = () => {
+  const [form] = Form.useForm<LoginFormValues>();
   const [loginRequest] = useLoginMutation();
   const [acceptInviteRequest] = useAcceptInviteMutation();
   const [showAnimation, setShowAnimation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // If the user prefers no motion, don't show the animation
   const reduceMotion = usePrefersReducedMotion();
   const token = useSelector(selectToken);
@@ -110,19 +110,55 @@ const useLogin = () => {
   const dispatch = useDispatch();
   const { username, inviteCode, redirect } = parseQueryParam(router.query);
 
-  const initialValues = {
+  const initialValues: LoginFormValues = {
     username: username ?? "",
     password: "",
   };
 
   const isFromInvite = inviteCode !== undefined;
 
-  const onSubmit = async (values: typeof initialValues) => {
+  const usernameRules = useMemo(
+    () => [{ required: true, message: "Username is required" }],
+    [],
+  );
+
+  const passwordRules = useMemo(
+    () =>
+      isFromInvite
+        ? [
+            { required: true, message: "Password is required" },
+            {
+              min: 8,
+              message: "Password must have at least eight characters.",
+            },
+            {
+              pattern: /[0-9]/,
+              message: "Password must have at least one number.",
+            },
+            {
+              pattern: /[A-Z]/,
+              message: "Password must have at least one capital letter.",
+            },
+            {
+              pattern: /[a-z]/,
+              message: "Password must have at least one lowercase letter.",
+            },
+            {
+              pattern: /[\W_]/,
+              message: "Password must have at least one symbol.",
+            },
+          ]
+        : [{ required: true, message: "Password is required" }],
+    [isFromInvite],
+  );
+
+  const handleSubmit = async (values: LoginFormValues) => {
     const credentials = {
       username: values.username,
       password: values.password,
     };
 
+    setIsSubmitting(true);
     try {
       let user;
       if (isFromInvite) {
@@ -136,20 +172,16 @@ const useLogin = () => {
       setShowAnimation(true);
       dispatch(login(user));
     } catch (error) {
+      setShowAnimation(false);
       // eslint-disable-next-line no-console
       console.log(error);
       message.error(
         "Login failed. Please check your credentials and try again.",
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const validationSchema = Yup.object().shape({
-    username: Yup.string().required().label("Username"),
-    password: isFromInvite
-      ? passwordValidation.label("Password")
-      : Yup.string().required().label("Password"),
-  });
 
   useEffect(() => {
     if (token) {
@@ -170,12 +202,15 @@ const useLogin = () => {
   }, [token, router, redirect, showAnimation, reduceMotion]);
 
   return {
+    form,
     isFromInvite,
     showAnimation,
-    inviteCode,
     initialValues,
-    onSubmit,
-    validationSchema,
+    handleSubmit,
+    isSubmitting,
+    usernameRules,
+    passwordRules,
+    username,
   };
 };
 
@@ -193,33 +228,41 @@ const OAuthLoginButtons = ({ openidProviders }: OAuthLoginButtonsProps) => {
   }
 
   return (
-    <Center>
-      <Stack spacing={4} width="100%">
-        {openidProviders.map((provider) => (
-          <Button
-            key={provider.identifier}
-            href={`/api/v1/plus/openid-provider/${provider.identifier}/authorize`}
-            icon={
-              <Image
-                src={`/images/oauth-login/${provider.provider}.svg`}
-                alt={`${provider.provider} icon`}
-                width={20}
-                height={20}
-              />
-            }
-            className="w-full"
-          >
-            Sign in with {provider.name}
-          </Button>
-        ))}
-      </Stack>
-    </Center>
+    <Flex vertical gap={16} className="w-full">
+      {openidProviders.map((provider) => (
+        <Button
+          key={provider.identifier}
+          href={`/api/v1/plus/openid-provider/${provider.identifier}/authorize`}
+          icon={
+            <Image
+              src={`/images/oauth-login/${provider.provider}.svg`}
+              alt={`${provider.provider} icon`}
+              width={20}
+              height={20}
+            />
+          }
+          className="w-full"
+        >
+          Sign in with {provider.name}
+        </Button>
+      ))}
+    </Flex>
   );
 };
 
 const Login: NextPage = () => {
-  const { isFromInvite, showAnimation, inviteCode, ...formikProps } =
-    useLogin();
+  const {
+    form,
+    isFromInvite,
+    showAnimation,
+    initialValues,
+    handleSubmit,
+    isSubmitting,
+    usernameRules,
+    passwordRules,
+    username,
+  } = useLogin();
+  const [canSubmit, setCanSubmit] = useState(false);
   const {
     data: authMethods,
     isLoading: authMethodsLoading,
@@ -247,136 +290,104 @@ const Login: NextPage = () => {
   }
 
   return (
-    <Formik {...formikProps} enableReinitialize>
-      {({ handleSubmit, isValid, isSubmitting, dirty }) => (
-        <Flex width="100%" justifyContent="center">
-          <Head />
+    <Flex className="w-full" justify="center">
+      <Head />
 
-          <main data-testid="Login">
-            <Stack
-              spacing={16}
-              mx="auto"
-              maxW="lg"
-              py={12}
-              px={6}
-              align="center"
-              minH="100vh"
-              justify="center"
-            >
-              <Box display={["none", "none", "block"]}>
-                <Image
-                  src="/logo.svg"
-                  alt="Fides logo"
-                  width={205}
-                  height={46}
-                />
-              </Box>
-              <Stack align="center" spacing={[0, 0, 6]}>
-                <Heading
-                  fontSize="4xl"
-                  colorScheme="primary"
-                  display={["none", "none", "block"]}
+      <main data-testid="Login">
+        <Flex
+          vertical
+          gap={64}
+          align="center"
+          justify="center"
+          className="px-6 py-12"
+        >
+          <Image src="/logo.svg" alt="Fides logo" width={205} height={46} />
+          <Flex vertical align="center" gap="large">
+            <Typography.Title level={1}>
+              Sign in to your account
+            </Typography.Title>
+            <Card className="static w-[640px] px-32 py-12">
+              <Flex align="center" justify="center">
+                <Form
+                  form={form}
+                  layout="vertical"
+                  key={username ?? "login"}
+                  initialValues={initialValues}
+                  onFinish={handleSubmit}
+                  onValuesChange={(
+                    _: Partial<LoginFormValues>,
+                    allValues: LoginFormValues,
+                  ) => {
+                    setCanSubmit(!!allValues.username && !!allValues.password);
+                  }}
+                  className="w-full"
                 >
-                  Sign in to your account
-                </Heading>
-                <Box
-                  bg="white"
-                  py={12}
-                  px={[0, 0, 40]}
-                  width={["100%", "100%", 640]}
-                  borderRadius={4}
-                  position={["absolute", "absolute", "inherit"]}
-                  top={0}
-                  bottom={0}
-                  left={0}
-                  right={0}
-                  boxShadow="base"
-                >
-                  <Stack align="center" justify="center" spacing={8}>
-                    <Stack display={["block", "block", "none"]} spacing={12}>
-                      <Flex justifyContent="center">
-                        <Image
-                          src="/logo.svg"
-                          alt="Fides logo"
-                          width={205}
-                          height={46}
-                        />
-                      </Flex>
-                      <Heading fontSize="3xl" colorScheme="primary">
-                        Sign in to your account
-                      </Heading>
-                    </Stack>
-                    <chakra.form
-                      onSubmit={handleSubmit}
-                      maxW={["xs", "xs", "100%"]}
-                      width="100%"
-                    >
-                      <Stack spacing={6}>
-                        {showUsernamePasswordInputs && (
-                          <>
-                            <CustomTextInput
-                              name="username"
-                              label="Username"
-                              variant="stacked"
-                              size="md"
-                              disabled={isFromInvite}
-                            />
-                            <CustomTextInput
-                              name="password"
-                              label={
-                                isFromInvite ? "Set new password" : "Password"
-                              }
-                              autoComplete={
-                                isFromInvite
-                                  ? "new-password"
-                                  : "current-password"
-                              }
-                              type="password"
-                              variant="stacked"
-                              size="md"
-                            />
-                            <Center>
-                              <motion.div
-                                className="w-full"
-                                animate={
-                                  showAnimation
-                                    ? {
-                                        width: ["100%", "10%"],
-                                        borderRadius: ["5%", "0%"],
-                                      }
-                                    : undefined
-                                }
-                              >
-                                <Button
-                                  htmlType="submit"
-                                  type="primary"
-                                  disabled={!isValid || !dirty}
-                                  data-testid="sign-in-btn"
-                                  loading={isSubmitting}
-                                  className="w-full"
-                                >
-                                  {showAnimation ? "" : submitButtonText}
-                                </Button>
-                              </motion.div>
-                              {showAnimation ? <Animation /> : null}
-                            </Center>
-                          </>
-                        )}
-                        {showSSOButtons && openidProviders && (
-                          <OAuthLoginButtons
-                            openidProviders={openidProviders}
+                  <Flex vertical>
+                    {showUsernamePasswordInputs && (
+                      <>
+                        <Form.Item
+                          name="username"
+                          label="Username"
+                          rules={usernameRules}
+                        >
+                          <Input
+                            size="large"
+                            disabled={isFromInvite}
+                            data-testid="input-username"
+                            autoComplete="username"
                           />
-                        )}
-                      </Stack>
-                    </chakra.form>
-                  </Stack>
-                </Box>
-              </Stack>
-            </Stack>
-          </main>
+                        </Form.Item>
+                        <Form.Item
+                          name="password"
+                          label={isFromInvite ? "Set new password" : "Password"}
+                          rules={passwordRules}
+                        >
+                          <Input.Password
+                            size="large"
+                            autoComplete={
+                              isFromInvite ? "new-password" : "current-password"
+                            }
+                            data-testid="input-password"
+                          />
+                        </Form.Item>
+                        <Flex justify="center" align="center">
+                          <motion.div
+                            className="h-8 w-full"
+                            animate={
+                              showAnimation
+                                ? { width: ["100%", "32px"] }
+                                : { width: ["32px", "100%"] }
+                            }
+                          >
+                            <Button
+                              htmlType="submit"
+                              type="primary"
+                              disabled={!canSubmit}
+                              data-testid="sign-in-btn"
+                              loading={isSubmitting}
+                              className="w-full"
+                            >
+                              {showAnimation ? "" : submitButtonText}
+                            </Button>
+                          </motion.div>
+                          {showAnimation ? <Animation /> : null}
+                        </Flex>
+                      </>
+                    )}
+                    {showUsernamePasswordInputs &&
+                      showSSOButtons &&
+                      openidProviders && <Divider>or</Divider>}
+                    {showSSOButtons && openidProviders && (
+                      <OAuthLoginButtons openidProviders={openidProviders} />
+                    )}
+                  </Flex>
+                </Form>
+              </Flex>
+            </Card>
+          </Flex>
         </Flex>
-      )}
-    </Formik>
+      </main>
+    </Flex>
   );
 };
 
