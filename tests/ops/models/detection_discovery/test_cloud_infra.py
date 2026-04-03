@@ -24,7 +24,11 @@ class TestCloudInfraStagedResourceModel:
                 "cloud_account_id": "123456789012",
                 "source_id": "arn:aws:s3:my-bucket",
                 "tags": {"env": "prod", "team": "platform"},
-                "meta": {"provider": "aws", "source_type": "s3:bucket", "category": "Storage"},
+                "meta": {
+                    "provider": "aws",
+                    "source_type": "s3:bucket",
+                    "category": "Storage",
+                },
             },
         )
         return resource

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum, StrEnum
 from re import match
-from typing import Any, Dict, Iterable, List, Optional, Set, Type
+from typing import Any, Dict, Iterable, List, Optional, Set, Type, TypeVar
 
 from loguru import logger
 from sqlalchemy import (
@@ -536,6 +536,9 @@ class StagedResourceAncestor(Base):
             db.execute(stmt_text, current_batch)
 
 
+_StagedResourceT = TypeVar("_StagedResourceT", bound="StagedResourceBase")
+
+
 class StagedResourceBase(Base):
     """
     Abstract base for all staged resource DB models.
@@ -569,9 +572,11 @@ class StagedResourceBase(Base):
     )
 
     @classmethod
-    def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
+    def get_urn(
+        cls: Type[_StagedResourceT], db: Session, urn: str
+    ) -> Optional[_StagedResourceT]:
         """Utility to retrieve the staged resource with the given URN"""
-        return cls.get_by(db=db, field="urn", value=urn)
+        return cls.get_by(db=db, field="urn", value=urn)  # type: ignore[return-value]
 
     @classmethod
     def get_urn_list(cls, db: Session, urns: Iterable[str]) -> Iterable[StagedResource]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 
 from fides.api.models.detection_discovery.core import StagedResourceBase
@@ -15,7 +16,10 @@ class CloudInfraStagedResource(StagedResourceBase):
     See CloudInfraResourceMetadata in fidesplus for the shape of the meta field.
     """
 
-    __tablename__ = "cloud_infra_staged_resource"
+    @declared_attr
+    def __tablename__(self) -> str:  # type: ignore[override]
+        return "cloud_infra_staged_resource"
+
     __table_args__ = (
         UniqueConstraint(
             "monitor_config_id",
