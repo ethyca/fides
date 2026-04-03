@@ -20,7 +20,6 @@ from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.common.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG
 
-
 FORGOT_PASSWORD_URL = V1_URL_PREFIX + "/user/forgot-password"
 RESET_PASSWORD_WITH_TOKEN_URL = V1_URL_PREFIX + "/user/reset-password-with-token"
 ACCEPT_INVITE_URL = V1_URL_PREFIX + "/user/accept-invite"
@@ -71,9 +70,15 @@ class TestForgotPassword:
         self, api_client: TestClient, verified_user
     ):
         """Test that forgot-password returns 200 and dispatches email for a verified user."""
-        with mock.patch(
-            "fides.service.user.user_service.dispatch_message"
-        ) as mock_dispatch:
+        with (
+            mock.patch(
+                "fides.service.messaging.messaging_service.MessagingService.is_email_invite_enabled",
+                return_value=True,
+            ),
+            mock.patch(
+                "fides.service.user.user_service.dispatch_message"
+            ) as mock_dispatch,
+        ):
             response = api_client.post(
                 FORGOT_PASSWORD_URL,
                 json={"email": "verified@example.com"},
@@ -112,7 +117,13 @@ class TestForgotPassword:
         self, db, api_client: TestClient, verified_user
     ):
         """Test that a reset token is created in the database."""
-        with mock.patch("fides.service.user.user_service.dispatch_message"):
+        with (
+            mock.patch(
+                "fides.service.messaging.messaging_service.MessagingService.is_email_invite_enabled",
+                return_value=True,
+            ),
+            mock.patch("fides.service.user.user_service.dispatch_message"),
+        ):
             api_client.post(
                 FORGOT_PASSWORD_URL,
                 json={"email": "verified@example.com"},
@@ -133,7 +144,13 @@ class TestForgotPassword:
             db, user_id=verified_user.id, token=token1
         )
 
-        with mock.patch("fides.service.user.user_service.dispatch_message"):
+        with (
+            mock.patch(
+                "fides.service.messaging.messaging_service.MessagingService.is_email_invite_enabled",
+                return_value=True,
+            ),
+            mock.patch("fides.service.user.user_service.dispatch_message"),
+        ):
             api_client.post(
                 FORGOT_PASSWORD_URL,
                 json={"email": "verified@example.com"},

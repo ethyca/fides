@@ -125,10 +125,7 @@ const authApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
-    forgotPassword: build.mutation<
-      { detail: string },
-      { email: string }
-    >({
+    forgotPassword: build.mutation<{ detail: string }, { email: string }>({
       query: ({ email }) => ({
         url: "user/forgot-password",
         method: "POST",

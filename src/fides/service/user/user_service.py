@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.models.client import ClientDetail
+from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_password_reset import FidesUserPasswordReset
@@ -18,7 +19,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.util.errors import FidesError, MessageDispatchException
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
