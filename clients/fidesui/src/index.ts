@@ -272,7 +272,6 @@ export {
   CustomAlert as Alert,
   CustomAvatar as Avatar,
   CustomCard as Card,
-  CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomDrawer as Drawer,
   CustomDropdown as Dropdown,
@@ -356,6 +355,7 @@ export type {
 } from "./components/charts/StackedBarChart";
 export { StackedBarChart } from "./components/charts/StackedBarChart";
 export { XAxisTick } from "./components/charts/XAxisTick";
+export { CopyTooltip } from "./components/data-display/CopyTooltip";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
