@@ -1,3 +1,4 @@
+import { Spin } from "fidesui";
 import { useMemo } from "react";
 
 import { useGetControlGroupsQuery } from "./access-policies.slice";
@@ -7,6 +8,7 @@ import { usePoliciesFilters } from "./hooks/usePoliciesFilters";
 import { useReorderPolicies } from "./hooks/useReorderPolicies";
 import { useTogglePolicyEnabled } from "./hooks/useTogglePolicyEnabled";
 import { useUpdatePolicyPriority } from "./hooks/useUpdatePolicyPriority";
+import OnboardingForm from "./OnboardingForm";
 import PoliciesGrid from "./PoliciesGrid";
 import PoliciesTable from "./PoliciesTable";
 import PoliciesToolbar, { ViewMode } from "./PoliciesToolbar";
@@ -54,6 +56,20 @@ const PoliciesContainer = () => {
   }, [policies, searchQuery, controlFilter, enabledFilter]);
 
   const groups = useAccessPolicyGroups(filteredPolicies, controlGroups);
+
+  // Show loading spinner while initial fetch is in progress
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  // Show onboarding form when no policies exist
+  if (policies.length === 0) {
+    return <OnboardingForm />;
+  }
 
   return (
     <div>

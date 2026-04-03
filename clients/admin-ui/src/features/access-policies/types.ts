@@ -107,6 +107,25 @@ export interface ActionBlock {
   message?: string;
 }
 
+export interface OnboardingFormState {
+  industry: string | null;
+  geographies: string[];
+  selectedDataUses: string[];
+}
+
+export interface OnboardingDataUsesResponse {
+  items: string[];
+}
+
+export interface OnboardingConfigResponse {
+  industry: string;
+  geographies: string[];
+}
+
+export interface GeneratePoliciesResponse {
+  status: "success" | "error";
+}
+
 export interface AccessPolicyYaml {
   fides_key?: string;
   name?: string;

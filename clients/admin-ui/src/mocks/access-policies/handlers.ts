@@ -3,15 +3,18 @@ import { rest } from "msw";
 
 import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
 
-import { mockAccessPolicies, mockControlGroups } from "./data";
+import { mockControlGroups } from "./data";
+import { generatedPoliciesForIndustry } from "./generated-policies";
+import { GEO_DATA_USES, INDUSTRY_DATA_USES } from "./onboarding-data";
 
 /**
  * MSW handlers for access policy endpoints
  */
 export const accessPoliciesHandlers = () => {
   const apiBase = "/api/v1";
-  // Use a mutable copy so create/update/delete persist within a session
-  const policies: AccessPolicy[] = [...mockAccessPolicies];
+  // Start empty so the onboarding flow is shown first.
+  // Generated policies will be pushed here by the /generate handler.
+  const policies: AccessPolicy[] = [];
 
   return [
     // GET /api/v1/plus/access-policy - list all
@@ -31,6 +34,45 @@ export const accessPoliciesHandlers = () => {
           size,
           pages: Math.ceil(policies.length / size),
         }),
+      );
+    }),
+
+    // GET /api/v1/plus/access-policy/config - saved config
+    // Must be registered before /:id to avoid the wildcard matching "config"
+    rest.get(`${apiBase}/plus/access-policy/config`, (_req, res, ctx) =>
+      res(
+        ctx.status(200),
+        ctx.json({ industry: "fintech", geographies: ["eea", "us"] }),
+      ),
+    ),
+
+    // GET /api/v1/plus/access-policy/data-uses - data uses by industry + geography
+    // Must be registered before /:id to avoid the wildcard matching "data-uses"
+    rest.get(`${apiBase}/plus/access-policy/data-uses`, (req, res, ctx) => {
+      const industry = req.url.searchParams.get("industry") ?? "";
+      const geographies = req.url.searchParams.getAll("geographies");
+
+      const industryUses = INDUSTRY_DATA_USES[industry] ?? [];
+      const geoUses = geographies.flatMap((geo) => GEO_DATA_USES[geo] ?? []);
+      const uses = [
+        ...industryUses,
+        ...geoUses.filter((u) => !industryUses.includes(u)),
+      ];
+
+      return res(ctx.status(200), ctx.json({ items: uses }));
+    }),
+
+    // POST /api/v1/plus/access-policy/generate - generate policies from onboarding
+    // Must be registered before /:id
+    rest.post(`${apiBase}/plus/access-policy/generate`, (_req, res, ctx) => {
+      // Push generated policies into the mutable array so the list view picks them up
+      const generated = generatedPoliciesForIndustry();
+      generated.forEach((p) => policies.push(p));
+
+      return res(
+        ctx.delay(800),
+        ctx.status(200),
+        ctx.json({ status: "success" }),
       );
     }),
 

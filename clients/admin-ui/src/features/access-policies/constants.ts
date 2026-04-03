@@ -9,7 +9,37 @@ import {
   DataFlowDirection,
   DataFlowOperator,
   GeoOperator,
+  SelectOption,
 } from "./types";
+
+export const INDUSTRY_OPTIONS: SelectOption[] = [
+  { label: "Fintech", value: "fintech" },
+  { label: "Healthcare", value: "healthcare" },
+  { label: "Retail & E-Commerce", value: "retail" },
+  { label: "SaaS / Technology", value: "saas" },
+  { label: "Insurance", value: "insurance" },
+  { label: "Government", value: "government" },
+];
+
+/** Icon for each data use card. Fideslang has no icon metadata. */
+export const DATA_USE_ICON: Record<string, string> = {
+  "essential.fraud_detection": "Security",
+  "analytics.reporting": "ChartBar",
+  "essential.service.payment_processing": "Receipt",
+  "essential.legal_obligation": "Building",
+  "marketing.advertising.profiling": "GroupPresentation",
+  "personalize.content": "UserProfile",
+  "essential.service.operations.support": "Chat",
+  "essential.service.operations": "Task",
+  third_party_sharing: "Folder",
+  "essential.service.security": "Security",
+  employment: "Document",
+  "marketing.communications.email": "Chat",
+  "functional.service.improve": "Analytics",
+  train_ai_system: "Analytics",
+  "functional.storage.privacy_preferences": "Security",
+  "marketing.advertising.third_party.targeted": "ChartBar",
+};
 
 interface RadioOption<T> {
   value: T;

@@ -1,5 +1,11 @@
 import { baseApi } from "~/features/common/api.slice";
 
+import type {
+  GeneratePoliciesResponse,
+  OnboardingConfigResponse,
+  OnboardingDataUsesResponse,
+} from "./types";
+
 export interface ControlGroup {
   key: string;
   label: string;
@@ -91,6 +97,30 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Access Policy Control Groups"],
     }),
+    getOnboardingDataUses: build.query<
+      OnboardingDataUsesResponse,
+      { industry: string; geographies: string[] }
+    >({
+      query: ({ industry, geographies }) => ({
+        method: "GET",
+        url: "plus/access-policy/data-uses",
+        params: { industry, geographies },
+      }),
+    }),
+    getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/config",
+      }),
+    }),
+    generatePolicies: build.mutation<GeneratePoliciesResponse, FormData>({
+      query: (formData) => ({
+        method: "POST",
+        url: "plus/access-policy/generate",
+        body: formData,
+      }),
+      invalidatesTags: ["Access Policies"],
+    }),
   }),
 });
 
@@ -102,4 +132,7 @@ export const {
   useDeleteAccessPolicyMutation,
   useReorderAccessPolicyMutation,
   useGetControlGroupsQuery,
+  useGetOnboardingDataUsesQuery,
+  useGetOnboardingConfigQuery,
+  useGeneratePoliciesMutation,
 } = accessPoliciesApi;
