@@ -1,5 +1,8 @@
+from typing import List
+
 import pytest
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.models.detection_discovery.cloud_infra import CloudInfraStagedResource
@@ -33,6 +36,51 @@ class TestCloudInfraStagedResourceModel:
         )
         return resource
 
+    def test_get_urn(
+        self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
+    ) -> None:
+        result = CloudInfraStagedResource.get_urn(db, create_cloud_infra_resource.urn)
+        assert result is not None
+        assert result.urn == create_cloud_infra_resource.urn
+
+    def test_get_urn_list(
+        self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
+    ) -> None:
+        urns = [create_cloud_infra_resource.urn]
+        results = CloudInfraStagedResource.get_urn_list(db, urns)
+        results = list(results)
+        assert len(results) == 1
+        assert results[0].urn == urns[0]
+
+    async def test_get_urn_async(
+        self,
+        async_session: AsyncSession,
+        create_cloud_infra_resource: CloudInfraStagedResource,
+    ) -> None:
+        urn = create_cloud_infra_resource.urn
+
+        result = await CloudInfraStagedResource.get_urn_async(async_session, urn)
+        assert result is not None
+        assert result.urn == urn
+
+    async def test_get_urn_list_async(
+        self,
+        async_session: AsyncSession,
+        create_cloud_infra_resource: CloudInfraStagedResource,
+    ) -> None:
+        urns: List[str] = [create_cloud_infra_resource.urn]
+
+        results = await CloudInfraStagedResource.get_urn_list_async(async_session, urns)
+        assert len(results) == 1
+        assert results[0].urn == urns[0]
+
+    def test_mark_as_addition(
+        self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
+    ) -> None:
+        create_cloud_infra_resource.diff_status = DiffStatus.MUTED.value
+        create_cloud_infra_resource.mark_as_addition(db)
+        assert create_cloud_infra_resource.diff_status == DiffStatus.ADDITION.value
+
     def test_unique_constraint_monitor_config_and_source_id(
         self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
     ) -> None:
@@ -61,8 +109,8 @@ class TestCloudInfraStagedResourceModel:
         resource = CloudInfraStagedResource.create(
             db=db,
             data={
-                "urn": f"{other_monitor}.arn:aws:s3:my-bucket",
-                "name": "my-bucket",
+                "urn": f"{other_monitor}.arn:aws:s3:my-bucket-2",
+                "name": "my-bucket-2",
                 "resource_type": StagedResourceType.CLOUD_INFRA,
                 "monitor_config_id": other_monitor,
                 "service": "s3",

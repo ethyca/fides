@@ -579,34 +579,36 @@ class StagedResourceBase(Base):
         return cls.get_by(db=db, field="urn", value=urn)  # type: ignore[return-value]
 
     @classmethod
-    def get_urn_list(cls, db: Session, urns: Iterable[str]) -> Iterable[StagedResource]:
+    def get_urn_list(
+        cls: Type[_StagedResourceT], db: Session, urns: Iterable[str]
+    ) -> Iterable[_StagedResourceT]:
         """
         Utility to retrieve all staged resources with the given URNs
         """
-        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))
+        results = db.execute(select(cls).where(cls.urn.in_(urns)))  # type: ignore[attr-defined]
         return results.scalars().all()
 
     @classmethod
     async def get_urn_async(
-        cls, db: AsyncSession, urn: str
-    ) -> Optional[StagedResource]:
+        cls: Type[_StagedResourceT], db: AsyncSession, urn: str
+    ) -> Optional[_StagedResourceT]:
         """
         Utility to retrieve the staged resource with the given URN using an async session
         """
         results = await db.execute(
-            select(StagedResource).where(StagedResource.urn == urn)
+            select(cls).where(cls.urn == urn)  # type: ignore[attr-defined]
         )
         return results.scalars().first()
 
     @classmethod
     async def get_urn_list_async(
-        cls, db: AsyncSession, urns: List[str]
-    ) -> Optional[List[StagedResource]]:
+        cls: Type[_StagedResourceT], db: AsyncSession, urns: List[str]
+    ) -> List[_StagedResourceT]:
         """
-        Utility to retrieve the staged resource with the given URN using an async session
+        Utility to retrieve the staged resources with the given URNs using an async session
         """
         results = await db.execute(
-            select(StagedResource).where(StagedResource.urn.in_(urns))
+            select(cls).where(cls.urn.in_(urns))  # type: ignore[attr-defined]
         )
         return results.scalars().all()
 
