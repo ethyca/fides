@@ -3,7 +3,7 @@ import {
   ChakraFlex as Flex,
   FilterValue,
   Icons,
-  PageSpinner,
+  Spin,
   Table,
   TablePaginationConfig,
   Typography,
@@ -233,7 +233,7 @@ export const ManualTasks = () => {
   );
 
   if (isLoading) {
-    return <PageSpinner />;
+    return <Spin />;
   }
 
   const showSpinner = isLoading || isFetching;
