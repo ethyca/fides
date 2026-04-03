@@ -22,7 +22,7 @@ const SecretField = ({
   redact?: boolean;
 }) => {
   const [revealed, setRevealed] = useState(!redact);
-  const displayed = revealed ? value : "•".repeat(Math.min(value.length, 32));
+  const displayed = revealed ? value : "•".repeat(32);
 
   return (
     <div className="flex flex-col gap-1">
