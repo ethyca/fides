@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.82.1b2.dev22+g25883d682"
+    "version": "2.82.1b2.dev23+gfdfe1d0ef"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18718,6 +18718,49 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/{user_id}/reinvite": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Reinvite User",
+        "description": "Reinvite a user who has a pending invitation by generating a new invite code\nand sending a new invitation email. Requires `USER_CREATE` scope.",
+        "operationId": "reinvite_user_api_v1_user__user_id__reinvite_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:create"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -38764,6 +38807,28 @@
               }
             ],
             "title": "Disabled Reason"
+          },
+          "has_invite": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Invite"
+          },
+          "invite_expired": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invite Expired"
           }
         },
         "type": "object",
