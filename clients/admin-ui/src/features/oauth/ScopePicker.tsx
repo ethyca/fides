@@ -31,28 +31,33 @@ interface ScopePickerProps {
 const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
   const [search, setSearch] = useState("");
 
-  const visibleResources = useMemo(() => {
+  /**
+   * Map of resource → visible scopes after applying the search filter.
+   * A resource is included if its label or any of its scopes match the query.
+   * When the label matches, all scopes in the group are shown.
+   */
+  const visibleByResource = useMemo<Map<string, string[]>>(() => {
     if (!search) {
-      return SORTED_RESOURCES;
+      return new Map(SORTED_RESOURCES.map((r) => [r, GROUPED[r]]));
     }
     const q = search.toLowerCase();
-    return SORTED_RESOURCES.filter(
-      (resource) =>
-        formatResourceLabel(resource).toLowerCase().includes(q) ||
-        GROUPED[resource].some((scope) => scope.toLowerCase().includes(q)),
+    return new Map(
+      SORTED_RESOURCES.reduce<[string, string[]][]>((acc, resource) => {
+        const labelMatch = formatResourceLabel(resource)
+          .toLowerCase()
+          .includes(q);
+        const scopes = labelMatch
+          ? GROUPED[resource]
+          : GROUPED[resource].filter((scope) =>
+              scope.toLowerCase().includes(q),
+            );
+        if (scopes.length > 0) {
+          acc.push([resource, scopes]);
+        }
+        return acc;
+      }, []),
     );
   }, [search]);
-
-  const visibleScopesForResource = (resource: string): string[] => {
-    if (!search) {
-      return GROUPED[resource];
-    }
-    const q = search.toLowerCase();
-    if (formatResourceLabel(resource).toLowerCase().includes(q)) {
-      return GROUPED[resource];
-    }
-    return GROUPED[resource].filter((scope) => scope.toLowerCase().includes(q));
-  };
 
   const handleGroupToggle = (resource: string, checked: boolean) => {
     const groupScopes = GROUPED[resource];
@@ -101,56 +106,57 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
         className="max-h-[400px] overflow-y-auto rounded-md border p-3"
         data-testid="scope-picker-list"
       >
-        {visibleResources.length === 0 ? (
+        {visibleByResource.size === 0 ? (
           <span className="text-sm text-gray-500">
             No scopes match &ldquo;{search}&rdquo;.
           </span>
         ) : (
           <div className="flex flex-col gap-3">
-            {visibleResources.map((resource) => {
-              const scopesInGroup = visibleScopesForResource(resource);
-              const allGroupScopes = GROUPED[resource];
-              const selectedInGroup = allGroupScopes.filter((s) =>
-                selected.includes(s),
-              );
-              const allGroupSelected =
-                selectedInGroup.length === allGroupScopes.length;
-              const someGroupSelected =
-                selectedInGroup.length > 0 && !allGroupSelected;
+            {Array.from(visibleByResource.entries()).map(
+              ([resource, scopesInGroup]) => {
+                const allGroupScopes = GROUPED[resource];
+                const selectedInGroup = allGroupScopes.filter((s) =>
+                  selected.includes(s),
+                );
+                const allGroupSelected =
+                  selectedInGroup.length === allGroupScopes.length;
+                const someGroupSelected =
+                  selectedInGroup.length > 0 && !allGroupSelected;
 
-              return (
-                <div key={resource} className="flex flex-col gap-1">
-                  <Checkbox
-                    checked={allGroupSelected}
-                    indeterminate={someGroupSelected}
-                    onChange={(e) =>
-                      handleGroupToggle(resource, e.target.checked)
-                    }
-                    className="font-semibold"
-                    data-testid={`scope-group-${resource}`}
-                  >
-                    {formatResourceLabel(resource)}
-                  </Checkbox>
-                  <div className="flex flex-row flex-wrap gap-1 pl-6">
-                    {scopesInGroup.map((scope) => {
-                      const action = scope.split(":")[1];
-                      return (
-                        <Checkbox
-                          key={scope}
-                          checked={selected.includes(scope)}
-                          onChange={(e) =>
-                            handleScopeToggle(scope, e.target.checked)
-                          }
-                          data-testid={`scope-checkbox-${scope}`}
-                        >
-                          {action}
-                        </Checkbox>
-                      );
-                    })}
+                return (
+                  <div key={resource} className="flex flex-col gap-1">
+                    <Checkbox
+                      checked={allGroupSelected}
+                      indeterminate={someGroupSelected}
+                      onChange={(e) =>
+                        handleGroupToggle(resource, e.target.checked)
+                      }
+                      className="font-semibold"
+                      data-testid={`scope-group-${resource}`}
+                    >
+                      {formatResourceLabel(resource)}
+                    </Checkbox>
+                    <div className="flex flex-row flex-wrap gap-1 pl-6">
+                      {scopesInGroup.map((scope) => {
+                        const action = scope.split(":")[1];
+                        return (
+                          <Checkbox
+                            key={scope}
+                            checked={selected.includes(scope)}
+                            onChange={(e) =>
+                              handleScopeToggle(scope, e.target.checked)
+                            }
+                            data-testid={`scope-checkbox-${scope}`}
+                          >
+                            {action}
+                          </Checkbox>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              },
+            )}
           </div>
         )}
       </div>
