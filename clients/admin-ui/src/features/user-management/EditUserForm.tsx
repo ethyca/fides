@@ -1,12 +1,5 @@
-import {
-  Alert,
-  Button,
-  ChakraBox as Box,
-  Modal,
-  Text,
-  useMessage,
-} from "fidesui";
-import React, { useState } from "react";
+import { Alert, Button, Modal, useMessage } from "fidesui";
+import React from "react";
 import { useSelector } from "react-redux";
 import UserManagementTabs from "user-management/UserManagementTabs";
 
@@ -64,31 +57,51 @@ interface ReinviteSectionProps {
 }
 
 const ReinviteSection = ({ user }: ReinviteSectionProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [reinviteUser, { isLoading }] = useReinviteUserMutation();
   const { handleError } = useAPIHelper();
   const message = useMessage();
+  const [modal, contextHolder] = Modal.useModal();
   const canReinvite = useHasPermission([ScopeRegistryEnum.USER_CREATE]);
 
   if (!user.has_invite || !canReinvite) {
     return null;
   }
 
-  const handleReinvite = async () => {
-    try {
-      await reinviteUser(user.id).unwrap();
-      message.success(
-        "User reinvited successfully. A new invitation email has been sent.",
-      );
-      setIsModalOpen(false);
-    } catch (error) {
-      handleError(error);
-    }
+  const handleReinviteClick = () => {
+    const content = (
+      <>
+        <p>
+          Are you sure you want to send a new invitation to {user.username}? A
+          new invitation email will be sent to {user.email_address}.
+        </p>
+        {!user.invite_expired ? (
+          <p>The previous invitation code will no longer be valid.</p>
+        ) : null}
+      </>
+    );
+
+    modal.confirm({
+      title: "Reinvite user",
+      content,
+      okText: "Reinvite",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await reinviteUser(user.id).unwrap();
+          message.success(
+            "User reinvited successfully. A new invitation email has been sent.",
+          );
+        } catch (error) {
+          handleError(error);
+        }
+      },
+    });
   };
 
   return (
     <>
-      <Box mb={4}>
+      {contextHolder}
+      <div className="mb-4">
         <Alert
           message={user.invite_expired ? "Invite expired" : "Invite pending"}
           description={
@@ -101,32 +114,14 @@ const ReinviteSection = ({ user }: ReinviteSectionProps) => {
           action={
             <Button
               type="primary"
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleReinviteClick}
               loading={isLoading}
             >
               Reinvite user
             </Button>
           }
         />
-      </Box>
-
-      <Modal
-        title="Reinvite user"
-        open={isModalOpen}
-        onOk={handleReinvite}
-        onCancel={() => setIsModalOpen(false)}
-        okText="Reinvite"
-        cancelText="Cancel"
-        confirmLoading={isLoading}
-      >
-        <Text>
-          Are you sure you want to send a new invitation to {user.username}? A
-          new invitation email will be sent to {user.email_address}.
-        </Text>
-        {!user.invite_expired ? (
-          <Text>The previous invitation code will no longer be valid.</Text>
-        ) : null}
-      </Modal>
+      </div>
     </>
   );
 };
