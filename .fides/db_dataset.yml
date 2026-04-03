@@ -3367,6 +3367,36 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: plus_access_policy
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: description
+        data_categories: [system.operations]
+      - name: enabled
+        data_categories: [system.operations]
+      - name: is_deleted
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: plus_access_policy_version
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: access_policy_id
+        data_categories: [system.operations]
+      - name: version
+        data_categories: [system.operations]
+      - name: yaml
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
   - name: plus_custom_report
     fields:
       - name: id
