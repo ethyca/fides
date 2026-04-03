@@ -1,5 +1,5 @@
 import { Checkbox } from "fidesui";
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import SearchInput from "~/features/common/SearchInput";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -59,29 +59,38 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
     );
   }, [search]);
 
-  const handleGroupToggle = (resource: string, checked: boolean) => {
-    const groupScopes = GROUPED[resource];
-    if (checked) {
-      onChange(Array.from(new Set([...selected, ...groupScopes])));
-    } else {
-      onChange(selected.filter((s) => !groupScopes.includes(s)));
-    }
-  };
+  const handleGroupToggle = useCallback(
+    (resource: string, checked: boolean) => {
+      const groupScopes = GROUPED[resource];
+      if (checked) {
+        onChange(Array.from(new Set([...selected, ...groupScopes])));
+      } else {
+        onChange(selected.filter((s) => !groupScopes.includes(s)));
+      }
+    },
+    [selected, onChange],
+  );
 
-  const handleScopeToggle = (scope: string, checked: boolean) => {
-    if (checked) {
-      onChange([...selected, scope]);
-    } else {
-      onChange(selected.filter((s) => s !== scope));
-    }
-  };
+  const handleScopeToggle = useCallback(
+    (scope: string, checked: boolean) => {
+      if (checked) {
+        onChange([...selected, scope]);
+      } else {
+        onChange(selected.filter((s) => s !== scope));
+      }
+    },
+    [selected, onChange],
+  );
 
   const allSelected = ALL_SCOPES.every((s) => selected.includes(s));
   const someSelected = selected.length > 0 && !allSelected;
 
-  const handleSelectAll = (checked: boolean) => {
-    onChange(checked ? ALL_SCOPES : []);
-  };
+  const handleSelectAll = useCallback(
+    (checked: boolean) => {
+      onChange(checked ? ALL_SCOPES : []);
+    },
+    [onChange],
+  );
 
   return (
     <div className="flex flex-col gap-3" data-testid="scope-picker">
