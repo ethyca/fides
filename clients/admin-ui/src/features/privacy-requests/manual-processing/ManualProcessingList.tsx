@@ -3,7 +3,6 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCenter as Center,
-  ChakraSpinner as Spinner,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -14,6 +13,7 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   ChakraVStack as VStack,
+  Spin,
   useMessage,
 } from "fidesui";
 import {
@@ -231,11 +231,7 @@ const ManualProcessingList = ({
         </Text>
       </Box>
       <Box>
-        {(isFetching || isLoading) && (
-          <Center>
-            <Spinner />
-          </Center>
-        )}
+        {(isFetching || isLoading) && <Spin />}
         {isSuccess && data ? (
           <TableContainer>
             <Table size="sm" variant="unstyled">

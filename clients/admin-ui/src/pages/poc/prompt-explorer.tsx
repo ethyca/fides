@@ -4,7 +4,6 @@ import {
   Card,
   Checkbox,
   Col,
-  Flex,
   Input,
   Layout,
   Radio,
@@ -315,9 +314,7 @@ const PromptExplorer: NextPage = () => {
               }
             >
               {promptsLoading ? (
-                <Flex justify="center" className="py-8">
-                  <Spin />
-                </Flex>
+                <Spin rootClassName="my-64" />
               ) : (
                 <Radio.Group
                   value={selectedPromptId}
