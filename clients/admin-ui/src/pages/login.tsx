@@ -24,8 +24,10 @@ import {
   useGetAuthenticationMethodsQuery,
   useLoginMutation,
 } from "~/features/auth";
+import { getErrorMessage } from "~/features/common/helpers";
 import { usePrefersReducedMotion } from "~/features/common/hooks";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
+import { RTKErrorResult } from "~/types/errors/api";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
   const validPathRegex = /^\/[\w/-]*$/;
@@ -175,9 +177,14 @@ const useLogin = () => {
       setShowAnimation(false);
       // eslint-disable-next-line no-console
       console.log(error);
-      message.error(
-        "Login failed. Please check your credentials and try again.",
+      const defaultErrorMsg = isFromInvite
+        ? "Setup failed. Please try the invite link again."
+        : "Login failed. Please check your credentials and try again.";
+      const errorMsg = getErrorMessage(
+        error as RTKErrorResult["error"],
+        defaultErrorMsg,
       );
+      message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
