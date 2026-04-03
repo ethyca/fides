@@ -1,12 +1,4 @@
-import {
-  Button,
-  ChakraAlert as Alert,
-  ChakraAlertDescription as AlertDescription,
-  ChakraAlertIcon as AlertIcon,
-  ChakraDeleteIcon as DeleteIcon,
-  ChakraFlex as Flex,
-  ChakraSmallAddIcon as SmallAddIcon,
-} from "fidesui";
+import { Alert, Button, Flex, Icons } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
@@ -21,22 +13,25 @@ const PathsFieldArray = () => {
     <FieldArray
       name="paths"
       render={(arrayHelpers) => (
-        <Flex flexDir="column" gap={3}>
+        <Flex vertical gap={12}>
           {paths.map((_, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Flex key={index} flexDir="column" gap={2}>
+            <Flex key={index} vertical gap={8}>
               {paths[index] === "/" && (
-                <Alert status="warning" colorScheme="warn">
-                  <AlertIcon />
-                  <AlertDescription>
-                    <code>FIDES_PRIVACY_CENTER__USE_API_CONFIG</code> must be
-                    set to <code>true</code> when serving the Privacy Center at
-                    the root path (<code>/</code>). Update this variable to
-                    continue.
-                  </AlertDescription>
-                </Alert>
+                <Alert
+                  type="warning"
+                  showIcon
+                  message={
+                    <>
+                      <code>FIDES_PRIVACY_CENTER__USE_API_CONFIG</code> must be
+                      set to <code>true</code> when serving the Privacy Center
+                      at the root path (<code>/</code>). Update this variable to
+                      continue.
+                    </>
+                  }
+                />
               )}
-              <Flex flexDir="row" gap={2} alignItems="flex-end">
+              <Flex gap={12} align="flex-end">
                 <Flex flex={1}>
                   <CustomTextInput
                     name={`paths[${index}]`}
@@ -47,17 +42,16 @@ const PathsFieldArray = () => {
                 </Flex>
                 <Button
                   aria-label="Remove path"
-                  icon={<DeleteIcon />}
+                  icon={<Icons.TrashCan />}
                   onClick={() => arrayHelpers.remove(index)}
                   loading={false}
-                  className="mb-1"
                   data-testid={`remove-path-${index}`}
                 />
               </Flex>
             </Flex>
           ))}
           <Button
-            icon={<SmallAddIcon />}
+            icon={<Icons.Add />}
             onClick={() => arrayHelpers.push("")}
             loading={false}
             data-testid="add-path-button"

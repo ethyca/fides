@@ -1,7 +1,6 @@
-import { Button, useMessage } from "fidesui";
+import { useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -21,7 +20,6 @@ const EditPropertyPage: NextPage = () => {
   const message = useMessage();
   const router = useRouter();
   const { id: propertyId } = router.query;
-  const [showPreview, setShowPreview] = useState(true);
   const { data, error } = useGetPropertyByIdQuery(propertyId as string);
   const [updateProperty] = useUpdatePropertyMutation();
 
@@ -63,17 +61,10 @@ const EditPropertyPage: NextPage = () => {
             title: data?.name ?? "Property",
           },
         ]}
-        rightContent={
-          <Button
-            onClick={() => setShowPreview((prev) => !prev)}
-            loading={false}
-            data-testid="toggle-preview-button"
-          >
-            {showPreview ? "Hide preview" : "Show preview"}
-          </Button>
-        }
       />
-      <PropertyForm property={data} handleSubmit={handleSubmit} />
+      <div style={{ maxWidth: 720 }}>
+        <PropertyForm property={data} handleSubmit={handleSubmit} />
+      </div>
     </Layout>
   );
 };
