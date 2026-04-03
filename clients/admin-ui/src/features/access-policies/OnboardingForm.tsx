@@ -143,117 +143,117 @@ const OnboardingForm = () => {
           </div>
         </div>
         <Form layout="vertical">
-        <Flex vertical gap={24}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Business vertical / industry"
-                required
-                htmlFor="industry-select"
-                className="!mb-0"
-              >
-                <Select
-                  id="industry-select"
-                  aria-label="Business vertical / industry"
-                  className="w-full"
-                  placeholder="Select industry"
-                  value={formState.industry}
-                  onChange={(value) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      industry: value,
-                      selectedDataUses: [],
-                    }))
-                  }
-                  options={INDUSTRY_OPTIONS}
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="Geography"
-                required
-                htmlFor="geography-select"
-                className="!mb-0"
-              >
-                <Select
-                  id="geography-select"
-                  aria-label="Geography"
-                  className="w-full"
-                  mode="multiple"
-                  placeholder="Select geographies"
-                  loading={isLocationsLoading}
-                  value={formState.geographies}
-                  onChange={(value) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      geographies: value,
-                      selectedDataUses: [],
-                    }))
-                  }
-                  options={geographyOptions}
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <div>
-            <Form.Item label="Common data uses" className="!mb-2">
-              <Text type="secondary" size="sm">
-                Select the data use categories most relevant to your
-                organization. This helps Fides prioritize scanning and generate
-                more targeted access policies.
-              </Text>
-            </Form.Item>
-            {renderDataUseCards()}
-          </div>
-
-          <Form.Item
-            label="Upload policy document or enter URL to policy page"
-            className="!mb-0"
-          >
-            <Flex gap={8} align="start">
-              <Select
-                aria-label="Policy URLs"
-                mode="tags"
-                className="flex-1"
-                placeholder="https://company.com/privacy"
-                value={policyUrls}
-                onChange={setPolicyUrls}
-                tokenSeparators={[" "]}
-                suffixIcon={null}
-                open={false}
-              />
-              <Upload
-                accept=".pdf,.docx"
-                multiple
-                beforeUpload={() => false}
-                onChange={handleFileChange}
-              >
-                <Button
-                  aria-label="Upload policy document"
-                  icon={<Icons.Upload size={16} />}
+          <Flex vertical gap={24}>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Business vertical / industry"
+                  required
+                  htmlFor="industry-select"
+                  className="!mb-0"
                 >
-                  Upload
-                </Button>
-              </Upload>
-            </Flex>
-          </Form.Item>
+                  <Select
+                    id="industry-select"
+                    aria-label="Business vertical / industry"
+                    className="w-full"
+                    placeholder="Select industry"
+                    value={formState.industry}
+                    onChange={(value) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        industry: value,
+                        selectedDataUses: [],
+                      }))
+                    }
+                    options={INDUSTRY_OPTIONS}
+                    allowClear
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Geography"
+                  required
+                  htmlFor="geography-select"
+                  className="!mb-0"
+                >
+                  <Select
+                    id="geography-select"
+                    aria-label="Geography"
+                    className="w-full"
+                    mode="multiple"
+                    placeholder="Select geographies"
+                    loading={isLocationsLoading}
+                    value={formState.geographies}
+                    onChange={(value) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        geographies: value,
+                        selectedDataUses: [],
+                      }))
+                    }
+                    options={geographyOptions}
+                    allowClear
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-          <div>
-            <Button
-              type="primary"
-              onClick={handleSubmit}
-              disabled={!canGenerate}
-              loading={isGenerating}
+            <div>
+              <Form.Item label="Common data uses" className="!mb-2">
+                <Text type="secondary" size="sm">
+                  Select the data use categories most relevant to your
+                  organization. This helps Fides prioritize scanning and
+                  generate more targeted access policies.
+                </Text>
+              </Form.Item>
+              {renderDataUseCards()}
+            </div>
+
+            <Form.Item
+              label="Upload policy document or enter URL to policy page"
+              className="!mb-0"
             >
-              Generate policies
-            </Button>
-          </div>
-        </Flex>
-      </Form>
+              <Flex gap={8} align="start">
+                <Select
+                  aria-label="Policy URLs"
+                  mode="tags"
+                  className="flex-1"
+                  placeholder="https://company.com/privacy"
+                  value={policyUrls}
+                  onChange={setPolicyUrls}
+                  tokenSeparators={[" "]}
+                  suffixIcon={null}
+                  open={false}
+                />
+                <Upload
+                  accept=".pdf,.docx"
+                  multiple
+                  beforeUpload={() => false}
+                  onChange={handleFileChange}
+                >
+                  <Button
+                    aria-label="Upload policy document"
+                    icon={<Icons.Upload size={16} />}
+                  >
+                    Upload
+                  </Button>
+                </Upload>
+              </Flex>
+            </Form.Item>
+
+            <div>
+              <Button
+                type="primary"
+                onClick={handleSubmit}
+                disabled={!canGenerate}
+                loading={isGenerating}
+              >
+                Generate policies
+              </Button>
+            </div>
+          </Flex>
+        </Form>
       </div>
     </div>
   );

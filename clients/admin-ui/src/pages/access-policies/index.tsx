@@ -35,9 +35,9 @@ const AccessPoliciesPage: NextPage = () => {
       >
         <div className="max-w-3xl">
           <Text type="secondary">
-            Access policies define when data processing is permitted or
-            denied. Policies are evaluated in priority order and can be
-            grouped into controls for organization and reporting.
+            Access policies define when data processing is permitted or denied.
+            Policies are evaluated in priority order and can be grouped into
+            controls for organization and reporting.
           </Text>
         </div>
       </PageHeader>

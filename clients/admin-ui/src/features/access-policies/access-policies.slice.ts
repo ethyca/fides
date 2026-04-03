@@ -101,11 +101,15 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       OnboardingDataUsesResponse,
       { industry: string; geographies: string[] }
     >({
-      query: ({ industry, geographies }) => ({
-        method: "GET",
-        url: "plus/access-policy/data-uses",
-        params: { industry, geographies },
-      }),
+      query: ({ industry, geographies }) => {
+        const params = new URLSearchParams();
+        params.append("industry", industry);
+        geographies.forEach((g) => params.append("geographies", g));
+        return {
+          method: "GET",
+          url: `plus/access-policy/data-uses?${params.toString()}`,
+        };
+      },
     }),
     getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
       query: () => ({
