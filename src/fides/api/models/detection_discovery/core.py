@@ -615,7 +615,7 @@ class StagedResourceBase(Base):
     def mark_as_addition(
         self,
         db: Session,
-        parent_resource_urns: Iterable[str] = [],
+        parent_resource_urns: Iterable[str] = (),
     ) -> None:
         """
         Marks the resource as an addition

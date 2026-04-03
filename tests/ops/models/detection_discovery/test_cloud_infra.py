@@ -13,7 +13,7 @@ class TestCloudInfraStagedResourceModel:
     MONITOR_KEY = "aws_monitor_1"
 
     @pytest.fixture
-    def create_cloud_infra_resource(self, db: Session) -> CloudInfraStagedResource:
+    def create_cloud_infra_resource(self, db: Session):
         resource = CloudInfraStagedResource.create(
             db=db,
             data={
@@ -34,7 +34,9 @@ class TestCloudInfraStagedResourceModel:
                 },
             },
         )
-        return resource
+        yield resource
+        db.delete(resource)
+        db.commit()
 
     def test_get_urn(
         self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
@@ -99,7 +101,6 @@ class TestCloudInfraStagedResourceModel:
                     "source_id": "arn:aws:s3:my-bucket",  # same source_id → violates constraint
                 },
             )
-            db.flush()
 
     def test_same_source_id_different_monitors_is_allowed(
         self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
@@ -120,4 +121,3 @@ class TestCloudInfraStagedResourceModel:
             },
         )
         assert resource.monitor_config_id == other_monitor
-        db.delete(resource)
