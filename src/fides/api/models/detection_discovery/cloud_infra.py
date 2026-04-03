@@ -12,7 +12,13 @@ class CloudInfraStagedResource(StagedResourceBase):
     Staged resource model for cloud infrastructure resources.
 
     Concrete subclass of StagedResourceBase with its own dedicated table.
-    See CloudInfraResourceMetadata in fidesplus for the shape of the meta field.
+    Expected shape of the meta field:
+      {
+          "provider": str,
+          "source_type": str,    # resource type from the provider, e.g. "s3:bucket"
+          "category": str | None,
+          "raw_response": dict,  # raw provider API response
+      }
     """
 
     @declared_attr

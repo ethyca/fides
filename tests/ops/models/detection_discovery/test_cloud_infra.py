@@ -94,6 +94,7 @@ class TestCloudInfraStagedResourceModel:
                     "source_id": "arn:aws:s3:my-bucket",  # same source_id → violates constraint
                 },
             )
+        db.rollback()
 
     def test_same_source_id_different_monitors_is_allowed(
         self, db: Session, create_cloud_infra_resource: CloudInfraStagedResource
@@ -113,4 +114,8 @@ class TestCloudInfraStagedResourceModel:
                 "source_id": "arn:aws:s3:my-bucket",  # same source_id, different monitor
             },
         )
-        assert resource.monitor_config_id == other_monitor
+        try:
+            assert resource.monitor_config_id == other_monitor
+        finally:
+            db.delete(resource)
+            db.commit()
