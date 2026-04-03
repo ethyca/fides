@@ -10,12 +10,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import MyDocument from "~/pages/_document";
 
 jest.mock("next/document", () => ({
-  Html: ({ children, ...props }: React.PropsWithChildren<object>) => (
-    <html {...props}>{children}</html>
+  Html: ({ children }: React.PropsWithChildren<object>) => (
+    <div>{children}</div>
   ),
-  Head: ({ children }: React.PropsWithChildren) => <head>{children}</head>,
-  Main: () => <main />,
-  NextScript: () => <script />,
+  Head: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+  Main: () => <div />,
+  NextScript: () => <div />,
   default: class Document {},
 }));
 
