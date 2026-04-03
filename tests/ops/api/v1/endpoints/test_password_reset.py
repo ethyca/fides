@@ -112,9 +112,7 @@ class TestForgotPassword:
         self, db, api_client: TestClient, verified_user
     ):
         """Test that a reset token is created in the database."""
-        with mock.patch(
-            "fides.service.user.user_service.dispatch_message"
-        ):
+        with mock.patch("fides.service.user.user_service.dispatch_message"):
             api_client.post(
                 FORGOT_PASSWORD_URL,
                 json={"email": "verified@example.com"},
@@ -135,17 +133,15 @@ class TestForgotPassword:
             db, user_id=verified_user.id, token=token1
         )
 
-        with mock.patch(
-            "fides.service.user.user_service.dispatch_message"
-        ):
+        with mock.patch("fides.service.user.user_service.dispatch_message"):
             api_client.post(
                 FORGOT_PASSWORD_URL,
                 json={"email": "verified@example.com"},
             )
 
-        resets = db.query(FidesUserPasswordReset).filter_by(
-            user_id=verified_user.id
-        ).all()
+        resets = (
+            db.query(FidesUserPasswordReset).filter_by(user_id=verified_user.id).all()
+        )
         assert len(resets) == 1
         # The old token should no longer be valid
         assert not resets[0].token_valid(token1)
@@ -173,9 +169,7 @@ class TestResetPasswordWithToken:
         )
 
         token = str(uuid4())
-        FidesUserPasswordReset.create_or_replace(
-            db, user_id=user.id, token=token
-        )
+        FidesUserPasswordReset.create_or_replace(db, user_id=user.id, token=token)
 
         yield user, token
         try:
@@ -208,14 +202,10 @@ class TestResetPasswordWithToken:
         assert user.credentials_valid(new_password)
 
         # Verify reset token is deleted (single-use)
-        reset = FidesUserPasswordReset.get_by(
-            db, field="user_id", value=user.id
-        )
+        reset = FidesUserPasswordReset.get_by(db, field="user_id", value=user.id)
         assert reset is None
 
-    def test_reset_password_with_invalid_token(
-        self, api_client: TestClient
-    ):
+    def test_reset_password_with_invalid_token(self, api_client: TestClient):
         """Test that an invalid token returns 400."""
         response = api_client.post(
             RESET_PASSWORD_WITH_TOKEN_URL,
@@ -234,9 +224,7 @@ class TestResetPasswordWithToken:
         user, token = user_with_reset_token
 
         # Manually expire the token by setting created_at to the past
-        reset = FidesUserPasswordReset.get_by(
-            db, field="user_id", value=user.id
-        )
+        reset = FidesUserPasswordReset.get_by(db, field="user_id", value=user.id)
         reset.created_at = datetime.now(timezone.utc) - timedelta(hours=24)
         reset.save(db)
 

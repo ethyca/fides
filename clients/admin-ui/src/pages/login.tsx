@@ -306,11 +306,12 @@ const Login: NextPage = () => {
       refetchOnMountOrArgChange: true,
     });
 
-  const submitButtonText = isFromInvite
-    ? "Setup user"
-    : isResetPassword
-      ? "Reset password"
-      : "Sign in";
+  let submitButtonText = "Sign in";
+  if (isFromInvite) {
+    submitButtonText = "Setup user";
+  } else if (isResetPassword) {
+    submitButtonText = "Reset password";
+  }
 
   // Determine if we should show username/password inputs
   // Show them if there was an error fetching auth methods or username/password auth is enabled
@@ -441,11 +442,9 @@ const Login: NextPage = () => {
                       showSSOButtons &&
                       openidProviders &&
                       !isResetPassword && <Divider>or</Divider>}
-                    {showSSOButtons &&
-                      openidProviders &&
-                      !isResetPassword && (
-                        <OAuthLoginButtons openidProviders={openidProviders} />
-                      )}
+                    {showSSOButtons && openidProviders && !isResetPassword && (
+                      <OAuthLoginButtons openidProviders={openidProviders} />
+                    )}
                   </Flex>
                 </Form>
               </Flex>

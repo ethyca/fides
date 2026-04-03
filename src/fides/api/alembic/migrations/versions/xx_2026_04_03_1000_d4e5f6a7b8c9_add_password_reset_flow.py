@@ -48,7 +48,13 @@ def upgrade():
         ),
     )
     op.create_index(
-        "ix_fides_user_password_reset_user_id",
+        op.f("ix_fides_user_password_reset_id"),
+        "fides_user_password_reset",
+        ["id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_fides_user_password_reset_user_id"),
         "fides_user_password_reset",
         ["user_id"],
         unique=True,
@@ -57,7 +63,11 @@ def upgrade():
 
 def downgrade():
     op.drop_index(
-        "ix_fides_user_password_reset_user_id",
+        op.f("ix_fides_user_password_reset_user_id"),
+        table_name="fides_user_password_reset",
+    )
+    op.drop_index(
+        op.f("ix_fides_user_password_reset_id"),
         table_name="fides_user_password_reset",
     )
     op.drop_table("fides_user_password_reset")
