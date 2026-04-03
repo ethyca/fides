@@ -20,6 +20,7 @@ const CreateOAuthClientModal = ({
     centered
     footer={null}
     width={720}
+    destroyOnHidden
     data-testid="create-oauth-client-modal"
   >
     <OAuthClientForm onClose={onClose} onCreated={onCreated} />
