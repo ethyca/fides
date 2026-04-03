@@ -126,6 +126,26 @@ class BaseErasureEmailConnector(BaseEmailConnector):
         for privacy_request in privacy_requests:
             self.error_privacy_request(db, privacy_request, failure_reason)
 
+    def get_already_sent_privacy_request_ids(
+        self, db: Session, privacy_request_ids: list[str]
+    ) -> set[str]:
+        """Return the subset of privacy_request_ids that already have a complete
+        ExecutionLog for this connector, preventing duplicate email sends
+        when a batch is retried after partial failure."""
+        if not privacy_request_ids:
+            return set()
+        rows = (
+            db.query(ExecutionLog.privacy_request_id)
+            .filter(
+                ExecutionLog.privacy_request_id.in_(privacy_request_ids),
+                ExecutionLog.connection_key == self.configuration.key,
+                ExecutionLog.action_type == ActionType.erasure,
+                ExecutionLog.status == ExecutionLogStatus.complete,
+            )
+            .all()
+        )
+        return {row[0] for row in rows}
+
 
 def get_identity_types_for_connector(
     email_secrets: BaseEmailSchema,

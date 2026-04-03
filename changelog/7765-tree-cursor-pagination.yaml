@@ -1,4 +1,0 @@
-type: Changed
-description: Upgraded fastapi-pagination to 0.15.12, improving Action Center tree pagination performance. Changed monitor failure log drawer title to include the monitor name.
-pr: 7765
-labels: []

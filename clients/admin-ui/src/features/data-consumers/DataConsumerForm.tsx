@@ -61,6 +61,10 @@ const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
     router.push(DATA_CONSUMERS_ROUTE);
   }, [router]);
 
+  if (purposesLoading) {
+    return <Spin />;
+  }
+
   return (
     <Form
       form={form}

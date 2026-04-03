@@ -1197,6 +1197,63 @@ class TestErasureEmailBatchSend:
         )
 
 
+class TestErasureEmailIdempotency:
+    """Tests that erasure email connectors don't re-send emails for privacy
+    requests that already have a complete ExecutionLog from a previous batch run."""
+
+    @mock.patch(
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email",
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    )
+    def test_erasure_email_skips_already_sent(
+        self,
+        requeue_privacy_requests,
+        send_single_erasure_email,
+        db,
+        privacy_request_awaiting_erasure_email_send,
+        attentive_email_connection_config,
+    ) -> None:
+        """If a privacy request already has a complete ExecutionLog for a
+        connector (e.g. from a previous batch where another connector failed),
+        the connector should not re-send the email."""
+        # Simulate a previous successful send by creating a complete ExecutionLog
+        ExecutionLog.create(
+            db=db,
+            data={
+                "connection_key": attentive_email_connection_config.key,
+                "dataset_name": attentive_email_connection_config.name_or_key,
+                "collection_name": attentive_email_connection_config.name_or_key,
+                "privacy_request_id": privacy_request_awaiting_erasure_email_send.id,
+                "action_type": ActionType.erasure,
+                "status": ExecutionLogStatus.complete,
+                "message": "Erasure email instructions dispatched for 'Attentive Email'",
+            },
+        )
+
+        exit_state = send_email_batch.delay().get()
+        assert exit_state == EmailExitState.complete
+
+        # The email should NOT have been sent again
+        assert not send_single_erasure_email.called
+        assert requeue_privacy_requests.called
+
+        # Verify no duplicate ExecutionLog was created
+        complete_logs = ExecutionLog.filter(
+            db=db,
+            conditions=(
+                (
+                    ExecutionLog.privacy_request_id
+                    == privacy_request_awaiting_erasure_email_send.id
+                )
+                & (ExecutionLog.connection_key == attentive_email_connection_config.key)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
+            ),
+        )
+        assert complete_logs.count() == 1  # Only the pre-existing one
+
+
 class TestEmailBatchSendLocking:
     def test_send_email_batch_already_running(
         self,

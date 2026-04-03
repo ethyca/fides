@@ -7,8 +7,8 @@ import {
   Drawer,
   Flex,
   Icons,
-  PageSpinner,
   Result,
+  Spin,
   Tag,
   Typography,
 } from "fidesui";
@@ -65,7 +65,7 @@ export const ViolationDetailDrawer = ({
         </Flex>
       }
     >
-      {isLoading && <PageSpinner />}
+      {isLoading && <Spin />}
       {error && (
         <Result
           status="error"

@@ -290,9 +290,7 @@ const RoleDetailPage: NextPage = () => {
   if (isLoading || isRolesLoading || isPermissionsLoading || !role) {
     return (
       <Layout title="Edit role">
-        <Flex justify="center" align="center" style={{ minHeight: 400 }}>
-          <Spin />
-        </Flex>
+        <Spin />
       </Layout>
     );
   }

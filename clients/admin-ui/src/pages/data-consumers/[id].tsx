@@ -1,4 +1,4 @@
-import { Card, Flex, Typography, useMessage } from "fidesui";
+import { Spin, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -37,6 +37,23 @@ const EditDataConsumerPage: NextPage = () => {
     message.success(`Data consumer "${values.name}" updated successfully`);
     router.push(DATA_CONSUMERS_ROUTE);
   };
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching the data consumer"
+      />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Layout title="Data consumer">
+        <Spin />
+      </Layout>
+    );
+  }
 
   return (
     <FixedLayout title={consumer?.name ?? "Data consumer"}>
