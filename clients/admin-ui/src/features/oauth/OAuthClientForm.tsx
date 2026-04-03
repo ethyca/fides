@@ -4,12 +4,8 @@ import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { ClientResponse } from "~/types/api";
 
-import {
-  useCreateOAuthClientMutation,
-  useUpdateOAuthClientMutation,
-} from "./oauth-clients.slice";
+import { useCreateOAuthClientMutation } from "./oauth-clients.slice";
 
 export interface OAuthClientFormValues {
   name: string;
@@ -31,13 +27,11 @@ interface OAuthClientFormProps {
 const OAuthClientForm = ({ onClose, onCreated }: OAuthClientFormProps) => {
   const message = useMessage();
   const [createClient] = useCreateOAuthClientMutation();
-  const [updateClient] = useUpdateOAuthClientMutation();
 
   const initialValues: OAuthClientFormValues = {
-    name: client?.name ?? "",
-    description: client?.description ?? "",
-    // Preserve existing scopes unchanged; scope editing added in follow-up PR
-    scopes: client?.scopes ?? [],
+    name: "",
+    description: "",
+    scopes: [],
   };
 
   const handleSubmit = async (values: OAuthClientFormValues) => {
@@ -49,9 +43,7 @@ const OAuthClientForm = ({ onClose, onCreated }: OAuthClientFormProps) => {
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
-      message.success(
-        "API client created. Copy the secret — it won't be shown again.",
-      );
+      message.success("API client created.");
       onClose();
       if (onCreated && result.data) {
         onCreated(result.data.client_id, result.data.client_secret);
