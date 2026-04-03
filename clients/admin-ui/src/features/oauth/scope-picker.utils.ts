@@ -16,11 +16,8 @@ export function groupScopesByResource(
 ): Record<string, string[]> {
   return scopes.reduce<Record<string, string[]>>((acc, scope) => {
     const resource = scope.split(":")[0];
-    if (!acc[resource]) {
-      acc[resource] = [];
-    }
-    acc[resource].push(scope);
-    return acc;
+    const existing = acc[resource] ?? [];
+    return { ...acc, [resource]: [...existing, scope] };
   }, {});
 }
 
