@@ -23,23 +23,15 @@ const validationSchema = Yup.object().shape({
 });
 
 interface OAuthClientFormProps {
-  /** When provided, the form is in edit mode for this client. */
-  client?: ClientResponse;
   onClose: () => void;
   /** Called with the new client_id + plaintext secret after successful creation. */
   onCreated?: (clientId: string, secret: string) => void;
 }
 
-const OAuthClientForm = ({
-  client,
-  onClose,
-  onCreated,
-}: OAuthClientFormProps) => {
+const OAuthClientForm = ({ onClose, onCreated }: OAuthClientFormProps) => {
   const message = useMessage();
   const [createClient] = useCreateOAuthClientMutation();
   const [updateClient] = useUpdateOAuthClientMutation();
-
-  const isEditing = !!client;
 
   const initialValues: OAuthClientFormValues = {
     name: client?.name ?? "",
@@ -49,34 +41,20 @@ const OAuthClientForm = ({
   };
 
   const handleSubmit = async (values: OAuthClientFormValues) => {
-    if (isEditing) {
-      const result = await updateClient({
-        client_id: client.client_id,
-        name: values.name,
-        description: values.description || undefined,
-        scopes: values.scopes,
-      });
-      if (isErrorResult(result)) {
-        message.error(getErrorMessage(result.error));
-      } else {
-        message.success("API client updated.");
-      }
+    const result = await createClient({
+      name: values.name,
+      description: values.description || undefined,
+      scopes: values.scopes,
+    });
+    if (isErrorResult(result)) {
+      message.error(getErrorMessage(result.error));
     } else {
-      const result = await createClient({
-        name: values.name,
-        description: values.description || undefined,
-        scopes: values.scopes,
-      });
-      if (isErrorResult(result)) {
-        message.error(getErrorMessage(result.error));
-      } else {
-        message.success(
-          "API client created. Copy the secret — it won't be shown again.",
-        );
-        onClose();
-        if (onCreated && result.data) {
-          onCreated(result.data.client_id, result.data.client_secret);
-        }
+      message.success(
+        "API client created. Copy the secret — it won't be shown again.",
+      );
+      onClose();
+      if (onCreated && result.data) {
+        onCreated(result.data.client_id, result.data.client_secret);
       }
     }
   };
@@ -119,7 +97,7 @@ const OAuthClientForm = ({
                 loading={isSubmitting}
                 data-testid="save-btn"
               >
-                {isEditing ? "Save changes" : "Create client"}
+                Create client
               </Button>
             </div>
           </div>
