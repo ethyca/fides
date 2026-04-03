@@ -1,12 +1,12 @@
 import { Flex, List, Pagination, Tag, Tooltip, Typography } from "fidesui";
 
-import ClipboardButton from "~/features/common/ClipboardButton";
 import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useHasPermission } from "~/features/common/Restrict";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { ClientResponse, ScopeRegistryEnum } from "~/types/api";
 
+import { pluralize } from "../common/utils";
 import { useListOAuthClientsQuery } from "./oauth-clients.slice";
 
 const { Text } = Typography;
@@ -48,10 +48,9 @@ const ClientListItem = ({
         description={
           <Flex vertical gap={4}>
             <Flex align="center" gap={4}>
-              <Text className="font-mono text-xs text-gray-400">
+              <Text className="font-mono text-xs" type="secondary" copyable>
                 {client.client_id}
               </Text>
-              <ClipboardButton copyText={client.client_id} size="small" />
             </Flex>
             {client.description && (
               <Text className="text-sm text-gray-700">
@@ -79,15 +78,13 @@ const OAuthClientsList = () => {
         loading={isLoading}
         itemLayout="horizontal"
         dataSource={data?.items ?? []}
-        rowKey={(client) => client.client_id}
+        rowKey="client_id"
         locale={{
           emptyText: (
-            <div className="px-4 py-8 text-center">
-              <Typography.Paragraph type="secondary">
-                No API clients yet. Click &quot;Create API client&quot; to get
-                started.
-              </Typography.Paragraph>
-            </div>
+            <Typography.Paragraph type="secondary">
+              No API clients yet. Click &quot;Create API client&quot; to get
+              started.
+            </Typography.Paragraph>
           ),
         }}
         renderItem={(client) => (
@@ -98,7 +95,9 @@ const OAuthClientsList = () => {
         <Pagination
           {...paginationProps}
           total={data?.total ?? 0}
-          showTotal={(totalItems) => `Total ${totalItems} items`}
+          showTotal={(totalItems) =>
+            `Total ${pluralize(totalItems, "item", "items")}`
+          }
         />
       </Flex>
     </Flex>
