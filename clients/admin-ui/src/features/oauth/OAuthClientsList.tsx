@@ -73,7 +73,7 @@ const OAuthClientsList = () => {
   const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
 
   return (
-    <Flex vertical>
+    <Flex vertical gap={8}>
       <List
         loading={isLoading}
         itemLayout="horizontal"
@@ -91,7 +91,7 @@ const OAuthClientsList = () => {
           <ClientListItem client={client} canUpdate={canUpdate} />
         )}
       />
-      <Flex justify="end" className="mt-4">
+      <Flex justify="end">
         <Pagination
           {...paginationProps}
           total={data?.total ?? 0}
