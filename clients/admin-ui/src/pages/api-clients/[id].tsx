@@ -102,7 +102,7 @@ const ApiClientDetailPage: NextPage = () => {
     isLoading,
     error,
   } = useGetOAuthClientQuery(clientId, {
-    skip: !clientId,
+    skip: !router.isReady || !clientId,
   });
 
   if (error) {
