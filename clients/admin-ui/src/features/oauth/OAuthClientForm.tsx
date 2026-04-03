@@ -121,11 +121,11 @@ const OAuthClientForm = ({
               data-testid="client-description-input"
               disabled={!canUpdate}
             />
-            <div>
-              <p className="text-sm font-medium mb-2">Scopes</p>
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium">Scopes</legend>
               <hr className="mb-3" />
               <ScopePickerField />
-            </div>
+            </fieldset>
             <div className="flex justify-end gap-3">
               <Button
                 htmlType="button"
