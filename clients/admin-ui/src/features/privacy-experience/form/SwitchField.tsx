@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Form, Icons, Switch } from "fidesui";
+import { Form, Switch } from "fidesui";
 
 import styles from "./SwitchField.module.scss";
 
@@ -22,19 +22,7 @@ export const SwitchField = ({
     colon={false}
     valuePropName="checked"
     {...props}
-    tooltip={
-      tooltip
-        ? {
-            title: tooltip,
-            icon: (
-              <Icons.InformationFilled
-                color="var(--fidesui-neutral-200)"
-                size={14}
-              />
-            ),
-          }
-        : undefined
-    }
+    tooltip={tooltip}
     className={classNames(props.className, styles["switch-field"])}
   >
     <Switch size="small" data-testid={`input-${props.name}`} {...switchProps} />

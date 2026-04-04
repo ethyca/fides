@@ -1,4 +1,4 @@
-import { Form, Icons, Select } from "fidesui";
+import { Form, Select } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -41,10 +41,7 @@ export const TCFConfigSelect = ({
     <Form.Item
       name="tcf_configuration_id"
       label="TCF Configuration"
-      tooltip={{
-        title: getTcfTooltip(overridesEnabled, !!tcfConfigOptions?.length),
-        icon: <Icons.InformationFilled color="var(--fidesui-neutral-200)" />,
-      }}
+      tooltip={getTcfTooltip(overridesEnabled, !!tcfConfigOptions?.length)}
     >
       <Select
         options={tcfConfigOptions}

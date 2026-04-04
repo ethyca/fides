@@ -4,6 +4,7 @@ export * from "./CustomCard";
 export * from "./CustomDateRangePicker";
 export * from "./CustomDrawer";
 export * from "./CustomDropdown";
+export * from "./CustomForm";
 export * from "./CustomInput";
 export * from "./CustomList";
 export * from "./CustomSelect";

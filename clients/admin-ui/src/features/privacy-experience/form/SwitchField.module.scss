@@ -1,8 +1,4 @@
 .switch-field {
-  :global(.ant-form-item-label) {
-    font-weight: 500;
-    --ant-form-label-font-size: 12px;
-  }
   :global(.ant-form-item-control-input) {
     display: flex;
     justify-content: flex-end;

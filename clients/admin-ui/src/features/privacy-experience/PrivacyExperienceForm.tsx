@@ -427,12 +427,7 @@ export const PrivacyExperienceForm = ({
             <Form.Item
               name="name"
               label="Name"
-              tooltip={{
-                title: "Internal admin use only",
-                icon: (
-                  <Icons.InformationFilled color="var(--fidesui-neutral-200)" />
-                ),
-              }}
+              tooltip="Internal admin use only"
               rules={[
                 { required: true, message: "Experience name is required" },
               ]}
@@ -477,13 +472,7 @@ export const PrivacyExperienceForm = ({
               <Form.Item
                 name="reject_all_mechanism"
                 label="Reject all behavior"
-                tooltip={{
-                  title:
-                    "Reject all: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject consent-only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection.",
-                  icon: (
-                    <Icons.InformationFilled color="var(--fidesui-neutral-200)" />
-                  ),
-                }}
+                tooltip="Reject all: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject consent-only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
               >
                 <Select
                   options={tcfRejectAllMechanismOptions}
@@ -502,15 +491,11 @@ export const PrivacyExperienceForm = ({
                     ? "Reject all visibility"
                     : "Banner options"
                 }
-                tooltip={{
-                  title:
-                    component === ComponentType.BANNER_AND_MODAL
-                      ? GPC_ADAPTIVE_TOOLTIP
-                      : undefined,
-                  icon: (
-                    <Icons.InformationFilled color="var(--fidesui-neutral-200)" />
-                  ),
-                }}
+                tooltip={
+                  component === ComponentType.BANNER_AND_MODAL
+                    ? GPC_ADAPTIVE_TOOLTIP
+                    : undefined
+                }
               >
                 <Select
                   options={
@@ -536,13 +521,7 @@ export const PrivacyExperienceForm = ({
               component === ComponentType.TCF_OVERLAY) && (
               <Form.Item
                 label="Resurface banner"
-                tooltip={{
-                  title:
-                    "Choose when to show the banner again after the user has interacted with it. Leave unchecked for default behavior (only resurface on cookie expiration, vendor changes, and other mandatory updates.)",
-                  icon: (
-                    <Icons.InformationFilled color="var(--fidesui-neutral-200)" />
-                  ),
-                }}
+                tooltip="Choose when to show the banner again after the user has interacted with it. Leave unchecked for default behavior (only resurface on cookie expiration, vendor changes, and other mandatory updates.)"
                 className="!mb-0 mt-4"
               >
                 <Checkbox.Group
@@ -809,13 +788,7 @@ export const PrivacyExperienceForm = ({
                   <Form.Item
                     name="asset_disclosure_include_types"
                     label="Asset types to disclose"
-                    tooltip={{
-                      title:
-                        "Select the asset types to disclose. Only cookies are currently supported.",
-                      icon: (
-                        <Icons.InformationFilled color="var(--fidesui-neutral-200)" />
-                      ),
-                    }}
+                    tooltip="Select the asset types to disclose. Only cookies are currently supported."
                     dependencies={[
                       "allow_vendor_asset_disclosure",
                       "component",
