@@ -1,55 +1,53 @@
 import {
+  Alert,
   Button,
-  ChakraHeading as Heading,
-  ChakraText as Text,
+  Flex,
+  Form,
+  Input,
+  Switch,
+  Typography,
   useModal,
 } from "fidesui";
-import { useFormikContext } from "formik";
 import { isEqual } from "lodash";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import {
-  CustomSwitch,
-  CustomTextArea,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
 import InfoBox from "~/features/common/InfoBox";
 import { BackButtonNonLink } from "~/features/common/nav/BackButton";
 import {
   getTranslationFormFields,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
-import { PrivacyExperienceConfigColumnLayout } from "~/features/privacy-experience/PrivacyExperienceForm";
-import {
-  ComponentType,
-  ExperienceConfigCreate,
-  ExperienceTranslation,
-} from "~/types/api";
+import { ExperienceFormInstance } from "~/features/privacy-experience/form/useExperienceForm";
+import { ComponentType, ExperienceTranslation } from "~/types/api";
+
+import { ConfigColumnLayout } from "./ConfigColumnLayout";
 
 export const OOBTranslationNotice = ({
   languageName,
 }: {
   languageName: string;
 }) => (
-  <InfoBox
-    text={`This is a default translation provided by Fides. If you've modified the default English language text, these translations will not match, so verify any changes with a native ${languageName} speaker before using.`}
+  <Alert
+    showIcon
+    description={`This is a default translation provided by Fides. If you've modified the default English language text, these translations will not match, so verify any changes with a native ${languageName} speaker before using.`}
     data-testid="oob-translation-notice"
   />
 );
 
 const PrivacyExperienceTranslationForm = ({
+  form,
   translation,
   translationsEnabled,
   isOOB,
   onReturnToMainForm,
 }: {
+  form: ExperienceFormInstance;
   translation: TranslationWithLanguageName;
   translationsEnabled?: boolean;
   isOOB?: boolean;
   onReturnToMainForm: () => void;
 }) => {
-  const { values, setFieldValue, errors, touched, setTouched } =
-    useFormikContext<ExperienceConfigCreate>();
+  const component = Form.useWatch("component", form);
 
   // store the initial translation so we can undo changes on discard
   const initialTranslation = useMemo(() => {
@@ -58,16 +56,49 @@ const PrivacyExperienceTranslationForm = ({
   }, [translation]);
   const isEditing = !!initialTranslation.title && !isOOB;
 
-  const formConfig = getTranslationFormFields(values.component);
+  const formConfig = getTranslationFormFields(component);
 
-  const translationIndex = values.translations!.findIndex(
-    (t) => t.language === translation.language,
-  );
+  // "translations" is not registered as a single Form.Item (it would conflict with
+  // nested name paths like ['translations', 0, 'title']). Read directly from the store.
+  const allTranslations = form.getFieldValue("translations") as
+    | ExperienceTranslation[]
+    | undefined;
 
-  const translationIsTouched = !isEqual(
-    values.translations![translationIndex],
-    initialTranslation,
-  );
+  const translationIndex =
+    allTranslations?.findIndex(
+      (t: ExperienceTranslation) => t.language === translation.language,
+    ) ?? -1;
+
+  // Watch the specific nested translation to get reactive updates when its fields change.
+  const currentTranslation = Form.useWatch(
+    ["translations", translationIndex],
+    form,
+  ) as ExperienceTranslation | undefined;
+
+  const translationIsTouched = !isEqual(currentTranslation, initialTranslation);
+
+  // Re-check translation validation errors reactively when values change.
+  // currentTranslation is derived from Form.useWatch so it updates on every edit.
+  // setTimeout(0) defers the check until after Ant's synchronous validation cycle.
+  const [hasTranslationErrors, setHasTranslationErrors] = useState(false);
+  useEffect(() => {
+    if (translationIndex < 0) {
+      setHasTranslationErrors(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      const fieldErrors = form.getFieldsError();
+      const hasErrors = fieldErrors.some(
+        ({ name, errors }) =>
+          Array.isArray(name) &&
+          name[0] === "translations" &&
+          name[1] === translationIndex &&
+          errors.length > 0,
+      );
+      setHasTranslationErrors(hasErrors);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [form, translationIndex, currentTranslation]);
 
   const modal = useModal();
 
@@ -82,7 +113,7 @@ const PrivacyExperienceTranslationForm = ({
   }
 
   const discardChanges = () => {
-    const newTranslations = values.translations!.slice();
+    const newTranslations = (allTranslations ?? []).slice();
     // when editing, revert all changes to the translation being edited
     if (isEditing) {
       newTranslations[translationIndex] = {
@@ -95,11 +126,7 @@ const PrivacyExperienceTranslationForm = ({
     else {
       newTranslations.splice(translationIndex, 1);
     }
-    setFieldValue("translations", newTranslations);
-    const { translations, ...rest } = touched;
-    setTouched({
-      ...rest,
-    });
+    form.setFieldValue("translations", newTranslations);
     onReturnToMainForm();
   };
 
@@ -107,7 +134,7 @@ const PrivacyExperienceTranslationForm = ({
     if (translationIsTouched || isOOB) {
       modal.confirm({
         title: translationsEnabled ? "Translation not saved" : "Text not saved",
-        content: <Text>{unsavedChangesMessage}</Text>,
+        content: <Typography.Text>{unsavedChangesMessage}</Typography.Text>,
         okText: "Discard",
         cancelText: "Cancel",
         centered: true,
@@ -120,28 +147,27 @@ const PrivacyExperienceTranslationForm = ({
   };
 
   const setNewDefaultTranslation = (newDefaultIndex: number) => {
-    const newTranslations = values.translations!.map((t, idx) => ({
-      ...t,
-      is_default: idx === newDefaultIndex,
-    }));
+    const newTranslations = (allTranslations ?? []).map(
+      (t: ExperienceTranslation, idx: number) => ({
+        ...t,
+        is_default: idx === newDefaultIndex,
+      }),
+    );
     // move the new default to first in the array
     newTranslations.unshift(newTranslations.splice(newDefaultIndex, 1)[0]);
-    setFieldValue("translations", newTranslations);
+    form.setFieldValue("translations", newTranslations);
     onReturnToMainForm();
   };
 
   const handleSaveTranslation = () => {
-    if (
-      values.translations![translationIndex].is_default &&
-      !initialTranslation.is_default
-    ) {
+    if (currentTranslation?.is_default && !initialTranslation.is_default) {
       modal.confirm({
         title: "Update default language",
         content: (
-          <Text>
+          <Typography.Text>
             Are you sure you want to update the default language of this
             experience?
-          </Text>
+          </Typography.Text>
         ),
         okText: "Continue",
         cancelText: "Cancel",
@@ -155,7 +181,11 @@ const PrivacyExperienceTranslationForm = ({
   };
 
   const buttonPanel = (
-    <div className="flex justify-between border-t border-[#DEE5EE] p-4">
+    <Flex
+      justify="space-between"
+      className="sticky bottom-0 z-10 bg-white p-4"
+      style={{ borderTop: "1px solid var(--ant-color-border)" }}
+    >
       <Button onClick={handleLeaveForm} data-testid="cancel-btn">
         Cancel
       </Button>
@@ -163,186 +193,272 @@ const PrivacyExperienceTranslationForm = ({
         onClick={handleSaveTranslation}
         type="primary"
         data-testid="save-btn"
-        disabled={(!translationIsTouched && !isOOB) || !!errors.translations}
+        disabled={(!translationIsTouched && !isOOB) || hasTranslationErrors}
       >
         {isEditing ? "Save" : "Add translation"}
       </Button>
-    </div>
+    </Flex>
   );
 
+  if (translationIndex < 0) {
+    return null;
+  }
+
+  const fieldPrefix = ["translations", translationIndex];
+
   return (
-    <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
+    <ConfigColumnLayout buttonPanel={buttonPanel}>
       <BackButtonNonLink onClick={handleLeaveForm} mt={4} />
-      <Heading fontSize="md" fontWeight="semibold">
+      <Typography.Title level={5} style={{ margin: 0 }}>
         {translationsEnabled
           ? `Edit ${translation.name} translation`
           : "Edit experience text"}
-      </Heading>
+      </Typography.Title>
       {isOOB ? <OOBTranslationNotice languageName={translation.name} /> : null}
       {translationsEnabled && (
-        <CustomSwitch
-          name={`translations.${translationIndex}.is_default`}
-          id={`translations.${translationIndex}.is_default`}
-          label="Default language"
-          isDisabled={Boolean(initialTranslation.is_default)}
-          variant="stacked"
-        />
+        <Flex justify="space-between" align="center">
+          <Typography.Text className="text-xs">
+            Default language
+          </Typography.Text>
+          <Form.Item
+            name={[...fieldPrefix, "is_default"]}
+            valuePropName="checked"
+            noStyle
+          >
+            <Switch
+              disabled={Boolean(initialTranslation.is_default)}
+              size="small"
+              data-testid={`input-translations.${translationIndex}.is_default`}
+            />
+          </Form.Item>
+        </Flex>
       )}
 
-      <CustomTextInput
-        name={`translations.${translationIndex}.title`}
-        id={`translations.${translationIndex}.title`}
+      <Form.Item
+        name={[...fieldPrefix, "title"]}
         label="Title"
-        isRequired
-        variant="stacked"
-      />
-      <CustomTextArea
-        name={`translations.${translationIndex}.description`}
-        id={`translations.${translationIndex}.description`}
+        rules={[{ required: true, message: "Title is required" }]}
+      >
+        <Input
+          required
+          data-testid={`input-translations.${translationIndex}.title`}
+        />
+      </Form.Item>
+      <Form.Item
+        name={[...fieldPrefix, "description"]}
         label="Description"
-        isRequired
-        variant="stacked"
-      />
-      {(values.component === ComponentType.BANNER_AND_MODAL ||
-        values.component === ComponentType.TCF_OVERLAY) && (
+        rules={[{ required: true, message: "Description is required" }]}
+      >
+        <Input.TextArea
+          required
+          data-testid={`input-translations.${translationIndex}.description`}
+        />
+      </Form.Item>
+      {(component === ComponentType.BANNER_AND_MODAL ||
+        component === ComponentType.TCF_OVERLAY) && (
         <>
-          <CustomTextInput
-            name={`translations.${translationIndex}.banner_title`}
-            id={`translations.${translationIndex}.banner_title`}
+          <Form.Item
+            name={[...fieldPrefix, "banner_title"]}
             label="Banner title (optional)"
             tooltip="A separate title for the banner (defaults to main title)"
-            variant="stacked"
-          />
-          <CustomTextArea
-            name={`translations.${translationIndex}.banner_description`}
-            id={`translations.${translationIndex}.banner_description`}
+          >
+            <Input
+              data-testid={`input-translations.${translationIndex}.banner_title`}
+            />
+          </Form.Item>
+          <Form.Item
+            name={[...fieldPrefix, "banner_description"]}
             label="Banner description (optional)"
             tooltip="A separate description for the banner (defaults to main description)"
-            variant="stacked"
-          />
+          >
+            <Input.TextArea
+              data-testid={`input-translations.${translationIndex}.banner_description`}
+            />
+          </Form.Item>
         </>
       )}
-      {values.component === ComponentType.TCF_OVERLAY && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.purpose_header`}
-          id={`translations.${translationIndex}.purpose_header`}
+      {component === ComponentType.TCF_OVERLAY && (
+        <Form.Item
+          name={[...fieldPrefix, "purpose_header"]}
           label="Purpose header (optional)"
           tooltip="Appears above the Purpose list section of the TCF banner"
-          variant="stacked"
-        />
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.purpose_header`}
+          />
+        </Form.Item>
       )}
-      <CustomTextInput
-        name={`translations.${translationIndex}.accept_button_label`}
-        id={`translations.${translationIndex}.accept_button_label`}
+      <Form.Item
+        name={[...fieldPrefix, "accept_button_label"]}
         label={`"Accept" button label`}
-        isRequired
-        variant="stacked"
-      />
-      <CustomTextInput
-        name={`translations.${translationIndex}.reject_button_label`}
-        id={`translations.${translationIndex}.reject_button_label`}
-        label={`"Reject" button label`}
-        isRequired
-        variant="stacked"
-      />
-      {formConfig.privacy_preferences_link_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.privacy_preferences_link_label`}
-          id={`translations.${translationIndex}.privacy_preferences_link_label`}
-          label={`"Manage privacy preferences" button label`}
-          variant="stacked"
-          isRequired={formConfig.privacy_preferences_link_label?.required}
+        rules={[{ required: true, message: "Accept button label is required" }]}
+      >
+        <Input
+          required
+          data-testid={`input-translations.${translationIndex}.accept_button_label`}
         />
+      </Form.Item>
+      <Form.Item
+        name={[...fieldPrefix, "reject_button_label"]}
+        label={`"Reject" button label`}
+        rules={[{ required: true, message: "Reject button label is required" }]}
+      >
+        <Input
+          required
+          data-testid={`input-translations.${translationIndex}.reject_button_label`}
+        />
+      </Form.Item>
+      {formConfig.privacy_preferences_link_label?.included && (
+        <Form.Item
+          name={[...fieldPrefix, "privacy_preferences_link_label"]}
+          label={`"Manage privacy preferences" button label`}
+          rules={
+            formConfig.privacy_preferences_link_label?.required
+              ? [
+                  {
+                    required: true,
+                    message: "Privacy preferences link label is required",
+                  },
+                ]
+              : undefined
+          }
+        >
+          <Input
+            required={formConfig.privacy_preferences_link_label?.required}
+            data-testid={`input-translations.${translationIndex}.privacy_preferences_link_label`}
+          />
+        </Form.Item>
       )}
       {formConfig.save_button_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.save_button_label`}
-          id={`translations.${translationIndex}.save_button_label`}
+        <Form.Item
+          name={[...fieldPrefix, "save_button_label"]}
           label={`"Save" button label`}
-          variant="stacked"
-          isRequired={formConfig.save_button_label.required}
-        />
+          rules={
+            formConfig.save_button_label.required
+              ? [
+                  {
+                    required: true,
+                    message: "Save button label is required",
+                  },
+                ]
+              : undefined
+          }
+        >
+          <Input
+            required={formConfig.save_button_label?.required}
+            data-testid={`input-translations.${translationIndex}.save_button_label`}
+          />
+        </Form.Item>
       )}
       {formConfig.acknowledge_button_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.acknowledge_button_label`}
-          id={`translations.${translationIndex}.acknowledge_button_label`}
+        <Form.Item
+          name={[...fieldPrefix, "acknowledge_button_label"]}
           label={`"Acknowledge" button label`}
-          variant="stacked"
-          isRequired={formConfig.acknowledge_button_label.required}
-        />
+          rules={
+            formConfig.acknowledge_button_label.required
+              ? [
+                  {
+                    required: true,
+                    message: "Acknowledge button label is required",
+                  },
+                ]
+              : undefined
+          }
+        >
+          <Input
+            required={formConfig.acknowledge_button_label?.required}
+            data-testid={`input-translations.${translationIndex}.acknowledge_button_label`}
+          />
+        </Form.Item>
       )}
       {formConfig.privacy_policy_link_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.privacy_policy_link_label`}
-          id={`translations.${translationIndex}.privacy_policy_link_label`}
+        <Form.Item
+          name={[...fieldPrefix, "privacy_policy_link_label"]}
           label="Privacy policy link label (optional)"
-          variant="stacked"
-        />
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.privacy_policy_link_label`}
+          />
+        </Form.Item>
       )}
       {formConfig.privacy_policy_url?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.privacy_policy_url`}
-          id={`translations.${translationIndex}.privacy_policy_url`}
+        <Form.Item
+          name={[...fieldPrefix, "privacy_policy_url"]}
           label="Privacy policy link URL (optional)"
-          variant="stacked"
-        />
+          rules={[{ type: "url", message: "Must be a valid URL" }]}
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.privacy_policy_url`}
+          />
+        </Form.Item>
       )}
       {formConfig.modal_link_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.modal_link_label`}
-          id={`translations.${translationIndex}.modal_link_label`}
+        <Form.Item
+          name={[...fieldPrefix, "modal_link_label"]}
           label="Trigger link label (optional)"
           tooltip="Include text here if you would like the Fides CMP to manage the copy of the button that is included on your site to open the CMP."
-          variant="stacked"
-        />
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.modal_link_label`}
+          />
+        </Form.Item>
       )}
       {formConfig.gpc_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.gpc_label`}
-          id={`translations.${translationIndex}.gpc_label`}
+        <Form.Item
+          name={[...fieldPrefix, "gpc_label"]}
           label="GPC label (optional)"
           tooltip="The label shown next to the GPC badge (e.g. 'Global Privacy Control')"
-          variant="stacked"
-        />
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.gpc_label`}
+          />
+        </Form.Item>
       )}
       {formConfig.gpc_title?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.gpc_title`}
-          id={`translations.${translationIndex}.gpc_title`}
+        <Form.Item
+          name={[...fieldPrefix, "gpc_title"]}
           label="GPC title (optional)"
           tooltip="Title shown in the GPC info section (e.g. 'Global Privacy Control detected')"
-          variant="stacked"
-        />
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.gpc_title`}
+          />
+        </Form.Item>
       )}
       {formConfig.gpc_description?.included && (
-        <CustomTextArea
-          name={`translations.${translationIndex}.gpc_description`}
-          id={`translations.${translationIndex}.gpc_description`}
+        <Form.Item
+          name={[...fieldPrefix, "gpc_description"]}
           label="GPC description (optional)"
           tooltip="Description shown when GPC preference is honored"
-          variant="stacked"
-        />
+        >
+          <Input.TextArea
+            data-testid={`input-translations.${translationIndex}.gpc_description`}
+          />
+        </Form.Item>
       )}
       {formConfig.gpc_status_applied_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.gpc_status_applied_label`}
-          id={`translations.${translationIndex}.gpc_status_applied_label`}
+        <Form.Item
+          name={[...fieldPrefix, "gpc_status_applied_label"]}
           label="GPC 'Applied' status label (optional)"
           tooltip="Text shown when GPC is applied (e.g. 'Applied')"
-          variant="stacked"
-        />
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.gpc_status_applied_label`}
+          />
+        </Form.Item>
       )}
       {formConfig.gpc_status_overridden_label?.included && (
-        <CustomTextInput
-          name={`translations.${translationIndex}.gpc_status_overridden_label`}
-          id={`translations.${translationIndex}.gpc_status_overridden_label`}
+        <Form.Item
+          name={[...fieldPrefix, "gpc_status_overridden_label"]}
           label="GPC 'Overridden' status label (optional)"
           tooltip="Text shown when GPC is overridden (e.g. 'Overridden')"
-          variant="stacked"
-        />
+        >
+          <Input
+            data-testid={`input-translations.${translationIndex}.gpc_status_overridden_label`}
+          />
+        </Form.Item>
       )}
-    </PrivacyExperienceConfigColumnLayout>
+    </ConfigColumnLayout>
   );
 };
 export default PrivacyExperienceTranslationForm;

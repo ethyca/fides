@@ -1,6 +1,5 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import { ChakraText as Text, Flex, useNotification } from "fidesui";
-import { useFormikContext } from "formik";
+import { Flex, Form, Typography, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
@@ -51,12 +50,12 @@ const NoPreviewNotice = ({
       vertical
       data-testid="no-preview-notice"
     >
-      <Text fontSize="lg" fontWeight="500" align="center">
+      <Typography.Text strong className="text-center text-lg">
         {title}
-      </Text>
-      <Text color="gray.500" align="center">
+      </Typography.Text>
+      <Typography.Text type="secondary" className="text-center">
         {description}
-      </Text>
+      </Typography.Text>
     </Flex>
   </Flex>
 );
@@ -77,7 +76,12 @@ const Preview = ({
   const router = useRouter();
   const isNewExperience = router.pathname.includes("/new");
   const notification = useNotification();
-  const { values } = useFormikContext<ExperienceConfigCreate>();
+  const form = Form.useFormInstance<ExperienceConfigCreate>();
+  // Watch all fields to trigger re-renders when any value changes.
+  // The selector maps store values through getFieldsValue(true) to include
+  // fields without a Form.Item (e.g. privacy_notice_ids from ScrollableList).
+  Form.useWatch([], form);
+  const values = (form?.getFieldsValue?.(true) ?? {}) as ExperienceConfigCreate;
   const [noticesOnConfig, setNoticesOnConfig] = useState<
     PrivacyNoticeResponse[]
   >([]);
