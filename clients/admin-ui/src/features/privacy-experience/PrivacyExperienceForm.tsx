@@ -399,11 +399,7 @@ export const PrivacyExperienceForm = ({
     <Flex vertical className="min-h-full w-full">
       <Flex vertical className="h-full overflow-y-auto px-4">
         {/* Register fields managed outside of Form.Item (e.g. ScrollableList, conditionally
-          rendered switches) so Form.useWatch and getFieldsValue track them reactively. */}
-        {/* Register array/object fields managed by ScrollableList so
-          Form.useWatch tracks them reactively. "translations" is excluded
-          The translation sub-form now uses its own isolated Form instance,
-          so registering "translations" here no longer conflicts. */}
+          rendered switches, translations form) so Form.useWatch and getFieldsValue track them reactively. */}
         <Form.Item name="translations" hidden noStyle>
           <Input />
         </Form.Item>
@@ -754,7 +750,7 @@ export const PrivacyExperienceForm = ({
             </Typography.Title>
             <div
               className={
-                !form.getFieldValue("properties").length ? "mt-4" : undefined
+                !form.getFieldValue("properties")?.length ? "mt-4" : undefined
               }
             >
               <ScrollableList

@@ -148,6 +148,9 @@ const ConfigurePrivacyExperience = ({
   >(undefined);
 
   const [usingOOBValues, setUsingOOBValues] = useState<boolean>(false);
+  const [editingTranslationValues, setEditingTranslationValues] = useState<
+    ExperienceTranslation | undefined
+  >(undefined);
 
   const handleTranslationSelected = (translation: ExperienceTranslation) => {
     setTranslationToEdit({
@@ -177,6 +180,7 @@ const ConfigurePrivacyExperience = ({
   const closeTranslationDrawer = useCallback(() => {
     setTranslationToEdit(undefined);
     setUsingOOBValues(false);
+    setEditingTranslationValues(undefined);
   }, []);
 
   /** Called by Cancel button or drawer close. Checks the local form for
@@ -356,6 +360,7 @@ const ConfigurePrivacyExperience = ({
                 allPrivacyNotices={allPrivacyNotices}
                 initialValues={initialValues}
                 translation={translationToEdit}
+                editingTranslationValues={editingTranslationValues}
                 isMobilePreview={isMobilePreview}
                 mockGpcEnabled={mockGpcEnabled}
               />
@@ -378,14 +383,14 @@ const ConfigurePrivacyExperience = ({
             <Flex justify="flex-end" gap="small">
               <Button
                 onClick={handleLeaveTranslationForm}
-                data-testid="cancel-btn"
+                data-testid="translation-cancel-btn"
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => translationFormRef.current?.save()}
                 type="primary"
-                data-testid="save-btn"
+                data-testid="translation-save-btn"
               >
                 {!!translationToEdit?.title && !usingOOBValues
                   ? "Done"
@@ -403,6 +408,7 @@ const ConfigurePrivacyExperience = ({
             translationsEnabled={translationsEnabled}
             isOOB={usingOOBValues}
             onClose={closeTranslationDrawer}
+            onValuesChange={setEditingTranslationValues}
           />
         )}
       </Drawer>

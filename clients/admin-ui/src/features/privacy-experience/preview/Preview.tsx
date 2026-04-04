@@ -16,6 +16,7 @@ import theme from "~/theme";
 import {
   ComponentType,
   ExperienceConfigCreate,
+  ExperienceTranslation,
   Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeResponse,
@@ -64,12 +65,15 @@ const Preview = ({
   allPrivacyNotices,
   initialValues,
   translation,
+  editingTranslationValues,
   isMobilePreview,
   mockGpcEnabled,
 }: {
   allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
   translation?: TranslationWithLanguageName;
+  /** Live values from the translation drawer's local form, for real-time preview. */
+  editingTranslationValues?: ExperienceTranslation;
   isMobilePreview: boolean;
   mockGpcEnabled: boolean | "disabled";
 }) => {
@@ -201,11 +205,12 @@ const Preview = ({
       updatedConfig.experience.experience_config.component =
         ComponentType.MODAL;
     }
-    // if we're editing a translation, we want to preview the banner/modal with that language,
-    // otherwise we show first translation if exists, else keep default
-    const currentTranslation = values.translations?.find(
-      (i) => i.language === translation?.language,
-    );
+    // If we're editing a translation, prefer live values from the local form
+    // (editingTranslationValues) over the committed parent form values.
+    // Otherwise show the first translation if it exists, else keep default.
+    const currentTranslation =
+      editingTranslationValues ??
+      values.translations?.find((i) => i.language === translation?.language);
     if (values.translations?.length) {
       if (currentTranslation) {
         updatedConfig.experience.available_locales = [
@@ -242,6 +247,7 @@ const Preview = ({
      */
   }, [
     translation,
+    editingTranslationValues,
     baseConfig,
     allPrivacyNotices,
     isPreviewAvailable,
