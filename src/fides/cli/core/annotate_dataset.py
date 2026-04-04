@@ -11,10 +11,10 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey, FidesValidationError, validate_fides_key
 
+from fides.cli.core import api_helpers
+from fides.cli.core.utils import get_all_level_fields
 from fides.common.utils import echo_green
 from fides.config import FidesConfig
-from fides.core import api_helpers
-from fides.core.utils import get_all_level_fields
 
 
 class AnnotationAbortError(Exception):

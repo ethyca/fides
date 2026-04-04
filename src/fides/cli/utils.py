@@ -7,6 +7,8 @@ from typing import Any, Callable, Optional, Union
 import requests
 import rich_click as click
 
+from fides.cli.core import api as _api
+from fides.common.utils import FIDES_ASCII_ART as FIDES_ASCII_ART
 from fides.common.utils import check_response, echo_green, echo_red
 from fides.config import FidesConfig
 from fides.config.credentials_settings import (
@@ -15,23 +17,13 @@ from fides.config.credentials_settings import (
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.connectors.models import (
+from fides.config.schemas.credentials import (
     AWSConfig,
     BigQueryConfig,
     DatabaseConfig,
     OktaConfig,
 )
-from fides.core import api as _api
-
-FIDES_ASCII_ART = """
-
-███████╗██╗██████╗ ███████╗███████╗
-██╔════╝██║██╔══██╗██╔════╝██╔════╝
-█████╗  ██║██║  ██║█████╗  ███████╗
-██╔══╝  ██║██║  ██║██╔══╝  ╚════██║
-██║     ██║██████╔╝███████╗███████║
-╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝
-"""
+from fides.config.utils import get_config_from_file, get_dev_mode
 
 
 def check_server_health(server_url: str, verbose: bool = True) -> requests.Response:

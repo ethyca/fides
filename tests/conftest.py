@@ -2114,7 +2114,7 @@ def monkeysession():
 @pytest.fixture(scope="session")
 def monkeypatch_requests(test_client, monkeysession) -> None:
     """
-    Some places within the application, for example `fides.core.api`, use the `requests`
+    Some places within the application, for example `fides.cli.core.api`, use the `requests`
     library to interact with the webserver. This fixture patches those `requests` calls
     so that all of those tests instead interact with the test instance.
 

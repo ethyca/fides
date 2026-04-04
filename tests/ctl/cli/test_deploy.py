@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from fides.core import deploy
+from fides.cli.core import deploy
 
 
 @pytest.mark.unit
@@ -26,7 +26,7 @@ class TestDeploy:
     def test_compare_semvers(self, semver_1, semver_2, expected):
         assert deploy.compare_semvers(semver_1, semver_2) is expected
 
-    @mock.patch("fides.core.deploy.sys")
+    @mock.patch("fides.cli.core.deploy.sys")
     def test_check_virtualenv(self, mock_sys):
         # Emulate non-virtual environment
         mock_sys.prefix = (

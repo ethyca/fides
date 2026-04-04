@@ -17,7 +17,7 @@ from fides.config import CONFIG
 ASYNC_READONLY_POOL_LOCK = Lock()
 ASYNC_READONLY_POOL_WARMED = False
 
-# Associated with a workaround in fides.core.config.database_settings
+# Associated with a workaround in fides.cli.core.config.database_settings
 # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
 connect_args: Dict[str, Any] = {}
 if CONFIG.database.params.get("sslrootcert"):

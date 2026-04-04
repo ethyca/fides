@@ -4,13 +4,9 @@ from pathlib import Path as LocalPath
 import pytest
 import toml
 
+from fides.cli.create_config import create_and_update_config_file, create_config_file
 from fides.config import FidesConfig
-from fides.config.create import (
-    build_field_documentation,
-    create_and_update_config_file,
-    create_config_file,
-    validate_generated_config,
-)
+from fides.config.utils import build_field_documentation, validate_generated_config
 
 
 @pytest.mark.unit

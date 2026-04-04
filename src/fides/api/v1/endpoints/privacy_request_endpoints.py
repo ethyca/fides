@@ -45,9 +45,7 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.deps import get_messaging_service, get_privacy_request_service
-from fides.api.graph.config import (
-    CollectionAddress,
-)
+from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.client import ClientDetail

@@ -2,7 +2,7 @@
 
 import rich_click as click
 
-from fides.core import annotate_dataset as _annotate_dataset
+from fides.cli.core import annotate_dataset as _annotate_dataset
 
 
 @click.group(name="annotate")

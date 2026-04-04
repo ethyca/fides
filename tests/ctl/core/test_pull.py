@@ -1,8 +1,8 @@
 import pytest
 from git.repo import Repo
 
+from fides.cli.core.pull import pull_existing_resources
 from fides.config import FidesConfig
-from fides.core.pull import pull_existing_resources
 
 
 def git_reset(change_dir: str) -> None:
