@@ -2,7 +2,6 @@ import {
   ComponentType,
   ExperienceConfigResponse,
   ExperienceTranslationResponse,
-  Layer1ButtonOption,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -27,9 +26,7 @@ describe("getSelectedRegionIds", () => {
   });
 
   it("returns empty array when no locations are selected", () => {
-    const locations = [
-      { id: "us_ca", name: "California", selected: false },
-    ];
+    const locations = [{ id: "us_ca", name: "California", selected: false }];
     expect(getSelectedRegionIds(locations)).toEqual([]);
   });
 

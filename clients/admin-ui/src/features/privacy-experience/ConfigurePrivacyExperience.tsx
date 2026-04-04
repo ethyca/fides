@@ -1,4 +1,6 @@
 import {
+  Button,
+  Drawer,
   Flex,
   Form,
   Icons,
@@ -8,9 +10,11 @@ import {
   Tooltip,
   Typography,
   useMessage,
+  useModal,
 } from "fidesui";
+import { omit } from "lodash";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -36,7 +40,9 @@ import {
   PrivacyExperienceForm,
   TCF_PLACEHOLDER_ID,
 } from "~/features/privacy-experience/PrivacyExperienceForm";
-import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
+import PrivacyExperienceTranslationForm, {
+  TranslationFormHandle,
+} from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   ExperienceConfigCreate,
@@ -165,10 +171,101 @@ const ConfigurePrivacyExperience = ({
     );
   };
 
-  const handleExitTranslationForm = () => {
+  const translationFormRef = useRef<TranslationFormHandle>(null);
+  const modal = useModal();
+
+  const closeTranslationDrawer = useCallback(() => {
     setTranslationToEdit(undefined);
     setUsingOOBValues(false);
-  };
+  }, []);
+
+  /** Called by Cancel button or drawer close. Checks the local form for
+   *  unsaved edits via the imperative handle and shows a confirmation modal
+   *  if dirty. On discard, removes new (uncommitted) translations. */
+  const handleLeaveTranslationForm = useCallback(() => {
+    const isDirty = translationFormRef.current?.isDirty() ?? false;
+
+    if (!isDirty) {
+      // For new translations that were never saved, remove the placeholder.
+      if (translationToEdit) {
+        const initial = omit(
+          translationToEdit,
+          "name",
+        ) as ExperienceTranslation;
+        const isEditing = !!initial.title && !usingOOBValues;
+        if (!isEditing) {
+          const allTranslations = (form.getFieldValue("translations") ??
+            []) as ExperienceTranslation[];
+          const idx = allTranslations.findIndex(
+            (t) => t.language === translationToEdit.language,
+          );
+          if (idx >= 0) {
+            const updated = allTranslations.slice();
+            updated.splice(idx, 1);
+            form.setFieldValue("translations", updated);
+          }
+        }
+      }
+      closeTranslationDrawer();
+      return;
+    }
+
+    if (!translationToEdit) {
+      closeTranslationDrawer();
+      return;
+    }
+
+    const initialTranslation = omit(
+      translationToEdit,
+      "name",
+    ) as ExperienceTranslation;
+    const isEditing = !!initialTranslation.title && !usingOOBValues;
+
+    let unsavedMessage;
+    if (!translationsEnabled) {
+      unsavedMessage =
+        "You have unsaved changes to this experience text. Discard changes?";
+    } else if (isEditing) {
+      unsavedMessage =
+        "You have unsaved changes to this translation. Discard changes?";
+    } else {
+      unsavedMessage =
+        "This translation has not been added to your experience.  Discard translation?";
+    }
+
+    modal.confirm({
+      title: translationsEnabled ? "Translation not saved" : "Text not saved",
+      content: <Typography.Text>{unsavedMessage}</Typography.Text>,
+      okText: "Discard",
+      cancelText: "Cancel",
+      centered: true,
+      icon: null,
+      onOk: () => {
+        // The local form never committed, so parent form has original values.
+        // For new translations, remove the placeholder entry.
+        if (!isEditing) {
+          const allTranslations = (form.getFieldValue("translations") ??
+            []) as ExperienceTranslation[];
+          const idx = allTranslations.findIndex(
+            (t) => t.language === translationToEdit.language,
+          );
+          if (idx >= 0) {
+            const updated = allTranslations.slice();
+            updated.splice(idx, 1);
+            form.setFieldValue("translations", updated);
+          }
+        }
+        closeTranslationDrawer();
+      },
+    });
+  }, [
+    translationToEdit,
+    usingOOBValues,
+    translationsEnabled,
+    form,
+    modal,
+    closeTranslationDrawer,
+  ]);
 
   return (
     <Form
@@ -183,24 +280,15 @@ const ConfigurePrivacyExperience = ({
       <Flex className="size-full" data-testid="privacy-experience-detail-page">
         <Splitter>
           <Splitter.Panel min={300} defaultSize={300} max="50%" collapsible>
-            {translationToEdit ? (
-              <PrivacyExperienceTranslationForm
-                form={form}
-                translation={translationToEdit}
-                translationsEnabled={translationsEnabled}
-                isOOB={usingOOBValues}
-                onReturnToMainForm={handleExitTranslationForm}
-              />
-            ) : (
-              <PrivacyExperienceForm
-                form={form}
-                allPrivacyNotices={allPrivacyNotices}
-                translationsEnabled={translationsEnabled}
-                onSelectTranslation={handleTranslationSelected}
-                onCreateTranslation={handleCreateNewTranslation}
-                isSubmitting={isSubmitting}
-              />
-            )}
+            <PrivacyExperienceForm
+              form={form}
+              allPrivacyNotices={allPrivacyNotices}
+              translationsEnabled={translationsEnabled}
+              initialValues={initialValues}
+              onSelectTranslation={handleTranslationSelected}
+              onCreateTranslation={handleCreateNewTranslation}
+              isSubmitting={isSubmitting}
+            />
           </Splitter.Panel>
           <Splitter.Panel>
             <Flex
@@ -275,6 +363,49 @@ const ConfigurePrivacyExperience = ({
           </Splitter.Panel>
         </Splitter>
       </Flex>
+      <Drawer
+        title={
+          translationsEnabled
+            ? `Edit ${translationToEdit?.name} translation`
+            : "Edit experience text"
+        }
+        open={!!translationToEdit}
+        onClose={handleLeaveTranslationForm}
+        placement="left"
+        mask={false}
+        footer={
+          translationToEdit && (
+            <Flex justify="flex-end" gap="small">
+              <Button
+                onClick={handleLeaveTranslationForm}
+                data-testid="cancel-btn"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => translationFormRef.current?.save()}
+                type="primary"
+                data-testid="save-btn"
+              >
+                {!!translationToEdit?.title && !usingOOBValues
+                  ? "Done"
+                  : "Add translation"}
+              </Button>
+            </Flex>
+          )
+        }
+      >
+        {!!translationToEdit && (
+          <PrivacyExperienceTranslationForm
+            ref={translationFormRef}
+            parentForm={form}
+            translation={translationToEdit}
+            translationsEnabled={translationsEnabled}
+            isOOB={usingOOBValues}
+            onClose={closeTranslationDrawer}
+          />
+        )}
+      </Drawer>
     </Form>
   );
 };

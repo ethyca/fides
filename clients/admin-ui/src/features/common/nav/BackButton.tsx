@@ -1,11 +1,4 @@
-import {
-  Button,
-  ChakraFlex as Flex,
-  ChakraFlexProps as FlexProps,
-  ChakraText as Text,
-  Icons,
-} from "fidesui";
-import NextLink from "next/link";
+import { Avatar, Button, ButtonProps, Icons } from "fidesui";
 import { useRouter } from "next/navigation";
 
 /**
@@ -15,52 +8,33 @@ import { useRouter } from "next/navigation";
 const BackButton = ({
   backPath,
   ...props
-}: { backPath: string } & FlexProps) => {
+}: { backPath?: string } & ButtonProps) => {
   const nextRouter = useRouter();
   return (
-    <Flex alignItems="center" mb={6} {...props}>
-      <Button
-        onClick={() => nextRouter.push(backPath)}
-        aria-label="Back"
-        icon={<Icons.ArrowLeft />}
-        className="mr-2"
-        size="small"
-      />
-      <Text
-        as={NextLink}
-        href={backPath}
-        tabIndex={-1}
-        fontSize="sm"
-        fontWeight="500"
-      >
-        Back
-      </Text>
-    </Flex>
+    <Button
+      onClick={backPath ? () => nextRouter.push(backPath) : undefined}
+      role={backPath ? "link" : undefined}
+      icon={
+        <Avatar
+          size="small"
+          shape="square"
+          style={{
+            backgroundColor: "var(--fidesui-white)",
+            border: "1px solid var(--ant-color-border)",
+          }}
+        >
+          <Icons.ArrowLeft color="var(--fidesui-minos)" />
+        </Avatar>
+      }
+      iconPlacement="start"
+      data-testid="back-to-experiences-btn"
+      className="mb-6 w-fit px-0"
+      type="text"
+      {...props}
+    >
+      Back
+    </Button>
   );
 };
-
-export const BackButtonNonLink = ({
-  onClick,
-  ...props
-}: { onClick: () => void } & FlexProps) => (
-  <Flex
-    alignItems="center"
-    mt={-4}
-    mb={3}
-    onClick={onClick}
-    cursor="pointer"
-    {...props}
-  >
-    <Button
-      aria-label="Back"
-      icon={<Icons.ArrowLeft />}
-      className="mr-2"
-      size="small"
-    />
-    <Text as="a" fontSize="sm" fontWeight="500">
-      Back
-    </Text>
-  </Flex>
-);
 
 export default BackButton;

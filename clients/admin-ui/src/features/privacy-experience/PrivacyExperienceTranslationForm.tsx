@@ -1,18 +1,6 @@
-import {
-  Alert,
-  Button,
-  Flex,
-  Form,
-  Input,
-  Switch,
-  Typography,
-  useModal,
-} from "fidesui";
-import { isEqual } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { Alert, Form, Input, Typography, useModal } from "fidesui";
+import React, { useImperativeHandle, useMemo } from "react";
 
-import InfoBox from "~/features/common/InfoBox";
-import { BackButtonNonLink } from "~/features/common/nav/BackButton";
 import {
   getTranslationFormFields,
   TranslationWithLanguageName,
@@ -20,7 +8,7 @@ import {
 import { ExperienceFormInstance } from "~/features/privacy-experience/form/useExperienceForm";
 import { ComponentType, ExperienceTranslation } from "~/types/api";
 
-import { ConfigColumnLayout } from "./ConfigColumnLayout";
+import { SwitchField } from "./form/SwitchField";
 
 export const OOBTranslationNotice = ({
   languageName,
@@ -34,33 +22,35 @@ export const OOBTranslationNotice = ({
   />
 );
 
-const PrivacyExperienceTranslationForm = ({
-  form,
-  translation,
-  translationsEnabled,
-  isOOB,
-  onReturnToMainForm,
-}: {
-  form: ExperienceFormInstance;
+export interface TranslationFormHandle {
+  /** Validate, commit to parent form, and close. */
+  save: () => void;
+  /** Returns true when the local form has been edited or is an OOB import. */
+  isDirty: () => boolean;
+}
+
+interface TranslationFormProps {
+  parentForm: ExperienceFormInstance;
   translation: TranslationWithLanguageName;
   translationsEnabled?: boolean;
   isOOB?: boolean;
-  onReturnToMainForm: () => void;
-}) => {
-  const component = Form.useWatch("component", form);
+  onClose: () => void;
+}
 
-  // store the initial translation so we can undo changes on discard
+const PrivacyExperienceTranslationForm = React.forwardRef<
+  TranslationFormHandle,
+  TranslationFormProps
+>(({ parentForm, translation, translationsEnabled, isOOB, onClose }, ref) => {
+  const component = Form.useWatch("component", parentForm);
+
   const initialTranslation = useMemo(() => {
     const { name, ...rest } = translation;
     return rest as ExperienceTranslation;
   }, [translation]);
-  const isEditing = !!initialTranslation.title && !isOOB;
 
   const formConfig = getTranslationFormFields(component);
 
-  // "translations" is not registered as a single Form.Item (it would conflict with
-  // nested name paths like ['translations', 0, 'title']). Read directly from the store.
-  const allTranslations = form.getFieldValue("translations") as
+  const allTranslations = parentForm.getFieldValue("translations") as
     | ExperienceTranslation[]
     | undefined;
 
@@ -69,173 +59,115 @@ const PrivacyExperienceTranslationForm = ({
       (t: ExperienceTranslation) => t.language === translation.language,
     ) ?? -1;
 
-  // Watch the specific nested translation to get reactive updates when its fields change.
-  const currentTranslation = Form.useWatch(
-    ["translations", translationIndex],
-    form,
-  ) as ExperienceTranslation | undefined;
-
-  const translationIsTouched = !isEqual(currentTranslation, initialTranslation);
-
-  // Re-check translation validation errors reactively when values change.
-  // currentTranslation is derived from Form.useWatch so it updates on every edit.
-  // setTimeout(0) defers the check until after Ant's synchronous validation cycle.
-  const [hasTranslationErrors, setHasTranslationErrors] = useState(false);
-  useEffect(() => {
-    if (translationIndex < 0) {
-      setHasTranslationErrors(false);
-      return undefined;
-    }
-    const timer = setTimeout(() => {
-      const fieldErrors = form.getFieldsError();
-      const hasErrors = fieldErrors.some(
-        ({ name, errors }) =>
-          Array.isArray(name) &&
-          name[0] === "translations" &&
-          name[1] === translationIndex &&
-          errors.length > 0,
-      );
-      setHasTranslationErrors(hasErrors);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [form, translationIndex, currentTranslation]);
+  // Own form instance so edits don't dirty the parent form until saved.
+  const [localForm] = Form.useForm<ExperienceTranslation>();
 
   const modal = useModal();
 
-  let unsavedChangesMessage;
-  if (!translationsEnabled) {
-    unsavedChangesMessage =
-      "You have unsaved changes to this experience text. Discard changes?";
-  } else {
-    unsavedChangesMessage = isEditing
-      ? "You have unsaved changes to this translation. Discard changes?"
-      : "This translation has not been added to your experience.  Discard translation?";
-  }
-
-  const discardChanges = () => {
-    const newTranslations = (allTranslations ?? []).slice();
-    // when editing, revert all changes to the translation being edited
-    if (isEditing) {
-      newTranslations[translationIndex] = {
-        ...initialTranslation,
-        title: initialTranslation.title!,
-        description: initialTranslation.description!,
-      };
-    }
-    // when creating, just get rid of it
-    else {
-      newTranslations.splice(translationIndex, 1);
-    }
-    form.setFieldValue("translations", newTranslations);
-    onReturnToMainForm();
-  };
-
-  const handleLeaveForm = () => {
-    if (translationIsTouched || isOOB) {
-      modal.confirm({
-        title: translationsEnabled ? "Translation not saved" : "Text not saved",
-        content: <Typography.Text>{unsavedChangesMessage}</Typography.Text>,
-        okText: "Discard",
-        cancelText: "Cancel",
-        centered: true,
-        icon: null,
-        onOk: discardChanges,
-      });
-    } else {
-      onReturnToMainForm();
-    }
+  /** Write local form values into the parent form's translations array. */
+  const commitToParentForm = () => {
+    const localValues = localForm.getFieldsValue(true) as ExperienceTranslation;
+    const currentTranslations =
+      (parentForm.getFieldValue("translations") as
+        | ExperienceTranslation[]
+        | undefined) ?? [];
+    const updated = currentTranslations.slice();
+    updated[translationIndex] = {
+      ...updated[translationIndex],
+      ...localValues,
+    };
+    // Cast needed: ExperienceTranslation allows `null` on some fields but
+    // antd's setFieldsValue types strip `null`. Runtime behavior is correct.
+    parentForm.setFieldsValue({
+      translations: updated,
+    } as Parameters<typeof parentForm.setFieldsValue>[0]);
   };
 
   const setNewDefaultTranslation = (newDefaultIndex: number) => {
-    const newTranslations = (allTranslations ?? []).map(
+    commitToParentForm();
+    const freshTranslations = parentForm.getFieldValue(
+      "translations",
+    ) as ExperienceTranslation[];
+    const newTranslations = freshTranslations.map(
       (t: ExperienceTranslation, idx: number) => ({
         ...t,
         is_default: idx === newDefaultIndex,
       }),
     );
-    // move the new default to first in the array
     newTranslations.unshift(newTranslations.splice(newDefaultIndex, 1)[0]);
-    form.setFieldValue("translations", newTranslations);
-    onReturnToMainForm();
+    parentForm.setFieldsValue({
+      translations: newTranslations,
+    } as Parameters<typeof parentForm.setFieldsValue>[0]);
+    onClose();
   };
 
-  const handleSaveTranslation = () => {
-    if (currentTranslation?.is_default && !initialTranslation.is_default) {
-      modal.confirm({
-        title: "Update default language",
-        content: (
-          <Typography.Text>
-            Are you sure you want to update the default language of this
-            experience?
-          </Typography.Text>
-        ),
-        okText: "Continue",
-        cancelText: "Cancel",
-        centered: true,
-        icon: null,
-        onOk: () => setNewDefaultTranslation(translationIndex),
+  const handleSave = () => {
+    localForm
+      .validateFields()
+      .then(() => {
+        const localValues = localForm.getFieldsValue(
+          true,
+        ) as ExperienceTranslation;
+        if (localValues.is_default && !initialTranslation.is_default) {
+          modal.confirm({
+            title: "Update default language",
+            content: (
+              <Typography.Text>
+                Are you sure you want to update the default language of this
+                experience?
+              </Typography.Text>
+            ),
+            okText: "Continue",
+            cancelText: "Cancel",
+            centered: true,
+            icon: null,
+            onOk: () => setNewDefaultTranslation(translationIndex),
+          });
+        } else {
+          commitToParentForm();
+          onClose();
+        }
+      })
+      .catch(() => {
+        // validation errors shown inline
       });
-    } else {
-      onReturnToMainForm();
-    }
   };
 
-  const buttonPanel = (
-    <Flex
-      justify="space-between"
-      className="sticky bottom-0 z-10 bg-white p-4"
-      style={{ borderTop: "1px solid var(--ant-color-border)" }}
-    >
-      <Button onClick={handleLeaveForm} data-testid="cancel-btn">
-        Cancel
-      </Button>
-      <Button
-        onClick={handleSaveTranslation}
-        type="primary"
-        data-testid="save-btn"
-        disabled={(!translationIsTouched && !isOOB) || hasTranslationErrors}
-      >
-        {isEditing ? "Save" : "Add translation"}
-      </Button>
-    </Flex>
-  );
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+    isDirty: () => localForm.isFieldsTouched() || !!isOOB,
+  }));
 
   if (translationIndex < 0) {
     return null;
   }
 
-  const fieldPrefix = ["translations", translationIndex];
-
   return (
-    <ConfigColumnLayout buttonPanel={buttonPanel}>
-      <BackButtonNonLink onClick={handleLeaveForm} mt={4} />
-      <Typography.Title level={5} style={{ margin: 0 }}>
-        {translationsEnabled
-          ? `Edit ${translation.name} translation`
-          : "Edit experience text"}
-      </Typography.Title>
-      {isOOB ? <OOBTranslationNotice languageName={translation.name} /> : null}
+    <Form
+      form={localForm}
+      initialValues={initialTranslation}
+      layout="vertical"
+      key={translation.language}
+    >
+      {isOOB ? (
+        <div className="pb-4">
+          <OOBTranslationNotice languageName={translation.name} />
+        </div>
+      ) : null}
       {translationsEnabled && (
-        <Flex justify="space-between" align="center">
-          <Typography.Text className="text-xs">
-            Default language
-          </Typography.Text>
-          <Form.Item
-            name={[...fieldPrefix, "is_default"]}
-            valuePropName="checked"
-            noStyle
-          >
-            <Switch
-              disabled={Boolean(initialTranslation.is_default)}
-              size="small"
-              data-testid={`input-translations.${translationIndex}.is_default`}
-            />
-          </Form.Item>
-        </Flex>
+        <SwitchField
+          name="is_default"
+          valuePropName="checked"
+          label="Default language"
+          switchProps={{
+            disabled: Boolean(initialTranslation.is_default),
+            "data-testid": `input-translations.${translationIndex}.is_default`,
+          }}
+        />
       )}
 
       <Form.Item
-        name={[...fieldPrefix, "title"]}
+        name="title"
         label="Title"
         rules={[{ required: true, message: "Title is required" }]}
       >
@@ -245,7 +177,7 @@ const PrivacyExperienceTranslationForm = ({
         />
       </Form.Item>
       <Form.Item
-        name={[...fieldPrefix, "description"]}
+        name="description"
         label="Description"
         rules={[{ required: true, message: "Description is required" }]}
       >
@@ -258,7 +190,7 @@ const PrivacyExperienceTranslationForm = ({
         component === ComponentType.TCF_OVERLAY) && (
         <>
           <Form.Item
-            name={[...fieldPrefix, "banner_title"]}
+            name="banner_title"
             label="Banner title (optional)"
             tooltip="A separate title for the banner (defaults to main title)"
           >
@@ -267,7 +199,7 @@ const PrivacyExperienceTranslationForm = ({
             />
           </Form.Item>
           <Form.Item
-            name={[...fieldPrefix, "banner_description"]}
+            name="banner_description"
             label="Banner description (optional)"
             tooltip="A separate description for the banner (defaults to main description)"
           >
@@ -279,7 +211,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {component === ComponentType.TCF_OVERLAY && (
         <Form.Item
-          name={[...fieldPrefix, "purpose_header"]}
+          name="purpose_header"
           label="Purpose header (optional)"
           tooltip="Appears above the Purpose list section of the TCF banner"
         >
@@ -289,7 +221,7 @@ const PrivacyExperienceTranslationForm = ({
         </Form.Item>
       )}
       <Form.Item
-        name={[...fieldPrefix, "accept_button_label"]}
+        name="accept_button_label"
         label={`"Accept" button label`}
         rules={[{ required: true, message: "Accept button label is required" }]}
       >
@@ -299,7 +231,7 @@ const PrivacyExperienceTranslationForm = ({
         />
       </Form.Item>
       <Form.Item
-        name={[...fieldPrefix, "reject_button_label"]}
+        name="reject_button_label"
         label={`"Reject" button label`}
         rules={[{ required: true, message: "Reject button label is required" }]}
       >
@@ -310,7 +242,7 @@ const PrivacyExperienceTranslationForm = ({
       </Form.Item>
       {formConfig.privacy_preferences_link_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "privacy_preferences_link_label"]}
+          name="privacy_preferences_link_label"
           label={`"Manage privacy preferences" button label`}
           rules={
             formConfig.privacy_preferences_link_label?.required
@@ -331,7 +263,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.save_button_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "save_button_label"]}
+          name="save_button_label"
           label={`"Save" button label`}
           rules={
             formConfig.save_button_label.required
@@ -352,7 +284,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.acknowledge_button_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "acknowledge_button_label"]}
+          name="acknowledge_button_label"
           label={`"Acknowledge" button label`}
           rules={
             formConfig.acknowledge_button_label.required
@@ -373,7 +305,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.privacy_policy_link_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "privacy_policy_link_label"]}
+          name="privacy_policy_link_label"
           label="Privacy policy link label (optional)"
         >
           <Input
@@ -383,7 +315,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.privacy_policy_url?.included && (
         <Form.Item
-          name={[...fieldPrefix, "privacy_policy_url"]}
+          name="privacy_policy_url"
           label="Privacy policy link URL (optional)"
           rules={[{ type: "url", message: "Must be a valid URL" }]}
         >
@@ -394,7 +326,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.modal_link_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "modal_link_label"]}
+          name="modal_link_label"
           label="Trigger link label (optional)"
           tooltip="Include text here if you would like the Fides CMP to manage the copy of the button that is included on your site to open the CMP."
         >
@@ -405,7 +337,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.gpc_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "gpc_label"]}
+          name="gpc_label"
           label="GPC label (optional)"
           tooltip="The label shown next to the GPC badge (e.g. 'Global Privacy Control')"
         >
@@ -416,7 +348,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.gpc_title?.included && (
         <Form.Item
-          name={[...fieldPrefix, "gpc_title"]}
+          name="gpc_title"
           label="GPC title (optional)"
           tooltip="Title shown in the GPC info section (e.g. 'Global Privacy Control detected')"
         >
@@ -427,7 +359,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.gpc_description?.included && (
         <Form.Item
-          name={[...fieldPrefix, "gpc_description"]}
+          name="gpc_description"
           label="GPC description (optional)"
           tooltip="Description shown when GPC preference is honored"
         >
@@ -438,7 +370,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.gpc_status_applied_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "gpc_status_applied_label"]}
+          name="gpc_status_applied_label"
           label="GPC 'Applied' status label (optional)"
           tooltip="Text shown when GPC is applied (e.g. 'Applied')"
         >
@@ -449,7 +381,7 @@ const PrivacyExperienceTranslationForm = ({
       )}
       {formConfig.gpc_status_overridden_label?.included && (
         <Form.Item
-          name={[...fieldPrefix, "gpc_status_overridden_label"]}
+          name="gpc_status_overridden_label"
           label="GPC 'Overridden' status label (optional)"
           tooltip="Text shown when GPC is overridden (e.g. 'Overridden')"
         >
@@ -458,7 +390,11 @@ const PrivacyExperienceTranslationForm = ({
           />
         </Form.Item>
       )}
-    </ConfigColumnLayout>
+    </Form>
   );
-};
+});
+
+PrivacyExperienceTranslationForm.displayName =
+  "PrivacyExperienceTranslationForm";
+
 export default PrivacyExperienceTranslationForm;
