@@ -1,15 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraTable as Table,
-  ChakraTbody as Tbody,
-  ChakraTd as Td,
-  ChakraTh as Th,
-  ChakraThead as Thead,
-  ChakraTr as Tr,
-  Icons,
-  Switch,
-} from "fidesui";
+import { Button, ColumnsType, Icons, Switch, Table } from "fidesui";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -44,34 +33,36 @@ export const AssignSystemsDeleteTable = ({
     );
   };
 
+  const columns: ColumnsType<System> = [
+    {
+      title: "System",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "",
+      key: "actions",
+      align: "right" as const,
+      render: (_, record) => (
+        <Button
+          aria-label="Unassign system from user"
+          icon={<Icons.TrashCan />}
+          onClick={() => onDelete(record)}
+          data-testid="unassign-btn"
+        />
+      ),
+    },
+  ];
+
   return (
-    <Table size="sm" data-testid="assign-systems-delete-table">
-      <Thead>
-        <Tr>
-          <Th>System</Th>
-          <Th />
-        </Tr>
-      </Thead>
-      <Tbody>
-        {assignedSystems.map((system) => (
-          <Tr
-            key={system.fides_key}
-            _hover={{ bg: "gray.50" }}
-            data-testid={`row-${system.fides_key}`}
-          >
-            <Td>{system.name}</Td>
-            <Td textAlign="end">
-              <Button
-                aria-label="Unassign system from user"
-                icon={<Icons.TrashCan />}
-                onClick={() => onDelete(system)}
-                data-testid="unassign-btn"
-              />
-            </Td>
-          </Tr>
-        ))}
-      </Tbody>
-    </Table>
+    <Table
+      size="small"
+      columns={columns}
+      dataSource={assignedSystems}
+      rowKey="fides_key"
+      pagination={false}
+      data-testid="assign-systems-delete-table"
+    />
   );
 };
 
@@ -99,45 +90,41 @@ const AssignSystemsTable = ({
     }
   };
 
+  const columns: ColumnsType<System> = [
+    {
+      title: "System",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Assign",
+      key: "assign",
+      render: (_, record) => {
+        const isAssigned = !!assignedSystems.find(
+          (assigned) => assigned.fides_key === record.fides_key,
+        );
+        return (
+          <Switch
+            checked={isAssigned}
+            onChange={() => handleToggle(record)}
+            data-testid="assign-switch"
+          />
+        );
+      },
+    },
+  ];
+
   return (
-    <Box overflowY="auto" maxHeight="300px">
+    <div className="max-h-[300px] overflow-y-auto">
       <Table
-        size="sm"
+        size="small"
+        columns={columns}
+        dataSource={allSystems}
+        rowKey="fides_key"
+        pagination={false}
         data-testid="assign-systems-table"
-        maxHeight="50vh"
-        overflowY="scroll"
-      >
-        <Thead position="sticky" top={0} background="white" zIndex={1}>
-          <Tr>
-            <Th>System</Th>
-            <Th>Assign</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {allSystems.map((system) => {
-            const isAssigned = !!assignedSystems.find(
-              (assigned) => assigned.fides_key === system.fides_key,
-            );
-            return (
-              <Tr
-                key={system.fides_key}
-                _hover={{ bg: "gray.50" }}
-                data-testid={`row-${system.fides_key}`}
-              >
-                <Td>{system.name}</Td>
-                <Td>
-                  <Switch
-                    checked={isAssigned}
-                    onChange={() => handleToggle(system)}
-                    data-testid="assign-switch"
-                  />
-                </Td>
-              </Tr>
-            );
-          })}
-        </Tbody>
-      </Table>
-    </Box>
+      />
+    </div>
   );
 };
 
