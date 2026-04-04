@@ -109,7 +109,7 @@ export const baseApi = createApi({
     "User Monitors",
     "Datastore Filters",
     "Access Policies",
-    "Access Policy Control Groups",
+    "Controls",
     "Access Control",
     "Fides Dashboard",
   ],

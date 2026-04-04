@@ -1,8 +1,63 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
+
+
+class Control(Base):
+    """A regulatory framework or compliance grouping that policies can be associated with."""
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "plus_control"
+
+    key = Column(String, nullable=False, unique=True, index=True)
+    label = Column(String, nullable=False)
+
+
+class AccessPolicyControl(Base):
+    """Association between an access policy and a control."""
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "plus_access_policy_control"
+
+    access_policy_id = Column(
+        String(255),
+        ForeignKey(
+            "plus_access_policy.id",
+            name="plus_access_policy_control_policy_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    control_id = Column(
+        String(255),
+        ForeignKey(
+            "plus_control.id",
+            name="plus_access_policy_control_control_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "access_policy_id",
+            "control_id",
+            name="uq_plus_access_policy_control_policy_control",
+        ),
+    )
 
 
 class AccessPolicy(Base):
@@ -26,6 +81,12 @@ class AccessPolicy(Base):
         back_populates="access_policy",
         cascade="all, delete-orphan",
         order_by="AccessPolicyVersion.version.desc()",
+    )
+
+    controls = relationship(
+        "Control",
+        secondary="plus_access_policy_control",
+        lazy="selectin",
     )
 
 

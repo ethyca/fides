@@ -1,6 +1,6 @@
 import { baseApi } from "~/features/common/api.slice";
 
-export interface ControlGroup {
+export interface Control {
   key: string;
   label: string;
 }
@@ -72,12 +72,12 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Access Policies"],
     }),
-    getControlGroups: build.query<ControlGroup[], void>({
+    getControls: build.query<Control[], void>({
       query: () => ({
         method: "GET",
-        url: "plus/access-policy/control-group",
+        url: "plus/controls",
       }),
-      providesTags: ["Access Policy Control Groups"],
+      providesTags: ["Controls"],
     }),
   }),
 });
@@ -88,5 +88,5 @@ export const {
   useCreateAccessPolicyMutation,
   useUpdateAccessPolicyMutation,
   useDeleteAccessPolicyMutation,
-  useGetControlGroupsQuery,
+  useGetControlsQuery,
 } = accessPoliciesApi;
