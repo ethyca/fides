@@ -1,7 +1,7 @@
 """IdentityResolver Protocol — maps user identities to consumers.
 
-OSS provides BasicIdentityResolver (email, external_id, members).
-Fidesplus extends with PlatformIdentityResolver (BigQuery IAM, Snowflake RBAC).
+OSS provides BasicIdentityResolver (email, scope, members).
+Fidesplus extends with IdentityGroupProviders (GCP IAM, Google Workspace, Snowflake RBAC).
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ class IdentityResolver(Protocol):
     """Resolve a query user identity to a consumer.
 
     Resolution should attempt to match the user to a registered
-    consumer. Returns ``None`` if the identity cannot be resolved.
+    consumer. Returns `None` if the identity cannot be resolved.
     """
 
     def resolve(

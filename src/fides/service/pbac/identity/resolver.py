@@ -13,7 +13,7 @@ class RedisIdentityResolver:
 
     Resolution chain:
     1. Exact match on DataConsumer.contact_email
-    2. Match on DataConsumer.external_id (for group/project consumers)
+    2. Match on DataConsumer.scope keys (e.g., scope email=<identity>)
 
     Returns None if the identity cannot be resolved (recorded as a gap).
     """
@@ -30,7 +30,8 @@ class RedisIdentityResolver:
         if matches:
             return matches[0]
 
-        matches = self._consumer_repo.get_by_index("external_id", identity)
+        # Try matching by scope email (service accounts, direct user match)
+        matches = self._consumer_repo.get_by_index("scope", f"email={identity}")
         if matches:
             return matches[0]
 

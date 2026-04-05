@@ -2,7 +2,7 @@
 
 Resolves user identities to consumers using:
 1. contact_email match
-2. external_id match
+2. scope key match (e.g., email=<identity>)
 3. members list match
 """
 
@@ -36,12 +36,13 @@ class BasicIdentityResolver:
 
         # Build indexes for fast lookup
         self._by_email: dict[str, DataConsumerEntity] = {}
-        self._by_external_id: dict[str, DataConsumerEntity] = {}
+        self._by_scope_email: dict[str, DataConsumerEntity] = {}
         for c in consumers:
             if c.contact_email:
                 self._by_email[c.contact_email] = c
-            if c.external_id:
-                self._by_external_id[c.external_id] = c
+            scope_email = c.scope.get("email")
+            if scope_email:
+                self._by_scope_email[scope_email] = c
 
     def resolve(
         self,
@@ -51,16 +52,16 @@ class BasicIdentityResolver:
 
         Resolution chain:
         1. Exact match on consumer contact_email
-        2. Exact match on consumer external_id
+        2. Exact match on consumer scope email
         3. Members list match (identity in consumer's members)
         """
         # 1. contact_email match
         if identity in self._by_email:
             return self._by_email[identity]
 
-        # 2. external_id match
-        if identity in self._by_external_id:
-            return self._by_external_id[identity]
+        # 2. scope email match
+        if identity in self._by_scope_email:
+            return self._by_scope_email[identity]
 
         # 3. members list match
         for consumer in self._consumers:

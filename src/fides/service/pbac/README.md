@@ -89,8 +89,8 @@ The `IdentityResolver` Protocol maps a user identity string to a `DataConsumerEn
 
 | Class | Backing | Resolution chain |
 |-------|---------|-----------------|
-| `BasicIdentityResolver` | In-memory list | contact_email → external_id → members list |
-| `RedisIdentityResolver` | Redis | contact_email → external_id |
+| `BasicIdentityResolver` | In-memory list | contact_email → scope email → members list |
+| `RedisIdentityResolver` | Redis | contact_email → scope email |
 
 If no consumer matches, the resolver returns `None` and the engine records an `unresolved_identity` gap.
 
