@@ -9,12 +9,21 @@ export interface SeedTasksConfig {
   consent_experiences?: boolean;
   compass_vendors?: boolean;
   email_templates?: boolean;
+  chat_slack?: boolean;
+  privacy_assessments?: boolean;
+  consent_preferences?: boolean;
   discovery_monitors?: boolean;
   pbac?: boolean;
   dashboard?: boolean;
 }
 
+export interface SeedProfileDetail {
+  name: string;
+  tasks: SeedTasksConfig;
+}
+
 export interface SeedRequest {
+  secret_profile?: string;
   tasks: SeedTasksConfig;
 }
 
@@ -41,6 +50,16 @@ export interface SeedStatusResponse {
 
 const seedDataApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    listSeedProfiles: build.query<string[], void>({
+      query: () => ({
+        url: "plus/seed/profiles",
+      }),
+    }),
+    getSeedProfile: build.query<SeedProfileDetail, string>({
+      query: (profileName) => ({
+        url: `plus/seed/profiles/${profileName}`,
+      }),
+    }),
     triggerSeed: build.mutation<SeedResponse, SeedRequest>({
       query: (body) => ({
         url: "plus/seed",
@@ -84,6 +103,8 @@ const seedDataApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useListSeedProfilesQuery,
+  useGetSeedProfileQuery,
   useTriggerSeedMutation,
   useGetSeedStatusQuery,
   useGetLatestSeedStatusQuery,

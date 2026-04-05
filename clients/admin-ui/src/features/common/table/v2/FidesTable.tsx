@@ -27,7 +27,7 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   Icons,
-  Spin,
+  TableSpinner as Spin,
   theme,
 } from "fidesui";
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
