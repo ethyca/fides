@@ -51,6 +51,10 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const isLoading =
     isCommentsLoading || isResultsLoading || isManualTasksLoading;
 
+  // Keep currentLogs up to date if `results` is re-fetched while the drawer
+  // is open (e.g., after a retry). Without this, the drawer would show stale
+  // logs. currentKey is the sole reason this effect exists after the
+  // connectionKey prop was removed from LogDrawer/EventLog.
   useEffect(() => {
     if (currentKey && results && results[currentKey]) {
       setCurrentLogs(results[currentKey]);
@@ -186,7 +190,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         onOpenErrorPanel={openErrorPanel}
         onCloseErrorPanel={closeErrorPanel}
         privacyRequest={subjectRequest}
-        connectionKey={currentKey || undefined}
       />
     </Box>
   );

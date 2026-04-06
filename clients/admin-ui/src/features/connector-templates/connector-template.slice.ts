@@ -49,6 +49,7 @@ export const connectorTemplateApi = baseApi.injectEndpoints({
     >({
       query: (connectorType) =>
         `${CONNECTOR_TEMPLATE}/${connectorType}/versions`,
+      providesTags: ["Connection Type"],
     }),
     getConnectorTemplateVersionConfig: build.query<
       string,

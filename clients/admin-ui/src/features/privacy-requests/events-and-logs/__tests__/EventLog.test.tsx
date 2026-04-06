@@ -71,30 +71,28 @@ describe("EventLog — version badge", () => {
     expect(screen.getByText("Version")).toBeInTheDocument();
   });
 
-  it("does not make the badge clickable when connectionKey is absent", () => {
+  it("does not make the badge clickable when connection_key is absent on the log", () => {
     render(
       <EventLog
         eventLogs={[makeLog({ saas_version: "0.0.11" })]}
         onDetailPanel={noop}
-        // connectionKey intentionally omitted
       />,
     );
 
     const wrapper = screen.getByTestId("version-badge-wrapper");
 
     expect(wrapper).not.toHaveAttribute("title");
-    expect(wrapper.style.cursor).toBeFalsy();
+    expect(wrapper.tagName.toLowerCase()).toBe("span");
 
     fireEvent.click(wrapper);
     expect(mockOpenVersionModal).not.toHaveBeenCalled();
   });
 
-  it("makes the badge clickable and triggers openVersionModal when connectionKey is given", () => {
+  it("makes the badge clickable and triggers openVersionModal when connection_key is on the log", () => {
     render(
       <EventLog
-        eventLogs={[makeLog({ saas_version: "0.0.11" })]}
+        eventLogs={[makeLog({ saas_version: "0.0.11", connection_key: "stripe_conn" })]}
         onDetailPanel={noop}
-        connectionKey="stripe_conn"
       />,
     );
 
@@ -109,12 +107,12 @@ describe("EventLog — version badge", () => {
 
   it("passes the correct version for each row when multiple versioned logs are shown", () => {
     const logs = [
-      makeLog({ saas_version: "0.0.11", updated_at: "2026-03-01T10:00:00Z" }),
-      makeLog({ saas_version: "0.0.12", updated_at: "2026-03-02T10:00:00Z" }),
+      makeLog({ saas_version: "0.0.11", connection_key: "stripe_conn", updated_at: "2026-03-01T10:00:00Z" }),
+      makeLog({ saas_version: "0.0.12", connection_key: "stripe_conn", updated_at: "2026-03-02T10:00:00Z" }),
     ];
 
     render(
-      <EventLog eventLogs={logs} onDetailPanel={noop} connectionKey="stripe_conn" />,
+      <EventLog eventLogs={logs} onDetailPanel={noop} />,
     );
 
     const wrappers = screen.getAllByTestId("version-badge-wrapper");

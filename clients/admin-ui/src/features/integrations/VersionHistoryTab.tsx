@@ -1,3 +1,5 @@
+import React, { useState } from "react";
+
 import { formatDate } from "common/utils";
 import {
   Button,
@@ -8,7 +10,6 @@ import {
   Tag,
   Typography,
 } from "fidesui";
-import React, { useState } from "react";
 
 import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
 import {
@@ -93,7 +94,7 @@ const VersionHistoryTab = ({ connectorType }: VersionHistoryTabProps) => {
         dataSource={versions}
         columns={columns}
         rowKey={(row: SaaSConfigVersionResponse) =>
-          `${row.version}-${row.is_custom}`
+          `${row.version}-${row.is_custom}-${row.created_at}`
         }
         size="small"
         pagination={false}

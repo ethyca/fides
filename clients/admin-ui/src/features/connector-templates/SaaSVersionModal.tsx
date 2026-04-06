@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import {
   Button,
@@ -38,27 +38,19 @@ const SaaSVersionContent = ({
     isError: datasetError,
   } = useGetConnectorTemplateVersionDatasetQuery({ connectorType, version });
 
-  if (configLoading) {
-    return (
-      <Box display="flex" justifyContent="center" py={8}>
-        <Spinner />
-      </Box>
-    );
-  }
-
-  if (configError) {
-    return (
-      <Text color="red.500" fontSize="sm">
-        Could not load version config.
-      </Text>
-    );
-  }
-
   const tabItems = [
     {
       key: "config",
       label: "Config",
-      children: (
+      children: configLoading ? (
+        <Box display="flex" justifyContent="center" py={8}>
+          <Spinner />
+        </Box>
+      ) : configError ? (
+        <Text color="red.500" fontSize="sm">
+          Could not load version config.
+        </Text>
+      ) : (
         <Code
           display="block"
           whiteSpace="pre"
@@ -172,9 +164,9 @@ export const useSaaSVersionModal = () => {
     setPending(null);
   }, [pending, connection]);
 
-  const openVersionModal = (connectionKey: string, version: string) => {
+  const openVersionModal = useCallback((connectionKey: string, version: string) => {
     setPending({ connectionKey, version });
-  };
+  }, []);
 
   const handleClose = () => setActive(null);
 

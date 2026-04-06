@@ -1,3 +1,5 @@
+import React from "react";
+
 import { formatDate } from "common/utils";
 import {
   ChakraBox as Box,
@@ -20,17 +22,17 @@ import {
   ExecutionLogStatusLabels,
   PrivacyRequestEntity,
 } from "privacy-requests/types";
-import React from "react";
 
 import { useSaaSVersionModal } from "~/features/connector-templates/SaaSVersionModal";
 import { ActionType } from "~/types/api";
+
+import styles from "./EventLog.module.scss";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
   allEventLogs?: ExecutionLog[]; // All event logs from all groups for total calculation
   onDetailPanel: (message: string, status?: ExecutionLogStatus) => void;
   privacyRequest?: PrivacyRequestEntity;
-  connectionKey?: string;
 };
 
 const actionTypeToLabel = (actionType: string) => {
@@ -155,7 +157,6 @@ const EventLog = ({
   allEventLogs,
   onDetailPanel,
   privacyRequest,
-  connectionKey,
 }: EventDetailsProps) => {
   const { openVersionModal, modal: versionModal } = useSaaSVersionModal();
   // Check if any logs have collection_name OR if there's a finished entry to determine if we should show Records and Collection columns
@@ -273,13 +274,13 @@ const EventLog = ({
       {hasDatasetEntries && !isRequestFinishedView && (
         <Td>
           {detail.saas_version ? (
-            connectionKey ? (
+            detail.connection_key ? (
               <button
                 type="button"
-                style={{ all: "unset", cursor: "pointer" }}
+                className={styles.versionButton}
                 onClick={(e) => {
                   e.stopPropagation();
-                  openVersionModal(connectionKey, detail.saas_version!);
+                  openVersionModal(detail.connection_key!, detail.saas_version!);
                 }}
                 title="View version config"
                 data-testid="version-badge-wrapper"
@@ -291,22 +292,6 @@ const EventLog = ({
                 <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
               </span>
             )
-          ) : (
-            <Text
-              color="gray.600"
-              fontSize="xs"
-              lineHeight="4"
-              fontWeight="medium"
-            >
-              -
-            </Text>
-          )}
-        </Td>
-      )}
-      {hasDatasetEntries && !isRequestFinishedView && (
-        <Td>
-          {detail.saas_version ? (
-            <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
           ) : (
             <Text
               color="gray.600"
