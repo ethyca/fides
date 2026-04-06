@@ -26,6 +26,7 @@ import {
   useLoginMutation,
   useResetPasswordWithTokenMutation,
 } from "~/features/auth";
+import { passwordRules as strongPasswordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
 import { usePrefersReducedMotion } from "~/features/common/hooks";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
@@ -102,30 +103,6 @@ interface LoginFormValues {
   password: string;
 }
 
-const strongPasswordRules = [
-  { required: true, message: "Password is required" },
-  {
-    min: 8,
-    message: "Password must have at least eight characters.",
-  },
-  {
-    pattern: /[0-9]/,
-    message: "Password must have at least one number.",
-  },
-  {
-    pattern: /[A-Z]/,
-    message: "Password must have at least one capital letter.",
-  },
-  {
-    pattern: /[a-z]/,
-    message: "Password must have at least one lowercase letter.",
-  },
-  {
-    pattern: /[\W_]/,
-    message: "Password must have at least one symbol.",
-  },
-];
-
 const useLogin = () => {
   const [form] = Form.useForm<LoginFormValues>();
   const [loginRequest] = useLoginMutation();
@@ -156,7 +133,7 @@ const useLogin = () => {
     [],
   );
 
-  const passwordRules = useMemo(
+  const loginPasswordRules = useMemo(
     () =>
       isFromInvite || isResetPassword
         ? strongPasswordRules
@@ -240,7 +217,7 @@ const useLogin = () => {
     handleSubmit,
     isSubmitting,
     usernameRules,
-    passwordRules,
+    passwordRules: loginPasswordRules,
     username,
   };
 };

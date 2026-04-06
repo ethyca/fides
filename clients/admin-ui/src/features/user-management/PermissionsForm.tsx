@@ -39,11 +39,18 @@ const defaultInitialValues: FormValues = {
 
 const { Text } = Typography;
 
+/**
+ * Legacy permissions form for non-RBAC mode.
+ *
+ * When RBAC is enabled (alphaRbac flag), UserManagementTabs renders RolesForm
+ * instead of this component. This component only handles legacy permissions.
+ */
 const PermissionsForm = () => {
   const message = useMessage();
   const router = useRouter();
   const modal = useModal();
   const [form] = Form.useForm<FormValues>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
@@ -149,11 +156,23 @@ const PermissionsForm = () => {
         okText: "Yes",
         centered: true,
         icon: null,
-        onOk: () => updatePermissions(values),
+        onOk: async () => {
+          setIsSubmitting(true);
+          try {
+            await updatePermissions(values);
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
         className: "downgrade-to-approver-confirmation-modal",
       });
     } else {
-      await updatePermissions(values);
+      setIsSubmitting(true);
+      try {
+        await updatePermissions(values);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -246,6 +265,7 @@ const PermissionsForm = () => {
               className="ml-2"
               type="primary"
               htmlType="submit"
+              loading={isSubmitting}
               disabled={
                 (!form.isFieldsTouched() &&
                   assignedSystems === initialManagedSystems) ||

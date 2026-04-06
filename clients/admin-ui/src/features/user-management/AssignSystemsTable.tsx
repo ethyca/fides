@@ -61,6 +61,9 @@ export const AssignSystemsDeleteTable = ({
       dataSource={assignedSystems}
       rowKey="fides_key"
       pagination={false}
+      onRow={(record) =>
+        ({ "data-testid": `row-${record.fides_key}` }) as React.HTMLAttributes<HTMLTableRowElement>
+      }
       data-testid="assign-systems-delete-table"
     />
   );
@@ -122,6 +125,9 @@ const AssignSystemsTable = ({
         dataSource={allSystems}
         rowKey="fides_key"
         pagination={false}
+        onRow={(record) =>
+          ({ "data-testid": `row-${record.fides_key}` }) as React.HTMLAttributes<HTMLTableRowElement>
+        }
         data-testid="assign-systems-table"
       />
     </div>

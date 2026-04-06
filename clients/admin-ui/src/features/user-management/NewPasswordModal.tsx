@@ -16,6 +16,8 @@ import { selectUser } from "~/features/auth/auth.slice";
 import { getErrorMessage } from "~/features/common/helpers";
 import { isErrorResult } from "~/types/errors";
 
+import { passwordRules } from "~/features/common/form/validation";
+
 import { clearAuthAndLogout } from "./logout-helpers";
 import { useForceResetUserPasswordMutation } from "./user-management.slice";
 
@@ -26,20 +28,6 @@ interface FormValues {
   passwordConfirmation: string;
 }
 
-const passwordRules = [
-  { required: true, message: "Password is required" },
-  { min: 8, message: "Password must have at least eight characters." },
-  { pattern: /[0-9]/, message: "Password must have at least one number." },
-  {
-    pattern: /[A-Z]/,
-    message: "Password must have at least one capital letter.",
-  },
-  {
-    pattern: /[a-z]/,
-    message: "Password must have at least one lowercase letter.",
-  },
-  { pattern: /[\W_]/, message: "Password must have at least one symbol." },
-];
 
 const useNewPasswordModal = (id: string) => {
   const [isOpen, setIsOpen] = useState(false);

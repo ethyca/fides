@@ -12,7 +12,7 @@ import {
   setActiveUserId,
   useCreateUserMutation,
 } from "./user-management.slice";
-import { FormValues } from "./UserForm";
+import { UserCreateExtended } from "~/types/api";
 
 const NewUserForm = () => {
   const router = useRouter();
@@ -23,7 +23,7 @@ const NewUserForm = () => {
     dispatch(setActiveUserId(undefined));
   }, [dispatch]);
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: UserCreateExtended) => {
     const b64Password = values.password
       ? utf8ToB64(values.password)
       : undefined;

@@ -30,6 +30,8 @@ import { UserCreateExtended } from "~/types/api";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
+import { passwordRules } from "~/features/common/form/validation";
+
 import {
   shouldShowPasswordField,
   shouldShowPasswordLoginToggle,
@@ -57,29 +59,9 @@ const defaultInitialValues: FormValues = {
   password_login_enabled: false,
 };
 
-const passwordRules = [
-  { required: true, message: "Password is required" },
-  { min: 8, message: "Password must have at least eight characters." },
-  {
-    pattern: /[0-9]/,
-    message: "Password must have at least one number.",
-  },
-  {
-    pattern: /[A-Z]/,
-    message: "Password must have at least one capital letter.",
-  },
-  {
-    pattern: /[a-z]/,
-    message: "Password must have at least one lowercase letter.",
-  },
-  {
-    pattern: /[\W_]/,
-    message: "Password must have at least one symbol.",
-  },
-];
 
 export interface UserFormProps {
-  onSubmit: (values: FormValues) => Promise<
+  onSubmit: (values: UserCreateExtended) => Promise<
     | {
         data: User | UserCreateResponse;
       }
@@ -180,7 +162,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
         payload.password = values.password;
       }
 
-      const result = await onSubmit(payload as FormValues);
+      const result = await onSubmit(payload);
       if (isErrorResult(result)) {
         message.error(getErrorMessage(result.error));
         return;
@@ -207,7 +189,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
       initialValues={formInitialValues}
       onFinish={handleSubmit}
       data-testid="user-form"
-      className="xs:max-w-xs max-w-full"
+      className="max-w-full"
     >
       <div className="flex max-w-[55%] flex-col">
         <Flex justify="space-between" align="center" className="mb-6">
@@ -331,7 +313,10 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
         <Button
           htmlType="submit"
           type="primary"
-          disabled={!form.isFieldsTouched()}
+          disabled={
+            !form.isFieldsTouched() ||
+            form.getFieldsError().some(({ errors }) => errors.length > 0)
+          }
           loading={isSubmitting}
           data-testid="save-user-btn"
         >

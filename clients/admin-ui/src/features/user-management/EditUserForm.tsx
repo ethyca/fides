@@ -15,7 +15,8 @@ import {
   useEditUserMutation,
   useReinviteUserMutation,
 } from "./user-management.slice";
-import { FormValues } from "./UserForm";
+import { type FormValues } from "./UserForm";
+import { UserCreateExtended } from "~/types/api";
 
 const useUserForm = (profile: User) => {
   const currentUser = useSelector(selectUser);
@@ -30,7 +31,7 @@ const useUserForm = (profile: User) => {
     password_login_enabled: Boolean(profile.password_login_enabled),
   };
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: UserCreateExtended) => {
     const userBody = {
       ...values,
       id: profile.id,
