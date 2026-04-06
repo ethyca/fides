@@ -78,6 +78,19 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/activity-feed",
         params: params ?? {},
       }),
+      transformResponse: (
+        response: ActivityFeedResponse,
+        _meta,
+        params: ActivityFeedParams | void,
+      ) => ({
+        ...response,
+        items: response.items.map((item, index) => ({
+          ...item,
+          id: item.id ?? `${params?.page ?? 1}-${index}`,
+          // Temporarily use index and page as fallback for ID so we have
+          // a stable key. Backend will be updaetd to return actual ID.
+        })),
+      }),
       providesTags: [{ type: "Fides Dashboard", id: "activity-feed" }],
     }),
     getPrivacyRequests: build.query<PrivacyRequestsResponse, void>({

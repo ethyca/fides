@@ -106,6 +106,8 @@ export interface AstralisResponse {
 }
 
 export interface ActivityFeedItem {
+  /** Stable identifier. The backend may omit this; the API slice generates a
+   *  synthetic ID from the item index when it is absent. */
   id: string;
   actor_type: "user" | "system" | "agent";
   message: string;
