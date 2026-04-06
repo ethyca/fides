@@ -1,4 +1,4 @@
-import { Flex, PageSpinner } from "fidesui";
+import { Flex, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -22,7 +22,7 @@ const EditDatasetPage: NextPage = () => {
   if (isLoading) {
     return (
       <Layout title="Integrations">
-        <PageSpinner />
+        <Spin />
       </Layout>
     );
   }
