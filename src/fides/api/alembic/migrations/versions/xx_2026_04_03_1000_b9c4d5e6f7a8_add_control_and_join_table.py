@@ -94,7 +94,7 @@ def upgrade() -> None:
     from uuid import uuid4
 
     for key, label in SEED_CONTROLS:
-        control_id = f"plu_{uuid4()}"
+        control_id = str(uuid4())
         op.execute(
             sa.text(
                 "INSERT INTO plus_control (id, key, label) VALUES (:id, :key, :label)"
