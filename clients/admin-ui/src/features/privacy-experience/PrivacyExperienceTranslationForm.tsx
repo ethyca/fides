@@ -251,18 +251,21 @@ const PrivacyExperienceTranslationForm = React.forwardRef<
             <Form.Item
               name="banner_title"
               label="Banner title (optional)"
-              tooltip="A separate title for the banner (defaults to main title)"
+              tooltip="A separate title for the banner (defaults to main title); type / to insert a template variable"
             >
-              <Input
+              <TemplateVariableInput
+                multiline={false}
+                variables={GPC_VARIABLES}
                 data-testid={`input-translations.${translationIndex}.banner_title`}
               />
             </Form.Item>
             <Form.Item
               name="banner_description"
               label="Banner description (optional)"
-              tooltip="A separate description for the banner (defaults to main description)"
+              tooltip="A separate description for the banner (defaults to main description); type / to insert a template variable"
             >
-              <Input.TextArea
+              <TemplateVariableInput
+                variables={GPC_VARIABLES}
                 data-testid={`input-translations.${translationIndex}.banner_description`}
               />
             </Form.Item>
