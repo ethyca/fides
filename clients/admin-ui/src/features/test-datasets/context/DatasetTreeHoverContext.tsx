@@ -62,10 +62,7 @@ export const DatasetTreeHoverProvider = ({
 }) => {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
 
-  const { getAncestors } = useMemo(
-    () => buildAncestryMaps(edges),
-    [edges],
-  );
+  const { getAncestors } = useMemo(() => buildAncestryMaps(edges), [edges]);
 
   const onMouseEnter = useCallback((nodeId: string) => {
     setActiveNodeId((prev) => (prev === nodeId ? prev : nodeId));
