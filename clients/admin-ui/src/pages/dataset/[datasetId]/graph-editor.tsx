@@ -2,7 +2,7 @@ import {
   Button,
   Flex,
   Icons,
-  PageSpinner,
+  Spin,
   Space,
   Tooltip,
   Typography,
@@ -191,7 +191,7 @@ const DatasetGraphEditorPage: NextPage = () => {
             allowNameEditing
           />
         ) : (
-          <PageSpinner />
+          <Spin />
         )}
       </Flex>
     </Layout>
