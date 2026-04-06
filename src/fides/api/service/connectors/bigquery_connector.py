@@ -104,7 +104,7 @@ class BigQueryConnector(SQLConnector):
         if self.should_dry_run(SqlDryRunMode.access):
             for partition_clause in partition_clauses:
                 existing_bind_params = stmt.compile().params
-                partitioned_stmt = text(
+                partitioned_stmt = text(  # nosemgrep: sql_injection_fstring -- stmt is a SQLAlchemy text object; partition_clause is an internal DSR partition string, not user input
                     f"{stmt} AND ({text(partition_clause)})"
                 ).params(existing_bind_params)
                 logger.warning(f"SQL DRY RUN - Would execute SQL: {partitioned_stmt}")
@@ -116,7 +116,9 @@ class BigQueryConnector(SQLConnector):
                 f"Executing partition query with partition clause '{partition_clause}'"
             )
             existing_bind_params = stmt.compile().params
-            partitioned_stmt = text(f"{stmt} AND ({text(partition_clause)})").params(
+            partitioned_stmt = text(
+                f"{stmt} AND ({text(partition_clause)})"
+            ).params(  # nosemgrep: sql_injection_fstring -- see above
                 existing_bind_params
             )
             results = connection.execute(partitioned_stmt)
