@@ -74,10 +74,12 @@ export const AssignSystemsDeleteTable = ({
 const AssignSystemsTable = ({
   allSystems,
   assignedSystems,
+  isLoading,
   onChange,
 }: {
   allSystems: System[];
   assignedSystems: System[];
+  isLoading?: boolean;
   onChange: (systems: System[]) => void;
 }) => {
   const handleToggle = (system: System) => {
@@ -126,7 +128,9 @@ const AssignSystemsTable = ({
         columns={columns}
         dataSource={allSystems}
         rowKey="fides_key"
+        sticky
         pagination={false}
+        loading={isLoading}
         onRow={(record) =>
           ({
             "data-testid": `row-${record.fides_key}`,

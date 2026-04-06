@@ -25,7 +25,7 @@ const AssignSystemsModal = ({
   assignedSystems: System[];
   onAssignedSystemChange: (systems: System[]) => void;
 }) => {
-  const { data: allSystems } = useGetAllSystemsQuery();
+  const { data: allSystems, isLoading } = useGetAllSystemsQuery();
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedSystems, setSelectedSystems] =
     useState<System[]>(assignedSystems);
@@ -35,7 +35,7 @@ const AssignSystemsModal = ({
     onClose();
   };
 
-  const emptySystems = !allSystems || allSystems.length === 0;
+  const emptySystems = (!allSystems || allSystems.length === 0) && !isLoading;
 
   const filteredSystems = useMemo(() => {
     if (!allSystems) {
@@ -123,6 +123,7 @@ const AssignSystemsModal = ({
             <AssignSystemsTable
               allSystems={filteredSystems}
               assignedSystems={selectedSystems}
+              isLoading={isLoading}
               onChange={setSelectedSystems}
             />
           </Flex>
