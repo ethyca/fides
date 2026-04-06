@@ -78,7 +78,7 @@ def check_docker_version(
 
     for version in ["Client", "Server"]:
         try:
-            raw_version = run(
+            raw_version = run(  # nosemgrep: command_injection -- command is constructed from a hardcoded template substituting only "Client"/"Server", never user input
                 "docker version --format '{{.Replaceme.Version}}'".replace(
                     "Replaceme", version
                 ),
