@@ -250,21 +250,21 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
         >
           <Input
             placeholder="Enter email of user"
-            data-testid="input-email-address"
+            data-testid="input-email_address"
           />
         </Form.Item>
         <Form.Item name="first_name" label="First name">
           <Input
             placeholder="Enter first name of user"
             disabled={nameDisabled}
-            data-testid="input-first-name"
+            data-testid="input-first_name"
           />
         </Form.Item>
         <Form.Item name="last_name" label="Last name">
           <Input
             placeholder="Enter last name of user"
             disabled={nameDisabled}
-            data-testid="input-last-name"
+            data-testid="input-last_name"
           />
         </Form.Item>
         {showPasswordLoginToggle && (
@@ -280,7 +280,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
           >
             <Switch
               disabled={!isNewUser}
-              data-testid="toggle-allow-password-login"
+              data-testid="input-password_login_enabled"
             />
           </Form.Item>
         )}

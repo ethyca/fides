@@ -112,6 +112,7 @@ const NewPasswordModal = ({ id }: Props) => {
             <Input.Password
               placeholder="********"
               autoComplete="new-password"
+              data-testid="input-password"
             />
           </Form.Item>
           <Form.Item
@@ -134,6 +135,7 @@ const NewPasswordModal = ({ id }: Props) => {
             <Input.Password
               placeholder="********"
               autoComplete="confirm-password"
+              data-testid="input-passwordConfirmation"
             />
           </Form.Item>
 

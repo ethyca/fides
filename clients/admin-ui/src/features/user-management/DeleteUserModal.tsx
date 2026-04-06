@@ -123,7 +123,10 @@ const DeleteUserModal = ({ user, isOpen, onClose }: DeleteUserModalProps) => {
             },
           ]}
         >
-          <Input placeholder="Type the username to delete" />
+          <Input
+            placeholder="Type the username to delete"
+            data-testid="input-usernameConfirmation"
+          />
         </Form.Item>
 
         <Flex className="mt-4 w-full" gap="small">
