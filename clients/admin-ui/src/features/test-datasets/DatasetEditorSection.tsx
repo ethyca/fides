@@ -268,7 +268,9 @@ const EditorSection = ({
     }
 
     await refetchDatasets();
-    await refetchReachability();
+    if (currentPolicyKey) {
+      await refetchReachability();
+    }
   };
 
   const handleRefresh = async () => {
