@@ -91,7 +91,7 @@ const RegulationManagement = ({
   };
 
   return (
-    <VStack alignItems="start" spacing={4}>
+    <VStack alignItems="start" spacing={4} data-testid="regulation-management">
       <Box maxWidth="510px" width="100%">
         <SearchInput
           onChange={setSearch}

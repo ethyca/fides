@@ -45,6 +45,7 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.db.base_class import FidesBase as FideslibBase
 from fides.api.db.encryption_utils import encrypted_type
+from fides.api.models.access_policy import AccessPolicy, AccessPolicyVersion
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -837,6 +838,8 @@ class SystemScans(Base):
 
 
 sql_model_map: Dict = {
+    "access_policy": AccessPolicy,
+    "access_policy_version": AccessPolicyVersion,
     "client_detail": ClientDetail,
     "data_category": DataCategory,
     "data_subject": DataSubject,

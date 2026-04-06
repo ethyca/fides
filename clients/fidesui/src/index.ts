@@ -234,10 +234,13 @@ export {
   Segmented,
   Skeleton,
   Space,
-  Spin,
   Splitter,
   Steps,
   Switch,
+  // the HOC CustomSpin is incompatible with a handful of usages for loading
+  // states on Chakra tables, so we re-export the base Spin.
+  // TODO: remove when all FidesTableV2s are migrated to Ant
+  Spin as TableSpinner,
   Tabs,
   TimePicker,
   Tree,
@@ -261,6 +264,7 @@ export type {
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomSpinProps as SpinProps,
   CustomStatisticProps as StatisticProps,
   StatisticTrend,
 } from "./hoc";
@@ -275,6 +279,7 @@ export {
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomSpin as Spin,
   CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
@@ -374,9 +379,6 @@ export {
 export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
 export { LocationSelect } from "./components/data-entry/LocationSelect";
 export { SelectInline } from "./components/data-entry/SelectInline";
-
-// Export feedback components
-export { PageSpinner } from "./components/feedback/PageSpinner";
 
 // Export navigation components
 export { FloatingMenu } from "./components/navigation/FloatingMenu";

@@ -39,9 +39,7 @@ const SharedMonitorConfigTable = ({
   const showSpinner = isLoading || isFetching;
 
   if (showSpinner) {
-    return (
-      <Spin size="large" className="flex h-full items-center justify-center" />
-    );
+    return <Spin size="large" />;
   }
 
   return (

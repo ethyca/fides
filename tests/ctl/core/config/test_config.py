@@ -242,6 +242,46 @@ def test_get_alembic_config_with_special_char_in_database_url():
     get_alembic_config(database_url)
 
 
+@pytest.mark.unit
+def test_database_settings_migration_role_defaults_to_none() -> None:
+    """migration_role is optional and defaults to None."""
+    db_settings = DatabaseSettings()
+    assert db_settings.migration_role is None
+
+
+@pytest.mark.unit
+@patch.dict(os.environ, {"FIDES__DATABASE__MIGRATION_ROLE": "app_migration_role"})
+def test_database_settings_migration_role_from_env() -> None:
+    """FIDES__DATABASE__MIGRATION_ROLE is picked up and stored on the config."""
+    db_settings = DatabaseSettings()
+    assert db_settings.migration_role == "app_migration_role"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("  app_role  ", "app_role"),
+        ("  ", None),
+        ("\t\n", None),
+        ("", None),
+    ],
+    ids=["strip_whitespace", "spaces_only", "tabs_newlines", "empty_string"],
+)
+def test_database_settings_migration_role_validator(
+    value: str, expected: str | None
+) -> None:
+    """validate_migration_role strips whitespace and rejects whitespace-only values."""
+    if expected is None:
+        with pytest.raises(ValidationError):
+            with patch.dict(os.environ, {"FIDES__DATABASE__MIGRATION_ROLE": value}):
+                DatabaseSettings()
+    else:
+        with patch.dict(os.environ, {"FIDES__DATABASE__MIGRATION_ROLE": value}):
+            db_settings = DatabaseSettings()
+        assert db_settings.migration_role == expected
+
+
 @patch.dict(
     os.environ,
     {
