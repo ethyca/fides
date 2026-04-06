@@ -51,18 +51,30 @@ const DatasetNodeDetailPanel = ({
   const modal = useModal();
   const actions = useContext(DatasetEditorActionsContext);
 
+  // Track which node the form was initialized for so we only do a full
+  // reset (including name) when switching to a different node, not on
+  // every nodeData reference change from debounced auto-saves.
+  const initializedNodeRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!nodeData || !open) {
+      initializedNodeRef.current = null;
       return;
     }
+
+    const nodeKey =
+      nodeData.nodeType === "collection"
+        ? `collection:${nodeData.collection.name}`
+        : `field:${nodeData.collectionName}:${nodeData.fieldPath}`;
+
+    const isNewNode = initializedNodeRef.current !== nodeKey;
 
     if (nodeData.nodeType === "collection") {
       const { collection } = nodeData;
       form.setFieldsValue({
-        name: collection.name,
+        ...(isNewNode ? { name: collection.name } : {}),
         description: collection.description ?? "",
         data_categories: collection.data_categories ?? [],
-        // CollectionMeta fields
         after: collection.fides_meta?.after ?? [],
         erase_after: collection.fides_meta?.erase_after ?? [],
         skip_processing: collection.fides_meta?.skip_processing ?? false,
@@ -70,16 +82,19 @@ const DatasetNodeDetailPanel = ({
     } else {
       const { field } = nodeData;
       form.setFieldsValue({
-        name: field.name,
+        ...(isNewNode ? { name: field.name } : {}),
         description: field.description ?? "",
         data_categories: field.data_categories ?? [],
-        // FidesMeta fields
         data_type: field.fides_meta?.data_type ?? undefined,
         identity: field.fides_meta?.identity ?? "",
         primary_key: field.fides_meta?.primary_key ?? false,
         read_only: field.fides_meta?.read_only ?? false,
         redact: field.fides_meta?.redact ?? "",
       });
+    }
+
+    if (isNewNode) {
+      initializedNodeRef.current = nodeKey;
     }
   }, [nodeData, open, form]);
 
