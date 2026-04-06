@@ -3,12 +3,13 @@ import {
   ChakraCollapse as Collapse,
   ChakraText as Text,
   Flex,
-  Modal,
   Tooltip,
   useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
+
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { isErrorResult } from "~/features/common/helpers";
@@ -215,27 +216,30 @@ export const PurposeRestrictionFormModal = ({
     }
   };
 
+  const formik = useFormik({
+    initialValues: {
+      ...initialValues,
+      restriction_type: isPurposeFlexible
+        ? initialValues.restriction_type
+        : TCFRestrictionType.PURPOSE_RESTRICTION,
+    },
+    onSubmit: handleSubmit,
+    validationSchema,
+  });
+  const { values, validateField, setTouched } = formik;
+
   return (
-    <Modal
-      open={isOpen}
-      onCancel={onClose}
-      centered
-      destroyOnClose
-      title="Edit restriction"
-      footer={null}
-    >
-      <Formik
-        initialValues={{
-          ...initialValues,
-          restriction_type: isPurposeFlexible
-            ? initialValues.restriction_type
-            : TCFRestrictionType.PURPOSE_RESTRICTION,
-        }}
-        onSubmit={handleSubmit}
-        validationSchema={validationSchema}
+    <FormikProvider value={formik}>
+      <ConfirmCloseModal
+        open={isOpen}
+        onClose={onClose}
+        getIsDirty={() => formik.dirty}
+        centered
+        destroyOnClose
+        title="Edit restriction"
+        footer={null}
       >
-        {({ values, validateField, setTouched }) => (
-          <Form>
+        <Form>
             <Flex vertical className="gap-6">
               <Text className="text-sm">
                 Define how specific vendors are restricted from processing data
@@ -323,9 +327,8 @@ export const PurposeRestrictionFormModal = ({
                 </Button>
               </Flex>
             </Flex>
-          </Form>
-        )}
-      </Formik>
-    </Modal>
+        </Form>
+      </ConfirmCloseModal>
+    </FormikProvider>
   );
 };

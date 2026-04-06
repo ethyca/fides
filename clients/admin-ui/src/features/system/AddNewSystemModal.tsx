@@ -1,7 +1,9 @@
-import { Button, Flex, Modal, Typography, useMessage } from "fidesui";
-import { Form, Formik } from "formik";
-import { useMemo, useRef, useState } from "react";
+import { Button, Flex, Typography, useMessage } from "fidesui";
+import { Form, FormikProvider, useFormik } from "formik";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
+
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
@@ -75,8 +77,6 @@ export const AddNewSystemModal = ({
   const message = useMessage();
 
   const { setSuggestions, setLockedForGVL } = dictSuggestionsSlice.actions;
-
-  const formRef = useRef(null);
 
   const ValidationSchema = useMemo(
     () =>
@@ -172,24 +172,26 @@ export const AddNewSystemModal = ({
     setIsSubmitting(false);
   };
 
+  const formik = useFormik({
+    initialValues: defaultInitialValues,
+    onSubmit: handleSubmit,
+    validationSchema: ValidationSchema,
+  });
+  const { dirty, isValid } = formik;
+
   return (
-    <Modal
-      title="Add New System"
-      open={isOpen}
-      onCancel={handleCloseModal}
-      centered
-      data-testid="add-modal-content"
-      destroyOnClose
-      footer={null}
-    >
-      <Formik
-        initialValues={defaultInitialValues}
-        onSubmit={handleSubmit}
-        validationSchema={ValidationSchema}
-        innerRef={formRef}
+    <FormikProvider value={formik}>
+      <ConfirmCloseModal
+        title="Add New System"
+        open={isOpen}
+        onClose={handleCloseModal}
+        getIsDirty={() => formik.dirty}
+        centered
+        data-testid="add-modal-content"
+        destroyOnClose
+        footer={null}
       >
-        {({ dirty, isValid }) => (
-          <Form>
+        <Form>
             <FormGuard id="new-system-modal" name="Add New System" />
             <Flex vertical gap={20} className="pb-6 pt-4">
               <Text>
@@ -255,9 +257,8 @@ export const AddNewSystemModal = ({
                 Save
               </Button>
             </Flex>
-          </Form>
-        )}
-      </Formik>
-    </Modal>
+        </Form>
+      </ConfirmCloseModal>
+    </FormikProvider>
   );
 };

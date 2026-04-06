@@ -5,11 +5,12 @@ import {
   ChakraText as Text,
   Flex,
   Icons,
-  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
+
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
@@ -66,18 +67,21 @@ const EditMinimalDataUseModal = ({
   const { specialCategoryLegalBasisOptions } =
     useSpecialCategoryLegalBasisOptions();
 
+  const formik = useFormik({
+    initialValues: declaration,
+    enableReinitialize: true,
+    onSubmit: handleSubmit,
+    validationSchema,
+  });
+  const { values, dirty, isValid, resetForm } = formik;
+
   return (
-    <Formik
-      initialValues={declaration}
-      enableReinitialize
-      onSubmit={handleSubmit}
-      validationSchema={validationSchema}
-    >
-      {({ dirty, isValid, values, resetForm }) => (
-        <Modal
+    <FormikProvider value={formik}>
+      <ConfirmCloseModal
           title="Edit data use"
           open={isOpen}
-          onCancel={onClose}
+          onClose={onClose}
+          getIsDirty={() => formik.dirty}
           centered
           destroyOnClose
           footer={null}
@@ -212,9 +216,8 @@ const EditMinimalDataUseModal = ({
               </Button>
             </div>
           </Form>
-        </Modal>
-      )}
-    </Formik>
+      </ConfirmCloseModal>
+    </FormikProvider>
   );
 };
 

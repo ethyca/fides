@@ -1,6 +1,8 @@
-import { Button, ChakraText as Text, Flex, Modal, useMessage } from "fidesui";
-import { Form, Formik } from "formik";
+import { Button, ChakraText as Text, Flex, useMessage } from "fidesui";
+import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
+
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
@@ -109,28 +111,30 @@ const AddEditAssetModal = ({
 
   const initialValues = asset ?? DEFAULT_VALUES;
 
+  const formik = useFormik({
+    initialValues,
+    onSubmit: handleSaveClicked,
+    validationSchema,
+  });
+  const { values, isValid, dirty } = formik;
+  const isCookieAsset =
+    !!values.asset_type && values.asset_type === AssetType.COOKIE;
+  const isNotCookieAsset =
+    !!values.asset_type && values.asset_type !== AssetType.COOKIE;
+
   return (
-    <Modal
-      title={isCreate ? "Add asset" : "Edit asset"}
-      onCancel={onClose}
-      open={isOpen}
-      centered
-      destroyOnClose
-      footer={null}
-      data-testid="add-modal-content"
-    >
-      <Formik
-        initialValues={initialValues}
-        onSubmit={handleSaveClicked}
-        validationSchema={validationSchema}
+    <FormikProvider value={formik}>
+      <ConfirmCloseModal
+        title={isCreate ? "Add asset" : "Edit asset"}
+        onClose={onClose}
+        getIsDirty={() => formik.dirty}
+        open={isOpen}
+        centered
+        destroyOnClose
+        footer={null}
+        data-testid="add-modal-content"
       >
-        {({ values, isValid, dirty }) => {
-          const isCookieAsset =
-            !!values.asset_type && values.asset_type === AssetType.COOKIE;
-          const isNotCookieAsset =
-            !!values.asset_type && values.asset_type !== AssetType.COOKIE;
-          return (
-            <Form>
+        <Form>
               <Flex vertical className="pb-6 pt-4">
                 <FormInfoBox>
                   <Text fontSize="sm">{FORM_COPY}</Text>
@@ -206,11 +210,9 @@ const AddEditAssetModal = ({
                   Save
                 </Button>
               </Flex>
-            </Form>
-          );
-        }}
-      </Formik>
-    </Modal>
+        </Form>
+      </ConfirmCloseModal>
+    </FormikProvider>
   );
 };
 
