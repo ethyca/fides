@@ -1,9 +1,9 @@
 import {
   AccessPolicy,
-  ControlGroup,
+  Control,
 } from "~/features/access-policies/access-policies.slice";
 
-export const mockControlGroups: ControlGroup[] = [
+export const mockControls: Control[] = [
   {
     key: "eea_uk_gdpr",
     label: "EEA/UK: GDPR Articles 5, 6 — Purpose limitation and lawful basis",

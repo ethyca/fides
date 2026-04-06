@@ -3,7 +3,7 @@ import { rest } from "msw";
 
 import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
 
-import { mockAccessPolicies, mockControlGroups } from "./data";
+import { mockAccessPolicies, mockControls } from "./data";
 
 /**
  * MSW handlers for access policy endpoints
@@ -34,10 +34,9 @@ export const accessPoliciesHandlers = () => {
       );
     }),
 
-    // GET /api/v1/plus/access-policy/control-group - list control groups
-    // Must be registered before /:id to avoid the wildcard matching "control-group"
-    rest.get(`${apiBase}/plus/access-policy/control-group`, (_req, res, ctx) =>
-      res(ctx.status(200), ctx.json(mockControlGroups)),
+    // GET /api/v1/plus/controls - list controls
+    rest.get(`${apiBase}/plus/controls`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockControls)),
     ),
 
     // GET /api/v1/plus/access-policy/:id - get single
@@ -68,8 +67,8 @@ export const accessPoliciesHandlers = () => {
       return res(ctx.status(201), ctx.json(newPolicy));
     }),
 
-    // PUT /api/v1/plus/access-policy/:id - update
-    rest.put(`${apiBase}/plus/access-policy/:id`, async (req, res, ctx) => {
+    // PATCH /api/v1/plus/access-policy/:id - partial update
+    rest.patch(`${apiBase}/plus/access-policy/:id`, async (req, res, ctx) => {
       const { id } = req.params;
       const index = policies.findIndex((p) => p.id === id);
 

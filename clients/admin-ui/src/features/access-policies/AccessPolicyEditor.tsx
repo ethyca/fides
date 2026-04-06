@@ -32,10 +32,7 @@ import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
-import {
-  AccessPolicy,
-  useGetControlsQuery,
-} from "./access-policies.slice";
+import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";

@@ -42,10 +42,11 @@ def upgrade() -> None:
         sa.Column("key", sa.String(), nullable=False),
         sa.Column("label", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("key", name="uq_plus_control_key"),
     )
     op.create_index("ix_plus_control_id", "plus_control", ["id"])
-    op.create_index("ix_plus_control_key", "plus_control", ["key"])
+    op.create_index(
+        "ix_plus_control_key", "plus_control", ["key"], unique=True
+    )
 
     op.create_table(
         "plus_access_policy_control",
