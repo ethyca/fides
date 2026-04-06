@@ -18,6 +18,7 @@ import {
   useContext,
   useEffect,
   useImperativeHandle,
+  useRef,
 } from "react";
 
 import { DatasetCollection, DatasetField } from "~/types/api";
@@ -68,6 +69,10 @@ const DatasetNodeDetailPanel = forwardRef<
     const modal = useModal();
     const actions = useContext(DatasetEditorActionsContext);
 
+    // Snapshot of form values when the panel opens, used to skip
+    // no-op updates on close.
+    const initialValuesRef = useRef<string>("");
+
     // Initialize form values when a node is selected
     useEffect(() => {
       if (!nodeData || !open) {
@@ -97,19 +102,23 @@ const DatasetNodeDetailPanel = forwardRef<
           redact: field.fides_meta?.redact ?? "",
         });
       }
+      initialValuesRef.current = JSON.stringify(form.getFieldsValue());
       // Only run when a different node is selected, not on every nodeData
       // reference change. nodeData identity changes on parent re-renders but
       // the logical node (identified by open + selectedNodeId) stays the same.
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, form]);
 
-    // Commit all form values to the dataset
+    // Commit all form values to the dataset (skips if nothing changed)
     const flush = useCallback(() => {
       if (!nodeData) {
         return;
       }
 
       const allValues = form.getFieldsValue();
+      if (JSON.stringify(allValues) === initialValuesRef.current) {
+        return;
+      }
       const categories = allValues.data_categories as string[] | undefined;
       const newName = allValues.name as string | undefined;
       const baseUpdates = {
