@@ -12,11 +12,10 @@ import {
 import NextLink from "next/link";
 import { useEffect, useMemo } from "react";
 
-import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
