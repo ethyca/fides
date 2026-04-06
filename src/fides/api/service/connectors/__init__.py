@@ -41,6 +41,9 @@ from fides.api.service.connectors.google_cloud_mysql_connector import (
 from fides.api.service.connectors.google_cloud_postgres_connector import (
     GoogleCloudSQLPostgresConnector as GoogleCloudSQLPostgresConnector,
 )
+from fides.api.service.connectors.google_workspace_connector import (
+    GoogleWorkspaceConnector as GoogleWorkspaceConnector,
+)
 from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
 from fides.api.service.connectors.manual_task_connector import (
     ManualTaskConnector as ManualTaskConnector,
@@ -98,6 +101,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,
     ConnectionType.google_cloud_sql_mysql.value: GoogleCloudSQLMySQLConnector,
     ConnectionType.google_cloud_sql_postgres.value: GoogleCloudSQLPostgresConnector,
+    ConnectionType.google_workspace.value: GoogleWorkspaceConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.manual_task.value: ManualTaskConnector,

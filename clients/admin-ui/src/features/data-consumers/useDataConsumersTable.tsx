@@ -14,15 +14,16 @@ import { DATA_CONSUMERS_NEW_ROUTE } from "~/features/common/nav/routes";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 
-import { CONSUMER_TYPE_LABELS, DataConsumerType } from "./constants";
 import {
   DataConsumer,
   useGetAllDataConsumersQuery,
 } from "./data-consumer.slice";
 import DataConsumerActionsCell from "./DataConsumerActionsCell";
+import useConsumerTypeOptions from "./useConsumerTypeOptions";
 
 const useDataConsumersTable = () => {
   const router = useRouter();
+  const { getConsumerType } = useConsumerTypeOptions();
 
   const tableState = useTableState({
     pagination: {
@@ -97,15 +98,26 @@ const useDataConsumersTable = () => {
         title: "Type",
         dataIndex: "type",
         key: "type",
-        render: (_, { type }) => (
-          <Tag>{CONSUMER_TYPE_LABELS[type as DataConsumerType] ?? type}</Tag>
-        ),
+        render: (_, { type }) => {
+          const dynamicType = getConsumerType(type);
+          return <Tag>{dynamicType?.name ?? type}</Tag>;
+        },
       },
       {
-        title: "Contact",
-        dataIndex: "contact_email",
-        key: "contact_email",
-        render: (_, { contact_email }) => contact_email || "N/A",
+        title: "Scope",
+        dataIndex: "scope",
+        key: "scope",
+        render: (_, { scope }) => {
+          if (!scope || Object.keys(scope).length === 0) {
+            return "N/A";
+          }
+          const label =
+            scope.group_email ??
+            scope.role ??
+            scope.email ??
+            Object.values(scope).join(", ");
+          return <Tag>{label}</Tag>;
+        },
       },
       {
         title: "Purposes",
@@ -123,21 +135,6 @@ const useDataConsumersTable = () => {
           ),
       },
       {
-        title: "Tags",
-        dataIndex: "tags",
-        key: "tags",
-        render: (_, { tags }) =>
-          tags && tags.length > 0 ? (
-            <Space size={[0, 4]} wrap>
-              {tags.map((tag) => (
-                <Tag key={tag}>{tag}</Tag>
-              ))}
-            </Space>
-          ) : (
-            "N/A"
-          ),
-      },
-      {
         title: "Actions",
         dataIndex: "actions",
         key: "actions",
@@ -146,7 +143,7 @@ const useDataConsumersTable = () => {
         ),
       },
     ],
-    [],
+    [getConsumerType],
   );
 
   return { tableProps, columns, error, searchQuery, updateSearch };

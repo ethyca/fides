@@ -47,6 +47,7 @@ class ConnectionType(enum.Enum):
     entra = "entra"  # Microsoft Entra ID (Azure AD) for IDP discovery
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
     google_cloud_sql_postgres = "google_cloud_sql_postgres"
+    google_workspace = "google_workspace"
     https = "https"
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
@@ -89,6 +90,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
             ConnectionType.google_cloud_sql_mysql.value: "Google Cloud SQL for MySQL",
             ConnectionType.google_cloud_sql_postgres.value: "Google Cloud SQL for Postgres",
+            ConnectionType.google_workspace.value: "Google Workspace",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual_webhook.value: "Manual Process",
             ConnectionType.manual_task.value: "Manual Task",
@@ -138,6 +140,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.generic_erasure_email.value: SystemType.email,
             ConnectionType.google_cloud_sql_mysql.value: SystemType.database,
             ConnectionType.google_cloud_sql_postgres.value: SystemType.database,
+            ConnectionType.google_workspace.value: SystemType.system,
             ConnectionType.https.value: SystemType.manual,
             ConnectionType.manual_webhook.value: SystemType.manual,
             ConnectionType.manual_task.value: SystemType.manual,
