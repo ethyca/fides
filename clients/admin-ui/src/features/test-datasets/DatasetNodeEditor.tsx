@@ -65,6 +65,7 @@ interface DatasetNodeEditorProps {
   dataset: Dataset;
   protectedFields?: ProtectedFieldsInfo;
   onDatasetChange: (dataset: Dataset) => void;
+  allowAddCollection?: boolean;
   allowNameEditing?: boolean;
 }
 
@@ -98,6 +99,7 @@ const DatasetNodeEditorInner = ({
   dataset,
   protectedFields,
   onDatasetChange,
+  allowAddCollection = false,
   allowNameEditing = false,
 }: DatasetNodeEditorProps) => {
   const reactFlowInstance = useReactFlow();
@@ -374,9 +376,10 @@ const DatasetNodeEditorInner = ({
         data: {
           ...node.data,
           isHighlighted: node.id === highlightedNodeId,
+          ...(node.id === DATASET_ROOT_ID && { allowAddCollection }),
         },
       })),
-    [layoutedNodes, selectedNodeId, highlightedNodeId],
+    [layoutedNodes, selectedNodeId, highlightedNodeId, allowAddCollection],
   );
 
   // Fit view only when the graph structure changes (drill-down or node count),
