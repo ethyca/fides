@@ -5,7 +5,6 @@ import {
 import { useMemo, useState } from "react";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";

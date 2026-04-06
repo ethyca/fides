@@ -1,13 +1,12 @@
 import { FormikProvider, useFormik } from "formik";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
-
 import SSOProviderForm, {
   getSSOProviderFormValidationSchema,
   transformOrganizationToFormValues,
   useSSOProviderSubmit,
 } from "~/features/openid-authentication/SSOProviderForm";
+import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
 const EditSSOProviderModal = ({
   isOpen,

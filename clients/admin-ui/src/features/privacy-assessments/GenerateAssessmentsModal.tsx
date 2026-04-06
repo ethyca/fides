@@ -12,10 +12,9 @@ import {
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { RTKErrorResult } from "~/types/errors/api";
 

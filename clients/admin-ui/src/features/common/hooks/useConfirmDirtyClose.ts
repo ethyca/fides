@@ -1,5 +1,5 @@
 import { useModal } from "fidesui";
-import { useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * Returns a close handler that shows a confirmation dialog when the form is
@@ -20,13 +20,22 @@ const useConfirmDirtyClose = (
   getIsDirty: () => boolean,
 ) => {
   const modal = useModal();
+  const destroyRef = useRef<(() => void) | null>(null);
 
-  return useCallback(() => {
+  useEffect(
+    () => () => {
+      destroyRef.current?.();
+    },
+    [],
+  );
+
+  return () => {
     if (!getIsDirty()) {
       onClose();
       return;
     }
-    modal.confirm({
+    destroyRef.current?.();
+    const { destroy } = modal.confirm({
       title: "Unsaved Changes",
       content:
         "You have unsaved changes that will be lost. Are you sure you want to close?",
@@ -36,7 +45,8 @@ const useConfirmDirtyClose = (
       icon: null,
       onOk: onClose,
     });
-  }, [getIsDirty, modal, onClose]);
+    destroyRef.current = destroy;
+  };
 };
 
 export default useConfirmDirtyClose;
