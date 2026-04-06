@@ -260,7 +260,7 @@ class UserService:
         logger.info("Password reset flow initiated")
 
     def reset_password_with_token(
-        self, token: str, new_password: str
+        self, username: str, token: str, new_password: str
     ) -> Tuple[FidesUser, str]:
         """
         Validates a password reset token and resets the user's password.
@@ -270,26 +270,25 @@ class UserService:
         Raises:
             FidesError: If the token is invalid, expired, or the user is not found.
         """
-        # Look through all reset records to find a matching token.
-        # There should only be one per user, and tokens are short-lived.
-        all_resets = self.db.query(FidesUserPasswordReset).all()
-        matching_reset = None
-        for reset in all_resets:
-            if reset.token_valid(token):
-                matching_reset = reset
-                break
+        user = FidesUser.get_by(self.db, field="username", value=username)
+        if not user:
+            raise FidesError("Invalid or expired password reset token.")
 
+        matching_reset = FidesUserPasswordReset.get_by(
+            self.db, field="user_id", value=user.id
+        )
         if not matching_reset:
             raise FidesError("Invalid or expired password reset token.")
 
+        # Check expiry before token_valid (O(1) vs hash computation)
         if matching_reset.is_expired():
             EventAudit.create(
                 self.db,
                 data={
                     "event_type": EventAuditType.password_reset_token_expired,
-                    "user_id": matching_reset.user_id,
+                    "user_id": user.id,
                     "resource_type": "user",
-                    "resource_identifier": matching_reset.user_id,
+                    "resource_identifier": user.id,
                     "description": "Password reset token expired",
                     "status": EventAuditStatus.failed,
                 },
@@ -297,9 +296,7 @@ class UserService:
             matching_reset.delete(self.db)
             raise FidesError("Invalid or expired password reset token.")
 
-        user = FidesUser.get(self.db, object_id=matching_reset.user_id)
-        if not user:
-            matching_reset.delete(self.db)
+        if not matching_reset.token_valid(token):
             raise FidesError("Invalid or expired password reset token.")
 
         # Reset password

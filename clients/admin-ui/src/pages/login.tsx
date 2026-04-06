@@ -175,6 +175,7 @@ const useLogin = () => {
       let user;
       if (isResetPassword) {
         user = await resetPasswordRequest({
+          username: username!,
           token: resetToken!,
           new_password: values.password,
         }).unwrap();

@@ -175,6 +175,7 @@ class UserForgotPassword(FidesSchema):
 class UserResetPasswordWithToken(FidesSchema):
     """Request body for resetting a password with a token"""
 
+    username: str
     token: str
     new_password: str
 

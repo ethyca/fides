@@ -134,12 +134,12 @@ const authApi = baseApi.injectEndpoints({
     }),
     resetPasswordWithToken: build.mutation<
       LoginResponse,
-      { token: string; new_password: string }
+      { username: string; token: string; new_password: string }
     >({
-      query: ({ token, new_password }) => ({
+      query: ({ username, token, new_password }) => ({
         url: "user/reset-password-with-token",
         method: "POST",
-        body: { token, new_password },
+        body: { username, token, new_password },
       }),
     }),
   }),

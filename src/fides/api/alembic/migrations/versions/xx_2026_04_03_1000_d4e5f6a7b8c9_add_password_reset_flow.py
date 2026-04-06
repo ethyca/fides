@@ -1,7 +1,7 @@
 """add email_verified_at and password reset token table
 
 Revision ID: d4e5f6a7b8c9
-Revises: b5d8f2a3c6e9
+Revises: d4e6f8a0b2c3
 Create Date: 2026-04-03 10:00:00.000000
 """
 

@@ -81,10 +81,6 @@ class FidesUserPasswordReset(Base):
         if not self.created_at:
             return True
 
-        ttl_minutes = getattr(
-            CONFIG.security,
-            "password_reset_token_ttl_minutes",
-            DEFAULT_PASSWORD_RESET_TOKEN_TTL_MINUTES,
-        )
+        ttl_minutes = CONFIG.security.password_reset_token_ttl_minutes
         expiration_datetime = self.created_at + timedelta(minutes=ttl_minutes)
         return current_time_utc > expiration_datetime

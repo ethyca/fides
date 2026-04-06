@@ -204,6 +204,7 @@ class TestResetPasswordWithToken:
         response = api_client.post(
             RESET_PASSWORD_WITH_TOKEN_URL,
             json={
+                "username": "reset_user",
                 "token": token,
                 "new_password": str_to_b64_str(new_password),
             },
@@ -227,6 +228,7 @@ class TestResetPasswordWithToken:
         response = api_client.post(
             RESET_PASSWORD_WITH_TOKEN_URL,
             json={
+                "username": "nonexistent_user",
                 "token": "invalid-token",
                 "new_password": str_to_b64_str("NewPassword1!"),
             },
@@ -248,6 +250,7 @@ class TestResetPasswordWithToken:
         response = api_client.post(
             RESET_PASSWORD_WITH_TOKEN_URL,
             json={
+                "username": "reset_user",
                 "token": token,
                 "new_password": str_to_b64_str("NewPassword1!"),
             },
@@ -264,6 +267,7 @@ class TestResetPasswordWithToken:
         response = api_client.post(
             RESET_PASSWORD_WITH_TOKEN_URL,
             json={
+                "username": "reset_user",
                 "token": token,
                 "new_password": str_to_b64_str("NewPassword1!"),
             },
@@ -278,6 +282,7 @@ class TestResetPasswordWithToken:
         response = api_client.post(
             RESET_PASSWORD_WITH_TOKEN_URL,
             json={
+                "username": "reset_user",
                 "token": token,
                 "new_password": str_to_b64_str("weak"),
             },

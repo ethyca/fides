@@ -1,7 +1,7 @@
 import json
 import random
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response, Security
@@ -985,7 +985,7 @@ def reset_password_with_token(
     """
     try:
         user, access_code = user_service.reset_password_with_token(
-            data.token, data.new_password
+            data.username, data.token, data.new_password
         )
     except FidesError as exc:
         raise HTTPException(
@@ -994,7 +994,7 @@ def reset_password_with_token(
         ) from exc
 
     expire_minutes = config.security.oauth_access_token_expire_minutes
-    expires_at = datetime.now() + timedelta(minutes=expire_minutes)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
     return UserLoginResponse(
         user_data=user,
         token_data=AccessToken(
