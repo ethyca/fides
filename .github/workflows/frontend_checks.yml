@@ -50,10 +50,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v5
         with:
-          node-version: 20.x
+          node-version: 24.x
           cache: "npm"
 
       - name: Install dependencies
@@ -73,17 +73,21 @@ jobs:
             exit 1
           fi
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Format
-        run: npm run format:ci
+      - name: Check (lint, format, typecheck)
+        run: npm run check:ci
 
       - name: Unit tests
-        run: npm run test
+        run: npm run test:ci
+        
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v7
+        id: test-coverage-upload-step
+        with:
+          path: |
+            ${{ github.workspace }}/clients/admin-ui/coverage/coverage-summary.json
+            ${{ github.workspace }}/clients/fides-js/coverage/coverage-summary.json
+            ${{ github.workspace }}/clients/privacy-center/coverage/coverage-summary.json
+          if-no-files-found: error
 
   # Summary job for branch protection - consolidates all frontend checks
   Frontend-Checks-Summary:
@@ -109,3 +113,23 @@ jobs:
           fi
 
           echo "✅ All required frontend checks passed or were skipped"
+
+  Frontend-Coverage:
+    runs-on: ubuntu-latest
+    needs:
+      - Clients-Unit
+    steps:
+      - name: Download Test Coverage Artifact
+        id: test-coverage-download-step
+        uses: actions/download-artifact@v8
+        with:
+          artifact-ids: ${{ steps.test-coverage-upload-step.outputs.artifact-id }}
+          path: /tmp/test-coverage
+
+      - name: Jest Coverage Comment
+        uses: MishaKav/jest-coverage-comment@main
+        with:
+          multiple-files: |
+            admin-ui, ${{ steps.test-coverage-download-step.outputs.download-path }}/admin-ui/coverage/coverage-summary.json
+            fides-js, ${{ steps.test-coverage-download-step.outputs.download-path }}/fides-js/coverage/coverage-summary.json
+            privacy-center, ${{ steps.test-coverage-download-step.outputs.download-path }}/privacy-center/coverage/coverage-summary.json

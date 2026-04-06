@@ -6,9 +6,7 @@ using Redis KEYS or SCAN. Each index is stored as a Redis SET at
 __idx:{index_prefix}; members are the actual cache key names.
 """
 
-from typing import List, Optional, Union
-
-from redis import Redis
+from typing import Any, List, Optional, Union
 
 # Redis key prefix for index sets. Index key = INDEX_KEY_PREFIX + index_prefix.
 INDEX_KEY_PREFIX = "__idx:"
@@ -31,10 +29,10 @@ class RedisCacheManager:
     set/delete helpers).
     """
 
-    def __init__(self, redis_client: Redis) -> None:
+    def __init__(self, redis_client: Any) -> None:
         """
         Args:
-            redis_client: Any Redis client (e.g. FidesopsRedis from get_cache()).
+            redis_client: redis.Redis, RedisCluster, or FidesopsRedis (delegates to underlying client).
         """
         self._redis = redis_client
 
@@ -131,6 +129,6 @@ class RedisCacheManager:
         pipe.execute()
 
     @property
-    def redis(self) -> Redis:
+    def redis(self) -> Any:
         """Access the underlying Redis client for operations not on the manager."""
         return self._redis

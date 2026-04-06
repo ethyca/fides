@@ -16,6 +16,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.util.errors import FidesError, MessageDispatchException
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
@@ -46,7 +47,9 @@ class UserService:
             FidesUserInvite.create(
                 db=self.db, data={"username": user.username, "invite_code": invite_code}
             )
-            user.update(self.db, data={"disabled": True})
+            user.update(
+                self.db, data={"disabled": True, "disabled_reason": "pending_invite"}
+            )
             # TODO: refactor to use MessagingService
             dispatch_message(
                 self.db,
@@ -148,3 +151,39 @@ class UserService:
         )
 
         return user, access_code
+
+    def reinvite_user(self, user: FidesUser) -> None:
+        """
+        Reinvites a user who has a pending invitation by generating a new invite code
+        and sending a new invitation email.
+
+        Raises:
+            FidesError: If the user has no pending invitation or the email fails to send.
+        """
+        user_invite = FidesUserInvite.get_by(
+            self.db, field="username", value=user.username
+        )
+
+        if not user_invite:
+            raise FidesError("User does not have a pending invitation.")
+
+        new_invite_code = str(uuid.uuid4())
+        user_invite.renew_invite(self.db, new_invite_code)
+
+        try:
+            dispatch_message(
+                self.db,
+                action_type=MessagingActionType.USER_INVITE,
+                to_identity=Identity(email=user.email_address),
+                service_type=self.config_proxy.notifications.notification_service_type,
+                message_body_params=UserInviteBodyParams(
+                    username=user.username, invite_code=new_invite_code
+                ),
+            )
+        except Exception as exc:
+            logger.exception("Failed to dispatch reinvite email")
+            raise MessageDispatchException(
+                "Failed to send invitation email. Please try again."
+            ) from exc
+
+        logger.info("Reinvite email dispatched for pending user")

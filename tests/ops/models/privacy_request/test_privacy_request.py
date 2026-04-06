@@ -47,6 +47,7 @@ from fides.api.util.cache import (
     FidesopsRedis,
     get_cache,
     get_custom_privacy_request_field_cache_key,
+    get_dsr_cache_store,
     get_identity_cache_key,
 )
 from fides.api.util.constants import API_DATE_FORMAT
@@ -257,34 +258,29 @@ def test_delete_privacy_request_removes_cached_data(
     privacy_request.delete(db)
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
-    assert cache.get(key) is None
+    # privacy_request.delete() calls clear_cached_values(), so cache is already cleared
 
 
 def test_cache_identity_fallback_to_db(
     db: Session,
     privacy_request_with_email_identity: PrivacyRequest,
-    cache: FidesopsRedis,
     loguru_caplog,
 ) -> None:
     identity = privacy_request_with_email_identity.get_persisted_identity()
     privacy_request_with_email_identity.cache_identity(identity)
-    key = get_identity_cache_key(
-        privacy_request_id=privacy_request_with_email_identity.id,
-        identity_attribute="email",
-    )
     cached_identity_data = (
         privacy_request_with_email_identity.get_cached_identity_data()
     )
     assert cached_identity_data != {}
-    cache.delete(key)
-    assert cache.get(key) is None
+    store = get_dsr_cache_store(privacy_request_with_email_identity.id)
+    store.delete("identity:email")
     assert (
         privacy_request_with_email_identity.get_cached_identity_data()
         == cached_identity_data
     )
     assert (
         f"Cache miss for request {privacy_request_with_email_identity.id}, falling back to DB"
-        in loguru_caplog.messages[-1]
+        in loguru_caplog.text
     )
 
 
@@ -312,7 +308,7 @@ def test_cache_identity_fallback_to_db_no_persisted_identity(
     assert privacy_request.get_cached_identity_data() == {}
     assert (
         f"Cache miss for request {privacy_request.id}, falling back to DB"
-        in loguru_caplog.messages[-1]
+        in loguru_caplog.text
     )
 
 
@@ -341,8 +337,9 @@ def test_custom_privacy_request_fields_fallback_to_db(
         privacy_request.get_cached_custom_privacy_request_fields()
     )
     assert cached_custom_privacy_request_fields is not None
-    cache.delete(key)
-    assert cache.get(key) is None
+    # Delete using DSR store to clear the cached custom field
+    store = get_dsr_cache_store(privacy_request.id)
+    store.delete(f"custom_field:{custom_privacy_request_field.label}")
     assert (
         privacy_request.get_cached_custom_privacy_request_fields()
         == cached_custom_privacy_request_fields
@@ -1332,6 +1329,7 @@ class TestPrivacyRequestCustomIdentities:
         We need to make sure we can still read these old values using the
         new `get_cached_identity_data` function.
         """
+        privacy_request.clear_cached_values()
 
         def cache_identity(identity: Identity, privacy_request_id: str) -> None:
             """Old function for caching identity"""

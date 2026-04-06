@@ -4,10 +4,9 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
   ChakraStack as Stack,
   ChakraText as Text,
+  Spin,
   useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -203,9 +202,7 @@ const ConsentConfigPage: NextPage = () => {
       isTcfPurposeOverridesLoading ||
       isApiConfigSetLoading ||
       isConfigSetLoading ? (
-        <Flex justifyContent="center" alignItems="center" height="100%">
-          <Spinner />
-        </Flex>
+        <Spin />
       ) : (
         <Box data-testid="consent-configuration">
           <PageHeader heading="Consent settings" />

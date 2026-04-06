@@ -16,6 +16,7 @@ export const useContainerSize = (
   ref: RefObject<HTMLElement | null>,
 ): ContainerSize => {
   const [size, setSize] = useState<ContainerSize>({ width: 0, height: 0 });
+
   useEffect(() => {
     const el = ref.current;
     if (!el) {
