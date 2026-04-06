@@ -353,13 +353,25 @@ const DatasetNodeEditorInner = ({
     options: LAYOUT_OPTIONS,
   });
 
-  // Derive selected node data from the current graph instead of stale state
+  // Derive selected node data from the current graph. Falls back to the
+  // last known data when a rename changes the node ID but the graph hasn't
+  // rebuilt yet (the parent's dataset state lags by one render).
+  const prevSelectedNodeDataRef = useRef<
+    CollectionNodeData | FieldNodeData | null
+  >(null);
   const selectedNodeData = useMemo(() => {
     if (!selectedNodeId) {
+      prevSelectedNodeDataRef.current = null;
       return null;
     }
     const node = rawNodes.find((n) => n.id === selectedNodeId);
-    return (node?.data as CollectionNodeData | FieldNodeData) ?? null;
+    const data = (node?.data as CollectionNodeData | FieldNodeData) ?? null;
+    if (data) {
+      prevSelectedNodeDataRef.current = data;
+      return data;
+    }
+    // Node not found yet — return last known data to keep the panel open
+    return prevSelectedNodeDataRef.current;
   }, [rawNodes, selectedNodeId]);
 
   // Merge selection + highlight state into nodes
