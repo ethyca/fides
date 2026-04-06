@@ -620,6 +620,29 @@ describe("Integration Management - Custom Identity Conditions", () => {
     cy.contains("Condition added successfully!").should("be.visible");
   });
 
+  it("should show validation error for invalid custom identity key characters", () => {
+    cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
+
+    // Select the manual entry option
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
+    cy.getAntSelectOption("Other (enter custom key)")
+      .should("be.visible")
+      .click();
+
+    // Type a key with invalid characters (hyphens are not allowed)
+    cy.getByTestId("manual-identity-key-input").type("loyalty-number");
+
+    // Select operator and attempt to submit
+    cy.getByTestId("operator-select").antSelect("Exists");
+    cy.getByTestId("save-btn").click();
+
+    // Validation error should appear and block submission
+    cy.contains(
+      "Identity key may only contain letters, numbers, and underscores",
+    ).should("be.visible");
+  });
+
   it("should hide manual key input when switching away from Other", () => {
     cy.getByTestId("add-condition-btn").click();
     cy.wait("@getPrivacyRequestFields");
