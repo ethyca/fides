@@ -232,25 +232,12 @@ const DatasetNodeEditorInner = ({
     options: LAYOUT_OPTIONS,
   });
 
-  // Derive selected node data from the current graph. Falls back to the
-  // last known data when a rename changes the node ID but the graph hasn't
-  // rebuilt yet (the parent's dataset state lags by one render).
-  const prevSelectedNodeDataRef = useRef<
-    CollectionNodeData | FieldNodeData | null
-  >(null);
   const selectedNodeData = useMemo(() => {
     if (!selectedNodeId) {
-      prevSelectedNodeDataRef.current = null;
       return null;
     }
     const node = rawNodes.find((n) => n.id === selectedNodeId);
-    const data = (node?.data as CollectionNodeData | FieldNodeData) ?? null;
-    if (data) {
-      prevSelectedNodeDataRef.current = data;
-      return data;
-    }
-    // Node not found yet — return last known data to keep the panel open
-    return prevSelectedNodeDataRef.current;
+    return (node?.data as CollectionNodeData | FieldNodeData) ?? null;
   }, [rawNodes, selectedNodeId]);
 
   // Merge selection + highlight state into nodes
@@ -327,12 +314,12 @@ const DatasetNodeEditorInner = ({
           c.name === collectionName ? { ...c, ...updates } : c,
         ),
       };
-      // If the collection was renamed, update selectedNodeId to the new ID
-      if (updates.name && updates.name !== collectionName) {
-        setSelectedNodeId(`${COLLECTION_ROOT_PREFIX}${updates.name}`);
-        if (focusedCollection === collectionName) {
-          setFocusedCollection(updates.name);
-        }
+      if (
+        updates.name &&
+        updates.name !== collectionName &&
+        focusedCollection === collectionName
+      ) {
+        setFocusedCollection(updates.name);
       }
       onDatasetChange(updated);
     },
@@ -359,11 +346,6 @@ const DatasetNodeEditorInner = ({
           };
         }),
       };
-      // If the field was renamed, update selectedNodeId to the new ID
-      if (updates.name && updates.name !== segments[segments.length - 1]) {
-        const newSegments = [...segments.slice(0, -1), updates.name];
-        setSelectedNodeId(`field-${collectionName}-${newSegments.join(".")}`);
-      }
       onDatasetChange(updated);
     },
     [onDatasetChange],
