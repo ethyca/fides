@@ -113,6 +113,29 @@ export const ACTION_CTA: Record<
   },
 };
 
+export const ACTIVITY_FILTER_OPTIONS = [
+  { label: "All", value: "all" },
+  { label: "Human", value: "user" },
+  { label: "System", value: "system" },
+  { label: "Agent", value: "agent" },
+] as const;
+
+export const ACTOR_ICON_MAP: Record<
+  string,
+  { icon: string; color: string }
+> = {
+  user: { icon: "User", color: "var(--ant-color-primary)" },
+  system: { icon: "Settings", color: "var(--ant-color-text-tertiary)" },
+  agent: { icon: "Activity", color: "var(--ant-color-success)" },
+};
+
+export const EVENT_SOURCE_LABELS: Record<string, string> = {
+  helios: "Helios",
+  janus: "Janus",
+  lethe: "Lethe",
+  astralis: "Astralis",
+};
+
 export function getUrgencyGroup(
   severity: ActionSeverity,
   dueDate: string | null,

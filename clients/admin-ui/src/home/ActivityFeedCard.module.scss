@@ -1,0 +1,50 @@
+.cardContainer {
+  height: 100%;
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+.scrollContainer {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.feedItem {
+  padding: var(--ant-padding-sm, 12px) var(--ant-padding, 16px);
+  border-radius: var(--ant-border-radius, 6px);
+  transition: background-color 0.15s;
+
+  &:focus-visible {
+    outline: auto;
+  }
+}
+
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--ant-color-fill-quaternary);
+  }
+}
+
+.nonClickable {
+  cursor: default;
+}
+
+.actorIcon {
+  color: var(--ant-color-text-secondary);
+  background-color: var(--ant-color-fill-quaternary);
+  border: 1px solid var(--ant-color-border-secondary);
+  flex-shrink: 0;
+}
+
+.attributionText {
+  font-size: var(--ant-font-size-sm);
+  color: var(--ant-color-text-quaternary);
+}
