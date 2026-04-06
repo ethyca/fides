@@ -207,9 +207,7 @@ const DatasetNodeEditorInner = ({
             // dataset (renamed or deleted via YAML), reset to overview.
             if (
               focusedCollection &&
-              !parsed.collections.some(
-                (c) => c.name === focusedCollection,
-              )
+              !parsed.collections.some((c) => c.name === focusedCollection)
             ) {
               setFocusedCollection(null);
             }
@@ -253,14 +251,10 @@ const DatasetNodeEditorInner = ({
 
     // Detect the collection indent level from the first `- name:` line
     // instead of hardcoding a threshold.
-    let collectionIndent: number | null = null;
-    for (const line of lines) {
-      const m = line.match(/^(\s*)-\s+name:\s+\S+/);
-      if (m) {
-        collectionIndent = m[1].length;
-        break;
-      }
-    }
+    const firstNameLine = lines.find((l) => /^(\s*)-\s+name:\s+\S+/.test(l));
+    const collectionIndent = firstNameLine
+      ? (firstNameLine.match(/^(\s*)-/)?.[1].length ?? null)
+      : null;
 
     lines.forEach((line: string, i: number) => {
       let isProtected = false;
