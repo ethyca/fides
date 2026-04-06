@@ -184,7 +184,7 @@ const PermissionsForm = () => {
   ]);
 
   // Watch roles field for dirty state (useWatch requires a registered Form.Item)
-  const currentRoles = Form.useWatch("roles", form);
+  const currentRoles = Form.useWatch("roles", form) ?? initialValues.roles;
 
   if (!activeUserId) {
     return null;

@@ -50,7 +50,6 @@ const RoleOption = ({
           borderColor: "var(--ant-color-border)",
           backgroundColor: "var(--ant-color-bg-layout)",
         }}
-        aria-selected="true"
         data-testid="selected"
       >
         <Flex vertical gap={16}>
