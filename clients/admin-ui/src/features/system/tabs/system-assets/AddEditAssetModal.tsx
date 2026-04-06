@@ -2,8 +2,6 @@ import { Button, ChakraText as Text, Flex, useMessage } from "fidesui";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 
-import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import {
@@ -11,6 +9,7 @@ import {
   getErrorMessage,
   isErrorResult,
 } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import {
   useAddSystemAssetMutation,
@@ -135,81 +134,81 @@ const AddEditAssetModal = ({
         data-testid="add-modal-content"
       >
         <Form>
-              <Flex vertical className="pb-6 pt-4">
-                <FormInfoBox>
-                  <Text fontSize="sm">{FORM_COPY}</Text>
-                </FormInfoBox>
-                <Flex vertical gap={20}>
-                  <CustomTextInput
-                    id="name"
-                    name="name"
-                    label="Name"
-                    variant="stacked"
-                    isRequired
-                    disabled={!isCreate}
-                  />
-                  <ControlledSelect
-                    isRequired
-                    id="asset_type"
-                    name="asset_type"
-                    label="Asset type"
-                    options={enumToOptions(AssetType)}
-                    layout="stacked"
-                    disabled={!isCreate}
-                  />
-                  <WrappedDataUseSelect
-                    name="data_uses"
-                    label="Data uses"
-                    layout="stacked"
-                  />
-                  <CustomTextInput
-                    id="domain"
-                    name="domain"
-                    label="Domain"
-                    variant="stacked"
-                    isRequired
-                    disabled={!isCreate}
-                  />
-                  <CustomTextArea
-                    id="description"
-                    name="description"
-                    label="Description"
-                    variant="stacked"
-                  />
-                  {isCookieAsset && (
-                    <CustomTextInput
-                      id="duration"
-                      name="duration"
-                      label="Duration"
-                      variant="stacked"
-                      placeholder="e.g. '1 day', '30 minutes', '1 year'"
-                      tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
-                      isRequired={isCookieAsset}
-                    />
-                  )}
-                  {isNotCookieAsset && (
-                    <CustomTextInput
-                      id="base_url"
-                      name="base_url"
-                      label="Base URL"
-                      variant="stacked"
-                      isRequired={isNotCookieAsset}
-                    />
-                  )}
-                </Flex>
-              </Flex>
-              <Flex justify="space-between">
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={addIsLoading || updateIsLoading}
-                  disabled={!isValid || !dirty}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </Flex>
+          <Flex vertical className="pb-6 pt-4">
+            <FormInfoBox>
+              <Text fontSize="sm">{FORM_COPY}</Text>
+            </FormInfoBox>
+            <Flex vertical gap={20}>
+              <CustomTextInput
+                id="name"
+                name="name"
+                label="Name"
+                variant="stacked"
+                isRequired
+                disabled={!isCreate}
+              />
+              <ControlledSelect
+                isRequired
+                id="asset_type"
+                name="asset_type"
+                label="Asset type"
+                options={enumToOptions(AssetType)}
+                layout="stacked"
+                disabled={!isCreate}
+              />
+              <WrappedDataUseSelect
+                name="data_uses"
+                label="Data uses"
+                layout="stacked"
+              />
+              <CustomTextInput
+                id="domain"
+                name="domain"
+                label="Domain"
+                variant="stacked"
+                isRequired
+                disabled={!isCreate}
+              />
+              <CustomTextArea
+                id="description"
+                name="description"
+                label="Description"
+                variant="stacked"
+              />
+              {isCookieAsset && (
+                <CustomTextInput
+                  id="duration"
+                  name="duration"
+                  label="Duration"
+                  variant="stacked"
+                  placeholder="e.g. '1 day', '30 minutes', '1 year'"
+                  tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
+                  isRequired={isCookieAsset}
+                />
+              )}
+              {isNotCookieAsset && (
+                <CustomTextInput
+                  id="base_url"
+                  name="base_url"
+                  label="Base URL"
+                  variant="stacked"
+                  isRequired={isNotCookieAsset}
+                />
+              )}
+            </Flex>
+          </Flex>
+          <Flex justify="space-between">
+            <Button onClick={onClose}>Cancel</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={addIsLoading || updateIsLoading}
+              disabled={!isValid || !dirty}
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
+          </Flex>
         </Form>
       </ConfirmCloseModal>
     </FormikProvider>
