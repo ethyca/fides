@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 
+import AWS_TYPE_INFO from "~/features/integrations/integration-type-info/awsInfo";
 import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
 import DATAHUB_TYPE_INFO from "~/features/integrations/integration-type-info/datahubInfo";
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
@@ -39,6 +40,7 @@ export type IntegrationTypeInfo = {
 export const SAAS_INTEGRATIONS: IntegrationTypeInfo[] = [SALESFORCE_TYPE_INFO];
 
 const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
+  [ConnectionType.AWS]: AWS_TYPE_INFO,
   [ConnectionType.BIGQUERY]: BIGQUERY_TYPE_INFO,
   [ConnectionType.DATAHUB]: DATAHUB_TYPE_INFO,
   [ConnectionType.DYNAMODB]: DYNAMO_TYPE_INFO,

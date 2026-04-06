@@ -11,18 +11,23 @@ export enum IntegrationFilterTabs {
   DATA_WAREHOUSE = "Data Warehouse",
   IDENTITY_PROVIDER = "Identity Provider",
   WEBSITE = "Website",
+  CLOUD_INFRASTRUCTURE = "Cloud Infrastructure",
   MANUAL = "Manual",
 }
 
 const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
   const {
-    flags: { webMonitor },
+    flags: { awsMonitor, webMonitor },
   } = useFlags();
-  const tabs = !webMonitor
-    ? Object.values(IntegrationFilterTabs).filter(
-        (tab) => tab !== IntegrationFilterTabs.WEBSITE,
-      )
-    : Object.values(IntegrationFilterTabs);
+  const tabs = Object.values(IntegrationFilterTabs).filter((tab) => {
+    if (!webMonitor && tab === IntegrationFilterTabs.WEBSITE) {
+      return false;
+    }
+    if (!awsMonitor && tab === IntegrationFilterTabs.CLOUD_INFRASTRUCTURE) {
+      return false;
+    }
+    return true;
+  });
 
   const [tabIndex, setTabIndex] = useState(0);
   const currentTab = tabs[tabIndex];

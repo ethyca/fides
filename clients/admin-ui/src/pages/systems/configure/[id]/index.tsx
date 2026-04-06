@@ -1,4 +1,4 @@
-import { Button, Icons, PageSpinner, Tabs } from "fidesui";
+import { Button, Icons, Spin, Tabs } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -66,7 +66,7 @@ const ConfigureSystem: NextPage = () => {
   if ((isLoading || isDictionaryLoading) && !dictionaryError) {
     return (
       <Layout title="Systems">
-        <PageSpinner />
+        <Spin />
       </Layout>
     );
   }
