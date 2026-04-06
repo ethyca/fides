@@ -112,6 +112,7 @@ const AddEditAssetModal = ({
 
   const formik = useFormik({
     initialValues,
+    enableReinitialize: true,
     onSubmit: handleSaveClicked,
     validationSchema,
   });
