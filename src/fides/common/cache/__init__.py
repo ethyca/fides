@@ -8,13 +8,8 @@ and index-backed list/clear with lazy migration for legacy keys.
 
 """
 
-from contextlib import contextmanager
-from typing import Iterator
-
-from fides.common.cache.dsr_store import (
-    DSR_KEY_PREFIX,
-    DSRCacheStore,
-)
+from fides.common.cache.dsr_store import DSRCacheStore
+from fides.common.cache.key_mapping import DSR_KEY_PREFIX
 from fides.common.cache.manager import (
     INDEX_KEY_PREFIX,
     RedisCacheManager,

@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fideslang.models import Dataset as FideslangDataset
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
@@ -226,6 +226,29 @@ class DatasetConfigService:
             )
 
         return True, None
+
+    def get_datasets_as_dicts(self, connection_config_id: str) -> List[Dict[str, Any]]:
+        """Return serialized datasets for a connection, suitable for history snapshots."""
+        return [
+            FideslangDataset.model_validate(dc.ctl_dataset).model_dump(mode="json")
+            for dc in self.db.query(DatasetConfig)
+            .options(selectinload(DatasetConfig.ctl_dataset))
+            .filter(DatasetConfig.connection_config_id == connection_config_id)
+            .all()
+            if dc.ctl_dataset
+        ]
+
+    def get_config_from_fides_key(
+        self, connection_config_id: str, fides_key: str
+    ) -> Optional[DatasetConfig]:
+        """Return a Dataset Config By searching by key and config id"""
+        return DatasetConfig.filter(
+            db=self.db,
+            conditions=(
+                (DatasetConfig.connection_config_id == connection_config_id)
+                & (DatasetConfig.fides_key == fides_key)
+            ),
+        ).first()
 
     def run_test_access_request(
         self,

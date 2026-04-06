@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed Redis cluster connection URL generation to include SSL query parameters from Redis settings.
+pr: 7811
+labels: []
