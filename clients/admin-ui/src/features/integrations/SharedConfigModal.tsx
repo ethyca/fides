@@ -1,7 +1,8 @@
-import { Button, Icons, Modal } from "fidesui";
+import { Button, Form, Icons } from "fidesui";
 import { useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import SharedMonitorConfigForm from "~/features/monitors/SharedMonitorConfigForm";
 import SharedMonitorConfigTable from "~/features/monitors/SharedMonitorConfigTable";
 import { SharedMonitorConfig } from "~/types/api";
@@ -13,6 +14,7 @@ enum SharedConfigModalState {
 
 const SharedConfigModal = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [form] = Form.useForm();
 
   const [configToEdit, setConfigToEdit] = useState<
     SharedMonitorConfig | undefined
@@ -34,6 +36,7 @@ const SharedConfigModal = () => {
   };
 
   const handleCancel = () => {
+    form.resetFields();
     resetForm();
     setModalIsOpen(false);
   };
@@ -48,9 +51,13 @@ const SharedConfigModal = () => {
       >
         Shared configs
       </Button>
-      <Modal
+      <ConfirmCloseModal
         open={modalIsOpen}
-        onCancel={handleCancel}
+        onClose={handleCancel}
+        getIsDirty={() =>
+          modalState === SharedConfigModalState.FORM_VIEW &&
+          form.isFieldsTouched()
+        }
         destroyOnHidden
         centered
         width={MODAL_SIZE.lg}
@@ -60,6 +67,7 @@ const SharedConfigModal = () => {
           <SharedMonitorConfigForm
             config={configToEdit}
             onBackClick={resetForm}
+            form={form}
           />
         )}
         {modalState === SharedConfigModalState.MAIN_VIEW && (
@@ -68,7 +76,7 @@ const SharedConfigModal = () => {
             onRowClick={handleRowClick}
           />
         )}
-      </Modal>
+      </ConfirmCloseModal>
     </>
   );
 };

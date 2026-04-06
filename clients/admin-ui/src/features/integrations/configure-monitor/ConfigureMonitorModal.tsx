@@ -1,11 +1,12 @@
 import {
   ChakraUseDisclosureReturn as UseDisclosureReturn,
-  Modal,
+  Form,
   Spin,
   useMessage,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
@@ -51,6 +52,9 @@ const ConfigureMonitorModal = ({
 }) => {
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
+
+  const [websiteForm] = Form.useForm();
+  const [monitorForm] = Form.useForm();
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -100,14 +104,15 @@ const ConfigureMonitorModal = ({
 
   if (isWebsiteMonitor) {
     return (
-      <Modal
+      <ConfirmCloseModal
         title={
           monitor?.name
             ? `Configure ${monitor.name}`
             : "Configure website monitor"
         }
         open={isOpen}
-        onCancel={onClose}
+        onClose={onClose}
+        getIsDirty={() => websiteForm.isFieldsTouched()}
         centered
         destroyOnClose
         footer={null}
@@ -119,20 +124,22 @@ const ConfigureMonitorModal = ({
           integrationSystem={integration?.system_key}
           onClose={onClose}
           onSubmit={handleSubmit}
+          form={websiteForm}
         />
-      </Modal>
+      </ConfirmCloseModal>
     );
   }
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title={
         monitor?.name
           ? `Configure ${monitor.name}`
           : "Configure discovery monitor"
       }
       open={isOpen}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => monitorForm.isFieldsTouched()}
       centered
       destroyOnClose
       footer={null}
@@ -148,6 +155,7 @@ const ConfigureMonitorModal = ({
           databasesAvailable={databasesAvailable}
           integrationSystem={integration?.system_key}
           integrationOption={integrationOption}
+          form={monitorForm}
         />
       )}
       {formStep === 1 &&
@@ -163,7 +171,7 @@ const ConfigureMonitorModal = ({
         ) : (
           <Spin />
         ))}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 
