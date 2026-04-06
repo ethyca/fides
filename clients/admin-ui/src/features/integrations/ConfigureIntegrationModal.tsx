@@ -1,9 +1,10 @@
 import {
   Button,
   ChakraUseDisclosureReturn as UseDisclosureReturn,
-  Modal,
 } from "fidesui";
 import { useMemo, useState } from "react";
+
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
@@ -69,10 +70,11 @@ const ConfigureIntegrationModal = ({
   );
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title={`Manage ${connection?.name} integration`}
       open={isOpen}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => formState?.dirty ?? false}
       centered
       destroyOnClose
       footer={modalFooter}
@@ -85,7 +87,7 @@ const ConfigureIntegrationModal = ({
         onFormStateChange={setFormState}
         initialSystemFidesKey={initialSystemFidesKey}
       />
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 
