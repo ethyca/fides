@@ -341,10 +341,9 @@ def very_short_request_task_expiration():
 
 @pytest.fixture(scope="function")
 def very_short_redis_cache_expiration():
-    original_value: float = CONFIG.redis.default_ttl_seconds
-    CONFIG.redis.default_ttl_seconds = (
-        0.01  # Set redis cache to expire very quickly for testing purposes
-    )
+    original_value: int = CONFIG.redis.default_ttl_seconds
+    # Redis SET ex= must be int or timedelta (not float). Use 2s to avoid flakiness on slow CI.
+    CONFIG.redis.default_ttl_seconds = 2
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
 
@@ -355,7 +354,7 @@ class TestRemoveSavedCustomerData:
     )
     def test_no_request_tasks(self, db, privacy_request):
         assert not privacy_request.request_tasks.count()
-        time.sleep(1)
+        time.sleep(3)
 
         # Mainly asserting this runs without error
         remove_saved_dsr_data.delay().get()
@@ -381,7 +380,7 @@ class TestRemoveSavedCustomerData:
         privacy_request.save(db)
 
         assert privacy_request.request_tasks.count()
-        time.sleep(1)
+        time.sleep(3)
 
         remove_saved_dsr_data.delay().get()
 
@@ -409,7 +408,7 @@ class TestRemoveSavedCustomerData:
         privacy_request.save(db)
 
         assert privacy_request.request_tasks.count()
-        time.sleep(1)
+        time.sleep(3)
 
         remove_saved_dsr_data.delay().get()
 
@@ -590,16 +589,18 @@ class TestGetCachedTaskId:
         result = get_cached_task_id(privacy_request.id)
         assert result is None
 
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cache")
+    @mock.patch("fides.api.service.privacy_request.request_service.get_dsr_cache_store")
     @mock.patch("fides.api.service.privacy_request.request_service.logger")
     def test_get_cached_task_id_cache_exception(
-        self, mock_logger, mock_get_cache, privacy_request
+        self, mock_logger, mock_get_store, privacy_request
     ):
         """Test that function logs error and re-raises exceptions from cache operations."""
-        # Mock cache to raise exception
-        mock_cache = mock.Mock()
-        mock_cache.get.side_effect = Exception("Redis connection failed")
-        mock_get_cache.return_value = mock_cache
+        # Mock store to raise exception on get_async_execution
+        mock_store = mock.Mock()
+        mock_store.get_async_execution.side_effect = Exception(
+            "Redis connection failed"
+        )
+        mock_get_store.return_value = mock_store
 
         # Function should log error and re-raise exception
         with pytest.raises(Exception, match="Redis connection failed"):

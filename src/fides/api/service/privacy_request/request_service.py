@@ -33,8 +33,8 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
-    get_async_task_tracking_cache_key,
     get_cache,
+    get_dsr_cache_store,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
     reset_privacy_request_retry_count,
@@ -337,9 +337,11 @@ def get_cached_task_id(entity_id: str) -> Optional[str]:
 
     Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
     """
-    cache: FidesopsRedis = get_cache()
     try:
-        task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
+        store = get_dsr_cache_store(entity_id)
+        task_id = store.get_async_execution()
+        if isinstance(task_id, bytes):
+            return task_id.decode(CONFIG.security.encoding)
         return task_id
     except Exception as exc:
         logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")
