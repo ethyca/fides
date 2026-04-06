@@ -1,8 +1,8 @@
 import { Button, Flex } from "fidesui";
 import { useState } from "react";
 
-import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";

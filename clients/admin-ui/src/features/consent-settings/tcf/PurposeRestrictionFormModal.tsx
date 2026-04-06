@@ -9,10 +9,9 @@ import {
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 
-import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { isErrorResult } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
   TCFPublisherRestrictionRequest,
   TCFRestrictionType,
@@ -240,93 +239,90 @@ export const PurposeRestrictionFormModal = ({
         footer={null}
       >
         <Form>
-            <Flex vertical className="gap-6">
-              <Text className="text-sm">
-                Define how specific vendors are restricted from processing data
-                for this purpose. Select a restriction type, set whether the
-                listed vendors are restricted or allowed, and specify which
-                vendor IDs the restriction applies to.
-              </Text>
-              <Tooltip
-                title={
-                  !isPurposeFlexible
-                    ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
-                    : undefined
-                }
-              >
-                <ControlledSelect
-                  name="restriction_type"
-                  label="Restriction type"
-                  options={restrictionTypeOptions}
-                  layout="stacked"
-                  tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
-                  isRequired
-                  disabled={!isPurposeFlexible}
-                  className="w-full" // tooltip wrapper makes this necessary
-                />
-              </Tooltip>
+          <Flex vertical className="gap-6">
+            <Text className="text-sm">
+              Define how specific vendors are restricted from processing data
+              for this purpose. Select a restriction type, set whether the
+              listed vendors are restricted or allowed, and specify which vendor
+              IDs the restriction applies to.
+            </Text>
+            <Tooltip
+              title={
+                !isPurposeFlexible
+                  ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
+                  : undefined
+              }
+            >
               <ControlledSelect
-                name="vendor_restriction"
-                label="Vendor restriction"
-                options={vendorRestrictionOptions}
+                name="restriction_type"
+                label="Restriction type"
+                options={restrictionTypeOptions}
                 layout="stacked"
-                tooltip="Decide if the restriction applies to all vendors, specific vendors, or if only certain vendors are allowed."
+                tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
+                isRequired
+                disabled={!isPurposeFlexible}
+                className="w-full" // tooltip wrapper makes this necessary
+              />
+            </Tooltip>
+            <ControlledSelect
+              name="vendor_restriction"
+              label="Vendor restriction"
+              options={vendorRestrictionOptions}
+              layout="stacked"
+              tooltip="Decide if the restriction applies to all vendors, specific vendors, or if only certain vendors are allowed."
+              isRequired
+            />
+            <Collapse
+              in={
+                !!values.restriction_type &&
+                !!values.vendor_restriction &&
+                values.vendor_restriction !==
+                  TCFVendorRestriction.RESTRICT_ALL_VENDORS
+              }
+              animateOpacity
+            >
+              <ControlledSelect
+                name="vendor_ids"
+                label="Vendor IDs"
+                mode="tags"
+                options={[]}
+                layout="stacked"
+                placeholder="Enter vendor IDs"
+                open={false}
+                // eslint-disable-next-line react/no-unstable-nested-components
+                suffixIcon={<span />}
+                tooltip="List the specific vendors that are restricted or allowed from processing data for this purpose."
+                disabled={
+                  values.vendor_restriction ===
+                  TCFVendorRestriction.RESTRICT_ALL_VENDORS
+                }
+                tokenSeparators={[",", " "]}
+                onBlur={() => {
+                  // Add small delay to allow Ant Select to create tag before validation
+                  setTimeout(() => {
+                    setTouched({
+                      vendor_ids: true,
+                    });
+                    validateField("vendor_ids");
+                  }, 100);
+                }}
+                helperText="Enter IDs (e.g. 123) or ranges (e.g. 1-10) and press enter"
                 isRequired
               />
-              <Collapse
-                in={
-                  !!values.restriction_type &&
-                  !!values.vendor_restriction &&
-                  values.vendor_restriction !==
-                    TCFVendorRestriction.RESTRICT_ALL_VENDORS
-                }
-                animateOpacity
+            </Collapse>
+            <Flex justify="flex-end" className="gap-3 pt-4">
+              <Button onClick={onClose} data-testid="cancel-restriction-button">
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                data-testid="save-restriction-button"
               >
-                <ControlledSelect
-                  name="vendor_ids"
-                  label="Vendor IDs"
-                  mode="tags"
-                  options={[]}
-                  layout="stacked"
-                  placeholder="Enter vendor IDs"
-                  open={false}
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  suffixIcon={<span />}
-                  tooltip="List the specific vendors that are restricted or allowed from processing data for this purpose."
-                  disabled={
-                    values.vendor_restriction ===
-                    TCFVendorRestriction.RESTRICT_ALL_VENDORS
-                  }
-                  tokenSeparators={[",", " "]}
-                  onBlur={() => {
-                    // Add small delay to allow Ant Select to create tag before validation
-                    setTimeout(() => {
-                      setTouched({
-                        vendor_ids: true,
-                      });
-                      validateField("vendor_ids");
-                    }, 100);
-                  }}
-                  helperText="Enter IDs (e.g. 123) or ranges (e.g. 1-10) and press enter"
-                  isRequired
-                />
-              </Collapse>
-              <Flex justify="flex-end" className="gap-3 pt-4">
-                <Button
-                  onClick={onClose}
-                  data-testid="cancel-restriction-button"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  data-testid="save-restriction-button"
-                >
-                  Save
-                </Button>
-              </Flex>
+                Save
+              </Button>
             </Flex>
+          </Flex>
         </Form>
       </ConfirmCloseModal>
     </FormikProvider>
