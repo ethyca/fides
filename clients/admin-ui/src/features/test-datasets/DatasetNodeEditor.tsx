@@ -195,9 +195,7 @@ const DatasetNodeEditorInner = ({
             // dataset (renamed or deleted via YAML), reset to overview.
             if (
               focusedCollection &&
-              !parsed.collections.some(
-                (c) => c.name === focusedCollection,
-              )
+              !parsed.collections.some((c) => c.name === focusedCollection)
             ) {
               setFocusedCollection(null);
             }
