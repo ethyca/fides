@@ -60,19 +60,26 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
   [ConnectionType.MANUAL_TASK]: MANUAL_TYPE_INFO,
-  [ConnectionType.TEST_DATASTORE]: {
+};
+
+// Mock integration only available in development environments
+if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
+  INTEGRATION_TYPE_MAP[ConnectionType.TEST_DATASTORE] = {
     placeholder: {
-      name: "Mock query log",
+      name: "Mock integration",
       key: "test_datastore_placeholder",
       connection_type: ConnectionType.TEST_DATASTORE,
       access: AccessLevel.READ,
       created_at: "",
     },
     category: ConnectionCategory.DATA_WAREHOUSE,
-    tags: ["Query Logging", "Mock"],
-    enabledFeatures: [IntegrationFeature.QUERY_LOGGING],
-  },
-};
+    tags: ["Query Logging", "Identity Resolution", "Mock"],
+    enabledFeatures: [
+      IntegrationFeature.QUERY_LOGGING,
+      IntegrationFeature.IDENTITY_RESOLUTION,
+    ],
+  };
+}
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
   ...Object.values(INTEGRATION_TYPE_MAP),

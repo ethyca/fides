@@ -60,6 +60,9 @@ const IdentityResolutionTab = ({ integration }: IdentityResolutionTabProps) => {
     if (integration.connection_type === "google_workspace") {
       return "google_workspace";
     }
+    if (integration.connection_type === "test_datastore") {
+      return "mock";
+    }
     return "gcp";
   }, [integration.connection_type]);
 
@@ -133,10 +136,13 @@ const IdentityResolutionTab = ({ integration }: IdentityResolutionTabProps) => {
   return (
     <div className="max-w-[600px]">
       <Typography.Paragraph className="mb-4">
-        Enable identity resolution to map query authors to data consumers using{" "}
-        {providerType === "google_workspace"
-          ? "Google Groups membership"
-          : "GCP IAM role bindings and service account matching"}
+        Enable identity resolution to map query authors to data consumers
+        {providerType === "google_workspace" &&
+          " using Google Groups membership"}
+        {providerType === "gcp" &&
+          " using GCP IAM role bindings and service account matching"}
+        {providerType === "mock" &&
+          " using mock data (no real credentials needed)"}
         .
       </Typography.Paragraph>
 
