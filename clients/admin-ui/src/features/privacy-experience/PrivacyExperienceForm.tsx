@@ -892,8 +892,11 @@ export const PrivacyExperienceForm = ({
       <Flex
         justify="flex-end"
         gap="small"
-        className="sticky bottom-0 z-10 bg-white px-4 py-2"
-        style={{ borderTop: "1px solid var(--ant-color-border)" }}
+        className="sticky bottom-0 z-10 px-4 py-2"
+        style={{
+          borderTop: "1px solid var(--ant-color-border)",
+          backgroundColor: "var(--fidesui-bg-white)",
+        }}
       >
         <Button onClick={handleCancel}>Cancel</Button>
         <Button

@@ -1,6 +1,10 @@
+import { FormInstance } from "fidesui";
+
 import {
   ComponentType,
+  ExperienceConfigCreate,
   ExperienceConfigResponse,
+  ExperienceTranslation,
   ExperienceTranslationResponse,
   SupportedLanguage,
 } from "~/types/api";
@@ -11,8 +15,10 @@ import {
   findLanguageDisplayName,
   getSelectedRegionIds,
   getTranslationFormFields,
+  removeUncommittedTranslation,
   transformConfigResponseToCreate,
   transformTranslationResponseToCreate,
+  TranslationWithLanguageName,
 } from "./helpers";
 
 describe("getSelectedRegionIds", () => {
@@ -289,5 +295,66 @@ describe("getTranslationFormFields", () => {
       included: true,
       required: true,
     });
+  });
+});
+
+describe("removeUncommittedTranslation", () => {
+  let mockForm: jest.Mocked<FormInstance<ExperienceConfigCreate>>;
+  let translationToEdit: TranslationWithLanguageName;
+
+  beforeEach(() => {
+    mockForm = {
+      getFieldValue: jest.fn(),
+      setFieldValue: jest.fn(),
+    } as unknown as jest.Mocked<FormInstance<ExperienceConfigCreate>>;
+    translationToEdit = {
+      language: SupportedLanguage.EN,
+      name: "English",
+    };
+  });
+
+  it("should remove the translation if it exists in the translations array", () => {
+    const translations: ExperienceTranslation[] = [
+      { language: SupportedLanguage.EN, title: "Privacy Policy" },
+      { language: SupportedLanguage.FR, title: "Politique de Confidentialité" },
+    ];
+    mockForm.getFieldValue.mockReturnValue(translations);
+
+    removeUncommittedTranslation(mockForm, translationToEdit);
+
+    expect(mockForm.getFieldValue).toHaveBeenCalledWith("translations");
+    expect(mockForm.setFieldValue).toHaveBeenCalledWith("translations", [
+      { language: SupportedLanguage.FR, title: "Politique de Confidentialité" },
+    ]);
+  });
+
+  it("should do nothing if the translation does not exist", () => {
+    const translations: ExperienceTranslation[] = [
+      { language: SupportedLanguage.FR, title: "Politique de Confidentialité" },
+    ];
+    mockForm.getFieldValue.mockReturnValue(translations);
+
+    removeUncommittedTranslation(mockForm, translationToEdit);
+
+    expect(mockForm.getFieldValue).toHaveBeenCalledWith("translations");
+    expect(mockForm.setFieldValue).not.toHaveBeenCalled();
+  });
+
+  it("should handle empty translations array", () => {
+    mockForm.getFieldValue.mockReturnValue([]);
+
+    removeUncommittedTranslation(mockForm, translationToEdit);
+
+    expect(mockForm.getFieldValue).toHaveBeenCalledWith("translations");
+    expect(mockForm.setFieldValue).not.toHaveBeenCalled();
+  });
+
+  it("should handle undefined translations", () => {
+    mockForm.getFieldValue.mockReturnValue(undefined);
+
+    removeUncommittedTranslation(mockForm, translationToEdit);
+
+    expect(mockForm.getFieldValue).toHaveBeenCalledWith("translations");
+    expect(mockForm.setFieldValue).not.toHaveBeenCalled();
   });
 });

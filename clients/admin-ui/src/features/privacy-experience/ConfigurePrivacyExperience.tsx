@@ -52,6 +52,8 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+import { removeUncommittedTranslation } from "./utils/removeUncommittedTranslation";
+
 const ConfigurePrivacyExperience = ({
   passedInExperience,
   passedInTranslations,
@@ -198,16 +200,9 @@ const ConfigurePrivacyExperience = ({
         ) as ExperienceTranslation;
         const isEditing = !!initial.title && !usingOOBValues;
         if (!isEditing) {
-          const allTranslations = (form.getFieldValue("translations") ??
-            []) as ExperienceTranslation[];
-          const idx = allTranslations.findIndex(
-            (t) => t.language === translationToEdit.language,
-          );
-          if (idx >= 0) {
-            const updated = allTranslations.slice();
-            updated.splice(idx, 1);
-            form.setFieldValue("translations", updated);
-          }
+          // The local form never committed, so parent form has original values.
+          // For new translations, remove the placeholder entry.
+          removeUncommittedTranslation(form, translationToEdit);
         }
       }
       closeTranslationDrawer();
@@ -245,19 +240,10 @@ const ConfigurePrivacyExperience = ({
       centered: true,
       icon: null,
       onOk: () => {
-        // The local form never committed, so parent form has original values.
-        // For new translations, remove the placeholder entry.
         if (!isEditing) {
-          const allTranslations = (form.getFieldValue("translations") ??
-            []) as ExperienceTranslation[];
-          const idx = allTranslations.findIndex(
-            (t) => t.language === translationToEdit.language,
-          );
-          if (idx >= 0) {
-            const updated = allTranslations.slice();
-            updated.splice(idx, 1);
-            form.setFieldValue("translations", updated);
-          }
+          // The local form never committed, so parent form has original values.
+          // For new translations, remove the placeholder entry.
+          removeUncommittedTranslation(form, translationToEdit);
         }
         closeTranslationDrawer();
       },
