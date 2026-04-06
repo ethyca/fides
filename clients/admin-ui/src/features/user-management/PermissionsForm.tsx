@@ -3,12 +3,14 @@ import {
   Button,
   Flex,
   Form,
+  Input,
   Spin,
   Tooltip,
   Typography,
   useMessage,
   useModal,
 } from "fidesui";
+import { isEqual } from "lodash";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -181,8 +183,8 @@ const PermissionsForm = () => {
     ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
   ]);
 
-  // Watch form for dirty state
-  Form.useWatch([], form);
+  // Watch roles field for dirty state (useWatch requires a registered Form.Item)
+  const currentRoles = Form.useWatch("roles", form);
 
   if (!activeUserId) {
     return null;
@@ -220,6 +222,9 @@ const PermissionsForm = () => {
 
   return (
     <Form form={form} initialValues={initialValues} onFinish={handleSubmit}>
+      <Form.Item name="roles" hidden>
+        <Input />
+      </Form.Item>
       <Flex vertical gap={28}>
         <Flex vertical gap={12} data-testid="role-options">
           <Flex align="center">
@@ -267,7 +272,7 @@ const PermissionsForm = () => {
               htmlType="submit"
               loading={isSubmitting}
               disabled={
-                (!form.isFieldsTouched() &&
+                (isEqual(currentRoles, initialValues.roles) &&
                   assignedSystems === initialManagedSystems) ||
                 isExternalRespondent
               }
