@@ -38,7 +38,7 @@ from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
 from fides.api.oauth.jwt import decrypt_jwe
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING, get_scopes_from_roles
-from fides.api.request_context import set_user_id
+from fides.api.request_context import set_client_id, set_user_id
 from fides.api.schemas.external_https import (
     DownloadTokenJWE,
     RequestTaskJWE,
@@ -664,15 +664,19 @@ def extract_token_and_load_client(
     # Invalidate tokens issued prior to the user's most recent password reset.
     check_token_invalidation(issued_at_dt, token_data, client)
 
-    # Populate request-scoped context with the authenticated user identifier.
-    # Prefer the linked user_id; fall back to the client id when this is the
-    # special root client (which has no associated FidesUser row).
+    # Populate request-scoped context with the authenticated actor.
+    # Priority order:
+    #   1. Linked FidesUser  → set user_id (human user acting via their personal client)
+    #   2. Root client       → set user_id to root client id (special system actor)
+    #   3. API client        → set client_id (non-user-linked OAuth client)
     ctx_user_id = client.user_id
     if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
         ctx_user_id = CONFIG.security.oauth_root_client_id
 
     if ctx_user_id:
         set_user_id(ctx_user_id)
+    else:
+        set_client_id(client.id)
 
     return token_data, client
 
@@ -743,15 +747,19 @@ async def extract_token_and_load_client_async(
     # Invalidate tokens issued prior to the user's most recent password reset.
     check_token_invalidation(issued_at_dt, token_data, client)
 
-    # Populate request-scoped context with the authenticated user identifier.
-    # Prefer the linked user_id; fall back to the client id when this is the
-    # special root client (which has no associated FidesUser row).
+    # Populate request-scoped context with the authenticated actor.
+    # Priority order:
+    #   1. Linked FidesUser  → set user_id (human user acting via their personal client)
+    #   2. Root client       → set user_id to root client id (special system actor)
+    #   3. API client        → set client_id (non-user-linked OAuth client)
     ctx_user_id = client.user_id
     if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
         ctx_user_id = CONFIG.security.oauth_root_client_id
 
     if ctx_user_id:
         set_user_id(ctx_user_id)
+    else:
+        set_client_id(client.id)
 
     return token_data, client
 
