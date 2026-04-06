@@ -4,7 +4,6 @@ import {
   Flex,
   Form,
   Input,
-  Modal,
   Select,
   Spin,
   Switch,
@@ -12,6 +11,8 @@ import {
 } from "fidesui";
 import NextLink from "next/link";
 import { useEffect, useMemo } from "react";
+
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
@@ -135,10 +136,11 @@ const AssessmentSettingsModal = ({
     })) ?? [];
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="Assessment settings"
       open={open}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       destroyOnHidden
       footer={
         <Flex justify="flex-end" gap={8}>
@@ -295,7 +297,7 @@ const AssessmentSettingsModal = ({
           )}
         </Form>
       )}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

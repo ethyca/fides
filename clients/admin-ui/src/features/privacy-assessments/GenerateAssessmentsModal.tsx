@@ -4,7 +4,6 @@ import {
   Descriptions,
   Flex,
   Form,
-  Modal,
   Select,
   Space,
   Switch,
@@ -12,6 +11,8 @@ import {
   useMessage,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
+
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -113,10 +114,11 @@ export const GenerateAssessmentsModal = ({
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="Generate assessments"
       open={open}
-      onCancel={handleCancel}
+      onClose={handleCancel}
+      getIsDirty={() => form.isFieldsTouched()}
       footer={null}
       width={MODAL_SIZE.md}
     >
@@ -218,6 +220,6 @@ export const GenerateAssessmentsModal = ({
           </Item>
         </Form>
       </Space>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
