@@ -287,3 +287,23 @@ h6 {
     width: 100%;
   }
 }
+
+.ant-pagination {
+  // fixes a bug where the ellipsis is too wide and wraps to the next line. Maybe they'll fix this.
+  &-item-ellipsis {
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+}
+
+// Ant Design's JS-driven animations (CSSMotion) don't reliably respect the
+// theme token `motion: false` during SSR hydration. This CSS rule acts as a
+// fallback: when prefers-reduced-motion is active (e.g. Cypress CI), it
+// forces all Ant animation classes to skip their opacity/transform transitions
+// so elements are immediately visible.
+@media (prefers-reduced-motion: reduce) {
+  [class*="ant-"] {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}

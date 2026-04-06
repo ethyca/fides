@@ -31,7 +31,7 @@ import {
   WebsiteMonitorParams,
 } from "~/types/api";
 
-import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
+import { SharedConfigSelect } from "./SharedConfigSelect";
 
 dayjs.extend(utc);
 
@@ -256,10 +256,9 @@ const ConfigureWebsiteMonitorForm = ({
             )}
           />
         </Form.Item>
-        <FormikSharedConfigSelect
-          name="shared_config_id"
-          onChange={(value) => form.setFieldValue("shared_config_id", value)}
-          value={form.getFieldValue("shared_config_id")}
+        <SharedConfigSelect
+          itemProps={{ name: "shared_config_id" }}
+          selectProps={{}}
         />
         <LlmModelSelector
           skip={!llmClassifierFeatureEnabled}

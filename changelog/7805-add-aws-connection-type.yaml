@@ -1,0 +1,4 @@
+type: Added
+description: Added AWS Cloud Infrastructure connection type, connector, and DB migration
+pr: 7805
+labels: ["db-migration"]

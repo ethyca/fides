@@ -21,6 +21,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset,
     Organization,
@@ -42,12 +43,20 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import MessagingSecretsMailgunDocs
 from fides.api.schemas.policy import ActionType, DrpAction
+from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.service.connectors.saas.connector_registry_service import (
+    FileConnectorTemplateLoader,
+)
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
 )
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.errors import AlreadyExistsError, QueryError
+from fides.api.util.saas_util import (
+    load_config_from_string,
+    load_dataset_from_string,
+)
 from fides.api.util.text import to_snake_case
 from fides.api.v1.endpoints.dataset_config_endpoints import patch_dataset_configs
 from fides.api.v1.endpoints.saas_config_endpoints import (
@@ -322,6 +331,44 @@ def load_default_dsr_policies(session: Session) -> None:
     log.info("All default policies & rules created")
 
 
+def sync_oob_saas_config_versions(session: Session) -> None:
+    """
+    Upserts a SaaSConfigVersion row for every bundled (OOB) SaaS connector
+    template currently loaded in memory.
+
+    Called on startup so the table is bootstrapped on first deploy and
+    picks up new template versions automatically on each upgrade.
+    Rows are immutable once written, so this is safe to call repeatedly.
+    """
+
+    templates = FileConnectorTemplateLoader.get_connector_templates()
+    existing = {
+        (row.connector_type, row.version)
+        for row in session.query(
+            SaaSConfigVersion.connector_type, SaaSConfigVersion.version
+        ).filter(SaaSConfigVersion.is_custom == False)  # noqa: E712
+    }
+    for connector_type, template in templates.items():
+        try:
+            saas_config = SaaSConfig(**load_config_from_string(template.config))
+            if (connector_type, saas_config.version) in existing:
+                continue
+            dataset = load_dataset_from_string(template.dataset)
+            SaaSConfigVersion.upsert(
+                db=session,
+                connector_type=connector_type,
+                version=saas_config.version,
+                config=saas_config.model_dump(mode="json"),
+                dataset=dataset,
+                is_custom=False,
+            )
+        except Exception:  # pylint: disable=broad-except
+            log.exception(
+                "Failed to sync SaaSConfigVersion for OOB connector '{}'",
+                connector_type,
+            )
+
+
 def load_default_resources(session: Session) -> None:
     """
     Seed the database with default resources that the application
@@ -330,6 +377,7 @@ def load_default_resources(session: Session) -> None:
     load_default_organization(session)
     load_default_taxonomy(session)
     load_default_dsr_policies(session)
+    sync_oob_saas_config_versions(session)
 
 
 async def load_samples(async_session: AsyncSession) -> None:

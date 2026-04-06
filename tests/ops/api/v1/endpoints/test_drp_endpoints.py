@@ -18,7 +18,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestDRPStatus,
     PrivacyRequestStatus,
 )
-from fides.api.util.cache import cache_task_tracking_key, get_drp_request_body_cache_key
+from fides.api.util.cache import cache_task_tracking_key, get_dsr_cache_store
 from fides.common.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
@@ -50,7 +50,6 @@ class TestCreateDrpPrivacyRequest:
         db,
         api_client: TestClient,
         policy_drp_action,
-        cache,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_PHONE_NUMBER = "+12345678910"
@@ -76,26 +75,15 @@ class TestCreateDrpPrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
-        meta_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="meta",
-        )
-        assert cache.get(meta_key) == "DrpMeta(version='0.5')"
-        regime_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="regime",
-        )
-        assert cache.get(regime_key) == "ccpa"
-        exercise_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="exercise",
-        )
-        assert cache.get(exercise_key) == "['access']"
-        identity_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="identity",
-        )
-        assert cache.get(identity_key) == encoded_identity
+        store = get_dsr_cache_store(pr.id)
+        meta_value = store.get_drp("meta")
+        assert meta_value == "DrpMeta(version='0.5')"
+        regime_value = store.get_drp("regime")
+        assert regime_value == "ccpa"
+        exercise_value = store.get_drp("exercise")
+        assert exercise_value == "['access']"
+        identity_value = store.get_drp("identity")
+        assert identity_value == encoded_identity
         assert pr.get_cached_identity_data()["email"] == identity["email"]
 
         persisted_identity = pr.get_persisted_identity()
@@ -115,7 +103,6 @@ class TestCreateDrpPrivacyRequest:
         db,
         api_client: TestClient,
         policy_drp_action,
-        cache,
     ):
         identity = {"email": "test@example.com", "address": "something"}
         encoded_identity: str = jwt.encode(
@@ -136,26 +123,15 @@ class TestCreateDrpPrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
-        meta_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="meta",
-        )
-        assert cache.get(meta_key) == "DrpMeta(version='0.5')"
-        regime_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="regime",
-        )
-        assert cache.get(regime_key) == "ccpa"
-        exercise_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="exercise",
-        )
-        assert cache.get(exercise_key) == "['access']"
-        identity_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="identity",
-        )
-        assert cache.get(identity_key) == encoded_identity
+        store = get_dsr_cache_store(pr.id)
+        meta_value = store.get_drp("meta")
+        assert meta_value == "DrpMeta(version='0.5')"
+        regime_value = store.get_drp("regime")
+        assert regime_value == "ccpa"
+        exercise_value = store.get_drp("exercise")
+        assert exercise_value == "['access']"
+        identity_value = store.get_drp("identity")
+        assert identity_value == encoded_identity
         assert pr.get_cached_identity_data()["email"] == identity["email"]
         assert "address" not in pr.get_cached_identity_data().keys()
 
@@ -305,7 +281,6 @@ class TestCreateDrpPrivacyRequest:
         url,
         db,
         api_client: TestClient,
-        cache,
         policy_drp_action,
     ):
         TEST_EMAIL = "test@example.com"
@@ -357,26 +332,15 @@ class TestCreateDrpPrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
 
         # test appropriate data is cached
-        meta_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="meta",
-        )
-        assert cache.get(meta_key) == "DrpMeta(version='0.5')"
-        regime_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="regime",
-        )
-        assert cache.get(regime_key) == "ccpa"
-        exercise_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="exercise",
-        )
-        assert cache.get(exercise_key) == "['access']"
-        identity_key = get_drp_request_body_cache_key(
-            privacy_request_id=pr.id,
-            identity_attribute="identity",
-        )
-        assert cache.get(identity_key) == encoded_identity
+        store = get_dsr_cache_store(pr.id)
+        meta_value = store.get_drp("meta")
+        assert meta_value == "DrpMeta(version='0.5')"
+        regime_value = store.get_drp("regime")
+        assert regime_value == "ccpa"
+        exercise_value = store.get_drp("exercise")
+        assert exercise_value == "['access']"
+        identity_value = store.get_drp("identity")
+        assert identity_value == encoded_identity
         assert pr.get_cached_identity_data()["email"] == identity["email"]
 
         persisted_identity = pr.get_persisted_identity()

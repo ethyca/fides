@@ -27,6 +27,8 @@ export const getCategoryLabel = (category: ConnectionCategory): string => {
       return "E-commerce";
     case ConnectionCategory.COMMUNICATION:
       return "Communication";
+    case ConnectionCategory.CLOUD_INFRASTRUCTURE:
+      return "Cloud Infrastructure";
     case ConnectionCategory.CUSTOM:
       return "Custom";
     default:
@@ -52,6 +54,7 @@ export const getCategoryFromLabel = (
     Analytics: ConnectionCategory.ANALYTICS,
     "E-commerce": ConnectionCategory.ECOMMERCE,
     Communication: ConnectionCategory.COMMUNICATION,
+    "Cloud Infrastructure": ConnectionCategory.CLOUD_INFRASTRUCTURE,
     Custom: ConnectionCategory.CUSTOM,
   };
 
