@@ -344,6 +344,15 @@ class RedisSettings(FidesSettings):
         if self.password or self.user:
             encoded_password = quote_plus(self.password)
             auth_prefix = f"{quote_plus(self.user)}:{encoded_password}@"
-        return f"{scheme}+cluster://{auth_prefix}{self.host}:{self.port}/0"
+
+        params_str = ""
+        if self.ssl:
+            params = {"ssl_cert_reqs": quote_plus(self.ssl_cert_reqs or "none")}
+            params["ssl_check_hostname"] = str(self.ssl_check_hostname)
+            if self.ssl_ca_certs:
+                params["ssl_ca_certs"] = quote(self.ssl_ca_certs, safe="/")
+            params_str = "?" + urlencode(params, quote_via=quote, safe="/")
+
+        return f"{scheme}+cluster://{auth_prefix}{self.host}:{self.port}/0{params_str}"
 
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

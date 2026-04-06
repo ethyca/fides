@@ -1,5 +1,4 @@
-import { Button } from "fidesui";
-import { useFormikContext } from "formik";
+import { Button, Form } from "fidesui";
 
 interface RenameColumnsButtonsProps {
   columnNameMapOverrides: Record<string, string>;
@@ -13,7 +12,7 @@ export const RenameColumnsButtons = ({
   setSavedCustomReportId,
   setIsRenamingColumns,
 }: RenameColumnsButtonsProps) => {
-  const { submitForm, resetForm } = useFormikContext();
+  const form = Form.useFormInstance();
   return (
     <div className="flex gap-2">
       <Button
@@ -22,7 +21,7 @@ export const RenameColumnsButtons = ({
         onClick={() => {
           setColumnNameMapOverrides({});
           setSavedCustomReportId("");
-          resetForm({ values: {} });
+          form.resetFields();
           setIsRenamingColumns(false);
         }}
       >
@@ -32,7 +31,7 @@ export const RenameColumnsButtons = ({
         size="small"
         data-testid="rename-columns-cancel-btn"
         onClick={() => {
-          resetForm({ values: columnNameMapOverrides });
+          form.setFieldsValue(columnNameMapOverrides);
           setIsRenamingColumns(false);
         }}
       >
@@ -41,9 +40,8 @@ export const RenameColumnsButtons = ({
       <Button
         size="small"
         type="primary"
-        htmlType="submit"
         data-testid="rename-columns-apply-btn"
-        onClick={submitForm}
+        onClick={() => form.submit()}
       >
         Apply
       </Button>

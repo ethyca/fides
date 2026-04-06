@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
 from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
@@ -13,6 +13,7 @@ from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride
 from fides.api.db.encryption_utils import encrypted_type
+from fides.api.models.connection_config_saas_history import ConnectionConfigSaaSHistory
 from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
@@ -37,6 +38,7 @@ class ConnectionType(enum.Enum):
     """
 
     attentive_email = "attentive_email"
+    aws = "aws"  # AWS for cloud infra discovery
     bigquery = "bigquery"
     datahub = "datahub"
     dynamodb = "dynamodb"
@@ -79,6 +81,7 @@ class ConnectionType(enum.Enum):
         """
         readable_mapping: dict[str, str] = {
             ConnectionType.attentive_email.value: "Attentive Email",
+            ConnectionType.aws.value: "Amazon Web Services",
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
@@ -128,6 +131,7 @@ class ConnectionType(enum.Enum):
 
         system_type_mapping: dict[str, SystemType] = {
             ConnectionType.attentive_email.value: SystemType.email,
+            ConnectionType.aws.value: SystemType.service,
             ConnectionType.bigquery.value: SystemType.database,
             ConnectionType.datahub.value: SystemType.data_catalog,
             ConnectionType.dynamic_erasure_email.value: SystemType.email,
@@ -353,10 +357,20 @@ class ConnectionConfig(Base):
         self,
         db: Session,
         saas_config: SaaSConfig,
+        datasets: Optional[List[Dict[str, Any]]] = None,
+        record_history: bool = True,
     ) -> None:
         """
         Updates the SaaS config and initializes any empty secrets with
-        connector param default values if available (will not override any existing secrets)
+        connector param default values if available (will not override any existing secrets).
+
+        The optional ``datasets`` argument is a pre-fetched list of dataset dicts
+        associated with this connection.  Callers that want a history snapshot to
+        include dataset context should query DatasetConfig themselves and pass the
+        result here.
+
+        Set ``record_history=False`` to skip creating a ConnectionConfigSaaSHistory
+        snapshot (e.g. in tests or one-off migrations where audit history is not needed).
         """
         default_secrets = {
             connector_param.name: connector_param.default_value
@@ -366,6 +380,17 @@ class ConnectionConfig(Base):
         updated_secrets = {**default_secrets, **(self.secrets or {})}
         self.secrets = updated_secrets
         self.saas_config = saas_config.model_dump(mode="json")
+
+        if record_history:
+            ConnectionConfigSaaSHistory.create_snapshot(
+                db=db,
+                connection_config_id=self.id,
+                connection_key=self.key,
+                version=saas_config.version,
+                config=self.saas_config,
+                datasets=datasets,
+            )
+
         self.save(db)
 
     def update_test_status(
