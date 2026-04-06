@@ -31,7 +31,9 @@ import {
   removeFieldAtPath,
   updateFieldAtPath,
 } from "./dataset-field-helpers";
-import DatasetNodeDetailPanel from "./DatasetNodeDetailPanel";
+import DatasetNodeDetailPanel, {
+  DatasetNodeDetailPanelHandle,
+} from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
 import { removeNulls } from "./helpers";
 import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
@@ -92,6 +94,7 @@ const DatasetNodeEditorInner = ({
 }: DatasetNodeEditorProps) => {
   const reactFlowInstance = useReactFlow();
   const reactFlowRef = useRef<HTMLDivElement>(null);
+  const detailPanelRef = useRef<DatasetNodeDetailPanelHandle>(null);
 
   // Keep a ref to the latest dataset so modal callbacks avoid stale closures
   const datasetRef = useRef(dataset);
@@ -298,6 +301,7 @@ const DatasetNodeEditorInner = ({
   );
 
   const handlePaneClick = useCallback(() => {
+    detailPanelRef.current?.flush();
     setSelectedNodeId(null);
   }, []);
 
@@ -660,6 +664,7 @@ const DatasetNodeEditorInner = ({
           </Flex>
         )}
         <DatasetNodeDetailPanel
+          ref={detailPanelRef}
           open={!!selectedNodeData}
           onClose={() => {
             setSelectedNodeId(null);
