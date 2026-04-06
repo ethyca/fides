@@ -7,12 +7,13 @@ import {
   Icons,
   Select,
   Space,
+  Tag,
   Tooltip,
   Typography,
   useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -21,20 +22,23 @@ import { Editor } from "~/features/common/yaml/helpers";
 import { useUpdateDatasetMutation } from "~/features/dataset";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
+  useGetDatasetProtectedFieldsQuery,
   useGetDatasetReachabilityQuery,
+  usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { Dataset } from "~/types/api";
+import { ConnectionType, Dataset, DatasetFieldWarning } from "~/types/api";
 
 import {
   selectCurrentDataset,
   selectCurrentPolicyKey,
   setCurrentDataset,
-  setReachability,
 } from "./dataset-test.slice";
+import DatasetNodeEditor from "./DatasetNodeEditor";
 import { removeNulls } from "./helpers";
 
 interface EditorSectionProps {
   connectionKey: string;
+  connectionType?: ConnectionType;
 }
 
 const getReachabilityMessage = (details: any) => {
@@ -52,12 +56,20 @@ const getReachabilityMessage = (details: any) => {
   return details;
 };
 
-const EditorSection = ({ connectionKey }: EditorSectionProps) => {
+const EditorSection = ({
+  connectionKey,
+  connectionType,
+}: EditorSectionProps) => {
   const messageApi = useMessage();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
+  const [patchConnectionDatasets] = usePatchConnectionDatasetsMutation();
 
+  const isSaas = connectionType === ConnectionType.SAAS;
+
+  const [localDataset, setLocalDataset] = useState<Dataset | undefined>();
   const [editorContent, setEditorContent] = useState<string>("");
+  const savedDatasetJson = useRef<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
@@ -81,11 +93,15 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       },
     );
 
-  useEffect(() => {
-    if (reachability) {
-      dispatch(setReachability(reachability.reachable));
-    }
-  }, [reachability, dispatch]);
+  const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
+    {
+      connectionKey,
+      datasetKey: currentDataset?.fides_key || "",
+    },
+    {
+      skip: !isSaas || !connectionKey || !currentDataset?.fides_key,
+    },
+  );
 
   const datasetOptions = useMemo(
     () =>
@@ -110,11 +126,29 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     }
   }, [datasetConfigs, currentDataset, dispatch]);
 
+  // SaaS: store as Dataset object; DB: store as YAML string
   useEffect(() => {
     if (currentDataset?.ctl_dataset) {
-      setEditorContent(yaml.dump(removeNulls(currentDataset?.ctl_dataset)));
+      const cleaned = removeNulls(currentDataset.ctl_dataset);
+      if (isSaas) {
+        setLocalDataset(cleaned as Dataset);
+        savedDatasetJson.current = JSON.stringify(cleaned);
+      } else {
+        setEditorContent(yaml.dump(cleaned));
+      }
     }
-  }, [currentDataset]);
+  }, [currentDataset, isSaas]);
+
+  // Key-ordering stability: both savedDatasetJson and localDataset are produced
+  // through the same removeNulls → JSON.stringify path, so key order is consistent.
+  // If this assumption ever breaks (e.g., server returns keys in different order),
+  // replace with a structural deep-equal.
+  const isDirty = useMemo(() => {
+    if (!isSaas || !localDataset) {
+      return false;
+    }
+    return JSON.stringify(localDataset) !== savedDatasetJson.current;
+  }, [isSaas, localDataset]);
 
   useEffect(() => {
     if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
@@ -127,12 +161,6 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     refetchReachability,
   ]);
 
-  useEffect(() => {
-    if (reachability) {
-      dispatch(setReachability(reachability.reachable));
-    }
-  }, [reachability, dispatch]);
-
   const handleDatasetChange = async (value: string) => {
     const selectedConfig = datasetConfigs?.items.find(
       (item) => item.fides_key === value,
@@ -142,43 +170,107 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     }
   };
 
+  const handleLocalDatasetChange = useCallback((updated: Dataset) => {
+    setLocalDataset(updated);
+  }, []);
+
   const handleSave = async () => {
     if (!currentDataset) {
       return;
     }
 
-    // Parse YAML first
     let datasetValues: Dataset;
-    try {
-      datasetValues = yaml.load(editorContent) as Dataset;
-    } catch (yamlError) {
-      messageApi.error(
-        `YAML Parsing Error: ${
-          yamlError instanceof YAMLException
-            ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
-            : "Invalid YAML format"
-        }`,
+    if (isSaas) {
+      if (!localDataset) {
+        return;
+      }
+      datasetValues = localDataset;
+    } else {
+      try {
+        datasetValues = yaml.load(editorContent) as Dataset;
+      } catch (yamlError) {
+        messageApi.error(
+          `YAML Parsing Error: ${
+            yamlError instanceof YAMLException
+              ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
+              : "Invalid YAML format"
+          }`,
+        );
+        return;
+      }
+    }
+
+    let saasWarnings: DatasetFieldWarning[] = [];
+    let succeededDataset: Dataset | undefined;
+
+    if (isSaas) {
+      const result = await patchConnectionDatasets({
+        connectionKey,
+        datasets: [datasetValues],
+      });
+
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+
+      const failedMessage = result.data?.failed?.[0]?.message;
+      if (failedMessage) {
+        messageApi.error(failedMessage);
+        return;
+      }
+
+      succeededDataset = result.data?.succeeded?.[0];
+      if (succeededDataset) {
+        dispatch(
+          setCurrentDataset({
+            fides_key: currentDataset.fides_key,
+            ctl_dataset: succeededDataset,
+          }),
+        );
+        // Refresh local state with server response (may have restored fields)
+        setLocalDataset(removeNulls(succeededDataset) as Dataset);
+      } else {
+        messageApi.warning("No changes were saved.");
+        return;
+      }
+
+      saasWarnings = result.data?.warnings ?? [];
+    } else {
+      const result = await updateDataset(datasetValues);
+
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+
+      dispatch(
+        setCurrentDataset({
+          fides_key: currentDataset.fides_key,
+          ctl_dataset: result.data,
+        }),
       );
-      return;
     }
 
-    // Then handle the API update
-    const result = await updateDataset(datasetValues);
-
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      return;
+    if (saasWarnings.length > 0) {
+      messageApi.success(
+        `Dataset saved — ${saasWarnings.length} protected field(s) were restored`,
+      );
+      saasWarnings.forEach((warning) => {
+        messageApi.warning(warning.message);
+      });
+    } else {
+      messageApi.success("Successfully modified dataset");
     }
 
-    dispatch(
-      setCurrentDataset({
-        fides_key: currentDataset.fides_key,
-        ctl_dataset: result.data,
-      }),
-    );
-    messageApi.success("Successfully modified dataset");
+    if (isSaas) {
+      savedDatasetJson.current = JSON.stringify(removeNulls(succeededDataset));
+    }
+
     await refetchDatasets();
-    await refetchReachability();
+    if (currentPolicyKey) {
+      await refetchReachability();
+    }
   };
 
   const handleRefresh = async () => {
@@ -188,7 +280,12 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
         (item) => item.fides_key === currentDataset?.fides_key,
       );
       if (refreshedDataset?.ctl_dataset) {
-        setEditorContent(yaml.dump(removeNulls(refreshedDataset.ctl_dataset)));
+        const cleaned = removeNulls(refreshedDataset.ctl_dataset);
+        if (isSaas) {
+          setLocalDataset(cleaned as Dataset);
+        } else {
+          setEditorContent(yaml.dump(cleaned));
+        }
       }
       messageApi.success("Successfully refreshed datasets");
     } catch (error) {
@@ -201,12 +298,14 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       align="stretch"
       flex="1"
       gap="small"
-      className="max-h-screen max-w-[70vw]"
       vertical
+      style={{ height: "100%", minHeight: 0 }}
     >
       <Flex align="center" justify="space-between">
         <Space>
-          <Typography.Title level={3}>Edit dataset: </Typography.Title>
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            Edit dataset:
+          </Typography.Title>
           <Select
             id="format"
             aria-label="Select a dataset"
@@ -218,7 +317,26 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           />
         </Space>
         <Space>
-          <ClipboardButton copyText={editorContent} />
+          {reachability && (
+            <Tooltip
+              title={
+                reachability.reachable
+                  ? "Dataset is reachable"
+                  : `Not reachable: ${getReachabilityMessage(reachability.details)}`
+              }
+              placement="bottom"
+            >
+              <Tag color={reachability.reachable ? "success" : "error"}>
+                {reachability.reachable ? "Reachable" : "Not reachable"}
+              </Tag>
+            </Tooltip>
+          )}
+          {isDirty && (
+            <Typography.Text type="warning" style={{ fontSize: 12 }}>
+              Unsaved changes
+            </Typography.Text>
+          )}
+          {!isSaas && <ClipboardButton copyText={editorContent} />}
           <Tooltip
             title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
             placement="top"
@@ -236,52 +354,78 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
             title="Save your changes to update the dataset in the database."
             placement="top"
           >
-            <Button htmlType="submit" size="small" onClick={handleSave}>
+            <Button
+              htmlType="submit"
+              size="small"
+              type={isDirty ? "primary" : "default"}
+              onClick={handleSave}
+            >
               Save
             </Button>
           </Tooltip>
         </Space>
       </Flex>
-      <Card
-        data-testid="empty-state"
-        className="flex flex-1"
-        styles={{
-          body: {
-            minHeight: "200px",
-            display: "flex",
+      {isSaas ? (
+        <div
+          style={{
             flex: "1 1 auto",
-            paddingLeft: 0,
-          },
-        }}
-      >
-        <Editor
-          defaultLanguage="yaml"
-          value={editorContent}
-          height="100%"
-          onChange={(value) => setEditorContent(value || "")}
-          onMount={() => {}}
-          options={{
-            fontFamily: "Menlo",
-            fontSize: 13,
-            minimap: { enabled: false },
-            readOnly: false,
-            hideCursorInOverviewRuler: true,
-            overviewRulerBorder: false,
-            scrollBeyondLastLine: false,
+            minHeight: 0,
+            borderRadius: 8,
+            overflow: "hidden",
+            border: "1px solid var(--fidesui-neutral-200)",
           }}
-          theme="light"
-        />
-      </Card>
-      {reachability && (
-        <Alert
-          type={reachability?.reachable ? "success" : "error"}
-          message={
-            reachability?.reachable
-              ? "Dataset is reachable"
-              : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`
-          }
-          showIcon
-        />
+        >
+          {localDataset && (
+            <DatasetNodeEditor
+              dataset={localDataset}
+              protectedFields={protectedFields}
+              onDatasetChange={handleLocalDatasetChange}
+            />
+          )}
+        </div>
+      ) : (
+        <>
+          <Card
+            data-testid="empty-state"
+            className="flex flex-1"
+            styles={{
+              body: {
+                minHeight: "200px",
+                display: "flex",
+                flex: "1 1 auto",
+                paddingLeft: 0,
+              },
+            }}
+          >
+            <Editor
+              defaultLanguage="yaml"
+              value={editorContent}
+              height="100%"
+              onChange={(value) => setEditorContent(value || "")}
+              options={{
+                fontFamily: "Menlo",
+                fontSize: 13,
+                minimap: { enabled: false },
+                readOnly: false,
+                hideCursorInOverviewRuler: true,
+                overviewRulerBorder: false,
+                scrollBeyondLastLine: false,
+              }}
+              theme="light"
+            />
+          </Card>
+          {reachability && (
+            <Alert
+              type={reachability?.reachable ? "success" : "error"}
+              message={
+                reachability?.reachable
+                  ? "Dataset is reachable"
+                  : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`
+              }
+              showIcon
+            />
+          )}
+        </>
       )}
     </Flex>
   );
