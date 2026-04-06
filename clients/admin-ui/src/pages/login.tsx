@@ -267,6 +267,7 @@ const Login: NextPage = () => {
     initialValues,
     handleSubmit,
     isSubmitting,
+    passwordRules: loginPasswordRules,
     usernameRules,
     username,
   } = useLogin();
@@ -367,7 +368,7 @@ const Login: NextPage = () => {
                               ? "Set new password"
                               : "Password"
                           }
-                          rules={passwordRules}
+                          rules={loginPasswordRules}
                         >
                           <Input.Password
                             size="large"
