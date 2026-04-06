@@ -1,12 +1,10 @@
 # pylint: disable=too-many-lines
 
 import json
-from collections import defaultdict
 from datetime import datetime, timezone
 from typing import (
     Annotated,
     Any,
-    DefaultDict,
     Dict,
     List,
     Literal,
@@ -16,7 +14,6 @@ from typing import (
     Union,
 )
 
-import sqlalchemy
 from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
@@ -26,7 +23,6 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy import cast, null
 from sqlalchemy.orm import Query, Session, selectinload
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -292,85 +288,6 @@ def create_privacy_request_authenticated(
     return privacy_request_service.create_bulk_privacy_requests(
         data, authenticated=True, user_id=client.user_id
     )
-
-
-EMBEDDED_EXECUTION_LOG_LIMIT = 50
-
-
-def execution_and_audit_logs_by_dataset_name(
-    self: PrivacyRequest,
-) -> DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]:
-    """
-    Returns a combined mapping of execution and audit logs for the given privacy request.
-
-    Audit Logs are for the entire privacy request as a whole, while execution logs are created for specific collections.
-    Logs here are grouped by dataset, but if it is an audit log, it is just given a fake dataset name, here "Request + status"
-    ExecutionLogs for each dataset are truncated.
-
-    Added as a conditional property to the PrivacyRequest class at runtime to
-    show optionally embedded execution and audit logs.
-
-    An example response might include your execution logs from your mongo db in one group, and execution logs from
-    your postgres db in a different group, plus audit logs for when the request was approved and denied.
-    """
-    db: Session = Session.object_session(self)
-    all_logs: DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]] = defaultdict(
-        list
-    )
-
-    execution_log_query: Query = db.query(
-        ExecutionLog.id,
-        ExecutionLog.created_at,
-        ExecutionLog.updated_at,
-        ExecutionLog.message,
-        cast(ExecutionLog.status, sqlalchemy.String).label(
-            "status"
-        ),  # Casting to string so we can perform a union of execution log and audit log statuses
-        ExecutionLog.privacy_request_id,
-        ExecutionLog.dataset_name,
-        ExecutionLog.collection_name,
-        ExecutionLog.connection_key,
-        ExecutionLog.fields_affected,
-        ExecutionLog.action_type,
-        null().label("user_id"),
-    ).filter(ExecutionLog.privacy_request_id == self.id)
-
-    audit_log_query: Query = db.query(
-        AuditLog.id,
-        AuditLog.created_at,
-        AuditLog.updated_at,
-        AuditLog.message,
-        cast(AuditLog.action.label("status"), sqlalchemy.String).label(
-            "status"
-        ),  # Casting to string so we can perform a union of execution log and audit log statuses
-        AuditLog.privacy_request_id,
-        null().label("dataset_name"),
-        null().label("collection_name"),
-        null().label("connection_key"),
-        null().label("fields_affected"),
-        null().label("action_type"),
-        AuditLog.user_id,
-    ).filter(AuditLog.privacy_request_id == self.id)
-
-    combined: Query = execution_log_query.union_all(audit_log_query)
-
-    audit_log_display_names = {
-        "approved": "Request approved",
-        "denied": "Request denied",
-        "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
-        "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
-        "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
-    }
-
-    for log in combined.order_by(ExecutionLog.updated_at.asc()):
-        dataset_name: str = log.dataset_name or audit_log_display_names.get(
-            log.status, f"Request {log.status}"
-        )
-
-        if len(all_logs[dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
-            continue
-        all_logs[dataset_name].append(log)
-    return all_logs
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
