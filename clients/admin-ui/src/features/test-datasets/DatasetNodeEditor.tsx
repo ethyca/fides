@@ -193,6 +193,16 @@ const DatasetNodeEditorInner = ({
             // Validate that the parsed structure won't crash the graph —
             // e.g. a bare "-" in YAML produces null array entries.
             changeSourceRef.current = "yaml";
+            // If the focused collection no longer exists in the parsed
+            // dataset (renamed or deleted via YAML), reset to overview.
+            if (
+              focusedCollection &&
+              !parsed.collections.some(
+                (c) => c.name === focusedCollection,
+              )
+            ) {
+              setFocusedCollection(null);
+            }
             onDatasetChange(parsed);
             setYamlError(null);
           } else {
@@ -209,7 +219,7 @@ const DatasetNodeEditorInner = ({
         }
       }, 500);
     },
-    [onDatasetChange],
+    [onDatasetChange, focusedCollection],
   );
 
   const availableCategories = useMemo(
