@@ -16,6 +16,7 @@ from typing import (
     Union,
 )
 
+import sqlalchemy
 from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
@@ -25,6 +26,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
+from sqlalchemy import cast, null
 from sqlalchemy.orm import Query, Session, selectinload
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -290,6 +292,9 @@ def create_privacy_request_authenticated(
     return privacy_request_service.create_bulk_privacy_requests(
         data, authenticated=True, user_id=client.user_id
     )
+
+
+EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
 def execution_and_audit_logs_by_dataset_name(
