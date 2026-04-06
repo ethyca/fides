@@ -92,7 +92,7 @@ const DeleteUserModal = ({ user, isOpen, onClose }: DeleteUserModalProps) => {
           type="warning"
           showIcon
           className="mb-4"
-          message={
+          description={
             <>
               <Text>You are about to delete the user&nbsp;</Text>
               <Text italic strong>
