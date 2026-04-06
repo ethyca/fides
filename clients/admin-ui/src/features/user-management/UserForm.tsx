@@ -17,6 +17,7 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
+import { passwordRules } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -30,8 +31,6 @@ import { UserCreateExtended } from "~/types/api";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreateResponse } from "./types";
-import { passwordRules } from "~/features/common/form/validation";
-
 import {
   shouldShowPasswordField,
   shouldShowPasswordLoginToggle,
@@ -58,7 +57,6 @@ const defaultInitialValues: FormValues = {
   password: "",
   password_login_enabled: false,
 };
-
 
 export interface UserFormProps {
   onSubmit: (values: UserCreateExtended) => Promise<

@@ -268,7 +268,6 @@ const Login: NextPage = () => {
     handleSubmit,
     isSubmitting,
     usernameRules,
-    passwordRules,
     username,
   } = useLogin();
   const [canSubmit, setCanSubmit] = useState(false);

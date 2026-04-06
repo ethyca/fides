@@ -13,10 +13,9 @@ import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth/auth.slice";
+import { passwordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
 import { isErrorResult } from "~/types/errors";
-
-import { passwordRules } from "~/features/common/form/validation";
 
 import { clearAuthAndLogout } from "./logout-helpers";
 import { useForceResetUserPasswordMutation } from "./user-management.slice";
@@ -27,7 +26,6 @@ interface FormValues {
   password: string;
   passwordConfirmation: string;
 }
-
 
 const useNewPasswordModal = (id: string) => {
   const [isOpen, setIsOpen] = useState(false);

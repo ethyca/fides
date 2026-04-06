@@ -6,7 +6,7 @@ import UserManagementTabs from "user-management/UserManagementTabs";
 import { selectUser } from "~/features/auth";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
-import { ScopeRegistryEnum } from "~/types/api";
+import { ScopeRegistryEnum, UserCreateExtended } from "~/types/api";
 
 import { useAPIHelper } from "../common/hooks";
 import PageHeader from "../common/PageHeader";
@@ -16,7 +16,6 @@ import {
   useReinviteUserMutation,
 } from "./user-management.slice";
 import { type FormValues } from "./UserForm";
-import { UserCreateExtended } from "~/types/api";
 
 const useUserForm = (profile: User) => {
   const currentUser = useSelector(selectUser);
