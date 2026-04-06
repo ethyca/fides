@@ -65,7 +65,7 @@ export const statusPropMap: {
     label: "Awaiting External Review",
   },
   pending_external: {
-    color: CUSTOM_TAG_COLOR.CAUTION,
+    color: CUSTOM_TAG_COLOR.MARBLE,
     label: "Pending External",
   },
   pre_approval_not_eligible: {

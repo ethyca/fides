@@ -65,7 +65,7 @@ export const statusPropMap: {
     label: "Duplicate",
   },
   pending_external: {
-    colorScheme: CUSTOM_TAG_COLOR.CAUTION,
+    colorScheme: CUSTOM_TAG_COLOR.MARBLE,
     label: "Pending External",
   },
   awaiting_pre_approval: {
