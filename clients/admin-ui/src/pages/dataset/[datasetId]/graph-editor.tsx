@@ -10,7 +10,13 @@ import {
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
@@ -41,6 +47,7 @@ const DatasetGraphEditorPage: NextPage = () => {
 
   const [localDataset, setLocalDataset] = useState<Dataset | undefined>();
   const savedDatasetJson = useRef<string>("");
+  const [editorKey, setEditorKey] = useState(0);
 
   // Initialize local state from server data
   useEffect(() => {
@@ -87,6 +94,7 @@ const DatasetGraphEditorPage: NextPage = () => {
         const cleaned = removeNulls(data) as Dataset;
         setLocalDataset(cleaned);
         savedDatasetJson.current = JSON.stringify(cleaned);
+        setEditorKey((k) => k + 1);
         messageApi.success("Successfully refreshed dataset");
       }
     } catch (error) {
@@ -158,6 +166,7 @@ const DatasetGraphEditorPage: NextPage = () => {
       >
         {localDataset ? (
           <DatasetNodeEditor
+            key={editorKey}
             dataset={localDataset}
             onDatasetChange={handleDatasetChange}
             allowAddCollection
