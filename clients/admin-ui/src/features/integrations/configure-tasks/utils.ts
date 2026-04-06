@@ -51,6 +51,9 @@ export const STANDARD_IDENTITY_FIELDS: Set<string> = new Set([
 // Sentinel value used in the PrivacyRequestFieldPicker to trigger manual identity key entry
 export const CUSTOM_IDENTITY_MANUAL_ENTRY = "__custom_identity_manual_entry__";
 
+// Valid characters for a custom identity key: letters, numbers, and underscores
+export const CUSTOM_IDENTITY_KEY_REGEX = /^[a-zA-Z0-9_]+$/;
+
 // Field type detection
 export type FieldType =
   | "boolean"

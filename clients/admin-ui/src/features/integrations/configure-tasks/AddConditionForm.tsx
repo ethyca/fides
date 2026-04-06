@@ -18,6 +18,7 @@ import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicke
 import { useCustomFieldMetadata } from "./hooks/useCustomFieldMetadata";
 import { FieldSource } from "./types";
 import {
+  CUSTOM_IDENTITY_KEY_REGEX,
   CUSTOM_IDENTITY_MANUAL_ENTRY,
   getFieldType,
   getInitialFieldSource,
@@ -25,6 +26,8 @@ import {
   OPERATOR_OPTIONS,
   parseConditionValue,
   parseStoredValueForForm,
+  PrivacyRequestField,
+  STANDARD_IDENTITY_FIELDS,
 } from "./utils";
 
 interface FormValues {
@@ -221,6 +224,25 @@ const AddConditionForm = ({
                     new Error("Please enter a custom identity key"),
                   )
                 : Promise.resolve(),
+          },
+          {
+            validator: (_, val) => {
+              if (
+                !val ||
+                !val.startsWith(PrivacyRequestField.IDENTITY_PREFIX) ||
+                STANDARD_IDENTITY_FIELDS.has(val)
+              ) {
+                return Promise.resolve();
+              }
+              const key = val.slice(PrivacyRequestField.IDENTITY_PREFIX.length);
+              return key && CUSTOM_IDENTITY_KEY_REGEX.test(key)
+                ? Promise.resolve()
+                : Promise.reject(
+                    new Error(
+                      "Identity key may only contain letters, numbers, and underscores",
+                    ),
+                  );
+            },
           },
         ]}
         tooltip={

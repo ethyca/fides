@@ -180,10 +180,9 @@ export const PrivacyRequestFieldPicker = ({
 
   const handleManualKeyChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      // Only allow valid identity key characters (alphanumeric and underscores)
-      const sanitized = e.target.value.replace(/[^a-zA-Z0-9_]/g, "");
-      if (sanitized) {
-        onChange?.(`${PrivacyRequestField.IDENTITY_PREFIX}${sanitized}`);
+      const rawValue = e.target.value;
+      if (rawValue) {
+        onChange?.(`${PrivacyRequestField.IDENTITY_PREFIX}${rawValue}`);
       } else {
         // Keep the sentinel so the input stays visible
         onChange?.(CUSTOM_IDENTITY_MANUAL_ENTRY);
