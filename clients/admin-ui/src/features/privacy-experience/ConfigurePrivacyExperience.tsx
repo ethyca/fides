@@ -22,6 +22,7 @@ import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   findLanguageDisplayName,
+  removeUncommittedTranslation,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
 import { useExperienceForm } from "~/features/privacy-experience/form/useExperienceForm";
@@ -51,8 +52,6 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
-
-import { removeUncommittedTranslation } from "./utils/removeUncommittedTranslation";
 
 const ConfigurePrivacyExperience = ({
   passedInExperience,
