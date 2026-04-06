@@ -22,9 +22,11 @@ import { Editor } from "~/features/common/yaml/helpers";
 import { useUpdateDatasetMutation } from "~/features/dataset";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
+  useGetDatasetProtectedFieldsQuery,
   useGetDatasetReachabilityQuery,
+  usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { ConnectionType, Dataset } from "~/types/api";
+import { ConnectionType, Dataset, DatasetFieldWarning } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -61,6 +63,7 @@ const EditorSection = ({
   const messageApi = useMessage();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
+  const [patchConnectionDatasets] = usePatchConnectionDatasetsMutation();
 
   const isSaas = connectionType === ConnectionType.SAAS;
 
@@ -89,6 +92,16 @@ const EditorSection = ({
         skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
       },
     );
+
+  const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
+    {
+      connectionKey,
+      datasetKey: currentDataset?.fides_key || "",
+    },
+    {
+      skip: !isSaas || !connectionKey || !currentDataset?.fides_key,
+    },
+  );
 
   const datasetOptions = useMemo(
     () =>
@@ -187,23 +200,73 @@ const EditorSection = ({
       }
     }
 
-    const result = await updateDataset(datasetValues);
+    let saasWarnings: DatasetFieldWarning[] = [];
+    let succeededDataset: Dataset | undefined;
 
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      return;
-    }
-
-    dispatch(
-      setCurrentDataset({
-        fides_key: currentDataset.fides_key,
-        ctl_dataset: result.data,
-      }),
-    );
     if (isSaas) {
-      savedDatasetJson.current = JSON.stringify(removeNulls(result.data));
+      const result = await patchConnectionDatasets({
+        connectionKey,
+        datasets: [datasetValues],
+      });
+
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+
+      const failedMessage = result.data?.failed?.[0]?.message;
+      if (failedMessage) {
+        messageApi.error(failedMessage);
+        return;
+      }
+
+      succeededDataset = result.data?.succeeded?.[0];
+      if (succeededDataset) {
+        dispatch(
+          setCurrentDataset({
+            fides_key: currentDataset.fides_key,
+            ctl_dataset: succeededDataset,
+          }),
+        );
+        // Refresh local state with server response (may have restored fields)
+        setLocalDataset(removeNulls(succeededDataset) as Dataset);
+      } else {
+        messageApi.warning("No changes were saved.");
+        return;
+      }
+
+      saasWarnings = result.data?.warnings ?? [];
+    } else {
+      const result = await updateDataset(datasetValues);
+
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+
+      dispatch(
+        setCurrentDataset({
+          fides_key: currentDataset.fides_key,
+          ctl_dataset: result.data,
+        }),
+      );
     }
-    messageApi.success("Successfully modified dataset");
+
+    if (saasWarnings.length > 0) {
+      messageApi.success(
+        `Dataset saved — ${saasWarnings.length} protected field(s) were restored`,
+      );
+      saasWarnings.forEach((warning) => {
+        messageApi.warning(warning.message);
+      });
+    } else {
+      messageApi.success("Successfully modified dataset");
+    }
+
+    if (isSaas) {
+      savedDatasetJson.current = JSON.stringify(removeNulls(succeededDataset));
+    }
+
     await refetchDatasets();
     await refetchReachability();
   };
@@ -313,6 +376,7 @@ const EditorSection = ({
           {localDataset && (
             <DatasetNodeEditor
               dataset={localDataset}
+              protectedFields={protectedFields}
               onDatasetChange={handleLocalDatasetChange}
             />
           )}

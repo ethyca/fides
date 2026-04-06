@@ -3,6 +3,8 @@ import { useMemo } from "react";
 
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
+import { buildProtectedPathsByCollection } from "./helpers";
+
 export const DATASET_ROOT_ID = "dataset-root";
 export const COLLECTION_ROOT_PREFIX = "collection-";
 
@@ -13,6 +15,7 @@ export type CollectionNodeData = {
   isProtected?: boolean;
   isRoot?: boolean;
   isHighlighted?: boolean;
+  filteredFieldCount?: number;
   [key: string]: unknown;
 };
 
@@ -67,6 +70,16 @@ const fieldMatchesCategories = (
     false
   );
 };
+
+/**
+ * Count top-level fields in a collection that match the filter (or have matching descendants).
+ */
+const countMatchingFields = (
+  collection: DatasetCollection,
+  categories: string[],
+): number =>
+  collection.fields?.filter((f) => fieldMatchesCategories(f, categories))
+    .length ?? 0;
 
 /**
  * Check if a collection has any field (recursively) matching any of the given categories.
@@ -187,19 +200,11 @@ const useDatasetGraph = (
     const filter = categoryFilter ?? [];
 
     // Build protected paths lookup per collection
-    const protectedByCollection = new Map<string, Set<string>>();
-    if (protectedFields) {
-      protectedFields.protected_collection_fields.forEach((pf) => {
-        if (!protectedByCollection.has(pf.collection)) {
-          protectedByCollection.set(pf.collection, new Set());
-        }
-        const pathSet = protectedByCollection.get(pf.collection)!;
-        const segments = pf.field.split(".");
-        segments.forEach((_, idx) => {
-          pathSet.add(segments.slice(0, idx + 1).join("."));
-        });
-      });
-    }
+    const protectedByCollection = protectedFields
+      ? buildProtectedPathsByCollection(
+          protectedFields.protected_collection_fields,
+        )
+      : new Map<string, Set<string>>();
 
     if (focusedCollection) {
       // --- Drill-down view: single collection → its fields ---
@@ -227,6 +232,9 @@ const useDatasetGraph = (
           nodeType: "collection",
           isProtected: false,
           isRoot: true,
+          ...(filter.length > 0 && {
+            filteredFieldCount: countMatchingFields(collection, filter),
+          }),
         } satisfies CollectionNodeData,
       });
 
@@ -273,6 +281,9 @@ const useDatasetGraph = (
               collection,
               nodeType: "collection",
               isProtected: false,
+              ...(filter.length > 0 && {
+                filteredFieldCount: countMatchingFields(collection, filter),
+              }),
             } satisfies CollectionNodeData,
           });
 
