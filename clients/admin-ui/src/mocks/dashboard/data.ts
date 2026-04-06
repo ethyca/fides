@@ -448,8 +448,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   {
     id: "af-007",
     actor_type: "agent",
-    message:
-      "Helios detected new system: Amplitude receiving user event data.",
+    message: "Helios detected new system: Amplitude receiving user event data.",
     timestamp: hoursAgo(5),
     event_source: "helios",
     event_type: ActionType.SYSTEM_REVIEW,
@@ -525,8 +524,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   {
     id: "af-016",
     actor_type: "agent",
-    message:
-      "Helios discovered Mixpanel receiving event data from iOS app.",
+    message: "Helios discovered Mixpanel receiving event data from iOS app.",
     timestamp: hoursAgo(24),
     event_source: "helios",
     event_type: ActionType.SYSTEM_REVIEW,
@@ -535,7 +533,8 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   {
     id: "af-017",
     actor_type: "system",
-    message: "Automated DSR SLA check completed — 5 requests approaching deadline.",
+    message:
+      "Automated DSR SLA check completed — 5 requests approaching deadline.",
     timestamp: hoursAgo(28),
     event_source: "lethe",
   },

@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Avatar, Card, Flex, Icons, SparkleIcon, Spin, Text } from "fidesui";
@@ -32,9 +33,14 @@ const getActorIcon = (actorType: string) => {
   }
 };
 
-const getActorIconStyle = (actorType: string): React.CSSProperties | undefined => {
+const getActorIconStyle = (
+  actorType: string,
+): React.CSSProperties | undefined => {
   if (actorType === "agent") {
-    return { color: palette.FIDESUI_TERRACOTTA, borderColor: palette.FIDESUI_TERRACOTTA };
+    return {
+      color: palette.FIDESUI_TERRACOTTA,
+      borderColor: palette.FIDESUI_TERRACOTTA,
+    };
   }
   return undefined;
 };
@@ -58,7 +64,10 @@ const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
           <Text className={styles.attributionText}>{attribution}</Text>
         )}
       </Flex>
-      <Text type="secondary" style={{ fontSize: "var(--ant-font-size-sm)", flexShrink: 0 }}>
+      <Text
+        type="secondary"
+        style={{ fontSize: "var(--ant-font-size-sm)", flexShrink: 0 }}
+      >
         {dayjs(item.timestamp).fromNow()}
       </Text>
     </Flex>
@@ -135,18 +144,24 @@ export const ActivityFeedCard = () => {
                 item.event_type && ACTION_CTA[item.event_type]
                   ? ACTION_CTA[item.event_type]
                   : null;
-              const href = cta
-                ? cta.route(item.action_data ?? {})
-                : null;
+              const href = cta ? cta.route(item.action_data ?? {}) : null;
 
               return (
                 <motion.div key={item.id} {...motionProps}>
                   {href ? (
-                    <NextLink href={href} className={styles.feedItem + " " + styles.clickable}>
+                    <NextLink
+                      href={href}
+                      className={classNames(styles.feedItem, styles.clickable)}
+                    >
                       <FeedItemContent item={item} />
                     </NextLink>
                   ) : (
-                    <div className={styles.feedItem + " " + styles.nonClickable}>
+                    <div
+                      className={classNames(
+                        styles.feedItem,
+                        styles.nonClickable,
+                      )}
+                    >
                       <FeedItemContent item={item} />
                     </div>
                   )}

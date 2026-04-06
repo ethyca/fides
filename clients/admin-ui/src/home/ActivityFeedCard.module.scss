@@ -23,6 +23,7 @@
 }
 
 .feedItem {
+  display: block;
   padding: var(--ant-padding-sm, 12px) var(--ant-padding, 16px);
   border-radius: var(--ant-border-radius, 6px);
   transition: background-color 0.15s;
@@ -34,6 +35,8 @@
 
 .clickable {
   cursor: pointer;
+  text-decoration: none;
+  color: inherit;
 
   &:hover {
     background-color: var(--ant-color-fill-quaternary);

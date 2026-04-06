@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useGetActivityFeedQuery } from "~/features/dashboard/dashboard.slice";
 import type { ActivityFeedItem } from "~/features/dashboard/types";
@@ -16,55 +16,98 @@ export const useInfiniteActivityFeed = ({
   const [page, setPage] = useState(1);
   const [allItems, setAllItems] = useState<ActivityFeedItem[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [isResetting, setIsResetting] = useState(false);
 
-  const queryParams = useMemo(
+  // Reset state synchronously during render when actorType changes,
+  // preventing a wasted request with the stale page number.
+  const prevActorTypeRef = useRef(actorType);
+  if (prevActorTypeRef.current !== actorType) {
+    prevActorTypeRef.current = actorType;
+    setPage(1);
+    setAllItems([]);
+    setHasMore(true);
+    setIsResetting(true);
+  }
+
+  // Always poll page 1 for fresh items
+  const page1Params = useMemo(
+    () => ({
+      page: 1,
+      size: PAGE_SIZE,
+      ...(actorType
+        ? { actor_type: actorType as "user" | "system" | "agent" }
+        : {}),
+    }),
+    [actorType],
+  );
+
+  const { data: page1Data, isFetching: isFetchingPage1 } =
+    useGetActivityFeedQuery(page1Params, {
+      pollingInterval: POLLING_INTERVAL,
+      skipPollingIfUnfocused: true,
+    });
+
+  // Fetch deeper pages on demand (skip when page 1 — already covered above)
+  const deepParams = useMemo(
     () => ({
       page,
       size: PAGE_SIZE,
-      ...(actorType ? { actor_type: actorType as "user" | "system" | "agent" } : {}),
+      ...(actorType
+        ? { actor_type: actorType as "user" | "system" | "agent" }
+        : {}),
     }),
     [page, actorType],
   );
 
-  const { data, isFetching } = useGetActivityFeedQuery(queryParams, {
-    pollingInterval: POLLING_INTERVAL,
-  });
+  const { data: deepData, isFetching: isFetchingDeep } =
+    useGetActivityFeedQuery(deepParams, { skip: page <= 1 });
 
+  // Process page 1 data (initial load + poll refreshes)
   useEffect(() => {
-    setPage(1);
-    setAllItems([]);
-    setHasMore(true);
-  }, [actorType]);
-
-  // actorType is in deps so this re-runs on filter switch even when
-  // RTK Query returns the same cached data reference.
-  useEffect(() => {
-    if (!data) {
+    if (!page1Data) {
       return;
     }
 
-    const newItems = actorType
-      ? data.items.filter((item) => item.actor_type === actorType)
-      : data.items;
+    setIsResetting(false);
 
     if (page === 1) {
-      setAllItems(newItems);
+      setAllItems(page1Data.items);
+      setHasMore(page1Data.page < page1Data.pages);
     } else {
+      // Poll refresh — prepend genuinely new items
       setAllItems((prev) => {
-        const existingIds = new Set(prev.map((item) => item.id));
-        const deduped = newItems.filter((item) => !existingIds.has(item.id));
-        return [...prev, ...deduped];
+        const existingIds = new Set(prev.map((i) => i.id));
+        const newItems = page1Data.items.filter((i) => !existingIds.has(i.id));
+        return newItems.length > 0 ? [...newItems, ...prev] : prev;
       });
     }
+  }, [page1Data, page]);
 
-    setHasMore(data.page < data.pages);
-  }, [data, page, actorType]);
+  // Append items from deeper pages
+  useEffect(() => {
+    if (!deepData || page <= 1) {
+      return;
+    }
+
+    setAllItems((prev) => {
+      const existingIds = new Set(prev.map((i) => i.id));
+      const deduped = deepData.items.filter((i) => !existingIds.has(i.id));
+      return deduped.length > 0 ? [...prev, ...deduped] : prev;
+    });
+
+    setHasMore(deepData.page < deepData.pages);
+  }, [deepData, page]);
 
   const loadMore = useCallback(() => {
-    if (!isFetching && hasMore) {
+    if (!isFetchingDeep && hasMore) {
       setPage((prev) => prev + 1);
     }
-  }, [isFetching, hasMore]);
+  }, [isFetchingDeep, hasMore]);
+
+  // Show spinner for initial load, filter resets, or when loading deeper pages,
+  // but not during background poll refreshes.
+  const isFetching =
+    isResetting || (isFetchingPage1 && allItems.length === 0) || isFetchingDeep;
 
   return {
     items: allItems,
