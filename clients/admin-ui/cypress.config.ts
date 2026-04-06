@@ -47,5 +47,5 @@ export default defineConfig({
   },
 
   // Will only run for cy:run, not cy:open
-  video: true,
+  video: false, // change to true if you are having failures in CI and not locally, to help debug
 });

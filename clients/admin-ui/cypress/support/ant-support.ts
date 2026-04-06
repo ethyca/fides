@@ -296,7 +296,7 @@ Cypress.Commands.add("clickAntTab", (tab: string) => {
     expect(hasActiveClass || parentHasActiveClass).to.be.true;
   });
   // eslint-disable-next-line cypress/no-unnecessary-waiting
-  cy.wait(500); // Wait for the animation/router to complete
+  cy.wait(500); // Wait for the router to complete
 });
 Cypress.Commands.add("getAntTabPanel", (tab: string) =>
   cy.get(`#rc-tabs-0-panel-${tab}`),

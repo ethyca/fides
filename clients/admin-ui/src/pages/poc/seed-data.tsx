@@ -10,9 +10,10 @@ const { Paragraph } = Typography;
 const SeedDataPage: NextPage = () => {
   return (
     <Content className="overflow-auto px-10 py-6">
-      <PageHeader heading="Seed data" />
+      <PageHeader heading="Sample data seeding" />
       <Paragraph type="secondary" className="mb-4">
-        Seed demo data into this environment for testing and development.
+        Populate this environment with synthetic sample data for demos, testing,
+        and internal development. Not intended for production use.
       </Paragraph>
       <SeedDataPanel />
     </Content>
