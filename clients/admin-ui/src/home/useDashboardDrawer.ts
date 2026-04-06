@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-export type DashboardDrawerState = {
-  type: "posture";
-};
+export type DashboardDrawerState =
+  | { type: "posture" }
+  | { type: "astralis"; metric?: string };
 
 let drawerState: DashboardDrawerState | null = null;
 const listeners = new Set<() => void>();

@@ -1,10 +1,15 @@
 import { Drawer } from "fidesui";
 
+import { AstralisDrawerContent } from "./AstralisDrawerContent";
 import { PostureBreakdownContent } from "./PostureBreakdownContent";
 import { closeDashboardDrawer, useDashboardDrawer } from "./useDashboardDrawer";
 
 const DRAWER_CONFIG = {
   posture: { title: "Posture breakdown", content: PostureBreakdownContent },
+  astralis: {
+    title: "Astralis Agent Activity",
+    content: AstralisDrawerContent,
+  },
 } as const;
 
 export const DashboardDrawer = () => {

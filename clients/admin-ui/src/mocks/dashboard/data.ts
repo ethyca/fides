@@ -1,5 +1,6 @@
 import type {
   AgentBriefingResponse,
+  AstralisResponse,
   PostureResponse,
   PriorityAction,
   PrivacyRequestsResponse,
@@ -387,6 +388,13 @@ export const mockAgentBriefing: AgentBriefingResponse = {
       severity: ActionSeverity.CRITICAL,
     },
   ],
+};
+
+export const mockAstralis: AstralisResponse = {
+  active_conversations: 7,
+  completed_assessments: 42,
+  awaiting_response: 3,
+  risks_identified: 12,
 };
 
 export const mockTrends: TrendsResponse = {

@@ -4,6 +4,8 @@ import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice
 import { TrendPeriod } from "~/features/dashboard/types";
 
 import { AgentBriefingBanner } from "./AgentBriefingBanner";
+import { AgentStatusStrip } from "./AgentStatusStrip";
+import { AstralisPanel } from "./AstralisPanel";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { DSRStatusCard } from "./DSRStatusCard";
 import { PostureCard } from "./PostureCard";
@@ -58,6 +60,8 @@ export const HomeDashboard = () => {
           <DSRStatusCard />
         </Col>
       </Row>
+      <AstralisPanel />
+      <AgentStatusStrip />
       <DashboardDrawer />
     </Flex>
   );
