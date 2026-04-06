@@ -1,4 +1,4 @@
-import { PageSpinner } from "fidesui";
+import { Spin } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -23,7 +23,7 @@ const CatalogResourceView: NextPage = () => {
   );
 
   if (isLoading) {
-    return <PageSpinner />;
+    return <Spin />;
   }
 
   return (

@@ -1,4 +1,4 @@
-import { Button, Flex, Icons, Result, Space, Spin } from "fidesui";
+import { Button, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
@@ -52,9 +52,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
     return (
       <Layout title="Privacy assessments">
         <PageHeader heading="Privacy assessments" isSticky />
-        <Flex align="center" justify="center" className="px-10 py-20">
-          <Spin size="large" />
-        </Flex>
+        <Spin size="large" />
       </Layout>
     );
   }

@@ -28,10 +28,8 @@ from fides.api.models.worker_task import ExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.util.cache import (
-    FidesopsRedis,
     celery_tasks_in_flight,
-    get_async_task_tracking_cache_key,
-    get_cache,
+    get_dsr_cache_store,
 )
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
@@ -247,8 +245,10 @@ class RequestTask(WorkerTask, Base):
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached celery task ID for this request task."""
-        cache: FidesopsRedis = get_cache()
-        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
+        store = get_dsr_cache_store(self.id)
+        task_id = store.get_async_execution()
+        if isinstance(task_id, bytes):
+            return task_id.decode(CONFIG.security.encoding)
         return task_id
 
     def cleanup_external_storage(self) -> None:

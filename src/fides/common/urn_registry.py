@@ -194,6 +194,8 @@ YAML_DATASETS = YAML + CONNECTION_DATASETS
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
+SAAS_CONFIG_HISTORY = CONNECTION_BY_KEY + "/saas-history"
+SAAS_CONFIG_HISTORY_BY_VERSION = CONNECTION_BY_KEY + "/saas-history/{version}"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{connector_template_type}"
 
 # Connector Template URLs
@@ -201,6 +203,13 @@ CONNECTOR_TEMPLATES = "/connector-templates"
 CONNECTOR_TEMPLATES_REGISTER = "/connector-templates/register"
 CONNECTOR_TEMPLATES_CONFIG = "/connector-templates/{connector_template_type}/config"
 CONNECTOR_TEMPLATES_DATASET = "/connector-templates/{connector_template_type}/dataset"
+CONNECTOR_TEMPLATES_VERSIONS = "/connector-templates/{connector_template_type}/versions"
+CONNECTOR_TEMPLATES_VERSION_CONFIG = (
+    "/connector-templates/{connector_template_type}/versions/{version}/config"
+)
+CONNECTOR_TEMPLATES_VERSION_DATASET = (
+    "/connector-templates/{connector_template_type}/versions/{version}/dataset"
+)
 DELETE_CUSTOM_TEMPLATE = "/connector-templates/{connector_template_type}"
 
 # Deprecated: Old connector template register URL
@@ -218,6 +227,7 @@ USER_ACCEPT_INVITE = "/user/accept-invite"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
+USER_REINVITE = "/user/{user_id}/reinvite"
 SYSTEM_MANAGER = "/user/{user_id}/system-manager"
 SYSTEM_MANAGER_DETAIL = "/user/{user_id}/system-manager/{system_key}"
 

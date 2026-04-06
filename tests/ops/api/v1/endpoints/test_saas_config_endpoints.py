@@ -24,6 +24,8 @@ from fides.common.scope_registry import (
 from fides.common.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
+    SAAS_CONFIG_HISTORY,
+    SAAS_CONFIG_HISTORY_BY_VERSION,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
@@ -510,7 +512,7 @@ class TestPatchSaaSConfigAllowedValuesAfterDelete:
         with mock.patch(
             "fides.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
         ) as mock_template:
-            mock_template.return_value = MagicMock(config=_template_yaml)
+            mock_template.return_value = MagicMock(config=_template_yaml, custom=True)
             response = api_client.patch(
                 url, headers=auth_header, json=_config_with_allowed_values
             )
@@ -584,3 +586,238 @@ class TestAuthorizeConnection:
         response = api_client.get(authorize_url, headers=auth_header)
         response.raise_for_status()
         assert response.text == f'"{authorization_url}"'
+
+
+@pytest.mark.unit_saas
+class TestListSaaSConfigHistory:
+    @pytest.fixture
+    def history_url(self, saas_example_connection_config) -> str:
+        path = V1_URL_PREFIX + SAAS_CONFIG_HISTORY
+        return path.format(connection_key=saas_example_connection_config.key)
+
+    def test_list_saas_config_history_unauthenticated(
+        self, history_url, api_client: TestClient
+    ) -> None:
+        response = api_client.get(history_url, headers={})
+        assert response.status_code == 401
+
+    def test_list_saas_config_history_wrong_scope(
+        self,
+        history_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+        response = api_client.get(history_url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_list_saas_config_history_connection_not_found(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY).format(
+            connection_key="nonexistent_key"
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_list_saas_config_history_empty(
+        self,
+        history_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        """Connection exists but update_saas_config has never been called — no snapshots."""
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(history_url, headers=auth_header)
+        assert response.status_code == 200
+        assert response.json() == []
+
+    def test_list_saas_config_history_after_patch(
+        self,
+        saas_example_config,
+        saas_example_connection_config,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        """PATCH the saas config, then verify a history snapshot was created."""
+        patch_url = (V1_URL_PREFIX + SAAS_CONFIG).format(
+            connection_key=saas_example_connection_config.key
+        )
+        patch_auth = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+        patch_resp = api_client.patch(
+            patch_url, headers=patch_auth, json=saas_example_config
+        )
+        assert patch_resp.status_code == 200
+
+        history_url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY).format(
+            connection_key=saas_example_connection_config.key
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(history_url, headers=auth_header)
+        assert response.status_code == 200
+        items = response.json()
+        assert len(items) == 1
+        item = items[0]
+        assert item["version"] == saas_example_config["version"]
+        assert "id" in item
+        assert "created_at" in item
+        # list response must not include the full config blob
+        assert "config" not in item
+
+    def test_list_saas_config_history_multiple_patches_newest_first(
+        self,
+        saas_example_config,
+        saas_example_connection_config,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        """Two PATCHes produce two snapshots ordered newest first."""
+        patch_url = (V1_URL_PREFIX + SAAS_CONFIG).format(
+            connection_key=saas_example_connection_config.key
+        )
+        patch_auth = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        # first patch
+        api_client.patch(patch_url, headers=patch_auth, json=saas_example_config)
+
+        # second patch — bump version so it's distinguishable
+        config_v2 = dict(saas_example_config)
+        config_v2["version"] = "0.0.2"
+        api_client.patch(patch_url, headers=patch_auth, json=config_v2)
+
+        history_url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY).format(
+            connection_key=saas_example_connection_config.key
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(history_url, headers=auth_header)
+        assert response.status_code == 200
+        items = response.json()
+        assert len(items) == 2
+        # newest first
+        assert items[0]["version"] == "0.0.2"
+        assert items[1]["version"] == saas_example_config["version"]
+
+
+@pytest.mark.unit_saas
+class TestGetSaaSConfigHistoryByVersion:
+    @pytest.fixture
+    def patched_connection_config(
+        self,
+        saas_example_config,
+        saas_example_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> ConnectionConfig:
+        """Connection config that has had update_saas_config called once."""
+        patch_url = (V1_URL_PREFIX + SAAS_CONFIG).format(
+            connection_key=saas_example_connection_config.key
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+        api_client.patch(patch_url, headers=auth_header, json=saas_example_config)
+        return saas_example_connection_config
+
+    def test_get_saas_config_history_by_version_unauthenticated(
+        self,
+        patched_connection_config,
+        api_client: TestClient,
+    ) -> None:
+        url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY_BY_VERSION).format(
+            connection_key=patched_connection_config.key, version="0.0.1"
+        )
+        response = api_client.get(url, headers={})
+        assert response.status_code == 401
+
+    def test_get_saas_config_history_by_version_wrong_scope(
+        self,
+        patched_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY_BY_VERSION).format(
+            connection_key=patched_connection_config.key, version="0.0.1"
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_saas_config_history_by_version_connection_not_found(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY_BY_VERSION).format(
+            connection_key="nonexistent_key", version="0.0.1"
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_saas_config_history_by_version_not_found(
+        self,
+        patched_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY_BY_VERSION).format(
+            connection_key=patched_connection_config.key, version="9.9.9"
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_saas_config_history_by_version_found(
+        self,
+        saas_example_config,
+        patched_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        version = saas_example_config["version"]
+        url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY_BY_VERSION).format(
+            connection_key=patched_connection_config.key, version=version
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["version"] == version
+        assert "id" in data
+        assert "created_at" in data
+        assert "config" in data
+        assert data["config"]["fides_key"] == saas_example_config["fides_key"]
+        # no datasets associated in this fixture
+        assert data["dataset"] is None
+
+    def test_get_saas_config_history_by_version_returns_most_recent(
+        self,
+        saas_example_config,
+        saas_example_connection_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        """When the same version is patched twice, the most recent snapshot is returned."""
+        patch_url = (V1_URL_PREFIX + SAAS_CONFIG).format(
+            connection_key=saas_example_connection_config.key
+        )
+        patch_auth = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        # patch twice with the same version
+        api_client.patch(patch_url, headers=patch_auth, json=saas_example_config)
+        modified = dict(saas_example_config)
+        modified["description"] = "second patch"
+        api_client.patch(patch_url, headers=patch_auth, json=modified)
+
+        version = saas_example_config["version"]
+        url = (V1_URL_PREFIX + SAAS_CONFIG_HISTORY_BY_VERSION).format(
+            connection_key=saas_example_connection_config.key, version=version
+        )
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["config"].get("description") == "second patch"
