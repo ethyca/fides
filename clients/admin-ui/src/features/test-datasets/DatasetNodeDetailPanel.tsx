@@ -86,7 +86,7 @@ const DatasetNodeDetailPanel = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const flushUpdate = useCallback(
-    (allValues: Record<string, unknown>) => {
+    (allValues: Record<string, unknown>, includeName = false) => {
       if (!nodeData) {
         return;
       }
@@ -94,7 +94,7 @@ const DatasetNodeDetailPanel = ({
       const categories = allValues.data_categories as string[] | undefined;
       const newName = allValues.name as string | undefined;
       const baseUpdates = {
-        ...(newName ? { name: newName } : {}),
+        ...(includeName && newName ? { name: newName } : {}),
         description: (allValues.description as string) || undefined,
         data_categories:
           categories && categories.length > 0 ? categories : undefined,
@@ -137,7 +137,7 @@ const DatasetNodeDetailPanel = ({
     if (!open && debounceRef.current) {
       clearTimeout(debounceRef.current);
       debounceRef.current = null;
-      flushUpdate(form.getFieldsValue());
+      flushUpdate(form.getFieldsValue(), true);
     }
   }, [open, flushUpdate, form]);
 
