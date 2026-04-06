@@ -85,7 +85,7 @@ class AccessPolicy(Base):
 
     controls = relationship(
         "Control",
-        secondary="plus_access_policy_control",
+        secondary=AccessPolicyControl.__table__,
         lazy="selectin",
     )
 

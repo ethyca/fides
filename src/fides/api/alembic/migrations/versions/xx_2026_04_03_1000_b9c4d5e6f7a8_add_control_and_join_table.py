@@ -6,6 +6,8 @@ Create Date: 2026-04-03 10:00:00.000000
 
 """
 
+from uuid import uuid4
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -89,10 +91,13 @@ def upgrade() -> None:
         "plus_access_policy_control",
         ["id"],
     )
+    op.create_index(
+        "ix_plus_access_policy_control_access_policy_id",
+        "plus_access_policy_control",
+        ["access_policy_id"],
+    )
 
     # Seed initial controls
-    from uuid import uuid4
-
     for key, label in SEED_CONTROLS:
         control_id = str(uuid4())
         op.execute(
@@ -103,6 +108,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    op.drop_index(
+        "ix_plus_access_policy_control_access_policy_id",
+        table_name="plus_access_policy_control",
+    )
     op.drop_index(
         "ix_plus_access_policy_control_id",
         table_name="plus_access_policy_control",
