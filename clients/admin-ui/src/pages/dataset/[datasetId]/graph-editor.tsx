@@ -7,6 +7,7 @@ import {
   Tooltip,
   Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -36,6 +37,7 @@ import { Dataset } from "~/types/api";
 const DatasetGraphEditorPage: NextPage = () => {
   const router = useRouter();
   const messageApi = useMessage();
+  const modal = useModal();
   const datasetId = router.query.datasetId as string;
 
   const {
@@ -87,7 +89,7 @@ const DatasetGraphEditorPage: NextPage = () => {
     messageApi.success("Successfully saved dataset");
   }, [localDataset, updateDataset, messageApi]);
 
-  const handleRefresh = useCallback(async () => {
+  const doRefresh = useCallback(async () => {
     try {
       const { data } = await refetch();
       if (data) {
@@ -101,6 +103,22 @@ const DatasetGraphEditorPage: NextPage = () => {
       messageApi.error(getErrorMessage(error));
     }
   }, [refetch, messageApi]);
+
+  const handleRefresh = useCallback(() => {
+    if (isDirty) {
+      modal.confirm({
+        title: "Unsaved changes",
+        content:
+          "You have unsaved changes that will be lost. Are you sure you want to refresh?",
+        okText: "Discard and refresh",
+        okButtonProps: { danger: true },
+        cancelText: "Cancel",
+        onOk: doRefresh,
+      });
+    } else {
+      doRefresh();
+    }
+  }, [isDirty, modal, doRefresh]);
 
   const datasetName = serverDataset?.name || datasetId;
 
