@@ -64,22 +64,28 @@ export const transformOrganizationToFormValues = (
   openIDProvider: OpenIDProvider,
 ): SSOProviderFormValues => ({ ...openIDProvider });
 
-const SSOProviderFormValidationSchema = Yup.object().shape({
-  provider: Yup.string().required().label("Provider"),
-  name: Yup.string().required().label("Name"),
-  client_id: Yup.string().required().label("Client ID"),
-  client_secret: Yup.string().required().label("Client Secret"),
-  scopes: Yup.array().of(Yup.string()).label("Scopes"),
-  verify_email: Yup.boolean().optional().label("Verify Email"),
-  verify_email_field: Yup.string()
-    .optional()
-    .nullable()
-    .label("Userinfo object verify email field"),
-  email_field: Yup.string()
-    .optional()
-    .nullable()
-    .label("Userinfo object email field"),
-});
+export const getSSOProviderFormValidationSchema = (isEditMode: boolean) =>
+  Yup.object().shape({
+    provider: Yup.string().required().label("Provider"),
+    name: Yup.string().required().label("Name"),
+    client_id: isEditMode
+      ? Yup.string().optional().label("Client ID")
+      : Yup.string().required().label("Client ID"),
+    client_secret: isEditMode
+      ? Yup.string().optional().label("Client Secret")
+      : Yup.string().required().label("Client Secret"),
+    // nullable — the API type allows null for scopes so that the form save button is not disabled (Array<string> | null)
+    scopes: Yup.array().of(Yup.string()).nullable().label("Scopes"),
+    verify_email: Yup.boolean().optional().label("Verify Email"),
+    verify_email_field: Yup.string()
+      .optional()
+      .nullable()
+      .label("Userinfo object verify email field"),
+    email_field: Yup.string()
+      .optional()
+      .nullable()
+      .label("Userinfo object email field"),
+  });
 
 const CustomProviderExtraFields = () => {
   const {
@@ -183,6 +189,11 @@ const SSOProviderForm = ({
   onSuccess,
   onClose,
 }: SSOProviderFormProps) => {
+  const isEditMode = !!openIDProvider;
+  const validationSchema = useMemo(
+    () => getSSOProviderFormValidationSchema(isEditMode),
+    [isEditMode],
+  );
   const [createOpenIDProviderMutationTrigger] =
     useCreateOpenIDProviderMutation();
   const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
@@ -221,8 +232,20 @@ const SSOProviderForm = ({
         }
       }
     };
-    if (initialValues.id) {
-      const result = await updateOpenIDProviderMutation(values);
+    if (isEditMode) {
+      // Strip empty credential fields — the backend preserves existing encrypted
+      // values when client_id / client_secret are absent from the payload.
+      const {
+        client_id: clientId,
+        client_secret: clientSecret,
+        ...rest
+      } = values;
+      const payload = {
+        ...rest,
+        ...(clientId ? { client_id: clientId } : {}),
+        ...(clientSecret ? { client_secret: clientSecret } : {}),
+      };
+      const result = await updateOpenIDProviderMutation(payload);
       handleResult(result);
     } else {
       const result = await createOpenIDProviderMutationTrigger(values);
@@ -274,7 +297,7 @@ const SSOProviderForm = ({
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
-      validationSchema={SSOProviderFormValidationSchema}
+      validationSchema={validationSchema}
     >
       {({ dirty, isValid, values }) => (
         <Form data-testid="openIDProvider-form">
@@ -293,7 +316,7 @@ const SSOProviderForm = ({
               tooltip="Unique identifier for your provider"
               variant="stacked"
               isRequired
-              disabled={!!initialValues.id}
+              disabled={isEditMode}
             />
             <CustomTextInput
               id="name"
@@ -310,7 +333,10 @@ const SSOProviderForm = ({
               type="password"
               tooltip="Client ID for your provider"
               variant="stacked"
-              isRequired
+              isRequired={!isEditMode}
+              placeholder={
+                isEditMode ? "Leave blank to keep existing" : undefined
+              }
             />
             <CustomTextInput
               id="client_secret"
@@ -319,7 +345,10 @@ const SSOProviderForm = ({
               type="password"
               tooltip="Client secret for your provider"
               variant="stacked"
-              isRequired
+              isRequired={!isEditMode}
+              placeholder={
+                isEditMode ? "Leave blank to keep existing" : undefined
+              }
             />
             {values.provider === "azure" && renderAzureProviderExtraFields()}
             {values.provider === "okta" && renderOktaProviderExtraFields()}

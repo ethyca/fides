@@ -44,6 +44,7 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      id-token: write
 
     steps:
       # For issue_comment events, GITHUB_SHA points at main, not the PR head.

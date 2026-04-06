@@ -19,6 +19,10 @@ from fides.api.service.connectors.base_erasure_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
 )
+from fides.api.service.connectors.dynamic_erasure_email_connector import (
+    DynamicErasureEmailConnector,
+    DynamicErasureEmailConnectorException,
+)
 from fides.api.service.privacy_request.request_runner_service import (
     get_erasure_email_connection_configs,
 )
@@ -270,3 +274,17 @@ class TestDynamicErasureEmailConnector:
             error_message
             == f"Dynamic batch erasure email 123 for connector {test_dynamic_erasure_email_connector.configuration.key} failed with exception Test error"
         )
+
+    def test_get_config_with_empty_secrets_includes_connector_key(
+        self, dynamic_erasure_email_connection_config_no_secrets
+    ):
+        """When secrets are empty, the error message should identify the connector."""
+        with pytest.raises(
+            DynamicErasureEmailConnectorException,
+            match="my_dynamic_erasure_email_config",
+        ) as exc_info:
+            DynamicErasureEmailConnector(
+                configuration=dynamic_erasure_email_connection_config_no_secrets
+            )
+        assert "incorrectly configured" in str(exc_info.value)
+        assert "third_party_vendor_name" in str(exc_info.value)

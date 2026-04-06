@@ -7,6 +7,7 @@
  */
 export enum ConnectionType {
   ATTENTIVE_EMAIL = "attentive_email",
+  AWS = "aws",
   BIGQUERY = "bigquery",
   DATAHUB = "datahub",
   DYNAMODB = "dynamodb",

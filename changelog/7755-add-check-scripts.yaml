@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Added combined check and check:ci scripts for lint, format, and typecheck
-pr: 7755
-labels: []

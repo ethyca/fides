@@ -58,6 +58,11 @@
       "cache": false,
       "persistent": true
     },
+    "test:ci": {
+      "dependsOn": [],
+      "cache": false,
+      "persistent": true
+    },
     "test:watch": {
       "dependsOn": ["^typecheck"],
       "cache": false,
