@@ -18,7 +18,6 @@ import {
   useContext,
   useEffect,
   useImperativeHandle,
-  useRef,
 } from "react";
 
 import { DatasetCollection, DatasetField } from "~/types/api";
@@ -69,28 +68,16 @@ const DatasetNodeDetailPanel = forwardRef<
     const modal = useModal();
     const actions = useContext(DatasetEditorActionsContext);
 
-    // Track which node the form was initialized for so we only do a full
-    // reset (including name) when switching to a different node, not on
-    // every nodeData reference change from debounced auto-saves.
-    const initializedNodeRef = useRef<string | null>(null);
-
+    // Initialize form values when a node is selected
     useEffect(() => {
       if (!nodeData || !open) {
-        initializedNodeRef.current = null;
         return;
       }
-
-      const nodeKey =
-        nodeData.nodeType === "collection"
-          ? `collection:${nodeData.collection.name}`
-          : `field:${nodeData.collectionName}:${nodeData.fieldPath}`;
-
-      const isNewNode = initializedNodeRef.current !== nodeKey;
 
       if (nodeData.nodeType === "collection") {
         const { collection } = nodeData;
         form.setFieldsValue({
-          ...(isNewNode ? { name: collection.name } : {}),
+          name: collection.name,
           description: collection.description ?? "",
           data_categories: collection.data_categories ?? [],
           after: collection.fides_meta?.after ?? [],
@@ -100,7 +87,7 @@ const DatasetNodeDetailPanel = forwardRef<
       } else {
         const { field } = nodeData;
         form.setFieldsValue({
-          ...(isNewNode ? { name: field.name } : {}),
+          name: field.name,
           description: field.description ?? "",
           data_categories: field.data_categories ?? [],
           data_type: field.fides_meta?.data_type ?? undefined,
@@ -110,98 +97,62 @@ const DatasetNodeDetailPanel = forwardRef<
           redact: field.fides_meta?.redact ?? "",
         });
       }
+      // Only run when a different node is selected, not on every nodeData
+      // reference change. nodeData identity changes on parent re-renders but
+      // the logical node (identified by open + selectedNodeId) stays the same.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, form]);
 
-      if (isNewNode) {
-        initializedNodeRef.current = nodeKey;
-      }
-    }, [nodeData, open, form]);
-
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const flushUpdate = useCallback(
-      (allValues: Record<string, unknown>) => {
-        if (!nodeData) {
-          return;
-        }
-
-        const categories = allValues.data_categories as string[] | undefined;
-        const newName = allValues.name as string | undefined;
-        const baseUpdates = {
-          ...(newName ? { name: newName } : {}),
-          description: (allValues.description as string) || undefined,
-          data_categories:
-            categories && categories.length > 0 ? categories : undefined,
-        };
-
-        if (nodeData.nodeType === "collection") {
-          const after = allValues.after as string[] | undefined;
-          const eraseAfter = allValues.erase_after as string[] | undefined;
-          const skipProcessing = allValues.skip_processing as boolean;
-          const collectionMeta = {
-            after: after && after.length > 0 ? after : undefined,
-            erase_after:
-              eraseAfter && eraseAfter.length > 0 ? eraseAfter : undefined,
-            skip_processing: skipProcessing || undefined,
-          };
-          const hasAnyMeta = Object.values(collectionMeta).some(
-            (v) => v !== undefined,
-          );
-
-          onUpdateCollection(nodeData.collection.name, {
-            ...baseUpdates,
-            fides_meta: hasAnyMeta ? collectionMeta : undefined,
-          } as Partial<DatasetCollection>);
-        } else {
-          onUpdateField(nodeData.collectionName, nodeData.fieldPath, {
-            ...baseUpdates,
-            fides_meta: buildFieldMeta(allValues),
-          } as Partial<DatasetField>);
-        }
-      },
-      [nodeData, onUpdateCollection, onUpdateField],
-    );
-
-    // Imperative flush for close handlers — clears debounce and commits all
-    // pending changes while nodeData is still valid.
+    // Commit all form values to the dataset
     const flush = useCallback(() => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-        debounceRef.current = null;
+      if (!nodeData) {
+        return;
       }
-      flushUpdate(form.getFieldsValue());
-    }, [flushUpdate, form]);
+
+      const allValues = form.getFieldsValue();
+      const categories = allValues.data_categories as string[] | undefined;
+      const newName = allValues.name as string | undefined;
+      const baseUpdates = {
+        ...(newName ? { name: newName } : {}),
+        description: (allValues.description as string) || undefined,
+        data_categories:
+          categories && categories.length > 0 ? categories : undefined,
+      };
+
+      if (nodeData.nodeType === "collection") {
+        const after = allValues.after as string[] | undefined;
+        const eraseAfter = allValues.erase_after as string[] | undefined;
+        const skipProcessing = allValues.skip_processing as boolean;
+        const collectionMeta = {
+          after: after && after.length > 0 ? after : undefined,
+          erase_after:
+            eraseAfter && eraseAfter.length > 0 ? eraseAfter : undefined,
+          skip_processing: skipProcessing || undefined,
+        };
+        const hasAnyMeta = Object.values(collectionMeta).some(
+          (v) => v !== undefined,
+        );
+
+        onUpdateCollection(nodeData.collection.name, {
+          ...baseUpdates,
+          fides_meta: hasAnyMeta ? collectionMeta : undefined,
+        } as Partial<DatasetCollection>);
+      } else {
+        onUpdateField(nodeData.collectionName, nodeData.fieldPath, {
+          ...baseUpdates,
+          fides_meta: buildFieldMeta(allValues),
+        } as Partial<DatasetField>);
+      }
+    }, [nodeData, onUpdateCollection, onUpdateField, form]);
 
     // Expose flush() so the parent can call it before clearing selection
-    // (e.g. on pane click).
     useImperativeHandle(ref, () => ({ flush }), [flush]);
 
-    // Flush and close — called from the Drawer's onClose (X button, ESC, etc.)
-    const handleDrawerClose = useCallback(() => {
+    // Flush and close — called from the Drawer's onClose and Done button
+    const handleClose = useCallback(() => {
       flush();
       onClose();
     }, [flush, onClose]);
-
-    // Clean up debounce timer on unmount
-    useEffect(() => {
-      return () => {
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
-      };
-    }, []);
-
-    const handleValuesChange = useCallback(
-      (_: Record<string, unknown>, allValues: Record<string, unknown>) => {
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
-        debounceRef.current = setTimeout(() => {
-          flushUpdate(allValues);
-          debounceRef.current = null;
-        }, 300);
-      },
-      [flushUpdate],
-    );
 
     const handleDelete = () => {
       if (!nodeData) {
@@ -249,16 +200,11 @@ const DatasetNodeDetailPanel = forwardRef<
         placement="right"
         width={400}
         open={open}
-        onClose={handleDrawerClose}
+        onClose={handleClose}
         mask={false}
       >
         {nodeData && (
-          <Form
-            form={form}
-            layout="vertical"
-            onValuesChange={handleValuesChange}
-            size="small"
-          >
+          <Form form={form} layout="vertical" size="small">
             <Form.Item label="Name" name="name">
               <Input disabled={!allowNameEditing} aria-label="Name" />
             </Form.Item>
@@ -333,13 +279,20 @@ const DatasetNodeDetailPanel = forwardRef<
               </Typography.Text>
             )}
 
-            {!isProtected && (
-              <div style={{ marginTop: 24 }}>
-                <Button danger size="small" block onClick={handleDelete}>
+            <Flex
+              gap={8}
+              style={{ marginTop: 24 }}
+              justify={isProtected ? "end" : "space-between"}
+            >
+              {!isProtected && (
+                <Button danger size="small" onClick={handleDelete}>
                   Delete {nodeData.nodeType}
                 </Button>
-              </div>
-            )}
+              )}
+              <Button type="primary" size="small" onClick={handleClose}>
+                Done
+              </Button>
+            </Flex>
           </Form>
         )}
       </Drawer>
