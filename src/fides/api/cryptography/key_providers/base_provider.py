@@ -13,7 +13,6 @@ class KeyProvider(ABC):
     @abstractmethod
     def get_dek(self) -> str:
         """Retrieve and unwrap the Data Encryption Key."""
-        ...
 
     @abstractmethod
     def encrypt_dek(self, dek: str) -> str:
@@ -21,4 +20,3 @@ class KeyProvider(ABC):
 
         Returns the encrypted DEK as a base64-encoded string.
         """
-        ...

@@ -133,7 +133,7 @@ class LocalKeyProvider(KeyProvider):
         stored_hash = row.kek_id_hash
         expected_hash = self.kek_id_hash(self._kek.decode("UTF-8"))
 
-        if stored_hash != expected_hash:
+        if not hmac.compare_digest(stored_hash, expected_hash):
             raise KeyProviderError(
                 f"KEK ID mismatch: expected {expected_hash}, found {stored_hash}. "
                 "The KEK may have been rotated — set key_encryption_key_previous "
