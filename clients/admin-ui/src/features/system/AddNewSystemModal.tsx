@@ -3,9 +3,8 @@ import { Form, FormikProvider, useFormik } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { System } from "~/types/api";
 
 import { useFeatures } from "../common/features";
@@ -192,71 +191,71 @@ export const AddNewSystemModal = ({
         footer={null}
       >
         <Form>
-            <FormGuard id="new-system-modal" name="Add New System" />
-            <Flex vertical gap={20} className="pb-6 pt-4">
-              <Text>
-                Fides will add this system to your inventory and configure it
-                for consent using the categories of consent listed below.
-                Optionally, you can check if this system is listed within the
-                Fides compass library by selecting the compass icon below.
-              </Text>
-              {dictionaryService ? (
-                <VendorSelector
-                  label="System name"
-                  options={dictionaryOptions}
-                  onVendorSelected={handleVendorSelected}
-                  isCreate
-                  lockedForGVL={lockedForGVL}
-                  isLoading={isLoading}
-                />
-              ) : (
-                <CustomTextInput
-                  id="name"
-                  name="name"
-                  label="System name"
-                  tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                  variant="stacked"
-                  isRequired
-                />
-              )}
-              <DictSuggestionTextArea
-                id="description"
-                name="description"
-                label="Description"
-                tooltip="What services does this system perform?"
-                disabled={lockedForGVL}
+          <FormGuard id="new-system-modal" name="Add New System" />
+          <Flex vertical gap={20} className="pb-6 pt-4">
+            <Text>
+              Fides will add this system to your inventory and configure it for
+              consent using the categories of consent listed below. Optionally,
+              you can check if this system is listed within the Fides compass
+              library by selecting the compass icon below.
+            </Text>
+            {dictionaryService ? (
+              <VendorSelector
+                label="System name"
+                options={dictionaryOptions}
+                onVendorSelected={handleVendorSelected}
+                isCreate
+                lockedForGVL={lockedForGVL}
+                isLoading={isLoading}
               />
-              {/* TODO [HJ-379] Add in the Categories of consent */}
-              {/* TODO [HJ-373] Add in the Data steward support */}
-              <ControlledSelect
-                mode="tags"
-                id="tags"
-                name="tags"
-                label="System Tags"
-                options={[]}
-                layout="stacked"
-                tooltip="Are there any tags to associate with this system?"
-                disabled={lockedForGVL}
+            ) : (
+              <CustomTextInput
+                id="name"
+                name="name"
+                label="System name"
+                tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                variant="stacked"
+                isRequired
               />
-            </Flex>
-            <Flex justify="space-between">
-              <Button
-                htmlType="reset"
-                onClick={handleCloseModal}
-                data-testid="cancel-btn"
-              >
-                Cancel
-              </Button>
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={isLoading || !dirty || !isValid}
-                loading={isSubmitting}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </Flex>
+            )}
+            <DictSuggestionTextArea
+              id="description"
+              name="description"
+              label="Description"
+              tooltip="What services does this system perform?"
+              disabled={lockedForGVL}
+            />
+            {/* TODO [HJ-379] Add in the Categories of consent */}
+            {/* TODO [HJ-373] Add in the Data steward support */}
+            <ControlledSelect
+              mode="tags"
+              id="tags"
+              name="tags"
+              label="System Tags"
+              options={[]}
+              layout="stacked"
+              tooltip="Are there any tags to associate with this system?"
+              disabled={lockedForGVL}
+            />
+          </Flex>
+          <Flex justify="space-between">
+            <Button
+              htmlType="reset"
+              onClick={handleCloseModal}
+              data-testid="cancel-btn"
+            >
+              Cancel
+            </Button>
+            <Button
+              htmlType="submit"
+              type="primary"
+              disabled={isLoading || !dirty || !isValid}
+              loading={isSubmitting}
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
+          </Flex>
         </Form>
       </ConfirmCloseModal>
     </FormikProvider>

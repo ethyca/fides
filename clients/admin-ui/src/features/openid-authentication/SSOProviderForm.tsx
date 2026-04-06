@@ -8,13 +8,7 @@ import {
   Icons,
   useMessage,
 } from "fidesui";
-import {
-  FieldArray,
-  Form,
-  FormikHelpers,
-  useFormikContext,
-} from "formik";
-import { useMemo } from "react";
+import { FieldArray, Form, FormikHelpers, useFormikContext } from "formik";
 import * as Yup from "yup";
 
 import {
@@ -293,7 +287,10 @@ interface SSOProviderFormProps {
  * Pure form fields component. Requires a FormikProvider ancestor —
  * see AddSSOProviderModal / EditSSOProviderModal which supply it.
  */
-const SSOProviderForm = ({ onClose, isEditMode = false }: SSOProviderFormProps) => {
+const SSOProviderForm = ({
+  onClose,
+  isEditMode = false,
+}: SSOProviderFormProps) => {
   const { dirty, isValid, values } = useFormikContext<SSOProviderFormValues>();
 
   return (

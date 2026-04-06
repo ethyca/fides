@@ -37,7 +37,22 @@ export const PrivacyRequestField = {
   POLICY_RULE_COUNT: "privacy_request.policy.rule_count",
   POLICY_RULE_NAMES: "privacy_request.policy.rule_names",
   CUSTOM_FIELDS_PREFIX: "privacy_request.custom_privacy_request_fields.",
+  IDENTITY_PREFIX: "privacy_request.identity.",
 } as const;
+
+// Standard identity fields that are already shown in the allowlist.
+// Any identity field from the API response NOT in this set is considered a custom identity.
+export const STANDARD_IDENTITY_FIELDS: Set<string> = new Set([
+  PrivacyRequestField.IDENTITY_EMAIL,
+  PrivacyRequestField.IDENTITY_PHONE_NUMBER,
+  PrivacyRequestField.IDENTITY_EXTERNAL_ID,
+]);
+
+// Sentinel value used in the PrivacyRequestFieldPicker to trigger manual identity key entry
+export const CUSTOM_IDENTITY_MANUAL_ENTRY = "__custom_identity_manual_entry__";
+
+// Valid characters for a custom identity key: letters, numbers, and underscores
+export const CUSTOM_IDENTITY_KEY_REGEX = /^[a-zA-Z0-9_]+$/;
 
 // Field type detection
 export type FieldType =
@@ -358,6 +373,40 @@ export const flattenPrivacyRequestFields = (
 
   flatten(data);
   return flattenedFields;
+};
+
+/**
+ * Extracts custom identity fields from the API response.
+ * Returns identity fields that are NOT in the standard allowlist (email, phone_number, external_id).
+ * These are custom identities configured in the Privacy Center Config's identity_inputs.
+ */
+export const extractCustomIdentityFields = (
+  data: Record<string, unknown>,
+): PrivacyRequestFieldDefinition[] => {
+  const customIdentityFields: PrivacyRequestFieldDefinition[] = [];
+
+  const flatten = (
+    obj: Record<string, unknown>,
+    prefix: string = "privacy_request",
+  ): void => {
+    Object.entries(obj).forEach(([key, val]) => {
+      const fieldPath = `${prefix}.${key}`;
+
+      if (isPrivacyRequestFieldDefinition(val)) {
+        if (
+          fieldPath.startsWith(PrivacyRequestField.IDENTITY_PREFIX) &&
+          !STANDARD_IDENTITY_FIELDS.has(fieldPath)
+        ) {
+          customIdentityFields.push(val);
+        }
+      } else if (val && typeof val === "object") {
+        flatten(val as Record<string, unknown>, fieldPath);
+      }
+    });
+  };
+
+  flatten(data);
+  return customIdentityFields;
 };
 
 export const groupFieldsByCategory = (
