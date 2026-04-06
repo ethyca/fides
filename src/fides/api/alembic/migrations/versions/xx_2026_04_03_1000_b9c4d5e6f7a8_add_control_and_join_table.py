@@ -91,12 +91,6 @@ def upgrade() -> None:
         "plus_access_policy_control",
         ["id"],
     )
-    op.create_index(
-        "ix_plus_access_policy_control_access_policy_id",
-        "plus_access_policy_control",
-        ["access_policy_id"],
-    )
-
     # Seed initial controls
     for key, label in SEED_CONTROLS:
         control_id = str(uuid4())
@@ -108,10 +102,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index(
-        "ix_plus_access_policy_control_access_policy_id",
-        table_name="plus_access_policy_control",
-    )
     op.drop_index(
         "ix_plus_access_policy_control_id",
         table_name="plus_access_policy_control",
