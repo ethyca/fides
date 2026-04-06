@@ -60,7 +60,7 @@ export const HomeDashboard = () => {
         </Col>
       </Row>
       <Row gutter={ROW_GUTTER} className="h-[400px] items-stretch">
-        <Col xs={24} md={16}>
+        <Col xs={24} md={16} className="h-full">
           <ActivityFeedCard />
         </Col>
       </Row>

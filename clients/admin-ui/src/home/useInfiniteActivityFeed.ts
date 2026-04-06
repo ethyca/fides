@@ -30,18 +30,26 @@ export const useInfiniteActivityFeed = ({
     pollingInterval: POLLING_INTERVAL,
   });
 
-  // Accumulate fetched pages into allItems
+  useEffect(() => {
+    setPage(1);
+    setAllItems([]);
+    setHasMore(true);
+  }, [actorType]);
+
+  // actorType is in deps so this re-runs on filter switch even when
+  // RTK Query returns the same cached data reference.
   useEffect(() => {
     if (!data) {
       return;
     }
 
-    const newItems = data.items;
+    const newItems = actorType
+      ? data.items.filter((item) => item.actor_type === actorType)
+      : data.items;
 
     if (page === 1) {
       setAllItems(newItems);
     } else {
-      // Subsequent page — append and deduplicate
       setAllItems((prev) => {
         const existingIds = new Set(prev.map((item) => item.id));
         const deduped = newItems.filter((item) => !existingIds.has(item.id));
@@ -50,14 +58,7 @@ export const useInfiniteActivityFeed = ({
     }
 
     setHasMore(data.page < data.pages);
-  }, [data, page]);
-
-  // Reset when actorType changes
-  useEffect(() => {
-    setPage(1);
-    setAllItems([]);
-    setHasMore(true);
-  }, [actorType]);
+  }, [data, page, actorType]);
 
   const loadMore = useCallback(() => {
     if (!isFetching && hasMore) {

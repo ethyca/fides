@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import type { CarbonIconType } from "@carbon/icons-react";
-import { Avatar, Card, Flex, Icons, Segmented, Spin, Text } from "fidesui";
+import { Avatar, Card, Flex, Icons, SparkleIcon, Spin, Text } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { motion } from "motion/react";
 import NextLink from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -19,10 +19,24 @@ import { useInfiniteActivityFeed } from "./useInfiniteActivityFeed";
 
 dayjs.extend(relativeTime);
 
-const ACTOR_ICONS: Record<string, CarbonIconType> = {
-  user: Icons.User,
-  system: Icons.Settings,
-  agent: Icons.Activity,
+const getActorIcon = (actorType: string) => {
+  switch (actorType) {
+    case "agent":
+      return <SparkleIcon size={14} />;
+    case "user":
+      return <Icons.User size={14} />;
+    case "system":
+      return <Icons.Settings size={14} />;
+    default:
+      return undefined;
+  }
+};
+
+const getActorIconStyle = (actorType: string): React.CSSProperties | undefined => {
+  if (actorType === "agent") {
+    return { color: palette.FIDESUI_TERRACOTTA, borderColor: palette.FIDESUI_TERRACOTTA };
+  }
+  return undefined;
 };
 
 const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
@@ -33,16 +47,10 @@ const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
   return (
     <Flex align="center" gap={12}>
       <Avatar
-        icon={
-          ACTOR_ICONS[item.actor_type]
-            ? (() => {
-                const Icon = ACTOR_ICONS[item.actor_type];
-                return <Icon size={14} />;
-              })()
-            : undefined
-        }
+        icon={getActorIcon(item.actor_type)}
         size={28}
         className={styles.actorIcon}
+        style={getActorIconStyle(item.actor_type)}
       />
       <Flex vertical flex={1} style={{ minWidth: 0 }}>
         <Text ellipsis>{item.message}</Text>
@@ -67,7 +75,6 @@ export const ActivityFeedCard = () => {
     actorType,
   });
 
-  // IntersectionObserver for infinite scroll
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) {
@@ -97,46 +104,58 @@ export const ActivityFeedCard = () => {
 
   return (
     <Card
-      variant="borderless"
       title="Activity"
-      extra={
-        <Segmented
-          size="small"
-          options={ACTIVITY_FILTER_OPTIONS.map((opt) => ({
-            label: opt.label,
-            value: opt.value,
-          }))}
-          value={activeFilter}
-          onChange={(val) => setActiveFilter(val as string)}
-        />
-      }
+      variant="borderless"
+      tabList={ACTIVITY_FILTER_OPTIONS.map((opt) => ({
+        key: opt.value,
+        label: opt.label,
+      }))}
+      activeTabKey={activeFilter}
+      onTabChange={setActiveFilter}
       className={styles.cardContainer}
     >
       <div className={styles.scrollContainer}>
-        {items.map((item) => {
-          const cta =
-            item.event_type && ACTION_CTA[item.event_type]
-              ? ACTION_CTA[item.event_type]
-              : null;
-          const href = cta
-            ? cta.route(item.action_data ?? {})
-            : null;
+        {!isFetching && items.length === 0 ? (
+          <Flex
+            vertical
+            align="center"
+            justify="center"
+            className={styles.emptyState}
+          >
+            <Text type="secondary">
+              {activeFilter === "all"
+                ? "No activity yet"
+                : `No ${ACTIVITY_FILTER_OPTIONS.find((o) => o.value === activeFilter)?.label.toLowerCase()} activity`}
+            </Text>
+          </Flex>
+        ) : (
+          <>
+            {items.map((item) => {
+              const cta =
+                item.event_type && ACTION_CTA[item.event_type]
+                  ? ACTION_CTA[item.event_type]
+                  : null;
+              const href = cta
+                ? cta.route(item.action_data ?? {})
+                : null;
 
-          return (
-            <motion.div key={item.id} {...motionProps}>
-              {href ? (
-                <NextLink href={href} className={styles.feedItem + " " + styles.clickable}>
-                  <FeedItemContent item={item} />
-                </NextLink>
-              ) : (
-                <div className={styles.feedItem + " " + styles.nonClickable}>
-                  <FeedItemContent item={item} />
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
-        {hasMore && <div ref={sentinelRef} className="h-px shrink-0" />}
+              return (
+                <motion.div key={item.id} {...motionProps}>
+                  {href ? (
+                    <NextLink href={href} className={styles.feedItem + " " + styles.clickable}>
+                      <FeedItemContent item={item} />
+                    </NextLink>
+                  ) : (
+                    <div className={styles.feedItem + " " + styles.nonClickable}>
+                      <FeedItemContent item={item} />
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
+            {hasMore && <div ref={sentinelRef} className="h-px shrink-0" />}
+          </>
+        )}
         {isFetching && (
           <Flex justify="center" style={{ padding: 12 }}>
             <Spin size="small" />
