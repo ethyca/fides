@@ -329,9 +329,9 @@ class TestPrivacyRequestService:
         )
         db.refresh(privacy_request)
 
-        # Check that privacy request is still pending
+        # Check that privacy request is awaiting pre-approval
         assert privacy_request.id == privacy_request_id
-        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.status == PrivacyRequestStatus.awaiting_pre_approval
 
         # verify that the error logs from the original attempt
         # were deleted as part of the re-submission
