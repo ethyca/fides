@@ -21,11 +21,11 @@ dayjs.extend(relativeTime);
 const getActorIcon = (actorType: string) => {
   switch (actorType) {
     case "agent":
-      return <SparkleIcon size={14} />;
+      return <SparkleIcon size={12} />;
     case "user":
-      return <Icons.User size={14} />;
+      return <Icons.User size={12} />;
     case "system":
-      return <Icons.Settings size={14} />;
+      return <Icons.Settings size={12} />;
     default:
       return undefined;
   }
@@ -49,19 +49,19 @@ const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
     : undefined;
 
   return (
-    <Flex align="center" gap={12}>
+    <Flex align="center" gap={8}>
       <Avatar
         icon={getActorIcon(item.actor_type)}
-        size={28}
+        size={22}
         className={styles.actorIcon}
         style={getActorIconStyle(item.actor_type)}
       />
-      <Flex vertical flex={1} style={{ minWidth: 0 }}>
-        <Text ellipsis>{item.message}</Text>
+      <Text ellipsis style={{ flex: 1, minWidth: 0 }}>
+        {item.message}
         {attribution && (
-          <Text className={styles.attributionText}>{attribution}</Text>
+          <span className={styles.attributionText}> {attribution}</span>
         )}
-      </Flex>
+      </Text>
       <Text type="secondary" className={styles.timestampText}>
         {dayjs(item.timestamp).fromNow()}
       </Text>
