@@ -76,8 +76,8 @@ describe("SaaSVersionModal", () => {
       <SaaSVersionModal isOpen onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
     );
 
-    // Chakra Spinner renders as a div with class chakra-spinner (no ARIA role in JSDOM)
-    expect(document.querySelector(".chakra-spinner")).toBeInTheDocument();
+    // Ant Design Spin renders with class ant-spin
+    expect(document.querySelector(".ant-spin")).toBeInTheDocument();
   });
 
   it("renders the modal title with connector type and version", () => {
