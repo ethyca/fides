@@ -29,7 +29,7 @@ const DatasetRootNode = ({ data, id }: NodeProps) => {
       <Button
         className={`${styles.button} ${styles["button--root"]} ${getNodeHoverClass(hoverStatus)}`}
         type="text"
-        disabled={id === DATASET_ROOT_ID && !nodeData.allowAddCollection}
+        disabled={id === DATASET_ROOT_ID}
       >
         <Icons.Layers size={14} style={{ flexShrink: 0 }} />
         <Typography.Text ellipsis style={{ color: "inherit" }}>

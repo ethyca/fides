@@ -19,6 +19,7 @@ import {
   useState,
 } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
@@ -43,6 +44,8 @@ const DatasetGraphEditorPage: NextPage = () => {
   const {
     data: serverDataset,
     isLoading,
+    isError,
+    error,
     refetch,
   } = useGetDatasetByKeyQuery(datasetId, { skip: !datasetId });
   const [updateDataset] = useUpdateDatasetMutation();
@@ -121,6 +124,17 @@ const DatasetGraphEditorPage: NextPage = () => {
   }, [isDirty, modal, doRefresh]);
 
   const datasetName = serverDataset?.name || datasetId;
+
+  if (isError) {
+    return (
+      <Layout title="Datasets">
+        <ErrorPage
+          error={error}
+          defaultMessage={`Could not load dataset ${datasetId}`}
+        />
+      </Layout>
+    );
+  }
 
   return (
     <Layout title={`Edit ${datasetName}`}>

@@ -108,7 +108,7 @@ const EditorSection = ({
       datasetKey: currentDataset?.fides_key || "",
     },
     {
-      skip: !isSaas || !connectionKey || !currentDataset?.fides_key,
+      skip: !isSaas || !currentDataset?.fides_key,
     },
   );
   const datasetOptions = useMemo(
