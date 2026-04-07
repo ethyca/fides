@@ -6,11 +6,13 @@ import { useState } from "react";
 import { useGetAccessPoliciesQuery } from "~/features/access-policies/access-policies.slice";
 import PoliciesContainer from "~/features/access-policies/PoliciesContainer";
 import PolicySettingsModal from "~/features/access-policies/PolicySettingsModal";
+import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const AccessPoliciesPage: NextPage = () => {
+  const { flags } = useFlags();
   const { data, isLoading } = useGetAccessPoliciesQuery({});
   const hasPolicies = !isLoading && (data?.items?.length ?? 0) > 0;
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -22,9 +24,11 @@ const AccessPoliciesPage: NextPage = () => {
         rightContent={
           hasPolicies ? (
             <Flex gap={8}>
-              <Button onClick={() => setSettingsOpen(true)}>
-                Policy config
-              </Button>
+              {flags.privacyDocUpload && (
+                <Button onClick={() => setSettingsOpen(true)}>
+                  Policy config
+                </Button>
+              )}
               <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
                 <Button type="primary">New policy</Button>
               </NextLink>
@@ -42,10 +46,12 @@ const AccessPoliciesPage: NextPage = () => {
         </div>
       </PageHeader>
       <PoliciesContainer />
-      <PolicySettingsModal
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-      />
+      {flags.privacyDocUpload && (
+        <PolicySettingsModal
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </Layout>
   );
 };

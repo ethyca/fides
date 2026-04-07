@@ -14,6 +14,8 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
+import { useFlags } from "~/features/common/features";
+
 import { useGetLocationsRegulationsQuery } from "../locations/locations.slice";
 import {
   useGeneratePoliciesMutation,
@@ -30,6 +32,7 @@ const INITIAL_STATE: OnboardingFormState = {
 };
 
 const OnboardingForm = () => {
+  const { flags } = useFlags();
   const [formState, setFormState] =
     useState<OnboardingFormState>(INITIAL_STATE);
   const message = useMessage();
@@ -210,37 +213,39 @@ const OnboardingForm = () => {
               {renderDataUseCards()}
             </div>
 
-            <Form.Item
-              label="Upload policy document or enter URL to policy page"
-              className="!mb-0"
-            >
-              <Flex gap={8} align="start">
-                <Select
-                  aria-label="Policy URLs"
-                  mode="tags"
-                  className="flex-1"
-                  placeholder="https://company.com/privacy"
-                  value={policyUrls}
-                  onChange={setPolicyUrls}
-                  tokenSeparators={[" "]}
-                  suffixIcon={null}
-                  open={false}
-                />
-                <Upload
-                  accept=".pdf,.docx"
-                  multiple
-                  beforeUpload={() => false}
-                  onChange={handleFileChange}
-                >
-                  <Button
-                    aria-label="Upload policy document"
-                    icon={<Icons.Upload size={16} />}
+            {flags.privacyDocUpload && (
+              <Form.Item
+                label="Upload policy document or enter URL to policy page"
+                className="!mb-0"
+              >
+                <Flex gap={8} align="start">
+                  <Select
+                    aria-label="Policy URLs"
+                    mode="tags"
+                    className="flex-1"
+                    placeholder="https://company.com/privacy"
+                    value={policyUrls}
+                    onChange={setPolicyUrls}
+                    tokenSeparators={[" "]}
+                    suffixIcon={null}
+                    open={false}
+                  />
+                  <Upload
+                    accept=".pdf,.docx"
+                    multiple
+                    beforeUpload={() => false}
+                    onChange={handleFileChange}
                   >
-                    Upload
-                  </Button>
-                </Upload>
-              </Flex>
-            </Form.Item>
+                    <Button
+                      aria-label="Upload policy document"
+                      icon={<Icons.Upload size={16} />}
+                    >
+                      Upload
+                    </Button>
+                  </Upload>
+                </Flex>
+              </Form.Item>
+            )}
 
             <div>
               <Button
