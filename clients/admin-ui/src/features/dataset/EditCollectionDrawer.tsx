@@ -1,5 +1,5 @@
-import { ConfirmationModal, Typography, useMessage } from "fidesui";
-import { useMemo, useState } from "react";
+import { Text, useMessage, useModal } from "fidesui";
+import { useMemo } from "react";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -16,8 +16,6 @@ import {
   getUpdatedDatasetFromCollection,
   removeCollectionFromDataset,
 } from "./helpers";
-
-const { Text } = Typography;
 
 const DESCRIPTION =
   "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
@@ -41,7 +39,7 @@ export const EditCollectionDrawer = ({
   );
   const [updateDataset] = useUpdateDatasetMutation();
   const message = useMessage();
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const confirmModal = useModal();
 
   const handleSubmit = async (
     values: Pick<DatasetCollection, "description" | "data_categories">,
@@ -74,46 +72,40 @@ export const EditCollectionDrawer = ({
         message.error(error as string);
       }
       onClose();
-      setDeleteOpen(false);
     }
   };
 
+  const confirmDelete = () => {
+    confirmModal.confirm({
+      title: "Delete Collection",
+      content: (
+        <>
+          You are about to permanently delete the collection named{" "}
+          <Text strong>{collection?.name}</Text> from this dataset. Are you sure
+          you would like to continue?
+        </>
+      ),
+      okButtonProps: { danger: true },
+      onOk: handleDelete,
+    });
+  };
+
   return (
-    <>
-      <EditDrawer
-        isOpen={isOpen}
-        onClose={onClose}
-        description={DESCRIPTION}
-        header={
-          <EditDrawerHeader title={`Collection Name: ${collection?.name}`} />
-        }
-        footer={
-          <EditDrawerFooter
-            onDelete={() => setDeleteOpen(true)}
-            formId={FORM_ID}
-          />
-        }
-      >
-        <EditCollectionOrFieldForm
-          values={collection}
-          onSubmit={handleSubmit}
-          dataType="collection"
-          showDataCategories={false}
-        />
-      </EditDrawer>
-      <ConfirmationModal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDelete}
-        title="Delete Collection"
-        message={
-          <Text>
-            You are about to permanently delete the collection named{" "}
-            <Text strong>{collection?.name}</Text> from this dataset. Are you
-            sure you would like to continue?
-          </Text>
-        }
+    <EditDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      description={DESCRIPTION}
+      header={
+        <EditDrawerHeader title={`Collection Name: ${collection?.name}`} />
+      }
+      footer={<EditDrawerFooter onDelete={confirmDelete} formId={FORM_ID} />}
+    >
+      <EditCollectionOrFieldForm
+        values={collection}
+        onSubmit={handleSubmit}
+        dataType="collection"
+        showDataCategories={false}
       />
-    </>
+    </EditDrawer>
   );
 };

@@ -1,6 +1,5 @@
-import { ConfirmationModal, Typography, useMessage } from "fidesui";
+import { Text, useMessage, useModal } from "fidesui";
 import { cloneDeep, set, update } from "lodash";
-import { useState } from "react";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -14,8 +13,6 @@ import {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
 import { getDatasetPath } from "./helpers";
-
-const { Text } = Typography;
 
 interface Props {
   isOpen: boolean;
@@ -40,7 +37,7 @@ export const EditFieldDrawer = ({
 }: Props) => {
   const [updateDataset] = useUpdateDatasetMutation();
   const message = useMessage();
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const confirmModal = useModal();
 
   const handleSubmit = async (
     values: Pick<DatasetField, "description" | "data_categories">,
@@ -88,44 +85,38 @@ export const EditFieldDrawer = ({
       message.error(error as string);
     }
     onClose();
-    setDeleteOpen(false);
+  };
+
+  const confirmDelete = () => {
+    confirmModal.confirm({
+      title: "Delete Field",
+      content: (
+        <>
+          You are about to permanently delete the field named{" "}
+          <Text strong>{field?.name}</Text> from this dataset. Are you sure you
+          would like to continue?
+        </>
+      ),
+      okButtonProps: { danger: true },
+      onOk: handleDelete,
+    });
   };
 
   return (
-    <>
-      <EditDrawer
-        isOpen={isOpen}
-        onClose={onClose}
-        description={DESCRIPTION}
-        header={<EditDrawerHeader title={`Field Name: ${field?.name}`} />}
-        footer={
-          <EditDrawerFooter
-            onDelete={() => setDeleteOpen(true)}
-            formId={FORM_ID}
-          />
-        }
-      >
-        {field && (
-          <EditCollectionOrFieldForm
-            values={field}
-            onSubmit={handleSubmit}
-            dataType="field"
-          />
-        )}
-      </EditDrawer>
-      <ConfirmationModal
-        isOpen={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDelete}
-        title="Delete Field"
-        message={
-          <Text>
-            You are about to permanently delete the field named{" "}
-            <Text strong>{field?.name}</Text> from this dataset. Are you sure
-            you would like to continue?
-          </Text>
-        }
-      />
-    </>
+    <EditDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      description={DESCRIPTION}
+      header={<EditDrawerHeader title={`Field Name: ${field?.name}`} />}
+      footer={<EditDrawerFooter onDelete={confirmDelete} formId={FORM_ID} />}
+    >
+      {field && (
+        <EditCollectionOrFieldForm
+          values={field}
+          onSubmit={handleSubmit}
+          dataType="field"
+        />
+      )}
+    </EditDrawer>
   );
 };
