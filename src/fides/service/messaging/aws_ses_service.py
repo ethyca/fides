@@ -3,8 +3,10 @@ from typing import Any, Optional
 from loguru import logger
 
 from fides.api.models.messaging import MessagingConfig
-from fides.api.models.property import CONFIG
-from fides.api.schemas.messaging.messaging import MessagingServiceDetailsAWS_SES
+from fides.api.schemas.messaging.messaging import (
+    EmailForActionType,
+    MessagingServiceDetailsAWS_SES,
+)
 from fides.api.schemas.messaging.shared_schemas import MessagingServiceSecretsAWS_SES
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.util.aws_util import get_aws_session
@@ -125,9 +127,8 @@ class AWS_SES_Service:
 
     def send_email(
         self,
+        message: EmailForActionType,
         to: str,
-        subject: str,
-        body: str,
     ) -> None:
         """
         Send an email using AWS SES.
@@ -147,8 +148,8 @@ class AWS_SES_Service:
             Source=from_address,
             Destination={"ToAddresses": [to.strip()]},
             Message={
-                "Subject": {"Data": subject},
-                "Body": {"Html": {"Data": body}},
+                "Subject": {"Data": message.subject},
+                "Body": {"Html": {"Data": message.body}},
             },
         )
 
