@@ -4,10 +4,10 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
   ChakraText as Text,
+  Icons,
+  Spin,
   useMessage,
 } from "fidesui";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
@@ -177,9 +177,7 @@ const CORSConfigurationPage: NextPage = () => {
             tooltip="Fides uses these domains to enforce cross-origin resource sharing (CORS), a browser-based security standard. Each domain must be a valid URL (e.g. https://example.com) without any wildcards '*' or paths '/blog'"
           >
             {isLoadingGetQuery || isLoadingPutMutation ? (
-              <Flex justifyContent="center">
-                <Spinner />
-              </Flex>
+              <Spin rootClassName="my-24" />
             ) : (
               <Formik<FormValues>
                 initialValues={apiSettings}
@@ -206,7 +204,7 @@ const CORSConfigurationPage: NextPage = () => {
                                 <Button
                                   aria-label="delete-domain"
                                   className="z-[2] ml-4"
-                                  icon={<DeleteIcon />}
+                                  icon={<Icons.TrashCan />}
                                   onClick={() => {
                                     arrayHelpers.remove(index);
                                   }}
@@ -254,9 +252,7 @@ const CORSConfigurationPage: NextPage = () => {
             tooltip="These domains are configured by an administrator with access to Fides security settings and can support more advanced options such as wildcards and regex."
           >
             {isLoadingConfigSetQuery ? (
-              <Flex justifyContent="center">
-                <Spinner />
-              </Flex>
+              <Spin rootClassName="my-24" />
             ) : (
               <Flex flexDir="column">
                 {configSettings.cors_origins!.map((origin, index) => (

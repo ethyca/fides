@@ -60,6 +60,18 @@ export const statusPropMap: {
     color: CUSTOM_TAG_COLOR.DEFAULT,
     label: "Duplicate",
   },
+  awaiting_pre_approval: {
+    color: CUSTOM_TAG_COLOR.CAUTION,
+    label: "Awaiting External Review",
+  },
+  pending_external: {
+    color: CUSTOM_TAG_COLOR.MARBLE,
+    label: "Pending External",
+  },
+  pre_approval_not_eligible: {
+    color: CUSTOM_TAG_COLOR.WARNING,
+    label: "Manual Review Required",
+  },
 };
 
 interface RequestBadgeProps {

@@ -84,6 +84,13 @@
     "test": false,
     "production": false
   },
+  "alphaRbac": {
+    "label": "Alpha RBAC",
+    "description": "Dynamic role-based access control system for roles, permissions, and user assignments",
+    "development": true,
+    "test": false,
+    "production": false
+  },
   "alphaDashboard": {
     "label": "Alpha new dashboard",
     "description": "Enable the new Ant Design-only home dashboard",
@@ -110,6 +117,20 @@
     "description": "Enable Microsoft Entra ID (Azure AD) identity provider monitoring",
     "development": true,
     "test": false,
+    "production": false
+  },
+  "awsMonitor": {
+    "label": "AWS monitor",
+    "description": "Enable AWS monitoring",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "heliosInsights": {
+    "label": "Helios insights",
+    "description": "Enable the new monitor progress widgets for the action center in Helios",
+    "development": true,
+    "test": true,
     "production": false
   }
 }

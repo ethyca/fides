@@ -2,7 +2,6 @@ import { Button, Flex, Icons } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import NewJavaScriptTag from "~/features/privacy-experience/NewJavaScriptTag";
@@ -40,7 +39,7 @@ const PropertyActions = ({ property }: Props) => {
             aria-label="Delete property"
             data-testid="delete-property-button"
             size="small"
-            icon={<TrashCanOutlineIcon />}
+            icon={<Icons.TrashCan />}
           />
         }
       />

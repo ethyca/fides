@@ -2,26 +2,24 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Button,
-  ChakraBox as Box,
-  ChakraFlex as Flex,
-  ChakraHStack as HStack,
-  ChakraStack as Stack,
-  ChakraText as Text,
+  Flex,
+  Form,
+  Icons,
+  Input,
+  Switch,
   Tag,
-  useChakraDisclosure as useDisclosure,
+  Typography,
   useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import DeleteUserModal from "user-management/DeleteUserModal";
-import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
-import { passwordValidation } from "~/features/common/form/validation";
+import { passwordRules } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import {
   selectPlusSecuritySettings,
@@ -40,7 +38,18 @@ import {
 } from "./user-form-helpers";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
 
-const defaultInitialValues: UserCreateExtended = {
+const { Text } = Typography;
+
+export interface FormValues {
+  username: string;
+  first_name: string;
+  email_address: string;
+  last_name: string;
+  password: string;
+  password_login_enabled: boolean;
+}
+
+const defaultInitialValues: FormValues = {
   username: "",
   first_name: "",
   email_address: "",
@@ -49,42 +58,8 @@ const defaultInitialValues: UserCreateExtended = {
   password_login_enabled: false,
 };
 
-export type FormValues = typeof defaultInitialValues;
-
-// Create a dynamic validation schema function that returns the appropriate schema
-const getValidationSchema = (
-  isNewUser: boolean,
-  inviteUsersViaEmail: boolean,
-  isPlusEnabled: boolean,
-  ssoEnabled: boolean,
-  allowUsernameAndPassword: boolean,
-) => {
-  return Yup.object().shape({
-    username: Yup.string().required().label("Username"),
-    email_address: Yup.string().email().required().label("Email address"),
-    first_name: Yup.string().label("First name"),
-    last_name: Yup.string().label("Last name"),
-    // Use the same condition for validation as for rendering the field
-    password: Yup.string().when(["password_login_enabled"], {
-      is: (password_login_enabled: boolean) => {
-        return shouldShowPasswordField(
-          isNewUser,
-          inviteUsersViaEmail,
-          isPlusEnabled,
-          ssoEnabled,
-          allowUsernameAndPassword,
-          password_login_enabled,
-        );
-      },
-      then: () => passwordValidation.label("Password"),
-      otherwise: () => Yup.string().optional().label("Password"),
-    }),
-    password_login_enabled: Yup.boolean().label("Allow password login"),
-  });
-};
-
 export interface UserFormProps {
-  onSubmit: (values: FormValues) => Promise<
+  onSubmit: (values: UserCreateExtended) => Promise<
     | {
         data: User | UserCreateResponse;
       }
@@ -101,7 +76,12 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
   const router = useRouter();
   const message = useMessage();
   const dispatch = useAppDispatch();
-  const deleteModal = useDisclosure();
+  const [form] = Form.useForm<FormValues>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  // Watch form fields for reactive UI
+  Form.useWatch([], form);
 
   // Queries
   const { data: emailInviteStatus } = useGetEmailInviteStatusQuery();
@@ -138,200 +118,210 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
     };
   }
 
-  // Get validation schema based on current form state
-  const validationSchema = getValidationSchema(
+  const passwordLoginEnabled = Form.useWatch("password_login_enabled", form);
+
+  const showPasswordField = shouldShowPasswordField(
     isNewUser,
     inviteUsersViaEmail,
     isPlusEnabled,
     ssoEnabled,
     allowUsernameAndPassword,
+    passwordLoginEnabled,
   );
 
   const handleSubmit = async (values: FormValues) => {
-    // Determine which fields should be included based on current form state
-    const includePassword = shouldShowPasswordField(
-      isNewUser,
-      inviteUsersViaEmail,
-      isPlusEnabled,
-      ssoEnabled,
-      allowUsernameAndPassword,
-      values.password_login_enabled,
-    );
+    setIsSubmitting(true);
+    try {
+      // Determine which fields should be included based on current form state
+      const includePassword = shouldShowPasswordField(
+        isNewUser,
+        inviteUsersViaEmail,
+        isPlusEnabled,
+        ssoEnabled,
+        allowUsernameAndPassword,
+        values.password_login_enabled,
+      );
 
-    // Create a clean payload
-    const payload: UserCreateExtended = {
-      username: values.username,
-      email_address: values.email_address,
-      first_name: values.first_name,
-      last_name: values.last_name,
-    };
+      // Create a clean payload
+      const payload: UserCreateExtended = {
+        username: values.username,
+        email_address: values.email_address,
+        first_name: values.first_name,
+        last_name: values.last_name,
+      };
 
-    // Only include password_login_enabled if the toggle is shown
-    if (showPasswordLoginToggle) {
-      payload.password_login_enabled = values.password_login_enabled;
-    }
+      // Only include password_login_enabled if the toggle is shown
+      if (showPasswordLoginToggle) {
+        payload.password_login_enabled = values.password_login_enabled;
+      }
 
-    // Only include password if it should be shown
-    if (includePassword && values.password) {
-      payload.password = values.password;
-    }
+      // Only include password if it should be shown
+      if (includePassword && values.password) {
+        payload.password = values.password;
+      }
 
-    const result = await onSubmit(payload);
-    if (isErrorResult(result)) {
-      message.error(getErrorMessage(result.error));
-      return;
-    }
-    message.success(
-      `${
-        isNewUser
-          ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
-          : "User updated."
-      }`,
-    );
-    if (result?.data) {
-      dispatch(setActiveUserId(result.data.id));
+      const result = await onSubmit(payload);
+      if (isErrorResult(result)) {
+        message.error(getErrorMessage(result.error));
+        return;
+      }
+      message.success(
+        `${
+          isNewUser
+            ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
+            : "User updated."
+        }`,
+      );
+      if (result?.data) {
+        dispatch(setActiveUserId(result.data.id));
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Formik
-      onSubmit={handleSubmit}
+    <Form
+      form={form}
+      layout="vertical"
       initialValues={formInitialValues}
-      validationSchema={validationSchema}
+      onFinish={handleSubmit}
       data-testid="user-form"
+      className="max-w-full"
     >
-      {({ dirty, isSubmitting, isValid, values }) => (
-        <Form>
-          <Stack maxW={["xs", "xs", "100%"]} width="100%" spacing={7}>
-            <Stack spacing={6} maxWidth="55%">
-              <Flex>
-                <Text
-                  display="flex"
-                  alignItems="center"
-                  fontSize="sm"
-                  fontWeight="semibold"
-                >
-                  Profile{" "}
-                  {activeUser?.disabled && (
-                    <Tag
-                      color="success"
-                      className="ml-2"
-                      data-testid="invite-sent-badge"
-                    >
-                      Invite sent
-                    </Tag>
-                  )}
-                </Text>
-                <Box marginLeft="auto">
-                  <HStack>
-                    {shouldShowPasswordManagement(
-                      isPlusEnabled,
-                      ssoEnabled,
-                      allowUsernameAndPassword || false,
-                      values.password_login_enabled,
-                    ) && (
-                      <PasswordManagement data-testid="password-management" />
-                    )}
-                    {!isNewUser ? (
-                      <Box>
-                        <Button
-                          aria-label="delete"
-                          icon={<TrashCanSolidIcon />}
-                          onClick={deleteModal.onOpen}
-                          data-testid="delete-user-btn"
-                        />
-                        <DeleteUserModal user={activeUser} {...deleteModal} />
-                      </Box>
-                    ) : null}
-                  </HStack>
-                </Box>
+      <div className="flex max-w-[55%] flex-col">
+        <Flex justify="space-between" align="center" className="mb-6">
+          <Text className="flex items-center text-sm font-semibold">
+            Profile{" "}
+            {activeUser?.disabled && (
+              <Tag
+                color="success"
+                className="ml-2"
+                data-testid="invite-sent-badge"
+              >
+                Invite sent
+              </Tag>
+            )}
+          </Text>
+          <Flex gap={8}>
+            {shouldShowPasswordManagement(
+              isPlusEnabled,
+              ssoEnabled,
+              allowUsernameAndPassword || false,
+              passwordLoginEnabled,
+            ) && <PasswordManagement data-testid="password-management" />}
+            {!isNewUser && (
+              <>
+                <Button
+                  aria-label="delete"
+                  icon={<Icons.TrashCan />}
+                  onClick={() => setDeleteModalOpen(true)}
+                  data-testid="delete-user-btn"
+                />
+                <DeleteUserModal
+                  user={activeUser}
+                  isOpen={deleteModalOpen}
+                  onClose={() => setDeleteModalOpen(false)}
+                />
+              </>
+            )}
+          </Flex>
+        </Flex>
+        <Form.Item
+          name="username"
+          label="Username"
+          rules={[{ required: true, message: "Username is required" }]}
+        >
+          <Input
+            placeholder="Enter new username"
+            disabled={!isNewUser}
+            data-testid="input-username"
+          />
+        </Form.Item>
+        <Form.Item
+          name="email_address"
+          label="Email address"
+          rules={[
+            { required: true, message: "Email address is required" },
+            { type: "email", message: "Please enter a valid email address" },
+          ]}
+        >
+          <Input
+            placeholder="Enter email of user"
+            data-testid="input-email_address"
+          />
+        </Form.Item>
+        <Form.Item name="first_name" label="First name">
+          <Input
+            placeholder="Enter first name of user"
+            disabled={nameDisabled}
+            data-testid="input-first_name"
+          />
+        </Form.Item>
+        <Form.Item name="last_name" label="Last name">
+          <Input
+            placeholder="Enter last name of user"
+            disabled={nameDisabled}
+            data-testid="input-last_name"
+          />
+        </Form.Item>
+        {showPasswordLoginToggle && (
+          <Form.Item
+            name="password_login_enabled"
+            label={
+              <Flex align="center" gap={4}>
+                Allow password login
+                <InfoTooltip label="When enabled, user can log in with username and password. When disabled, user must use SSO." />
               </Flex>
-              <CustomTextInput
-                name="username"
-                label="Username"
-                variant="block"
-                placeholder="Enter new username"
-                disabled={!isNewUser}
-                isRequired
-                data-testid="input-username"
-              />
-              <CustomTextInput
-                name="email_address"
-                label="Email address"
-                variant="block"
-                placeholder="Enter email of user"
-                isRequired
-                data-testid="input-email-address"
-              />
-              <CustomTextInput
-                name="first_name"
-                label="First name"
-                variant="block"
-                placeholder="Enter first name of user"
-                disabled={nameDisabled}
-                data-testid="input-first-name"
-              />
-              <CustomTextInput
-                name="last_name"
-                label="Last name"
-                variant="block"
-                placeholder="Enter last name of user"
-                disabled={nameDisabled}
-                data-testid="input-last-name"
-              />
-              {showPasswordLoginToggle && (
-                <CustomSwitch
-                  name="password_login_enabled"
-                  label="Allow password login"
-                  tooltip="When enabled, user can log in with username and password. When disabled, user must use SSO."
-                  variant="stacked"
-                  isDisabled={!isNewUser}
-                  data-testid="toggle-allow-password-login"
-                  size="default"
-                />
-              )}
-              {shouldShowPasswordField(
-                isNewUser,
-                inviteUsersViaEmail,
-                isPlusEnabled,
-                ssoEnabled,
-                allowUsernameAndPassword,
-                values.password_login_enabled,
-              ) && (
-                <CustomTextInput
-                  name="password"
-                  label="Password"
-                  variant="block"
-                  placeholder="********"
-                  type="password"
-                  tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  isRequired
-                  data-testid="input-password"
-                />
-              )}
-            </Stack>
-            <div>
-              <Button
-                onClick={() => router.push(USER_MANAGEMENT_ROUTE)}
-                className="mr-3"
-                data-testid="cancel-btn"
-              >
-                Cancel
-              </Button>
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={!dirty || !isValid}
-                loading={isSubmitting}
-                data-testid="save-user-btn"
-              >
-                Save
-              </Button>
-            </div>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+            }
+            valuePropName="checked"
+          >
+            <Switch
+              disabled={!isNewUser}
+              data-testid="input-password_login_enabled"
+            />
+          </Form.Item>
+        )}
+        {showPasswordField && (
+          <Form.Item
+            name="password"
+            label={
+              <Flex align="center" gap={4}>
+                Password
+                <InfoTooltip label="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol." />
+              </Flex>
+            }
+            rules={passwordRules}
+          >
+            <Input.Password
+              placeholder="********"
+              data-testid="input-password"
+            />
+          </Form.Item>
+        )}
+      </div>
+      <div className="mt-7">
+        <Button
+          onClick={() => router.push(USER_MANAGEMENT_ROUTE)}
+          className="mr-3"
+          data-testid="cancel-btn"
+        >
+          Cancel
+        </Button>
+        <Button
+          htmlType="submit"
+          type="primary"
+          disabled={
+            !form.isFieldsTouched() ||
+            form.getFieldsError().some(({ errors }) => errors.length > 0)
+          }
+          loading={isSubmitting}
+          data-testid="save-user-btn"
+        >
+          Save
+        </Button>
+      </div>
+    </Form>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Col, Flex, Input, PageSpinner, Row, Select } from "fidesui";
+import { Col, Flex, Input, Row, Select, Spin } from "fidesui";
 import { ReactNode, useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -21,7 +21,13 @@ export const useIntegrationFilters = () => {
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { entraMonitor, newIntegrationManagement, webMonitor },
+    flags: {
+      awsMonitor,
+      entraMonitor,
+      newIntegrationManagement,
+      webMonitor,
+      alphaJiraIntegration,
+    },
   } = useFlags();
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -41,11 +47,27 @@ export const useIntegrationFilters = () => {
       );
     }
 
+    // Filter out AWS when awsMonitor flag is disabled
+    if (!awsMonitor) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !== ConnectionType.AWS,
+      );
+    }
+
     // Filter out SaaS integrations if the new integration management flag is disabled
     if (!newIntegrationManagement) {
       staticIntegrations = staticIntegrations.filter(
         (integration) =>
           integration.placeholder.connection_type !== ConnectionType.SAAS,
+      );
+    }
+
+    if (!alphaJiraIntegration) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !==
+          ConnectionType.JIRA_TICKET,
       );
     }
 
@@ -73,14 +95,29 @@ export const useIntegrationFilters = () => {
       : [];
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [connectionTypes, entraMonitor, newIntegrationManagement]);
+  }, [
+    connectionTypes,
+    awsMonitor,
+    entraMonitor,
+    alphaJiraIntegration,
+    newIntegrationManagement,
+  ]);
 
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
       "ALL",
-      ...Object.values(ConnectionCategory).filter(
-        (category) => !!webMonitor || category !== ConnectionCategory.WEBSITE,
-      ),
+      ...Object.values(ConnectionCategory).filter((category) => {
+        if (!webMonitor && category === ConnectionCategory.WEBSITE) {
+          return false;
+        }
+        if (
+          !awsMonitor &&
+          category === ConnectionCategory.CLOUD_INFRASTRUCTURE
+        ) {
+          return false;
+        }
+        return true;
+      }),
     ];
 
     if (!newIntegrationManagement) {
@@ -95,7 +132,7 @@ export const useIntegrationFilters = () => {
     }
 
     return allCategories;
-  }, [newIntegrationManagement, webMonitor, allIntegrationTypes]);
+  }, [awsMonitor, newIntegrationManagement, webMonitor, allIntegrationTypes]);
 
   const filteredTypes = useMemo(() => {
     let filtered = allIntegrationTypes;
@@ -117,6 +154,13 @@ export const useIntegrationFilters = () => {
       );
     }
 
+    // Filter out AWS when awsMonitor flag is disabled
+    if (!awsMonitor) {
+      filtered = filtered.filter(
+        (i) => i.placeholder.connection_type !== ConnectionType.AWS,
+      );
+    }
+
     // Filter by search term (name only)
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
@@ -135,6 +179,7 @@ export const useIntegrationFilters = () => {
     selectedCategory,
     webMonitor,
     entraMonitor,
+    awsMonitor,
     allIntegrationTypes,
   ]);
 
@@ -202,7 +247,7 @@ const SelectIntegrationType = ({
   onDetailClick,
 }: Props) =>
   isFiltering ? (
-    <PageSpinner />
+    <Spin />
   ) : (
     <Row gutter={[24, 24]}>
       {filteredTypes.map((i) => (

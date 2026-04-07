@@ -1,8 +1,10 @@
-import { Button, ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
+import { Button, Col, Row, Spin, Tabs, useMessage } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useEffect, useRef } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import { useFlags } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -15,6 +17,7 @@ import getIntegrationTypeInfo, {
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import { useFeatureBasedTabs } from "~/features/integrations/hooks/useFeatureBasedTabs";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
+import { useJiraAuthorization } from "~/features/integrations/hooks/useJiraAuthorization";
 import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
@@ -25,6 +28,12 @@ import { ConnectionType } from "~/types/api";
 const IntegrationDetailView: NextPage = () => {
   const router = useRouter();
   const id = router.query.id as string;
+  const message = useMessage();
+  const oauthHandled = useRef(false);
+
+  const {
+    flags: { alphaJiraIntegration },
+  } = useFlags();
 
   const {
     data: connection,
@@ -56,11 +65,45 @@ const IntegrationDetailView: NextPage = () => {
     isLoading: isTestLoading,
   } = useTestConnection(connection);
 
-  const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
+  const isJira = connection?.connection_type === ConnectionType.JIRA_TICKET;
+
+  const defaultAuth = useIntegrationAuthorization({
     connection,
     connectionOption: integrationOption,
     testData,
   });
+
+  const jiraAuth = useJiraAuthorization({
+    connection,
+    testData,
+  });
+
+  const { handleAuthorize, needsAuthorization } = isJira
+    ? jiraAuth
+    : defaultAuth;
+
+  // Handle OAuth callback query params
+  useEffect(() => {
+    if (oauthHandled.current) {
+      return;
+    }
+    const jiraAuthStatus = router.query.jira_auth as string | undefined;
+    if (jiraAuthStatus === "success") {
+      oauthHandled.current = true;
+      message.success("Jira authorization successful");
+      router.replace(`${INTEGRATION_MANAGEMENT_ROUTE}/${id}`, undefined, {
+        shallow: true,
+      });
+    } else if (jiraAuthStatus === "error") {
+      oauthHandled.current = true;
+      message.error(
+        "Jira authorization failed. Check server logs for details.",
+      );
+      router.replace(`${INTEGRATION_MANAGEMENT_ROUTE}/${id}`, undefined, {
+        shallow: true,
+      });
+    }
+  }, [router.query.jira_auth, id, message, router]);
 
   const integrationTypeInfo = getIntegrationTypeInfo(
     connection?.connection_type,
@@ -78,12 +121,21 @@ const IntegrationDetailView: NextPage = () => {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
 
+  if (
+    !!connection &&
+    connection.connection_type === ConnectionType.JIRA_TICKET &&
+    !alphaJiraIntegration
+  ) {
+    router.push(INTEGRATION_MANAGEMENT_ROUTE);
+  }
+
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_TASK;
 
   const supportsSystemLinking =
     connection?.connection_type !== ConnectionType.WEBSITE &&
-    connection?.connection_type !== ConnectionType.MANUAL_TASK;
+    connection?.connection_type !== ConnectionType.MANUAL_TASK &&
+    connection?.connection_type !== ConnectionType.JIRA_TICKET;
 
   const tabs = useFeatureBasedTabs({
     connection,
@@ -105,7 +157,9 @@ const IntegrationDetailView: NextPage = () => {
     tabKeys: tabs.map((tab) => tab.key),
   });
 
-  if (error) {
+  const isAbortedRequest =
+    error && "status" in error && error.status === "FETCH_ERROR";
+  if (error && !isAbortedRequest) {
     return (
       <ErrorPage
         error={error}
@@ -155,7 +209,7 @@ const IntegrationDetailView: NextPage = () => {
           />
           {modalContext}
           {isLoading ? (
-            <Spinner />
+            <Spin />
           ) : (
             !!connection && (
               <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
@@ -168,7 +222,7 @@ const IntegrationDetailView: NextPage = () => {
           xxl={{ flex: "0 0 350px" }}
         >
           {isLoading ? (
-            <Spinner />
+            <Spin />
           ) : (
             !!connection && (
               <IntegrationSetupSteps

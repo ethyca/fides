@@ -1,7 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraVStack as VStack,
-  PageSpinner,
+  Spin,
   useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -118,7 +118,9 @@ const ConfigureIntegrationForm = ({
 
   const [setSystemLinks] = useSetSystemLinksMutation();
 
-  const hasSecrets = connectionOption.identifier !== ConnectionType.MANUAL_TASK;
+  const hasSecrets =
+    connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+    connectionOption.identifier !== ConnectionType.JIRA_TICKET;
 
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier, {
@@ -390,7 +392,7 @@ const ConfigureIntegrationForm = ({
   const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
   if (secretsSchemaIsLoading) {
-    return <PageSpinner />;
+    return <Spin />;
   }
 
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>
@@ -446,6 +448,7 @@ const ConfigureIntegrationForm = ({
                   variant="stacked"
                 />
                 {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+                  connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
                   connectionOption.identifier !== ConnectionType.WEBSITE && (
                     <ControlledSelect
                       id="system_fides_key"

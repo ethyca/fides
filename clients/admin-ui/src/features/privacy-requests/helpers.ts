@@ -42,6 +42,17 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
   ],
   [PrivacyRequestStatus.CANCELED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.ERROR]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.PENDING_EXTERNAL]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.AWAITING_PRE_APPROVAL]: [
+    BulkActionType.APPROVE,
+    BulkActionType.DENY,
+    BulkActionType.DELETE,
+  ],
+  [PrivacyRequestStatus.PRE_APPROVAL_NOT_ELIGIBLE]: [
+    BulkActionType.APPROVE,
+    BulkActionType.DENY,
+    BulkActionType.DELETE,
+  ],
 } as const;
 
 /**

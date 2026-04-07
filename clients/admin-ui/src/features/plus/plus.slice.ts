@@ -34,6 +34,8 @@ import {
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  JiraPreviewRequest,
+  JiraTicketData,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   SystemPurposeSummary,
@@ -511,6 +513,60 @@ const plusApi = baseApi.injectEndpoints({
         body: { dataset_ids: datasetIds },
       }),
     }),
+    initiateJiraOAuth: build.mutation<
+      { authorization_url: string },
+      { connection_key: string }
+    >({
+      query: (body) => ({
+        url: `plus/oauth/jira/initiate`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Datastore Connection"],
+    }),
+    getJiraProjects: build.query<
+      Array<{ id: string; key: string; name: string }>,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/projects`,
+      }),
+    }),
+    getJiraIssueTypes: build.query<
+      Array<{
+        id: string;
+        name: string;
+        description?: string;
+        subtask: boolean;
+      }>,
+      { connectionKey: string; projectKey: string }
+    >({
+      query: ({ connectionKey, projectKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/projects/${projectKey}/issuetypes`,
+      }),
+    }),
+    getJiraTemplateVariables: build.query<
+      Array<{
+        name: string;
+        description: string;
+        example_value?: string;
+      }>,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `plus/connection/${connectionKey}/jira/template-variables`,
+      }),
+    }),
+    previewJiraTicket: build.mutation<
+      JiraTicketData,
+      { connectionKey: string } & JiraPreviewRequest
+    >({
+      query: ({ connectionKey, ...body }) => ({
+        url: `plus/connection/${connectionKey}/jira/preview`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -552,6 +608,11 @@ export const {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
   useSyncDatahubConnectionMutation,
+  useInitiateJiraOAuthMutation,
+  useGetJiraProjectsQuery,
+  useGetJiraIssueTypesQuery,
+  useGetJiraTemplateVariablesQuery,
+  usePreviewJiraTicketMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

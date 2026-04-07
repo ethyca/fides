@@ -4,6 +4,7 @@ import {
   FidesCookie,
   getGpcContext,
   getOrMakeFidesCookie,
+  GPC_FALLBACKS,
   initializeI18n,
   loadMessagesFromFiles,
   PrivacyExperience,
@@ -244,6 +245,12 @@ const ConsentPage: NextPage = () => {
       // still load the static messages in order to have default english
       // messages available
       loadMessagesFromFiles(i18n);
+      // Map static GPC messages to exp.* keys so the GPC banner can find them
+      const gpcMessages: Record<string, string> = {};
+      Object.entries(GPC_FALLBACKS).forEach(([expKey, staticKey]) => {
+        gpcMessages[expKey] = i18n.t(staticKey);
+      });
+      i18n.load(i18n.locale, gpcMessages);
       setI18nInstance(i18n);
       setIsI18nInitialized(true);
       return;

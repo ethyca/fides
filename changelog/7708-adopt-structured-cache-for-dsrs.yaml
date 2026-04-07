@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated DSR workflows to use structured caching mechanism with secondary index, ensuring backward compatibility with legacy cache keys for in-flight requests during deployment.
+pr: 7708
+labels: []

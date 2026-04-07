@@ -1,12 +1,10 @@
 # pylint: disable=too-many-lines
 
 import json
-from collections import defaultdict
 from datetime import datetime, timezone
 from typing import (
     Annotated,
     Any,
-    DefaultDict,
     Dict,
     List,
     Literal,
@@ -16,7 +14,6 @@ from typing import (
     Union,
 )
 
-import sqlalchemy
 from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
@@ -26,7 +23,6 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy import cast, null
 from sqlalchemy.orm import Query, Session, selectinload
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -49,10 +45,12 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.deps import get_messaging_service, get_privacy_request_service
-from fides.api.graph.config import CollectionAddress
+from fides.api.graph.config import (
+    CollectionAddress,
+)
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
-from fides.api.models.audit_log import AuditLog
+from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -107,6 +105,10 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.service.privacy_request.email_batch_service import send_email_batch
+from fides.api.service.privacy_request.request_service import (
+    batch_execution_and_audit_logs_by_dataset,
+    batch_task_status_by_dataset,
+)
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -189,10 +191,6 @@ from fides.service.privacy_request.privacy_request_service import (
 )
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
-
-# Heavely increasing the limit so the proper status of the request task is reflected
-# for long running requests like polling requests.
-EMBEDDED_EXECUTION_LOG_LIMIT = 1000
 
 
 def get_privacy_request_or_error(
@@ -290,72 +288,6 @@ def create_privacy_request_authenticated(
     return privacy_request_service.create_bulk_privacy_requests(
         data, authenticated=True, user_id=client.user_id
     )
-
-
-def execution_and_audit_logs_by_dataset_name(
-    self: PrivacyRequest,
-) -> DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]:
-    """
-    Returns a combined mapping of execution and audit logs for the given privacy request.
-
-    Audit Logs are for the entire privacy request as a whole, while execution logs are created for specific collections.
-    Logs here are grouped by dataset, but if it is an audit log, it is just given a fake dataset name, here "Request + status"
-    ExecutionLogs for each dataset are truncated.
-
-    Added as a conditional property to the PrivacyRequest class at runtime to
-    show optionally embedded execution and audit logs.
-
-    An example response might include your execution logs from your mongo db in one group, and execution logs from
-    your postgres db in a different group, plus audit logs for when the request was approved and denied.
-    """
-    db: Session = Session.object_session(self)
-    all_logs: DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]] = defaultdict(
-        list
-    )
-
-    execution_log_query: Query = db.query(
-        ExecutionLog.id,
-        ExecutionLog.created_at,
-        ExecutionLog.updated_at,
-        ExecutionLog.message,
-        cast(ExecutionLog.status, sqlalchemy.String).label(
-            "status"
-        ),  # Casting to string so we can perform a union of execution log and audit log statuses
-        ExecutionLog.privacy_request_id,
-        ExecutionLog.dataset_name,
-        ExecutionLog.collection_name,
-        ExecutionLog.connection_key,
-        ExecutionLog.fields_affected,
-        ExecutionLog.action_type,
-        null().label("user_id"),
-    ).filter(ExecutionLog.privacy_request_id == self.id)
-
-    audit_log_query: Query = db.query(
-        AuditLog.id,
-        AuditLog.created_at,
-        AuditLog.updated_at,
-        AuditLog.message,
-        cast(AuditLog.action.label("status"), sqlalchemy.String).label(
-            "status"
-        ),  # Casting to string so we can perform a union of execution log and audit log statuses
-        AuditLog.privacy_request_id,
-        null().label("dataset_name"),
-        null().label("collection_name"),
-        null().label("connection_key"),
-        null().label("fields_affected"),
-        null().label("action_type"),
-        AuditLog.user_id,
-    ).filter(AuditLog.privacy_request_id == self.id)
-
-    combined: Query = execution_log_query.union_all(audit_log_query)
-
-    for log in combined.order_by(ExecutionLog.updated_at.asc()):
-        dataset_name: str = log.dataset_name or f"Request {log.status}"
-
-        if len(all_logs[dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
-            continue
-        all_logs[dataset_name].append(log)
-    return all_logs
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
@@ -476,18 +408,19 @@ def _shared_privacy_request_search(
             )
         query = query.options(*eager_load_options)
 
-    # Conditionally embed execution log details in the response.
-    if filters.verbose:
-        logger.info("Finding execution and audit log details")
-        PrivacyRequest.execution_and_audit_logs_by_dataset = property(
-            execution_and_audit_logs_by_dataset_name
-        )
-    else:
-        PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
-
     paginated = paginate(query, params)
 
+    if filters.verbose:
+        logger.info("Finding execution and audit log details")
+        pr_ids = [item.id for item in paginated.items]  # type: ignore
+        all_logs = batch_execution_and_audit_logs_by_dataset(db, pr_ids)
+        task_statuses = batch_task_status_by_dataset(db, pr_ids)
+
     for item in paginated.items:  # type: ignore
+        if filters.verbose:
+            item.execution_and_audit_logs_by_dataset = all_logs.get(item.id, {})
+            item.task_status_by_dataset = task_statuses.get(item.id, {})
+
         if filters.include_identities:
             item.identity = item.get_persisted_identity().labeled_dict(
                 include_default_labels=True
@@ -1218,7 +1151,7 @@ def cancel_privacy_request(
     )
 
 
-def _validate_privacy_request_pending_or_error(
+def _validate_privacy_request_awaiting_pre_approval_or_error(
     db: Session, privacy_request_id: str
 ) -> None:
     privacy_request = (
@@ -1232,10 +1165,13 @@ def _validate_privacy_request_pending_or_error(
             detail=f"No privacy request found with id: '{privacy_request_id}'.",
         )
 
-    if privacy_request.status != PrivacyRequestStatus.pending:
+    if privacy_request.status not in (
+        PrivacyRequestStatus.pending,
+        PrivacyRequestStatus.awaiting_pre_approval,
+    ):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Privacy request with id '{privacy_request_id}' is not in pending status.",
+            detail=f"Privacy request with id '{privacy_request_id}' is not in pending or awaiting pre-approval status.",
         )
 
 
@@ -1258,7 +1194,7 @@ def mark_privacy_request_pre_approve_eligible(
     Marks privacy request as eligible for automatic approval.
     If all webhook responses have been received and all are affirmative, proceed to queue privacy request
     """
-    _validate_privacy_request_pending_or_error(db, privacy_request_id)
+    _validate_privacy_request_awaiting_pre_approval_or_error(db, privacy_request_id)
     logger.info(
         "Marking privacy request '{}' as eligible for automatic approval via webhook '{}' for connection config '{}'.",
         privacy_request_id,
@@ -1280,6 +1216,15 @@ def mark_privacy_request_pre_approve_eligible(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Failed to mark privacy request {privacy_request_id} as eligible due to: {str(exc)}",
         )
+
+    AuditLog.create(
+        db=db,
+        data={
+            "privacy_request_id": privacy_request_id,
+            "action": AuditLogAction.pre_approval_eligible,
+            "message": f"Pre-approval webhook '{webhook.name}' responded: eligible",
+        },
+    )
 
     all_webhooks = PreApprovalWebhook.all(db)
 
@@ -1344,13 +1289,14 @@ def mark_privacy_request_pre_approve_not_eligible(
     ),
 ) -> None:
     """Marks privacy request as not eligible for automatic approval, regardless of what other webhook responses we receive"""
-    _validate_privacy_request_pending_or_error(db, privacy_request_id)
+    _validate_privacy_request_awaiting_pre_approval_or_error(db, privacy_request_id)
     logger.info(
         "Marking privacy request '{}' as not eligible for automatic approval via webhook '{}' for connection config '{}'.",
         privacy_request_id,
         webhook.key,
         webhook.connection_config.key,
     )
+
     try:
         PreApprovalWebhookReply.create(
             db=db,
@@ -1365,6 +1311,25 @@ def mark_privacy_request_pre_approve_not_eligible(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Failed to mark privacy request {privacy_request_id} as not eligible due to: {str(exc)}",
         )
+
+    AuditLog.create(
+        db=db,
+        data={
+            "privacy_request_id": privacy_request_id,
+            "action": AuditLogAction.pre_approval_not_eligible,
+            "message": f"Request flagged for manual review by pre-approval webhooks. Webhook '{webhook.name}' responded: not eligible",
+        },
+    )
+
+    # Transition the privacy request status to pre_approval_not_eligible
+    privacy_request = (
+        PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
+    )
+    if privacy_request:
+        privacy_request.status = PrivacyRequestStatus.pre_approval_not_eligible
+        privacy_request.save(db)
 
 
 def _handle_manual_webhook_input(

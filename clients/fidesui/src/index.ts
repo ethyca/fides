@@ -164,37 +164,6 @@ export type {
  */
 export { isNumeric as isChakraNumeric } from "@chakra-ui/utils";
 
-/**
- * @deprecated Chakra UI icons are deprecated and will be removed in a future release.
- * Please use Carbon icons (Icons.*) instead.
- */
-export {
-  ArrowBackIcon as ChakraArrowBackIcon,
-  ArrowDownIcon as ChakraArrowDownIcon,
-  ArrowForwardIcon as ChakraArrowForwardIcon,
-  ArrowUpIcon as ChakraArrowUpIcon,
-  BellIcon as ChakraBellIcon,
-  CheckCircleIcon as ChakraCheckCircleIcon,
-  CheckIcon as ChakraCheckIcon,
-  ChevronDownIcon as ChakraChevronDownIcon,
-  ChevronLeftIcon as ChakraChevronLeftIcon,
-  ChevronRightIcon as ChakraChevronRightIcon,
-  ChevronUpIcon as ChakraChevronUpIcon,
-  CloseIcon as ChakraCloseIcon,
-  DeleteIcon as ChakraDeleteIcon,
-  DragHandleIcon as ChakraDragHandleIcon,
-  EditIcon as ChakraEditIcon,
-  ExternalLinkIcon as ChakraExternalLinkIcon,
-  RepeatClockIcon as ChakraRepeatClockIcon,
-  RepeatIcon as ChakraRepeatIcon,
-  SmallAddIcon as ChakraSmallAddIcon,
-  SmallCloseIcon as ChakraSmallCloseIcon,
-  ViewOffIcon as ChakraViewOffIcon,
-  WarningTwoIcon as ChakraWarningTwoIcon,
-  // Icon utilities
-  createIcon as createChakraIcon,
-} from "@chakra-ui/icons";
-
 // Unmodified component exported directly from Ant Design
 export type { DisplayValueType } from "@rc-component/select/lib/interface";
 export type { ThemeConfig } from "antd/es";
@@ -256,6 +225,7 @@ export {
   Modal,
   notification,
   Pagination,
+  Popconfirm,
   Popover,
   Progress,
   Radio,
@@ -264,10 +234,13 @@ export {
   Segmented,
   Skeleton,
   Space,
-  Spin,
   Splitter,
   Steps,
   Switch,
+  // the HOC CustomSpin is incompatible with a handful of usages for loading
+  // states on Chakra tables, so we re-export the base Spin.
+  // TODO: remove when all FidesTableV2s are migrated to Ant
+  Spin as TableSpinner,
   Tabs,
   TimePicker,
   Tree,
@@ -291,6 +264,7 @@ export type {
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomSpinProps as SpinProps,
   CustomStatisticProps as StatisticProps,
   StatisticTrend,
 } from "./hoc";
@@ -305,6 +279,7 @@ export {
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomSpin as Spin,
   CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
@@ -330,13 +305,34 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
-export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export type {
+  AreaChartDataPoint,
+  AreaChartProps,
+  AreaChartSeries,
+} from "./components/charts/AreaChart";
+export { AreaChart } from "./components/charts/AreaChart";
+export type {
+  BarChartDataPoint,
+  BarChartProps,
+} from "./components/charts/BarChart";
+export { BarChart } from "./components/charts/BarChart";
+export type {
+  AntColorTokenKey,
+  BarSize,
+} from "./components/charts/chart-constants";
 export {
   CHART_ANIMATION,
   CHART_GRADIENT,
   CHART_STROKE,
   CHART_TYPOGRAPHY,
 } from "./components/charts/chart-constants";
+export {
+  DAY_MS,
+  formatTimestamp,
+  HOUR_MS,
+} from "./components/charts/chart-utils";
+export type { ChartGradientProps } from "./components/charts/ChartGradient";
+export { ChartGradient } from "./components/charts/ChartGradient";
 export type { ChartTextProps } from "./components/charts/ChartText";
 export { ChartText } from "./components/charts/ChartText";
 export type {
@@ -359,6 +355,7 @@ export type {
   StackedBarSegment,
 } from "./components/charts/StackedBarChart";
 export { StackedBarChart } from "./components/charts/StackedBarChart";
+export { XAxisTick } from "./components/charts/XAxisTick";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
@@ -383,9 +380,6 @@ export type { LocationSelectProps } from "./components/data-entry/LocationSelect
 export { LocationSelect } from "./components/data-entry/LocationSelect";
 export { SelectInline } from "./components/data-entry/SelectInline";
 
-// Export feedback components
-export { PageSpinner } from "./components/feedback/PageSpinner";
-
 // Export navigation components
 export { FloatingMenu } from "./components/navigation/FloatingMenu";
 
@@ -399,7 +393,6 @@ export const { Text, Title, Paragraph, Link } = CustomTypography;
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
-export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 export {
   CarryOutOutlined,
@@ -415,7 +408,7 @@ export {
  * prefixed icons from Carbon Icons
  * @example <Icons.download size={14} />
  */
-export * as Icons from "@carbon/icons-react";
+export * as Icons from "./icons/carbon";
 /* end prefixed icons */
 
 export {
@@ -435,7 +428,9 @@ export {
   darkAntTheme,
   defaultAntTheme,
 } from "./ant-theme";
-export { theme as antTheme } from "antd";
+// Use antd/lib (CJS) rather than antd (ESM) to prevent dual module instances
+// that break ConfigProvider context and cause useToken() to return default tokens.
+export { theme as antTheme } from "antd/lib";
 
 /**
  * Custom ChakraUI Components (deprecated)

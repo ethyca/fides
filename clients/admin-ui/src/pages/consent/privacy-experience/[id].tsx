@@ -1,9 +1,4 @@
-import {
-  ChakraCenter as Center,
-  ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
-  ChakraText as Text,
-} from "fidesui";
+import { ChakraText as Text, Spin } from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
@@ -30,11 +25,7 @@ const PrivacyExperienceDetailPage = () => {
   if (isLoading || isTranslationsLoading) {
     return (
       <Layout title="Privacy experience">
-        <Flex className="size-full items-center justify-center overflow-scroll">
-          <Center>
-            <Spinner />
-          </Center>
-        </Flex>
+        <Spin />
       </Layout>
     );
   }

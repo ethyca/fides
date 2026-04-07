@@ -72,7 +72,6 @@ from fides.api.models.privacy_request.duplicate_group import (
     generate_rule_version,
 )
 from fides.api.models.property import Property
-from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.sql_models import Organization, PrivacyDeclaration, System
@@ -2215,6 +2214,32 @@ def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyReques
 
 
 @pytest.fixture(scope="function")
+def privacy_request_status_awaiting_pre_approval(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.awaiting_pre_approval,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_status_pre_approval_not_eligible(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.pre_approval_not_eligible,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_status_canceled(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -3120,31 +3145,6 @@ def short_redis_cache_expiration():
     )
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
-
-
-@pytest.fixture(scope="function")
-def user_registration_opt_out(db: Session) -> UserRegistration:
-    """Adds a UserRegistration record with `opt_in` as False."""
-    return create_user_registration(db, opt_in=False)
-
-
-@pytest.fixture(scope="function")
-def user_registration_opt_in(db: Session) -> UserRegistration:
-    """Adds a UserRegistration record with `opt_in` as True."""
-    return create_user_registration(db, opt_in=True)
-
-
-def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistration:
-    """Adds a UserRegistration record."""
-    return UserRegistration.create(
-        db=db,
-        data={
-            "user_email": "user@example.com",
-            "user_organization": "Example Org.",
-            "analytics_id": "example-analytics-id",
-            "opt_in": opt_in,
-        },
-    )
 
 
 @pytest.fixture(scope="function")

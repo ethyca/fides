@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { Button, Dropdown, MenuProps, MoreIcon } from "fidesui";
+import { Button, Dropdown, Icons, MenuProps } from "fidesui";
 import { useMemo } from "react";
 
 import { DefaultCell } from "~/features/common/table/v2";
@@ -34,7 +34,7 @@ const CatalogDatasetActionsCell = ({
       <Button
         size="small"
         type="text"
-        icon={<MoreIcon transform="rotate(90deg)" />}
+        icon={<Icons.OverflowMenuVertical />}
         className="w-6 gap-0"
         data-testid="dataset-actions"
         aria-label="Dataset actions"
