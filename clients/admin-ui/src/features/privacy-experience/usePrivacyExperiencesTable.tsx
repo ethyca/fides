@@ -27,7 +27,7 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-const EmptyTableExperience = () => {
+const EmptyTableExperience = ({ canCreate }: { canCreate: boolean }) => {
   const router = useRouter();
   return (
     <div data-testid="empty-state">
@@ -36,18 +36,20 @@ const EmptyTableExperience = () => {
         description={
           <Flex vertical gap="small">
             <div>No privacy experiences found.</div>
-            <div>
-              <Button
-                onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
-                type="primary"
-                size="small"
-                data-testid="add-privacy-experience-btn"
-                icon={<Icons.Add />}
-                iconPosition="end"
-              >
-                Create new experience
-              </Button>
-            </div>
+            {canCreate && (
+              <div>
+                <Button
+                  onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
+                  type="primary"
+                  size="small"
+                  data-testid="add-privacy-experience-btn"
+                  icon={<Icons.Add />}
+                  iconPosition="end"
+                >
+                  Create new experience
+                </Button>
+              </div>
+            )}
           </Flex>
         }
       />
@@ -96,6 +98,11 @@ const usePrivacyExperiencesTable = () => {
   const dataSource = useMemo(() => data?.items ?? [], [data?.items]);
   const totalRows = data?.total ?? 0;
 
+  const emptyText = useMemo(
+    () => <EmptyTableExperience canCreate={userCanUpdate} />,
+    [userCanUpdate],
+  );
+
   const antTableConfig = useMemo(
     () => ({
       dataSource,
@@ -104,10 +111,10 @@ const usePrivacyExperiencesTable = () => {
       isFetching,
       getRowKey: (record: ExperienceConfigListViewResponse) => record.id,
       customTableProps: {
-        locale: { emptyText: <EmptyTableExperience /> },
+        locale: { emptyText },
       },
     }),
-    [dataSource, totalRows, isLoading, isFetching],
+    [dataSource, totalRows, isLoading, isFetching, emptyText],
   );
 
   const { tableProps } = useAntTable(tableState, antTableConfig);
@@ -164,7 +171,7 @@ const usePrivacyExperiencesTable = () => {
           <TagExpandableCell
             values={(properties ?? []).map((p) => ({
               label: p.name,
-              key: p.name,
+              key: p.id,
             }))}
             columnState={{ isExpanded: isPropertiesExpanded }}
           />
