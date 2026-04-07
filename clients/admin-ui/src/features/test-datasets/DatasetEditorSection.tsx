@@ -30,6 +30,7 @@ import {
   selectCurrentDataset,
   selectCurrentPolicyKey,
   setCurrentDataset,
+  setReachability,
 } from "./dataset-test.slice";
 import DatasetNodeEditor from "./DatasetNodeEditor";
 import { removeNulls } from "./helpers";
@@ -90,6 +91,11 @@ const EditorSection = ({
       },
     );
 
+  useEffect(() => {
+    if (reachability) {
+      dispatch(setReachability(reachability.reachable));
+    }
+  }, [reachability, dispatch]);
   const datasetOptions = useMemo(
     () =>
       (datasetConfigs?.items || []).map((item) => ({

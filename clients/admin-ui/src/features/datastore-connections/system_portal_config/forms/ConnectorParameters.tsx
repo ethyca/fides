@@ -391,6 +391,10 @@ export const ConnectorParameters = ({
     }
   };
 
+  const handleTestDatasetsRunClick = () => {
+    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
+  };
+
   const {
     isSubmitting,
     isAuthorizing,
@@ -451,6 +455,7 @@ export const ConnectorParameters = ({
         onSaveClick={handleSubmit}
         onTestConnectionClick={handleTestConnectionClick}
         onTestDatasetsClick={handleTestDatasetsClick}
+        onTestDatasetsRunClick={handleTestDatasetsRunClick}
         onAuthorizeConnectionClick={handleAuthorization}
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}
