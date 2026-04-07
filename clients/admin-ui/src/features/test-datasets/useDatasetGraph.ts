@@ -73,6 +73,8 @@ const fieldMatchesCategories = (
 
 /**
  * Count top-level fields in a collection that match the filter (or have matching descendants).
+ * Intentionally shallow — counts only direct children, not recursive subfields,
+ * to stay consistent with the unfiltered badge which shows collection.fields.length.
  */
 const countMatchingFields = (
   collection: DatasetCollection,
