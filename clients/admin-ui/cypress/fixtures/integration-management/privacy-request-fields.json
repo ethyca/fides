@@ -1,5 +1,31 @@
 {
   "privacy_request": {
+    "identity": {
+      "email": {
+        "field_path": "privacy_request.identity.email",
+        "field_type": "string",
+        "description": "Privacy request identity email",
+        "is_convenience_field": false
+      },
+      "phone_number": {
+        "field_path": "privacy_request.identity.phone_number",
+        "field_type": "string",
+        "description": "Privacy request identity phone_number",
+        "is_convenience_field": false
+      },
+      "external_id": {
+        "field_path": "privacy_request.identity.external_id",
+        "field_type": "string",
+        "description": "Privacy request identity external_id",
+        "is_convenience_field": false
+      },
+      "customer_id": {
+        "field_path": "privacy_request.identity.customer_id",
+        "field_type": "string",
+        "description": "Custom identity field 'customer_id'",
+        "is_convenience_field": false
+      }
+    },
     "location": {
       "field_path": "privacy_request.location",
       "field_type": "string",

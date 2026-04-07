@@ -197,10 +197,25 @@ class OnePasswordClient:
     # Public API — sync wrappers
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _run_coroutine(coro):  # type: ignore[no-untyped-def]
+        """Run a coroutine synchronously without disturbing the thread's event loop.
+
+        ``asyncio.run()`` closes and unsets the thread-local event loop when it
+        finishes, which breaks pytest-asyncio's session-scoped loop (and any
+        other caller that expects the loop to survive).  Using an isolated loop
+        via ``new_event_loop`` + ``run_until_complete`` avoids this.
+        """
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
+
     def get_secrets_sync(self, title: str) -> Dict[str, str]:
         """Synchronous wrapper around :meth:`get_secrets`."""
-        return asyncio.run(self.get_secrets(title))
+        return self._run_coroutine(self.get_secrets(title))
 
     def get_item_notes_json_sync(self, title: str) -> Optional[Dict[str, Any]]:
         """Synchronous wrapper around :meth:`get_item_notes_json`."""
-        return asyncio.run(self.get_item_notes_json(title))
+        return self._run_coroutine(self.get_item_notes_json(title))

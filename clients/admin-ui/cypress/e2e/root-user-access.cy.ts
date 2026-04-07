@@ -164,7 +164,9 @@ describe("Root User Access", () => {
     });
 
     it("can see and expand Overview nav group", () => {
-      cy.getByTestId("Overview-nav-group").should("be.visible").click();
+      // Overview is auto-expanded because "/" is the active route, so the
+      // submenu links are already visible without needing to click.
+      cy.getByTestId("Overview-nav-group").should("be.visible");
       cy.getByTestId("Home-nav-link").should("be.visible");
     });
 

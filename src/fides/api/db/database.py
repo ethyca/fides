@@ -118,7 +118,9 @@ def reset_db(database_url: str) -> None:
 
         log.info("Dropping excluded tables without models...")
         for table_name in EXCLUDED_TABLES:
-            connection.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
+            connection.execute(
+                text(f"DROP TABLE IF EXISTS {table_name} CASCADE")
+            )  # nosemgrep: sql_injection_fstring -- table_name from hardcoded EXCLUDED_TABLES, not user input
 
         log.info("Dropping Alembic table...")
         migration_context = migration.MigrationContext.configure(connection)
