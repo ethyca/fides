@@ -231,7 +231,10 @@ export const PurposeRestrictionFormModal = ({
     <FormikProvider value={formik}>
       <ConfirmCloseModal
         open={isOpen}
-        onClose={onClose}
+        onClose={() => {
+          formik.resetForm();
+          onClose();
+        }}
         getIsDirty={() => formik.dirty}
         centered
         destroyOnClose

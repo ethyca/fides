@@ -206,7 +206,6 @@ const EditMinimalDataUseModal = ({
               type="primary"
               htmlType="submit"
               disabled={!dirty || !isValid}
-              loading={false}
               data-testid="save-btn"
             >
               Save

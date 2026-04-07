@@ -204,7 +204,7 @@ const AddEditAssetModal = ({
               type="primary"
               htmlType="submit"
               loading={addIsLoading || updateIsLoading}
-              disabled={!isValid || !dirty}
+              disabled={!isValid || (isCreate && !dirty)}
               data-testid="save-btn"
             >
               Save

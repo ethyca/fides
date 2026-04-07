@@ -183,7 +183,10 @@ export const AddNewSystemModal = ({
       <ConfirmCloseModal
         title="Add New System"
         open={isOpen}
-        onClose={handleCloseModal}
+        onClose={() => {
+          formik.resetForm();
+          handleCloseModal();
+        }}
         getIsDirty={() => formik.dirty}
         centered
         data-testid="add-modal-content"
