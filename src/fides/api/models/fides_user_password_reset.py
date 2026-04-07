@@ -14,8 +14,6 @@ from fides.api.cryptography.cryptographic_util import (
 from fides.api.db.base_class import Base
 from fides.config import CONFIG
 
-DEFAULT_PASSWORD_RESET_TOKEN_TTL_MINUTES = 30
-
 
 class FidesUserPasswordReset(Base):
     """Stores hashed password reset tokens for self-service forgot-password flow."""

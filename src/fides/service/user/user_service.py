@@ -242,21 +242,32 @@ class UserService:
                     ttl_minutes=ttl_minutes,
                 ),
             )
+            EventAudit.create(
+                self.db,
+                data={
+                    "event_type": EventAuditType.password_reset_requested,
+                    "user_id": user.id,
+                    "resource_type": "user",
+                    "resource_identifier": user.id,
+                    "description": "Password reset requested",
+                    "status": EventAuditStatus.succeeded,
+                },
+            )
         except Exception:
             logger.exception("Failed to dispatch password reset email")
+            EventAudit.create(
+                self.db,
+                data={
+                    "event_type": EventAuditType.password_reset_requested,
+                    "user_id": user.id,
+                    "resource_type": "user",
+                    "resource_identifier": user.id,
+                    "description": "Password reset email dispatch failed",
+                    "status": EventAuditStatus.failed,
+                },
+            )
             # Don't raise — always return success to avoid user enumeration
 
-        EventAudit.create(
-            self.db,
-            data={
-                "event_type": EventAuditType.password_reset_requested,
-                "user_id": user.id,
-                "resource_type": "user",
-                "resource_identifier": user.id,
-                "description": "Password reset requested",
-                "status": EventAuditStatus.succeeded,
-            },
-        )
         logger.info("Password reset flow initiated")
 
     def reset_password_with_token(
