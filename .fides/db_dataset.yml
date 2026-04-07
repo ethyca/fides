@@ -776,6 +776,9 @@ dataset:
     - name: last_name
       data_categories:
       - user.name.last
+    - name: email_verified_at
+      data_categories:
+      - system.operations
     - name: password_reset_at
       data_categories:
       - system.operations
@@ -1166,6 +1169,24 @@ dataset:
     - name: enabled_actions
       description: 'The privacy actions that are enabled for this connection'
       data_categories: [system.operations]
+  - name: connection_config_saas_history
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: connection_config_id
+        data_categories: [system.operations]
+      - name: connection_key
+        data_categories: [system.operations]
+      - name: version
+        data_categories: [system.operations]
+      - name: config
+        data_categories: [system.operations]
+      - name: dataset
+        data_categories: [system.operations]
   - name: consent
     description: 'A database table used to map consent preference to identities'
     data_categories: []
@@ -3153,6 +3174,21 @@ dataset:
       data_categories: [user]
     - name: rows_masked
       data_categories: [system]
+  - name: monitor_aggregate_statistics
+    data_categories: [system.operations]
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: monitor_config_key
+      data_categories: [system.operations]
+    - name: monitor_type
+      data_categories: [system.operations]
+    - name: statistics
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: monitorconfig
     fields:
     - name: classify_params
@@ -3257,6 +3293,20 @@ dataset:
         data_categories: [system.operations]
       - name: username
         data_categories: [user.account.username]
+  - name: fides_user_password_reset
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: hashed_token
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: salt
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: user_id
+        data_categories: [user.unique_id]
   - name: plus_consent_automation
     fields:
     - name: connection_config_id
@@ -3349,6 +3399,36 @@ dataset:
       - name: salt
         data_categories: [system.operations]
       - name: single_row
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: plus_access_policy
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: description
+        data_categories: [system.operations]
+      - name: enabled
+        data_categories: [system.operations]
+      - name: is_deleted
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: plus_access_policy_version
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: access_policy_id
+        data_categories: [system.operations]
+      - name: version
+        data_categories: [system.operations]
+      - name: yaml
+        data_categories: [system.operations]
+      - name: created_at
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
@@ -3860,6 +3940,26 @@ dataset:
       - name: created_by
         data_categories: [user.unique_id]
       - name: is_default
+        data_categories: [system.operations]
+      - name: case_sensitive
+        data_categories: [system.operations]
+  - name: saas_config_version
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: connector_type
+        data_categories: [system.operations]
+      - name: version
+        data_categories: [system.operations]
+      - name: config
+        data_categories: [system.operations]
+      - name: dataset
+        data_categories: [system.operations]
+      - name: is_custom
         data_categories: [system.operations]
   - name: saas_template_dataset
     fields:

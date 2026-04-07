@@ -14,9 +14,9 @@ import NextLink from "next/link";
 
 import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
 
-import { DECISION_LABELS } from "./constants";
+import DecisionTag from "./DecisionTag";
 import styles from "./PolicyCard.module.scss";
-import { AccessPolicyListItem, ActionType } from "./types";
+import { AccessPolicyListItem } from "./types";
 import { formatRelativeTime } from "./utils";
 
 const { Link: LinkText } = Typography;
@@ -60,15 +60,7 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
                   <Tag color="sandstone" hasSparkle />
                 </Tooltip>
               )}
-              {policy.decision && (
-                <Tag
-                  color={
-                    policy.decision === ActionType.ALLOW ? "success" : "error"
-                  }
-                >
-                  {DECISION_LABELS[policy.decision] ?? policy.decision}
-                </Tag>
-              )}
+              {policy.decision && <DecisionTag decision={policy.decision} />}
             </Flex>
           </Flex>
 

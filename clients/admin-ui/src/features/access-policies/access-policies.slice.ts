@@ -63,7 +63,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       { id: string } & Partial<AccessPolicy>
     >({
       query: ({ id, ...body }) => ({
-        method: "PUT",
+        method: "PATCH",
         url: `plus/access-policy/${id}`,
         body,
       }),

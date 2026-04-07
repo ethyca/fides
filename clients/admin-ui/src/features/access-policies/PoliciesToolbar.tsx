@@ -79,11 +79,11 @@ const PoliciesToolbar = ({
           onChange={(value) => onViewModeChange(value as ViewMode)}
           options={[
             {
-              label: <Icons.ShowDataCards size={16} />,
+              label: <Icons.Grid size={16} />,
               value: ViewMode.CARDS,
             },
             {
-              label: <Icons.DataTable size={16} />,
+              label: <Icons.Table size={16} />,
               value: ViewMode.TABLE,
             },
           ]}

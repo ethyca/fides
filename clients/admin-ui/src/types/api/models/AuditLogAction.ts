@@ -10,4 +10,8 @@ export enum AuditLogAction {
   DENIED = "denied",
   EMAIL_SENT = "email_sent",
   FINISHED = "finished",
+  POLICY_EVALUATED = "policy_evaluated",
+  PRE_APPROVAL_WEBHOOK_TRIGGERED = "pre_approval_webhook_triggered",
+  PRE_APPROVAL_ELIGIBLE = "pre_approval_eligible",
+  PRE_APPROVAL_NOT_ELIGIBLE = "pre_approval_not_eligible",
 }

@@ -34,11 +34,11 @@ const PoliciesContainer = () => {
     let result = policies;
 
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase();
       result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.description?.toLowerCase().includes(q) ?? false),
+        (policy) =>
+          policy.name.toLowerCase().includes(query) ||
+          (policy.description?.toLowerCase().includes(query) ?? false),
       );
     }
 

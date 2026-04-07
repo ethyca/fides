@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import type { Identifier, XYCoord } from "dnd-core";
-import { Flex, Icons, Input, Switch, Table, Tag, Text } from "fidesui";
+import { Flex, Icons, Input, Switch, Table, Text } from "fidesui";
 import React, {
   useCallback,
   useEffect,
@@ -17,9 +17,9 @@ import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 
 import { ControlGroup } from "./access-policies.slice";
-import { DECISION_LABELS } from "./constants";
+import DecisionTag from "./DecisionTag";
 import styles from "./PoliciesTable.module.scss";
-import { AccessPolicyListItem, ActionType } from "./types";
+import { AccessPolicyListItem } from "./types";
 import { formatRelativeTime } from "./utils";
 
 const ROW_TYPE = "PolicyTableRow";
@@ -331,13 +331,7 @@ const PoliciesTable = ({
         key: "decision",
         width: 100,
         render: (_: unknown, record: AccessPolicyListItem) =>
-          record.decision ? (
-            <Tag
-              color={record.decision === ActionType.ALLOW ? "success" : "error"}
-            >
-              {DECISION_LABELS[record.decision] ?? record.decision}
-            </Tag>
-          ) : null,
+          record.decision ? <DecisionTag decision={record.decision} /> : null,
       },
       {
         title: "Enabled",

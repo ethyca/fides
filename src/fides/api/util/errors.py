@@ -36,6 +36,10 @@ class FidesError(Exception):
     """General fides exception"."""
 
 
+class MessageDispatchException(FidesError):
+    """Raised when a message (email, etc.) fails to send."""
+
+
 class NotFoundError(HTTPException):
     """
     To be raised when a requested resource does not exist in the database.

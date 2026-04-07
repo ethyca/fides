@@ -17,9 +17,11 @@ export const useAccessPolicyGroups = (
       return [];
     }
 
-    const groups: PolicyGroup[] = controlGroups.map((cg) => ({
-      controlGroup: cg,
-      policies: policies.filter((p) => p.controls?.includes(cg.key)),
+    const groups: PolicyGroup[] = controlGroups.map((controlGroup) => ({
+      controlGroup,
+      policies: policies.filter((policy) =>
+        policy.controls?.includes(controlGroup.key),
+      ),
     }));
 
     const ungrouped = policies.filter(

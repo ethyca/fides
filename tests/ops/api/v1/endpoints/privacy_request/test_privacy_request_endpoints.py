@@ -71,7 +71,6 @@ from fides.api.service.privacy_request.request_service import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
 )
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
-from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.encryption.secrets_util import SecretsUtil
 from fides.api.util.fuzzy_search_utils import (
@@ -534,7 +533,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        assert response_data[0]["status"] == "pending"
+        assert response_data[0]["status"] == "awaiting_pre_approval"
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert not run_access_request_mock.called
@@ -788,7 +787,6 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -804,11 +802,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        encryption_key = get_encryption_cache_key(
-            privacy_request_id=pr.id,
-            encryption_attr="key",
-        )
-        assert cache.get(encryption_key) == "test--encryption"
+        assert pr.get_cached_encryption_key() == "test--encryption"
 
         pr.delete(db=db)
         assert run_access_request_mock.called
@@ -4882,7 +4876,10 @@ class TestMarkPrivacyRequestPreApproveEligible:
         ).first()
 
         assert approval_audit_log is not None
-        assert approval_audit_log.message == None
+        assert (
+            approval_audit_log.message
+            == "Request auto-approved by pre-approval webhooks"
+        )
         assert approval_audit_log.webhook_id == pre_approval_webhooks[1].id
 
         approval_audit_log.delete(db)
@@ -6463,11 +6460,11 @@ class TestVerifyIdentity:
         assert resp.status_code == 200
 
         resp = resp.json()
-        assert resp["status"] == "pending"
+        assert resp["status"] == "awaiting_pre_approval"
         assert resp["identity_verified_at"] is not None
 
         db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.status == PrivacyRequestStatus.awaiting_pre_approval
         assert privacy_request.identity_verified_at is not None
 
         approved_audit_log: AuditLog = AuditLog.filter(
@@ -8179,7 +8176,6 @@ class TestCreatePrivacyRequestAuthenticated:
         generate_auth_header,
         api_client: TestClient,
         policy,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -8196,11 +8192,7 @@ class TestCreatePrivacyRequestAuthenticated:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        encryption_key = get_encryption_cache_key(
-            privacy_request_id=pr.id,
-            encryption_attr="key",
-        )
-        assert cache.get(encryption_key) == "test--encryption"
+        assert pr.get_cached_encryption_key() == "test--encryption"
         assert run_access_request_mock.called
 
     def test_create_privacy_request_no_identities(
