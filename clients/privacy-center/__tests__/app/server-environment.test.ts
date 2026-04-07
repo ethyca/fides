@@ -148,6 +148,16 @@ describe("validateConfig", () => {
         message: "Missing required field(s) in actions[0]: title, description",
       },
     },
+    {
+      name: "missing icon_path in action",
+      config: produce(minimalJson, (draft: any) => {
+        delete draft.actions[0].icon_path;
+      }),
+      expected: {
+        isValid: false,
+        message: "Missing required field(s) in actions[0]: icon_path",
+      },
+    },
     // URL validation
     {
       name: "valid URL fields",

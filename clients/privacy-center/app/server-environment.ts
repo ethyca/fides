@@ -262,7 +262,10 @@ export const validateConfig = (
         url: link.url,
         label: link.label,
       }))
-      .filter(({ url }) => typeof url === "string" && !isValidUrl(url));
+      .filter(
+        ({ url }) =>
+          typeof url === "string" && url.trim().length > 0 && !isValidUrl(url),
+      );
     if (invalidLinks.length > 0) {
       const details = invalidLinks
         .map(({ index, label }) => `links[${index}] ("${label}")`)
