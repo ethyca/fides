@@ -53,8 +53,12 @@ const ConfigureMonitorModal = ({
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
 
-  const [websiteForm] = Form.useForm();
-  const [monitorForm] = Form.useForm();
+  // isWebsiteMonitor is stable for the lifetime of the modal, so one form
+  // instance covers both branches. Note: the dirty guard only covers step 0
+  // (ConfigureMonitorForm); step 1 (ConfigureMonitorDatabasesForm) manages
+  // its selections via useState rather than an AntD Form, so it cannot be
+  // covered by isFieldsTouched().
+  const [form] = Form.useForm();
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -112,7 +116,7 @@ const ConfigureMonitorModal = ({
         }
         open={isOpen}
         onClose={onClose}
-        getIsDirty={() => websiteForm.isFieldsTouched()}
+        getIsDirty={() => form.isFieldsTouched()}
         centered
         destroyOnClose
         footer={null}
@@ -124,7 +128,7 @@ const ConfigureMonitorModal = ({
           integrationSystem={integration?.system_key}
           onClose={onClose}
           onSubmit={handleSubmit}
-          form={websiteForm}
+          form={form}
         />
       </ConfirmCloseModal>
     );
@@ -139,7 +143,7 @@ const ConfigureMonitorModal = ({
       }
       open={isOpen}
       onClose={onClose}
-      getIsDirty={() => monitorForm.isFieldsTouched()}
+      getIsDirty={() => form.isFieldsTouched()}
       centered
       destroyOnClose
       footer={null}
@@ -155,7 +159,7 @@ const ConfigureMonitorModal = ({
           databasesAvailable={databasesAvailable}
           integrationSystem={integration?.system_key}
           integrationOption={integrationOption}
-          form={monitorForm}
+          form={form}
         />
       )}
       {formStep === 1 &&

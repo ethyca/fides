@@ -31,6 +31,7 @@ const SharedConfigModal = () => {
   };
 
   const resetForm = () => {
+    form.resetFields();
     setModalState(SharedConfigModalState.MAIN_VIEW);
     setConfigToEdit(undefined);
   };

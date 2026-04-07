@@ -43,7 +43,7 @@ interface AddConditionFormProps {
   editingCondition?: ConditionLeaf | null;
   isSubmitting?: boolean;
   connectionKey: string;
-  form?: FormInstance;
+  form?: FormInstance<FormValues>;
   /**
    * When true, hides the dataset field source option and filters privacy request
    * fields to only those available for consent requests.
