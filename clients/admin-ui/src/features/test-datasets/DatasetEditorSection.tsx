@@ -84,6 +84,9 @@ const EditorSection = ({
     skip: !connectionKey,
   });
 
+  // Reachability only applies on the test-datasets page (no connectionType),
+  // where the user selects a policy. The edit-dataset page has no policy
+  // selector, so showing reachability there would use stale global state.
   const { data: reachability, refetch: refetchReachability } =
     useGetDatasetReachabilityQuery(
       {
@@ -92,7 +95,11 @@ const EditorSection = ({
         policyKey: currentPolicyKey,
       },
       {
-        skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
+        skip:
+          !!connectionType ||
+          !connectionKey ||
+          !currentDataset?.fides_key ||
+          !currentPolicyKey,
       },
     );
 
