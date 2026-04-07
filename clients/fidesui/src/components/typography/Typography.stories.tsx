@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Button, Typography, theme } from "antd/lib";
+import { Button, theme, Typography } from "antd/lib";
 
 import { Typography as FidesTypography } from "../../index";
 
@@ -261,8 +261,8 @@ const BrandGuidelinesStory = () => {
             }}
           >
             &ldquo;Ethyca uses Eliza Medium Italic for quotes to add elegance
-            and emphasis, ensuring key statements stand out and convey a personal
-            touch.&rdquo;
+            and emphasis, ensuring key statements stand out and convey a
+            personal touch.&rdquo;
           </span>
         }
       />
@@ -283,9 +283,10 @@ const BrandGuidelinesStory = () => {
             }}
           >
             The body copy uses Basier Square, which is specifically chosen for
-            its exceptional clarity and readability. This choice ensures that the
-            messaging remains clear, concise, and easy to read, significantly
-            enhancing the overall effectiveness of our communication.
+            its exceptional clarity and readability. This choice ensures that
+            the messaging remains clear, concise, and easy to read,
+            significantly enhancing the overall effectiveness of our
+            communication.
           </span>
         }
       />
