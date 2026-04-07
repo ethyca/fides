@@ -12,6 +12,7 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.saas.connector_template import (
     ConnectorTemplate,
@@ -328,6 +329,15 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             db=db,
             connector_type=connector_type,
             dataset_json=template_dataset_json,
+        )
+
+        SaaSConfigVersion.upsert(
+            db=db,
+            connector_type=connector_type,
+            version=saas_config.version,
+            config=saas_config.model_dump(mode="json"),
+            dataset=template_dataset_json,
+            is_custom=True,
         )
 
         # Bump the Redis version counter and clear the local cache so

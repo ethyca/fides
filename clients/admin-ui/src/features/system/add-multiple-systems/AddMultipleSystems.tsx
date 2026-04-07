@@ -33,9 +33,9 @@ import {
   ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraHStack as HStack,
-  ChakraSpinner as Spinner,
   ChakraText as Text,
   ChakraVStack as VStack,
+  Spin,
   Tag,
   Tooltip,
   useChakraDisclosure as useDisclosure,
@@ -286,11 +286,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   }
 
   if (isPostLoading || isPostSuccess) {
-    return (
-      <Flex height="100%" justifyContent="center" alignItems="center">
-        <Spinner />
-      </Flex>
-    );
+    return <Spin />;
   }
 
   if (isGetLoading) {

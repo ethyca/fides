@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
@@ -23,8 +23,8 @@ from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
 )
 from fides.api.common_exceptions import ValidationError as FidesValidationError
+from fides.api.models.connection_config_saas_history import ConnectionConfigSaaSHistory
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
@@ -33,6 +33,10 @@ from fides.api.schemas.connection_configuration.connection_config import (
 )
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
+)
+from fides.api.schemas.saas.connection_config_saas_history import (
+    ConnectionConfigSaaSHistoryDetailResponse,
+    ConnectionConfigSaaSHistoryResponse,
 )
 from fides.api.schemas.saas.saas_config import (
     SaaSConfig,
@@ -48,6 +52,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
+from fides.api.service.saas_config_version_service import SaaSConfigVersionService
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
@@ -65,6 +70,8 @@ from fides.common.scope_registry import (
 from fides.common.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
+    SAAS_CONFIG_HISTORY,
+    SAAS_CONFIG_HISTORY_BY_VERSION,
     SAAS_CONFIG_VALIDATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
@@ -73,6 +80,7 @@ from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,
 )
+from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
@@ -171,6 +179,9 @@ def patch_saas_config(
     saas_config: SaaSConfig,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
 ) -> SaaSConfig:
     """
     Given a SaaS config element, update the corresponding ConnectionConfig object
@@ -184,8 +195,8 @@ def patch_saas_config(
     )
 
     existing_saas_config = connection_config.get_saas_config()
+    template = ConnectorRegistry.get_connector_template(saas_config.type)
     if not existing_saas_config:
-        template = ConnectorRegistry.get_connector_template(saas_config.type)
         if template:
             existing_saas_config = SaaSConfig(
                 **load_config_from_string(template.config)
@@ -208,7 +219,13 @@ def patch_saas_config(
             detail=str(exc),
         )
 
-    connection_config.update_saas_config(db, saas_config=saas_config)
+    datasets = dataset_config_service.get_datasets_as_dicts(connection_config.id)
+    connection_config.update_saas_config(db, saas_config=saas_config, datasets=datasets)
+    SaaSConfigVersionService.record_template_version(
+        db=db,
+        saas_config=saas_config,
+        is_custom=template.custom if template else False,
+    )
 
     # Create audit event for SaaS config update
     event_audit_service = EventAuditService(db)
@@ -256,6 +273,9 @@ def get_saas_config(
 def delete_saas_config(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
 ) -> None:
     """Removes the SaaS config for the given connection config.
     The corresponding dataset and secrets must be deleted before deleting the SaaS config
@@ -270,13 +290,9 @@ def delete_saas_config(
         )
 
     fides_key = saas_config.get("fides_key")
-    dataset = DatasetConfig.filter(
-        db=db,
-        conditions=(
-            (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == fides_key)
-        ),
-    ).first()
+    dataset = dataset_config_service.get_config_from_fides_key(
+        connection_config.id, fides_key
+    )
 
     warnings = []
 
@@ -300,6 +316,54 @@ def delete_saas_config(
 
     logger.info("Deleting SaaS config for connection '{}'", connection_config.key)
     connection_config.update(db, data={"saas_config": None})
+
+
+@router.get(
+    SAAS_CONFIG_HISTORY,
+    dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONFIG_READ])],
+    response_model=List[ConnectionConfigSaaSHistoryResponse],
+)
+def list_saas_config_history(
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
+) -> List[ConnectionConfigSaaSHistory]:
+    """
+    Returns all per-connection SaaS config snapshots for the given connection,
+    ordered newest first.
+    """
+    logger.info(
+        "Listing SaaS config history for connection '{}'", connection_config.key
+    )
+    return SaaSConfigVersionService.list_connection_history(db, connection_config.id)
+
+
+@router.get(
+    SAAS_CONFIG_HISTORY_BY_VERSION,
+    dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONFIG_READ])],
+    response_model=ConnectionConfigSaaSHistoryDetailResponse,
+)
+def get_saas_config_history_by_version(
+    version: str,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_saas_connection_config),
+) -> ConnectionConfigSaaSHistory:
+    """
+    Returns the most recent snapshot for the given connection and version string.
+    """
+    logger.info(
+        "Fetching SaaS config history for connection '{}' version '{}'",
+        connection_config.key,
+        version,
+    )
+    snapshot = SaaSConfigVersionService.get_connection_history_by_version(
+        db, connection_config.id, version
+    )
+    if not snapshot:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No SaaS config history found for connection '{connection_config.key}' version '{version}'",
+        )
+    return snapshot
 
 
 @router.get(

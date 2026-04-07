@@ -1,9 +1,9 @@
 import {
   ChakraCloseButton as CloseButton,
   ChakraHStack as HStack,
-  ChakraSpinner as Spinner,
   ChakraStack as Stack,
   ChakraText as Text,
+  Spin,
   useModal,
 } from "fidesui";
 
@@ -60,13 +60,7 @@ const ScannerLoading = ({ title, onClose }: Props) => {
       </HStack>
 
       <Stack alignItems="center">
-        <Spinner
-          thickness="4px"
-          speed="0.65s"
-          emptyColor="gray.200"
-          color="green.300"
-          size="xl"
-        />
+        <Spin size="large" />
       </Stack>
     </Stack>
   );

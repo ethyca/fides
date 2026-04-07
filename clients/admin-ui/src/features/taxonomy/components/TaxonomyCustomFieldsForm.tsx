@@ -1,4 +1,4 @@
-import { Form, FormInstance, Input, PageSpinner, Select } from "fidesui";
+import { Form, FormInstance, Input, Select, Spin } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";
@@ -37,7 +37,7 @@ const TaxonomyCustomFieldsForm = ({
       data-testid="custom-fields-form"
     >
       {isLoading ? (
-        <PageSpinner />
+        <Spin />
       ) : (
         <div>
           {!isEmpty(sortedCustomFieldDefinitionIds) && (

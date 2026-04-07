@@ -28,6 +28,8 @@ from fides.api.tasks import (
     celery_app,
 )
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
+from fides.common.cache.dsr_store import DSRCacheStore
+from fides.common.cache.manager import RedisCacheManager
 from fides.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
@@ -320,6 +322,20 @@ def get_cache() -> FidesopsRedis:
     return _connection
 
 
+def get_redis_cache_manager() -> RedisCacheManager:
+    """Return a RedisCacheManager wrapping the default Redis connection."""
+    return RedisCacheManager(get_cache())
+
+
+def get_dsr_cache_store(dsr_id: str) -> DSRCacheStore:
+    """Return a DSRCacheStore scoped to a single privacy request."""
+    return DSRCacheStore(
+        dsr_id,
+        get_redis_cache_manager(),
+        default_ttl_seconds=CONFIG.redis.default_ttl_seconds,
+    )
+
+
 def get_read_only_cache() -> FidesopsRedis:
     """
     Return a singleton connection to the read-only Redis cache.
@@ -409,6 +425,12 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
 
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
+    """Return the *legacy* Redis key for async-execution tracking.
+
+    Prefer ``get_dsr_cache_store(dsr_id).get_async_execution()`` for reads and
+    ``cache_task_tracking_key()`` for writes — both route through the
+    DSRCacheStore which handles legacy fallback automatically.
+    """
     return f"id-{privacy_request_id}-async-execution"
 
 
@@ -425,12 +447,11 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
     :return: None
     """
 
-    cache: FidesopsRedis = get_cache()
-
     try:
-        cache.set_with_autoexpire(
-            get_async_task_tracking_cache_key(request_id),
+        store = get_dsr_cache_store(request_id)
+        store.write_async_execution(
             celery_task_id,
+            expire_seconds=CONFIG.redis.default_ttl_seconds,
         )
     except DataError:
         logger.debug(

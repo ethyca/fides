@@ -1,4 +1,4 @@
-import { Col, Flex, Input, PageSpinner, Row, Select } from "fidesui";
+import { Col, Flex, Input, Row, Select, Spin } from "fidesui";
 import { ReactNode, useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -247,7 +247,7 @@ const SelectIntegrationType = ({
   onDetailClick,
 }: Props) =>
   isFiltering ? (
-    <PageSpinner />
+    <Spin />
   ) : (
     <Row gutter={[24, 24]}>
       {filteredTypes.map((i) => (

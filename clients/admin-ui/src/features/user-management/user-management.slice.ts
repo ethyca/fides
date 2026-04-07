@@ -166,6 +166,13 @@ const userApi = baseApi.injectEndpoints({
       // Invalidates all queries that subscribe to this User `id` only
       invalidatesTags: ["User"],
     }),
+    reinviteUser: build.mutation<void, string>({
+      query: (id) => ({
+        url: `user/${id}/reinvite`,
+        method: "POST",
+      }),
+      invalidatesTags: ["User"],
+    }),
 
     // Data steward endpoints
     getUserManagedSystems: build.query<System[], string>({
@@ -321,6 +328,7 @@ export const {
   useCreateUserMutation,
   useEditUserMutation,
   useDeleteUserMutation,
+  useReinviteUserMutation,
   useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
   useGetUserPermissionsQuery,
