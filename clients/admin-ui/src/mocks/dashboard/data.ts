@@ -395,6 +395,50 @@ export const mockAstralis: AstralisResponse = {
   completed_assessments: 42,
   awaiting_response: 3,
   risks_identified: 12,
+  conversations: [
+    {
+      steward_name: "Casey Martinez",
+      system_name: "Snowflake Analytics",
+      status: "in_progress",
+      days_in_status: 2,
+    },
+    {
+      steward_name: "Jamie Torres",
+      system_name: "BigQuery Prod",
+      status: "in_progress",
+      days_in_status: 1,
+    },
+    {
+      steward_name: "Alex Chen",
+      system_name: "HubSpot CRM",
+      status: "awaiting",
+      days_in_status: 5,
+    },
+    {
+      steward_name: "Morgan Davis",
+      system_name: "Salesforce",
+      status: "awaiting",
+      days_in_status: 4,
+    },
+    {
+      steward_name: "Sam Wilson",
+      system_name: "Stripe Payments",
+      status: "in_progress",
+      days_in_status: 0,
+    },
+    {
+      steward_name: "Jordan Lee",
+      system_name: "Workday HR",
+      status: "awaiting",
+      days_in_status: 1,
+    },
+    {
+      steward_name: "Taylor Brooks",
+      system_name: "AWS S3",
+      status: "in_progress",
+      days_in_status: 3,
+    },
+  ],
 };
 
 export const mockTrends: TrendsResponse = {
