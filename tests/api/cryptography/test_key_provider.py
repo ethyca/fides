@@ -22,6 +22,12 @@ class TestInit:
         with pytest.raises(KeyProviderError, match="32 bytes"):
             LocalKeyProvider(kek="a" * 64, session=db)
 
+    def test_repr_masks_kek(self, db):
+        provider = LocalKeyProvider(kek=TEST_KEK, session=db)
+        output = f"{provider}"
+        assert TEST_KEK not in output
+        assert "***" in output
+
 
 class TestKekIdHash:
     def test_deterministic(self):
