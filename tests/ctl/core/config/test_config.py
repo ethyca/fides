@@ -354,6 +354,100 @@ def test_config_app_encryption_key_validation_length_error(app_encryption_key) -
         assert "must be exactly 32 characters" in str(err.value)
 
 
+@pytest.mark.unit
+def test_config_key_provider_defaults() -> None:
+    """Test key_provider defaults to 'none' and KEK fields default to None."""
+    config = get_config()
+    assert config.security.key_provider == "none"
+    assert config.security.key_encryption_key is None
+    assert config.security.key_encryption_key_previous is None
+
+
+@pytest.mark.unit
+def test_config_key_encryption_key_validation() -> None:
+    """Test KEY_ENCRYPTION_KEY is validated to be exactly 32 characters."""
+    valid_kek = "avalidkekthatis32characterslongg"
+    with patch.dict(
+        os.environ,
+        {
+            **REQUIRED_ENV_VARS,
+            "FIDES__SECURITY__KEY_ENCRYPTION_KEY": valid_kek,
+            "FIDES__SECURITY__KEY_PROVIDER": "local",
+        },
+        clear=True,
+    ):
+        config = get_config()
+        assert config.security.key_encryption_key == valid_kek
+        assert config.security.key_provider == "local"
+
+
+@pytest.mark.parametrize(
+    "key_encryption_key",
+    ["tooshortkey", "muchmuchmuchmuchmuchmuchmuchmuchtoolongkey"],
+)
+@pytest.mark.unit
+def test_config_key_encryption_key_validation_length_error(
+    key_encryption_key,
+) -> None:
+    """Test KEY_ENCRYPTION_KEY is validated to be exactly 32 characters."""
+    with patch.dict(
+        os.environ,
+        {
+            **REQUIRED_ENV_VARS,
+            "FIDES__SECURITY__KEY_ENCRYPTION_KEY": key_encryption_key,
+        },
+        clear=True,
+    ):
+        with pytest.raises(ValidationError) as err:
+            get_config()
+        assert "must be exactly 32 characters" in str(err.value)
+
+
+@pytest.mark.parametrize(
+    "key_encryption_key_previous",
+    ["tooshortkey", "muchmuchmuchmuchmuchmuchmuchmuchtoolongkey"],
+)
+def test_config_key_encryption_key_previous_validation_length_error(
+    key_encryption_key_previous,
+) -> None:
+    """Test KEY_ENCRYPTION_KEY_PREVIOUS is validated to be exactly 32 characters."""
+    with patch.dict(
+        os.environ,
+        {
+            **REQUIRED_ENV_VARS,
+            "FIDES__SECURITY__KEY_ENCRYPTION_KEY_PREVIOUS": key_encryption_key_previous,
+        },
+        clear=True,
+    ):
+        with pytest.raises(ValidationError) as err:
+            get_config()
+        assert "must be exactly 32 characters" in str(err.value)
+
+
+@patch.dict(
+    os.environ,
+    {
+        "FIDES__CONFIG_PATH": "tests/ctl/test_default_config.toml",
+        "FIDES__SECURITY__KEY_PROVIDER": "local",
+    },
+    clear=True,
+)
+@pytest.mark.unit
+def test_check_required_webserver_config_values_local_provider_missing_kek(
+    capfd,
+) -> None:
+    """Test that key_encryption_key is required when key_provider is 'local'."""
+    config = get_config()
+    assert config.security.key_provider == "local"
+    assert config.security.key_encryption_key is None
+
+    with pytest.raises(SystemExit):
+        check_required_webserver_config_values(config=config)
+
+    out, _ = capfd.readouterr()
+    assert "key_encryption_key" in out
+
+
 @pytest.mark.parametrize(
     "log_level,expected_log_level",
     [

@@ -1,0 +1,4 @@
+type: Changed
+description: Replaced Chakra/Formik with antd Form in user management forms
+pr: 7843
+labels: []
