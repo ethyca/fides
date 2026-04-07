@@ -12,6 +12,7 @@ import {
 } from "fidesui";
 import { motion } from "motion/react";
 import type { NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import { useEffect, useMemo, useState } from "react";
@@ -23,6 +24,7 @@ import {
   useAcceptInviteMutation,
   useGetAuthenticationMethodsQuery,
   useLoginMutation,
+  useResetPasswordWithTokenMutation,
 } from "~/features/auth";
 import { getErrorMessage } from "~/features/common/helpers";
 import { usePrefersReducedMotion } from "~/features/common/hooks";
@@ -34,6 +36,7 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
   const {
     username: rawUsername,
     invite_code: rawInviteCode,
+    reset_token: rawResetToken,
     redirect: rawRedirect,
   } = query;
   const redirectDecoded =
@@ -43,6 +46,7 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
   return {
     username: typeof rawUsername === "string" ? rawUsername : undefined,
     inviteCode: typeof rawInviteCode === "string" ? rawInviteCode : undefined,
+    resetToken: typeof rawResetToken === "string" ? rawResetToken : undefined,
     redirect:
       redirectDecoded && validPathRegex.test(redirectDecoded)
         ? redirectDecoded
@@ -98,10 +102,35 @@ interface LoginFormValues {
   password: string;
 }
 
+const strongPasswordRules = [
+  { required: true, message: "Password is required" },
+  {
+    min: 8,
+    message: "Password must have at least eight characters.",
+  },
+  {
+    pattern: /[0-9]/,
+    message: "Password must have at least one number.",
+  },
+  {
+    pattern: /[A-Z]/,
+    message: "Password must have at least one capital letter.",
+  },
+  {
+    pattern: /[a-z]/,
+    message: "Password must have at least one lowercase letter.",
+  },
+  {
+    pattern: /[\W_]/,
+    message: "Password must have at least one symbol.",
+  },
+];
+
 const useLogin = () => {
   const [form] = Form.useForm<LoginFormValues>();
   const [loginRequest] = useLoginMutation();
   const [acceptInviteRequest] = useAcceptInviteMutation();
+  const [resetPasswordRequest] = useResetPasswordWithTokenMutation();
   const [showAnimation, setShowAnimation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // If the user prefers no motion, don't show the animation
@@ -110,7 +139,9 @@ const useLogin = () => {
   const message = useMessage();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { username, inviteCode, redirect } = parseQueryParam(router.query);
+  const { username, inviteCode, resetToken, redirect } = parseQueryParam(
+    router.query,
+  );
 
   const initialValues: LoginFormValues = {
     username: username ?? "",
@@ -118,6 +149,7 @@ const useLogin = () => {
   };
 
   const isFromInvite = inviteCode !== undefined;
+  const isResetPassword = resetToken !== undefined;
 
   const usernameRules = useMemo(
     () => [{ required: true, message: "Username is required" }],
@@ -126,32 +158,10 @@ const useLogin = () => {
 
   const passwordRules = useMemo(
     () =>
-      isFromInvite
-        ? [
-            { required: true, message: "Password is required" },
-            {
-              min: 8,
-              message: "Password must have at least eight characters.",
-            },
-            {
-              pattern: /[0-9]/,
-              message: "Password must have at least one number.",
-            },
-            {
-              pattern: /[A-Z]/,
-              message: "Password must have at least one capital letter.",
-            },
-            {
-              pattern: /[a-z]/,
-              message: "Password must have at least one lowercase letter.",
-            },
-            {
-              pattern: /[\W_]/,
-              message: "Password must have at least one symbol.",
-            },
-          ]
+      isFromInvite || isResetPassword
+        ? strongPasswordRules
         : [{ required: true, message: "Password is required" }],
-    [isFromInvite],
+    [isFromInvite, isResetPassword],
   );
 
   const handleSubmit = async (values: LoginFormValues) => {
@@ -163,10 +173,16 @@ const useLogin = () => {
     setIsSubmitting(true);
     try {
       let user;
-      if (isFromInvite) {
+      if (isResetPassword) {
+        user = await resetPasswordRequest({
+          username: username!,
+          token: resetToken!,
+          new_password: values.password,
+        }).unwrap();
+      } else if (isFromInvite) {
         user = await acceptInviteRequest({
           ...credentials,
-          inviteCode,
+          inviteCode: inviteCode!,
         }).unwrap();
       } else {
         user = await loginRequest(credentials).unwrap();
@@ -177,9 +193,16 @@ const useLogin = () => {
       setShowAnimation(false);
       // eslint-disable-next-line no-console
       console.log(error);
-      const defaultErrorMsg = isFromInvite
-        ? "Setup failed. Please try the invite link again."
-        : "Login failed. Please check your credentials and try again.";
+      let defaultErrorMsg: string;
+      if (isFromInvite) {
+        defaultErrorMsg = "Setup failed. Please try the invite link again.";
+      } else if (isResetPassword) {
+        defaultErrorMsg =
+          "Password reset failed. The link may have expired. Please request a new one.";
+      } else {
+        defaultErrorMsg =
+          "Login failed. Please check your credentials and try again.";
+      }
       const errorMsg = getErrorMessage(
         error as RTKErrorResult["error"],
         defaultErrorMsg,
@@ -211,6 +234,7 @@ const useLogin = () => {
   return {
     form,
     isFromInvite,
+    isResetPassword,
     showAnimation,
     initialValues,
     handleSubmit,
@@ -261,6 +285,7 @@ const Login: NextPage = () => {
   const {
     form,
     isFromInvite,
+    isResetPassword,
     showAnimation,
     initialValues,
     handleSubmit,
@@ -282,7 +307,12 @@ const Login: NextPage = () => {
       refetchOnMountOrArgChange: true,
     });
 
-  const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
+  let submitButtonText = "Sign in";
+  if (isFromInvite) {
+    submitButtonText = "Setup user";
+  } else if (isResetPassword) {
+    submitButtonText = "Reset password";
+  }
 
   // Determine if we should show username/password inputs
   // Show them if there was an error fetching auth methods or username/password auth is enabled
@@ -311,7 +341,9 @@ const Login: NextPage = () => {
           <Image src="/logo.svg" alt="Fides logo" width={205} height={46} />
           <Flex vertical align="center" gap="large">
             <Typography.Title level={1}>
-              Sign in to your account
+              {isResetPassword
+                ? "Set a new password"
+                : "Sign in to your account"}
             </Typography.Title>
             <Card className="static w-[640px] px-32 py-12">
               <Flex align="center" justify="center">
@@ -325,34 +357,48 @@ const Login: NextPage = () => {
                     _: Partial<LoginFormValues>,
                     allValues: LoginFormValues,
                   ) => {
-                    setCanSubmit(!!allValues.username && !!allValues.password);
+                    if (isResetPassword) {
+                      setCanSubmit(!!allValues.password);
+                    } else {
+                      setCanSubmit(
+                        !!allValues.username && !!allValues.password,
+                      );
+                    }
                   }}
                   className="w-full"
                 >
                   <Flex vertical>
                     {showUsernamePasswordInputs && (
                       <>
-                        <Form.Item
-                          name="username"
-                          label="Username"
-                          rules={usernameRules}
-                        >
-                          <Input
-                            size="large"
-                            disabled={isFromInvite}
-                            data-testid="input-username"
-                            autoComplete="username"
-                          />
-                        </Form.Item>
+                        {!isResetPassword && (
+                          <Form.Item
+                            name="username"
+                            label="Username"
+                            rules={usernameRules}
+                          >
+                            <Input
+                              size="large"
+                              disabled={isFromInvite}
+                              data-testid="input-username"
+                              autoComplete="username"
+                            />
+                          </Form.Item>
+                        )}
                         <Form.Item
                           name="password"
-                          label={isFromInvite ? "Set new password" : "Password"}
+                          label={
+                            isFromInvite || isResetPassword
+                              ? "Set new password"
+                              : "Password"
+                          }
                           rules={passwordRules}
                         >
                           <Input.Password
                             size="large"
                             autoComplete={
-                              isFromInvite ? "new-password" : "current-password"
+                              isFromInvite || isResetPassword
+                                ? "new-password"
+                                : "current-password"
                             }
                             data-testid="input-password"
                           />
@@ -379,12 +425,25 @@ const Login: NextPage = () => {
                           </motion.div>
                           {showAnimation ? <Animation /> : null}
                         </Flex>
+                        {!isFromInvite && !isResetPassword && (
+                          <Flex justify="center" className="mt-4">
+                            <Link href="/forgot-password">
+                              <Button
+                                type="link"
+                                data-testid="forgot-password-btn"
+                              >
+                                Forgot password?
+                              </Button>
+                            </Link>
+                          </Flex>
+                        )}
                       </>
                     )}
                     {showUsernamePasswordInputs &&
                       showSSOButtons &&
-                      openidProviders && <Divider>or</Divider>}
-                    {showSSOButtons && openidProviders && (
+                      openidProviders &&
+                      !isResetPassword && <Divider>or</Divider>}
+                    {showSSOButtons && openidProviders && !isResetPassword && (
                       <OAuthLoginButtons openidProviders={openidProviders} />
                     )}
                   </Flex>
