@@ -776,6 +776,9 @@ dataset:
     - name: last_name
       data_categories:
       - user.name.last
+    - name: email_verified_at
+      data_categories:
+      - system.operations
     - name: password_reset_at
       data_categories:
       - system.operations
@@ -3290,6 +3293,20 @@ dataset:
         data_categories: [system.operations]
       - name: username
         data_categories: [user.account.username]
+  - name: fides_user_password_reset
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: hashed_token
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: salt
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: user_id
+        data_categories: [user.unique_id]
   - name: plus_consent_automation
     fields:
     - name: connection_config_id

@@ -187,6 +187,13 @@ declare global {
         type: "success" | "error" | "info" | "warning",
         text?: string,
       ) => Chainable;
+
+      /**
+       * Get the validation error message for an Ant Design Form.Item by field name
+       * @param fieldName The name attribute of the Form.Item
+       * @example cy.getAntFormError("email").should("contain", "Email is required");
+       */
+      getAntFormError: (fieldName: string) => Chainable;
     }
   }
 }
@@ -441,6 +448,10 @@ Cypress.Commands.add(
       cy.get(selector).should("contain", text);
     }
   },
+);
+
+Cypress.Commands.add("getAntFormError", (fieldName: string) =>
+  cy.get(`#${fieldName}_help .ant-form-item-explain-error`),
 );
 
 export {};

@@ -1,3 +1,25 @@
+import { AccessPolicy } from "./access-policies.slice";
+
+export enum ViewMode {
+  CARDS = "cards",
+  TABLE = "table",
+}
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
+/**
+ * AccessPolicy enriched with fields parsed from the embedded YAML.
+ * Used by the list page to avoid parsing YAML in every component.
+ */
+export interface AccessPolicyListItem extends AccessPolicy {
+  enabled: boolean;
+  priority: number;
+  decision?: ActionType;
+}
+
 export enum ActionType {
   ALLOW = "ALLOW",
   DENY = "DENY",
@@ -92,7 +114,7 @@ export interface AccessPolicyYaml {
   enabled?: boolean;
   priority?: number;
   controls?: string[];
-  decision: "ALLOW" | "DENY";
+  decision: ActionType;
   match: MatchBlock;
   unless?: UnlessItem[];
   action?: ActionBlock;
