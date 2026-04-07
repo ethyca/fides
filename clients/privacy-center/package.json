@@ -14,7 +14,7 @@
     "lint": "eslint --fix .",
     "lint:ci": "eslint .",
     "lint-staged:fix": "lint-staged --diff=main",
-    "format": "prettier --write .",
+    "format": "prettier --write --log-level warn .",
     "format:ci": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "jest",

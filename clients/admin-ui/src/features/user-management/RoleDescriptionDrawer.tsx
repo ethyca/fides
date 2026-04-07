@@ -1,28 +1,24 @@
-import { ChakraBox as Box, ChakraVStack as VStack } from "fidesui";
+import { Card, Flex, Typography } from "fidesui";
 
 import { ROLES } from "~/features/user-management/constants";
 
+const { Text, Title } = Typography;
+
 const RoleDescriptionDrawer = () => (
-  <Box>
-    <Box pb={4} fontSize="18px" fontWeight="semibold">
+  <div>
+    <Title level={5} className="pb-4">
       Role Description
-    </Box>
-    <VStack spacing={4}>
+    </Title>
+    <Flex vertical gap={16}>
       {ROLES.map((role) => (
-        <Box
-          width="100%"
-          key={role.roleKey}
-          padding={4}
-          borderRadius="md"
-          backgroundColor="gray.75"
-          fontSize="14px"
-        >
-          <Box fontWeight="semibold">{role.label}</Box>
-          <Box color="gray.700">{role.description}</Box>
-        </Box>
+        <Card key={role.roleKey} size="small">
+          <Text strong>{role.label}</Text>
+          <br />
+          <Text type="secondary">{role.description}</Text>
+        </Card>
       ))}
-    </VStack>
-  </Box>
+    </Flex>
+  </div>
 );
 
 export default RoleDescriptionDrawer;
