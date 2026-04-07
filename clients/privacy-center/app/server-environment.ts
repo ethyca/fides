@@ -18,7 +18,7 @@ import {
 } from "~/features/consent/helpers";
 import { Property } from "~/types/api";
 import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
-import { Config, LegacyConfig } from "~/types/config";
+import { Config, LegacyConfig, PrivacyCenterLink } from "~/types/config";
 
 /**
  * Subset of PrivacyCenterSettings that are for use only on server-side and
@@ -169,11 +169,110 @@ export const transformConfig = (config: LegacyConfig): Config => {
 };
 
 /**
+ * Check whether a string is a valid URL (http or https).
+ */
+const isValidUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Validate the config object
  */
 export const validateConfig = (
   input: Config | LegacyConfig,
 ): { isValid: boolean; message: string } => {
+  // Validate required top-level fields exist and are non-empty strings
+  const requiredStringFields: (keyof Config)[] = [
+    "title",
+    "description",
+    "logo_path",
+  ];
+  const missingFields = requiredStringFields.filter((field) => {
+    const value = (input as Record<string, unknown>)[field];
+    return typeof value !== "string" || value.trim().length === 0;
+  });
+  if (missingFields.length > 0) {
+    return {
+      isValid: false,
+      message: `Missing required field(s): ${missingFields.join(", ")}`,
+    };
+  }
+
+  // Validate actions array is present and non-empty
+  if (!Array.isArray(input.actions) || input.actions.length === 0) {
+    return {
+      isValid: false,
+      message:
+        "Missing required field(s): actions (must be a non-empty array)",
+    };
+  }
+
+  // Validate required fields within each action
+  const requiredActionFields: (keyof Config["actions"][number])[] = [
+    "title",
+    "description",
+    "icon_path",
+  ];
+  for (let i = 0; i < input.actions.length; i++) {
+    const action = input.actions[i];
+    const missingActionFields = requiredActionFields.filter((field) => {
+      const value = (action as Record<string, unknown>)[field];
+      return typeof value !== "string" || value.trim().length === 0;
+    });
+    if (missingActionFields.length > 0) {
+      return {
+        isValid: false,
+        message: `Missing required field(s) in actions[${i}]: ${missingActionFields.join(", ")}`,
+      };
+    }
+  }
+
+  // Validate URL fields have valid URL format when present
+  const urlFields: (keyof Config)[] = [
+    "server_url_development",
+    "server_url_production",
+    "logo_url",
+    "privacy_policy_url",
+  ];
+  const invalidUrls = urlFields.filter((field) => {
+    const value = (input as Record<string, unknown>)[field];
+    return typeof value === "string" && value.trim().length > 0 && !isValidUrl(value);
+  });
+  if (invalidUrls.length > 0) {
+    return {
+      isValid: false,
+      message: `Invalid URL(s): ${invalidUrls.join(", ")} (must use http or https)`,
+    };
+  }
+
+  // Validate links URLs
+  const links = (input as Record<string, unknown>).links as
+    | PrivacyCenterLink[]
+    | undefined;
+  if (Array.isArray(links)) {
+    const invalidLinks = links
+      .map((link: PrivacyCenterLink, i: number) => ({
+        index: i,
+        url: link.url,
+        label: link.label,
+      }))
+      .filter(({ url }) => typeof url === "string" && !isValidUrl(url));
+    if (invalidLinks.length > 0) {
+      const details = invalidLinks
+        .map(({ index, label }) => `links[${index}] ("${label}")`)
+        .join(", ");
+      return {
+        isValid: false,
+        message: `Invalid URL(s) in ${details} (must use http or https)`,
+      };
+    }
+  }
+
   // First, ensure we support LegacyConfig type if provided
   const config = transformConfig(input);
 
@@ -249,15 +348,13 @@ export const loadConfigFromFile = async (
   const file = await loadConfigFile(urls);
   if (file) {
     const parsedConfig = JSON.parse(file);
-    const config = transformConfig(parsedConfig);
     const { isValid, message } = validateConfig(parsedConfig);
-    // DEFER: add more validations here, log helpful warnings, etc.
-    // (see https://github.com/ethyca/fides/issues/3171)
     if (!isValid) {
-      console.warn("WARN: Configuration file is invalid! Message:", message);
-
-      return;
+      throw new Error(
+        `Privacy Center configuration is invalid and cannot start: ${message}`,
+      );
     }
+    const config = transformConfig(parsedConfig);
     return config;
   }
 };
