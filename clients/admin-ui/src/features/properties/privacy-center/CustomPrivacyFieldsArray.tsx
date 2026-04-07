@@ -2,12 +2,11 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
   ChakraFormLabel as FormLabel,
   ChakraInput as Input,
-  ChakraSmallAddIcon as SmallAddIcon,
   ChakraText as Text,
+  Icons,
   Select,
 } from "fidesui";
 import { useFormikContext } from "formik";
@@ -142,7 +141,7 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
               </Text>
               <Button
                 aria-label="Remove custom field"
-                icon={<DeleteIcon />}
+                icon={<Icons.TrashCan />}
                 onClick={() => handleRemove(index)}
                 loading={false}
                 data-testid={`remove-custom-field-${actionIndex}-${index}`}
@@ -262,7 +261,7 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
                         />
                         <Button
                           aria-label="Remove option"
-                          icon={<DeleteIcon />}
+                          icon={<Icons.TrashCan />}
                           onClick={() => handleRemoveOption(index, optIdx)}
                           loading={false}
                           data-testid={`remove-option-${actionIndex}-${index}-${optIdx}`}
@@ -271,7 +270,7 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
                     ))}
                     <Box>
                       <Button
-                        icon={<SmallAddIcon />}
+                        icon={<Icons.Add />}
                         onClick={() => handleAddOption(index)}
                         loading={false}
                         data-testid={`add-option-${actionIndex}-${index}`}
@@ -288,7 +287,7 @@ const CustomPrivacyFieldsArray = ({ actionIndex }: Props) => {
       })}
       <Box>
         <Button
-          icon={<SmallAddIcon />}
+          icon={<Icons.Add />}
           onClick={handleAdd}
           loading={false}
           data-testid={`add-custom-field-${actionIndex}`}

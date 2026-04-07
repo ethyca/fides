@@ -1,8 +1,8 @@
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
+  Icons,
 } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 
@@ -43,7 +43,7 @@ const DescriptionSubtextFieldArray = ({
               </Flex>
               <Button
                 aria-label={`Remove ${label.toLowerCase()} entry`}
-                icon={<DeleteIcon />}
+                icon={<Icons.TrashCan />}
                 onClick={() => arrayHelpers.remove(index)}
                 loading={false}
                 className="mb-1"

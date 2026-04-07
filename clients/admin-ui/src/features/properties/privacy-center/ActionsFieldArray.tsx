@@ -1,10 +1,9 @@
 import {
   Button,
   ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
   ChakraFlex as Flex,
-  ChakraSmallAddIcon as SmallAddIcon,
   ChakraText as Text,
+  Icons,
 } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 
@@ -38,7 +37,7 @@ const ActionsFieldArray = () => {
                 </Text>
                 <Button
                   aria-label="Remove action"
-                  icon={<DeleteIcon />}
+                  icon={<Icons.TrashCan />}
                   onClick={() => arrayHelpers.remove(index)}
                   loading={false}
                   disabled={actions.length === 1}
@@ -50,7 +49,7 @@ const ActionsFieldArray = () => {
           ))}
           <Box>
             <Button
-              icon={<SmallAddIcon />}
+              icon={<Icons.Add />}
               onClick={() => arrayHelpers.push({ ...DEFAULT_ACTION })}
               loading={false}
               data-testid="add-action-button"
