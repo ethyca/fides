@@ -12,8 +12,8 @@ import { DataCategoryInput } from "./DataCategoryInput";
 export const FORM_ID = "edit-collection-or-field-form";
 
 type FormValues =
-  | Pick<DatasetField, "description" | "data_categories">
-  | Pick<DatasetCollection, "description" | "data_categories">;
+  | Pick<DatasetField, "name" | "description" | "data_categories">
+  | Pick<DatasetCollection, "name" | "description" | "data_categories">;
 
 interface Props {
   values: FormValues;
@@ -51,6 +51,7 @@ export const EditCollectionOrFieldForm = ({
   const handleFinish = (formValues: { description: string }) => {
     // data categories need to be handled separately since they are not a typical form element
     const newValues: FormValues = {
+      name: values.name,
       ...formValues,
       data_categories: checkedDataCategories,
     };
@@ -66,7 +67,7 @@ export const EditCollectionOrFieldForm = ({
         description: values.description ?? "",
       }}
       onFinish={handleFinish}
-      key={values.description}
+      key={values.name}
     >
       <Form.Item
         name="description"
