@@ -100,6 +100,9 @@ export interface MockDataset {
   collectionCount: number;
   fieldCount: number;
   createdAt: string;
+  category?: string;
+  usage?: string;
+  status?: "approved" | "pending" | "draft";
 }
 
 export interface MockPrivacyRequests {
@@ -108,13 +111,26 @@ export interface MockPrivacyRequests {
   avgAccessDays: number;
   avgErasureDays: number;
   dsarEnabled: boolean;
+  statusBreakdown?: {
+    pending: number;
+    inProgress: number;
+    approved: number;
+    complete: number;
+    denied: number;
+    error: number;
+  };
 }
 
 export interface MockHistoryEntry {
   timestamp: string;
   action: string;
+  category: string;
   user: string;
   detail: string;
+  fieldName?: string;
+  oldValue?: string;
+  newValue?: string;
+  reason?: string;
 }
 
 export interface MockSystem {

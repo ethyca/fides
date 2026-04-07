@@ -68,9 +68,9 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     privacyRequests: { open: 3, closed: 18, avgAccessDays: 2.1, avgErasureDays: 4.5, dsarEnabled: true },
     history: [
-      { timestamp: "2026-03-25T14:00:00Z", action: "Steward assigned", user: "Anna Kim", detail: "Added Jack Gale as data steward" },
-      { timestamp: "2026-03-22T09:00:00Z", action: "Purpose updated", user: "System", detail: "Added Finance purpose" },
-      { timestamp: "2026-03-18T11:00:00Z", action: "Integration tested", user: "Anna Kim", detail: "Snowflake Read/Write — passed" },
+      { timestamp: "2026-03-25T14:00:00Z", action: "Steward assigned", category: "steward", user: "Anna Kim", detail: "Added Jack Gale as data steward" },
+      { timestamp: "2026-03-22T09:00:00Z", action: "Purpose updated", category: "purpose", user: "System", detail: "Added Finance purpose" },
+      { timestamp: "2026-03-18T11:00:00Z", action: "Integration tested", category: "integration", user: "Anna Kim", detail: "Snowflake Read/Write — passed" },
     ],
   }),
 
@@ -120,8 +120,8 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     privacyRequests: { open: 4, closed: 12, avgAccessDays: 3.2, avgErasureDays: 5.1, dsarEnabled: false },
     history: [
-      { timestamp: "2026-03-26T08:00:00Z", action: "Monitor completed", user: "System", detail: "PII field detector found 12 resources" },
-      { timestamp: "2026-03-24T14:00:00Z", action: "Integration failed", user: "System", detail: "Fivetran Read only — connection timeout" },
+      { timestamp: "2026-03-26T08:00:00Z", action: "Monitor completed", category: "integration", user: "System", detail: "PII field detector found 12 resources" },
+      { timestamp: "2026-03-24T14:00:00Z", action: "Integration failed", category: "integration", user: "System", detail: "Fivetran Read only — connection timeout" },
     ],
   }),
 
@@ -137,7 +137,7 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     classification: { approved: 52, pending: 5, unreviewed: 2, categories: [{ name: "Usage metrics", fieldCount: 59, approvedPercent: 88 }] },
     datasets: [{ name: "sync_logs", key: "fivetran_sync", collectionCount: 6, fieldCount: 59, createdAt: "2025-09-15" }],
     privacyRequests: { open: 0, closed: 3, avgAccessDays: 1.5, avgErasureDays: 2.0, dsarEnabled: true },
-    history: [{ timestamp: "2026-03-25T10:00:00Z", action: "Integration tested", user: "Anna Kim", detail: "Fivetran API — passed" }],
+    history: [{ timestamp: "2026-03-25T10:00:00Z", action: "Integration tested", category: "integration", user: "Anna Kim", detail: "Fivetran API — passed" }],
   }),
 
   s("dbt", "dbt", "Data transformation", "SQL-based data transformation and modeling tool.", {
@@ -151,7 +151,7 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     stewards: [{ initials: "JG", name: "Jack Gale" }],
     group: "Data engineering",
     classification: { approved: 20, pending: 10, unreviewed: 15, categories: [{ name: "Usage metrics", fieldCount: 45, approvedPercent: 44 }] },
-    history: [{ timestamp: "2026-03-20T09:00:00Z", action: "Purpose assigned", user: "Jack Gale", detail: "Added Analytics purpose" }],
+    history: [{ timestamp: "2026-03-20T09:00:00Z", action: "Purpose assigned", category: "purpose", user: "Jack Gale", detail: "Added Analytics purpose" }],
   }),
 
   s("airflow", "Airflow", "Orchestration", "Workflow orchestration platform for data pipelines.", {
@@ -183,7 +183,7 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     classification: { approved: 85, pending: 5, unreviewed: 3, categories: [{ name: "Behavioral data", fieldCount: 93, approvedPercent: 91 }] },
     datasets: [{ name: "events", key: "amplitude_events", collectionCount: 4, fieldCount: 93, createdAt: "2025-08-01" }],
     privacyRequests: { open: 1, closed: 8, avgAccessDays: 1.8, avgErasureDays: 3.0, dsarEnabled: true },
-    history: [{ timestamp: "2026-03-25T14:00:00Z", action: "Integration tested", user: "Rachel Smith", detail: "Amplitude API — passed" }],
+    history: [{ timestamp: "2026-03-25T14:00:00Z", action: "Integration tested", category: "integration", user: "Rachel Smith", detail: "Amplitude API — passed" }],
   }),
 
   s("google_ads", "Google Ads", "Ad platform", "Advertising platform for search and display ad campaigns.", {
@@ -418,16 +418,38 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { systemName: "Fraud Detection Service", systemKey: "fraud_detection", role: "producer", declaredUse: "Fraud prevention", authorizedUses: ["Fraud prevention"], hasViolation: false },
       { systemName: "Internal API", systemKey: "internal_api", role: "producer", declaredUse: "Customer support", authorizedUses: ["Customer support", "Analytics"], hasViolation: false },
     ],
-    classification: { approved: 22, pending: 2, unreviewed: 2, categories: [{ name: "Identity data", fieldCount: 26, approvedPercent: 85 }] },
+    classification: { approved: 612, pending: 486, unreviewed: 538, categories: [
+      { name: "Identity data", fieldCount: 420, approvedPercent: 82 },
+      { name: "Authentication tokens", fieldCount: 286, approvedPercent: 54 },
+      { name: "Session metadata", fieldCount: 196, approvedPercent: 41 },
+      { name: "Authorization rules", fieldCount: 142, approvedPercent: 68 },
+    ]},
+    datasets: [
+      { name: "auth0_users", key: "auth0_users", collectionCount: 12, fieldCount: 1842, createdAt: "2025-11-01", category: "Identity data", usage: "DSR Access, DSR Erasure", status: "approved" },
+      { name: "auth0_sessions", key: "auth0_sessions", collectionCount: 8, fieldCount: 956, createdAt: "2025-12-15", category: "Session metadata", usage: "DSR Access", status: "approved" },
+      { name: "auth0_logs", key: "auth0_logs", collectionCount: 5, fieldCount: 2314, createdAt: "2026-01-10", category: "Audit logs", usage: "Monitoring", status: "approved" },
+      { name: "auth0_tokens", key: "auth0_tokens", collectionCount: 3, fieldCount: 428, createdAt: "2026-02-01", category: "Authentication tokens", usage: "DSR Erasure", status: "pending" },
+      { name: "auth0_roles", key: "auth0_roles", collectionCount: 2, fieldCount: 186, createdAt: "2026-02-15", category: "Authorization", usage: "Access control", status: "approved" },
+      { name: "auth0_connections", key: "auth0_connections", collectionCount: 4, fieldCount: 312, createdAt: "2026-03-01", category: "Identity providers", usage: "Configuration", status: "draft" },
+    ],
+    privacyRequests: { open: 147, closed: 3842, avgAccessDays: 1.8, avgErasureDays: 3.2, dsarEnabled: true, statusBreakdown: { pending: 23, inProgress: 84, approved: 40, complete: 3842, denied: 12, error: 3 } },
     history: [
-      { timestamp: "2026-03-26T08:00:00Z", action: "Monitor completed", user: "System", detail: "Identity schema scan completed — 26 resources found" },
-      { timestamp: "2026-03-25T14:30:00Z", action: "Integration tested", user: "Jack Gale", detail: "Auth0 Management API — connection test passed" },
-      { timestamp: "2026-03-24T10:00:00Z", action: "Fields classified", user: "Jack Gale", detail: "22 identity fields approved, 2 pending review" },
-      { timestamp: "2026-03-22T09:00:00Z", action: "Purpose added", user: "Jack Gale", detail: "Added 'Customer support' purpose to Auth0" },
-      { timestamp: "2026-03-20T11:00:00Z", action: "Steward assigned", user: "Anna Kim", detail: "Jack Gale assigned as data steward" },
-      { timestamp: "2026-03-18T16:00:00Z", action: "System registered", user: "System", detail: "Auth0 added to system inventory via API discovery" },
-      { timestamp: "2026-03-15T09:00:00Z", action: "Integration added", user: "Jack Gale", detail: "Auth0 API integration configured with read access" },
-      { timestamp: "2026-03-12T14:00:00Z", action: "Monitor created", user: "Anna Kim", detail: "Identity schema scan monitor set to weekly frequency" },
+      { timestamp: "2026-03-26T08:00:00Z", action: "Monitor completed", category: "integration", user: "System", detail: "Identity schema scan completed — 26 resources found" },
+      { timestamp: "2026-03-25T16:45:00Z", action: "Label changed", category: "classification", user: "Jack Gale", detail: "Reclassified user.phone_number from contact to PII", fieldName: "user.phone_number", oldValue: "Contact info", newValue: "PII — Phone number", reason: "Field contains direct personal identifier per GDPR Art. 4" },
+      { timestamp: "2026-03-25T16:30:00Z", action: "Classification approved", category: "classification", user: "Jack Gale", detail: "Approved classification for user.email", fieldName: "user.email", newValue: "PII — Email address" },
+      { timestamp: "2026-03-25T16:20:00Z", action: "Classification approved", category: "classification", user: "Jack Gale", detail: "Approved classification for user.name", fieldName: "user.name", newValue: "PII — Full name" },
+      { timestamp: "2026-03-25T16:10:00Z", action: "Field reviewed", category: "classification", user: "Jack Gale", detail: "Reviewed user.last_login — marked as non-PII", fieldName: "user.last_login", newValue: "System metadata", reason: "Timestamp only, no personal data" },
+      { timestamp: "2026-03-25T14:30:00Z", action: "Integration tested", category: "integration", user: "Jack Gale", detail: "Auth0 Management API — connection test passed" },
+      { timestamp: "2026-03-24T11:00:00Z", action: "Label changed", category: "classification", user: "Anna Kim", detail: "Changed user.ip_address from system data to PII", fieldName: "user.ip_address", oldValue: "System data", newValue: "PII — IP address", reason: "IP addresses are personal data under GDPR recital 30" },
+      { timestamp: "2026-03-24T10:00:00Z", action: "Classification approved", category: "classification", user: "Jack Gale", detail: "Bulk approved 18 identity fields", fieldName: "user.* (18 fields)", newValue: "Identity data" },
+      { timestamp: "2026-03-23T15:00:00Z", action: "Category assigned", category: "classification", user: "Anna Kim", detail: "Assigned 'Identity data' category to Auth0 dataset", fieldName: "auth0_identity.*", newValue: "Identity data", reason: "All fields relate to user identity and authentication" },
+      { timestamp: "2026-03-22T09:00:00Z", action: "Purpose added", category: "purpose", user: "Jack Gale", detail: "Added 'Customer support' purpose to Auth0" },
+      { timestamp: "2026-03-21T14:00:00Z", action: "Purpose added", category: "purpose", user: "Jack Gale", detail: "Added 'Fraud prevention' purpose to Auth0" },
+      { timestamp: "2026-03-20T11:00:00Z", action: "Steward assigned", category: "steward", user: "Anna Kim", detail: "Jack Gale assigned as data steward" },
+      { timestamp: "2026-03-19T10:00:00Z", action: "Integration configured", category: "integration", user: "Jack Gale", detail: "Auth0 Management API added with read/write access and erasure scope" },
+      { timestamp: "2026-03-18T16:00:00Z", action: "System registered", category: "system", user: "System", detail: "Auth0 added to system inventory via API discovery" },
+      { timestamp: "2026-03-15T09:00:00Z", action: "Integration added", category: "integration", user: "Jack Gale", detail: "Auth0 API integration configured with read access" },
+      { timestamp: "2026-03-12T14:00:00Z", action: "Monitor created", category: "integration", user: "Anna Kim", detail: "Identity schema scan monitor set to weekly frequency" },
     ],
   }),
 

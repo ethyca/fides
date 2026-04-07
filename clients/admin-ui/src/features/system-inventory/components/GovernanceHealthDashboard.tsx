@@ -139,7 +139,7 @@ const GovernanceHealthDashboard = ({
               className="border-b border-solid border-[#f5f5f5] py-1.5 last:border-b-0"
             >
               <Text className="min-w-0 flex-1 truncate text-[11px]">{item.message}</Text>
-              <Flex align="center" gap={12} className="shrink-0 pl-4">
+              <Flex align="center" gap={40} className="shrink-0 pl-12">
                 <Avatar
                   size={20}
                   style={{ backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 9 }}

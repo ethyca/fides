@@ -60,10 +60,31 @@ export function computeGovernanceDimensions(
   );
 
   return [
-    { label: "Annotation", score: 85, color: "#b9704b" },
-    { label: "Purpose", score: 100, color: "#999b83" },
+    { label: "Annotation", score: 58, color: "#b9704b" },
     { label: "Compliance", score: 92, color: "#cecac2" },
-    { label: "Ownership", score: 100, color: "#2b2e35" },
+    { label: "Purpose", score: 84, color: "#999b83" },
+    { label: "Ownership", score: 66, color: "#2b2e35" },
+  ];
+}
+
+export function computeSystemDimensions(
+  system: MockSystem,
+): GovernanceDimension[] {
+  const annotationScore = system.annotation_percent;
+
+  const maxIssues = 5;
+  const complianceScore = Math.round(
+    Math.max(0, (1 - system.issue_count / maxIssues) * 100),
+  );
+
+  const purposeScore = system.purposes.length > 0 ? 100 : 0;
+  const ownershipScore = system.stewards.length > 0 ? 100 : 0;
+
+  return [
+    { label: "Annotation", score: annotationScore, color: "#b9704b" },
+    { label: "Compliance", score: complianceScore, color: "#cecac2" },
+    { label: "Purpose", score: purposeScore, color: "#999b83" },
+    { label: "Ownership", score: ownershipScore, color: "#2b2e35" },
   ];
 }
 

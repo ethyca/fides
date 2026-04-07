@@ -55,8 +55,9 @@ function getIssues(system: MockSystem): Issue[] {
   if (system.stewards.length === 0) {
     issues.push({ label: "No steward assigned", action: "Assign steward", href: `${base}#config`, severity: "warning" });
   }
-  if (system.classification.unreviewed > 0) {
-    issues.push({ label: `${system.classification.unreviewed} unreviewed fields`, action: "Review fields", href: `${base}#assets`, severity: "warning" });
+  const needsReview = system.classification.unreviewed + system.classification.pending;
+  if (needsReview > 0) {
+    issues.push({ label: `${needsReview.toLocaleString()} fields need review`, action: "Review fields", href: `${base}#assets`, severity: "warning" });
   }
   if (system.purposes.length === 0) {
     issues.push({ label: "No purposes defined", action: "Define purposes", href: `${base}#config`, severity: "warning" });

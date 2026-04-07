@@ -5,7 +5,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { useCountUp } from "~/home/useCountUp";
 
 import type { MockSystem } from "../types";
-import { computeGovernanceDimensions } from "../utils";
+import { computeSystemDimensions } from "../utils";
 
 interface SystemDetailDashboardV2Props {
   system: MockSystem;
@@ -19,9 +19,9 @@ const DIMENSION_COLORS = [
 ];
 
 function computeSystemScore(system: MockSystem): number {
-  const dims = computeGovernanceDimensions([system]);
+  const dims = computeSystemDimensions(system);
   if (dims.length === 0) return 0;
-  return Math.round(dims.reduce((s, d) => s + d.score, 0) / dims.length);
+  return Math.round(dims.reduce((s: number, d) => s + d.score, 0) / dims.length);
 }
 
 const MetricCard = ({
@@ -33,7 +33,7 @@ const MetricCard = ({
 }) => (
   <div
     style={{
-      backgroundColor: highlight ? palette.FIDESUI_BG_CAUTION : palette.FIDESUI_CORINTH,
+      backgroundColor: highlight ? palette.FIDESUI_BG_CAUTION : palette.FIDESUI_NEUTRAL_75,
     }}
     className="flex h-full w-full flex-col justify-between rounded-lg px-4 py-4"
   >
@@ -42,7 +42,7 @@ const MetricCard = ({
 );
 
 const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
-  const dimensions = computeGovernanceDimensions([system]);
+  const dimensions = computeSystemDimensions(system);
   const score = computeSystemScore(system);
   const animatedScore = useCountUp(score);
 
@@ -51,7 +51,7 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
       { name: dim.label, value: dim.score, color: DIMENSION_COLORS[i % DIMENSION_COLORS.length] },
     ];
     if (dim.score < 100) {
-      segments.push({ name: `${dim.label}-bg`, value: 100 - dim.score, color: "#f0f0f0" });
+      segments.push({ name: `${dim.label}-bg`, value: 100 - dim.score, color: "#e6e6e8" });
     }
     return segments;
   });
@@ -138,7 +138,7 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
         </MetricCard>
       </Col>
       <Col span={5} className="flex">
-        <MetricCard highlight={system.privacyRequests.open > 0}>
+        <MetricCard>
           <Text type="secondary" className="text-[10px] uppercase tracking-wider">
             Privacy Requests
           </Text>
