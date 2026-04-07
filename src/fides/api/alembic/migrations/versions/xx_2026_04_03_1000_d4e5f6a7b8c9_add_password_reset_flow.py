@@ -1,7 +1,7 @@
 """add email_verified_at and password reset token table
 
 Revision ID: d4e5f6a7b8c9
-Revises: d4e6f8a0b2c3
+Revises: b1c2d3e4f5a6
 Create Date: 2026-04-03 10:00:00.000000
 """
 
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "d4e5f6a7b8c9"
-down_revision = "d4e6f8a0b2c3"
+down_revision = "b1c2d3e4f5a6"
 branch_labels = None
 depends_on = None
 
