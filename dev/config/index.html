@@ -2244,7 +2244,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">573</span>
 <span class="normal">574</span>
 <span class="normal">575</span>
-<span class="normal">576</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2788,6 +2792,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Either enables the collection of audit log resource data or bypasses</span>
 <span class="c1"># the middleware</span>
 <span class="n">enable_audit_log_resource_middleware</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># The time in minutes for which a self-service password reset token is</span>
+<span class="c1"># valid. Must be between 15 and 60.</span>
+<span class="n">password_reset_token_ttl_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1"># The timeout in seconds for the transport socket</span>
 <span class="c1"># (``socket.settimeout``)</span>

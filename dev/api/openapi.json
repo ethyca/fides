@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.82.1b2.dev34+g8710b7589"
+    "version": "2.82.1b2.dev35+g964efc52f"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18921,6 +18921,114 @@
         }
       }
     },
+    "/api/v1/user/forgot-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Forgot Password",
+        "description": "Initiates a self-service password reset flow. Sends a reset email if the\nuser exists and has a verified email. Always returns 200 to prevent user\nenumeration (OWASP).",
+        "operationId": "forgot_password_api_v1_user_forgot_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserForgotPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Forgot Password Api V1 User Forgot Password Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/reset-password-with-token": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Reset Password With Token",
+        "description": "Resets a user's password using a valid, single-use reset token.\nReturns login credentials on success.",
+        "operationId": "reset_password_with_token_api_v1_user_reset_password_with_token_post",
+        "parameters": [
+          {
+            "name": "config_path_override",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Config Path Override"
+            }
+          },
+          {
+            "name": "verbose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Verbose"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserResetPasswordWithToken"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/user/{user_id}/permission": {
       "post": {
         "tags": [
@@ -28946,6 +29054,7 @@
           "privacy_request_review_deny",
           "privacy_request_review_approve",
           "user_invite",
+          "password_reset",
           "external_user_welcome",
           "manual_task_digest",
           "test_message"
@@ -38606,6 +38715,21 @@
         "title": "UserForcePasswordReset",
         "description": "Only a new password, for the case where the user does not remember their password"
       },
+      "UserForgotPassword": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "UserForgotPassword",
+        "description": "Request body for the forgot-password endpoint"
+      },
       "UserLogin": {
         "properties": {
           "username": {
@@ -38741,6 +38865,30 @@
         "title": "UserPermissionsResponse",
         "description": "Response after creating, editing, or retrieving a FidesUserPermissions record."
       },
+      "UserResetPasswordWithToken": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "new_password": {
+            "type": "string",
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "token",
+          "new_password"
+        ],
+        "title": "UserResetPasswordWithToken",
+        "description": "Request body for resetting a password with a token"
+      },
       "UserResponse": {
         "properties": {
           "id": {
@@ -38812,6 +38960,18 @@
               }
             ],
             "title": "Disabled Reason"
+          },
+          "email_verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Verified At"
           },
           "has_invite": {
             "anyOf": [

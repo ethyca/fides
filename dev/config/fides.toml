@@ -543,6 +543,10 @@ domain_validation_mode = "monitor" #
 # the middleware
 enable_audit_log_resource_middleware = false # boolean
 
+# The time in minutes for which a self-service password reset token is
+# valid. Must be between 15 and 60.
+password_reset_token_ttl_minutes = 30 # integer
+
 # The timeout in seconds for the transport socket
 # (``socket.settimeout``)
 bastion_server_ssh_timeout = 0.1 # number
