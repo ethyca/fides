@@ -209,7 +209,12 @@ class TestCacheTaskTrackingKey:
         cache_task_tracking_key(privacy_request.id, "test_1234")
 
         raw_cache = get_cache()
-        ttl = raw_cache.ttl(get_async_task_tracking_cache_key(privacy_request.id))
+        # Check new-format key; fall back to legacy key for backward compat
+        new_key = f"dsr:{privacy_request.id}:async_execution"
+        legacy_key = get_async_task_tracking_cache_key(privacy_request.id)
+        ttl = raw_cache.ttl(new_key)
+        if ttl == -2:
+            ttl = raw_cache.ttl(legacy_key)
         assert ttl > 0
 
     def test_cache_tracking_key_request_task(self, request_task):

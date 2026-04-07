@@ -8,6 +8,7 @@ export * from "./CustomDropdown";
 export * from "./CustomInput";
 export * from "./CustomList";
 export * from "./CustomSelect";
+export * from "./CustomSpin";
 export * from "./CustomStatistic";
 export * from "./CustomTable";
 export * from "./CustomTag";
