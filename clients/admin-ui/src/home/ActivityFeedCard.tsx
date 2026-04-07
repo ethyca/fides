@@ -3,11 +3,9 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Avatar, Card, Flex, Icons, SparkleIcon, Spin, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import { motion } from "motion/react";
 import NextLink from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { usePrefersReducedMotion } from "~/features/common/hooks";
 import {
   ACTION_CTA,
   ACTIVITY_FILTER_OPTIONS,
@@ -64,10 +62,7 @@ const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
           <Text className={styles.attributionText}>{attribution}</Text>
         )}
       </Flex>
-      <Text
-        type="secondary"
-        style={{ fontSize: "var(--ant-font-size-sm)", flexShrink: 0 }}
-      >
+      <Text type="secondary" className={styles.timestampText}>
         {dayjs(item.timestamp).fromNow()}
       </Text>
     </Flex>
@@ -76,7 +71,6 @@ const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
 
 export const ActivityFeedCard = () => {
   const [activeFilter, setActiveFilter] = useState<string>("all");
-  const reduceMotion = usePrefersReducedMotion();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const actorType = activeFilter === "all" ? undefined : activeFilter;
@@ -102,14 +96,6 @@ export const ActivityFeedCard = () => {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [loadMore, items.length]);
-
-  const motionProps = reduceMotion
-    ? {}
-    : {
-        initial: { opacity: 0, y: 8 },
-        animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.2, ease: "easeOut" as const },
-      };
 
   return (
     <Card
@@ -147,7 +133,7 @@ export const ActivityFeedCard = () => {
               const href = cta ? cta.route(item.action_data ?? {}) : null;
 
               return (
-                <motion.div key={item.id} {...motionProps}>
+                <div key={item.id}>
                   {href ? (
                     <NextLink
                       href={href}
@@ -165,14 +151,14 @@ export const ActivityFeedCard = () => {
                       <FeedItemContent item={item} />
                     </div>
                   )}
-                </motion.div>
+                </div>
               );
             })}
             {hasMore && <div ref={sentinelRef} className="h-px shrink-0" />}
           </>
         )}
         {isFetching && (
-          <Flex justify="center" style={{ padding: 12 }}>
+          <Flex justify="center" align="center" className="h-full">
             <Spin size="small" />
           </Flex>
         )}

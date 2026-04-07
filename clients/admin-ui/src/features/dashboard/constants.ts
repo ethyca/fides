@@ -5,6 +5,7 @@ import {
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
 
+import type { ActivityFeedItem } from "./types";
 import { ActionSeverity, ActionType, PostureBand } from "./types";
 
 export const DIMENSION_DESCRIPTIONS: Record<string, string> = {
@@ -120,7 +121,10 @@ export const ACTIVITY_FILTER_OPTIONS = [
   { label: "Agent", value: "agent" },
 ] as const;
 
-export const EVENT_SOURCE_LABELS: Record<string, string> = {
+export const EVENT_SOURCE_LABELS: Record<
+  NonNullable<ActivityFeedItem["event_source"]>,
+  string
+> = {
   helios: "Helios",
   janus: "Janus",
   lethe: "Lethe",

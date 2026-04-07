@@ -63,3 +63,8 @@
   font-size: var(--ant-font-size-sm);
   color: var(--ant-color-text-quaternary);
 }
+
+.timestampText {
+  font-size: var(--ant-font-size-sm);
+  flex-shrink: 0;
+}

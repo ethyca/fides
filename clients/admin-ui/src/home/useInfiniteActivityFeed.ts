@@ -99,10 +99,10 @@ export const useInfiniteActivityFeed = ({
   }, [deepData, page]);
 
   const loadMore = useCallback(() => {
-    if (!isFetchingDeep && hasMore) {
+    if (!isFetchingDeep && !isFetchingPage1 && hasMore) {
       setPage((prev) => prev + 1);
     }
-  }, [isFetchingDeep, hasMore]);
+  }, [isFetchingDeep, isFetchingPage1, hasMore]);
 
   // Show spinner for initial load, filter resets, or when loading deeper pages,
   // but not during background poll refreshes.
