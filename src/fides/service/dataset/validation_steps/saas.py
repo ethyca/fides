@@ -23,7 +23,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
 )
 
 
-def _validate_saas_dataset(
+def validate_saas_dataset(
     connection_config: ConnectionConfig, dataset: FideslangDataset
 ) -> None:
     if connection_config.saas_config is None:
@@ -53,7 +53,7 @@ def _validate_saas_dataset(
 MUTABLE_DATASET_FIELDS = {"collections"}
 
 
-def _restore_immutable_fields(
+def restore_immutable_fields(
     dataset: FideslangDataset,
     existing_dataset: Optional[FideslangDataset] = None,
 ) -> List[DatasetFieldWarning]:
@@ -88,9 +88,7 @@ def _restore_immutable_fields(
     return warnings
 
 
-def _find_field_by_name(
-    fields: list[DatasetField], name: str
-) -> Optional[DatasetField]:
+def find_field_by_name(fields: list[DatasetField], name: str) -> Optional[DatasetField]:
     """Find a field by name in a list of dataset fields."""
     for field in fields:
         if field.name == name:
@@ -98,7 +96,7 @@ def _find_field_by_name(
     return None
 
 
-def _resolve_field_path(
+def resolve_field_path(
     fields: list[DatasetField], dot_path: str
 ) -> Optional[DatasetField]:
     """
@@ -111,14 +109,14 @@ def _resolve_field_path(
     current_fields = fields
     resolved: Optional[DatasetField] = None
     for part in parts:
-        resolved = _find_field_by_name(current_fields, part)
+        resolved = find_field_by_name(current_fields, part)
         if resolved is None:
             return None
         current_fields = resolved.fields or []
     return resolved
 
 
-def _restore_nested_field(
+def restore_nested_field(
     parent_fields: list[DatasetField],
     path_parts: list[str],
     existing_parent_fields: list[DatasetField],
@@ -136,15 +134,15 @@ def _restore_nested_field(
 
     if len(path_parts) == 1:
         # Leaf – restore directly from existing
-        existing_field = _find_field_by_name(existing_parent_fields, name)
+        existing_field = find_field_by_name(existing_parent_fields, name)
         if existing_field:
             parent_fields.append(existing_field)
             return True
         return False
 
     # Intermediate – make sure the container exists in parent_fields
-    container = _find_field_by_name(parent_fields, name)
-    existing_container = _find_field_by_name(existing_parent_fields, name)
+    container = find_field_by_name(parent_fields, name)
+    existing_container = find_field_by_name(existing_parent_fields, name)
     if existing_container is None:
         return False
 
@@ -156,14 +154,14 @@ def _restore_nested_field(
     # Container exists – recurse
     if container.fields is None:
         container.fields = []
-    return _restore_nested_field(
+    return restore_nested_field(
         container.fields,
         path_parts[1:],
         existing_container.fields or [],
     )
 
 
-def _restore_protected_structure(
+def restore_protected_structure(
     connection_config: ConnectionConfig,
     dataset: FideslangDataset,
     existing_dataset: Optional[FideslangDataset] = None,
@@ -273,12 +271,12 @@ def _restore_protected_structure(
         if not collection:
             continue
 
-        if _resolve_field_path(collection.fields, field_path) is None:
+        if resolve_field_path(collection.fields, field_path) is None:
             # Field was deleted — restore from existing dataset
             existing_collection = existing_collections_by_name.get(collection_name)
             if existing_collection:
                 path_parts = field_path.split(".")
-                restored = _restore_nested_field(
+                restored = restore_nested_field(
                     collection.fields,
                     path_parts,
                     existing_collection.fields,
@@ -310,7 +308,7 @@ class SaaSValidationStep(DatasetValidationStep):
             context.connection_config
             and context.connection_config.connection_type == ConnectionType.saas
         ):
-            _validate_saas_dataset(context.connection_config, context.dataset)
+            validate_saas_dataset(context.connection_config, context.dataset)
 
             # Fetch the existing dataset once and pass to both helpers
             existing_record = (
@@ -331,10 +329,10 @@ class SaaSValidationStep(DatasetValidationStep):
 
             # Restore immutable fields and protected structure instead of rejecting
             context.warnings.extend(
-                _restore_immutable_fields(context.dataset, existing_dataset)
+                restore_immutable_fields(context.dataset, existing_dataset)
             )
             context.warnings.extend(
-                _restore_protected_structure(
+                restore_protected_structure(
                     context.connection_config, context.dataset, existing_dataset
                 )
             )
