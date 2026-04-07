@@ -1,6 +1,7 @@
-import { Col, Divider, Flex, Input, Row, Text, Title } from "fidesui";
+import { Col, Divider, Flex, Input, Row, Select, Text, Title } from "fidesui";
 import { useMemo, useState } from "react";
 
+import { MOCK_SYSTEM_ASSIGNMENTS } from "./mockData";
 import PurposeCard from "./PurposeCard";
 import { formatDataUse } from "./purposeUtils";
 import type { DataPurpose, PurposeSummary } from "./types";
@@ -12,13 +13,52 @@ interface PurposeCardGridProps {
 
 const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
   const [search, setSearch] = useState("");
+  const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
+  const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
+
+  const consumerOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const options: { value: string; label: string }[] = [];
+    Object.values(MOCK_SYSTEM_ASSIGNMENTS).forEach((assignments) => {
+      assignments
+        .filter((a) => a.assigned)
+        .forEach((a) => {
+          if (!seen.has(a.system_id)) {
+            seen.add(a.system_id);
+            options.push({ value: a.system_id, label: a.system_name });
+          }
+        });
+    });
+    return options.sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
+
+  const dataUseOptions = useMemo(
+    () =>
+      [...new Set(purposes.map((p) => p.data_use))].map((du) => ({
+        value: du,
+        label: formatDataUse(du),
+      })),
+    [purposes],
+  );
 
   const filtered = useMemo(
     () =>
-      purposes.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [purposes, search],
+      purposes.filter((p) => {
+        if (search && !p.name.toLowerCase().includes(search.toLowerCase()))
+          return false;
+        if (dataUseFilter && p.data_use !== dataUseFilter) return false;
+        if (consumerFilter) {
+          const assignments = MOCK_SYSTEM_ASSIGNMENTS[p.id] ?? [];
+          if (
+            !assignments.some(
+              (a) => a.assigned && a.system_id === consumerFilter,
+            )
+          )
+            return false;
+        }
+        return true;
+      }),
+    [purposes, search, dataUseFilter, consumerFilter],
   );
 
   const groups = useMemo(() => {
@@ -34,15 +74,35 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
 
   return (
     <div>
-      <Input
-        placeholder="Search purposes..."
-        value={search}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setSearch(e.target.value)
-        }
-        allowClear
-        style={{ width: 300, marginBottom: 24 }}
-      />
+      <Flex justify="space-between" align="center" className="mb-6">
+        <Input
+          placeholder="Search purposes..."
+          value={search}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setSearch(e.target.value)
+          }
+          allowClear
+          style={{ width: 280 }}
+        />
+        <Flex gap={8}>
+          <Select
+            placeholder="Consumer"
+            allowClear
+            style={{ width: 200 }}
+            options={consumerOptions}
+            value={consumerFilter}
+            onChange={(v) => setConsumerFilter(v ?? null)}
+          />
+          <Select
+            placeholder="Data use"
+            allowClear
+            style={{ width: 200 }}
+            options={dataUseOptions}
+            value={dataUseFilter}
+            onChange={(v) => setDataUseFilter(v ?? null)}
+          />
+        </Flex>
+      </Flex>
       {groups.map(([dataUse, items]) => {
         const groupSystemCount = items.reduce((sum, p) => {
           const s = summaries.find((su) => su.id === p.id);

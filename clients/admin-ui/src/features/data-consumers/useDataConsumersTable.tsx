@@ -36,7 +36,7 @@ const useDataConsumersTable = () => {
       if (typeFilter && c.type !== typeFilter) {
         return false;
       }
-      if (statusFilter === "has_violations" && c.violationCount <= 0) {
+      if (statusFilter === "has_findings" && c.findingsCount <= 0) {
         return false;
       }
       if (statusFilter === "no_purposes" && c.purposes.length > 0) {
@@ -44,7 +44,7 @@ const useDataConsumersTable = () => {
       }
       if (
         statusFilter === "healthy" &&
-        (c.violationCount > 0 || c.purposes.length === 0)
+        (c.findingsCount > 0 || c.purposes.length === 0)
       ) {
         return false;
       }
@@ -110,19 +110,17 @@ const useDataConsumersTable = () => {
         },
       },
       {
-        title: "Violations",
-        key: "violations",
-        width: 120,
-        render: (_, { violationCount, purposes }) => {
+        title: "Status",
+        key: "status",
+        width: 140,
+        render: (_, { findingsCount, purposes }) => {
           if (purposes.length === 0) {
-            return <Tag color={CUSTOM_TAG_COLOR.WARNING}>No purposes</Tag>;
+            return <Tag color={CUSTOM_TAG_COLOR.WARNING}>Needs setup</Tag>;
           }
-          if (violationCount > 0) {
-            return (
-              <Tag color={CUSTOM_TAG_COLOR.ERROR}>{violationCount}</Tag>
-            );
+          if (findingsCount > 0) {
+            return <Tag color={CUSTOM_TAG_COLOR.ERROR}>Non-compliant</Tag>;
           }
-          return <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>0</Tag>;
+          return <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Compliant</Tag>;
         },
       },
     ],
