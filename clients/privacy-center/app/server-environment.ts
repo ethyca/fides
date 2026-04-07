@@ -207,8 +207,7 @@ export const validateConfig = (
   if (!Array.isArray(input.actions) || input.actions.length === 0) {
     return {
       isValid: false,
-      message:
-        "Missing required field(s): actions (must be a non-empty array)",
+      message: "Missing required field(s): actions (must be a non-empty array)",
     };
   }
 
@@ -218,7 +217,7 @@ export const validateConfig = (
     "description",
     "icon_path",
   ];
-  for (let i = 0; i < input.actions.length; i++) {
+  for (let i = 0; i < input.actions.length; i += 1) {
     const action = input.actions[i];
     const missingActionFields = requiredActionFields.filter((field) => {
       const value = (action as Record<string, unknown>)[field];
@@ -241,7 +240,9 @@ export const validateConfig = (
   ];
   const invalidUrls = urlFields.filter((field) => {
     const value = (input as Record<string, unknown>)[field];
-    return typeof value === "string" && value.trim().length > 0 && !isValidUrl(value);
+    return (
+      typeof value === "string" && value.trim().length > 0 && !isValidUrl(value)
+    );
   });
   if (invalidUrls.length > 0) {
     return {
