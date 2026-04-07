@@ -18,7 +18,6 @@ const s = (
   annotation_percent: 0,
   health: HealthStatus.HEALTHY,
   issues: [],
-  violation_count: 0,
   issue_count: 0,
   stewards: [],
   group: null,
@@ -41,11 +40,12 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     roles: ["producer", "consumer"],
     purposes: [{ name: "Analytics", color: "info" }, { name: "Fraud prevention", color: "alert" }, { name: "Finance", color: "success" }, { name: "Customer support", color: "default" }, { name: "Marketing", color: "warning" }, { name: "HR", color: "default" }],
     annotation_percent: 78,
-    health: HealthStatus.VIOLATIONS,
-    violation_count: 2,
+    health: HealthStatus.ISSUES,
+
     issue_count: 0,
     stewards: [{ initials: "AK", name: "Anna Kim" }, { initials: "JG", name: "Jack Gale" }],
     group: "Data engineering",
+    agentBriefing: "Snowflake is a critical data warehouse serving analytics and ML workloads. 78% annotation coverage is solid but 22% of fields remain unreviewed. Prioritize completing field classification and reviewing the BigQuery data flow.",
     integrations: [
       { name: "Snowflake — Read/Write", type: "Snowflake", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T10:00:00Z", enabledActions: ["access", "erasure"] },
     ],
@@ -80,8 +80,8 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     roles: ["producer", "consumer"],
     purposes: [{ name: "Analytics", color: "info" }, { name: "Finance", color: "success" }, { name: "Fraud prevention", color: "alert" }, { name: "Marketing", color: "warning" }, { name: "Customer support", color: "default" }],
     annotation_percent: 62,
-    health: HealthStatus.VIOLATIONS,
-    violation_count: 1,
+    health: HealthStatus.ISSUES,
+
     issue_count: 2,
     issues: [
       { title: "High % unreviewed fields", severity: "warning", resolveHref: "#assets" },
@@ -89,6 +89,7 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     stewards: [{ initials: "AK", name: "Anna Kim" }],
     group: "Data engineering",
+    agentBriefing: "BigQuery has 2 governance issues including a failed Fivetran integration. 62% annotation coverage needs improvement — 30 fields are unreviewed. DSAR automation is not yet enabled despite active integrations.",
     integrations: [
       { name: "Google Cloud — Read/Write", type: "BigQuery", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T08:00:00Z", enabledActions: ["access", "erasure"] },
       { name: "Fivetran — Read only", type: "Fivetran", accessLevel: "Read", status: "failed", lastTested: "2026-03-23T12:00:00Z", enabledActions: ["access"] },
@@ -220,12 +221,13 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     roles: ["consumer"],
     purposes: [{ name: "Marketing", color: "warning" }, { name: "Analytics", color: "info" }],
     annotation_percent: 0,
-    health: HealthStatus.VIOLATIONS,
-    violation_count: 2,
+    health: HealthStatus.ISSUES,
+
     issue_count: 1,
     issues: [{ title: "No data steward assigned", severity: "warning", resolveHref: "#information" }],
     stewards: [],
     group: "Growth",
+    agentBriefing: "Marketing Analytics has no data steward assigned and multiple governance issues. With 0% annotation coverage, this system is a significant governance risk. Assign a steward from the Marketing team and begin field classification immediately.",
     history: [],
   }),
 
@@ -234,8 +236,8 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     roles: ["consumer"],
     purposes: [{ name: "Analytics", color: "info" }],
     annotation_percent: 0,
-    health: HealthStatus.VIOLATIONS,
-    violation_count: 1,
+    health: HealthStatus.ISSUES,
+
     issue_count: 2,
     issues: [
       { title: "Needs classification", severity: "warning", resolveHref: "#assets" },
@@ -403,9 +405,30 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "JG", name: "Jack Gale" }],
     group: "Customer platform",
-    integrations: [{ name: "Auth0 API", type: "Auth0", accessLevel: "Read", status: "active", lastTested: "2026-03-26T07:00:00Z", enabledActions: ["access"] }],
+    integrations: [
+      { name: "Auth0 API", type: "Auth0", accessLevel: "Read", status: "active", lastTested: "2026-03-26T07:00:00Z", enabledActions: ["access"] },
+      { name: "Auth0 Management API", type: "Auth0", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-25T14:00:00Z", enabledActions: ["access", "erasure"] },
+    ],
+    monitors: [
+      { name: "Identity schema scan", frequency: "Weekly", status: "completed", lastRun: "2026-03-25T06:00:00Z", resourceCount: 26 },
+      { name: "Token usage monitor", frequency: "Daily", status: "completed", lastRun: "2026-03-26T02:00:00Z", resourceCount: 8 },
+    ],
+    relationships: [
+      { systemName: "Segment", systemKey: "segment", role: "producer", declaredUse: "Analytics", authorizedUses: ["Analytics"], hasViolation: false },
+      { systemName: "Fraud Detection Service", systemKey: "fraud_detection", role: "producer", declaredUse: "Fraud prevention", authorizedUses: ["Fraud prevention"], hasViolation: false },
+      { systemName: "Internal API", systemKey: "internal_api", role: "producer", declaredUse: "Customer support", authorizedUses: ["Customer support", "Analytics"], hasViolation: false },
+    ],
     classification: { approved: 22, pending: 2, unreviewed: 2, categories: [{ name: "Identity data", fieldCount: 26, approvedPercent: 85 }] },
-    history: [],
+    history: [
+      { timestamp: "2026-03-26T08:00:00Z", action: "Monitor completed", user: "System", detail: "Identity schema scan completed — 26 resources found" },
+      { timestamp: "2026-03-25T14:30:00Z", action: "Integration tested", user: "Jack Gale", detail: "Auth0 Management API — connection test passed" },
+      { timestamp: "2026-03-24T10:00:00Z", action: "Fields classified", user: "Jack Gale", detail: "22 identity fields approved, 2 pending review" },
+      { timestamp: "2026-03-22T09:00:00Z", action: "Purpose added", user: "Jack Gale", detail: "Added 'Customer support' purpose to Auth0" },
+      { timestamp: "2026-03-20T11:00:00Z", action: "Steward assigned", user: "Anna Kim", detail: "Jack Gale assigned as data steward" },
+      { timestamp: "2026-03-18T16:00:00Z", action: "System registered", user: "System", detail: "Auth0 added to system inventory via API discovery" },
+      { timestamp: "2026-03-15T09:00:00Z", action: "Integration added", user: "Jack Gale", detail: "Auth0 API integration configured with read access" },
+      { timestamp: "2026-03-12T14:00:00Z", action: "Monitor created", user: "Anna Kim", detail: "Identity schema scan monitor set to weekly frequency" },
+    ],
   }),
 
   s("segment", "Segment", "CDP", "Customer data platform for event collection and routing.", {
@@ -482,6 +505,7 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { title: "Needs classification", severity: "warning", resolveHref: "#assets" },
     ],
     stewards: [],
+    agentBriefing: "Slack has 3 governance issues: no steward, no integration, and no classification. With only 20% annotation coverage, this system needs foundational governance setup. Assign an IT team steward and configure the Slack API integration.",
     history: [],
   }),
 
@@ -503,8 +527,8 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     roles: ["producer"],
     purposes: [],
     annotation_percent: 15,
-    health: HealthStatus.VIOLATIONS,
-    violation_count: 1,
+    health: HealthStatus.ISSUES,
+
     issue_count: 3,
     issues: [
       { title: "No data steward assigned", severity: "warning", resolveHref: "#information" },
@@ -512,6 +536,7 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { title: "Needs classification", severity: "warning", resolveHref: "#assets" },
     ],
     stewards: [],
+    agentBriefing: "Legacy CRM is being decommissioned but still has 3 unresolved governance issues. No steward is assigned and annotation coverage is only 15%. Ensure data flows are properly shut down before decommission.",
     history: [],
   }),
 

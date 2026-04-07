@@ -1,4 +1,6 @@
-import { HealthStatus } from "./types";
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
+import { HealthStatus, SystemCapability } from "./types";
 
 export const HEALTH_CONFIG: Record<
   HealthStatus,
@@ -13,11 +15,6 @@ export const HEALTH_CONFIG: Record<
     label: "Issues",
     color: "warning",
     dotColor: "#e59d47",
-  },
-  [HealthStatus.VIOLATIONS]: {
-    label: "Violations",
-    color: "error",
-    dotColor: "#d9534f",
   },
 };
 
@@ -46,9 +43,8 @@ export const SYSTEM_TYPE_OPTIONS = [
 ].map((t) => ({ label: t, value: t }));
 
 export const HEALTH_FILTER_OPTIONS = [
+  { label: "Needs attention", value: HealthStatus.ISSUES },
   { label: "Healthy", value: HealthStatus.HEALTHY },
-  { label: "Has issues", value: HealthStatus.ISSUES },
-  { label: "Has violations", value: HealthStatus.VIOLATIONS },
 ];
 
 export const INTEGRATION_STATUS_COLORS: Record<string, string> = {
@@ -62,4 +58,12 @@ export const MONITOR_STATUS_COLORS: Record<string, string> = {
   completed: "success",
   processing: "warning",
   failed: "error",
+};
+
+export const CAPABILITY_TAG_COLORS: Record<SystemCapability, `${CUSTOM_TAG_COLOR}`> = {
+  [SystemCapability.DSAR]: CUSTOM_TAG_COLOR.OLIVE,
+  [SystemCapability.MONITORING]: CUSTOM_TAG_COLOR.SANDSTONE,
+  [SystemCapability.CONSENT]: CUSTOM_TAG_COLOR.NECTAR,
+  [SystemCapability.INTEGRATIONS]: CUSTOM_TAG_COLOR.MINOS,
+  [SystemCapability.CLASSIFICATION]: CUSTOM_TAG_COLOR.TERRACOTTA,
 };

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 
 import { MOCK_SYSTEMS } from "../mock-data";
-import { HealthStatus, type SystemInventoryStats } from "../types";
+import { HealthStatus, type GovernanceHealthData, type SystemInventoryStats } from "../types";
+import { computeGovernanceHealth } from "../utils";
 
 export const useSystemInventory = () => {
   const [search, setSearch] = useState("");
@@ -48,11 +49,29 @@ export const useSystemInventory = () => {
   const stats: SystemInventoryStats = useMemo(
     () => ({
       total: systems.length,
-      violations: systems.filter((s) => s.health === HealthStatus.VIOLATIONS).length,
+      violations: 0,
       issues: systems.filter((s) => s.health === HealthStatus.ISSUES).length,
       healthy: systems.filter((s) => s.health === HealthStatus.HEALTHY).length,
     }),
     [systems],
+  );
+
+  const governanceHealth: GovernanceHealthData = useMemo(
+    () => computeGovernanceHealth(systems),
+    [systems],
+  );
+
+  const needsAttention = useMemo(
+    () =>
+      filtered
+        .filter((s) => s.health !== HealthStatus.HEALTHY)
+        .sort((a, b) => b.issue_count - a.issue_count),
+    [filtered],
+  );
+
+  const healthy = useMemo(
+    () => filtered.filter((s) => s.health === HealthStatus.HEALTHY),
+    [filtered],
   );
 
   const purposeOptions = useMemo(() => {
@@ -73,6 +92,9 @@ export const useSystemInventory = () => {
 
   return {
     systems: filtered,
+    needsAttention,
+    healthy,
+    governanceHealth,
     stats,
     search,
     setSearch,

@@ -1,7 +1,41 @@
 export enum HealthStatus {
   HEALTHY = "healthy",
   ISSUES = "issues",
-  VIOLATIONS = "violations",
+}
+
+export enum SystemCapability {
+  DSAR = "DSARs",
+  MONITORING = "Monitoring",
+  CONSENT = "Consent",
+  INTEGRATIONS = "Integrations",
+  CLASSIFICATION = "Classification",
+}
+
+export interface GovernanceDimension {
+  label: string;
+  score: number;
+  color: string;
+}
+
+export interface GovernanceHealthData {
+  score: number;
+  dimensions: GovernanceDimension[];
+  annotationAvg: number;
+  systemsWithPurposes: number;
+  systemsWithStewards: number;
+  totalIssues: number;
+  healthBreakdown: {
+    healthy: number;
+    issues: number;
+  };
+  annotationTrend: number[];
+  stewardTrend: number[];
+  purposeTrend: number[];
+}
+
+export interface SystemQuickAction {
+  label: string;
+  href: string;
 }
 
 export interface GovernanceIssue {
@@ -95,11 +129,11 @@ export interface MockSystem {
   annotation_percent: number;
   health: HealthStatus;
   issues: GovernanceIssue[];
-  violation_count: number;
   issue_count: number;
   stewards: MockSteward[];
   group: string | null;
   logoDomain: string | null;
+  agentBriefing?: string;
   // Detail page data
   integrations: MockIntegration[];
   monitors: MockMonitor[];

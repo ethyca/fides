@@ -1,12 +1,12 @@
 import { ArrowDownRight, ArrowUpRight } from "@carbon/icons-react";
-import { Avatar, Card, Divider, Flex, Tag, Text } from "fidesui";
+import { Avatar, Card, Divider, Flex, Progress, Tag, Text } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 
 import { getBrandIconUrl } from "~/features/common/utils";
 
-import { HEALTH_CONFIG } from "../constants";
-import HealthBadge from "./HealthBadge";
 import type { MockSystem } from "../types";
+import HealthBadge from "./HealthBadge";
 
 interface SystemCardProps {
   system: MockSystem;
@@ -15,18 +15,16 @@ interface SystemCardProps {
 const SystemCard = ({ system }: SystemCardProps) => {
   const router = useRouter();
 
-  const totalIssues = system.violation_count + system.issue_count;
+  const totalIssues = system.issue_count;
   const isProducer = system.roles.includes("producer");
   const isConsumer = system.roles.includes("consumer");
-  const borderColor = HEALTH_CONFIG[system.health].dotColor;
-
   return (
     <Card
       size="small"
       style={{
         cursor: "pointer",
         height: "100%",
-        borderLeft: `4px solid ${borderColor}`,
+        backgroundColor: palette.FIDESUI_CORINTH,
       }}
       className="transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
       onClick={() => router.push(`/system-inventory/${system.fides_key}`)}
@@ -58,12 +56,12 @@ const SystemCard = ({ system }: SystemCardProps) => {
           {system.purposes.length > 0 ? (
             <>
               {system.purposes.slice(0, 4).map((p) => (
-                <Tag key={p.name} bordered={false} className="shrink-0 text-xs">
+                <Tag key={p.name} bordered={false} className="shrink-0 text-xs" style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}>
                   {p.name}
                 </Tag>
               ))}
               {system.purposes.length > 4 && (
-                <Tag bordered={false} className="shrink-0 text-xs">
+                <Tag bordered={false} className="shrink-0 text-xs" style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}>
                   +{system.purposes.length - 4} more
                 </Tag>
               )}
@@ -79,25 +77,49 @@ const SystemCard = ({ system }: SystemCardProps) => {
         <div className="mt-auto">
           <Divider className="!my-2" />
           <Flex justify="space-between" align="center">
-            <Text type="secondary" className="text-xs">
-              {system.annotation_percent}% annotated
-            </Text>
-            <Flex gap={-8}>
-              {system.stewards.map((st) => (
-                <Avatar
-                  key={st.initials}
-                  size="small"
-                  style={{
-                    backgroundColor: "#e6e6e8",
-                    color: "#53575c",
-                    fontSize: 10,
-                    border: "2px solid white",
-                  }}
-                >
-                  {st.initials}
-                </Avatar>
-              ))}
+            <Flex align="center" gap={6}>
+              <Progress
+                type="circle"
+                percent={system.annotation_percent}
+                size={20}
+                strokeColor={
+                  system.annotation_percent >= 75
+                    ? "#5a9a68"
+                    : system.annotation_percent >= 40
+                      ? "#e59d47"
+                      : "#d9534f"
+                }
+                strokeWidth={14}
+                format={(pct) => (
+                  <Text className="!text-[7px]">{pct}</Text>
+                )}
+              />
+              <Text type="secondary" className="text-xs">
+                {system.annotation_percent}% annotated
+              </Text>
             </Flex>
+            {system.stewards.length > 0 ? (
+              <Flex gap={-8}>
+                {system.stewards.map((st) => (
+                  <Avatar
+                    key={st.initials}
+                    size="small"
+                    style={{
+                      backgroundColor: "#e6e6e8",
+                      color: "#53575c",
+                      fontSize: 10,
+                      border: "2px solid white",
+                    }}
+                  >
+                    {st.initials}
+                  </Avatar>
+                ))}
+              </Flex>
+            ) : (
+              <Text type="secondary" className="text-xs">
+                No steward
+              </Text>
+            )}
           </Flex>
         </div>
       </Flex>

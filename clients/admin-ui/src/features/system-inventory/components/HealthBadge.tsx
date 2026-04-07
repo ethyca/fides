@@ -1,6 +1,5 @@
 import { Flex, Text } from "fidesui";
 
-import { HEALTH_CONFIG } from "../constants";
 import { HealthStatus } from "../types";
 
 interface HealthBadgeProps {
@@ -8,8 +7,18 @@ interface HealthBadgeProps {
   count?: number;
 }
 
+function getBadgeConfig(health: HealthStatus, count?: number) {
+  if (health === HealthStatus.HEALTHY) {
+    return { dotColor: "#5a9a68", label: "Healthy" };
+  }
+  if (count !== undefined && count >= 3) {
+    return { dotColor: "#d9534f", label: "Issues" };
+  }
+  return { dotColor: "#e59d47", label: "Issues" };
+}
+
 const HealthBadge = ({ health, count }: HealthBadgeProps) => {
-  const config = HEALTH_CONFIG[health];
+  const config = getBadgeConfig(health, count);
 
   return (
     <Flex align="center" gap={6}>
