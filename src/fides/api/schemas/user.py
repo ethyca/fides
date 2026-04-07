@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, Self
 
 from pydantic import ConfigDict, EmailStr, field_validator
 
 from fides.api.cryptography.cryptographic_util import decode_password
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.oauth import AccessToken
+
+if TYPE_CHECKING:
+    from fides.api.models.fides_user import FidesUser
+    from fides.api.models.fides_user_invite import FidesUserInvite
 
 
 class PrivacyRequestUser(FidesSchema):
@@ -99,6 +105,20 @@ class UserResponse(FidesSchema):
     last_name: Optional[str] = None
     disabled: Optional[bool] = False
     disabled_reason: Optional[str] = None
+    has_invite: Optional[bool] = None
+    invite_expired: Optional[bool] = None
+
+    @classmethod
+    def from_user(
+        cls,
+        user: FidesUser,
+        invite: FidesUserInvite | None = None,
+    ) -> Self:
+        """Build a UserResponse from a FidesUser, optionally enriching with invite status."""
+        response = cls.model_validate(user)
+        response.has_invite = invite is not None
+        response.invite_expired = invite.is_expired() if invite else None
+        return response
 
 
 class UserLoginResponse(FidesSchema):

@@ -1,0 +1,8 @@
+type: Added
+description: |
+  Add AccessPolicy and AccessPolicyVersion database models with Alembic
+  migration for the PBAC policy engine. Two-table design enables
+  transparent policy versioning where each update preserves the previous
+  version for audit trail.
+pr: 7773
+labels: ["db-migration"]

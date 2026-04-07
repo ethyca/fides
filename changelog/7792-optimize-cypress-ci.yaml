@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Optimize Cypress CI with shared build artifacts, file-size-based test sharding, and increased parallelism
+pr: 7792
+labels: []

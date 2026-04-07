@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated datamap report table from TanStack Table to Ant Design
+pr: 7780
+labels: []
