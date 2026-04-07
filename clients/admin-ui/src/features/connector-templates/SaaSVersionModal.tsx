@@ -6,10 +6,11 @@ import {
   ChakraCode as Code,
   ChakraSpinner as Spinner,
   ChakraText as Text,
+  Modal,
   Tabs,
 } from "fidesui";
 
-import FormModal from "~/features/common/modals/FormModal";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 
 import {
@@ -111,21 +112,23 @@ const SaaSVersionModal = ({
   connectorType,
   version,
 }: SaaSVersionModalProps) => (
-  <FormModal
+  <Modal
+    open={isOpen}
+    onCancel={onClose}
+    width={MODAL_SIZE.xl}
+    centered
+    destroyOnHidden
     title={`${connectorType} — v${version}`}
-    isOpen={isOpen}
-    onClose={onClose}
-    showCloseButton
-    size="3xl"
-    modalContentProps={{ maxW: "800px" }}
     footer={
-      <Button onClick={onClose} data-testid="version-modal-close-btn">
-        Close
-      </Button>
+      <div className="flex w-full justify-end">
+        <Button onClick={onClose} data-testid="version-modal-close-btn">
+          Close
+        </Button>
+      </div>
     }
   >
     <SaaSVersionContent connectorType={connectorType} version={version} />
-  </FormModal>
+  </Modal>
 );
 
 interface PendingModalState {
