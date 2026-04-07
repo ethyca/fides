@@ -173,6 +173,13 @@ class SecuritySettings(FidesSettings):
         description="Either enables the collection of audit log resource data or bypasses the middleware",
     )
 
+    password_reset_token_ttl_minutes: int = Field(
+        default=30,
+        description="The time in minutes for which a self-service password reset token is valid. Must be between 15 and 60.",
+        ge=15,
+        le=60,
+    )
+
     bastion_server_host: Optional[str] = Field(
         default=None, description="An optional field to store the bastion server host"
     )
