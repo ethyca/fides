@@ -1,6 +1,6 @@
 import { produce } from "immer";
 
-import { validateConfig } from "~/common/config-validation";
+import { validateConfig } from "~/common/validation";
 import customFields from "~/config/examples/customFields.json";
 import fullJson from "~/config/examples/full.json";
 import minimalJson from "~/config/examples/minimal.json";

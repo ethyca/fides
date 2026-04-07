@@ -12,7 +12,7 @@ import { URL } from "url";
 
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
-import { transformConfig, validateConfig } from "~/common/config-validation";
+import { transformConfig, validateConfig } from "~/common/validation";
 import { Property } from "~/types/api";
 import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
 import { Config } from "~/types/config";
