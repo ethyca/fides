@@ -27,7 +27,7 @@ const BackButton = ({
         </Avatar>
       }
       iconPlacement="start"
-      data-testid="back-to-experiences-btn"
+      data-testid="back-btn"
       className="mb-6 w-fit px-0"
       type="text"
       {...props}
