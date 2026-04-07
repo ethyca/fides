@@ -33,9 +33,15 @@ const EventDetail = ({
       >
         Status
       </Text>
-      <Tag color={ExecutionLogStatusColors[status]}>
-        {ExecutionLogStatusLabels[status]}
-      </Tag>
+      {ExecutionLogStatusLabels[status] ? (
+        <Tag color={ExecutionLogStatusColors[status]}>
+          {ExecutionLogStatusLabels[status]}
+        </Tag>
+      ) : (
+        <Text size="sm" color="gray.600" fontWeight="medium">
+          {status}
+        </Text>
+      )}
       <Box padding="0px" marginBottom="3px">
         <ClipboardButton copyText={errorMessage} />
       </Box>
