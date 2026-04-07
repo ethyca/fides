@@ -16,7 +16,7 @@ from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.node_filters import NodeFilter
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -26,15 +26,22 @@ from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetFieldWarning,
+    DatasetProtectedFields,
+    ProtectedCollectionField,
     ValidateDatasetResponse,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
+from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.service.connection.merge_configs_util import (
+    get_saas_config_referenced_field_paths,
+)
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     _get_ctl_dataset,
 )
 from fides.service.dataset.dataset_validator import DatasetValidator
+from fides.service.dataset.validation_steps.saas import MUTABLE_DATASET_FIELDS
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
 
 
@@ -270,6 +277,42 @@ class DatasetConfigService:
                 & (DatasetConfig.fides_key == fides_key)
             ),
         ).first()
+
+    def get_protected_fields(
+        self,
+        connection_config: ConnectionConfig,
+    ) -> DatasetProtectedFields:
+        """
+        Return the fields that are protected on a SaaS dataset:
+        immutable top-level metadata fields and collection fields
+        referenced by the SaaS config.
+
+        For non-SaaS connections, returns empty lists.
+        """
+        if (
+            connection_config.connection_type != ConnectionType.saas
+            or not connection_config.saas_config
+        ):
+            return DatasetProtectedFields(
+                immutable_fields=[],
+                protected_collection_fields=[],
+            )
+
+        saas_config = SaaSConfig(**connection_config.saas_config)
+        instance_key = connection_config.saas_config["fides_key"]
+        protected = get_saas_config_referenced_field_paths(saas_config, instance_key)
+
+        return DatasetProtectedFields(
+            immutable_fields=[
+                f
+                for f in FideslangDataset.model_fields
+                if f not in MUTABLE_DATASET_FIELDS
+            ],
+            protected_collection_fields=[
+                ProtectedCollectionField(collection=col, field=field_path)
+                for col, field_path in protected
+            ],
+        )
 
     def run_test_access_request(
         self,
