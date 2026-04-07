@@ -589,6 +589,7 @@ class StagedResource(Base):
         default=None,
     )
     user_assigned_system_id = Column(String, nullable=True, index=True)
+    user_assigned_description = Column(String, nullable=True, default=None)
 
     # pointers to child and parent URNs
     children = Column(
