@@ -5,9 +5,9 @@ from fideslang.models import DatasetCollection, DatasetField
 
 from fides.api.models.connectionconfig import ConnectionType
 from fides.service.dataset.validation_steps.saas import (
-    _resolve_field_path,
-    _restore_immutable_fields,
-    _restore_protected_structure,
+    resolve_field_path,
+    restore_immutable_fields,
+    restore_protected_structure,
 )
 
 
@@ -130,16 +130,16 @@ def _make_existing_dataset(
 
 
 class TestResolveFieldPath:
-    """Tests for the _resolve_field_path helper."""
+    """Tests for the resolve_field_path helper."""
 
     def test_top_level_field(self):
         fields = _make_fields(["user_id", "name"])
-        assert _resolve_field_path(fields, "user_id") is not None
-        assert _resolve_field_path(fields, "user_id").name == "user_id"
+        assert resolve_field_path(fields, "user_id") is not None
+        assert resolve_field_path(fields, "user_id").name == "user_id"
 
     def test_missing_top_level_field(self):
         fields = _make_fields(["name"])
-        assert _resolve_field_path(fields, "user_id") is None
+        assert resolve_field_path(fields, "user_id") is None
 
     def test_nested_field(self):
         fields = _make_fields(
@@ -147,7 +147,7 @@ class TestResolveFieldPath:
                 {"name": "address", "fields": ["street", "city"]},
             ]
         )
-        resolved = _resolve_field_path(fields, "address.street")
+        resolved = resolve_field_path(fields, "address.street")
         assert resolved is not None
         assert resolved.name == "street"
 
@@ -157,11 +157,11 @@ class TestResolveFieldPath:
                 {"name": "address", "fields": ["city"]},
             ]
         )
-        assert _resolve_field_path(fields, "address.street") is None
+        assert resolve_field_path(fields, "address.street") is None
 
     def test_missing_intermediate(self):
         fields = _make_fields(["name"])
-        assert _resolve_field_path(fields, "address.street") is None
+        assert resolve_field_path(fields, "address.street") is None
 
     def test_deeply_nested_field(self):
         fields = _make_fields(
@@ -174,12 +174,12 @@ class TestResolveFieldPath:
                 },
             ]
         )
-        resolved = _resolve_field_path(fields, "address.geo.lat")
+        resolved = resolve_field_path(fields, "address.geo.lat")
         assert resolved is not None
         assert resolved.name == "lat"
 
     def test_empty_fields_list(self):
-        assert _resolve_field_path([], "anything") is None
+        assert resolve_field_path([], "anything") is None
 
 
 class TestRestoreProtectedStructure:
@@ -205,7 +205,7 @@ class TestRestoreProtectedStructure:
                 {"name": "orders", "fields": ["order_id"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert warnings == []
 
     def test_added_collection_removed_with_warning(self):
@@ -218,7 +218,7 @@ class TestRestoreProtectedStructure:
                 {"name": "extra_collection", "fields": ["foo"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].collection == "extra_collection"
         assert "Removed" in warnings[0].message
@@ -241,7 +241,7 @@ class TestRestoreProtectedStructure:
                 {"name": "users", "fields": ["name"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].collection == "orders"
         assert "Restored" in warnings[0].message
@@ -259,7 +259,7 @@ class TestRestoreProtectedStructure:
             ],
             existing_dataset=None,
         )
-        warnings = _restore_protected_structure(connection_config, dataset, None)
+        warnings = restore_protected_structure(connection_config, dataset, None)
         assert len(warnings) == 1
         assert warnings[0].collection == "orders"
         assert "missing" in warnings[0].message
@@ -284,7 +284,7 @@ class TestRestoreProtectedStructure:
                 {"name": "users", "fields": ["name", "email"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].collection == "users"
         assert warnings[0].field == "user_id"
@@ -311,7 +311,7 @@ class TestRestoreProtectedStructure:
                 {"name": "users", "fields": ["name"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert warnings == []
 
     def test_adding_field_allowed_no_warning(self):
@@ -328,7 +328,7 @@ class TestRestoreProtectedStructure:
                 {"name": "users", "fields": ["user_id", "name", "extra_field"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert warnings == []
 
     def test_removing_non_referenced_field_allowed_no_warning(self):
@@ -345,7 +345,7 @@ class TestRestoreProtectedStructure:
                 {"name": "users", "fields": ["user_id"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert warnings == []
 
     def test_delete_referenced_field_restored_with_warning(self):
@@ -367,7 +367,7 @@ class TestRestoreProtectedStructure:
                 {"name": "users", "fields": ["name"]},
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].collection == "users"
         assert warnings[0].field == "user_id"
@@ -414,7 +414,7 @@ class TestRestoreProtectedStructure:
                 },
             ],
         )
-        warnings = _restore_protected_structure(connection_config, dataset, existing)
+        warnings = restore_protected_structure(connection_config, dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].field == "address.street"
         # Verify the field was actually restored
@@ -432,7 +432,7 @@ class TestRestoreImmutableFields:
             name="Test Connector Dataset",
             description="Original description",
         )
-        warnings = _restore_immutable_fields(dataset, existing)
+        warnings = restore_immutable_fields(dataset, existing)
         assert warnings == []
 
     def test_changed_name_restored_with_warning(self):
@@ -443,7 +443,7 @@ class TestRestoreImmutableFields:
             name="Changed Name",
             description="Original description",
         )
-        warnings = _restore_immutable_fields(dataset, existing)
+        warnings = restore_immutable_fields(dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].collection is None
         assert warnings[0].field == "name"
@@ -458,7 +458,7 @@ class TestRestoreImmutableFields:
             name="Test Connector Dataset",
             description="Changed description",
         )
-        warnings = _restore_immutable_fields(dataset, existing)
+        warnings = restore_immutable_fields(dataset, existing)
         assert len(warnings) == 1
         assert "'description'" in warnings[0].message
         assert dataset.description == "Original description"
@@ -471,7 +471,7 @@ class TestRestoreImmutableFields:
             name="Changed Name",
             description="Changed description",
         )
-        warnings = _restore_immutable_fields(dataset, existing)
+        warnings = restore_immutable_fields(dataset, existing)
         assert len(warnings) == 2
         assert dataset.name == "Test Connector Dataset"
         assert dataset.description == "Original description"
@@ -481,5 +481,5 @@ class TestRestoreImmutableFields:
             "test_connector",
             [{"name": "users", "fields": ["name"]}],
         )
-        warnings = _restore_immutable_fields(dataset, None)
+        warnings = restore_immutable_fields(dataset, None)
         assert warnings == []
