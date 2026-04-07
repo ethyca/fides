@@ -77,7 +77,7 @@ export const EditCollectionOrFieldForm = ({
           </Flex>
         }
       >
-        <Input data-testid="description-input" />
+        <Input data-testid="input-description" />
       </Form.Item>
       {showDataCategories && (
         <DataCategoryInput

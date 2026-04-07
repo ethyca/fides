@@ -2,6 +2,7 @@ import { Button, Divider, Flex, Typography, useMessage } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
+import { useDispatch } from "react-redux";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
@@ -30,6 +31,7 @@ export function isDatasetArray(value: unknown): value is NestedDataset {
 }
 
 export const DatasetYamlForm = () => {
+  const dispatch = useDispatch();
   const [createDataset] = useCreateDatasetMutation();
   const [isEmptyState, setIsEmptyState] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,7 +81,7 @@ export const DatasetYamlForm = () => {
 
   const handleSuccess = (newDataset: Dataset) => {
     message.success("Successfully loaded new dataset YAML");
-    setActiveDatasetFidesKey(newDataset.fides_key);
+    dispatch(setActiveDatasetFidesKey(newDataset.fides_key));
     router.push({
       pathname: DATASET_DETAIL_ROUTE,
       query: { datasetId: newDataset.fides_key },

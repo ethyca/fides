@@ -1,6 +1,7 @@
 import { Text, useMessage, useModal } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -30,6 +31,7 @@ export const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   const [updateDataset, { isLoading }] = useUpdateDatasetMutation();
   const [deleteDataset] = useDeleteDatasetMutation();
   const router = useRouter();
+  const dispatch = useDispatch();
   const message = useMessage();
   const confirmModal = useModal();
   const [yamlOpen, setYamlOpen] = useState(false);
@@ -62,7 +64,7 @@ export const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     } else {
       message.success("Successfully deleted dataset");
     }
-    setActiveDatasetFidesKey(undefined);
+    dispatch(setActiveDatasetFidesKey(undefined));
     router.push("/dataset");
     onClose();
   };

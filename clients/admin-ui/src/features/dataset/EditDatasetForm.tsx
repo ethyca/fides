@@ -5,7 +5,7 @@ import { Dataset } from "~/types/api";
 import { InfoTooltip } from "../common/InfoTooltip";
 import { DATASET } from "./constants";
 
-export const FORM_ID = "edit-field-drawer";
+export const FORM_ID = "edit-dataset-form";
 
 type FormValues = Pick<Dataset, "name" | "description">;
 
@@ -46,7 +46,7 @@ export const EditDatasetForm = ({ values, onSubmit }: Props) => {
           </Flex>
         }
       >
-        <Input data-testid="name-input" />
+        <Input data-testid="input-name" />
       </Form.Item>
       <Form.Item
         name="description"
@@ -57,7 +57,7 @@ export const EditDatasetForm = ({ values, onSubmit }: Props) => {
           </Flex>
         }
       >
-        <Input data-testid="description-input" />
+        <Input data-testid="input-description" />
       </Form.Item>
     </Form>
   );
