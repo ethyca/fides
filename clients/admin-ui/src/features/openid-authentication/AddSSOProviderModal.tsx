@@ -1,4 +1,3 @@
-import { ChakraUseDisclosureReturn as UseDisclosureReturn } from "fidesui";
 import { FormikProvider, useFormik } from "formik";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
@@ -11,7 +10,10 @@ import SSOProviderForm, {
 const AddSSOProviderModal = ({
   isOpen,
   onClose,
-}: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => {
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   const { handleSubmit } = useSSOProviderSubmit({ onClose });
 
   const formik = useFormik({

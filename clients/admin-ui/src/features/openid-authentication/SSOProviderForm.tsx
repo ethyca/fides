@@ -47,7 +47,7 @@ export const defaultInitialValues: SSOProviderFormValues = {
   verify_email: true,
 };
 
-export const transformOrganizationToFormValues = (
+export const transformOpenIDProviderToFormValues = (
   openIDProvider: OpenIDProvider,
 ): SSOProviderFormValues => ({ ...openIDProvider });
 
@@ -240,13 +240,13 @@ const CustomProviderExtraFields = () => {
 };
 
 const PROVIDER_OPTIONS = [
-  { label: "Azure", value: "azure" },
-  { label: "Google", value: "google" },
-  { label: "Okta", value: "okta" },
-  { label: "Custom", value: "custom" },
+  { label: "Azure", value: ProviderEnum.AZURE },
+  { label: "Google", value: ProviderEnum.GOOGLE },
+  { label: "Okta", value: ProviderEnum.OKTA },
+  { label: "Custom", value: ProviderEnum.CUSTOM },
 ];
 
-const renderAzureProviderExtraFields = () => (
+const AzureProviderExtraFields = () => (
   <>
     <CustomTextInput
       id="authorization_url"
@@ -267,7 +267,7 @@ const renderAzureProviderExtraFields = () => (
   </>
 );
 
-const renderOktaProviderExtraFields = () => (
+const OktaProviderExtraFields = () => (
   <CustomTextInput
     id="domain"
     name="domain"
@@ -340,9 +340,11 @@ const SSOProviderForm = ({
           isRequired={!isEditMode}
           placeholder={isEditMode ? "Leave blank to keep existing" : undefined}
         />
-        {values.provider === "azure" && renderAzureProviderExtraFields()}
-        {values.provider === "okta" && renderOktaProviderExtraFields()}
-        {values.provider === "custom" && <CustomProviderExtraFields />}
+        {values.provider === ProviderEnum.AZURE && <AzureProviderExtraFields />}
+        {values.provider === ProviderEnum.OKTA && <OktaProviderExtraFields />}
+        {values.provider === ProviderEnum.CUSTOM && (
+          <CustomProviderExtraFields />
+        )}
         <Box textAlign="right">
           <Button
             htmlType="button"
