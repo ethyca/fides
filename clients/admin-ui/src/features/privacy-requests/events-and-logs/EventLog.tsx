@@ -280,7 +280,9 @@ const EventLog = ({
                 className={styles.versionButton}
                 onClick={(e) => {
                   e.stopPropagation();
-                  openVersionModal(detail.connection_key!, detail.saas_version!);
+                  const key = detail.connection_key;
+                  const ver = detail.saas_version;
+                  if (key && ver) openVersionModal(key, ver);
                 }}
                 title="View version config"
                 data-testid="version-badge-wrapper"
