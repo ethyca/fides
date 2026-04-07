@@ -462,6 +462,11 @@ aes_gcm_nonce_length = 12 # integer
 # The key used to sign Fides API access tokens.
 app_encryption_key = "" # string
 
+# Envelope encryption provider. 'none' disables envelope encryption and
+# uses app_encryption_key directly (legacy). 'local' enables envelope
+# encryption, wrapping the DEK with a KEK via in-process AES-256-GCM.
+key_provider = "none" # string
+
 # Text encoding to use for the application.
 encoding = "UTF-8" # string
 

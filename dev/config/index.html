@@ -2239,7 +2239,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">568</span>
 <span class="normal">569</span>
 <span class="normal">570</span>
-<span class="normal">571</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2702,6 +2707,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The key used to sign Fides API access tokens.</span>
 <span class="n">app_encryption_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Envelope encryption provider. &#39;none&#39; disables envelope encryption and</span>
+<span class="c1"># uses app_encryption_key directly (legacy). &#39;local&#39; enables envelope</span>
+<span class="c1"># encryption, wrapping the DEK with a KEK via in-process AES-256-GCM.</span>
+<span class="n">key_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># Text encoding to use for the application.</span>
 <span class="n">encoding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;UTF-8&quot;</span><span class="w"> </span><span class="c1"># string</span>
