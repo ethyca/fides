@@ -71,8 +71,16 @@ describe("VersionHistoryTab", () => {
 
     render(<VersionHistoryTab connectorType="stripe" />);
 
-    // Chakra Spinner renders as a div with class chakra-spinner (no ARIA role in JSDOM)
-    expect(document.querySelector(".chakra-spinner")).toBeInTheDocument();
+    // Ant Design Spin renders with class ant-spin
+    expect(document.querySelector(".ant-spin")).toBeInTheDocument();
+  });
+
+  it("shows an error message when the versions query fails", () => {
+    mockUseVersions.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+
+    render(<VersionHistoryTab connectorType="stripe" />);
+
+    expect(screen.getByText("Could not load version history.")).toBeInTheDocument();
   });
 
   it("shows empty-state message when no versions are available", () => {

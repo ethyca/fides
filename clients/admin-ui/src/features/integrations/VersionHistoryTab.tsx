@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import { formatDate } from "common/utils";
 import {
   Button,
-  ChakraSpinner as Spinner,
-  ChakraText as Text,
   CUSTOM_TAG_COLOR,
+  Spin,
   Table,
   Tag,
   Typography,
@@ -22,22 +21,20 @@ interface VersionHistoryTabProps {
 }
 
 const VersionHistoryTab = ({ connectorType }: VersionHistoryTabProps) => {
-  const { data: versions, isLoading } =
+  const { data: versions, isLoading, isError } =
     useGetConnectorTemplateVersionsQuery(connectorType);
 
   const [selected, setSelected] = useState<SaaSConfigVersionResponse | null>(
     null,
   );
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       title: "Version",
       dataIndex: "version",
       key: "version",
       render: (v: string) => (
-        <Text fontSize="sm" fontWeight="medium">
-          v{v}
-        </Text>
+        <Typography.Text>v{v}</Typography.Text>
       ),
     },
     {
@@ -55,9 +52,7 @@ const VersionHistoryTab = ({ connectorType }: VersionHistoryTabProps) => {
       dataIndex: "created_at",
       key: "created_at",
       render: (ts: string) => (
-        <Text fontSize="sm" color="gray.600">
-          {formatDate(ts)}
-        </Text>
+        <Typography.Text type="secondary">{formatDate(ts)}</Typography.Text>
       ),
     },
     {
@@ -69,17 +64,25 @@ const VersionHistoryTab = ({ connectorType }: VersionHistoryTabProps) => {
         </Button>
       ),
     },
-  ];
+  ], [setSelected]);
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
+  }
+
+  if (isError) {
+    return (
+      <Typography.Text type="danger">
+        Could not load version history.
+      </Typography.Text>
+    );
   }
 
   if (!versions || versions.length === 0) {
     return (
-      <Text color="gray.500" fontSize="sm">
+      <Typography.Text type="secondary">
         No version history captured yet.
-      </Text>
+      </Typography.Text>
     );
   }
 
@@ -94,7 +97,7 @@ const VersionHistoryTab = ({ connectorType }: VersionHistoryTabProps) => {
         dataSource={versions}
         columns={columns}
         rowKey={(row: SaaSConfigVersionResponse) =>
-          `${row.version}-${row.is_custom}-${row.created_at}`
+          `${row.connector_type}-${row.version}-${row.created_at}`
         }
         size="small"
         pagination={false}

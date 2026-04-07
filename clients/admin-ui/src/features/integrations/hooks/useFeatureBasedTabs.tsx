@@ -20,15 +20,16 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
+import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 import {
+  ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
   IntegrationFeature,
 } from "~/types/api";
-import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 
 interface UseFeatureBasedTabsProps {
-  connection: any;
+  connection: ConnectionConfigurationResponse | null | undefined;
   enabledFeatures?: IntegrationFeature[];
   integrationOption?: ConnectionSystemTypeMap;
   testData: ConnectionStatusData;
