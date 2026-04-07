@@ -261,12 +261,10 @@ const EditorSection = ({
     }
 
     if (saasWarnings.length > 0) {
-      messageApi.success(
-        `Dataset saved — ${saasWarnings.length} protected field(s) were restored`,
+      const details = saasWarnings.map((w) => w.message).join("; ");
+      messageApi.warning(
+        `Dataset saved — ${saasWarnings.length} protected field(s) were restored: ${details}`,
       );
-      saasWarnings.forEach((warning) => {
-        messageApi.warning(warning.message);
-      });
     } else {
       messageApi.success("Successfully modified dataset");
     }
