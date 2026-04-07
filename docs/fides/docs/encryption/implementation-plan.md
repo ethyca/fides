@@ -85,8 +85,8 @@ We want to introduce **envelope encryption** — separating a Key Encryption Key
 
 Each provider owns both the **crypto** (wrap/unwrap) and the **storage** (where the wrapped DEK persists):
 
-| Provider            | Wrapped DEK storage      | Wrap/unwrap mechanism                       | KEK location                                    |
-| ------------------- | ------------------------ | ------------------------------------------- | ----------------------------------------------- |
+| Provider            | Wrapped DEK storage        | Wrap/unwrap mechanism                       | KEK location                                    |
+| ------------------- | -------------------------- | ------------------------------------------- | ----------------------------------------------- |
 | `LocalKeyProvider`  | `encryption_keys` DB table | In-process AES-256-GCM                      | Env var (`FIDES__SECURITY__KEY_ENCRYPTION_KEY`) |
 | `AwsKmsKeyProvider` | `encryption_keys` DB table | AWS KMS API (`kms:Encrypt` / `kms:Decrypt`) | Inside AWS KMS (never leaves the HSM)           |
 
@@ -183,7 +183,7 @@ At every point during the migration, the old columns remain intact. The running 
 
 ---
 
-### PR 2: `encrypted_type()` factory + callable key (pure refactor) — 🔧 In progress
+### PR 2: `encrypted_type()` factory + callable key (pure refactor) — ✅ Done
 
 **Goal:** Centralize all `StringEncryptedType` construction and switch from import-time key binding to a callable key. Zero behavior change.
 
@@ -195,26 +195,26 @@ Alembic migration files are frozen historical snapshots and are not modified.
 
 #### Non-column encryption paths
 
-In addition to the `StringEncryptedType` columns, several non-column code paths reference `CONFIG.security.app_encryption_key` directly. This PR updates them to use `get_encryption_key()` so that every encryption path benefits from envelope encryption once it is wired up in PR 7.
+In addition to the `StringEncryptedType` columns, several non-column code paths reference `CONFIG.security.app_encryption_key` directly. This PR updates them to use `get_encryption_key()` so that every encryption path benefits from envelope encryption once it is wired up in PR 6.
 
-| Path | File(s) | Current key source | Change |
-|------|---------|--------------------|--------|
-| **JWE / OAuth tokens** (create) | `fides: oauth_endpoints.py`, `user_endpoints.py` | `CONFIG.security.app_encryption_key` passed to `create_access_code_jwe()` | Replace with `get_encryption_key()` |
-| **JWE / OAuth tokens** (verify) | `fides: oauth/utils.py` (5 call sites) | `CONFIG.security.app_encryption_key` passed to `extract_payload()` | Replace with `get_encryption_key()` |
-| **OAuth state tokens** (Jira, Slack, OpenID) | `fidesplus: jira_oauth_service.py`, `slack.py`, `openid_providers.py` | `CONFIG.security.app_encryption_key` / `CONFIG.fides.security.app_encryption_key` passed to `generate_state_token()` / `validate_state_token()` | Replace with `get_encryption_key()` |
-| **JWE token creation** (fidesplus) | `fidesplus: external_login.py`, `connections.py`, `openid_providers.py` | `config.security.app_encryption_key` passed to `create_access_code_jwe()` | Replace with `get_encryption_key()` |
-| **Consent preferences encrypt/decrypt** | `fidesplus: preferences_util.py` (2 call sites) | `config.fides.security.app_encryption_key.encode()` used as raw AES-GCM key bytes | Replace with `get_encryption_key().encode()` |
-| **AES-GCM encryption scheme** (fidesplus override) | `fidesplus: aes_gcm_overrides.py` | Validates key length against `config.fides.security.app_encryption_key` | Update `verify_app_encryption_key()` to use `get_encryption_key()` |
-| **Chunked external storage** | `fides: aes_gcm_encryption_util.py` | Already uses `get_encryption_key()` | No change needed |
-| **SQLAlchemy-Utils external storage** | `fides: aes_gcm_encryption_util.py` | Already uses `get_encryption_key()` | No change needed |
-| **Privacy request result encryption** | `fides: tasks/encryption_utils.py` | Per-request key from Redis (not `app_encryption_key`) | No change needed — independent key path |
-| **Database startup validation** | `fides: db/database.py` | Error message references `app_encryption_key` | Update error message only (cosmetic) |
+| Path                                               | File(s)                                                                 | Current key source                                                                                                                              | Change                                                             |
+| -------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **JWE / OAuth tokens** (create)                    | `fides: oauth_endpoints.py`, `user_endpoints.py`                        | `CONFIG.security.app_encryption_key` passed to `create_access_code_jwe()`                                                                       | Replace with `get_encryption_key()`                                |
+| **JWE / OAuth tokens** (verify)                    | `fides: oauth/utils.py` (5 call sites)                                  | `CONFIG.security.app_encryption_key` passed to `extract_payload()`                                                                              | Replace with `get_encryption_key()`                                |
+| **OAuth state tokens** (Jira, Slack, OpenID)       | `fidesplus: jira_oauth_service.py`, `slack.py`, `openid_providers.py`   | `CONFIG.security.app_encryption_key` / `CONFIG.fides.security.app_encryption_key` passed to `generate_state_token()` / `validate_state_token()` | Replace with `get_encryption_key()`                                |
+| **JWE token creation** (fidesplus)                 | `fidesplus: external_login.py`, `connections.py`, `openid_providers.py` | `config.security.app_encryption_key` passed to `create_access_code_jwe()`                                                                       | Replace with `get_encryption_key()`                                |
+| **Consent preferences encrypt/decrypt**            | `fidesplus: preferences_util.py` (2 call sites)                         | `config.fides.security.app_encryption_key.encode()` used as raw AES-GCM key bytes                                                               | Replace with `get_encryption_key().encode()`                       |
+| **AES-GCM encryption scheme** (fidesplus override) | `fidesplus: aes_gcm_overrides.py`                                       | Validates key length against `config.fides.security.app_encryption_key`                                                                         | Update `verify_app_encryption_key()` to use `get_encryption_key()` |
+| **Chunked external storage**                       | `fides: aes_gcm_encryption_util.py`                                     | Already uses `get_encryption_key()`                                                                                                             | No change needed                                                   |
+| **SQLAlchemy-Utils external storage**              | `fides: aes_gcm_encryption_util.py`                                     | Already uses `get_encryption_key()`                                                                                                             | No change needed                                                   |
+| **Privacy request result encryption**              | `fides: tasks/encryption_utils.py`                                      | Per-request key from Redis (not `app_encryption_key`)                                                                                           | No change needed — independent key path                            |
+| **Database startup validation**                    | `fides: db/database.py`                                                 | Error message references `app_encryption_key`                                                                                                   | Update error message only (cosmetic)                               |
 
 **Note:** The `aes_gcm_encryption_scheme.py` module in fides uses a **different key derivation** (raw `.encode()` instead of SHA256) and is called with per-request keys from Redis, not `app_encryption_key`. This path is unaffected by envelope encryption.
 
 ---
 
-### PR 3: `encryption_keys` database table — 📋 To do
+### PR 3: `encryption_keys` database table — ✅ Done
 
 **Goal:** Create the database table used by both `LocalKeyProvider` and `AwsKmsKeyProvider` for wrapped DEK storage.
 
@@ -239,47 +239,52 @@ The `kek_id_hash` column identifies which KEK was used to wrap the DEK, allowing
 
 ---
 
-### PR 4: New config fields — 📋 To do
+### PR 4: Config fields + `KeyProvider` ABC + `LocalKeyProvider` — ✅ Done
 
-**Goal:** Add envelope encryption configuration to `SecuritySettings`. All fields are optional with backward-compatible defaults.
+**Goal:** Add local envelope encryption configuration to `SecuritySettings` and introduce the provider abstraction with the local (in-process) implementation. All fields are optional with backward-compatible defaults. AWS KMS config fields are deferred to PR 5. Nothing calls the provider yet — wiring is deferred to PR 6.
 
 **New fields in `SecuritySettings`:**
 
-| Field                            | Type  | Default  | Description                                                              |
-| -------------------------------- | ----- | -------- | ------------------------------------------------------------------------ |
-| `key_provider`                   | `str` | `"none"` | Provider type: `"none"` (legacy), `"local"`, `"aws_kms"`                 |
-| `key_encryption_key`             | `str` | `""`     | Current KEK for local provider (32 chars)                                |
-| `key_encryption_key_previous`    | `str` | `""`     | Previous KEK, set during rotation (see KEK Rotation below)               |
-| `aws_kms_key_arn`                | `str` | `""`     | ARN of the KMS key to use for wrapping/unwrapping (operator-provisioned) |
-| `aws_kms_region`                 | `str` | `""`     | AWS region for the KMS key                                               |
+| Field                         | Type      | Default  | Description                                                  |
+| ----------------------------- | --------- | -------- | ------------------------------------------------------------ |
+| `key_provider`                | `Literal` | `"none"` | Provider type: `"none"` (legacy), `"local"`                  |
+| `key_encryption_key`          | `str`     | `""`     | Current KEK for local provider (32 chars)                    |
+| `key_encryption_key_previous` | `str`     | `""`     | Previous KEK, set during rotation (see KEK Rotation below)   |
 
 **Validation logic:**
 
 - `key_provider = "none"`: require `app_encryption_key` (existing behavior)
 - `key_provider = "local"`: require `key_encryption_key` (32 chars); `key_encryption_key_previous` is optional
-- `key_provider = "aws_kms"`: require `aws_kms_key_arn` and `aws_kms_region`
+- `key_encryption_key` validated to be exactly 32 characters when provided
 
-**Update to `check_required_webserver_config_values`:** `app_encryption_key` is no longer unconditionally required — it is only required when `key_provider = "none"`.
+**Update to `check_required_webserver_config_values`:** `key_encryption_key` is required when `key_provider = "local"`. `app_encryption_key` remains required for all modes (needed for initial bootstrap wrap).
 
-**No behavioral change.** The new settings exist but nothing reads them yet. Existing deployments have `key_provider = "none"` by default.
+**`KeyProvider` ABC** with `get_dek()` and `encrypt_dek()` abstract methods, plus `LocalKeyProvider` implementation:
 
----
+- Reads the encrypted DEK from the `encryption_keys` DB table via `EncryptionKey.get_by_provider()`
+- Decrypts with AES-256-GCM using the KEK from config (raw key bytes, NOT SHA-256 hashed)
+- `kek_id_hash()`: `HMAC-SHA256(key=b"fides-kek-id", msg=kek)[:16]` for KEK identification
+- `decrypt_with()`: public static method for KEK rotation (decrypt with a specific old KEK)
+- `encrypt_dek()`: encrypts a DEK, returns `base64(nonce[12] + tag[16] + ciphertext)`
 
-### PR 5: `KeyProvider` ABC + `LocalKeyProvider` — 📋 To do
+**Bootstrap:** Handled automatically on startup (see PR 6). When `key_provider = "local"` and no row exists in `encryption_keys`, the startup task wraps the current `app_encryption_key` with the configured KEK and inserts the row. No CLI command needed.
 
-**Goal:** Introduce the provider abstraction and the local (in-process) implementation. New code only — nothing wired up yet.
-
-Create a `KeyProvider` ABC with a `get_dek()` method, and a `LocalKeyProvider` implementation that reads the wrapped DEK from the `encryption_keys` DB table via raw SQL (not ORM) and decrypts it with AES-256-GCM using a KEK from config.
-
-**Bootstrap:** Handled automatically on startup (see PR 7). When `key_provider = "local"` and no row exists in `encryption_keys`, the startup task wraps the current `app_encryption_key` with the configured KEK and inserts the row. No CLI command needed.
-
-**No behavioral change.** Nothing calls these classes yet.
+**No behavioral change.** The new settings and provider classes exist but nothing calls them yet. Existing deployments have `key_provider = "none"` by default.
 
 ---
 
-### PR 6: `AwsKmsKeyProvider` (optional, can be deferred) — 📋 To do
+### PR 5: `AwsKmsKeyProvider` + AWS config fields (optional, can be deferred) — 📋 To do
 
-**Goal:** Add the AWS KMS provider implementation.
+**Goal:** Add the AWS KMS provider implementation and its configuration fields.
+
+**New config fields in `SecuritySettings`:**
+
+| Field              | Type  | Default | Description                                                              |
+| ------------------ | ----- | ------- | ------------------------------------------------------------------------ |
+| `aws_kms_key_arn`  | `str` | `""`    | ARN of the KMS key to use for wrapping/unwrapping (operator-provisioned) |
+| `aws_kms_region`   | `str` | `""`    | AWS region for the KMS key                                               |
+
+Also extends the `key_provider` Literal to include `"aws_kms"`, and adds validation: `key_provider = "aws_kms"` requires `aws_kms_key_arn` and `aws_kms_region`.
 
 Create an `AwsKmsKeyProvider` that reads the wrapped DEK from the `encryption_keys` DB table (the same table used by `LocalKeyProvider`) and calls `kms:Decrypt` to unwrap it. The KEK never leaves the KMS HSM. No new dependencies — `boto3` is already in Fides's dependency tree.
 
@@ -290,15 +295,15 @@ Both providers share the `encryption_keys` table for wrapped DEK storage. The on
 - **`LocalKeyProvider`:** AES-256-GCM in-process using a KEK from an env var.
 - **`AwsKmsKeyProvider`:** `kms:Decrypt(CiphertextBlob=wrapped_dek)` via boto3. KMS identifies the correct key and backing key version from metadata embedded in the ciphertext blob — no key ARN is needed at decrypt time, though we pass it for validation.
 
-**Bootstrap:** Handled automatically on startup (see PR 7). When `key_provider = "aws_kms"` and no row exists in `encryption_keys`, the startup task calls `kms:Encrypt(KeyId=aws_kms_key_arn, Plaintext=app_encryption_key)` and stores the resulting `CiphertextBlob` in the `encryption_keys` table. After the first successful startup, `app_encryption_key` can be removed from the environment.
+**Bootstrap:** Handled automatically on startup (see PR 6). When `key_provider = "aws_kms"` and no row exists in `encryption_keys`, the startup task calls `kms:Encrypt(KeyId=aws_kms_key_arn, Plaintext=app_encryption_key)` and stores the resulting `CiphertextBlob` in the `encryption_keys` table. After the first successful startup, `app_encryption_key` can be removed from the environment.
 
 **Required IAM permissions:** `kms:Encrypt` (bootstrap only) and `kms:Decrypt` (runtime) on the configured KMS key ARN.
 
-**Independent of PR 5.** Can land before or after. Can also be deferred to a later phase.
+**Independent of PR 4's `LocalKeyProvider`.** Can also be deferred to a later phase.
 
 ---
 
-### PR 7: Wire `get_encryption_key()` to envelope mode — 📋 To do
+### PR 6: Wire `get_encryption_key()` to envelope mode — 📋 To do
 
 **Goal:** Connect the callable key resolver to the provider system. This is the PR that activates envelope encryption.
 
@@ -400,31 +405,31 @@ The TTL-based cache ensures that after a DEK rotation (Phase 3), all pods conver
 - Integration test: write and read an encrypted column with envelope mode enabled
 - Integration test: verify backward compat — existing config with only `app_encryption_key` works identically
 
-**Depends on:** PR 2 (callable key), PR 3 (DB table), PR 4 (config fields), PR 5 or 6 (at least one provider).
+**Depends on:** PR 2 (callable key), PR 3 (DB table), PR 4 (config + provider).
 
 ---
 
 ## PR Dependency Graph
 
 ```
-          PR 1 (migrate Organization)
+          PR 1 (migrate Organization)          ✅
                │
-          PR 2 (factory refactor)
+          PR 2 (factory refactor)              ✅
                │
-               │     PR 3 (DB table)     PR 4 (config fields)
-               │         │                    │
-               │     PR 5 (LocalKeyProvider)  PR 6 (AwsKmsKeyProvider)
-               │         │                    │
-               └─────────┴────────────────────┘
-                            │
-                       PR 7 (wire it together)
+               │     PR 3 (DB table)           ✅
+               │         │
+               │     PR 4 (config + provider)  ✅
+               │         │
+               │         │     PR 5 (AwsKmsKeyProvider, optional)
+               │         │         │
+               └─────────┴─────────┘
+                         │
+                    PR 6 (wire it together)
 ```
 
-- PR 1 must land before PR 2 (PR 2 converts the migrated columns to use the factory).
-- PRs 3 and 4 are independent of each other and of PR 2. They can land in any order or in parallel.
-- PRs 5 and 6 are independent of each other. Both depend on PR 3 (DB table). PR 6 is optional and can be deferred.
-- PR 2 must land before PR 7.
-- PRs 3, 4, and 5 (or 6) must all land before PR 7.
+- PRs 1–4 are all done.
+- PR 5 (AWS KMS) is optional and can be deferred.
+- PR 6 requires PRs 2, 3, and 4. If AWS KMS support is needed, PR 5 must also land before PR 6.
 
 ---
 
@@ -467,3 +472,9 @@ With key versioning in the `encryption_keys` table:
 - Reads try the active DEK first, fall back to previous versions
 - A background task lazily re-encrypts old rows on read (read-old/write-new pattern)
 - The TTL-based cache in `get_encryption_key()` ensures all pods converge to the new DEK without restarts
+
+## Open Questions
+
+1. Sometimes customers like to bring their own key (BYOK), should be transparent if they plug their own key into AWS KMS?
+2. How do we track when key rotation is done? (perhaps our post_upgrade_migration_tasks table )
+3. key rotation via AWS KMS?
