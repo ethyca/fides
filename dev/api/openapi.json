@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.82.1b2.dev31+g32f1a9580"
+    "version": "2.82.1b2.dev32+gae74363d3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20974,7 +20974,10 @@
           "denied",
           "email_sent",
           "finished",
-          "policy_evaluated"
+          "policy_evaluated",
+          "pre_approval_webhook_triggered",
+          "pre_approval_eligible",
+          "pre_approval_not_eligible"
         ],
         "title": "AuditLogAction",
         "description": "Enum for audit log actions, reflecting what a user did."
@@ -32976,7 +32979,9 @@
           "pending_external",
           "canceled",
           "error",
-          "duplicate"
+          "duplicate",
+          "awaiting_pre_approval",
+          "pre_approval_not_eligible"
         ],
         "title": "PrivacyRequestStatus",
         "description": "Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"
