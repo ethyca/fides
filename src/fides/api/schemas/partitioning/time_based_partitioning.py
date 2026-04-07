@@ -318,7 +318,9 @@ class TimeBasedPartitioning(FidesSchema):
         # Handle datetime literals
         if re.match(DATETIME_LITERAL_REGEX, expr):
             # Use TIMESTAMP function to convert string to timestamp for compatibility with interval arithmetic
-            return func.timestamp(text(f"'{expr}'"))
+            return func.timestamp(
+                text(f"'{expr}'")
+            )  # nosemgrep: sql_injection_fstring -- expr validated against DATETIME_LITERAL_REGEX before use
 
         # Handle TIMESTAMP('date') literals
         if re.match(TIMESTAMP_DATE_LITERAL_REGEX, expr):
@@ -336,7 +338,9 @@ class TimeBasedPartitioning(FidesSchema):
             )
             if datetime_match:
                 datetime_str = datetime_match.group(1)
-                return func.timestamp(text(f"'{datetime_str}'"))
+                return func.timestamp(
+                    text(f"'{datetime_str}'")
+                )  # nosemgrep: sql_injection_fstring -- datetime_str extracted from regex match, contains only digits and separators
 
         raise ValueError(f"Unsupported time expression: {expr}")
 

@@ -34,6 +34,7 @@ from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
+from fides.api.models.fides_user_password_reset import FidesUserPasswordReset
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.fides_user_respondent_email_verification import (
     FidesUserRespondentEmailVerification,
