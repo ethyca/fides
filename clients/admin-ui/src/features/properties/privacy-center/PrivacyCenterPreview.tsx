@@ -15,13 +15,26 @@ const sanitizeIconSrc = (iconPath?: string | null): string | undefined => {
     return undefined;
   }
 
+  // Only allow same-origin HTTP(S) URLs or root-relative paths.
   try {
-    const url = new URL(iconPath, typeof window !== "undefined" ? window.location.origin : "http://localhost");
-    if (url.protocol === "http:" || url.protocol === "https:") {
+    const fallbackOrigin = "http://localhost";
+    const origin =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : fallbackOrigin;
+
+    const url = new URL(iconPath, origin);
+
+    const isHttpScheme = url.protocol === "http:" || url.protocol === "https:";
+    const isSameOrigin = url.origin === origin;
+
+    if (isHttpScheme && isSameOrigin) {
       return url.toString();
     }
+
     return undefined;
   } catch {
+    // Allow only root-relative paths (e.g., "/assets/icon.png").
     if (iconPath.startsWith("/")) {
       return iconPath;
     }
