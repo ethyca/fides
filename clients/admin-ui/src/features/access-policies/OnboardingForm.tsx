@@ -213,7 +213,7 @@ const OnboardingForm = () => {
               {renderDataUseCards()}
             </div>
 
-            {flags.privacyDocUpload && (
+            {flags.alphaPrivacyDocUpload && (
               <Form.Item
                 label="Upload policy document or enter URL to policy page"
                 className="!mb-0"

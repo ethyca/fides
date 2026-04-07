@@ -24,7 +24,7 @@ const AccessPoliciesPage: NextPage = () => {
         rightContent={
           hasPolicies ? (
             <Flex gap={8}>
-              {flags.privacyDocUpload && (
+              {flags.alphaPrivacyDocUpload && (
                 <Button onClick={() => setSettingsOpen(true)}>
                   Policy config
                 </Button>
@@ -46,7 +46,7 @@ const AccessPoliciesPage: NextPage = () => {
         </div>
       </PageHeader>
       <PoliciesContainer />
-      {flags.privacyDocUpload && (
+      {flags.alphaPrivacyDocUpload && (
         <PolicySettingsModal
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}

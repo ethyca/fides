@@ -133,11 +133,11 @@
     "test": true,
     "production": false
   },
-  "privacyDocUpload": {
-    "label": "Privacy Document Upload",
+  "alphaPrivacyDocUpload": {
+    "label": "Alpha Privacy Document Upload",
     "description": "Enable users to use and see the UI in PBAC",
     "development": true,
-    "test": true,
+    "test": false,
     "production": false
   }
 }
