@@ -1,9 +1,6 @@
-import {
-  ChakraText as Text,
-  ConfirmationModal,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
+import { ConfirmationModal, Typography, useMessage } from "fidesui";
 import { cloneDeep, set, update } from "lodash";
+import { useState } from "react";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -12,10 +9,13 @@ import EditDrawer, {
 import { Dataset, DatasetField } from "~/types/api";
 
 import { useUpdateDatasetMutation } from "./dataset.slice";
-import EditCollectionOrFieldForm, {
+import {
+  EditCollectionOrFieldForm,
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
 import { getDatasetPath } from "./helpers";
+
+const { Text } = Typography;
 
 interface Props {
   isOpen: boolean;
@@ -30,7 +30,7 @@ interface Props {
 const DESCRIPTION =
   "Fields are an array of objects that describe the collection's fields. Provide additional context to this field by filling out the fields below.";
 
-const EditFieldDrawer = ({
+export const EditFieldDrawer = ({
   field,
   isOpen,
   onClose,
@@ -39,13 +39,10 @@ const EditFieldDrawer = ({
   subfields,
 }: Props) => {
   const [updateDataset] = useUpdateDatasetMutation();
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
+  const message = useMessage();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const handleSubmit = (
+  const handleSubmit = async (
     values: Pick<DatasetField, "description" | "data_categories">,
   ) => {
     const pathToField = getDatasetPath({
@@ -60,11 +57,16 @@ const EditFieldDrawer = ({
     const updatedDataset = cloneDeep(dataset!);
     set(updatedDataset, pathToField, updatedField);
 
-    updateDataset(updatedDataset);
+    try {
+      await updateDataset(updatedDataset);
+      message.success("Successfully modified field");
+    } catch (error) {
+      message.error(error as string);
+    }
     onClose();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     const pathToParentField = getDatasetPath({
       dataset: dataset!,
       collectionName,
@@ -79,9 +81,14 @@ const EditFieldDrawer = ({
       ),
     }));
 
-    updateDataset(updatedDataset);
+    try {
+      await updateDataset(updatedDataset);
+      message.success("Successfully deleted field");
+    } catch (error) {
+      message.error(error as string);
+    }
     onClose();
-    onDeleteClose();
+    setDeleteOpen(false);
   };
 
   return (
@@ -91,7 +98,12 @@ const EditFieldDrawer = ({
         onClose={onClose}
         description={DESCRIPTION}
         header={<EditDrawerHeader title={`Field Name: ${field?.name}`} />}
-        footer={<EditDrawerFooter onDelete={onDeleteOpen} formId={FORM_ID} />}
+        footer={
+          <EditDrawerFooter
+            onDelete={() => setDeleteOpen(true)}
+            formId={FORM_ID}
+          />
+        }
       >
         {field && (
           <EditCollectionOrFieldForm
@@ -102,22 +114,18 @@ const EditFieldDrawer = ({
         )}
       </EditDrawer>
       <ConfirmationModal
-        isOpen={deleteIsOpen}
-        onClose={onDeleteClose}
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         title="Delete Field"
         message={
           <Text>
             You are about to permanently delete the field named{" "}
-            <Text color="complimentary.500" as="span" fontWeight="bold">
-              {field?.name}
-            </Text>{" "}
-            from this dataset. Are you sure you would like to continue?
+            <Text strong>{field?.name}</Text> from this dataset. Are you sure
+            you would like to continue?
           </Text>
         }
       />
     </>
   );
 };
-
-export default EditFieldDrawer;

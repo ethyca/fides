@@ -1,9 +1,4 @@
-import {
-  ChakraText as Text,
-  ConfirmationModal,
-  useChakraDisclosure as useDisclosure,
-  useMessage,
-} from "fidesui";
+import { ConfirmationModal, Typography, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -20,30 +15,26 @@ import {
   useDeleteDatasetMutation,
   useUpdateDatasetMutation,
 } from "./dataset.slice";
-import EditDatasetForm, { FORM_ID } from "./EditDatasetForm";
+import { EditDatasetForm, FORM_ID } from "./EditDatasetForm";
+
+const { Text } = Typography;
 
 const DESCRIPTION =
   "A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. Provide additional context to this dataset by filling out the fields below.";
+
 interface Props {
   dataset?: Dataset;
   isOpen: boolean;
   onClose: () => void;
 }
-const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
+
+export const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   const [updateDataset, { isLoading }] = useUpdateDatasetMutation();
   const [deleteDataset] = useDeleteDatasetMutation();
   const router = useRouter();
   const message = useMessage();
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
-  const {
-    isOpen: yamlIsOpen,
-    onOpen: onYamlOpen,
-    onClose: onYamlClose,
-  } = useDisclosure();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [yamlOpen, setYamlOpen] = useState(false);
 
   const [datasetYaml, setDatasetYaml] = useState<Dataset | undefined>(
     undefined,
@@ -76,7 +67,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     setActiveDatasetFidesKey(undefined);
     router.push("/dataset");
     onClose();
-    onDeleteClose();
+    setDeleteOpen(false);
   };
 
   return (
@@ -88,15 +79,15 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         header={<EditDrawerHeader title={`Edit: ${dataset?.name}`} />}
         footer={
           <EditDrawerFooter
-            onDelete={onDeleteOpen}
-            onEditYaml={() => onYamlOpen()}
+            onDelete={() => setDeleteOpen(true)}
+            onEditYaml={() => setYamlOpen(true)}
             formId={FORM_ID}
           />
         }
       >
         <YamlEditorModal
-          isOpen={yamlIsOpen}
-          onClose={onYamlClose}
+          isOpen={yamlOpen}
+          onClose={() => setYamlOpen(false)}
           onChange={setDatasetYaml}
           onSubmit={() => handleSubmit(datasetYaml!)}
           title="Edit dataset YAML"
@@ -109,22 +100,18 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         )}
       </EditDrawer>
       <ConfirmationModal
-        isOpen={deleteIsOpen}
-        onClose={onDeleteClose}
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         title="Delete Dataset"
         message={
           <Text>
             You are about to permanently delete the dataset named{" "}
-            <Text color="complimentary.500" as="span" fontWeight="bold">
-              {dataset?.name}
-            </Text>
-            . Are you sure you would like to continue?
+            <Text strong>{dataset?.name}</Text>. Are you sure you would like to
+            continue?
           </Text>
         }
       />
     </>
   );
 };
-
-export default EditDatasetDrawer;

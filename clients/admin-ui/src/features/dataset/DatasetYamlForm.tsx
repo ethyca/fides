@@ -1,11 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraDivider as Divider,
-  ChakraFlex as Flex,
-  ChakraVStack as VStack,
-  useMessage,
-} from "fidesui";
+import { Button, Divider, Flex, Typography, useMessage } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
@@ -21,6 +14,8 @@ import {
   useCreateDatasetMutation,
 } from "./dataset.slice";
 
+const { Text } = Typography;
+
 // handle the common case where everything is nested under a `dataset` key
 interface NestedDataset {
   dataset: Dataset[];
@@ -34,7 +29,7 @@ export function isDatasetArray(value: unknown): value is NestedDataset {
   );
 }
 
-const DatasetYamlForm = () => {
+export const DatasetYamlForm = () => {
   const [createDataset] = useCreateDatasetMutation();
   const [isEmptyState, setIsEmptyState] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,15 +100,15 @@ const DatasetYamlForm = () => {
   };
 
   return (
-    <Flex gap="97px">
-      <Box w="75%">
-        <Box color="gray.700" fontSize="14px" mb={4}>
+    <Flex gap={97}>
+      <div className="w-3/4">
+        <Text className="mb-4">
           Get started creating your first dataset by pasting your dataset yaml
           below! You may have received this yaml from a colleague or your Ethyca
           developer support engineer.
-        </Box>
-        <VStack align="stretch">
-          <Divider color="gray.100" />
+        </Text>
+        <Flex vertical>
+          <Divider />
           <Editor
             defaultLanguage="yaml"
             height="calc(100vh - 515px)"
@@ -128,7 +123,7 @@ const DatasetYamlForm = () => {
             }}
             theme="light"
           />
-          <Divider color="gray.100" />
+          <Divider />
           <Button
             type="primary"
             disabled={isEmptyState || !!yamlError || isSubmitting}
@@ -139,15 +134,13 @@ const DatasetYamlForm = () => {
           >
             Create dataset
           </Button>
-        </VStack>
-      </Box>
-      <Box>
+        </Flex>
+      </div>
+      <div>
         {isTouched && (isEmptyState || yamlError) && (
           <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
         )}
-      </Box>
+      </div>
     </Flex>
   );
 };
-
-export default DatasetYamlForm;

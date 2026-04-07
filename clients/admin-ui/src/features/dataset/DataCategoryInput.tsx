@@ -1,15 +1,9 @@
-import {
-  ChakraBox as Box,
-  ChakraFormLabel as FormLabel,
-  ChakraGrid as Grid,
-  Space,
-  Tag,
-} from "fidesui";
+import { Col, Flex, Row, Space, Tag } from "fidesui";
 
 import { DataCategory } from "~/types/api";
 
 import { InfoTooltip } from "../common/InfoTooltip";
-import DataCategoryDropdown from "./DataCategoryDropdown";
+import { DataCategoryDropdown } from "./DataCategoryDropdown";
 
 export interface Props {
   dataCategories: DataCategory[];
@@ -18,7 +12,7 @@ export interface Props {
   tooltip?: string;
 }
 
-const DataCategoryInput = ({
+export const DataCategoryInput = ({
   dataCategories,
   checked,
   onChecked,
@@ -33,35 +27,41 @@ const DataCategoryInput = ({
     .sort((a, b) => a.localeCompare(b));
 
   return (
-    <Grid templateColumns="1fr 3fr">
-      <FormLabel>Data Categories</FormLabel>
-      <Space direction="vertical" size="small">
-        <Box display="flex" alignItems="center">
-          <Box mr="2" width="100%">
-            <DataCategoryDropdown
-              dataCategories={dataCategories}
-              checked={checked}
-              onChecked={onChecked}
-            />
-          </Box>
-          <InfoTooltip label={tooltip} />
-        </Box>
-        <Space direction="vertical" size={2} data-testid="selected-categories">
-          {sortedCheckedDataCategories.map((dc) => (
-            <Tag
-              closable
-              onClose={() => {
-                handleRemoveDataCategory(dc);
-              }}
-              key={dc}
-            >
-              {dc}
-            </Tag>
-          ))}
+    <Row>
+      <Col span={6}>
+        <span>Data Categories</span>
+      </Col>
+      <Col span={18}>
+        <Space direction="vertical" size="small" className="w-full">
+          <Flex align="center">
+            <div className="mr-2 w-full">
+              <DataCategoryDropdown
+                dataCategories={dataCategories}
+                checked={checked}
+                onChecked={onChecked}
+              />
+            </div>
+            <InfoTooltip label={tooltip} />
+          </Flex>
+          <Space
+            direction="vertical"
+            size={2}
+            data-testid="selected-categories"
+          >
+            {sortedCheckedDataCategories.map((dc) => (
+              <Tag
+                closable
+                onClose={() => {
+                  handleRemoveDataCategory(dc);
+                }}
+                key={dc}
+              >
+                {dc}
+              </Tag>
+            ))}
+          </Space>
         </Space>
-      </Space>
-    </Grid>
+      </Col>
+    </Row>
   );
 };
-
-export default DataCategoryInput;
