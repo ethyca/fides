@@ -68,6 +68,14 @@ export const statusPropMap: {
     colorScheme: CUSTOM_TAG_COLOR.MARBLE,
     label: "Pending External",
   },
+  awaiting_pre_approval: {
+    colorScheme: CUSTOM_TAG_COLOR.CAUTION,
+    label: "Awaiting External Review",
+  },
+  pre_approval_not_eligible: {
+    colorScheme: CUSTOM_TAG_COLOR.WARNING,
+    label: "Manual Review Required",
+  },
 };
 
 export const RequestStatusBadgeCell = ({

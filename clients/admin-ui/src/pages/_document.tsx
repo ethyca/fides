@@ -5,7 +5,10 @@ import React from "react";
 
 const MyDocument = () => (
   <Html lang="en">
-    <Head />
+    <Head>
+      {/* Prevent search engines from indexing Admin UI pages */}
+      <meta name="robots" content="noindex" />
+    </Head>
     <body>
       <Main />
       <NextScript />

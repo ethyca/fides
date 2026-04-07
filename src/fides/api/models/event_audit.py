@@ -57,6 +57,11 @@ class EventAuditType(str, EnumType):
     manual_task_submission_created = "manual_task.submission.created"
     manual_task_submission_updated = "manual_task.submission.updated"
 
+    # Password Reset
+    password_reset_requested = "password_reset.requested"
+    password_reset_completed = "password_reset.completed"
+    password_reset_token_expired = "password_reset.token_expired"
+
     # Privacy Assessment
     privacy_assessment_created = "privacy_assessment.created"
     privacy_assessment_deleted = "privacy_assessment.deleted"

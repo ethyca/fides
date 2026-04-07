@@ -1,7 +1,7 @@
 import json
 import random
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response, Security
@@ -56,9 +56,11 @@ from fides.api.schemas.user import (
     UserCreate,
     UserCreateResponse,
     UserForcePasswordReset,
+    UserForgotPassword,
     UserLogin,
     UserLoginResponse,
     UserPasswordReset,
+    UserResetPasswordWithToken,
     UserResponse,
     UserUpdate,
 )
@@ -932,6 +934,67 @@ def accept_user_invite(
 
     expire_minutes = config.security.oauth_access_token_expire_minutes
     expires_at = datetime.now() + timedelta(minutes=expire_minutes)
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(
+            access_token=access_code,
+            expires_in=expire_minutes * 60,
+            expires_at=expires_at.isoformat(),
+        ),
+    )
+
+
+@router.post(
+    urls.USER_FORGOT_PASSWORD,
+    status_code=HTTP_200_OK,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def forgot_password(
+    *,
+    request: Request,
+    data: UserForgotPassword,
+    user_service: UserService = Depends(get_user_service),
+) -> Dict:
+    """
+    Initiates a self-service password reset flow. Sends a reset email if the
+    user exists and has a verified email. Always returns 200 to prevent user
+    enumeration (OWASP).
+    """
+    user_service.request_password_reset(data.email)
+    return {
+        "detail": "If an account with that email exists, a password reset link has been sent."
+    }
+
+
+@router.post(
+    urls.USER_RESET_PASSWORD_WITH_TOKEN,
+    status_code=HTTP_200_OK,
+    response_model=UserLoginResponse,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def reset_password_with_token(
+    *,
+    request: Request,
+    config: FidesConfig = Depends(get_config),
+    data: UserResetPasswordWithToken,
+    user_service: UserService = Depends(get_user_service),
+) -> UserLoginResponse:
+    """
+    Resets a user's password using a valid, single-use reset token.
+    Returns login credentials on success.
+    """
+    try:
+        user, access_code = user_service.reset_password_with_token(
+            data.username, data.token, data.new_password
+        )
+    except FidesError as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    expire_minutes = config.security.oauth_access_token_expire_minutes
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
     return UserLoginResponse(
         user_data=user,
         token_data=AccessToken(
