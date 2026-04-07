@@ -386,8 +386,12 @@ export const ConnectorParameters = ({
   );
 
   const handleTestDatasetsClick = () => {
-    if (connectionConfig?.key) {
-      router.push(`/integrations/${connectionConfig.key}/edit-dataset`);
+    if (connectionOption.type === SystemType.SAAS) {
+      if (connectionConfig?.key) {
+        router.push(`/integrations/${connectionConfig.key}/edit-dataset`);
+      }
+    } else if (initialDatasets?.length) {
+      router.push(`/dataset/${initialDatasets[0]}/graph-editor`);
     }
   };
 
