@@ -66,6 +66,9 @@ h6 {
     margin-top: 0.25rem;
     color: var(--fidesui-neutral-700);
   }
+  &-tooltip {
+    cursor: default !important;
+  }
 }
 
 // Custom styles for dark submenus
