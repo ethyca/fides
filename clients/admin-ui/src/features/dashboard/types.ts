@@ -106,10 +106,8 @@ export interface AstralisResponse {
 }
 
 export interface ActivityFeedItem {
-  /** Stable identifier. The backend may omit this; the API slice generates a
-   *  synthetic ID from the item index when it is absent. */
-  id?: string;
-  actor_type: "user" | "system" | "agent";
+  id: string;
+  actor_type: "user" | "system";
   message: string;
   timestamp: string;
   event_source?: "helios" | "janus" | "lethe" | "astralis";
@@ -130,7 +128,7 @@ interface ActivityFeedParams {
   size?: number;
   start_date?: string;
   end_date?: string;
-  actor_type?: "user" | "system" | "agent";
+  actor_type?: "user" | "system";
 }
 
 export type { ActivityFeedParams, ActivityFeedResponse };

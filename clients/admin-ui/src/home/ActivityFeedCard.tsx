@@ -1,8 +1,7 @@
 import classNames from "classnames";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { Avatar, Card, Flex, Icons, SparkleIcon, Spin, Text } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+import { Avatar, Card, Flex, Icons, Spin, Text } from "fidesui";
 import NextLink from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -20,8 +19,6 @@ dayjs.extend(relativeTime);
 
 const getActorIcon = (actorType: string) => {
   switch (actorType) {
-    case "agent":
-      return <SparkleIcon size={12} />;
     case "user":
       return <Icons.User size={12} />;
     case "system":
@@ -29,18 +26,6 @@ const getActorIcon = (actorType: string) => {
     default:
       return undefined;
   }
-};
-
-const getActorIconStyle = (
-  actorType: string,
-): React.CSSProperties | undefined => {
-  if (actorType === "agent") {
-    return {
-      color: palette.FIDESUI_TERRACOTTA,
-      borderColor: palette.FIDESUI_TERRACOTTA,
-    };
-  }
-  return undefined;
 };
 
 const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
@@ -54,7 +39,6 @@ const FeedItemContent = ({ item }: { item: ActivityFeedItem }) => {
         icon={getActorIcon(item.actor_type)}
         size={22}
         className={styles.actorIcon}
-        style={getActorIconStyle(item.actor_type)}
       />
       <Text ellipsis style={{ flex: 1, minWidth: 0 }}>
         {item.message}

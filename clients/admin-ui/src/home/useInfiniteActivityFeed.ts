@@ -22,7 +22,7 @@ export const useInfiniteActivityFeed = ({
       page,
       size: PAGE_SIZE,
       ...(actorType
-        ? { actor_type: actorType as "user" | "system" | "agent" }
+        ? { actor_type: actorType as "user" | "system" }
         : {}),
     }),
     [page, actorType],

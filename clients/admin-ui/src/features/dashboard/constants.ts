@@ -118,7 +118,6 @@ export const ACTIVITY_FILTER_OPTIONS = [
   { label: "All", value: "all" },
   { label: "Human", value: "user" },
   { label: "System", value: "system" },
-  { label: "Agent", value: "agent" },
 ] as const;
 
 export const EVENT_SOURCE_LABELS: Record<
