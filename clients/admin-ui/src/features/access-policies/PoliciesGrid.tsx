@@ -1,4 +1,4 @@
-import { Empty, Spin } from "fidesui";
+import { Empty, Flex, Spin } from "fidesui";
 
 import { PolicyGroup } from "./hooks/useAccessPolicyGroups";
 import PolicyCategoryGroup from "./PolicyCategoryGroup";
@@ -17,9 +17,9 @@ const PoliciesGrid = ({
 }: PoliciesGridProps) => {
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
+      <Flex justify="center" className="py-12">
         <Spin size="large" />
-      </div>
+      </Flex>
     );
   }
 
