@@ -1,0 +1,4 @@
+type: Added
+description: Added FIDES__DATABASE__MIGRATION_ROLE config to execute SET ROLE before Alembic migrations
+pr: 7815
+labels: []

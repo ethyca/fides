@@ -1,6 +1,5 @@
 import {
   Button,
-  Flex,
   Icons,
   Result,
   Space,
@@ -115,9 +114,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     return (
       <Layout title="Privacy assessment">
         <PageHeader heading="Privacy assessments" isSticky />
-        <Flex align="center" justify="center" className="p-20">
-          <Spin size="large" />
-        </Flex>
+        <Spin size="large" />
       </Layout>
     );
   }

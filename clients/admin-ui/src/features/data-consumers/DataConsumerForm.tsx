@@ -58,11 +58,7 @@ const DataConsumerForm = ({
   }, [router]);
 
   if (purposesLoading) {
-    return (
-      <Flex justify="center" align="center" className="py-12">
-        <Spin />
-      </Flex>
-    );
+    return <Spin />;
   }
 
   return (

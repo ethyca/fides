@@ -18,4 +18,6 @@ export type UserResponseExtended = {
    * Whether password login is enabled for the user.
    */
   password_login_enabled?: boolean | null;
+  has_invite?: boolean | null;
+  invite_expired?: boolean | null;
 };

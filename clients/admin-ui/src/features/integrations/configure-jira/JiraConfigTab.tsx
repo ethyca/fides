@@ -1,12 +1,22 @@
-import { Button, Flex, Form, Select, Typography, useMessage } from "fidesui";
+import {
+  Button,
+  Flex,
+  Form,
+  Modal,
+  Select,
+  Typography,
+  useMessage,
+} from "fidesui";
+import { useState } from "react";
 
 import { usePatchDatastoreConnectionSecretsMutation } from "~/features/datastore-connections";
 import {
   useGetJiraIssueTypesQuery,
   useGetJiraProjectsQuery,
   useGetJiraTemplateVariablesQuery,
+  usePreviewJiraTicketMutation,
 } from "~/features/plus/plus.slice";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionConfigurationResponse, JiraTicketData } from "~/types/api";
 
 import TemplateVariableTextArea from "./TemplateVariableTextArea";
 
@@ -36,12 +46,17 @@ interface JiraConfigFormValues {
 const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   const [form] = Form.useForm<JiraConfigFormValues>();
   const message = useMessage();
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewData, setPreviewData] = useState<JiraTicketData | null>(null);
 
   const secrets = (connection as any)?.secrets as
     | Record<string, any>
     | undefined;
 
   const selectedProject = Form.useWatch("project_key", form);
+  const summaryTemplate = Form.useWatch("summary_template", form);
+  const descriptionTemplate = Form.useWatch("description_template", form);
+
   // RTK Query hooks
   const { data: projects, isLoading: projectsLoading } =
     useGetJiraProjectsQuery(
@@ -63,8 +78,26 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   const [patchSecrets, { isLoading: isSaving }] =
     usePatchDatastoreConnectionSecretsMutation();
 
+  const [previewJiraTicket, { isLoading: isPreviewing }] =
+    usePreviewJiraTicketMutation();
+
   const handleProjectChange = () => {
     form.setFieldValue("issue_type", undefined);
+  };
+
+  const handlePreview = async () => {
+    setPreviewData(null);
+    try {
+      const result = await previewJiraTicket({
+        connectionKey: connection.key,
+        summary_template: summaryTemplate,
+        description_template: descriptionTemplate,
+      }).unwrap();
+      setPreviewData(result);
+      setPreviewVisible(true);
+    } catch {
+      message.error("Failed to generate preview");
+    }
   };
 
   const handleSave = async (values: JiraConfigFormValues) => {
@@ -191,11 +224,42 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
         </Form.Item>
 
         <Flex justify="end" gap="middle" className="mt-4">
+          <Button
+            onClick={handlePreview}
+            loading={isPreviewing}
+            disabled={!summaryTemplate}
+          >
+            Preview ticket
+          </Button>
           <Button type="primary" htmlType="submit" loading={isSaving}>
             Save configuration
           </Button>
         </Flex>
       </Form>
+
+      <Modal
+        title="Ticket preview"
+        open={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+        footer={null}
+      >
+        {previewData && (
+          <Flex vertical gap="small">
+            <div>
+              <Typography.Text strong>Summary</Typography.Text>
+              <Typography.Paragraph className="mt-1">
+                {previewData.summary}
+              </Typography.Paragraph>
+            </div>
+            <div>
+              <Typography.Text strong>Description</Typography.Text>
+              <Typography.Paragraph className="mt-1 whitespace-pre-wrap">
+                {previewData.description}
+              </Typography.Paragraph>
+            </div>
+          </Flex>
+        )}
+      </Modal>
     </Flex>
   );
 };
