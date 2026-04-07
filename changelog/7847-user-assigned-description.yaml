@@ -1,0 +1,3 @@
+type: added
+description: Added `user_assigned_description` column to `StagedResource` model to support distinguishing system-generated from user-edited descriptions in IDP monitor resources.
+pr: 7847
