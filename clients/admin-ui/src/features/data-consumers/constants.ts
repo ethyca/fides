@@ -47,10 +47,10 @@ export const PLATFORM_OPTIONS = Object.entries(PLATFORM_LABELS).map(
   ([value, label]) => ({ value, label }),
 );
 
-export type StatusFilterValue = "has_violations" | "no_purposes" | "healthy";
+export type StatusFilterValue = "has_findings" | "no_purposes" | "healthy";
 
 export const STATUS_FILTER_OPTIONS: { value: StatusFilterValue; label: string }[] = [
-  { value: "has_violations", label: "Has violations" },
+  { value: "has_findings", label: "Has findings" },
   { value: "no_purposes", label: "No purposes" },
   { value: "healthy", label: "Healthy" },
 ];

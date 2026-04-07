@@ -12,7 +12,7 @@ export interface MockDataConsumer {
   type: ConsumerType;
   platform: string | null;
   purposes: string[];
-  violationCount: number;
+  findingsCount: number;
   linkedSystem: string | null;
 }
 
@@ -22,5 +22,26 @@ export interface ConsumerViolation {
   dataset: string;
   table: string;
   accessedAt: string;
+  description: string;
+}
+
+export interface ViolationDataset {
+  name: string;
+  tables: string[];
+  queryCount: number;
+  lastSeen: string;
+}
+
+export interface PolicyViolationGroup {
+  purpose: string;
+  totalQueries: number;
+  datasets: ViolationDataset[];
+}
+
+export interface PolicyGap {
+  dataset: string;
+  tables: string[];
+  queryCount: number;
+  lastSeen: string;
   description: string;
 }

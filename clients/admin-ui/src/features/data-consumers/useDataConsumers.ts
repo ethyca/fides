@@ -5,7 +5,7 @@ import type { MockDataConsumer } from "./types";
 
 export interface ConsumerMetrics {
   total: number;
-  withViolations: number;
+  withFindings: number;
   noPurposes: number;
   aiAgents: number;
 }
@@ -17,7 +17,7 @@ export const useDataConsumers = () => {
   const metrics = useMemo<ConsumerMetrics>(
     () => ({
       total: consumers.length,
-      withViolations: consumers.filter((c) => c.violationCount > 0).length,
+      withFindings: consumers.filter((c) => c.findingsCount > 0).length,
       noPurposes: consumers.filter((c) => c.purposes.length === 0).length,
       aiAgents: consumers.filter((c) => c.type === "ai_agent").length,
     }),
