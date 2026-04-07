@@ -673,6 +673,10 @@ class StagedResource(StagedResourceBase):
         default=None,
     )
     user_assigned_system_id = Column(String, nullable=True, index=True)
+    # This field is intentionally nullable to distinguish system-generated descriptions
+    # (value is None) from user-edited descriptions (non-null value). This enables the
+    # frontend to show a sparkle icon only for system-generated descriptions.
+    user_assigned_description = Column(String, nullable=True)
 
     # pointers to child and parent URNs
     children = Column(
