@@ -23,6 +23,7 @@ import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
 import { useInfrastructureSystemsBulkActions } from "../hooks/useInfrastructureSystemsBulkActions";
 import { useInfrastructureSystemsSelection } from "../hooks/useInfrastructureSystemsSelection";
+import { SystemDetailsDrawer } from "../SystemDetailsDrawer";
 import {
   getBulkActionsMenuItems,
   shouldAllowIgnore,
@@ -46,7 +47,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
     paginationProps,
     activeTab,
     diffStatusFilters,
-    rowClickUrl,
+    // rowClickUrl,
     getRecordKey,
     refetch,
   } = useDiscoveredInfrastructureSystemsTable({
@@ -220,7 +221,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
               item={item}
               selected={isItemSelected(item)}
               onSelect={handleSelectItem}
-              rowClickUrl={rowClickUrl}
+              // rowClickUrl={rowClickUrl}
               monitorId={monitorId}
               activeTab={activeTab as ActionCenterTabHash | null}
               allowIgnore={allowIgnore}
@@ -241,6 +242,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
           paginationProps.pageSizeOptions?.[0]
         }
       />
+      <SystemDetailsDrawer monitorId={monitorId} />
     </Flex>
   );
 };
