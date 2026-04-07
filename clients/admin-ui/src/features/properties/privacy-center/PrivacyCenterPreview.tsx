@@ -10,6 +10,25 @@ import { useFormikContext } from "formik";
 
 import type { PropertyFormValues } from "../PropertyForm";
 
+const sanitizeIconSrc = (iconPath?: string | null): string | undefined => {
+  if (!iconPath) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(iconPath, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return url.toString();
+    }
+    return undefined;
+  } catch {
+    if (iconPath.startsWith("/")) {
+      return iconPath;
+    }
+    return undefined;
+  }
+};
+
 const ActionCard = ({
   title,
   description,
@@ -18,45 +37,49 @@ const ActionCard = ({
   title: string;
   description: string;
   iconPath?: string | null;
-}) => (
-  <Flex
-    border="1px solid"
-    borderColor="gray.200"
-    borderRadius="lg"
-    p={5}
-    gap={3}
-    flex="1"
-    minWidth="120px"
-    flexDirection="column"
-    alignItems="flex-start"
-    textAlign="left"
-    backgroundColor="white"
-    _hover={{ borderColor: "gray.400", boxShadow: "sm" }}
-    cursor="default"
-    data-testid="preview-action-card"
-  >
-    {iconPath && (
-      <Box flexShrink={0} mt={0.5}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={iconPath}
-          alt=""
-          style={{ width: 24, height: 24, objectFit: "contain" }}
-        />
+}) => {
+  const safeIconSrc = sanitizeIconSrc(iconPath);
+
+  return (
+    <Flex
+      border="1px solid"
+      borderColor="gray.200"
+      borderRadius="lg"
+      p={5}
+      gap={3}
+      flex="1"
+      minWidth="120px"
+      flexDirection="column"
+      alignItems="flex-start"
+      textAlign="left"
+      backgroundColor="white"
+      _hover={{ borderColor: "gray.400", boxShadow: "sm" }}
+      cursor="default"
+      data-testid="preview-action-card"
+    >
+      {safeIconSrc && (
+        <Box flexShrink={0} mt={0.5}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={safeIconSrc}
+            alt=""
+            style={{ width: 24, height: 24, objectFit: "contain" }}
+          />
+        </Box>
+      )}
+      <Box>
+        <Text fontWeight="semibold" fontSize="sm" color="gray.800">
+          {title || <span style={{ color: "#aaa" }}>Action title</span>}
+        </Text>
+        <Text fontSize="xs" color="gray.600" mt={1}>
+          {description || (
+            <span style={{ color: "#aaa" }}>Action description</span>
+          )}
+        </Text>
       </Box>
-    )}
-    <Box>
-      <Text fontWeight="semibold" fontSize="sm" color="gray.800">
-        {title || <span style={{ color: "#aaa" }}>Action title</span>}
-      </Text>
-      <Text fontSize="xs" color="gray.600" mt={1}>
-        {description || (
-          <span style={{ color: "#aaa" }}>Action description</span>
-        )}
-      </Text>
-    </Box>
-  </Flex>
-);
+    </Flex>
+  );
+};
 
 const PrivacyCenterPreview = () => {
   const { values } = useFormikContext<PropertyFormValues>();
