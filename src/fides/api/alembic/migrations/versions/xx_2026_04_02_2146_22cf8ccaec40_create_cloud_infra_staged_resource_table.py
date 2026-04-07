@@ -1,7 +1,7 @@
 """Create cloud_infra_staged_resource table
 
 Revision ID: 22cf8ccaec40
-Revises: d4e6f8a0b2c3
+Revises: d4e5f6a7b8c9
 Create Date: 2026-04-02 21:46:16.484694
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '22cf8ccaec40'
-down_revision = 'd4e6f8a0b2c3'
+down_revision = 'd4e5f6a7b8c9'
 branch_labels = None
 depends_on = None
 
