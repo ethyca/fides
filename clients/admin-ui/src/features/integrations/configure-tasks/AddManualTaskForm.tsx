@@ -2,6 +2,7 @@ import {
   Button,
   ChakraFlex as Flex,
   Form,
+  FormInstance,
   Icons,
   Input,
   Select,
@@ -20,6 +21,7 @@ type Props = {
   onSaveClick: (values: any) => void;
   onCancel: () => void;
   editingTask?: Task | null;
+  form?: FormInstance<TaskFormValues>;
 };
 
 interface TaskFormValues {
@@ -47,8 +49,10 @@ const AddManualTaskForm = ({
   onSaveClick,
   onCancel,
   editingTask,
+  form: formProp,
 }: Props) => {
-  const [form] = Form.useForm<TaskFormValues>();
+  const [internalForm] = Form.useForm<TaskFormValues>();
+  const form = formProp ?? internalForm;
 
   const isEditing = !!editingTask;
 
