@@ -195,7 +195,7 @@ const TemplateVariableInput = (allProps: TemplateVariableInputProps) => {
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp,
     onClick: handleClick,
-    onBlur: () => setTimeout(closeDropdown, 150),
+    onBlur: closeDropdown,
     placeholder,
   };
 
