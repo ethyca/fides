@@ -11,6 +11,7 @@ import {
   Tooltip,
   Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -62,6 +63,7 @@ const EditorSection = ({
   connectionType,
 }: EditorSectionProps) => {
   const messageApi = useMessage();
+  const modal = useModal();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
   const [patchConnectionDatasets] = usePatchConnectionDatasetsMutation();
@@ -279,7 +281,7 @@ const EditorSection = ({
     }
   };
 
-  const handleRefresh = async () => {
+  const doRefresh = async () => {
     try {
       const { data } = await refetchDatasets();
       const refreshedDataset = data?.items.find(
@@ -296,6 +298,22 @@ const EditorSection = ({
       messageApi.success("Successfully refreshed datasets");
     } catch (error) {
       messageApi.error(getErrorMessage(error as FetchBaseQueryError));
+    }
+  };
+
+  const handleRefresh = () => {
+    if (isDirty) {
+      modal.confirm({
+        title: "Unsaved changes",
+        content:
+          "You have unsaved changes that will be lost. Are you sure you want to refresh?",
+        okText: "Discard and refresh",
+        okButtonProps: { danger: true },
+        cancelText: "Cancel",
+        onOk: doRefresh,
+      });
+    } else {
+      doRefresh();
     }
   };
 
