@@ -85,6 +85,7 @@ export const PrivacyRequestFiltersModal = ({
       status: [],
       action_type: [],
     });
+    onClose();
   };
 
   return (
@@ -93,6 +94,7 @@ export const PrivacyRequestFiltersModal = ({
       onClose={onClose}
       getIsDirty={() => form.isFieldsTouched()}
       title="All filters"
+      destroyOnHidden
       footer={[
         <Button
           key="clear"
