@@ -19,7 +19,7 @@
     "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
     "export": "PROD_EXPORT=true next build",
     "prod-export": "npm run export && npm run copy-export",
-    "format": "prettier --write .",
+    "format": "prettier --write --log-level warn .",
     "format:ci": "prettier --check .",
     "check": "npm run lint && npm run format && npm run typecheck",
     "check:ci": "npm run lint:ci && npm run format:ci && npm run typecheck",

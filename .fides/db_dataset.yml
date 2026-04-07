@@ -3281,6 +3281,38 @@ dataset:
       data_categories: [system]
     - name: vendor_id
       data_categories: [system]
+  - name: cloud_infra_staged_resource
+    fields:
+    - name: cloud_account_id
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: description
+      data_categories: [system]
+    - name: diff_status
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: location
+      data_categories: [system]
+    - name: meta
+      data_categories: [system]
+    - name: monitor_config_id
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: resource_type
+      data_categories: [system]
+    - name: service
+      data_categories: [system]
+    - name: source_id
+      data_categories: [system]
+    - name: tags
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: urn
+      data_categories: [system]
   - name: fides_user_invite
     fields:
       - name: created_at
