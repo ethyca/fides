@@ -1,4 +1,4 @@
-import { Flex, PageSpinner } from "fidesui";
+import { Flex, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -32,7 +32,7 @@ const TestDatasetPage: NextPage = () => {
   if (isLoading) {
     return (
       <Layout title="System inventory">
-        <PageSpinner />
+        <Spin />
       </Layout>
     );
   }
