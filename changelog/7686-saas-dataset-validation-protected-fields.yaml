@@ -1,0 +1,4 @@
+type: Added
+description: Added backend validation and protected field restoration for SaaS dataset editing
+pr: 7686
+labels: []
