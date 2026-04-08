@@ -396,7 +396,7 @@ const hoursAgo = (h: number) => new Date(now - h * 3600_000).toISOString();
 export const mockActivityFeed: ActivityFeedItem[] = [
   {
     id: "af-001",
-    actor_type: "agent",
+    actor_type: "system",
     message: "Helios classified 847 fields across Snowflake and BigQuery.",
     timestamp: hoursAgo(0.5),
     event_source: "helios",
@@ -423,7 +423,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   },
   {
     id: "af-004",
-    actor_type: "agent",
+    actor_type: "system",
     message: "Astralis completed privacy assessment for Stripe integration.",
     timestamp: hoursAgo(2),
     event_source: "astralis",
@@ -447,7 +447,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   },
   {
     id: "af-007",
-    actor_type: "agent",
+    actor_type: "system",
     message: "Helios detected new system: Amplitude receiving user event data.",
     timestamp: hoursAgo(5),
     event_source: "helios",
@@ -474,7 +474,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   },
   {
     id: "af-010",
-    actor_type: "agent",
+    actor_type: "system",
     message:
       "Astralis flagged policy violation: HubSpot retaining data beyond 24-month limit.",
     timestamp: hoursAgo(10),
@@ -499,7 +499,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   },
   {
     id: "af-013",
-    actor_type: "agent",
+    actor_type: "system",
     message: "Lethe processed batch erasure for 48 records across Snowflake.",
     timestamp: hoursAgo(16),
     event_source: "lethe",
@@ -523,7 +523,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   },
   {
     id: "af-016",
-    actor_type: "agent",
+    actor_type: "system",
     message: "Helios discovered Mixpanel receiving event data from iOS app.",
     timestamp: hoursAgo(24),
     event_source: "helios",
@@ -548,7 +548,7 @@ export const mockActivityFeed: ActivityFeedItem[] = [
   },
   {
     id: "af-019",
-    actor_type: "agent",
+    actor_type: "system",
     message: "Janus detected consent opt-in rate drop on mobile web.",
     timestamp: hoursAgo(36),
     event_source: "janus",

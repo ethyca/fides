@@ -36,6 +36,8 @@ export const useInfiniteActivityFeed = ({
 
   useEffect(() => {
     setPage(1);
+    setAllItems([]);
+    setHasMore(true);
   }, [actorType]);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export const useInfiniteActivityFeed = ({
     }
 
     setHasMore(data.page < data.pages);
-  }, [data, page, actorType]);
+  }, [data, page]);
 
   const loadMore = useCallback(() => {
     if (!isFetching && hasMore) {

@@ -94,7 +94,11 @@ export const ActivityFeedCard = () => {
       className={styles.cardContainer}
     >
       <div className={styles.scrollContainer}>
-        {!isFetching && items.length === 0 ? (
+        {isFetching && items.length === 0 ? (
+          <Flex justify="center" align="center" className="h-full">
+            <Spin size="small" />
+          </Flex>
+        ) : !isFetching && items.length === 0 ? (
           <Flex
             vertical
             align="center"
@@ -140,11 +144,6 @@ export const ActivityFeedCard = () => {
             })}
             {hasMore && <div ref={sentinelRef} className="h-px shrink-0" />}
           </>
-        )}
-        {isFetching && (
-          <Flex justify="center" align="center" className="h-full">
-            <Spin size="small" />
-          </Flex>
         )}
       </div>
     </Card>
