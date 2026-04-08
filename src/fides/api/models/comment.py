@@ -96,11 +96,34 @@ class Comment(Base):
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
     )
+    parent_id = Column(
+        String(255),
+        ForeignKey("comment.id", name="comment_parent_id_fkey", ondelete="SET NULL"),
+        nullable=True,
+    )
     # Not all users in the system have a username, and users can be deleted.
     # Store a non-normalized copy of username for these cases.
     username = Column(String, nullable=True)
     comment_text = Column(String, nullable=False)
     comment_type = Column(EnumColumn(CommentType), nullable=False)
+
+    __table_args__ = (Index("ix_comment_parent_id", "parent_id"),)
+
+    parent = relationship(
+        "Comment",
+        remote_side="Comment.id",
+        foreign_keys=[parent_id],
+        uselist=False,
+    )
+
+    replies = relationship(
+        "Comment",
+        foreign_keys=[parent_id],
+        uselist=True,
+        order_by="Comment.created_at",
+        overlaps="parent",
+        passive_deletes=True,
+    )
 
     user = relationship(
         "FidesUser",
@@ -130,7 +153,9 @@ class Comment(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
-        # Delete attachments associated with this comment
+        # TODO (ENG-3299): When message_to_subject / reply_from_subject CommentTypes
+        # are added, prevent deletion of comments with those types to preserve
+        # correspondence threads.
         AttachmentService(db).delete_for_reference(
             self.id, AttachmentReferenceType.comment
         )
