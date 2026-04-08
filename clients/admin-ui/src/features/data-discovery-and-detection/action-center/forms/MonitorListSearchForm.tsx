@@ -2,12 +2,12 @@ import { Flex, Form, Select } from "fidesui";
 import _ from "lodash";
 
 import { useAppSelector } from "~/app/hooks";
+import { useQuery } from "~/app/queryClient";
 import { selectUser } from "~/features/auth";
 import SearchInput from "~/features/common/SearchInput";
 import { formatUser } from "~/features/common/utils";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
-import { useGetAllUsersQuery } from "~/features/user-management";
 
 import { MonitorSearchForm } from "../MonitorList.const";
 
@@ -28,14 +28,20 @@ const MonitorListSearchForm = ({
   availableMonitorTypes: readonly MONITOR_TYPES[];
 }) => {
   const currentUser = useAppSelector(selectUser);
-
-  const { data: eligibleUsersData, isLoading: isLoadingUserOptions } =
-    useGetAllUsersQuery({
-      page: 1,
-      size: 100,
-      include_external: false,
-      exclude_approvers: true,
-    });
+  const { data: eligibleUsersData, isLoading: isLoadingUserOptions } = useQuery(
+    "/api/v1/user",
+    {
+      method: "get",
+      params: {
+        query: {
+          page: 1,
+          size: 100,
+          include_external: false,
+          exclude_approvers: true,
+        },
+      },
+    },
+  );
 
   const dataStewardOptions = _.uniqBy(
     [

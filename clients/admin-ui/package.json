@@ -26,14 +26,13 @@
     "lint": "eslint --fix .",
     "lint:ci": "eslint .",
     "lint-staged:fix": "lint-staged --diff=main",
-    "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./src/types/api --exportCore false --exportServices false --indent 2 && prettier --write .",
-    "openapi:generate-dictionary": "openapi --input http://localhost:8081/openapi.json --output ./src/types/dictionary-api --exportCore false --exportServices false --indent 2",
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ethyca/fides-api-ts": "latest",
     "@ant-design/cssinjs": "^1.21.0",
     "@dagrejs/dagre": "^1.1.4",
     "@date-fns/tz": "^1.2.0",
@@ -66,6 +65,7 @@
     "next-swagger-doc": "^0.4.0",
     "next-transpile-modules": "^10.0.0",
     "nuqs": "^2.8.8",
+    "openapi-fetch": "^0.15.0",
     "papaparse": "^5.5.3",
     "query-string": "^9.0.0",
     "react": "^18.3.1",
@@ -124,12 +124,12 @@
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^13.2.0",
     "msw": "^1.2.1",
-    "openapi-typescript-codegen": "^0.23.0",
+    "openapi-typescript": "^7.10.1",
     "postcss": "^8.4.41",
     "prettier": "^3.3.3",
     "sass": "^1.80.6",
     "tailwindcss": "^3.4.10",
-    "typescript": "^5.7.2",
+    "typescript": "^5.9.3",
     "whatwg-fetch": "^3.6.2"
   },
   "lint-staged": {

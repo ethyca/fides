@@ -15,6 +15,7 @@ concurrency:
 
 env:
   CI: true
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # can remove once package public
 
 jobs:
   Check-Privacy-Center-Changes:
