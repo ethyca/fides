@@ -14,7 +14,7 @@ interface SaaSVersionContentProps {
 }
 
 const YamlBlock = ({ yaml }: { yaml: string | undefined }) => (
-  <pre className="max-h-[60vh] overflow-auto rounded-md bg-gray-50 p-3 text-xs whitespace-pre">
+  <pre className="max-h-[60vh] overflow-auto whitespace-pre rounded-md bg-gray-50 p-3 text-xs">
     {yaml}
   </pre>
 );
@@ -45,7 +45,7 @@ const SaaSVersionContent = ({
     }
     if (configError) {
       return (
-        <Text className="text-red-500 text-sm">
+        <Text className="text-sm text-red-500">
           Could not load version config.
         </Text>
       );
@@ -63,7 +63,7 @@ const SaaSVersionContent = ({
     }
     if (datasetError) {
       return (
-        <Text className="text-gray-500 text-sm">
+        <Text className="text-sm text-gray-500">
           No dataset available for this version.
         </Text>
       );

@@ -14,9 +14,9 @@ jest.mock("react-dnd", () => ({
   useDrop: jest.fn(() => [{}, jest.fn()]),
   DndProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
-// eslint-disable-next-line global-require
 jest.mock(
   "nuqs",
+  // eslint-disable-next-line global-require
   () => require("../../../../__tests__/utils/nuqs-mock").nuqsMock,
 );
 

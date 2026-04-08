@@ -9,11 +9,11 @@ import {
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
-import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
 import {
   SaaSConfigVersionResponse,
   useGetConnectorTemplateVersionsQuery,
 } from "~/features/connector-templates/connector-template.slice";
+import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
 
 interface VersionHistoryTabProps {
   connectorType: string;
@@ -96,9 +96,8 @@ const VersionHistoryTab = ({ connectorType }: VersionHistoryTabProps) => {
   return (
     <>
       <Typography.Paragraph className="mb-4 max-w-3xl">
-        All captured versions of this connector&apos;s configuration. Each
-        entry reflects the config and dataset snapshot at the time it was
-        recorded.
+        All captured versions of this connector&apos;s configuration. Each entry
+        reflects the config and dataset snapshot at the time it was recorded.
       </Typography.Paragraph>
       <Table
         dataSource={versions}

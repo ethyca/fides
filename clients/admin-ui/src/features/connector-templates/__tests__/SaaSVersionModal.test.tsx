@@ -2,12 +2,12 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 import { render } from "~/../__tests__/utils/test-utils";
-import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
 import {
   useGetConnectorTemplateVersionConfigQuery,
   useGetConnectorTemplateVersionDatasetQuery,
 } from "~/features/connector-templates/connector-template.slice";
 import { useSaaSVersionModal } from "~/features/connector-templates/hooks/useSaaSVersionModal";
+import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 
 jest.mock("query-string", () => ({
@@ -19,9 +19,9 @@ jest.mock("react-dnd", () => ({
   useDrop: jest.fn(() => [{}, jest.fn()]),
   DndProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
-// eslint-disable-next-line global-require
 jest.mock(
   "nuqs",
+  // eslint-disable-next-line global-require
   () => require("../../../../__tests__/utils/nuqs-mock").nuqsMock,
 );
 
