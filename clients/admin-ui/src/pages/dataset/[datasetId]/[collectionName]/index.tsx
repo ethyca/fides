@@ -42,7 +42,7 @@ import {
   useUpdateDatasetMutation,
 } from "~/features/dataset";
 import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
-import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
+import { EditFieldDrawer } from "~/features/dataset/EditFieldDrawer";
 import { getUpdatedDatasetFromField } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
 
