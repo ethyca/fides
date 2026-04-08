@@ -98,6 +98,39 @@ class CommentReference(Base):
         return super().create(db=db, data=data, check_name=check_name)
 
 
+class CorrespondenceMetadata(Base):
+    """1:1 metadata for correspondence comments (delivery tracking, threading)."""
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "correspondence_metadata"
+
+    comment_id = Column(
+        String,
+        ForeignKey("comment.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+    )
+    message_id = Column(String, unique=True, index=True, nullable=False)
+    in_reply_to = Column(String, nullable=True)
+    reply_to_address = Column(String, index=True, nullable=True)
+    delivery_status = Column(
+        String,
+        nullable=False,
+        server_default=CorrespondenceDeliveryStatus.pending,
+    )
+    delivered_at = Column(DateTime(timezone=True), nullable=True)
+    bounce_reason = Column(String, nullable=True)
+    sender_email = Column(String, nullable=True)
+    recipient_email = Column(String, nullable=True)
+
+    comment = relationship(
+        "Comment",
+        back_populates="correspondence_metadata",
+        uselist=False,
+    )
+
+
 class Comment(Base):
     """
     Stores information about a Comment.
@@ -121,6 +154,13 @@ class Comment(Base):
         "FidesUser",
         lazy="selectin",
         uselist=False,
+    )
+
+    correspondence_metadata = relationship(
+        "CorrespondenceMetadata",
+        back_populates="comment",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
     references = relationship(
