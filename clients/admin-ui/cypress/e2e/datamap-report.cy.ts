@@ -596,10 +596,8 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("delete-report-button").first().click();
       });
-      cy.getByTestId("confirmation-modal").should("be.visible");
-      cy.getByTestId("confirmation-modal").within(() => {
-        cy.getByTestId("continue-btn").click();
-      });
+      cy.getAntModalConfirmButtons().should("be.visible");
+      cy.getAntModalConfirmButtons().find(".ant-btn-dangerous").click();
       cy.wait("@deleteCustomReport")
         .its("request.url")
         .should("include", "1234");
