@@ -1,6 +1,7 @@
 import type {
   ActivityFeedItem,
   AgentBriefingResponse,
+  AstralisResponse,
   PostureResponse,
   PriorityAction,
   PrivacyRequestsResponse,
@@ -562,6 +563,13 @@ export const mockActivityFeed: ActivityFeedItem[] = [
     timestamp: hoursAgo(44),
   },
 ];
+
+export const mockAstralis: AstralisResponse = {
+  active_conversations: 7,
+  completed_assessments: 42,
+  awaiting_response: 3,
+  risks_identified: 12,
+};
 
 export const mockTrends: TrendsResponse = {
   metrics: {
