@@ -80,32 +80,20 @@ const MonitorFieldsSearchForm = ({
   );
 
   return (
-    <Form
-      form={form}
-      {...formProps}
-      layout="inline"
-      className="flex grow gap-2"
-    >
-      <Flex className="grow gap-2 self-stretch" vertical>
+    <Form form={form} {...formProps} layout="inline" className="contents">
+      <Flex className="col-span-2 gap-2 xl:col-span-1" vertical>
         <Flex className="gap-2">
-          <Form.Item name="search" className="!me-0 self-end">
+          <Form.Item name="search" className="!me-0 grow">
             <SearchInput
+              className="!min-w-[200px]"
               placeholder="Search by name or URN"
               status={regexError ? "error" : undefined}
             />
           </Form.Item>
 
-          <Form.Item name="search_regex" className="!me-0 self-end">
+          <Form.Item name="search_regex" className="!me-0">
             <RegexToggle />
           </Form.Item>
-
-          <Tooltip title="Display keyboard shortcuts">
-            <Button
-              aria-label="Display keyboard shortcuts"
-              icon={<Icons.Keyboard />}
-              onClick={shortcutCallback}
-            />
-          </Tooltip>
         </Flex>
         {regexError && (
           <Text type="danger" className="text-xs">
@@ -113,13 +101,21 @@ const MonitorFieldsSearchForm = ({
           </Text>
         )}
       </Flex>
-      <Form.Item name="resource_status" className="!me-0 self-end">
+
+      <Tooltip title="Display keyboard shortcuts">
+        <Button
+          aria-label="Display keyboard shortcuts"
+          icon={<Icons.Keyboard />}
+          onClick={shortcutCallback}
+          className="col-span-3 xl:col-span-1"
+        />
+      </Tooltip>
+      <Form.Item name="resource_status" className="!me-0">
         <Select
           options={RESOURCE_STATUS_OPTIONS.map((resourceStatus) => ({
             value: resourceStatus,
             label: resourceStatus,
           }))}
-          className="!w-[200px]"
           placeholder="Status"
           allowClear
           aria-label="Filter by status"
@@ -128,13 +124,12 @@ const MonitorFieldsSearchForm = ({
         />
       </Form.Item>
 
-      <Form.Item name="confidence_bucket" className="!me-0 self-end">
+      <Form.Item name="confidence_bucket" className="!me-0">
         <Select
           options={CONFIDENCE_BUCKETS.map((confidenceBucket) => ({
             value: confidenceBucket,
             label: capitalize(confidenceBucket),
           }))}
-          className="!w-[200px]"
           placeholder="Confidence"
           allowClear
           aria-label="Filter by confidence score"
@@ -143,9 +138,9 @@ const MonitorFieldsSearchForm = ({
         />
       </Form.Item>
 
-      <Form.Item name="data_category" className="!me-0 self-end">
+      <Form.Item name="data_category" className="!me-0 overflow-hidden">
         <DataCategorySelect
-          className="!w-[200px]"
+          rootClassName="overflow-hidden"
           variant="outlined"
           allowClear
           maxTagCount="responsive"
@@ -153,6 +148,7 @@ const MonitorFieldsSearchForm = ({
           mode="multiple"
           options={options}
           autoFocus={false}
+          popupMatchSelectWidth={false}
         />
       </Form.Item>
     </Form>

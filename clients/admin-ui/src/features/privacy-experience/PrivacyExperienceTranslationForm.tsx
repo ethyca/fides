@@ -1,6 +1,9 @@
 import { Alert, Form, Input, Typography, useModal } from "fidesui";
 import React, { useImperativeHandle, useMemo } from "react";
 
+import TemplateVariableInput, {
+  TemplateVariable,
+} from "~/features/common/TemplateVariableInput";
 import {
   getTranslationFormFields,
   TranslationWithLanguageName,
@@ -9,6 +12,34 @@ import { ExperienceFormInstance } from "~/features/privacy-experience/form/useEx
 import { ComponentType, ExperienceTranslation } from "~/types/api";
 
 import { SwitchField } from "./form/SwitchField";
+
+const GPC_VARIABLES: TemplateVariable[] = [
+  {
+    name: "GPC_START",
+    description: "Start of text shown only when a GPC signal is detected",
+  },
+  {
+    name: "GPC_END",
+    description: "End of GPC-conditional block",
+  },
+  {
+    name: "NO_GPC_START",
+    description: "Start of text shown only when no GPC signal is detected",
+  },
+  {
+    name: "NO_GPC_END",
+    description: "End of no-GPC block",
+  },
+];
+
+const DESCRIPTION_VARIABLES: TemplateVariable[] = [
+  ...GPC_VARIABLES,
+  {
+    name: "VENDOR_COUNT_LINK",
+    description:
+      "A clickable link showing the number of vendors; tapping it opens the vendor list",
+  },
+];
 
 export const OOBTranslationNotice = ({
   languageName,
@@ -193,9 +224,12 @@ const PrivacyExperienceTranslationForm = React.forwardRef<
           name="title"
           label="Title"
           rules={[{ required: true, message: "Title is required" }]}
+          tooltip="Type / to insert a template variable"
         >
-          <Input
+          <TemplateVariableInput
+            multiline={false}
             required
+            variables={GPC_VARIABLES}
             data-testid={`input-translations.${translationIndex}.title`}
           />
         </Form.Item>
@@ -203,9 +237,11 @@ const PrivacyExperienceTranslationForm = React.forwardRef<
           name="description"
           label="Description"
           rules={[{ required: true, message: "Description is required" }]}
+          tooltip="Type / to insert a template variable"
         >
-          <Input.TextArea
+          <TemplateVariableInput
             required
+            variables={DESCRIPTION_VARIABLES}
             data-testid={`input-translations.${translationIndex}.description`}
           />
         </Form.Item>
@@ -215,18 +251,21 @@ const PrivacyExperienceTranslationForm = React.forwardRef<
             <Form.Item
               name="banner_title"
               label="Banner title (optional)"
-              tooltip="A separate title for the banner (defaults to main title)"
+              tooltip="A separate title for the banner (defaults to main title); type / to insert a template variable"
             >
-              <Input
+              <TemplateVariableInput
+                multiline={false}
+                variables={GPC_VARIABLES}
                 data-testid={`input-translations.${translationIndex}.banner_title`}
               />
             </Form.Item>
             <Form.Item
               name="banner_description"
               label="Banner description (optional)"
-              tooltip="A separate description for the banner (defaults to main description)"
+              tooltip="A separate description for the banner (defaults to main description); type / to insert a template variable"
             >
-              <Input.TextArea
+              <TemplateVariableInput
+                variables={GPC_VARIABLES}
                 data-testid={`input-translations.${translationIndex}.banner_description`}
               />
             </Form.Item>
