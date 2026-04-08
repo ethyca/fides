@@ -1,5 +1,3 @@
-import React from "react";
-
 import { formatDate } from "common/utils";
 import {
   ChakraBox as Box,
@@ -22,9 +20,11 @@ import {
   ExecutionLogStatusLabels,
   PrivacyRequestEntity,
 } from "privacy-requests/types";
+import React from "react";
 
-import { useSaaSVersionModal } from "~/features/connector-templates/SaaSVersionModal";
+import { useSaaSVersionModal } from "~/features/connector-templates/hooks/useSaaSVersionModal";
 import { ActionType } from "~/types/api";
+
 import styles from "./EventLog.module.scss";
 
 const AUDIT_STATUSES_WITH_DETAILS: ExecutionLogStatus[] = [
@@ -168,6 +168,7 @@ const EventLog = ({
   privacyRequest,
 }: EventDetailsProps) => {
   const { openVersionModal, modal: versionModal } = useSaaSVersionModal();
+
   // Check if any logs have collection_name OR if there's a finished entry to determine if we should show Records and Collection columns
   const hasDatasetEntries =
     eventLogs?.some((log) => log.collection_name) ||
@@ -196,6 +197,38 @@ const EventLog = ({
       return actionTypeToLabel(privacyRequestActionType);
     }
     return "-";
+  };
+
+  const renderVersionCell = (log: ExecutionLog) => {
+    const { saas_version: ver, connection_key: key } = log;
+    if (!ver) {
+      return (
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          -
+        </Text>
+      );
+    }
+    if (key) {
+      return (
+        <button
+          type="button"
+          className={styles.versionButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            openVersionModal(key, ver);
+          }}
+          title="View version config"
+          data-testid="version-badge-wrapper"
+        >
+          <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
+        </button>
+      );
+    }
+    return (
+      <span data-testid="version-badge-wrapper">
+        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
+      </span>
+    );
   };
 
   const tableItems = eventLogs?.map((detail) => {
@@ -288,39 +321,7 @@ const EventLog = ({
                   : detail.collection_name}
               </Text>
             </Td>
-            <Td>
-              {detail.saas_version ? (
-                detail.connection_key ? (
-                  <button
-                    type="button"
-                    className={styles.versionButton}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const key = detail.connection_key;
-                      const ver = detail.saas_version;
-                      if (key && ver) openVersionModal(key, ver);
-                    }}
-                    title="View version config"
-                    data-testid="version-badge-wrapper"
-                  >
-                    <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
-                  </button>
-                ) : (
-                  <span data-testid="version-badge-wrapper">
-                    <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
-                  </span>
-                )
-              ) : (
-                <Text
-                  color="gray.600"
-                  fontSize="xs"
-                  lineHeight="4"
-                  fontWeight="medium"
-                >
-                  -
-                </Text>
-              )}
-            </Td>
+            <Td>{renderVersionCell(detail)}</Td>
           </>
         )}
       </Tr>

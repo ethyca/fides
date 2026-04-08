@@ -1,25 +1,3 @@
-// Mock ESM-only packages — must be before imports (Jest hoists these)
-jest.mock("query-string", () => ({
-  __esModule: true,
-  default: { stringify: jest.fn(), parse: jest.fn() },
-}));
-jest.mock("react-dnd", () => ({
-  useDrag: jest.fn(() => [{}, jest.fn()]),
-  useDrop: jest.fn(() => [{}, jest.fn()]),
-  DndProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-// eslint-disable-next-line global-require
-jest.mock("nuqs", () => require("../../../../../__tests__/utils/nuqs-mock").nuqsMock);
-
-// Capture openVersionModal so tests can assert on calls
-const mockOpenVersionModal = jest.fn();
-jest.mock("~/features/connector-templates/SaaSVersionModal", () => ({
-  useSaaSVersionModal: () => ({
-    openVersionModal: mockOpenVersionModal,
-    modal: null,
-  }),
-}));
-
 import { fireEvent, screen } from "@testing-library/react";
 import React from "react";
 
@@ -30,6 +8,30 @@ import {
   ExecutionLogStatus,
 } from "~/features/privacy-requests/types";
 import { ActionType } from "~/types/api";
+
+jest.mock("query-string", () => ({
+  __esModule: true,
+  default: { stringify: jest.fn(), parse: jest.fn() },
+}));
+jest.mock("react-dnd", () => ({
+  useDrag: jest.fn(() => [{}, jest.fn()]),
+  useDrop: jest.fn(() => [{}, jest.fn()]),
+  DndProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+// eslint-disable-next-line global-require
+jest.mock(
+  "nuqs",
+  () => require("../../../../../__tests__/utils/nuqs-mock").nuqsMock,
+);
+
+// Capture openVersionModal so tests can assert on calls
+const mockOpenVersionModal = jest.fn();
+jest.mock("~/features/connector-templates/hooks/useSaaSVersionModal", () => ({
+  useSaaSVersionModal: () => ({
+    openVersionModal: mockOpenVersionModal,
+    modal: null,
+  }),
+}));
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -55,7 +57,10 @@ describe("EventLog — version badge", () => {
 
   it("renders the version badge when saas_version is present", () => {
     render(
-      <EventLog eventLogs={[makeLog({ saas_version: "0.0.11" })]} onDetailPanel={noop} />,
+      <EventLog
+        eventLogs={[makeLog({ saas_version: "0.0.11" })]}
+        onDetailPanel={noop}
+      />,
     );
 
     expect(screen.getByText("v0.0.11")).toBeInTheDocument();
@@ -63,7 +68,10 @@ describe("EventLog — version badge", () => {
 
   it("shows a dash in the Version column when saas_version is null", () => {
     render(
-      <EventLog eventLogs={[makeLog({ saas_version: null })]} onDetailPanel={noop} />,
+      <EventLog
+        eventLogs={[makeLog({ saas_version: null })]}
+        onDetailPanel={noop}
+      />,
     );
 
     // Records column also shows "-" for completed rows with no parseable count,
@@ -91,7 +99,9 @@ describe("EventLog — version badge", () => {
   it("makes the badge clickable and triggers openVersionModal when connection_key is on the log", () => {
     render(
       <EventLog
-        eventLogs={[makeLog({ saas_version: "0.0.11", connection_key: "stripe_conn" })]}
+        eventLogs={[
+          makeLog({ saas_version: "0.0.11", connection_key: "stripe_conn" }),
+        ]}
         onDetailPanel={noop}
       />,
     );
@@ -107,22 +117,34 @@ describe("EventLog — version badge", () => {
 
   it("passes the correct version for each row when multiple versioned logs are shown", () => {
     const logs = [
-      makeLog({ saas_version: "0.0.11", connection_key: "stripe_conn", updated_at: "2026-03-01T10:00:00Z" }),
-      makeLog({ saas_version: "0.0.12", connection_key: "stripe_conn", updated_at: "2026-03-02T10:00:00Z" }),
+      makeLog({
+        saas_version: "0.0.11",
+        connection_key: "stripe_conn",
+        updated_at: "2026-03-01T10:00:00Z",
+      }),
+      makeLog({
+        saas_version: "0.0.12",
+        connection_key: "stripe_conn",
+        updated_at: "2026-03-02T10:00:00Z",
+      }),
     ];
 
-    render(
-      <EventLog eventLogs={logs} onDetailPanel={noop} />,
-    );
+    render(<EventLog eventLogs={logs} onDetailPanel={noop} />);
 
     const wrappers = screen.getAllByTestId("version-badge-wrapper");
     expect(wrappers).toHaveLength(2);
 
     fireEvent.click(wrappers[0]);
-    expect(mockOpenVersionModal).toHaveBeenLastCalledWith("stripe_conn", "0.0.11");
+    expect(mockOpenVersionModal).toHaveBeenLastCalledWith(
+      "stripe_conn",
+      "0.0.11",
+    );
 
     fireEvent.click(wrappers[1]);
-    expect(mockOpenVersionModal).toHaveBeenLastCalledWith("stripe_conn", "0.0.12");
+    expect(mockOpenVersionModal).toHaveBeenLastCalledWith(
+      "stripe_conn",
+      "0.0.12",
+    );
   });
 
   it("does not show the Version column when no logs have a collection_name", () => {
