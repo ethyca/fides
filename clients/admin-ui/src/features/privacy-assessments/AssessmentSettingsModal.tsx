@@ -4,7 +4,6 @@ import {
   Flex,
   Form,
   Input,
-  Modal,
   Select,
   Spin,
   Switch,
@@ -16,6 +15,7 @@ import { useEffect, useMemo } from "react";
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
@@ -135,10 +135,11 @@ const AssessmentSettingsModal = ({
     })) ?? [];
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="Assessment settings"
       open={open}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       destroyOnHidden
       footer={
         <Flex justify="flex-end" gap={8}>
@@ -295,7 +296,7 @@ const AssessmentSettingsModal = ({
           )}
         </Form>
       )}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

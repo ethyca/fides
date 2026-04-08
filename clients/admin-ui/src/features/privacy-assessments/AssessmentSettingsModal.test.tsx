@@ -41,6 +41,11 @@ jest.mock(
             warning: jest.fn(),
           });
         }
+        if (prop === "useModal") {
+          return () => ({
+            confirm: jest.fn(() => ({ destroy: jest.fn() })),
+          });
+        }
         return target[prop as keyof typeof target];
       },
     }),
