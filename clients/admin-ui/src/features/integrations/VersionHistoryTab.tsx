@@ -1,5 +1,3 @@
-import React, { useMemo, useState } from "react";
-
 import { formatDate } from "common/utils";
 import {
   Button,
@@ -9,6 +7,7 @@ import {
   Tag,
   Typography,
 } from "fidesui";
+import React, { useMemo, useState } from "react";
 
 import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
 import {
@@ -21,50 +20,58 @@ interface VersionHistoryTabProps {
 }
 
 const VersionHistoryTab = ({ connectorType }: VersionHistoryTabProps) => {
-  const { data: versions, isLoading, isError } =
-    useGetConnectorTemplateVersionsQuery(connectorType);
+  const {
+    data: versions,
+    isLoading,
+    isError,
+  } = useGetConnectorTemplateVersionsQuery(connectorType);
 
   const [selected, setSelected] = useState<SaaSConfigVersionResponse | null>(
     null,
   );
 
-  const columns = useMemo(() => [
-    {
-      title: "Version",
-      dataIndex: "version",
-      key: "version",
-      render: (v: string) => (
-        <Typography.Text>v{v}</Typography.Text>
-      ),
-    },
-    {
-      title: "Type",
-      dataIndex: "is_custom",
-      key: "is_custom",
-      render: (isCustom: boolean) => (
-        <Tag color={isCustom ? CUSTOM_TAG_COLOR.WARNING : CUSTOM_TAG_COLOR.DEFAULT}>
-          {isCustom ? "Custom" : "OOB"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Captured at",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (ts: string) => (
-        <Typography.Text type="secondary">{formatDate(ts)}</Typography.Text>
-      ),
-    },
-    {
-      title: "",
-      key: "actions",
-      render: (_: unknown, row: SaaSConfigVersionResponse) => (
-        <Button size="small" onClick={() => setSelected(row)}>
-          View
-        </Button>
-      ),
-    },
-  ], [setSelected]);
+  const columns = useMemo(
+    () => [
+      {
+        title: "Version",
+        dataIndex: "version",
+        key: "version",
+        render: (v: string) => <Typography.Text>v{v}</Typography.Text>,
+      },
+      {
+        title: "Type",
+        dataIndex: "is_custom",
+        key: "is_custom",
+        render: (isCustom: boolean) => (
+          <Tag
+            color={
+              isCustom ? CUSTOM_TAG_COLOR.WARNING : CUSTOM_TAG_COLOR.DEFAULT
+            }
+          >
+            {isCustom ? "Custom" : "OOB"}
+          </Tag>
+        ),
+      },
+      {
+        title: "Captured at",
+        dataIndex: "created_at",
+        key: "created_at",
+        render: (ts: string) => (
+          <Typography.Text type="secondary">{formatDate(ts)}</Typography.Text>
+        ),
+      },
+      {
+        title: "",
+        key: "actions",
+        render: (_: unknown, row: SaaSConfigVersionResponse) => (
+          <Button size="small" onClick={() => setSelected(row)}>
+            View
+          </Button>
+        ),
+      },
+    ],
+    [setSelected],
+  );
 
   if (isLoading) {
     return <Spin />;

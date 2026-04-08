@@ -1,4 +1,10 @@
-// Mock ESM-only packages — must be before imports (Jest hoists these)
+import { fireEvent, screen } from "@testing-library/react";
+import React from "react";
+
+import { render } from "~/../__tests__/utils/test-utils";
+import { useGetConnectorTemplateVersionsQuery } from "~/features/connector-templates/connector-template.slice";
+import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
+
 jest.mock("query-string", () => ({
   __esModule: true,
   default: { stringify: jest.fn(), parse: jest.fn() },
@@ -9,7 +15,10 @@ jest.mock("react-dnd", () => ({
   DndProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 // eslint-disable-next-line global-require
-jest.mock("nuqs", () => require("../../../../__tests__/utils/nuqs-mock").nuqsMock);
+jest.mock(
+  "nuqs",
+  () => require("../../../../__tests__/utils/nuqs-mock").nuqsMock,
+);
 
 jest.mock("~/features/connector-templates/connector-template.slice", () => ({
   useGetConnectorTemplateVersionsQuery: jest.fn(),
@@ -34,13 +43,6 @@ jest.mock("~/features/connector-templates/SaaSVersionModal", () => ({
       </div>
     ) : null,
 }));
-
-import { fireEvent, screen } from "@testing-library/react";
-import React from "react";
-
-import { render } from "~/../__tests__/utils/test-utils";
-import { useGetConnectorTemplateVersionsQuery } from "~/features/connector-templates/connector-template.slice";
-import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 
 // ── Typed mock ─────────────────────────────────────────────────────────────────
 
@@ -76,11 +78,17 @@ describe("VersionHistoryTab", () => {
   });
 
   it("shows an error message when the versions query fails", () => {
-    mockUseVersions.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+    mockUseVersions.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+    });
 
     render(<VersionHistoryTab connectorType="stripe" />);
 
-    expect(screen.getByText("Could not load version history.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Could not load version history."),
+    ).toBeInTheDocument();
   });
 
   it("shows empty-state message when no versions are available", () => {
@@ -88,7 +96,9 @@ describe("VersionHistoryTab", () => {
 
     render(<VersionHistoryTab connectorType="stripe" />);
 
-    expect(screen.getByText("No version history captured yet.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No version history captured yet."),
+    ).toBeInTheDocument();
   });
 
   it("renders a row for each captured version", () => {
