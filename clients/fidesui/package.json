@@ -56,7 +56,7 @@
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-storybook": "^10.3.5",
+    "eslint-plugin-storybook": "^9.1.15",
     "msw": "^2.12.10",
     "postcss": "^8.4.38",
     "prettier": "^3.3.3",

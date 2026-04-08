@@ -26,8 +26,8 @@
     "lint": "eslint --fix .",
     "lint:ci": "eslint .",
     "lint-staged:fix": "lint-staged --diff=main",
-    "openapi:generate": "openapi-ts --file openapi-ts-api.config.ts",
-    "openapi:generate-dictionary": "openapi-ts --file openapi-ts-dictionary.config.ts",
+    "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./src/types/api --exportCore false --exportServices false --indent 2 && prettier --write .",
+    "openapi:generate-dictionary": "openapi --input http://localhost:8081/openapi.json --output ./src/types/dictionary-api --exportCore false --exportServices false --indent 2",
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watchAll",
@@ -81,7 +81,7 @@
     "yup": "^1.4.0"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.88.0",
+    "@hey-api/openapi-ts": "^0.88.2",
     "@jest/globals": "^29.7.0",
     "@next/bundle-analyzer": "^13.2.4",
     "@testing-library/cypress": "^10.0.3",
