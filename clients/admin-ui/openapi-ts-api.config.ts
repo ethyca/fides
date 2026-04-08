@@ -35,6 +35,13 @@ export default defineConfig({
             );
           }
         },
+        MySQLSSLMode: (schema) => {
+          // Remove the empty string enum value — Babel cannot use "" as an enum key name
+          if (schema.enum && Array.isArray(schema.enum)) {
+            // eslint-disable-next-line no-param-reassign
+            schema.enum = schema.enum.filter((v: string) => v !== "");
+          }
+        },
         AllowedTypes: (schema) => {
           // Assign distinct enum key names since both values would map to STRING
           if (schema.enum && Array.isArray(schema.enum)) {

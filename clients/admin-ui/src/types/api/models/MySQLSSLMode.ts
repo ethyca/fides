@@ -7,5 +7,4 @@ export enum MySQLSSLMode {
   PREFERRED = "preferred",
   REQUIRED = "required",
   DISABLED = "disabled",
-  "" = "",
 }
