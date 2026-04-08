@@ -1,0 +1,4 @@
+type: Added
+description: Added ability to re-invite users with expired or pending invite links
+pr: 6904
+labels: []

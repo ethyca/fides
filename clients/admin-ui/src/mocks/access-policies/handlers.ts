@@ -68,6 +68,55 @@ export const accessPoliciesHandlers = () => {
       return res(ctx.status(201), ctx.json(newPolicy));
     }),
 
+    // POST /api/v1/plus/access-policy/:id/reorder - reorder
+    // Must be registered before PUT /:id to avoid the wildcard matching "reorder"
+    rest.post(
+      `${apiBase}/plus/access-policy/:id/reorder`,
+      async (req, res, ctx) => {
+        const { id } = req.params;
+        const body = await req.json();
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { insert_after_id: insertAfterId } = body;
+
+        const idx = policies.findIndex((p) => p.id === id);
+        if (idx === -1) {
+          return res(
+            ctx.status(404),
+            ctx.json({ detail: `Access policy with id ${id} not found` }),
+          );
+        }
+
+        const [moved] = policies.splice(idx, 1);
+        if (insertAfterId === null || insertAfterId === undefined) {
+          policies.unshift(moved);
+        } else {
+          const afterIdx = policies.findIndex((p) => p.id === insertAfterId);
+          if (afterIdx === -1) {
+            return res(
+              ctx.status(404),
+              ctx.json({
+                detail: `Access policy with id ${insertAfterId} not found`,
+              }),
+            );
+          }
+          policies.splice(afterIdx + 1, 0, moved);
+        }
+
+        // Reassign sequential priorities in YAML so subsequent GETs reflect the new order
+        policies.forEach((policy, i) => {
+          if (policy.yaml) {
+            // eslint-disable-next-line no-param-reassign
+            policy.yaml = policy.yaml.replace(
+              /^priority:\s*\d+/m,
+              `priority: ${(i + 1) * 100}`,
+            );
+          }
+        });
+
+        return res(ctx.status(204));
+      },
+    ),
+
     // PUT /api/v1/plus/access-policy/:id - update
     rest.put(`${apiBase}/plus/access-policy/:id`, async (req, res, ctx) => {
       const { id } = req.params;

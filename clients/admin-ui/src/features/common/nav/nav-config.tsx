@@ -145,6 +145,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "policies",
         scopes: [ScopeRegistryEnum.POLICY_READ],
       },
+      {
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.WEBHOOK_READ,
+          ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
+        ],
+      },
     ],
   },
   {

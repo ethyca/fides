@@ -1,8 +1,8 @@
 import json
 import random
 import time
-from datetime import datetime, timedelta
-from typing import List, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Request, Response, Security
 from fastapi.security import SecurityScopes
@@ -23,6 +23,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fides.api import deps
@@ -51,16 +52,20 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.oauth import AccessToken
 from fides.api.schemas.user import (
+    DisabledReason,
     UserCreate,
     UserCreateResponse,
     UserForcePasswordReset,
+    UserForgotPassword,
     UserLogin,
     UserLoginResponse,
     UserPasswordReset,
+    UserResetPasswordWithToken,
     UserResponse,
     UserUpdate,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.errors import FidesError, MessageDispatchException
 from fides.api.util.rate_limit import fides_limiter
 from fides.api.v1.endpoints.user_permission_endpoints import validate_user_id
 from fides.common import urn_registry as urls
@@ -573,6 +578,64 @@ def delete_user(
     user.delete(db)
 
 
+@router.post(
+    urls.USER_REINVITE,
+    status_code=HTTP_204_NO_CONTENT,
+    dependencies=[Security(verify_oauth_client, scopes=[USER_CREATE])],
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def reinvite_user(
+    *,
+    request: Request,
+    db: Session = Depends(get_db),
+    user_id: str,
+    user_service: UserService = Depends(get_user_service),
+) -> None:
+    """
+    Reinvite a user who has a pending invitation by generating a new invite code
+    and sending a new invitation email. Requires `USER_CREATE` scope.
+    """
+    user = FidesUser.get_by(db, field="id", value=user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    if not user.disabled:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User does not have a pending invitation.",
+        )
+
+    if user.disabled_reason and user.disabled_reason != DisabledReason.pending_invite:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User is disabled for a reason other than a pending invitation.",
+        )
+
+    try:
+        user_service.reinvite_user(user)
+    except MessageDispatchException as exc:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
+    except FidesError as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+def _get_invite_for_user(db: Session, user: FidesUser) -> Optional[FidesUserInvite]:
+    """Look up the invite record for a user, if any."""
+    if user.username:
+        return FidesUserInvite.get_by(db, field="username", value=user.username)
+    return None
+
+
 @router.get(
     urls.USER_DETAIL,
     dependencies=[Security(verify_user_read_scopes)],
@@ -585,7 +648,7 @@ def get_user(
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
-) -> FidesUser:
+) -> UserResponse:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
     # Resolve Depends if called directly (not via FastAPI DI)
     permission_checker = _resolve_depends(permission_checker, get_permission_checker)
@@ -604,7 +667,8 @@ def get_user(
         permission_checker=permission_checker,
     ):
         logger.debug("Returning user with id: '{}'.", user_id)
-        return user
+        invite = _get_invite_for_user(db, user)
+        return UserResponse.from_user(user, invite)
 
     # User has USER_READ_OWN scope, check if they're accessing their own data
     if user.id != client.user_id:
@@ -614,7 +678,8 @@ def get_user(
         )
 
     logger.debug("Returning user with id: '{}'.", user_id)
-    return user
+    invite = _get_invite_for_user(db, user)
+    return UserResponse.from_user(user, invite)
 
 
 @router.get(
@@ -670,7 +735,39 @@ def get_users(
 
     logger.debug("Returning a paginated list of users.")
 
-    return paginate(query.order_by(FidesUser.created_at.desc()), params=params)
+    paginated_result = paginate(
+        query.order_by(FidesUser.created_at.desc()), params=params
+    )
+
+    user_records = paginated_result.items
+    usernames = list(
+        {
+            user.username
+            for user in user_records
+            if user.username is not None and user.username != ""
+        }
+    )
+    invite_records_by_username: Dict[str, FidesUserInvite] = {}
+    if usernames:
+        invite_records = (
+            db.query(FidesUserInvite)
+            .filter(FidesUserInvite.username.in_(usernames))
+            .all()
+        )
+        invite_records_by_username = {
+            invite.username: invite for invite in invite_records
+        }
+
+    # Build UserResponse with invite status for each user.
+    paginated_result.items = [
+        UserResponse.from_user(
+            user,
+            invite_records_by_username.get(user.username) if user.username else None,
+        )
+        for user in user_records
+    ]
+
+    return paginated_result
 
 
 @router.post(
@@ -792,8 +889,8 @@ def verify_invite_code(
 
     if not user_invite:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="User not found.",
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invite code is invalid.",
         )
 
     if not user_invite.invite_code_valid(invite_code):
@@ -837,6 +934,67 @@ def accept_user_invite(
 
     expire_minutes = config.security.oauth_access_token_expire_minutes
     expires_at = datetime.now() + timedelta(minutes=expire_minutes)
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(
+            access_token=access_code,
+            expires_in=expire_minutes * 60,
+            expires_at=expires_at.isoformat(),
+        ),
+    )
+
+
+@router.post(
+    urls.USER_FORGOT_PASSWORD,
+    status_code=HTTP_200_OK,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def forgot_password(
+    *,
+    request: Request,
+    data: UserForgotPassword,
+    user_service: UserService = Depends(get_user_service),
+) -> Dict:
+    """
+    Initiates a self-service password reset flow. Sends a reset email if the
+    user exists and has a verified email. Always returns 200 to prevent user
+    enumeration (OWASP).
+    """
+    user_service.request_password_reset(data.email)
+    return {
+        "detail": "If an account with that email exists, a password reset link has been sent."
+    }
+
+
+@router.post(
+    urls.USER_RESET_PASSWORD_WITH_TOKEN,
+    status_code=HTTP_200_OK,
+    response_model=UserLoginResponse,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def reset_password_with_token(
+    *,
+    request: Request,
+    config: FidesConfig = Depends(get_config),
+    data: UserResetPasswordWithToken,
+    user_service: UserService = Depends(get_user_service),
+) -> UserLoginResponse:
+    """
+    Resets a user's password using a valid, single-use reset token.
+    Returns login credentials on success.
+    """
+    try:
+        user, access_code = user_service.reset_password_with_token(
+            data.username, data.token, data.new_password
+        )
+    except FidesError as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+    expire_minutes = config.security.oauth_access_token_expire_minutes
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
     return UserLoginResponse(
         user_data=user,
         token_data=AccessToken(

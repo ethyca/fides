@@ -172,9 +172,21 @@ describe("Data map report table", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
       cy.getAntDropdownOverlay("more-menu-list").should("not.be.visible");
+      // react-dnd's HTML5 backend requires a DataTransfer on every event and
+      // reorders on hover (not drop), so we simulate the full drag lifecycle.
       const dataTransfer = new DataTransfer();
-      cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
-      cy.getByTestId("column-dragger-data_categories").trigger("drop");
+      cy.getByTestId("column-dragger-legal_name").trigger("dragstart", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-data_categories").trigger("dragover", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-data_categories").trigger("drop", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-legal_name").trigger("dragend", {
+        dataTransfer,
+      });
       cy.getByTestId("save-button").click();
 
       // Verify the new order

@@ -776,6 +776,9 @@ dataset:
     - name: last_name
       data_categories:
       - user.name.last
+    - name: email_verified_at
+      data_categories:
+      - system.operations
     - name: password_reset_at
       data_categories:
       - system.operations
@@ -3270,11 +3273,45 @@ dataset:
       data_categories: [system]
     - name: user_assigned_system_id
       data_categories: [system]
+    - name: user_assigned_description
+      data_categories: [system]
     - name: data_uses
       data_categories: [system]
     - name: system_id
       data_categories: [system]
     - name: vendor_id
+      data_categories: [system]
+  - name: cloud_infra_staged_resource
+    fields:
+    - name: cloud_account_id
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: description
+      data_categories: [system]
+    - name: diff_status
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: location
+      data_categories: [system]
+    - name: meta
+      data_categories: [system]
+    - name: monitor_config_id
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: resource_type
+      data_categories: [system]
+    - name: service
+      data_categories: [system]
+    - name: source_id
+      data_categories: [system]
+    - name: tags
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: urn
       data_categories: [system]
   - name: fides_user_invite
     fields:
@@ -3290,6 +3327,20 @@ dataset:
         data_categories: [system.operations]
       - name: username
         data_categories: [user.account.username]
+  - name: fides_user_password_reset
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: hashed_token
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: salt
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: user_id
+        data_categories: [user.unique_id]
   - name: plus_consent_automation
     fields:
     - name: connection_config_id
