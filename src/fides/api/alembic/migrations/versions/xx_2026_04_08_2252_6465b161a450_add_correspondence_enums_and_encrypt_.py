@@ -4,13 +4,11 @@ Revision ID: 6465b161a450
 Revises: 6a42f48c23dd
 Create Date: 2026-04-08 22:52:01.736340
 
-Creates the correspondencedeliverystatus PostgreSQL enum (for use by the
-CorrespondenceMetadata table in a follow-up migration), encrypts existing
-comment_text rows, and seeds RBAC permissions for correspondence scopes.
+Encrypts existing comment_text rows and seeds RBAC permissions for
+correspondence scopes.
 
-Note: CommentType new values (message_to_subject, reply_from_subject) do NOT
-require a DB migration because the comment_type column is varchar, not a
-PostgreSQL enum. Validation happens at the SQLAlchemy model layer.
+Note: CommentType and CorrespondenceDeliveryStatus are Python-only enums
+stored as varchar columns — no PostgreSQL enum types are created.
 
 PREREQ: FIDES__SECURITY__APP_ENCRYPTION_KEY must be set at migration time.
 Without it, encryption will fail. Ensure this is configured in CI and fresh
@@ -37,18 +35,9 @@ CORRESPONDENCE_SCOPES = {
 
 
 def upgrade():
-    # 1. Create correspondencedeliverystatus enum (used by PR 2's metadata table)
     bind = op.get_bind()
-    type_exists = bind.execute(
-        text("SELECT 1 FROM pg_type WHERE typname = 'correspondencedeliverystatus'")
-    ).fetchone()
-    if not type_exists:
-        op.execute(
-            "CREATE TYPE correspondencedeliverystatus AS ENUM "
-            "('pending', 'sent', 'delivered', 'bounced', 'failed')"
-        )
 
-    # 2. Batch-encrypt existing comment_text rows
+    # 1. Batch-encrypt existing comment_text rows
     from fides.api.db.encryption_utils import encrypted_type
 
     enc = encrypted_type(type_in=String())
@@ -77,7 +66,7 @@ def upgrade():
     if total_encrypted:
         logger.info("Encrypted {} existing comment_text rows", total_encrypted)
 
-    # 3. Seed RBAC permissions for correspondence scopes
+    # 2. Seed RBAC permissions for correspondence scopes
     for scope_code, description in CORRESPONDENCE_SCOPES.items():
         resource_type = scope_code.split(":")[0]
         bind.execute(
@@ -137,7 +126,7 @@ def downgrade():
                 {"id": permission.id},
             )
 
-    # 2. Decrypt comment_text rows back to plaintext
+    # 2. Decrypt comment_text rows back to plaintext (reverse encryption)
     from fides.api.db.encryption_utils import encrypted_type
 
     enc = encrypted_type(type_in=String())
@@ -161,6 +150,3 @@ def downgrade():
                 {"val": decrypted, "id": row.id},
             )
         offset += batch_size
-
-    # 3. Drop correspondencedeliverystatus enum
-    op.execute("DROP TYPE IF EXISTS correspondencedeliverystatus")
