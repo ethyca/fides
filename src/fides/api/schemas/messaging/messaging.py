@@ -96,6 +96,7 @@ class MessagingActionType(StrEnum):
     EXTERNAL_USER_WELCOME = "external_user_welcome"
     MANUAL_TASK_DIGEST = "manual_task_digest"
     TEST_MESSAGE = "test_message"
+    CORRESPONDENCE = "correspondence"
 
 
 CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (

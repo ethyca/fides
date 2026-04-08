@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.attachment import AttachmentReferenceType
 from fides.service.attachment_service import AttachmentService
 
@@ -20,12 +21,26 @@ class CommentType(str, EnumType):
     """
     Enum for comment types. Indicates comment usage.
 
-    - notes are internal comments.
-    - reply is reserved for future use and is not currently supported
+    - note: internal comments
+    - reply: reserved for future use
+    - message_to_subject: outbound correspondence to data subject
+    - reply_from_subject: inbound reply from data subject
     """
 
     note = "note"
     reply = "reply"
+    message_to_subject = "message_to_subject"
+    reply_from_subject = "reply_from_subject"
+
+
+class CorrespondenceDeliveryStatus(str, EnumType):
+    """Delivery status for correspondence messages."""
+
+    pending = "pending"
+    sent = "sent"
+    delivered = "delivered"
+    bounced = "bounced"
+    failed = "failed"
 
 
 class CommentReferenceType(str, EnumType):
@@ -99,7 +114,7 @@ class Comment(Base):
     # Not all users in the system have a username, and users can be deleted.
     # Store a non-normalized copy of username for these cases.
     username = Column(String, nullable=True)
-    comment_text = Column(String, nullable=False)
+    comment_text = Column(encrypted_type(type_in=String()), nullable=False)
     comment_type = Column(EnumColumn(CommentType), nullable=False)
 
     user = relationship(
