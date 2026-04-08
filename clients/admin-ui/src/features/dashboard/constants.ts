@@ -143,6 +143,8 @@ export const ASTRALIS_ACTIVE_KEY =
   "active_conversations" satisfies AstralisMetricKey;
 export const ASTRALIS_AWAITING_KEY =
   "awaiting_response" satisfies AstralisMetricKey;
+export const ASTRALIS_RISKS_KEY =
+  "risks_identified" satisfies AstralisMetricKey;
 
 export function getUrgencyGroup(
   severity: ActionSeverity,
