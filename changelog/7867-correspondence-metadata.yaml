@@ -1,0 +1,4 @@
+type: Added
+description: Add CorrespondenceMetadata table for delivery tracking and threading
+pr: 7867
+labels: ["db-migration"]
