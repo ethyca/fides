@@ -113,6 +113,20 @@ export const ACTION_CTA: Record<
   },
 };
 
+export const ASTRALIS_METRICS = [
+  { key: "active_conversations", label: "Active" },
+  { key: "awaiting_response", label: "Awaiting" },
+  { key: "completed_assessments", label: "Completed" },
+  { key: "risks_identified", label: "Risks" },
+] as const;
+
+export type AstralisMetricKey = (typeof ASTRALIS_METRICS)[number]["key"];
+
+export const ASTRALIS_ACTIVE_KEY =
+  "active_conversations" satisfies AstralisMetricKey;
+export const ASTRALIS_AWAITING_KEY =
+  "awaiting_response" satisfies AstralisMetricKey;
+
 export function getUrgencyGroup(
   severity: ActionSeverity,
   dueDate: string | null,

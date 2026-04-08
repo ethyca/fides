@@ -5,6 +5,7 @@ import { ActionType } from "~/features/dashboard/types";
 
 import {
   mockAgentBriefing,
+  mockAstralis,
   mockPosture,
   mockPriorityActions,
   mockPrivacyRequests,
@@ -73,6 +74,10 @@ export const dashboardHandlers = () => {
 
     rest.get(`${apiBase}/plus/dashboard/trends`, (_req, res, ctx) =>
       res(ctx.status(200), ctx.json(mockTrends)),
+    ),
+
+    rest.get(`${apiBase}/plus/dashboard/astralis`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockAstralis)),
     ),
 
     rest.patch(

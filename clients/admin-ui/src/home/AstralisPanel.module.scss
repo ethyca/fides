@@ -1,0 +1,12 @@
+.overdueValue :global(.ant-statistic-content-value) {
+  color: var(--ant-color-warning);
+}
+
+.pulseDot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 100%;
+  background-color: var(--ant-color-success);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
