@@ -1,4 +1,0 @@
-type: Fixed
-description: Added Privacy Center config schema validation at startup
-pr: 7845
-labels: []

@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated Chakra Spinner components to Ant Design Spin in the admin UI
-pr: 7791
-labels: []

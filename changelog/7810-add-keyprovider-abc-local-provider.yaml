@@ -1,4 +1,0 @@
-type: Added
-description: Added KeyProvider ABC and LocalKeyProvider for envelope encryption
-pr: 7810
-labels: []
