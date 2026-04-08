@@ -1,4 +1,4 @@
-import { Button, Flex, Form, Icons, Select, Tooltip } from "fidesui";
+import { Button, Form, Icons, Select, Tooltip } from "fidesui";
 import { capitalize } from "lodash";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -77,32 +77,25 @@ const MonitorFieldsSearchForm = ({
   );
 
   return (
-    <Form
-      form={form}
-      {...formProps}
-      layout="inline"
-      className="flex grow gap-2"
-    >
-      <Flex className="grow gap-2 self-stretch">
-        <Form.Item name="search" className="!me-0 self-end">
-          <SearchInput />
-        </Form.Item>
+    <Form form={form} {...formProps} layout="inline" className="contents">
+      <Form.Item name="search" className="col-span-2 !me-0 xl:col-span-1">
+        <SearchInput className="!min-w-[200px]" />
+      </Form.Item>
 
-        <Tooltip title="Display keyboard shortcuts">
-          <Button
-            aria-label="Display keyboard shortcuts"
-            icon={<Icons.Keyboard />}
-            onClick={shortcutCallback}
-          />
-        </Tooltip>
-      </Flex>
-      <Form.Item name="resource_status" className="!me-0 self-end">
+      <Tooltip title="Display keyboard shortcuts">
+        <Button
+          aria-label="Display keyboard shortcuts"
+          icon={<Icons.Keyboard />}
+          onClick={shortcutCallback}
+          className="col-span-3 xl:col-span-1"
+        />
+      </Tooltip>
+      <Form.Item name="resource_status" className="!me-0">
         <Select
           options={RESOURCE_STATUS_OPTIONS.map((resourceStatus) => ({
             value: resourceStatus,
             label: resourceStatus,
           }))}
-          className="!w-[200px]"
           placeholder="Status"
           allowClear
           aria-label="Filter by status"
@@ -111,13 +104,12 @@ const MonitorFieldsSearchForm = ({
         />
       </Form.Item>
 
-      <Form.Item name="confidence_bucket" className="!me-0 self-end">
+      <Form.Item name="confidence_bucket" className="!me-0">
         <Select
           options={CONFIDENCE_BUCKETS.map((confidenceBucket) => ({
             value: confidenceBucket,
             label: capitalize(confidenceBucket),
           }))}
-          className="!w-[200px]"
           placeholder="Confidence"
           allowClear
           aria-label="Filter by confidence score"
@@ -126,9 +118,9 @@ const MonitorFieldsSearchForm = ({
         />
       </Form.Item>
 
-      <Form.Item name="data_category" className="!me-0 self-end">
+      <Form.Item name="data_category" className="!me-0 overflow-hidden">
         <DataCategorySelect
-          className="!w-[200px]"
+          rootClassName="overflow-hidden"
           variant="outlined"
           allowClear
           maxTagCount="responsive"
@@ -136,6 +128,7 @@ const MonitorFieldsSearchForm = ({
           mode="multiple"
           options={options}
           autoFocus={false}
+          popupMatchSelectWidth={false}
         />
       </Form.Item>
     </Form>

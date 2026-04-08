@@ -1,0 +1,4 @@
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: datastore filter responsiveness
+pr: 7752 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
