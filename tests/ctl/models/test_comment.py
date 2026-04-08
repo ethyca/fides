@@ -6,7 +6,12 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
-from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
+from fides.api.models.comment import (
+    Comment,
+    CommentReference,
+    CommentReferenceType,
+    CommentType,
+)
 from fides.api.models.fides_user import FidesUser
 
 
@@ -393,6 +398,55 @@ def test_comment_attachment_relationship(
     # Clean up
     attachment_ref.delete(db)
     attachment.delete(db)
+
+
+def test_reply_relationship(db, comment):
+    """Test that parent/replies relationships load correctly on a threaded comment."""
+    reply = Comment.create(
+        db,
+        data={
+            "user_id": comment.user_id,
+            "comment_text": "This is a reply",
+            "comment_type": CommentType.reply,
+            "parent_id": comment.id,
+        },
+    )
+    db.refresh(comment)
+
+    assert reply.parent_id == comment.id
+    assert reply.parent.id == comment.id
+    assert reply in comment.replies
+
+    reply.delete(db)
+
+
+def test_delete_parent_comment_deletes_replies(db, user):
+    """Test that deleting a parent comment also deletes its replies via delete()."""
+    parent = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Parent comment",
+            "comment_type": CommentType.note,
+        },
+    )
+    reply = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Reply comment",
+            "comment_type": CommentType.reply,
+            "parent_id": parent.id,
+        },
+    )
+    parent_id = parent.id
+    reply_id = reply.id
+
+    parent.delete(db)
+    db.commit()
+
+    assert db.query(Comment).filter_by(id=parent_id).first() is None
+    assert db.query(Comment).filter_by(id=reply_id).first() is None
 
 
 def test_comment_to_multiple_attachments_relationship(

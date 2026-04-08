@@ -123,7 +123,6 @@ class Comment(Base):
         back_populates="parent",
         uselist=True,
         order_by="Comment.created_at",
-        passive_deletes=True,
     )
 
     user = relationship(
@@ -153,10 +152,12 @@ class Comment(Base):
     )
 
     def delete(self, db: Session) -> None:
-        """Delete the comment and all associated references."""
+        """Delete the comment, its replies, and all associated references."""
         # TODO (ENG-3299): When message_to_subject / reply_from_subject CommentTypes
         # are added, prevent deletion of comments with those types to preserve
         # correspondence threads.
+        for reply in self.replies:
+            reply.delete(db)
         AttachmentService(db).delete_for_reference(
             self.id, AttachmentReferenceType.comment
         )
