@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from boto3 import Session
 from botocore.config import Config
@@ -6,6 +6,9 @@ from botocore.exceptions import ClientError
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
+from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
+    BaseAWSSchema,
+)
 from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 from fides.config import CONFIG
 
@@ -83,6 +86,38 @@ def get_assumed_role_session(
         aws_session_token=temp_credentials["SessionToken"],
         region_name=region_name,
     )
+
+
+def build_aws_client(
+    service: str,
+    secrets: BaseAWSSchema,
+    region_name: Optional[str] = None,
+) -> Any:
+    """
+    Build a boto3 client for the given AWS service.
+
+    Authentication is delegated to ``get_aws_session`` which already handles
+    ``secret_keys``, ``automatic``, and ``assume_role_arn``.
+
+    Args:
+        service: boto3 service name, e.g. ``"s3"`` or ``"rds"``.
+        secrets: Typed AWS credentials from a connection config.
+        region_name: AWS region override. When ``None`` the session's
+            default region is used.
+
+    Returns:
+        A boto3 service client.
+    """
+    secrets_dict = secrets.model_dump()
+    if region_name is not None:
+        secrets_dict["region_name"] = region_name
+
+    session = get_aws_session(
+        auth_method=secrets.auth_method.value,
+        storage_secrets=cast(Dict[StorageSecrets, Any], secrets_dict),
+        assume_role_arn=secrets.aws_assume_role_arn,
+    )
+    return session.client(service)
 
 
 def get_s3_client(
