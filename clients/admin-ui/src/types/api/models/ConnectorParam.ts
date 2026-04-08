@@ -13,4 +13,6 @@ export type ConnectorParam = {
   multiselect?: boolean | null;
   description?: string | null;
   sensitive?: boolean | null;
+  type?: string | null;
+  allowed_values?: Array<string> | null;
 };

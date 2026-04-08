@@ -120,6 +120,7 @@ export const FormFieldFromSchema = ({
             autoComplete="off"
             color="gray.700"
             variant={layout}
+            disabled={fieldSchema.readonly}
           />
         );
       }}
