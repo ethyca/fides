@@ -1,4 +1,0 @@
-type: Added
-description: Add build_aws_client factory to aws_util for creating boto3 service clients with per-call region overrides
-pr: 7860
-labels: []

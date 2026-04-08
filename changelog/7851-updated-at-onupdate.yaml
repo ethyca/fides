@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed updated_at column on privacy_preferences to auto-populate on record updates
-pr: 7851
-labels: []
