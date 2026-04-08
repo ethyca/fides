@@ -1,5 +1,7 @@
-import { antTheme, Input, Typography } from "fidesui";
+import { Flex, Input, Typography } from "fidesui";
 import { KeyboardEvent, useRef, useState } from "react";
+
+import styles from "./TemplateVariableInput.module.css";
 
 export interface TemplateVariable {
   name: string;
@@ -46,7 +48,6 @@ function omitCustomProps<T extends object>(obj: T): Omit<T, CustomPropKey> {
 const TemplateVariableInput = (allProps: TemplateVariableInputProps) => {
   const { multiline } = allProps;
   const { value = "", onChange, variables, placeholder } = allProps;
-  const { token } = antTheme.useToken();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<number>(0);
 
@@ -200,20 +201,16 @@ const TemplateVariableInput = (allProps: TemplateVariableInputProps) => {
   };
 
   const dropdown = triggerIndex !== null && filteredVars.length > 0 && (
-    <div
+    <Flex
       ref={listboxRef}
+      vertical
       role="listbox"
-      className="absolute inset-x-0 top-full z-[1000] max-h-[220px] overflow-y-auto"
-      style={{
-        background: token.colorBgContainer,
-        border: `1px solid ${token.colorBorder}`,
-        borderRadius: token.borderRadiusLG,
-        boxShadow: token.boxShadowSecondary,
-      }}
+      className={styles.dropdown}
     >
       {filteredVars.map((v, i) => (
-        <div
+        <Flex
           key={v.name}
+          vertical
           role="option"
           aria-selected={i === activeIndex}
           tabIndex={-1}
@@ -223,15 +220,7 @@ const TemplateVariableInput = (allProps: TemplateVariableInputProps) => {
             selectVariable(v.name);
           }}
           onMouseEnter={() => setActiveIndex(i)}
-          className="flex cursor-pointer flex-col px-3 py-[7px]"
-          style={{
-            background:
-              i === activeIndex ? token.colorFillAlter : token.colorBgContainer,
-            borderBottom:
-              i < filteredVars.length - 1
-                ? `1px solid ${token.colorBorderSecondary}`
-                : undefined,
-          }}
+          className={`${styles.option}${i === activeIndex ? ` ${styles.optionActive}` : ""}`}
         >
           <Typography.Text code className="whitespace-nowrap">
             {`__${v.name.toUpperCase()}__`}
@@ -241,9 +230,9 @@ const TemplateVariableInput = (allProps: TemplateVariableInputProps) => {
               {v.description}
             </Typography.Text>
           )}
-        </div>
+        </Flex>
       ))}
-    </div>
+    </Flex>
   );
 
   if (multiline === false) {
