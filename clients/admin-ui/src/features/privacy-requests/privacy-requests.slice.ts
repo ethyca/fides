@@ -119,8 +119,7 @@ interface DateRangeParams {
 }
 
 export interface SearchFilterParams
-  extends
-    Omit<Partial<PrivacyRequestFilter>, "sort_field" | "sort_direction">,
+  extends Omit<Partial<PrivacyRequestFilter>, "sort_field" | "sort_direction">,
     Partial<DateRangeParams> {
   sort_field?: string | null;
   sort_direction?: ColumnSort | null;

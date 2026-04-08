@@ -138,11 +138,7 @@ const DigestConfigList = () => {
                     <Tag>{DIGEST_TYPE_LABELS[config.digest_type]}</Tag>
                     {config.messaging_service_type && (
                       <Tag>
-                        {
-                          MESSAGING_METHOD_LABELS[
-                            config.messaging_service_type
-                          ]
-                        }
+                        {MESSAGING_METHOD_LABELS[config.messaging_service_type]}
                       </Tag>
                     )}
                   </Space>

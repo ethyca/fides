@@ -73,9 +73,9 @@ export const allNoticesAreDefaultOptIn = (
 ): boolean =>
   Boolean(
     notices &&
-    notices.every(
-      (notice) => notice.default_preference === UserConsentPreference.OPT_IN,
-    ),
+      notices.every(
+        (notice) => notice.default_preference === UserConsentPreference.OPT_IN,
+      ),
   );
 
 /**
@@ -660,10 +660,10 @@ export const isValidAcString = (acString: string) => {
   const acVersion = acString.split("~")[0];
   return Boolean(
     acVersion &&
-    ["1", "2"].includes(acVersion) &&
-    acString?.match(
-      acVersion === "1" ? /\d~[0-9.]*$/ : /\d~[0-9.]*~dv.[0-9.]*$/,
-    ),
+      ["1", "2"].includes(acVersion) &&
+      acString?.match(
+        acVersion === "1" ? /\d~[0-9.]*$/ : /\d~[0-9.]*~dv.[0-9.]*$/,
+      ),
   );
 };
 

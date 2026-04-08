@@ -34,7 +34,10 @@ import {
   useUpdateRoleMutation,
   useUpdateRolePermissionsMutation,
 } from "~/features/rbac";
-import type { RBACPermissionResponse as RBACPermission, RBACRoleResponse as RBACRole } from "~/types/api";
+import type {
+  RBACPermissionResponse as RBACPermission,
+  RBACRoleResponse as RBACRole,
+} from "~/types/api";
 import type { RTKErrorResult } from "~/types/errors/api";
 
 /**

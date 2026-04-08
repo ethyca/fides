@@ -251,7 +251,9 @@ export const alignPrivacyDeclarations = (
   const before = historyBefore.privacy_declarations || [];
   const after = historyAfter.privacy_declarations || [];
 
-  const allNames = new Set([...before, ...after].map((item: any) => item.data_use));
+  const allNames = new Set(
+    [...before, ...after].map((item: any) => item.data_use),
+  );
   const alignedBefore: PrivacyDeclaration[] = [];
   const alignedAfter: PrivacyDeclaration[] = [];
 

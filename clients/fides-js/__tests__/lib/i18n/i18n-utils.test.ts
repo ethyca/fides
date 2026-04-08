@@ -196,8 +196,10 @@ describe("i18n-utils", () => {
       const mockExpDifferentDefault = JSON.parse(
         JSON.stringify(mockExperience),
       );
-      mockExpDifferentDefault.experience_config.translations[0].is_default = false;
-      mockExpDifferentDefault.experience_config.translations[1].is_default = true; // sets "es" to default
+      mockExpDifferentDefault.experience_config.translations[0].is_default =
+        false;
+      mockExpDifferentDefault.experience_config.translations[1].is_default =
+        true; // sets "es" to default
 
       const mockNavigator: Partial<Navigator> = {
         language: "fr-CA", // not a match for either en or es
@@ -525,8 +527,10 @@ describe("i18n-utils", () => {
         // This test covers the exact scenario that caused the translation bug
         const mockExpFrenchDefault = JSON.parse(JSON.stringify(mockExperience));
         mockExpFrenchDefault.experience_config.component = "tcf_overlay";
-        mockExpFrenchDefault.experience_config.translations[0].is_default = false; // English
-        mockExpFrenchDefault.experience_config.translations[1].is_default = false; // Spanish
+        mockExpFrenchDefault.experience_config.translations[0].is_default =
+          false; // English
+        mockExpFrenchDefault.experience_config.translations[1].is_default =
+          false; // Spanish
         // Add French as default
         mockExpFrenchDefault.experience_config.translations.push({
           language: "fr",
@@ -667,8 +671,10 @@ describe("i18n-utils", () => {
           JSON.stringify(mockExperience),
         );
         mockExpEnglishDefault.experience_config.component = "tcf_overlay";
-        mockExpEnglishDefault.experience_config.translations[0].is_default = true; // English
-        mockExpEnglishDefault.experience_config.translations[1].is_default = false; // Spanish
+        mockExpEnglishDefault.experience_config.translations[0].is_default =
+          true; // English
+        mockExpEnglishDefault.experience_config.translations[1].is_default =
+          false; // Spanish
 
         // Simulate the condition check from TcfOverlay
         const userlocale = "en";

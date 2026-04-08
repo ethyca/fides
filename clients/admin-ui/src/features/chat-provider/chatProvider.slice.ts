@@ -24,10 +24,7 @@ const chatProviderApi = baseApi.injectEndpoints({
       query: () => ({ url: "plus/chat/config" }),
       providesTags: ["Chat Provider Config"],
     }),
-    createChatConfig: build.mutation<
-      ChatConfigResponse,
-      ChatConfigCreate
-    >({
+    createChatConfig: build.mutation<ChatConfigResponse, ChatConfigCreate>({
       query: (body) => ({
         url: "plus/chat/config",
         method: "POST",
