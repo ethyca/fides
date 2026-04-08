@@ -201,12 +201,7 @@ const TemplateVariableInput = (allProps: TemplateVariableInputProps) => {
   };
 
   const dropdown = triggerIndex !== null && filteredVars.length > 0 && (
-    <Flex
-      ref={listboxRef}
-      vertical
-      role="listbox"
-      className={styles.dropdown}
-    >
+    <Flex ref={listboxRef} vertical role="listbox" className={styles.dropdown}>
       {filteredVars.map((v, i) => (
         <Flex
           key={v.name}

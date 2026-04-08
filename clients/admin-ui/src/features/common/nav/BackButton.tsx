@@ -17,11 +17,7 @@ const BackButton = ({
       onClick={backPath ? () => nextRouter.push(backPath) : undefined}
       role={backPath ? "link" : undefined}
       icon={
-        <Avatar
-          size="small"
-          shape="square"
-          className={styles.avatar}
-        >
+        <Avatar size="small" shape="square" className={styles.avatar}>
           <Icons.ArrowLeft />
         </Avatar>
       }
