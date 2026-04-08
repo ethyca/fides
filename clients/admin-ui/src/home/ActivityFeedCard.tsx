@@ -81,6 +81,63 @@ export const ActivityFeedCard = () => {
     return () => observer.disconnect();
   }, [loadMore, items.length]);
 
+  const renderContent = () => {
+    if (isFetching && items.length === 0) {
+      return (
+        <Flex justify="center" align="center" className="h-full">
+          <Spin size="small" />
+        </Flex>
+      );
+    }
+    if (items.length === 0) {
+      return (
+        <Flex
+          vertical
+          align="center"
+          justify="center"
+          className={styles.emptyState}
+        >
+          <Text type="secondary">
+            {activeFilter === "all"
+              ? "No activity yet"
+              : `No ${ACTIVITY_FILTER_OPTIONS.find((o) => o.value === activeFilter)?.label.toLowerCase()} activity`}
+          </Text>
+        </Flex>
+      );
+    }
+    return (
+      <>
+        {items.map((item) => {
+          const cta =
+            item.event_type && ACTION_CTA[item.event_type]
+              ? ACTION_CTA[item.event_type]
+              : null;
+          const href = cta ? cta.route(item.action_data ?? {}) : null;
+
+          return (
+            <div key={item.id}>
+              {href ? (
+                <NextLink
+                  href={href}
+                  className={classNames(styles.feedItem, styles.clickable)}
+                >
+                  <FeedItemContent item={item} />
+                </NextLink>
+              ) : (
+                <div
+                  className={classNames(styles.feedItem, styles.nonClickable)}
+                >
+                  <FeedItemContent item={item} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {hasMore && <div ref={sentinelRef} className="h-px shrink-0" />}
+      </>
+    );
+  };
+
   return (
     <Card
       title="Activity"
@@ -93,59 +150,7 @@ export const ActivityFeedCard = () => {
       onTabChange={setActiveFilter}
       className={styles.cardContainer}
     >
-      <div className={styles.scrollContainer}>
-        {isFetching && items.length === 0 ? (
-          <Flex justify="center" align="center" className="h-full">
-            <Spin size="small" />
-          </Flex>
-        ) : !isFetching && items.length === 0 ? (
-          <Flex
-            vertical
-            align="center"
-            justify="center"
-            className={styles.emptyState}
-          >
-            <Text type="secondary">
-              {activeFilter === "all"
-                ? "No activity yet"
-                : `No ${ACTIVITY_FILTER_OPTIONS.find((o) => o.value === activeFilter)?.label.toLowerCase()} activity`}
-            </Text>
-          </Flex>
-        ) : (
-          <>
-            {items.map((item) => {
-              const cta =
-                item.event_type && ACTION_CTA[item.event_type]
-                  ? ACTION_CTA[item.event_type]
-                  : null;
-              const href = cta ? cta.route(item.action_data ?? {}) : null;
-
-              return (
-                <div key={item.id}>
-                  {href ? (
-                    <NextLink
-                      href={href}
-                      className={classNames(styles.feedItem, styles.clickable)}
-                    >
-                      <FeedItemContent item={item} />
-                    </NextLink>
-                  ) : (
-                    <div
-                      className={classNames(
-                        styles.feedItem,
-                        styles.nonClickable,
-                      )}
-                    >
-                      <FeedItemContent item={item} />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            {hasMore && <div ref={sentinelRef} className="h-px shrink-0" />}
-          </>
-        )}
-      </div>
+      <div className={styles.scrollContainer}>{renderContent()}</div>
     </Card>
   );
 };
