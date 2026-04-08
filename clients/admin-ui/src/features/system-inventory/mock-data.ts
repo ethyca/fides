@@ -46,33 +46,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issue_count: 0,
     stewards: [{ initials: "AK", name: "Anna Kim" }, { initials: "JG", name: "Jack Gale" }],
     group: "Data engineering",
-    agentBriefing: "Snowflake is a critical data warehouse serving analytics and ML workloads. 78% annotation coverage is solid but 22% of fields remain unreviewed. Prioritize completing field classification and reviewing the BigQuery data flow.",
-    integrations: [
-      { name: "Snowflake — Read/Write", type: "Snowflake", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T10:00:00Z", enabledActions: ["access", "erasure"] },
-    ],
-    monitors: [
-      { name: "Production schema scan", frequency: "Daily", status: "completed", lastRun: "2026-03-26T02:00:00Z", resourceCount: 120 },
-    ],
-    relationships: [
-      { systemName: "Amplitude", systemKey: "amplitude", role: "producer", declaredUse: "Analytics", authorizedUses: ["Analytics"], hasViolation: false },
-      { systemName: "Looker", systemKey: "looker_dashboards", role: "producer", declaredUse: "Analytics", authorizedUses: ["Analytics"], hasViolation: false },
-      { systemName: "BigQuery", systemKey: "bigquery", role: "consumer", declaredUse: "Analytics", authorizedUses: ["Analytics", "Finance"], hasViolation: true, violationReason: "Purpose mismatch — Analytics not authorized by BigQuery" },
-    ],
-    classification: { approved: 94, pending: 15, unreviewed: 11, categories: [
-      { name: "PII — Name, Email, Phone", fieldCount: 32, approvedPercent: 88 },
-      { name: "Usage metrics", fieldCount: 48, approvedPercent: 72 },
-      { name: "Financial data", fieldCount: 40, approvedPercent: 65 },
-    ]},
-    datasets: [
-      { name: "raw_events", key: "snowflake_raw_events", collectionCount: 12, fieldCount: 85, createdAt: "2025-11-15" },
-      { name: "user_profiles", key: "snowflake_user_profiles", collectionCount: 4, fieldCount: 35, createdAt: "2025-12-01" },
-    ],
-    privacyRequests: { open: 3, closed: 18, avgAccessDays: 2.1, avgErasureDays: 4.5, dsarEnabled: true },
-    history: [
-      { timestamp: "2026-03-25T14:00:00Z", action: "Steward assigned", category: "steward", user: "Anna Kim", detail: "Added Jack Gale as data steward" },
-      { timestamp: "2026-03-22T09:00:00Z", action: "Purpose updated", category: "purpose", user: "System", detail: "Added Finance purpose" },
-      { timestamp: "2026-03-18T11:00:00Z", action: "Integration tested", category: "integration", user: "Anna Kim", detail: "Snowflake Read/Write — passed" },
-    ],
   }),
 
   s("bigquery", "Auth0", "Identity provider", "Identity and access management platform.", {
@@ -90,40 +63,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     stewards: [{ initials: "AK", name: "Anna Kim" }],
     group: "Data engineering",
-    agentBriefing: "BigQuery has 2 governance issues including a failed Fivetran integration. 62% annotation coverage needs improvement — 30 fields are unreviewed. DSAR automation is not yet enabled despite active integrations.",
-    integrations: [
-      { name: "Google Cloud — Read/Write", type: "BigQuery", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T08:00:00Z", enabledActions: ["access", "erasure"] },
-      { name: "Fivetran — Read only", type: "Fivetran", accessLevel: "Read", status: "failed", lastTested: "2026-03-23T12:00:00Z", enabledActions: ["access"] },
-    ],
-    monitors: [
-      { name: "Production schema scan", frequency: "Daily", status: "completed", lastRun: "2026-03-26T02:00:00Z", resourceCount: 84 },
-      { name: "PII field detector", frequency: "Weekly", status: "processing", lastRun: "2026-03-24T06:00:00Z", resourceCount: 12 },
-    ],
-    relationships: [
-      { systemName: "Amplitude", systemKey: "amplitude", role: "producer", declaredUse: "Analytics", authorizedUses: ["Analytics"], hasViolation: false },
-      { systemName: "Looker Dashboards", systemKey: "looker_dashboards", role: "producer", declaredUse: "Analytics", authorizedUses: ["Analytics"], hasViolation: false },
-      { systemName: "Snowflake", systemKey: "snowflake", role: "consumer", declaredUse: "Analytics", authorizedUses: ["Analytics", "Fraud prevention", "Finance"], hasViolation: false },
-      { systemName: "Salesforce", systemKey: "salesforce", role: "consumer", declaredUse: "Analytics", authorizedUses: ["Customer support"], hasViolation: true, violationReason: "Purpose mismatch — Analytics not authorized by Salesforce" },
-    ],
-    classification: { approved: 148, pending: 62, unreviewed: 30, categories: [
-      { name: "PII — Name, Email, Phone", fieldCount: 48, approvedPercent: 80 },
-      { name: "Usage metrics", fieldCount: 72, approvedPercent: 55 },
-      { name: "Financial data", fieldCount: 28, approvedPercent: 40 },
-    ]},
-    datasets: [
-      { name: "analytics_events", key: "bq_analytics_events", collectionCount: 18, fieldCount: 65, createdAt: "2025-10-01" },
-      { name: "user_data", key: "bq_user_data", collectionCount: 12, fieldCount: 42, createdAt: "2025-10-15" },
-      { name: "financial_reports", key: "bq_financial", collectionCount: 15, fieldCount: 38, createdAt: "2025-11-01" },
-      { name: "marketing_attribution", key: "bq_marketing", collectionCount: 10, fieldCount: 28, createdAt: "2025-11-20" },
-      { name: "product_metrics", key: "bq_product", collectionCount: 14, fieldCount: 35, createdAt: "2025-12-01" },
-      { name: "support_tickets", key: "bq_support", collectionCount: 8, fieldCount: 18, createdAt: "2026-01-10" },
-      { name: "fraud_signals", key: "bq_fraud", collectionCount: 7, fieldCount: 14, createdAt: "2026-02-01" },
-    ],
-    privacyRequests: { open: 4, closed: 12, avgAccessDays: 3.2, avgErasureDays: 5.1, dsarEnabled: false },
-    history: [
-      { timestamp: "2026-03-26T08:00:00Z", action: "Monitor completed", category: "integration", user: "System", detail: "PII field detector found 12 resources" },
-      { timestamp: "2026-03-24T14:00:00Z", action: "Integration failed", category: "integration", user: "System", detail: "Fivetran Read only — connection timeout" },
-    ],
   }),
 
   s("fivetran", "Fivetran", "Data pipeline", "Automated data integration and ETL pipeline service.", {
@@ -134,11 +73,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "AK", name: "Anna Kim" }],
     group: "Data engineering",
-    integrations: [{ name: "Fivetran API", type: "Fivetran", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-25T10:00:00Z", enabledActions: ["access"] }],
-    classification: { approved: 52, pending: 5, unreviewed: 2, categories: [{ name: "Usage metrics", fieldCount: 59, approvedPercent: 88 }] },
-    datasets: [{ name: "sync_logs", key: "fivetran_sync", collectionCount: 6, fieldCount: 59, createdAt: "2025-09-15" }],
-    privacyRequests: { open: 0, closed: 3, avgAccessDays: 1.5, avgErasureDays: 2.0, dsarEnabled: true },
-    history: [{ timestamp: "2026-03-25T10:00:00Z", action: "Integration tested", category: "integration", user: "Anna Kim", detail: "Fivetran API — passed" }],
   }),
 
   s("dbt", "dbt", "Data transformation", "SQL-based data transformation and modeling tool.", {
@@ -151,8 +85,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "High % unreviewed fields", severity: "warning", resolveHref: "#assets" }],
     stewards: [{ initials: "JG", name: "Jack Gale" }],
     group: "Data engineering",
-    classification: { approved: 20, pending: 10, unreviewed: 15, categories: [{ name: "Usage metrics", fieldCount: 45, approvedPercent: 44 }] },
-    history: [{ timestamp: "2026-03-20T09:00:00Z", action: "Purpose assigned", category: "purpose", user: "Jack Gale", detail: "Added Analytics purpose" }],
   }),
 
   s("airflow", "Airflow", "Orchestration", "Workflow orchestration platform for data pipelines.", {
@@ -168,7 +100,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     stewards: [{ initials: "AK", name: "Anna Kim" }],
     group: "Data engineering",
-    history: [],
   }),
 
   // --- Analytics & Growth ---
@@ -180,11 +111,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "RS", name: "Rachel Smith" }],
     group: "Growth",
-    integrations: [{ name: "Amplitude API", type: "Amplitude", accessLevel: "Read", status: "active", lastTested: "2026-03-25T14:00:00Z", enabledActions: ["access"] }],
-    classification: { approved: 85, pending: 5, unreviewed: 3, categories: [{ name: "Behavioral data", fieldCount: 93, approvedPercent: 91 }] },
-    datasets: [{ name: "events", key: "amplitude_events", collectionCount: 4, fieldCount: 93, createdAt: "2025-08-01" }],
-    privacyRequests: { open: 1, closed: 8, avgAccessDays: 1.8, avgErasureDays: 3.0, dsarEnabled: true },
-    history: [{ timestamp: "2026-03-25T14:00:00Z", action: "Integration tested", category: "integration", user: "Rachel Smith", detail: "Amplitude API — passed" }],
   }),
 
   s("google_ads", "Google Ads", "Ad platform", "Advertising platform for search and display ad campaigns.", {
@@ -200,7 +126,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     stewards: [],
     group: "Growth",
-    history: [],
   }),
 
   s("braze", "Braze", "Messaging", "Customer engagement platform for push, email, and in-app messaging.", {
@@ -211,10 +136,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "RS", name: "Rachel Smith" }],
     group: "Growth",
-    integrations: [{ name: "Braze API", type: "Braze", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-22T09:00:00Z", enabledActions: ["access", "erasure"] }],
-    classification: { approved: 30, pending: 8, unreviewed: 8, categories: [{ name: "Contact data", fieldCount: 46, approvedPercent: 65 }] },
-    privacyRequests: { open: 2, closed: 5, avgAccessDays: 2.5, avgErasureDays: 4.0, dsarEnabled: true },
-    history: [],
   }),
 
   s("marketing_analytics", "Marketing Analytics", "Analytics", "Internal marketing analytics and attribution platform.", {
@@ -228,8 +149,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "No data steward assigned", severity: "warning", resolveHref: "#information" }],
     stewards: [],
     group: "Growth",
-    agentBriefing: "Marketing Analytics has no data steward assigned and multiple governance issues. With 0% annotation coverage, this system is a significant governance risk. Assign a steward from the Marketing team and begin field classification immediately.",
-    history: [],
   }),
 
   s("ml_platform", "ML Platform", "ML training", "Machine learning training and inference platform.", {
@@ -246,7 +165,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     stewards: [{ initials: "RS", name: "Rachel Smith" }],
     group: "Growth",
-    history: [],
   }),
 
   // --- Finance ---
@@ -261,11 +179,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "High % unreviewed fields", severity: "warning", resolveHref: "#assets" }],
     stewards: [{ initials: "MB", name: "Mike Brown" }],
     group: "Finance & accounting",
-    integrations: [{ name: "Stripe API", type: "Stripe", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T16:00:00Z", enabledActions: ["access", "erasure"] }],
-    classification: { approved: 25, pending: 12, unreviewed: 8, categories: [{ name: "Financial data", fieldCount: 45, approvedPercent: 56 }] },
-    datasets: [{ name: "payments", key: "stripe_payments", collectionCount: 5, fieldCount: 45, createdAt: "2025-07-01" }],
-    privacyRequests: { open: 1, closed: 6, avgAccessDays: 2.0, avgErasureDays: 3.5, dsarEnabled: true },
-    history: [],
   }),
 
   s("netsuite", "NetSuite", "ERP", "Enterprise resource planning for finance, inventory, and operations.", {
@@ -276,10 +189,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "MB", name: "Mike Brown" }],
     group: "Finance & accounting",
-    integrations: [{ name: "NetSuite API", type: "NetSuite", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-23T11:00:00Z", enabledActions: ["access"] }],
-    classification: { approved: 60, pending: 10, unreviewed: 6, categories: [{ name: "Financial data", fieldCount: 76, approvedPercent: 79 }] },
-    privacyRequests: { open: 0, closed: 4, avgAccessDays: 3.0, avgErasureDays: 6.0, dsarEnabled: true },
-    history: [],
   }),
 
   s("chargebee", "Chargebee", "Payment processor", "Subscription billing and revenue management platform.", {
@@ -292,7 +201,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "DSAR not ready", severity: "warning", resolveHref: "#integrations" }],
     stewards: [{ initials: "MB", name: "Mike Brown" }],
     group: "Finance & accounting",
-    history: [],
   }),
 
   s("expensify", "Expensify", "Expense management", "Expense reporting and corporate card management.", {
@@ -308,7 +216,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     stewards: [],
     group: "Finance & accounting",
-    history: [],
   }),
 
   // --- Trust & Safety ---
@@ -320,10 +227,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "CK", name: "Chris Kelly" }],
     group: "Trust & safety",
-    integrations: [{ name: "Internal API", type: "REST", accessLevel: "Read", status: "active", lastTested: "2026-03-25T08:00:00Z", enabledActions: ["access"] }],
-    classification: { approved: 42, pending: 2, unreviewed: 1, categories: [{ name: "Risk data", fieldCount: 45, approvedPercent: 93 }] },
-    privacyRequests: { open: 0, closed: 2, avgAccessDays: 1.0, avgErasureDays: 2.0, dsarEnabled: true },
-    history: [],
   }),
 
   s("risk_scoring_api", "Risk Scoring API", "Internal service", "API for real-time risk scoring of users and transactions.", {
@@ -334,9 +237,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "CK", name: "Chris Kelly" }],
     group: "Trust & safety",
-    integrations: [{ name: "Risk API", type: "REST", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-26T06:00:00Z", enabledActions: ["access"] }],
-    classification: { approved: 28, pending: 1, unreviewed: 0, categories: [{ name: "Risk scores", fieldCount: 29, approvedPercent: 97 }] },
-    history: [],
   }),
 
   s("sift", "Sift", "Fraud detection", "Third-party fraud detection and content moderation platform.", {
@@ -350,7 +250,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "High % unreviewed fields", severity: "warning", resolveHref: "#assets" }],
     stewards: [{ initials: "CK", name: "Chris Kelly" }],
     group: "Trust & safety",
-    history: [],
   }),
 
   // --- Customer Platform ---
@@ -364,11 +263,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "DSAR not ready", severity: "warning", resolveHref: "#integrations" }],
     stewards: [{ initials: "LT", name: "Lisa Torres" }],
     group: "Customer platform",
-    integrations: [{ name: "Salesforce API", type: "Salesforce", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T14:00:00Z", enabledActions: ["access", "erasure"] }],
-    classification: { approved: 80, pending: 20, unreviewed: 11, categories: [{ name: "CRM data", fieldCount: 111, approvedPercent: 72 }] },
-    datasets: [{ name: "contacts", key: "sf_contacts", collectionCount: 3, fieldCount: 55, createdAt: "2025-06-01" }, { name: "accounts", key: "sf_accounts", collectionCount: 2, fieldCount: 30, createdAt: "2025-06-01" }],
-    privacyRequests: { open: 2, closed: 15, avgAccessDays: 2.8, avgErasureDays: 4.2, dsarEnabled: false },
-    history: [],
   }),
 
   s("zendesk", "Zendesk", "Support platform", "Customer support ticketing and knowledge base platform.", {
@@ -379,10 +273,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "LT", name: "Lisa Torres" }],
     group: "Customer platform",
-    integrations: [{ name: "Zendesk API", type: "Zendesk", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-25T10:00:00Z", enabledActions: ["access", "erasure"] }],
-    classification: { approved: 40, pending: 5, unreviewed: 4, categories: [{ name: "Support data", fieldCount: 49, approvedPercent: 82 }] },
-    privacyRequests: { open: 1, closed: 10, avgAccessDays: 1.5, avgErasureDays: 3.0, dsarEnabled: true },
-    history: [],
   }),
 
   s("intercom", "Intercom", "Messaging", "Customer messaging platform for support and engagement.", {
@@ -395,7 +285,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "High % unreviewed fields", severity: "warning", resolveHref: "#assets" }],
     stewards: [{ initials: "LT", name: "Lisa Torres" }],
     group: "Customer platform",
-    history: [],
   }),
 
   s("auth0", "BigQuery", "Data warehouse", "Google Cloud data warehouse for analytics, BI, and ML.", {
@@ -476,10 +365,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "DSAR not ready", severity: "warning", resolveHref: "#integrations" }],
     stewards: [{ initials: "RS", name: "Rachel Smith" }],
     group: "Customer platform",
-    integrations: [{ name: "Segment API", type: "Segment", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T12:00:00Z", enabledActions: ["access"] }],
-    classification: { approved: 55, pending: 10, unreviewed: 8, categories: [{ name: "Event data", fieldCount: 73, approvedPercent: 75 }] },
-    privacyRequests: { open: 1, closed: 7, avgAccessDays: 2.0, avgErasureDays: 3.5, dsarEnabled: false },
-    history: [],
   }),
 
   // --- HR ---
@@ -492,10 +377,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     health: HealthStatus.HEALTHY,
     stewards: [{ initials: "DP", name: "Diana Park" }],
     group: "HR & recruiting",
-    integrations: [{ name: "Workday API", type: "Workday", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-23T09:00:00Z", enabledActions: ["access", "erasure"] }],
-    classification: { approved: 65, pending: 5, unreviewed: 2, categories: [{ name: "Employee data", fieldCount: 72, approvedPercent: 90 }] },
-    privacyRequests: { open: 0, closed: 3, avgAccessDays: 2.0, avgErasureDays: 5.0, dsarEnabled: true },
-    history: [],
   }),
 
   s("greenhouse", "Greenhouse", "HRIS", "Applicant tracking and recruiting platform.", {
@@ -508,7 +389,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issues: [{ title: "DSAR not ready", severity: "warning", resolveHref: "#integrations" }],
     stewards: [{ initials: "DP", name: "Diana Park" }],
     group: "HR & recruiting",
-    history: [],
   }),
 
   s("bamboohr", "BambooHR", "HRIS", "HR management software for small and mid-size businesses.", {
@@ -524,7 +404,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
     stewards: [],
     group: "HR & recruiting",
-    history: [],
   }),
 
   s("slack", "Slack", "Messaging", "Team communication and collaboration platform.", {
@@ -540,8 +419,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { title: "Needs classification", severity: "warning", resolveHref: "#assets" },
     ],
     stewards: [],
-    agentBriefing: "Slack has 3 governance issues: no steward, no integration, and no classification. With only 20% annotation coverage, this system needs foundational governance setup. Assign an IT team steward and configure the Slack API integration.",
-    history: [],
   }),
 
   // --- Ungrouped ---
@@ -554,7 +431,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     issue_count: 1,
     issues: [{ title: "No data steward assigned", severity: "warning", resolveHref: "#information" }],
     stewards: [],
-    history: [],
   }),
 
   s("legacy_crm", "Legacy CRM", "CRM", "Legacy customer relationship management system being decommissioned.", {
@@ -571,8 +447,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { title: "Needs classification", severity: "warning", resolveHref: "#assets" },
     ],
     stewards: [],
-    agentBriefing: "Legacy CRM is being decommissioned but still has 3 unresolved governance issues. No steward is assigned and annotation coverage is only 15%. Ensure data flows are properly shut down before decommission.",
-    history: [],
   }),
 
   s("test_environment", "Test Environment", "Internal service", "Staging and testing environment for QA.", {
@@ -588,6 +462,5 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { title: "No integration linked", severity: "warning", resolveHref: "#integrations" },
     ],
     stewards: [],
-    history: [],
   }),
 ];
