@@ -3,6 +3,7 @@ import { Col, Flex, Row } from "fidesui";
 import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice";
 import { TrendPeriod } from "~/features/dashboard/types";
 
+import { ActivityFeedCard } from "./ActivityFeedCard";
 import { AgentBriefingBanner } from "./AgentBriefingBanner";
 import { AstralisPanel } from "./AstralisPanel";
 import { DashboardDrawer } from "./DashboardDrawer";
@@ -60,6 +61,9 @@ export const HomeDashboard = () => {
         </Col>
       </Row>
       <Row gutter={ROW_GUTTER} className="h-[400px] items-stretch">
+        <Col xs={24} md={16} className="h-full">
+          <ActivityFeedCard />
+        </Col>
         <Col xs={24} md={8} className="h-full">
           <AstralisPanel />
         </Col>
