@@ -41,7 +41,7 @@ const createMockOktaApp = (
   urn: `urn:okta:app:${String(index).padStart(8, "0")}-1234-1234-1234-123456789012`,
   name: overrides?.name || `App ${index}`,
   description: overrides?.description || `Description for app ${index}`,
-  resource_type: StagedResourceTypeValue.OKTA_APP,
+  resource_type: StagedResourceTypeValue.IDP_APP,
   diff_status: overrides?.diff_status || DiffStatus.ADDITION,
   updated_at: overrides?.updated_at || "2024-01-15T10:30:00Z",
   monitor_config_id: "okta_identity_provider",

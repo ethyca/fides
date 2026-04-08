@@ -16,7 +16,7 @@ import { useCallback, useMemo, useState } from "react";
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { CreateAssessmentRequest } from "~/types/api";
+import { CreateAssessmentTaskRequest } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import {
@@ -93,7 +93,7 @@ export const GenerateAssessmentsModal = ({
     try {
       await createAssessment({
         assessment_types:
-          values.assessment_types as CreateAssessmentRequest["assessment_types"],
+          values.assessment_types as CreateAssessmentTaskRequest["assessment_types"],
         system_fides_keys: values.system_fides_keys?.length
           ? values.system_fides_keys
           : null,

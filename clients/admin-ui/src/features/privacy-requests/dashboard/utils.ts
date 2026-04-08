@@ -2,7 +2,7 @@ import { isEmpty, isNil, pickBy } from "lodash";
 import { createParser } from "nuqs";
 
 import {
-  IdentityValue,
+  fides__api__schemas__privacy_request__IdentityValue as IdentityValue,
   PrivacyRequestOption,
   PrivacyRequestResponse,
 } from "~/types/api";

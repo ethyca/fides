@@ -21,7 +21,7 @@ import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/priv
 import {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
-  PrivacyRequestCreate,
+  PrivacyRequestCreateExtended as PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
 

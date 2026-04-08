@@ -20,7 +20,7 @@ import {
 import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { MonitorTaskResponse } from "~/types/api/models/MonitorTaskResponse";
-import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
+import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
@@ -124,7 +124,7 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
 
     getMonitorTree: build.query<
-      CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+      ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
       Partial<CursorPaginationQueryParams> & {
         monitor_config_id: string;
         staged_resource_urn?: string;
