@@ -1,4 +1,0 @@
-type: Added
-description: Add `cloud_infra_staged_resource` table and `CloudInfraStagedResource` ORM model for cloud infrastructure monitor resources
-pr: 7823
-labels: ["db-migration"]

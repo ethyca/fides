@@ -1,31 +1,53 @@
-import { antTheme, Input, Typography } from "fidesui";
+import { Flex, Input, Typography } from "fidesui";
 import { KeyboardEvent, useRef, useState } from "react";
 
-interface TemplateVariable {
+import styles from "./TemplateVariableInput.module.css";
+
+export interface TemplateVariable {
   name: string;
   description: string;
   example_value?: string;
 }
 
-interface TemplateVariableTextAreaProps
-  extends Omit<
-    React.ComponentPropsWithoutRef<typeof Input.TextArea>,
-    "onChange" | "value"
-  > {
+type SharedProps = {
   variables: TemplateVariable[];
   onChange?: (value: string) => void;
   value?: string;
+};
+
+type TemplateVariableInputProps = SharedProps &
+  (
+    | ({ multiline?: true } & Omit<
+        React.ComponentPropsWithoutRef<typeof Input.TextArea>,
+        "onChange" | "value"
+      >)
+    | ({ multiline: false } & Omit<
+        React.ComponentPropsWithoutRef<typeof Input>,
+        "onChange" | "value"
+      >)
+  );
+
+// Strip our custom/discriminant props before forwarding to the underlying element.
+// These are not valid antd/DOM props and must not be spread onto Input or TextArea.
+const CUSTOM_PROP_KEYS = [
+  "variables",
+  "onChange",
+  "value",
+  "multiline",
+] as const;
+type CustomPropKey = (typeof CUSTOM_PROP_KEYS)[number];
+
+function omitCustomProps<T extends object>(obj: T): Omit<T, CustomPropKey> {
+  const copy = { ...obj };
+  CUSTOM_PROP_KEYS.forEach((key) => {
+    delete (copy as Record<string, unknown>)[key];
+  });
+  return copy as Omit<T, CustomPropKey>;
 }
 
-const TemplateVariableTextArea = ({
-  value = "",
-  onChange,
-  variables,
-  rows = 4,
-  placeholder,
-  ...props
-}: TemplateVariableTextAreaProps) => {
-  const { token } = antTheme.useToken();
+const TemplateVariableInput = (allProps: TemplateVariableInputProps) => {
+  const { multiline } = allProps;
+  const { value = "", onChange, variables, placeholder } = allProps;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<number>(0);
 
@@ -43,8 +65,10 @@ const TemplateVariableTextArea = ({
     });
   };
 
-  const getTextarea = (): HTMLTextAreaElement | null =>
-    wrapperRef.current?.querySelector("textarea") ?? null;
+  const getInputEl = (): HTMLInputElement | HTMLTextAreaElement | null =>
+    wrapperRef.current?.querySelector(
+      multiline === false ? "input" : "textarea",
+    ) ?? null;
 
   const filteredVars =
     triggerIndex !== null
@@ -71,15 +95,17 @@ const TemplateVariableTextArea = ({
     closeDropdown();
 
     setTimeout(() => {
-      const textarea = getTextarea();
-      if (textarea) {
-        textarea.focus();
-        textarea.setSelectionRange(newCursor, newCursor);
+      const el = getInputEl();
+      if (el) {
+        el.focus();
+        el.setSelectionRange(newCursor, newCursor);
       }
     }, 0);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     const text = e.target.value;
     const cursor = e.target.selectionStart ?? text.length;
     cursorRef.current = cursor;
@@ -121,7 +147,9 @@ const TemplateVariableTextArea = ({
     onChange?.(text);
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (
+    e: KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     if (triggerIndex === null || filteredVars.length === 0) {
       return;
     }
@@ -146,79 +174,78 @@ const TemplateVariableTextArea = ({
     }
   };
 
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyUp = (
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     cursorRef.current =
-      (e.target as HTMLTextAreaElement).selectionStart ?? cursorRef.current;
+      (e.target as HTMLInputElement | HTMLTextAreaElement).selectionStart ??
+      cursorRef.current;
   };
 
-  const handleClick = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+  const handleClick = (
+    e: React.MouseEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     cursorRef.current =
-      (e.target as HTMLTextAreaElement).selectionStart ?? cursorRef.current;
+      (e.target as HTMLInputElement | HTMLTextAreaElement).selectionStart ??
+      cursorRef.current;
   };
 
+  const eventProps = {
+    value,
+    onChange: handleChange,
+    onKeyDown: handleKeyDown,
+    onKeyUp: handleKeyUp,
+    onClick: handleClick,
+    onBlur: closeDropdown,
+    placeholder,
+  };
+
+  const dropdown = triggerIndex !== null && filteredVars.length > 0 && (
+    <Flex ref={listboxRef} vertical role="listbox" className={styles.dropdown}>
+      {filteredVars.map((v, i) => (
+        <Flex
+          key={v.name}
+          vertical
+          role="option"
+          aria-selected={i === activeIndex}
+          tabIndex={-1}
+          // preventDefault keeps the input focused so blur doesn't fire
+          onMouseDown={(e) => {
+            e.preventDefault();
+            selectVariable(v.name);
+          }}
+          onMouseEnter={() => setActiveIndex(i)}
+          className={`${styles.option}${i === activeIndex ? ` ${styles.optionActive}` : ""}`}
+        >
+          <Typography.Text code className="whitespace-nowrap">
+            {`__${v.name.toUpperCase()}__`}
+          </Typography.Text>
+          {v.description && (
+            <Typography.Text type="secondary" className="text-xs">
+              {v.description}
+            </Typography.Text>
+          )}
+        </Flex>
+      ))}
+    </Flex>
+  );
+
+  if (multiline === false) {
+    return (
+      <div ref={wrapperRef} className="relative">
+        <Input {...omitCustomProps(allProps)} {...eventProps} />
+        {dropdown}
+      </div>
+    );
+  }
+
+  const { rows = 4, ...textAreaProps } = omitCustomProps(allProps);
   return (
     <div ref={wrapperRef} className="relative">
-      <Input.TextArea
-        {...props}
-        value={value}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onKeyUp={handleKeyUp}
-        onClick={handleClick}
-        onBlur={() => setTimeout(closeDropdown, 150)}
-        rows={rows}
-        placeholder={placeholder}
-      />
-      {triggerIndex !== null && filteredVars.length > 0 && (
-        <div
-          ref={listboxRef}
-          role="listbox"
-          className="absolute inset-x-0 top-full z-[1000] max-h-[220px] overflow-y-auto"
-          style={{
-            background: token.colorBgContainer,
-            border: `1px solid ${token.colorBorder}`,
-            borderRadius: token.borderRadiusLG,
-            boxShadow: token.boxShadowSecondary,
-          }}
-        >
-          {filteredVars.map((v, i) => (
-            <div
-              key={v.name}
-              role="option"
-              aria-selected={i === activeIndex}
-              tabIndex={-1}
-              // preventDefault keeps textarea focused so blur doesn't fire
-              onMouseDown={(e) => {
-                e.preventDefault();
-                selectVariable(v.name);
-              }}
-              onMouseEnter={() => setActiveIndex(i)}
-              className="flex cursor-pointer items-baseline gap-2 px-3 py-[7px]"
-              style={{
-                background:
-                  i === activeIndex
-                    ? token.colorFillAlter
-                    : token.colorBgContainer,
-                borderBottom:
-                  i < filteredVars.length - 1
-                    ? `1px solid ${token.colorBorderSecondary}`
-                    : undefined,
-              }}
-            >
-              <Typography.Text
-                code
-              >{`__${v.name.toUpperCase()}__`}</Typography.Text>
-              {v.description && (
-                <Typography.Text type="secondary" className="text-xs">
-                  {v.description}
-                </Typography.Text>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      <Input.TextArea {...textAreaProps} {...eventProps} rows={rows} />
+      {dropdown}
     </div>
   );
 };
 
-export default TemplateVariableTextArea;
+export default TemplateVariableInput;
