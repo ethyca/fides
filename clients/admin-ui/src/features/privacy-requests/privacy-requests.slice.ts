@@ -7,10 +7,10 @@ import {
   ActionType,
   BulkPostPrivacyRequests,
   ColumnSort,
-  Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
   fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
-  PrivacyRequestCreateExtended as PrivacyRequestCreate,
+  Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
   PrivacyRequestAccessResults,
+  PrivacyRequestCreateExtended as PrivacyRequestCreate,
   PrivacyRequestDiagnosticsExportResponse,
   PrivacyRequestFilter,
   PrivacyRequestNotificationInfo,
@@ -119,7 +119,8 @@ interface DateRangeParams {
 }
 
 export interface SearchFilterParams
-  extends Omit<Partial<PrivacyRequestFilter>, "sort_field" | "sort_direction">,
+  extends
+    Omit<Partial<PrivacyRequestFilter>, "sort_field" | "sort_direction">,
     Partial<DateRangeParams> {
   sort_field?: string | null;
   sort_direction?: ColumnSort | null;

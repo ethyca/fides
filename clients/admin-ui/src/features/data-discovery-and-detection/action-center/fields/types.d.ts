@@ -10,10 +10,10 @@ import {
   Schema,
   Table,
 } from "~/types/api";
-
-import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
+
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 
 export type MonitorResource =
   | DatastoreStagedResource

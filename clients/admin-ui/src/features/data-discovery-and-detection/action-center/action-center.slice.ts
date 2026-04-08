@@ -19,12 +19,12 @@ import {
 } from "~/types/api";
 import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
-import { MonitorTaskResponse } from "~/types/api/models/MonitorTaskResponse";
 import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
+import { MonitorTaskResponse } from "~/types/api/models/MonitorTaskResponse";
 import {
   PaginatedResponse,
   PaginationQueryParams,
@@ -565,16 +565,15 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Tasks"],
     }),
-    dismissMonitorTask: build.mutation<
-      MonitorTaskResponse,
-      { taskId: string }
-    >({
-      query: ({ taskId }) => ({
-        url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Monitor Tasks"],
-    }),
+    dismissMonitorTask: build.mutation<MonitorTaskResponse, { taskId: string }>(
+      {
+        query: ({ taskId }) => ({
+          url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+          method: "POST",
+        }),
+        invalidatesTags: ["Monitor Tasks"],
+      },
+    ),
     undismissMonitorTask: build.mutation<
       MonitorTaskResponse,
       { taskId: string }
