@@ -1,7 +1,8 @@
-import { Form, Input, InputNumber, Modal, Select, useMessage } from "fidesui";
+import { Form, Input, InputNumber, Select, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
 
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { capitalize } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
@@ -111,10 +112,11 @@ export const PolicyFormModal = ({
   );
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title={isEditing ? "Edit policy" : "Create policy"}
       open={isOpen}
-      onCancel={handleClose}
+      onClose={handleClose}
+      getIsDirty={() => form.isFieldsTouched()}
       onOk={() => form.submit()}
       okText={isEditing ? "Save" : "Create"}
       confirmLoading={isLoading}
@@ -193,6 +195,6 @@ export const PolicyFormModal = ({
           />
         </Form.Item>
       </Form>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
