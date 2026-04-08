@@ -1,21 +1,39 @@
-import { Button, Text } from "fidesui";
+import { Button, Flex, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
+import { useState } from "react";
 
+import { useGetAccessPoliciesQuery } from "~/features/access-policies/access-policies.slice";
 import PoliciesContainer from "~/features/access-policies/PoliciesContainer";
+import PolicySettingsModal from "~/features/access-policies/PolicySettingsModal";
+import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const AccessPoliciesPage: NextPage = () => {
+  const { flags } = useFlags();
+  const { data, isLoading } = useGetAccessPoliciesQuery({});
+  const hasPolicies = !isLoading && (data?.items?.length ?? 0) > 0;
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <Layout title="Access policies">
       <PageHeader
         heading="Access policies"
         rightContent={
-          <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
-            <Button type="primary">New policy</Button>
-          </NextLink>
+          hasPolicies ? (
+            <Flex gap={8}>
+              {flags.alphaPrivacyDocUpload && (
+                <Button onClick={() => setSettingsOpen(true)}>
+                  Policy settings
+                </Button>
+              )}
+              <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
+                <Button type="primary">New policy</Button>
+              </NextLink>
+            </Flex>
+          ) : undefined
         }
         isSticky
       >
@@ -28,6 +46,12 @@ const AccessPoliciesPage: NextPage = () => {
         </div>
       </PageHeader>
       <PoliciesContainer />
+      {flags.alphaPrivacyDocUpload && (
+        <PolicySettingsModal
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </Layout>
   );
 };
