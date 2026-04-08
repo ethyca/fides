@@ -113,15 +113,16 @@ class Comment(Base):
         "Comment",
         remote_side="Comment.id",
         foreign_keys=[parent_id],
+        back_populates="replies",
         uselist=False,
     )
 
     replies = relationship(
         "Comment",
         foreign_keys=[parent_id],
+        back_populates="parent",
         uselist=True,
         order_by="Comment.created_at",
-        overlaps="parent",
         passive_deletes=True,
     )
 
