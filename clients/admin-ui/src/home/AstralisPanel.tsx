@@ -22,18 +22,18 @@ export const AstralisPanel = () => {
 
           return (
             <Flex key={key} align="center" gap={8}>
-              {isActive && (
-                <span
-                  className="inline-block size-2 animate-pulse rounded-full"
-                  style={{ backgroundColor: token.colorSuccess }}
-                />
-              )}
               <Statistic
                 value={value}
                 valueStyle={{
                   color: isOverdue ? token.colorWarning : undefined,
                 }}
               />
+              {isActive && value > 0 && (
+                <span
+                  className="inline-block size-2 animate-pulse rounded-full"
+                  style={{ backgroundColor: token.colorSuccess }}
+                />
+              )}
               <Text
                 type="secondary"
                 className="text-xs"
