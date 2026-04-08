@@ -82,8 +82,7 @@ def upgrade() -> None:
         ),
         sa.UniqueConstraint(
             "access_policy_id",
-            "control_id",
-            name="uq_plus_access_policy_control_policy_control",
+            name="uq_plus_access_policy_control_one_per_policy",
         ),
     )
     op.create_index(
