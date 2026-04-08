@@ -1,0 +1,4 @@
+type: Changed
+description: Expanded database healthcheck to report per-pool health details and readonly async prewarming metrics
+pr: 7856
+labels: []
