@@ -1,4 +1,6 @@
-from typing import Any, Dict, Optional, cast
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, Optional, cast
 
 from boto3 import Session
 from botocore.config import Config
@@ -6,11 +8,13 @@ from botocore.exceptions import ClientError
 from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
-from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
-    BaseAWSSchema,
-)
 from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 from fides.config import CONFIG
+
+if TYPE_CHECKING:
+    from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
+        BaseAWSSchema,
+    )
 
 
 def get_aws_session(
