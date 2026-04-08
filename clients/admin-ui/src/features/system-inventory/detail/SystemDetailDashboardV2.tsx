@@ -1,3 +1,4 @@
+import type { CarbonIconType } from "@carbon/icons-react";
 import {
   Activity,
   DataBase,
@@ -5,7 +6,6 @@ import {
   Policy,
   SettingsCheck,
 } from "@carbon/icons-react";
-import type { CarbonIconType } from "@carbon/icons-react";
 import { Flex, Statistic, Tag, Text, Title } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
@@ -37,8 +37,12 @@ const CAPABILITY_ICONS: Record<SystemCapability, CarbonIconType> = {
 
 function computeSystemScore(system: MockSystem): number {
   const dims = computeSystemDimensions(system);
-  if (dims.length === 0) return 0;
-  return Math.round(dims.reduce((s: number, d) => s + d.score, 0) / dims.length);
+  if (dims.length === 0) {
+    return 0;
+  }
+  return Math.round(
+    dims.reduce((s: number, d) => s + d.score, 0) / dims.length,
+  );
 }
 
 const MetricCard = ({
@@ -50,9 +54,11 @@ const MetricCard = ({
 }) => (
   <div
     style={{
-      backgroundColor: highlight ? palette.FIDESUI_BG_CAUTION : palette.FIDESUI_NEUTRAL_75,
+      backgroundColor: highlight
+        ? palette.FIDESUI_BG_CAUTION
+        : palette.FIDESUI_NEUTRAL_75,
     }}
-    className="flex h-full w-full flex-col justify-between rounded-lg px-4 py-4"
+    className="flex size-full flex-col justify-between rounded-lg p-4"
   >
     {children}
   </div>
@@ -66,24 +72,41 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
 
   const pieData = dimensions.flatMap((dim, i) => {
     const segments = [
-      { name: dim.label, value: dim.score, color: DIMENSION_COLORS[i % DIMENSION_COLORS.length] },
+      {
+        name: dim.label,
+        value: dim.score,
+        color: DIMENSION_COLORS[i % DIMENSION_COLORS.length],
+      },
     ];
     if (dim.score < 100) {
-      segments.push({ name: `${dim.label}-bg`, value: 100 - dim.score, color: "#e6e6e8" });
+      segments.push({
+        name: `${dim.label}-bg`,
+        value: 100 - dim.score,
+        color: "#e6e6e8",
+      });
     }
     return segments;
   });
 
   const totalDatasets = system.datasets.length;
-  const totalFieldCount = system.datasets.reduce((sum, d) => sum + d.fieldCount, 0);
-  const totalCollections = system.datasets.reduce((sum, d) => sum + d.collectionCount, 0);
+  const totalFieldCount = system.datasets.reduce(
+    (sum, d) => sum + d.fieldCount,
+    0,
+  );
+  const totalCollections = system.datasets.reduce(
+    (sum, d) => sum + d.collectionCount,
+    0,
+  );
 
   return (
     <Flex gap={12} className="mb-4 items-stretch">
       {/* System Health */}
       <div className="min-w-0 flex-1">
         <MetricCard highlight={score < 70}>
-          <Text type="secondary" className="mb-2 block text-[10px] uppercase tracking-wider">
+          <Text
+            type="secondary"
+            className="mb-2 block text-[10px] uppercase tracking-wider"
+          >
             System Health
           </Text>
           <Flex align="center" gap={8}>
@@ -109,7 +132,10 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
-              <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: -2 }}>
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ marginTop: -2 }}
+              >
                 <Statistic
                   value={animatedScore}
                   className="[&_.ant-statistic-content-value]:!text-sm [&_.ant-statistic-content-value]:!font-bold [&_.ant-statistic-content-value]:!leading-none"
@@ -121,7 +147,10 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
                 <Flex key={dim.label} align="center" gap={4}>
                   <div
                     className="size-[5px] shrink-0 rounded-full"
-                    style={{ backgroundColor: DIMENSION_COLORS[i % DIMENSION_COLORS.length] }}
+                    style={{
+                      backgroundColor:
+                        DIMENSION_COLORS[i % DIMENSION_COLORS.length],
+                    }}
                   />
                   <Text className="whitespace-nowrap text-[10px]">
                     {dim.label} {dim.score}%
@@ -136,7 +165,10 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
       {/* Capabilities */}
       <div className="min-w-0 flex-1">
         <MetricCard>
-          <Text type="secondary" className="mb-2 block text-[10px] uppercase tracking-wider">
+          <Text
+            type="secondary"
+            className="mb-2 block text-[10px] uppercase tracking-wider"
+          >
             Capabilities
           </Text>
           {capabilities.length > 0 ? (
@@ -144,7 +176,11 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
               {capabilities.map((cap) => {
                 const Icon = CAPABILITY_ICONS[cap];
                 return (
-                  <Tag key={cap} bordered={false} style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}>
+                  <Tag
+                    key={cap}
+                    bordered={false}
+                    style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
+                  >
                     <Flex align="center" gap={4}>
                       <Icon size={12} />
                       <span className="text-xs">{cap}</span>
@@ -154,24 +190,34 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
               })}
             </Flex>
           ) : (
-            <Text type="secondary" className="mt-1 text-xs">No capabilities detected</Text>
+            <Text type="secondary" className="mt-1 text-xs">
+              No capabilities detected
+            </Text>
           )}
-          <Text type="secondary" className="mt-2 text-[9px]">Based on active integrations</Text>
+          <Text type="secondary" className="mt-2 text-[9px]">
+            Based on active integrations
+          </Text>
         </MetricCard>
       </div>
 
       {/* Privacy Requests */}
       <div className="min-w-0 flex-1">
         <MetricCard>
-          <Text type="secondary" className="text-[10px] uppercase tracking-wider">
+          <Text
+            type="secondary"
+            className="text-[10px] uppercase tracking-wider"
+          >
             Privacy Requests
           </Text>
           <Title level={2} className="!mb-0 !mt-1">
             {system.privacyRequests.open}{" "}
-            <Text type="secondary" className="text-sm font-normal">open</Text>
+            <Text type="secondary" className="text-sm font-normal">
+              open
+            </Text>
           </Title>
           <Text type="secondary" className="text-[10px]">
-            {system.privacyRequests.closed.toLocaleString()} closed &middot; avg {system.privacyRequests.avgAccessDays}d
+            {system.privacyRequests.closed.toLocaleString()} closed &middot; avg{" "}
+            {system.privacyRequests.avgAccessDays}d
           </Text>
         </MetricCard>
       </div>
@@ -179,12 +225,18 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
       {/* Datasets */}
       <div className="min-w-0 flex-1">
         <MetricCard>
-          <Text type="secondary" className="text-[10px] uppercase tracking-wider">
+          <Text
+            type="secondary"
+            className="text-[10px] uppercase tracking-wider"
+          >
             Datasets
           </Text>
-          <Title level={2} className="!mb-0 !mt-1">{totalDatasets}</Title>
+          <Title level={2} className="!mb-0 !mt-1">
+            {totalDatasets}
+          </Title>
           <Text type="secondary" className="text-[10px]">
-            {totalFieldCount.toLocaleString()} fields across {totalCollections} collections
+            {totalFieldCount.toLocaleString()} fields across {totalCollections}{" "}
+            collections
           </Text>
         </MetricCard>
       </div>

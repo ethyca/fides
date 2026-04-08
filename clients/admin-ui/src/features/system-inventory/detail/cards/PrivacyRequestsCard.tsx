@@ -7,7 +7,14 @@ interface PrivacyRequestsCardProps {
 }
 
 const PrivacyRequestsCard = ({ requests }: PrivacyRequestsCardProps) => (
-  <Card title={<span className="text-[10px] uppercase tracking-wider">Privacy requests</span>} size="small">
+  <Card
+    title={
+      <span className="text-[10px] uppercase tracking-wider">
+        Privacy requests
+      </span>
+    }
+    size="small"
+  >
     <Descriptions column={1} size="small">
       <Descriptions.Item label="Open">
         <Text strong>{requests.open}</Text>

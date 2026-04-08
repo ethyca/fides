@@ -4,7 +4,6 @@ import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { type MockSystem } from "../types";
-import { getSystemQuickActions } from "../utils";
 
 interface SystemBriefingBannerProps {
   system: MockSystem;
@@ -25,17 +24,27 @@ function buildRichBriefing(system: MockSystem): string {
 
   if (system.roles.length > 0) {
     const roleDesc = system.roles
-      .map((r) => (r === "producer" ? "produces data for downstream systems" : "consumes data from upstream sources"))
+      .map((r) =>
+        r === "producer"
+          ? "produces data for downstream systems"
+          : "consumes data from upstream sources",
+      )
       .join(" and ");
     parts.push(`This system ${roleDesc}.`);
   }
 
   if (system.annotation_percent >= 80) {
-    parts.push(`Annotation coverage is strong at ${system.annotation_percent}%.`);
+    parts.push(
+      `Annotation coverage is strong at ${system.annotation_percent}%.`,
+    );
   } else if (system.annotation_percent >= 50) {
-    parts.push(`Annotation coverage is at ${system.annotation_percent}% — there's room to improve.`);
+    parts.push(
+      `Annotation coverage is at ${system.annotation_percent}% — there's room to improve.`,
+    );
   } else {
-    parts.push(`Annotation coverage is low at ${system.annotation_percent}% and needs attention.`);
+    parts.push(
+      `Annotation coverage is low at ${system.annotation_percent}% and needs attention.`,
+    );
   }
 
   return parts.join(" ");
@@ -53,21 +62,47 @@ function getIssues(system: MockSystem): Issue[] {
   const base = `/system-inventory/${system.fides_key}`;
 
   if (system.stewards.length === 0) {
-    issues.push({ label: "No steward assigned", action: "Assign steward", href: `${base}#config`, severity: "warning" });
+    issues.push({
+      label: "No steward assigned",
+      action: "Assign steward",
+      href: `${base}#config`,
+      severity: "warning",
+    });
   }
-  const needsReview = system.classification.unreviewed + system.classification.pending;
+  const needsReview =
+    system.classification.unreviewed + system.classification.pending;
   if (needsReview > 0) {
-    issues.push({ label: `${needsReview.toLocaleString()} fields need review`, action: "Review fields", href: `${base}#assets`, severity: "warning" });
+    issues.push({
+      label: `${needsReview.toLocaleString()} fields need review`,
+      action: "Review fields",
+      href: `${base}#assets`,
+      severity: "warning",
+    });
   }
   if (system.purposes.length === 0) {
-    issues.push({ label: "No purposes defined", action: "Define purposes", href: `${base}#config`, severity: "warning" });
+    issues.push({
+      label: "No purposes defined",
+      action: "Define purposes",
+      href: `${base}#config`,
+      severity: "warning",
+    });
   }
   if (!system.privacyRequests.dsarEnabled && system.integrations.length > 0) {
-    issues.push({ label: "DSAR not enabled", action: "Enable DSARs", href: `${base}#config`, severity: "warning" });
+    issues.push({
+      label: "DSAR not enabled",
+      action: "Enable DSARs",
+      href: `${base}#config`,
+      severity: "warning",
+    });
   }
-  for (const issue of system.issues) {
-    issues.push({ label: issue.title, action: "Resolve", href: issue.resolveHref, severity: issue.severity === "error" ? "error" : "warning" });
-  }
+  system.issues.forEach((issue) => {
+    issues.push({
+      label: issue.title,
+      action: "Resolve",
+      href: issue.resolveHref,
+      severity: issue.severity === "error" ? "error" : "warning",
+    });
+  });
   return issues;
 }
 
@@ -86,7 +121,9 @@ const SystemBriefingBanner = ({ system }: SystemBriefingBannerProps) => {
     sessionStorage.setItem(storageKey, "true");
   }, [storageKey]);
 
-  if (!visible) return null;
+  if (!visible) {
+    return null;
+  }
 
   const briefing = system.agentBriefing ?? buildRichBriefing(system);
   const issues = getIssues(system);
@@ -140,13 +177,14 @@ const SystemBriefingBanner = ({ system }: SystemBriefingBannerProps) => {
             )}
           </Flex>
         </Flex>
-        <Text
-          className="cursor-pointer shrink-0 pl-4 text-xs"
-          type="secondary"
+        <Button
+          type="text"
+          size="small"
+          className="shrink-0 pl-4 text-xs"
           onClick={dismiss}
         >
           Dismiss
-        </Text>
+        </Button>
       </Flex>
     </div>
   );

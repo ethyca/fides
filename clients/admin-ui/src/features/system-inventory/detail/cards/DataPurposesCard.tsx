@@ -7,7 +7,14 @@ interface DataPurposesCardProps {
 }
 
 const DataPurposesCard = ({ purposes }: DataPurposesCardProps) => (
-  <Card title={<span className="text-[10px] uppercase tracking-wider">Data purposes</span>} size="small">
+  <Card
+    title={
+      <span className="text-[10px] uppercase tracking-wider">
+        Data purposes
+      </span>
+    }
+    size="small"
+  >
     <Flex gap="small" wrap className="mb-2">
       {purposes.length > 0 ? (
         purposes.map((p) => (

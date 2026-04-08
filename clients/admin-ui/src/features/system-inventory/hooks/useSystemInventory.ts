@@ -1,7 +1,11 @@
 import { useMemo, useState } from "react";
 
 import { MOCK_SYSTEMS } from "../mock-data";
-import { HealthStatus, type GovernanceHealthData, type SystemInventoryStats } from "../types";
+import {
+  type GovernanceHealthData,
+  HealthStatus,
+  type SystemInventoryStats,
+} from "../types";
 import { computeGovernanceHealth } from "../utils";
 
 export const useSystemInventory = () => {
@@ -86,7 +90,9 @@ export const useSystemInventory = () => {
   }, [systems]);
 
   const groupOptions = useMemo(() => {
-    const groups = [...new Set(systems.map((s) => s.group).filter(Boolean))].sort() as string[];
+    const groups = [
+      ...new Set(systems.map((s) => s.group).filter(Boolean)),
+    ].sort() as string[];
     return groups.map((g) => ({ label: g, value: g }));
   }, [systems]);
 

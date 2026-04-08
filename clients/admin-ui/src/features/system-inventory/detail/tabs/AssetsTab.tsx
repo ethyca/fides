@@ -1,13 +1,4 @@
-import {
-  Avatar,
-  Button,
-  Flex,
-  Input,
-  Modal,
-  Select,
-  Tag,
-  Text,
-} from "fidesui";
+import { Button, Flex, Input, Modal, Select, Tag, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useState } from "react";
 
@@ -45,11 +36,14 @@ const AssetsTab = ({ system }: AssetsTabProps) => {
       if (
         !asset.name.toLowerCase().includes(q) &&
         !asset.domain.toLowerCase().includes(q) &&
-        !(asset.description?.toLowerCase().includes(q))
-      )
+        !asset.description?.toLowerCase().includes(q)
+      ) {
         return false;
+      }
     }
-    if (typeFilter && asset.assetType !== typeFilter) return false;
+    if (typeFilter && asset.assetType !== typeFilter) {
+      return false;
+    }
     return true;
   });
 
@@ -69,6 +63,7 @@ const AssetsTab = ({ system }: AssetsTabProps) => {
         />
         <Flex gap={12} align="center">
           <Select
+            aria-label="Filter by asset type"
             placeholder="All types"
             value={typeFilter}
             onChange={setTypeFilter}
@@ -100,40 +95,22 @@ const AssetsTab = ({ system }: AssetsTabProps) => {
           className="border-b border-solid border-[#f0f0f0] px-3 py-2"
           style={{ backgroundColor: palette.FIDESUI_CORINTH }}
         >
-          <Text
-            strong
-            className="w-[18%] text-[10px] uppercase tracking-wider"
-          >
+          <Text strong className="w-[18%] text-[10px] uppercase tracking-wider">
             Name
           </Text>
-          <Text
-            strong
-            className="w-[10%] text-[10px] uppercase tracking-wider"
-          >
+          <Text strong className="w-[10%] text-[10px] uppercase tracking-wider">
             Type
           </Text>
-          <Text
-            strong
-            className="w-[14%] text-[10px] uppercase tracking-wider"
-          >
+          <Text strong className="w-[14%] text-[10px] uppercase tracking-wider">
             Domain
           </Text>
-          <Text
-            strong
-            className="w-[16%] text-[10px] uppercase tracking-wider"
-          >
+          <Text strong className="w-[16%] text-[10px] uppercase tracking-wider">
             Categories of Consent
           </Text>
-          <Text
-            strong
-            className="w-[8%] text-[10px] uppercase tracking-wider"
-          >
+          <Text strong className="w-[8%] text-[10px] uppercase tracking-wider">
             Duration
           </Text>
-          <Text
-            strong
-            className="w-[20%] text-[10px] uppercase tracking-wider"
-          >
+          <Text strong className="w-1/5 text-[10px] uppercase tracking-wider">
             Detected On
           </Text>
           <Text
@@ -188,13 +165,19 @@ const AssetsTab = ({ system }: AssetsTabProps) => {
             <Text type="secondary" className="w-[8%] text-xs">
               {asset.duration ?? "—"}
             </Text>
-            <div className="w-[20%]">
+            <div className="w-1/5">
               {asset.detectedOn && asset.detectedOn.length > 0 ? (
-                <Text type="secondary" className="truncate text-[10px]" title={asset.detectedOn.join(", ")}>
+                <Text
+                  type="secondary"
+                  className="truncate text-[10px]"
+                  title={asset.detectedOn.join(", ")}
+                >
                   {asset.detectedOn.join(", ")}
                 </Text>
               ) : (
-                <Text type="secondary" className="text-[10px]">—</Text>
+                <Text type="secondary" className="text-[10px]">
+                  —
+                </Text>
               )}
             </div>
             <Flex className="w-[14%]" justify="flex-end" gap={6}>
@@ -254,6 +237,7 @@ const AssetsTab = ({ system }: AssetsTabProps) => {
               Asset type
             </Text>
             <Select
+              aria-label="Asset type"
               defaultValue={editingAsset?.assetType}
               className="w-full"
               options={ASSET_TYPE_OPTIONS}
@@ -274,6 +258,7 @@ const AssetsTab = ({ system }: AssetsTabProps) => {
               Data uses
             </Text>
             <Select
+              aria-label="Data uses"
               mode="multiple"
               defaultValue={editingAsset?.dataUses ?? []}
               className="w-full"

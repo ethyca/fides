@@ -7,8 +7,12 @@ interface DataFlowTabProps {
 }
 
 const DataFlowTab = ({ system }: DataFlowTabProps) => {
-  const producingFor = system.relationships.filter((r) => r.role === "producer");
-  const consumingFrom = system.relationships.filter((r) => r.role === "consumer");
+  const producingFor = system.relationships.filter(
+    (r) => r.role === "producer",
+  );
+  const consumingFrom = system.relationships.filter(
+    (r) => r.role === "consumer",
+  );
 
   return (
     <Flex vertical gap="large" style={{ maxWidth: 800 }}>
@@ -21,11 +25,7 @@ const DataFlowTab = ({ system }: DataFlowTabProps) => {
               <Title level={5}>Producing data for</Title>
               {producingFor.map((rel, i) => (
                 <div key={rel.systemKey}>
-                  <Flex
-                    justify="space-between"
-                    align="center"
-                    className="py-2"
-                  >
+                  <Flex justify="space-between" align="center" className="py-2">
                     <div>
                       <Flex align="center" gap="small">
                         <Text strong>{system.name}</Text>
@@ -57,11 +57,7 @@ const DataFlowTab = ({ system }: DataFlowTabProps) => {
               <Title level={5}>Consuming data from</Title>
               {consumingFrom.map((rel, i) => (
                 <div key={rel.systemKey}>
-                  <Flex
-                    justify="space-between"
-                    align="center"
-                    className="py-2"
-                  >
+                  <Flex justify="space-between" align="center" className="py-2">
                     <div>
                       <Flex align="center" gap="small">
                         <Text strong>{rel.systemName}</Text>

@@ -7,7 +7,12 @@ interface SystemInfoCardProps {
 }
 
 const SystemInfoCard = ({ system }: SystemInfoCardProps) => (
-  <Card title={<span className="text-[10px] uppercase tracking-wider">System info</span>} size="small">
+  <Card
+    title={
+      <span className="text-[10px] uppercase tracking-wider">System info</span>
+    }
+    size="small"
+  >
     <Descriptions column={1} size="small">
       <Descriptions.Item label="Type">
         <Text strong>{system.system_type}</Text>

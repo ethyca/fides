@@ -46,6 +46,7 @@ const SystemInventoryFilters = ({
     />
     <div className="ml-auto" />
     <Select
+      aria-label="Filter by health status"
       placeholder="All health"
       options={HEALTH_FILTER_OPTIONS}
       value={healthFilter}
@@ -54,6 +55,7 @@ const SystemInventoryFilters = ({
       style={{ width: 160 }}
     />
     <Select
+      aria-label="Filter by system type"
       placeholder="All types"
       options={typeOptions}
       value={typeFilter}
@@ -62,6 +64,7 @@ const SystemInventoryFilters = ({
       style={{ width: 180 }}
     />
     <Select
+      aria-label="Filter by group"
       placeholder="All groups"
       options={groupOptions}
       value={groupFilter}
@@ -70,6 +73,7 @@ const SystemInventoryFilters = ({
       style={{ width: 180 }}
     />
     <Select
+      aria-label="Filter by purpose"
       placeholder="All purposes"
       options={purposeOptions}
       value={purposeFilter}

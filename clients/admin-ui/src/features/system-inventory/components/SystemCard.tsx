@@ -1,4 +1,3 @@
-import { ArrowDownRight, ArrowUpRight } from "@carbon/icons-react";
 import { Avatar, Card, Divider, Flex, Progress, Tag, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
@@ -12,12 +11,20 @@ interface SystemCardProps {
   system: MockSystem;
 }
 
+const getAnnotationColor = (pct: number): string => {
+  if (pct >= 75) {
+    return palette.FIDESUI_SUCCESS;
+  }
+  if (pct >= 40) {
+    return palette.FIDESUI_WARNING;
+  }
+  return palette.FIDESUI_ERROR;
+};
+
 const SystemCard = ({ system }: SystemCardProps) => {
   const router = useRouter();
 
   const totalIssues = system.issue_count;
-  const isProducer = system.roles.includes("producer");
-  const isConsumer = system.roles.includes("consumer");
   return (
     <Card
       size="small"
@@ -36,14 +43,27 @@ const SystemCard = ({ system }: SystemCardProps) => {
             <Avatar
               size={24}
               shape="square"
-              src={system.logoUrl ?? (system.logoDomain ? getBrandIconUrl(system.logoDomain, 48) : undefined)}
-              style={!system.logoDomain && !system.logoUrl ? { backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 10 } : undefined}
+              src={
+                system.logoUrl ??
+                (system.logoDomain
+                  ? getBrandIconUrl(system.logoDomain, 48)
+                  : undefined)
+              }
+              style={
+                !system.logoDomain && !system.logoUrl
+                  ? {
+                      backgroundColor: "#e6e6e8",
+                      color: "#53575c",
+                      fontSize: 10,
+                    }
+                  : undefined
+              }
             >
-              {!system.logoDomain && !system.logoUrl ? system.name.slice(0, 2).toUpperCase() : null}
+              {!system.logoDomain && !system.logoUrl
+                ? system.name.slice(0, 2).toUpperCase()
+                : null}
             </Avatar>
             <Text strong>{system.name}</Text>
-            {isProducer && <ArrowUpRight size={14} title="Producer" />}
-            {isConsumer && <ArrowDownRight size={14} title="Consumer" />}
           </Flex>
           <HealthBadge
             health={system.health}
@@ -56,12 +76,21 @@ const SystemCard = ({ system }: SystemCardProps) => {
           {system.purposes.length > 0 ? (
             <>
               {system.purposes.slice(0, 4).map((p) => (
-                <Tag key={p.name} bordered={false} className="shrink-0 text-xs" style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}>
+                <Tag
+                  key={p.name}
+                  bordered={false}
+                  className="shrink-0 text-xs"
+                  style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
+                >
                   {p.name}
                 </Tag>
               ))}
               {system.purposes.length > 4 && (
-                <Tag bordered={false} className="shrink-0 text-xs" style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}>
+                <Tag
+                  bordered={false}
+                  className="shrink-0 text-xs"
+                  style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
+                >
                   +{system.purposes.length - 4} more
                 </Tag>
               )}
@@ -82,17 +111,9 @@ const SystemCard = ({ system }: SystemCardProps) => {
                 type="circle"
                 percent={system.annotation_percent}
                 size={20}
-                strokeColor={
-                  system.annotation_percent >= 75
-                    ? "#5a9a68"
-                    : system.annotation_percent >= 40
-                      ? "#e59d47"
-                      : "#d9534f"
-                }
+                strokeColor={getAnnotationColor(system.annotation_percent)}
                 strokeWidth={14}
-                format={(pct) => (
-                  <Text className="!text-[7px]">{pct}</Text>
-                )}
+                format={() => null}
               />
               <Text type="secondary" className="text-xs">
                 {system.annotation_percent}% annotated

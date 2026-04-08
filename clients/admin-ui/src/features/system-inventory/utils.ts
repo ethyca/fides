@@ -1,10 +1,10 @@
 import {
-  SystemCapability,
-  type MockSystem,
   type GovernanceDimension,
   type GovernanceHealthData,
-  type SystemQuickAction,
   HealthStatus,
+  type MockSystem,
+  SystemCapability,
+  type SystemQuickAction,
 } from "./types";
 
 export function getSystemCapabilities(system: MockSystem): SystemCapability[] {
@@ -24,9 +24,7 @@ export function getSystemCapabilities(system: MockSystem): SystemCapability[] {
     caps.push(SystemCapability.CLASSIFICATION);
   }
   if (
-    system.purposes.some((p) =>
-      ["Marketing", "Analytics"].includes(p.name),
-    ) &&
+    system.purposes.some((p) => ["Marketing", "Analytics"].includes(p.name)) &&
     system.integrations.length > 0
   ) {
     caps.push(SystemCapability.CONSENT);
@@ -37,7 +35,9 @@ export function getSystemCapabilities(system: MockSystem): SystemCapability[] {
 export function computeGovernanceDimensions(
   systems: MockSystem[],
 ): GovernanceDimension[] {
-  if (systems.length === 0) return [];
+  if (systems.length === 0) {
+    return [];
+  }
 
   const annotationScore = Math.round(
     systems.reduce((sum, s) => sum + s.annotation_percent, 0) / systems.length,
@@ -60,10 +60,10 @@ export function computeGovernanceDimensions(
   );
 
   return [
-    { label: "Annotation", score: 58, color: "#b9704b" },
-    { label: "Compliance", score: 92, color: "#cecac2" },
-    { label: "Purpose", score: 84, color: "#999b83" },
-    { label: "Ownership", score: 66, color: "#2b2e35" },
+    { label: "Annotation", score: annotationScore, color: "#b9704b" },
+    { label: "Compliance", score: complianceScore, color: "#cecac2" },
+    { label: "Purpose", score: purposeScore, color: "#999b83" },
+    { label: "Ownership", score: stewardScore, color: "#2b2e35" },
   ];
 }
 
@@ -117,9 +117,48 @@ export function computeGovernanceHealth(
       healthy: systems.filter((s) => s.health === HealthStatus.HEALTHY).length,
       issues: systems.filter((s) => s.health === HealthStatus.ISSUES).length,
     },
-    annotationTrend: [38, 40, 42, 45, 48, 50, 51, 53, 54, 55, 56, annotationAvg],
-    stewardTrend: [10, 11, 12, 12, 13, 14, 14, 15, 16, 16, 17, systems.filter((s) => s.stewards.length > 0).length],
-    purposeTrend: [14, 15, 15, 16, 17, 17, 18, 18, 19, 19, 20, systems.filter((s) => s.purposes.length > 0).length],
+    annotationTrend: [
+      38,
+      40,
+      42,
+      45,
+      48,
+      50,
+      51,
+      53,
+      54,
+      55,
+      56,
+      annotationAvg,
+    ],
+    stewardTrend: [
+      10,
+      11,
+      12,
+      12,
+      13,
+      14,
+      14,
+      15,
+      16,
+      16,
+      17,
+      systems.filter((s) => s.stewards.length > 0).length,
+    ],
+    purposeTrend: [
+      14,
+      15,
+      15,
+      16,
+      17,
+      17,
+      18,
+      18,
+      19,
+      19,
+      20,
+      systems.filter((s) => s.purposes.length > 0).length,
+    ],
   };
 }
 
@@ -155,10 +194,7 @@ export function generateSystemBriefing(system: MockSystem): string {
     parts.push("No data purposes are defined for this system.");
   }
 
-  if (
-    system.issue_count === 0 &&
-    system.annotation_percent >= 80
-  ) {
+  if (system.issue_count === 0 && system.annotation_percent >= 80) {
     parts.push("This system is in good governance health.");
   }
 

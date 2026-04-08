@@ -125,7 +125,12 @@ export interface MockPrivacyRequests {
 export interface MockAsset {
   id: string;
   name: string;
-  assetType: "Cookie" | "Browser Request" | "iFrame" | "Javascript tag" | "Image";
+  assetType:
+    | "Cookie"
+    | "Browser Request"
+    | "iFrame"
+    | "Javascript tag"
+    | "Image";
   domain: string;
   dataUses: string[];
   duration?: string;

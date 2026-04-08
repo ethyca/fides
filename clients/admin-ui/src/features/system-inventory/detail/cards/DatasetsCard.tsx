@@ -10,10 +10,17 @@ interface DatasetsCardProps {
 const DatasetsCard = ({ datasets, roles }: DatasetsCardProps) => {
   const totalCollections = datasets.reduce((s, d) => s + d.collectionCount, 0);
   const totalFields = datasets.reduce((s, d) => s + d.fieldCount, 0);
-  const roleLabel = roles.map((r) => r.charAt(0).toUpperCase() + r.slice(1)).join(" + ");
+  const roleLabel = roles
+    .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
+    .join(" + ");
 
   return (
-    <Card title={<span className="text-[10px] uppercase tracking-wider">Datasets</span>} size="small">
+    <Card
+      title={
+        <span className="text-[10px] uppercase tracking-wider">Datasets</span>
+      }
+      size="small"
+    >
       {datasets.length === 0 ? (
         <Text type="secondary">No datasets linked</Text>
       ) : (

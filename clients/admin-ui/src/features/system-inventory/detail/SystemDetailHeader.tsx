@@ -27,8 +27,17 @@ const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
         <Avatar
           size={48}
           shape="square"
-          src={system.logoUrl ?? (system.logoDomain ? getBrandIconUrl(system.logoDomain, 96) : undefined)}
-          style={!system.logoDomain && !system.logoUrl ? { backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 16 } : undefined}
+          src={
+            system.logoUrl ??
+            (system.logoDomain
+              ? getBrandIconUrl(system.logoDomain, 96)
+              : undefined)
+          }
+          style={
+            !system.logoDomain && !system.logoUrl
+              ? { backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 16 }
+              : undefined
+          }
         >
           {!system.logoDomain && !system.logoUrl ? initials : null}
         </Avatar>
@@ -46,6 +55,7 @@ const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
         <Button
           type="text"
           danger
+          aria-label="Delete system"
           icon={<TrashCan size={16} />}
           onClick={() => setDeleteOpen(true)}
         />
@@ -65,7 +75,9 @@ const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
         width={440}
       >
         <Text>
-          Are you sure you want to delete <Text strong>{system.name}</Text>? This action cannot be undone. All associated data, integrations, and history will be permanently removed.
+          Are you sure you want to delete <Text strong>{system.name}</Text>?
+          This action cannot be undone. All associated data, integrations, and
+          history will be permanently removed.
         </Text>
       </Modal>
     </Flex>

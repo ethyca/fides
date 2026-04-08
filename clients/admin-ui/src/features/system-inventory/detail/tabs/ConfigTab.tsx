@@ -15,6 +15,18 @@ import { useCallback, useState } from "react";
 import { SYSTEM_TYPE_OPTIONS } from "../../constants";
 import type { MockSystem } from "../../types";
 
+const getIntegrationStatusColor = (
+  status: string,
+): "success" | "error" | "default" => {
+  if (status === "active") {
+    return "success";
+  }
+  if (status === "failed") {
+    return "error";
+  }
+  return "default";
+};
+
 interface ConfigTabProps {
   system: MockSystem;
 }
@@ -62,13 +74,16 @@ const ConfigTab = ({ system }: ConfigTabProps) => {
             <Input />
           </Form.Item>
           <Form.Item label="System type" name="system_type">
-            <Select options={SYSTEM_TYPE_OPTIONS} />
+            <Select aria-label="System type" options={SYSTEM_TYPE_OPTIONS} />
           </Form.Item>
           <Form.Item label="Department" name="department">
             <Input />
           </Form.Item>
           <Form.Item label="Responsibility" name="responsibility">
-            <Select options={responsibilityOptions} />
+            <Select
+              aria-label="Responsibility"
+              options={responsibilityOptions}
+            />
           </Form.Item>
           <Form.Item label="Group" name="group">
             <Input />
@@ -81,6 +96,7 @@ const ConfigTab = ({ system }: ConfigTabProps) => {
           </Form.Item>
           <Form.Item label="Stewards" name="stewards">
             <Select
+              aria-label="Stewards"
               mode="multiple"
               placeholder="Select stewards"
               options={system.stewards.map((st) => ({
@@ -98,10 +114,12 @@ const ConfigTab = ({ system }: ConfigTabProps) => {
       children: (
         <Flex vertical gap={12}>
           <Text type="secondary">
-            Assign data purposes to describe how this system processes personal data.
+            Assign data purposes to describe how this system processes personal
+            data.
           </Text>
           <Form.Item name="purposes">
             <Select
+              aria-label="Purposes"
               mode="multiple"
               placeholder="Select purposes"
               options={purposeOptions}
@@ -139,7 +157,9 @@ const ConfigTab = ({ system }: ConfigTabProps) => {
                   <Flex vertical>
                     <Text strong>{rel.systemName}</Text>
                     <Text type="secondary" className="text-xs">
-                      {rel.role === "producer" ? "Producing for" : "Consuming from"}{" "}
+                      {rel.role === "producer"
+                        ? "Producing for"
+                        : "Consuming from"}{" "}
                       &middot; {rel.declaredUse}
                     </Text>
                   </Flex>
@@ -177,13 +197,7 @@ const ConfigTab = ({ system }: ConfigTabProps) => {
                     </Text>
                   </Flex>
                   <Tag
-                    color={
-                      intg.status === "active"
-                        ? "success"
-                        : intg.status === "failed"
-                          ? "error"
-                          : "default"
-                    }
+                    color={getIntegrationStatusColor(intg.status)}
                     bordered={false}
                   >
                     {intg.status}
@@ -217,11 +231,7 @@ const ConfigTab = ({ system }: ConfigTabProps) => {
       onValuesChange={() => setIsDirty(true)}
     >
       <Flex vertical gap={16}>
-        <Collapse
-          defaultActiveKey={["info"]}
-          items={panels}
-          accordion
-        />
+        <Collapse defaultActiveKey={["info"]} items={panels} accordion />
         <Flex gap={8} justify="flex-end">
           <Button onClick={handleReset} disabled={!isDirty}>
             Cancel

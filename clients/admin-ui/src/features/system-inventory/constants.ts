@@ -60,7 +60,10 @@ export const MONITOR_STATUS_COLORS: Record<string, string> = {
   failed: "error",
 };
 
-export const CAPABILITY_TAG_COLORS: Record<SystemCapability, `${CUSTOM_TAG_COLOR}`> = {
+export const CAPABILITY_TAG_COLORS: Record<
+  SystemCapability,
+  `${CUSTOM_TAG_COLOR}`
+> = {
   [SystemCapability.DSAR]: CUSTOM_TAG_COLOR.OLIVE,
   [SystemCapability.MONITORING]: CUSTOM_TAG_COLOR.SANDSTONE,
   [SystemCapability.CONSENT]: CUSTOM_TAG_COLOR.NECTAR,

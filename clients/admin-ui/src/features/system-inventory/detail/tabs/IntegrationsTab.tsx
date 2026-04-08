@@ -10,9 +10,7 @@ interface IntegrationsTabProps {
 const IntegrationsTab = ({ system }: IntegrationsTabProps) => (
   <Flex vertical gap="middle" style={{ maxWidth: 800 }}>
     {system.integrations.length === 0 ? (
-      <Text type="secondary">
-        No integrations configured for this system.
-      </Text>
+      <Text type="secondary">No integrations configured for this system.</Text>
     ) : (
       system.integrations.map((integ) => (
         <Card key={integ.name} size="small">

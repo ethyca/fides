@@ -8,7 +8,9 @@ interface ClassificationCardProps {
 
 const ClassificationCard = ({ classification }: ClassificationCardProps) => {
   const total =
-    classification.approved + classification.pending + classification.unreviewed;
+    classification.approved +
+    classification.pending +
+    classification.unreviewed;
   const approvedPercent =
     total > 0 ? Math.round((classification.approved / total) * 100) : 0;
 
@@ -16,7 +18,14 @@ const ClassificationCard = ({ classification }: ClassificationCardProps) => {
     <Card
       title="Classification coverage"
       size="small"
-      extra={<Text type="secondary" className="cursor-pointer text-xs hover:underline">Review fields ›</Text>}
+      extra={
+        <Text
+          type="secondary"
+          className="cursor-pointer text-xs hover:underline"
+        >
+          Review fields ›
+        </Text>
+      }
     >
       {total === 0 ? (
         <Text type="secondary">No classifications found</Text>
@@ -36,11 +45,7 @@ const ClassificationCard = ({ classification }: ClassificationCardProps) => {
             className="mb-3"
           />
           {classification.categories.map((cat) => (
-            <Flex
-              key={cat.name}
-              justify="space-between"
-              className="py-1"
-            >
+            <Flex key={cat.name} justify="space-between" className="py-1">
               <Text className="text-xs">{cat.name}</Text>
               <Text type="secondary" className="text-xs">
                 {cat.fieldCount} fields &middot; {cat.approvedPercent}% approved

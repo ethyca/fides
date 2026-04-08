@@ -24,8 +24,8 @@ const ScorePopoverContent = ({ data }: { data: GovernanceHealthData }) => (
       How is this score calculated?
     </Text>
     <Text type="secondary" className="text-xs">
-      The inventory health score is the average of four governance pillars,
-      each measured as a percentage across all registered systems:
+      The inventory health score is the average of four governance pillars, each
+      measured as a percentage across all registered systems:
     </Text>
     {data.dimensions.map((dim, i) => (
       <Flex key={dim.label} justify="space-between" align="center">
@@ -52,7 +52,8 @@ const ScorePopoverContent = ({ data }: { data: GovernanceHealthData }) => (
 
 const GovernanceScoreCard = ({ data }: GovernanceScoreCardProps) => {
   const animatedScore = useCountUp(data.score);
-  const totalSystems = data.healthBreakdown.healthy + data.healthBreakdown.issues;
+  const totalSystems =
+    data.healthBreakdown.healthy + data.healthBreakdown.issues;
 
   // Each pillar gets exactly 25% of the donut (value=100 per pillar).
   // Within each 25%, the colored fill represents the score, the rest is gray.
@@ -134,10 +135,14 @@ const GovernanceScoreCard = ({ data }: GovernanceScoreCardProps) => {
               <div
                 className="size-2 shrink-0 rounded-full"
                 style={{
-                  backgroundColor: DIMENSION_COLORS[i % DIMENSION_COLORS.length],
+                  backgroundColor:
+                    DIMENSION_COLORS[i % DIMENSION_COLORS.length],
                 }}
               />
-              <Text className="text-xs" style={{ color: palette.FIDESUI_MINOS }}>
+              <Text
+                className="text-xs"
+                style={{ color: palette.FIDESUI_MINOS }}
+              >
                 {dim.label} {dim.score}%
               </Text>
             </Flex>

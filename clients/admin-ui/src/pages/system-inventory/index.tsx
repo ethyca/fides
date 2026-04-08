@@ -21,7 +21,6 @@ const { Title } = Typography;
 
 const SystemInventoryPage: NextPage = () => {
   const {
-    systems,
     needsAttention,
     healthy,
     governanceHealth,

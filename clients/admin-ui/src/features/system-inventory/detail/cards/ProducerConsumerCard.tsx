@@ -29,13 +29,13 @@ const RelationshipRow = ({ rel }: { rel: MockRelationship }) => (
         </div>
       )}
     </div>
-    <Tag bordered={false}>{rel.role === "producer" ? "Consumer" : "Producer"}</Tag>
+    <Tag bordered={false}>
+      {rel.role === "producer" ? "Consumer" : "Producer"}
+    </Tag>
   </Flex>
 );
 
-const ProducerConsumerCard = ({
-  relationships,
-}: ProducerConsumerCardProps) => {
+const ProducerConsumerCard = ({ relationships }: ProducerConsumerCardProps) => {
   const producingFor = relationships.filter((r) => r.role === "producer");
   const consumingFrom = relationships.filter((r) => r.role === "consumer");
 
@@ -43,11 +43,21 @@ const ProducerConsumerCard = ({
     <Card
       title="Producer / consumer relationships"
       size="small"
-      extra={<Text type="secondary" className="cursor-pointer text-xs hover:underline">View data flow ›</Text>}
+      extra={
+        <Text
+          type="secondary"
+          className="cursor-pointer text-xs hover:underline"
+        >
+          View data flow ›
+        </Text>
+      }
     >
       {producingFor.length > 0 && (
         <>
-          <Text type="secondary" className="text-[10px] uppercase tracking-wider">
+          <Text
+            type="secondary"
+            className="text-[10px] uppercase tracking-wider"
+          >
             Producing for
           </Text>
           {producingFor.map((rel) => (
@@ -58,7 +68,10 @@ const ProducerConsumerCard = ({
       {producingFor.length > 0 && consumingFrom.length > 0 && <Divider />}
       {consumingFrom.length > 0 && (
         <>
-          <Text type="secondary" className="text-[10px] uppercase tracking-wider">
+          <Text
+            type="secondary"
+            className="text-[10px] uppercase tracking-wider"
+          >
             Consuming from
           </Text>
           {consumingFrom.map((rel) => (

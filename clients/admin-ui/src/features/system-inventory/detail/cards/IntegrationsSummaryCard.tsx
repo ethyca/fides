@@ -13,7 +13,11 @@ const IntegrationsSummaryCard = ({
   <Card
     title="Integrations"
     size="small"
-    extra={<Text type="secondary" className="cursor-pointer text-xs hover:underline">Manage ›</Text>}
+    extra={
+      <Text type="secondary" className="cursor-pointer text-xs hover:underline">
+        Manage ›
+      </Text>
+    }
   >
     {integrations.length === 0 ? (
       <Text type="secondary">No integrations linked</Text>
@@ -26,7 +30,14 @@ const IntegrationsSummaryCard = ({
           className="py-2"
         >
           <Flex gap="small" align="center">
-            <Avatar size="small" style={{ backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 10 }}>
+            <Avatar
+              size="small"
+              style={{
+                backgroundColor: "#e6e6e8",
+                color: "#53575c",
+                fontSize: 10,
+              }}
+            >
               {integ.type.slice(0, 2).toUpperCase()}
             </Avatar>
             <div>

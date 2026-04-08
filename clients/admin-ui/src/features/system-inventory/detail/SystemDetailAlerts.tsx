@@ -8,9 +8,11 @@ interface SystemDetailAlertsProps {
 
 const SystemDetailAlerts = ({ system }: SystemDetailAlertsProps) => {
   const violations = system.relationships.filter((r) => r.hasViolation);
-  const issues = system.issues;
+  const { issues } = system;
 
-  if (violations.length === 0 && issues.length === 0) return null;
+  if (violations.length === 0 && issues.length === 0) {
+    return null;
+  }
 
   return (
     <Flex vertical gap="small" className="mb-4">

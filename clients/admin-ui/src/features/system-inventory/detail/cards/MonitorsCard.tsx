@@ -11,7 +11,11 @@ const MonitorsCard = ({ monitors }: MonitorsCardProps) => (
   <Card
     title="Monitors"
     size="small"
-    extra={<Text type="secondary" className="cursor-pointer text-xs hover:underline">View all ›</Text>}
+    extra={
+      <Text type="secondary" className="cursor-pointer text-xs hover:underline">
+        View all ›
+      </Text>
+    }
   >
     {monitors.length === 0 ? (
       <Text type="secondary">No monitors configured</Text>

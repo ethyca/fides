@@ -1,4 +1,14 @@
-import { Avatar, Card, Col, Descriptions, Flex, Row, Tag, Text, Title } from "fidesui";
+import {
+  Avatar,
+  Card,
+  Col,
+  Descriptions,
+  Flex,
+  Row,
+  Tag,
+  Text,
+  Title,
+} from "fidesui";
 
 import { CAPABILITY_TAG_COLORS } from "../../constants";
 import type { MockSystem } from "../../types";
@@ -25,10 +35,18 @@ const OverviewTab = ({ system }: OverviewTabProps) => {
           About
         </Title>
         <Descriptions column={2} size="small">
-          <Descriptions.Item label="Type">{system.system_type}</Descriptions.Item>
-          <Descriptions.Item label="Department">{system.department}</Descriptions.Item>
-          <Descriptions.Item label="Responsibility">{system.responsibility}</Descriptions.Item>
-          <Descriptions.Item label="Group">{system.group ?? "—"}</Descriptions.Item>
+          <Descriptions.Item label="Type">
+            {system.system_type}
+          </Descriptions.Item>
+          <Descriptions.Item label="Department">
+            {system.department}
+          </Descriptions.Item>
+          <Descriptions.Item label="Responsibility">
+            {system.responsibility}
+          </Descriptions.Item>
+          <Descriptions.Item label="Group">
+            {system.group ?? "—"}
+          </Descriptions.Item>
           <Descriptions.Item label="Roles">
             {system.roles.join(", ") || "—"}
           </Descriptions.Item>
