@@ -2,9 +2,10 @@ import { Icons, Tooltip, TooltipProps } from "fidesui";
 
 interface InfoTooltipProps extends Omit<TooltipProps, "children" | "title"> {
   label: string | null | undefined;
+  size?: number;
 }
 
-export const InfoTooltip = ({ label, ...props }: InfoTooltipProps) =>
+export const InfoTooltip = ({ label, size, ...props }: InfoTooltipProps) =>
   label ? (
     <Tooltip
       title={label}
@@ -12,13 +13,11 @@ export const InfoTooltip = ({ label, ...props }: InfoTooltipProps) =>
       placement="right"
       {...props}
     >
-      <span
-        style={{ color: "var(--fidesui-neutral-200)", display: "inline-block" }}
-        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- popover makes it interactive
-        tabIndex={0}
-      >
-        {/* ViewBox is set to match the size of the icon (default 16px) with 1px padding all around */}
-        <Icons.InformationFilled viewBox="0 -1 34 34" />
+      <span className="inline-block">
+        <Icons.InformationFilled
+          color="var(--fidesui-neutral-200)"
+          size={size}
+        />
       </span>
     </Tooltip>
   ) : null;

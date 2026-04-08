@@ -5,8 +5,8 @@ import { useState } from "react";
 import Layout from "~/features/common/Layout";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
-import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
+import { DatabaseConnectForm } from "~/features/dataset/DatabaseConnectForm";
+import { DatasetYamlForm } from "~/features/dataset/DatasetYamlForm";
 
 const NewDataset: NextPage = () => {
   const [generateMethod, setGenerateMethod] = useState<
