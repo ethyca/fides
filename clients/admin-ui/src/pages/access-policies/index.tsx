@@ -26,7 +26,7 @@ const AccessPoliciesPage: NextPage = () => {
             <Flex gap={8}>
               {flags.alphaPrivacyDocUpload && (
                 <Button onClick={() => setSettingsOpen(true)}>
-                  Policy config
+                  Policy settings
                 </Button>
               )}
               <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>

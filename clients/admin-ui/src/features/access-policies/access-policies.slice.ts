@@ -4,6 +4,7 @@ import type {
   GeneratePoliciesResponse,
   OnboardingConfigResponse,
   OnboardingDataUsesResponse,
+  OnboardingIndustriesResponse,
 } from "./types";
 
 export interface ControlGroup {
@@ -97,6 +98,12 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Access Policy Control Groups"],
     }),
+    getOnboardingIndustries: build.query<OnboardingIndustriesResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/presets/industries",
+      }),
+    }),
     getOnboardingDataUses: build.query<
       OnboardingDataUsesResponse,
       { industry: string; geographies: string[] }
@@ -107,20 +114,20 @@ const accessPoliciesApi = baseApi.injectEndpoints({
         geographies.forEach((g) => params.append("geographies", g));
         return {
           method: "GET",
-          url: `plus/access-policy/data-uses?${params.toString()}`,
+          url: `plus/access-policy/presets/data-uses?${params.toString()}`,
         };
       },
     }),
     getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
       query: () => ({
         method: "GET",
-        url: "plus/access-policy/config",
+        url: "plus/access-policy/presets/config",
       }),
     }),
     generatePolicies: build.mutation<GeneratePoliciesResponse, FormData>({
       query: (formData) => ({
         method: "POST",
-        url: "plus/access-policy/generate",
+        url: "plus/access-policy/presets/generate",
         body: formData,
       }),
       invalidatesTags: ["Access Policies"],
@@ -136,6 +143,7 @@ export const {
   useDeleteAccessPolicyMutation,
   useReorderAccessPolicyMutation,
   useGetControlGroupsQuery,
+  useGetOnboardingIndustriesQuery,
   useGetOnboardingDataUsesQuery,
   useGetOnboardingConfigQuery,
   useGeneratePoliciesMutation,

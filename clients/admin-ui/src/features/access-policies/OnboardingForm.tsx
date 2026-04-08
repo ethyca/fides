@@ -20,8 +20,8 @@ import { useGetLocationsRegulationsQuery } from "../locations/locations.slice";
 import {
   useGeneratePoliciesMutation,
   useGetOnboardingDataUsesQuery,
+  useGetOnboardingIndustriesQuery,
 } from "./access-policies.slice";
-import { INDUSTRY_OPTIONS } from "./constants";
 import DataUseCard from "./DataUseCard";
 import { OnboardingFormState } from "./types";
 
@@ -33,6 +33,9 @@ const INITIAL_STATE: OnboardingFormState = {
 
 const OnboardingForm = () => {
   const { flags } = useFlags();
+  const { data: industriesData, isLoading: isIndustriesLoading } =
+    useGetOnboardingIndustriesQuery();
+  const industryOptions = industriesData?.items ?? [];
   const [formState, setFormState] =
     useState<OnboardingFormState>(INITIAL_STATE);
   const message = useMessage();
@@ -168,7 +171,8 @@ const OnboardingForm = () => {
                         selectedDataUses: [],
                       }))
                     }
-                    options={INDUSTRY_OPTIONS}
+                    loading={isIndustriesLoading}
+                    options={industryOptions}
                     allowClear
                   />
                 </Form.Item>

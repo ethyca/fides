@@ -1,3 +1,13 @@
+/** Human-readable labels for each industry key. */
+export const INDUSTRY_LABELS: Record<string, string> = {
+  fintech: "Fintech",
+  healthcare: "Healthcare",
+  retail: "Retail & E-Commerce",
+  saas: "SaaS / Technology",
+  insurance: "Insurance",
+  government: "Government",
+};
+
 /** Industry-specific data uses mapped to fideslang taxonomy keys. */
 export const INDUSTRY_DATA_USES: Record<string, string[]> = {
   fintech: [

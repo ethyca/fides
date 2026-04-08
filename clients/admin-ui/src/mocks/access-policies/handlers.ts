@@ -5,7 +5,11 @@ import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
 
 import { mockControlGroups } from "./data";
 import { generatedPoliciesForIndustry } from "./generated-policies";
-import { GEO_DATA_USES, INDUSTRY_DATA_USES } from "./onboarding-data";
+import {
+  GEO_DATA_USES,
+  INDUSTRY_DATA_USES,
+  INDUSTRY_LABELS,
+} from "./onboarding-data";
 
 /**
  * MSW handlers for access policy endpoints
@@ -37,44 +41,62 @@ export const accessPoliciesHandlers = () => {
       );
     }),
 
-    // GET /api/v1/plus/access-policy/config - saved config
-    // Must be registered before /:id to avoid the wildcard matching "config"
-    rest.get(`${apiBase}/plus/access-policy/config`, (_req, res, ctx) =>
+    // GET /api/v1/plus/access-policy/presets/industries - available industries
+    rest.get(
+      `${apiBase}/plus/access-policy/presets/industries`,
+      (_req, res, ctx) =>
+        res(
+          ctx.status(200),
+          ctx.json({
+            items: Object.keys(INDUSTRY_DATA_USES).map((key) => ({
+              label: INDUSTRY_LABELS[key] ?? key,
+              value: key,
+            })),
+          }),
+        ),
+    ),
+
+    // GET /api/v1/plus/access-policy/presets/config - saved config
+    rest.get(`${apiBase}/plus/access-policy/presets/config`, (_req, res, ctx) =>
       res(
         ctx.status(200),
         ctx.json({ industry: "fintech", geographies: ["eea", "us"] }),
       ),
     ),
 
-    // GET /api/v1/plus/access-policy/data-uses - data uses by industry + geography
-    // Must be registered before /:id to avoid the wildcard matching "data-uses"
-    rest.get(`${apiBase}/plus/access-policy/data-uses`, (req, res, ctx) => {
-      const industry = req.url.searchParams.get("industry") ?? "";
-      const geographies = req.url.searchParams.getAll("geographies");
+    // GET /api/v1/plus/access-policy/presets/data-uses - data uses by industry + geography
+    rest.get(
+      `${apiBase}/plus/access-policy/presets/data-uses`,
+      (req, res, ctx) => {
+        const industry = req.url.searchParams.get("industry") ?? "";
+        const geographies = req.url.searchParams.getAll("geographies");
 
-      const industryUses = INDUSTRY_DATA_USES[industry] ?? [];
-      const geoUses = geographies.flatMap((geo) => GEO_DATA_USES[geo] ?? []);
-      const uses = [
-        ...industryUses,
-        ...geoUses.filter((u) => !industryUses.includes(u)),
-      ];
+        const industryUses = INDUSTRY_DATA_USES[industry] ?? [];
+        const geoUses = geographies.flatMap((geo) => GEO_DATA_USES[geo] ?? []);
+        const uses = [
+          ...industryUses,
+          ...geoUses.filter((u) => !industryUses.includes(u)),
+        ];
 
-      return res(ctx.status(200), ctx.json({ items: uses }));
-    }),
+        return res(ctx.status(200), ctx.json({ items: uses }));
+      },
+    ),
 
-    // POST /api/v1/plus/access-policy/generate - generate policies from onboarding
-    // Must be registered before /:id
-    rest.post(`${apiBase}/plus/access-policy/generate`, (_req, res, ctx) => {
-      // Push generated policies into the mutable array so the list view picks them up
-      const generated = generatedPoliciesForIndustry();
-      generated.forEach((p) => policies.push(p));
+    // POST /api/v1/plus/access-policy/presets/generate - generate policies from onboarding
+    rest.post(
+      `${apiBase}/plus/access-policy/presets/generate`,
+      (_req, res, ctx) => {
+        // Push generated policies into the mutable array so the list view picks them up
+        const generated = generatedPoliciesForIndustry();
+        generated.forEach((p) => policies.push(p));
 
-      return res(
-        ctx.delay(800),
-        ctx.status(200),
-        ctx.json({ status: "success" }),
-      );
-    }),
+        return res(
+          ctx.delay(800),
+          ctx.status(200),
+          ctx.json({ status: "success" }),
+        );
+      },
+    ),
 
     // GET /api/v1/plus/access-policy/control-group - list control groups
     // Must be registered before /:id to avoid the wildcard matching "control-group"

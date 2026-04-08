@@ -113,6 +113,10 @@ export interface OnboardingFormState {
   selectedDataUses: string[];
 }
 
+export interface OnboardingIndustriesResponse {
+  items: SelectOption[];
+}
+
 export interface OnboardingDataUsesResponse {
   items: string[];
 }
