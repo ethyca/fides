@@ -42,7 +42,7 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
-import EditDatasetDrawer from "~/features/dataset/EditDatasetDrawer";
+import { EditDatasetDrawer } from "~/features/dataset/EditDatasetDrawer";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 const columnHelper = createColumnHelper<Dataset>();

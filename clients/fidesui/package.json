@@ -9,7 +9,7 @@
     "check:ci": "npm run lint:ci && npm run format:ci && npm run typecheck",
     "lint": "eslint --fix .",
     "lint:ci": "eslint .",
-    "format": "prettier --write .",
+    "format": "prettier --write --log-level warn .",
     "format:ci": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules",
