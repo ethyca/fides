@@ -573,13 +573,13 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My Custom Report").blur();
-        cy.getByTestId("error-reportName").should("exist");
+        cy.getAntFormError("reportName").should("exist");
         cy.get("#reportName").clear();
       });
       cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My new report");
-        cy.getByTestId("error-reportName").should("not.exist");
+        cy.getAntFormError("reportName").should("not.exist");
         cy.getByTestId("custom-report-form-submit").click();
       });
       cy.wait("@createCustomReport").then((interception) => {
