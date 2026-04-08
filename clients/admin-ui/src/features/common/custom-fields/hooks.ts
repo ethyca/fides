@@ -41,7 +41,7 @@ export const useCustomFields = ({
     isLoading: isCustomFieldIsLoading,
     error,
     isError,
-  } = useGetCustomFieldsForResourceQuery(resourceFidesKey ?? "", {
+  } = useGetCustomFieldsForResourceQuery(resourceFidesKey!, {
     skip: !resourceFidesKey || !isEnabled,
   });
 
