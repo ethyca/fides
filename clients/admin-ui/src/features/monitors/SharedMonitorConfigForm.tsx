@@ -18,13 +18,14 @@ import { parse } from "papaparse";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import { BackButtonNonLink } from "~/features/common/nav/BackButton";
 import {
   useCreateSharedMonitorConfigMutation,
   useUpdateSharedMonitorConfigMutation,
 } from "~/features/monitors/shared-monitor-config.slice";
 import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
 import { isErrorResult, RTKResult } from "~/types/errors";
+
+import BackButton from "../common/nav/BackButton";
 
 export interface SharedMonitorConfigFormValues {
   name: string;
@@ -147,7 +148,7 @@ const SharedMonitorConfigForm = ({
 
   return (
     <>
-      <BackButtonNonLink onClick={onBackClick} className="pt-3" />
+      <BackButton onClick={onBackClick} className="pt-3" />
       <CustomTypography.Title level={2}>
         {config ? `Edit ${config.name}` : "Create new configuration"}
       </CustomTypography.Title>
