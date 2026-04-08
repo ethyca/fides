@@ -12,6 +12,7 @@ from sqlalchemy import (  # type: ignore[attr-defined]
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 
 from fides.api.cryptography.cryptographic_util import hash_value_with_salt
 from fides.api.cryptography.identity_salt import get_identity_salt
@@ -76,14 +77,23 @@ class PrivacyPreferences(Base):
         Boolean, nullable=False, server_default=text("false"), primary_key=True
     )
 
-    # Override base class timestamp columns to match migration
+    # Override base class timestamp columns:
+    # - created_at: indexed for query performance (base class doesn't index it)
+    # - updated_at: nullable with no server_default (unlike base class which defaults
+    #   to now()). New records start with updated_at=NULL; it is only set when a
+    #   record is later modified (this only happens when is_latest is flipped
+    #   from True to False).
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,
         server_default=text("now()"),
         index=True,
     )
-    updated_at = Column(DateTime(timezone=True), nullable=True)
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
+        onupdate=func.now(),
+    )
 
     @classmethod
     def hash_value(

@@ -1,36 +1,31 @@
-import { CellContext } from "@tanstack/react-table";
-import React, { useState } from "react";
+import { useState } from "react";
 
-import { DefaultCell, EnableCell } from "~/features/common/table/v2/cells";
-import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
+import { EnableCell } from "~/features/common/table/cells/EnableCell";
 import { useLimitedPatchExperienceConfigMutation } from "~/features/privacy-experience/privacy-experience.slice";
-import { ComponentType, ExperienceConfigListViewResponse } from "~/types/api";
-
-export const ComponentCell = (value: ComponentType | undefined) => {
-  const innerText = COMPONENT_MAP.get(value!) ?? value;
-  return <DefaultCell value={innerText} />;
-};
+import { ExperienceConfigListViewResponse } from "~/types/api";
 
 export const EnablePrivacyExperienceCell = ({
-  row,
-  getValue,
-}: CellContext<ExperienceConfigListViewResponse, boolean | undefined>) => {
+  record,
+}: {
+  record: ExperienceConfigListViewResponse;
+}) => {
   const [limitedPatchExperienceMutationTrigger] =
     useLimitedPatchExperienceConfigMutation();
   const [isLoading, setIsLoading] = useState(false);
 
   const onToggle = async (toggle: boolean) => {
     setIsLoading(true);
-    const response = await limitedPatchExperienceMutationTrigger({
-      id: row.original.id,
-      disabled: !toggle,
-    });
-    setIsLoading(false);
-    return response;
+    try {
+      return await limitedPatchExperienceMutationTrigger({
+        id: record.id,
+        disabled: !toggle,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const disabled = getValue()!;
-  const { regions } = row.original;
+  const { disabled, regions } = record;
   const multipleRegions = regions ? regions.length > 1 : false;
 
   const title = multipleRegions
