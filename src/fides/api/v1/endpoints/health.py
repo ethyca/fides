@@ -1,22 +1,32 @@
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, Query, status
 from loguru import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 import fides
 from fides.api.common_exceptions import RedisConnectionError
-from fides.api.db.database import get_db_health
+from fides.api.db.ctl_session import (
+    async_session,
+    ensure_async_readonly_pool_prewarmed,
+    is_async_readonly_pool_prewarmed,
+    readonly_async_engine,
+    readonly_async_session,
+)
 from fides.api.deps import get_db
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
+from fides.common.session_management import get_readonly_api_session
 from fides.config import CONFIG
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured", "skipped"]
+PoolHealth = Literal["healthy", "unhealthy", "skipped"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
 
 
@@ -31,8 +41,26 @@ class CoreHealthCheck(BaseModel):
 class DatabaseHealthCheck(BaseModel):
     """Database Healthcheck Schema"""
 
-    database: str
+    database: PoolHealth
+    pools: Dict[str, "PoolStatus"]
+    async_readonly_pool_prewarmed: Optional[bool] = None
     database_revision: Optional[str] = None
+
+
+class PoolPrewarming(BaseModel):
+    """Optional pool prewarming details."""
+
+    target: int
+    checked_in: int
+    checked_out: int
+    capacity_percentage: Optional[float]
+
+
+class PoolStatus(BaseModel):
+    """Per-pool health details."""
+
+    healthy: bool
+    prewarming: Optional[PoolPrewarming] = None
 
 
 class WorkerHealthCheck(BaseModel):
@@ -83,19 +111,110 @@ def get_cache_health() -> str:
     },
 )
 async def database_health(db: Session = Depends(get_db)) -> Dict:
-    """Confirm that the API is running and healthy."""
-    db_health, revision = get_db_health(CONFIG.database.sync_database_uri, db=db)
+    """Confirm that configured API database pools are reachable."""
+    pools: Dict[str, PoolStatus] = {}
+    async_readonly_pool_prewarmed: Optional[bool] = None
 
+    # Primary sync pool (already checked out by dependency-injected session).
+    pools["api_sync_primary"] = PoolStatus(healthy=_check_sync_session(db) == "healthy")
+
+    # Optional sync readonly pool.
+    if CONFIG.database.sqlalchemy_readonly_database_uri:
+        readonly_db: Optional[Session] = None
+        try:
+            readonly_db = get_readonly_api_session()
+            pools["api_sync_readonly"] = PoolStatus(
+                healthy=_check_sync_session(readonly_db) == "healthy"
+            )
+        finally:
+            if readonly_db:
+                readonly_db.close()
+    else:
+        pools["api_sync_readonly"] = PoolStatus(healthy=True)
+
+    # Primary async pool.
+    pools["api_async_primary"] = PoolStatus(
+        healthy=(await _check_async_session(async_session) == "healthy")
+    )
+
+    # Optional readonly async pool with prewarm awareness.
+    if CONFIG.database.async_readonly_database_uri:
+        if CONFIG.database.async_readonly_database_prewarm:
+            await ensure_async_readonly_pool_prewarmed()
+            async_readonly_pool_prewarmed = is_async_readonly_pool_prewarmed()
+        else:
+            async_readonly_pool_prewarmed = False
+
+        pools["api_async_readonly"] = PoolStatus(
+            healthy=(await _check_async_session(readonly_async_session) == "healthy"),
+            prewarming=_get_async_readonly_prewarming_details(),
+        )
+    else:
+        pools["api_async_readonly"] = PoolStatus(healthy=True)
+        async_readonly_pool_prewarmed = None
+
+    has_unhealthy_pool = any(not status.healthy for status in pools.values())
     response = DatabaseHealthCheck(
-        database=db_health, database_revision=revision if revision else "unknown"
+        database="unhealthy" if has_unhealthy_pool else "healthy",
+        pools=pools,
+        async_readonly_pool_prewarmed=async_readonly_pool_prewarmed,
+        database_revision=None,
     ).model_dump(mode="json")
 
-    if db_health != "healthy":
+    if has_unhealthy_pool:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
         )
 
     return response
+
+
+def _check_sync_session(db: Session) -> PoolHealth:
+    """Return health status for a sync pool-backed session."""
+    try:
+        db.execute(text("SELECT 1"))
+        return "healthy"
+    except Exception as error:  # pylint: disable=broad-except
+        logger.error("Unable to reach sync database pool: {}", Pii(str(error)))
+        return "unhealthy"
+
+
+async def _check_async_session(session_factory: Any) -> PoolHealth:
+    """Return health status for an async pool-backed session factory."""
+    try:
+        async with session_factory() as session:
+            session = session  # type: AsyncSession
+            await session.execute(text("SELECT 1"))
+        return "healthy"
+    except Exception as error:  # pylint: disable=broad-except
+        logger.error("Unable to reach async database pool: {}", Pii(str(error)))
+        return "unhealthy"
+
+
+def _get_async_readonly_prewarming_details() -> Optional[PoolPrewarming]:
+    """Return readonly async pool prewarming details when enabled."""
+    if not CONFIG.database.async_readonly_database_prewarm:
+        return None
+    if not readonly_async_engine:
+        return None
+
+    pool = readonly_async_engine.sync_engine.pool
+    target = CONFIG.database.async_readonly_database_pool_size
+    checked_in = int(pool.checkedin())
+    checked_out = int(pool.checkedout())
+
+    capacity_percentage: Optional[float]
+    if target <= 0:
+        capacity_percentage = None
+    else:
+        capacity_percentage = (checked_in + checked_out) / target
+
+    return PoolPrewarming(
+        target=target,
+        checked_in=checked_in,
+        checked_out=checked_out,
+        capacity_percentage=capacity_percentage,
+    )
 
 
 @HEALTH_ROUTER.get(

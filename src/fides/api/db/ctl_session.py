@@ -184,6 +184,35 @@ async def warm_async_pool(pool_id: str, pool_size: int, engine: AsyncEngine) -> 
         logger.info(f"Connections released back to the pool for {pool_id}.")
 
 
+async def ensure_async_readonly_pool_prewarmed() -> bool:
+    """Warm the readonly async pool if enabled and not already warmed.
+
+    Returns True when the readonly async pool is configured and marked warmed.
+    """
+    if not CONFIG.database.async_readonly_database_uri:
+        return False
+
+    if not CONFIG.database.async_readonly_database_prewarm:
+        return False
+
+    async with ASYNC_READONLY_POOL_LOCK:
+        global ASYNC_READONLY_POOL_WARMED
+        if not ASYNC_READONLY_POOL_WARMED:
+            await warm_async_pool(
+                "readonly-async-pool",
+                CONFIG.database.async_readonly_database_pool_size,
+                readonly_async_engine,
+            )
+            ASYNC_READONLY_POOL_WARMED = True
+
+    return ASYNC_READONLY_POOL_WARMED
+
+
+def is_async_readonly_pool_prewarmed() -> bool:
+    """Return current readonly async pool warm state."""
+    return ASYNC_READONLY_POOL_WARMED
+
+
 async def get_async_db() -> AsyncGenerator:
     """Return an async session generator for dependency injection into API endpoints"""
     async with async_session() as session:
