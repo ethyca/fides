@@ -1,4 +1,4 @@
-import { antTheme, Card, Flex, Statistic } from "fidesui";
+import { antTheme, Card, Flex, Statistic, Text } from "fidesui";
 
 import { ASTRALIS_METRICS } from "~/features/dashboard/constants";
 import { useGetAstralisQuery } from "~/features/dashboard/dashboard.slice";
@@ -30,11 +30,17 @@ export const AstralisPanel = () => {
               )}
               <Statistic
                 value={value}
-                suffix={label}
                 valueStyle={{
                   color: isOverdue ? token.colorWarning : undefined,
                 }}
               />
+              <Text
+                type="secondary"
+                className="text-xs"
+                style={isOverdue ? { color: token.colorWarning } : undefined}
+              >
+                {label}
+              </Text>
             </Flex>
           );
         })}
