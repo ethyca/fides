@@ -122,6 +122,11 @@ export const ASTRALIS_METRICS = [
 
 export type AstralisMetricKey = (typeof ASTRALIS_METRICS)[number]["key"];
 
+export const ASTRALIS_ACTIVE_KEY =
+  "active_conversations" satisfies AstralisMetricKey;
+export const ASTRALIS_AWAITING_KEY =
+  "awaiting_response" satisfies AstralisMetricKey;
+
 export function getUrgencyGroup(
   severity: ActionSeverity,
   dueDate: string | null,

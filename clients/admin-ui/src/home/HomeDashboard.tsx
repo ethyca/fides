@@ -59,7 +59,7 @@ export const HomeDashboard = () => {
           <DSRStatusCard />
         </Col>
       </Row>
-      <Row gutter={ROW_GUTTER} className="h-[350px] items-stretch">
+      <Row gutter={ROW_GUTTER} className="h-[400px] items-stretch">
         <Col xs={24} md={8} className="h-full">
           <AstralisPanel />
         </Col>
