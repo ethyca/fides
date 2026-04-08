@@ -101,7 +101,8 @@ export interface MockDataset {
   fieldCount: number;
   createdAt: string;
   category?: string;
-  usage?: string;
+  dsrScope?: string[];
+  dataCategories?: string[];
   status?: "approved" | "pending" | "draft";
 }
 
@@ -119,6 +120,19 @@ export interface MockPrivacyRequests {
     denied: number;
     error: number;
   };
+}
+
+export interface MockAsset {
+  id: string;
+  name: string;
+  assetType: "Cookie" | "Browser Request" | "iFrame" | "Javascript tag" | "Image";
+  domain: string;
+  dataUses: string[];
+  duration?: string;
+  baseUrl?: string;
+  description?: string;
+  detectedOn?: string[];
+  consentStatus?: "opt_in" | "opt_out" | "notice_only";
 }
 
 export interface MockHistoryEntry {
@@ -149,6 +163,7 @@ export interface MockSystem {
   stewards: MockSteward[];
   group: string | null;
   logoDomain: string | null;
+  logoUrl?: string;
   agentBriefing?: string;
   // Detail page data
   integrations: MockIntegration[];
@@ -158,6 +173,7 @@ export interface MockSystem {
   datasets: MockDataset[];
   privacyRequests: MockPrivacyRequests;
   history: MockHistoryEntry[];
+  assets: MockAsset[];
 }
 
 export interface SystemInventoryStats {

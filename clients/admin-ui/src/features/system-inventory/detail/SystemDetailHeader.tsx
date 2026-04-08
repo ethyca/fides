@@ -1,4 +1,7 @@
-import { Avatar, Button, Flex, Text, Title } from "fidesui";
+import { TrashCan } from "@carbon/icons-react";
+import { Avatar, Button, Flex, Modal, Text, Title } from "fidesui";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 import { getBrandIconUrl } from "~/features/common/utils";
 
@@ -9,6 +12,8 @@ interface SystemDetailHeaderProps {
 }
 
 const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
+  const router = useRouter();
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const initials = system.name
     .split(" ")
     .map((w) => w[0])
@@ -22,10 +27,10 @@ const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
         <Avatar
           size={48}
           shape="square"
-          src={system.logoDomain ? getBrandIconUrl(system.logoDomain, 96) : undefined}
-          style={!system.logoDomain ? { backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 16 } : undefined}
+          src={system.logoUrl ?? (system.logoDomain ? getBrandIconUrl(system.logoDomain, 96) : undefined)}
+          style={!system.logoDomain && !system.logoUrl ? { backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 16 } : undefined}
         >
-          {!system.logoDomain ? initials : null}
+          {!system.logoDomain && !system.logoUrl ? initials : null}
         </Avatar>
         <div>
           <Title level={2} className="!mb-0">
@@ -38,9 +43,31 @@ const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
         </div>
       </Flex>
       <Flex gap="small">
+        <Button
+          type="text"
+          danger
+          icon={<TrashCan size={16} />}
+          onClick={() => setDeleteOpen(true)}
+        />
         <Button type="default">Export CSV</Button>
-        <Button type="default">Edit</Button>
       </Flex>
+
+      <Modal
+        title="Delete system"
+        open={deleteOpen}
+        onCancel={() => setDeleteOpen(false)}
+        onOk={() => {
+          setDeleteOpen(false);
+          router.push("/system-inventory");
+        }}
+        okText="Delete"
+        okButtonProps={{ danger: true }}
+        width={440}
+      >
+        <Text>
+          Are you sure you want to delete <Text strong>{system.name}</Text>? This action cannot be undone. All associated data, integrations, and history will be permanently removed.
+        </Text>
+      </Modal>
     </Flex>
   );
 };

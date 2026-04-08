@@ -36,10 +36,10 @@ const SystemCard = ({ system }: SystemCardProps) => {
             <Avatar
               size={24}
               shape="square"
-              src={system.logoDomain ? getBrandIconUrl(system.logoDomain, 48) : undefined}
-              style={!system.logoDomain ? { backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 10 } : undefined}
+              src={system.logoUrl ?? (system.logoDomain ? getBrandIconUrl(system.logoDomain, 48) : undefined)}
+              style={!system.logoDomain && !system.logoUrl ? { backgroundColor: "#e6e6e8", color: "#53575c", fontSize: 10 } : undefined}
             >
-              {!system.logoDomain ? system.name.slice(0, 2).toUpperCase() : null}
+              {!system.logoDomain && !system.logoUrl ? system.name.slice(0, 2).toUpperCase() : null}
             </Avatar>
             <Text strong>{system.name}</Text>
             {isProducer && <ArrowUpRight size={14} title="Producer" />}

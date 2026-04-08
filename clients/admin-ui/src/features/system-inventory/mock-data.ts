@@ -29,6 +29,7 @@ const s = (
   datasets: [],
   privacyRequests: { open: 0, closed: 0, avgAccessDays: 0, avgErasureDays: 0, dsarEnabled: false },
   history: [],
+  assets: [],
   ...overrides,
 });
 
@@ -74,9 +75,9 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     ],
   }),
 
-  s("bigquery", "BigQuery", "Data warehouse", "Google Cloud data warehouse for analytics, BI, and ML.", {
+  s("bigquery", "Auth0", "Identity provider", "Identity and access management platform.", {
     department: "Engineering",
-    logoDomain: "cloud.google.com",
+    logoDomain: "auth0.com",
     roles: ["producer", "consumer"],
     purposes: [{ name: "Analytics", color: "info" }, { name: "Finance", color: "success" }, { name: "Fraud prevention", color: "alert" }, { name: "Marketing", color: "warning" }, { name: "Customer support", color: "default" }],
     annotation_percent: 62,
@@ -397,8 +398,8 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     history: [],
   }),
 
-  s("auth0", "Auth0", "Identity provider", "Identity and access management platform.", {
-    department: "Engineering", logoDomain: "auth0.com",
+  s("auth0", "BigQuery", "Data warehouse", "Google Cloud data warehouse for analytics, BI, and ML.", {
+    department: "Engineering", logoDomain: "cloud.google.com",
     roles: ["producer"],
     purposes: [{ name: "Analytics", color: "info" }, { name: "Fraud prevention", color: "alert" }, { name: "Customer support", color: "default" }],
     annotation_percent: 85,
@@ -406,8 +407,10 @@ export const MOCK_SYSTEMS: MockSystem[] = [
     stewards: [{ initials: "JG", name: "Jack Gale" }],
     group: "Customer platform",
     integrations: [
-      { name: "Auth0 API", type: "Auth0", accessLevel: "Read", status: "active", lastTested: "2026-03-26T07:00:00Z", enabledActions: ["access"] },
-      { name: "Auth0 Management API", type: "Auth0", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-25T14:00:00Z", enabledActions: ["access", "erasure"] },
+      { name: "BigQuery — DSR Automation", type: "BigQuery", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-26T07:00:00Z", enabledActions: ["DSR access", "DSR erasure"] },
+      { name: "BigQuery — Monitoring", type: "BigQuery", accessLevel: "Read", status: "active", lastTested: "2026-03-25T14:00:00Z", enabledActions: ["monitoring", "classification"] },
+      { name: "BigQuery — Consent", type: "BigQuery", accessLevel: "Read/Write", status: "active", lastTested: "2026-03-24T10:00:00Z", enabledActions: ["consent"] },
+      { name: "Fivetran — BigQuery Sync", type: "Fivetran", accessLevel: "Read", status: "active", lastTested: "2026-03-23T08:00:00Z", enabledActions: ["monitoring"] },
     ],
     monitors: [
       { name: "Identity schema scan", frequency: "Weekly", status: "completed", lastRun: "2026-03-25T06:00:00Z", resourceCount: 26 },
@@ -425,12 +428,12 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { name: "Authorization rules", fieldCount: 142, approvedPercent: 68 },
     ]},
     datasets: [
-      { name: "auth0_users", key: "auth0_users", collectionCount: 12, fieldCount: 1842, createdAt: "2025-11-01", category: "Identity data", usage: "DSR Access, DSR Erasure", status: "approved" },
-      { name: "auth0_sessions", key: "auth0_sessions", collectionCount: 8, fieldCount: 956, createdAt: "2025-12-15", category: "Session metadata", usage: "DSR Access", status: "approved" },
-      { name: "auth0_logs", key: "auth0_logs", collectionCount: 5, fieldCount: 2314, createdAt: "2026-01-10", category: "Audit logs", usage: "Monitoring", status: "approved" },
-      { name: "auth0_tokens", key: "auth0_tokens", collectionCount: 3, fieldCount: 428, createdAt: "2026-02-01", category: "Authentication tokens", usage: "DSR Erasure", status: "pending" },
-      { name: "auth0_roles", key: "auth0_roles", collectionCount: 2, fieldCount: 186, createdAt: "2026-02-15", category: "Authorization", usage: "Access control", status: "approved" },
-      { name: "auth0_connections", key: "auth0_connections", collectionCount: 4, fieldCount: 312, createdAt: "2026-03-01", category: "Identity providers", usage: "Configuration", status: "draft" },
+      { name: "bq_user_profiles", key: "bq_user_profiles", collectionCount: 8, fieldCount: 1842, createdAt: "2025-11-01", category: "Identity data", dsrScope: ["access", "erasure"], dataCategories: ["user.name", "user.contact.email", "user.contact.phone_number", "user.unique_id"], status: "approved" },
+      { name: "bq_analytics_events", key: "bq_analytics_events", collectionCount: 14, fieldCount: 956, createdAt: "2025-12-15", category: "Behavioral data", dsrScope: ["access"], dataCategories: ["user.behavior", "user.device.ip_address", "system.operations"], status: "approved" },
+      { name: "bq_audit_logs", key: "bq_audit_logs", collectionCount: 5, fieldCount: 2314, createdAt: "2026-01-10", category: "Audit logs", dsrScope: [], dataCategories: ["system.operations"], status: "approved" },
+      { name: "bq_payment_transactions", key: "bq_payment_transactions", collectionCount: 6, fieldCount: 428, createdAt: "2026-02-01", category: "Financial data", dsrScope: ["access", "erasure"], dataCategories: ["user.financial", "user.payment", "user.contact.email"], status: "pending" },
+      { name: "bq_marketing_attribution", key: "bq_marketing_attribution", collectionCount: 4, fieldCount: 186, createdAt: "2026-02-15", category: "Marketing data", dsrScope: ["access", "erasure"], dataCategories: ["user.behavior", "user.device.cookie_id", "user.contact.email"], status: "approved" },
+      { name: "bq_support_tickets", key: "bq_support_tickets", collectionCount: 3, fieldCount: 312, createdAt: "2026-03-01", category: "Support data", dsrScope: ["access"], dataCategories: ["user.contact.email", "user.name", "user.content"], status: "draft" },
     ],
     privacyRequests: { open: 147, closed: 3842, avgAccessDays: 1.8, avgErasureDays: 3.2, dsarEnabled: true, statusBreakdown: { pending: 23, inProgress: 84, approved: 40, complete: 3842, denied: 12, error: 3 } },
     history: [
@@ -439,17 +442,27 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       { timestamp: "2026-03-25T16:30:00Z", action: "Classification approved", category: "classification", user: "Jack Gale", detail: "Approved classification for user.email", fieldName: "user.email", newValue: "PII — Email address" },
       { timestamp: "2026-03-25T16:20:00Z", action: "Classification approved", category: "classification", user: "Jack Gale", detail: "Approved classification for user.name", fieldName: "user.name", newValue: "PII — Full name" },
       { timestamp: "2026-03-25T16:10:00Z", action: "Field reviewed", category: "classification", user: "Jack Gale", detail: "Reviewed user.last_login — marked as non-PII", fieldName: "user.last_login", newValue: "System metadata", reason: "Timestamp only, no personal data" },
-      { timestamp: "2026-03-25T14:30:00Z", action: "Integration tested", category: "integration", user: "Jack Gale", detail: "Auth0 Management API — connection test passed" },
+      { timestamp: "2026-03-25T14:30:00Z", action: "Integration tested", category: "integration", user: "Jack Gale", detail: "BigQuery Storage API — connection test passed" },
       { timestamp: "2026-03-24T11:00:00Z", action: "Label changed", category: "classification", user: "Anna Kim", detail: "Changed user.ip_address from system data to PII", fieldName: "user.ip_address", oldValue: "System data", newValue: "PII — IP address", reason: "IP addresses are personal data under GDPR recital 30" },
       { timestamp: "2026-03-24T10:00:00Z", action: "Classification approved", category: "classification", user: "Jack Gale", detail: "Bulk approved 18 identity fields", fieldName: "user.* (18 fields)", newValue: "Identity data" },
       { timestamp: "2026-03-23T15:00:00Z", action: "Category assigned", category: "classification", user: "Anna Kim", detail: "Assigned 'Identity data' category to Auth0 dataset", fieldName: "auth0_identity.*", newValue: "Identity data", reason: "All fields relate to user identity and authentication" },
       { timestamp: "2026-03-22T09:00:00Z", action: "Purpose added", category: "purpose", user: "Jack Gale", detail: "Added 'Customer support' purpose to Auth0" },
       { timestamp: "2026-03-21T14:00:00Z", action: "Purpose added", category: "purpose", user: "Jack Gale", detail: "Added 'Fraud prevention' purpose to Auth0" },
       { timestamp: "2026-03-20T11:00:00Z", action: "Steward assigned", category: "steward", user: "Anna Kim", detail: "Jack Gale assigned as data steward" },
-      { timestamp: "2026-03-19T10:00:00Z", action: "Integration configured", category: "integration", user: "Jack Gale", detail: "Auth0 Management API added with read/write access and erasure scope" },
+      { timestamp: "2026-03-19T10:00:00Z", action: "Integration configured", category: "integration", user: "Jack Gale", detail: "BigQuery Read/Write configured with access and erasure scopes" },
       { timestamp: "2026-03-18T16:00:00Z", action: "System registered", category: "system", user: "System", detail: "Auth0 added to system inventory via API discovery" },
-      { timestamp: "2026-03-15T09:00:00Z", action: "Integration added", category: "integration", user: "Jack Gale", detail: "Auth0 API integration configured with read access" },
+      { timestamp: "2026-03-15T09:00:00Z", action: "Integration added", category: "integration", user: "Jack Gale", detail: "BigQuery Storage API configured with read access" },
       { timestamp: "2026-03-12T14:00:00Z", action: "Monitor created", category: "integration", user: "Anna Kim", detail: "Identity schema scan monitor set to weekly frequency" },
+    ],
+    assets: [
+      { id: "a1", name: "auth0_session", assetType: "Cookie", domain: "auth0.com", dataUses: ["functional"], duration: "24 hours", description: "Session cookie for authenticated users", consentStatus: "opt_in" },
+      { id: "a2", name: "auth0_csrf", assetType: "Cookie", domain: "auth0.com", dataUses: ["functional", "essential"], duration: "1 hour", description: "CSRF protection token", consentStatus: "opt_out" },
+      { id: "a3", name: "_auth0_consent", assetType: "Cookie", domain: "auth0.com", dataUses: ["functional"], duration: "1 year", description: "Stores user consent preferences", consentStatus: "opt_in" },
+      { id: "a4", name: "auth0-analytics.js", assetType: "Javascript tag", domain: "cdn.auth0.com", dataUses: ["analytics"], baseUrl: "https://cdn.auth0.com/js/analytics.js", description: "Auth0 usage analytics tracker", detectedOn: ["/login", "/signup", "/dashboard"], consentStatus: "opt_in" },
+      { id: "a5", name: "consent-manager.js", assetType: "Javascript tag", domain: "cdn.auth0.com", dataUses: ["functional", "essential"], baseUrl: "https://cdn.auth0.com/js/consent.js", description: "Consent management script", detectedOn: ["/login", "/signup"] },
+      { id: "a6", name: "auth0-retarget", assetType: "Image", domain: "pixel.auth0.com", dataUses: ["marketing"], baseUrl: "https://pixel.auth0.com/t.gif", description: "Retargeting pixel for marketing campaigns", detectedOn: ["/pricing"], consentStatus: "opt_in" },
+      { id: "a7", name: "social-login-frame", assetType: "iFrame", domain: "login.auth0.com", dataUses: ["functional", "third_party_sharing"], baseUrl: "https://login.auth0.com/social", description: "Social login provider iframe (Google, GitHub)", detectedOn: ["/login"] },
+      { id: "a8", name: "telemetry-beacon", assetType: "Browser Request", domain: "telemetry.auth0.com", dataUses: ["analytics", "functional"], baseUrl: "https://telemetry.auth0.com/v1/track", description: "Performance and error telemetry", detectedOn: ["/login", "/signup", "/dashboard", "/settings"] },
     ],
   }),
 

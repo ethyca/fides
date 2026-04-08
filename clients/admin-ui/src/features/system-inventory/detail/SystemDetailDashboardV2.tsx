@@ -1,11 +1,20 @@
-import { Col, Flex, Progress, Row, Statistic, Text, Title } from "fidesui";
+import {
+  Activity,
+  DataBase,
+  Locked,
+  Policy,
+  SettingsCheck,
+} from "@carbon/icons-react";
+import type { CarbonIconType } from "@carbon/icons-react";
+import { Flex, Statistic, Tag, Text, Title } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import { useCountUp } from "~/home/useCountUp";
 
 import type { MockSystem } from "../types";
-import { computeSystemDimensions } from "../utils";
+import { SystemCapability } from "../types";
+import { computeSystemDimensions, getSystemCapabilities } from "../utils";
 
 interface SystemDetailDashboardV2Props {
   system: MockSystem;
@@ -17,6 +26,14 @@ const DIMENSION_COLORS = [
   palette.FIDESUI_SANDSTONE,
   palette.FIDESUI_MINOS,
 ];
+
+const CAPABILITY_ICONS: Record<SystemCapability, CarbonIconType> = {
+  [SystemCapability.DSAR]: Locked,
+  [SystemCapability.MONITORING]: Activity,
+  [SystemCapability.CONSENT]: Policy,
+  [SystemCapability.INTEGRATIONS]: SettingsCheck,
+  [SystemCapability.CLASSIFICATION]: DataBase,
+};
 
 function computeSystemScore(system: MockSystem): number {
   const dims = computeSystemDimensions(system);
@@ -45,6 +62,7 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
   const dimensions = computeSystemDimensions(system);
   const score = computeSystemScore(system);
   const animatedScore = useCountUp(score);
+  const capabilities = getSystemCapabilities(system);
 
   const pieData = dimensions.flatMap((dim, i) => {
     const segments = [
@@ -56,25 +74,17 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
     return segments;
   });
 
-  const totalFields =
-    system.classification.approved +
-    system.classification.pending +
-    system.classification.unreviewed;
-  const classPct =
-    totalFields > 0
-      ? Math.round((system.classification.approved / totalFields) * 100)
-      : 0;
-
   const totalDatasets = system.datasets.length;
   const totalFieldCount = system.datasets.reduce((sum, d) => sum + d.fieldCount, 0);
   const totalCollections = system.datasets.reduce((sum, d) => sum + d.collectionCount, 0);
 
   return (
-    <Row gutter={[12, 12]} className="mb-4 items-stretch">
-      <Col span={8} className="flex">
+    <Flex gap={12} className="mb-4 items-stretch">
+      {/* System Health */}
+      <div className="min-w-0 flex-1">
         <MetricCard highlight={score < 70}>
           <Text type="secondary" className="mb-2 block text-[10px] uppercase tracking-wider">
-            Governance Score
+            System Health
           </Text>
           <Flex align="center" gap={8}>
             <div className="relative size-[72px] shrink-0">
@@ -121,23 +131,37 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
             </div>
           </Flex>
         </MetricCard>
-      </Col>
-      <Col span={6} className="flex">
+      </div>
+
+      {/* Capabilities */}
+      <div className="min-w-0 flex-1">
         <MetricCard>
-          <Text type="secondary" className="text-[10px] uppercase tracking-wider">
-            Classification
+          <Text type="secondary" className="mb-2 block text-[10px] uppercase tracking-wider">
+            Capabilities
           </Text>
-          <Title level={2} className="!mb-1 !mt-1">{classPct}%</Title>
-          <Progress
-            percent={classPct}
-            showInfo={false}
-            strokeColor="#5a9a68"
-            size="small"
-            className="!mb-0 [&_.ant-progress-inner]:!h-[4px] [&_.ant-progress-inner]:!rounded-full"
-          />
+          {capabilities.length > 0 ? (
+            <Flex gap={6} wrap className="mt-1">
+              {capabilities.map((cap) => {
+                const Icon = CAPABILITY_ICONS[cap];
+                return (
+                  <Tag key={cap} bordered={false} style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}>
+                    <Flex align="center" gap={4}>
+                      <Icon size={12} />
+                      <span className="text-xs">{cap}</span>
+                    </Flex>
+                  </Tag>
+                );
+              })}
+            </Flex>
+          ) : (
+            <Text type="secondary" className="mt-1 text-xs">No capabilities detected</Text>
+          )}
+          <Text type="secondary" className="mt-2 text-[9px]">Based on active integrations</Text>
         </MetricCard>
-      </Col>
-      <Col span={5} className="flex">
+      </div>
+
+      {/* Privacy Requests */}
+      <div className="min-w-0 flex-1">
         <MetricCard>
           <Text type="secondary" className="text-[10px] uppercase tracking-wider">
             Privacy Requests
@@ -147,22 +171,24 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
             <Text type="secondary" className="text-sm font-normal">open</Text>
           </Title>
           <Text type="secondary" className="text-[10px]">
-            {system.privacyRequests.closed} closed &middot; avg {system.privacyRequests.avgAccessDays}d
+            {system.privacyRequests.closed.toLocaleString()} closed &middot; avg {system.privacyRequests.avgAccessDays}d
           </Text>
         </MetricCard>
-      </Col>
-      <Col span={5} className="flex">
+      </div>
+
+      {/* Datasets */}
+      <div className="min-w-0 flex-1">
         <MetricCard>
           <Text type="secondary" className="text-[10px] uppercase tracking-wider">
             Datasets
           </Text>
           <Title level={2} className="!mb-0 !mt-1">{totalDatasets}</Title>
           <Text type="secondary" className="text-[10px]">
-            {totalFieldCount} fields across {totalCollections} collections
+            {totalFieldCount.toLocaleString()} fields across {totalCollections} collections
           </Text>
         </MetricCard>
-      </Col>
-    </Row>
+      </div>
+    </Flex>
   );
 };
 

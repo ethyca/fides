@@ -17,15 +17,16 @@ interface GovernanceHealthDashboardProps {
   data: GovernanceHealthData;
 }
 
-// Starts ~10, ends ~75, with movement in pillar mix
+// Each pillar contributes score/4 so they stack to the overall score
 const TREND_DATA = [
-  { month: "Oct", annotation: 2, compliance: 4, purpose: 3, ownership: 1 },
-  { month: "Nov", annotation: 5, compliance: 3, purpose: 8, ownership: 2 },
-  { month: "Dec", annotation: 4, compliance: 10, purpose: 6, ownership: 5 },
-  { month: "Jan", annotation: 10, compliance: 8, purpose: 12, ownership: 7 },
-  { month: "Feb", annotation: 8, compliance: 16, purpose: 10, ownership: 14 },
-  { month: "Mar", annotation: 14, compliance: 22, purpose: 20, ownership: 12 },
+  { month: "Oct", annotation: 5.5, compliance: 12, purpose: 8.75, ownership: 7.5 },
+  { month: "Nov", annotation: 7.5, compliance: 13.75, purpose: 10.5, ownership: 9.5 },
+  { month: "Dec", annotation: 9.5, compliance: 15.5, purpose: 13.75, ownership: 11.25 },
+  { month: "Jan", annotation: 10.5, compliance: 17.5, purpose: 17, ownership: 13 },
+  { month: "Feb", annotation: 12.5, compliance: 20.5, purpose: 19.5, ownership: 14.5 },
+  { month: "Mar", annotation: 14.5, compliance: 23, purpose: 21, ownership: 16.5 },
 ];
+// Stacked totals: 34 → 41 → 50 → 58 → 67 → 75
 
 const PILLAR_SERIES = [
   { key: "annotation", name: "Annotation", color: palette.FIDESUI_TERRACOTTA },
@@ -59,7 +60,7 @@ const GovernanceHealthDashboard = ({
         <GovernanceScoreCard data={data} />
       </div>
 
-      {/* Panel 2: Stacked area trend chart */}
+      {/* Panel 2: Health Over Time (stacked pillar contributions) */}
       <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
         <Flex justify="space-between" align="center" className="mb-6">
           <Text strong className="text-[10px] uppercase tracking-wider">
@@ -68,38 +69,20 @@ const GovernanceHealthDashboard = ({
           <Flex gap={12}>
             {PILLAR_SERIES.map((s) => (
               <Flex key={s.key} align="center" gap={4}>
-                <div
-                  className="size-[5px] shrink-0 rounded-full"
-                  style={{ backgroundColor: s.color }}
-                />
-                <Text className="text-[10px]" style={{ color: palette.FIDESUI_MINOS }}>
-                  {s.name}
-                </Text>
+                <div className="size-[5px] shrink-0 rounded-full" style={{ backgroundColor: s.color }} />
+                <Text className="text-[10px]" style={{ color: palette.FIDESUI_MINOS }}>{s.name}</Text>
               </Flex>
             ))}
-            <Flex align="center" gap={4}>
-              <div className="h-[1px] w-3 shrink-0" style={{ backgroundColor: palette.FIDESUI_MINOS }} />
-              <Text className="text-[10px]" style={{ color: palette.FIDESUI_MINOS }}>
-                Health
-              </Text>
-            </Flex>
           </Flex>
         </Flex>
         <div className="h-[170px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={TREND_DATA}
-              margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
-            >
+            <AreaChart data={TREND_DATA} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
               <defs>
                 {PILLAR_SERIES.map((s) => (
-                  <linearGradient
-                    key={s.key}
-                    id={`dash-grad-${s.key}`}
-                    x1="0" y1="0" x2="0" y2="1"
-                  >
-                    <stop offset="0%" stopColor={s.color} stopOpacity={0.75} />
-                    <stop offset="100%" stopColor={s.color} stopOpacity={0.25} />
+                  <linearGradient key={s.key} id={`dash-grad-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={s.color} stopOpacity={0.7} />
+                    <stop offset="100%" stopColor={s.color} stopOpacity={0.2} />
                   </linearGradient>
                 ))}
               </defs>
@@ -108,17 +91,7 @@ const GovernanceHealthDashboard = ({
               <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#93969a" }} />
               <Tooltip contentStyle={{ borderRadius: 6, border: "1px solid #f0f0f0", fontSize: 11 }} />
               {PILLAR_SERIES.map((s) => (
-                <Area
-                  key={s.key}
-                  type="monotone"
-                  dataKey={s.key}
-                  name={s.name}
-                  stroke={s.color}
-                  strokeWidth={1}
-                  fill={`url(#dash-grad-${s.key})`}
-                  stackId="health"
-                  dot={false}
-                />
+                <Area key={s.key} type="monotone" dataKey={s.key} name={s.name} stroke={s.color} strokeWidth={1} fill={`url(#dash-grad-${s.key})`} stackId="health" dot={false} />
               ))}
             </AreaChart>
           </ResponsiveContainer>
