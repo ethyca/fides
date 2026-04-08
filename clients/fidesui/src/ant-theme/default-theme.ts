@@ -14,8 +14,8 @@ import palette from "../palette/palette.module.scss";
 
 export const defaultAntTheme: ThemeConfig = {
   token: {
-    fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
-    fontFamilyCode: `"Basier Square Mono", 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`,
+    fontFamily: `"Basier Square", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    fontFamilyCode: `"Basier Square Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace`,
     colorText: palette.FIDESUI_MINOS,
     colorTextBase: palette.FIDESUI_MINOS,
     colorTextHeading: palette.FIDESUI_MINOS,
@@ -109,10 +109,10 @@ export const defaultAntTheme: ThemeConfig = {
       fontSizeHeading1: 24,
       fontSizeHeading2: 20,
       fontSizeHeading3: 16,
+      titleMarginBottom: 0,
       fontSizeXL: 24,
       fontSizeLG: 18,
       fontSizeSM: 12,
-      titleMarginBottom: 0,
     },
     Tag: {
       colorText: palette.FIDESUI_NEUTRAL_900,

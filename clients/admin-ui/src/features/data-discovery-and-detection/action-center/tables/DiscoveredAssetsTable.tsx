@@ -142,7 +142,7 @@ export const DiscoveredAssetsTable = ({
       <Flex
         justify="space-between"
         align="center"
-        className="sticky -top-6 z-10 mb-4 bg-white py-4"
+        className="sticky -top-6 z-20 mb-4 bg-white py-4"
       >
         <DebouncedSearchInput
           value={searchQuery}

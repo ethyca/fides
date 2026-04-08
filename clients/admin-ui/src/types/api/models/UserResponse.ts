@@ -38,4 +38,7 @@ export type UserResponse = {
    * Disabled Reason
    */
   disabled_reason?: string | null;
+  email_verified_at?: string | null;
+  has_invite?: boolean | null;
+  invite_expired?: boolean | null;
 };

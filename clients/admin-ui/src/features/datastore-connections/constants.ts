@@ -36,6 +36,7 @@ export const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
  */
 export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.ATTENTIVE_EMAIL, "attentive.svg"],
+  [ConnectionType.AWS, "aws.svg"],
   [ConnectionType.BIGQUERY, "bigquery.svg"],
   [ConnectionType.DATAHUB, "datahub.svg"],
   [ConnectionType.DYNAMODB, "dynamodb.svg"],

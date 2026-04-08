@@ -1,4 +1,0 @@
-type: Changed
-description: Allowed extra fields in JiraTicketSchema to preserve Jira ticket metadata such as project key, issue type, and templates
-pr: 7605
-labels: []

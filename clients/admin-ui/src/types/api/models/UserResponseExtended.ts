@@ -38,10 +38,13 @@ export type UserResponseExtended = {
    * Disabled Reason
    */
   disabled_reason?: string | null;
+  email_verified_at?: string | null;
   /**
    * Password Login Enabled
    *
    * Whether password login is enabled for the user.
    */
   password_login_enabled?: boolean | null;
+  has_invite?: boolean | null;
+  invite_expired?: boolean | null;
 };

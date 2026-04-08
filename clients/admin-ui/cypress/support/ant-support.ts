@@ -149,6 +149,10 @@ declare global {
        */
       getAntModalClose: () => Chainable;
       /**
+       * Get the drawer component
+       */
+      getAntDrawer: () => Chainable;
+      /**
        * Get the close button from an Ant Design Drawer component
        * @example cy.getAntDrawerClose().click();
        */
@@ -187,6 +191,13 @@ declare global {
         type: "success" | "error" | "info" | "warning",
         text?: string,
       ) => Chainable;
+
+      /**
+       * Get the validation error message for an Ant Design Form.Item by field name
+       * @param fieldName The name attribute of the Form.Item
+       * @example cy.getAntFormError("email").should("contain", "Email is required");
+       */
+      getAntFormError: (fieldName: string) => Chainable;
     }
   }
 }
@@ -211,8 +222,8 @@ Cypress.Commands.add(
     prevSubject: "element",
   },
   (subject, option, clickOptions = { force: true }) => {
-    cy.get(subject.selector).first().should("have.class", "ant-select");
-    cy.get(subject.selector)
+    cy.wrap(subject).first().should("have.class", "ant-select");
+    cy.wrap(subject)
       .first()
       .invoke("attr", "class")
       .then((classes) => {
@@ -221,19 +232,15 @@ Cypress.Commands.add(
         }
         if (!classes.includes("ant-select-open")) {
           if (classes.includes("ant-select-multiple")) {
-            cy.get(subject.selector).first().find("input").focus().click();
+            cy.wrap(subject).first().find("input").focus().click();
           } else {
-            cy.get(subject.selector)
-              .first()
-              .find("input")
-              .focus()
-              .click(clickOptions);
+            cy.wrap(subject).first().find("input").focus().click(clickOptions);
           }
         }
         cy.antSelectDropdownVisible();
         cy.getAntSelectOption(option).should("be.visible").click(clickOptions);
         if (classes.includes("ant-select-multiple")) {
-          cy.get(subject.selector).first().find("input").blur();
+          cy.wrap(subject).first().find("input").blur();
         }
         cy.get("body").should(() => {
           const dropdown = Cypress.$(".ant-select-dropdown:visible");
@@ -249,8 +256,8 @@ Cypress.Commands.add(
     prevSubject: "element",
   },
   (subject) => {
-    cy.get(subject.selector).should("have.class", "ant-select-allow-clear");
-    cy.get(subject.selector).find(".ant-select-clear").click({ force: true });
+    cy.wrap(subject).should("have.class", "ant-select-allow-clear");
+    cy.wrap(subject).find(".ant-select-clear").click({ force: true });
   },
 );
 
@@ -260,7 +267,7 @@ Cypress.Commands.add(
     prevSubject: "element",
   },
   (subject, option) => {
-    cy.get(subject.selector)
+    cy.wrap(subject)
       .find(`.ant-select-selection-item[title="${option}"]`)
       .find(".ant-select-selection-item-remove")
       .click({ force: true });
@@ -300,7 +307,7 @@ Cypress.Commands.add("clickAntTab", (tab: string) => {
     expect(hasActiveClass || parentHasActiveClass).to.be.true;
   });
   // eslint-disable-next-line cypress/no-unnecessary-waiting
-  cy.wait(500); // Wait for the animation/router to complete
+  cy.wait(500); // Wait for the router to complete
 });
 Cypress.Commands.add("getAntTabPanel", (tab: string) =>
   cy.get(`#rc-tabs-0-panel-${tab}`),
@@ -420,6 +427,7 @@ Cypress.Commands.add("getAntModalConfirmButtons", () =>
 Cypress.Commands.add("getAntModalClose", () =>
   cy.get(`.ant-modal-close:visible`),
 );
+Cypress.Commands.add("getAntDrawer", () => cy.get(`.ant-drawer-open`));
 Cypress.Commands.add("getAntDrawerClose", () => cy.get(".ant-drawer-close"));
 Cypress.Commands.add("getAntDrawerHeader", () => cy.get(".ant-drawer-header"));
 Cypress.Commands.add("getAntDrawerFooter", () => cy.get(".ant-drawer-footer"));
@@ -445,6 +453,10 @@ Cypress.Commands.add(
       cy.get(selector).should("contain", text);
     }
   },
+);
+
+Cypress.Commands.add("getAntFormError", (fieldName: string) =>
+  cy.get(`#${fieldName}_help .ant-form-item-explain-error`),
 );
 
 export {};

@@ -46,20 +46,20 @@ describe("Domains page", () => {
 
       it("can display a loading state while fetching domain configuration", () => {
         cy.getByTestId("api-set-domains-form").within(() => {
-          cy.get(".chakra-spinner");
+          cy.get(".ant-spin-spinning");
         });
         cy.getByTestId("config-set-domains-form").within(() => {
-          cy.get(".chakra-spinner");
+          cy.get(".ant-spin-spinning");
         });
 
         // After fetching, spinners should disappear
         cy.wait("@getApiSetConfig");
         cy.wait("@getConfigSetConfig");
         cy.getByTestId("api-set-domains-form").within(() => {
-          cy.get(".chakra-spinner").should("not.exist");
+          cy.get(".ant-spin-spinning").should("not.exist");
         });
         cy.getByTestId("config-set-domains-form").within(() => {
-          cy.get(".chakra-spinner").should("not.exist");
+          cy.get(".ant-spin-spinning").should("not.exist");
         });
       });
 

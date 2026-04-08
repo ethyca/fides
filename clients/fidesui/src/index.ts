@@ -217,7 +217,6 @@ export {
   Divider,
   Empty,
   Flex,
-  Form,
   Image,
   InputNumber,
   Layout,
@@ -234,10 +233,13 @@ export {
   Segmented,
   Skeleton,
   Space,
-  Spin,
   Splitter,
   Steps,
   Switch,
+  // the HOC CustomSpin is incompatible with a handful of usages for loading
+  // states on Chakra tables, so we re-export the base Spin.
+  // TODO: remove when all FidesTableV2s are migrated to Ant
+  Spin as TableSpinner,
   Tabs,
   TimePicker,
   Tree,
@@ -261,6 +263,7 @@ export type {
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomSpinProps as SpinProps,
   CustomStatisticProps as StatisticProps,
   StatisticTrend,
 } from "./hoc";
@@ -268,13 +271,14 @@ export {
   CustomAlert as Alert,
   CustomAvatar as Avatar,
   CustomCard as Card,
-  CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomDrawer as Drawer,
   CustomDropdown as Dropdown,
+  CustomForm as Form,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomSpin as Spin,
   CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
@@ -351,6 +355,7 @@ export type {
 } from "./components/charts/StackedBarChart";
 export { StackedBarChart } from "./components/charts/StackedBarChart";
 export { XAxisTick } from "./components/charts/XAxisTick";
+export { CopyTooltip } from "./components/data-display/CopyTooltip";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
@@ -374,9 +379,6 @@ export {
 export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
 export { LocationSelect } from "./components/data-entry/LocationSelect";
 export { SelectInline } from "./components/data-entry/SelectInline";
-
-// Export feedback components
-export { PageSpinner } from "./components/feedback/PageSpinner";
 
 // Export navigation components
 export { FloatingMenu } from "./components/navigation/FloatingMenu";
@@ -426,7 +428,9 @@ export {
   darkAntTheme,
   defaultAntTheme,
 } from "./ant-theme";
-export { theme as antTheme } from "antd";
+// Use antd/lib (CJS) rather than antd (ESM) to prevent dual module instances
+// that break ConfigProvider context and cause useToken() to return default tokens.
+export { theme as antTheme } from "antd/lib";
 
 /**
  * Custom ChakraUI Components (deprecated)

@@ -33,8 +33,8 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
-    get_async_task_tracking_cache_key,
     get_cache,
+    get_dsr_cache_store,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
     reset_privacy_request_retry_count,
@@ -148,6 +148,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                         PrivacyRequestStatus.in_processing,
                         PrivacyRequestStatus.approved,
                         PrivacyRequestStatus.requires_input,
+                        PrivacyRequestStatus.pending_external,
                     ]
                 )
             )
@@ -336,9 +337,11 @@ def get_cached_task_id(entity_id: str) -> Optional[str]:
 
     Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
     """
-    cache: FidesopsRedis = get_cache()
     try:
-        task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
+        store = get_dsr_cache_store(entity_id)
+        task_id = store.get_async_execution()
+        if isinstance(task_id, bytes):
+            return task_id.decode(CONFIG.security.encoding)
         return task_id
     except Exception as exc:
         logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")
@@ -573,6 +576,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             PrivacyRequestStatus.in_processing,
                             PrivacyRequestStatus.approved,
                             PrivacyRequestStatus.requires_input,
+                            PrivacyRequestStatus.pending_external,
                         ]
                     )
                 )
@@ -667,16 +671,17 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         # This means the subtask is stuck - but we need to handle this differently
                         # based on the privacy request status
                         if not subtask_id:
-                            if (
-                                privacy_request.status
-                                == PrivacyRequestStatus.requires_input
+                            if privacy_request.status in (
+                                PrivacyRequestStatus.requires_input,
+                                PrivacyRequestStatus.pending_external,
                             ):
-                                # For requires_input status, don't automatically error the request
-                                # as it's intentionally waiting for user input
+                                # For requires_input / pending_external status, don't
+                                # automatically error the request as it's intentionally
+                                # waiting for user input or an external system (e.g. Jira)
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) in requires_input status - "
-                                    f"keeping request in current status as it may be waiting for manual input"
+                                    f"(privacy request {privacy_request.id}) in {privacy_request.status.value} status - "
+                                    f"keeping request in current status as it may be waiting for input or an external system"
                                 )
                                 should_requeue = False
                                 break
@@ -858,12 +863,22 @@ def batch_execution_and_audit_logs_by_dataset(
 
     result: Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]] = {}
 
+    audit_log_display_names = {
+        "approved": "Request approved",
+        "denied": "Request denied",
+        "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
+        "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
+        "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
+    }
+
     for log in combined.order_by(ExecutionLog.updated_at.asc()):
         pr_id = log.privacy_request_id
         if pr_id not in result:
             result[pr_id] = defaultdict(list)
 
-        dataset_name: str = log.dataset_name or f"Request {log.status}"
+        dataset_name: str = log.dataset_name or audit_log_display_names.get(
+            log.status, f"Request {log.status}"
+        )
 
         if len(result[pr_id][dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
             continue

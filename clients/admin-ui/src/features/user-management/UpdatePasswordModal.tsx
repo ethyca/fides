@@ -1,12 +1,4 @@
-import {
-  Button,
-  ChakraFormControl as FormControl,
-  ChakraInput as Input,
-  ChakraStack as Stack,
-  Modal,
-  useChakraDisclosure as useDisclosure,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Input, Modal, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -15,7 +7,7 @@ import { clearAuthAndLogout } from "./logout-helpers";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
 
 const useUpdatePasswordModal = (id: string) => {
-  const modal = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const message = useMessage();
   const [oldPasswordValue, setOldPasswordValue] = useState("");
   const [newPasswordValue, setNewPasswordValue] = useState("");
@@ -29,14 +21,6 @@ const useUpdatePasswordModal = (id: string) => {
     oldPasswordValue
   );
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === "oldPassword") {
-      setOldPasswordValue(event.target.value);
-    } else {
-      setNewPasswordValue(event.target.value);
-    }
-  };
-
   const handleChangePassword = async () => {
     if (changePasswordValidation) {
       changePassword({
@@ -48,20 +32,23 @@ const useUpdatePasswordModal = (id: string) => {
         .then(() => {
           message.success("Password updated");
           clearAuthAndLogout(dispatch as any, router, {
-            onClose: modal.onClose,
+            onClose: () => setIsOpen(false),
           });
         });
     }
   };
 
   return {
-    ...modal,
+    isOpen,
+    onOpen: () => setIsOpen(true),
+    onClose: () => setIsOpen(false),
     changePasswordValidation,
-    handleChange,
+    oldPasswordValue,
+    setOldPasswordValue,
+    newPasswordValue,
+    setNewPasswordValue,
     handleChangePassword,
     isLoading,
-    newPasswordValue,
-    oldPasswordValue,
   };
 };
 
@@ -72,12 +59,13 @@ interface UpdatePasswordModalProps {
 const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
   const {
     changePasswordValidation,
-    handleChange,
+    oldPasswordValue,
+    setOldPasswordValue,
+    newPasswordValue,
+    setNewPasswordValue,
     handleChangePassword,
     isLoading,
     isOpen,
-    newPasswordValue,
-    oldPasswordValue,
     onClose,
     onOpen,
   } = useUpdatePasswordModal(id);
@@ -112,30 +100,22 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
           </>
         }
       >
-        <Stack direction="column" spacing="15px">
-          <FormControl>
-            <Input
-              isRequired
-              name="oldPassword"
-              onChange={handleChange}
-              placeholder="Old Password"
-              type="password"
-              value={oldPasswordValue}
-              data-testid="input-oldPassword"
-            />
-          </FormControl>
-          <FormControl>
-            <Input
-              isRequired
-              name="newPassword"
-              onChange={handleChange}
-              placeholder="New Password"
-              type="password"
-              value={newPasswordValue}
-              data-testid="input-newPassword"
-            />
-          </FormControl>
-        </Stack>
+        <Flex vertical gap={15}>
+          <Input.Password
+            name="oldPassword"
+            onChange={(e) => setOldPasswordValue(e.target.value)}
+            placeholder="Old Password"
+            value={oldPasswordValue}
+            data-testid="input-oldPassword"
+          />
+          <Input.Password
+            name="newPassword"
+            onChange={(e) => setNewPasswordValue(e.target.value)}
+            placeholder="New Password"
+            value={newPasswordValue}
+            data-testid="input-newPassword"
+          />
+        </Flex>
       </Modal>
     </>
   );

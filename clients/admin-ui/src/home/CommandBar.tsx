@@ -1,9 +1,9 @@
-import { Flex, Statistic, Text } from "fidesui";
+import { antTheme, Divider, Flex, Icons, Statistic } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
-import { BAND_CONFIG } from "~/features/dashboard/constants";
+import { BAND_STATUS } from "~/features/dashboard/constants";
 import {
   useGetDashboardPostureQuery,
   useGetPriorityActionsQuery,
@@ -21,31 +21,18 @@ import styles from "./CommandBar.module.scss";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 
-function getDiffArrow(direction: DiffDirection): string {
+function getDiffArrow(direction: DiffDirection): React.ReactNode {
   if (direction === DiffDirection.DOWN) {
-    return "↓";
+    return <Icons.ArrowDown size={12} />;
   }
   if (direction === DiffDirection.UP) {
-    return "↑";
+    return <Icons.ArrowUp size={12} />;
   }
-  return "→";
+  return <Icons.ArrowRight size={12} />;
 }
 
-const SCORE_COLOR: Record<string, string> = {
-  success: "var(--ant-color-success)",
-  info: "var(--ant-color-info)",
-  caution: "var(--ant-color-warning)",
-  error: "var(--ant-color-error)",
-};
-
-const VALUE_COLOR: Record<PostureBand, string | undefined> = {
-  [PostureBand.EXCELLENT]: undefined,
-  [PostureBand.GOOD]: undefined,
-  [PostureBand.AT_RISK]: "var(--ant-color-warning)",
-  [PostureBand.CRITICAL]: "var(--ant-color-error)",
-};
-
 export const CommandBar = () => {
+  const { token } = antTheme.useToken();
   const {
     flags: { alphaDarkMode },
   } = useFlags();
@@ -60,9 +47,12 @@ export const CommandBar = () => {
 
   const animatedScore = useCountUp(score);
 
-  const bandConfig = BAND_CONFIG[band];
-  const scoreColor = SCORE_COLOR[bandConfig.color];
-  const valueColor = VALUE_COLOR[band];
+  const bandStatus = BAND_STATUS[band];
+  const statusTokenMap = {
+    warning: token.colorWarning,
+    error: token.colorError,
+  };
+  const valueColor = bandStatus ? statusTokenMap[bandStatus] : undefined;
 
   const stats = useMemo(() => {
     const items = actions?.items ?? [];
@@ -95,59 +85,51 @@ export const CommandBar = () => {
   }, []);
 
   return (
-    <Flex
-      align="center"
-      className="h-12 shrink-0 select-none bg-[var(--ant-color-bg-layout)] px-10"
-    >
-      <Flex align="center" gap="large" className="flex-1">
-        <Flex
-          align="center"
-          gap="small"
-          role="button"
-          tabIndex={0}
-          className="cursor-pointer rounded-md px-2 py-1 transition-opacity hover:opacity-70"
-          onClick={openPostureDrawer}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              openPostureDrawer();
-            }
-          }}
-        >
-          <Statistic
-            value={animatedScore}
-            valueStyle={{ color: scoreColor }}
-            className={styles.scoreStatistic}
-          />
-          <Statistic
-            value={diffPercent}
-            prefix={getDiffArrow(diffDirection)}
-            className={styles.diffStatistic}
-          />
-        </Flex>
-
-        <Text style={{ color: "var(--ant-color-border)" }}>·</Text>
-
-        {stats.map((stat, i) => (
-          <Flex key={stat.label} align="center" gap={4}>
-            {i > 0 && (
-              <Text
-                className="mr-2"
-                style={{ color: "var(--ant-color-border)" }}
-              >
-                ·
-              </Text>
-            )}
+    <Flex align="center" className="h-12 shrink-0 select-none px-10">
+      <div className="mx-auto flex w-full items-center">
+        <Flex align="center" gap="large" className="flex-1">
+          <Flex
+            align="center"
+            gap="small"
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer rounded-md px-2 py-1 transition-opacity hover:opacity-70"
+            onClick={openPostureDrawer}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openPostureDrawer();
+              }
+            }}
+          >
             <Statistic
-              value={stat.value}
-              suffix={stat.label}
-              valueStyle={valueColor ? { color: valueColor } : undefined}
-              className={styles.barStatistic}
+              value={animatedScore}
+              className={styles.scoreStatistic}
+            />
+            <Statistic
+              value={diffPercent}
+              prefix={getDiffArrow(diffDirection)}
+              size="sm"
+              className={styles.diffStatistic}
             />
           </Flex>
-        ))}
-      </Flex>
-      {alphaDarkMode && <ThemeModeSegmented />}
+
+          <Divider type="vertical" />
+
+          {stats.map((stat, i) => (
+            <Flex key={stat.label} align="center" gap={4}>
+              {i > 0 && <Divider type="vertical" />}
+              <Statistic
+                value={stat.value}
+                suffix={stat.label}
+                valueStyle={valueColor ? { color: valueColor } : undefined}
+                className={styles.barStatistic}
+              />
+            </Flex>
+          ))}
+        </Flex>
+        {alphaDarkMode && <ThemeModeSegmented />}
+      </div>
     </Flex>
   );
 };

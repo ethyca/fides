@@ -1,11 +1,4 @@
-import {
-  Button,
-  ChakraSpinner as Spinner,
-  Col,
-  Row,
-  Tabs,
-  useMessage,
-} from "fidesui";
+import { Button, Col, Row, Spin, Tabs, useMessage } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
@@ -216,7 +209,7 @@ const IntegrationDetailView: NextPage = () => {
           />
           {modalContext}
           {isLoading ? (
-            <Spinner />
+            <Spin />
           ) : (
             !!connection && (
               <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
@@ -229,7 +222,7 @@ const IntegrationDetailView: NextPage = () => {
           xxl={{ flex: "0 0 350px" }}
         >
           {isLoading ? (
-            <Spinner />
+            <Spin />
           ) : (
             !!connection && (
               <IntegrationSetupSteps

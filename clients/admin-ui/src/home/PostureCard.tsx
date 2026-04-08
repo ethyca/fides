@@ -1,35 +1,33 @@
 import type { RadarChartDataPoint } from "fidesui";
-import { Alert, Card, Flex, RadarChart, Spin, Statistic, Tag } from "fidesui";
+import {
+  Alert,
+  Card,
+  Flex,
+  Icons,
+  RadarChart,
+  SparkleIcon,
+  Statistic,
+  Tag,
+} from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { BAND_CONFIG, BAND_STATUS } from "~/features/dashboard/constants";
 import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
 import { DiffDirection } from "~/features/dashboard/types";
 
-import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PostureCard.module.scss";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 import { setDimensionFilter } from "./useDimensionFilter";
 
-function getDiffPrefix(direction: DiffDirection): string | undefined {
+function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
   if (direction === DiffDirection.UNCHANGED) {
     return undefined;
   }
   if (direction === DiffDirection.DOWN) {
-    return "↓";
+    return <Icons.ArrowDown size={12} />;
   }
-  return "↑";
-}
-
-function getPostureAlertType(score: number): "error" | "warning" | "success" {
-  if (score < 40) {
-    return "error";
-  }
-  if (score < 80) {
-    return "warning";
-  }
-  return "success";
+  return <Icons.ArrowUp size={12} />;
 }
 
 export const PostureCard = () => {
@@ -86,57 +84,58 @@ export const PostureCard = () => {
   );
 
   return (
-    <Spin spinning={isLoading} wrapperClassName={styles.spinWrapper}>
-      <Card
-        title="Posture"
-        variant="borderless"
-        className={styles.cardContainer}
-      >
-        <Flex align="baseline" gap="medium">
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label="View posture breakdown"
-            className={styles.clickableScore}
-            onClick={openPostureDrawer}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                openPostureDrawer();
-              }
-            }}
-          >
-            <Statistic value={animatedScore} />
-          </div>
-          <Statistic
-            trend={
-              diffDirection === DiffDirection.UNCHANGED
-                ? "neutral"
-                : (diffDirection as "up" | "down")
+    <Card
+      title="Posture"
+      variant="borderless"
+      loading={isLoading}
+      className={styles.cardContainer}
+    >
+      <Flex align="baseline" gap="small" className={styles.scoreOverlay}>
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="View posture breakdown"
+          className={styles.clickableScore}
+          onClick={openPostureDrawer}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openPostureDrawer();
             }
-            value={postureDiff}
-            prefix={getDiffPrefix(diffDirection)}
-            className={cardStyles.smallStatistic}
-          />
-        </Flex>
-        <div className={styles.radarChartWrapper}>
-          <div className={styles.radarChartInner}>
-            <RadarChart
-              data={radarData}
-              outerRadius="80%"
-              onDimensionClick={handleDimensionClick}
-              tooltipContent={renderTooltip}
-            />
-          </div>
+          }}
+        >
+          <Statistic value={animatedScore} valueStyle={{ fontSize: 48 }} />
         </div>
-        {posture?.agent_annotation && (
-          <Alert
-            type={getPostureAlertType(postureScore)}
-            message={posture.agent_annotation}
-            className={styles.alertSm}
+        <Statistic
+          trend={
+            diffDirection === DiffDirection.UNCHANGED
+              ? "neutral"
+              : (diffDirection as "up" | "down")
+          }
+          value={postureDiff}
+          prefix={getDiffPrefix(diffDirection)}
+          size="sm"
+        />
+      </Flex>
+      <div className={styles.radarChartWrapper}>
+        <div className={styles.radarChartInner}>
+          <RadarChart
+            data={radarData}
+            outerRadius="80%"
+            onDimensionClick={handleDimensionClick}
+            tooltipContent={renderTooltip}
           />
-        )}
-      </Card>
-    </Spin>
+        </div>
+      </div>
+      {posture?.agent_annotation && (
+        <Alert
+          type="info"
+          showIcon
+          icon={<SparkleIcon size={14} />}
+          message={posture.agent_annotation}
+          className={styles.alertSm}
+        />
+      )}
+    </Card>
   );
 };

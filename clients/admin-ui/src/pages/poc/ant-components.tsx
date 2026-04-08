@@ -52,7 +52,7 @@ const AntPOC: NextPage = () => {
   return (
     <Layout>
       <Content className="overflow-auto px-10 py-6">
-        <PageHeader heading="Ant Design Proof of Concept" />
+        <PageHeader heading="Ant design POC" />
         <Row gutter={16} className="mt-6">
           <Col span={8}>
             <Card title="Button" variant="borderless" className="h-full">

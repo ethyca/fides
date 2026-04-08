@@ -1,16 +1,21 @@
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { DefaultCell, GroupCountBadgeCell } from "common/table/v2";
-import { CUSTOM_TAG_COLOR } from "fidesui";
-import { isArray, map, snakeCase } from "lodash";
+import {
+  ColumnsType,
+  CUSTOM_TAG_COLOR,
+  Form,
+  FormInstance,
+  Input,
+  MenuProps,
+} from "fidesui";
+import { isArray, snakeCase } from "lodash";
 import { ReactNode } from "react";
 
-import { CustomReportColumn } from "~/features/common/custom-reports/types";
-import { TagExpandableCell } from "~/features/common/table/cells";
 import {
-  BadgeCellExpandable,
-  EditableHeaderCell,
-} from "~/features/common/table/v2/cells";
-import { getColumnHeaderText } from "~/features/common/table/v2/util";
+  ListExpandableCell,
+  TagExpandableCell,
+} from "~/features/common/table/cells";
+import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
+import { InteractiveTextCell } from "~/features/common/table/cells/InteractiveTextCell";
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";
 import {
   CustomFieldDefinitionWithId,
@@ -20,58 +25,91 @@ import {
 } from "~/types/api";
 
 import { COLUMN_IDS, DEFAULT_COLUMN_NAMES } from "./constants";
-import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
+import { DatamapReportRow, getGroupKey } from "./groupDatamapRows";
+import { getColKey } from "./utils";
 
-const columnHelper = createColumnHelper<DatamapReport>();
+type MenuClickInfo = Parameters<NonNullable<MenuProps["onClick"]>>[0];
 
-// Custom fields are prepended by `system_` or `privacy_declaration_`
-const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
-const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
+export const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
+export const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
 
-export const getDefaultColumn: (
-  columnNameMap: Record<string, CustomReportColumn | string>,
-  isRenamingColumns: boolean,
-) => Partial<ColumnDef<DatamapReport>> = (
-  columnNameMap,
-  isRenamingColumns,
-) => ({
-  cell: (props) => <DefaultCell value={props.getValue() as string} />,
-  header: (props) => {
-    const newColumnNameMap: Record<string, string> = {};
-    Object.keys(columnNameMap).forEach((key) => {
-      if (typeof columnNameMap[key] === "string") {
-        newColumnNameMap[key] = columnNameMap[key] as string;
-      } else if ((columnNameMap[key] as CustomReportColumn).label) {
-        newColumnNameMap[key] =
-          (columnNameMap[key] as CustomReportColumn).label || "";
+export interface DatamapReportColumnProps {
+  onOpenSystemDrawer: (row: DatamapReportRow) => void;
+  getDataUseDisplayName: (dataUseKey: string) => ReactNode;
+  getDataCategoryDisplayName: (dataCategoryKey: string) => string | JSX.Element;
+  getDataSubjectDisplayName: (dataSubjectKey: string) => ReactNode;
+  datamapReport: Page_DatamapReport_ | undefined;
+  customFields: CustomFieldDefinitionWithId[];
+  systemGroups?: SystemGroup[];
+  isRenaming?: boolean;
+  groupBy?: string;
+  columnNameMap: Record<string, string>;
+  form?: FormInstance;
+  expandedColumns: Record<string, boolean>;
+  onToggleColumnExpand: (columnId: string, expanded: boolean) => void;
+}
+
+/**
+ * Returns the expand/collapse header menu for a column, or an empty object
+ * when column renaming is active (menus are hidden during rename).
+ */
+const expandCollapseMenu = (
+  columnId: string,
+  isRenaming: boolean,
+  onToggleColumnExpand: (id: string, expanded: boolean) => void,
+) =>
+  !isRenaming
+    ? {
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e: MenuClickInfo) => {
+            e.domEvent.stopPropagation();
+            onToggleColumnExpand(columnId, e.key === "expand-all");
+          },
+        },
       }
-    });
+    : {};
+
+/**
+ * Get the display title for a column, supporting inline renaming via Ant Form.
+ */
+const getColumnTitle = (
+  columnId: string,
+  columnNameMap: Record<string, string>,
+  isRenaming: boolean,
+  form?: FormInstance,
+): ReactNode => {
+  const displayName =
+    columnNameMap[columnId] ||
+    DEFAULT_COLUMN_NAMES[columnId as COLUMN_IDS] ||
+    columnId;
+
+  if (isRenaming && form) {
     return (
-      <EditableHeaderCell
-        value={getColumnHeaderText({
-          columnId: props.column.id,
-          columnNameMap: newColumnNameMap,
-        })}
-        defaultValue={
-          DEFAULT_COLUMN_NAMES[props.column.id as COLUMN_IDS] ||
-          getColumnHeaderText({
-            columnId: props.column.id,
-          })
-        }
-        isEditing={isRenamingColumns}
-        {...props}
-      />
+      <Form.Item name={columnId} noStyle>
+        <Input
+          size="small"
+          placeholder={DEFAULT_COLUMN_NAMES[columnId as COLUMN_IDS] || columnId}
+          onPressEnter={() => form.submit()}
+          onClick={(e) => e.stopPropagation()}
+          data-testid={`column-${columnId}-input`}
+          style={{ minWidth: 100 }}
+        />
+      </Form.Item>
     );
-  },
-});
+  }
+  return displayName;
+};
 
 const getCustomFieldColumns = (
   datamapReport: Page_DatamapReport_ | undefined,
   customFields: CustomFieldDefinitionWithId[],
-) => {
-  // Determine custom field keys by
-  // 1. If they aren't in our expected, static, columns
-  // 2. If they start with one of the custom field prefixes
+  columnNameMap: Record<string, string>,
+  isRenaming: boolean,
+  expandedColumns: Record<string, boolean>,
+  onToggleColumnExpand: (columnId: string, expanded: boolean) => void,
+  form?: FormInstance,
+): ColumnsType<DatamapReportRow> => {
   const datamapKeys = datamapReport?.items?.length
     ? Object.keys(datamapReport.items[0])
     : [];
@@ -84,45 +122,43 @@ const getCustomFieldColumns = (
         k.startsWith(CUSTOM_FIELD_SYSTEM_PREFIX),
     );
 
-  // Create column objects for each custom field key
-  const customColumns = customFieldKeys.map((key) => {
-    // We need to figure out the original custom field object in order to see
-    // if the value is a string[], which would want `showHeaderMenu=true`
+  return customFieldKeys.map((key) => {
     const customField = customFields.find((cf) =>
       key.includes(snakeCase(cf.name)),
     );
-    return columnHelper.accessor((row) => row[key], {
-      id: key,
-      cell: (props) =>
-        // Conditionally render the Group cell if we have more than one value.
-        // Alternatively, could check the customField type
-        Array.isArray(props.getValue()) ? (
-          <GroupCountBadgeCell value={props.getValue()} ignoreZero {...props} />
-        ) : (
-          <DefaultCell value={props.getValue() as string} />
-        ),
-      meta: {
-        showHeaderMenu: customField?.field_type === "string[]",
-      },
-    });
-  });
+    const isArrayField = customField?.field_type === "string[]";
 
-  return customColumns;
+    return {
+      title:
+        customField?.name ||
+        getColumnTitle(key, columnNameMap, isRenaming, form), // Custom fields cannot be renamed, so we only care about the name and then we fall back to generating a title from the key if that's missing.
+      dataIndex: key,
+      key,
+      render: (value: unknown) => {
+        if (Array.isArray(value)) {
+          return (
+            <ListExpandableCell
+              values={value.map(String)}
+              valueSuffix={key}
+              columnState={{ isExpanded: expandedColumns[key] }}
+            />
+          );
+        }
+        return (
+          <EllipsisCell>
+            {value !== null && value !== undefined ? String(value) : ""}
+          </EllipsisCell>
+        );
+      },
+      ...(isArrayField
+        ? expandCollapseMenu(key, isRenaming, onToggleColumnExpand)
+        : {}),
+    };
+  });
 };
 
-interface DatamapReportColumnProps {
-  onSelectRow: (row: DatamapReport) => void;
-  getDataUseDisplayName: (dataUseKey: string) => ReactNode;
-  getDataCategoryDisplayName: (dataCategoryKey: string) => string | JSX.Element;
-  getDataSubjectDisplayName: (dataSubjectKey: string) => ReactNode;
-  datamapReport: Page_DatamapReport_ | undefined;
-  customFields: CustomFieldDefinitionWithId[];
-  systemGroups?: SystemGroup[];
-  isRenaming?: boolean;
-  groupBy?: string;
-}
 export const getDatamapReportColumns = ({
-  onSelectRow,
+  onOpenSystemDrawer,
   getDataUseDisplayName,
   getDataCategoryDisplayName,
   getDataSubjectDisplayName,
@@ -131,10 +167,21 @@ export const getDatamapReportColumns = ({
   systemGroups = [],
   isRenaming = false,
   groupBy,
-}: DatamapReportColumnProps) => {
-  const customFieldColumns = getCustomFieldColumns(datamapReport, customFields);
+  columnNameMap,
+  form,
+  expandedColumns,
+  onToggleColumnExpand,
+}: DatamapReportColumnProps): ColumnsType<DatamapReportRow> => {
+  const customFieldColumns = getCustomFieldColumns(
+    datamapReport,
+    customFields,
+    columnNameMap,
+    isRenaming,
+    expandedColumns,
+    onToggleColumnExpand,
+    form,
+  );
 
-  // Helper function to get system group color by fides_key
   const getSystemGroupColor = (
     fidesKey: string,
   ): CUSTOM_TAG_COLOR | undefined => {
@@ -146,7 +193,6 @@ export const getDatamapReportColumns = ({
       : undefined;
   };
 
-  // Helper function to get the dominant color for a group of system groups
   const getDominantColor = (
     groupKeys: string[],
   ): CUSTOM_TAG_COLOR | undefined => {
@@ -156,373 +202,534 @@ export const getDatamapReportColumns = ({
     if (groupKeys.length === 1) {
       return getSystemGroupColor(groupKeys[0]);
     }
-    // For multiple groups, use white as neutral color (consistent with other columns)
     return undefined;
   };
 
-  // Base columns that are always included
-  const baseColumns = [
-    columnHelper.accessor((row) => row.system_name, {
-      enableGrouping: true,
-      id: COLUMN_IDS.SYSTEM_NAME,
-      meta: {
-        onCellClick: onSelectRow,
-      },
-    }),
-    columnHelper.accessor((row) => row.data_uses, {
-      id: COLUMN_IDS.DATA_USE,
-      cell: (props) => {
-        const value = props.getValue();
-        return (
-          <GroupCountBadgeCell
-            suffix="data uses"
-            ignoreZero
-            value={
-              isArray(value)
-                ? map(value, getDataUseDisplayName)
-                : getDataUseDisplayName(value || "")
-            }
-            tagProps={{ color: "white" }}
-            {...props}
-          />
-        );
-      },
-      meta: {
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.data_categories, {
-      id: COLUMN_IDS.DATA_CATEGORY,
-      cell: (props) => {
-        const cellValues = props.getValue();
-        if (!cellValues || cellValues.length === 0) {
-          return null;
-        }
-        const values = isArray(cellValues)
-          ? cellValues.map((value) => {
-              return { label: getDataCategoryDisplayName(value), key: value };
-            })
-          : [
-              {
-                label: getDataCategoryDisplayName(cellValues),
-                key: cellValues,
-              },
-            ];
-        return <BadgeCellExpandable values={values} cellProps={props as any} />;
-      },
-      meta: {
-        showHeaderMenu: !isRenaming,
-        showHeaderMenuWrapOption: true,
-        width: "auto",
-        overflow: "hidden",
-      },
-    }),
-    columnHelper.accessor((row) => row.data_subjects, {
-      id: COLUMN_IDS.DATA_SUBJECT,
-      cell: (props) => {
-        const value = props.getValue();
+  const title = (id: string) =>
+    getColumnTitle(id, columnNameMap, isRenaming, form);
 
+  const menu = (columnId: string) =>
+    expandCollapseMenu(columnId, isRenaming, onToggleColumnExpand);
+
+  const baseColumns: ColumnsType<DatamapReportRow> = [
+    {
+      title: title(COLUMN_IDS.SYSTEM_NAME),
+      dataIndex: "system_name",
+      key: COLUMN_IDS.SYSTEM_NAME,
+      render: (value: string, record: DatamapReportRow) => (
+        <InteractiveTextCell onClick={() => onOpenSystemDrawer(record)}>
+          {value}
+        </InteractiveTextCell>
+      ),
+      className: `column-${COLUMN_IDS.SYSTEM_NAME}`,
+    },
+    {
+      title: title(COLUMN_IDS.DATA_USE),
+      dataIndex: "data_uses",
+      key: COLUMN_IDS.DATA_USE,
+      render: (value: string | string[] | null) => {
+        if (!value) {
+          return null;
+        }
+        const displayValues = isArray(value)
+          ? value.map((v) => ({
+              label: getDataUseDisplayName(v),
+              key: v,
+            }))
+          : [{ label: getDataUseDisplayName(value), key: value }];
         return (
-          <GroupCountBadgeCell
-            suffix="data subjects"
-            ignoreZero
-            value={
-              isArray(value)
-                ? map(value, getDataSubjectDisplayName)
-                : getDataSubjectDisplayName(value || "")
-            }
+          <TagExpandableCell
+            values={displayValues}
             tagProps={{ color: "white" }}
-            {...props}
+            columnState={{ isExpanded: expandedColumns[COLUMN_IDS.DATA_USE] }}
           />
         );
       },
-      meta: {
-        showHeaderMenu: !isRenaming,
-      },
-    }),
-    columnHelper.accessor((row) => row.legal_name, {
-      id: COLUMN_IDS.LEGAL_NAME,
-    }),
-    columnHelper.accessor((row) => row.dpo, {
-      id: COLUMN_IDS.DPO,
-    }),
-    columnHelper.accessor((row) => row.legal_basis_for_processing, {
-      id: COLUMN_IDS.LEGAL_BASIS_FOR_PROCESSING,
-    }),
-    columnHelper.accessor((row) => row.administrating_department, {
-      id: COLUMN_IDS.ADMINISTRATING_DEPARTMENT,
-    }),
-    columnHelper.accessor((row) => row.cookie_max_age_seconds, {
-      id: COLUMN_IDS.COOKIE_MAX_AGE_SECONDS,
-    }),
-    columnHelper.accessor((row) => row.privacy_policy, {
-      id: COLUMN_IDS.PRIVACY_POLICY,
-    }),
-    columnHelper.accessor((row) => row.legal_address, {
-      id: COLUMN_IDS.LEGAL_ADDRESS,
-    }),
-    columnHelper.accessor((row) => row.cookie_refresh, {
-      id: COLUMN_IDS.COOKIE_REFRESH,
-    }),
-    columnHelper.accessor((row) => row.data_security_practices, {
-      id: COLUMN_IDS.DATA_SECURITY_PRACTICES,
-    }),
-    columnHelper.accessor((row) => row.data_shared_with_third_parties, {
-      id: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
-    }),
-    columnHelper.accessor((row) => row.processes_special_category_data, {
-      id: COLUMN_IDS.PROCESSES_SPECIAL_CATEGORY_DATA,
-    }),
-    columnHelper.accessor((row) => row.data_stewards, {
-      id: COLUMN_IDS.DATA_STEWARDS,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="data stewards"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.declaration_name, {
-      id: COLUMN_IDS.DECLARATION_NAME,
-    }),
-    columnHelper.accessor((row) => row.does_international_transfers, {
-      id: COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS,
-    }),
-    columnHelper.accessor((row) => row.dpa_location, {
-      id: COLUMN_IDS.DPA_LOCATION,
-    }),
-    columnHelper.accessor((row) => row.egress, {
-      id: COLUMN_IDS.DESTINATIONS,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="destinations"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.exempt_from_privacy_regulations, {
-      id: COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS,
-    }),
-    columnHelper.accessor((row) => row.features, {
-      id: COLUMN_IDS.FEATURES,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="features"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.fides_key, {
-      id: COLUMN_IDS.FIDES_KEY,
-    }),
-    columnHelper.accessor((row) => row.flexible_legal_basis_for_processing, {
-      id: COLUMN_IDS.FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING,
-    }),
-    columnHelper.accessor((row) => row.impact_assessment_location, {
-      id: COLUMN_IDS.IMPACT_ASSESSMENT_LOCATION,
-    }),
-    columnHelper.accessor((row) => row.ingress, {
-      id: COLUMN_IDS.SOURCES,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="sources"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.joint_controller_info, {
-      id: COLUMN_IDS.JOINT_CONTROLLER_INFO,
-    }),
-    columnHelper.accessor((row) => row.legal_basis_for_profiling, {
-      id: COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="profiles"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.legal_basis_for_transfers, {
-      id: COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="transfers"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
-      id: COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL,
-    }),
-    columnHelper.accessor((row) => row.processes_personal_data, {
-      id: COLUMN_IDS.PROCESSES_PERSONAL_DATA,
-    }),
-    columnHelper.accessor((row) => row.reason_for_exemption, {
-      id: COLUMN_IDS.REASON_FOR_EXEMPTION,
-    }),
-    columnHelper.accessor((row) => row.requires_data_protection_assessments, {
-      id: COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS,
-    }),
-    columnHelper.accessor((row) => row.responsibility, {
-      id: COLUMN_IDS.RESPONSIBILITY,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="responsibilities"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.retention_period, {
-      id: COLUMN_IDS.RETENTION_PERIOD,
-    }),
-    columnHelper.accessor((row) => row.shared_categories, {
-      id: COLUMN_IDS.SHARED_CATEGORIES,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="shared categories"
-          ignoreZero
-          value={props.getValue()}
-          tagProps={{ color: "white" }}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.special_category_legal_basis, {
-      id: COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS,
-    }),
-    columnHelper.accessor((row) => row.third_parties, {
-      id: COLUMN_IDS.THIRD_PARTIES,
-    }),
-    columnHelper.accessor((row) => row.system_undeclared_data_categories, {
-      id: COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES,
-      cell: (props) => {
-        const cellValues = props.getValue();
-        if (!cellValues || cellValues.length === 0) {
-          return null;
-        }
-        const values = isArray(cellValues)
-          ? cellValues.map((value) => {
-              return { label: getDataCategoryDisplayName(value), key: value };
-            })
-          : [
-              {
-                label: getDataCategoryDisplayName(cellValues),
-                key: cellValues,
-              },
-            ];
-        return <BadgeCellExpandable values={values} cellProps={props as any} />;
-      },
-      meta: {
-        showHeaderMenu: !isRenaming,
-        showHeaderMenuWrapOption: true,
-        width: "auto",
-        overflow: "hidden",
-      },
-    }),
-    columnHelper.accessor((row) => row.data_use_undeclared_data_categories, {
-      id: COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES,
-      cell: (props) => {
-        const cellValues = props.getValue();
-        if (!cellValues || cellValues.length === 0) {
-          return null;
-        }
-        const values = isArray(cellValues)
-          ? cellValues.map((value) => {
-              return { label: getDataCategoryDisplayName(value), key: value };
-            })
-          : [
-              {
-                label: getDataCategoryDisplayName(cellValues),
-                key: cellValues,
-              },
-            ];
-        return <BadgeCellExpandable values={values} cellProps={props as any} />;
-      },
-      meta: {
-        showHeaderMenu: !isRenaming,
-        showHeaderMenuWrapOption: true,
-        width: "auto",
-        overflow: "hidden",
-      },
-    }),
-    columnHelper.accessor((row) => row.cookies, {
-      id: COLUMN_IDS.COOKIES,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          ignoreZero
-          suffix="cookies"
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.uses_cookies, {
-      id: COLUMN_IDS.USES_COOKIES,
-    }),
-    columnHelper.accessor((row) => row.uses_non_cookie_access, {
-      id: COLUMN_IDS.USES_NON_COOKIE_ACCESS,
-    }),
-    columnHelper.accessor((row) => row.uses_profiling, {
-      id: COLUMN_IDS.USES_PROFILING,
-    }),
-    columnHelper.accessor((row) => row.system_groups, {
-      id: COLUMN_IDS.SYSTEM_GROUPS,
-      cell: (props) => {
-        const value = props.getValue();
+      className: `column-${COLUMN_IDS.DATA_USE}`,
+    },
+    {
+      title: title(COLUMN_IDS.DATA_CATEGORY),
+      dataIndex: "data_categories",
+      key: COLUMN_IDS.DATA_CATEGORY,
+      render: (value: string | string[] | null) => {
         if (!value || (Array.isArray(value) && value.length === 0)) {
           return null;
         }
-
+        const values = isArray(value)
+          ? value.map((v) => ({
+              label: getDataCategoryDisplayName(v),
+              key: v,
+            }))
+          : [{ label: getDataCategoryDisplayName(value), key: value }];
+        return (
+          <TagExpandableCell
+            values={values}
+            columnState={{
+              isExpanded: expandedColumns[COLUMN_IDS.DATA_CATEGORY],
+            }}
+          />
+        );
+      },
+      ...menu(COLUMN_IDS.DATA_CATEGORY),
+      className: `column-${COLUMN_IDS.DATA_CATEGORY}`,
+    },
+    {
+      title: title(COLUMN_IDS.DATA_SUBJECT),
+      dataIndex: "data_subjects",
+      key: COLUMN_IDS.DATA_SUBJECT,
+      render: (value: string[] | null) => {
+        if (!value) {
+          return null;
+        }
+        const displayValues = isArray(value)
+          ? value.map((v) => ({
+              label: getDataSubjectDisplayName(v),
+              key: v,
+            }))
+          : [{ label: getDataSubjectDisplayName(value), key: value }];
+        return (
+          <TagExpandableCell
+            values={displayValues}
+            tagProps={{ color: "white" }}
+            columnState={{
+              isExpanded: expandedColumns[COLUMN_IDS.DATA_SUBJECT],
+            }}
+          />
+        );
+      },
+      ...menu(COLUMN_IDS.DATA_SUBJECT),
+      className: `column-${COLUMN_IDS.DATA_SUBJECT}`,
+    },
+    {
+      title: title(COLUMN_IDS.LEGAL_NAME),
+      dataIndex: "legal_name",
+      key: COLUMN_IDS.LEGAL_NAME,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.DPO),
+      dataIndex: "dpo",
+      key: COLUMN_IDS.DPO,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.LEGAL_BASIS_FOR_PROCESSING),
+      dataIndex: "legal_basis_for_processing",
+      key: COLUMN_IDS.LEGAL_BASIS_FOR_PROCESSING,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.ADMINISTRATING_DEPARTMENT),
+      dataIndex: "administrating_department",
+      key: COLUMN_IDS.ADMINISTRATING_DEPARTMENT,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.COOKIE_MAX_AGE_SECONDS),
+      dataIndex: "cookie_max_age_seconds",
+      key: COLUMN_IDS.COOKIE_MAX_AGE_SECONDS,
+      render: (value: number | null) => (
+        <EllipsisCell>
+          {value !== null && value !== undefined ? String(value) : ""}
+        </EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.PRIVACY_POLICY),
+      dataIndex: "privacy_policy",
+      key: COLUMN_IDS.PRIVACY_POLICY,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.LEGAL_ADDRESS),
+      dataIndex: "legal_address",
+      key: COLUMN_IDS.LEGAL_ADDRESS,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.COOKIE_REFRESH),
+      dataIndex: "cookie_refresh",
+      key: COLUMN_IDS.COOKIE_REFRESH,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.DATA_SECURITY_PRACTICES),
+      dataIndex: "data_security_practices",
+      key: COLUMN_IDS.DATA_SECURITY_PRACTICES,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES),
+      dataIndex: "data_shared_with_third_parties",
+      key: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
+      render: (value: boolean | null) => (
+        <EllipsisCell>
+          {value !== null && value !== undefined ? String(value) : ""}
+        </EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.PROCESSES_SPECIAL_CATEGORY_DATA),
+      dataIndex: "processes_special_category_data",
+      key: COLUMN_IDS.PROCESSES_SPECIAL_CATEGORY_DATA,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.DATA_STEWARDS),
+      dataIndex: "data_stewards",
+      key: COLUMN_IDS.DATA_STEWARDS,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="data stewards"
+          columnState={{
+            isExpanded: expandedColumns[COLUMN_IDS.DATA_STEWARDS],
+          }}
+        />
+      ),
+      ...menu(COLUMN_IDS.DATA_STEWARDS),
+    },
+    {
+      title: title(COLUMN_IDS.DECLARATION_NAME),
+      dataIndex: "declaration_name",
+      key: COLUMN_IDS.DECLARATION_NAME,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS),
+      dataIndex: "does_international_transfers",
+      key: COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.DPA_LOCATION),
+      dataIndex: "dpa_location",
+      key: COLUMN_IDS.DPA_LOCATION,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.DESTINATIONS),
+      dataIndex: "egress",
+      key: COLUMN_IDS.DESTINATIONS,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="destinations"
+          columnState={{
+            isExpanded: expandedColumns[COLUMN_IDS.DESTINATIONS],
+          }}
+        />
+      ),
+      ...menu(COLUMN_IDS.DESTINATIONS),
+    },
+    {
+      title: title(COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS),
+      dataIndex: "exempt_from_privacy_regulations",
+      key: COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.FEATURES),
+      dataIndex: "features",
+      key: COLUMN_IDS.FEATURES,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="features"
+          columnState={{ isExpanded: expandedColumns[COLUMN_IDS.FEATURES] }}
+        />
+      ),
+      ...menu(COLUMN_IDS.FEATURES),
+    },
+    {
+      title: title(COLUMN_IDS.FIDES_KEY),
+      dataIndex: "fides_key",
+      key: COLUMN_IDS.FIDES_KEY,
+      render: (value: string) => <EllipsisCell>{value}</EllipsisCell>,
+    },
+    {
+      title: title(COLUMN_IDS.FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING),
+      dataIndex: "flexible_legal_basis_for_processing",
+      key: COLUMN_IDS.FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING,
+      render: (value: boolean | null) => (
+        <EllipsisCell>
+          {value !== null && value !== undefined ? String(value) : ""}
+        </EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.IMPACT_ASSESSMENT_LOCATION),
+      dataIndex: "impact_assessment_location",
+      key: COLUMN_IDS.IMPACT_ASSESSMENT_LOCATION,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.SOURCES),
+      dataIndex: "ingress",
+      key: COLUMN_IDS.SOURCES,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="sources"
+          columnState={{ isExpanded: expandedColumns[COLUMN_IDS.SOURCES] }}
+        />
+      ),
+      ...menu(COLUMN_IDS.SOURCES),
+    },
+    {
+      title: title(COLUMN_IDS.JOINT_CONTROLLER_INFO),
+      dataIndex: "joint_controller_info",
+      key: COLUMN_IDS.JOINT_CONTROLLER_INFO,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING),
+      dataIndex: "legal_basis_for_profiling",
+      key: COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="profiles"
+          columnState={{
+            isExpanded: expandedColumns[COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING],
+          }}
+        />
+      ),
+      ...menu(COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING),
+    },
+    {
+      title: title(COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS),
+      dataIndex: "legal_basis_for_transfers",
+      key: COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="transfers"
+          columnState={{
+            isExpanded: expandedColumns[COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS],
+          }}
+        />
+      ),
+      ...menu(COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS),
+    },
+    {
+      title: title(COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL),
+      dataIndex: "legitimate_interest_disclosure_url",
+      key: COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.PROCESSES_PERSONAL_DATA),
+      dataIndex: "processes_personal_data",
+      key: COLUMN_IDS.PROCESSES_PERSONAL_DATA,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.REASON_FOR_EXEMPTION),
+      dataIndex: "reason_for_exemption",
+      key: COLUMN_IDS.REASON_FOR_EXEMPTION,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS),
+      dataIndex: "requires_data_protection_assessments",
+      key: COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.RESPONSIBILITY),
+      dataIndex: "responsibility",
+      key: COLUMN_IDS.RESPONSIBILITY,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="responsibilities"
+          columnState={{
+            isExpanded: expandedColumns[COLUMN_IDS.RESPONSIBILITY],
+          }}
+        />
+      ),
+      ...menu(COLUMN_IDS.RESPONSIBILITY),
+    },
+    {
+      title: title(COLUMN_IDS.RETENTION_PERIOD),
+      dataIndex: "retention_period",
+      key: COLUMN_IDS.RETENTION_PERIOD,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.SHARED_CATEGORIES),
+      dataIndex: "shared_categories",
+      key: COLUMN_IDS.SHARED_CATEGORIES,
+      render: (value: string[] | null) => {
+        if (!value || value.length === 0) {
+          return null;
+        }
+        const displayValues = value.map((v) => ({
+          label: v,
+          key: v,
+        }));
+        return (
+          <TagExpandableCell
+            values={displayValues}
+            tagProps={{ color: "white" }}
+            columnState={{
+              isExpanded: expandedColumns[COLUMN_IDS.SHARED_CATEGORIES],
+            }}
+          />
+        );
+      },
+      ...menu(COLUMN_IDS.SHARED_CATEGORIES),
+    },
+    {
+      title: title(COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS),
+      dataIndex: "special_category_legal_basis",
+      key: COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.THIRD_PARTIES),
+      dataIndex: "third_parties",
+      key: COLUMN_IDS.THIRD_PARTIES,
+      render: (value: string | null) => (
+        <EllipsisCell>{value ?? ""}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES),
+      dataIndex: "system_undeclared_data_categories",
+      key: COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES,
+      render: (value: string[] | null) => {
+        if (!value || value.length === 0) {
+          return null;
+        }
+        const values = value.map((v) => ({
+          label: getDataCategoryDisplayName(v),
+          key: v,
+        }));
+        return (
+          <TagExpandableCell
+            values={values}
+            columnState={{
+              isExpanded:
+                expandedColumns[COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES],
+            }}
+          />
+        );
+      },
+      ...menu(COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES),
+    },
+    {
+      title: title(COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES),
+      dataIndex: "data_use_undeclared_data_categories",
+      key: COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES,
+      render: (value: string[] | null) => {
+        if (!value || value.length === 0) {
+          return null;
+        }
+        const values = value.map((v) => ({
+          label: getDataCategoryDisplayName(v),
+          key: v,
+        }));
+        return (
+          <TagExpandableCell
+            values={values}
+            columnState={{
+              isExpanded:
+                expandedColumns[COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES],
+            }}
+          />
+        );
+      },
+      ...menu(COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES),
+    },
+    {
+      title: title(COLUMN_IDS.COOKIES),
+      dataIndex: "cookies",
+      key: COLUMN_IDS.COOKIES,
+      render: (value: string[] | null) => (
+        <ListExpandableCell
+          values={value ?? []}
+          valueSuffix="cookies"
+          columnState={{ isExpanded: expandedColumns[COLUMN_IDS.COOKIES] }}
+        />
+      ),
+      ...menu(COLUMN_IDS.COOKIES),
+    },
+    {
+      title: title(COLUMN_IDS.USES_COOKIES),
+      dataIndex: "uses_cookies",
+      key: COLUMN_IDS.USES_COOKIES,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.USES_NON_COOKIE_ACCESS),
+      dataIndex: "uses_non_cookie_access",
+      key: COLUMN_IDS.USES_NON_COOKIE_ACCESS,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.USES_PROFILING),
+      dataIndex: "uses_profiling",
+      key: COLUMN_IDS.USES_PROFILING,
+      render: (value: boolean | null) => (
+        <EllipsisCell>{String(value ?? "")}</EllipsisCell>
+      ),
+    },
+    {
+      title: title(COLUMN_IDS.SYSTEM_GROUPS),
+      dataIndex: "system_groups",
+      key: COLUMN_IDS.SYSTEM_GROUPS,
+      render: (value: string[] | null) => {
+        if (!value || (Array.isArray(value) && value.length === 0)) {
+          return null;
+        }
         const groupKeys = Array.isArray(value) ? value : [value];
         const values = groupKeys.map((groupKey) => {
           const systemGroup = systemGroups.find(
@@ -539,90 +746,130 @@ export const getDatamapReportColumns = ({
             },
           };
         });
-
         return <TagExpandableCell values={values} />;
       },
-      meta: {
-        width: "auto",
-      },
-    }),
-    // Tack on the custom field columns to the end
-    ...customFieldColumns,
+    },
   ];
 
-  // System group specific columns - only include when grouping by system group
-  const systemGroupColumns = [];
+  // System group specific columns
+  const systemGroupColumns: ColumnsType<DatamapReportRow> = [];
   if (groupBy === DATAMAP_GROUPING.SYSTEM_GROUP) {
     systemGroupColumns.push(
-      columnHelper.accessor((row) => row.system_group_fides_key, {
-        id: COLUMN_IDS.SYSTEM_GROUP,
-        cell: (props) => {
-          const value = props.getValue();
+      {
+        title: title(COLUMN_IDS.SYSTEM_GROUP),
+        dataIndex: "system_group_fides_key",
+        key: COLUMN_IDS.SYSTEM_GROUP,
+        render: (value: string | string[] | null) => {
           if (!value || (Array.isArray(value) && value.length === 0)) {
             return null;
           }
-          // Convert to display name and get appropriate color
-          const groupName = Array.isArray(value)
-            ? value.map(
-                (groupKey) =>
-                  systemGroups.find((sg) => sg.fides_key === groupKey)?.name ||
-                  groupKey,
-              )
-            : [
-                systemGroups.find((sg) => sg.fides_key === value)?.name ||
-                  value,
-              ];
-
           const groupKeys = Array.isArray(value) ? value : [value];
+          const groupNames = groupKeys.map(
+            (groupKey) =>
+              systemGroups.find((sg) => sg.fides_key === groupKey)?.name ||
+              groupKey,
+          );
           const dominantColor = getDominantColor(groupKeys);
-
+          const displayValues = groupNames.map((name, idx) => ({
+            label: name,
+            key: groupKeys[idx],
+          }));
           return (
-            <GroupCountBadgeCell
-              suffix="system group"
-              ignoreZero
-              value={groupName}
+            <TagExpandableCell
+              values={displayValues}
               tagProps={{
                 color: dominantColor ?? CUSTOM_TAG_COLOR.WHITE,
                 bordered: false,
               }}
-              {...props}
+              columnState={{
+                isExpanded: expandedColumns[COLUMN_IDS.SYSTEM_GROUP],
+              }}
             />
           );
         },
-        meta: {
-          width: "auto",
-          showHeaderMenu: !isRenaming,
-        },
-      }),
-      columnHelper.accessor((row) => row.system_group_data_uses, {
-        id: COLUMN_IDS.SYSTEM_GROUP_DATA_USES,
-        cell: (props) => {
-          const value = props.getValue();
+        ...menu(COLUMN_IDS.SYSTEM_GROUP),
+      },
+      {
+        title: title(COLUMN_IDS.SYSTEM_GROUP_DATA_USES),
+        dataIndex: "system_group_data_uses",
+        key: COLUMN_IDS.SYSTEM_GROUP_DATA_USES,
+        render: (value: string | string[] | null) => {
           if (!value || (Array.isArray(value) && value.length === 0)) {
             return null;
           }
+          const displayValues = isArray(value)
+            ? value.map((v) => ({
+                label: getDataUseDisplayName(v),
+                key: v,
+              }))
+            : [{ label: getDataUseDisplayName(value), key: value }];
           return (
-            <GroupCountBadgeCell
-              suffix="data uses"
-              ignoreZero
-              value={
-                isArray(value)
-                  ? map(value, getDataUseDisplayName)
-                  : getDataUseDisplayName(value || "")
-              }
+            <TagExpandableCell
+              values={displayValues}
               tagProps={{ color: "white" }}
-              {...props}
+              columnState={{
+                isExpanded: expandedColumns[COLUMN_IDS.SYSTEM_GROUP_DATA_USES],
+              }}
             />
           );
         },
-        meta: {
-          width: "auto",
-          showHeaderMenu: !isRenaming,
-        },
-      }),
+        ...menu(COLUMN_IDS.SYSTEM_GROUP_DATA_USES),
+      },
     );
   }
 
-  // Combine all columns
-  return [...baseColumns, ...systemGroupColumns];
+  const allColumns = [
+    ...baseColumns,
+    ...systemGroupColumns,
+    ...customFieldColumns,
+  ];
+
+  // Determine the grouping column key so we can apply rowSpan
+  const groupingColKey = groupBy
+    ? (getGroupKey(groupBy as DATAMAP_GROUPING) as string)
+    : undefined;
+
+  // Inject data-testid attributes and rowSpan for the grouping column
+  return allColumns.map((col) => {
+    const colKey = getColKey(col);
+    if (!colKey) {
+      return col;
+    }
+    const existingOnCell = (
+      col as {
+        onCell?: (
+          record: DatamapReportRow,
+          index?: number,
+        ) => React.HTMLAttributes<HTMLElement>;
+      }
+    ).onCell;
+    const isGroupingColumn = colKey === groupingColKey;
+
+    return {
+      ...col,
+      onHeaderCell: () =>
+        ({
+          "data-testid": `column-${colKey}`,
+        }) as React.HTMLAttributes<HTMLElement>,
+      onCell: (record: DatamapReportRow, index?: number) => {
+        const existing = existingOnCell?.(record, index) || {};
+        const cellProps: Record<string, unknown> = {
+          ...existing,
+          "data-testid": `row-${index ?? 0}-col-${colKey}`,
+        };
+
+        // Apply rowSpan merging on the grouping column
+        if (isGroupingColumn) {
+          if (record.groupRowHidden) {
+            cellProps.rowSpan = 0;
+          } else if (record.groupRowSpan) {
+            cellProps.rowSpan = record.groupRowSpan;
+            cellProps.style = { verticalAlign: "top" };
+          }
+        }
+
+        return cellProps as React.HTMLAttributes<HTMLElement>;
+      },
+    };
+  });
 };

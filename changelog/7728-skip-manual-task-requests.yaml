@@ -1,4 +1,0 @@
-type: Fixed
-description: Skip unnecessary manual task API requests on non-manual-task integrations
-pr: 7728
-labels: []

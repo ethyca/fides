@@ -1,6 +1,11 @@
 import { Icons, MenuProps } from "fidesui";
 
 import useMenuNavigation from "~/features/common/hooks/useMenuNavigation";
+import type { NavConfigTab } from "~/features/common/nav/nav-config";
+import {
+  ACTION_CENTER_ACTIVITY_ROUTE,
+  ACTION_CENTER_ROUTE,
+} from "~/features/common/nav/routes";
 
 export enum ActionCenterRoute {
   ATTENTION_REQUIRED = "attention-required",
@@ -24,6 +29,12 @@ export const ACTION_CENTER_CONFIG: Record<
     icon: <Icons.Activity />,
   },
 } as const;
+
+/** Shared tab definitions used by both the tab bar and nav search. */
+export const ACTION_CENTER_TAB_ITEMS: NavConfigTab[] = [
+  { title: "Attention required", path: ACTION_CENTER_ROUTE },
+  { title: "Activity", path: ACTION_CENTER_ACTIVITY_ROUTE },
+];
 
 export type ActionCenterRouteConfig = Record<ActionCenterRoute, string>;
 

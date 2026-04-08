@@ -403,21 +403,24 @@ describe("Integration Management - Manual Task Conditions", () => {
     it("should display custom fields in privacy request field picker", () => {
       cy.getByTestId("add-condition-btn").click();
 
-      // Open the field picker dropdown
-      cy.getByTestId("privacy-request-field-select").click();
-
-      // Verify custom fields section appears
-      cy.contains("Custom fields").should("be.visible");
+      // Search for the custom field to filter the dropdown
+      cy.getByTestId("privacy-request-field-select")
+        .find("input")
+        .type("Department");
+      cy.get(".ant-select-dropdown").should("be.visible");
 
       // Verify specific custom field appears with correct label
-      cy.contains("Department").should("be.visible");
+      cy.get(".ant-select-dropdown").should("contain", "Department");
     });
 
     it("should add condition with custom select field", () => {
       cy.getByTestId("add-condition-btn").click();
 
-      // Select custom select field
-      cy.getByTestId("privacy-request-field-select").antSelect("Department");
+      // Search and select the custom field
+      cy.getByTestId("privacy-request-field-select")
+        .find("input")
+        .type("Department");
+      cy.getAntSelectOption("Department").should("be.visible").click();
 
       // Select operator
       cy.getByTestId("operator-select").antSelect("Equals");
@@ -446,6 +449,220 @@ describe("Integration Management - Manual Task Conditions", () => {
       // Verify success message
       cy.contains("Condition added successfully!").should("be.visible");
     });
+  });
+});
+
+describe("Integration Management - Custom Identity Conditions", () => {
+  beforeEach(() => {
+    cy.login();
+    stubPlus(true);
+
+    cy.intercept("GET", "/api/v1/config?api_set=false", {
+      body: {},
+    }).as("getConfig");
+
+    cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
+      fixture: "privacy-requests/privacy-center-config.json",
+    }).as("getPrivacyCenterConfig");
+
+    cy.intercept("GET", "/api/v1/plus/locations?all_locations=true", {
+      fixture: "locations/list.json",
+    }).as("getLocations");
+
+    cy.intercept("GET", "/api/v1/policy*", {
+      fixture: "policies/list.json",
+    }).as("getPolicies");
+
+    cy.intercept(
+      "GET",
+      "/api/v1/plus/connection/*/manual-task/dependency-conditions/privacy-request-fields",
+      {
+        fixture: "integration-management/privacy-request-fields.json",
+      },
+    ).as("getPrivacyRequestFields");
+
+    cy.intercept("GET", "/api/v1/connection/demo_manual_task_integration", {
+      fixture:
+        "integration-management/manual-tasks/manual-task-connection.json",
+    }).as("getConnection");
+
+    cy.intercept("GET", "/api/v1/connection_type?page=1&size=100", {
+      body: { items: [], total: 0, page: 1, size: 100 },
+    }).as("getConnectionTypes");
+
+    cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields", {
+      body: { items: [], total: 0, page: 1, size: 25 },
+    }).as("getManualFields");
+
+    cy.intercept("GET", "/api/v1/plus/connection/*/manual-task", {
+      fixture: "integration-management/manual-tasks/task-config.json",
+    }).as("getManualTask");
+
+    cy.intercept(
+      "PUT",
+      "/api/v1/plus/connection/*/manual-task/dependency-conditions",
+      {
+        body: {},
+      },
+    ).as("updateDependencyConditions");
+
+    cy.intercept(
+      "GET",
+      "/api/v1/dataset?minimal=true&exclude_saas_datasets=true",
+      {
+        fixture: "datasets.json",
+      },
+    ).as("getFilteredDatasets");
+
+    cy.intercept("GET", "/api/v1/dataset/*", {
+      fixture: "dataset.json",
+    }).as("getDatasetByKey");
+
+    cy.visitWithLanguage(
+      `${INTEGRATION_MANAGEMENT_ROUTE}/demo_manual_task_integration#conditions`,
+      "en-US",
+    );
+    cy.wait("@getConnection");
+  });
+
+  it("should display custom identity fields in the field picker", () => {
+    cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
+
+    // Privacy request field should be selected by default
+    cy.getByTestId("field-source-privacy-request").should("be.checked");
+
+    // Use the search feature to filter to custom identity options
+    cy.getByTestId("privacy-request-field-select")
+      .find("input")
+      .type("Customer");
+    cy.get(".ant-select-dropdown").should("be.visible");
+
+    // Verify the custom identity field appears in filtered results
+    cy.get(".ant-select-dropdown").should("contain", "Customer id");
+
+    // Clear search and search for the manual entry option
+    cy.getByTestId("privacy-request-field-select").find("input").clear();
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
+    cy.get(".ant-select-dropdown").should(
+      "contain",
+      "Other (enter custom key)",
+    );
+  });
+
+  it("should add condition with a custom identity field from the dropdown", () => {
+    cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
+
+    // Type to search and filter to the custom identity option
+    cy.getByTestId("privacy-request-field-select")
+      .find("input")
+      .type("Customer");
+    cy.getAntSelectOption("Customer id").should("be.visible").click();
+
+    // Select operator
+    cy.getByTestId("operator-select").antSelect("Equals");
+
+    // Enter value
+    cy.getByTestId("value-input").type("cust_12345");
+
+    // Submit the form
+    cy.getByTestId("save-btn").click();
+
+    // Verify API call was made with correct parameters
+    cy.wait("@updateDependencyConditions").then((interception) => {
+      const conditions = interception.request.body[0].conditions;
+      const newCondition = conditions[conditions.length - 1];
+      expect(newCondition.field_address).to.equal(
+        "privacy_request.identity.customer_id",
+      );
+      expect(newCondition.operator).to.equal("eq");
+      expect(newCondition.value).to.equal("cust_12345");
+    });
+
+    cy.contains("Condition added successfully!").should("be.visible");
+  });
+
+  it("should allow manual entry of a custom identity key", () => {
+    cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
+
+    // Type to search and select the manual entry option
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
+    cy.getAntSelectOption("Other (enter custom key)")
+      .should("be.visible")
+      .click();
+
+    // Verify manual key input appears below the select
+    cy.getByTestId("manual-identity-key-input").should("exist");
+    // The select should still be visible
+    cy.getByTestId("privacy-request-field-select").should("exist");
+
+    // Type a custom identity key
+    cy.getByTestId("manual-identity-key-input").type("loyalty_number");
+
+    // Select operator
+    cy.getByTestId("operator-select").antSelect("Exists");
+
+    // Submit the form
+    cy.getByTestId("save-btn").click();
+
+    // Verify API call was made with correct parameters
+    cy.wait("@updateDependencyConditions").then((interception) => {
+      const conditions = interception.request.body[0].conditions;
+      const newCondition = conditions[conditions.length - 1];
+      expect(newCondition.field_address).to.equal(
+        "privacy_request.identity.loyalty_number",
+      );
+      expect(newCondition.operator).to.equal("exists");
+    });
+
+    cy.contains("Condition added successfully!").should("be.visible");
+  });
+
+  it("should show validation error for invalid custom identity key characters", () => {
+    cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
+
+    // Select the manual entry option
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
+    cy.getAntSelectOption("Other (enter custom key)")
+      .should("be.visible")
+      .click();
+
+    // Type a key with invalid characters (hyphens are not allowed)
+    cy.getByTestId("manual-identity-key-input").type("loyalty-number");
+
+    // Select operator and attempt to submit
+    cy.getByTestId("operator-select").antSelect("Exists");
+    cy.getByTestId("save-btn").click();
+
+    // Validation error should appear and block submission
+    cy.contains(
+      "Identity key may only contain letters, numbers, and underscores",
+    ).should("be.visible");
+  });
+
+  it("should hide manual key input when switching away from Other", () => {
+    cy.getByTestId("add-condition-btn").click();
+    cy.wait("@getPrivacyRequestFields");
+
+    // Enter manual entry mode by searching and selecting Other
+    cy.getByTestId("privacy-request-field-select").find("input").type("Other");
+    cy.getAntSelectOption("Other (enter custom key)")
+      .should("be.visible")
+      .click();
+    cy.getByTestId("manual-identity-key-input").should("exist");
+
+    // Switch to a different field by searching and selecting Customer id
+    cy.getByTestId("privacy-request-field-select")
+      .find("input")
+      .clear()
+      .type("Customer");
+    cy.getAntSelectOption("Customer id").should("be.visible").click();
+
+    // Manual key input should disappear
+    cy.getByTestId("manual-identity-key-input").should("not.exist");
   });
 });
 

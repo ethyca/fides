@@ -74,8 +74,15 @@ export const ACTION_CTA: Record<
   },
   [ActionType.DSR_ACTION]: {
     label: "View request",
-    route: (d) =>
-      d.request_id ? `/privacy-requests/${d.request_id}` : "/privacy-requests",
+    route: (d) => {
+      if (d.request_id) {
+        return `/privacy-requests/${d.request_id}`;
+      }
+      if (d.is_overdue) {
+        return "/privacy-requests?is_overdue=true";
+      }
+      return "/privacy-requests";
+    },
   },
   [ActionType.SYSTEM_REVIEW]: {
     label: "Review system",
@@ -93,12 +100,16 @@ export const ACTION_CTA: Record<
   [ActionType.POLICY_VIOLATION]: {
     label: "Review violation",
     route: (d) =>
-      d.system_id ? `/systems/configure/${d.system_id}` : "/systems",
+      d.system_id
+        ? `/data-discovery/access-control?tab=log&violationId=${d.system_id}`
+        : "/data-discovery/access-control",
   },
   [ActionType.PIA_UPDATE]: {
     label: "View assessment",
     route: (d) =>
-      d.system_id ? `/systems/configure/${d.system_id}` : "/systems",
+      d.assessment_id
+        ? `/privacy-assessments/${d.assessment_id}`
+        : "/privacy-assessments",
   },
 };
 

@@ -1,19 +1,24 @@
-import classNames from "classnames";
-import { antTheme, Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
+import {
+  antTheme,
+  Card,
+  Flex,
+  Icons,
+  Skeleton,
+  Sparkline,
+  Statistic,
+} from "fidesui";
 
 import { nFormatter } from "~/features/common/utils";
 import type { TrendMetric } from "~/features/dashboard/types";
 
-import cardStyles from "./dashboard-card.module.scss";
-
 type StatType = "number" | "percent";
 
 const TREND_METRIC_CONFIG = {
-  gps_score: { label: "GPS Score", statType: "number" },
-  dsr_volume: { label: "DSR Volume", statType: "number" },
-  system_coverage: { label: "System Coverage", statType: "percent" },
+  gps_score: { label: "Governance posture", statType: "number" },
+  dsr_volume: { label: "DSR volume", statType: "number" },
+  system_coverage: { label: "System coverage", statType: "percent" },
   classification_health: {
-    label: "Classification Health",
+    label: "Classification health",
     statType: "percent",
   },
 } satisfies Record<string, { label: string; statType: StatType }>;
@@ -66,8 +71,14 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
             trend={metric.diff > 0 ? "up" : "down"}
             value={formattedDiff}
             suffix={suffix}
-            prefix={metric.diff > 0 ? "↑" : "↓"}
-            className={cardStyles.smallStatistic}
+            prefix={
+              metric.diff > 0 ? (
+                <Icons.ArrowUp size={12} />
+              ) : (
+                <Icons.ArrowDown size={12} />
+              )
+            }
+            size="sm"
           />
         )}
       </Flex>
@@ -78,7 +89,7 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
     <Card
       variant="borderless"
       title={config?.label ?? metricKey}
-      className={classNames("overflow-clip h-full", cardStyles.dashboardCard)}
+      className="h-full text-clip"
       cover={
         !isLoading ? (
           <div className="h-16">
