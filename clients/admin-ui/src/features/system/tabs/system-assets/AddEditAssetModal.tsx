@@ -1,5 +1,5 @@
-import { Button, ChakraText as Text, Flex, Modal, useMessage } from "fidesui";
-import { Form, Formik } from "formik";
+import { Button, ChakraText as Text, Flex, useMessage } from "fidesui";
+import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
@@ -9,6 +9,7 @@ import {
   getErrorMessage,
   isErrorResult,
 } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import {
   useAddSystemAssetMutation,
@@ -109,108 +110,109 @@ const AddEditAssetModal = ({
 
   const initialValues = asset ?? DEFAULT_VALUES;
 
+  const formik = useFormik({
+    initialValues,
+    enableReinitialize: true,
+    onSubmit: handleSaveClicked,
+    validationSchema,
+  });
+  const { values, isValid, dirty } = formik;
+  const isCookieAsset =
+    !!values.asset_type && values.asset_type === AssetType.COOKIE;
+  const isNotCookieAsset =
+    !!values.asset_type && values.asset_type !== AssetType.COOKIE;
+
   return (
-    <Modal
-      title={isCreate ? "Add asset" : "Edit asset"}
-      onCancel={onClose}
-      open={isOpen}
-      centered
-      destroyOnClose
-      footer={null}
-      data-testid="add-modal-content"
-    >
-      <Formik
-        initialValues={initialValues}
-        onSubmit={handleSaveClicked}
-        validationSchema={validationSchema}
+    <FormikProvider value={formik}>
+      <ConfirmCloseModal
+        title={isCreate ? "Add asset" : "Edit asset"}
+        onClose={onClose}
+        getIsDirty={() => formik.dirty}
+        open={isOpen}
+        centered
+        destroyOnClose
+        footer={null}
+        data-testid="add-modal-content"
       >
-        {({ values, isValid, dirty }) => {
-          const isCookieAsset =
-            !!values.asset_type && values.asset_type === AssetType.COOKIE;
-          const isNotCookieAsset =
-            !!values.asset_type && values.asset_type !== AssetType.COOKIE;
-          return (
-            <Form>
-              <Flex vertical className="pb-6 pt-4">
-                <FormInfoBox>
-                  <Text fontSize="sm">{FORM_COPY}</Text>
-                </FormInfoBox>
-                <Flex vertical gap={20}>
-                  <CustomTextInput
-                    id="name"
-                    name="name"
-                    label="Name"
-                    variant="stacked"
-                    isRequired
-                    disabled={!isCreate}
-                  />
-                  <ControlledSelect
-                    isRequired
-                    id="asset_type"
-                    name="asset_type"
-                    label="Asset type"
-                    options={enumToOptions(AssetType)}
-                    layout="stacked"
-                    disabled={!isCreate}
-                  />
-                  <WrappedDataUseSelect
-                    name="data_uses"
-                    label="Data uses"
-                    layout="stacked"
-                  />
-                  <CustomTextInput
-                    id="domain"
-                    name="domain"
-                    label="Domain"
-                    variant="stacked"
-                    isRequired
-                    disabled={!isCreate}
-                  />
-                  <CustomTextArea
-                    id="description"
-                    name="description"
-                    label="Description"
-                    variant="stacked"
-                  />
-                  {isCookieAsset && (
-                    <CustomTextInput
-                      id="duration"
-                      name="duration"
-                      label="Duration"
-                      variant="stacked"
-                      placeholder="e.g. '1 day', '30 minutes', '1 year'"
-                      tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
-                      isRequired={isCookieAsset}
-                    />
-                  )}
-                  {isNotCookieAsset && (
-                    <CustomTextInput
-                      id="base_url"
-                      name="base_url"
-                      label="Base URL"
-                      variant="stacked"
-                      isRequired={isNotCookieAsset}
-                    />
-                  )}
-                </Flex>
-              </Flex>
-              <Flex justify="space-between">
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={addIsLoading || updateIsLoading}
-                  disabled={!isValid || !dirty}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </Flex>
-            </Form>
-          );
-        }}
-      </Formik>
-    </Modal>
+        <Form>
+          <Flex vertical className="pb-6 pt-4">
+            <FormInfoBox>
+              <Text fontSize="sm">{FORM_COPY}</Text>
+            </FormInfoBox>
+            <Flex vertical gap={20}>
+              <CustomTextInput
+                id="name"
+                name="name"
+                label="Name"
+                variant="stacked"
+                isRequired
+                disabled={!isCreate}
+              />
+              <ControlledSelect
+                isRequired
+                id="asset_type"
+                name="asset_type"
+                label="Asset type"
+                options={enumToOptions(AssetType)}
+                layout="stacked"
+                disabled={!isCreate}
+              />
+              <WrappedDataUseSelect
+                name="data_uses"
+                label="Data uses"
+                layout="stacked"
+              />
+              <CustomTextInput
+                id="domain"
+                name="domain"
+                label="Domain"
+                variant="stacked"
+                isRequired
+                disabled={!isCreate}
+              />
+              <CustomTextArea
+                id="description"
+                name="description"
+                label="Description"
+                variant="stacked"
+              />
+              {isCookieAsset && (
+                <CustomTextInput
+                  id="duration"
+                  name="duration"
+                  label="Duration"
+                  variant="stacked"
+                  placeholder="e.g. '1 day', '30 minutes', '1 year'"
+                  tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
+                  isRequired={isCookieAsset}
+                />
+              )}
+              {isNotCookieAsset && (
+                <CustomTextInput
+                  id="base_url"
+                  name="base_url"
+                  label="Base URL"
+                  variant="stacked"
+                  isRequired={isNotCookieAsset}
+                />
+              )}
+            </Flex>
+          </Flex>
+          <Flex justify="space-between">
+            <Button onClick={onClose}>Cancel</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={addIsLoading || updateIsLoading}
+              disabled={!isValid || (isCreate && !dirty)}
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
+          </Flex>
+        </Form>
+      </ConfirmCloseModal>
+    </FormikProvider>
   );
 };
 

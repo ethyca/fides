@@ -4,7 +4,6 @@ import {
   Descriptions,
   Flex,
   Form,
-  Modal,
   Select,
   Space,
   Switch,
@@ -15,6 +14,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { CreateAssessmentTaskRequest } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors/api";
@@ -115,10 +115,11 @@ export const GenerateAssessmentsModal = ({
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="Generate assessments"
       open={open}
-      onCancel={handleCancel}
+      onClose={handleCancel}
+      getIsDirty={() => form.isFieldsTouched()}
       footer={null}
       width={MODAL_SIZE.md}
     >
@@ -220,6 +221,6 @@ export const GenerateAssessmentsModal = ({
           </Item>
         </Form>
       </Space>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };

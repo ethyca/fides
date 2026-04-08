@@ -2,7 +2,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { Button, DatePicker, Form, Input, Select } from "fidesui";
+import { Button, DatePicker, Form, FormInstance, Input, Select } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -84,6 +84,7 @@ const ConfigureMonitorForm = ({
   onClose,
   onAdvance,
   onSubmit,
+  form: formProp,
 }: {
   monitor?: EditableMonitorConfig;
   integrationOption: ConnectionSystemTypeMap;
@@ -93,10 +94,12 @@ const ConfigureMonitorForm = ({
   onClose: () => void;
   onAdvance: (monitor: EditableMonitorConfig) => void;
   onSubmit: (monitor: EditableMonitorConfig) => void;
+  form?: FormInstance<MonitorConfigFormValues>;
 }) => {
   const isEditing = !!monitor;
 
-  const [form] = Form.useForm<MonitorConfigFormValues>();
+  const [internalForm] = Form.useForm<MonitorConfigFormValues>();
+  const form = formProp ?? internalForm;
   const { data: systemData, isLoading: isLoadingSystem } =
     useGetSystemByFidesKeyQuery(integrationSystem || skipToken);
 

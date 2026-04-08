@@ -3,6 +3,7 @@ import {
   Col,
   Flex,
   Form,
+  FormInstance,
   Icons,
   Input,
   Row,
@@ -46,11 +47,14 @@ const TOOLTIP_COPY = `Upload a CSV to map regex patterns to data categories. For
 const SharedMonitorConfigForm = ({
   config,
   onBackClick,
+  form: formProp,
 }: {
   config?: SharedMonitorConfig;
   onBackClick: () => void;
+  form?: FormInstance<SharedMonitorConfigFormValues>;
 }) => {
-  const [form] = Form.useForm<SharedMonitorConfigFormValues>();
+  const [internalForm] = Form.useForm<SharedMonitorConfigFormValues>();
+  const form = formProp ?? internalForm;
   const message = useMessage();
 
   const [createMonitorTemplate, { isLoading: createIsLoading }] =
