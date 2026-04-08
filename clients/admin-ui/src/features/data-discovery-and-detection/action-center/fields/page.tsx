@@ -90,6 +90,7 @@ const ActionCenterFields = ({
       query: {
         staged_resource_urn?: string[];
         search?: string;
+        search_regex?: boolean;
         diff_status?: DiffStatus[];
         confidence_bucket?: ConfidenceBucket[];
         data_category?: string[];
@@ -112,6 +113,7 @@ const ActionCenterFields = ({
           ),
         ],
         search: query.search ?? undefined,
+        search_regex: query.search_regex ?? undefined,
         staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
       },
     }),
@@ -252,7 +254,17 @@ const ActionCenterFields = ({
     () => listQueryMeta.refetch(),
   );
 
-  if (listQueryMeta.error) {
+  const isRegexValidationError =
+    listQueryMeta.error &&
+    "status" in listQueryMeta.error &&
+    listQueryMeta.error.status === 422;
+
+  const regexErrorMessage = isRegexValidationError
+    ? (listQueryMeta.error as { data?: { detail?: string } }).data?.detail ??
+      "Invalid regex pattern"
+    : null;
+
+  if (listQueryMeta.error && !isRegexValidationError) {
     return (
       <ErrorPage
         error={listQueryMeta.error}
@@ -343,6 +355,7 @@ const ActionCenterFields = ({
                 availableFilters={{
                   data_category: availableFilters?.data_category ?? undefined,
                 }}
+                regexError={regexErrorMessage}
                 shortcutCallback={() => setHotkeysHelperModalOpen(true)}
               />
               <Flex gap="small">

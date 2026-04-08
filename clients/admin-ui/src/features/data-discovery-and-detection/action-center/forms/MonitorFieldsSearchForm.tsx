@@ -1,4 +1,4 @@
-import { Button, Flex, Form, Icons, Select, Tooltip } from "fidesui";
+import { Button, Flex, Form, Icons, Select, Text, Tooltip } from "fidesui";
 import { capitalize } from "lodash";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -10,6 +10,7 @@ import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { RESOURCE_STATUS } from "../fields/MonitorFields.const";
 import { MonitorFieldSearchForm } from "./MonitorFieldSearchForm.util";
+import RegexToggle from "./RegexToggle";
 
 const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
   ConfidenceBucket.HIGH,
@@ -34,6 +35,7 @@ const MonitorFieldsSearchForm = ({
   form,
   shortcutCallback,
   availableFilters,
+  regexError,
   ...formProps
 }: Omit<
   ReturnType<typeof useSearchForm<any, MonitorFieldSearchForm>>,
@@ -43,6 +45,7 @@ const MonitorFieldsSearchForm = ({
   availableFilters: {
     data_category?: string[];
   };
+  regexError?: string | null;
 }) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
@@ -83,18 +86,32 @@ const MonitorFieldsSearchForm = ({
       layout="inline"
       className="flex grow gap-2"
     >
-      <Flex className="grow gap-2 self-stretch">
-        <Form.Item name="search" className="!me-0 self-end">
-          <SearchInput />
-        </Form.Item>
+      <Flex className="grow gap-2 self-stretch" vertical>
+        <Flex className="gap-2">
+          <Form.Item name="search" className="!me-0 self-end">
+            <SearchInput
+              placeholder="Search by name or URN"
+              status={regexError ? "error" : undefined}
+            />
+          </Form.Item>
 
-        <Tooltip title="Display keyboard shortcuts">
-          <Button
-            aria-label="Display keyboard shortcuts"
-            icon={<Icons.Keyboard />}
-            onClick={shortcutCallback}
-          />
-        </Tooltip>
+          <Form.Item name="search_regex" className="!me-0 self-end">
+            <RegexToggle />
+          </Form.Item>
+
+          <Tooltip title="Display keyboard shortcuts">
+            <Button
+              aria-label="Display keyboard shortcuts"
+              icon={<Icons.Keyboard />}
+              onClick={shortcutCallback}
+            />
+          </Tooltip>
+        </Flex>
+        {regexError && (
+          <Text type="danger" className="text-xs">
+            {regexError}
+          </Text>
+        )}
       </Flex>
       <Form.Item name="resource_status" className="!me-0 self-end">
         <Select
