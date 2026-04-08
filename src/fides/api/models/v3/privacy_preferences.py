@@ -77,7 +77,12 @@ class PrivacyPreferences(Base):
         Boolean, nullable=False, server_default=text("false"), primary_key=True
     )
 
-    # Override base class timestamp columns to match migration
+    # Override base class timestamp columns:
+    # - created_at: indexed for query performance (base class doesn't index it)
+    # - updated_at: nullable with no server_default (unlike base class which defaults
+    #   to now()). New records start with updated_at=NULL; it is only set when a
+    #   record is later modified (this only happens when is_latest is flipped
+    #   from True to False).
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,
