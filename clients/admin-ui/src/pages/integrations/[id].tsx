@@ -1,4 +1,4 @@
-import { Button, Col, Row, Spin, Tabs, useMessage } from "fidesui";
+import { Button, Col, Row, Spin, useMessage } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
@@ -7,7 +7,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
@@ -175,67 +175,69 @@ const IntegrationDetailView: NextPage = () => {
   }
 
   return (
-    <FixedLayout title="Integrations">
-      <PageHeader
-        heading="Integrations"
-        breadcrumbItems={[
-          {
-            title: "All integrations",
-            href: INTEGRATION_MANAGEMENT_ROUTE,
-          },
-          {
-            title: connection?.name ?? connection?.key ?? "",
-          },
-        ]}
-      />
-      <Row wrap={false} gutter={24}>
-        <Col flex="1 1 auto">
-          <IntegrationBox
-            integration={connection}
-            integrationTypeInfo={integrationTypeInfo}
-            showDeleteButton
-            otherButtons={
-              showRemoveCustomButton ? (
-                <Button
-                  type="link"
-                  danger
-                  data-testid="remove-custom-integration-btn"
-                  onClick={handleRemoveCustomIntegration}
-                >
-                  Remove
-                </Button>
-              ) : undefined
-            }
-          />
-          {modalContext}
-          {isLoading ? (
-            <Spin />
-          ) : (
-            !!connection && (
-              <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
-            )
-          )}
-        </Col>
-        <Col
-          xs={{ flex: "0 0 310px" }}
-          xl={{ flex: "0 0 330px" }}
-          xxl={{ flex: "0 0 350px" }}
-        >
-          {isLoading ? (
-            <Spin />
-          ) : (
-            !!connection && (
-              <IntegrationSetupSteps
-                testData={testData}
-                testIsLoading={isTestLoading}
-                connectionOption={integrationOption!}
-                connection={connection}
-              />
-            )
-          )}
-        </Col>
-      </Row>
-    </FixedLayout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title={connection?.name ?? connection?.key ?? "Integration"}
+          breadcrumbItems={[
+            { title: "All integrations", href: INTEGRATION_MANAGEMENT_ROUTE },
+            { title: connection?.name ?? connection?.key ?? "" },
+          ]}
+        />
+        <SidePanel.Navigation
+          items={tabs.map((t) => ({ key: t.key, label: t.label as string }))}
+          activeKey={activeTab}
+          onSelect={onTabChange}
+        />
+      </SidePanel>
+      <FixedLayout title="Integrations">
+        <Row wrap={false} gutter={24}>
+          <Col flex="1 1 auto">
+            <IntegrationBox
+              integration={connection}
+              integrationTypeInfo={integrationTypeInfo}
+              showDeleteButton
+              otherButtons={
+                showRemoveCustomButton ? (
+                  <Button
+                    type="link"
+                    danger
+                    data-testid="remove-custom-integration-btn"
+                    onClick={handleRemoveCustomIntegration}
+                  >
+                    Remove
+                  </Button>
+                ) : undefined
+              }
+            />
+            {modalContext}
+            {isLoading ? (
+              <Spin />
+            ) : (
+              !!connection && tabs.find((t) => t.key === activeTab)?.children
+            )}
+          </Col>
+          <Col
+            xs={{ flex: "0 0 310px" }}
+            xl={{ flex: "0 0 330px" }}
+            xxl={{ flex: "0 0 350px" }}
+          >
+            {isLoading ? (
+              <Spin />
+            ) : (
+              !!connection && (
+                <IntegrationSetupSteps
+                  testData={testData}
+                  testIsLoading={isTestLoading}
+                  connectionOption={integrationOption!}
+                  connection={connection}
+                />
+              )
+            )}
+          </Col>
+        </Row>
+      </FixedLayout>
+    </>
   );
 };
 

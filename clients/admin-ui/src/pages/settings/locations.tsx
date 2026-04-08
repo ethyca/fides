@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 import { useAppSelector } from "~/app/hooks";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import LocationManagement from "~/features/locations/LocationManagement";
 import {
   selectLocationsRegulations,
@@ -27,19 +27,23 @@ const LocationsPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Locations">
-      <PageHeader heading="Locations" />
-      <Text fontSize="sm" maxWidth="720px" pb={6}>
-        Select the locations that you operate in and Fides will make sure that
-        you are automatically presented with the relevant regulatory guidelines
-        and global frameworks for your locations.
-      </Text>
-      {isLoading ? (
-        <Spin />
-      ) : (
-        <LocationManagement data={locationsRegulations} />
-      )}
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Locations" />
+      </SidePanel>
+      <Layout title="Locations">
+        <Text fontSize="sm" maxWidth="720px" pb={6}>
+          Select the locations that you operate in and Fides will make sure that
+          you are automatically presented with the relevant regulatory guidelines
+          and global frameworks for your locations.
+        </Text>
+        {isLoading ? (
+          <Spin />
+        ) : (
+          <LocationManagement data={locationsRegulations} />
+        )}
+      </Layout>
+    </>
   );
 };
 export default LocationsPage;

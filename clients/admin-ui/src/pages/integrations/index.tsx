@@ -21,16 +21,15 @@ import React, {
   useState,
 } from "react";
 
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
 import { useConnectionLogo } from "~/features/common/hooks";
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import {
   EDIT_SYSTEM_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { ListExpandableCell } from "~/features/common/table/cells/ListExpandableCell";
 import { formatDate } from "~/features/common/utils";
@@ -340,15 +339,19 @@ const IntegrationListView: NextPage = () => {
   }
 
   return (
-    <Layout title="Integrations">
-      <PageHeader
-        heading="Integrations"
-        breadcrumbItems={[
-          {
-            title: "All integrations",
-          },
-        ]}
-        rightContent={
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Integrations"
+          breadcrumbItems={[{ title: "All integrations" }]}
+        />
+        <SidePanel.Search
+          placeholder="Search by name..."
+          value={searchTerm}
+          onSearch={handleSearchChange}
+          onChange={(e) => handleSearchChange(e.target.value)}
+        />
+        <SidePanel.Actions>
           <Button
             onClick={onOpen}
             data-testid="add-integration-btn"
@@ -356,34 +359,26 @@ const IntegrationListView: NextPage = () => {
           >
             Add integration
           </Button>
-        }
-      />
-
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <DebouncedSearchInput
-          placeholder="Search by name..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="max-w-sm"
+          <SharedConfigModal />
+        </SidePanel.Actions>
+      </SidePanel>
+      <FixedLayout title="Integrations">
+        <Table
+          columns={columns}
+          dataSource={tableData}
+          rowKey="key"
+          pagination={paginationConfig}
+          loading={isLoading}
+          size="small"
+          locale={tableLocale}
+          bordered
+          onChange={handleTableChange}
+          data-testid="integrations-table"
         />
-        <SharedConfigModal />
-      </div>
 
-      <Table
-        columns={columns}
-        dataSource={tableData}
-        rowKey="key"
-        pagination={paginationConfig}
-        loading={isLoading}
-        size="small"
-        locale={tableLocale}
-        bordered
-        onChange={handleTableChange}
-        data-testid="integrations-table"
-      />
-
-      <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
-    </Layout>
+        <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
+      </FixedLayout>
+    </>
   );
 };
 

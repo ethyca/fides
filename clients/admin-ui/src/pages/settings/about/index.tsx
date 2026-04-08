@@ -17,7 +17,7 @@ import {
 } from "~/features/common/features/features.slice";
 import { FlagControl } from "~/features/common/features/FlagControl";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 
 const About: NextPage<{ showAlphaFeatures: boolean }> = ({
   showAlphaFeatures = false,
@@ -29,9 +29,12 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
   const betaFlags = FLAG_NAMES.filter((flag) => !flag.startsWith("alpha"));
 
   return (
-    <Layout title="About Fides">
-      <PageHeader heading="About Fides">
-        <Flex direction="column" gap={4}>
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="About Fides" />
+      </SidePanel>
+      <Layout title="About Fides">
+        <Flex direction="column" gap={4} mb={4}>
           <Box>
             <Text as="span" fontWeight="bold">
               Fides Core Version:{" "}
@@ -53,7 +56,6 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
           ) : null}
           <Divider />
         </Flex>
-      </PageHeader>
 
       <Flex alignItems="center" gap={4}>
         <Heading as="h2" fontSize="xl">
@@ -131,7 +133,8 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
           .
         </Text>
       </Box>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 export default About;

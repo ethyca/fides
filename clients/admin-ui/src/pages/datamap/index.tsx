@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import Datamap from "~/features/datamap/Datamap";
 import DatamapTableContext, {
   DatamapTableContextValue,
@@ -28,17 +28,21 @@ const Home: NextPage = () => {
   }
 
   return (
-    <Layout
-      title="Data lineage"
-      mainProps={{
-        padding: "24px 0 0 40px",
-      }}
-    >
-      <PageHeader style={{ paddingLeft: 0 }} heading="Data lineage" />
-      <DatamapTableContext.Provider value={datamapTableContextValue}>
-        <Datamap />
-      </DatamapTableContext.Provider>
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Data lineage" />
+      </SidePanel>
+      <Layout
+        title="Data lineage"
+        mainProps={{
+          padding: "24px 0 0 40px",
+        }}
+      >
+        <DatamapTableContext.Provider value={datamapTableContextValue}>
+          <Datamap />
+        </DatamapTableContext.Provider>
+      </Layout>
+    </>
   );
 };
 

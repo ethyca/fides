@@ -8,7 +8,7 @@ import { isErrorResult } from "~/features/common/helpers";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { UserCreateExtended } from "~/types/api";
 
-import PageHeader from "../common/PageHeader";
+import { SidePanel } from "../common/SidePanel";
 import {
   setActiveUserId,
   useCreateUserMutation,
@@ -38,19 +38,23 @@ const NewUserForm = () => {
   };
 
   return (
-    <div>
-      <PageHeader
-        heading="Users"
-        breadcrumbItems={[
-          {
-            title: "All users",
-            href: USER_MANAGEMENT_ROUTE,
-          },
-          { title: "New User" },
-        ]}
-      />
-      <UserManagementTabs onSubmit={handleSubmit} />
-    </div>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Users"
+          breadcrumbItems={[
+            {
+              title: "All users",
+              href: USER_MANAGEMENT_ROUTE,
+            },
+            { title: "New User" },
+          ]}
+        />
+      </SidePanel>
+      <div>
+        <UserManagementTabs onSubmit={handleSubmit} />
+      </div>
+    </>
   );
 };
 

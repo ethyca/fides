@@ -9,7 +9,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum, UserCreateExtended } from "~/types/api";
 
 import { useAPIHelper } from "../common/hooks";
-import PageHeader from "../common/PageHeader";
+import { SidePanel } from "../common/SidePanel";
 import { User } from "./types";
 import {
   useEditUserMutation,
@@ -135,24 +135,28 @@ const EditUserForm = ({ user }: Props) => {
   const canViewAllUsers = useHasPermission([ScopeRegistryEnum.USER_READ]);
 
   return (
-    <div>
-      <PageHeader
-        heading="Users"
-        breadcrumbItems={[
-          {
-            title: "All users",
-            href: canViewAllUsers ? USER_MANAGEMENT_ROUTE : undefined,
-          },
-          { title: initialValues.username },
-        ]}
-      />
-      <ReinviteSection user={user} />
-      <UserManagementTabs
-        onSubmit={handleSubmit}
-        initialValues={initialValues}
-        canEditNames={canUpdateUser}
-      />
-    </div>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Users"
+          breadcrumbItems={[
+            {
+              title: "All users",
+              href: canViewAllUsers ? USER_MANAGEMENT_ROUTE : undefined,
+            },
+            { title: initialValues.username },
+          ]}
+        />
+      </SidePanel>
+      <div>
+        <ReinviteSection user={user} />
+        <UserManagementTabs
+          onSubmit={handleSubmit}
+          initialValues={initialValues}
+          canEditNames={canUpdateUser}
+        />
+      </div>
+    </>
   );
 };
 

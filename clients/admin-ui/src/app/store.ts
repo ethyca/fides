@@ -42,6 +42,7 @@ import { privacyExperienceConfigSlice } from "~/features/privacy-experience/priv
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { propertySlice } from "~/features/properties";
+import { sidePanelSlice } from "~/features/common/SidePanel/sidepanel.slice";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { systemGroupSlice } from "~/features/system/system-groups.slice";
 import { dataCategorySlice } from "~/features/taxonomy/data-category.slice";
@@ -102,6 +103,7 @@ const reducer = {
   [systemGroupSlice.name]: systemGroupSlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
+  [sidePanelSlice.name]: sidePanelSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;

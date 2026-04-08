@@ -1,17 +1,16 @@
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import CatalogSystemsTable from "~/features/data-catalog/systems/CatalogSystemsTable";
 
-const DataCatalogMainPage = () => {
-  return (
+const DataCatalogMainPage = () => (
+  <>
+    <SidePanel>
+      <SidePanel.Identity title="Data catalog" breadcrumbItems={[{ title: "All systems" }]} />
+    </SidePanel>
     <Layout title="Data catalog">
-      <PageHeader
-        heading="Data catalog"
-        breadcrumbItems={[{ title: "All systems" }]}
-      />
       <CatalogSystemsTable />
     </Layout>
-  );
-};
+  </>
+);
 
 export default DataCatalogMainPage;

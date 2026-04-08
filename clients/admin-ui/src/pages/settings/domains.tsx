@@ -20,7 +20,7 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput, TextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   CORSOrigins,
   selectApplicationConfig,
@@ -157,9 +157,12 @@ const CORSConfigurationPage: NextPage = () => {
   };
 
   return (
-    <Layout title="Domains">
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Domains" />
+      </SidePanel>
+      <Layout title="Domains">
       <Box data-testid="management-domains">
-        <PageHeader heading="Domains" />
         <Box maxW="600px">
           <Text fontSize="sm" pb={6}>
             For Fides to work on your website(s), each of your domains must be
@@ -285,7 +288,8 @@ const CORSConfigurationPage: NextPage = () => {
           </FormSection>
         </Box>
       </Box>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 export default CORSConfigurationPage;

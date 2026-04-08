@@ -11,7 +11,7 @@ import React, { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import ConnectionTypeLogo, {
   connectionLogoFromKey,
   connectionLogoFromSystemType,
@@ -62,17 +62,20 @@ const NewManualSystem: NextPage = () => {
   const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   return (
-    <Layout title="Describe your system">
-      <PageHeader
-        heading="Add systems"
-        breadcrumbItems={[
-          {
-            title: "Add systems",
-            href: ADD_SYSTEMS_ROUTE,
-          },
-          { title: "New system" },
-        ]}
-      />
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Add systems"
+          breadcrumbItems={[
+            {
+              title: "Add systems",
+              href: ADD_SYSTEMS_ROUTE,
+            },
+            { title: "New system" },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Describe your system">
       <Header connector={connector} />
 
       {lockedForGVL ? <GVLNotice /> : null}
@@ -83,6 +86,7 @@ const NewManualSystem: NextPage = () => {
         <Tabs items={tabData} activeKey={activeKey} onChange={onTabChange} />
       </Box>
     </Layout>
+    </>
   );
 };
 

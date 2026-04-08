@@ -2,7 +2,7 @@ import { ChakraBox as Box, ChakraText as Text, Spin } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import EmailTemplatesForm from "~/features/messaging-templates/EmailTemplatesForm";
 import { useGetMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
 
@@ -12,16 +12,24 @@ const EmailTemplates: NextPage = () => {
 
   if (isLoading) {
     return (
-      <Layout title="Email templates">
-        <Spin />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Email templates" />
+        </SidePanel>
+        <Layout title="Email templates">
+          <Spin />
+        </Layout>
+      </>
     );
   }
 
   return (
-    <Layout title="Email templates">
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Email templates" />
+      </SidePanel>
+      <Layout title="Email templates">
       <Box data-testid="email-templates">
-        <PageHeader heading="Email Templates" />
         <Box maxWidth="720px">
           <Text fontSize="sm">
             When privacy requests are submitted, Fides emails the data subject
@@ -36,7 +44,8 @@ const EmailTemplates: NextPage = () => {
           </Box>
         </Box>
       </Box>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

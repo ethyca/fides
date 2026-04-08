@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import EditorSection from "~/features/test-datasets/DatasetEditorSection";
 import TestLogsSection from "~/features/test-datasets/TestLogsSection";
@@ -38,23 +38,26 @@ const TestDatasetPage: NextPage = () => {
   }
 
   return (
-    <Layout
-      title="System inventory"
-      mainProps={{
-        height: "100vh",
-      }}
-    >
-      <PageHeader
-        heading="System inventory"
-        breadcrumbItems={[
-          { title: "System inventory", href: SYSTEM_ROUTE },
-          {
-            title: system?.name || "",
-            href: `/systems/configure/${systemId}#integrations`,
-          },
-          { title: "Test datasets" },
-        ]}
-      />
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="System inventory"
+          breadcrumbItems={[
+            { title: "System inventory", href: SYSTEM_ROUTE },
+            {
+              title: system?.name || "",
+              href: `/systems/configure/${systemId}#integrations`,
+            },
+            { title: "Test datasets" },
+          ]}
+        />
+      </SidePanel>
+      <Layout
+        title="System inventory"
+        mainProps={{
+          height: "100vh",
+        }}
+      >
       <Flex align="stretch" flex="1" gap="medium" vertical>
         <Flex
           align="stretch"
@@ -70,6 +73,7 @@ const TestDatasetPage: NextPage = () => {
         </Flex>
       </Flex>
     </Layout>
+    </>
   );
 };
 

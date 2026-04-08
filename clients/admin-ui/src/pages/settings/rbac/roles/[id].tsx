@@ -25,7 +25,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage } from "~/features/common/helpers";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   useDeleteRoleMutation,
   useGetPermissionsQuery,
@@ -289,9 +289,20 @@ const RoleDetailPage: NextPage = () => {
 
   if (isLoading || isRolesLoading || isPermissionsLoading || !role) {
     return (
-      <Layout title="Edit role">
-        <Spin />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity
+            title="Role management"
+            breadcrumbItems={[
+              { title: "Role management", href: RBAC_ROUTE },
+              { title: "Edit role" },
+            ]}
+          />
+        </SidePanel>
+        <Layout title="Edit role">
+          <Spin />
+        </Layout>
+      </>
     );
   }
 
@@ -406,16 +417,16 @@ const RoleDetailPage: NextPage = () => {
   ];
 
   return (
-    <Layout title={`Edit Role: ${role.name}`}>
-      <PageHeader
-        heading={role.name}
-        isSticky={false}
-        className="pb-0"
-        breadcrumbItems={[
-          { title: "Role management", href: RBAC_ROUTE },
-          { title: role.name },
-        ]}
-        rightContent={
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title={role.name}
+          breadcrumbItems={[
+            { title: "Role management", href: RBAC_ROUTE },
+            { title: role.name },
+          ]}
+        />
+        <SidePanel.Actions>
           <Space>
             <Tooltip
               title={
@@ -443,10 +454,10 @@ const RoleDetailPage: NextPage = () => {
               </Button>
             )}
           </Space>
-        }
-      />
-
-      <Flex vertical gap="large">
+        </SidePanel.Actions>
+      </SidePanel>
+      <Layout title={`Edit Role: ${role.name}`}>
+        <Flex vertical gap="large">
         <div>
           <Flex align="center" gap={8} className="mb-4">
             <Typography.Title level={4} className="m-0">
@@ -514,8 +525,9 @@ const RoleDetailPage: NextPage = () => {
             size="small"
           />
         </div>
-      </Flex>
-    </Layout>
+        </Flex>
+      </Layout>
+    </>
   );
 };
 

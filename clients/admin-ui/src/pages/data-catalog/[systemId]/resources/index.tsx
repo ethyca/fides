@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   FidesTableV2,
   PaginationBar,
@@ -94,17 +94,20 @@ const CatalogDatasetViewNoProjects = () => {
   const showContent = !isLoading && !systemIsLoading && !isFetching;
 
   return (
-    <Layout title="Data catalog">
-      <PageHeader
-        heading="Data catalog"
-        breadcrumbItems={[
-          { title: "All systems", href: DATA_CATALOG_ROUTE },
-          {
-            title: system?.name || systemKey,
-          },
-        ]}
-      />
-      {!showContent && <TableSkeletonLoader rowHeight={36} numRows={36} />}
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Data catalog"
+          breadcrumbItems={[
+            { title: "All systems", href: DATA_CATALOG_ROUTE },
+            {
+              title: system?.name || systemKey,
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Data catalog">
+        {!showContent && <TableSkeletonLoader rowHeight={36} numRows={36} />}
       {showContent && (
         <>
           <FidesTableV2
@@ -130,8 +133,9 @@ const CatalogDatasetViewNoProjects = () => {
             onClose={() => setDetailsToView(undefined)}
           />
         </>
-      )}
-    </Layout>
+        )}
+      </Layout>
+    </>
   );
 };
 

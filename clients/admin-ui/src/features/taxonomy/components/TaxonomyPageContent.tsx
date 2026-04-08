@@ -21,8 +21,8 @@ import {
   isErrorResult,
 } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
 import { useHasPermission } from "~/features/common/Restrict";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import CreateCustomTaxonomyForm from "~/features/taxonomy/components/CreateCustomTaxonomyForm";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
@@ -253,11 +253,13 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
   };
 
   return (
+    <>
+    <SidePanel>
+      <SidePanel.Identity title="Taxonomy" />
+    </SidePanel>
     <Layout title="Taxonomy">
       <Flex vertical className="h-full">
         <div>
-          <PageHeader heading="Taxonomy" />
-
           {/* hide search bar until functionality is implemented */}
           <div className="hidden">
             <div className="mb-5 flex justify-between">
@@ -388,6 +390,7 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
         />
       )}
     </Layout>
+    </>
   );
 };
 

@@ -4,7 +4,7 @@ import UserManagementTable from "user-management/UserManagementTable";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import useUserManagementTable from "~/features/user-management/useUserManagementTable";
 
 const UserManagement: NextPage = () => {
@@ -19,18 +19,17 @@ const UserManagement: NextPage = () => {
     );
   }
   return (
-    <FixedLayout title="User Management">
-      <PageHeader
-        heading="Users"
-        breadcrumbItems={[
-          {
-            title: "All users",
-          },
-        ]}
-        isSticky={false}
-      />
-      <UserManagementTable />
-    </FixedLayout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Users"
+          breadcrumbItems={[{ title: "All users" }]}
+        />
+      </SidePanel>
+      <FixedLayout title="User Management">
+        <UserManagementTable />
+      </FixedLayout>
+    </>
   );
 };
 

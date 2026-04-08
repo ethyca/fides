@@ -1,4 +1,4 @@
-import { Button, Icons, Spin, Tabs } from "fidesui";
+import { Button, Icons, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -12,7 +12,7 @@ import {
   INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import {
@@ -24,7 +24,6 @@ import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
 
 const ConfigureSystem: NextPage = () => {
   const router = useRouter();
-
   const dispatch = useAppDispatch();
 
   let systemId = "";
@@ -65,9 +64,14 @@ const ConfigureSystem: NextPage = () => {
 
   if ((isLoading || isDictionaryLoading) && !dictionaryError) {
     return (
-      <Layout title="Systems">
-        <Spin />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="System inventory" />
+        </SidePanel>
+        <Layout title="Systems">
+          <Spin />
+        </Layout>
+      </>
     );
   }
 
@@ -86,24 +90,32 @@ const ConfigureSystem: NextPage = () => {
     );
   }
 
+  const navItems = tabData.map((tab) => ({
+    key: tab.key as string,
+    label: tab.label as string,
+    disabled: tab.disabled ?? false,
+  }));
+
+  const activeContent = tabData.find((tab) => tab.key === activeKey)?.children;
+
   return (
-    <Layout title="System inventory">
-      <PageHeader
-        heading="System inventory"
-        breadcrumbItems={[
-          { title: "All systems", href: SYSTEM_ROUTE },
-          { title: system?.name || "" },
-        ]}
-      />
-      <Tabs
-        activeKey={activeKey}
-        onChange={onTabChange}
-        items={tabData}
-        className="w-full"
-        tabBarExtraContent={
-          isPlusEnabled && (
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title={system?.name || "System"}
+          breadcrumbItems={[
+            { title: "All systems", href: SYSTEM_ROUTE },
+            { title: system?.name || "" },
+          ]}
+        />
+        <SidePanel.Navigation
+          items={navItems}
+          activeKey={activeKey}
+          onSelect={onTabChange}
+        />
+        {isPlusEnabled && (
+          <SidePanel.Actions>
             <Button
-              className="absolute right-0 top-2"
               data-testid="integration-page-btn"
               iconPlacement="end"
               icon={<Icons.Settings />}
@@ -111,16 +123,14 @@ const ConfigureSystem: NextPage = () => {
             >
               Integrations
             </Button>
-          )
-        }
-        renderTabBar={(props, DefaultTabBar) => (
-          <>
-            <DefaultTabBar {...props} />
-            {lockedForGVL && <GVLNotice />}
-          </>
+          </SidePanel.Actions>
         )}
-      />
-    </Layout>
+      </SidePanel>
+      <Layout title="System inventory">
+        {lockedForGVL && <GVLNotice />}
+        {activeContent}
+      </Layout>
+    </>
   );
 };
 

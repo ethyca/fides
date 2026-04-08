@@ -6,7 +6,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useDiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredSystemAggregateTable";
 import MonitorStats from "~/features/data-discovery-and-detection/action-center/MonitorStats";
 import { DiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredSystemAggregateTable";
@@ -45,18 +45,21 @@ const MonitorResultSystems: NextPage = () => {
   }
 
   return flags.webMonitor ? (
-    <FixedLayout title="Action center - Discovered assets by system">
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId },
-        ]}
-        isSticky={false}
-      />
-      <MonitorStats monitorId={monitorId} />
-      <DiscoveredSystemAggregateTable monitorId={monitorId} />
-    </FixedLayout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Action center"
+          breadcrumbItems={[
+            { title: "All activity", href: ACTION_CENTER_ROUTE },
+            { title: monitorId },
+          ]}
+        />
+      </SidePanel>
+      <FixedLayout title="Action center - Discovered assets by system">
+        <MonitorStats monitorId={monitorId} />
+        <DiscoveredSystemAggregateTable monitorId={monitorId} />
+      </FixedLayout>
+    </>
   ) : (
     <Result status="error" title={<MonitorFeatureError />} />
   );

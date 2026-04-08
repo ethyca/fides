@@ -4,18 +4,22 @@ import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 
 const AccessPoliciesOnboardingPage: NextPage = () => {
   return (
-    <Layout title="Access policies">
-      <PageHeader heading="Get started with access policies" isSticky />
-      <div className="p-6">
-        <NextLink href={ACCESS_POLICIES_ROUTE} passHref>
-          <Button type="primary">Continue</Button>
-        </NextLink>
-      </div>
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Get started with access policies" />
+      </SidePanel>
+      <Layout title="Access policies">
+        <div className="p-6">
+          <NextLink href={ACCESS_POLICIES_ROUTE} passHref>
+            <Button type="primary">Continue</Button>
+          </NextLink>
+        </div>
+      </Layout>
+    </>
   );
 };
 

@@ -27,14 +27,12 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
-  GlobalFilterV2,
   PaginationBar,
-  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
@@ -209,64 +207,61 @@ const DataSets: NextPage = () => {
   }
 
   return (
-    <Layout title="Datasets">
-      <Box data-testid="system-management">
-        <PageHeader
-          heading="Datasets"
-          breadcrumbItems={[
-            {
-              title: "All datasets",
-            },
-          ]}
-          rightContent={
-            <NextLink href="/dataset/new" passHref legacyBehavior>
-              <Button data-testid="create-dataset-btn">+ Add dataset</Button>
-            </NextLink>
-          }
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Datasets"
+          breadcrumbItems={[{ title: "All datasets" }]}
         />
-
-        {isLoading ? (
-          <TableSkeletonLoader rowHeight={36} numRows={15} />
-        ) : (
-          <Box data-testid="dataset-table">
-            <TableActionBar>
-              <GlobalFilterV2
-                globalFilter={globalFilter}
-                setGlobalFilter={updateGlobalFilter}
-                placeholder="Search"
-                testid="dataset-search"
+        <SidePanel.Search
+          placeholder="Search datasets..."
+          onSearch={updateGlobalFilter}
+          value={globalFilter ?? ""}
+          onChange={(e) => updateGlobalFilter(e.target.value)}
+        />
+        <SidePanel.Actions>
+          <NextLink href="/dataset/new" passHref legacyBehavior>
+            <Button data-testid="create-dataset-btn">+ Add dataset</Button>
+          </NextLink>
+        </SidePanel.Actions>
+      </SidePanel>
+      <Layout title="Datasets">
+        <Box data-testid="system-management">
+          {isLoading ? (
+            <TableSkeletonLoader rowHeight={36} numRows={15} />
+          ) : (
+            <Box data-testid="dataset-table">
+              <FidesTableV2
+                tableInstance={tableInstance}
+                emptyTableNotice={<EmptyTableNotice />}
+                onRowClick={onRowClick}
               />
-            </TableActionBar>
-            <FidesTableV2
-              tableInstance={tableInstance}
-              emptyTableNotice={<EmptyTableNotice />}
-              onRowClick={onRowClick}
-            />
-          </Box>
-        )}
+            </Box>
+          )}
 
-        <PaginationBar
-          totalRows={totalRows || 0}
-          pageSizes={PAGE_SIZES}
-          setPageSize={setPageSize}
-          onPreviousPageClick={onPreviousPageClick}
-          isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-          onNextPageClick={onNextPageClick}
-          isNextPageDisabled={isNextPageDisabled || isFetching}
-          startRange={startRange}
-          endRange={endRange}
-        />
+          <PaginationBar
+            totalRows={totalRows || 0}
+            pageSizes={PAGE_SIZES}
+            setPageSize={setPageSize}
+            onPreviousPageClick={onPreviousPageClick}
+            isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+            onNextPageClick={onNextPageClick}
+            isNextPageDisabled={isNextPageDisabled || isFetching}
+            startRange={startRange}
+            endRange={endRange}
+          />
 
-        <EditDatasetDrawer
-          dataset={selectedDatasetForEditing}
-          isOpen={isEditingDataset}
-          onClose={() => {
-            setSelectedDatasetForEditing(undefined);
-            setIsEditingDataset(false);
-          }}
-        />
-      </Box>
-    </Layout>
+          <EditDatasetDrawer
+            dataset={selectedDatasetForEditing}
+            isOpen={isEditingDataset}
+            onClose={() => {
+              setSelectedDatasetForEditing(undefined);
+              setIsEditingDataset(false);
+            }}
+          />
+        </Box>
+      </Layout>
+    </>
   );
 };
 

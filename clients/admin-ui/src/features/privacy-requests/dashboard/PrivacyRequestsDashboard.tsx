@@ -13,24 +13,27 @@ import React, { useEffect, useMemo } from "react";
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSelection } from "~/features/common/hooks/useSelection";
+import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestResponse } from "~/types/api";
 
-import { useAntPagination } from "../../common/pagination/useAntPagination";
 import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
-import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
-export const PrivacyRequestsDashboard = () => {
-  const pagination = useAntPagination();
-  const { filterQueryParams, filters, setFilters, sortState, setSortState } =
-    usePrivacyRequestsFilters({
-      pagination,
-    });
+interface PrivacyRequestsDashboardProps {
+  pagination: ReturnType<typeof useAntPagination>;
+  filterState: ReturnType<typeof usePrivacyRequestsFilters>;
+}
+
+export const PrivacyRequestsDashboard = ({
+  pagination,
+  filterState,
+}: PrivacyRequestsDashboardProps) => {
+  const { filterQueryParams, filters } = filterState;
 
   const {
     data,
@@ -90,17 +93,7 @@ export const PrivacyRequestsDashboard = () => {
 
   return (
     <div>
-      {/* First row: Search and Filters */}
-      <Flex gap="small" align="center" className="mb-4">
-        <PrivacyRequestFiltersBar
-          filters={filters}
-          setFilters={setFilters}
-          sortState={sortState}
-          setSortState={setSortState}
-        />
-      </Flex>
-
-      {/* Second row: Actions */}
+      {/* Actions row */}
       <Flex gap="small" align="center" justify="space-between" className="mb-2">
         <Flex align="center" gap="small">
           <Checkbox

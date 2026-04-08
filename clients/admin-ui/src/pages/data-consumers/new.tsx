@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   useAssignConsumerPurposesMutation,
   useCreateDataConsumerMutation,
@@ -50,21 +50,25 @@ const NewDataConsumerPage: NextPage = () => {
   };
 
   return (
-    <Layout title="Add data consumer">
-      <PageHeader
-        heading="Data consumers"
-        breadcrumbItems={[
-          {
-            title: "All data consumers",
-            href: DATA_CONSUMERS_ROUTE,
-          },
-          {
-            title: "Add data consumer",
-          },
-        ]}
-      />
-      <DataConsumerForm handleSubmit={handleSubmit} />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Data consumers"
+          breadcrumbItems={[
+            {
+              title: "All data consumers",
+              href: DATA_CONSUMERS_ROUTE,
+            },
+            {
+              title: "Add data consumer",
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Add data consumer">
+        <DataConsumerForm handleSubmit={handleSubmit} />
+      </Layout>
+    </>
   );
 };
 

@@ -1,14 +1,18 @@
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import PreApprovalWebhooksPage from "~/features/privacy-requests/pre-approval-webhooks/PreApprovalWebhooksPage";
 
 const PreApprovalWebhooksSettingsPage: NextPage = () => (
-  <Layout title="Pre-approval webhooks">
-    <PageHeader heading="Pre-approval webhooks" />
-    <PreApprovalWebhooksPage />
-  </Layout>
+  <>
+    <SidePanel>
+      <SidePanel.Identity title="Pre-approval webhooks" />
+    </SidePanel>
+    <Layout title="Pre-approval webhooks">
+      <PreApprovalWebhooksPage />
+    </Layout>
+  </>
 );
 
 export default PreApprovalWebhooksSettingsPage;

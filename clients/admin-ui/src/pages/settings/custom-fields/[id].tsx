@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import CustomFieldForm from "~/features/custom-fields/CustomFieldForm";
 import { useGetCustomFieldDefinitionByIdQuery } from "~/features/plus/plus.slice";
 
@@ -29,16 +29,20 @@ const CustomFieldDetailPage = () => {
   }
 
   return (
-    <Layout title="Edit custom field" mainProps={{ maxWidth: "720px" }}>
-      <PageHeader
-        heading="Custom fields"
-        breadcrumbItems={[
-          { title: "All custom fields", href: CUSTOM_FIELDS_ROUTE },
-          { title: customField?.name ?? id },
-        ]}
-      />
-      <CustomFieldForm initialField={customField} isLoading={isLoading} />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Custom fields"
+          breadcrumbItems={[
+            { title: "All custom fields", href: CUSTOM_FIELDS_ROUTE },
+            { title: customField?.name ?? (id as string) },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Edit custom field" mainProps={{ maxWidth: "720px" }}>
+        <CustomFieldForm initialField={customField} isLoading={isLoading} />
+      </Layout>
+    </>
   );
 };
 

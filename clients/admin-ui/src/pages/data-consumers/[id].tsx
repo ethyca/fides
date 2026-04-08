@@ -6,7 +6,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   useAssignConsumerPurposesMutation,
   useGetDataConsumerByIdQuery,
@@ -83,28 +83,37 @@ const EditDataConsumerPage: NextPage = () => {
 
   if (isLoading) {
     return (
-      <Layout title="Data consumer">
-        <Spin />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Data consumers" />
+        </SidePanel>
+        <Layout title="Data consumer">
+          <Spin />
+        </Layout>
+      </>
     );
   }
 
   return (
-    <Layout title={consumer?.name ?? "Data consumer"}>
-      <PageHeader
-        heading="Data consumers"
-        breadcrumbItems={[
-          {
-            title: "All data consumers",
-            href: DATA_CONSUMERS_ROUTE,
-          },
-          {
-            title: consumer?.name ?? "Data consumer",
-          },
-        ]}
-      />
-      <DataConsumerForm consumer={consumer} handleSubmit={handleSubmit} />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Data consumers"
+          breadcrumbItems={[
+            {
+              title: "All data consumers",
+              href: DATA_CONSUMERS_ROUTE,
+            },
+            {
+              title: consumer?.name ?? "Data consumer",
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title={consumer?.name ?? "Data consumer"}>
+        <DataConsumerForm consumer={consumer} handleSubmit={handleSubmit} />
+      </Layout>
+    </>
   );
 };
 

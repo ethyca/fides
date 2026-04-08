@@ -6,7 +6,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
@@ -47,23 +47,27 @@ const EditPropertyPage: NextPage = () => {
   }
 
   return (
-    <Layout title={data?.name ?? "Property"}>
-      <PageHeader
-        heading="Properties"
-        breadcrumbItems={[
-          {
-            title: "All properties",
-            href: PROPERTIES_ROUTE,
-          },
-          {
-            title: data?.name ?? "Property",
-          },
-        ]}
-      />
-      <Box maxWidth="720px">
-        <PropertyForm property={data} handleSubmit={handleSubmit} />
-      </Box>
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Properties"
+          breadcrumbItems={[
+            {
+              title: "All properties",
+              href: PROPERTIES_ROUTE,
+            },
+            {
+              title: data?.name ?? "Property",
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title={data?.name ?? "Property"}>
+        <Box maxWidth="720px">
+          <PropertyForm property={data} handleSubmit={handleSubmit} />
+        </Box>
+      </Layout>
+    </>
   );
 };
 

@@ -38,7 +38,6 @@ import {
   Spin,
   Tag,
   Tooltip,
-  useChakraDisclosure as useDisclosure,
   useMessage,
   useModal,
 } from "fidesui";
@@ -55,7 +54,6 @@ import {
   useGetHealthQuery,
   usePostSystemVendorsMutation,
 } from "~/features/plus/plus.slice";
-import MultipleSystemsFilterModal from "~/features/system/add-multiple-systems/MultipleSystemsFilterModal";
 
 export const VendorSourceCell = ({ value }: { value: string }) => {
   const source = extractVendorSource(value);
@@ -78,6 +76,7 @@ const columnHelper = createColumnHelper<MultipleSystemTable>();
 
 type Props = {
   redirectRoute: string;
+  selectedSources?: string[];
 };
 
 const EmptyTableNotice = () => (
@@ -109,7 +108,10 @@ const EmptyTableNotice = () => (
 
 const SYSTEM_TEXT = "Vendor";
 
-export const AddMultipleSystems = ({ redirectRoute }: Props) => {
+export const AddMultipleSystems = ({
+  redirectRoute,
+  selectedSources = [],
+}: Props) => {
   const message = useMessage();
   const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
@@ -124,11 +126,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
 
   const dictionaryOptions = useAppSelector(selectAllDictSystems);
   const [globalFilter, setGlobalFilter] = useState();
-  const {
-    isOpen: isFilterOpen,
-    onOpen: onOpenFilter,
-    onClose: onCloseFilter,
-  } = useDisclosure();
   const modal = useModal();
   const [isRowSelectionBarOpen, setIsRowSelectionBarOpen] =
     useState<boolean>(false);
@@ -245,6 +242,17 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     }
   }, [dictionaryOptions, tableInstance]);
 
+  // Apply source filters from the SidePanel
+  useEffect(() => {
+    if (selectedSources.length > 0) {
+      tableInstance.setColumnFilters([
+        { id: "vendor_id", value: selectedSources },
+      ]);
+    } else {
+      tableInstance.setColumnFilters([]);
+    }
+  }, [selectedSources, tableInstance]);
+
   const {
     totalRows,
     onPreviousPageClick,
@@ -301,13 +309,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     .getSelectedRowModel()
     .rows.filter((r) => !r.original.linked_system).length;
 
-  const vendorFilter = tableInstance
-    .getState()
-    .columnFilters.find((c) => c.id === "vendor_id");
-  const totalFilters =
-    vendorFilter && Array.isArray(vendorFilter.value)
-      ? vendorFilter.value.length
-      : 0;
   return (
     <Flex
       flex={1}
@@ -315,11 +316,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       overflow="auto"
       data-testid="add-multiple-systems-tbl"
     >
-      <MultipleSystemsFilterModal
-        isOpen={isFilterOpen}
-        onClose={onCloseFilter}
-        tableInstance={tableInstance}
-      />
       <TableActionBar>
         <Flex alignItems="center" grow={1}>
           <Box maxW="420px" width="100%">
@@ -361,21 +357,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         </Flex>
         <HStack spacing={4} alignItems="center">
           <AddVendor buttonLabel="Add custom vendor" />
-          {isTcfEnabled ? (
-            // Wrap in a span so it is consistent height with the add button, whose
-            // Tooltip wraps a span
-            <span>
-              <Button
-                onClick={onOpenFilter}
-                data-testid="filter-multiple-systems-btn"
-              >
-                Filter
-                {totalFilters > 0 ? (
-                  <Tag className="mr-0">{totalFilters}</Tag>
-                ) : null}
-              </Button>
-            </span>
-          ) : null}
         </HStack>
       </TableActionBar>
       <FidesTableV2<MultipleSystemTable>

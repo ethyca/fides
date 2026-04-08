@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import CatalogProjectsTable from "~/features/data-catalog/projects/CatalogProjectsTable";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 
@@ -18,19 +18,23 @@ const CatalogProjectView = () => {
   }
 
   return (
-    <Layout title="Data catalog">
-      <PageHeader
-        heading="Data catalog"
-        breadcrumbItems={[
-          { title: "All systems", href: DATA_CATALOG_ROUTE },
-          { title: system?.name ?? system?.fides_key },
-        ]}
-      />
-      <CatalogProjectsTable
-        systemKey={systemKey}
-        monitorConfigIds={monitorConfigIds}
-      />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Data catalog"
+          breadcrumbItems={[
+            { title: "All systems", href: DATA_CATALOG_ROUTE },
+            { title: system?.name ?? system?.fides_key ?? systemKey },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Data catalog">
+        <CatalogProjectsTable
+          systemKey={systemKey}
+          monitorConfigIds={monitorConfigIds}
+        />
+      </Layout>
+    </>
   );
 };
 

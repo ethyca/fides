@@ -16,7 +16,7 @@ import React, { useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useCreateRoleMutation, useGetRolesQuery } from "~/features/rbac";
 import type { RBACRoleCreate } from "~/types/api";
 import type { RTKErrorResult } from "~/types/errors/api";
@@ -61,16 +61,17 @@ const NewRolePage: NextPage = () => {
   };
 
   return (
-    <Layout title="Create role">
-      <PageHeader
-        heading="Create role"
-        isSticky={false}
-        className="pb-0"
-        breadcrumbItems={[
-          { title: "Role management", href: RBAC_ROUTE },
-          { title: "Create role" },
-        ]}
-      />
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Create role"
+          breadcrumbItems={[
+            { title: "Role management", href: RBAC_ROUTE },
+            { title: "Create role" },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Create role">
 
       <Flex vertical>
         <Form
@@ -151,7 +152,8 @@ const NewRolePage: NextPage = () => {
           </Form.Item>
         </Form>
       </Flex>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

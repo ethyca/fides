@@ -1,4 +1,4 @@
-import { Flex, Spin, Tabs, useMessage } from "fidesui";
+import { Flex, Spin, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { POLICIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { PolicyConditionsTab } from "~/features/policies/conditions/PolicyConditionsTab";
 import {
@@ -102,41 +102,42 @@ const PolicyDetailPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Policies">
-      <PageHeader
-        heading="DSR policies"
-        breadcrumbItems={[
-          {
-            title: "All policies",
-            href: POLICIES_ROUTE,
-          },
-          {
-            title: policy?.name ?? policy?.key ?? "Policy",
-          },
-        ]}
-      />
-
-      {isLoading && <Spin />}
-
-      {policy && (
-        <Flex vertical gap="large">
-          <PolicyBox
-            policy={policy}
-            isDefault={isDefault}
-            onEdit={() => setIsEditModalOpen(true)}
-            onDelete={handleDelete}
-            isDeleting={isDeleting}
-          />
-          <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
-        </Flex>
-      )}
-
-      <PolicyFormModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        policyKey={policyKey}
-      />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title={policy?.name ?? policyKey ?? "Policy"}
+          breadcrumbItems={[
+            { title: "All policies", href: POLICIES_ROUTE },
+            { title: policy?.name ?? policy?.key ?? "Policy" },
+          ]}
+        />
+        <SidePanel.Navigation
+          items={tabs.map((t) => ({ key: t.key, label: t.label }))}
+          activeKey={activeTab}
+          onSelect={onTabChange}
+        />
+      </SidePanel>
+      <Layout title="Policies">
+        {isLoading && <Spin />}
+        {policy && (
+          <Flex vertical gap="large">
+            <PolicyBox
+              policy={policy}
+              isDefault={isDefault}
+              onEdit={() => setIsEditModalOpen(true)}
+              onDelete={handleDelete}
+              isDeleting={isDeleting}
+            />
+            {tabs.find((t) => t.key === activeTab)?.children}
+          </Flex>
+        )}
+        <PolicyFormModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          policyKey={policyKey}
+        />
+      </Layout>
+    </>
   );
 };
 

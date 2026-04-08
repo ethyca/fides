@@ -18,7 +18,7 @@ import { ViolationRateCard } from "~/features/access-control/ViolationRateCard";
 import { ViolationsChartCard } from "~/features/access-control/ViolationsChartCard";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 
 const FACET_LABELS: Record<
   keyof FiltersResponse,
@@ -68,18 +68,16 @@ const AccessControlPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Access control">
-      <PageHeader heading="Access control" isSticky />
-      <RequestLogFilterContext.Provider value={filterState}>
-        <Flex vertical gap={16}>
-          <Flex gap={12} align="center">
-            <Flex flex={1}>
-              <FacetedSearchInput
-                facets={facets}
-                value={searchValues}
-                onChange={setSearchValues}
-              />
-            </Flex>
+    <RequestLogFilterContext.Provider value={filterState}>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Access control" />
+          <SidePanel.Filters>
+            <FacetedSearchInput
+              facets={facets}
+              value={searchValues}
+              onChange={setSearchValues}
+            />
             <DatePicker.RangePicker
               format="YYYY-MM-DD"
               value={dateRange}
@@ -95,24 +93,26 @@ const AccessControlPage: NextPage = () => {
               aria-label="Date range"
               className="w-60"
             />
+          </SidePanel.Filters>
+        </SidePanel>
+        <Layout title="Access control">
+          <Flex vertical gap={16}>
+            <Row gutter={16}>
+              <Col span={14}>
+                <ViolationsChartCard />
+              </Col>
+              <Col span={5}>
+                <ViolationRateCard />
+              </Col>
+              <Col span={5}>
+                <DataConsumersCard />
+              </Col>
+            </Row>
+            <AccessControlTableTabs />
           </Flex>
-
-          <Row gutter={16}>
-            <Col span={14}>
-              <ViolationsChartCard />
-            </Col>
-            <Col span={5}>
-              <ViolationRateCard />
-            </Col>
-            <Col span={5}>
-              <DataConsumersCard />
-            </Col>
-          </Row>
-
-          <AccessControlTableTabs />
-        </Flex>
-      </RequestLogFilterContext.Provider>
-    </Layout>
+        </Layout>
+      </>
+    </RequestLogFilterContext.Provider>
   );
 };
 

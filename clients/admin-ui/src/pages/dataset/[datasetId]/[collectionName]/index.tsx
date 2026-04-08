@@ -23,10 +23,9 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
-  DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
 } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   BadgeCell,
   DefaultCell,
@@ -41,7 +40,6 @@ import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
-import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import { EditFieldDrawer } from "~/features/dataset/EditFieldDrawer";
 import { getUpdatedDatasetFromField } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
@@ -266,15 +264,10 @@ const FieldsDetailPage: NextPage = () => {
       },
       {
         title: datasetId,
-        href: {
-          pathname: DATASET_DETAIL_ROUTE,
-          query: { datasetId },
-        },
-        icon: DATA_BREADCRUMB_ICONS[1],
+        href: `${DATASET_ROUTE}/${encodeURIComponent(datasetId)}`,
       },
       {
         title: collectionName,
-        icon: DATA_BREADCRUMB_ICONS[2],
       },
     ];
   }, [datasetId, collectionName]);
@@ -295,10 +288,12 @@ const FieldsDetailPage: NextPage = () => {
   }
 
   return (
-    <Layout title={`Dataset - ${datasetId}`}>
-      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
-
-      {isLoading ? (
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Datasets" breadcrumbItems={breadcrumbs} />
+      </SidePanel>
+      <Layout title={`Dataset - ${datasetId}`}>
+        {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
       ) : (
         <Box data-testid="fields-table">
@@ -332,8 +327,9 @@ const FieldsDetailPage: NextPage = () => {
             collectionName={collectionName}
           />
         </Box>
-      )}
-    </Layout>
+        )}
+      </Layout>
+    </>
   );
 };
 

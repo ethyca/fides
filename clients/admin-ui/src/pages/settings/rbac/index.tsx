@@ -6,7 +6,7 @@ import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { RBAC_ROLE_NEW_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useGetRolesQuery } from "~/features/rbac";
 import type { RBACRole } from "~/types/api";
@@ -79,33 +79,30 @@ const RBACPage: NextPage = () => {
   ];
 
   return (
-    <Layout title="Role management">
-      <PageHeader
-        heading="Role management"
-        isSticky={false}
-        className="pb-0"
-        rightContent={
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Role management"
+          description="Create and manage roles to define fine-grained access control. Assign roles to users to control what resources and actions they can access within the system."
+        />
+        <SidePanel.Actions>
           <NextLink href={RBAC_ROLE_NEW_ROUTE} passHref>
             <Button type="primary">Create role</Button>
           </NextLink>
-        }
-      >
-        <Typography.Paragraph className="max-w-screen-sm">
-          Create and manage roles to define fine-grained access control. Assign
-          roles to users to control what resources and actions they can access
-          within the system.
-        </Typography.Paragraph>
-      </PageHeader>
-      <Flex vertical gap={16}>
-        <Table
-          dataSource={roles || []}
-          columns={columns}
-          rowKey="id"
-          loading={isLoading}
-          pagination={false}
-        />
-      </Flex>
-    </Layout>
+        </SidePanel.Actions>
+      </SidePanel>
+      <Layout title="Role management">
+        <Flex vertical gap={16}>
+          <Table
+            dataSource={roles || []}
+            columns={columns}
+            rowKey="id"
+            loading={isLoading}
+            pagination={false}
+          />
+        </Flex>
+      </Layout>
+    </>
   );
 };
 

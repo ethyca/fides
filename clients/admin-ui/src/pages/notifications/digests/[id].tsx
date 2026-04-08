@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { NOTIFICATIONS_DIGESTS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import Restrict from "~/features/common/Restrict";
 import DigestConfigForm from "~/features/digests/components/DigestConfigForm";
 import { useGetDigestConfigByIdQuery } from "~/features/digests/digest-config.slice";
@@ -45,22 +45,25 @@ const EditDigestPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Edit digest">
-      <Restrict
-        scopes={[
-          ScopeRegistryEnum.DIGEST_CONFIG_CREATE,
-          ScopeRegistryEnum.DIGEST_CONFIG_UPDATE,
-        ]}
-      >
-        <Box data-testid="edit-digest-config">
-          <PageHeader
-            heading={digestConfig?.name || "Edit Digest Configuration"}
-            breadcrumbItems={[
-              { title: "Digests", href: NOTIFICATIONS_DIGESTS_ROUTE },
-              { title: digestConfig?.name || "Edit" },
-            ]}
-          />
-          <DigestConfigForm
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title={digestConfig?.name || "Edit Digest Configuration"}
+          breadcrumbItems={[
+            { title: "Digests", href: NOTIFICATIONS_DIGESTS_ROUTE },
+            { title: digestConfig?.name || "Edit" },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Edit digest">
+        <Restrict
+          scopes={[
+            ScopeRegistryEnum.DIGEST_CONFIG_CREATE,
+            ScopeRegistryEnum.DIGEST_CONFIG_UPDATE,
+          ]}
+        >
+          <Box data-testid="edit-digest-config">
+            <DigestConfigForm
             initialValues={
               digestConfig
                 ? {
@@ -79,6 +82,7 @@ const EditDigestPage: NextPage = () => {
         </Box>
       </Restrict>
     </Layout>
+    </>
   );
 };
 

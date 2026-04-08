@@ -1,10 +1,9 @@
 import Layout from "common/Layout";
-import { Typography } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import CustomFieldsTable from "~/features/custom-fields/CustomFieldsTable";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
 
@@ -23,14 +22,17 @@ const CustomFields: NextPage = () => {
     );
   }
   return (
-    <Layout title="Custom fields">
-      <PageHeader heading="Custom fields" isSticky={false} className="pb-0">
-        <Typography.Paragraph className="max-w-screen-md">
-          {CUSTOM_FIELDS_COPY}
-        </Typography.Paragraph>
-      </PageHeader>
-      <CustomFieldsTable />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Custom fields"
+          description={CUSTOM_FIELDS_COPY}
+        />
+      </SidePanel>
+      <Layout title="Custom fields">
+        <CustomFieldsTable />
+      </Layout>
+    </>
   );
 };
 export default CustomFields;

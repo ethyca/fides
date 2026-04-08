@@ -1,9 +1,8 @@
-import { Typography } from "fidesui";
 import type { NextPage } from "next";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import PropertiesTable from "~/features/properties/PropertiesTable";
 import usePropertiesTable from "~/features/properties/usePropertiesTable";
 
@@ -20,16 +19,17 @@ const PropertiesPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Properties">
-      <PageHeader heading="Properties">
-        <Typography.Text>
-          Review and manage your properties below. Properties are the locations
-          you have configured for consent management such as a website or mobile
-          app.
-        </Typography.Text>
-      </PageHeader>
-      <PropertiesTable />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Properties"
+          description="Review and manage your properties. Properties are locations configured for consent management such as a website or mobile app."
+        />
+      </SidePanel>
+      <Layout title="Properties">
+        <PropertiesTable />
+      </Layout>
+    </>
   );
 };
 

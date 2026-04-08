@@ -157,12 +157,16 @@ export const useConsentManagementFilters = () => {
     onOpen,
     resetFilters,
     purposeOptions,
+    setPurposeOptions,
     onPurposeChange,
     dataUseOptions,
+    setDataUseOptions,
     onDataUseChange,
     legalBasisOptions,
+    setLegalBasisOptions,
     onLegalBasisChange,
     consentCategoryOptions,
+    setConsentCategoryOptions,
     onConsentCategoryChange,
   };
 };

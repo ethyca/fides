@@ -1,10 +1,9 @@
-import { ChakraBox as Box } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import AddSystemsMenu from "~/features/system/AddSystemsMenu";
 import SystemsTable from "~/features/system/SystemsTable";
 import useSystemsTable from "~/features/system/table/useSystemsTable";
@@ -22,17 +21,20 @@ const Systems: NextPage = () => {
   }
 
   return (
-    <Layout title="System inventory">
-      <Box data-testid="system-management">
-        <PageHeader
-          heading="System inventory"
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="System inventory"
           breadcrumbItems={[{ title: "All systems" }]}
-          rightContent={<AddSystemsMenu />}
-          isSticky={false}
         />
+        <SidePanel.Actions>
+          <AddSystemsMenu />
+        </SidePanel.Actions>
+      </SidePanel>
+      <Layout title="System inventory">
         <SystemsTable />
-      </Box>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

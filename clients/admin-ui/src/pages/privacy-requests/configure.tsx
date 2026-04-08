@@ -1,78 +1,64 @@
-import {
-  ChakraBox as Box,
-  ChakraHeading as Heading,
-  ChakraLinkBox as LinkBox,
-  ChakraLinkOverlay as LinkOverlay,
-  Typography,
-} from "fidesui";
+import { Flex } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
+import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
+import DigestConfigList from "~/features/digests/components/DigestConfigList";
+import MessagingTemplatesContent from "~/features/messaging-templates/MessagingTemplatesContent";
+import { StorageConfigurationContent } from "~/features/privacy-requests/configuration/StorageConfiguration";
+import PrivacyRequestDuplicateDetectionSettings from "~/features/settings/PrivacyRequestDuplicateDetectionSettings";
+import PrivacyRequestRedactionPatternsPage from "~/features/settings/PrivacyRequestRedactionPatternsPage";
 
-const { Text } = Typography;
+const VIEWS = {
+  REDACTION: "redaction",
+  DUPLICATE: "duplicate",
+  STORAGE: "storage",
+  TEMPLATES: "templates",
+  DIGESTS: "digests",
+} as const;
 
-const ConfigurePrivacyRequests: NextPage = () => (
-  <Layout title="Configure Privacy Requests">
-    <PageHeader
-      heading="Privacy Requests"
-      breadcrumbItems={[
-        { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
-        { title: "Configure requests" },
-      ]}
-    />
+const ConfigurationHub: NextPage = () => {
+  const [activeView, setActiveView] = useState<string>(VIEWS.REDACTION);
 
-    <Text strong>Configure your privacy requests:</Text>
+  return (
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Configuration"
+          breadcrumbItems={[
+            { title: "Privacy Requests", href: PRIVACY_REQUESTS_ROUTE },
+            { title: "Configuration" },
+          ]}
+        />
+        <SidePanel.Navigation
+          items={[
+            { key: VIEWS.REDACTION, label: "Redaction Patterns" },
+            { key: VIEWS.DUPLICATE, label: "Duplicate Detection" },
+            { key: VIEWS.STORAGE, label: "Storage" },
+            { key: VIEWS.TEMPLATES, label: "Messaging Templates" },
+            { key: VIEWS.DIGESTS, label: "Digests" },
+          ]}
+          activeKey={activeView}
+          onSelect={setActiveView}
+        />
+      </SidePanel>
+      <Layout title="Configuration">
+        <Flex vertical gap="large">
+          {activeView === VIEWS.REDACTION && (
+            <PrivacyRequestRedactionPatternsPage />
+          )}
+          {activeView === VIEWS.DUPLICATE && (
+            <PrivacyRequestDuplicateDetectionSettings />
+          )}
+          {activeView === VIEWS.STORAGE && <StorageConfigurationContent />}
+          {activeView === VIEWS.TEMPLATES && <MessagingTemplatesContent />}
+          {activeView === VIEWS.DIGESTS && <DigestConfigList />}
+        </Flex>
+      </Layout>
+    </>
+  );
+};
 
-    <Box
-      display="flex"
-      alignItems="center"
-      my={5}
-      data-testid="privacy-requests-configure"
-    >
-      <LinkBox
-        p="5"
-        borderWidth="1px"
-        rounded="md"
-        borderColor="gray.300"
-        _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
-        mr={5}
-        minHeight="100%"
-      >
-        <Heading mb={2} size="sm">
-          <LinkOverlay
-            as={NextLink}
-            href="/privacy-requests/configure/messaging"
-          >
-            Configure messaging provider
-          </LinkOverlay>
-        </Heading>
-        Fides supports email (Mailgun & Twilio) and SMS (Twilio) server
-        configurations for sending processing notices to privacy request
-        subjects. Configure your settings here.
-      </LinkBox>
-      <LinkBox
-        p="5"
-        borderWidth="1px"
-        rounded="md"
-        borderColor="gray.300"
-        _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
-        minHeight="100%"
-      >
-        <Heading mb={2} size="sm">
-          <LinkOverlay as={NextLink} href="/privacy-requests/configure/storage">
-            Configure storage
-          </LinkOverlay>
-        </Heading>
-        The data produced by an access request will need to be uploaded to a
-        storage destination (e.g. an S3 bucket) in order to be returned to the
-        user. At least one storage destination must be configured to process
-        access requests. Configure your settings here.
-      </LinkBox>
-    </Box>
-  </Layout>
-);
-
-export default ConfigurePrivacyRequests;
+export default ConfigurationHub;

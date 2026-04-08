@@ -16,17 +16,16 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Button, ChakraFlex as Flex, ChakraHStack as HStack } from "fidesui";
+import { ChakraFlex as Flex, ChakraHStack as HStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
+import {
+  getQueryParamsFromList,
+  Option,
+} from "~/features/common/modals/FilterModal";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
-import {
-  ConsentManagementFilterModal,
-  useConsentManagementFilters,
-} from "~/features/configure-consent/ConsentManagementFilterModal";
 import {
   ConsentManagementModal,
   useConsentManagementModal,
@@ -46,7 +45,19 @@ const emptyVendorReportResponse: Page_SystemSummary_ = {
   size: 25,
   pages: 1,
 };
-export const ConsentManagementTable = () => {
+interface ConsentManagementTableProps {
+  purposeOptions: Option[];
+  dataUseOptions: Option[];
+  legalBasisOptions: Option[];
+  consentCategoryOptions: Option[];
+}
+
+export const ConsentManagementTable = ({
+  purposeOptions,
+  dataUseOptions,
+  legalBasisOptions,
+  consentCategoryOptions,
+}: ConsentManagementTableProps) => {
   const { tcf: isTcfEnabled, dictionaryService } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
@@ -58,21 +69,6 @@ export const ConsentManagementTable = () => {
   const router = useRouter();
 
   const [systemFidesKey, setSystemFidesKey] = useState<string>();
-
-  const {
-    isOpen: isFilterOpen,
-    onOpen: onOpenFilter,
-    onClose: onCloseFilter,
-    resetFilters,
-    purposeOptions,
-    onPurposeChange,
-    dataUseOptions,
-    onDataUseChange,
-    legalBasisOptions,
-    onLegalBasisChange,
-    consentCategoryOptions,
-    onConsentCategoryChange,
-  } = useConsentManagementFilters();
 
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
@@ -266,31 +262,11 @@ export const ConsentManagementTable = () => {
           setGlobalFilter={updateGlobalFilter}
           placeholder="Search"
         />
-        <ConsentManagementFilterModal
-          isOpen={isFilterOpen}
-          isTcfEnabled={isTcfEnabled}
-          onClose={onCloseFilter}
-          resetFilters={resetFilters}
-          purposeOptions={purposeOptions}
-          onPurposeChange={onPurposeChange}
-          dataUseOptions={dataUseOptions}
-          onDataUseChange={onDataUseChange}
-          legalBasisOptions={legalBasisOptions}
-          onLegalBasisChange={onLegalBasisChange}
-          consentCategoryOptions={consentCategoryOptions}
-          onConsentCategoryChange={onConsentCategoryChange}
-        />
         <HStack alignItems="center" spacing={2}>
           <AddVendor
             buttonLabel="Add vendors"
             onButtonClick={dictionaryService ? goToAddMultiple : undefined}
           />
-          <Button
-            onClick={onOpenFilter}
-            data-testid="filter-multiple-systems-btn"
-          >
-            Filter
-          </Button>
         </HStack>
       </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />

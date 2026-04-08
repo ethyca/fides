@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   useGetAvailableNoticeTranslationsQuery,
   useGetPrivacyNoticeByIdQuery,
@@ -26,44 +26,54 @@ const PrivacyNoticeDetailPage = () => {
 
   if (isLoading) {
     return (
-      <Layout title="Privacy notice">
-        <Spin />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Privacy notices" />
+        </SidePanel>
+        <Layout title="Privacy notice">
+          <Spin />
+        </Layout>
+      </>
     );
   }
 
   if (!data) {
     return (
-      <Layout title="Privacy notice">
-        <Text>No privacy notice with id {noticeId} found.</Text>
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Privacy notices" />
+        </SidePanel>
+        <Layout title="Privacy notice">
+          <Text>No privacy notice with id {noticeId} found.</Text>
+        </Layout>
+      </>
     );
   }
 
   return (
-    <Layout title={`Privacy notice ${data.name}`}>
-      <PageHeader
-        heading="Privacy notices"
-        breadcrumbItems={[
-          { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
-          { title: data.name },
-        ]}
-      />
-      <Box
-        width={{ base: "100%", lg: "70%" }}
-        data-testid="privacy-notice-detail-page"
-      >
-        <Text fontSize="sm" mb={8}>
-          Configure your privacy notice including consent mechanism, associated
-          data uses and the locations in which this should be displayed to
-          users.
-        </Text>
-        <PrivacyNoticeForm
-          privacyNotice={data}
-          availableTranslations={availableTranslations}
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title={data.name}
+          breadcrumbItems={[
+            { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
+            { title: data.name },
+          ]}
+          description="Configure your privacy notice including consent mechanism, data uses, and display locations."
         />
-      </Box>
-    </Layout>
+      </SidePanel>
+      <Layout title={`Privacy notice ${data.name}`}>
+        <Box
+          width={{ base: "100%", lg: "70%" }}
+          data-testid="privacy-notice-detail-page"
+        >
+          <PrivacyNoticeForm
+            privacyNotice={data}
+            availableTranslations={availableTranslations}
+          />
+        </Box>
+      </Layout>
+    </>
   );
 };
 

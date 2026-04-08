@@ -4,16 +4,13 @@ import {
   Button,
   Dropdown,
   DropdownProps,
-  Flex,
   Icons,
-  Menu,
 } from "fidesui";
-import _ from "lodash";
 import { PropsWithChildren } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import useActionCenterNavigation, {
   ActionCenterRoute,
   ActionCenterRouteConfig,
@@ -42,53 +39,53 @@ const ActionCenterLayout = ({
     setActiveItem,
   } = useActionCenterNavigation(routeConfig);
 
+  const navItems = Object.values(menuItems).flatMap((item) => {
+    if (!item || !("key" in item) || !("label" in item)) {
+      return [];
+    }
+    return [{ key: item.key as string, label: item.label as string }];
+  });
+
   return (
-    <FixedLayout
-      title="Action center"
-      mainProps={{ overflow: "hidden" }}
-      fullHeight
-    >
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          ...(monitorId ? [{ title: monitorId }] : []),
-        ]}
-        isSticky={false}
-        rightContent={
-          pageSettings && (
-            <Flex>
-              <Badge {...pageSettings.badgeProps}>
-                <Dropdown {...pageSettings.dropdownProps}>
-                  <Button
-                    aria-label="Page settings"
-                    icon={<Icons.SettingsView />}
-                  />
-                </Dropdown>
-              </Badge>
-            </Flex>
-          )
-        }
-      />
-      <MonitorStats monitorId={monitorId} />
-      <Menu
-        aria-label="Action center tabs"
-        mode="horizontal"
-        items={Object.values(menuItems)}
-        selectedKeys={_.compact([activeItem])}
-        onClick={async (menuInfo) => {
-          const validKey = Object.values(ActionCenterRoute).find(
-            (value) => value === menuInfo.key,
-          );
-          if (validKey) {
-            await setActiveItem(validKey);
-          }
-        }}
-        className="mb-4"
-        data-testid="action-center-tabs"
-      />
-      {children}
-    </FixedLayout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Action center"
+          breadcrumbItems={[
+            { title: "All activity", href: ACTION_CENTER_ROUTE },
+            ...(monitorId ? [{ title: monitorId }] : []),
+          ]}
+        />
+        <SidePanel.Navigation
+          items={navItems}
+          activeKey={activeItem ?? ""}
+          onSelect={async (key) => {
+            const validKey = Object.values(ActionCenterRoute).find(
+              (v) => v === key,
+            );
+            if (validKey) {
+              await setActiveItem(validKey);
+            }
+          }}
+        />
+        {pageSettings && (
+          <SidePanel.Actions>
+            <Badge {...pageSettings.badgeProps}>
+              <Dropdown {...pageSettings.dropdownProps}>
+                <Button
+                  aria-label="Page settings"
+                  icon={<Icons.SettingsView />}
+                />
+              </Dropdown>
+            </Badge>
+          </SidePanel.Actions>
+        )}
+      </SidePanel>
+      <FixedLayout title="Action center" mainProps={{ overflow: "hidden" }} fullHeight>
+        <MonitorStats monitorId={monitorId} />
+        {children}
+      </FixedLayout>
+    </>
   );
 };
 

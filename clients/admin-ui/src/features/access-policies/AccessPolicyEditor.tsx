@@ -28,7 +28,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { Editor } from "~/features/common/yaml/helpers";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
@@ -878,15 +878,18 @@ const AccessPolicyEditor = ({
   );
 
   return (
-    <Layout title={title}>
-      <PageHeader
-        heading={title}
-        breadcrumbItems={[
-          { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
-          { title: breadcrumbTitle },
-        ]}
-        isSticky
-        rightContent={
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title={title}
+          breadcrumbItems={[
+            { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
+            { title: breadcrumbTitle },
+          ]}
+        />
+      </SidePanel>
+      <Layout title={title}>
+        <Flex justify="end" style={{ marginBottom: 16 }}>
           <Space>
             {!isNew && (
               <Popconfirm
@@ -916,10 +919,9 @@ const AccessPolicyEditor = ({
               Save
             </Button>
           </Space>
-        }
-      />
+        </Flex>
 
-      <Tabs
+        <Tabs
         activeKey={mode}
         onChange={(key) => handleModeChange(key as EditorMode)}
         data-testid="mode-toggle"
@@ -979,7 +981,8 @@ const AccessPolicyEditor = ({
           },
         ]}
       />
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

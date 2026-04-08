@@ -1,0 +1,103 @@
+.panel {
+  border-right: 1px solid var(--fidesui-neutral-200);
+  overflow-y: auto;
+  height: 100%;
+
+  :global(.ant-layout-sider-children) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+}
+
+.panelContent {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.overlay {
+  position: fixed;
+  z-index: 25;
+}
+
+// Identity slot
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.identityTitle {
+  margin-bottom: 0 !important;
+}
+
+// Navigation slot
+.navigation {
+  margin-left: -12px;
+  margin-right: -12px;
+}
+
+.navigationMenu {
+  border-inline-end: none !important;
+}
+
+// Search slot
+.search {
+  width: 100%;
+}
+
+// Actions slot
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  :global(.ant-btn-primary) {
+    width: 100%;
+  }
+}
+
+// Filters slot
+.filters {
+  margin-left: -12px;
+  margin-right: -12px;
+}
+
+.filterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.clearAll {
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.filterContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 4px;
+}
+
+// ViewSettings slot
+.viewSettings {
+  margin-left: -12px;
+  margin-right: -12px;
+}
+
+// SavedViews slot
+.savedViews {
+  margin-left: -12px;
+  margin-right: -12px;
+}

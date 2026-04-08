@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useCreatePropertyMutation } from "~/features/properties/property.slice";
 import PropertyForm, { FormValues } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
@@ -29,23 +29,27 @@ const AddPropertyPage: NextPage = () => {
   };
 
   return (
-    <Layout title="Add property">
-      <PageHeader
-        heading="Properties"
-        breadcrumbItems={[
-          {
-            title: "All properties",
-            href: PROPERTIES_ROUTE,
-          },
-          {
-            title: "Add property",
-          },
-        ]}
-      />
-      <Box maxWidth="720px">
-        <PropertyForm handleSubmit={handleSubmit} />
-      </Box>
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Properties"
+          breadcrumbItems={[
+            {
+              title: "All properties",
+              href: PROPERTIES_ROUTE,
+            },
+            {
+              title: "Add property",
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Add property">
+        <Box maxWidth="720px">
+          <PropertyForm handleSubmit={handleSubmit} />
+        </Box>
+      </Layout>
+    </>
   );
 };
 

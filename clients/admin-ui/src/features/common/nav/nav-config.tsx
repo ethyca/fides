@@ -43,9 +43,10 @@ export interface NavConfigGroup {
 }
 
 export const NAV_CONFIG: NavConfigGroup[] = [
+  // 1. Dashboard
   {
     icon: <Icons.Home />,
-    title: "Overview",
+    title: "Dashboard",
     routes: [
       {
         title: "Home",
@@ -55,55 +56,36 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
     ],
   },
+  // 2. Discovery & Inventory
   {
-    title: "Detection & Discovery",
+    title: "Discovery & Inventory",
     icon: <Icons.DataAnalytics />,
     routes: [
       {
-        title: "Action center",
+        title: "Dashboard",
+        path: routes.DISCOVERY_INVENTORY_DASHBOARD_ROUTE,
+        scopes: [],
+        requiresPlus: true,
+      },
+      {
+        title: "Activity Log",
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
         tabs: ACTION_CENTER_TAB_ITEMS,
       },
       {
-        title: "Data catalog",
-        path: routes.DATA_CATALOG_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresFlag: "dataCatalog",
-        requiresPlus: true,
-      },
-      {
-        title: "Access control",
-        path: routes.ACCESS_CONTROL_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        requiresPlus: true,
-      },
-    ],
-  },
-  {
-    title: "Data inventory",
-    icon: <Icons.DataTable />,
-    routes: [
-      {
-        title: "Data lineage",
-        path: routes.DATAMAP_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.DATAMAP_READ],
-      },
-      {
-        title: "System inventory",
+        title: "Systems",
         path: routes.SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
       {
-        title: "Add systems",
+        title: "Add Systems",
         path: routes.ADD_SYSTEMS_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
       },
       {
-        title: "Manage datasets",
+        title: "Datasets",
         path: routes.DATASET_ROUTE,
         scopes: [
           ScopeRegistryEnum.CTL_DATASET_CREATE,
@@ -111,25 +93,81 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Data map report",
-        path: routes.REPORTING_DATAMAP_ROUTE,
+        title: "Data Catalog",
+        path: routes.DATA_CATALOG_ROUTE,
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
+        requiresFlag: "dataCatalog",
+        requiresPlus: true,
+      },
+      {
+        title: "Data Lineage",
+        path: routes.DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
       {
-        title: "Asset report",
-        path: routes.REPORTING_ASSETS_ROUTE,
+        title: "Reports",
+        path: routes.REPORTS_HUB_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
     ],
   },
+  // 3. Consent
   {
-    title: "Privacy requests",
+    title: "Consent",
+    icon: <Icons.SettingsAdjust />,
+    routes: [
+      {
+        title: "Dashboard",
+        path: routes.CONSENT_DASHBOARD_ROUTE,
+        scopes: [],
+        requiresPlus: true,
+      },
+      {
+        title: "Consent Report",
+        path: routes.CONSENT_REPORTING_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+      },
+      {
+        title: "Vendors",
+        path: routes.CONFIGURE_CONSENT_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+      },
+      {
+        title: "Privacy Notices",
+        path: routes.PRIVACY_NOTICES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+      },
+      {
+        title: "Privacy Experiences",
+        path: routes.PRIVACY_EXPERIENCE_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
+      },
+      {
+        title: "Consent Settings",
+        path: routes.CONSENT_SETTINGS_HUB_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
+    ],
+  },
+  // 4. Privacy Requests
+  {
+    title: "Privacy Requests",
     icon: <Icons.MessageQueue />,
     routes: [
       {
-        title: "Request manager",
+        title: "Dashboard",
+        path: routes.PRIVACY_REQUESTS_DASHBOARD_ROUTE,
+        scopes: [],
+      },
+      {
+        title: "Request Manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
         scopes: [
           ScopeRegistryEnum.PRIVACY_REQUEST_READ,
@@ -140,78 +178,81 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         tabs: PRIVACY_REQUEST_TAB_ITEMS,
       },
       {
-        title: "DSR policies",
+        title: "DSR Policies",
         path: routes.POLICIES_ROUTE,
         requiresFlag: "policies",
         scopes: [ScopeRegistryEnum.POLICY_READ],
       },
       {
-        title: "Pre-approval webhooks",
+        title: "Pre-approval Webhooks",
         path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
         scopes: [
           ScopeRegistryEnum.WEBHOOK_READ,
           ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
         ],
       },
+      {
+        title: "Configuration",
+        path: routes.PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+      },
     ],
   },
+  // 5. AI Governance
   {
-    title: "Privacy assessments",
+    title: "AI Governance",
     icon: <Icons.Document />,
     routes: [
       {
-        title: "Assessments",
+        title: "Dashboard",
+        path: routes.AI_GOVERNANCE_DASHBOARD_ROUTE,
+        scopes: [],
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+      },
+      {
+        title: "Violation Log",
+        path: routes.ACCESS_CONTROL_ROUTE,
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        requiresPlus: true,
+      },
+      {
+        title: "Access Policies",
+        path: routes.ACCESS_POLICIES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [],
+      },
+      {
+        title: "Data Purposes",
+        path: routes.DATA_PURPOSES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
+      },
+      {
+        title: "Data Consumers",
+        path: routes.DATA_CONSUMERS_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
+      },
+      {
+        title: "Privacy Assessments",
         path: routes.PRIVACY_ASSESSMENTS_ROUTE,
         scopes: [],
         requiresFlag: "privacyAssessments",
       },
     ],
   },
+  // 6. Integrations
   {
-    title: "Consent",
-    icon: <Icons.SettingsAdjust />,
-    routes: [
-      {
-        title: "Vendors",
-        path: routes.CONFIGURE_CONSENT_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-      },
-      {
-        title: "Notices",
-        path: routes.PRIVACY_NOTICES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-      },
-      {
-        title: "Experiences",
-        path: routes.PRIVACY_EXPERIENCE_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
-      },
-      {
-        title: "Consent report",
-        path: routes.CONSENT_REPORTING_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
-      },
-    ],
-  },
-  {
-    title: "Core configuration",
+    title: "Integrations",
     icon: <Icons.WorkflowAutomation />,
     routes: [
       {
-        title: "Taxonomy",
-        path: routes.TAXONOMY_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.DATA_USE_READ,
-          ScopeRegistryEnum.DATA_CATEGORY_READ,
-          ScopeRegistryEnum.DATA_SUBJECT_READ,
-        ],
-      },
-      {
-        title: "Integrations",
+        title: "Integration List",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
         requiresPlus: true,
         scopes: [
@@ -224,108 +265,28 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Notifications",
-        path: routes.NOTIFICATIONS_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
-          ScopeRegistryEnum.DIGEST_CONFIG_READ,
-          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
-        ],
-        tabs: NOTIFICATION_TAB_ITEMS,
+        title: "Email Providers",
+        path: routes.MESSAGING_PROVIDERS_ROUTE,
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
-        title: "Custom fields",
-        path: routes.CUSTOM_FIELDS_ROUTE,
-        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
-        requiresPlus: true,
-      },
-      {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
-      },
-      {
-        title: "Domain verification",
-        path: routes.DOMAIN_RECORDS_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: true,
-        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
-      },
-      {
-        title: "Domains",
-        path: routes.DOMAIN_MANAGEMENT_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: false,
-        scopes: [
-          ScopeRegistryEnum.CONFIG_READ,
-          ScopeRegistryEnum.CONFIG_UPDATE,
-        ],
-      },
-      {
-        title: "Data purposes",
-        path: routes.DATA_PURPOSES_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
-      },
-      {
-        title: "Data consumers",
-        path: routes.DATA_CONSUMERS_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
-      },
-      {
-        title: "Access policies",
-        path: routes.ACCESS_POLICIES_ROUTE,
-        requiresPlus: true,
-        requiresFlag: "alphaPurposeBasedAccessControl",
-        scopes: [],
+        title: "Chat Providers",
+        path: routes.CHAT_PROVIDERS_ROUTE,
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
     ],
   },
-  {
-    title: "Compliance",
-    icon: <Icons.RuleDraft />,
-    routes: [
-      {
-        title: "Locations",
-        path: routes.LOCATIONS_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.LOCATION_READ,
-          ScopeRegistryEnum.LOCATION_UPDATE,
-        ],
-        requiresPlus: true,
-      },
-      {
-        title: "Regulations",
-        path: routes.REGULATIONS_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.LOCATION_READ,
-          ScopeRegistryEnum.LOCATION_UPDATE,
-        ],
-        requiresPlus: true,
-      },
-    ],
-  },
+  // 7. Settings
   {
     title: "Settings",
     icon: <Icons.Settings />,
     routes: [
       {
-        title: "Privacy requests",
-        path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
-        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
-        tabs: [
-          {
-            title: "Redaction patterns",
-            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
-          },
-          {
-            title: "Duplicate detection",
-            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
-          },
+        title: "Organization",
+        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
         ],
       },
       {
@@ -355,28 +316,47 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Organization",
-        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+        title: "Notifications",
+        path: routes.NOTIFICATIONS_ROUTE,
         scopes: [
-          ScopeRegistryEnum.ORGANIZATION_READ,
-          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
+          ScopeRegistryEnum.DIGEST_CONFIG_READ,
+          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
         ],
+        tabs: NOTIFICATION_TAB_ITEMS,
       },
       {
-        title: "Email templates",
-        path: routes.EMAIL_TEMPLATES_ROUTE,
-        requiresOss: true,
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
-      },
-      {
-        title: "Consent",
-        path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        title: "Custom fields",
+        path: routes.CUSTOM_FIELDS_ROUTE,
+        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
         requiresPlus: true,
-        requiresFidesCloud: false,
+      },
+      {
+        title: "Taxonomy",
+        path: routes.TAXONOMY_ROUTE,
         scopes: [
-          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
-          ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
+          ScopeRegistryEnum.DATA_USE_READ,
+          ScopeRegistryEnum.DATA_CATEGORY_READ,
+          ScopeRegistryEnum.DATA_SUBJECT_READ,
         ],
+      },
+      {
+        title: "Locations",
+        path: routes.LOCATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.LOCATION_READ,
+          ScopeRegistryEnum.LOCATION_UPDATE,
+        ],
+        requiresPlus: true,
+      },
+      {
+        title: "Regulations",
+        path: routes.REGULATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.LOCATION_READ,
+          ScopeRegistryEnum.LOCATION_UPDATE,
+        ],
+        requiresPlus: true,
       },
       {
         title: "About Fides",
@@ -460,7 +440,7 @@ export interface NavGroupChild {
 
 export interface NavGroup {
   /**
-   * Title of the group. Displayed as an accordion in MainSideNav.
+   * Title of the group. Displayed in the IconRail navigation.
    */
   title: string;
   /**

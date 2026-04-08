@@ -2,18 +2,21 @@ import { ChakraBox as Box, ChakraText as Text } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
 
 const NewPrivacyNoticePage = () => (
-  <Layout title="New privacy notice">
-    <PageHeader
-      heading="Privacy notices"
-      breadcrumbItems={[
-        { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
-        { title: "New privacy notice" },
-      ]}
-    />
+  <>
+    <SidePanel>
+      <SidePanel.Identity
+        title="Privacy notices"
+        breadcrumbItems={[
+          { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
+          { title: "New privacy notice" },
+        ]}
+      />
+    </SidePanel>
+    <Layout title="New privacy notice">
     <Box width={{ base: "100%", lg: "70%" }}>
       <Text fontSize="sm" mb={8}>
         Configure your privacy notice including consent mechanism, associated
@@ -24,6 +27,7 @@ const NewPrivacyNoticePage = () => (
       </Box>
     </Box>
   </Layout>
+  </>
 );
 
 export default NewPrivacyNoticePage;

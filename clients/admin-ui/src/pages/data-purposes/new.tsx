@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useCreateDataPurposeMutation } from "~/features/data-purposes/data-purpose.slice";
 import DataPurposeForm, {
   DataPurposeFormValues,
@@ -28,23 +28,27 @@ const AddDataPurposePage: NextPage = () => {
   };
 
   return (
-    <Layout title="Add data purpose">
-      <PageHeader
-        heading="Data Purposes"
-        breadcrumbItems={[
-          {
-            title: "All data purposes",
-            href: DATA_PURPOSES_ROUTE,
-          },
-          {
-            title: "Add data purpose",
-          },
-        ]}
-      />
-      <div style={{ maxWidth: 720 }}>
-        <DataPurposeForm handleSubmit={handleSubmit} />
-      </div>
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Data Purposes"
+          breadcrumbItems={[
+            {
+              title: "All data purposes",
+              href: DATA_PURPOSES_ROUTE,
+            },
+            {
+              title: "Add data purpose",
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Add data purpose">
+        <div style={{ maxWidth: 720 }}>
+          <DataPurposeForm handleSubmit={handleSubmit} />
+        </div>
+      </Layout>
+    </>
   );
 };
 

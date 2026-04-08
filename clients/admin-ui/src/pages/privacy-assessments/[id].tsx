@@ -1,11 +1,9 @@
 import {
   Button,
-  Icons,
   Result,
   Space,
   Spin,
   Text,
-  Tooltip,
   useMessage,
   useModal,
 } from "fidesui";
@@ -17,7 +15,7 @@ import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   AssessmentDetail,
   useDeletePrivacyAssessmentMutation,
@@ -100,90 +98,76 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
   if (!flags?.privacyAssessments) {
     return (
-      <Layout title="Privacy assessment">
-        <Result
-          status="error"
-          title="Feature not available"
-          subTitle="This feature is currently behind a feature flag and is not enabled."
-        />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Privacy assessments" />
+        </SidePanel>
+        <Layout title="Privacy assessment">
+          <Result
+            status="error"
+            title="Feature not available"
+            subTitle="This feature is currently behind a feature flag and is not enabled."
+          />
+        </Layout>
+      </>
     );
   }
 
   if (isLoading) {
     return (
-      <Layout title="Privacy assessment">
-        <PageHeader heading="Privacy assessments" isSticky />
-        <Spin size="large" />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Privacy assessments" />
+        </SidePanel>
+        <Layout title="Privacy assessment">
+          <Spin size="large" />
+        </Layout>
+      </>
     );
   }
 
   if (isError || !assessment) {
     return (
-      <Layout title="Privacy assessment">
-        <PageHeader heading="Privacy assessments" isSticky />
-        <Result
-          status="error"
-          title="Failed to load assessment"
-          subTitle="There was an error loading this privacy assessment. Please try again."
-          extra={
-            <Space>
-              <NextLink href={PRIVACY_ASSESSMENTS_ROUTE} passHref>
-                <Button>Back to list</Button>
-              </NextLink>
-              <Button type="primary" onClick={() => refetch()}>
-                Retry
-              </Button>
-            </Space>
-          }
-        />
-      </Layout>
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Privacy assessments" />
+        </SidePanel>
+        <Layout title="Privacy assessment">
+          <Result
+            status="error"
+            title="Failed to load assessment"
+            subTitle="There was an error loading this privacy assessment. Please try again."
+            extra={
+              <Space>
+                <NextLink href={PRIVACY_ASSESSMENTS_ROUTE} passHref>
+                  <Button>Back to list</Button>
+                </NextLink>
+                <Button type="primary" onClick={() => refetch()}>
+                  Retry
+                </Button>
+              </Space>
+            }
+          />
+        </Layout>
+      </>
     );
   }
 
   return (
-    <Layout title={`Privacy assessment - ${assessment.name}`}>
-      <PageHeader
-        heading="Privacy assessments"
-        breadcrumbItems={[
-          { title: "Privacy assessments", href: PRIVACY_ASSESSMENTS_ROUTE },
-          { title: assessment.name },
-        ]}
-        isSticky
-        rightContent={
-          <Space>
-            <Tooltip title="Delete assessment">
-              <Button
-                type="text"
-                danger
-                onClick={handleDelete}
-                aria-label="Delete assessment"
-                loading={isDeleting}
-                icon={<Icons.TrashCan size={16} />}
-              />
-            </Tooltip>
-            <Tooltip
-              title={
-                !isComplete
-                  ? "Assessment must be complete before generating a report"
-                  : undefined
-              }
-            >
-              <Button
-                type="primary"
-                disabled={!isComplete}
-                loading={isDownloading}
-                onClick={handleDownloadReport}
-              >
-                Generate report
-              </Button>
-            </Tooltip>
-          </Space>
-        }
-      />
-      <AssessmentDetail assessment={assessment} />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Privacy assessments"
+          breadcrumbItems={[
+            { title: "Privacy assessments", href: PRIVACY_ASSESSMENTS_ROUTE },
+            { title: assessment.name },
+          ]}
+        />
+      </SidePanel>
+      <Layout title={`Privacy assessment - ${assessment.name}`}>
+        <AssessmentDetail assessment={assessment} />
+      </Layout>
+    </>
   );
 };
 

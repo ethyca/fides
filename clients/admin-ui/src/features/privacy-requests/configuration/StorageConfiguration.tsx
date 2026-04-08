@@ -15,7 +15,7 @@ import {
   PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
 } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { usePatchConfigurationSettingsMutation } from "~/features/config-settings/config-settings.slice";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
@@ -28,7 +28,11 @@ import { StorageTypeApiAccepted } from "~/types/api";
 import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
-const StorageConfiguration = () => {
+/**
+ * Core storage configuration content without Layout/SidePanel wrappers.
+ * Used by the Privacy Requests Configuration hub page.
+ */
+export const StorageConfigurationContent = () => {
   const message = useMessage();
   const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
@@ -81,18 +85,7 @@ const StorageConfiguration = () => {
     storageComponents[storageValue as keyof typeof storageComponents];
 
   return (
-    <Layout title="Configure Privacy Requests - Storage">
-      <PageHeader
-        heading="Privacy Requests"
-        breadcrumbItems={[
-          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
-          {
-            title: "Configure requests",
-            href: PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
-          },
-          { title: "Storage" },
-        ]}
-      />
+    <>
       <Heading mb={5} fontSize="md" fontWeight="semibold">
         Configure storage
       </Heading>
@@ -148,8 +141,29 @@ const StorageConfiguration = () => {
           <StorageConfigComponent storageDetails={storageDetails} />
         )}
       </Box>
-    </Layout>
+    </>
   );
 };
+
+const StorageConfiguration = () => (
+  <>
+    <SidePanel>
+      <SidePanel.Identity
+        title="Privacy Requests"
+        breadcrumbItems={[
+          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+          {
+            title: "Configure requests",
+            href: PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+          },
+          { title: "Storage" },
+        ]}
+      />
+    </SidePanel>
+    <Layout title="Configure Privacy Requests - Storage">
+      <StorageConfigurationContent />
+    </Layout>
+  </>
+);
 
 export default StorageConfiguration;

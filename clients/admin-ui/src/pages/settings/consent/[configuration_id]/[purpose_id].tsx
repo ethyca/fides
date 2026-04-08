@@ -12,7 +12,7 @@ import DocsLink from "~/features/common/DocsLink";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { GLOBAL_CONSENT_CONFIG_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
 import { PUBLISHER_RESTRICTIONS_DOCS_URL } from "~/features/consent-settings/tcf/constants";
@@ -53,19 +53,18 @@ const ConsentConfigurationPage: NextPage = () => {
   }
 
   return (
-    <FixedLayout title="Consent Configuration">
-      <PageHeader
-        heading="Consent configuration"
-        breadcrumbItems={[
-          { title: "Consent settings", href: GLOBAL_CONSENT_CONFIG_ROUTE },
-          {
-            title: configuration?.name || "Configuration",
-          },
-          {
-            title: `TCF purpose ${purposeId}`,
-          },
-        ]}
-      />
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Consent configuration"
+          breadcrumbItems={[
+            { title: "Consent settings", href: GLOBAL_CONSENT_CONFIG_ROUTE },
+            { title: configuration?.name || "Configuration" },
+            { title: `TCF purpose ${purposeId}` },
+          ]}
+        />
+      </SidePanel>
+      <FixedLayout title="Consent Configuration">
       <Space direction="vertical" size="medium">
         <Space direction="vertical" size="medium">
           <SettingsBox
@@ -102,7 +101,8 @@ const ConsentConfigurationPage: NextPage = () => {
         </Space>
         <PurposeRestrictionsTable />
       </Space>
-    </FixedLayout>
+      </FixedLayout>
+    </>
   );
 };
 

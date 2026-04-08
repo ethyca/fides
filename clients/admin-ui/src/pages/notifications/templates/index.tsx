@@ -22,7 +22,7 @@ import {
   NOTIFICATIONS_TEMPLATES_ROUTE,
 } from "~/features/common/nav/routes";
 import NotificationTabs from "~/features/common/NotificationTabs";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
@@ -256,17 +256,10 @@ const NotificationTemplatesPage: NextPage = () => {
   }
 
   return (
-    <FixedLayout title="Notifications">
-      <PageHeader heading="Notifications" />
-
-      <NotificationTabs />
-
-      <Flex vertical gap="small" className="py-2">
-        <FeatureNotEnabledInfoBox />
-        <MissingMessagesInfoBox />
-      </Flex>
-      <Flex vertical gap="small">
-        <Flex justify="flex-end">
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Notifications" />
+        <SidePanel.Actions>
           <Button
             type="primary"
             data-testid="add-message-btn"
@@ -274,25 +267,35 @@ const NotificationTemplatesPage: NextPage = () => {
           >
             Add message +
           </Button>
-        </Flex>
-        {isLoading ? (
-          <Skeleton active />
-        ) : (
-          <Table {...tableProps} columns={columns} />
-        )}
-      </Flex>
+        </SidePanel.Actions>
+      </SidePanel>
+      <FixedLayout title="Notifications">
+        <NotificationTabs />
 
-      <AddMessagingTemplateModal
-        isOpen={isAddTemplateModalOpen}
-        onClose={() => setIsAddTemplateModalOpen(false)}
-        onAccept={(messageTemplateType) => {
-          router.push({
-            pathname: NOTIFICATIONS_ADD_TEMPLATE_ROUTE,
-            query: { templateType: messageTemplateType },
-          });
-        }}
-      />
-    </FixedLayout>
+        <Flex vertical gap="small" className="py-2">
+          <FeatureNotEnabledInfoBox />
+          <MissingMessagesInfoBox />
+        </Flex>
+        <Flex vertical gap="small">
+          {isLoading ? (
+            <Skeleton active />
+          ) : (
+            <Table {...tableProps} columns={columns} />
+          )}
+        </Flex>
+
+        <AddMessagingTemplateModal
+          isOpen={isAddTemplateModalOpen}
+          onClose={() => setIsAddTemplateModalOpen(false)}
+          onAccept={(messageTemplateType) => {
+            router.push({
+              pathname: NOTIFICATIONS_ADD_TEMPLATE_ROUTE,
+              query: { templateType: messageTemplateType },
+            });
+          }}
+        />
+      </FixedLayout>
+    </>
   );
 };
 

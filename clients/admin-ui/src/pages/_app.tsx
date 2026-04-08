@@ -18,7 +18,8 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
-import MainSideNav from "~/features/common/nav/MainSideNav";
+import { IconRail } from "~/features/common/nav/IconRail";
+import { SidePanelProvider } from "~/features/common/SidePanel";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
@@ -66,17 +67,19 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
                 ) : (
                   <ProtectedRoute>
                     <CommonSubscriptions />
-                    <Flex width="100%" height="100%" flex={1}>
-                      <MainSideNav />
-                      <Flex
-                        direction="column"
-                        flex={1}
-                        minWidth={0}
-                        overflow="hidden"
-                      >
-                        <Component {...pageProps} />
+                    <SidePanelProvider>
+                      <Flex width="100%" height="100%" flex={1}>
+                        <IconRail />
+                        <Flex
+                          direction="row"
+                          flex={1}
+                          minWidth={0}
+                          overflow="hidden"
+                        >
+                          <Component {...pageProps} />
+                        </Flex>
                       </Flex>
-                    </Flex>
+                    </SidePanelProvider>
                   </ProtectedRoute>
                 )}
               </NuqsAdapter>

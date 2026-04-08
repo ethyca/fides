@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { DatabaseConnectForm } from "~/features/dataset/DatabaseConnectForm";
 import { DatasetYamlForm } from "~/features/dataset/DatasetYamlForm";
 
@@ -13,19 +13,18 @@ const NewDataset: NextPage = () => {
     "yaml" | "database" | "manual" | null
   >(null);
   return (
-    <Layout title="Create New Dataset">
-      <PageHeader
-        heading="Datasets"
-        breadcrumbItems={[
-          {
-            title: "All datasets",
-            href: DATASET_ROUTE,
-          },
-          { title: "Create new" },
-        ]}
-      />
-
-      <Stack spacing={8}>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Datasets"
+          breadcrumbItems={[
+            { title: "All datasets", href: DATASET_ROUTE },
+            { title: "Create new" },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Create New Dataset">
+        <Stack spacing={8}>
         <Box>
           <Button
             onClick={() => setGenerateMethod("yaml")}
@@ -53,8 +52,9 @@ const NewDataset: NextPage = () => {
             <DatasetYamlForm />
           </Box>
         )}
-      </Stack>
-    </Layout>
+        </Stack>
+      </Layout>
+    </>
   );
 };
 

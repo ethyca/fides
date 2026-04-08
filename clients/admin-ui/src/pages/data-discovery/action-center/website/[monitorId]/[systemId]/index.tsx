@@ -9,7 +9,7 @@ import {
   ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { useDiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredAssetsTable";
 import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
@@ -58,30 +58,33 @@ const MonitorResultAssets: NextPage = () => {
   }
 
   return (
-    <FixedLayout title="Action center - Discovered assets">
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          {
-            title: monitorId,
-            href: `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}`,
-          },
-          {
-            title:
-              systemId === UNCATEGORIZED_SEGMENT
-                ? "Uncategorized assets"
-                : system?.name,
-          },
-        ]}
-        isSticky={false}
-      />
-      <DiscoveredAssetsTable
-        monitorId={monitorId}
-        systemId={systemId}
-        consentStatus={system?.consent_status}
-      />
-    </FixedLayout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Action center"
+          breadcrumbItems={[
+            { title: "All activity", href: ACTION_CENTER_ROUTE },
+            {
+              title: monitorId,
+              href: `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}`,
+            },
+            {
+              title:
+                systemId === UNCATEGORIZED_SEGMENT
+                  ? "Uncategorized assets"
+                  : (system?.name ?? systemId),
+            },
+          ]}
+        />
+      </SidePanel>
+      <FixedLayout title="Action center - Discovered assets">
+        <DiscoveredAssetsTable
+          monitorId={monitorId}
+          systemId={systemId}
+          consentStatus={system?.consent_status}
+        />
+      </FixedLayout>
+    </>
   );
 };
 

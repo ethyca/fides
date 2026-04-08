@@ -12,8 +12,8 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import { usePagination } from "~/features/common/hooks";
-import PageHeader from "~/features/common/PageHeader";
 import { InfinitePaginator } from "~/features/common/pagination/InfinitePaginator";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
@@ -67,10 +67,10 @@ const ConsentReportingPage = () => {
   };
 
   return (
-    <FixedLayout title="Consent report">
-      <PageHeader
-        heading="Consent report"
-        rightContent={
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Consent report" />
+        <SidePanel.Actions>
           <Button
             type="primary"
             onClick={handleClickRefresh}
@@ -78,10 +78,37 @@ const ConsentReportingPage = () => {
           >
             Refresh
           </Button>
-        }
-      />
-      <Flex vertical gap="medium">
-        <Flex justify="space-between">
+          <Button
+            icon={<Icons.Download />}
+            data-testid="download-btn"
+            onClick={() => setIsDownloadReportModalOpen(true)}
+            aria-label="Download Consent Report"
+          />
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "1",
+                  label: (
+                    <span data-testid="consent-preference-lookup-btn">
+                      Consent preference lookup
+                    </span>
+                  ),
+                  onClick: () => setIsConsentLookupModalOpen(true),
+                },
+              ],
+            }}
+            styles={{ root: { width: "220px" } }}
+            trigger={["click"]}
+          >
+            <Button
+              aria-label="Menu"
+              icon={<Icons.OverflowMenuVertical />}
+              data-testid="consent-reporting-dropdown-btn"
+            />
+          </Dropdown>
+        </SidePanel.Actions>
+        <SidePanel.Filters>
           <DateRangePicker
             placeholder={["From", "To"]}
             maxDate={today}
@@ -91,72 +118,45 @@ const ConsentReportingPage = () => {
               setEndDate(dates && dates[1]);
             }}
           />
-          <Flex gap={12}>
-            <Button
-              icon={<Icons.Download />}
-              data-testid="download-btn"
-              onClick={() => setIsDownloadReportModalOpen(true)}
-              aria-label="Download Consent Report"
-            />
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: "1",
-                    label: (
-                      <span data-testid="consent-preference-lookup-btn">
-                        Consent preference lookup
-                      </span>
-                    ),
-                    onClick: () => setIsConsentLookupModalOpen(true),
-                  },
-                ],
-              }}
-              styles={{ root: { width: "220px" } }}
-              trigger={["click"]}
-            >
-              <Button
-                aria-label="Menu"
-                icon={<Icons.OverflowMenuVertical />}
-                data-testid="consent-reporting-dropdown-btn"
-              />
-            </Dropdown>
-          </Flex>
+        </SidePanel.Filters>
+      </SidePanel>
+      <FixedLayout title="Consent report">
+        <Flex vertical gap="medium">
+          <Table
+            columns={antColumns}
+            dataSource={privacyPreferences}
+            rowKey="id"
+            loading={isLoading}
+            pagination={false}
+            data-testid="consent-reporting-table"
+            scroll={{ x: 1590 }}
+            tableLayout="fixed"
+          />
+          <InfinitePaginator
+            disableNext={(data?.items?.length ?? 0) < pageSize}
+            pagination={pagination}
+          />
         </Flex>
-        <Table
-          columns={antColumns}
-          dataSource={privacyPreferences}
-          rowKey="id"
-          loading={isLoading}
-          pagination={false}
-          data-testid="consent-reporting-table"
-          scroll={{ x: 1590 }}
-          tableLayout="fixed"
+        <ConsentLookupModal
+          isOpen={isConsentLookupModalOpen}
+          onClose={() => setIsConsentLookupModalOpen(false)}
         />
-        <InfinitePaginator
-          disableNext={(data?.items?.length ?? 0) < pageSize}
-          pagination={pagination}
+        <ConsentReportDownloadModal
+          isOpen={isDownloadReportModalOpen}
+          onClose={() => setIsDownloadReportModalOpen(false)}
+          startDate={startDate}
+          endDate={endDate}
         />
-      </Flex>
-      <ConsentLookupModal
-        isOpen={isConsentLookupModalOpen}
-        onClose={() => setIsConsentLookupModalOpen(false)}
-      />
-      <ConsentReportDownloadModal
-        isOpen={isDownloadReportModalOpen}
-        onClose={() => setIsDownloadReportModalOpen(false)}
-        startDate={startDate}
-        endDate={endDate}
-      />
-      <ConsentTcfDetailModal
-        isOpen={isConsentTcfDetailModalOpen}
-        onClose={() => {
-          setIsConsentTcfDetailModalOpen(false);
-          setCurrentTcfPreferences(undefined);
-        }}
-        tcfPreferences={currentTcfPreferences}
-      />
-    </FixedLayout>
+        <ConsentTcfDetailModal
+          isOpen={isConsentTcfDetailModalOpen}
+          onClose={() => {
+            setIsConsentTcfDetailModalOpen(false);
+            setCurrentTcfPreferences(undefined);
+          }}
+          tcfPreferences={currentTcfPreferences}
+        />
+      </FixedLayout>
+    </>
   );
 };
 

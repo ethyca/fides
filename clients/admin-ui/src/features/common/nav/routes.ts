@@ -1,11 +1,18 @@
 // Home page
 export const INDEX_ROUTE = "/";
 
+// Pillar dashboard routes
+export const DISCOVERY_INVENTORY_DASHBOARD_ROUTE = "/discovery-inventory";
+export const CONSENT_DASHBOARD_ROUTE = "/consent/dashboard";
+export const PRIVACY_REQUESTS_DASHBOARD_ROUTE = "/privacy-requests/dashboard";
+export const AI_GOVERNANCE_DASHBOARD_ROUTE = "/ai-governance";
+
 // Data map group
 export const ADD_SYSTEMS_ROUTE = "/add-systems";
 export const ADD_SYSTEMS_MANUAL_ROUTE = "/add-systems/manual";
 export const ADD_SYSTEMS_MULTIPLE_ROUTE = "/add-systems/multiple";
 export const DATAMAP_ROUTE = "/datamap";
+export const REPORTS_HUB_ROUTE = "/reporting";
 export const REPORTING_DATAMAP_ROUTE = "/reporting/datamap";
 export const REPORTING_ASSETS_ROUTE = "/reporting/assets";
 export const SYSTEM_ROUTE = "/systems";
@@ -52,6 +59,7 @@ export const PRIVACY_NOTICES_ROUTE = "/consent/privacy-notices";
 export const CONFIGURE_CONSENT_ROUTE = "/consent/configure";
 export const ADD_MULTIPLE_VENDORS_ROUTE = "/consent/configure/add-vendors";
 export const CONSENT_REPORTING_ROUTE = "/consent/reporting";
+export const CONSENT_SETTINGS_HUB_ROUTE = "/consent/settings";
 
 // Management group
 export const PROPERTIES_ROUTE = "/properties";

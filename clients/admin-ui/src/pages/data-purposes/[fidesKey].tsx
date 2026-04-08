@@ -6,7 +6,7 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   useGetDataPurposeByKeyQuery,
   useUpdateDataPurposeMutation,
@@ -53,25 +53,29 @@ const EditDataPurposePage: NextPage = () => {
   }
 
   return (
-    <Layout title={purpose?.name ?? "Data Purpose"}>
-      <PageHeader
-        heading="Data Purposes"
-        breadcrumbItems={[
-          {
-            title: "All data purposes",
-            href: DATA_PURPOSES_ROUTE,
-          },
-          {
-            title: purpose?.name ?? "Data Purpose",
-          },
-        ]}
-      />
-      {isLoading ? (
-        <Spin />
-      ) : (
-        <DataPurposeForm purpose={purpose} handleSubmit={handleSubmit} />
-      )}
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Data Purposes"
+          breadcrumbItems={[
+            {
+              title: "All data purposes",
+              href: DATA_PURPOSES_ROUTE,
+            },
+            {
+              title: purpose?.name ?? "Data Purpose",
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title={purpose?.name ?? "Data Purpose"}>
+        {isLoading ? (
+          <Spin />
+        ) : (
+          <DataPurposeForm purpose={purpose} handleSubmit={handleSubmit} />
+        )}
+      </Layout>
+    </>
   );
 };
 

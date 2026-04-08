@@ -22,14 +22,11 @@ import { useCallback, useMemo, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
-import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 import {
-  DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
-  DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
 } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   BadgeCell,
   DefaultCell,
@@ -44,7 +41,6 @@ import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
-import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import { EditFieldDrawer } from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
@@ -276,26 +272,20 @@ const FieldsDetailPage: NextPage = () => {
   >();
 
   const breadcrumbs = useMemo(() => {
-    const baseBreadcrumbs: NextBreadcrumbProps["items"] = [
+    const encodedDatasetId = encodeURIComponent(datasetId);
+    const encodedCollectionName = encodeURIComponent(collectionName);
+    const baseBreadcrumbs: Array<{ title: string; href?: string }> = [
       {
         title: "All datasets",
         href: DATASET_ROUTE,
       },
       {
         title: datasetId,
-        href: {
-          pathname: DATASET_DETAIL_ROUTE,
-          query: { datasetId },
-        },
-        icon: DATA_BREADCRUMB_ICONS[1],
+        href: `${DATASET_ROUTE}/${encodedDatasetId}`,
       },
       {
         title: collectionName,
-        icon: DATA_BREADCRUMB_ICONS[2],
-        href: {
-          pathname: DATASET_COLLECTION_DETAIL_ROUTE,
-          query: { datasetId, collectionName },
-        },
+        href: `${DATASET_ROUTE}/${encodedDatasetId}/${encodedCollectionName}`,
       },
     ];
     subfieldNames.forEach((subfield, index) => {
@@ -303,18 +293,11 @@ const FieldsDetailPage: NextPage = () => {
         title: subfield,
         href:
           index < subfieldNames.length - 1
-            ? {
-                pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
-                query: {
-                  datasetId,
-                  collectionName,
-                  subfieldNames: subfieldNames
-                    .slice(0, index + 1)
-                    .map(encodeURIComponent),
-                },
-              }
+            ? `${DATASET_ROUTE}/${encodedDatasetId}/${encodedCollectionName}/${subfieldNames
+                .slice(0, index + 1)
+                .map(encodeURIComponent)
+                .join("/")}`
             : undefined,
-        icon: DATA_BREADCRUMB_ICONS[3],
       });
     });
     return baseBreadcrumbs;
@@ -330,10 +313,12 @@ const FieldsDetailPage: NextPage = () => {
   }
 
   return (
-    <Layout title={`Dataset - ${datasetId}`}>
-      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
-
-      {isLoading ? (
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Datasets" breadcrumbItems={breadcrumbs} />
+      </SidePanel>
+      <Layout title={`Dataset - ${datasetId}`}>
+        {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
       ) : (
         <Box data-testid="fields-table">
@@ -368,8 +353,9 @@ const FieldsDetailPage: NextPage = () => {
             subfields={subfieldNames}
           />
         </Box>
-      )}
-    </Layout>
+        )}
+      </Layout>
+    </>
   );
 };
 

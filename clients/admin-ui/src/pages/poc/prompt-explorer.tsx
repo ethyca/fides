@@ -5,7 +5,6 @@ import {
   Checkbox,
   Col,
   Input,
-  Layout,
   Radio,
   Row,
   Select,
@@ -17,7 +16,8 @@ import type { NextPage } from "next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
-import PageHeader from "~/features/common/PageHeader";
+import Layout from "~/features/common/Layout";
+import { SidePanel } from "~/features/common/SidePanel";
 import { DEFAULT_DATA_SECTIONS } from "~/features/prompt-explorer/constants";
 import {
   DataSectionConfig,
@@ -35,7 +35,6 @@ import {
 import { QuestionnaireControls } from "~/features/prompt-explorer/QuestionnaireControls";
 import { buildQuestionnaireVariables } from "~/features/prompt-explorer/utils";
 
-const { Content } = Layout;
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
@@ -258,23 +257,28 @@ const PromptExplorer: NextPage = () => {
 
   if (!hasPlus) {
     return (
-      <Layout>
-        <Content className="overflow-auto px-10 py-6">
+      <>
+        <SidePanel>
+          <SidePanel.Identity title="Prompt explorer" />
+        </SidePanel>
+        <Layout title="Prompt explorer">
           <Alert
             message="Plus Required"
             description="The Prompt Explorer requires Fides Plus."
             type="warning"
             showIcon
           />
-        </Content>
-      </Layout>
+        </Layout>
+      </>
     );
   }
 
   return (
-    <Layout className="h-screen">
-      <Content className="overflow-auto px-10 py-6">
-        <PageHeader heading="Prompt explorer" />
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Prompt explorer" />
+      </SidePanel>
+      <Layout title="Prompt explorer">
         <Paragraph type="secondary" className="mb-6">
           Developer tool for exploring and testing LLM prompts used in
           assessments and questionnaires.
@@ -550,8 +554,8 @@ const PromptExplorer: NextPage = () => {
             </Space>
           </Col>
         </Row>
-      </Content>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

@@ -9,7 +9,6 @@ import {
   Flex,
   Icons,
   Input,
-  Layout,
   List,
   Radio,
   Row,
@@ -24,13 +23,13 @@ import type { NextPage } from "next";
 import { useState } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import PageHeader from "~/features/common/PageHeader";
+import Layout from "~/features/common/Layout";
+import { SidePanel } from "~/features/common/SidePanel";
 import MessageDemoCard from "~/features/poc/MessageDemoCard";
 import type { ListDataItem } from "~/features/poc/mockListData";
 import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
 import { ModalMethodsCard } from "~/features/poc/ModalMethodsCard";
 
-const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;
 
 const options: { label: string; value: string }[] = [];
@@ -50,9 +49,11 @@ const AntPOC: NextPage = () => {
   ]);
 
   return (
-    <Layout>
-      <Content className="overflow-auto px-10 py-6">
-        <PageHeader heading="Ant design POC" />
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Ant design POC" />
+      </SidePanel>
+      <Layout title="Ant design POC">
         <Row gutter={16} className="mt-6">
           <Col span={8}>
             <Card title="Button" variant="borderless" className="h-full">
@@ -500,8 +501,8 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
         </Row>
-      </Content>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

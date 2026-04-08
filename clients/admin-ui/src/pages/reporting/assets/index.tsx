@@ -5,7 +5,7 @@ import AssetReportingTable from "~/features/asset-reporting/AssetReportingTable"
 import useAssetReportingDownload from "~/features/asset-reporting/hooks/useAssetReportingDownload";
 import { useAssetReportingTable } from "~/features/asset-reporting/hooks/useAssetReportingTable";
 import FixedLayout from "~/features/common/FixedLayout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 
 const AssetReportingPage = () => {
   const { downloadReport, isDownloadingReport } = useAssetReportingDownload();
@@ -21,10 +21,16 @@ const AssetReportingPage = () => {
   };
 
   return (
-    <FixedLayout title="Asset report">
-      <PageHeader
-        heading="Asset report"
-        rightContent={
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Asset report" />
+        <SidePanel.Search
+          placeholder="Search assets..."
+          onSearch={updateSearch}
+          value={searchQuery ?? ""}
+          onChange={(e) => updateSearch(e.target.value)}
+        />
+        <SidePanel.Actions>
           <Button
             icon={<Icons.Download />}
             onClick={handleExport}
@@ -33,15 +39,17 @@ const AssetReportingPage = () => {
           >
             Export CSV
           </Button>
-        }
-      />
-      <AssetReportingTable
-        columns={columns}
-        searchQuery={searchQuery}
-        updateSearch={updateSearch}
-        tableProps={tableProps}
-      />
-    </FixedLayout>
+        </SidePanel.Actions>
+      </SidePanel>
+      <FixedLayout title="Asset report">
+        <AssetReportingTable
+          columns={columns}
+          searchQuery={searchQuery}
+          updateSearch={updateSearch}
+          tableProps={tableProps}
+        />
+      </FixedLayout>
+    </>
   );
 };
 

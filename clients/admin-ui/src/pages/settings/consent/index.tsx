@@ -17,7 +17,7 @@ import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
 import {
   selectGppSettings,
@@ -196,7 +196,11 @@ const ConsentConfigPage: NextPage = () => {
     useFeatures()?.flags?.publisherRestrictions;
 
   return (
-    <Layout title="Consent Configuration">
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Consent settings" />
+      </SidePanel>
+      <Layout title="Consent Configuration">
       {isHealthCheckLoading ||
       isPurposesLoading ||
       isTcfPurposeOverridesLoading ||
@@ -205,7 +209,6 @@ const ConsentConfigPage: NextPage = () => {
         <Spin />
       ) : (
         <Box data-testid="consent-configuration">
-          <PageHeader heading="Consent settings" />
           <Stack spacing={3} mb={3}>
             <SettingsBox title="Transparency & Consent Framework settings">
               <FrameworkStatus name="TCF" enabled={isTcfEnabled} />
@@ -271,7 +274,8 @@ const ConsentConfigPage: NextPage = () => {
           </Formik>
         </Box>
       )}
-    </Layout>
+      </Layout>
+    </>
   );
 };
 export default ConsentConfigPage;

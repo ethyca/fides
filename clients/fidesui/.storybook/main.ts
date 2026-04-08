@@ -1,4 +1,11 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { StorybookConfig } from "@storybook/react-vite";
+
+const ADMIN_UI_SRC = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../admin-ui/src",
+);
 
 const config: StorybookConfig = {
   refs: {
@@ -6,7 +13,10 @@ const config: StorybookConfig = {
       disable: true,
     },
   },
-  stories: ["../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  stories: [
+    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../../admin-ui/src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+  ],
   addons: ["@storybook/addon-a11y"],
   framework: {
     name: "@storybook/react-vite",
@@ -28,6 +38,8 @@ const config: StorybookConfig = {
           // Vite's module graph, which would break ConfigProvider-based theming.
           { find: /^antd\/lib\/(.+)$/, replacement: "antd/es/$1" },
           { find: "antd/lib", replacement: "antd/es" },
+          // Support admin-ui path aliases so stories from that package resolve correctly.
+          { find: /^~\/(.+)$/, replacement: `${ADMIN_UI_SRC}/$1` },
         ],
       },
       // @chakra-ui/react@2.10.6 has an incomplete ESM distribution — several

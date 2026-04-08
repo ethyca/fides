@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { NOTIFICATIONS_TEMPLATES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   MessagingTemplateCreateOrUpdate,
@@ -109,20 +109,23 @@ const EditNotificationTemplatePage: NextPage = () => {
   }
 
   return (
-    <Layout title="Configure Message">
-      <PageHeader
-        heading="Templates"
-        breadcrumbItems={[
-          { title: "Templates", href: NOTIFICATIONS_TEMPLATES_ROUTE },
-          {
-            title: `${
-              CustomizableMessagingTemplatesLabelEnum[
-                messagingTemplate.type as keyof typeof CustomizableMessagingTemplatesLabelEnum
-              ]
-            }`,
-          },
-        ]}
-      />
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Templates"
+          breadcrumbItems={[
+            { title: "Templates", href: NOTIFICATIONS_TEMPLATES_ROUTE },
+            {
+              title: `${
+                CustomizableMessagingTemplatesLabelEnum[
+                  messagingTemplate.type as keyof typeof CustomizableMessagingTemplatesLabelEnum
+                ]
+              }`,
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Configure Message">
       <Box data-testid="add-messaging-template" maxWidth="720px">
         <PropertySpecificMessagingTemplateForm
           template={messagingTemplate}
@@ -143,6 +146,7 @@ const EditNotificationTemplatePage: NextPage = () => {
         }
       />
     </Layout>
+    </>
   );
 };
 

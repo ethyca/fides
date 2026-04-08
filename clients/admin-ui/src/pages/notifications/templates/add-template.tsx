@@ -5,7 +5,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   MessagingTemplateCreateOrUpdate,
@@ -60,16 +60,19 @@ const AddNotificationTemplatePage: NextPage = () => {
   }
 
   return (
-    <Layout title="Configure Message">
-      <PageHeader
-        heading="Templates"
-        breadcrumbItems={[
-          { title: "Templates", href: NOTIFICATIONS_TEMPLATES_ROUTE },
-          {
-            title: `${CustomizableMessagingTemplatesLabelEnum[messagingTemplate.type]}`,
-          },
-        ]}
-      >
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Templates"
+          breadcrumbItems={[
+            { title: "Templates", href: NOTIFICATIONS_TEMPLATES_ROUTE },
+            {
+              title: `${CustomizableMessagingTemplatesLabelEnum[messagingTemplate.type]}`,
+            },
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Configure Message">
         <Box maxWidth="720px">
           <Box padding={2}>
             <PropertySpecificMessagingTemplateForm
@@ -78,8 +81,8 @@ const AddNotificationTemplatePage: NextPage = () => {
             />
           </Box>
         </Box>
-      </PageHeader>
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

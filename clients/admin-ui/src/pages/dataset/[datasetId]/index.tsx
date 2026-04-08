@@ -25,7 +25,7 @@ import {
   DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_ROUTE,
 } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -35,7 +35,6 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
-import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import { EditCollectionDrawer } from "~/features/dataset/EditCollectionDrawer";
 import { DatasetCollection } from "~/types/api";
 
@@ -147,7 +146,6 @@ const DatasetDetailPage: NextPage = () => {
       },
       {
         title: datasetId,
-        icon: DATA_BREADCRUMB_ICONS[1],
       },
     ];
   }, [datasetId]);
@@ -162,8 +160,11 @@ const DatasetDetailPage: NextPage = () => {
   }
 
   return (
-    <Layout title={`Dataset - ${datasetId}`}>
-      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Datasets" breadcrumbItems={breadcrumbs} />
+      </SidePanel>
+      <Layout title={`Dataset - ${datasetId}`}>
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
@@ -193,7 +194,8 @@ const DatasetDetailPage: NextPage = () => {
           onClose={() => setIsEditingCollection(false)}
         />
       )}
-    </Layout>
+      </Layout>
+    </>
   );
 };
 

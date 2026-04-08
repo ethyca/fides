@@ -6,7 +6,7 @@ import { useAppSelector } from "~/app/hooks";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
@@ -29,22 +29,26 @@ const RegulationsPage: NextPage = () => {
   }
 
   return (
-    <Layout title="Regulations">
-      <PageHeader heading="Regulations" />
-      <Text pb={6} fontSize="sm" maxWidth="600px">
-        Select the regulations that apply to your organizations compliance
-        requirements. The selections you make here will automatically update
-        your location selections.{" "}
-        <Link as={NextLink} href={LOCATIONS_ROUTE} color="complimentary.500">
-          You can view your location settings here.
-        </Link>
-      </Text>
-      {isLoading ? (
-        <Spin />
-      ) : (
-        <RegulationManagement data={locationsRegulations} />
-      )}
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity title="Regulations" />
+      </SidePanel>
+      <Layout title="Regulations">
+        <Text pb={6} fontSize="sm" maxWidth="600px">
+          Select the regulations that apply to your organizations compliance
+          requirements. The selections you make here will automatically update
+          your location selections.{" "}
+          <Link as={NextLink} href={LOCATIONS_ROUTE} color="complimentary.500">
+            You can view your location settings here.
+          </Link>
+        </Text>
+        {isLoading ? (
+          <Spin />
+        ) : (
+          <RegulationManagement data={locationsRegulations} />
+        )}
+      </Layout>
+    </>
   );
 };
 export default RegulationsPage;

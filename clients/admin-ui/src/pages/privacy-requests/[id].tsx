@@ -1,11 +1,11 @@
-import { Spin } from "fidesui";
+import { Flex, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
 import PrivacyRequestActionsDropdown from "~/features/privacy-requests/PrivacyRequestActionsDropdown";
@@ -36,22 +36,28 @@ const PrivacyRequests: NextPage = () => {
   }
 
   return (
-    <Layout title={`Privacy Request - ${privacyRequestId}`}>
-      <PageHeader
-        heading="Privacy Requests"
-        breadcrumbItems={[
-          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
-          { title: "Request details" },
-        ]}
-        rightContent={
-          !!privacyRequest && (
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Privacy Requests"
+          breadcrumbItems={[
+            { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+            { title: "Request details" },
+          ]}
+        />
+      </SidePanel>
+      <Layout title={`Privacy Request - ${privacyRequestId}`}>
+        {!!privacyRequest && (
+          <Flex justify="end" style={{ marginBottom: 16 }}>
             <PrivacyRequestActionsDropdown privacyRequest={privacyRequest} />
-          )
-        }
-      />
-      {isLoading && <Spin />}
-      {!isLoading && privacyRequest && <PrivacyRequest data={privacyRequest} />}
-    </Layout>
+          </Flex>
+        )}
+        {isLoading && <Spin />}
+        {!isLoading && privacyRequest && (
+          <PrivacyRequest data={privacyRequest} />
+        )}
+      </Layout>
+    </>
   );
 };
 

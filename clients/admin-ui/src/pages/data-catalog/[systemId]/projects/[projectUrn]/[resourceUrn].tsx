@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { SidePanel } from "~/features/common/SidePanel";
 import CatalogResourcesTable from "~/features/data-catalog/staged-resources/CatalogResourcesTable";
 import { parseResourceBreadcrumbsWithProject } from "~/features/data-catalog/utils/urnParsing";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
@@ -29,27 +29,34 @@ const CatalogResourceView: NextPage = () => {
   }
 
   return (
-    <Layout title="Data catalog">
-      <PageHeader
-        heading="Data catalog"
-        breadcrumbItems={[
-          { title: "All systems", href: DATA_CATALOG_ROUTE },
-          {
-            title: system?.name ?? system?.fides_key,
-            href: DATA_CATALOG_ROUTE,
-          },
-          ...resourceBreadcrumbs,
-        ]}
-      />
-      <CatalogResourcesTable
-        resourceUrn={resourceUrn}
-        onRowClick={(row) =>
-          router.push(
-            `${DATA_CATALOG_ROUTE}/${system!.fides_key}/projects/${projectUrn}/${row.urn}`,
-          )
-        }
-      />
-    </Layout>
+    <>
+      <SidePanel>
+        <SidePanel.Identity
+          title="Data catalog"
+          breadcrumbItems={[
+            { title: "All systems", href: DATA_CATALOG_ROUTE },
+            {
+              title: system?.name ?? system?.fides_key ?? systemId,
+              href: DATA_CATALOG_ROUTE,
+            },
+            ...resourceBreadcrumbs.map((b) => ({
+              title: String(b.title ?? ""),
+              href: typeof b.href === "string" ? b.href : undefined,
+            })),
+          ]}
+        />
+      </SidePanel>
+      <Layout title="Data catalog">
+        <CatalogResourcesTable
+          resourceUrn={resourceUrn}
+          onRowClick={(row) =>
+            router.push(
+              `${DATA_CATALOG_ROUTE}/${system!.fides_key}/projects/${projectUrn}/${row.urn}`,
+            )
+          }
+        />
+      </Layout>
+    </>
   );
 };
 

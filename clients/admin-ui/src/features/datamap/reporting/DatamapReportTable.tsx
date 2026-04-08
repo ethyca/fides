@@ -18,7 +18,6 @@ import { ColumnSettingsModal } from "~/features/common/table/column-settings/Col
 import { ExportFormat } from "~/features/datamap/constants";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
-import { DatamapReportFilterModal } from "~/features/datamap/reporting/DatamapReportFilterModal";
 import {
   CustomReportResponse,
   DATAMAP_GROUPING,
@@ -78,12 +77,6 @@ export const DatamapReportTable = ({
   } = useDatamapReportTable();
 
   const message = useMessage();
-
-  const {
-    isOpen: isFilterModalOpen,
-    onClose: onFilterModalClose,
-    onOpen: onFilterModalOpen,
-  } = useDisclosure();
 
   const {
     isOpen: isColumnSettingsOpen,
@@ -301,12 +294,6 @@ export const DatamapReportTable = ({
                 </Button>
               </Dropdown>
               <Button
-                data-testid="filter-multiple-systems-btn"
-                onClick={onFilterModalOpen}
-              >
-                Filter
-              </Button>
-              <Button
                 aria-label="Export report"
                 data-testid="export-btn"
                 onClick={onExportReportOpen}
@@ -359,16 +346,6 @@ export const DatamapReportTable = ({
         />
       </Form>
 
-      <DatamapReportFilterModal
-        columnNameMap={columnNameMap}
-        selectedFilters={selectedFilters}
-        isOpen={isFilterModalOpen}
-        onClose={onFilterModalClose}
-        onFilterChange={(newFilters) => {
-          setSavedCustomReportId("");
-          setSelectedFilters(newFilters);
-        }}
-      />
       <ColumnSettingsModal
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
