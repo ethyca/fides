@@ -1,6 +1,5 @@
-import React from "react";
-
 import { Button, Flex, Modal, Spin, Tabs, Text } from "fidesui";
+import React from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
@@ -36,37 +35,45 @@ const SaaSVersionContent = ({
     isError: datasetError,
   } = useGetConnectorTemplateVersionDatasetQuery({ connectorType, version });
 
-  const tabItems = [
-    {
-      key: "config",
-      label: "Config",
-      children: configLoading ? (
+  const renderConfig = () => {
+    if (configLoading) {
+      return (
         <Flex justify="center" className="py-8">
           <Spin />
         </Flex>
-      ) : configError ? (
+      );
+    }
+    if (configError) {
+      return (
         <Text className="text-red-500 text-sm">
           Could not load version config.
         </Text>
-      ) : (
-        <YamlBlock yaml={configYaml} />
-      ),
-    },
-    {
-      key: "dataset",
-      label: "Dataset",
-      children: datasetLoading ? (
+      );
+    }
+    return <YamlBlock yaml={configYaml} />;
+  };
+
+  const renderDataset = () => {
+    if (datasetLoading) {
+      return (
         <Flex justify="center" className="py-4">
           <Spin size="small" />
         </Flex>
-      ) : datasetError ? (
+      );
+    }
+    if (datasetError) {
+      return (
         <Text className="text-gray-500 text-sm">
           No dataset available for this version.
         </Text>
-      ) : (
-        <YamlBlock yaml={datasetYaml} />
-      ),
-    },
+      );
+    }
+    return <YamlBlock yaml={datasetYaml} />;
+  };
+
+  const tabItems = [
+    { key: "config", label: "Config", children: renderConfig() },
+    { key: "dataset", label: "Dataset", children: renderDataset() },
   ];
 
   return <Tabs items={tabItems} />;
@@ -103,8 +110,5 @@ const SaaSVersionModal = ({
     <SaaSVersionContent connectorType={connectorType} version={version} />
   </Modal>
 );
-
-// Re-export hook from its own file for convenience
-export { useSaaSVersionModal } from "./hooks/useSaaSVersionModal";
 
 export default SaaSVersionModal;

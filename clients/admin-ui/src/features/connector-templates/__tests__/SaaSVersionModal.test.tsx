@@ -1,4 +1,15 @@
-// Mock ESM-only packages — must be before imports (Jest hoists these)
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import React from "react";
+
+import { render } from "~/../__tests__/utils/test-utils";
+import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
+import {
+  useGetConnectorTemplateVersionConfigQuery,
+  useGetConnectorTemplateVersionDatasetQuery,
+} from "~/features/connector-templates/connector-template.slice";
+import { useSaaSVersionModal } from "~/features/connector-templates/hooks/useSaaSVersionModal";
+import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
+
 jest.mock("query-string", () => ({
   __esModule: true,
   default: { stringify: jest.fn(), parse: jest.fn() },
@@ -9,7 +20,10 @@ jest.mock("react-dnd", () => ({
   DndProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 // eslint-disable-next-line global-require
-jest.mock("nuqs", () => require("../../../../__tests__/utils/nuqs-mock").nuqsMock);
+jest.mock(
+  "nuqs",
+  () => require("../../../../__tests__/utils/nuqs-mock").nuqsMock,
+);
 
 // RTK Query hook mocks
 jest.mock("~/features/connector-templates/connector-template.slice", () => ({
@@ -25,19 +39,6 @@ jest.mock("~/features/datastore-connections", () => ({
     reducer: (state = {}) => state,
   },
 }));
-
-import { fireEvent, screen, waitFor } from "@testing-library/react";
-import React from "react";
-
-import { render } from "~/../__tests__/utils/test-utils";
-import SaaSVersionModal, {
-  useSaaSVersionModal,
-} from "~/features/connector-templates/SaaSVersionModal";
-import {
-  useGetConnectorTemplateVersionConfigQuery,
-  useGetConnectorTemplateVersionDatasetQuery,
-} from "~/features/connector-templates/connector-template.slice";
-import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 
 // ── Typed mocks ────────────────────────────────────────────────────────────────
 
@@ -70,10 +71,19 @@ describe("SaaSVersionModal", () => {
   beforeEach(setupDefaultMocks);
 
   it("shows a loading spinner while config is fetching", () => {
-    mockUseConfig.mockReturnValue({ data: undefined, isLoading: true, isError: false });
+    mockUseConfig.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+    });
 
     render(
-      <SaaSVersionModal isOpen onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
     // Ant Design Spin renders with class ant-spin
@@ -82,7 +92,12 @@ describe("SaaSVersionModal", () => {
 
   it("renders the modal title with connector type and version", () => {
     render(
-      <SaaSVersionModal isOpen onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
     expect(screen.getByText("stripe — v0.0.11")).toBeInTheDocument();
@@ -90,47 +105,90 @@ describe("SaaSVersionModal", () => {
 
   it("calls the config query with the correct connector type and version", () => {
     render(
-      <SaaSVersionModal isOpen onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
-    expect(mockUseConfig).toHaveBeenCalledWith({ connectorType: "stripe", version: "0.0.11" });
+    expect(mockUseConfig).toHaveBeenCalledWith({
+      connectorType: "stripe",
+      version: "0.0.11",
+    });
   });
 
   it("calls the dataset query with the correct connector type and version", () => {
     render(
-      <SaaSVersionModal isOpen onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
-    expect(mockUseDataset).toHaveBeenCalledWith({ connectorType: "stripe", version: "0.0.11" });
+    expect(mockUseDataset).toHaveBeenCalledWith({
+      connectorType: "stripe",
+      version: "0.0.11",
+    });
   });
 
   it("shows 'No dataset available' in the Dataset tab when the dataset endpoint errors", () => {
-    mockUseDataset.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+    mockUseDataset.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+    });
 
     render(
-      <SaaSVersionModal isOpen onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
     // Activate the Dataset tab, then assert the fallback message
     fireEvent.click(screen.getByText("Dataset"));
-    expect(screen.getByText("No dataset available for this version.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No dataset available for this version."),
+    ).toBeInTheDocument();
   });
 
   it("shows an error message when config fails to load", () => {
-    mockUseConfig.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+    mockUseConfig.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+    });
 
     render(
-      <SaaSVersionModal isOpen onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
-    expect(screen.getByText("Could not load version config.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Could not load version config."),
+    ).toBeInTheDocument();
   });
 
   it("calls onClose when the Close button is clicked", () => {
     const onClose = jest.fn();
 
     render(
-      <SaaSVersionModal isOpen onClose={onClose} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen
+        onClose={onClose}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
     fireEvent.click(screen.getByTestId("version-modal-close-btn"));
@@ -139,7 +197,12 @@ describe("SaaSVersionModal", () => {
 
   it("does not render when isOpen is false", () => {
     render(
-      <SaaSVersionModal isOpen={false} onClose={jest.fn()} connectorType="stripe" version="0.0.11" />,
+      <SaaSVersionModal
+        isOpen={false}
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
     );
 
     expect(screen.queryByText("stripe — v0.0.11")).not.toBeInTheDocument();

@@ -33,16 +33,24 @@ export const useSaaSVersionModal = () => {
   // If the connection has no saas_config.type (non-SaaS), bail out silently
   // so pending doesn't stay set indefinitely.
   React.useEffect(() => {
-    if (!pending || !connection) return;
+    if (!pending || !connection) {
+      return;
+    }
     if (connection.saas_config?.type) {
-      setActive({ connectorType: connection.saas_config.type, version: pending.version });
+      setActive({
+        connectorType: connection.saas_config.type,
+        version: pending.version,
+      });
     }
     setPending(null);
   }, [pending, connection]);
 
-  const openVersionModal = useCallback((connectionKey: string, version: string) => {
-    setPending({ connectionKey, version });
-  }, []);
+  const openVersionModal = useCallback(
+    (connectionKey: string, version: string) => {
+      setPending({ connectionKey, version });
+    },
+    [],
+  );
 
   const handleClose = useCallback(() => setActive(null), []);
 
