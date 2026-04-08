@@ -261,7 +261,8 @@ const ActionCenterFields = ({
   const isRegexValidationError =
     listQueryMeta.error &&
     isFetchBaseQueryError(listQueryMeta.error) &&
-    listQueryMeta.error.status === 422;
+    listQueryMeta.error.status === 422 &&
+    !!requestData.query?.search_regex;
 
   const regexErrorMessage =
     isRegexValidationError && listQueryMeta.error

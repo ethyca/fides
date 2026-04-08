@@ -20,7 +20,7 @@ const RegexToggle = ({ value, onChange }: RegexToggleProps) => {
         aria-label="Toggle regex search"
         type={isActive ? "primary" : "default"}
         onClick={() => onChange?.(isActive ? null : true)}
-        style={{ fontFamily: "monospace", fontWeight: "bold" }}
+        className="font-mono font-bold"
         data-testid="regex-toggle"
       >
         .*
