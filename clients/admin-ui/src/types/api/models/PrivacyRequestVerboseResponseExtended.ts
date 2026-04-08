@@ -123,6 +123,12 @@ export type PrivacyRequestVerboseResponseExtended = {
     [key: string]: Array<ExecutionAndAuditLogResponse>;
   };
   /**
+   * Task Status By Dataset
+   */
+  task_status_by_dataset?: {
+    [key: string]: string;
+  } | null;
+  /**
    * Jira Tickets
    */
   jira_tickets?: Array<JiraTicketSummary>;

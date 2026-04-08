@@ -38,7 +38,16 @@ export type UserResponse = {
    * Disabled Reason
    */
   disabled_reason?: string | null;
+  /**
+   * Email Verified At
+   */
   email_verified_at?: string | null;
+  /**
+   * Has Invite
+   */
   has_invite?: boolean | null;
+  /**
+   * Invite Expired
+   */
   invite_expired?: boolean | null;
 };

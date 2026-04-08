@@ -35,6 +35,10 @@ export type IdentityDefinitionEntity = {
    */
   updated_at: string;
   /**
+   * Case Sensitive
+   */
+  case_sensitive?: boolean;
+  /**
    * Created By
    */
   created_by?: string | null;

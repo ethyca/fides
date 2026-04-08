@@ -38,5 +38,8 @@ export type DatastoreMonitorUpdates = {
    * Classified High Confidence
    */
   classified_high_confidence: number | null;
+  /**
+   * Approved
+   */
   approved: number | null;
 };

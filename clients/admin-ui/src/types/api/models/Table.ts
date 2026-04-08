@@ -33,10 +33,6 @@ export type Table = {
    */
   name?: string | null;
   /**
-   * System Key
-   */
-  system_key?: string | null;
-  /**
    * Description
    */
   description?: string | null;
@@ -53,6 +49,10 @@ export type Table = {
    */
   diff_status?: DiffStatus | null;
   resource_type?: StagedResourceTypeValue | null;
+  /**
+   * System Key
+   */
+  system_key?: string | null;
   /**
    * Data Uses
    *
@@ -114,11 +114,11 @@ export type Table = {
     | null
     | string
     | null
-    | string
-    | null
     | DiffStatus
     | null
     | StagedResourceTypeValue
+    | null
+    | string
     | null
     | Array<string>
     | null

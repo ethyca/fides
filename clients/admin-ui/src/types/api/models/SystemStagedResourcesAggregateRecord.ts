@@ -47,5 +47,5 @@ export type SystemStagedResourcesAggregateRecord = {
   /**
    * Okta application metadata for identity provider resources (fidesplus)
    */
-  metadata?: IdentityProviderApplicationMetadata | null;
+  metadata?: IdentityProviderApplicationMetadata;
 };

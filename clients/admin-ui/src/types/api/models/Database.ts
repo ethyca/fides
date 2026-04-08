@@ -32,10 +32,6 @@ export type Database = {
    */
   name?: string | null;
   /**
-   * System Key
-   */
-  system_key?: string | null;
-  /**
    * Description
    */
   description?: string | null;
@@ -52,6 +48,10 @@ export type Database = {
    */
   diff_status?: DiffStatus | null;
   resource_type?: StagedResourceTypeValue | null;
+  /**
+   * System Key
+   */
+  system_key?: string | null;
   /**
    * Data Uses
    *
@@ -93,11 +93,11 @@ export type Database = {
     | null
     | string
     | null
-    | string
-    | null
     | DiffStatus
     | null
     | StagedResourceTypeValue
+    | null
+    | string
     | null
     | Array<string>
     | null

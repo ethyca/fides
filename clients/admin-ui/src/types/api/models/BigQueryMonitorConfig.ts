@@ -22,6 +22,12 @@ export type BigQueryMonitorConfig = {
    */
   system_key?: string;
   /**
+   * Databases
+   *
+   * BigQuery project IDs to scope the monitor to. When set, only these projects are scanned. When unset, all accessible projects are scanned.
+   */
+  databases?: Array<string> | null;
+  /**
    * Execute After Creation
    *
    * Execute the monitor after creation

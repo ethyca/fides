@@ -30,6 +30,12 @@ export type DatasetCollection = {
    */
   data_categories?: Array<string> | null;
   /**
+   * Data Purposes
+   *
+   * Array of Data Purpose resources, identified by `fides_key`, that apply to all fields in the collection.
+   */
+  data_purposes?: Array<string> | null;
+  /**
    * Fields
    *
    * An array of objects that describe the collection's fields.

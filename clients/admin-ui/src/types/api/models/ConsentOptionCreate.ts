@@ -13,4 +13,8 @@ export type ConsentOptionCreate = {
    */
   privacy_notice_history_id: string;
   preference: UserConsentPreference;
+  /**
+   * Received At
+   */
+  received_at?: string | null;
 };

@@ -6,6 +6,7 @@ import { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import { RejectAllMechanism } from "./RejectAllMechanism";
+import { ResurfaceBehavior } from "./ResurfaceBehavior";
 
 /**
  * ExperienceConfigResponseNoNotices
@@ -48,6 +49,10 @@ export type ExperienceConfigResponseNoNotices = {
    * Cookie Deletion Based On Host Domain
    */
   cookie_deletion_based_on_host_domain?: boolean | null;
+  /**
+   * Resurface Behavior
+   */
+  resurface_behavior?: Array<ResurfaceBehavior> | null;
   /**
    * Allow Vendor Asset Disclosure
    */

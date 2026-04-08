@@ -7,4 +7,5 @@
  */
 export enum IdentityProvider {
   OKTA = "okta",
+  ENTRA = "entra",
 }

@@ -61,6 +61,10 @@ export type AssessmentTaskResponse = {
    */
   llm_model?: string | null;
   /**
+   * High Risk Only
+   */
+  high_risk_only?: boolean;
+  /**
    * Assessment Ids
    */
   assessment_ids?: Array<string>;

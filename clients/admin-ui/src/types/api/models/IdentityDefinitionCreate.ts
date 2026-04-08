@@ -21,4 +21,8 @@ export type IdentityDefinitionCreate = {
    */
   description?: string | null;
   type: IdentityDefinitionType;
+  /**
+   * Case Sensitive
+   */
+  case_sensitive?: boolean;
 };

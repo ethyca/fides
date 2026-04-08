@@ -49,6 +49,10 @@ export type ExperienceConfigCreate = {
    */
   cookie_deletion_based_on_host_domain?: boolean | null;
   /**
+   * Resurface behavior options (fidesplus)
+   */
+  resurface_behavior?: Array<"reject" | "dismiss">;
+  /**
    * Allow Vendor Asset Disclosure
    */
   allow_vendor_asset_disclosure?: boolean | null;
@@ -81,8 +85,4 @@ export type ExperienceConfigCreate = {
    * Properties
    */
   properties?: Array<MinimalProperty>;
-  /**
-   * Resurface behavior options (fidesplus)
-   */
-  resurface_behavior?: Array<"reject" | "dismiss"> | null;
 };

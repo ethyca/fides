@@ -41,10 +41,6 @@ export type Field = {
    */
   name?: string | null;
   /**
-   * System Key
-   */
-  system_key?: string | null;
-  /**
    * Description
    */
   description?: string | null;
@@ -61,6 +57,10 @@ export type Field = {
    */
   diff_status?: DiffStatus | null;
   resource_type?: StagedResourceTypeValue | null;
+  /**
+   * System Key
+   */
+  system_key?: string | null;
   /**
    * Data Uses
    *
@@ -128,5 +128,5 @@ export type Field = {
   /**
    * Computed: field_data_categories (fidesplus)
    */
-  preferred_data_categories?: Array<string> | null;
+  preferred_data_categories?: Array<string>;
 };

@@ -93,6 +93,10 @@ export type PrivacyRequestFilter = {
    */
   include_deleted_requests?: boolean | null;
   /**
+   * Is Overdue
+   */
+  is_overdue?: boolean | null;
+  /**
    * Download Csv
    */
   download_csv?: boolean | null;

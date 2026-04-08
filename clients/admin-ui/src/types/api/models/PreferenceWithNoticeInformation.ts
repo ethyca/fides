@@ -14,6 +14,10 @@ export type PreferenceWithNoticeInformation = {
   privacy_notice_history_id: string;
   preference: UserConsentPreference;
   /**
+   * Received At
+   */
+  received_at?: string | null;
+  /**
    * Notice Key
    */
   notice_key: string;

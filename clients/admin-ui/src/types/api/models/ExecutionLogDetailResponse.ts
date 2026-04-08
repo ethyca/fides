@@ -36,4 +36,8 @@ export type ExecutionLogDetailResponse = {
    * Dataset Name
    */
   dataset_name?: string | null;
+  /**
+   * Saas Version
+   */
+  saas_version?: string | null;
 };

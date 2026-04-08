@@ -16,5 +16,6 @@ export enum StagedResourceTypeValue {
   IMAGE = "Image",
   I_FRAME = "iFrame",
   JAVASCRIPT_TAG = "Javascript tag",
-  OKTA_APP = "Okta App",
+  IDP_APP = "IDP App",
+  CLOUD_INFRASTRUCTURE = "Cloud Infrastructure",
 }

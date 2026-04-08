@@ -7,7 +7,8 @@ import { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 /**
  * StagedResource
  *
- * Base API model that represents a staged resource, fields common to all types of staged resources
+ * Pydantic schema for staged resources using the shared stagedresource table
+ * (datastore, website, and IDP monitor resources).
  */
 export type StagedResource = {
   /**
@@ -33,10 +34,6 @@ export type StagedResource = {
    */
   name?: string | null;
   /**
-   * System Key
-   */
-  system_key?: string | null;
-  /**
    * Description
    */
   description?: string | null;
@@ -53,6 +50,10 @@ export type StagedResource = {
    */
   diff_status?: DiffStatus | null;
   resource_type?: StagedResourceTypeValue | null;
+  /**
+   * System Key
+   */
+  system_key?: string | null;
   /**
    * Data Uses
    *

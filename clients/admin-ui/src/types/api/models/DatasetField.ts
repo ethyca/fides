@@ -28,6 +28,12 @@ export type DatasetField = {
    * Arrays of Data Categories, identified by `fides_key`, that applies to this field.
    */
   data_categories?: Array<string> | null;
+  /**
+   * Data Purposes
+   *
+   * Array of Data Purpose resources, identified by `fides_key`, that apply to this field.
+   */
+  data_purposes?: Array<string> | null;
   fides_meta?: FidesMeta | null;
   /**
    * Fields

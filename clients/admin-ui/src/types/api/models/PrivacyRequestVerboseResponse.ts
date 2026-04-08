@@ -122,4 +122,10 @@ export type PrivacyRequestVerboseResponse = {
   results: {
     [key: string]: Array<ExecutionAndAuditLogResponse>;
   };
+  /**
+   * Task Status By Dataset
+   */
+  task_status_by_dataset?: {
+    [key: string]: string;
+  } | null;
 };

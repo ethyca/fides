@@ -37,6 +37,32 @@ export type SaasConnectionTemplateValues = {
   secrets:
     | {
         /**
+         * Authentication Method
+         *
+         * Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.
+         */
+        auth_method: AWSAuthMethod;
+        /**
+         * Access Key ID
+         *
+         * Part of the credentials that provide access to your AWS account.
+         */
+        aws_access_key_id?: string | null;
+        /**
+         * Secret Access Key
+         *
+         * Part of the credentials that provide access to your AWS account.
+         */
+        aws_secret_access_key?: string | null;
+        /**
+         * Assume Role ARN
+         *
+         * If provided, the ARN of the role that should be assumed to connect to AWS.
+         */
+        aws_assume_role_arn?: string | null;
+      }
+    | {
+        /**
          * Keyfile creds
          *
          * The contents of the key file that contains authentication credentials for a service account in GCP.

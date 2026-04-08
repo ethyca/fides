@@ -3,7 +3,11 @@
 /**
  * SeedTasksConfig
  *
- * Configuration for which seed tasks to run.
+ * Configuration for which sample-data seeding tasks to run.
+ *
+ * Each flag controls a discrete set of synthetic data that will be
+ * written to the environment.  This is an internal utility for demo,
+ * test, and POC environments — not for production use.
  */
 export type SeedTasksConfig = {
   /**
@@ -55,9 +59,39 @@ export type SeedTasksConfig = {
    */
   email_templates?: boolean;
   /**
+   * Chat Slack
+   *
+   * Configure Slack chat provider for questionnaires
+   */
+  chat_slack?: boolean;
+  /**
+   * Privacy Assessments
+   *
+   * Generate sample privacy assessments
+   */
+  privacy_assessments?: boolean;
+  /**
+   * Consent Preferences
+   *
+   * Generate sample consent preference records for the Consent Report
+   */
+  consent_preferences?: boolean;
+  /**
    * Discovery Monitors
    *
    * Create discovery monitors
    */
   discovery_monitors?: boolean;
+  /**
+   * Pbac
+   *
+   * Seed PBAC data: purposes, consumers, datasets, mock query log integration, and 60 days of access control history
+   */
+  pbac?: boolean;
+  /**
+   * Dashboard
+   *
+   * Populate dashboard cards with demo data (systems, DSRs, audit logs, staged resources, trend snapshots)
+   */
+  dashboard?: boolean;
 };

@@ -57,6 +57,12 @@ export type DatasetResponse = {
    */
   data_categories?: Array<string> | null;
   /**
+   * Data Purposes
+   *
+   * Array of Data Purpose resources, identified by `fides_key`, that apply to all collections in the Dataset.
+   */
+  data_purposes?: Array<string> | null;
+  /**
    *
    * The DatasetMetadata resource model.
    *
