@@ -10,6 +10,7 @@ from fides.api.email_templates.template_names import (
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     EXTERNAL_USER_WELCOME,
     MANUAL_TASK_DIGEST,
+    PASSWORD_RESET,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
     PRIVACY_REQUEST_ERROR_NOTIFICATION_TEMPLATE,
@@ -58,6 +59,8 @@ def get_email_template(  # pylint: disable=too-many-return-statements, too-many-
         return template_env.get_template(TEST_MESSAGE_TEMPLATE)
     if action_type == MessagingActionType.USER_INVITE:
         return template_env.get_template(USER_INVITE)
+    if action_type == MessagingActionType.PASSWORD_RESET:
+        return template_env.get_template(PASSWORD_RESET)
     if action_type == MessagingActionType.EXTERNAL_USER_WELCOME:
         return template_env.get_template(EXTERNAL_USER_WELCOME)
     if action_type == MessagingActionType.MANUAL_TASK_DIGEST:

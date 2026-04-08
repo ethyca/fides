@@ -11,6 +11,7 @@ export interface AccessPolicy {
   description?: string;
   controls?: string[];
   yaml?: string;
+  is_recommendation?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -72,6 +73,17 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Access Policies"],
     }),
+    reorderAccessPolicy: build.mutation<
+      void,
+      { id: string; insert_after_id: string | null }
+    >({
+      query: ({ id, insert_after_id }) => ({
+        method: "POST",
+        url: `plus/access-policy/${id}/reorder`,
+        body: { insert_after_id },
+      }),
+      invalidatesTags: ["Access Policies"],
+    }),
     getControlGroups: build.query<ControlGroup[], void>({
       query: () => ({
         method: "GET",
@@ -88,5 +100,6 @@ export const {
   useCreateAccessPolicyMutation,
   useUpdateAccessPolicyMutation,
   useDeleteAccessPolicyMutation,
+  useReorderAccessPolicyMutation,
   useGetControlGroupsQuery,
 } = accessPoliciesApi;

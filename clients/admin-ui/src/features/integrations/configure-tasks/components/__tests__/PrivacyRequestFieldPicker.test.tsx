@@ -110,7 +110,7 @@ describe("PrivacyRequestFieldPicker", () => {
       ).toBeInTheDocument();
     });
 
-    it("should show empty state message when no fields available", () => {
+    it("should still show select when no standard fields available (custom identities group always present)", () => {
       mockUseGetPrivacyRequestFieldsQuery.mockReturnValue({
         data: {
           privacy_request: {},
@@ -124,9 +124,9 @@ describe("PrivacyRequestFieldPicker", () => {
 
       render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
-      expect(
-        screen.getByText("No privacy request fields available."),
-      ).toBeInTheDocument();
+      // The Custom identities group with manual entry option is always present
+      const select = screen.getByTestId("privacy-request-field-select");
+      expect(select).toBeInTheDocument();
     });
   });
 
@@ -308,6 +308,106 @@ describe("PrivacyRequestFieldPicker", () => {
 
       render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
+      const select = screen.getByTestId("privacy-request-field-select");
+      expect(select).toBeInTheDocument();
+    });
+  });
+
+  describe("Custom Identity Fields", () => {
+    it("should include custom identity fields from the API response", () => {
+      mockUseGetPrivacyRequestFieldsQuery.mockReturnValue({
+        data: {
+          privacy_request: {
+            identity: {
+              email: {
+                field_path: "privacy_request.identity.email",
+                field_type: "string",
+                description: "Email",
+                is_convenience_field: false,
+              },
+              customer_id: {
+                field_path: "privacy_request.identity.customer_id",
+                field_type: "string",
+                description: "Custom identity field 'customer_id'",
+                is_convenience_field: false,
+              },
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+      mockUseGetPrivacyCenterConfigQuery.mockReturnValue({
+        data: undefined,
+      });
+
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
+
+      const select = screen.getByTestId("privacy-request-field-select");
+      expect(select).toBeInTheDocument();
+    });
+
+    it("should always show the Custom identities group with manual entry option", () => {
+      mockUseGetPrivacyRequestFieldsQuery.mockReturnValue({
+        data: {
+          privacy_request: {
+            created_at: {
+              field_path: "privacy_request.created_at",
+              field_type: "string",
+              description: "Created at",
+              is_convenience_field: false,
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+      mockUseGetPrivacyCenterConfigQuery.mockReturnValue({
+        data: undefined,
+      });
+
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
+
+      // The select should be present (Custom identities group always has at least the manual entry option)
+      const select = screen.getByTestId("privacy-request-field-select");
+      expect(select).toBeInTheDocument();
+    });
+
+    it("should show manual key input when value is an unknown custom identity", () => {
+      mockUseGetPrivacyRequestFieldsQuery.mockReturnValue({
+        data: {
+          privacy_request: {
+            identity: {
+              email: {
+                field_path: "privacy_request.identity.email",
+                field_type: "string",
+                description: "Email",
+                is_convenience_field: false,
+              },
+            },
+          },
+        },
+        isLoading: false,
+        error: null,
+      });
+      mockUseGetPrivacyCenterConfigQuery.mockReturnValue({
+        data: undefined,
+      });
+
+      // Render with a value that is a custom identity not in the API response
+      render(
+        <PrivacyRequestFieldPicker
+          {...defaultProps}
+          value="privacy_request.identity.unknown_field"
+        />,
+      );
+
+      // Should show the manual key input below the select
+      const manualInput = screen.getByTestId("manual-identity-key-input");
+      expect(manualInput).toBeInTheDocument();
+      expect(manualInput).toHaveValue("unknown_field");
+
+      // Select should also still be visible
       const select = screen.getByTestId("privacy-request-field-select");
       expect(select).toBeInTheDocument();
     });

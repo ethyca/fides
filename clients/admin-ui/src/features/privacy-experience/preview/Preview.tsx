@@ -1,6 +1,5 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import { ChakraText as Text, Flex, useNotification } from "fidesui";
-import { useFormikContext } from "formik";
+import { Flex, Form, Typography, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
@@ -17,6 +16,7 @@ import theme from "~/theme";
 import {
   ComponentType,
   ExperienceConfigCreate,
+  ExperienceTranslation,
   Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeResponse,
@@ -51,12 +51,12 @@ const NoPreviewNotice = ({
       vertical
       data-testid="no-preview-notice"
     >
-      <Text fontSize="lg" fontWeight="500" align="center">
+      <Typography.Text strong className="text-center text-lg">
         {title}
-      </Text>
-      <Text color="gray.500" align="center">
+      </Typography.Text>
+      <Typography.Text type="secondary" className="text-center">
         {description}
-      </Text>
+      </Typography.Text>
     </Flex>
   </Flex>
 );
@@ -65,19 +65,27 @@ const Preview = ({
   allPrivacyNotices,
   initialValues,
   translation,
+  editingTranslationValues,
   isMobilePreview,
   mockGpcEnabled,
 }: {
   allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
   translation?: TranslationWithLanguageName;
+  /** Live values from the translation drawer's local form, for real-time preview. */
+  editingTranslationValues?: ExperienceTranslation;
   isMobilePreview: boolean;
   mockGpcEnabled: boolean | "disabled";
 }) => {
   const router = useRouter();
   const isNewExperience = router.pathname.includes("/new");
   const notification = useNotification();
-  const { values } = useFormikContext<ExperienceConfigCreate>();
+  const form = Form.useFormInstance<ExperienceConfigCreate>();
+  // Watch all fields to trigger re-renders when any value changes.
+  // The selector maps store values through getFieldsValue(true) to include
+  // fields without a Form.Item (e.g. privacy_notice_ids from ScrollableList).
+  Form.useWatch([], form);
+  const values = (form?.getFieldsValue?.(true) ?? {}) as ExperienceConfigCreate;
   const [noticesOnConfig, setNoticesOnConfig] = useState<
     PrivacyNoticeResponse[]
   >([]);
@@ -197,11 +205,12 @@ const Preview = ({
       updatedConfig.experience.experience_config.component =
         ComponentType.MODAL;
     }
-    // if we're editing a translation, we want to preview the banner/modal with that language,
-    // otherwise we show first translation if exists, else keep default
-    const currentTranslation = values.translations?.find(
-      (i) => i.language === translation?.language,
-    );
+    // If we're editing a translation, prefer live values from the local form
+    // (editingTranslationValues) over the committed parent form values.
+    // Otherwise show the first translation if it exists, else keep default.
+    const currentTranslation =
+      editingTranslationValues ??
+      values.translations?.find((i) => i.language === translation?.language);
     if (values.translations?.length) {
       if (currentTranslation) {
         updatedConfig.experience.available_locales = [
@@ -238,6 +247,7 @@ const Preview = ({
      */
   }, [
     translation,
+    editingTranslationValues,
     baseConfig,
     allPrivacyNotices,
     isPreviewAvailable,
