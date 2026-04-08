@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed race condition in custom fields hook that wiped form values on system configure page
+pr: 7859
+labels: []
