@@ -9,5 +9,4 @@ cypress/screenshots
 .eslintrc*
 postcss.config.js
 tailwind.config.js
-src/types/api/models
-src/types/api/types.ts
+src/types/api
