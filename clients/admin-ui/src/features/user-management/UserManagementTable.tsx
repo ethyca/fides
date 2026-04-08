@@ -11,7 +11,15 @@ import { ScopeRegistryEnum } from "~/types/api";
 import { setActiveUserId } from "./user-management.slice";
 import useUserManagementTable from "./useUserManagementTable";
 
-const UserManagementTable = () => {
+interface UserManagementTableProps {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+const UserManagementTable = ({
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: UserManagementTableProps) => {
   const { tableProps, columns, searchQuery, updateSearch } =
     useUserManagementTable();
   const dispatch = useAppDispatch();
@@ -23,12 +31,14 @@ const UserManagementTable = () => {
   return (
     <>
       <Flex justify="space-between" className="mb-4">
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search by username"
-          data-testid="user-search"
-        />
+        {!onSearchChange && (
+          <DebouncedSearchInput
+            value={searchQuery}
+            onChange={updateSearch}
+            placeholder="Search by username"
+            data-testid="user-search"
+          />
+        )}
         <Restrict scopes={[ScopeRegistryEnum.USER_CREATE]}>
           <NextLink
             href={`${USER_MANAGEMENT_ROUTE}/new`}

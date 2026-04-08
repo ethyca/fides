@@ -7,7 +7,15 @@ import Restrict from "~/features/common/Restrict";
 import usePropertiesTable from "~/features/properties/usePropertiesTable";
 import { ScopeRegistryEnum } from "~/types/api";
 
-const PropertiesTable = () => {
+interface PropertiesTableProps {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+const PropertiesTable = ({
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: PropertiesTableProps) => {
   const router = useRouter();
   const { tableProps, columns, searchQuery, updateSearch } =
     usePropertiesTable();
@@ -15,11 +23,13 @@ const PropertiesTable = () => {
   return (
     <Flex vertical gap="small">
       <Flex justify="space-between">
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search properties..."
-        />
+        {!onSearchChange && (
+          <DebouncedSearchInput
+            value={searchQuery}
+            onChange={updateSearch}
+            placeholder="Search properties..."
+          />
+        )}
         <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
           <Button
             type="primary"

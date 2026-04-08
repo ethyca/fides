@@ -39,7 +39,17 @@ const COPY = `This page displays all assets associated with this system. Use the
 
 const GVL_COPY = `This page displays all assets associated with this system. Use the table below to review these technologies for compliance and detailed insights.`;
 
-const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
+interface SystemAssetsTableProps {
+  system: SystemResponse;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+const SystemAssetsTable = ({
+  system,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: SystemAssetsTableProps) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -55,7 +65,12 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
     resetPageIndexToDefault,
   } = useServerSidePagination();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [internalSearchQuery, setInternalSearchQuery] = useState("");
+  const searchQuery =
+    externalSearchQuery !== undefined
+      ? externalSearchQuery
+      : internalSearchQuery;
+  const setSearchQuery = onSearchChange || setInternalSearchQuery;
   const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(
     undefined,
   );
@@ -158,7 +173,9 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
         {lockedForGVL ? GVL_COPY : COPY}
       </Text>
       <TableActionBar>
-        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
+        {!onSearchChange && (
+          <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
+        )}
         {!lockedForGVL && (
           <>
             <Spacer />

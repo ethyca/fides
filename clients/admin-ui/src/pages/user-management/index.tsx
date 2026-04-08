@@ -8,7 +8,7 @@ import { SidePanel } from "~/features/common/SidePanel";
 import useUserManagementTable from "~/features/user-management/useUserManagementTable";
 
 const UserManagement: NextPage = () => {
-  const { error } = useUserManagementTable();
+  const { error, searchQuery, updateSearch } = useUserManagementTable();
 
   if (error) {
     return (
@@ -25,9 +25,18 @@ const UserManagement: NextPage = () => {
           title="Users"
           breadcrumbItems={[{ title: "All users" }]}
         />
+        <SidePanel.Search
+          onSearch={updateSearch}
+          value={searchQuery ?? ""}
+          onChange={(e) => updateSearch(e.target.value)}
+          placeholder="Search by username"
+        />
       </SidePanel>
       <FixedLayout title="User Management">
-        <UserManagementTable />
+        <UserManagementTable
+          searchQuery={searchQuery}
+          onSearchChange={updateSearch}
+        />
       </FixedLayout>
     </>
   );

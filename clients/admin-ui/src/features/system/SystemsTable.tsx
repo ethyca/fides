@@ -4,7 +4,15 @@ import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";
 import useSystemsTable from "~/features/system/table/useSystemsTable";
 
-const SystemsTable = () => {
+interface SystemsTableProps {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+const SystemsTable = ({
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: SystemsTableProps) => {
   const {
     // table
     tableProps,
@@ -38,11 +46,13 @@ const SystemsTable = () => {
         justify="space-between"
         className="sticky -top-6 z-20 bg-white py-4"
       >
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          data-testid="system-search"
-        />
+        {!onSearchChange && (
+          <DebouncedSearchInput
+            value={searchQuery}
+            onChange={updateSearch}
+            data-testid="system-search"
+          />
+        )}
         <SystemActionsMenu
           selectedRowKeys={selectionProps?.selectedRowKeys ?? []}
           createModalIsOpen={createModalIsOpen}

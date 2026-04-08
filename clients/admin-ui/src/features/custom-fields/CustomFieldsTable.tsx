@@ -3,7 +3,15 @@ import { Button, Flex, Table } from "fidesui";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import useCustomFieldsTable from "~/features/custom-fields/useCustomFieldsTable";
 
-const CustomFieldsTable = () => {
+interface CustomFieldsTableProps {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+const CustomFieldsTable = ({
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: CustomFieldsTableProps) => {
   const { tableProps, columns, searchQuery, updateSearch, onAddClick } =
     useCustomFieldsTable();
 
@@ -13,11 +21,13 @@ const CustomFieldsTable = () => {
         justify="space-between"
         className="sticky -top-6 z-20 bg-white py-4"
       >
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search custom fields..."
-        />
+        {!onSearchChange && (
+          <DebouncedSearchInput
+            value={searchQuery}
+            onChange={updateSearch}
+            placeholder="Search custom fields..."
+          />
+        )}
         <Button
           onClick={onAddClick}
           type="primary"

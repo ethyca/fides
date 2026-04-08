@@ -18,10 +18,14 @@ import { useDiscoveredSystemAggregateTable } from "../hooks/useDiscoveredSystemA
 
 interface DiscoveredSystemAggregateTableProps {
   monitorId: string;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 export const DiscoveredSystemAggregateTable = ({
   monitorId,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
 }: DiscoveredSystemAggregateTableProps) => {
   const {
     // Table state and data
@@ -73,7 +77,9 @@ export const DiscoveredSystemAggregateTable = ({
         align="center"
         className="sticky -top-6 z-20 bg-white py-4"
       >
-        <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
+        {!onSearchChange && (
+          <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
+        )}
         <Space size="large">
           {hasSelectedRows && <SelectedText count={selectedRows.length} />}
           <Dropdown

@@ -2,6 +2,7 @@ import { NextPage } from "next";
 import { useParams } from "next/navigation";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import { useSearch } from "~/features/common/hooks/useSearch";
 import {
   ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
   ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
@@ -25,6 +26,7 @@ const InfrastructureMonitorResultSystems: NextPage = () => {
     ? decodeURIComponent(params.monitorId)
     : undefined;
   const loading = !monitorId;
+  const { searchQuery, updateSearch } = useSearch();
   const { error: infrastructureSystemsError } =
     useDiscoveredInfrastructureSystemsTable({
       monitorId,
@@ -43,9 +45,18 @@ const InfrastructureMonitorResultSystems: NextPage = () => {
     <ActionCenterLayout
       monitorId={monitorId}
       routeConfig={MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG}
+      searchProps={{
+        value: searchQuery ?? "",
+        onSearch: updateSearch,
+        placeholder: "Search...",
+      }}
     >
       {loading ? null : (
-        <DiscoveredInfrastructureSystemsTable monitorId={monitorId} />
+        <DiscoveredInfrastructureSystemsTable
+          monitorId={monitorId}
+          searchQuery={searchQuery}
+          onSearchChange={updateSearch}
+        />
       )}
     </ActionCenterLayout>
   );

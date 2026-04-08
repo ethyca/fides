@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
+import { useSearch } from "~/features/common/hooks/useSearch";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { SidePanel } from "~/features/common/SidePanel";
 import { useDiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredSystemAggregateTable";
@@ -22,6 +23,8 @@ const MonitorResultSystems: NextPage = () => {
   const { flags } = useFeatures();
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
+
+  const { searchQuery, updateSearch } = useSearch();
 
   const { error } = useDiscoveredSystemAggregateTable({
     monitorId,
@@ -54,10 +57,20 @@ const MonitorResultSystems: NextPage = () => {
             { title: monitorId },
           ]}
         />
+        <SidePanel.Search
+          onSearch={updateSearch}
+          value={searchQuery ?? ""}
+          onChange={(e) => updateSearch(e.target.value)}
+          placeholder="Search..."
+        />
       </SidePanel>
       <FixedLayout title="Action center - Discovered assets by system">
         <MonitorStats monitorId={monitorId} />
-        <DiscoveredSystemAggregateTable monitorId={monitorId} />
+        <DiscoveredSystemAggregateTable
+          monitorId={monitorId}
+          searchQuery={searchQuery}
+          onSearchChange={updateSearch}
+        />
       </FixedLayout>
     </>
   ) : (

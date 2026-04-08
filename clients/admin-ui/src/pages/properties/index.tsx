@@ -7,7 +7,7 @@ import PropertiesTable from "~/features/properties/PropertiesTable";
 import usePropertiesTable from "~/features/properties/usePropertiesTable";
 
 const PropertiesPage: NextPage = () => {
-  const { error } = usePropertiesTable();
+  const { error, searchQuery, updateSearch } = usePropertiesTable();
 
   if (error) {
     return (
@@ -25,9 +25,15 @@ const PropertiesPage: NextPage = () => {
           title="Properties"
           description="Review and manage your properties. Properties are locations configured for consent management such as a website or mobile app."
         />
+        <SidePanel.Search
+          onSearch={updateSearch}
+          value={searchQuery ?? ""}
+          onChange={(e) => updateSearch(e.target.value)}
+          placeholder="Search properties..."
+        />
       </SidePanel>
       <Layout title="Properties">
-        <PropertiesTable />
+        <PropertiesTable searchQuery={searchQuery} onSearchChange={updateSearch} />
       </Layout>
     </>
   );

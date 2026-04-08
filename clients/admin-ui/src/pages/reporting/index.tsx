@@ -8,6 +8,7 @@ import useAssetReportingDownload from "~/features/asset-reporting/hooks/useAsset
 import { useAssetReportingTable } from "~/features/asset-reporting/hooks/useAssetReportingTable";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
+import { useSearch } from "~/features/common/hooks/useSearch";
 import { SidePanel } from "~/features/common/SidePanel";
 import {
   useDatamapReport,
@@ -68,6 +69,10 @@ const ReportsHub = () => {
     [],
   );
 
+  // Shared search state (URL-synced via NuQS, used by both views)
+  const { searchQuery: datamapSearchQuery, updateSearch: updateDatamapSearch } =
+    useSearch();
+
   // Asset report hooks (always called, but only rendered when active)
   const { downloadReport, isDownloadingReport } = useAssetReportingDownload();
   const { columns, searchQuery, updateSearch, tableProps, columnFilters } =
@@ -98,7 +103,17 @@ const ReportsHub = () => {
           activeKey={activeView}
           onSelect={setActiveView}
         />
-        {activeView === VIEWS.DATA_MAP && <DatamapFilters />}
+        {activeView === VIEWS.DATA_MAP && (
+          <>
+            <SidePanel.Search
+              placeholder="System name, Fides key, or ID"
+              onSearch={updateDatamapSearch}
+              value={datamapSearchQuery ?? ""}
+              onChange={(e) => updateDatamapSearch(e.target.value)}
+            />
+            <DatamapFilters />
+          </>
+        )}
         {activeView === VIEWS.ASSET && (
           <>
             <SidePanel.Search
@@ -122,7 +137,11 @@ const ReportsHub = () => {
       </SidePanel>
       <FixedLayout title="Reports">
         {activeView === VIEWS.DATA_MAP && (
-          <DatamapReportTable onError={onDatamapError} />
+          <DatamapReportTable
+            onError={onDatamapError}
+            searchQuery={datamapSearchQuery}
+            onSearchChange={updateDatamapSearch}
+          />
         )}
         {activeView === VIEWS.ASSET && (
           <AssetReportingTable

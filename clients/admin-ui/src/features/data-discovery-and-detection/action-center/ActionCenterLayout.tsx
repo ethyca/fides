@@ -25,6 +25,11 @@ export interface ActionCenterLayoutProps {
     dropdownProps?: DropdownProps;
     badgeProps?: BadgeProps;
   };
+  searchProps?: {
+    value: string;
+    onSearch: (value: string) => void;
+    placeholder?: string;
+  };
 }
 
 const ActionCenterLayout = ({
@@ -32,6 +37,7 @@ const ActionCenterLayout = ({
   monitorId,
   routeConfig,
   pageSettings,
+  searchProps,
 }: PropsWithChildren<ActionCenterLayoutProps>) => {
   const {
     items: menuItems,
@@ -68,6 +74,14 @@ const ActionCenterLayout = ({
             }
           }}
         />
+        {searchProps && (
+          <SidePanel.Search
+            onSearch={searchProps.onSearch}
+            value={searchProps.value}
+            onChange={(e) => searchProps.onSearch(e.target.value)}
+            placeholder={searchProps.placeholder}
+          />
+        )}
         {pageSettings && (
           <SidePanel.Actions>
             <Badge {...pageSettings.badgeProps}>

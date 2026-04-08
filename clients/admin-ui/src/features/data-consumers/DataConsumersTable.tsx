@@ -8,7 +8,15 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import useDataConsumersTable from "./useDataConsumersTable";
 
-const DataConsumersTable = () => {
+interface DataConsumersTableProps {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+const DataConsumersTable = ({
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: DataConsumersTableProps) => {
   const router = useRouter();
   const { tableProps, columns, searchQuery, updateSearch } =
     useDataConsumersTable();
@@ -16,11 +24,13 @@ const DataConsumersTable = () => {
   return (
     <Flex vertical gap="middle">
       <Flex justify="space-between" className="mb-2">
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search data consumers..."
-        />
+        {!onSearchChange && (
+          <DebouncedSearchInput
+            value={searchQuery}
+            onChange={updateSearch}
+            placeholder="Search data consumers..."
+          />
+        )}
         <Restrict scopes={[ScopeRegistryEnum.DATA_CONSUMER_CREATE]}>
           <Button
             type="primary"

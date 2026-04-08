@@ -30,12 +30,16 @@ interface DiscoveredAssetsTableProps {
   monitorId: string;
   systemId: string;
   consentStatus?: ConsentAlertInfo | null;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
   consentStatus,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
 }: DiscoveredAssetsTableProps) => {
   // Modal state
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
@@ -144,11 +148,13 @@ export const DiscoveredAssetsTable = ({
         align="center"
         className="sticky -top-6 z-20 mb-4 bg-white py-4"
       >
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search by asset name..."
-        />
+        {!onSearchChange && (
+          <DebouncedSearchInput
+            value={searchQuery}
+            onChange={updateSearch}
+            placeholder="Search by asset name..."
+          />
+        )}
         <Space size="large">
           {hasSelectedRows && <SelectedText count={selectedUrns.length} />}
           <Space size="small">

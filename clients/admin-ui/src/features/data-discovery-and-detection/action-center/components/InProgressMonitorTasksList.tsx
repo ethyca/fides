@@ -32,10 +32,14 @@ const formatStatusForDisplay = (
 
 export const InProgressMonitorTasksList = ({
   filters,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
 }: {
   filters?: {
     monitorKey?: string;
   };
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }) => {
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
@@ -123,7 +127,7 @@ export const InProgressMonitorTasksList = ({
       {/* Search Row */}
       <Flex justify="space-between" align="center">
         <div className="min-w-[300px]">
-          {!filters?.monitorKey && (
+          {!filters?.monitorKey && !onSearchChange && (
             <DebouncedSearchInput
               value={searchQuery}
               onChange={updateSearch}

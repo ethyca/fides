@@ -1,6 +1,7 @@
 import { Spin } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
@@ -16,6 +17,7 @@ const CatalogResourceView: NextPage = () => {
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId);
 
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const resourceBreadcrumbs = parseResourceBreadcrumbsNoProject(
     resourceUrn,
@@ -43,6 +45,12 @@ const CatalogResourceView: NextPage = () => {
             })),
           ]}
         />
+        <SidePanel.Search
+          onSearch={setSearchQuery}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search resources..."
+        />
       </SidePanel>
       <Layout title="Data catalog">
         <CatalogResourcesTable
@@ -52,6 +60,8 @@ const CatalogResourceView: NextPage = () => {
               `${DATA_CATALOG_ROUTE}/${system!.fides_key}/resources/${row.urn}`,
             )
           }
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
       </Layout>
     </>

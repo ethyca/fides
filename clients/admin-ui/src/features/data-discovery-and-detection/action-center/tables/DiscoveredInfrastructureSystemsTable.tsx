@@ -32,10 +32,14 @@ import {
 
 interface DiscoveredInfrastructureSystemsTableProps {
   monitorId: string;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
 export const DiscoveredInfrastructureSystemsTable = ({
   monitorId,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
 }: DiscoveredInfrastructureSystemsTableProps) => {
   const infrastructureSystemsFilters = useInfrastructureSystemsFilters();
 
@@ -155,11 +159,13 @@ export const DiscoveredInfrastructureSystemsTable = ({
       />
       <Flex justify="space-between" gap="medium">
         <Flex gap="small">
-          <DebouncedSearchInput
-            value={searchQuery}
-            onChange={updateSearch}
-            placeholder="Search"
-          />
+          {!onSearchChange && (
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={updateSearch}
+              placeholder="Search"
+            />
+          )}
         </Flex>
         <Flex gap="small">
           <InfrastructureSystemsFilters

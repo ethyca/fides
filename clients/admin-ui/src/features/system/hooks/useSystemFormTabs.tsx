@@ -62,10 +62,15 @@ const NotificationActions = ({
 
 const useSystemFormTabs = ({
   isCreate,
+  assetSearchProps,
 }: {
   initialTabIndex?: number;
   /** If true, then some editing features will not be enabled */
   isCreate?: boolean;
+  assetSearchProps?: {
+    searchQuery?: string;
+    onSearchChange?: (value: string) => void;
+  };
 }) => {
   const router = useRouter();
 
@@ -272,7 +277,11 @@ const useSystemFormTabs = ({
       label: "Assets",
       key: "assets",
       children: activeSystem ? (
-        <SystemAssetsTable system={activeSystem} />
+        <SystemAssetsTable
+          system={activeSystem}
+          searchQuery={assetSearchProps?.searchQuery}
+          onSearchChange={assetSearchProps?.onSearchChange}
+        />
       ) : null,
       disabled: !activeSystem,
     });

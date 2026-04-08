@@ -48,9 +48,13 @@ const EMPTY_RESPONSE = {
 const CatalogResourcesTable = ({
   resourceUrn,
   onRowClick,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
 }: {
   resourceUrn: string;
   onRowClick: (row: StagedResourceAPIResponse) => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }) => {
   const {
     PAGE_SIZES,
@@ -67,7 +71,9 @@ const CatalogResourcesTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [internalSearchQuery, setInternalSearchQuery] = useState("");
+  const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
+  const setSearchQuery = onSearchChange || setInternalSearchQuery;
 
   useEffect(() => {
     resetPageIndexToDefault();
@@ -122,12 +128,14 @@ const CatalogResourcesTable = ({
     <>
       <TableActionBar>
         <Flex gap={6} align="center">
-          <Box flexShrink={0}>
-            <DebouncedSearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-            />
-          </Box>
+          {!onSearchChange && (
+            <Box flexShrink={0}>
+              <DebouncedSearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
+            </Box>
+          )}
         </Flex>
       </TableActionBar>
       <FidesTableV2

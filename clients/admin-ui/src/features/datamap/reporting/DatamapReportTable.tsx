@@ -38,11 +38,17 @@ const checkIcon = (isSelected: boolean) => (
   <CheckOutlined style={{ visibility: isSelected ? "visible" : "hidden" }} />
 );
 
+interface DatamapReportTableProps {
+  onError: (error: FetchBaseQueryError | SerializedError) => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
 export const DatamapReportTable = ({
   onError,
-}: {
-  onError: (error: FetchBaseQueryError | SerializedError) => void;
-}) => {
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: DatamapReportTableProps) => {
   const {
     form,
     tableProps,
@@ -227,11 +233,13 @@ export const DatamapReportTable = ({
       >
         <Flex className="sticky -top-6 z-[100] bg-white py-4">
           <Flex className="flex-1 items-center justify-between py-2">
-            <DebouncedSearchInput
-              value={searchQuery}
-              onChange={updateSearch}
-              placeholder="System name, Fides key, or ID"
-            />
+            {!onSearchChange && (
+              <DebouncedSearchInput
+                value={searchQuery}
+                onChange={updateSearch}
+                placeholder="System name, Fides key, or ID"
+              />
+            )}
             <Flex className="items-center gap-2">
               {userCanSeeReports && (
                 <CustomReportTemplates

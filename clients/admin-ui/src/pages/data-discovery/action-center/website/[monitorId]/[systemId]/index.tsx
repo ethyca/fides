@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
+import { useSearch } from "~/features/common/hooks/useSearch";
 import {
   ACTION_CENTER_ROUTE,
   ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
@@ -43,6 +44,8 @@ const MonitorResultAssets: NextPage = () => {
     }
   }, [systemResults, router, monitorId]);
 
+  const { searchQuery, updateSearch } = useSearch();
+
   const { error } = useDiscoveredAssetsTable({
     monitorId,
     systemId,
@@ -76,12 +79,20 @@ const MonitorResultAssets: NextPage = () => {
             },
           ]}
         />
+        <SidePanel.Search
+          onSearch={updateSearch}
+          value={searchQuery ?? ""}
+          onChange={(e) => updateSearch(e.target.value)}
+          placeholder="Search by asset name..."
+        />
       </SidePanel>
       <FixedLayout title="Action center - Discovered assets">
         <DiscoveredAssetsTable
           monitorId={monitorId}
           systemId={systemId}
           consentStatus={system?.consent_status}
+          searchQuery={searchQuery}
+          onSearchChange={updateSearch}
         />
       </FixedLayout>
     </>

@@ -3,6 +3,7 @@ import type { NextPage } from "next";
 import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import { useSearch } from "~/features/common/hooks/useSearch";
 import { SidePanel } from "~/features/common/SidePanel";
 import CustomFieldsTable from "~/features/custom-fields/CustomFieldsTable";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
@@ -12,6 +13,7 @@ const CUSTOM_FIELDS_COPY =
 
 const CustomFields: NextPage = () => {
   const { error } = useGetAllCustomFieldDefinitionsQuery();
+  const { searchQuery, updateSearch } = useSearch();
 
   if (error) {
     return (
@@ -28,9 +30,15 @@ const CustomFields: NextPage = () => {
           title="Custom fields"
           description={CUSTOM_FIELDS_COPY}
         />
+        <SidePanel.Search
+          onSearch={updateSearch}
+          value={searchQuery ?? ""}
+          onChange={(e) => updateSearch(e.target.value)}
+          placeholder="Search custom fields..."
+        />
       </SidePanel>
       <Layout title="Custom fields">
-        <CustomFieldsTable />
+        <CustomFieldsTable searchQuery={searchQuery} onSearchChange={updateSearch} />
       </Layout>
     </>
   );

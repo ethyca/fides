@@ -1,7 +1,7 @@
 import { Button, Icons, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -58,8 +58,14 @@ const ConfigureSystem: NextPage = () => {
     }
   }, [system, dispatch, isTCFEnabled]);
 
+  const [assetSearchQuery, setAssetSearchQuery] = useState("");
+
   const { tabData, activeKey, onTabChange } = useSystemFormTabs({
     isCreate: false,
+    assetSearchProps: {
+      searchQuery: assetSearchQuery,
+      onSearchChange: setAssetSearchQuery,
+    },
   });
 
   if ((isLoading || isDictionaryLoading) && !dictionaryError) {
@@ -113,6 +119,14 @@ const ConfigureSystem: NextPage = () => {
           activeKey={activeKey}
           onSelect={onTabChange}
         />
+        {activeKey === "assets" && (
+          <SidePanel.Search
+            onSearch={setAssetSearchQuery}
+            value={assetSearchQuery}
+            onChange={(e) => setAssetSearchQuery(e.target.value)}
+            placeholder="Search assets..."
+          />
+        )}
         {isPlusEnabled && (
           <SidePanel.Actions>
             <Button

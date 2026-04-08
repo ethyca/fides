@@ -7,7 +7,15 @@ import Restrict from "~/features/common/Restrict";
 import useDataPurposesTable from "~/features/data-purposes/useDataPurposesTable";
 import { ScopeRegistryEnum } from "~/types/api";
 
-const DataPurposesTable = () => {
+interface DataPurposesTableProps {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+const DataPurposesTable = ({
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: DataPurposesTableProps) => {
   const router = useRouter();
   const { tableProps, columns, searchQuery, updateSearch } =
     useDataPurposesTable();
@@ -15,11 +23,13 @@ const DataPurposesTable = () => {
   return (
     <Flex vertical gap="middle">
       <Flex justify="space-between" className="mb-2">
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={updateSearch}
-          placeholder="Search data purposes..."
-        />
+        {!onSearchChange && (
+          <DebouncedSearchInput
+            value={searchQuery}
+            onChange={updateSearch}
+            placeholder="Search data purposes..."
+          />
+        )}
         <Restrict scopes={[ScopeRegistryEnum.DATA_PURPOSE_CREATE]}>
           <Button
             type="primary"
