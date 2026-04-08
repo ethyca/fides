@@ -228,6 +228,8 @@ USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"
 USER_REINVITE = "/user/{user_id}/reinvite"
+USER_FORGOT_PASSWORD = "/user/forgot-password"
+USER_RESET_PASSWORD_WITH_TOKEN = "/user/reset-password-with-token"
 SYSTEM_MANAGER = "/user/{user_id}/system-manager"
 SYSTEM_MANAGER_DETAIL = "/user/{user_id}/system-manager/{system_key}"
 

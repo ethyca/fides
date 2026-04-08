@@ -230,12 +230,18 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
 def check_required_webserver_config_values(config: FidesConfig) -> None:
     """Check for required config values and print a user-friendly error message."""
+    required_security_keys = [
+        "app_encryption_key",
+        "oauth_root_client_id",
+        "oauth_root_client_secret",
+    ]
+
+    # key_encryption_key is required when using the local provider
+    if config.security.key_provider == "local":
+        required_security_keys.append("key_encryption_key")
+
     required_config_dict = {
-        "security": [
-            "app_encryption_key",
-            "oauth_root_client_id",
-            "oauth_root_client_secret",
-        ]
+        "security": required_security_keys,
     }
 
     missing_required_config_vars = []

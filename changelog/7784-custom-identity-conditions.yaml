@@ -1,0 +1,4 @@
+type: Added
+description: Added support for custom identities as manual task condition options
+pr: 7784
+labels: []

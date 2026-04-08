@@ -1,4 +1,5 @@
 @use "sass:string";
+@use "../fonts/fonts.scss";
 @use "../palette/palette.module.scss" as palette;
 
 /**
@@ -64,6 +65,9 @@ h6 {
     --ant-font-size: var(--ant-font-size-sm);
     margin-top: 0.25rem;
     color: var(--fidesui-neutral-700);
+  }
+  &-tooltip {
+    cursor: default !important;
   }
 }
 
