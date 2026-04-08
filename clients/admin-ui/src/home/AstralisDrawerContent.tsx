@@ -1,16 +1,24 @@
-import { antTheme, CUSTOM_TAG_COLOR, Flex, Tag, Text } from "fidesui";
+import { antTheme, Flex, Tag, Text } from "fidesui";
+import { useMemo } from "react";
 
+import {
+  ASTRALIS_METRICS,
+  ASTRALIS_STATUS_TAG,
+  type AstralisMetricKey,
+} from "~/features/dashboard/constants";
 import { useGetAstralisQuery } from "~/features/dashboard/dashboard.slice";
+import type { AstralisConversation } from "~/features/dashboard/types";
 
 import { useDashboardDrawer } from "./useDashboardDrawer";
 
-const STATUS_TAG: Record<
-  string,
-  { color: CUSTOM_TAG_COLOR; label: string }
+const METRIC_TO_STATUSES: Record<
+  AstralisMetricKey,
+  AstralisConversation["status"][] | null
 > = {
-  in_progress: { color: CUSTOM_TAG_COLOR.INFO, label: "In Progress" },
-  awaiting: { color: CUSTOM_TAG_COLOR.WARNING, label: "Awaiting Response" },
-  completed: { color: CUSTOM_TAG_COLOR.SUCCESS, label: "Completed" },
+  active_conversations: ["in_progress"],
+  awaiting_response: ["awaiting"],
+  completed_assessments: ["completed"],
+  risks_identified: null, // no status filter — shows all
 };
 
 export const AstralisDrawerContent = () => {
@@ -19,13 +27,25 @@ export const AstralisDrawerContent = () => {
   const drawer = useDashboardDrawer();
   const metric = drawer?.type === "astralis" ? drawer.metric : undefined;
 
-  const conversations = data?.conversations ?? [];
+  const conversations = useMemo(() => {
+    const all = data?.conversations ?? [];
+    if (!metric) {
+      return all;
+    }
+    const statuses = METRIC_TO_STATUSES[metric];
+    if (!statuses) {
+      return all;
+    }
+    return all.filter((c) => statuses.includes(c.status));
+  }, [data?.conversations, metric]);
 
   return (
     <Flex vertical gap="middle">
       {metric && (
         <Text type="secondary" className="text-xs uppercase tracking-wide">
-          Filtered by: {metric.replace(/_/g, " ")}
+          Filtered by:{" "}
+          {ASTRALIS_METRICS.find((m) => m.key === metric)?.label ??
+            metric.replace(/_/g, " ")}
         </Text>
       )}
 
@@ -74,13 +94,13 @@ export const AstralisDrawerContent = () => {
 
       <Flex vertical gap={0}>
         {conversations.map((conv) => {
-          const tag = STATUS_TAG[conv.status];
+          const tag = ASTRALIS_STATUS_TAG[conv.status];
           const isOverdue =
             conv.status === "awaiting" && conv.days_in_status > 3;
 
           return (
             <Flex
-              key={`${conv.steward_name}-${conv.system_name}`}
+              key={`${conv.steward_name}-${conv.system_name}-${conv.status}`}
               justify="space-between"
               align="center"
               className="border-b border-solid border-b-[var(--ant-color-border)] py-3"
@@ -97,7 +117,7 @@ export const AstralisDrawerContent = () => {
                     {conv.days_in_status}d overdue
                   </Text>
                 )}
-                <Tag color={tag.color}>{tag.label}</Tag>
+                {tag && <Tag color={tag.color}>{tag.label}</Tag>}
               </Flex>
             </Flex>
           );

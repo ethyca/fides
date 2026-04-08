@@ -1,41 +1,20 @@
-import {
-  antTheme,
-  Card,
-  CUSTOM_TAG_COLOR,
-  Flex,
-  Statistic,
-  Tag,
-  Text,
-} from "fidesui";
+import { antTheme, Card, Flex, Statistic, Tag, Text } from "fidesui";
 import { useCallback } from "react";
 
+import {
+  ASTRALIS_METRICS,
+  ASTRALIS_STATUS_TAG,
+  type AstralisMetricKey,
+} from "~/features/dashboard/constants";
 import { useGetAstralisQuery } from "~/features/dashboard/dashboard.slice";
 
 import { openDashboardDrawer } from "./useDashboardDrawer";
-
-const METRICS = [
-  { key: "active_conversations", label: "Active" },
-  { key: "awaiting_response", label: "Awaiting" },
-  { key: "completed_assessments", label: "Completed" },
-  { key: "risks_identified", label: "Risks" },
-] as const;
-
-type MetricKey = (typeof METRICS)[number]["key"];
-
-const STATUS_TAG: Record<
-  string,
-  { color: CUSTOM_TAG_COLOR; label: string }
-> = {
-  in_progress: { color: CUSTOM_TAG_COLOR.INFO, label: "In Progress" },
-  awaiting: { color: CUSTOM_TAG_COLOR.WARNING, label: "Awaiting" },
-  completed: { color: CUSTOM_TAG_COLOR.SUCCESS, label: "Completed" },
-};
 
 export const AstralisPanel = () => {
   const { token } = antTheme.useToken();
   const { data, isLoading } = useGetAstralisQuery();
 
-  const handleMetricClick = useCallback((metric: MetricKey) => {
+  const handleMetricClick = useCallback((metric: AstralisMetricKey) => {
     openDashboardDrawer({ type: "astralis", metric });
   }, []);
 
@@ -49,7 +28,7 @@ export const AstralisPanel = () => {
       <Flex vertical className="h-full">
         {/* Compact 2x2 metric grid */}
         <Flex wrap="wrap" gap={8} className="mb-3 shrink-0">
-          {METRICS.map(({ key, label }) => {
+          {ASTRALIS_METRICS.map(({ key, label }) => {
             const value = data?.[key] ?? 0;
             const isActive = key === "active_conversations";
             const isOverdue = key === "awaiting_response" && value > 0;
@@ -90,13 +69,13 @@ export const AstralisPanel = () => {
         {/* Scrollable conversation list */}
         <Flex vertical gap={0} className="min-h-0 flex-1 overflow-y-auto">
           {data?.conversations?.map((conv) => {
-            const tag = STATUS_TAG[conv.status];
+            const tag = ASTRALIS_STATUS_TAG[conv.status];
             const isOverdue =
               conv.status === "awaiting" && conv.days_in_status > 3;
 
             return (
               <Flex
-                key={`${conv.steward_name}-${conv.system_name}`}
+                key={`${conv.steward_name}-${conv.system_name}-${conv.status}`}
                 justify="space-between"
                 align="center"
                 className="border-b border-solid border-b-[var(--ant-color-border)] py-2"
@@ -115,9 +94,11 @@ export const AstralisPanel = () => {
                       {conv.days_in_status}d overdue
                     </Text>
                   )}
-                  <Tag color={tag.color} className="!mr-0 !text-[11px]">
-                    {tag.label}
-                  </Tag>
+                  {tag && (
+                    <Tag color={tag.color} className="!mr-0 !text-[11px]">
+                      {tag.label}
+                    </Tag>
+                  )}
                 </Flex>
               </Flex>
             );
