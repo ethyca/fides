@@ -29,8 +29,8 @@ export const AstralisPanel = () => {
                 />
               )}
               <Statistic
-                title={label}
                 value={value}
+                suffix={label}
                 valueStyle={{
                   color: isOverdue ? token.colorWarning : undefined,
                 }}
