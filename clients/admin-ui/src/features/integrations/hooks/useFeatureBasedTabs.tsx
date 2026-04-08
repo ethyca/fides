@@ -181,7 +181,14 @@ export const useFeatureBasedTabs = ({
       tabItems.push({
         label: "Query logging",
         key: "query-logging",
-        children: <QueryLogConfigTab integration={connection!} />,
+        children: (
+          <QueryLogConfigTab
+            integration={{
+              ...connection!,
+              name: connection!.name ?? undefined,
+            }}
+          />
+        ),
       });
     }
 
