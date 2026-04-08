@@ -3,8 +3,8 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fides.api.schemas.storage.storage import AWSAuthMethod
 
+from fides.api.schemas.storage.storage import AWSAuthMethod
 from fides.api.util.aws_util import build_aws_client
 
 
@@ -27,9 +27,7 @@ def secrets() -> MagicMock:
 class TestBuildAWSClient:
     """Tests for the build_aws_client factory function."""
 
-    @patch(
-        "fides.api.util.aws_util.get_aws_session"
-    )
+    @patch("fides.api.util.aws_util.get_aws_session")
     def test_delegates_to_get_aws_session(
         self, mock_get_session: MagicMock, secrets: MagicMock
     ) -> None:
@@ -48,9 +46,7 @@ class TestBuildAWSClient:
         )
         mock_session.client.assert_called_once_with("s3")
 
-    @patch(
-        "fides.api.util.aws_util.get_aws_session"
-    )
+    @patch("fides.api.util.aws_util.get_aws_session")
     def test_region_override(
         self, mock_get_session: MagicMock, secrets: MagicMock
     ) -> None:
@@ -63,9 +59,7 @@ class TestBuildAWSClient:
         call_secrets = mock_get_session.call_args[1]["storage_secrets"]
         assert call_secrets["region_name"] == "eu-west-1"
 
-    @patch(
-        "fides.api.util.aws_util.get_aws_session"
-    )
+    @patch("fides.api.util.aws_util.get_aws_session")
     def test_no_region_override(
         self, mock_get_session: MagicMock, secrets: MagicMock
     ) -> None:
