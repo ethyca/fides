@@ -71,7 +71,10 @@ export const ExecutionLogStatusColors: Record<
 };
 
 export interface ExecutionLog
-  extends Pick<ExecutionAndAuditLogResponse, "connection_key" | "saas_version"> {
+  extends Pick<
+    ExecutionAndAuditLogResponse,
+    "connection_key" | "saas_version"
+  > {
   collection_name: string | null;
   fields_affected: FieldsAffected[];
   message: string;
