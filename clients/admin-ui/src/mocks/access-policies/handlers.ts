@@ -3,7 +3,7 @@ import { rest } from "msw";
 
 import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
 
-import { mockControlGroups } from "./data";
+import { mockAccessPolicies, mockControlGroups } from "./data";
 import { generatedPoliciesForIndustry } from "./generated-policies";
 import {
   GEO_DATA_USES,
@@ -16,9 +16,8 @@ import {
  */
 export const accessPoliciesHandlers = () => {
   const apiBase = "/api/v1";
-  // Start empty so the onboarding flow is shown first.
-  // Generated policies will be pushed here by the /generate handler.
-  const policies: AccessPolicy[] = [];
+  // Use a mutable copy so create/update/delete persist within a session
+  const policies: AccessPolicy[] = [...mockAccessPolicies];
 
   return [
     // GET /api/v1/plus/access-policy - list all

@@ -31,7 +31,7 @@ const INITIAL_STATE: OnboardingFormState = {
   selectedDataUses: [],
 };
 
-const OnboardingForm = () => {
+const OnboardingForm = ({ onComplete }: { onComplete?: () => void }) => {
   const { flags } = useFlags();
   const { data: industriesData, isLoading: isIndustriesLoading } =
     useGetOnboardingIndustriesQuery();
@@ -97,6 +97,7 @@ const OnboardingForm = () => {
     try {
       await generatePolicies(formData).unwrap();
       message.success("Policies generated successfully");
+      onComplete?.();
     } catch {
       message.error("Failed to generate policies");
     }
