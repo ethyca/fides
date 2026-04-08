@@ -275,53 +275,53 @@ const EventLog = ({
           </Td>
         )}
         {hasDatasetEntries && !isRequestFinishedView && (
-          <Td>
-            <Text
-              color="gray.600"
-              fontSize="xs"
-              lineHeight="4"
-              fontWeight="medium"
-            >
-              {(detail.status as string) === "finished"
-                ? "Request completed"
-                : detail.collection_name}
-            </Text>
-          </Td>
-        )}
-        {hasDatasetEntries && !isRequestFinishedView && (
-          <Td>
-            {detail.saas_version ? (
-              detail.connection_key ? (
-                <button
-                  type="button"
-                  className={styles.versionButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const key = detail.connection_key;
-                    const ver = detail.saas_version;
-                    if (key && ver) openVersionModal(key, ver);
-                  }}
-                  title="View version config"
-                  data-testid="version-badge-wrapper"
-                >
-                  <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
-                </button>
-              ) : (
-                <span data-testid="version-badge-wrapper">
-                  <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
-                </span>
-              )
-            ) : (
+          <>
+            <Td>
               <Text
                 color="gray.600"
                 fontSize="xs"
                 lineHeight="4"
                 fontWeight="medium"
               >
-                -
+                {(detail.status as string) === "finished"
+                  ? "Request completed"
+                  : detail.collection_name}
               </Text>
-            )}
-          </Td>
+            </Td>
+            <Td>
+              {detail.saas_version ? (
+                detail.connection_key ? (
+                  <button
+                    type="button"
+                    className={styles.versionButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const key = detail.connection_key;
+                      const ver = detail.saas_version;
+                      if (key && ver) openVersionModal(key, ver);
+                    }}
+                    title="View version config"
+                    data-testid="version-badge-wrapper"
+                  >
+                    <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+                  </button>
+                ) : (
+                  <span data-testid="version-badge-wrapper">
+                    <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+                  </span>
+                )
+              ) : (
+                <Text
+                  color="gray.600"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
+                  -
+                </Text>
+              )}
+            </Td>
+          </>
         )}
       </Tr>
     );
@@ -389,28 +389,28 @@ const EventLog = ({
                 </Th>
               )}
               {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Collection
-                  </Text>
-                </Th>
-              )}
-              {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Version
-                  </Text>
-                </Th>
+                <>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Collection
+                    </Text>
+                  </Th>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Version
+                    </Text>
+                  </Th>
+                </>
               )}
             </Tr>
           </Thead>
