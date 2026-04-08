@@ -1,10 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-import type { AstralisMetricKey } from "~/features/dashboard/constants";
-
-export type DashboardDrawerState =
-  | { type: "posture" }
-  | { type: "astralis"; metric?: AstralisMetricKey };
+export type DashboardDrawerState = {
+  type: "posture";
+};
 
 let drawerState: DashboardDrawerState | null = null;
 const listeners = new Set<() => void>();

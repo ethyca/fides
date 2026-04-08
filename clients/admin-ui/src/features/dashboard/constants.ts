@@ -1,5 +1,3 @@
-import { CUSTOM_TAG_COLOR } from "fidesui";
-
 import {
   ACTION_CENTER_ROUTE,
   CONSENT_REPORTING_ROUTE,
@@ -7,12 +5,7 @@ import {
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
 
-import {
-  ActionSeverity,
-  ActionType,
-  type AstralisConversation,
-  PostureBand,
-} from "./types";
+import { ActionSeverity, ActionType, PostureBand } from "./types";
 
 export const DIMENSION_DESCRIPTIONS: Record<string, string> = {
   coverage: "How well your data systems are mapped and documented",
@@ -128,15 +121,6 @@ export const ASTRALIS_METRICS = [
 ] as const;
 
 export type AstralisMetricKey = (typeof ASTRALIS_METRICS)[number]["key"];
-
-export const ASTRALIS_STATUS_TAG: Record<
-  AstralisConversation["status"],
-  { color: CUSTOM_TAG_COLOR; label: string }
-> = {
-  in_progress: { color: CUSTOM_TAG_COLOR.INFO, label: "In Progress" },
-  awaiting: { color: CUSTOM_TAG_COLOR.WARNING, label: "Awaiting Response" },
-  completed: { color: CUSTOM_TAG_COLOR.SUCCESS, label: "Completed" },
-};
 
 export function getUrgencyGroup(
   severity: ActionSeverity,

@@ -98,19 +98,11 @@ interface TrendsResponse {
 
 export type { TrendsResponse };
 
-export interface AstralisConversation {
-  steward_name: string;
-  system_name: string;
-  status: "in_progress" | "awaiting" | "completed";
-  days_in_status: number;
-}
-
 export interface AstralisResponse {
   active_conversations: number;
   completed_assessments: number;
   awaiting_response: number;
   risks_identified: number;
-  conversations: AstralisConversation[];
 }
 
 export interface ActivityFeedItem {
