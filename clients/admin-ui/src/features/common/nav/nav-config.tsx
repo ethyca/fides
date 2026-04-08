@@ -198,9 +198,9 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
     ],
   },
-  // 5. AI Governance
+  // 5. Data Governance
   {
-    title: "AI Governance",
+    title: "Data Governance",
     icon: <Icons.Document />,
     routes: [
       {

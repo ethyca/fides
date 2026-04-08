@@ -1,16 +1,12 @@
-import { Button, Icons } from "fidesui";
+import { Icons } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useRef, useState } from "react";
 
-import { useAppDispatch } from "~/app/hooks";
-import { LOGIN_ROUTE } from "~/constants";
-import { logout, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import logoCollapsed from "../../../../../public/logo-collapsed.svg";
-import AccountDropdownMenu from "../AccountDropdownMenu";
 import { useNav } from "../hooks";
 import { NavGroup } from "../nav-config";
 import NavSearch from "../NavSearch";
@@ -24,8 +20,6 @@ const LAST_VISITED_KEY = "fides-last-visited-pillar";
 const IconRail: React.FC = () => {
   const router = useRouter();
   const nav = useNav({ path: router.pathname });
-  const [logoutMutation] = useLogoutMutation();
-  const dispatch = useAppDispatch();
   const plusQuery = useGetHealthQuery();
 
   const [expanded, setExpanded] = useState(false);
@@ -46,13 +40,6 @@ const IconRail: React.FC = () => {
       setHighlightedGroup(null);
     }, 150);
   }, []);
-
-  const handleLogout = useCallback(async () => {
-    await logoutMutation({});
-    router.push(LOGIN_ROUTE).then(() => {
-      dispatch(logout());
-    });
-  }, [logoutMutation, router, dispatch]);
 
   const handleNavigate = useCallback(() => {
     setExpanded(false);
@@ -119,9 +106,12 @@ const IconRail: React.FC = () => {
     );
   }
 
-  // Separate Settings from other groups for bottom placement
+  // Separate bottom groups (Settings + Integrations) from pillar groups
+  // Dashboard is accessible via logo, not shown as a rail icon
   const settingsGroup = nav.groups.find((g) => g.title === "Settings");
-  const mainGroups = nav.groups.filter((g) => g.title !== "Settings");
+  const integrationsGroup = nav.groups.find((g) => g.title === "Integrations");
+  const bottomGroupTitles = new Set(["Settings", "Integrations", "Dashboard"]);
+  const mainGroups = nav.groups.filter((g) => !bottomGroupTitles.has(g.title));
 
   return (
     <div className={styles.railWrapper}>
@@ -149,25 +139,12 @@ const IconRail: React.FC = () => {
           </NextLink>
 
           {expanded ? (
-            <>
-              <ExpandedNav
-                groups={mainGroups}
-                active={nav.active}
-                highlightedGroup={highlightedGroup}
-                onNavigate={handleNavigate}
-              />
-              {settingsGroup && (
-                <>
-                  <div className={styles.separator} />
-                  <ExpandedNav
-                    groups={[settingsGroup]}
-                    active={nav.active}
-                    highlightedGroup={highlightedGroup}
-                    onNavigate={handleNavigate}
-                  />
-                </>
-              )}
-            </>
+            <ExpandedNav
+              groups={mainGroups}
+              active={nav.active}
+              highlightedGroup={highlightedGroup}
+              onNavigate={handleNavigate}
+            />
           ) : (
             <>
               {mainGroups.map((group) => (
@@ -184,41 +161,52 @@ const IconRail: React.FC = () => {
           )}
         </div>
 
-        {/* Bottom section */}
+        {/* Bottom section: Integrations + Settings */}
         <div
           className={`${styles.railBottom} ${expanded ? styles.railExpandedBottom : ""}`}
         >
-          {settingsGroup && !expanded && (
-            <IconRailItem
-              icon={<Icons.Settings />}
-              title="Settings"
-              isActive={nav.active?.title === "Settings"}
-              onClick={() => navigateToGroup(settingsGroup)}
-              onMouseEnter={() => setHighlightedGroup("Settings")}
-            />
+          {expanded ? (
+            <>
+              {integrationsGroup && (
+                <ExpandedNav
+                  groups={[integrationsGroup]}
+                  active={nav.active}
+                  highlightedGroup={highlightedGroup}
+                  onNavigate={handleNavigate}
+                />
+              )}
+              {settingsGroup && (
+                <ExpandedNav
+                  groups={[settingsGroup]}
+                  active={nav.active}
+                  highlightedGroup={highlightedGroup}
+                  onNavigate={handleNavigate}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {integrationsGroup && (
+                <IconRailItem
+                  icon={integrationsGroup.icon}
+                  title="Integrations"
+                  isActive={nav.active?.title === "Integrations"}
+                  onClick={() => navigateToGroup(integrationsGroup)}
+                  onMouseEnter={() => setHighlightedGroup("Integrations")}
+                  className={styles.integrationsIcon}
+                />
+              )}
+              {settingsGroup && (
+                <IconRailItem
+                  icon={<Icons.Settings />}
+                  title="Settings"
+                  isActive={nav.active?.title === "Settings"}
+                  onClick={() => navigateToGroup(settingsGroup)}
+                  onMouseEnter={() => setHighlightedGroup("Settings")}
+                />
+              )}
+            </>
           )}
-          <Button
-            type="primary"
-            href="https://docs.ethyca.com"
-            target="_blank"
-            className={
-              expanded
-                ? `${styles.bottomButton} ${styles.bottomButtonExpanded}`
-                : styles.bottomButton
-            }
-            icon={<Icons.Help />}
-            aria-label="Help"
-          >
-            {expanded && <span className={styles.bottomLabel}>Help</span>}
-          </Button>
-          <AccountDropdownMenu
-            onLogout={handleLogout}
-            className={
-              expanded
-                ? `${styles.bottomButton} ${styles.bottomButtonExpanded}`
-                : styles.bottomButton
-            }
-          />
         </div>
 
         {/* NavSearch - renders Cmd+K listener and modal only */}

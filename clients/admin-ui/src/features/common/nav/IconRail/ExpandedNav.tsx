@@ -57,7 +57,7 @@ const ExpandedNav: React.FC<ExpandedNavProps> = ({
         return (
           <div
             key={group.title}
-            className={styles.sectionGroup}
+            className={`${styles.sectionGroup} ${isGroupActive ? styles.sectionGroupActive : ""}`}
             ref={(el) => {
               if (el) sectionRefs.current.set(group.title, el);
             }}
@@ -75,10 +75,13 @@ const ExpandedNav: React.FC<ExpandedNavProps> = ({
                 <li key={child.path} className={styles.subPageItem}>
                   <NextLink
                     href={child.path}
-                    className={`${styles.subPageLink} ${isActivePage(child) ? styles.subPageLinkActive : ""}`}
+                    className={`${styles.subPageLink} ${isGroupActive ? styles.subPageLinkInActiveGroup : ""} ${isActivePage(child) ? styles.subPageLinkActive : ""}`}
                     onClick={onNavigate}
                   >
-                    {child.title}
+                    <span>{child.title}</span>
+                    {isActivePage(child) && (
+                      <span className={styles.activeDot} />
+                    )}
                   </NextLink>
                 </li>
               ))}

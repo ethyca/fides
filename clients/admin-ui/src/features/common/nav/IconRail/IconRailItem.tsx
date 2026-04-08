@@ -8,6 +8,7 @@ interface IconRailItemProps {
   isActive: boolean;
   onClick: () => void;
   onMouseEnter?: () => void;
+  className?: string;
 }
 
 const IconRailItem: React.FC<IconRailItemProps> = ({
@@ -16,10 +17,11 @@ const IconRailItem: React.FC<IconRailItemProps> = ({
   isActive,
   onClick,
   onMouseEnter,
+  className,
 }) => (
   <button
     type="button"
-    className={`${styles.iconItem} ${isActive ? styles.iconItemActive : ""}`}
+    className={`${styles.iconItem} ${isActive ? styles.iconItemActive : ""} ${className ?? ""}`}
     onClick={onClick}
     onMouseEnter={onMouseEnter}
     aria-label={title}

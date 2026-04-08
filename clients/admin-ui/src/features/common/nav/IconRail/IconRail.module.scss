@@ -118,6 +118,12 @@
   margin-bottom: 8px;
 }
 
+.sectionGroupActive {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 4px 0;
+}
+
 .sectionHeader {
   display: flex;
   align-items: center;
@@ -178,6 +184,7 @@
 .subPageLink {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 6px 8px;
   border-radius: 4px;
   color: var(--fidesui-neutral-400);
@@ -194,20 +201,28 @@
   }
 }
 
-.subPageLinkActive {
-  color: var(--fidesui-corinth);
+.subPageLinkInActiveGroup {
+  color: #fff;
   font-weight: 500;
 
-  &::before {
-    content: "";
-    display: inline-block;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background-color: var(--fidesui-sandstone);
-    margin-right: 8px;
-    flex-shrink: 0;
+  &:hover {
+    color: var(--fidesui-corinth);
   }
+}
+
+.subPageLinkActive {
+  color: #fff;
+  font-weight: 500;
+}
+
+.activeDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--fidesui-sandstone);
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .separator {
@@ -250,6 +265,15 @@
 .bottomLabel {
   white-space: nowrap;
   color: var(--fidesui-neutral-400);
+}
+
+// Integrations icon: yellow/gold color
+.integrationsIcon {
+  color: #f5a623;
+
+  &:hover {
+    color: #f5a623;
+  }
 }
 
 // Loading placeholder
