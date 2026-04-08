@@ -78,9 +78,6 @@ def up(
 
     config = ctx.obj["CONFIG"]
 
-    if not no_pull:
-        pull_specific_docker_image()
-
     if env_file:
         print(f"> Using custom ENV file from: {env_file}")
         environ["FIDES_DEPLOY_ENV_FILE"] = str(env_file)
@@ -88,6 +85,9 @@ def up(
     if image:
         print(f"> Using custom image: {image}")
         environ["FIDES_DEPLOY_IMAGE"] = image
+
+    if not no_pull:
+        pull_specific_docker_image(custom_image=image)
 
     try:
         check_fides_uploads_dir()
