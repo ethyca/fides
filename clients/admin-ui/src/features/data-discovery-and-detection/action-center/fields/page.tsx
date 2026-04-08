@@ -331,7 +331,7 @@ const ActionCenterFields = ({
                 )}
               </Flex>
             </Flex>
-            <Flex justify="space-between" wrap="wrap" gap="small">
+            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto,auto] grid-rows-2 gap-2 xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto,auto] xl:grid-rows-1">
               <MonitorFieldsSearchForm
                 form={form}
                 {...formProps}
@@ -345,65 +345,61 @@ const ActionCenterFields = ({
                 }}
                 shortcutCallback={() => setHotkeysHelperModalOpen(true)}
               />
-              <Flex gap="small">
-                <Dropdown
-                  onOpenChange={onActionDropdownOpenChange}
-                  menu={{
-                    items: [
-                      ...DROPDOWN_ACTIONS.map((actionType) => ({
-                        key: actionType,
-                        label:
-                          isFetchingAllowedActions ||
-                          !availableActions?.includes(actionType) ? (
-                            <Tooltip
-                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
-                            >
-                              {FIELD_ACTION_LABEL[actionType]}
-                            </Tooltip>
-                          ) : (
-                            FIELD_ACTION_LABEL[actionType]
-                          ),
-                        disabled:
-                          isFetchingAllowedActions ||
-                          !availableActions?.includes(actionType),
-                        onClick: async () => {
-                          if (listSelectMode === "exclusive") {
-                            await bulkActions[actionType](
-                              baseMonitorFilters,
-                              excludedKeys.map((key) => key.toString()),
-                              selectedListItemCount,
-                            );
-                          } else {
-                            await fieldActions[actionType](
-                              selectedKeys.map((key) => key.toString()),
-                            );
-                          }
+              <Dropdown
+                onOpenChange={onActionDropdownOpenChange}
+                menu={{
+                  items: [
+                    ...DROPDOWN_ACTIONS.map((actionType) => ({
+                      key: actionType,
+                      label:
+                        isFetchingAllowedActions ||
+                        !availableActions?.includes(actionType) ? (
+                          <Tooltip title={ACTIONS_DISABLED_MESSAGE[actionType]}>
+                            {FIELD_ACTION_LABEL[actionType]}
+                          </Tooltip>
+                        ) : (
+                          FIELD_ACTION_LABEL[actionType]
+                        ),
+                      disabled:
+                        isFetchingAllowedActions ||
+                        !availableActions?.includes(actionType),
+                      onClick: async () => {
+                        if (listSelectMode === "exclusive") {
+                          await bulkActions[actionType](
+                            baseMonitorFilters,
+                            excludedKeys.map((key) => key.toString()),
+                            selectedListItemCount,
+                          );
+                        } else {
+                          await fieldActions[actionType](
+                            selectedKeys.map((key) => key.toString()),
+                          );
+                        }
 
-                          resetListSelect();
-                        },
-                      })),
-                    ],
-                  }}
-                  disabled={selectedKeys.length <= 0}
+                        resetListSelect();
+                      },
+                    })),
+                  ],
+                }}
+                disabled={selectedKeys.length <= 0}
+              >
+                <Button
+                  type="primary"
+                  icon={<Icons.ChevronDown />}
+                  iconPosition="end"
+                  loading={isFetchingAllowedActions}
                 >
-                  <Button
-                    type="primary"
-                    icon={<Icons.ChevronDown />}
-                    iconPosition="end"
-                    loading={isFetchingAllowedActions}
-                  >
-                    Actions
-                  </Button>
-                </Dropdown>
-                <Tooltip title="Refresh">
-                  <Button
-                    icon={<Icons.Renew />}
-                    onClick={() => listQueryMeta.refetch()}
-                    aria-label="Refresh"
-                  />
-                </Tooltip>
-              </Flex>
-            </Flex>
+                  Actions
+                </Button>
+              </Dropdown>
+              <Tooltip title="Refresh">
+                <Button
+                  icon={<Icons.Renew />}
+                  onClick={() => listQueryMeta.refetch()}
+                  aria-label="Refresh"
+                />
+              </Tooltip>
+            </div>
             <Flex gap="medium" align="center">
               <Checkbox id="select-all" {...checkboxProps} />
               <label htmlFor="select-all">Select all</label>
