@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -5,6 +7,7 @@ from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
     AttachmentReferenceType,
+    AttachmentType,
 )
 from fides.api.models.comment import (
     Comment,
@@ -13,6 +16,7 @@ from fides.api.models.comment import (
     CommentType,
 )
 from fides.api.models.fides_user import FidesUser
+from fides.service.attachment_service import AttachmentService
 
 
 @pytest.fixture
@@ -447,13 +451,17 @@ def test_delete_parent_comment_deletes_replies(db, user):
     assert db.query(Comment).filter_by(id=reply_id).first() is None
 
 
-def test_delete_parent_deletes_reply_attachments(s3_client, db, user, monkeypatch):
+def test_delete_parent_deletes_reply_attachments(
+    s3_client, db, user, storage_config, monkeypatch
+):
     """Test that deleting a parent comment cleans up reply attachments."""
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 
-    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
 
     parent = Comment.create(
         db,
@@ -474,14 +482,14 @@ def test_delete_parent_deletes_reply_attachments(s3_client, db, user, monkeypatc
     )
 
     # Attach a file to the reply
-    attachment = Attachment.create(
-        db,
+    attachment = AttachmentService(db).create_and_upload(
         data={
+            "user_id": user.id,
             "file_name": "reply_attachment.txt",
-            "file_size": 100,
-            "content_type": "text/plain",
-            "storage_key": "test/reply_attachment.txt",
+            "attachment_type": AttachmentType.internal_use_only,
+            "storage_key": storage_config.key,
         },
+        file_data=BytesIO(b"reply attachment content"),
     )
     attachment_ref = AttachmentReference.create(
         db,
