@@ -44,4 +44,5 @@ export type EventAuditResponse = {
    * User Id
    */
   user_id?: string | null;
+  client_id?: string | null;
 };
