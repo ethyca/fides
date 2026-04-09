@@ -1,13 +1,18 @@
 """EventAudit model and related enums for comprehensive audit logging."""
 
 from enum import Enum as EnumType
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, String, Text
+from sqlalchemy import Column, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
+
+if TYPE_CHECKING:
+    from fides.api.models.client import ClientDetail
 
 
 class EventAuditType(str, EnumType):
@@ -101,6 +106,16 @@ class EventAudit(Base):
     # Uses EventAuditType values but left as String to avoid future migrations
     event_type = Column(String, index=True, nullable=False)
     user_id = Column(String, nullable=True, index=True)
+    client_id = Column(
+        String, ForeignKey("client.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    client: "ClientDetail" = relationship(
+        "ClientDetail",
+        lazy="selectin",
+        uselist=False,
+        foreign_keys=[client_id],
+        primaryjoin="EventAudit.client_id == ClientDetail.id",
+    )
 
     # Resource information
     resource_type = Column(String, nullable=True, index=True)
