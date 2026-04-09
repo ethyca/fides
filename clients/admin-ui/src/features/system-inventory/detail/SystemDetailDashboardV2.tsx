@@ -1,4 +1,3 @@
-import type { CarbonIconType } from "@carbon/icons-react";
 import {
   Activity,
   DataBase,
@@ -6,6 +5,7 @@ import {
   Policy,
   SettingsCheck,
 } from "@carbon/icons-react";
+import type { CarbonIconType } from "@carbon/icons-react";
 import { Flex, Statistic, Tag, Text, Title } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
@@ -45,25 +45,6 @@ function computeSystemScore(system: MockSystem): number {
   );
 }
 
-const MetricCard = ({
-  children,
-  highlight = false,
-}: {
-  children: React.ReactNode;
-  highlight?: boolean;
-}) => (
-  <div
-    style={{
-      backgroundColor: highlight
-        ? palette.FIDESUI_BG_CAUTION
-        : palette.FIDESUI_NEUTRAL_75,
-    }}
-    className="flex size-full flex-col justify-between rounded-lg p-4"
-  >
-    {children}
-  </div>
-);
-
 const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
   const dimensions = computeSystemDimensions(system);
   const score = computeSystemScore(system);
@@ -99,10 +80,10 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
   );
 
   return (
-    <Flex gap={12} className="mb-4 items-stretch">
-      {/* System Health */}
-      <div className="min-w-0 flex-1">
-        <MetricCard highlight={score < 70}>
+    <div className="mb-4">
+      <Flex gap={32}>
+        {/* System Health */}
+        <div className="min-w-0 flex-1">
           <Text
             type="secondary"
             className="mb-2 block text-[10px] uppercase tracking-wider"
@@ -159,12 +140,10 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
               ))}
             </div>
           </Flex>
-        </MetricCard>
-      </div>
+        </div>
 
-      {/* Capabilities */}
-      <div className="min-w-0 flex-1">
-        <MetricCard>
+        {/* Capabilities */}
+        <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
           <Text
             type="secondary"
             className="mb-2 block text-[10px] uppercase tracking-wider"
@@ -179,7 +158,9 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
                   <Tag
                     key={cap}
                     bordered={false}
-                    style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
+                    style={{
+                      backgroundColor: palette.FIDESUI_NEUTRAL_100,
+                    }}
                   >
                     <Flex align="center" gap={4}>
                       <Icon size={12} />
@@ -197,19 +178,17 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
           <Text type="secondary" className="mt-2 text-[9px]">
             Based on active integrations
           </Text>
-        </MetricCard>
-      </div>
+        </div>
 
-      {/* Privacy Requests */}
-      <div className="min-w-0 flex-1">
-        <MetricCard>
+        {/* Privacy Requests */}
+        <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
           <Text
             type="secondary"
             className="text-[10px] uppercase tracking-wider"
           >
             Privacy Requests
           </Text>
-          <Title level={2} className="!mb-0 !mt-1">
+          <Title level={3} className="!mb-0 !mt-1">
             {system.privacyRequests.open}{" "}
             <Text type="secondary" className="text-sm font-normal">
               open
@@ -219,28 +198,26 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
             {system.privacyRequests.closed.toLocaleString()} closed &middot; avg{" "}
             {system.privacyRequests.avgAccessDays}d
           </Text>
-        </MetricCard>
-      </div>
+        </div>
 
-      {/* Datasets */}
-      <div className="min-w-0 flex-1">
-        <MetricCard>
+        {/* Datasets */}
+        <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
           <Text
             type="secondary"
             className="text-[10px] uppercase tracking-wider"
           >
             Datasets
           </Text>
-          <Title level={2} className="!mb-0 !mt-1">
+          <Title level={3} className="!mb-0 !mt-1">
             {totalDatasets}
           </Title>
           <Text type="secondary" className="text-[10px]">
-            {totalFieldCount.toLocaleString()} fields across {totalCollections}{" "}
-            collections
+            {totalFieldCount.toLocaleString()} fields across{" "}
+            {totalCollections} collections
           </Text>
-        </MetricCard>
-      </div>
-    </Flex>
+        </div>
+      </Flex>
+    </div>
   );
 };
 

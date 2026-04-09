@@ -130,7 +130,7 @@ const SystemBriefingBanner = ({ system }: SystemBriefingBannerProps) => {
 
   return (
     <div
-      className="mb-4 rounded-lg px-5 py-4"
+      className="mb-6 rounded-lg px-5 py-4"
       style={{ backgroundColor: palette.FIDESUI_BG_DEFAULT }}
     >
       <Flex justify="space-between" align="flex-start">
