@@ -1,0 +1,6 @@
+type: fix
+description: |
+  Fixed property-based DAG filtering for SaaS connector datasets. The `merge_datasets`
+  function was dropping `property_ids` when constructing the merged GraphDataset, causing
+  all SaaS datasets to be treated as universal and never filtered by property.
+pr: 7868
