@@ -154,6 +154,28 @@ describe("SaaSVersionModal", () => {
     // Activate the Dataset tab, then assert the fallback message
     fireEvent.click(screen.getByText("Dataset"));
     expect(
+      screen.getByText("Could not load dataset for this version."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows 'No dataset available' in the Dataset tab when the dataset returns no data", () => {
+    mockUseDataset.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+    });
+
+    render(
+      <SaaSVersionModal
+        isOpen
+        onClose={jest.fn()}
+        connectorType="stripe"
+        version="0.0.11"
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Dataset"));
+    expect(
       screen.getByText("No dataset available for this version."),
     ).toBeInTheDocument();
   });
