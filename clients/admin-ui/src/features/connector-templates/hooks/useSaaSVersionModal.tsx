@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 
@@ -32,7 +32,7 @@ export const useSaaSVersionModal = () => {
   // query after pending is cleared (skip: true returns undefined data).
   // If the connection has no saas_config.type (non-SaaS), bail out silently
   // so pending doesn't stay set indefinitely.
-  React.useEffect(() => {
+  useEffect(() => {
     if (!pending || !connection) {
       return;
     }
