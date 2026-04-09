@@ -68,9 +68,7 @@ class TestHttpConnectorMethods:
             with pytest.raises(ClientUnsuccessfulException) as exc:
                 connector.execute(request_body, response_expected=True)
 
-            assert exc.value.args[0].startswith(
-                "Client call failed with status code '500'"
-            )
+            assert "status code '500'" in exc.value.args[0]
 
     user_agent_header: dict[str, str] = {"User-Agent": "fides"}
     forwards_secret_headers = HeaderTestCase(

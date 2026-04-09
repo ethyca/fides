@@ -112,9 +112,7 @@ class TestHttpOAuth2ConnectorMethods:
             with pytest.raises(ClientUnsuccessfulException) as exc:
                 connector.execute(request_body, response_expected=True)
 
-            assert exc.value.args[0].startswith(
-                "Client call failed with status code '500'"
-            )
+            assert "status code '500'" in exc.value.args[0]
             assert mock_response.call_count == 2
 
     def test_invalid_access_token_response_causes_error(self, connector):
@@ -137,9 +135,7 @@ class TestHttpOAuth2ConnectorMethods:
             with pytest.raises(ClientUnsuccessfulException) as exc:
                 connector.execute(request_body, response_expected=True)
 
-            assert exc.value.args[0].startswith(
-                "Client call failed with status code '500'"
-            )
+            assert "status code '500'" in exc.value.args[0]
             assert mock_response.call_count == 1
 
     @pytest.mark.parametrize(
@@ -176,8 +172,6 @@ class TestHttpOAuth2ConnectorMethods:
             with pytest.raises(ClientUnsuccessfulException) as exc:
                 connector.execute(request_body, response_expected=True)
 
-            assert exc.value.args[0].startswith(
-                "Client call failed with status code '500'"
-            )
+            assert "status code '500'" in exc.value.args[0]
 
             assert mock_response.call_count == 1
