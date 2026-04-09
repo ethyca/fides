@@ -1,7 +1,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Button, Form, Input, Spin, useMessage } from "fidesui";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
@@ -28,7 +28,9 @@ export const OrganizationForm = ({
   onSuccess,
 }: OrganizationFormProps) => {
   const [form] = Form.useForm<Organization>();
-  const [updateOrganizationMutation] = useUpdateOrganizationMutation();
+  const [updateOrganizationMutation, { isLoading: isSaving }] =
+    useUpdateOrganizationMutation();
+  const [hasChanges, setHasChanges] = useState(false);
   const message = useMessage();
 
   const initialValues = useMemo(
@@ -72,6 +74,7 @@ export const OrganizationForm = ({
       layout="vertical"
       initialValues={initialValues}
       onFinish={handleSubmit}
+      onValuesChange={() => setHasChanges(true)}
       data-testid="organization-form"
     >
       <Form.Item
@@ -87,7 +90,7 @@ export const OrganizationForm = ({
         tooltip="User-friendly name for your organization, used in messaging to end-users and other public locations."
         rules={[{ required: true, message: "Name is required" }]}
       >
-        <Input disabled={isLoading} data-testid="input-name" />
+        <Input disabled={isSaving} data-testid="input-name" />
       </Form.Item>
       <Form.Item
         name="description"
@@ -95,14 +98,14 @@ export const OrganizationForm = ({
         tooltip="Short description of your organization, your services, etc."
         rules={[{ required: true, message: "Description is required" }]}
       >
-        <Input disabled={isLoading} data-testid="input-description" />
+        <Input disabled={isSaving} data-testid="input-description" />
       </Form.Item>
       <div className="text-right">
         <Button
           htmlType="submit"
           type="primary"
-          disabled={isLoading}
-          loading={isLoading}
+          disabled={isSaving || !hasChanges}
+          loading={isSaving}
           data-testid="save-btn"
         >
           Save
