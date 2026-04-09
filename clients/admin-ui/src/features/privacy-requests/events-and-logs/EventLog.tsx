@@ -161,6 +161,29 @@ const extractRecordCountOrTotal = (
   return extractRecordCount(detail);
 };
 
+const VersionBadge = ({
+  ver,
+  onClick,
+}: {
+  ver: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}) =>
+  onClick ? (
+    <button
+      type="button"
+      className={styles.versionButton}
+      onClick={onClick}
+      title="View version config"
+      data-testid="version-badge-wrapper"
+    >
+      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
+    </button>
+  ) : (
+    <span data-testid="version-badge-wrapper">
+      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
+    </span>
+  );
+
 const EventLog = ({
   eventLogs,
   allEventLogs,
@@ -208,26 +231,18 @@ const EventLog = ({
         </Text>
       );
     }
-    if (key) {
-      return (
-        <button
-          type="button"
-          className={styles.versionButton}
-          onClick={(e) => {
-            e.stopPropagation();
-            openVersionModal(key, ver);
-          }}
-          title="View version config"
-          data-testid="version-badge-wrapper"
-        >
-          <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
-        </button>
-      );
-    }
     return (
-      <span data-testid="version-badge-wrapper">
-        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
-      </span>
+      <VersionBadge
+        ver={ver}
+        onClick={
+          key
+            ? (e) => {
+                e.stopPropagation();
+                openVersionModal(key, ver);
+              }
+            : undefined
+        }
+      />
     );
   };
 
