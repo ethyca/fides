@@ -383,6 +383,31 @@ class TestMergeDatasets:
         assert merged_dataset.property_ids == []
 
 
+@pytest.mark.integration_saas
+class TestMergeDatasetsIntegration:
+    """Integration test: verify property_ids survive the full
+    DatasetConfig.get_graph() → merge_datasets chain with a real SaaS config."""
+
+    def test_get_graph_preserves_property_ids(self, db, saas_example_dataset_config):
+        """property_ids set on the DatasetConfig are present on the
+        GraphDataset returned by get_graph(), which internally calls
+        merge_datasets for SaaS connectors."""
+        saas_example_dataset_config.property_ids = ["FDS-12345", "FDS-67890"]
+        saas_example_dataset_config.save(db=db)
+
+        graph_dataset = saas_example_dataset_config.get_graph()
+        assert graph_dataset.property_ids == ["FDS-12345", "FDS-67890"]
+
+    def test_get_graph_empty_property_ids_stays_universal(
+        self, db, saas_example_dataset_config
+    ):
+        """A SaaS dataset with no property_ids remains universal after merge."""
+        assert saas_example_dataset_config.property_ids == []
+
+        graph_dataset = saas_example_dataset_config.get_graph()
+        assert graph_dataset.property_ids == []
+
+
 @pytest.mark.unit_saas
 class TestAssignPlaceholders:
     def test_string_value(self):
