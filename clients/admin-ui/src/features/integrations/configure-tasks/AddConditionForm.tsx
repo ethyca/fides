@@ -3,6 +3,7 @@ import {
   Button,
   ChakraFlex as Flex,
   Form,
+  FormInstance,
   Radio,
   RadioChangeEvent,
   Select,
@@ -18,12 +19,16 @@ import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicke
 import { useCustomFieldMetadata } from "./hooks/useCustomFieldMetadata";
 import { FieldSource } from "./types";
 import {
+  CUSTOM_IDENTITY_KEY_REGEX,
+  CUSTOM_IDENTITY_MANUAL_ENTRY,
   getFieldType,
   getInitialFieldSource,
   getValueTooltip,
   OPERATOR_OPTIONS,
   parseConditionValue,
   parseStoredValueForForm,
+  PrivacyRequestField,
+  STANDARD_IDENTITY_FIELDS,
 } from "./utils";
 
 interface FormValues {
@@ -38,6 +43,7 @@ interface AddConditionFormProps {
   editingCondition?: ConditionLeaf | null;
   isSubmitting?: boolean;
   connectionKey: string;
+  form?: FormInstance<FormValues>;
   /**
    * When true, hides the dataset field source option and filters privacy request
    * fields to only those available for consent requests.
@@ -52,9 +58,11 @@ const AddConditionForm = ({
   editingCondition,
   isSubmitting = false,
   connectionKey,
+  form: formProp,
   isConsentOnly = false,
 }: AddConditionFormProps) => {
-  const [form] = Form.useForm();
+  const [internalForm] = Form.useForm();
+  const form = formProp ?? internalForm;
   const isEditing = !!editingCondition;
 
   const [fieldSource, setFieldSource] = useState<FieldSource>(
@@ -211,7 +219,36 @@ const AddConditionForm = ({
       <Form.Item
         name="fieldAddress"
         label="Field"
-        rules={[{ required: true, message: "Field is required" }]}
+        rules={[
+          { required: true, message: "Field is required" },
+          {
+            validator: (_, val) =>
+              val === CUSTOM_IDENTITY_MANUAL_ENTRY
+                ? Promise.reject(
+                    new Error("Please enter a custom identity key"),
+                  )
+                : Promise.resolve(),
+          },
+          {
+            validator: (_, val) => {
+              if (
+                !val ||
+                !val.startsWith(PrivacyRequestField.IDENTITY_PREFIX) ||
+                STANDARD_IDENTITY_FIELDS.has(val)
+              ) {
+                return Promise.resolve();
+              }
+              const key = val.slice(PrivacyRequestField.IDENTITY_PREFIX.length);
+              return key && CUSTOM_IDENTITY_KEY_REGEX.test(key)
+                ? Promise.resolve()
+                : Promise.reject(
+                    new Error(
+                      "Identity key may only contain letters, numbers, and underscores",
+                    ),
+                  );
+            },
+          },
+        ]}
         tooltip={
           fieldSource === FieldSource.DATASET
             ? "Select a field from your datasets to use in the condition"

@@ -4,6 +4,8 @@ import React from "react";
 
 import { CustomTableHeaderCell } from "./CustomTableHeaderCell";
 
+// The `any` type is used here to allow for flexibility in the record type, as the CustomTable component is designed to be reusable across different data structures. Consumers of this component can specify their own record type when using it, ensuring type safety while maintaining versatility. This matches Ant Design's native Table components.
+
 type CustomColumnType<RecordType = any> = ColumnsType<RecordType>[number] & {
   menu?: MenuProps;
 };
@@ -49,22 +51,27 @@ export const CustomTable = <RecordType = any,>({
         pagination.pageSizeOptions?.[0]?.toString(), // Hide pagination if there's only one page
       ...pagination,
     };
-  }, [pagination, dataSource]);
+  }, [pagination]);
 
   const customColumns = React.useMemo(() => {
-    return columns.map((column) => ({
-      ...column,
-      onHeaderCell: (data: any, index: number) => {
-        // Get existing onHeaderCell props if they exist
-        const existingProps = column.onHeaderCell?.(data, index) || {};
+    return columns.map((column) => {
+      const columnKey = "key" in column ? (column.key as string) : undefined;
+      return {
+        ...column,
+        onHeaderCell: (data: any, index: number) => {
+          // Get existing onHeaderCell props if they exist
+          const existingProps = column.onHeaderCell?.(data, index) || {};
 
-        // Merge with our menu prop
-        return {
-          ...existingProps,
-          menu: column.menu,
-        };
-      },
-    }));
+          // Merge with our menu prop and column key for test IDs
+          return {
+            ...existingProps,
+            menu: column.menu,
+            // Only pass columnKey when menu exists — it's used for header menu test IDs
+            columnKey: column.menu ? columnKey : undefined,
+          };
+        },
+      };
+    });
   }, [columns]);
 
   return (
@@ -75,12 +82,13 @@ export const CustomTable = <RecordType = any,>({
       dataSource={dataSource}
       scroll={scroll}
       {...props}
+      // Spread consumer components first so our CustomTableHeaderCell always wins
       components={{
+        ...components,
         header: {
           ...components?.header,
           cell: CustomTableHeaderCell,
         },
-        ...components,
       }}
       columns={customColumns as ColumnsType<RecordType>}
     />

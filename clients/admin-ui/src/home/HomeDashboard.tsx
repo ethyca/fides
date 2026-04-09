@@ -3,7 +3,9 @@ import { Col, Divider, Flex, Row } from "fidesui";
 import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice";
 import { TrendPeriod } from "~/features/dashboard/types";
 
+import { ActivityFeedCard } from "./ActivityFeedCard";
 import { AgentBriefingBanner } from "./AgentBriefingBanner";
+import { AstralisPanel } from "./AstralisPanel";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { DSRStatusCard } from "./DSRStatusCard";
 import { PostureRadar, PostureScore } from "./PostureCard";
@@ -64,7 +66,14 @@ export const HomeDashboard = () => {
           <DSRStatusCard />
         </Col>
       </Row>
-
+      <Row gutter={20} className="h-[400px] items-stretch">
+        <Col xs={24} md={16} className="h-full">
+          <ActivityFeedCard />
+        </Col>
+        <Col xs={24} md={8} className="h-full">
+          <AstralisPanel />
+        </Col>
+      </Row>
       <DashboardDrawer />
     </Flex>
   );

@@ -19,6 +19,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 
 import { defaultAntTheme } from "./ant-theme";
@@ -93,6 +94,33 @@ export const FidesUIProvider = ({
   antTheme = defaultAntTheme, // Use default theme if none provided
   wave,
 }: FidesUIProviderProps) => {
+  // Ant Design ignores the CSS prefers-reduced-motion media query, so we read
+  // it ourselves and set the theme token `motion: false`. The lazy initializer
+  // ensures animations are disabled from the very first render.
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) =>
+      setPrefersReducedMotion(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  const resolvedAntTheme = useMemo(
+    () =>
+      prefersReducedMotion
+        ? { ...antTheme, token: { ...antTheme?.token, motion: false } }
+        : antTheme,
+    [antTheme, prefersReducedMotion],
+  );
+
   const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
   const [notificationApi, notificationContextHolder] =
@@ -175,7 +203,7 @@ export const FidesUIProvider = ({
   );
 
   return (
-    <BaseAntDesignProvider theme={antTheme} wave={wave}>
+    <BaseAntDesignProvider theme={resolvedAntTheme} wave={wave}>
       <BaseChakraProvider theme={theme}>
         <AntComponentAPIsContext.Provider value={value}>
           {messageContextHolder}

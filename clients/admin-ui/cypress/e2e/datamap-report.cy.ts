@@ -48,12 +48,12 @@ describe("Data map report table", () => {
             field_type: LegacyAllowedTypes.STRING_ARRAY,
           }),
           mockCustomField({
-            name: "color",
+            name: "Color",
             resource_type: LegacyResourceTypes.DATA_USE,
           }),
         ],
       },
-    );
+    ).as("getCustomFieldDefinitions");
     cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
       fixture: "custom-reports/minimal.json",
     }).as("getCustomReportsMinimal");
@@ -61,6 +61,7 @@ describe("Data map report table", () => {
   });
 
   it("can render custom fields", () => {
+    cy.wait("@getCustomFieldDefinitions");
     // Should render the custom fields as columns
     cy.getByTestId("column-system_starter_pokemon").contains("Starter pokemon");
     cy.getByTestId("column-system_pokemon_party").contains("Pokemon party");
@@ -69,9 +70,11 @@ describe("Data map report table", () => {
     // Pokemon party is multi-select, so we should have a menu to allow expanding/collapsing all
     cy.getByTestId("row-0-col-system_pokemon_party").contains("3");
     cy.getByTestId("system_pokemon_party-header-menu").click();
-    cy.getByTestId("system_pokemon_party-header-menu-list").within(() => {
-      cy.get("button").contains("Expand all").click();
-    });
+    cy.getAntDropdownOverlay("system_pokemon_party-header-menu-list").within(
+      () => {
+        cy.selectAntDropdownOption("Expand all");
+      },
+    );
     ["eevee", "pikachu", "articuno"].forEach((pokemon) => {
       cy.getByTestId("row-0-col-system_pokemon_party").contains(pokemon);
     });
@@ -168,11 +171,22 @@ describe("Data map report table", () => {
     it("should reorder columns", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
-      cy.get(".more-menu-list").should("not.be.visible");
-      cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
-      cy.getByTestId("column-dragger-data_categories").trigger("dragenter");
-      cy.getByTestId("column-dragger-data_categories").trigger("dragover");
-      cy.getByTestId("column-dragger-data_categories").trigger("drop");
+      cy.getAntDropdownOverlay("more-menu-list").should("not.be.visible");
+      // react-dnd's HTML5 backend requires a DataTransfer on every event and
+      // reorders on hover (not drop), so we simulate the full drag lifecycle.
+      const dataTransfer = new DataTransfer();
+      cy.getByTestId("column-dragger-legal_name").trigger("dragstart", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-data_categories").trigger("dragover", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-data_categories").trigger("drop", {
+        dataTransfer,
+      });
+      cy.getByTestId("column-dragger-legal_name").trigger("dragend", {
+        dataTransfer,
+      });
       cy.getByTestId("save-button").click();
 
       // Verify the new order
@@ -192,15 +206,25 @@ describe("Data map report table", () => {
     it("should expand/collapse columns", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
-      cy.contains("div", "System undeclared data categories").click();
-      cy.contains("div", "Data use undeclared data categories").click();
+      cy.getByTestId(
+        "column-list-item-system_undeclared_data_categories",
+      ).within(() => {
+        cy.get("button#system_undeclared_data_categories").click();
+      });
+      cy.getByTestId(
+        "column-list-item-data_use_undeclared_data_categories",
+      ).within(() => {
+        cy.get("button#data_use_undeclared_data_categories").click();
+      });
       cy.getByTestId("save-button").click();
 
-      cy.getByTestId("system_undeclared_data_categories-header-menu").click();
-      cy.getByTestId(
+      cy.getByTestId("system_undeclared_data_categories-header-menu")
+        .should("exist")
+        .click();
+      cy.getAntDropdownOverlay(
         "system_undeclared_data_categories-header-menu-list",
       ).within(() => {
-        cy.get("button").contains("Expand all").click();
+        cy.selectAntDropdownOption("Expand all");
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
@@ -209,10 +233,10 @@ describe("Data map report table", () => {
       });
 
       cy.getByTestId("data_use_undeclared_data_categories-header-menu").click();
-      cy.getByTestId(
+      cy.getAntDropdownOverlay(
         "data_use_undeclared_data_categories-header-menu-list",
       ).within(() => {
-        cy.get("button").contains("Expand all").click();
+        cy.selectAntDropdownOption("Expand all");
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId(
@@ -240,9 +264,13 @@ describe("Data map report table", () => {
         cy.getByTestId("rename-columns-cancel-btn").should("exist");
         cy.getByTestId("rename-columns-apply-btn").should("exist");
         cy.getByTestId("column-data_categories-input")
+          .eq(0)
+          .should("be.visible")
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_categories-input").type("Custom Title");
+            cy.getByTestId("column-data_categories-input")
+              .eq(0)
+              .type("Custom Title");
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
@@ -282,9 +310,10 @@ describe("Data map report table", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("column-data_uses-input")
+          .eq(0)
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_uses-input").type("Custom Title");
+            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
           });
         cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
@@ -296,9 +325,10 @@ describe("Data map report table", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("column-data_uses-input")
+          .eq(0)
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_uses-input").type("Custom Title");
+            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("more-menu").click();
@@ -309,7 +339,9 @@ describe("Data map report table", () => {
       it("should support pressing the Enter key to apply renamed columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
-        cy.getByTestId("column-data_uses-input").type("Custom Title{enter}");
+        cy.getByTestId("column-data_uses-input")
+          .eq(0)
+          .type("Custom Title{enter}");
         cy.getByTestId("column-data_uses").should(
           "contain.text",
           "Custom Title",
@@ -508,9 +540,11 @@ describe("Data map report table", () => {
       cy.wait("@getCustomReportById");
       cy.getByTestId("apply-report-button").click();
       cy.getByTestId("data_categories-header-menu").click();
-      cy.getByTestId("data_categories-header-menu-list").within(() => {
-        cy.get("button").contains("Expand all").click();
-      });
+      cy.getAntDropdownOverlay("data_categories-header-menu-list").within(
+        () => {
+          cy.selectAntDropdownOption("Expand all");
+        },
+      );
       cy.getByTestId("custom-reports-trigger").should(
         "contain.text",
         "My Custom Report",
@@ -532,18 +566,20 @@ describe("Data map report table", () => {
     it("should allow an authorized user to create a new report", () => {
       cy.getByTestId("custom-reports-trigger").click();
       cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").should("be.visible");
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("create-report-button").click();
       });
       cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My Custom Report").blur();
-        cy.getByTestId("error-reportName").should("exist");
+        cy.getAntFormError("reportName").should("exist");
         cy.get("#reportName").clear();
       });
+      cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My new report");
-        cy.getByTestId("error-reportName").should("not.exist");
+        cy.getAntFormError("reportName").should("not.exist");
         cy.getByTestId("custom-report-form-submit").click();
       });
       cy.wait("@createCustomReport").then((interception) => {
@@ -551,6 +587,7 @@ describe("Data map report table", () => {
         expect(interception.request.body.type).to.equal(ReportType.DATAMAP);
         expect(interception.request.body.config).to.not.be.empty;
       });
+      cy.wait(["@getDatamapMinimal", "@getDatamapMinimal"]);
       cy.getByTestId("custom-reports-popover").should("be.visible");
     });
     it("should allow an authorized user to delete a report", () => {
@@ -559,10 +596,8 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("delete-report-button").first().click();
       });
-      cy.getByTestId("confirmation-modal").should("be.visible");
-      cy.getByTestId("confirmation-modal").within(() => {
-        cy.getByTestId("continue-btn").click();
-      });
+      cy.getAntModalConfirmButtons().should("be.visible");
+      cy.getAntModalConfirmButtons().find(".ant-btn-dangerous").click();
       cy.wait("@deleteCustomReport")
         .its("request.url")
         .should("include", "1234");
@@ -587,7 +622,9 @@ describe("Data map report table", () => {
 
   describe("System preview drawer", () => {
     it("should open the system preview drawer", () => {
-      cy.getByTestId("row-0-col-system_name").click();
+      cy.getByTestId("row-0-col-system_name").within(() => {
+        cy.getByTestId("interactive-text-cell").click();
+      });
       cy.getByTestId("datamap-drawer").should("be.visible");
       cy.getAntDrawerClose().click({ force: true });
       cy.getByTestId("datamap-drawer").should("not.exist");
@@ -596,7 +633,9 @@ describe("Data map report table", () => {
       cy.getByTestId("group-by-menu").click();
       cy.selectAntDropdownOption("Data use");
       cy.wait("@getDatamapMinimal");
-      cy.getByTestId("row-0-col-system_name").click();
+      cy.getByTestId("row-0-col-system_name").within(() => {
+        cy.getByTestId("interactive-text-cell").click();
+      });
       cy.getByTestId("datamap-drawer").should("be.visible");
       cy.getAntDrawerClose().click({ force: true });
       cy.getByTestId("datamap-drawer").should("not.exist");

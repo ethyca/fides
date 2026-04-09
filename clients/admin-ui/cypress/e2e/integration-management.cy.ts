@@ -906,7 +906,7 @@ describe("Integration management for data detection & discovery", () => {
           );
           cy.getByTestId("input-rules.0.dataCategory").should(
             "contain",
-            "user.contact.email",
+            "User Contact Email",
           );
           cy.getByTestId("input-rules.1.regex").should(
             "have.value",

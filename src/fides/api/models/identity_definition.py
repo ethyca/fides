@@ -64,3 +64,4 @@ class IdentityDefinition(Base):
     )
     created_by = Column(String(255), nullable=True)
     is_default = Column(Boolean, nullable=False, server_default="false")
+    case_sensitive = Column(Boolean, nullable=False, server_default="false")

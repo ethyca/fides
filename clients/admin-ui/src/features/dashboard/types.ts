@@ -107,9 +107,13 @@ export interface AstralisResponse {
 }
 
 export interface ActivityFeedItem {
-  actor_type: "user" | "agent";
+  id: string;
+  actor_type: "user" | "system";
   message: string;
   timestamp: string;
+  event_source?: "helios" | "janus" | "lethe" | "astralis";
+  event_type?: ActionType;
+  action_data?: Record<string, unknown>;
 }
 
 interface ActivityFeedResponse {
@@ -125,6 +129,7 @@ interface ActivityFeedParams {
   size?: number;
   start_date?: string;
   end_date?: string;
+  actor_type?: "user" | "system";
 }
 
 export type { ActivityFeedParams, ActivityFeedResponse };

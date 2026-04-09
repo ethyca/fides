@@ -14,8 +14,8 @@ import palette from "../palette/palette.module.scss";
 
 export const defaultAntTheme: ThemeConfig = {
   token: {
-    fontFamily: `"Basier Square", "DM Sans", Helvetica, sans-serif`,
-    fontFamilyCode: `"Basier Square Mono", "DM Mono", "Courier Prime", monospace`,
+    fontFamily: `"Basier Square", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    fontFamilyCode: `"Basier Square Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace`,
     colorText: palette.FIDESUI_MINOS,
     colorTextBase: palette.FIDESUI_MINOS,
     colorTextHeading: palette.FIDESUI_MINOS,

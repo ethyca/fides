@@ -1,0 +1,26 @@
+.draggableRow {
+  cursor: grab;
+
+  &.isDragging {
+    opacity: 0.4;
+    cursor: grabbing;
+  }
+}
+
+.priorityCellWrapper {
+  cursor: default;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  cursor: pointer;
+  flex-shrink: 0;
+  visibility: hidden;
+
+  &.visible {
+    visibility: visible;
+  }
+}

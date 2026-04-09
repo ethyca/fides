@@ -1,7 +1,0 @@
-type: Added
-description: |
-  Support Jira DSR lifecycle: auto-create ManualTaskConfig on jira_ticket
-  connection setup, use pending_external status for Jira manual tasks,
-  and treat pending_external equivalently to requires_input in watchdog
-  and duplication detection.
-pr: 7772
