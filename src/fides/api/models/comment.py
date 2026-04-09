@@ -34,6 +34,13 @@ class CommentType(str, EnumType):
     reply_from_subject = "reply_from_subject"
 
 
+# Correspondence comments are retained after PR deletion for audit purposes.
+# The TLA+ spec (CorrespondenceConcurrency.tla) relies on this guard.
+CORRESPONDENCE_COMMENT_TYPES = frozenset(
+    {CommentType.message_to_subject, CommentType.reply_from_subject}
+)
+
+
 class CommentReferenceType(str, EnumType):
     """
     Enum for comment reference types. Indicates where the comment is referenced.
@@ -142,7 +149,17 @@ class Comment(Base):
     )
 
     def delete(self, db: Session) -> None:
-        """Delete the comment and all associated references."""
+        """Delete the comment and all associated references.
+
+        Correspondence comments (message_to_subject, reply_from_subject) are
+        protected from deletion to preserve the audit trail. Attempting to
+        delete one raises ValueError.
+        """
+        if self.comment_type in CORRESPONDENCE_COMMENT_TYPES:
+            raise ValueError(
+                f"Cannot delete correspondence comment (type={self.comment_type}). "
+                "Correspondence comments are retained for audit purposes."
+            )
         # Delete attachments associated with this comment
         AttachmentService(db).delete_for_reference(
             self.id, AttachmentReferenceType.comment
@@ -170,13 +187,15 @@ class Comment(Base):
                 db, privacy_request.id, CommentReferenceType.privacy_request
             )``
         """
-        # Query comments explicitly to avoid lazy loading
+        # Query comments explicitly to avoid lazy loading.
+        # Correspondence comments are excluded — they are retained for audit.
         comments = (
             db.query(Comment)
             .join(CommentReference)
             .filter(
                 CommentReference.reference_id == reference_id,
                 CommentReference.reference_type == reference_type,
+                Comment.comment_type.notin_(CORRESPONDENCE_COMMENT_TYPES),
             )
             .all()
         )

@@ -313,6 +313,71 @@ def test_delete_all_comments(db, comment, privacy_request):
     assert retrieved_comment_reference is None
 
 
+@pytest.mark.parametrize(
+    "comment_type",
+    [CommentType.message_to_subject, CommentType.reply_from_subject],
+    ids=["message_to_subject", "reply_from_subject"],
+)
+def test_delete_correspondence_comment_raises(db, comment_type):
+    """Correspondence comments are protected from deletion for audit purposes."""
+    correspondence_comment = Comment.create(
+        db,
+        data={
+            "comment_text": "Protected message",
+            "comment_type": comment_type,
+        },
+    )
+    with pytest.raises(ValueError, match="Cannot delete correspondence comment"):
+        correspondence_comment.delete(db)
+
+    # Verify it still exists
+    assert db.query(Comment).filter_by(id=correspondence_comment.id).first() is not None
+
+    # Manual cleanup (bypass the guard via session)
+    db.delete(correspondence_comment)
+    db.commit()
+
+
+def test_bulk_delete_skips_correspondence_comments(db, privacy_request):
+    """delete_comments_for_reference_and_type skips correspondence comments."""
+    note = Comment.create(
+        db, data={"comment_text": "A note", "comment_type": CommentType.note}
+    )
+    outbound = Comment.create(
+        db,
+        data={
+            "comment_text": "Outbound message",
+            "comment_type": CommentType.message_to_subject,
+        },
+    )
+    for c in [note, outbound]:
+        CommentReference.create(
+            db,
+            data={
+                "comment_id": c.id,
+                "reference_id": privacy_request.id,
+                "reference_type": CommentReferenceType.privacy_request,
+            },
+        )
+
+    note_id = note.id
+    outbound_id = outbound.id
+
+    Comment.delete_comments_for_reference_and_type(
+        db, privacy_request.id, CommentReferenceType.privacy_request
+    )
+    db.commit()
+
+    # Note should be deleted
+    assert db.query(Comment).filter_by(id=note_id).first() is None
+    # Correspondence comment should be retained
+    assert db.query(Comment).filter_by(id=outbound_id).first() is not None
+
+    # Manual cleanup
+    db.delete(db.query(Comment).filter_by(id=outbound_id).one())
+    db.commit()
+
+
 def test_relationship_warning_conditions(
     s3_client, db, comment, attachment, privacy_request, monkeypatch
 ):
@@ -514,7 +579,8 @@ class TestCorrespondenceMetadata:
         with pytest.raises(IntegrityError):
             db.commit()
         db.rollback()
-        second_comment.delete(db)
+        db.delete(second_comment)
+        db.commit()
 
     def test_reference_id_unique_constraint(self, db, comment, correspondence_metadata):
         """Two metadata rows for the same comment must raise IntegrityError (1:1)."""
