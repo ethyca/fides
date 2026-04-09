@@ -521,6 +521,7 @@ export type { RangeEntry } from "./models/RangeEntry";
 export type { RateLimit } from "./models/RateLimit";
 export type { RateLimitConfig } from "./models/RateLimitConfig";
 export { RateLimitPeriod } from "./models/RateLimitPeriod";
+export type { RBACStatus } from "./models/RBACStatus";
 export type {
   RBACConstraint,
   RBACConstraintCreate,
