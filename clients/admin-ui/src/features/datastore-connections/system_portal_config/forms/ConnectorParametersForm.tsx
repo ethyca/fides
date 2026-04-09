@@ -21,6 +21,7 @@ import {
 } from "~/features/common/form/useFormFieldsFromSchema";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
+import { useIntegrationPropertySelect } from "~/features/properties/useIntegrationPropertySelect";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -93,6 +94,18 @@ export const ConnectorParametersForm = ({
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
 
+  const isEditingConnection = !!connectionConfig;
+
+  const {
+    propertyOptions,
+    initialPropertyIds,
+    savePropertyAssignments,
+    hasDatasets,
+    isLoading: isLoadingProperties,
+  } = useIntegrationPropertySelect(
+    isEditingConnection ? connectionConfig?.key : undefined,
+  );
+
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secretsSchema);
 
@@ -114,6 +127,7 @@ export const ConnectorParametersForm = ({
         : {};
 
       initialValues.dataset = initialDatasets;
+      initialValues.property_ids = initialPropertyIds;
 
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
@@ -148,9 +162,14 @@ export const ConnectorParametersForm = ({
     return fillInDefaults(initialValues, secretsSchema);
   };
 
-  const handleSubmit = (values: any, actions: any) => {
+  const handleSubmit = async (values: any, actions: any) => {
     const processedValues = preprocessValues(values);
     onSaveClick(processedValues, actions);
+
+    // Save property assignments if editing
+    if (isEditingConnection && values.property_ids) {
+      await savePropertyAssignments(values.property_ids);
+    }
   };
 
   const handleAuthorizeConnectionClick = async (
@@ -274,6 +293,20 @@ export const ConnectorParametersForm = ({
                     optionRender={DatasetSelectOption}
                   />
                 )}
+              {isPlusEnabled && isEditingConnection && hasDatasets && (
+                <ControlledSelect
+                  id="property_ids"
+                  name="property_ids"
+                  label="Properties"
+                  tooltip="Assign properties to this integration's datasets to scope privacy request processing"
+                  layout="inline"
+                  mode="multiple"
+                  options={propertyOptions}
+                  loading={isLoadingProperties}
+                  allowClear
+                  placeholder="Select properties..."
+                />
+              )}
               <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button

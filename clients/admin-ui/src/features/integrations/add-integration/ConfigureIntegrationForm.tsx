@@ -9,6 +9,7 @@ import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import { CustomTextInput } from "~/features/common/form/inputs";
@@ -27,6 +28,7 @@ import {
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { useSetSystemLinksMutation } from "~/features/integrations/system-links.slice";
+import { useIntegrationPropertySelect } from "~/features/properties/useIntegrationPropertySelect";
 import {
   useGetSystemsQuery,
   usePatchSystemConnectionConfigsMutation,
@@ -53,6 +55,7 @@ type FormValues = {
   system_fides_key?: string;
   secrets?: ConnectionSecrets;
   dataset?: string[];
+  property_ids?: string[];
 };
 
 // Helper component to handle form state communication
@@ -117,6 +120,18 @@ const ConfigureIntegrationForm = ({
     useCreateUnlinkedSassConnectionConfigMutation();
 
   const [setSystemLinks] = useSetSystemLinksMutation();
+
+  const { plus: hasPlus } = useFeatures();
+
+  const isEditing = !!connection;
+
+  const {
+    propertyOptions,
+    initialPropertyIds,
+    savePropertyAssignments,
+    hasDatasets,
+    isLoading: isLoadingProperties,
+  } = useIntegrationPropertySelect(isEditing ? connection?.key : undefined);
 
   const hasSecrets =
     connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
@@ -198,11 +213,11 @@ const ConfigureIntegrationForm = ({
       }),
     }),
     dataset: initialDatasets,
+    property_ids: initialPropertyIds,
   };
 
   const messageApi = useMessage();
 
-  const isEditing = !!connection;
   const isSaas = connectionOption.type === SystemType.SAAS;
 
   // Exclude secrets fields that haven't changed
@@ -292,6 +307,11 @@ const ConfigureIntegrationForm = ({
         }
       }
 
+      // Save property assignments if editing
+      if (isEditing && values.property_ids) {
+        await savePropertyAssignments(values.property_ids);
+      }
+
       messageApi.success(
         `Integration ${isEditing ? "updated" : "created"} successfully`,
       );
@@ -337,6 +357,11 @@ const ConfigureIntegrationForm = ({
         messageApi.error(secretsErrorMsg);
         return;
       }
+    }
+
+    // Save property assignments if editing
+    if (isEditing && values.property_ids) {
+      await savePropertyAssignments(values.property_ids);
     }
 
     messageApi.success(
@@ -463,6 +488,25 @@ const ConfigureIntegrationForm = ({
                       loading={isFetchingSystems}
                       allowClear
                       placeholder="Search for a system..."
+                    />
+                  )}
+                {isEditing &&
+                  hasPlus &&
+                  hasDatasets &&
+                  connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+                  connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
+                  connectionOption.identifier !== ConnectionType.WEBSITE && (
+                    <ControlledSelect
+                      id="property_ids"
+                      name="property_ids"
+                      label="Properties"
+                      tooltip="Assign properties to this integration's datasets to scope privacy request processing"
+                      layout="stacked"
+                      mode="multiple"
+                      options={propertyOptions}
+                      loading={isLoadingProperties}
+                      allowClear
+                      placeholder="Select properties..."
                     />
                   )}
                 {hasSecrets && secrets && generateFields(secrets)}
