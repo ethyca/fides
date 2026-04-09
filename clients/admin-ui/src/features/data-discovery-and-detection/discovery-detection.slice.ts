@@ -250,13 +250,12 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     unmuteResources: build.mutation<any, BulkResourceActionQueryParams>({
-      query: (params) => ({
-        params,
+      query: ({ staged_resource_urns }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/un-mute?${queryString.stringify(
-          { staged_resource_urns: params.staged_resource_urns },
-          { arrayFormat: "none" },
-        )}`,
+        url: "/plus/discovery-monitor/un-mute",
+        body: {
+          staged_resource_urns,
+        },
       }),
       invalidatesTags: [
         "Discovery Monitor Results",
