@@ -12,8 +12,8 @@
 #   - PR reopened
 #   - Comment containing "/code-review" on a PR (trusted users only)
 #
-# Required secrets (org-level):
-#   ANTHROPIC_API_KEY          — Anthropic API key for Claude
+# Required secrets:
+#   ANTHROPIC_API_KEY          — Anthropic API key for Claude (repo-level)
 #   CROSS_REPO_APP_PRIVATE_KEY — GitHub App private key (ethyca-cross-repo)
 # Required vars (org-level):
 #   CROSS_REPO_APP_ID          — GitHub App ID (ethyca-cross-repo)
