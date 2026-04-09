@@ -60,7 +60,7 @@ export function computeGovernanceDimensions(
   );
 
   return [
-    { label: "Annotation", score: annotationScore, color: "#b9704b" },
+    { label: "Classification", score: annotationScore, color: "#b9704b" },
     { label: "Compliance", score: complianceScore, color: "#cecac2" },
     { label: "Purpose", score: purposeScore, color: "#999b83" },
     { label: "Ownership", score: stewardScore, color: "#2b2e35" },
@@ -81,7 +81,7 @@ export function computeSystemDimensions(
   const ownershipScore = system.stewards.length > 0 ? 100 : 0;
 
   return [
-    { label: "Annotation", score: annotationScore, color: "#b9704b" },
+    { label: "Classification", score: annotationScore, color: "#b9704b" },
     { label: "Compliance", score: complianceScore, color: "#cecac2" },
     { label: "Purpose", score: purposeScore, color: "#999b83" },
     { label: "Ownership", score: ownershipScore, color: "#2b2e35" },

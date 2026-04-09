@@ -65,7 +65,7 @@ const TREND_DATA = [
 // Stacked totals: 34 → 41 → 50 → 58 → 67 → 75
 
 const PILLAR_SERIES = [
-  { key: "annotation", name: "Annotation", color: palette.FIDESUI_TERRACOTTA },
+  { key: "annotation", name: "Classification", color: palette.FIDESUI_TERRACOTTA },
   { key: "compliance", name: "Compliance", color: palette.FIDESUI_SANDSTONE },
   { key: "purpose", name: "Purpose", color: palette.FIDESUI_OLIVE },
   { key: "ownership", name: "Ownership", color: palette.FIDESUI_MINOS },
@@ -226,22 +226,24 @@ const GovernanceHealthDashboard = ({
               <Text className="min-w-0 flex-1 truncate text-[11px]">
                 {item.message}
               </Text>
-              <Flex align="center" gap={40} className="shrink-0 pl-12">
-                <Avatar
-                  size={20}
-                  style={{
-                    backgroundColor: "#e6e6e8",
-                    color: "#53575c",
-                    fontSize: 9,
-                  }}
-                >
-                  {item.steward.initials}
-                </Avatar>
-                <Text type="secondary" className="text-xs">
+              <Flex align="center" className="shrink-0 pl-8">
+                <div className="w-[32px]">
+                  <Avatar
+                    size={20}
+                    style={{
+                      backgroundColor: "#e6e6e8",
+                      color: "#53575c",
+                      fontSize: 9,
+                    }}
+                  >
+                    {item.steward.initials}
+                  </Avatar>
+                </div>
+                <Text type="secondary" className="w-[48px] text-right text-xs">
                   {item.time}
                 </Text>
                 <Text
-                  className="cursor-pointer text-xs"
+                  className="w-[52px] cursor-pointer text-right text-xs"
                   style={{ color: palette.FIDESUI_MINOS }}
                 >
                   View &rarr;
