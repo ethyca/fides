@@ -10,8 +10,8 @@ import {
   AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
-  useGetProcessingActivitiesQuery,
   useGetPrivacyAssessmentsQuery,
+  useGetProcessingActivitiesQuery,
 } from "~/features/privacy-assessments";
 
 const PrivacyAssessmentsPage: NextPage = () => {
@@ -25,19 +25,32 @@ const PrivacyAssessmentsPage: NextPage = () => {
     refetch: refetchAssessments,
   } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
-  const assessments = assessmentsData?.items ?? [];
+  const assessments = useMemo(
+    () => assessmentsData?.items ?? [],
+    [assessmentsData],
+  );
 
   const { data: processingActivitiesData } = useGetProcessingActivitiesQuery();
 
-  const processingActivities = processingActivitiesData?.items ?? [];
+  const processingActivities = useMemo(
+    () => processingActivitiesData?.items ?? [],
+    [processingActivitiesData],
+  );
 
   const hasAssessments = assessments.length > 0;
 
   const groupedAssessments = useMemo(() => {
     // Sort: null data_use ("Uncategorized") goes last
     const sorted = [...processingActivities].sort((a, b) => {
-      if (a.data_use === null) return 1;
-      if (b.data_use === null) return -1;
+      if (a.data_use === null && b.data_use === null) {
+        return 0;
+      }
+      if (a.data_use === null) {
+        return 1;
+      }
+      if (b.data_use === null) {
+        return -1;
+      }
       return (a.data_use_name ?? "").localeCompare(b.data_use_name ?? "");
     });
     return sorted
@@ -113,7 +126,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
             {groupedAssessments.map((group) => (
               <AssessmentGroup
                 key={group.dataUse ?? "uncategorized"}
-                dataUse={group.dataUse}
                 dataUseName={group.dataUseName}
                 systemCount={group.systemCount}
                 assessments={group.assessments}
