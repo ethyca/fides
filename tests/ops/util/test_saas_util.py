@@ -382,6 +382,35 @@ class TestMergeDatasets:
         merged_dataset = merge_datasets(saas_dataset, saas_config)
         assert merged_dataset.property_ids == []
 
+    def test_merge_uses_dataset_property_ids_not_config(self):
+        """property_ids come from the dataset only, not the config_dataset."""
+        saas_dataset = GraphDataset(
+            name="saas_dataset",
+            collections=[
+                Collection(
+                    name="member",
+                    fields=[ScalarField(name="list_id")],
+                )
+            ],
+            connection_key="connection_key",
+            property_ids=["FDS-12345"],
+        )
+
+        saas_config = GraphDataset(
+            name="saas_config",
+            collections=[
+                Collection(
+                    name="member",
+                    fields=[ScalarField(name="query", identity="email")],
+                )
+            ],
+            connection_key="connection_key",
+            property_ids=["FDS-ZZZZZ"],
+        )
+
+        merged_dataset = merge_datasets(saas_dataset, saas_config)
+        assert merged_dataset.property_ids == ["FDS-12345"]
+
 
 @pytest.mark.integration_saas
 class TestMergeDatasetsIntegration:
