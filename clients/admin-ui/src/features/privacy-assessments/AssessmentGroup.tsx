@@ -18,7 +18,6 @@ import { PrivacyAssessmentResponse } from "./types";
 const { Title } = Typography;
 
 interface AssessmentGroupProps {
-  dataUse: string | null;
   dataUseName: string | null;
   systemCount: number;
   assessments: PrivacyAssessmentResponse[];
