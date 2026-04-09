@@ -3439,6 +3439,30 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: plus_control
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: key
+        data_categories: [system.operations]
+      - name: label
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: plus_access_policy_control
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: access_policy_id
+        data_categories: [system.operations]
+      - name: control_id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
   - name: plus_access_policy
     fields:
       - name: id
