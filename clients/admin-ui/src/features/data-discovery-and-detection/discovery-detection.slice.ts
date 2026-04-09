@@ -277,12 +277,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     promoteResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/promote?${queryString.stringify(
-          { staged_resource_urns: [params.staged_resource_urn] },
-          {
-            arrayFormat: "none",
-          },
-        )}`,
+        url: "/plus/discovery-monitor/promote",
+        body: {
+          staged_resource_urns: [params.staged_resource_urn],
+        },
       }),
       invalidatesTags: [
         "Discovery Monitor Results",
@@ -309,10 +307,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     promoteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/promote?${queryString.stringify(
-          { staged_resource_urns },
-          { arrayFormat: "none" },
-        )}`,
+        url: "/plus/discovery-monitor/promote",
+        body: {
+          staged_resource_urns,
+        },
       }),
       invalidatesTags: [
         "Discovery Monitor Results",
