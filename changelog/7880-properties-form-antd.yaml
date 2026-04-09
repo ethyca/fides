@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated properties form from Chakra/Formik to Ant Design
+pr: 7880
+labels: []
