@@ -262,7 +262,7 @@ class ClientUnsuccessfulException(FidesopsException):
                 body = response.text[:500]
                 message = f"{message}: {body}"
         except Exception:
-            pass
+            pass  # Never let response extraction break exception construction
         super().__init__(message=message)
         self.status_code = status_code
         self.response = response
