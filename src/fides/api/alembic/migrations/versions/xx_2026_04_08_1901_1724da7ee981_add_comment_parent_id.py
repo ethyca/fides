@@ -1,7 +1,7 @@
 """add_comment_parent_id
 
 Revision ID: 1724da7ee981
-Revises: 6a42f48c23dd
+Revises: b9c4d5e6f7a8
 Create Date: 2026-04-08 19:01:40.083985
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "1724da7ee981"
-down_revision = "6a42f48c23dd"
+down_revision = "b9c4d5e6f7a8"
 branch_labels = None
 depends_on = None
 
