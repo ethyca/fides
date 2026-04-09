@@ -41,10 +41,10 @@ jobs:
       has_backend_changes: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for backend file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           list-files: shell
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download admin-ui build
         uses: actions/download-artifact@v4
@@ -181,7 +181,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -242,7 +242,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -302,7 +302,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -424,7 +424,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -498,7 +498,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -556,7 +556,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -631,7 +631,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -752,7 +752,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
