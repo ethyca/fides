@@ -39,7 +39,7 @@ export const OrganizationForm = ({
   const handleSubmit = async (values: Organization) => {
     const handleResult = (
       result:
-        | { data: object }
+        | { data: Organization }
         | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
@@ -50,8 +50,10 @@ export const OrganizationForm = ({
         message.error(errorMsg);
       } else {
         message.success("Organization configuration saved.");
+        const { fides_key, name, description } = result.data;
+        form.setFieldsValue({ fides_key, name, description });
         if (onSuccess) {
-          onSuccess(values);
+          onSuccess(result.data);
         }
       }
     };
