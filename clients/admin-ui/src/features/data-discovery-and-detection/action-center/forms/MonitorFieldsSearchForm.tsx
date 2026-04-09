@@ -1,4 +1,13 @@
-import { Button, Flex, Form, Icons, Select, Text, Tooltip } from "fidesui";
+import {
+  Button,
+  Flex,
+  Form,
+  Icons,
+  Select,
+  Space,
+  Text,
+  Tooltip,
+} from "fidesui";
 import { capitalize } from "lodash";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -81,20 +90,20 @@ const MonitorFieldsSearchForm = ({
 
   return (
     <Form form={form} {...formProps} layout="inline" className="contents">
-      <Flex className="col-span-2 gap-2 xl:col-span-1" vertical>
-        <Flex className="gap-2">
-          <Form.Item name="search" className="!me-0 grow">
+      <Flex className="col-span-4 gap-2 2xl:col-span-1" vertical>
+        <Space.Compact>
+          <Form.Item name="search" className="!me-0 contents grow">
             <SearchInput
-              className="!min-w-[200px]"
+              className="!min-w-[300px]"
               placeholder="Search by name or URN"
               status={regexError ? "error" : undefined}
             />
           </Form.Item>
 
-          <Form.Item name="search_regex" className="!me-0">
+          <Form.Item name="search_regex" className="!me-0 contents">
             <RegexToggle />
           </Form.Item>
-        </Flex>
+        </Space.Compact>
         {regexError && (
           <Text type="danger" className="text-xs">
             {regexError}
@@ -107,7 +116,7 @@ const MonitorFieldsSearchForm = ({
           aria-label="Display keyboard shortcuts"
           icon={<Icons.Keyboard />}
           onClick={shortcutCallback}
-          className="col-span-3 xl:col-span-1"
+          className="col-span-1 2xl:col-span-1"
         />
       </Tooltip>
       <Form.Item name="resource_status" className="!me-0">
