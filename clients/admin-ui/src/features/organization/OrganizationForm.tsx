@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Button, Form, Input, useMessage } from "fidesui";
+import { Button, Form, Input, Spin, useMessage } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -20,6 +20,7 @@ import { Organization } from "~/types/api";
 // fetches the Organization via the API
 interface OrganizationFormProps {
   organization?: Organization;
+  isLoading?: boolean;
   onSuccess?: (organization: Organization) => void;
 }
 
@@ -50,11 +51,11 @@ export const transformFormValuesToOrganization = (
 
 export const OrganizationForm = ({
   organization,
+  isLoading,
   onSuccess,
 }: OrganizationFormProps) => {
   const [form] = Form.useForm<OrganizationFormValues>();
-  const [updateOrganizationMutation, updateOrganizationMutationResult] =
-    useUpdateOrganizationMutation();
+  const [updateOrganizationMutation] = useUpdateOrganizationMutation();
   const [isDirty, setIsDirty] = useState(false);
   const message = useMessage();
 
@@ -93,14 +94,12 @@ export const OrganizationForm = ({
     handleResult(result);
   };
 
-  // Show the loading state if the organization is null or being updated
-  const isLoading = !organization || updateOrganizationMutationResult.isLoading;
+  if (isLoading) {
+    return <Spin />;
+  }
 
   return (
-    // key forces antd Form to reinitialize with new initialValues when the
-    // organization prop changes from undefined (loading) to defined (loaded)
     <Form
-      key={organization ? "loaded" : "loading"}
       form={form}
       layout="vertical"
       initialValues={initialValues}
