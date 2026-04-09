@@ -34,7 +34,11 @@ class CommentType(str, EnumType):
 
 
 class CorrespondenceDeliveryStatus(str, EnumType):
-    """Delivery status for correspondence messages."""
+    """Delivery status for correspondence messages.
+
+    Used by the delivery_status column on Comment, added in PR 2 of 2
+    (ENG-3299: correspondence metadata).
+    """
 
     pending = "pending"
     sent = "sent"
