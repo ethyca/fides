@@ -127,31 +127,45 @@ class TestHttpConnectorMethods:
 
 
 class TestClientUnsuccessfulExceptionMessage:
-    def test_includes_response_body(self):
-        mock_response = Mock()
-        mock_response.text = "FUNCTIONALITY_NOT_ENABLED"
-        exc = ClientUnsuccessfulException(status_code=400, response=mock_response)
-        assert str(exc) == (
-            "Client call failed with status code '400': FUNCTIONALITY_NOT_ENABLED"
-        )
-
-    def test_truncates_long_response_body(self):
-        mock_response = Mock()
-        mock_response.text = "x" * 1000
-        exc = ClientUnsuccessfulException(status_code=400, response=mock_response)
-        assert str(exc) == (
-            "Client call failed with status code '400': " + "x" * 500
-        )
-
-    def test_without_response(self):
-        exc = ClientUnsuccessfulException(status_code=500)
-        assert str(exc) == "Client call failed with status code '500'"
-
-    def test_response_with_empty_text(self):
-        mock_response = Mock()
-        mock_response.text = ""
-        exc = ClientUnsuccessfulException(status_code=400, response=mock_response)
-        assert str(exc) == "Client call failed with status code '400'"
+    @pytest.mark.parametrize(
+        "status_code, response_text, expected_message",
+        [
+            (
+                400,
+                "FUNCTIONALITY_NOT_ENABLED",
+                "Client call failed with status code '400': FUNCTIONALITY_NOT_ENABLED",
+            ),
+            (
+                400,
+                "x" * 1000,
+                "Client call failed with status code '400': " + "x" * 500,
+            ),
+            (
+                500,
+                None,
+                "Client call failed with status code '500'",
+            ),
+            (
+                400,
+                "",
+                "Client call failed with status code '400'",
+            ),
+        ],
+        ids=[
+            "includes_response_body",
+            "truncates_at_500_chars",
+            "no_response",
+            "empty_text",
+        ],
+    )
+    def test_exception_message(self, status_code, response_text, expected_message):
+        if response_text is None:
+            response = None
+        else:
+            response = Mock()
+            response.text = response_text
+        exc = ClientUnsuccessfulException(status_code=status_code, response=response)
+        assert str(exc) == expected_message
 
     def test_response_without_text_attribute(self):
         exc = ClientUnsuccessfulException(status_code=400, response=object())
