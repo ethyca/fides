@@ -12,6 +12,9 @@ export const SYSTEM_ROUTE = "/systems";
 export const EDIT_SYSTEM_ROUTE = "/systems/configure/[id]";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 
+// Bending Spoons
+export const BENDING_SPOONS_ROUTE = "/bending-spoons";
+
 // Dataset
 export const DATASET_ROUTE = "/dataset";
 export const DATASET_DETAIL_ROUTE = "/dataset/[datasetId]";

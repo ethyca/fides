@@ -55,6 +55,7 @@
     "file-saver": "^2.0.5",
     "formik": "^2.4.6",
     "framer-motion": "^11.2.12",
+    "html-to-image": "^1.11.13",
     "i18n-iso-countries": "^7.5.0",
     "immer": "^9.0.21",
     "js-yaml": "^4.1.0",

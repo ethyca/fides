@@ -122,6 +122,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
+      {
+        title: "Bending Spoons",
+        path: routes.BENDING_SPOONS_ROUTE,
+        scopes: [],
+      },
     ],
   },
   {
