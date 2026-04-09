@@ -322,6 +322,66 @@ class TestMergeDatasets:
         merged_dataset = merge_datasets(saas_dataset, saas_config)
         assert merged_dataset.collections[0].data_categories == {"user"}
 
+    def test_merge_preserves_property_ids(self):
+        """Verify that property_ids from the customer dataset survive the merge."""
+        saas_dataset = GraphDataset(
+            name="saas_dataset",
+            collections=[
+                Collection(
+                    name="member",
+                    fields=[
+                        ScalarField(name="list_id"),
+                    ],
+                )
+            ],
+            connection_key="connection_key",
+            property_ids=["FDS-12345", "FDS-67890"],
+        )
+
+        saas_config = GraphDataset(
+            name="saas_config",
+            collections=[
+                Collection(
+                    name="member",
+                    fields=[
+                        ScalarField(name="query", identity="email"),
+                    ],
+                )
+            ],
+            connection_key="connection_key",
+        )
+
+        merged_dataset = merge_datasets(saas_dataset, saas_config)
+        assert merged_dataset.property_ids == ["FDS-12345", "FDS-67890"]
+
+    def test_merge_preserves_empty_property_ids(self):
+        """Universal datasets (empty property_ids) stay universal after merge."""
+        saas_dataset = GraphDataset(
+            name="saas_dataset",
+            collections=[
+                Collection(
+                    name="member",
+                    fields=[ScalarField(name="list_id")],
+                )
+            ],
+            connection_key="connection_key",
+            property_ids=[],
+        )
+
+        saas_config = GraphDataset(
+            name="saas_config",
+            collections=[
+                Collection(
+                    name="member",
+                    fields=[ScalarField(name="query", identity="email")],
+                )
+            ],
+            connection_key="connection_key",
+        )
+
+        merged_dataset = merge_datasets(saas_dataset, saas_config)
+        assert merged_dataset.property_ids == []
+
 
 @pytest.mark.unit_saas
 class TestAssignPlaceholders:
