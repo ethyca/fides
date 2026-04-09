@@ -1,4 +1,13 @@
-import { Button, Form, Icons, Select, Tooltip } from "fidesui";
+import {
+  Button,
+  Flex,
+  Form,
+  Icons,
+  Select,
+  Space,
+  Text,
+  Tooltip,
+} from "fidesui";
 import { capitalize } from "lodash";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -10,6 +19,7 @@ import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { RESOURCE_STATUS } from "../fields/MonitorFields.const";
 import { MonitorFieldSearchForm } from "./MonitorFieldSearchForm.util";
+import RegexToggle from "./RegexToggle";
 
 const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
   ConfidenceBucket.HIGH,
@@ -34,6 +44,7 @@ const MonitorFieldsSearchForm = ({
   form,
   shortcutCallback,
   availableFilters,
+  regexError,
   ...formProps
 }: Omit<
   ReturnType<typeof useSearchForm<any, MonitorFieldSearchForm>>,
@@ -43,6 +54,7 @@ const MonitorFieldsSearchForm = ({
   availableFilters: {
     data_category?: string[];
   };
+  regexError?: string | null;
 }) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
@@ -78,16 +90,33 @@ const MonitorFieldsSearchForm = ({
 
   return (
     <Form form={form} {...formProps} layout="inline" className="contents">
-      <Form.Item name="search" className="col-span-2 !me-0 xl:col-span-1">
-        <SearchInput className="!min-w-[200px]" />
-      </Form.Item>
+      <Flex className="col-span-4 gap-2 2xl:col-span-1" vertical>
+        <Space.Compact>
+          <Form.Item name="search" className="!me-0 contents grow">
+            <SearchInput
+              className="!min-w-[300px]"
+              placeholder="Search by name or URN"
+              status={regexError ? "error" : undefined}
+            />
+          </Form.Item>
+
+          <Form.Item name="search_regex" className="!me-0 contents">
+            <RegexToggle />
+          </Form.Item>
+        </Space.Compact>
+        {regexError && (
+          <Text type="danger" className="text-xs">
+            {regexError}
+          </Text>
+        )}
+      </Flex>
 
       <Tooltip title="Display keyboard shortcuts">
         <Button
           aria-label="Display keyboard shortcuts"
           icon={<Icons.Keyboard />}
           onClick={shortcutCallback}
-          className="col-span-3 xl:col-span-1"
+          className="col-span-1 2xl:col-span-1"
         />
       </Tooltip>
       <Form.Item name="resource_status" className="!me-0">
