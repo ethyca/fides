@@ -20,7 +20,7 @@ type RequestDetailsProps = {
 const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   const { plus: hasPlus } = useFeatures();
   const {
-    flags: { alphaJiraIntegration },
+    flags: { jiraIntegration },
   } = useFlags();
   const {
     id,
@@ -111,7 +111,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Form.Item>
       </Form>
       <RequestAttachments subjectRequest={subjectRequest} />
-      {hasPlus && alphaJiraIntegration && (
+      {hasPlus && jiraIntegration && (
         <RequestJiraTickets subjectRequest={subjectRequest} />
       )}
     </div>

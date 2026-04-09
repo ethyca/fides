@@ -26,7 +26,7 @@ export const useIntegrationFilters = () => {
       entraMonitor,
       newIntegrationManagement,
       webMonitor,
-      alphaJiraIntegration,
+      jiraIntegration,
     },
   } = useFlags();
 
@@ -63,7 +63,7 @@ export const useIntegrationFilters = () => {
       );
     }
 
-    if (!alphaJiraIntegration) {
+    if (!jiraIntegration) {
       staticIntegrations = staticIntegrations.filter(
         (integration) =>
           integration.placeholder.connection_type !==
@@ -99,7 +99,7 @@ export const useIntegrationFilters = () => {
     connectionTypes,
     awsMonitor,
     entraMonitor,
-    alphaJiraIntegration,
+    jiraIntegration,
     newIntegrationManagement,
   ]);
 
