@@ -123,6 +123,7 @@ class Comment(Base):
         back_populates="parent",
         uselist=True,
         order_by="Comment.created_at",
+        passive_deletes=True,
     )
 
     user = relationship(
@@ -159,12 +160,32 @@ class Comment(Base):
         uses SET NULL as a safety net: if a comment is deleted outside this method,
         replies become orphans rather than being silently cascade-deleted without
         attachment cleanup.
+
+        Uses iterative traversal to avoid unbounded recursion and session state
+        hazards from lazy loading mid-delete.
         """
         # TODO (ENG-3299): When message_to_subject / reply_from_subject CommentTypes
         # are added, prevent deletion of comments with those types to preserve
         # correspondence threads.
-        for reply in self.replies:
-            reply.delete(db)
+
+        # Collect all descendants iteratively (breadth-first)
+        to_delete = []
+        stack = list(self.replies)
+        while stack:
+            node = stack.pop()
+            stack.extend(node.replies)
+            to_delete.append(node)
+
+        # Delete children before parents (reverse of discovery order)
+        for node in reversed(to_delete):
+            AttachmentService(db).delete_for_reference(
+                node.id, AttachmentReferenceType.comment
+            )
+            for reference in node.references:
+                reference.delete(db)
+            db.delete(node)
+
+        # Delete self
         AttachmentService(db).delete_for_reference(
             self.id, AttachmentReferenceType.comment
         )
