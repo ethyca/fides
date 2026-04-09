@@ -63,6 +63,13 @@ const SaaSVersionContent = ({
     }
     if (datasetError) {
       return (
+        <Text className="text-sm text-red-500">
+          Could not load dataset for this version.
+        </Text>
+      );
+    }
+    if (!datasetYaml) {
+      return (
         <Text className="text-sm text-gray-500">
           No dataset available for this version.
         </Text>
