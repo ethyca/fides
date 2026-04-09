@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated domains/CORS config form from Chakra/Formik to Ant Design
+pr: 7853
+labels: []
