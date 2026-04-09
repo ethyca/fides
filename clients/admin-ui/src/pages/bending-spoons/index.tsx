@@ -24,7 +24,7 @@ const BendingSpoonsPage: NextPage = () => {
           </Flex>
           <div
             style={{
-              backgroundColor: palette.FIDESUI_MINOS,
+              backgroundColor: "#CCD1D3",
               borderRadius: 10,
               padding: 8,
             }}
