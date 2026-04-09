@@ -44,7 +44,7 @@ const usePrivacyRequestsFilters = ({
   const allowedStatusFilterOptions = [...SubjectRequestStatusMap.keys()].filter(
     (status) =>
       status !== PrivacyRequestStatus.PENDING_EXTERNAL ||
-      flags.alphaJiraIntegration,
+      flags.jiraIntegration,
   );
 
   const [filters, setFilters] = useQueryStates(

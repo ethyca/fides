@@ -32,7 +32,7 @@ const IntegrationDetailView: NextPage = () => {
   const oauthHandled = useRef(false);
 
   const {
-    flags: { alphaJiraIntegration },
+    flags: { jiraIntegration },
   } = useFlags();
 
   const {
@@ -124,7 +124,7 @@ const IntegrationDetailView: NextPage = () => {
   if (
     !!connection &&
     connection.connection_type === ConnectionType.JIRA_TICKET &&
-    !alphaJiraIntegration
+    !jiraIntegration
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
