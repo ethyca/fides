@@ -50,8 +50,8 @@ export const OrganizationForm = ({
         message.error(errorMsg);
       } else {
         message.success("Organization configuration saved.");
-        const { fides_key, name, description } = result.data;
-        form.setFieldsValue({ fides_key, name, description });
+        const { fides_key: key, name, description } = result.data;
+        form.setFieldsValue({ fides_key: key, name, description });
         if (onSuccess) {
           onSuccess(result.data);
         }
