@@ -242,6 +242,19 @@ export interface QuestionEvidence {
   evidence: EvidenceItem[];
 }
 
+export interface ProcessingActivitySummary {
+  data_use: string | null;
+  data_use_name: string | null;
+  assessment_count: number;
+  system_count: number;
+  latest_updated_at: string | null;
+}
+
+export interface ProcessingActivitiesResponse {
+  items: ProcessingActivitySummary[];
+  total: number;
+}
+
 export interface GetPrivacyAssessmentsParams {
   page?: number;
   size?: number;

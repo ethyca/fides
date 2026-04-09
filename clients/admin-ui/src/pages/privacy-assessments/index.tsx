@@ -1,6 +1,6 @@
 import { Button, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
@@ -10,7 +10,7 @@ import {
   AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
-  useGetAssessmentTemplatesQuery,
+  useGetProcessingActivitiesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
@@ -27,26 +27,30 @@ const PrivacyAssessmentsPage: NextPage = () => {
 
   const assessments = assessmentsData?.items ?? [];
 
-  const { data: templatesData } = useGetAssessmentTemplatesQuery({
-    page: 1,
-    size: 100,
-  });
+  const { data: processingActivitiesData } = useGetProcessingActivitiesQuery();
 
-  const templates = templatesData?.items ?? [];
+  const processingActivities = processingActivitiesData?.items ?? [];
 
   const hasAssessments = assessments.length > 0;
 
-  const groupedAssessments = templates
-    .map((template) => ({
-      templateId: template.id,
-      key: template.key,
-      title: template.name,
-      description: template.description,
-      assessments: assessments.filter(
-        (a) => a.template_id === template.id || a.template_id === template.key,
-      ),
-    }))
-    .filter((group) => group.assessments.length > 0);
+  const groupedAssessments = useMemo(() => {
+    // Sort: null data_use ("Uncategorized") goes last
+    const sorted = [...processingActivities].sort((a, b) => {
+      if (a.data_use === null) return 1;
+      if (b.data_use === null) return -1;
+      return (a.data_use_name ?? "").localeCompare(b.data_use_name ?? "");
+    });
+    return sorted
+      .map((activity) => ({
+        dataUse: activity.data_use,
+        dataUseName: activity.data_use_name,
+        systemCount: activity.system_count,
+        assessments: assessments.filter(
+          (a) => (a.data_use ?? null) === activity.data_use,
+        ),
+      }))
+      .filter((group) => group.assessments.length > 0);
+  }, [processingActivities, assessments]);
 
   if (isLoading) {
     return (
@@ -106,12 +110,13 @@ const PrivacyAssessmentsPage: NextPage = () => {
       ) : (
         <div className="py-6">
           <Space direction="vertical" size="large" className="w-full">
-            {groupedAssessments.map((template) => (
+            {groupedAssessments.map((group) => (
               <AssessmentGroup
-                key={template.key}
-                templateId={template.templateId}
-                title={template.title}
-                assessments={template.assessments}
+                key={group.dataUse ?? "uncategorized"}
+                dataUse={group.dataUse}
+                dataUseName={group.dataUseName}
+                systemCount={group.systemCount}
+                assessments={group.assessments}
               />
             ))}
           </Space>
