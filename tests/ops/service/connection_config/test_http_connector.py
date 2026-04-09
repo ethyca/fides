@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from unittest.mock import Mock
 
 import pytest
 import requests_mock
@@ -67,7 +68,9 @@ class TestHttpConnectorMethods:
             with pytest.raises(ClientUnsuccessfulException) as exc:
                 connector.execute(request_body, response_expected=True)
 
-            assert exc.value.args[0] == "Client call failed with status code '500'"
+            assert exc.value.args[0].startswith(
+                "Client call failed with status code '500'"
+            )
 
     user_agent_header: dict[str, str] = {"User-Agent": "fides"}
     forwards_secret_headers = HeaderTestCase(
@@ -121,3 +124,35 @@ class TestHttpConnectorMethods:
                 response_expected=True,
                 additional_headers=test_case.additional,
             )
+
+
+class TestClientUnsuccessfulExceptionMessage:
+    def test_includes_response_body(self):
+        mock_response = Mock()
+        mock_response.text = "FUNCTIONALITY_NOT_ENABLED"
+        exc = ClientUnsuccessfulException(status_code=400, response=mock_response)
+        assert str(exc) == (
+            "Client call failed with status code '400': FUNCTIONALITY_NOT_ENABLED"
+        )
+
+    def test_truncates_long_response_body(self):
+        mock_response = Mock()
+        mock_response.text = "x" * 1000
+        exc = ClientUnsuccessfulException(status_code=400, response=mock_response)
+        assert str(exc) == (
+            "Client call failed with status code '400': " + "x" * 500
+        )
+
+    def test_without_response(self):
+        exc = ClientUnsuccessfulException(status_code=500)
+        assert str(exc) == "Client call failed with status code '500'"
+
+    def test_response_with_empty_text(self):
+        mock_response = Mock()
+        mock_response.text = ""
+        exc = ClientUnsuccessfulException(status_code=400, response=mock_response)
+        assert str(exc) == "Client call failed with status code '400'"
+
+    def test_response_without_text_attribute(self):
+        exc = ClientUnsuccessfulException(status_code=400, response=object())
+        assert str(exc) == "Client call failed with status code '400'"

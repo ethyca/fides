@@ -256,7 +256,14 @@ class ClientUnsuccessfulException(FidesopsException):
     """Exception for when client call fails"""
 
     def __init__(self, status_code: int, response: Optional[Any] = None):
-        super().__init__(message=f"Client call failed with status code '{status_code}'")
+        message = f"Client call failed with status code '{status_code}'"
+        try:
+            if response is not None and hasattr(response, "text") and response.text:
+                body = response.text[:500]
+                message = f"{message}: {body}"
+        except Exception:
+            pass
+        super().__init__(message=message)
         self.status_code = status_code
         self.response = response
 
