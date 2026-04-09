@@ -2,17 +2,11 @@ import { Button, Card, Flex, Form, Input, Select, Space, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { enumToOptions } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
-import {
-  selectAllExperienceConfigs,
-  selectPage,
-  selectPageSize,
-  useGetAllExperienceConfigsQuery,
-} from "~/features/privacy-experience/privacy-experience.slice";
+import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import {
   MinimalMessagingTemplate,
   MinimalPrivacyExperienceConfig,
@@ -42,13 +36,12 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load experience configs for the multi-select
-  const page = useAppSelector(selectPage);
-  const pageSize = useAppSelector(selectPageSize);
-  const { isLoading: experiencesLoading } = useGetAllExperienceConfigsQuery({
-    page,
-    size: pageSize,
-  });
-  const experienceConfigs = useAppSelector(selectAllExperienceConfigs);
+  const { data: experienceData, isLoading: experiencesLoading } =
+    useGetAllExperienceConfigsQuery({
+      page: 1,
+      size: 100,
+    });
+  const experienceConfigs = experienceData?.items ?? [];
 
   const experienceOptions = useMemo(
     () => experienceConfigs.map((exp) => ({ value: exp.id, label: exp.name })),
