@@ -255,11 +255,13 @@ class NotFoundException(HTTPException):
 class ClientUnsuccessfulException(FidesopsException):
     """Exception for when client call fails"""
 
+    MAX_RESPONSE_BODY_LENGTH = 500
+
     def __init__(self, status_code: int, response: Optional[Any] = None):
         message = f"Client call failed with status code '{status_code}'"
         try:
             if response is not None and hasattr(response, "text") and response.text:
-                body = response.text[:500]
+                body = response.text[: self.MAX_RESPONSE_BODY_LENGTH]
                 message = f"{message}: {body}"
         except Exception:
             pass  # Never let response extraction break exception construction

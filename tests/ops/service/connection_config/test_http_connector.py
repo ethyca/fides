@@ -138,7 +138,8 @@ class TestClientUnsuccessfulExceptionMessage:
             (
                 400,
                 "x" * 1000,
-                "Client call failed with status code '400': " + "x" * 500,
+                "Client call failed with status code '400': "
+                + "x" * ClientUnsuccessfulException.MAX_RESPONSE_BODY_LENGTH,
             ),
             (
                 500,
