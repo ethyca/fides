@@ -70,7 +70,7 @@ jobs:
         run: npm run build:test
 
       - name: Cypress Privacy Center E2E Tests
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: clients/privacy-center
           install: false
@@ -79,7 +79,7 @@ jobs:
           wait-on-timeout: 180
           spec: cypress/e2e/fides-js/**
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-videos-fides-js
