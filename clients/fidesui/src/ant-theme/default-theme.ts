@@ -67,12 +67,12 @@ export const defaultAntTheme: ThemeConfig = {
     },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
+      colorBorderDisabled: palette.FIDESUI_NEUTRAL_100,
+      colorTextDisabled: palette.FIDESUI_NEUTRAL_700,
+      colorBgContainerDisabled: palette.FIDESUI_NEUTRAL_50,
     },
     Layout: {
       bodyBg: palette.FIDESUI_NEUTRAL_50,
-    },
-    Select: {
-      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
     Dropdown: {
       controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
@@ -89,6 +89,9 @@ export const defaultAntTheme: ThemeConfig = {
     },
     Popover: {
       colorText: "inherit", // Ant v6 Popover gets its text color from the Tooltip component, which we have set to a dark background and light text. Popovers typically use light backgrounds, so we need to override the text color to ensure readability. For some reason, using `palette.FIDESUI_MINOS` here will not work??
+    },
+    Select: {
+      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
     Table: {
       cellPaddingBlockSM: 8,

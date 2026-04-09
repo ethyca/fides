@@ -38,16 +38,10 @@ h6 {
  * Styles for Ant components where tokens are not available
  */
 
-.ant-input-compact-item.ant-input-css-var {
-  --ant-color-border: var(--fidesui-neutral-200);
-  --ant-input-hover-border-color: var(--fidesui-neutral-200);
-}
-
-.ant-btn-compact-item.ant-btn-variant-outlined {
-  --ant-button-default-border-color: var(--fidesui-neutral-200);
-  --ant-button-default-hover-border-color: var(--fidesui-neutral-200);
-  --ant-button-default-hover-bg: var(--fidesui-neutral-200);
-  --ant-button-default-bg: var(--fidesui-neutral-50);
+.ant-space {
+  &-addon {
+    --ant-space-addon-background: unset;
+  }
 }
 
 .ant-btn-icon {
@@ -123,17 +117,16 @@ h6 {
 }
 
 .ant-input {
-  // Read-only inputs should have a light background, neutral 700 text and no hover/active styles
+  // Read-only inputs should match disabled.
   &:read-only {
-    --ant-color-text: var(--fidesui-neutral-700);
-    --ant-color-bg-container: var(--fidesui-neutral-50);
-    --ant-input-hover-bg: var(--fidesui-neutral-50);
-    --ant-input-active-bg: var(--fidesui-neutral-50);
-
-    --ant-input-active-border-color: var(--ant-color-border);
-    --ant-input-hover-border-color: var(--ant-color-border);
+    --ant-color-text: var(--ant-color-text-disabled);
+    --ant-color-bg-container: var(--ant-color-bg-container-disabled);
+    --ant-input-hover-bg: var(--ant-color-bg-container-disabled);
+    --ant-input-active-bg: var(--ant-color-bg-container-disabled);
+    --ant-input-active-border-color: var(--ant-color-border-disabled);
+    --ant-input-hover-border-color: var(--ant-color-border-disabled);
     --ant-input-active-shadow: none;
-    --ant-input-hove-shadow: none;
+    --ant-input-hover-shadow: none;
   }
 }
 
