@@ -37,7 +37,7 @@
     "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
     "docs:generate": "typedoc --tsconfig ./tsconfig.json --out docs src/docs/ ",
-    "format": "prettier --write .",
+    "format": "prettier --write --log-level warn .",
     "format:ci": "prettier --check .",
     "check": "npm run lint && npm run format && npm run typecheck",
     "check:ci": "npm run lint:ci && npm run format:ci && npm run typecheck",

@@ -632,7 +632,7 @@ class TestDeepNestingBehavior:
         print(query_str)
         # 7. Verify the query is valid SQL
         expected_parts = [
-            "SELECT fidesuser.id, fidesuser.created_at, fidesuser.updated_at, fidesuser.username, fidesuser.email_address, fidesuser.first_name, fidesuser.last_name, fidesuser.hashed_password, fidesuser.salt, fidesuser.disabled, fidesuser.disabled_reason, fidesuser.last_login_at, fidesuser.password_reset_at, fidesuser.password_login_enabled, fidesuser.totp_secret ",
+            "SELECT fidesuser.id, fidesuser.created_at, fidesuser.updated_at, fidesuser.username, fidesuser.email_address, fidesuser.first_name, fidesuser.last_name, fidesuser.hashed_password, fidesuser.salt, fidesuser.disabled, fidesuser.disabled_reason, fidesuser.last_login_at, fidesuser.password_reset_at, fidesuser.email_verified_at, fidesuser.password_login_enabled, fidesuser.totp_secret ",
             "FROM fidesuser ",
             "WHERE fidesuser.disabled = false AND (EXISTS (SELECT 1 ",
             "FROM fidesuserpermissions ",

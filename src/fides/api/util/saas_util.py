@@ -413,6 +413,7 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
         name=dataset.name,
         collections=collections,
         connection_key=dataset.connection_key,
+        property_ids=dataset.property_ids,
     )
 
 

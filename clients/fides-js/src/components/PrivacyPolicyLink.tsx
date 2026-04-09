@@ -15,14 +15,7 @@ const PrivacyPolicyLink = () => {
   const url = i18n.t("exp.privacy_policy_url");
 
   return (
-    <div
-      id="fides-privacy-policy-link"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <div id="fides-privacy-policy-link">
       <a
         href={url}
         rel="noopener noreferrer"

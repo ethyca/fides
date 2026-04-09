@@ -513,14 +513,19 @@ div#fides-consent-content .fides-modal-description {
   justify-content: center;
 }
 
-.fides-modal-footer .fides-button-group-brand {
+.fides-modal-footer .fides-button-group-brand,
+.fides-modal-footer .fides-button-group-attribution {
   min-height: var(--fides-overlay-modal-secondary-button-group-height);
 }
 
-.fides-modal-secondary-actions .fides-brand {
+.fides-modal-secondary-actions .fides-brand,
+.fides-modal-secondary-actions .fides-attribution {
   position: absolute;
   right: var(--fides-overlay-padding);
   bottom: var(--fides-overlay-padding);
+}
+
+.fides-modal-secondary-actions .fides-brand {
   display: flex;
   align-items: center;
   justify-content: center;

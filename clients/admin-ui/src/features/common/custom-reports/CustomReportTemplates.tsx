@@ -1,8 +1,8 @@
 import {
   Button,
-  ConfirmationModal,
   Empty,
   Flex,
+  Form,
   Icons,
   Input,
   Popover,
@@ -10,10 +10,10 @@ import {
   Skeleton,
   Space,
   Text,
-  useChakraDisclosure as useDisclosure,
+  Title,
   useMessage,
+  useModal,
 } from "fidesui";
-import { Form, Formik } from "formik";
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -69,26 +69,13 @@ export const CustomReportTemplates = ({
     useState<Page_CustomReportResponseMinimal_["items"]>();
   const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
   const [deleteCustomReportMutationTrigger] = useDeleteCustomReportMutation();
-  const {
-    isOpen: popoverIsOpen,
-    onOpen: popoverOnOpen,
-    onClose: popoverOnClose,
-  } = useDisclosure();
-  const {
-    isOpen: modalIsOpen,
-    onOpen: modalOnOpen,
-    onClose: modalOnClose,
-  } = useDisclosure();
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
+
+  const [popoverIsOpen, setPopoverIsOpen] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const confirmModal = useModal();
 
   const [selectedReportId, setSelectedReportId] = useState<string>(); // for the radio buttons
   const [fetchedReport, setFetchedReport] = useState<CustomReportResponse>();
-  const [reportToDelete, setReportToDelete] =
-    useState<CustomReportResponseMinimal>();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const buttonLabel = useMemo(() => {
@@ -136,7 +123,7 @@ export const CustomReportTemplates = ({
     } else {
       handleReset();
     }
-    popoverOnClose();
+    setPopoverIsOpen(false);
   };
 
   const handleApplyTemplate = () => {
@@ -145,14 +132,14 @@ export const CustomReportTemplates = ({
       if (fetchedReport.id !== savedReportId) {
         onCustomReportSaved(fetchedReport);
       }
-      popoverOnClose();
+      setPopoverIsOpen(false);
     } else if (selectedReportId) {
       // user clicked apply before the report was fetched
       setShowSpinner(true);
     } else {
       // form was reset, apply the reset
       onCustomReportSaved(null);
-      popoverOnClose();
+      setPopoverIsOpen(false);
     }
   };
 
@@ -164,11 +151,27 @@ export const CustomReportTemplates = ({
     deleteCustomReportMutationTrigger(id);
   };
 
+  const onDelete = (report: CustomReportResponseMinimal) => {
+    confirmModal.confirm({
+      title: `Delete ${CUSTOM_REPORT_TITLE}`,
+      content: (
+        <>
+          You are about to permanently delete the{" "}
+          {CUSTOM_REPORT_TITLE.toLowerCase()} named{" "}
+          <strong>{report.name}</strong>. Are you sure you would like to
+          continue?
+        </>
+      ),
+      okButtonProps: { danger: true },
+      onOk: () => handleDeleteReport(report.id),
+    });
+  };
+
   const handleCloseModal = () => {
-    modalOnClose();
+    setModalIsOpen(false);
     setTimeout(() => {
       // switch back to the popover once the modal has closed
-      popoverOnOpen();
+      setPopoverIsOpen(true);
     }, 100);
   };
 
@@ -197,145 +200,124 @@ export const CustomReportTemplates = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savedReportId]);
 
-  useEffect(() => {
-    if (reportToDelete) {
-      onDeleteOpen();
-    }
-  }, [onDeleteOpen, reportToDelete]);
-
   const applyDisabled =
     (!fetchedReport && !savedReportId) || fetchedReport?.id === savedReportId;
 
   const popoverContent = (
     <div data-testid="custom-reports-popover">
-      <Formik
-        initialValues={{}}
-        onSubmit={handleApplyTemplate}
-        onReset={handleReset}
-      >
-        <Form>
-          <div
-            className="relative p-3"
-            style={{
-              borderBottom: "var(--ant-popover-title-border-bottom)",
-            }}
-          >
-            <Button
-              size="small"
-              disabled={isEmpty}
-              htmlType="reset"
-              className="absolute left-3 top-3"
-              data-testid="custom-reports-reset-button"
-            >
-              Reset
-            </Button>
+      <Form onFinish={handleApplyTemplate}>
+        <Flex vertical gap="medium">
+          <div className="relative">
+            {!isEmpty && (
+              <Button
+                size="small"
+                disabled={isEmpty}
+                onClick={handleReset}
+                className="absolute left-0 top-0"
+                data-testid="custom-reports-reset-button"
+              >
+                Reset
+              </Button>
+            )}
             <Button
               type="text"
               size="small"
               aria-label="Cancel"
               icon={<Icons.Close />}
-              className="absolute right-3 top-3"
+              className="absolute right-0 top-0"
               onClick={handleCancel}
               data-testid="custom-report-popover-cancel"
             />
-            <div
-              className="text-center"
-              style={{
-                color: "var(--ant-color-text-heading)",
-                fontWeight: "var(--ant-font-weight-strong)",
-              }}
-            >
+            <Title level={5} className="text-center">
               {CUSTOM_REPORTS_TITLE}
-            </div>
-            <div className="mt-3">
+            </Title>
+            {!isEmpty && (
               <Input
                 size="small"
                 placeholder="Search..."
+                aria-label="Search"
                 onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="px-5 pb-1 pt-3">
-            {isEmpty && (
-              <Empty
-                image={
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    size="small"
-                    aria-label={`add ${CUSTOM_REPORT_TITLE}`}
-                    icon={<Icons.Add />}
-                    onClick={modalOnOpen}
-                    data-testid="add-report-button"
-                  />
-                }
-                description={`No ${CUSTOM_REPORTS_TITLE.toLowerCase()} have been created. Start by applying your preferred filter and column settings, then create a ${CUSTOM_REPORT_TITLE.toLowerCase()} for easy access later.`}
-                styles={{
-                  image: {
-                    height: "24px",
-                  },
-                }}
-                data-testid="custom-reports-empty-state"
+                className="mt-3"
               />
             )}
-            {!isEmpty &&
-              (isCustomReportsLoading ? (
-                <Skeleton
-                  active
-                  paragraph={{ rows: 3, width: "100%" }}
-                  title={false}
-                  className="pt-2"
-                />
-              ) : (
-                <Radio.Group
-                  onChange={(e) => handleSelection(e.target.value)}
-                  value={selectedReportId}
-                  style={{ width: "100%" }}
-                >
-                  <Space direction="vertical" className="w-full" size="small">
-                    {searchResults?.map((customReport) => (
-                      <Flex
-                        key={customReport.id}
-                        justify={
-                          userCanDeleteReports ? "space-between" : "flex-start"
-                        }
-                        align="center"
-                      >
-                        <Radio
-                          value={customReport.id}
-                          name="custom-report-id"
-                          data-testid="custom-report-item"
-                        >
-                          {customReport.name}
-                        </Radio>
-                        {userCanDeleteReports && (
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<Icons.TrashCan />}
-                            onClick={() => setReportToDelete(customReport)}
-                            data-testid="delete-report-button"
-                            aria-label="Delete"
-                          />
-                        )}
-                      </Flex>
-                    ))}
-                  </Space>
-                </Radio.Group>
-              ))}
           </div>
-
-          <Flex className="px-5 py-4" gap="small">
+          {isEmpty && (
+            <Empty
+              image={
+                <Button
+                  type="primary"
+                  shape="circle"
+                  size="small"
+                  aria-label={`add ${CUSTOM_REPORT_TITLE}`}
+                  icon={<Icons.Add />}
+                  onClick={() => setModalIsOpen(true)}
+                  data-testid="add-report-button"
+                />
+              }
+              description={`No ${CUSTOM_REPORTS_TITLE.toLowerCase()} have been created. Start by applying your preferred filter and column settings, then create a ${CUSTOM_REPORT_TITLE.toLowerCase()} for easy access later.`}
+              styles={{
+                image: {
+                  height: "24px",
+                },
+              }}
+              data-testid="custom-reports-empty-state"
+            />
+          )}
+          {!isEmpty &&
+            (isCustomReportsLoading ? (
+              <Skeleton
+                active
+                paragraph={{ rows: 3, width: "100%" }}
+                title={false}
+                className="pt-2"
+              />
+            ) : (
+              <Radio.Group
+                onChange={(e) => handleSelection(e.target.value)}
+                value={selectedReportId}
+                style={{ width: "100%" }}
+              >
+                <Space orientation="vertical" className="w-full" size="small">
+                  {searchResults?.map((customReport) => (
+                    <Flex
+                      key={customReport.id}
+                      justify={
+                        userCanDeleteReports ? "space-between" : "flex-start"
+                      }
+                      align="center"
+                    >
+                      <Radio
+                        value={customReport.id}
+                        name="custom-report-id"
+                        data-testid="custom-report-item"
+                      >
+                        {customReport.name}
+                      </Radio>
+                      {userCanDeleteReports && (
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<Icons.TrashCan />}
+                          onClick={() => onDelete(customReport)}
+                          data-testid="delete-report-button"
+                          aria-label="Delete"
+                        />
+                      )}
+                    </Flex>
+                  ))}
+                </Space>
+              </Radio.Group>
+            ))}
+          <Flex gap="small">
             {userCanCreateReports && tableStateToSave && (
               <Button
                 size="small"
-                onClick={modalOnOpen}
+                onClick={() => setModalIsOpen(true)}
                 className="flex-1 gap-1 pl-0"
                 data-testid="create-report-button"
                 htmlType="button"
                 icon={<Icons.Add />}
-                iconPosition="start"
+                iconPlacement="start"
               >
                 Create {CUSTOM_REPORT_TITLE.toLowerCase()}
               </Button>
@@ -352,8 +334,8 @@ export const CustomReportTemplates = ({
               Apply
             </Button>
           </Flex>
-        </Form>
-      </Formik>
+        </Flex>
+      </Form>
     </div>
   );
 
@@ -366,7 +348,7 @@ export const CustomReportTemplates = ({
         open={popoverIsOpen}
         onOpenChange={(open) => {
           if (open) {
-            popoverOnOpen();
+            setPopoverIsOpen(true);
           } else {
             handleApplyTemplate();
           }
@@ -397,28 +379,6 @@ export const CustomReportTemplates = ({
         })}
         onCreateCustomReport={(customReport) =>
           onCustomReportSaved(customReport)
-        }
-      />
-      <ConfirmationModal
-        isOpen={deleteIsOpen}
-        onClose={() => {
-          setReportToDelete(undefined);
-          onDeleteClose();
-        }}
-        onConfirm={() => {
-          if (reportToDelete) {
-            handleDeleteReport(reportToDelete.id);
-          }
-          onDeleteClose();
-        }}
-        title={`Delete ${CUSTOM_REPORT_TITLE}`}
-        message={
-          <Text>
-            You are about to permanently delete the{" "}
-            {CUSTOM_REPORT_TITLE.toLowerCase()} named{" "}
-            <strong>{reportToDelete?.name}</strong>. Are you sure you would like
-            to continue?
-          </Text>
         }
       />
     </>

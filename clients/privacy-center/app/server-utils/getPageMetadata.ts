@@ -13,6 +13,7 @@ const getPageMetadata = async (): Promise<Metadata> => {
     icons: {
       icon: config?.favicon_path || "/favicon.ico",
     },
+    robots: { index: false },
   };
 };
 export default getPageMetadata;

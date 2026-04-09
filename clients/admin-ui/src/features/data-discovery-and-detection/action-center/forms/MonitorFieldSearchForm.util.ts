@@ -1,5 +1,6 @@
 import {
   parseAsArrayOf,
+  parseAsBoolean,
   parseAsString,
   parseAsStringLiteral,
   UseQueryStatesKeysMap,
@@ -13,6 +14,7 @@ import { RESOURCE_STATUS } from "../fields/MonitorFields.const";
 
 export const MonitorFieldSearchFormQuerySchema = v.object({
   search: v.nullable(v.string(), null),
+  search_regex: v.nullable(v.boolean(), null),
   resource_status: v.nullable(v.array(v.picklist(RESOURCE_STATUS))),
   confidence_bucket: v.nullable(v.array(v.enum(ConfidenceBucket)), null),
   data_category: v.nullable(v.array(v.string()), null),
@@ -20,6 +22,7 @@ export const MonitorFieldSearchFormQuerySchema = v.object({
 
 export const MonitorFieldSearchFormQueryState = {
   search: parseAsString,
+  search_regex: parseAsBoolean,
   resource_status: parseAsArrayOf(parseAsStringLiteral(RESOURCE_STATUS)),
   confidence_bucket: parseAsArrayOf(
     parseAsStringLiteral(Object.values(ConfidenceBucket)),
