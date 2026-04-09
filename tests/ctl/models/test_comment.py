@@ -11,6 +11,8 @@ from fides.api.models.comment import (
     CommentReference,
     CommentReferenceType,
     CommentType,
+)
+from fides.api.models.correspondence_metadata import (
     CorrespondenceDeliveryStatus,
     CorrespondenceMetadata,
 )
@@ -20,7 +22,7 @@ from fides.api.models.fides_user import FidesUser
 @pytest.fixture
 def correspondence_metadata(db, comment):
     metadata = CorrespondenceMetadata(
-        comment_id=comment.id,
+        reference_id=comment.id,
         message_id="test-msg-001@example.com",
         in_reply_to=None,
         reply_to_address="reply+abc@inbound.example.com",
@@ -465,7 +467,7 @@ class TestCorrespondenceMetadata:
     Validates the constraints that the TLA+ spec
     (CorrespondenceConcurrency.tla) relies on:
     - message_id UNIQUE for idempotency
-    - comment_id UNIQUE for 1:1 relationship
+    - reference_id UNIQUE for 1:1 relationship
     - CASCADE delete for PR deletion cleanup
     """
 
@@ -477,7 +479,7 @@ class TestCorrespondenceMetadata:
             .first()
         )
         assert retrieved is not None
-        assert retrieved.comment_id == comment.id
+        assert retrieved.reference_id == comment.id
         assert retrieved.message_id == "test-msg-001@example.com"
         assert retrieved.reply_to_address == "reply+abc@inbound.example.com"
         assert retrieved.sender_email == "privacy@example.com"
@@ -505,7 +507,7 @@ class TestCorrespondenceMetadata:
             },
         )
         duplicate = CorrespondenceMetadata(
-            comment_id=second_comment.id,
+            reference_id=second_comment.id,
             message_id="test-msg-001@example.com",  # same as fixture
         )
         db.add(duplicate)
@@ -514,10 +516,10 @@ class TestCorrespondenceMetadata:
         db.rollback()
         second_comment.delete(db)
 
-    def test_comment_id_unique_constraint(self, db, comment, correspondence_metadata):
+    def test_reference_id_unique_constraint(self, db, comment, correspondence_metadata):
         """Two metadata rows for the same comment must raise IntegrityError (1:1)."""
         duplicate = CorrespondenceMetadata(
-            comment_id=comment.id,  # same comment as fixture
+            reference_id=comment.id,  # same comment as fixture
             message_id="different-msg-002@example.com",
         )
         db.add(duplicate)

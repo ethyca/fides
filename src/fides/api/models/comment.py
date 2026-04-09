@@ -13,6 +13,7 @@ from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment, AttachmentReference
+    from fides.api.models.correspondence_metadata import CorrespondenceMetadata
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
 
@@ -31,16 +32,6 @@ class CommentType(str, EnumType):
     reply = "reply"
     message_to_subject = "message_to_subject"
     reply_from_subject = "reply_from_subject"
-
-
-class CorrespondenceDeliveryStatus(str, EnumType):
-    """Delivery status for correspondence messages."""
-
-    pending = "pending"
-    sent = "sent"
-    delivered = "delivered"
-    bounced = "bounced"
-    failed = "failed"
 
 
 class CommentReferenceType(str, EnumType):
@@ -96,39 +87,6 @@ class CommentReference(Base):
     ) -> "CommentReference":
         """Creates a new comment reference record in the database."""
         return super().create(db=db, data=data, check_name=check_name)
-
-
-class CorrespondenceMetadata(Base):
-    """1:1 metadata for correspondence comments (delivery tracking, threading)."""
-
-    @declared_attr
-    def __tablename__(cls) -> str:
-        return "correspondence_metadata"
-
-    comment_id = Column(
-        String,
-        ForeignKey("comment.id", ondelete="CASCADE"),
-        unique=True,
-        nullable=False,
-    )
-    message_id = Column(String, unique=True, index=True, nullable=False)
-    in_reply_to = Column(String, nullable=True)
-    reply_to_address = Column(String, index=True, nullable=True)
-    delivery_status = Column(
-        String,
-        nullable=False,
-        server_default=CorrespondenceDeliveryStatus.pending,
-    )
-    delivered_at = Column(DateTime(timezone=True), nullable=True)
-    bounce_reason = Column(String, nullable=True)
-    sender_email = Column(String, nullable=True)
-    recipient_email = Column(String, nullable=True)
-
-    comment = relationship(
-        "Comment",
-        back_populates="correspondence_metadata",
-        uselist=False,
-    )
 
 
 class Comment(Base):
