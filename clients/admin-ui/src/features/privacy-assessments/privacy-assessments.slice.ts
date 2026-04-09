@@ -23,6 +23,7 @@ import {
   PrivacyAssessmentConfigUpdate,
   PrivacyAssessmentDetailResponse,
   PrivacyAssessmentResponse,
+  ProcessingActivitiesResponse,
   QuestionnaireResponse,
   QuestionnaireStatusResponse,
   ReminderResponse,
@@ -53,6 +54,13 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         url: "plus/privacy-assessments/templates",
         params: params ?? undefined,
       }),
+    }),
+
+    getProcessingActivities: build.query<ProcessingActivitiesResponse, void>({
+      query: () => ({
+        url: "plus/privacy-assessments/processing-activities",
+      }),
+      providesTags: ["Privacy Assessment"],
     }),
 
     getPrivacyAssessment: build.query<PrivacyAssessmentDetailResponse, string>({
@@ -280,6 +288,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 export const {
   useGetPrivacyAssessmentsQuery,
   useGetAssessmentTemplatesQuery,
+  useGetProcessingActivitiesQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
   useUpdatePrivacyAssessmentMutation,

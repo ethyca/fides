@@ -76,11 +76,17 @@ export const AssessmentCard = ({
         <div>
           <Title level={5} className={`!mb-1 ${styles.titleLink}`}>
             <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
-              {assessment.name}
+              {assessment.template_name ?? assessment.name}
             </NextLink>
           </Title>
-          <Text type="secondary" size="sm" className={styles.textWithTags}>
-            Processing{" "}
+          {assessment.system_name && (
+            <div>
+              <Text type="secondary" size="sm">
+                {assessment.system_name}
+              </Text>
+            </div>
+          )}
+          <div className={styles.textWithTags}>
             {(assessment.data_categories ?? []).length > 0 ? (
               <TagList
                 tags={(assessment.data_categories ?? []).map((key) => ({
@@ -92,13 +98,8 @@ export const AssessmentCard = ({
               />
             ) : (
               <Tag>0 data categories</Tag>
-            )}{" "}
-            for{" "}
-            <TagList
-              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-              maxTags={1}
-            />
-          </Text>
+            )}
+          </div>
           {riskLevel && (
             <div>
               <Tag
