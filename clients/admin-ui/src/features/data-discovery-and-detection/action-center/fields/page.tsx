@@ -348,7 +348,7 @@ const ActionCenterFields = ({
                 )}
               </Flex>
             </Flex>
-            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto,auto] grid-rows-2 gap-2 xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto,auto] xl:grid-rows-1">
+            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto,auto] 2xl:grid-rows-1">
               <MonitorFieldsSearchForm
                 form={form}
                 {...formProps}
