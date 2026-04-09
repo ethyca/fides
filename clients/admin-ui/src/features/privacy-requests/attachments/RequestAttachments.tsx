@@ -2,7 +2,7 @@ import {
   Button,
   Flex,
   Icons,
-  PageSpinner,
+  Spin,
   Title,
   Tooltip,
   Upload,
@@ -103,7 +103,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
           <Title level={3}>Attachments</Title>
         </div>
         {isLoadingStorage || isLoadingAttachments ? (
-          <PageSpinner alignment="start" />
+          <Spin rootClassName="my-12" />
         ) : (
           <Upload
             name="attachment_file"

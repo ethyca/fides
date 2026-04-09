@@ -1,4 +1,4 @@
-import { Flex, Spin, useMessage } from "fidesui";
+import { Spin, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -85,9 +85,7 @@ const EditDataConsumerPage: NextPage = () => {
   if (isLoading) {
     return (
       <Layout title="Data consumer">
-        <Flex justify="center" align="center" style={{ padding: "48px 0" }}>
-          <Spin />
-        </Flex>
+        <Spin />
       </Layout>
     );
   }

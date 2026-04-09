@@ -43,6 +43,19 @@ class SecuritySettings(FidesSettings):
     app_encryption_key: str = Field(
         default="", description="The key used to sign Fides API access tokens."
     )
+    key_provider: Literal["none", "local"] = Field(
+        default="none",
+        description="Envelope encryption provider. 'none' disables envelope encryption and uses app_encryption_key directly (legacy). "
+        "'local' enables envelope encryption, wrapping the DEK with a KEK via in-process AES-256-GCM.",
+    )
+    key_encryption_key: Optional[str] = Field(
+        default=None,
+        description="The Key Encryption Key (KEK) for the local envelope encryption provider. Must be exactly 32 characters.",
+    )
+    key_encryption_key_previous: Optional[str] = Field(
+        default=None,
+        description="Previous KEK, used during key rotation. Set this to the old KEK when rotating to a new one.",
+    )
     cors_origins: SerializeAsAny[List[URLOriginString]] = Field(
         default_factory=list,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
@@ -160,6 +173,13 @@ class SecuritySettings(FidesSettings):
         description="Either enables the collection of audit log resource data or bypasses the middleware",
     )
 
+    password_reset_token_ttl_minutes: int = Field(
+        default=30,
+        description="The time in minutes for which a self-service password reset token is valid. Must be between 15 and 60.",
+        ge=15,
+        le=60,
+    )
+
     bastion_server_host: Optional[str] = Field(
         default=None, description="An optional field to store the bastion server host"
     )
@@ -192,7 +212,11 @@ class SecuritySettings(FidesSettings):
     def validate_encryption_key_length(
         cls, v: Optional[str], info: ValidationInfo
     ) -> Optional[str]:
-        """Validate the encryption key is exactly 32 characters"""
+        """Validate the encryption key is exactly 32 characters.
+
+        When a key_provider is configured, app_encryption_key is only needed
+        for initial bootstrap (wrapping), so an empty value is allowed.
+        """
 
         # If the value is the default value, return immediately to prevent unwanted errors
         if v == "":
@@ -201,6 +225,21 @@ class SecuritySettings(FidesSettings):
         if v is None or len(v.encode(info.data.get("encoding", "UTF-8"))) != 32:
             raise ValueError(
                 "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
+            )
+        return v
+
+    @field_validator("key_encryption_key", "key_encryption_key_previous", mode="before")
+    @classmethod
+    def validate_kek_length(
+        cls, v: Optional[str], info: ValidationInfo
+    ) -> Optional[str]:
+        """Validate the KEK is exactly 32 characters when provided."""
+        if not v:
+            return None
+
+        if len(v.encode(info.data.get("encoding", "UTF-8"))) != 32:
+            raise ValueError(
+                f"{(info.field_name or '').upper()} value must be exactly 32 characters long"
             )
         return v
 

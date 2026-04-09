@@ -36,14 +36,6 @@ const theme = extendTheme({
         opacity: 1,
       },
     },
-    Spinner: {
-      baseStyle: {
-        color: "secondary.500",
-      },
-      defaultProps: {
-        size: "xl",
-      },
-    },
     Switch: {
       baseStyle: {
         track: {

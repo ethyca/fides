@@ -39,6 +39,7 @@ export type FieldActionTypeValue = `${FieldActionType}`;
 interface MonitorFieldQueryParameters {
   staged_resource_urn?: Array<string>;
   search?: string;
+  search_regex?: boolean;
   diff_status?: Array<DiffStatus>;
   confidence_bucket?: Array<ConfidenceBucket>;
   data_category?: Array<string>;

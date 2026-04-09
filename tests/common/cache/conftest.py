@@ -3,9 +3,46 @@ Conftest for common/cache tests. Overrides session-scoped fixtures so the
 real FastAPI app, DB, and Celery worker are not started when running only these tests.
 """
 
+import uuid
 from unittest.mock import MagicMock
 
 import pytest
+
+from fides.common.cache.dsr_store import DSRCacheStore
+from fides.common.cache.manager import RedisCacheManager
+from tests.common.cache.mock_redis import create_mock_redis
+
+# --- Shared cache test fixtures ---
+
+
+@pytest.fixture
+def mock_redis():
+    """In-memory autospec'd Redis mock."""
+    return create_mock_redis()
+
+
+@pytest.fixture
+def manager(mock_redis) -> RedisCacheManager:
+    """RedisCacheManager backed by mock Redis."""
+    return RedisCacheManager(mock_redis)
+
+
+@pytest.fixture
+def dsr_store(manager: RedisCacheManager) -> DSRCacheStore:
+    """DSRCacheStore backed by mock Redis, scoped to default 'pr-1' ID."""
+    return DSRCacheStore("pr-1", manager)
+
+
+@pytest.fixture
+def pr_id():
+    """Generate unique privacy request ID."""
+    return f"test-pr-{uuid.uuid4()}"
+
+
+@pytest.fixture
+def dsr_id():
+    """Alias for pr_id used by migration tests."""
+    return f"test-pr-{uuid.uuid4()}"
 
 
 @pytest.fixture(scope="session")

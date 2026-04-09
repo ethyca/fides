@@ -1,9 +1,9 @@
 import { getErrorMessage } from "common/helpers";
 import {
   ChakraBox as Box,
-  ChakraSpinner as Spinner,
   ChakraText as Text,
   ConfirmationModal,
+  Spin,
   useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
@@ -90,7 +90,7 @@ const EditNotificationTemplatePage: NextPage = () => {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
   if (error) {

@@ -1,5 +1,6 @@
 import { PrivacyRequestFieldDefinition } from "../types";
 import {
+  extractCustomIdentityFields,
   formatFieldDisplay,
   formatFieldLabel,
   getCategoryFromFieldPath,
@@ -146,6 +147,100 @@ describe("configure-tasks utils", () => {
 
     it("should handle empty array", () => {
       const result = groupFieldsByCategory([]);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("extractCustomIdentityFields", () => {
+    it("should extract custom identity fields and exclude standard ones", () => {
+      const data = {
+        identity: {
+          email: {
+            field_path: "privacy_request.identity.email",
+            field_type: "string",
+            description: "Email",
+            is_convenience_field: false,
+          },
+          phone_number: {
+            field_path: "privacy_request.identity.phone_number",
+            field_type: "string",
+            description: "Phone number",
+            is_convenience_field: false,
+          },
+          external_id: {
+            field_path: "privacy_request.identity.external_id",
+            field_type: "string",
+            description: "External ID",
+            is_convenience_field: false,
+          },
+          customer_id: {
+            field_path: "privacy_request.identity.customer_id",
+            field_type: "string",
+            description: "Custom identity field 'customer_id'",
+            is_convenience_field: false,
+          },
+          loyalty_number: {
+            field_path: "privacy_request.identity.loyalty_number",
+            field_type: "string",
+            description: "Custom identity field 'loyalty_number'",
+            is_convenience_field: false,
+          },
+        },
+      };
+
+      const result = extractCustomIdentityFields(data);
+
+      expect(result).toHaveLength(2);
+      expect(result.map((f) => f.field_path)).toContain(
+        "privacy_request.identity.customer_id",
+      );
+      expect(result.map((f) => f.field_path)).toContain(
+        "privacy_request.identity.loyalty_number",
+      );
+      // Should NOT include standard fields
+      expect(result.map((f) => f.field_path)).not.toContain(
+        "privacy_request.identity.email",
+      );
+      expect(result.map((f) => f.field_path)).not.toContain(
+        "privacy_request.identity.phone_number",
+      );
+      expect(result.map((f) => f.field_path)).not.toContain(
+        "privacy_request.identity.external_id",
+      );
+    });
+
+    it("should return empty array when no identity fields exist", () => {
+      const data = {
+        created_at: {
+          field_path: "privacy_request.created_at",
+          field_type: "string",
+          description: "Created at",
+          is_convenience_field: false,
+        },
+      };
+
+      const result = extractCustomIdentityFields(data);
+      expect(result).toEqual([]);
+    });
+
+    it("should return empty array when only standard identity fields exist", () => {
+      const data = {
+        identity: {
+          email: {
+            field_path: "privacy_request.identity.email",
+            field_type: "string",
+            description: "Email",
+            is_convenience_field: false,
+          },
+        },
+      };
+
+      const result = extractCustomIdentityFields(data);
+      expect(result).toEqual([]);
+    });
+
+    it("should handle empty data object", () => {
+      const result = extractCustomIdentityFields({});
       expect(result).toEqual([]);
     });
   });

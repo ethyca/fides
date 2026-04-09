@@ -20,7 +20,6 @@ from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
 from fides.api.schemas.redis_cache import IdentityBase
-from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.config import CONFIG
 
@@ -94,12 +93,6 @@ class ConsentRequest(IdentityVerificationMixin, Base):
 
     privacy_request_id = Column(String, ForeignKey("privacyrequest.id"), nullable=True)
     privacy_request = relationship("PrivacyRequest")
-
-    def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache."""
-        cache: FidesopsRedis = get_cache()
-        keys = cache.get_keys_by_prefix(f"id-{self.id}-identity-")
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
 
     def verify_identity(
         self,

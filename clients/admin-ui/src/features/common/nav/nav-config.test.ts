@@ -42,6 +42,10 @@ describe("configureNavGroups", () => {
 
     expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
       { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
+      {
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+      },
     ]);
   });
 
@@ -108,6 +112,24 @@ describe("configureNavGroups", () => {
       expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
         { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
       ]);
+    });
+
+    it("shows pre-approval webhooks under privacy requests with correct scopes", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.WEBHOOK_READ,
+          ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
+        ],
+      });
+      const privacyRequestsChildren = findGroup(
+        navGroups,
+        "Privacy requests",
+      ).children.map((c) => ({ title: c.title, path: c.path }));
+      expect(privacyRequestsChildren).toContainEqual({
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+      });
     });
 
     it("does not show /plus/datamap if plus is not enabled but user has the scope", () => {
