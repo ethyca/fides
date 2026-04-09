@@ -19,7 +19,7 @@
     "description": "Monitor websites for activity",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "assetConsentStatusLabels": {
     "label": "Asset consent status labels",
@@ -40,14 +40,14 @@
     "description": "TCF publisher restrictions",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "newIntegrationManagement": {
     "label": "New integration management",
     "description": "Shows all integrations (including SaaS) in the integrations page",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "alphaPrivacyNoticesSandbox": {
     "label": "Alpha privacy notices sandbox",
@@ -68,14 +68,14 @@
     "description": "Enable privacy assessments feature",
     "development": true,
     "test": false,
-    "production": false
+    "production": true
   },
   "policies": {
     "label": "DSR Policies",
     "description": "Privacy request policies management",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "alphaDarkMode": {
     "label": "Alpha light and dark theme",
@@ -131,6 +131,6 @@
     "description": "Enable the new monitor progress widgets for the action center in Helios",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   }
 }
