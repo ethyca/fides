@@ -79,7 +79,6 @@ All shared types live in `types.py` — plain dataclasses with no external depen
 
 **Enums:**
 - `GapType` — `UNRESOLVED_IDENTITY`, `UNCONFIGURED_DATASET`
-- `ConsumerType` — `GROUP`, `SYSTEM`, `UNRESOLVED`, and platform-specific types (`GOOGLE_GROUP`, `IAM_ROLE`, etc.)
 
 ## Identity resolution
 

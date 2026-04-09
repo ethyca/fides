@@ -139,20 +139,6 @@ class GapType(str, Enum):
     UNCONFIGURED_DATASET = "unconfigured_dataset"
 
 
-class ConsumerType(str, Enum):
-    """Standard consumer type discriminators."""
-
-    GROUP = "group"
-    GOOGLE_GROUP = "google_group"
-    IAM_ROLE = "iam_role"
-    SERVICE_ACCOUNT = "service_account"
-    SNOWFLAKE_ROLE = "snowflake_role"
-    SNOWFLAKE_DATABASE_ROLE = "snowflake_database_role"
-    SNOWFLAKE_SERVICE_USER = "snowflake_service_user"
-    SYSTEM = "system"
-    UNRESOLVED = "unresolved"
-
-
 # ── Service boundary types ─────────────────────────────────────────────
 
 
