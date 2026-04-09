@@ -168,10 +168,11 @@ const useLogin = () => {
       dispatch(login(user));
     } catch (error) {
       setShowAnimation(false);
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
       let errorMsg: string;
       if (isFromInvite) {
+        // Invite and reset-password flows may surface backend error detail
+        // (e.g. expired/invalid token) since it is actionable to the user.
         errorMsg = getErrorMessage(
           error as RTKErrorResult["error"],
           "Setup failed. Please try the invite link again.",
