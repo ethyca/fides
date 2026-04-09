@@ -1,7 +1,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Button, Form, Input, Spin, useMessage } from "fidesui";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
@@ -10,66 +10,33 @@ import {
 } from "~/features/organization";
 import { Organization } from "~/types/api";
 
-// NOTE: This form only supports *editing* Organizations right now, and
-// does not support creation/deletion. Since Fides will automatically create the
-// "default_organization" on startup, this works!
-//
-// However, note that if the provided `organization` prop is null, the form
-// will still render but all fields will be disabled and it will display as
-// "loading". This allows the form to render immediately while the parent
-// fetches the Organization via the API
 interface OrganizationFormProps {
   organization?: Organization;
   isLoading?: boolean;
   onSuccess?: (organization: Organization) => void;
 }
 
-export interface OrganizationFormValues extends Organization {}
-
-export const defaultInitialValues: OrganizationFormValues = {
+const defaultInitialValues: Organization = {
   description: "",
   fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
   name: "",
 };
-
-// NOTE: These transform functions are (basically) unnecessary right now, since
-// the form values are an exact match to the Organization object. However, in
-// future iterations some transformation is likely to be necessary, so we've
-// put these transform functions in place ahead of time to make future updates
-// easier to make
-export const transformOrganizationToFormValues = (
-  organization: Organization,
-): OrganizationFormValues => ({ ...organization });
-
-export const transformFormValuesToOrganization = (
-  formValues: OrganizationFormValues,
-): Organization => ({
-  description: formValues.description,
-  fides_key: formValues.fides_key,
-  name: formValues.name,
-});
 
 export const OrganizationForm = ({
   organization,
   isLoading,
   onSuccess,
 }: OrganizationFormProps) => {
-  const [form] = Form.useForm<OrganizationFormValues>();
+  const [form] = Form.useForm<Organization>();
   const [updateOrganizationMutation] = useUpdateOrganizationMutation();
-  const [isDirty, setIsDirty] = useState(false);
   const message = useMessage();
 
   const initialValues = useMemo(
-    () =>
-      organization
-        ? transformOrganizationToFormValues(organization)
-        : defaultInitialValues,
+    () => organization ?? defaultInitialValues,
     [organization],
   );
 
-  const handleSubmit = async (values: OrganizationFormValues) => {
-    const organizationBody = transformFormValuesToOrganization(values);
-
+  const handleSubmit = async (values: Organization) => {
     const handleResult = (
       result:
         | { data: object }
@@ -83,14 +50,13 @@ export const OrganizationForm = ({
         message.error(errorMsg);
       } else {
         message.success("Organization configuration saved.");
-        setIsDirty(false);
         if (onSuccess) {
-          onSuccess(organizationBody);
+          onSuccess(values);
         }
       }
     };
 
-    const result = await updateOrganizationMutation(organizationBody);
+    const result = await updateOrganizationMutation(values);
     handleResult(result);
   };
 
@@ -103,7 +69,6 @@ export const OrganizationForm = ({
       form={form}
       layout="vertical"
       initialValues={initialValues}
-      onValuesChange={() => setIsDirty(true)}
       onFinish={handleSubmit}
       data-testid="organization-form"
     >
@@ -134,7 +99,7 @@ export const OrganizationForm = ({
         <Button
           htmlType="submit"
           type="primary"
-          disabled={isLoading || !isDirty}
+          disabled={isLoading}
           loading={isLoading}
           data-testid="save-btn"
         >

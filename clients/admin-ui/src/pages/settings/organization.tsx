@@ -29,12 +29,7 @@ const OrganizationPage: NextPage = () => {
             including key information that will be recorded in the RoPA (Record
             of Processing Activities).
           </Text>
-          <Box background="gray.50" padding={2}>
-            <OrganizationForm
-              organization={organization}
-              isLoading={isLoading}
-            />
-          </Box>
+          <OrganizationForm organization={organization} isLoading={isLoading} />
           {hasPlus && (
             <Restrict scopes={[ScopeRegistryEnum.OPENID_PROVIDER_CREATE]}>
               <OpenIDAuthenticationSection />
