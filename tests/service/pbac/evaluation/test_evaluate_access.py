@@ -50,7 +50,7 @@ def _make_query(
 # --- Rule 1: consumer with no purposes ---
 
 
-def test_no_consumer_purposes_produces_violation(now):
+def test_no_consumer_purposes_produces_gap(now):
     consumer = _make_consumer(frozenset())
     datasets = {
         "ds_billing": DatasetPurposes(
@@ -60,11 +60,11 @@ def test_no_consumer_purposes_produces_violation(now):
     }
     query = _make_query(("ds_billing",), now=now)
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert not result.is_compliant
-    assert len(result.violations) == 1
-    assert "no declared purposes" in result.violations[0].reason
+    assert output.result.is_compliant
+    assert len(output.gaps) == 1
+    assert "no declared purposes" in output.gaps[0].reason
 
 
 def test_no_consumer_purposes_with_unrestricted_dataset(now):
