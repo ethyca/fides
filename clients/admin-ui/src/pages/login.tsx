@@ -170,20 +170,22 @@ const useLogin = () => {
       setShowAnimation(false);
       // eslint-disable-next-line no-console
       console.log(error);
-      let defaultErrorMsg: string;
+      let errorMsg: string;
       if (isFromInvite) {
-        defaultErrorMsg = "Setup failed. Please try the invite link again.";
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Setup failed. Please try the invite link again.",
+        );
       } else if (isResetPassword) {
-        defaultErrorMsg =
-          "Password reset failed. The link may have expired. Please request a new one.";
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Password reset failed. The link may have expired. Please request a new one.",
+        );
       } else {
-        defaultErrorMsg =
-          "Login failed. Please check your credentials and try again.";
+        // Always show a generic message for standard login failures to avoid
+        // leaking backend details (SSO config, authorization state, etc.)
+        errorMsg = "Login failed. Please check your credentials and try again.";
       }
-      const errorMsg = getErrorMessage(
-        error as RTKErrorResult["error"],
-        defaultErrorMsg,
-      );
       message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
