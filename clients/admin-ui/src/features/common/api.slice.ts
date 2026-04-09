@@ -107,6 +107,7 @@ export const baseApi = createApi({
     "Privacy Assessment Evidence",
     "Privacy Assessment Tasks",
     "User Monitors",
+    "Pre-Approval Webhooks",
     "Datastore Filters",
     "Access Policies",
     "Controls",

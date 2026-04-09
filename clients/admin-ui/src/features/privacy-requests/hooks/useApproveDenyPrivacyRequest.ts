@@ -22,8 +22,16 @@ const useApproveDenyPrivacyRequest = ({
     privacyRequest.status === PrivacyRequestStatus.PENDING;
   const isDuplicateStatus =
     privacyRequest.status === PrivacyRequestStatus.DUPLICATE;
+  const isAwaitingPreApproval =
+    privacyRequest.status === PrivacyRequestStatus.AWAITING_PRE_APPROVAL;
+  const isPreApprovalNotEligible =
+    privacyRequest.status === PrivacyRequestStatus.PRE_APPROVAL_NOT_ELIGIBLE;
 
-  const showAction = isPendingStatus || isDuplicateStatus;
+  const showAction =
+    isPendingStatus ||
+    isDuplicateStatus ||
+    isAwaitingPreApproval ||
+    isPreApprovalNotEligible;
   const modal = useDisclosure();
 
   const performAction = async ({ reason }: { reason: string }) => {

@@ -22,6 +22,7 @@ import MainSideNav from "~/features/common/nav/MainSideNav";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
+import ForgotPassword from "./forgot-password";
 import Login from "./login";
 import LoginWithOIDC from "./login/[provider]";
 
@@ -54,7 +55,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
           <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
             <DndProvider backend={HTML5Backend}>
               <NuqsAdapter>
-                {Component === Login || Component === LoginWithOIDC ? (
+                {Component === Login ||
+                Component === LoginWithOIDC ||
+                Component === ForgotPassword ? (
                   // Only the login page is accessible while logged out. If there is
                   // a use case for more unprotected routes, Next has a guide for
                   // per-page layouts:

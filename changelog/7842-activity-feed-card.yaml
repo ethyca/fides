@@ -1,0 +1,4 @@
+type: Added
+description: Activity feed card on the home dashboard with infinite scroll, actor-type filtering, and real-time polling
+pr: 7842
+labels: []

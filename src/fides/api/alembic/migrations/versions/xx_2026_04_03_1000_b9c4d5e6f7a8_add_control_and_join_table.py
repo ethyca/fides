@@ -1,7 +1,7 @@
 """add control and access_policy_control tables
 
 Revision ID: b9c4d5e6f7a8
-Revises: d4e6f8a0b2c3
+Revises: 6a42f48c23dd
 Create Date: 2026-04-03 10:00:00.000000
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b9c4d5e6f7a8"
-down_revision = "d4e6f8a0b2c3"
+down_revision = "6a42f48c23dd"
 branch_labels = None
 depends_on = None
 

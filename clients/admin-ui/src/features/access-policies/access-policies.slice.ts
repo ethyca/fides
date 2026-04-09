@@ -1,5 +1,12 @@
 import { baseApi } from "~/features/common/api.slice";
 
+import type {
+  GeneratePoliciesResponse,
+  OnboardingConfigResponse,
+  OnboardingDataUsesResponse,
+  OnboardingIndustriesResponse,
+} from "./types";
+
 export interface Control {
   key: string;
   label: string;
@@ -11,6 +18,7 @@ export interface AccessPolicy {
   description?: string;
   controls?: string[];
   yaml?: string;
+  is_recommendation?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -72,12 +80,57 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Access Policies"],
     }),
+    reorderAccessPolicy: build.mutation<
+      void,
+      { id: string; insert_after_id: string | null }
+    >({
+      query: ({ id, insert_after_id }) => ({
+        method: "POST",
+        url: `plus/access-policy/${id}/reorder`,
+        body: { insert_after_id },
+      }),
+      invalidatesTags: ["Access Policies"],
+    }),
     getControls: build.query<Control[], void>({
       query: () => ({
         method: "GET",
         url: "plus/controls",
       }),
       providesTags: ["Controls"],
+    }),
+    getOnboardingIndustries: build.query<OnboardingIndustriesResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/presets/industries",
+      }),
+    }),
+    getOnboardingDataUses: build.query<
+      OnboardingDataUsesResponse,
+      { industry: string; geographies: string[] }
+    >({
+      query: ({ industry, geographies }) => {
+        const params = new URLSearchParams();
+        params.append("industry", industry);
+        geographies.forEach((g) => params.append("geographies", g));
+        return {
+          method: "GET",
+          url: `plus/access-policy/presets/data-uses?${params.toString()}`,
+        };
+      },
+    }),
+    getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/presets/config",
+      }),
+    }),
+    generatePolicies: build.mutation<GeneratePoliciesResponse, FormData>({
+      query: (formData) => ({
+        method: "POST",
+        url: "plus/access-policy/presets/generate",
+        body: formData,
+      }),
+      invalidatesTags: ["Access Policies"],
     }),
   }),
 });
@@ -88,5 +141,10 @@ export const {
   useCreateAccessPolicyMutation,
   useUpdateAccessPolicyMutation,
   useDeleteAccessPolicyMutation,
+  useReorderAccessPolicyMutation,
   useGetControlsQuery,
+  useGetOnboardingIndustriesQuery,
+  useGetOnboardingDataUsesQuery,
+  useGetOnboardingConfigQuery,
+  useGeneratePoliciesMutation,
 } = accessPoliciesApi;

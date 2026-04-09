@@ -23,7 +23,7 @@ export const Sparkline = ({
   animationDuration = CHART_ANIMATION.defaultDuration,
 }: SparklineProps) => {
   const { token } = theme.useToken();
-  const empty = !data?.length;
+  const empty = !data || data.length <= 1;
   const activeColor = color ? token[color] : token.colorText;
   const chartColor = empty ? token.colorBorder : activeColor;
 
