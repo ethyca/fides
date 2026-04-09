@@ -305,6 +305,10 @@ def test_get_connection_type_secret_schemas_aws():
     s3_required = s3_secret_schema["required"]
     assert "auth_method" in s3_required
 
+    aws_secret_schema = get_connection_type_secret_schema(connection_type="aws")
+    aws_required = aws_secret_schema["required"]
+    assert "auth_method" in aws_required
+
 
 def test_get_connection_type_secret_schemas_test_website():
     test_website_schema = get_connection_type_secret_schema(

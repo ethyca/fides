@@ -125,6 +125,23 @@ const authApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    forgotPassword: build.mutation<{ detail: string }, { email: string }>({
+      query: ({ email }) => ({
+        url: "user/forgot-password",
+        method: "POST",
+        body: { email },
+      }),
+    }),
+    resetPasswordWithToken: build.mutation<
+      LoginResponse,
+      { username: string; token: string; new_password: string }
+    >({
+      query: ({ username, token, new_password }) => ({
+        url: "user/reset-password-with-token",
+        method: "POST",
+        body: { username, token, new_password },
+      }),
+    }),
   }),
 });
 
@@ -135,5 +152,7 @@ export const {
   useAcceptInviteMutation,
   useGetRolesToScopesMappingQuery,
   useGetAuthenticationMethodsQuery,
+  useForgotPasswordMutation,
+  useResetPasswordWithTokenMutation,
 } = authApi;
 export const { reducer } = authSlice;

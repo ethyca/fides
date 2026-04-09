@@ -1,0 +1,11 @@
+{
+  "_comment": "Codegraph MCP server for CI. CODEGRAPH_SERVER_PATH is exported by the claude-code-review workflow via $GITHUB_ENV and expanded at startup. Locally this falls back to /bin/false (silent no-op) — codegraph runs via the ethyca-talos plugin instead.",
+  "mcpServers": {
+    "codegraph": {
+      "command": "${CODEGRAPH_SERVER_PATH:-/bin/false}",
+      "env": {
+        "CODEGRAPH_CONFIG": "/tmp/codegraph-ci.toml"
+      }
+    }
+  }
+}

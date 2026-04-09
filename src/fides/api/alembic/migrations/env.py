@@ -1,7 +1,8 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from loguru import logger as log
+from sqlalchemy import engine_from_config, pool, text
 
 from fides.api.db.database import include_object
 from fides.api.util.logger import setup as setup_fidesapi_logger
@@ -52,6 +53,13 @@ def run_migrations_offline():
         include_object=include_object,
     )
 
+    if fides_config.database.migration_role:
+        log.warning(
+            "FIDES__DATABASE__MIGRATION_ROLE is set but has no effect in offline "
+            f"migration mode. Prepend 'SET ROLE \"{fides_config.database.migration_role}\";' "
+            "to the generated SQL script manually if needed."
+        )
+
     with context.begin_transaction():
         context.run_migrations()
 
@@ -72,6 +80,16 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
+        if fides_config.database.migration_role:
+            # SET ROLE does not support bind parameters; use standard SQL identifier
+            # quoting (double-quotes, inner double-quotes escaped by doubling) to
+            # safely handle role names. The value is operator-supplied config, not
+            # end-user input.
+            escaped_role = fides_config.database.migration_role.replace('"', '""')
+            quoted_role = f'"{escaped_role}"'
+            connection.execute(text(f"SET ROLE {quoted_role}"))
+            log.info(f"Migration role set to: {fides_config.database.migration_role!r}")
+
         context.configure(
             connection=connection,
             target_metadata=target_metadata,

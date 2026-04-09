@@ -17,4 +17,5 @@ class ConnectionCategory(StrEnum):
     ANALYTICS = "ANALYTICS"
     ECOMMERCE = "ECOMMERCE"
     COMMUNICATION = "COMMUNICATION"
+    CLOUD_INFRASTRUCTURE = "CLOUD_INFRASTRUCTURE"
     CUSTOM = "CUSTOM"  # Fallback for uncategorized/custom uploaded integrations
