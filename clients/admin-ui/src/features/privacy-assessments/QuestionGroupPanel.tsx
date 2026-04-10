@@ -31,7 +31,7 @@ export const QuestionGroupPanel = ({
     <>
       <Flex gap="large" align="flex-start" className="min-w-0 flex-1">
         <div className="flex-1">
-          <Typography.Title level={2} className="!mb-2 mt-0 !text-[18px]">
+          <Typography.Title level={3} className="!mb-2 mt-0">
             {group.id}. {group.title}
           </Typography.Title>
           <Flex gap="medium" align="center" wrap="wrap" className="mb-2">
