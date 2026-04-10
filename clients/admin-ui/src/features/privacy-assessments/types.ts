@@ -252,6 +252,9 @@ export interface AssessmentGroupResponse {
 export interface GroupedAssessmentsResponse {
   groups: AssessmentGroupResponse[];
   total: number;
+  page: number;
+  size: number;
+  pages: number;
 }
 
 export interface GetAssessmentEvidenceParams {
