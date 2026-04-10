@@ -121,6 +121,7 @@ export const transformConfigResponseToCreate = (
     translations: config.translations
       ? config.translations.map((t) => transformTranslationResponseToCreate(t))
       : [],
+    resurface_behavior: rest.resurface_behavior ?? undefined,
   };
 
   // If vendor/asset disclosure is enabled but there are no include types,

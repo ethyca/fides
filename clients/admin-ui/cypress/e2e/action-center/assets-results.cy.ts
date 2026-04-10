@@ -7,9 +7,9 @@ import {
 } from "cypress/support/stubs";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
-import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
-const WEB_MONITOR_ROUTE = `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}`;
+const WEB_MONITOR_ROUTE = `${ACTION_CENTER_ROUTE}/${APIMonitorType.WEBSITE}`;
 
 describe("Action center Asset Results", () => {
   beforeEach(() => {
