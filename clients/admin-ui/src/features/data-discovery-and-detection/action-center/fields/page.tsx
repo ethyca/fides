@@ -349,7 +349,7 @@ const ActionCenterFields = ({
                 )}
               </Flex>
             </Flex>
-            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto,auto] 2xl:grid-rows-1">
+            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto] 2xl:grid-rows-1">
               <MonitorFieldsSearchForm
                 form={form}
                 {...formProps}
@@ -411,159 +411,148 @@ const ActionCenterFields = ({
                   Actions
                 </Button>
               </Dropdown>
-              <Tooltip title="Refresh">
-                <Button
-                  icon={<Icons.Renew />}
-                  onClick={() => listQueryMeta.refetch()}
-                  aria-label="Refresh"
-                />
-              </Tooltip>
             </div>
-            <Flex gap="medium" align="center">
-              <Checkbox id="select-all" {...checkboxProps} />
-              <label htmlFor="select-all">Select all</label>
-              {!!selectedListItemCount && (
-                <Text strong>
-                  {selectedListItemCount.toLocaleString()} selected
-                </Text>
-              )}
-            </Flex>
-            <List
-              dataSource={[...listNodes.values()]}
-              className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
-              loading={listQueryMeta.isFetching}
-              enableKeyboardShortcuts
-              locale={
-                !baseMonitorFilters.query.search &&
-                _(
-                  baseMonitorFilters.query.diff_status?.map(
-                    (diffStatus) => DIFF_TO_RESOURCE_STATUS[diffStatus],
-                  ),
-                )
-                  .intersection(EXCLUDED_FILTER_STATUSES)
-                  .isEmpty()
-                  ? {
-                      emptyText: (
-                        <Empty
-                          image={Empty.PRESENTED_IMAGE_SIMPLE}
-                          description={
-                            <>
-                              <div>
-                                All resources have been either approved or
-                                ignored.
-                              </div>
-                              <div>
-                                Approved resources can be found in the manage
-                                datasets view.
-                              </div>
-                              <div>
-                                To see ignored resources, adjust your filters.
-                              </div>
-                            </>
-                          }
-                        >
-                          <Flex gap="medium" justify="center">
-                            <NextLink
-                              href={DATASET_ROUTE}
-                              passHref
-                              legacyBehavior
-                            >
-                              <Button>Manage datasets view</Button>
-                            </NextLink>
-                            <Button
-                              type="primary"
-                              aria-label="Refresh page"
-                              onClick={() => {
-                                form.resetFields();
-                                router.reload();
-                              }}
-                            >
-                              Refresh page
-                            </Button>
-                          </Flex>
-                        </Empty>
-                      ),
-                    }
-                  : undefined
-              }
-              onActiveItemChange={(
-                item,
-                _activeListItemIndex,
-                setActiveIndexFn,
-              ) => {
-                // Store the setter function so handleNavigate can use it
-                setSetActiveListItemIndex(() => setActiveIndexFn);
-
-                if (item?.urn) {
-                  setActiveListItem({
-                    ...item,
-                    key: item.urn,
-                  });
-                  if (detailsUrn && item.urn !== detailsUrn) {
-                    setDetailsUrn(item.urn);
-                  }
-                } else {
-                  setActiveListItem(undefined);
-                }
-              }}
-              renderItem={(props) =>
-                renderMonitorFieldListItem({
-                  ...props,
-                  selected: selectedKeys.includes(props.urn),
-                  onSelect: updateSelectedListItem,
-                  onNavigate: handleNavigate,
-                  onSetDataCategories: (urn, values) =>
-                    fieldActions["assign-categories"]([urn], true, {
-                      user_assigned_data_categories: values,
-                    }),
-                  dataCategoriesDisabled: props?.diff_status
-                    ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
-                        (status) => status === props.diff_status,
-                      )
-                    : true,
-                  actions: props?.diff_status
-                    ? LIST_ITEM_ACTIONS[props.diff_status].map((action) => (
-                        <Tooltip
-                          key={action}
-                          title={FIELD_ACTION_LABEL[action]}
-                        >
-                          <Button
-                            aria-label={FIELD_ACTION_LABEL[action]}
-                            icon={FIELD_ACTION_ICON[action]}
-                            onClick={() => fieldActions[action]([props.urn])}
-                            disabled={
-                              props?.diff_status
-                                ? !ACTION_ALLOWED_STATUSES[action].some(
-                                    (status) => status === props.diff_status,
-                                  )
-                                : true
-                            }
-                            style={{
-                              // Hack: because Sparkle is so weird, and Ant is using `inline-block`
-                              // for actions, this is needed to get the buttons to align correctly.
-                              fontSize:
-                                "var(--ant-button-content-font-size-lg)",
-                            }}
-                          />
-                        </Tooltip>
-                      ))
-                    : [],
-                })
-              }
-            />
-            <Pagination
-              {...paginationProps}
-              showSizeChanger={{
-                suffixIcon: <Icons.ChevronDown />,
-              }}
-              total={listQueryMeta.data?.total || 0}
-              hideOnSinglePage={
-                // if we're on the smallest page size, and there's only one page, hide the pagination
-                paginationProps.pageSize?.toString() ===
-                paginationProps.pageSizeOptions?.[0]
-              }
-            />
           </Flex>
+          <Flex gap="medium" align="center">
+            <Checkbox id="select-all" {...checkboxProps} />
+            <label htmlFor="select-all">Select all</label>
+            {!!selectedListItemCount && (
+              <Text strong>
+                {selectedListItemCount.toLocaleString()} selected
+              </Text>
+            )}
+          </Flex>
+          <List
+            dataSource={[...listNodes.values()]}
+            className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
+            loading={listQueryMeta.isFetching}
+            enableKeyboardShortcuts
+            locale={
+              !baseMonitorFilters.query.search &&
+              _(
+                baseMonitorFilters.query.diff_status?.map(
+                  (diffStatus) => DIFF_TO_RESOURCE_STATUS[diffStatus],
+                ),
+              )
+                .intersection(EXCLUDED_FILTER_STATUSES)
+                .isEmpty()
+                ? {
+                    emptyText: (
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description={
+                          <>
+                            <div>
+                              All resources have been either approved or
+                              ignored.
+                            </div>
+                            <div>
+                              Approved resources can be found in the manage
+                              datasets view.
+                            </div>
+                            <div>
+                              To see ignored resources, adjust your filters.
+                            </div>
+                          </>
+                        }
+                      >
+                        <Flex gap="medium" justify="center">
+                          <NextLink
+                            href={DATASET_ROUTE}
+                            passHref
+                            legacyBehavior
+                          >
+                            <Button>Manage datasets view</Button>
+                          </NextLink>
+                          <Button
+                            type="primary"
+                            aria-label="Refresh page"
+                            onClick={() => {
+                              form.resetFields();
+                              router.reload();
+                            }}
+                          >
+                            Refresh page
+                          </Button>
+                        </Flex>
+                      </Empty>
+                    ),
+                  }
+                : undefined
+            }
+            onActiveItemChange={(
+              item,
+              _activeListItemIndex,
+              setActiveIndexFn,
+            ) => {
+              // Store the setter function so handleNavigate can use it
+              setSetActiveListItemIndex(() => setActiveIndexFn);
+
+              if (item?.urn) {
+                setActiveListItem({
+                  ...item,
+                  key: item.urn,
+                });
+                if (detailsUrn && item.urn !== detailsUrn) {
+                  setDetailsUrn(item.urn);
+                }
+              } else {
+                setActiveListItem(undefined);
+              }
+            }}
+            renderItem={(props) =>
+              renderMonitorFieldListItem({
+                ...props,
+                selected: selectedKeys.includes(props.urn),
+                onSelect: updateSelectedListItem,
+                onNavigate: handleNavigate,
+                onSetDataCategories: (urn, values) =>
+                  fieldActions["assign-categories"]([urn], true, {
+                    user_assigned_data_categories: values,
+                  }),
+                dataCategoriesDisabled: props?.diff_status
+                  ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
+                      (status) => status === props.diff_status,
+                    )
+                  : true,
+                actions: props?.diff_status
+                  ? LIST_ITEM_ACTIONS[props.diff_status].map((action) => (
+                      <Tooltip key={action} title={FIELD_ACTION_LABEL[action]}>
+                        <Button
+                          aria-label={FIELD_ACTION_LABEL[action]}
+                          icon={FIELD_ACTION_ICON[action]}
+                          onClick={() => fieldActions[action]([props.urn])}
+                          disabled={
+                            props?.diff_status
+                              ? !ACTION_ALLOWED_STATUSES[action].some(
+                                  (status) => status === props.diff_status,
+                                )
+                              : true
+                          }
+                          style={{
+                            // Hack: because Sparkle is so weird, and Ant is using `inline-block`
+                            // for actions, this is needed to get the buttons to align correctly.
+                            fontSize: "var(--ant-button-content-font-size-lg)",
+                          }}
+                        />
+                      </Tooltip>
+                    ))
+                  : [],
+              })
+            }
+          />
+          <Pagination
+            {...paginationProps}
+            showSizeChanger={{
+              suffixIcon: <Icons.ChevronDown />,
+            }}
+            total={listQueryMeta.data?.total || 0}
+            hideOnSinglePage={
+              // if we're on the smallest page size, and there's only one page, hide the pagination
+              paginationProps.pageSize?.toString() ===
+              paginationProps.pageSizeOptions?.[0]
+            }
+          />
         </Splitter.Panel>
       </Splitter>
       <ResourceDetailsDrawer
