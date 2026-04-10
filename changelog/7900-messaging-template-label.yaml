@@ -1,0 +1,7 @@
+type: Added
+description: |
+  Add label column to MessagingTemplate model enabling multiple named
+  templates per MessagingActionType. Includes migration with backfill,
+  unique constraint on (type, label), and get_templates_by_type query.
+pr: 7900
+labels: ["db-migration"]
