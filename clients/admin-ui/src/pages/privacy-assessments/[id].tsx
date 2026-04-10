@@ -143,12 +143,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   }
 
   return (
-    <Layout title={`Privacy assessment - ${assessment.name}`}>
+    <Layout
+      title={`Privacy assessment - ${assessment.template_name ?? assessment.name}`}
+    >
       <PageHeader
         heading="Privacy assessments"
         breadcrumbItems={[
           { title: "Privacy assessments", href: PRIVACY_ASSESSMENTS_ROUTE },
-          { title: assessment.name },
+          { title: assessment.template_name ?? assessment.name },
         ]}
         isSticky
         rightContent={
