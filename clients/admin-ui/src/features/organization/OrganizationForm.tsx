@@ -1,16 +1,8 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraStack as Stack,
-  useMessage,
-} from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
-import { useMemo } from "react";
-import * as Yup from "yup";
+import { Button, Form, Input, Spin, useMessage } from "fidesui";
+import { useMemo, useState } from "react";
 
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
@@ -18,76 +10,38 @@ import {
 } from "~/features/organization";
 import { Organization } from "~/types/api";
 
-// NOTE: This form only supports *editing* Organizations right now, and
-// does not support creation/deletion. Since Fides will automatically create the
-// "default_organization" on startup, this works!
-//
-// However, note that if the provided `organization` prop is null, the form
-// will still render but all fields will be disabled and it will display as
-// "loading". This allows the form to render immediately while the parent
-// fetches the Organization via the API
 interface OrganizationFormProps {
   organization?: Organization;
+  isLoading?: boolean;
   onSuccess?: (organization: Organization) => void;
 }
 
-export interface OrganizationFormValues extends Organization {}
-
-export const defaultInitialValues: OrganizationFormValues = {
+const defaultInitialValues: Organization = {
   description: "",
   fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
   name: "",
 };
 
-// NOTE: These transform functions are (basically) unnecessary right now, since
-// the form values are an exact match to the Organization object. However, in
-// future iterations some transformation is likely to be necessary, so we've
-// put these transform functions in place ahead of time to make future updates
-// easier to make
-export const transformOrganizationToFormValues = (
-  organization: Organization,
-): OrganizationFormValues => ({ ...organization });
-
-export const transformFormValuesToOrganization = (
-  formValues: OrganizationFormValues,
-): Organization => ({
-  description: formValues.description,
-  fides_key: formValues.fides_key,
-  name: formValues.name,
-});
-
-const OrganizationFormValidationSchema = Yup.object().shape({
-  description: Yup.string().required().label("Description"),
-  fides_key: Yup.string().required().label("Organization Fides Key"),
-  name: Yup.string().required().label("Name"),
-});
-
 export const OrganizationForm = ({
   organization,
+  isLoading,
   onSuccess,
 }: OrganizationFormProps) => {
-  const [updateOrganizationMutation, updateOrganizationMutationResult] =
+  const [form] = Form.useForm<Organization>();
+  const [updateOrganizationMutation, { isLoading: isSaving }] =
     useUpdateOrganizationMutation();
+  const [hasChanges, setHasChanges] = useState(false);
+  const message = useMessage();
 
   const initialValues = useMemo(
-    () =>
-      organization
-        ? transformOrganizationToFormValues(organization)
-        : defaultInitialValues,
+    () => organization ?? defaultInitialValues,
     [organization],
   );
 
-  const message = useMessage();
-
-  const handleSubmit = async (
-    values: OrganizationFormValues,
-    formikHelpers: FormikHelpers<OrganizationFormValues>,
-  ) => {
-    const organizationBody = transformFormValuesToOrganization(values);
-
+  const handleSubmit = async (values: Organization) => {
     const handleResult = (
       result:
-        | { data: object }
+        | { data: Organization }
         | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
@@ -98,69 +52,65 @@ export const OrganizationForm = ({
         message.error(errorMsg);
       } else {
         message.success("Organization configuration saved.");
-        // TODO: is this needed? Copied from SystemInformationForm which is more complex
-        // Reset state such that isDirty will be checked again before next save
-        formikHelpers.resetForm({ values });
+        const { fides_key: key, name, description } = result.data;
+        form.setFieldsValue({ fides_key: key, name, description });
         if (onSuccess) {
-          onSuccess(organizationBody);
+          onSuccess(result.data);
         }
       }
     };
 
-    const result = await updateOrganizationMutation(organizationBody);
+    const result = await updateOrganizationMutation(values);
     handleResult(result);
   };
 
-  // Show the loading state if the organization is null or being updated
-  const isLoading = !organization || updateOrganizationMutationResult.isLoading;
+  if (isLoading) {
+    return <Spin />;
+  }
+
   return (
-    <Formik
+    <Form
+      form={form}
+      layout="vertical"
       initialValues={initialValues}
-      enableReinitialize
-      onSubmit={handleSubmit}
-      validationSchema={OrganizationFormValidationSchema}
+      onFinish={handleSubmit}
+      onValuesChange={() => setHasChanges(true)}
+      data-testid="organization-form"
     >
-      {({ dirty, isValid }) => (
-        <Form data-testid="organization-form">
-          <Stack spacing={4}>
-            <CustomTextInput
-              id="fides_key"
-              name="fides_key"
-              label="Fides Key"
-              disabled
-              tooltip="A unique key that identifies your organization. Not editable via UI."
-              variant="stacked"
-            />
-            <CustomTextInput
-              id="name"
-              name="name"
-              label="Name"
-              disabled={isLoading}
-              tooltip="User-friendly name for your organization, used in messaging to end-users and other public locations."
-              variant="stacked"
-            />
-            <CustomTextInput
-              id="description"
-              name="description"
-              label="Description"
-              disabled={isLoading}
-              tooltip="Short description of your organization, your services, etc."
-              variant="stacked"
-            />
-            <Box textAlign="right">
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={isLoading || !dirty || !isValid}
-                loading={isLoading}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </Box>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+      <Form.Item
+        name="fides_key"
+        label="Fides key"
+        tooltip="A unique key that identifies your organization. Not editable via UI."
+      >
+        <Input disabled data-testid="input-fides_key" />
+      </Form.Item>
+      <Form.Item
+        name="name"
+        label="Name"
+        tooltip="User-friendly name for your organization, used in messaging to end-users and other public locations."
+        rules={[{ required: true, message: "Name is required" }]}
+      >
+        <Input disabled={isSaving} data-testid="input-name" />
+      </Form.Item>
+      <Form.Item
+        name="description"
+        label="Description"
+        tooltip="Short description of your organization, your services, etc."
+        rules={[{ required: true, message: "Description is required" }]}
+      >
+        <Input disabled={isSaving} data-testid="input-description" />
+      </Form.Item>
+      <div className="text-right">
+        <Button
+          htmlType="submit"
+          type="primary"
+          disabled={isSaving || !hasChanges}
+          loading={isSaving}
+          data-testid="save-btn"
+        >
+          Save
+        </Button>
+      </div>
+    </Form>
   );
 };

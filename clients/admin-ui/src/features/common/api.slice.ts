@@ -111,7 +111,7 @@ export const baseApi = createApi({
     "Pre-Approval Webhooks",
     "Datastore Filters",
     "Access Policies",
-    "Access Policy Control Groups",
+    "Controls",
     "Access Control",
     "Fides Dashboard",
   ],
