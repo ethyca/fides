@@ -616,7 +616,7 @@ def get_basic_messaging_templates(
         BasicMessagingTemplateResponse(
             type=template.type,
             content=template.content,
-            label=DEFAULT_MESSAGING_TEMPLATES.get(template.type, {}).get("label", None),
+            label=template.label,
         )
         for template in get_all_basic_messaging_templates(db=db)
     ]
@@ -653,7 +653,7 @@ def update_basic_messaging_templates(
             # For Basic Messaging Templates, we ignore the is_enabled flag at runtime. This is because
             # enabling/disabling by template is only supported for property-specific messaging templates,
             # not basic templates.
-            create_or_update_basic_templates(
+            updated_template = create_or_update_basic_templates(
                 db,
                 data={"type": template_type, "content": content, "is_enabled": False},
             )
@@ -662,7 +662,9 @@ def update_basic_messaging_templates(
                 BasicMessagingTemplateResponse(
                     type=template_type,
                     content=content,
-                    label=default_template.get("label"),
+                    label=updated_template.label
+                    if updated_template
+                    else default_template.get("label"),
                 )
             )
 

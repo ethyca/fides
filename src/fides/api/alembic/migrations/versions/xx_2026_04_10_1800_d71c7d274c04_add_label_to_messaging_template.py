@@ -1,6 +1,6 @@
 """Add label column to messaging_template
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: d71c7d274c04
 Revises: b9c4d5e6f7a8
 Create Date: 2026-04-10 18:00:00.000000
 
