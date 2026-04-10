@@ -1,4 +1,4 @@
-import { Icons } from "fidesui";
+import { Icons, StackedBarChartProps } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
 import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
@@ -20,9 +20,9 @@ const getMonitorUpdateName = (key: string, count: number) => {
 };
 
 export const MONITOR_TYPE_TO_LABEL: Record<APIMonitorType, string> = {
-  datastore: "Data stores",
-  infrastructure: "Infrastructure",
-  website: "Web monitors",
+  datastore: "Monitored data stores",
+  infrastructure: "Monitored infrastructure",
+  website: "Monitored websites",
 };
 
 export const MONITOR_TYPE_TO_ICON: Record<
@@ -74,7 +74,30 @@ const MONITOR_TYPE_TO_PERCENT_STATISTIC_LABEL: Record<APIMonitorType, string> =
     website: "Categories of consent",
   };
 
-export const transformStatisticsResponseToCardProps = (
+const MONITOR_BAR_CHART_SEGMENTS: StackedBarChartProps["segments"] = [
+  {
+    key: "approved",
+    color: "colorSuccess",
+    label: "Approved",
+  },
+  {
+    key: "classified",
+    color: "colorWarning",
+    label: "Classified",
+  },
+  {
+    key: "unlabeled",
+    color: "colorPrimaryBg",
+    label: "Unlabeled",
+  },
+  {
+    key: "empty",
+    color: "colorPrimaryBg",
+    label: "",
+  },
+] as const;
+
+export const buildWidgetProps = (
   response: AggregateStatisticsResponse,
 ): ProgressCardProps => ({
   title: MONITOR_TYPE_TO_LABEL[response.monitor_type],
@@ -84,6 +107,26 @@ export const transformStatisticsResponseToCardProps = (
     denominator: response?.approval_progress?.total,
     numerator: response?.approval_progress?.approved,
     percent: response?.approval_progress?.percentage,
+  },
+  barChartProps: {
+    data: {
+      progress: {
+        approved: response.approval_progress?.approved ?? 0,
+        classified: response.status_counts?.classified ?? 0,
+        unlabeled:
+          (response.approval_progress?.total ?? 0) -
+          (response.approval_progress?.approved ?? 0) -
+          (response.status_counts?.classified ?? 0),
+        empty:
+          (response.approval_progress?.total ?? 0) -
+            (response.approval_progress?.approved ?? 0) -
+            (response.status_counts?.classified ?? 0) <=
+          0
+            ? 1
+            : 0,
+      },
+    },
+    segments: MONITOR_BAR_CHART_SEGMENTS,
   },
   numericStats: {
     label: "Current status",

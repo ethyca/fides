@@ -27,10 +27,10 @@ jobs:
       has_cli_changes: ${{ steps.filter.outputs.cli }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for CLI-related file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           list-files: shell
@@ -53,7 +53,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4

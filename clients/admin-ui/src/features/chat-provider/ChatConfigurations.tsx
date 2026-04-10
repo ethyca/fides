@@ -20,7 +20,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CHAT_PROVIDERS_CONFIGURE_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { TableSkeletonLoader } from "~/features/common/table/v2";
-import { ChatProviderSettingsResponse, ScopeRegistryEnum } from "~/types/api";
+import { ChatConfigResponse, ScopeRegistryEnum } from "~/types/api";
 
 import { SlackLogo } from "../common/logos/SlackLogo";
 import {
@@ -71,7 +71,7 @@ export const ChatConfigurations = () => {
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [configToDelete, setConfigToDelete] =
-    useState<ChatProviderSettingsResponse | null>(null);
+    useState<ChatConfigResponse | null>(null);
 
   // Use items from the list response
   const tableData = useMemo(() => {
@@ -86,7 +86,7 @@ export const ChatConfigurations = () => {
   );
 
   const handleDeleteConfiguration = useCallback(
-    (config: ChatProviderSettingsResponse) => {
+    (config: ChatConfigResponse) => {
       setConfigToDelete(config);
       setDeleteModalOpen(true);
     },
@@ -134,12 +134,12 @@ export const ChatConfigurations = () => {
   }, []);
 
   // Column definitions
-  const columns: ColumnsType<ChatProviderSettingsResponse> = useMemo(
+  const columns: ColumnsType<ChatConfigResponse> = useMemo(
     () => [
       {
         title: "Provider",
         key: ChatProviderColumnKeys.PROVIDER,
-        render: (_value: unknown, record: ChatProviderSettingsResponse) => {
+        render: (_value: unknown, record: ChatConfigResponse) => {
           const getProviderIcon = () => {
             switch (record.provider_type) {
               case "slack":
@@ -172,7 +172,7 @@ export const ChatConfigurations = () => {
       {
         title: "Status",
         key: ChatProviderColumnKeys.STATUS,
-        render: (_value: unknown, record: ChatProviderSettingsResponse) => {
+        render: (_value: unknown, record: ChatConfigResponse) => {
           if (record.authorized) {
             return (
               <Tag color="success" data-testid="status-authorized">
@@ -194,7 +194,7 @@ export const ChatConfigurations = () => {
         title: "Enabled",
         key: ChatProviderColumnKeys.ENABLED,
         width: 100,
-        render: (_value: unknown, record: ChatProviderSettingsResponse) => (
+        render: (_value: unknown, record: ChatConfigResponse) => (
           <Switch
             checked={record.enabled}
             disabled={!userCanUpdate || record.enabled}
@@ -215,7 +215,7 @@ export const ChatConfigurations = () => {
       {
         title: "Actions",
         key: ChatProviderColumnKeys.ACTIONS,
-        render: (_value: unknown, record: ChatProviderSettingsResponse) => (
+        render: (_value: unknown, record: ChatConfigResponse) => (
           <Space>
             {userCanUpdate && !record.authorized && record.client_id && (
               <Button

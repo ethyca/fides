@@ -62,9 +62,9 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
                 <LabeledText
                   key={identity.key}
                   label={identity.label}
-                  copyValue={identity.value}
+                  copyValue={String(identity.value ?? "")}
                 >
-                  {identity.value}
+                  {String(identity.value ?? "")}
                 </LabeledText>
               ))}
               {customFields.map((field) => {
