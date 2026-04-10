@@ -112,7 +112,7 @@ class MessagingTemplate(Base):
     )
 
     type = Column(String, index=True, nullable=False)
-    label = Column(String, nullable=False)
+    label = Column(String, nullable=False, default="Default")
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
     properties: RelationshipProperty[List[Property]] = relationship(
         "Property",
