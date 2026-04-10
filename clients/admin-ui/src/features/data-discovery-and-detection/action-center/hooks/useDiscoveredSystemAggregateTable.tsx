@@ -20,6 +20,7 @@ import {
   DiffStatus,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import {
   useAddMonitorResultSystemsMutation,
@@ -27,7 +28,6 @@ import {
   useIgnoreMonitorResultSystemsMutation,
 } from "../action-center.slice";
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
-import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
@@ -87,7 +87,7 @@ export const useDiscoveredSystemAggregateTable = ({
     (record: SystemStagedResourcesAggregateRecord) => {
       const recordId = record.id ?? UNCATEGORIZED_SEGMENT;
       const activeTabHash = activeTab ? `#${activeTab}` : "";
-      return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${recordId}${activeTabHash}`;
+      return `${ACTION_CENTER_ROUTE}/${APIMonitorType.WEBSITE}/${monitorId}/${recordId}${activeTabHash}`;
     },
     [monitorId, activeTab],
   );

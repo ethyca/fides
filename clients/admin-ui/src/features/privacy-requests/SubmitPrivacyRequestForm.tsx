@@ -21,7 +21,7 @@ import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/priv
 import {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
-  PrivacyRequestCreate,
+  PrivacyRequestCreateExtended as PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
 
@@ -194,7 +194,7 @@ const SubmitPrivacyRequestForm = ({
     >
       {({ values, dirty, isValid, isSubmitting, setFieldValue }) => {
         const currentAction = findActionFromPolicyKey(
-          values.policy_key,
+          values.policy_key ?? "",
           config?.actions,
         );
 

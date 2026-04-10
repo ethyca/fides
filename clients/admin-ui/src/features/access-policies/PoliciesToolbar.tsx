@@ -2,7 +2,7 @@ import { Flex, Form, Icons, Segmented, Select } from "fidesui";
 
 import SearchInput from "~/features/common/SearchInput";
 
-import { ControlGroup } from "./access-policies.slice";
+import { Control } from "./access-policies.slice";
 import { ViewMode } from "./types";
 
 export { ViewMode };
@@ -15,7 +15,7 @@ const STATUS_OPTIONS = [
 interface PoliciesToolbarProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
-  controlGroups: ControlGroup[];
+  controlGroups: Control[];
   controlFilter: string | undefined;
   onControlFilterChange: (value: string | undefined) => void;
   enabledFilter: string | undefined;

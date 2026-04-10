@@ -32,10 +32,7 @@ import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
-import {
-  AccessPolicy,
-  useGetControlGroupsQuery,
-} from "./access-policies.slice";
+import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
@@ -68,7 +65,7 @@ export enum EditorMode {
 export interface SidebarFormValues {
   name: string;
   description: string;
-  control_group?: string;
+  controls?: string[];
 }
 
 interface AccessPolicyEditorProps {
@@ -798,7 +795,7 @@ const AccessPolicyEditor = ({
   const isNew = !policyId;
   const messageApi = useMessage();
 
-  const { data: controlGroups = [] } = useGetControlGroupsQuery();
+  const { data: controlGroups = [] } = useGetControlsQuery();
 
   const controlOptions = useMemo(
     () => controlGroups.map((cg) => ({ value: cg.key, label: cg.label })),
@@ -837,7 +834,7 @@ const AccessPolicyEditor = ({
       {
         name,
         description: parsed?.description ?? "",
-        control_group: controls.length > 0 ? controls.join(",") : undefined,
+        controls: controls.length > 0 ? controls : undefined,
       },
       yamlValue,
     );
