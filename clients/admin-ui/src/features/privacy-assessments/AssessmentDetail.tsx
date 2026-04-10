@@ -230,7 +230,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
       <div>
         <Flex align="center" gap="small" className="mb-1">
           <Typography.Title level={4} className="m-0">
-            {assessment.template_name ?? assessment.name}
+            {assessment.system_name ?? assessment.name}
           </Typography.Title>
           <Tag
             color={
@@ -240,9 +240,9 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
             {isComplete ? "Completed" : "In progress"}
           </Tag>
         </Flex>
-        {assessment.system_name && (
+        {assessment.template_name && (
           <Text type="secondary" size="sm" className="block">
-            {assessment.system_name}
+            {assessment.template_name}
           </Text>
         )}
       </div>
