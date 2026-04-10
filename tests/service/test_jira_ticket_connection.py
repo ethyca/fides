@@ -134,6 +134,40 @@ class TestJiraTicketSecretsSchema:
                 api_key="token",
             )
 
+    def test_oauth_app_credentials_valid(self):
+        """OAuth app credentials (client_id, client_secret, redirect_uri) are accepted."""
+        schema = JiraTicketSchema(
+            client_id="my-client-id",
+            client_secret="my-client-secret",
+            redirect_uri="https://app.example.com/callback",
+        )
+        assert schema.client_id == "my-client-id"
+        assert schema.client_secret == "my-client-secret"
+        assert schema.redirect_uri == "https://app.example.com/callback"
+
+    def test_oauth_app_credentials_with_tokens_valid(self):
+        """OAuth app credentials can coexist with OAuth tokens."""
+        schema = JiraTicketSchema(
+            client_id="my-client-id",
+            client_secret="my-client-secret",
+            redirect_uri="https://app.example.com/callback",
+            access_token="token",
+            cloud_id="cloud-123",
+            site_url="https://example.atlassian.net",
+        )
+        assert schema.client_id == "my-client-id"
+        assert schema.access_token == "token"
+
+    def test_mixed_oauth_app_and_api_key_rejected(self):
+        """OAuth app credentials mixed with API key fields are rejected."""
+        with pytest.raises(
+            PydanticValidationError, match="Cannot mix OAuth and API key credentials"
+        ):
+            JiraTicketSchema(
+                client_id="my-client-id",
+                domain="company.atlassian.net",
+            )
+
 
 class TestJiraTicketSingletonEnforcement:
     """Tests for singleton constraint on jira_ticket connections."""
