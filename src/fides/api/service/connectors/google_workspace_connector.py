@@ -5,14 +5,13 @@ with domain-wide delegation). It does not support DSR traversal — it
 exists solely to enable the connection test flow and identity resolution.
 """
 
-from typing import Any, List, NoReturn, Optional
+from typing import Any, Dict, List, NoReturn, Optional
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_google_workspace import (
     GoogleWorkspaceSchema,
 )
@@ -63,20 +62,21 @@ class GoogleWorkspaceConnector(BaseConnector):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        request_task: Any,
-        input_data: dict[str, List[Any]],
+        request_task: RequestTask,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         raise NotImplementedError("Google Workspace does not support DSR traversal")
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        request_task: Any,
+        request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         raise NotImplementedError("Google Workspace does not support DSR traversal")
