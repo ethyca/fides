@@ -7,6 +7,7 @@ exists solely to enable the connection test flow and identity resolution.
 
 from typing import Any, List, NoReturn, Optional
 
+from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
@@ -53,9 +54,12 @@ class GoogleWorkspaceConnector(BaseConnector):
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         from google.auth.transport.requests import Request as AuthRequest
 
-        creds = self.create_client()
-        creds.refresh(AuthRequest())
-        return ConnectionTestStatus.succeeded
+        try:
+            creds = self.create_client()
+            creds.refresh(AuthRequest())
+            return ConnectionTestStatus.succeeded
+        except Exception as e:
+            raise ConnectionException(str(e))
 
     def retrieve_data(
         self,

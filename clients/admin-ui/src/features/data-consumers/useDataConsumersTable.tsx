@@ -14,6 +14,7 @@ import { DATA_CONSUMERS_NEW_ROUTE } from "~/features/common/nav/routes";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 
+import { getDisplayNameForScope } from "./constants";
 import {
   DataConsumer,
   useGetAllDataConsumersQuery,
@@ -107,16 +108,11 @@ const useDataConsumersTable = () => {
         title: "Scope",
         dataIndex: "scope",
         key: "scope",
-        render: (_, { scope }) => {
+        render: (_, { scope, type }) => {
           if (!scope || Object.keys(scope).length === 0) {
             return "N/A";
           }
-          const label =
-            scope.group_email ??
-            scope.role ??
-            scope.email ??
-            Object.values(scope).join(", ");
-          return <Tag>{label}</Tag>;
+          return <Tag>{getDisplayNameForScope(scope, type)}</Tag>;
         },
       },
       {

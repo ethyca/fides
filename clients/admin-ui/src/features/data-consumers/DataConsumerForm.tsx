@@ -5,27 +5,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
 import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpose.slice";
 
+import { getDisplayNameForScope } from "./constants";
 import {
   DataConsumer,
   useGetAvailableScopesQuery,
 } from "./data-consumer.slice";
 import useConsumerTypeOptions from "./useConsumerTypeOptions";
-
-const getDisplayNameForScope = (
-  scope: Record<string, string>,
-  type: string,
-): string => {
-  if (type === "google_group") {
-    return scope.group_email ?? "";
-  }
-  if (type === "gcp_iam_role") {
-    return scope.role ?? "";
-  }
-  if (type === "gcp_service_account") {
-    return scope.email ?? "";
-  }
-  return Object.values(scope).join(", ");
-};
 
 export interface DataConsumerFormValues {
   name: string;
@@ -117,9 +102,13 @@ const DataConsumerForm = ({
 
   const handleScopeSelect = useCallback(
     (value: string) => {
-      const scope = JSON.parse(value) as Record<string, string>;
-      form.setFieldsValue({ scope });
-      setSelectedScopeValue(value);
+      try {
+        const scope = JSON.parse(value) as Record<string, string>;
+        form.setFieldsValue({ scope });
+        setSelectedScopeValue(value);
+      } catch {
+        // Malformed scope value — ignore
+      }
     },
     [form],
   );
@@ -202,26 +191,35 @@ const DataConsumerForm = ({
         <Input />
       </Form.Item>
 
-      {selectedType && allScopeOptions.length > 0 && (
+      {selectedType && (
         <Form.Item
           label="Scope"
           rules={[{ required: true, message: "Scope is required" }]}
           tooltip="The specific identity to associate with this consumer"
         >
-          <Select
-            placeholder="Select scope"
-            options={allScopeOptions}
-            value={selectedScopeValue}
-            onChange={handleScopeSelect}
-            showSearch
-            filterOption={(input, option) =>
-              String(option?.label ?? "")
-                .toLowerCase()
-                .includes(input.toLowerCase())
-            }
-            aria-label="Scope"
-            data-testid="data-consumer-scope-select"
-          />
+          {allScopeOptions.length > 0 ? (
+            <Select
+              placeholder="Select scope"
+              options={allScopeOptions}
+              value={selectedScopeValue}
+              onChange={handleScopeSelect}
+              showSearch
+              filterOption={(input, option) =>
+                String(option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              aria-label="Scope"
+              data-testid="data-consumer-scope-select"
+            />
+          ) : (
+            <Select
+              placeholder="No scopes available for this type"
+              disabled
+              aria-label="Scope"
+              data-testid="data-consumer-scope-select"
+            />
+          )}
         </Form.Item>
       )}
 

@@ -39,16 +39,6 @@ export interface TestConnectionResponse {
   message: string;
 }
 
-const PROVIDER_TYPE_OPTIONS = [
-  { value: "gcp", label: "GCP (IAM roles + service accounts)" },
-  {
-    value: "google_workspace",
-    label: "Google Workspace (Google Groups)",
-  },
-];
-
-export { PROVIDER_TYPE_OPTIONS };
-
 const identityGroupProviderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getIdentityGroupProviders: build.query<
