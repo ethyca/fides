@@ -61,13 +61,14 @@ export const DSRCustomizationForm = ({
       onFinish={handleFinish}
       key={JSON.stringify(data)}
       style={{ marginTop: 0 }}
+      validateTrigger={[]}
     >
       <Flex vertical>
         <Form.List name="fields">
           {(formFields, { add, remove }) => (
             <>
               {/* Column headers */}
-              <Flex gap={24} className="mb-1.5 text-sm font-semibold leading-5">
+              <Flex gap={24} className="mb-1.5 font-semibold">
                 <div className="w-[416px]">PII Field</div>
                 <div className="w-[416px]">DSR Package Label</div>
                 <div className="w-[416px]">Data Categories</div>

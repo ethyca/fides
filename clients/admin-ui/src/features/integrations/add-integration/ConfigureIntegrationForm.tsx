@@ -1,4 +1,4 @@
-import { Flex, Form, Input, Select, Spin, useMessage } from "fidesui";
+import { Card, Flex, Form, Input, Select, Spin, useMessage } from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -147,22 +147,25 @@ export const ConfigureIntegrationForm = ({
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secrets);
 
-  const initialValues: FormValues = {
-    name: connection?.name ?? "",
-    description: connection?.description ?? "",
-    system_fides_key: initialSystemFidesKey,
-    ...(hasSecrets && {
-      secrets: mapValues(secrets?.properties, (s, key) => {
-        const value = connection?.secrets?.[key] ?? s.default;
-        // Convert booleans to strings to match select options
-        if (typeof value === "boolean") {
-          return String(value);
-        }
-        return value ?? "";
+  const initialValues: FormValues = useMemo(
+    () => ({
+      name: connection?.name ?? "",
+      description: connection?.description ?? "",
+      system_fides_key: initialSystemFidesKey,
+      ...(hasSecrets && {
+        secrets: mapValues(secrets?.properties, (s, key) => {
+          const value = connection?.secrets?.[key] ?? s.default;
+          // Convert booleans to strings to match select options
+          if (typeof value === "boolean") {
+            return String(value);
+          }
+          return value ?? "";
+        }),
       }),
+      dataset: initialDatasets,
     }),
-    dataset: initialDatasets,
-  };
+    [connection, initialSystemFidesKey, hasSecrets, secrets, initialDatasets],
+  );
 
   const [form] = Form.useForm<FormValues>();
 
@@ -370,8 +373,9 @@ export const ConfigureIntegrationForm = ({
 
   const isDirty = useMemo(
     () => !isEqual(form.getFieldsValue(true), initialValues),
+    // allValues triggers recalculation when form values change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allValues, initialValues],
+    [form, allValues, initialValues],
   );
 
   useEffect(() => {
@@ -406,11 +410,7 @@ export const ConfigureIntegrationForm = ({
 
   return (
     <>
-      {description && (
-        <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 px-6 py-5 text-sm">
-          {description}
-        </div>
-      )}
+      {description && <Card className="mt-4 text-sm">{description}</Card>}
       <Form
         form={form}
         layout="vertical"

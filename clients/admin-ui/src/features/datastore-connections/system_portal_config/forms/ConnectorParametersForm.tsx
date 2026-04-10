@@ -1,10 +1,10 @@
-import { Option } from "common/form/inputs";
+import type { Option } from "common/form/inputs";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { Button, Flex, Form, Input, Select } from "fidesui";
 import _ from "lodash";
-import React from "react";
+import React, { useMemo } from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
@@ -92,24 +92,24 @@ export const ConnectorParametersForm = ({
 
   const [form] = Form.useForm<ConnectionConfigFormValues>();
 
-  const getInitialValues = () => {
-    const initialValues = { ...defaultValues };
+  const initialFormValues = useMemo(() => {
+    const values = { ...defaultValues };
     if (connectionConfig?.key) {
-      initialValues.name = connectionConfig.name ?? "";
-      initialValues.description = connectionConfig.description as string;
-      initialValues.instance_key =
+      values.name = connectionConfig.name ?? "";
+      values.description = connectionConfig.description as string;
+      values.instance_key =
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
-      initialValues.enabled_actions = (
-        connectionConfig.enabled_actions || []
-      ).map((action) => action.toString());
+      values.enabled_actions = (connectionConfig.enabled_actions || []).map(
+        (action) => action.toString(),
+      );
 
-      initialValues.secrets = connectionConfig.secrets
+      values.secrets = connectionConfig.secrets
         ? _.cloneDeep(connectionConfig.secrets)
         : {};
 
-      initialValues.dataset = initialDatasets;
+      values.dataset = initialDatasets;
 
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
@@ -117,32 +117,38 @@ export const ConnectorParametersForm = ({
       if (secretsSchema?.properties) {
         Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
           if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
-            const datasetReference = initialValues.secrets[key];
+            const datasetReference = values.secrets[key];
             if (datasetReference) {
-              initialValues.secrets[key] =
+              values.secrets[key] =
                 `${datasetReference.dataset}.${datasetReference.field}`;
             }
           }
           // Convert boolean secret values to string so they correctly match ControlledSelect options
           if (secretsSchema.properties[key]?.type === "boolean") {
-            const boolVal = initialValues.secrets[key];
+            const boolVal = values.secrets[key];
             if (typeof boolVal === "boolean") {
-              initialValues.secrets[key] = boolVal.toString();
+              values.secrets[key] = boolVal.toString();
             }
           }
         });
       }
-      return initialValues;
+      return values;
     }
 
-    if (_.isEmpty(initialValues.enabled_actions)) {
-      initialValues.enabled_actions = connectionOption.supported_actions.map(
+    if (_.isEmpty(values.enabled_actions)) {
+      values.enabled_actions = connectionOption.supported_actions.map(
         (action) => action.toString(),
       );
     }
 
-    return fillInDefaults(initialValues, secretsSchema);
-  };
+    return fillInDefaults(values, secretsSchema);
+  }, [
+    connectionConfig,
+    defaultValues,
+    secretsSchema,
+    initialDatasets,
+    connectionOption,
+  ]);
 
   const handleFinish = (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
@@ -172,10 +178,9 @@ export const ConnectorParametersForm = ({
   const isDisabledConnection = connectionConfig?.disabled || false;
 
   const allValues = Form.useWatch([], form);
-  const isDirty = React.useMemo(
-    () => !_.isEqual(allValues, getInitialValues()),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allValues],
+  const isDirty = useMemo(
+    () => !_.isEqual(allValues, initialFormValues),
+    [allValues, initialFormValues],
   );
   const authorized = !isDirty && connectionConfig?.authorized;
 
@@ -183,9 +188,10 @@ export const ConnectorParametersForm = ({
     <Form
       form={form}
       layout="vertical"
-      initialValues={getInitialValues()}
+      initialValues={initialFormValues}
       onFinish={handleFinish}
       key={connectionConfig?.key ?? "create"}
+      validateTrigger="onBlur"
     >
       <Flex vertical gap={16}>
         <div className="flex flex-row">
