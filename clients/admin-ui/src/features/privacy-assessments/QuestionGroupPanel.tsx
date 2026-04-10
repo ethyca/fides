@@ -7,6 +7,7 @@ import {
   Icons,
   Tag,
   Text,
+  Typography,
 } from "fidesui";
 
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
@@ -30,9 +31,9 @@ export const QuestionGroupPanel = ({
     <>
       <Flex gap="large" align="flex-start" className="min-w-0 flex-1">
         <div className="flex-1">
-          <Text strong size="lg" className="mb-3 block">
+          <Typography.Title level={2} className="!mb-2 mt-0 !text-[18px]">
             {group.id}. {group.title}
-          </Text>
+          </Typography.Title>
           <Flex gap="medium" align="center" wrap="wrap" className="mb-2">
             <Text type="secondary" size="sm">
               {group.last_updated_at
