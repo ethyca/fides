@@ -515,6 +515,7 @@ export const {
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
+  util: discoveryDetectionUtil,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({

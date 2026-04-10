@@ -5,6 +5,7 @@ import {
   getQueryParamsFromArray,
 } from "~/features/common/utils";
 import {
+  ConnectionConfigurationResponseWithSystemKey,
   ConnectionType,
   ConsentStatus,
   DiffStatus,
@@ -18,14 +19,14 @@ import {
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
-import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
-import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
+import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
-import { MonitorTaskInProgressResponse } from "~/types/api/models/MonitorTaskInProgressResponse";
+import { MonitorTaskResponse } from "~/types/api/models/MonitorTaskResponse";
 import {
   PaginatedResponse,
   PaginationQueryParams,
@@ -39,7 +40,7 @@ import {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
 } from "./types";
-import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
+import { getMonitorType } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -59,7 +60,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       MonitorSummaryPaginatedResponse,
       SearchQueryParams &
         PaginationQueryParams & {
-          monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+          monitor_type?: APIMonitorType[]; // defaults to all monitor types if not provided
           steward_user_id?: string[];
         }
     >({
@@ -125,7 +126,7 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
 
     getMonitorTree: build.query<
-      CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+      ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
       Partial<CursorPaginationQueryParams> & {
         monitor_config_id: string;
         staged_resource_urn?: string;
@@ -474,7 +475,7 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
     getInProgressMonitorTasks: build.query<
       {
-        items: MonitorTaskInProgressResponse[];
+        items: MonitorTaskResponse[];
         total: number;
         page: number;
         pages: number;
@@ -529,8 +530,9 @@ const actionCenterApi = baseApi.injectEndpoints({
     getAggregateStatistics: build.query<
       AggregateStatisticsResponse,
       {
-        monitor_type: "website" | "datastore" | "infrastructure";
+        monitor_type: APIMonitorType;
         monitor_config_id?: string;
+        steward_user_id?: string[];
       }
     >({
       query: ({ monitor_type, ...params }) => {
@@ -539,7 +541,25 @@ const actionCenterApi = baseApi.injectEndpoints({
           params,
         };
       },
-      providesTags: ["Monitor Tasks"],
+      providesTags: ["Monitor Statistics"],
+    }),
+
+    calcAggregateStatistics: build.mutation<
+      AggregateStatisticsResponse,
+      {
+        monitor_type: APIMonitorType;
+        monitor_config_id?: string;
+        steward_user_id?: string[];
+      }
+    >({
+      query: ({ monitor_type, ...params }) => {
+        return {
+          url: `/plus/discovery-monitor/aggregate-results/summary/${monitor_type}/refresh`,
+          method: "POST",
+          params,
+        };
+      },
+      invalidatesTags: ["Monitor Statistics"],
     }),
 
     retryMonitorTask: build.mutation<
@@ -558,18 +578,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Tasks"],
     }),
-    dismissMonitorTask: build.mutation<
-      MonitorTaskInProgressResponse,
-      { taskId: string }
-    >({
-      query: ({ taskId }) => ({
-        url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Monitor Tasks"],
-    }),
+    dismissMonitorTask: build.mutation<MonitorTaskResponse, { taskId: string }>(
+      {
+        query: ({ taskId }) => ({
+          url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+          method: "POST",
+        }),
+        invalidatesTags: ["Monitor Tasks"],
+      },
+    ),
     undismissMonitorTask: build.mutation<
-      MonitorTaskInProgressResponse,
+      MonitorTaskResponse,
       { taskId: string }
     >({
       query: ({ taskId }) => ({
@@ -579,7 +598,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Monitor Tasks"],
     }),
     classifyStagedResources: build.mutation<
-      ClassifyResourcesResponse,
+      void,
       BaseStagedResourcesRequest & { monitor_config_key: string }
     >({
       query: ({ monitor_config_key, ...body }) => ({
@@ -603,6 +622,15 @@ const actionCenterApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
+    }),
+    getConnection: build.query<
+      ConnectionConfigurationResponseWithSystemKey,
+      { connection_key: string }
+    >({
+      query: ({ connection_key }) => ({
+        url: `/connection/${connection_key}`,
+      }),
+      providesTags: ["Connection Type"],
     }),
   }),
 });
@@ -636,4 +664,7 @@ export const {
   usePromoteRemovalStagedResourcesMutation,
   useLazyGetAggregateStatisticsQuery,
   useGetAggregateStatisticsQuery,
+  useGetConnectionQuery,
+  useCalcAggregateStatisticsMutation,
+  util: actionCenterUtil,
 } = actionCenterApi;

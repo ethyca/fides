@@ -1,12 +1,13 @@
 import classNames from "classnames";
 import {
-  Card,
+  Badge,
   Descriptions,
-  Divider,
-  DonutChart,
+  EnterExitList,
   Flex,
   Paragraph,
-  TagList,
+  StackedBarChart,
+  StackedBarChartProps,
+  Statistic,
   Text,
   Title,
   Tooltip,
@@ -35,6 +36,7 @@ export interface ProgressCardProps {
     numerator?: number;
     denominator?: number;
   };
+  barChartProps?: StackedBarChartProps;
   numericStats?: {
     data: NumericStat[];
     label: string;
@@ -45,26 +47,18 @@ export interface ProgressCardProps {
   };
   lastUpdated?: string;
   compact?: boolean;
+  disabled?: boolean;
 }
-
-const getProgressColor = (percent: number) => {
-  switch (true) {
-    case percent > 80:
-      return "colorSuccess";
-    case percent > 60:
-      return "colorWarning";
-    default:
-      return "colorErrorTextHover";
-  }
-};
 
 export const ProgressCard = ({
   title,
   subtitle,
   progress,
-  numericStats,
+  barChartProps,
   percentageStats,
+  numericStats,
   lastUpdated,
+  disabled,
   compact,
 }: PropsWithChildren<ProgressCardProps>) => {
   const relativeTime = useRelativeTime(
@@ -72,198 +66,105 @@ export const ProgressCard = ({
   );
 
   return (
-    <Card
-      size="small"
+    <Flex
       rootClassName={classNames(
-        compact ? "w-full" : "h-full overflow-hidden w-full",
+        "transition duration-1000 w-full",
+        disabled ? "opacity-50" : "opacity-100",
       )}
-      classNames={{
-        body: "h-full overflow-hidden",
-      }}
-      title={
-        !compact && (
-          <Flex justify="space-between" align="baseline">
-            <span>{title}</span>
-            <Text type="secondary" className="text-xs !font-normal">
-              {subtitle}
-            </Text>
-          </Flex>
-        )
-      }
+      vertical
     >
-      <div
-        className={classNames(
-          `grid overflow-hidden w-full gap-2 xl:gap-4`,
-          compact
-            ? "grid-cols-[1fr,min-content,1fr,min-content,1fr]"
-            : "grid-cols-1 xl:grid-cols-[auto,1fr,1fr]",
-        )}
-      >
-        <Flex
-          vertical={!compact}
-          className={classNames([
-            compact ? "gap-2 xl:gap-4" : "gap-0 xl:gap-1",
-            !compact && "content-center justify-center text-center",
-          ])}
-        >
-          <div
-            className={classNames(compact ? "h-full" : "min-h-[80px] w-full")}
+      {!compact && (
+        <Flex justify="space-between" align="baseline">
+          <Title level={5} className="whitespace-nowrap">
+            {title}
+          </Title>
+          <Paragraph
+            type="secondary"
+            className="!my-0 w-full self-end text-right text-xs"
+            ellipsis={{
+              rows: 1,
+              tooltip: { title: relativeTime },
+            }}
           >
-            <DonutChart
-              centerLabel={
-                <Title
-                  level={compact ? 3 : 5}
-                  rootClassName={compact ? "!text-xs" : ""}
-                >{`${nFormatter(progress.percent)}%`}</Title>
-              }
-              variant={compact ? "thin" : "default"}
-              fit={compact ? "fill" : "contain"}
-              segments={[
-                {
-                  color: getProgressColor(progress.percent ?? 0),
-                  value: progress.percent ?? 0,
-                },
-                {
-                  color: "colorPrimaryBg",
-                  value: 100 - (progress.percent ?? 0),
-                },
-              ]}
-            />
-          </div>
-          <Flex
-            vertical
-            justify={compact ? "center" : undefined}
-            className="w-full"
-          >
-            <Text
-              type="secondary"
-              strong={compact}
-              className={compact ? "whitespace-nowrap text-xs" : undefined}
-            >
-              {progress.label}
-            </Text>
-            <Text strong>
-              {nFormatter(progress.numerator)} of{" "}
-              {nFormatter(progress.denominator)}
-            </Text>
-          </Flex>
+            {relativeTime}
+          </Paragraph>
         </Flex>
-        <div
-          className={classNames(
-            "grid grid-cols-1 grid-rows-[1fr,min-content,1fr,min-content] col-span-2 gap-2",
-            !!compact && "contents",
-          )}
-        >
-          {numericStats && (
-            <>
-              {compact && (
-                <Divider
-                  size="small"
-                  rootClassName="!m-0 !my-0 h-full"
-                  vertical={compact}
-                />
-              )}
-              <div>
-                <Text type="secondary" strong className="text-xs">
-                  {numericStats.label}
-                </Text>
-                <Paragraph
-                  type="secondary"
-                  className="!my-0 !text-xs"
-                  ellipsis={{
-                    rows: 1,
-                    tooltip: {
-                      color: "white",
-                      title: (
-                        <Descriptions
-                          size="small"
-                          column={1}
-                          layout="horizontal"
-                        >
-                          {numericStats.data?.map(({ label, count }) => (
-                            <Descriptions.Item label={label} key={label}>
-                              {nFormatter(count)}
-                            </Descriptions.Item>
-                          ))}
-                        </Descriptions>
-                      ),
-                    },
-                  }}
-                >
-                  {numericStats.data.length > 0
-                    ? numericStats.data
-                        ?.map(
-                          ({ label, count }) => `${nFormatter(count)} ${label}`,
-                        )
-                        .join(", ")
-                    : "None"}
-                </Paragraph>
-              </div>
-            </>
-          )}
-          {percentageStats && (
-            <>
-              <Divider
-                size="small"
-                rootClassName="!m-0 !my-0 h-full"
-                vertical={compact}
-              />
+      )}
+      <EnterExitList
+        dataSource={[progress.denominator ?? 0]}
+        itemKey={(key) => key}
+        renderItem={(item) => (
+          <Tooltip
+            color="white"
+            rootClassName="max-w-[400px]"
+            title={
+              numericStats && (
+                <div>
+                  <Text type="secondary" strong className="text-xs">
+                    {numericStats.label}
+                  </Text>
+                  {numericStats.data.length > 0 ? (
+                    <Descriptions size="small" column={1} layout="horizontal">
+                      {numericStats.data?.map(({ label, count }) => (
+                        <Descriptions.Item label={label} key={label}>
+                          {nFormatter(count)}
+                        </Descriptions.Item>
+                      ))}
+                    </Descriptions>
+                  ) : (
+                    <div className="text-xs">None</div>
+                  )}
+                </div>
+              )
+            }
+          >
+            <Statistic value={nFormatter(item)} />
+          </Tooltip>
+        )}
+      />
+      <Text>resources need review across {subtitle}</Text>
+      <div>
+        {barChartProps && <StackedBarChart {...barChartProps} hideTooltip />}
+        <Tooltip
+          color="white"
+          rootClassName="max-w-[400px]"
+          title={
+            percentageStats && (
               <div>
                 <Text type="secondary" strong className="text-xs">
                   {percentageStats.label}
                 </Text>
                 {percentageStats.data.length > 0 ? (
-                  <Tooltip
-                    color="white"
-                    styles={{
-                      root: {
-                        maxWidth: 400,
-                      },
-                    }}
-                    title={
-                      <Descriptions size="small" column={1} layout="horizontal">
-                        {percentageStats.data?.map(({ label, value }) => (
-                          <Descriptions.Item label={label} key={label}>
-                            {nFormatter(value)}%
-                          </Descriptions.Item>
-                        ))}
-                      </Descriptions>
-                    }
-                  >
-                    <span>
-                      <TagList
-                        maxTags={undefined}
-                        className="flex flex-nowrap gap-1"
-                        tags={percentageStats.data?.map(({ label, value }) => ({
-                          label: (
-                            <span>{`${nFormatter(value)}% ${label}`}</span>
-                          ),
-                          value: `${value}%`,
-                        }))}
-                      />
-                    </span>
-                  </Tooltip>
+                  <Descriptions size="small" column={1} layout="horizontal">
+                    {percentageStats.data?.map(({ label, value }) => (
+                      <Descriptions.Item label={label} key={label}>
+                        {nFormatter(value)}%
+                      </Descriptions.Item>
+                    ))}
+                  </Descriptions>
                 ) : (
                   <div className="text-xs">None</div>
                 )}
               </div>
-            </>
-          )}
-          <Paragraph
-            type="secondary"
-            className={classNames(
-              "text-xs w-full text-right self-end !my-0",
-              !!compact && "hidden",
-            )}
-            ellipsis={{
-              rows: 1,
-              tooltip: { title: <>Updated: {relativeTime}</> },
-            }}
-          >
-            <>Updated: {relativeTime}</>
-          </Paragraph>
-        </div>
+            )
+          }
+        >
+          <Flex gap="small" rootClassName="w-max overflow-hidden">
+            <Badge
+              status="success"
+              text={`${nFormatter(barChartProps?.data?.progress?.approved ?? 0)} approved`}
+            />
+            <Badge
+              status="warning"
+              text={`${nFormatter(barChartProps?.data?.progress?.classified ?? 0)} classified`}
+            />
+            <Badge
+              status="default"
+              text={`${nFormatter(progress.denominator)} unlabeled`}
+            />
+          </Flex>
+        </Tooltip>
       </div>
-    </Card>
+    </Flex>
   );
 };
