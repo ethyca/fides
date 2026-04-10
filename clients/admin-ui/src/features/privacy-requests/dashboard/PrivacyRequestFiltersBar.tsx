@@ -10,8 +10,8 @@ import { useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import {
-  SubjectRequestActionTypeOptions,
   SubjectRequestStatusOptions,
+  useSubjectRequestActionTypeOptions,
 } from "~/features/privacy-requests/constants";
 import PrivacyRequestSortMenu, {
   SortParams,
@@ -51,6 +51,8 @@ export const PrivacyRequestFiltersBar = ({
   sortState,
   setSortState,
 }: PrivacyRequestFiltersBarProps) => {
+  const actionTypeOptions = useSubjectRequestActionTypeOptions();
+
   // Fetch privacy center config to get custom fields
   const { data: config } = useGetPrivacyCenterConfigQuery();
 
@@ -153,7 +155,7 @@ export const PrivacyRequestFiltersBar = ({
       <Select
         mode="multiple"
         placeholder="Request type"
-        options={SubjectRequestActionTypeOptions}
+        options={actionTypeOptions}
         value={filters.action_type || []}
         onChange={handleActionTypeChange}
         allowClear

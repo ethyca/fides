@@ -10,8 +10,9 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
+import { selectConsentModuleEnabled } from "~/features/config-settings/config-settings.slice";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import {
@@ -84,6 +85,7 @@ const useSystemFormTabs = ({
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
+  const consentModuleEnabled = useAppSelector(selectConsentModuleEnabled);
   const showNewIntegrationNotice = isPlusEnabled;
 
   const systemFidesKey = router.query.id as string;
@@ -255,12 +257,13 @@ const useSystemFormTabs = ({
             connectionConfig={activeSystem.connection_configs?.[0] ?? null}
             systemFidesKey={activeSystem.fides_key}
           />
-          {activeSystem.connection_configs?.[0]?.key && (
-            <ConsentAutomationForm
-              m={6}
-              connectionKey={activeSystem.connection_configs?.[0]?.key}
-            />
-          )}
+          {consentModuleEnabled &&
+            activeSystem.connection_configs?.[0]?.key && (
+              <ConsentAutomationForm
+                m={6}
+                connectionKey={activeSystem.connection_configs?.[0]?.key}
+              />
+            )}
         </Box>
       ) : null,
       disabled: !activeSystem,

@@ -87,6 +87,7 @@ class AdminUIConfig(FidesSchema):
     error_notification_mode: Optional[ErrorNotificationMode] = (
         ErrorNotificationMode.CONSOLE_ONLY
     )
+    consent_module_enabled: Optional[bool] = None
 
     model_config = ConfigDict(extra="forbid")
 

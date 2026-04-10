@@ -3,8 +3,8 @@ import { Button, DatePicker, Form, Select } from "fidesui";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
-  SubjectRequestActionTypeOptions,
   SubjectRequestStatusOptions,
+  useSubjectRequestActionTypeOptions,
 } from "~/features/privacy-requests/constants";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
@@ -37,6 +37,7 @@ export const PrivacyRequestFiltersModal = ({
   modalFilters,
   setModalFilters,
 }: PrivacyRequestFiltersModalProps) => {
+  const actionTypeOptions = useSubjectRequestActionTypeOptions();
   const [form] = Form.useForm<FormValues>();
 
   // Convert modalFilters to form initial values
@@ -139,7 +140,7 @@ export const PrivacyRequestFiltersModal = ({
           <Select
             mode="multiple"
             placeholder="Select request type"
-            options={SubjectRequestActionTypeOptions}
+            options={actionTypeOptions}
             data-testid="request-action-type-filter"
             aria-label="Request type"
           />

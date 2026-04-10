@@ -529,6 +529,7 @@ interface ConfigureNavProps {
   hasPlus?: boolean;
   hasFidesCloud?: boolean;
   flags?: Record<string, boolean>;
+  consentModuleEnabled?: boolean;
 }
 
 const configureNavRoute = ({
@@ -619,15 +620,23 @@ const configureNavRoute = ({
   return groupChild;
 };
 
+export const CONSENT_NAV_GROUP_TITLE = "Consent";
+
 export const configureNavGroups = ({
   config,
   userScopes,
   hasPlus = false,
   hasFidesCloud = false,
   flags,
+  consentModuleEnabled = true,
 }: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
   config.forEach((group) => {
+    // If consent module is disabled, skip the entire Consent nav group
+    if (!consentModuleEnabled && group.title === CONSENT_NAV_GROUP_TITLE) {
+      return;
+    }
+
     // if no nav routes are scoped for the user or all require plus
     if (
       !navGroupInScope(group, userScopes) ||
@@ -643,6 +652,15 @@ export const configureNavGroups = ({
     };
 
     group.routes.forEach((route) => {
+      // If consent module is disabled, skip the Settings > Consent route
+      if (
+        !consentModuleEnabled &&
+        route.title === CONSENT_NAV_GROUP_TITLE &&
+        route.path === routes.GLOBAL_CONSENT_CONFIG_ROUTE
+      ) {
+        return;
+      }
+
       const routeConfig = configureNavRoute({
         route,
         hasPlus,

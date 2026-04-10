@@ -1,3 +1,7 @@
+import { useMemo } from "react";
+
+import { useAppSelector } from "~/app/hooks";
+import { selectConsentModuleEnabled } from "~/features/config-settings/config-settings.slice";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
@@ -39,6 +43,17 @@ export const SubjectRequestActionTypeOptions = [
   label: value,
   value: key,
 }));
+
+export const useSubjectRequestActionTypeOptions = () => {
+  const consentModuleEnabled = useAppSelector(selectConsentModuleEnabled);
+  return useMemo(
+    () =>
+      SubjectRequestActionTypeOptions.filter(
+        (option) => consentModuleEnabled || option.value !== ActionType.CONSENT,
+      ),
+    [consentModuleEnabled],
+  );
+};
 
 export const messagingProviders = {
   mailgun: "mailgun",
