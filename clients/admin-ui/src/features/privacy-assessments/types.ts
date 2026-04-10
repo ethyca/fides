@@ -250,7 +250,7 @@ export interface AssessmentGroupResponse {
 }
 
 export interface GroupedAssessmentsResponse {
-  groups: AssessmentGroupResponse[];
+  items: AssessmentGroupResponse[];
   total: number;
   page: number;
   size: number;
