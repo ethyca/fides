@@ -52,14 +52,14 @@ repos:
 
       - id: npm-run-format
         name: npm-run-format
-        description: Format frontend code
-        entry: sh -c 'cd clients; npm run format'
+        description: Format staged frontend code
+        entry: npx --prefix clients prettier --write --ignore-unknown
         language: system
         types: [javascript, jsx, ts, tsx]
 
       - id: npm-run-lint
         name: npm-run-lint
-        description: Lint and fix frontend code
-        entry: sh -c 'cd clients; npm run lint'
+        description: Lint and fix staged frontend code
+        entry: npx --prefix clients eslint --fix
         language: system
         types: [javascript, jsx, ts, tsx]
