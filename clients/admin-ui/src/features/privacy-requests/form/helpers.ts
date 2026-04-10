@@ -1,5 +1,3 @@
-import * as Yup from "yup";
-
 import { PrivacyRequestOption } from "~/types/api";
 
 export const findActionFromPolicyKey = (
@@ -7,55 +5,61 @@ export const findActionFromPolicyKey = (
   allActions?: PrivacyRequestOption[],
 ) => allActions?.find((action) => action.policy_key === key);
 
-export const generateValidationSchemaFromAction = (
+/**
+ * Generates antd Form.Item rules for each field based on the selected action.
+ * Returns a record mapping field name paths to their validation rules.
+ */
+export const generateFormRulesFromAction = (
   action?: PrivacyRequestOption,
-) => {
-  if (!action) {
-    return Yup.object().shape({
-      policy_key: Yup.string().required().label("Request type"),
-    });
-  }
-  const customFieldsSchema = action.custom_privacy_request_fields
-    ? Object.entries(action.custom_privacy_request_fields)
-        .filter(
-          ([, fieldInfo]) =>
-            /* checking for object key should not be necessary when backend types are updated */
-            "field_type" in fieldInfo && fieldInfo.field_type !== "location",
-        )
-        .map(([fieldName, fieldInfo]) => ({
-          [fieldName]: Yup.object().shape({
-            value:
-              fieldInfo.required && !fieldInfo.hidden
-                ? Yup.string().required().label(fieldInfo.label)
-                : Yup.string().nullable(),
-          }),
-        }))
-        .reduce((acc, next) => ({ ...acc, ...next }), {})
-    : {};
+): Record<string, Array<Record<string, unknown>>> => {
+  const rules: Record<string, Array<Record<string, unknown>>> = {
+    policy_key: [{ required: true, message: "Request type is required" }],
+  };
 
-  return Yup.object().shape({
-    policy_key: Yup.string().required().label("Request type"),
-    identity: Yup.object().shape({
-      email:
-        action.identity_inputs?.email === "required"
-          ? Yup.string().email().required().label("Email address")
-          : Yup.string().nullable(),
-      phone_number:
-        action.identity_inputs?.phone === "required"
-          ? Yup.string()
-              .matches(
-                /^\+?[1-9]\d{1,14}$/,
-                "Phone number must be formatted correctly (e.g. 15555555555)",
-              )
-              .required()
-              .label("Phone number")
-          : Yup.string()
-              .matches(
-                /^\+?[1-9]\d{1,14}$/,
-                "Phone number must be formatted correctly (e.g. 15555555555)",
-              )
-              .nullable(),
-    }),
-    custom_privacy_request_fields: Yup.object().shape(customFieldsSchema),
-  });
+  if (!action) {
+    return rules;
+  }
+
+  if (action.identity_inputs?.email === "required") {
+    rules["identity.email"] = [
+      { required: true, message: "Email address is required" },
+      { type: "email", message: "Email address must be a valid email" },
+    ];
+  } else if (action.identity_inputs?.email) {
+    rules["identity.email"] = [
+      { type: "email", message: "Email address must be a valid email" },
+    ];
+  }
+
+  const phonePattern = /^\+?[1-9]\d{1,14}$/;
+  const phoneMessage =
+    "Phone number must be formatted correctly (e.g. 15555555555)";
+
+  if (action.identity_inputs?.phone === "required") {
+    rules["identity.phone_number"] = [
+      { required: true, message: "Phone number is required" },
+      { pattern: phonePattern, message: phoneMessage },
+    ];
+  } else if (action.identity_inputs?.phone) {
+    rules["identity.phone_number"] = [
+      { pattern: phonePattern, message: phoneMessage },
+    ];
+  }
+
+  if (action.custom_privacy_request_fields) {
+    Object.entries(action.custom_privacy_request_fields)
+      .filter(
+        ([, fieldInfo]) =>
+          "field_type" in fieldInfo && fieldInfo.field_type !== "location",
+      )
+      .forEach(([fieldName, fieldInfo]) => {
+        if (fieldInfo.required && !fieldInfo.hidden) {
+          rules[`custom_privacy_request_fields.${fieldName}.value`] = [
+            { required: true, message: `${fieldInfo.label} is required` },
+          ];
+        }
+      });
+  }
+
+  return rules;
 };
