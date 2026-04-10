@@ -232,7 +232,7 @@ jobs:
             "password = \"${{ steps.neo4j-creds.outputs.password }}\"" \
             > /tmp/codegraph-ci.toml
 
-      - name: Validate codegraph MCP config
+      - name: Write concrete path into .mcp.json
         id: codegraph-mcp-check
         if: env.ENABLE_CODEGRAPH == 'true' && steps.codegraph-install.outcome == 'success'
         continue-on-error: true
@@ -242,7 +242,14 @@ jobs:
             echo "::warning::Codegraph will not connect. Commit a .mcp.json to your repo."
             exit 1
           fi
-          echo "Found .mcp.json — codegraph MCP config ready"
+          # claude-code-action does not expand env vars in .mcp.json, so
+          # ${CODEGRAPH_SERVER_PATH:-/bin/false} resolves to /bin/false.
+          # Replace it with the actual installed path.
+          SERVER_PATH=$(which codegraph-server)
+          jq --arg cmd "$SERVER_PATH" '.mcpServers.codegraph.command = $cmd' .mcp.json > .mcp.json.tmp
+          mv .mcp.json.tmp .mcp.json
+          echo "Rewrote .mcp.json with codegraph-server path: $SERVER_PATH"
+          cat .mcp.json
 
       # ── Debug info ─────────────────────────────────────────────────────────
       - name: Debug codegraph config state

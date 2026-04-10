@@ -90,7 +90,7 @@ const MonitorFieldsSearchForm = ({
 
   return (
     <Form form={form} {...formProps} layout="inline" className="contents">
-      <Flex className="col-span-4 gap-2 2xl:col-span-1" vertical>
+      <Flex className="col-span-3 gap-2 2xl:col-span-1" vertical>
         <Space.Compact>
           <Form.Item name="search" className="!me-0 contents grow">
             <SearchInput
@@ -116,7 +116,7 @@ const MonitorFieldsSearchForm = ({
           aria-label="Display keyboard shortcuts"
           icon={<Icons.Keyboard />}
           onClick={shortcutCallback}
-          className="col-span-1 2xl:col-span-1"
+          className="col-span-1 justify-self-end 2xl:col-span-1 2xl:justify-self-start"
         />
       </Tooltip>
       <Form.Item name="resource_status" className="!me-0">

@@ -134,4 +134,5 @@ export const {
   useFieldActionsMutation,
   useGetMonitorFieldsQuery,
   useLazyGetAllowedActionsQuery,
+  util: monitorFieldUtil,
 } = monitorFieldApi;

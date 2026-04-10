@@ -552,7 +552,6 @@ class TestRBACScopeRegistrySync:
 
         # Collect scope keys from all dicts whose name ends with _SCOPES
         # or is SCOPE_DOCS across all migration files
-        SCOPE_DICT_NAMES = {"SCOPE_DOCS", "CORRESPONDENCE_SCOPES"}
         migration_scopes: set[str] = set()
 
         for migration_file in migrations_dir.glob("*.py"):
@@ -560,9 +559,8 @@ class TestRBACScopeRegistrySync:
             for node in ast.walk(tree):
                 if isinstance(node, ast.Assign):
                     for target in node.targets:
-                        if (
-                            isinstance(target, ast.Name)
-                            and target.id in SCOPE_DICT_NAMES
+                        if isinstance(target, ast.Name) and (
+                            target.id.endswith("_SCOPES") or target.id == "SCOPE_DOCS"
                         ):
                             if isinstance(node.value, ast.Dict):
                                 for key in node.value.keys:

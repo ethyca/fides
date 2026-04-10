@@ -33,4 +33,5 @@ export interface CustomReportTableState {
   filters?: unknown;
   columnOrder?: string[];
   columnVisibility?: Record<string, boolean>;
+  [key: string]: unknown;
 }
