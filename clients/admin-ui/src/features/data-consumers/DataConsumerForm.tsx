@@ -89,7 +89,10 @@ const DataConsumerForm = ({
     }
     // Add current scope as an option (it's already assigned to this consumer)
     const currentType = getConsumerType(consumer.type);
-    const displayName = getDisplayNameForScope(consumer.scope, consumer.type);
+    const displayName = getDisplayNameForScope(
+      consumer.scope,
+      currentType?.display_key,
+    );
     return [
       {
         value: currentScopeJson,

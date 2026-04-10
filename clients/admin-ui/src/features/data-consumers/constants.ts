@@ -13,26 +13,16 @@ export const formatScopeKeyLabel = (key: string): string =>
 export const DATA_CONSUMER_FORM_ID = "data-consumer-form";
 
 /**
- * Pick the best display value from a scope object based on the consumer type.
- * Used in both the consumer form and the consumers table.
+ * Pick the best display value from a scope object.
+ * If a display_key is provided (from ConsumerTypeDescriptor), use it.
+ * Otherwise falls back to joining all scope values.
  */
 export const getDisplayNameForScope = (
   scope: Record<string, string>,
-  type?: string,
+  displayKey?: string,
 ): string => {
-  if (type === "google_group") {
-    return scope.group_email ?? "";
+  if (displayKey && scope[displayKey]) {
+    return scope[displayKey];
   }
-  if (type === "gcp_iam_role") {
-    return scope.role ?? "";
-  }
-  if (type === "gcp_service_account") {
-    return scope.email ?? "";
-  }
-  return (
-    scope.group_email ??
-    scope.role ??
-    scope.email ??
-    Object.values(scope).join(", ")
-  );
+  return Object.values(scope).join(", ");
 };

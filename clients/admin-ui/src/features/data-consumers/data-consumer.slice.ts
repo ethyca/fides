@@ -20,6 +20,7 @@ export interface ConsumerTypeDefinition {
   platform: string;
   supports_members: boolean;
   scope_keys: Record<string, string>;
+  display_key: string;
 }
 
 export interface AvailableScope {

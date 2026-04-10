@@ -112,7 +112,8 @@ const useDataConsumersTable = () => {
           if (!scope || Object.keys(scope).length === 0) {
             return "N/A";
           }
-          return <Tag>{getDisplayNameForScope(scope, type)}</Tag>;
+          const ct = getConsumerType(type);
+          return <Tag>{getDisplayNameForScope(scope, ct?.display_key)}</Tag>;
         },
       },
       {
