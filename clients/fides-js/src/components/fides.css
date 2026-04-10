@@ -479,8 +479,8 @@ div#fides-consent-content .fides-modal-body {
   bottom: 0px;
   width: 100%;
   max-width: var(--fides-overlay-width);
-  border-bottom-left-radius: var(--fides-overlay-component-border-radius);
-  border-bottom-right-radius: var(--fides-overlay-component-border-radius);
+  border-bottom-left-radius: var(--fides-overlay-container-border-radius);
+  border-bottom-right-radius: var(--fides-overlay-container-border-radius);
 }
 
 div#fides-consent-content .fides-modal-description {
