@@ -45,10 +45,6 @@ export const DSRCustomizationForm = ({
     onSaveClick(values, { setSubmitting: () => {} });
   };
 
-  if (isLoadingDataCategories) {
-    return null;
-  }
-
   const initialValues = {
     fields:
       data.length > 0
@@ -90,6 +86,7 @@ export const DSRCustomizationForm = ({
                   key={formField.key}
                   gutter={16}
                   className={index > 0 ? "mt-3" : undefined}
+                  align="middle"
                 >
                   <Col span={8}>
                     <Form.Item
@@ -148,10 +145,12 @@ export const DSRCustomizationForm = ({
                       <Select
                         aria-label="Data Categories"
                         mode="multiple"
+                        popupMatchSelectWidth={false}
                         options={allDataCategories.map((data_category) => ({
                           value: data_category.fides_key,
                           label: data_category.fides_key,
                         }))}
+                        loading={isLoadingDataCategories}
                       />
                     </Form.Item>
                   </Col>
@@ -160,6 +159,7 @@ export const DSRCustomizationForm = ({
                     style={{
                       visibility: index > 0 ? "visible" : "hidden",
                     }}
+                    className="items-center"
                   >
                     <Icons.TrashCan
                       onClick={() => remove(formField.name)}

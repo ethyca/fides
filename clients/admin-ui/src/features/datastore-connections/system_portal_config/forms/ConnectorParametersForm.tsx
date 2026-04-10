@@ -102,6 +102,7 @@ export const ConnectorParametersForm = ({
     useFormFieldsFromSchema(secretsSchema);
 
   const [form] = Form.useForm<ConnectionConfigFormValues>();
+  const [modal, contextHolder] = Modal.useModal();
 
   const initialFormValues = useMemo(() => {
     const values = { ...defaultValues };
@@ -190,7 +191,7 @@ export const ConnectorParametersForm = ({
 
   const confirmToggleConnection = () => {
     const action = isDisabledConnection ? "Enable" : "Disable";
-    Modal.confirm({
+    modal.confirm({
       title: `${action} connection`,
       content: `${action === "Enable" ? "Enabling" : "Disabling"} a connection may impact any privacy request that is currently in progress. Do you wish to proceed?`,
       okText: `${action} connection`,
@@ -206,7 +207,7 @@ export const ConnectorParametersForm = ({
   };
 
   const confirmDeleteConnection = () => {
-    Modal.confirm({
+    modal.confirm({
       title: "Delete integration",
       content:
         "Deleting an integration may impact any privacy request that is currently in progress. Do you wish to proceed?",
@@ -224,157 +225,162 @@ export const ConnectorParametersForm = ({
   const authorized = !isDirty && connectionConfig?.authorized;
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      initialValues={initialFormValues}
-      onFinish={handleFinish}
-      key={connectionConfig?.key ?? "create"}
-      validateTrigger="onBlur"
-    >
-      <Flex vertical>
-        {/* Hidden fields to preserve values in form submission */}
-        <Form.Item name="name" hidden noStyle>
-          <input type="hidden" />
-        </Form.Item>
-        <Form.Item name="description" hidden noStyle>
-          <input type="hidden" />
-        </Form.Item>
-        {connectionConfig && (
-          <Flex align="center" gap="middle">
-            <span>Enable integration</span>
-            <Switch
-              checked={!isDisabledConnection}
-              onChange={confirmToggleConnection}
-            />
-            <div className="grow" />
-            <span>Delete integration</span>
-            <Button
-              aria-label="Delete integration"
-              icon={<Icons.TrashCan />}
-              disabled={deleteResult.isLoading}
-              onClick={confirmDeleteConnection}
-            />
-          </Flex>
-        )}
-        {/* Connection Identifier */}
-        {!!connectionConfig?.key && (
-          <Form.Item
-            name="instance_key"
-            label="Integration identifier"
-            tooltip="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-            rules={[{ required: true }]}
-            layout="horizontal"
-          >
-            <Input
-              data-testid="input-instance_key"
-              disabled={!!connectionConfig?.key}
-            />
-          </Form.Item>
-        )}
-        {/* Dynamic connector secret fields */}
-        {secretsSchema
-          ? Object.entries(secretsSchema.properties).map(([key, item]) => {
-              if (key === "advanced_settings") {
-                // TODO: advanced settings
-                return null;
-              }
-              return (
-                <FormFieldFromSchema
-                  key={`secrets.${key}`}
-                  name={`secrets.${key}`}
-                  fieldSchema={item}
-                  isRequired={secretsSchema.required?.includes(key)}
-                  secretsSchema={secretsSchema}
-                  validate={getFieldValidation(key, item)}
-                  layout="inline"
-                />
-              );
-            })
-          : null}
-        {isPlusEnabled ? (
-          <Form.Item
-            name="enabled_actions"
-            label="Request types"
-            tooltip="The request types that are supported for this integration"
-            rules={[{ required: true }]}
-            layout="horizontal"
-          >
-            <Select
-              aria-label="Request types"
-              data-testid="controlled-select-enabled_actions"
-              mode="multiple"
-              options={connectionOption.supported_actions.map((action) => ({
-                label: _.upperFirst(action),
-                value: action,
-              }))}
-            />
-          </Form.Item>
-        ) : (
-          <Form.Item name="enabled_actions" hidden noStyle>
+    <>
+      {contextHolder}
+      <Form
+        form={form}
+        layout="horizontal"
+        initialValues={initialFormValues}
+        onFinish={handleFinish}
+        key={connectionConfig?.key ?? "create"}
+        validateTrigger="onBlur"
+        labelCol={{ flex: "180px" }}
+        labelAlign="left"
+      >
+        <Flex vertical>
+          {/* Hidden fields to preserve values in form submission */}
+          <Form.Item name="name" hidden noStyle>
             <input type="hidden" />
           </Form.Item>
-        )}
-        {SystemType.DATABASE === connectionOption.type &&
-          !isCreatingConnectionConfig && (
+          <Form.Item name="description" hidden noStyle>
+            <input type="hidden" />
+          </Form.Item>
+          {connectionConfig && (
+            <Flex align="center" gap="middle" className="pb-4">
+              <span>Enable integration</span>
+              <Switch
+                checked={!isDisabledConnection}
+                onChange={confirmToggleConnection}
+              />
+              <div className="grow" />
+              <span>Delete integration</span>
+              <Button
+                aria-label="Delete integration"
+                icon={<Icons.TrashCan />}
+                disabled={deleteResult.isLoading}
+                onClick={confirmDeleteConnection}
+              />
+            </Flex>
+          )}
+          {/* Connection Identifier */}
+          {!!connectionConfig?.key && (
             <Form.Item
-              name="dataset"
-              label="Datasets"
-              tooltip="Select datasets to associate with this integration"
-              layout="horizontal"
+              name="instance_key"
+              label="Integration identifier"
+              tooltip="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+              rules={[{ required: true }]}
             >
-              <Select
-                aria-label="Datasets"
-                data-testid="controlled-select-dataset"
-                mode="multiple"
-                options={datasetDropdownOptions}
-                optionRender={DatasetSelectOption}
+              <Input
+                data-testid="input-instance_key"
+                disabled={!!connectionConfig?.key}
               />
             </Form.Item>
           )}
-        <div className="flex gap-4">
-          {!connectionOption.authorization_required || authorized ? (
-            <Button
-              disabled={
-                !connectionConfig?.key || isSubmitting || deleteResult.isLoading
-              }
-              loading={isLoading || isFetching}
-              onClick={() => handleTestConnectionClick()}
-              data-testid="test-connection-button"
+          {/* Dynamic connector secret fields */}
+          {secretsSchema
+            ? Object.entries(secretsSchema.properties).map(([key, item]) => {
+                if (key === "advanced_settings") {
+                  // TODO: advanced settings
+                  return null;
+                }
+                return (
+                  <FormFieldFromSchema
+                    key={`secrets.${key}`}
+                    name={`secrets.${key}`}
+                    fieldSchema={item}
+                    isRequired={secretsSchema.required?.includes(key)}
+                    secretsSchema={secretsSchema}
+                    validate={getFieldValidation(key, item)}
+                    layout="inline"
+                  />
+                );
+              })
+            : null}
+          {isPlusEnabled ? (
+            <Form.Item
+              name="enabled_actions"
+              label="Request types"
+              tooltip="The request types that are supported for this integration"
+              rules={[{ required: true }]}
             >
-              {testButtonLabel}
-            </Button>
-          ) : null}
-          {isPlusEnabled &&
-            SystemType.DATABASE === connectionOption.type &&
-            !_.isEmpty(initialDatasets) && (
-              <Button onClick={() => onTestDatasetsClick()}>
-                Test datasets
-              </Button>
+              <Select
+                aria-label="Request types"
+                data-testid="controlled-select-enabled_actions"
+                mode="multiple"
+                options={connectionOption.supported_actions.map((action) => ({
+                  label: _.upperFirst(action),
+                  value: action,
+                }))}
+              />
+            </Form.Item>
+          ) : (
+            <Form.Item name="enabled_actions" hidden noStyle>
+              <input type="hidden" />
+            </Form.Item>
+          )}
+          {SystemType.DATABASE === connectionOption.type &&
+            !isCreatingConnectionConfig && (
+              <Form.Item
+                name="dataset"
+                label="Datasets"
+                tooltip="Select datasets to associate with this integration"
+              >
+                <Select
+                  aria-label="Datasets"
+                  data-testid="controlled-select-dataset"
+                  mode="multiple"
+                  options={datasetDropdownOptions}
+                  optionRender={DatasetSelectOption}
+                />
+              </Form.Item>
             )}
-          {connectionOption.authorization_required && !authorized ? (
+          <Flex justify="space-between">
+            <Flex gap="small">
+              {!connectionOption.authorization_required || authorized ? (
+                <Button
+                  disabled={
+                    !connectionConfig?.key ||
+                    isSubmitting ||
+                    deleteResult.isLoading
+                  }
+                  loading={isLoading || isFetching}
+                  onClick={() => handleTestConnectionClick()}
+                  data-testid="test-connection-button"
+                >
+                  {testButtonLabel}
+                </Button>
+              ) : null}
+              {isPlusEnabled &&
+                SystemType.DATABASE === connectionOption.type &&
+                !_.isEmpty(initialDatasets) && (
+                  <Button onClick={() => onTestDatasetsClick()}>
+                    Test datasets
+                  </Button>
+                )}
+              {connectionOption.authorization_required && !authorized ? (
+                <Button
+                  loading={isAuthorizing}
+                  onClick={() => handleAuthorizeConnectionClick()}
+                >
+                  Authorize integration
+                </Button>
+              ) : null}
+              {connectionOption.type === SystemType.MANUAL ? (
+                <DSRCustomizationModal connectionConfig={connectionConfig} />
+              ) : null}
+            </Flex>
             <Button
-              loading={isAuthorizing}
-              onClick={() => handleAuthorizeConnectionClick()}
+              type="primary"
+              disabled={deleteResult.isLoading || isSubmitting}
+              loading={isSubmitting}
+              htmlType="submit"
+              data-testid="save-integration-btn"
             >
-              Authorize integration
+              Save
             </Button>
-          ) : null}
-          {connectionOption.type === SystemType.MANUAL ? (
-            <DSRCustomizationModal connectionConfig={connectionConfig} />
-          ) : null}
-          <div className="grow" />
-          <Button
-            type="primary"
-            disabled={deleteResult.isLoading || isSubmitting}
-            loading={isSubmitting}
-            htmlType="submit"
-            data-testid="save-integration-btn"
-          >
-            Save
-          </Button>
-        </div>
-      </Flex>
-    </Form>
+          </Flex>
+        </Flex>
+      </Form>
+    </>
   );
 };

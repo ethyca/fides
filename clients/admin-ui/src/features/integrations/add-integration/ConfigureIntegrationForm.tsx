@@ -1,4 +1,13 @@
-import { Card, Flex, Form, Input, Select, Spin, useMessage } from "fidesui";
+import {
+  Card,
+  Flex,
+  Form,
+  Input,
+  Select,
+  Spin,
+  Text,
+  useMessage,
+} from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -410,7 +419,11 @@ export const ConfigureIntegrationForm = ({
 
   return (
     <>
-      {description && <Card className="mt-4 text-sm">{description}</Card>}
+      {description && (
+        <Card className="mt-4">
+          <Text>{description}</Text>
+        </Card>
+      )}
       <Form
         form={form}
         layout="vertical"
@@ -418,7 +431,7 @@ export const ConfigureIntegrationForm = ({
         onFinish={handleSubmit}
         key={connection?.key ?? "create"}
       >
-        <Flex vertical gap={24} align="flex-start" className="mt-4">
+        <Flex vertical className="mt-4">
           <Form.Item
             name="name"
             label="Name"

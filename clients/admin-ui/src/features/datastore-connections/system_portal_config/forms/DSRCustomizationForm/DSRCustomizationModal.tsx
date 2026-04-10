@@ -7,17 +7,8 @@ import {
   CreateAccessManualWebhookRequest,
   PatchAccessManualWebhookRequest,
 } from "datastore-connections/types";
-import {
-  Button,
-  Flex,
-  Modal,
-  Skeleton,
-  Spin,
-  Text,
-  Tooltip,
-  useMessage,
-} from "fidesui";
-import React, { useEffect, useRef, useState } from "react";
+import { Button, Flex, Modal, Text, Tooltip, useMessage } from "fidesui";
+import React, { useState } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -30,17 +21,16 @@ type Props = {
 };
 
 export const DSRCustomizationModal = ({ connectionConfig }: Props) => {
-  const mounted = useRef(false);
   const message = useMessage();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fields, setFields] = useState([] as Field[]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const { data, isFetching, isLoading, isSuccess } =
-    useGetAccessManualHookQuery(connectionConfig ? connectionConfig.key : "", {
-      skip: !connectionConfig,
-    });
+  const { data } = useGetAccessManualHookQuery(
+    connectionConfig ? connectionConfig.key : "",
+    { skip: !connectionConfig },
+  );
+  const fields = data?.fields ?? [];
 
   const [createAccessManualWebhook] = useCreateAccessManualWebhookMutation();
   const [patchAccessManualWebhook] = usePatchAccessManualWebhookMutation();
@@ -69,16 +59,6 @@ export const DSRCustomizationModal = ({ connectionConfig }: Props) => {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    mounted.current = true;
-    if (isSuccess && data) {
-      setFields(data.fields);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [data, isSuccess]);
 
   const DSRButton = (
     <Button
@@ -117,18 +97,12 @@ export const DSRCustomizationModal = ({ connectionConfig }: Props) => {
             privacy request packages. This &quot;Package Label&quot; is the
             label your user will see in their downloaded package.
           </Text>
-          {mounted.current && !isLoading ? (
-            <DSRCustomizationForm
-              data={fields}
-              isSubmitting={isSubmitting}
-              onSaveClick={handleSubmit}
-              onCancel={() => setIsOpen(false)}
-            />
-          ) : (
-            <>
-              <Skeleton />
-            </>
-          )}
+          <DSRCustomizationForm
+            data={fields}
+            isSubmitting={isSubmitting}
+            onSaveClick={handleSubmit}
+            onCancel={() => setIsOpen(false)}
+          />
         </Flex>
       </Modal>
     </>
