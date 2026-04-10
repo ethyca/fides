@@ -20,7 +20,7 @@ import ConnectionTypeLogo, {
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionType,
-  MonitorTaskInProgressResponse,
+  MonitorTaskResponse,
   MonitorTaskType,
 } from "~/types/api";
 
@@ -43,7 +43,7 @@ const formatStatusForDisplay = (status: string): string => {
 };
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
-  task: MonitorTaskInProgressResponse;
+  task: MonitorTaskResponse;
 }
 
 export const InProgressMonitorTaskItem = ({
@@ -130,7 +130,7 @@ export const InProgressMonitorTaskItem = ({
 
   const monitorName = task.monitor_name || "Unknown monitor";
 
-  const getStatusColor = (status?: string) => {
+  const getStatusColor = (status?: string | null) => {
     switch (status) {
       case "pending":
         return CUSTOM_TAG_COLOR.DEFAULT;
@@ -151,7 +151,7 @@ export const InProgressMonitorTaskItem = ({
     }
   };
 
-  const formatText = (text?: string) => {
+  const formatText = (text?: string | null) => {
     if (!text) {
       return "Unknown";
     }

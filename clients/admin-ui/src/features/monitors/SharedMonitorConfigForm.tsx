@@ -84,9 +84,12 @@ const SharedMonitorConfigForm = ({
       name: values.name,
       description: values.description,
       classify_params: {
-        context_regex_pattern_mapping: values.rules.map(
-          ({ regex, dataCategory }) => [regex, dataCategory],
-        ),
+        context_regex_pattern_mapping: values.rules
+          .filter(
+            (rule): rule is { regex: string; dataCategory: string } =>
+              !!rule.regex && !!rule.dataCategory,
+          )
+          .map(({ regex, dataCategory }) => [regex, dataCategory]),
       },
     };
   };
