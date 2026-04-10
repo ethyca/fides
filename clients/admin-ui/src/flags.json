@@ -12,7 +12,7 @@
     "description": "Data catalog view",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "webMonitor": {
     "label": "Web monitor",
@@ -26,21 +26,21 @@
     "description": "Consent status labels for assets discovered by the web monitor",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "downloadAccessRequestResults": {
     "label": "Download access request results",
     "description": "Download access data from completed requests",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "publisherRestrictions": {
     "label": "Publisher restrictions",
     "description": "TCF publisher restrictions",
     "development": true,
     "test": true,
-    "production": true
+    "production": false
   },
   "newIntegrationManagement": {
     "label": "New integration management",
@@ -54,14 +54,14 @@
     "description": "Enable privacy notices sandbox page for testing consent v3",
     "development": true,
     "test": false,
-    "production": false
+    "production": true
   },
   "alphaWebMonitorLlmClassification": {
     "label": "Web monitor LLM classification",
     "description": "Use LLM to classify website assets that cannot be identified by Compass",
     "development": true,
     "test": false,
-    "production": false
+    "production": true
   },
   "privacyAssessments": {
     "label": "Privacy assessments",
@@ -75,28 +75,28 @@
     "description": "Privacy request policies management",
     "development": true,
     "test": true,
-    "production": true
+    "production": false
   },
   "alphaDarkMode": {
     "label": "Alpha light and dark theme",
     "description": "Enable switching themes on Home page",
     "development": true,
     "test": false,
-    "production": false
+    "production": true
   },
   "alphaRbac": {
     "label": "Alpha RBAC",
     "description": "Dynamic role-based access control system for roles, permissions, and user assignments",
     "development": true,
     "test": false,
-    "production": false
+    "production": true
   },
   "alphaDashboard": {
     "label": "Alpha new dashboard",
     "description": "Enable the new Ant Design-only home dashboard",
     "development": true,
     "test": false,
-    "production": false
+    "production": true
   },
   "jiraIntegration": {
     "label": "Jira integration",
