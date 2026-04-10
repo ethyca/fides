@@ -1,21 +1,10 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraHStack as HStack,
-  ChakraVStack as VStack,
-  Icons,
-  useMessage,
-} from "fidesui";
-import { FieldArray, Form, Formik } from "formik";
+import { Button, Flex, Form, Icons, Input, Select, useMessage } from "fidesui";
 import React from "react";
-import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
 
-import CustomInput from "../CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
 import { Field } from "./types";
 
@@ -26,7 +15,7 @@ type DSRCustomizationFormProps = {
   onCancel: () => void;
 };
 
-const DSRCustomizationForm = ({
+export const DSRCustomizationForm = ({
   data = [],
   isSubmitting = false,
   onSaveClick,
@@ -36,154 +25,162 @@ const DSRCustomizationForm = ({
   const allDataCategories = useAppSelector(selectDataCategories);
 
   const message = useMessage();
+  const [form] = Form.useForm();
 
-  const handleSubmit = (values: any, actions: any) => {
+  const handleFinish = (values: { fields: Field[] }) => {
     const uniqueValues = new Set(values.fields.map((f: Field) => f.pii_field));
     if (uniqueValues.size < values.fields.length) {
       message.error("PII Field must be unique");
       return;
     }
-    onSaveClick(values, actions);
+    onSaveClick(values, { setSubmitting: () => {} });
   };
 
   if (isLoadingDataCategories) {
     return null;
   }
 
+  const initialValues = {
+    fields:
+      data.length > 0
+        ? data
+        : ([
+            {
+              pii_field: "",
+              dsr_package_label: "",
+              data_categories: [],
+            },
+          ] as Field[]),
+  };
+
   return (
-    <Formik
-      enableReinitialize
-      initialValues={{
-        fields:
-          data.length > 0
-            ? data
-            : ([
-                {
-                  pii_field: "",
-                  dsr_package_label: "",
-                  data_categories: [],
-                },
-              ] as Field[]),
-      }}
-      onSubmit={handleSubmit}
-      validateOnBlur={false}
-      validateOnChange={false}
-      validationSchema={Yup.object({
-        fields: Yup.array().of(
-          Yup.object().shape({
-            pii_field: Yup.string()
-              .required("PII Field is required")
-              .min(1, "PII Field must have at least one character")
-              .max(200, "PII Field has a maximum of 200 characters")
-              .label("PII Field"),
-            dsr_package_label: Yup.string()
-              .required("DSR Package Label is required")
-              .min(1, "DSR Package Label must have at least one character")
-              .max(200, "DSR Package Label has a maximum of 200 characters")
-              .label("DSR Package Label"),
-            data_categories: Yup.array(Yup.string()).label("Data Categories"),
-          }),
-        ),
-      })}
+    <Form
+      form={form}
+      layout="vertical"
+      initialValues={initialValues}
+      onFinish={handleFinish}
+      key={JSON.stringify(data)}
+      style={{ marginTop: 0 }}
     >
-      {(props) => (
-        <Form style={{ marginTop: 0 }} noValidate>
-          <VStack align="stretch">
-            <FieldArray
-              name="fields"
-              render={(fieldArrayProps) => {
-                const { fields } = props.values;
-                return (
-                  <>
-                    <HStack
-                      color="gray.900"
-                      flex="1"
-                      fontSize="14px"
-                      fontWeight="semibold"
-                      lineHeight="20px"
-                      mb="6px"
-                      spacing="24px"
-                    >
-                      <Box w="416px">PII Field</Box>
-                      <Box w="416px">DSR Package Label</Box>
-                      <Box w="416px">Data Categories</Box>
-                      <Box visibility="hidden">
-                        <Icons.TrashCan />
-                      </Box>
-                    </HStack>
-                    <Box>
-                      {fields && fields.length > 0
-                        ? fields.map((_field: Field, index: number) => (
-                            <HStack
-                              // eslint-disable-next-line react/no-array-index-key
-                              key={index}
-                              mt={index > 0 ? "12px" : undefined}
-                              spacing="24px"
-                              align="flex-start"
-                            >
-                              <Box minH="57px" w="416px">
-                                <CustomInput
-                                  autoFocus={index === 0}
-                                  isRequired
-                                  name={`fields.${index}.pii_field`}
-                                />
-                              </Box>
-                              <Box minH="57px" w="416px">
-                                <CustomInput
-                                  isRequired
-                                  name={`fields.${index}.dsr_package_label`}
-                                />
-                              </Box>
-                              <Box minH="57px" w="416px">
-                                <ControlledSelect
-                                  name={`fields.${index}.data_categories`}
-                                  options={allDataCategories.map(
-                                    (data_category) => ({
-                                      value: data_category.fides_key,
-                                      label: data_category.fides_key,
-                                    }),
-                                  )}
-                                  isRequired
-                                  mode="multiple"
-                                />
-                              </Box>
-                              <Box
-                                h="57px"
-                                visibility={index > 0 ? "visible" : "hidden"}
-                              >
-                                <Icons.TrashCan
-                                  onClick={() => fieldArrayProps.remove(index)}
-                                  className="cursor-pointer"
-                                />
-                              </Box>
-                            </HStack>
-                          ))
-                        : null}
-                    </Box>
-                    <Button
-                      className="my-6"
-                      onClick={() => {
-                        fieldArrayProps.push({
-                          pii_field: "",
-                          dsr_package_label: "",
-                          data_categories: [],
-                        });
+      <Flex vertical>
+        <Form.List name="fields">
+          {(formFields, { add, remove }) => (
+            <>
+              {/* Column headers */}
+              <Flex gap={24} className="mb-1.5 text-sm font-semibold leading-5">
+                <div className="w-[416px]">PII Field</div>
+                <div className="w-[416px]">DSR Package Label</div>
+                <div className="w-[416px]">Data Categories</div>
+                <div className="invisible">
+                  <Icons.TrashCan />
+                </div>
+              </Flex>
+              <div>
+                {formFields.map((formField, index) => (
+                  <Flex
+                    key={formField.key}
+                    gap={24}
+                    align="flex-start"
+                    className={index > 0 ? "mt-3" : undefined}
+                  >
+                    <div className="min-h-[57px] w-[416px]">
+                      <Form.Item
+                        {...formField}
+                        name={[formField.name, "pii_field"]}
+                        rules={[
+                          {
+                            required: true,
+                            message: "PII Field is required",
+                          },
+                          {
+                            min: 1,
+                            message:
+                              "PII Field must have at least one character",
+                          },
+                          {
+                            max: 200,
+                            message:
+                              "PII Field has a maximum of 200 characters",
+                          },
+                        ]}
+                      >
+                        <Input autoFocus={index === 0} />
+                      </Form.Item>
+                    </div>
+                    <div className="min-h-[57px] w-[416px]">
+                      <Form.Item
+                        {...formField}
+                        name={[formField.name, "dsr_package_label"]}
+                        rules={[
+                          {
+                            required: true,
+                            message: "DSR Package Label is required",
+                          },
+                          {
+                            min: 1,
+                            message:
+                              "DSR Package Label must have at least one character",
+                          },
+                          {
+                            max: 200,
+                            message:
+                              "DSR Package Label has a maximum of 200 characters",
+                          },
+                        ]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </div>
+                    <div className="min-h-[57px] w-[416px]">
+                      <Form.Item
+                        {...formField}
+                        name={[formField.name, "data_categories"]}
+                      >
+                        <Select
+                          aria-label="Data Categories"
+                          mode="multiple"
+                          options={allDataCategories.map((data_category) => ({
+                            value: data_category.fides_key,
+                            label: data_category.fides_key,
+                          }))}
+                        />
+                      </Form.Item>
+                    </div>
+                    <div
+                      className="h-[57px]"
+                      style={{
+                        visibility: index > 0 ? "visible" : "hidden",
                       }}
                     >
-                      Add new PII field
-                    </Button>
-                    <ManualButtonGroup
-                      isSubmitting={isSubmitting}
-                      onCancelClick={onCancel}
-                    />
-                  </>
-                );
-              }}
-            />
-          </VStack>
-        </Form>
-      )}
-    </Formik>
+                      <Icons.TrashCan
+                        onClick={() => remove(formField.name)}
+                        className="cursor-pointer"
+                      />
+                    </div>
+                  </Flex>
+                ))}
+              </div>
+              <Button
+                className="my-6"
+                onClick={() => {
+                  add({
+                    pii_field: "",
+                    dsr_package_label: "",
+                    data_categories: [],
+                  });
+                }}
+              >
+                Add new PII field
+              </Button>
+              <ManualButtonGroup
+                isSubmitting={isSubmitting}
+                onCancelClick={onCancel}
+              />
+            </>
+          )}
+        </Form.List>
+      </Flex>
+    </Form>
   );
 };
 

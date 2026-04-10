@@ -1,17 +1,9 @@
-import {
-  ChakraBox as Box,
-  ChakraVStack as VStack,
-  Spin,
-  useMessage,
-} from "fidesui";
-import { Form, Formik } from "formik";
-import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { Flex, Form, Input, Select, Spin, useMessage } from "fidesui";
+import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_DETAIL_ROUTE } from "~/features/common/nav/routes";
@@ -55,35 +47,7 @@ type FormValues = {
   dataset?: string[];
 };
 
-// Helper component to handle form state communication
-const FormStateHandler = ({
-  dirty,
-  isValid,
-  submitForm,
-  loading,
-  onFormStateChange,
-}: {
-  dirty: boolean;
-  isValid: boolean;
-  submitForm: () => void;
-  loading: boolean;
-  onFormStateChange?: (formState: {
-    dirty: boolean;
-    isValid: boolean;
-    submitForm: () => void;
-    loading: boolean;
-  }) => void;
-}) => {
-  useEffect(() => {
-    if (onFormStateChange) {
-      onFormStateChange({ dirty, isValid, submitForm, loading });
-    }
-  }, [dirty, isValid, submitForm, loading, onFormStateChange]);
-
-  return null;
-};
-
-const ConfigureIntegrationForm = ({
+export const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
   onClose,
@@ -199,6 +163,8 @@ const ConfigureIntegrationForm = ({
     }),
     dataset: initialDatasets,
   };
+
+  const [form] = Form.useForm<FormValues>();
 
   const messageApi = useMessage();
 
@@ -391,6 +357,34 @@ const ConfigureIntegrationForm = ({
 
   const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
+  // Form state tracking for parent component
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  const isDirty = useMemo(
+    () => !isEqual(form.getFieldsValue(true), initialValues),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allValues, initialValues],
+  );
+
+  useEffect(() => {
+    if (onFormStateChange) {
+      onFormStateChange({
+        dirty: isDirty,
+        isValid: submittable,
+        submitForm: () => form.submit(),
+        loading,
+      });
+    }
+  }, [isDirty, submittable, loading, form, onFormStateChange]);
+
   if (secretsSchemaIsLoading) {
     return <Spin />;
   }
@@ -413,82 +407,67 @@ const ConfigureIntegrationForm = ({
   return (
     <>
       {description && (
-        <Box
-          padding="20px 24px"
-          backgroundColor="gray.50"
-          borderRadius="md"
-          border="1px solid"
-          borderColor="gray.200"
-          fontSize="sm"
-          marginTop="16px"
-        >
+        <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 px-6 py-5 text-sm">
           {description}
-        </Box>
+        </div>
       )}
-      <Formik
+      <Form
+        form={form}
+        layout="vertical"
         initialValues={initialValues}
-        enableReinitialize
-        onSubmit={handleSubmit}
+        onFinish={handleSubmit}
+        key={connection?.key ?? "create"}
       >
-        {({ dirty, isValid, submitForm }) => {
-          return (
-            <Form>
-              <VStack alignItems="start" spacing={6} mt={4}>
-                <CustomTextInput
-                  id="name"
-                  name="name"
-                  label="Name"
-                  variant="stacked"
-                  isRequired
+        <Flex vertical gap={24} align="flex-start" className="mt-4">
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Name is required" }]}
+            className="w-full"
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="description" label="Description" className="w-full">
+            <Input />
+          </Form.Item>
+          {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+            connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
+            connectionOption.identifier !== ConnectionType.WEBSITE && (
+              <Form.Item
+                name="system_fides_key"
+                label="System"
+                tooltip="Link this integration to a system for monitoring purposes"
+                className="w-full"
+              >
+                <Select
+                  aria-label="System"
+                  options={systemOptions}
+                  onSearch={onSystemSearch}
+                  filterOption={false}
+                  loading={isFetchingSystems}
+                  allowClear
+                  placeholder="Search for a system..."
+                  showSearch
                 />
-                <CustomTextInput
-                  id="description"
-                  name="description"
-                  label="Description"
-                  variant="stacked"
-                />
-                {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
-                  connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
-                  connectionOption.identifier !== ConnectionType.WEBSITE && (
-                    <ControlledSelect
-                      id="system_fides_key"
-                      name="system_fides_key"
-                      label="System"
-                      tooltip="Link this integration to a system for monitoring purposes"
-                      layout="stacked"
-                      options={systemOptions}
-                      onSearch={onSystemSearch}
-                      // Refetch systems on search; disable client-side filtering
-                      filterOption={false}
-                      loading={isFetchingSystems}
-                      allowClear
-                      placeholder="Search for a system..."
-                    />
-                  )}
-                {hasSecrets && secrets && generateFields(secrets)}
-                {connectionOption.identifier === ConnectionType.DATAHUB && (
-                  <ControlledSelect
-                    id="dataset"
-                    name="dataset"
-                    options={datasetOptions ?? []}
-                    label="Datasets"
-                    tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
-                    layout="stacked"
-                    mode="multiple"
-                  />
-                )}
-              </VStack>
-              <FormStateHandler
-                dirty={dirty}
-                isValid={isValid}
-                submitForm={submitForm}
-                loading={loading}
-                onFormStateChange={onFormStateChange}
+              </Form.Item>
+            )}
+          {hasSecrets && secrets && generateFields(secrets)}
+          {connectionOption.identifier === ConnectionType.DATAHUB && (
+            <Form.Item
+              name="dataset"
+              label="Datasets"
+              tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
+              className="w-full"
+            >
+              <Select
+                aria-label="Datasets"
+                options={datasetOptions ?? []}
+                mode="multiple"
               />
-            </Form>
-          );
-        }}
-      </Formik>
+            </Form.Item>
+          )}
+        </Flex>
+      </Form>
     </>
   );
 };
