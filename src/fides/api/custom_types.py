@@ -3,7 +3,7 @@
 
 from html import escape
 from re import compile as regex
-from typing import Annotated
+from typing import Annotated, Optional
 
 from nh3 import clean
 from pydantic import AfterValidator, AnyHttpUrl, AnyUrl, BeforeValidator
@@ -187,3 +187,23 @@ def validate_path_of_http_url_no_slash(value: AnyHttpUrl) -> str:
 AnyHttpUrlStringRemovesSlash = Annotated[
     AnyHttpUrl, AfterValidator(validate_path_of_http_url_no_slash)
 ]
+
+_USER_GEOGRAPHY_RE = regex(r"^([a-z]{2}(_[a-z0-9]{1,3})?|eea)$")
+
+def validate_user_geography(v: Optional[str]) -> Optional[str]:
+    """
+    Validates that a user_geography value is a well-formed locale code.
+
+    Accepts bare country codes (e.g. "fr") and country+region codes
+    (e.g. "us_ca", "fr_idg"). Rejects anything else to prevent malicious
+    data from being persisted (ENG-2488).
+    """
+    if v is None:
+        return None
+    if not _USER_GEOGRAPHY_RE.match(str(v)):
+        raise ValueError(
+            "user_geography must be a locale code matching '([a-z]{2}(_[a-z0-9]{1,3})?|eea)'"
+        )
+    return v
+
+UserGeography = Annotated[str, BeforeValidator(validate_user_geography)]
