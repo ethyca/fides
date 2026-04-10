@@ -39,20 +39,22 @@ def upgrade() -> None:
         ).bindparams(key=MIGRATION_KEY)
     )
 
-    # Check table size to decide if we should create index immediately
+    # Use approximate row count from pg_class to avoid a sequential scan
+    # on large tables during the migration transaction
     table_size = connection.execute(
-        sa.text("SELECT COUNT(*) FROM privacy_preferences")
-    ).scalar()
+        sa.text(
+            "SELECT reltuples::bigint FROM pg_class WHERE relname = 'privacy_preferences'"
+        )
+    ).scalar() or 0
+    # reltuples is -1 when the table has never been analyzed; treat as small
+    table_size = max(table_size, 0)
 
     if table_size < 1000000:
         logger.info(
-            f"privacy_preferences has {table_size} rows, creating composite index directly"
+            f"privacy_preferences has ~{table_size} rows, creating composite index directly"
         )
-        op.execute(
-            sa.text(
-                f"CREATE INDEX {INDEX_NAME} "
-                "ON privacy_preferences (created_at, id)"
-            )
+        op.create_index(
+            INDEX_NAME, "privacy_preferences", ["created_at", "id"]
         )
         # Mark as completed so the post-upgrade startup task doesn't re-check
         op.execute(
@@ -64,9 +66,9 @@ def upgrade() -> None:
         )
         logger.info(f"{INDEX_NAME} created successfully")
     else:
-        logger.warning(
-            f"privacy_preferences has {table_size} rows (>1M), "
-            "skipping index creation. Index will be created during application startup "
+        logger.info(
+            f"privacy_preferences has ~{table_size} rows (>1M), "
+            "deferring index creation to application startup "
             "via post_upgrade_index_creation.py"
         )
 

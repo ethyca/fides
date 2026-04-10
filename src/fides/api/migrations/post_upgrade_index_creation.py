@@ -255,6 +255,8 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "type": "index",
             "migration_key": "idx_privacy_preferences_current_unique_identity",
         },
+    ],
+    "privacy_preferences": [
         {
             "name": "idx_privacy_preferences_created_at_id",
             "statement": "CREATE INDEX CONCURRENTLY idx_privacy_preferences_created_at_id ON privacy_preferences (created_at, id)",

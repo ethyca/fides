@@ -36,6 +36,9 @@ class PrivacyPreferences(Base):
     def __tablename__(self) -> str:
         return "privacy_preferences"
 
+    # Declared here so Alembic's autogenerate recognizes it. Actual creation
+    # is managed via migration c5d6e7f8a9b0 + deferred startup task in
+    # post_upgrade_index_creation.py.
     __table_args__ = (
         Index("idx_privacy_preferences_created_at_id", "created_at", "id"),
     )
