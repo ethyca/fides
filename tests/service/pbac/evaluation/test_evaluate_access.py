@@ -68,8 +68,9 @@ def test_no_consumer_purposes_produces_gap(now):
 
 
 def test_no_consumer_purposes_with_unrestricted_dataset(now):
-    """Rule 1 takes precedence over Rule 3 -- even if the dataset has no purposes,
-    a consumer with no purposes is still a violation."""
+    """A consumer with no purposes accessing an unrestricted dataset is
+    compliant (no purpose mismatch) but produces a gap flagging the
+    consumer as having no declared purposes."""
     consumer = _make_consumer(frozenset())
     datasets = {
         "ds_open": DatasetPurposes(
@@ -81,8 +82,9 @@ def test_no_consumer_purposes_with_unrestricted_dataset(now):
 
     output = evaluate_access(consumer, datasets, query)
 
-    assert not output.result.is_compliant
-    assert len(output.result.violations) == 1
+    assert output.result.is_compliant
+    assert len(output.gaps) == 1
+    assert "no declared purposes" in output.gaps[0].reason
 
 
 # --- Rule 2: purpose mismatch ---
