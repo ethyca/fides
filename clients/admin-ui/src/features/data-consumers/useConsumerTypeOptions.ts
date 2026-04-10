@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from "react";
 
-import { formatPlatformLabel } from "./constants";
 import {
   ConsumerTypeDefinition,
   useGetConsumerTypesQuery,
@@ -21,7 +20,7 @@ const useConsumerTypeOptions = () => {
 
     const groups = new Map<string, { value: string; label: string }[]>();
     consumerTypes.forEach((ct) => {
-      const platformLabel = formatPlatformLabel(ct.platform);
+      const platformLabel = ct.platform_label;
       if (!groups.has(platformLabel)) {
         groups.set(platformLabel, []);
       }

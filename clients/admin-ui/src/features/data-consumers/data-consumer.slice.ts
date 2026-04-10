@@ -18,6 +18,7 @@ export interface ConsumerTypeDefinition {
   name: string;
   description: string;
   platform: string;
+  platform_label: string;
   supports_members: boolean;
   scope_keys: Record<string, string>;
   display_key: string;
