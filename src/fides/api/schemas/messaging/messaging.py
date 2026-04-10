@@ -533,6 +533,7 @@ class UserEmailInviteStatus(BaseModel):
 class MessagingTemplateWithPropertiesBase(BaseModel):
     id: str
     type: str
+    label: str
     is_enabled: bool
     properties: Optional[List[MinimalProperty]] = None
 
@@ -541,6 +542,7 @@ class MessagingTemplateWithPropertiesBase(BaseModel):
 
 class MessagingTemplateDefault(BaseModel):
     type: str
+    label: str
     is_enabled: bool
     content: Dict[str, Any] = Field(
         examples=[
@@ -570,6 +572,7 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
+    label: str = "Default"
     content: Dict[str, Any] = Field(
         examples=[
             {
@@ -583,6 +586,7 @@ class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
 
 class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
+    label: str | None = None
     content: Optional[Dict[str, Any]] = Field(
         None,
         examples=[

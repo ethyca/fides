@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Type
 
 from pydantic import ConfigDict
-from sqlalchemy import Boolean, Column, String
+from sqlalchemy import Boolean, Column, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -107,7 +107,12 @@ class MessagingTemplate(Base):
     def __tablename__(self) -> str:
         return "messaging_template"
 
+    __table_args__ = (
+        UniqueConstraint("type", "label", name="uq_messaging_template_type_label"),
+    )
+
     type = Column(String, index=True, nullable=False)
+    label = Column(String, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
     properties: RelationshipProperty[List[Property]] = relationship(
         "Property",
