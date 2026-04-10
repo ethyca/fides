@@ -5,7 +5,7 @@ import { useAppSelector } from "~/app/hooks";
 import AddSystem from "./AddSystem";
 import AuthenticateScanner from "./AuthenticateScanner";
 import { selectStep } from "./config-wizard.slice";
-import OrganizationInfoForm from "./OrganizationInfoForm";
+import { OrganizationInfoForm } from "./OrganizationInfoForm";
 import ScanResults from "./ScanResults";
 
 const ConfigWizardWalkthrough = () => {

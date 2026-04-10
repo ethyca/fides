@@ -1,10 +1,15 @@
-import { Button, Flex, Typography, useMessage } from "fidesui";
-import { Form, Formik } from "formik";
-import { useState } from "react";
-import * as Yup from "yup";
+import {
+  Button,
+  Card,
+  Flex,
+  Form,
+  Input,
+  Typography,
+  useMessage,
+} from "fidesui";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
   ParsedError,
@@ -48,57 +53,29 @@ const initialValues = {
 
 type FormValues = typeof initialValues;
 
-const ValidationSchema = Yup.object().shape({
-  orgUrl: Yup.string().required().trim().url().label("Organization URL"),
-  clientId: Yup.string()
-    .required()
-    .trim()
-    .matches(/^[^\s]+$/, "Cannot contain spaces")
-    .label("Client ID"),
-  privateKey: Yup.string()
-    .required()
-    .trim()
-    .test(
-      "is-valid-json",
-      "Private key must be valid JSON. Paste the JWK downloaded from Okta.",
-      (value) => {
-        if (!value) {
-          return true;
-        }
-        try {
-          JSON.parse(value);
-          return true;
-        } catch {
-          return false;
-        }
-      },
-    )
-    .label("Private Key"),
-  scopes: Yup.string()
-    .required()
-    .trim()
-    .label("Scopes")
-    .default("okta.apps.read")
-    .test(
-      "valid-scopes",
-      "Scopes must be a single scope or comma-separated list (e.g., 'okta.apps.read' or 'okta.apps.read, okta.users.read')",
-      (value) => {
-        if (!value) {
-          return true;
-        }
-        // Split on comma and check each scope is non-empty and has no internal whitespace
-        const scopes = value.split(",").map((s) => s.trim());
-        return scopes.every((scope) => scope.length > 0 && !/\s/.test(scope));
-      },
-    ),
-});
-
-const AuthenticateOktaForm = () => {
+export const AuthenticateOktaForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
   const message = useMessage();
+  const [form] = Form.useForm<FormValues>();
 
   const [scannerError, setScannerError] = useState<ParsedError>();
+
+  // Track submittable state
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  useEffect(() => {
+    setIsDirty(form.isFieldsTouched());
+  }, [form, allValues]);
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
     const systems: System[] = (results ?? []).filter(isSystem);
@@ -121,7 +98,7 @@ const AuthenticateOktaForm = () => {
 
   const [generate, { isLoading }] = useGenerateMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const onFinish = async (values: FormValues) => {
     setScannerError(undefined);
 
     const config: OktaOAuth2Config = {
@@ -147,6 +124,8 @@ const AuthenticateOktaForm = () => {
     }
   };
 
+  const isSubmitting = isLoading;
+
   return (
     <Flex vertical gap="large">
       <NextBreadcrumb
@@ -162,90 +141,160 @@ const AuthenticateOktaForm = () => {
           { title: "Authenticate Okta scanner" },
         ]}
       />
-      <Formik
-        initialValues={initialValues}
-        validationSchema={ValidationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isValid, isSubmitting, dirty }) => (
-          <>
-            {isSubmitting && (
-              <ScannerLoading
-                title="System scanning in progress"
-                onClose={handleCancel}
-              />
-            )}
 
-            {scannerError && (
-              <ErrorPage
-                error={scannerError}
-                defaultMessage="Fides was unable to scan your infrastructure. Please ensure your credentials are accurate and inspect the error log below for more details."
-                fullScreen={false}
-                showReload={false}
-              />
-            )}
-            <Form data-testid="authenticate-okta-form">
-              <Flex vertical gap="large">
-                {!isSubmitting && !scannerError && (
-                  <Flex vertical gap="small" className="w-full max-w-xl">
-                    <Typography.Paragraph>
-                      {OKTA_AUTH_DESCRIPTION}
-                    </Typography.Paragraph>
-                    <CustomTextInput
-                      name="orgUrl"
-                      label="Organization URL"
-                      tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
-                      placeholder="https://your-org.okta.com"
-                      isRequired
-                    />
-                    <CustomTextInput
-                      name="clientId"
-                      label="Client ID"
-                      tooltip="The OAuth2 client ID from your Okta API Services application"
-                      placeholder="0oa1abc2def3ghi4jkl5"
-                      isRequired
-                    />
-                    <CustomTextArea
-                      name="privateKey"
-                      label="Private key"
-                      tooltip="RSA private key in JWK format for OAuth2 authentication"
-                      placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
-                      isRequired
-                      textAreaProps={{
-                        rows: 8,
-                        style: { fontFamily: "monospace", fontSize: "12px" },
-                      }}
-                    />
-                    <CustomTextInput
-                      name="scopes"
-                      label="Scopes"
-                      tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
-                      placeholder="okta.apps.read"
-                      isRequired
-                    />
-                  </Flex>
-                )}
-                {!isSubmitting && (
-                  <Flex gap="small">
-                    <Button onClick={handleCancel}>Cancel</Button>
-                    {!scannerError && (
-                      <Button
-                        htmlType="submit"
-                        type="primary"
-                        disabled={!dirty || !isValid}
-                        loading={isLoading}
-                        data-testid="submit-btn"
-                      >
-                        Save and continue
-                      </Button>
-                    )}
-                  </Flex>
-                )}
+      {isSubmitting && (
+        <ScannerLoading
+          title="System scanning in progress"
+          onClose={handleCancel}
+        />
+      )}
+
+      {scannerError && (
+        <ErrorPage
+          error={scannerError}
+          defaultMessage="Fides was unable to scan your infrastructure. Please ensure your credentials are accurate and inspect the error log below for more details."
+          fullScreen={false}
+          showReload={false}
+        />
+      )}
+
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={initialValues}
+        data-testid="authenticate-okta-form"
+      >
+        <Flex vertical gap="large">
+          {!isSubmitting && !scannerError && (
+            <Card>
+              <Flex vertical gap="small" className="w-full max-w-xl">
+                <Typography.Paragraph>
+                  {OKTA_AUTH_DESCRIPTION}
+                </Typography.Paragraph>
+                <Form.Item
+                  name="orgUrl"
+                  label="Organization URL"
+                  tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Organization URL is required",
+                    },
+                    { type: "url", message: "Must be a valid URL" },
+                  ]}
+                >
+                  <Input
+                    placeholder="https://your-org.okta.com"
+                    data-testid="input-orgUrl"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="clientId"
+                  label="Client ID"
+                  tooltip="The OAuth2 client ID from your Okta API Services application"
+                  rules={[
+                    { required: true, message: "Client ID is required" },
+                    {
+                      pattern: /^[^\s]+$/,
+                      message: "Cannot contain spaces",
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="0oa1abc2def3ghi4jkl5"
+                    data-testid="input-clientId"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="privateKey"
+                  label="Private key"
+                  tooltip="RSA private key in JWK format for OAuth2 authentication"
+                  rules={[
+                    { required: true, message: "Private key is required" },
+                    {
+                      validator: (_, value) => {
+                        if (!value) {
+                          return Promise.resolve();
+                        }
+                        try {
+                          JSON.parse(value);
+                          return Promise.resolve();
+                        } catch {
+                          return Promise.reject(
+                            new Error(
+                              "Private key must be valid JSON. Paste the JWK downloaded from Okta.",
+                            ),
+                          );
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    rows={8}
+                    style={{ fontFamily: "monospace", fontSize: "12px" }}
+                    placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
+                    data-testid="input-privateKey"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="scopes"
+                  label="Scopes"
+                  tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
+                  rules={[
+                    { required: true, message: "Scopes is required" },
+                    {
+                      validator: (_, value) => {
+                        if (!value) {
+                          return Promise.resolve();
+                        }
+                        const scopes = value
+                          .split(",")
+                          .map((s: string) => s.trim());
+                        if (
+                          scopes.every(
+                            (scope: string) =>
+                              scope.length > 0 && !/\s/.test(scope),
+                          )
+                        ) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error(
+                            "Scopes must be a single scope or comma-separated list (e.g., 'okta.apps.read' or 'okta.apps.read, okta.users.read')",
+                          ),
+                        );
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="okta.apps.read"
+                    data-testid="input-scopes"
+                  />
+                </Form.Item>
               </Flex>
-            </Form>
-          </>
-        )}
-      </Formik>
+            </Card>
+          )}
+          {!isSubmitting && (
+            <Flex gap="small" justify="end">
+              <Button onClick={handleCancel}>Cancel</Button>
+              {!scannerError && (
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!isDirty || !submittable}
+                  loading={isLoading}
+                  data-testid="submit-btn"
+                >
+                  Save and continue
+                </Button>
+              )}
+            </Flex>
+          )}
+        </Flex>
+      </Form>
     </Flex>
   );
 };
