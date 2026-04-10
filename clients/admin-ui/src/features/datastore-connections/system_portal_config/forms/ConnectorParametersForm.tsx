@@ -1,8 +1,20 @@
 import type { Option } from "common/form/inputs";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
-import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
+import {
+  useLazyGetDatastoreConnectionStatusQuery,
+  usePatchDatastoreConnectionsMutation,
+} from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
-import { Button, Flex, Form, Input, Select } from "fidesui";
+import {
+  Button,
+  Flex,
+  Form,
+  Icons,
+  Input,
+  Modal,
+  Select,
+  Switch,
+} from "fidesui";
 import _ from "lodash";
 import React, { useMemo } from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
@@ -14,7 +26,6 @@ import {
   useFormFieldsFromSchema,
 } from "~/features/common/form/useFormFieldsFromSchema";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
-import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -22,7 +33,6 @@ import {
   SystemType,
 } from "~/types/api";
 
-import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
 
@@ -85,6 +95,7 @@ export const ConnectorParametersForm = ({
 }: ConnectorParametersFormProps) => {
   const [trigger, { isLoading, isFetching }] =
     useLazyGetDatastoreConnectionStatusQuery();
+  const [patchConnection] = usePatchDatastoreConnectionsMutation();
   const { plus: isPlusEnabled } = useFeatures();
 
   const { getFieldValidation, preprocessValues } =
@@ -177,6 +188,34 @@ export const ConnectorParametersForm = ({
 
   const isDisabledConnection = connectionConfig?.disabled || false;
 
+  const confirmToggleConnection = () => {
+    const action = isDisabledConnection ? "Enable" : "Disable";
+    Modal.confirm({
+      title: `${action} connection`,
+      content: `${action === "Enable" ? "Enabling" : "Disabling"} a connection may impact any privacy request that is currently in progress. Do you wish to proceed?`,
+      okText: `${action} connection`,
+      onOk: () =>
+        patchConnection({
+          key: connectionConfig!.key,
+          name: connectionConfig?.name ?? connectionConfig!.key,
+          disabled: !isDisabledConnection,
+          access: connectionConfig!.access,
+          connection_type: connectionConfig!.connection_type,
+        }),
+    });
+  };
+
+  const confirmDeleteConnection = () => {
+    Modal.confirm({
+      title: "Delete integration",
+      content:
+        "Deleting an integration may impact any privacy request that is currently in progress. Do you wish to proceed?",
+      okText: "Delete integration",
+      okButtonProps: { danger: true },
+      onOk: onDelete,
+    });
+  };
+
   const allValues = Form.useWatch([], form);
   const isDirty = useMemo(
     () => !_.isEqual(allValues, initialFormValues),
@@ -193,7 +232,7 @@ export const ConnectorParametersForm = ({
       key={connectionConfig?.key ?? "create"}
       validateTrigger="onBlur"
     >
-      <Flex vertical gap={16}>
+      <Flex vertical>
         {/* Hidden fields to preserve values in form submission */}
         <Form.Item name="name" hidden noStyle>
           <input type="hidden" />
@@ -201,23 +240,23 @@ export const ConnectorParametersForm = ({
         <Form.Item name="description" hidden noStyle>
           <input type="hidden" />
         </Form.Item>
-        <div className="flex flex-row">
-          {connectionConfig ? (
-            <DisableConnectionModal
-              connection_key={connectionConfig?.key}
-              disabled={isDisabledConnection}
-              connection_type={connectionConfig?.connection_type}
-              access_type={connectionConfig?.access}
-              name={connectionConfig?.name ?? connectionConfig.key}
+        {connectionConfig && (
+          <Flex align="center" gap="middle">
+            <span>Enable integration</span>
+            <Switch
+              checked={!isDisabledConnection}
+              onChange={confirmToggleConnection}
             />
-          ) : null}
-          {connectionConfig ? (
-            <DeleteConnectionModal
-              onDelete={onDelete}
-              deleteResult={deleteResult}
+            <div className="grow" />
+            <span>Delete integration</span>
+            <Button
+              aria-label="Delete integration"
+              icon={<Icons.TrashCan />}
+              disabled={deleteResult.isLoading}
+              onClick={confirmDeleteConnection}
             />
-          ) : null}
-        </div>
+          </Flex>
+        )}
         {/* Connection Identifier */}
         {!!connectionConfig?.key && (
           <Form.Item
