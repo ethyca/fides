@@ -563,12 +563,11 @@ describe("Integration management for data detection & discovery", () => {
         .should("have.value", "BQ Integration")
         .clear()
         .type("A different name");
-      cy.getByTestId("input-secrets.keyfile_creds").clear().type(
-        `{"credentials": "test221312"}`,
-        {
+      cy.getByTestId("input-secrets.keyfile_creds")
+        .clear()
+        .type(`{"credentials": "test221312"}`, {
           parseSpecialCharSequences: false,
-        },
-      );
+        });
       cy.getByTestId("input-secrets.dataset").type(`somedataset`);
       cy.getByTestId("save-btn").click();
 
