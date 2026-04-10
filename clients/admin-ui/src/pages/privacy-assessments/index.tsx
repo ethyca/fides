@@ -24,7 +24,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
     refetch: refetchAssessments,
   } = useGetPrivacyAssessmentsQuery();
 
-  const groups = assessmentsData?.groups ?? [];
+  const groups = assessmentsData?.items ?? [];
   const hasAssessments = (assessmentsData?.total ?? 0) > 0;
 
   if (isLoading) {
