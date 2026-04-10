@@ -1,4 +1,4 @@
-import { Button, Flex, Icons, Text } from "fidesui";
+import { Button, Flex, Icons, Text, Title } from "fidesui";
 import Link from "next/link";
 import { useQueryStates } from "nuqs";
 
@@ -38,7 +38,7 @@ const MonitorProgressWidget = ({
     SearchFormQueryState(Object.values(APIMonitorType)),
   );
 
-  const { data } = useGetAggregateStatisticsQuery(
+  const { data, isLoading } = useGetAggregateStatisticsQuery(
     {
       monitor_type: monitorType,
       monitor_config_id: monitorId,
@@ -54,7 +54,7 @@ const MonitorProgressWidget = ({
   return (
     heliosInsights && (
       <Flex className="w-full" gap="middle">
-        {(data && totalMonitors > 0) || !!filters.steward_key ? (
+        {(data && totalMonitors > 0) || !!filters.steward_key || isLoading ? (
           <ProgressCard
             {...buildWidgetProps({
               monitor_type: monitorType,
@@ -70,10 +70,10 @@ const MonitorProgressWidget = ({
           />
         ) : (
           <div>
-            <Flex vertical gap="middle" align="center" justify="center">
-              <span>{MONITOR_TYPE_TO_LABEL[monitorType]}</span>
+            <Flex vertical gap="small" justify="center">
+              <Title level={5}>{MONITOR_TYPE_TO_LABEL[monitorType]}</Title>
               <Text>{renderIcon(MONITOR_TYPE_TO_ICON[monitorType])}</Text>
-              <Text type="secondary" className="text-center">
+              <Text type="secondary">
                 {MONITOR_TYPE_TO_EMPTY_TEXT[monitorType]}
               </Text>
               <Link href={INTEGRATION_MANAGEMENT_ROUTE}>
