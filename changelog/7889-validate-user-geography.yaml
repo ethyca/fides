@@ -1,0 +1,4 @@
+type: Security
+description: Validated user_geography field values against a locale-code pattern to prevent malicious data from being persisted
+pr: 7889
+labels: []
