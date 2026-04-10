@@ -82,6 +82,7 @@ export const FormFieldFromSchema = ({
       <Form.Item {...formItemProps}>
         <Select
           aria-label={fieldSchema.title}
+          data-testid={`controlled-select-${name}`}
           options={options}
           mode={fieldSchema.multiselect ? "multiple" : undefined}
         />
@@ -94,6 +95,7 @@ export const FormFieldFromSchema = ({
       <Form.Item {...formItemProps}>
         <Select
           aria-label={fieldSchema.title}
+          data-testid={`controlled-select-${name}`}
           options={[
             { label: "False", value: "false" },
             { label: "True", value: "true" },
@@ -108,6 +110,7 @@ export const FormFieldFromSchema = ({
     return (
       <Form.Item {...formItemProps}>
         <Input.TextArea
+          data-testid={`input-${name}`}
           rows={8}
           style={{ fontFamily: "monospace", fontSize: "12px" }}
           placeholder={getPlaceholder()}
@@ -119,14 +122,22 @@ export const FormFieldFromSchema = ({
   if (fieldSchema.sensitive) {
     return (
       <Form.Item {...formItemProps}>
-        <Input.Password placeholder={getPlaceholder()} autoComplete="off" />
+        <Input.Password
+          data-testid={`input-${name}`}
+          placeholder={getPlaceholder()}
+          autoComplete="off"
+        />
       </Form.Item>
     );
   }
 
   return (
     <Form.Item {...formItemProps}>
-      <Input placeholder={getPlaceholder()} autoComplete="off" />
+      <Input
+        data-testid={`input-${name}`}
+        placeholder={getPlaceholder()}
+        autoComplete="off"
+      />
     </Form.Item>
   );
 };

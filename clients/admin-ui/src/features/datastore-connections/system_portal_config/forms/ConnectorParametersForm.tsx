@@ -194,6 +194,13 @@ export const ConnectorParametersForm = ({
       validateTrigger="onBlur"
     >
       <Flex vertical gap={16}>
+        {/* Hidden fields to preserve values in form submission */}
+        <Form.Item name="name" hidden noStyle>
+          <input type="hidden" />
+        </Form.Item>
+        <Form.Item name="description" hidden noStyle>
+          <input type="hidden" />
+        </Form.Item>
         <div className="flex flex-row">
           {connectionConfig ? (
             <DisableConnectionModal
@@ -220,7 +227,10 @@ export const ConnectorParametersForm = ({
             rules={[{ required: true }]}
             layout="horizontal"
           >
-            <Input disabled={!!connectionConfig?.key} />
+            <Input
+              data-testid="input-instance_key"
+              disabled={!!connectionConfig?.key}
+            />
           </Form.Item>
         )}
         {/* Dynamic connector secret fields */}
@@ -243,7 +253,7 @@ export const ConnectorParametersForm = ({
               );
             })
           : null}
-        {isPlusEnabled && (
+        {isPlusEnabled ? (
           <Form.Item
             name="enabled_actions"
             label="Request types"
@@ -253,12 +263,17 @@ export const ConnectorParametersForm = ({
           >
             <Select
               aria-label="Request types"
+              data-testid="controlled-select-enabled_actions"
               mode="multiple"
               options={connectionOption.supported_actions.map((action) => ({
                 label: _.upperFirst(action),
                 value: action,
               }))}
             />
+          </Form.Item>
+        ) : (
+          <Form.Item name="enabled_actions" hidden noStyle>
+            <input type="hidden" />
           </Form.Item>
         )}
         {SystemType.DATABASE === connectionOption.type &&
@@ -271,6 +286,7 @@ export const ConnectorParametersForm = ({
             >
               <Select
                 aria-label="Datasets"
+                data-testid="controlled-select-dataset"
                 mode="multiple"
                 options={datasetDropdownOptions}
                 optionRender={DatasetSelectOption}

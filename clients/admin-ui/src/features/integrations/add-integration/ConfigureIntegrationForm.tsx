@@ -425,10 +425,10 @@ export const ConfigureIntegrationForm = ({
             rules={[{ required: true, message: "Name is required" }]}
             className="w-full"
           >
-            <Input />
+            <Input data-testid="input-name" />
           </Form.Item>
           <Form.Item name="description" label="Description" className="w-full">
-            <Input />
+            <Input data-testid="input-description" />
           </Form.Item>
           {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
             connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
@@ -441,6 +441,7 @@ export const ConfigureIntegrationForm = ({
               >
                 <Select
                   aria-label="System"
+                  data-testid="controlled-select-system_fides_key"
                   options={systemOptions}
                   onSearch={onSystemSearch}
                   filterOption={false}
@@ -461,6 +462,7 @@ export const ConfigureIntegrationForm = ({
             >
               <Select
                 aria-label="Datasets"
+                data-testid="controlled-select-dataset"
                 options={datasetOptions ?? []}
                 mode="multiple"
               />
