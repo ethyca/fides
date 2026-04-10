@@ -22,7 +22,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAPIHelper } from "~/features/common/hooks";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
-import DSRCustomizationForm from "./DSRCustomizationForm";
+import { DSRCustomizationForm } from "./DSRCustomizationForm";
 import { Field } from "./types";
 
 type Props = {
