@@ -190,6 +190,7 @@ AnyHttpUrlStringRemovesSlash = Annotated[
 
 _USER_GEOGRAPHY_RE = regex(r"^([a-z]{2}(_[a-z0-9]{1,3})?|eea)$")
 
+
 def validate_user_geography(v: Optional[str]) -> Optional[str]:
     """
     Validates that a user_geography value is a well-formed locale code.
