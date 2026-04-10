@@ -726,6 +726,7 @@ def get_messaging_template_by_id(
         return MessagingTemplateWithPropertiesDetail(
             id=template_id,
             type=messaging_template.type,
+            label=messaging_template.label,
             content=messaging_template.content,
             is_enabled=messaging_template.is_enabled,
             properties=messaging_template.properties,
