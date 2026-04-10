@@ -207,4 +207,5 @@ def validate_user_geography(v: Optional[str]) -> Optional[str]:
         )
     return v
 
+
 UserGeography = Annotated[str, BeforeValidator(validate_user_geography)]
