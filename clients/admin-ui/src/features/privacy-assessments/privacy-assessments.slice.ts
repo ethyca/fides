@@ -35,7 +35,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getPrivacyAssessments: build.query<
       GroupedAssessmentsResponse,
-      { status?: string } | void
+      { page?: number; size?: number; status?: string } | void
     >({
       query: (params) => ({
         url: "plus/privacy-assessments",
