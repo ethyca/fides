@@ -12,18 +12,14 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
-import {
-  isErrorResult,
-  ParsedError,
-  parseError,
-} from "~/features/common/helpers";
+import { ParsedError, parseError } from "~/features/common/helpers";
 import {
   GenerateResponse,
   GenerateTypes,
   System,
   ValidTargets,
 } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import ErrorPage from "../common/errors/ErrorPage";
 import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
@@ -57,17 +53,12 @@ export const AuthenticateAwsForm = () => {
   // Track submittable state
   const allValues = Form.useWatch([], form);
   const [submittable, setSubmittable] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     form
       .validateFields({ validateOnly: true })
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
-  }, [form, allValues]);
-
-  useEffect(() => {
-    setIsDirty(form.isFieldsTouched());
   }, [form, allValues]);
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
@@ -78,13 +69,6 @@ export const AuthenticateAwsForm = () => {
       `Your scan was successfully completed, with ${systems.length} new systems detected!`,
     );
   };
-  const handleError = (error: RTKErrorResult["error"]) => {
-    const parsedError = parseError(error, {
-      status: 500,
-      message: "Our system encountered a problem while connecting to AWS.",
-    });
-    setScannerError(parsedError);
-  };
   const handleCancel = () => {
     dispatch(changeStep(2));
   };
@@ -94,23 +78,25 @@ export const AuthenticateAwsForm = () => {
   const onFinish = async (values: FormValues) => {
     setScannerError(undefined);
 
-    const result = await generate({
-      organization_key: organizationKey,
-      generate: {
-        config: values,
-        target: ValidTargets.AWS,
-        type: GenerateTypes.SYSTEMS,
-      },
-    });
+    try {
+      const result = await generate({
+        organization_key: organizationKey,
+        generate: {
+          config: values,
+          target: ValidTargets.AWS,
+          type: GenerateTypes.SYSTEMS,
+        },
+      }).unwrap();
 
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else {
-      handleResults(result.data.generate_results);
+      handleResults(result.generate_results);
+    } catch (error) {
+      const parsedError = parseError(error as RTKErrorResult["error"], {
+        status: 500,
+        message: "Our system encountered a problem while connecting to AWS.",
+      });
+      setScannerError(parsedError);
     }
   };
-
-  const isSubmitting = isLoading;
 
   return (
     <Flex vertical gap="large">
@@ -128,7 +114,7 @@ export const AuthenticateAwsForm = () => {
         ]}
       />
 
-      {isSubmitting && (
+      {isLoading && (
         <ScannerLoading
           title="System scanning in progress"
           onClose={handleCancel}
@@ -170,7 +156,7 @@ export const AuthenticateAwsForm = () => {
         data-testid="authenticate-aws-form"
       >
         <Flex vertical gap="large">
-          {!isSubmitting && !scannerError && (
+          {!isLoading && !scannerError && (
             <Card>
               <Flex vertical gap="small" className="w-full max-w-xl">
                 <Typography.Paragraph>
@@ -237,14 +223,14 @@ export const AuthenticateAwsForm = () => {
               </Flex>
             </Card>
           )}
-          {!isSubmitting && (
+          {!isLoading && (
             <Flex gap="small" justify="end">
               <Button onClick={handleCancel}>Cancel</Button>
               {!scannerError && (
                 <Button
                   htmlType="submit"
                   type="primary"
-                  disabled={!isDirty || !submittable}
+                  disabled={!form.isFieldsTouched() || !submittable}
                   loading={isLoading}
                   data-testid="submit-btn"
                 >
@@ -258,5 +244,3 @@ export const AuthenticateAwsForm = () => {
     </Flex>
   );
 };
-
-export default AuthenticateAwsForm;

@@ -10,11 +10,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import {
-  isErrorResult,
-  ParsedError,
-  parseError,
-} from "~/features/common/helpers";
+import { ParsedError, parseError } from "~/features/common/helpers";
 import { OKTA_AUTH_DESCRIPTION } from "~/features/integrations/integration-type-info/oktaInfo";
 import {
   GenerateResponse,
@@ -23,7 +19,7 @@ import {
   System,
   ValidTargets,
 } from "~/types/api";
-import { RTKErrorResult } from "~/types/errors";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import ErrorPage from "../common/errors/ErrorPage";
 import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
@@ -35,14 +31,6 @@ import {
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerLoading from "./ScannerLoading";
-
-// OAuth2 config type for Okta authentication
-type OktaOAuth2Config = {
-  orgUrl: string;
-  clientId: string;
-  privateKey: string;
-  scopes: string[];
-};
 
 const initialValues = {
   orgUrl: "",
@@ -64,17 +52,12 @@ export const AuthenticateOktaForm = () => {
   // Track submittable state
   const allValues = Form.useWatch([], form);
   const [submittable, setSubmittable] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     form
       .validateFields({ validateOnly: true })
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
-  }, [form, allValues]);
-
-  useEffect(() => {
-    setIsDirty(form.isFieldsTouched());
   }, [form, allValues]);
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
@@ -85,13 +68,6 @@ export const AuthenticateOktaForm = () => {
       `Your scan was successfully completed, with ${systems.length} new systems detected!`,
     );
   };
-  const handleError = (error: RTKErrorResult["error"]) => {
-    const parsedError = parseError(error, {
-      status: 500,
-      message: "Our system encountered a problem while connecting to Okta.",
-    });
-    setScannerError(parsedError);
-  };
   const handleCancel = () => {
     dispatch(changeStep(2));
   };
@@ -101,30 +77,32 @@ export const AuthenticateOktaForm = () => {
   const onFinish = async (values: FormValues) => {
     setScannerError(undefined);
 
-    const config: OktaOAuth2Config = {
+    const config: Omit<OktaConfig, "scopes"> & { scopes: string[] } = {
       ...values,
       scopes: values.scopes
         ? values.scopes.split(",").map((s) => s.trim())
         : ["okta.apps.read"],
     };
 
-    const result = await generate({
-      organization_key: organizationKey,
-      generate: {
-        config: config as unknown as OktaConfig,
-        target: ValidTargets.OKTA,
-        type: GenerateTypes.SYSTEMS,
-      },
-    });
+    try {
+      const result = await generate({
+        organization_key: organizationKey,
+        generate: {
+          config: config as OktaConfig,
+          target: ValidTargets.OKTA,
+          type: GenerateTypes.SYSTEMS,
+        },
+      }).unwrap();
 
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else {
-      handleResults(result.data.generate_results);
+      handleResults(result.generate_results);
+    } catch (error) {
+      const parsedError = parseError(error as RTKErrorResult["error"], {
+        status: 500,
+        message: "Our system encountered a problem while connecting to Okta.",
+      });
+      setScannerError(parsedError);
     }
   };
-
-  const isSubmitting = isLoading;
 
   return (
     <Flex vertical gap="large">
@@ -142,7 +120,7 @@ export const AuthenticateOktaForm = () => {
         ]}
       />
 
-      {isSubmitting && (
+      {isLoading && (
         <ScannerLoading
           title="System scanning in progress"
           onClose={handleCancel}
@@ -166,7 +144,7 @@ export const AuthenticateOktaForm = () => {
         data-testid="authenticate-okta-form"
       >
         <Flex vertical gap="large">
-          {!isSubmitting && !scannerError && (
+          {!isLoading && !scannerError && (
             <Card>
               <Flex vertical gap="small" className="w-full max-w-xl">
                 <Typography.Paragraph>
@@ -233,7 +211,7 @@ export const AuthenticateOktaForm = () => {
                 >
                   <Input.TextArea
                     rows={8}
-                    style={{ fontFamily: "monospace", fontSize: "12px" }}
+                    className="font-mono text-xs"
                     placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
                     data-testid="input-privateKey"
                   />
@@ -277,14 +255,14 @@ export const AuthenticateOktaForm = () => {
               </Flex>
             </Card>
           )}
-          {!isSubmitting && (
+          {!isLoading && (
             <Flex gap="small" justify="end">
               <Button onClick={handleCancel}>Cancel</Button>
               {!scannerError && (
                 <Button
                   htmlType="submit"
                   type="primary"
-                  disabled={!isDirty || !submittable}
+                  disabled={!form.isFieldsTouched() || !submittable}
                   loading={isLoading}
                   data-testid="submit-btn"
                 >
@@ -298,5 +276,3 @@ export const AuthenticateOktaForm = () => {
     </Flex>
   );
 };
-
-export default AuthenticateOktaForm;

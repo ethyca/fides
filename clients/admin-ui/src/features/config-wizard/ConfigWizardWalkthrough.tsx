@@ -1,4 +1,4 @@
-import { ChakraBox as Box, ChakraStack as Stack } from "fidesui";
+import { Flex } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 
@@ -12,18 +12,18 @@ const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
 
   return (
-    <Stack direction={["column", "row"]} bg="white">
-      <Box display="flex" justifyContent="flex-start" w="100%">
+    <Flex className="bg-white">
+      <div className="flex w-full justify-start">
         {step === 1 ? <OrganizationInfoForm /> : null}
         {step === 2 ? <AddSystem /> : null}
         {step === 3 ? <AuthenticateScanner /> : null}
         {step === 4 ? (
-          <Box pr={10}>
+          <div className="pr-10">
             <ScanResults />
-          </Box>
+          </div>
         ) : null}
-      </Box>
-    </Stack>
+      </div>
+    </Flex>
   );
 };
 

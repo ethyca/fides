@@ -7,10 +7,10 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { getErrorMessage } from "~/features/common/helpers";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useCreateOrganizationMutation,
@@ -18,6 +18,7 @@ import {
   useUpdateOrganizationMutation,
 } from "~/features/organization";
 import { Organization } from "~/types/api";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import { changeStep, setOrganization } from "./config-wizard.slice";
 
@@ -58,15 +59,13 @@ export const OrganizationInfoForm = () => {
     }
   }, [isLoadingOrganization, existingOrg, dispatch, hasSubmitted]);
 
-  // Reinitialize form when existing org loads
-  useEffect(() => {
-    if (existingOrg) {
-      form.setFieldsValue({
-        name: existingOrg.name ?? "",
-        description: existingOrg.description ?? "",
-      });
-    }
-  }, [existingOrg, form]);
+  const formInitialValues = useMemo(
+    () => ({
+      name: existingOrg?.name ?? "",
+      description: existingOrg?.description ?? "",
+    }),
+    [existingOrg],
+  );
 
   const handleSuccess = (organization: Organization) => {
     dispatch(setOrganization(organization));
@@ -82,26 +81,16 @@ export const OrganizationInfoForm = () => {
       organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
     };
 
-    if (!existingOrg) {
-      const createOrganizationResult =
-        await createOrganization(organizationBody);
-
-      if (isErrorResult(createOrganizationResult)) {
-        const errorMsg = getErrorMessage(createOrganizationResult.error);
-        message.error(errorMsg);
-        return;
+    try {
+      if (!existingOrg) {
+        await createOrganization(organizationBody).unwrap();
+      } else {
+        await updateOrganization(organizationBody).unwrap();
       }
       handleSuccess(organizationBody);
-    } else {
-      const updateOrganizationResult =
-        await updateOrganization(organizationBody);
-
-      if (isErrorResult(updateOrganizationResult)) {
-        const errorMsg = getErrorMessage(updateOrganizationResult.error);
-        message.error(errorMsg);
-        return;
-      }
-      handleSuccess(organizationBody);
+    } catch (error) {
+      const errorMsg = getErrorMessage(error as RTKErrorResult["error"]);
+      message.error(errorMsg);
     }
   };
 
@@ -110,7 +99,8 @@ export const OrganizationInfoForm = () => {
       form={form}
       layout="vertical"
       onFinish={onFinish}
-      initialValues={{ name: "", description: "" }}
+      initialValues={formInitialValues}
+      key={existingOrg?.fides_key ?? "create"}
       className="w-full max-w-xl"
       data-testid="organization-info-form"
     >
@@ -162,5 +152,3 @@ export const OrganizationInfoForm = () => {
     </Form>
   );
 };
-
-export default OrganizationInfoForm;
