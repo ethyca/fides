@@ -1,0 +1,4 @@
+type: Security
+description: Bumped aiohttp to 3.13.4 to fix 10 CVEs (3 High/Critical)
+pr: 7891
+labels: []
