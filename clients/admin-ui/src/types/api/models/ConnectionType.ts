@@ -18,6 +18,7 @@ export enum ConnectionType {
   DYNAMIC_ERASURE_EMAIL = "dynamic_erasure_email",
   GOOGLE_CLOUD_SQL_MYSQL = "google_cloud_sql_mysql",
   GOOGLE_CLOUD_SQL_POSTGRES = "google_cloud_sql_postgres",
+  GOOGLE_WORKSPACE = "google_workspace",
   HTTPS = "https",
   JIRA_TICKET = "jira_ticket",
   MANUAL = "manual",

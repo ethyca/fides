@@ -79,10 +79,10 @@ def test_no_consumer_purposes_with_unrestricted_dataset(now):
     }
     query = _make_query(("ds_open",), now=now)
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert not result.is_compliant
-    assert len(result.violations) == 1
+    assert not output.result.is_compliant
+    assert len(output.result.violations) == 1
 
 
 # --- Rule 2: purpose mismatch ---
@@ -98,11 +98,11 @@ def test_purpose_mismatch_produces_violation(now):
     }
     query = _make_query(("ds_billing",), now=now)
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert not result.is_compliant
-    assert len(result.violations) == 1
-    assert "do not overlap" in result.violations[0].reason
+    assert not output.result.is_compliant
+    assert len(output.result.violations) == 1
+    assert "do not overlap" in output.result.violations[0].reason
 
 
 def test_purpose_overlap_is_compliant(now):
@@ -115,10 +115,10 @@ def test_purpose_overlap_is_compliant(now):
     }
     query = _make_query(("ds_billing",), now=now)
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert result.is_compliant
-    assert len(result.violations) == 0
+    assert output.result.is_compliant
+    assert len(output.result.violations) == 0
 
 
 # --- Rule 3: dataset with no declared purposes ---
@@ -134,9 +134,9 @@ def test_unrestricted_dataset_is_compliant(now):
     }
     query = _make_query(("ds_open",), now=now)
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert result.is_compliant
+    assert output.result.is_compliant
 
 
 def test_unknown_dataset_is_compliant(now):
@@ -144,9 +144,9 @@ def test_unknown_dataset_is_compliant(now):
     consumer = _make_consumer(frozenset({"billing"}))
     query = _make_query(("ds_unknown",), now=now)
 
-    result = evaluate_access(consumer, {}, query)
+    output = evaluate_access(consumer, {}, query)
 
-    assert result.is_compliant
+    assert output.result.is_compliant
 
 
 # --- Collection-level additive inheritance ---
@@ -168,9 +168,9 @@ def test_collection_inherits_dataset_purposes(now):
         now=now,
     )
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert result.is_compliant
+    assert output.result.is_compliant
 
 
 def test_collection_adds_own_purposes(now):
@@ -190,9 +190,9 @@ def test_collection_adds_own_purposes(now):
         now=now,
     )
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert result.is_compliant
+    assert output.result.is_compliant
 
 
 def test_collection_mismatch_produces_violation(now):
@@ -211,10 +211,10 @@ def test_collection_mismatch_produces_violation(now):
         now=now,
     )
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert not result.is_compliant
-    assert len(result.violations) == 1
+    assert not output.result.is_compliant
+    assert len(output.result.violations) == 1
 
 
 # --- Multiple datasets ---
@@ -234,9 +234,9 @@ def test_multiple_datasets_mixed_compliance(now):
     }
     query = _make_query(("ds_billing", "ds_analytics"), now=now)
 
-    result = evaluate_access(consumer, datasets, query)
+    output = evaluate_access(consumer, datasets, query)
 
-    assert not result.is_compliant
-    assert result.total_accesses == 2
-    assert len(result.violations) == 1
-    assert result.violations[0].dataset_key == "ds_analytics"
+    assert not output.result.is_compliant
+    assert output.result.total_accesses == 2
+    assert len(output.result.violations) == 1
+    assert output.result.violations[0].dataset_key == "ds_analytics"

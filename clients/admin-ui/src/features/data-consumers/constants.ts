@@ -1,19 +1,13 @@
-export enum DataConsumerType {
-  SERVICE = "service",
-  APPLICATION = "application",
-  GROUP = "group",
-  USER = "user",
-}
-
-export const CONSUMER_TYPE_LABELS: Record<DataConsumerType, string> = {
-  [DataConsumerType.SERVICE]: "Service",
-  [DataConsumerType.APPLICATION]: "Application",
-  [DataConsumerType.GROUP]: "Group",
-  [DataConsumerType.USER]: "User",
+export const PLATFORM_LABELS: Record<string, string> = {
+  google_workspace: "Google Workspace",
+  gcp: "GCP",
 };
 
-export const CONSUMER_TYPE_OPTIONS = Object.entries(CONSUMER_TYPE_LABELS).map(
-  ([value, label]) => ({ value, label }),
-);
+export const formatPlatformLabel = (platform: string): string =>
+  PLATFORM_LABELS[platform] ??
+  platform.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+export const formatScopeKeyLabel = (key: string): string =>
+  key.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
 export const DATA_CONSUMER_FORM_ID = "data-consumer-form";

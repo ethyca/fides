@@ -103,11 +103,11 @@ class TestRegisteredConsumerWithDatasetPurposes:
             [TableRef(project="", dataset="billing_db", table="invoices")],
         )
 
-        result = service.evaluate(entry)
+        output = service.evaluate(entry)
 
-        assert result.is_compliant
-        assert result.consumer.id == "consumer-integ-1"
-        assert result.consumer.type == "group"
+        assert output.result.is_compliant
+        assert output.result.consumer.id == "consumer-integ-1"
+        assert output.result.consumer.type == "group"
 
     def test_violation_when_purposes_do_not_overlap(
         self, cache, registered_consumer, dataset_purposes_map
@@ -121,12 +121,12 @@ class TestRegisteredConsumerWithDatasetPurposes:
             [TableRef(project="", dataset="marketing_db", table="campaigns")],
         )
 
-        result = service.evaluate(entry)
+        output = service.evaluate(entry)
 
-        assert not result.is_compliant
-        assert len(result.violations) == 1
-        assert result.violations[0].dataset_key == "marketing_db"
-        assert result.violations[0].control == "purpose_restriction"
+        assert not output.result.is_compliant
+        assert len(output.result.violations) == 1
+        assert output.result.violations[0].dataset_key == "marketing_db"
+        assert output.result.violations[0].control == "purpose_restriction"
 
     def test_mixed_compliance_across_datasets(
         self, cache, registered_consumer, dataset_purposes_map
@@ -143,12 +143,12 @@ class TestRegisteredConsumerWithDatasetPurposes:
             ],
         )
 
-        result = service.evaluate(entry)
+        output = service.evaluate(entry)
 
-        assert not result.is_compliant
-        assert result.total_accesses == 2
-        assert len(result.violations) == 1
-        assert result.violations[0].dataset_key == "marketing_db"
+        assert not output.result.is_compliant
+        assert output.result.total_accesses == 2
+        assert len(output.result.violations) == 1
+        assert output.result.violations[0].dataset_key == "marketing_db"
 
 
 # --- Unregistered consumer ---
@@ -166,11 +166,11 @@ class TestUnregisteredConsumer:
             [TableRef(project="", dataset="billing_db", table="invoices")],
         )
 
-        result = service.evaluate(entry)
+        output = service.evaluate(entry)
 
-        assert not result.is_compliant
-        assert result.consumer.type == "unresolved"
-        assert "no declared purposes" in result.violations[0].reason
+        assert not output.result.is_compliant
+        assert output.result.consumer.type == "unresolved"
+        assert "no declared purposes" in output.result.violations[0].reason
 
 
 # --- Dataset not in the purposes map ---
@@ -191,9 +191,9 @@ class TestDatasetNotInMap:
             [TableRef(project="", dataset="unknown_db", table="things")],
         )
 
-        result = service.evaluate(entry)
+        output = service.evaluate(entry)
 
-        assert result.is_compliant
+        assert output.result.is_compliant
 
 
 # --- dataset_purpose_overrides takes precedence ---
@@ -215,12 +215,12 @@ class TestDatasetPurposeOverrides:
         )
 
         # marketing_db would normally violate, but override gives it billing purpose
-        result = service.evaluate(
+        output = service.evaluate(
             entry,
             dataset_purpose_overrides={"marketing_db": ["billing"]},
         )
 
-        assert result.is_compliant
+        assert output.result.is_compliant
 
 
 # --- No dataset purposes provided (backward compat) ---
@@ -237,6 +237,6 @@ class TestNoDatasetPurposes:
             [TableRef(project="", dataset="billing_db", table="invoices")],
         )
 
-        result = service.evaluate(entry)
+        output = service.evaluate(entry)
 
-        assert result.is_compliant
+        assert output.result.is_compliant

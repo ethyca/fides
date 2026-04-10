@@ -73,6 +73,7 @@ export const baseApi = createApi({
     "Purpose",
     "DataPurpose",
     "DataConsumer",
+    "IdentityGroupProvider",
     "QueryLogConfig",
     "Shared Monitor Configs",
     "System",
