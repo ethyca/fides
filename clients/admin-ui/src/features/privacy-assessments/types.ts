@@ -242,23 +242,16 @@ export interface QuestionEvidence {
   evidence: EvidenceItem[];
 }
 
-export interface ProcessingActivitySummary {
+export interface AssessmentGroupResponse {
   data_use: string | null;
   data_use_name: string | null;
-  assessment_count: number;
   system_count: number;
-  latest_updated_at: string | null;
+  assessments: PrivacyAssessmentResponse[];
 }
 
-export interface ProcessingActivitiesResponse {
-  items: ProcessingActivitySummary[];
+export interface GroupedAssessmentsResponse {
+  groups: AssessmentGroupResponse[];
   total: number;
-}
-
-export interface GetPrivacyAssessmentsParams {
-  page?: number;
-  size?: number;
-  status?: AssessmentStatus;
 }
 
 export interface GetAssessmentEvidenceParams {
