@@ -45,6 +45,11 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         title="Dataset",
         description="Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
     )
+    domain: Optional[str] = Field(
+        default=None,
+        title="Domain",
+        description="Google Workspace domain for identity resolution (e.g. example.com). Required for PBAC identity group providers.",
+    )
 
     _required_components: ClassVar[List[str]] = ["keyfile_creds"]
 
