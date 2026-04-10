@@ -6,6 +6,7 @@ from sqlalchemy import (  # type: ignore[attr-defined]
     Column,
     DateTime,
     Identity,
+    Index,
     Text,
     text,
 )
@@ -34,6 +35,10 @@ class PrivacyPreferences(Base):
     @declared_attr
     def __tablename__(self) -> str:
         return "privacy_preferences"
+
+    __table_args__ = (
+        Index("idx_privacy_preferences_created_at_id", "created_at", "id"),
+    )
 
     # Partition-level index (not declarable on the parent table):
     #
