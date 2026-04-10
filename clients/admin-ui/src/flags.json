@@ -54,7 +54,7 @@
     "description": "Enable privacy notices sandbox page for testing consent v3",
     "development": true,
     "test": false,
-    "production": true
+    "production": false
   },
   "alphaWebMonitorLlmClassification": {
     "label": "Web monitor LLM classification",
