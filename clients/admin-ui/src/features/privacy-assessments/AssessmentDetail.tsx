@@ -230,7 +230,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
       <div>
         <Flex align="center" gap="small" className="mb-1">
           <Typography.Title level={4} className="m-0">
-            {assessment.system_name ?? assessment.name}
+            {assessment.name}
           </Typography.Title>
           <Tag
             color={
