@@ -42,13 +42,19 @@
   }
 }
 
-.overdueLink {
-  margin-top: var(--ant-margin-sm);
-  color: var(--ant-color-error);
+.overdueBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--ant-color-error) 10%, transparent);
+  border: 1px solid var(--ant-color-error);
+  border-radius: var(--ant-border-radius, 6px);
   text-decoration: none;
+  margin-bottom: var(--ant-margin-xs, 4px);
 
   &:hover {
-    opacity: 0.8;
+    opacity: 0.85;
   }
 
   &:focus-visible {

@@ -1,5 +1,6 @@
-import { Col, Flex, Row } from "fidesui";
+import { Col, Flex, Row, Text } from "fidesui";
 
+import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
 import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice";
 import { TrendPeriod } from "~/features/dashboard/types";
 
@@ -29,10 +30,13 @@ export const HomeDashboard = () => {
       gap={24}
       className="mx-auto w-full max-w-[1600px] px-10 py-6"
     >
+      <Flex justify="end">
+        <ThemeModeSegmented />
+      </Flex>
       <AgentBriefingBanner />
       <Row
         gutter={ROW_GUTTER}
-        className="h-[350px] items-stretch lg:h-[400px] xl:h-[500px]"
+        className="min-h-[480px] items-stretch"
       >
         <Col xs={24} md={8} lg={8} xxl={8} className="h-full">
           <PostureCard />
@@ -41,6 +45,11 @@ export const HomeDashboard = () => {
           <PriorityActionsCard />
         </Col>
       </Row>
+      <Flex justify="end" className="-mb-4">
+        <Text type="secondary" className="text-xs">
+          Last 30 days
+        </Text>
+      </Flex>
       <Row gutter={ROW_GUTTER}>
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>

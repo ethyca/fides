@@ -4,23 +4,40 @@
   }
 }
 
-.quickActionLink {
-  font-weight: 600;
+.quickActionTile {
   text-decoration: none;
+}
 
-  &:hover {
-    text-decoration: underline;
-  }
+.quickActionButton {
+  font-weight: 600;
 
   &.error {
     color: var(--ant-color-error);
+    border-color: var(--ant-color-error);
+
+    &:hover {
+      color: var(--ant-color-error-hover) !important;
+      border-color: var(--ant-color-error-hover) !important;
+    }
   }
 
   &.warning {
     color: var(--ant-color-warning);
+    border-color: var(--ant-color-warning);
+
+    &:hover {
+      color: var(--ant-color-warning-hover) !important;
+      border-color: var(--ant-color-warning-hover) !important;
+    }
   }
 
   &.info {
     color: var(--ant-color-info);
+    border-color: var(--ant-color-info);
+
+    &:hover {
+      color: var(--ant-color-info-hover) !important;
+      border-color: var(--ant-color-info-hover) !important;
+    }
   }
 }

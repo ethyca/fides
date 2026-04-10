@@ -4,6 +4,7 @@ import NextLink from "next/link";
 import {
   BAND_CONFIG,
   DIMENSION_DESCRIPTIONS,
+  DIMENSION_LABELS,
   DIMENSION_ROUTES,
 } from "~/features/dashboard/constants";
 import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
@@ -38,7 +39,9 @@ export const PostureBreakdownContent = () => {
         return (
           <div key={dim.dimension} className={styles.dimensionCard}>
             <Flex vertical gap="small">
-              <Text strong>{dim.label}</Text>
+              <Text strong>
+                {DIMENSION_LABELS[dim.dimension] ?? dim.label}
+              </Text>
               <Flex justify="space-between" align="flex-start" gap={12}>
                 <Flex vertical gap="small" className="min-w-0 flex-1">
                   {description && <Text type="secondary">{description}</Text>}

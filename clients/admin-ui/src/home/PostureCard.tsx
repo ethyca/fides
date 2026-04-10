@@ -11,7 +11,12 @@ import {
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
-import { BAND_CONFIG, BAND_STATUS } from "~/features/dashboard/constants";
+import {
+  BAND_CONFIG,
+  BAND_STATUS,
+  DIMENSION_DESCRIPTIONS,
+  DIMENSION_LABELS,
+} from "~/features/dashboard/constants";
 import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
 import { DiffDirection } from "~/features/dashboard/types";
 
@@ -45,7 +50,8 @@ export const PostureCard = () => {
   const radarData = useMemo(
     () =>
       posture?.dimensions.map((dimension) => ({
-        subject: dimension.label,
+        subject:
+          DIMENSION_LABELS[dimension.dimension] ?? dimension.label,
         value: dimension.score,
         status: BAND_STATUS[dimension.band],
       })),
@@ -64,11 +70,22 @@ export const PostureCard = () => {
 
   const renderTooltip = useCallback(
     (point: RadarChartDataPoint) => {
-      const dim = posture?.dimensions.find((d) => d.label === point.subject);
+      const dim = posture?.dimensions.find(
+        (d) =>
+          (DIMENSION_LABELS[d.dimension] ?? d.label) === point.subject,
+      );
       const band = dim ? BAND_CONFIG[dim.band] : undefined;
+      const description = dim
+        ? DIMENSION_DESCRIPTIONS[dim.dimension]
+        : undefined;
       return (
         <Flex vertical gap={2} className={styles.radarTooltip}>
           <span className="font-semibold">{point.subject}</span>
+          {description && (
+            <span className="max-w-[200px] text-xs opacity-70">
+              {description}
+            </span>
+          )}
           <Flex align="center" gap={6}>
             <span>{point.value} / 100</span>
             {band && (

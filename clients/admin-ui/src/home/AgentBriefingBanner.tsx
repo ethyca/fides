@@ -1,5 +1,6 @@
 import {
   Alert,
+  Button,
   ConfigProvider,
   Flex,
   SparkleIcon,
@@ -14,6 +15,26 @@ import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
+
+/**
+ * Fix common singular/plural grammar issues in server-generated briefing text.
+ * e.g. "1 privacy requests are overdue" → "1 privacy request is overdue"
+ */
+function fixPluralGrammar(text: string): string {
+  return text
+    .replace(
+      /\b1 privacy requests are overdue and require\b/g,
+      "1 privacy request is overdue and requires",
+    )
+    .replace(
+      /\b1 privacy requests are/g,
+      "1 privacy request is",
+    )
+    .replace(
+      /\b1 requests?\b/g,
+      "1 request",
+    );
+}
 
 const SEVERITY_STYLE: Record<ActionSeverity, string> = {
   [ActionSeverity.CRITICAL]: styles.error,
@@ -48,7 +69,8 @@ export const AgentBriefingBanner = () => {
     return null;
   }
 
-  const { briefing: text, quick_actions: quickActions } = briefing;
+  const { briefing: rawText, quick_actions: quickActions } = briefing;
+  const text = fixPluralGrammar(rawText);
 
   return (
     <ConfigProvider theme={alertTheme}>
@@ -66,13 +88,20 @@ export const AgentBriefingBanner = () => {
                 if (!cta) {
                   return null;
                 }
+                const severityClass =
+                  SEVERITY_STYLE[action.severity] ?? styles.info;
                 return (
                   <NextLink
                     key={`${action.action_type}-${action.label}`}
                     href={cta.route(action.action_data)}
-                    className={`${styles.quickActionLink} ${SEVERITY_STYLE[action.severity] ?? styles.info}`}
+                    className={styles.quickActionTile}
                   >
-                    {action.label}
+                    <Button
+                      size="small"
+                      className={`${styles.quickActionButton} ${severityClass}`}
+                    >
+                      {action.label}
+                    </Button>
                   </NextLink>
                 );
               })}

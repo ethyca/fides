@@ -1,5 +1,6 @@
 import {
   antTheme,
+  Badge,
   Card,
   Flex,
   Icons,
@@ -27,6 +28,24 @@ const SLA_SEGMENTS = [
   { key: "approaching", color: "colorWarning", label: "Approaching" },
   { key: "overdue", color: "colorError", label: "Overdue" },
 ] as const;
+
+const ALL_DSR_TYPES = ["Access", "Erasure", "Portability", "Rectification"];
+const EMPTY_SLA = { on_track: 0, approaching: 0, overdue: 0 };
+
+function normalizeSlaHealth(
+  slaHealth: Record<
+    string,
+    { on_track: number; approaching: number; overdue: number }
+  >,
+) {
+  const result = { ...slaHealth };
+  for (const type of ALL_DSR_TYPES) {
+    if (!(type in result)) {
+      result[type] = EMPTY_SLA;
+    }
+  }
+  return result;
+}
 
 export const DSRStatusCard = () => {
   const { token } = antTheme.useToken();
@@ -64,6 +83,22 @@ export const DSRStatusCard = () => {
             justify="space-between"
             className="w-[180px] shrink-0 border-r border-solid border-r-[var(--ant-color-border)] pr-5"
           >
+            {(data?.overdue_count ?? 0) > 0 && (
+              <NextLink
+                href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
+                className={styles.overdueBadge}
+              >
+                <Badge
+                  count={data?.overdue_count}
+                  color={token.colorError}
+                  size="small"
+                />
+                <Text strong type="danger" className="text-xs">
+                  overdue
+                </Text>
+                <Icons.ArrowRight size={12} color={token.colorError} />
+              </NextLink>
+            )}
             <div>
               <Flex align="baseline" gap="middle">
                 <Statistic value={data?.active_count ?? 0} />
@@ -86,30 +121,17 @@ export const DSRStatusCard = () => {
                 ))}
               </Flex>
             </div>
-            {(data?.overdue_count ?? 0) > 0 && (
-              <NextLink
-                href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
-                className={styles.overdueLink}
-              >
-                <Flex align="center" gap={4}>
-                  <Text strong type="danger">
-                    {data?.overdue_count} overdue
-                  </Text>
-                  <Icons.ArrowRight size={14} color={token.colorError} />
-                </Flex>
-              </NextLink>
-            )}
           </Flex>
 
           <Flex vertical className="min-w-0 flex-1 pl-5">
             <Text strong className="mb-3 text-xs">
-              SLA Health
+              Regulatory Deadline Compliance
             </Text>
             {data?.sla_health && (
               <>
                 <Flex className="flex-1">
                   <StackedBarChart
-                    data={data?.sla_health}
+                    data={normalizeSlaHealth(data.sla_health)}
                     segments={SLA_SEGMENTS}
                     onCategoryClick={handleTypeClick}
                   />

@@ -1,7 +1,7 @@
 import { theme } from "antd/lib";
 import classNames from "classnames";
 import type { ReactNode } from "react";
-import { useId, useMemo } from "react";
+import { useCallback, useId, useMemo, useRef, useState } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -53,6 +53,12 @@ interface RadarTickProps {
   statusColors: Record<RadarPointStatus, string>;
   chartColor: string;
   onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
+  onTickHover?: (
+    index: number,
+    rect: { x: number; y: number },
+    event: React.MouseEvent,
+  ) => void;
+  onTickLeave?: () => void;
 }
 
 const RadarTick = ({
@@ -63,13 +69,15 @@ const RadarTick = ({
   statusColors,
   chartColor,
   onDimensionClick,
+  onTickHover,
+  onTickLeave,
 }: RadarTickProps) => {
   if (!payload) {
     return null;
   }
   const point = data[payload.index];
   const statusColor = point?.status ? statusColors[point.status] : undefined;
-  const interactive = !!onDimensionClick;
+  const interactive = !!onDimensionClick || !!onTickHover;
 
   return (
     <g
@@ -78,8 +86,16 @@ const RadarTick = ({
         [styles.interactive]: interactive,
       })}
       onClick={
-        interactive ? () => onDimensionClick(payload.index, point) : undefined
+        onDimensionClick
+          ? () => onDimensionClick(payload.index, point)
+          : undefined
       }
+      onMouseEnter={
+        onTickHover
+          ? (e) => onTickHover(payload.index, { x, y }, e)
+          : undefined
+      }
+      onMouseLeave={onTickLeave}
     >
       {interactive && (
         <rect
@@ -186,9 +202,46 @@ export const RadarChart = ({
 
   const interactive = !!onDimensionClick || !!tooltipContent;
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [tickTooltip, setTickTooltip] = useState<{
+    index: number;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleTickHover = useCallback(
+    (index: number, _rect: { x: number; y: number }, e: React.MouseEvent) => {
+      if (!tooltipContent || !containerRef.current) {
+        return;
+      }
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const clientX = e.clientX - containerRect.left;
+      const clientY = e.clientY - containerRect.top;
+      setTickTooltip({ index, x: clientX, y: clientY });
+    },
+    [tooltipContent],
+  );
+
+  const handleTickLeave = useCallback(() => {
+    setTickTooltip(null);
+  }, []);
+
+  const tickTooltipStyle = useMemo<React.CSSProperties>(
+    () => ({
+      backgroundColor: token.colorBgElevated,
+      borderRadius: token.borderRadius,
+      padding: `${token.paddingXXS}px ${token.paddingXS}px`,
+      boxShadow: token.boxShadow,
+      fontSize: token.fontSizeSM,
+    }),
+    [token],
+  );
+
   return (
     <div
-      className={classNames("w-full h-full", className, {
+      ref={containerRef}
+      className={classNames("w-full h-full relative", className, {
         "pointer-events-none": !interactive,
       })}
     >
@@ -252,12 +305,14 @@ export const RadarChart = ({
                   statusColors={STATUS_COLORS}
                   chartColor={chartColor}
                   onDimensionClick={onDimensionClick}
+                  onTickHover={tooltipContent ? handleTickHover : undefined}
+                  onTickLeave={tooltipContent ? handleTickLeave : undefined}
                 />
               }
             />
           )}
 
-          {interactive && !empty && (
+          {interactive && !empty && !tickTooltip && (
             <Tooltip
               cursor={false}
               content={<RadarTooltipContent tooltipContent={tooltipContent} />}
@@ -265,6 +320,22 @@ export const RadarChart = ({
           )}
         </RechartsRadarChart>
       </ResponsiveContainer>
+
+      {tickTooltip && data?.[tickTooltip.index] && tooltipContent && (
+        <div
+          style={{
+            ...tickTooltipStyle,
+            position: "absolute",
+            left: tickTooltip.x,
+            top: tickTooltip.y,
+            transform: "translate(-50%, -100%) translateY(-8px)",
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          {tooltipContent(data[tickTooltip.index])}
+        </div>
+      )}
     </div>
   );
 };

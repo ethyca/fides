@@ -2,9 +2,12 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: visible;
 
   :global(.ant-card-head) {
     flex-shrink: 0;
+    min-height: 0;
+    margin-bottom: 0;
   }
 
   :global(.ant-card-body) {
@@ -13,20 +16,30 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    padding-top: 0;
+    overflow: visible;
   }
 }
 
 .radarChartWrapper {
   margin-left: -12px;
   margin-right: -12px;
+  margin-top: -16px;
   flex: 1;
-  min-height: 0;
+  min-height: 220px;
   position: relative;
+  overflow: visible;
 }
 
 .radarChartInner {
   position: absolute;
   inset: 0;
+  overflow: visible;
+
+  :global(.recharts-wrapper),
+  :global(.recharts-surface) {
+    overflow: visible !important;
+  }
 
   :global(.recharts-radar-polygon) {
     pointer-events: none;
@@ -39,10 +52,7 @@
 }
 
 .scoreOverlay {
-  position: absolute;
-  top: var(--ant-padding-lg, 24px);
-  left: var(--ant-padding-lg, 24px);
-  z-index: 1;
+  flex-shrink: 0;
   pointer-events: auto;
 }
 

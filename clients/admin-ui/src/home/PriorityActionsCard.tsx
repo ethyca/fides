@@ -10,7 +10,7 @@ import {
   Text,
 } from "fidesui";
 import NextLink from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import {
@@ -53,18 +53,23 @@ function getDaysRemaining(dueDate: string | null): {
   return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.DEFAULT };
 }
 
+const MAX_VISIBLE_ITEMS = 4;
+
 export const PriorityActionsCard = () => {
   const dimensionFilter = useDimensionFilter();
   const { data, isLoading } = useGetPriorityActionsQuery(
     dimensionFilter ? { dimension: dimensionFilter } : undefined,
   );
-  const [activeTab, setActiveTab] = useState("act_now");
+  const [activeTab, setActiveTab] = useState("overdue");
+  const [showAll, setShowAll] = useState(false);
+
+  const toggleShowAll = useCallback(() => setShowAll((prev) => !prev), []);
 
   const countsByGroup = useMemo(() => {
     const counts: Record<string, number> = {
-      act_now: 0,
-      scheduled: 0,
-      when_ready: 0,
+      overdue: 0,
+      urgent: 0,
+      pending: 0,
     };
     data?.items?.forEach((action) => {
       const group = getUrgencyGroup(action.severity, action.due_date);
@@ -73,7 +78,7 @@ export const PriorityActionsCard = () => {
     return counts;
   }, [data]);
 
-  const filteredActions = useMemo(() => {
+  const allFilteredActions = useMemo(() => {
     if (!data?.items) {
       return [];
     }
@@ -82,6 +87,12 @@ export const PriorityActionsCard = () => {
         getUrgencyGroup(action.severity, action.due_date) === activeTab,
     );
   }, [data, activeTab]);
+
+  const filteredActions =
+    showAll || allFilteredActions.length <= MAX_VISIBLE_ITEMS
+      ? allFilteredActions
+      : allFilteredActions.slice(0, MAX_VISIBLE_ITEMS);
+  const hasMore = allFilteredActions.length > MAX_VISIBLE_ITEMS;
 
   return (
     <Card
@@ -164,6 +175,15 @@ export const PriorityActionsCard = () => {
           );
         }}
       />
+      {hasMore && (
+        <Flex justify="center" className="mt-2">
+          <Button type="link" size="small" onClick={toggleShowAll}>
+            {showAll
+              ? "Show less"
+              : `View all ${allFilteredActions.length} actions`}
+          </Button>
+        </Flex>
+      )}
     </Card>
   );
 };
