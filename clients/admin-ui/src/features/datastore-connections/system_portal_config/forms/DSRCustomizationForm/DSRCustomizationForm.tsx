@@ -184,5 +184,3 @@ export const DSRCustomizationForm = ({
     </Form>
   );
 };
-
-export default DSRCustomizationForm;

@@ -473,5 +473,3 @@ export const ConfigureIntegrationForm = ({
     </>
   );
 };
-
-export default ConfigureIntegrationForm;
