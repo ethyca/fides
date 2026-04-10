@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
-import { Button, DatePicker, Form, Modal, Select } from "fidesui";
+import { Button, DatePicker, Form, Select } from "fidesui";
 
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
   SubjectRequestActionTypeOptions,
   SubjectRequestStatusOptions,
@@ -84,13 +85,16 @@ export const PrivacyRequestFiltersModal = ({
       status: [],
       action_type: [],
     });
+    onClose();
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       open={open}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       title="All filters"
+      destroyOnHidden
       footer={[
         <Button
           key="clear"
@@ -141,6 +145,6 @@ export const PrivacyRequestFiltersModal = ({
           />
         </Form.Item>
       </Form>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };

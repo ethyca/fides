@@ -98,11 +98,11 @@
     "test": false,
     "production": false
   },
-  "alphaJiraIntegration": {
-    "label": "Alpha Jira integration",
+  "jiraIntegration": {
+    "label": "Jira integration",
     "description": "Enable Jira DSR integration for creating and managing Jira issues from privacy requests",
     "development": true,
-    "test": false,
+    "test": true,
     "production": false
   },
   "alphaPurposeBasedAccessControl": {
@@ -132,5 +132,12 @@
     "development": true,
     "test": true,
     "production": true
+  },
+  "alphaPrivacyDocUpload": {
+    "label": "Alpha Privacy Document Upload",
+    "description": "Enable users to use and see the UI in PBAC",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }

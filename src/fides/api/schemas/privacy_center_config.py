@@ -237,6 +237,18 @@ class PrivacyCenterConfig(FidesSchema):
     links: List[PrivacyCenterLink] = []
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
 
+    @field_validator(
+        "server_url_development",
+        "server_url_production",
+        "logo_url",
+        "privacy_policy_url",
+    )
+    @classmethod
+    def validate_url_fields(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not v.startswith(("http://", "https://")):
+            raise ValueError("URL must use the http or https scheme")
+        return v
+
 
 class PartialPrivacyRequestOption(FidesSchema):
     policy_key: str

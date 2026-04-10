@@ -39,6 +39,7 @@ export {
   Edit,
   ExpandAll,
   Fork,
+  Grid,
   Help,
   HelpFilled,
   Home,

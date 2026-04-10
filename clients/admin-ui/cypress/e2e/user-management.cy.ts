@@ -622,7 +622,8 @@ describe("User management", () => {
       // trigger blur event
       cy.getByTestId("input-usernameConfirmation").blur();
       cy.getByTestId("submit-btn").should("be.disabled");
-      cy.getByTestId("error-usernameConfirmation").contains(
+      cy.getAntFormError("usernameConfirmation").should(
+        "contain",
         "Confirmation input must match the username",
       );
 
