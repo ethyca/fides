@@ -90,6 +90,7 @@ export interface TrendMetric {
   history: number[];
   metadata: Record<string, unknown>;
   diff: number;
+  agent_summary?: string;
 }
 
 interface TrendsResponse {
@@ -145,6 +146,7 @@ interface PrivacyRequestsResponse {
     string,
     { on_track: number; approaching: number; overdue: number }
   >;
+  agent_summary?: string;
 }
 
 export type { PrivacyRequestsResponse };
@@ -176,4 +178,5 @@ export interface SystemCoverageResponse {
   unclassified: number;
   without_steward: number;
   coverage_percentage: number;
+  agent_summary?: string;
 }

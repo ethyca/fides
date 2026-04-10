@@ -16,10 +16,10 @@ import { ActionSeverity } from "~/features/dashboard/types";
 import styles from "./AgentBriefingBanner.module.scss";
 
 const SEVERITY_STYLE: Record<ActionSeverity, string> = {
-  [ActionSeverity.CRITICAL]: styles.error,
-  [ActionSeverity.HIGH]: styles.error,
-  [ActionSeverity.MEDIUM]: styles.warning,
-  [ActionSeverity.LOW]: styles.info,
+  [ActionSeverity.CRITICAL]: styles.critical,
+  [ActionSeverity.HIGH]: styles.high,
+  [ActionSeverity.MEDIUM]: styles.medium,
+  [ActionSeverity.LOW]: styles.low,
 };
 
 export const AgentBriefingBanner = () => {

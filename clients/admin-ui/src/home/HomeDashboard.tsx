@@ -1,4 +1,4 @@
-import { Col, Flex, Row } from "fidesui";
+import { Col, Divider, Flex, Row } from "fidesui";
 
 import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice";
 import { TrendPeriod } from "~/features/dashboard/types";
@@ -8,12 +8,12 @@ import { AgentBriefingBanner } from "./AgentBriefingBanner";
 import { AstralisPanel } from "./AstralisPanel";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { DSRStatusCard } from "./DSRStatusCard";
-import { PostureCard } from "./PostureCard";
+import { PostureRadar, PostureScore } from "./PostureCard";
 import { PriorityActionsCard } from "./PriorityActionsCard";
 import { SystemCoverageCard } from "./SystemCoverageCard";
 import { TREND_METRIC_KEYS, TrendCard } from "./TrendCard";
 
-const ROW_GUTTER = 24;
+const TREND_GUTTER = 16;
 
 export const HomeDashboard = () => {
   const { data: trends, isLoading: isTrendsLoading } =
@@ -24,24 +24,25 @@ export const HomeDashboard = () => {
   const metrics = trends?.metrics;
 
   return (
-    <Flex
-      vertical
-      gap={24}
-      className="mx-auto w-full max-w-[1600px] px-10 py-6"
-    >
-      <AgentBriefingBanner />
-      <Row
-        gutter={ROW_GUTTER}
-        className="h-[350px] items-stretch lg:h-[400px] xl:h-[500px]"
-      >
-        <Col xs={24} md={8} lg={8} xxl={8} className="h-full">
-          <PostureCard />
+    <Flex vertical className="mx-auto w-full max-w-[1600px] px-10">
+      <div className="pt-10">
+        <AgentBriefingBanner />
+      </div>
+      <Row gutter={48} className="min-h-[80vh] items-center pb-16 pl-16">
+        <Col xs={24} md={12}>
+          <PostureScore />
         </Col>
-        <Col xs={24} md={16} lg={16} xxl={16} className="h-full">
-          <PriorityActionsCard />
+        <Col xs={24} md={12}>
+          <PostureRadar />
         </Col>
       </Row>
-      <Row gutter={ROW_GUTTER}>
+      <Divider />
+      <div className="py-9">
+        <PriorityActionsCard />
+      </div>
+      <Divider />
+
+      <Row gutter={TREND_GUTTER} className="py-8">
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>
             <TrendCard
@@ -52,15 +53,20 @@ export const HomeDashboard = () => {
           </Col>
         ))}
       </Row>
-      <Row gutter={ROW_GUTTER} className="items-stretch">
-        <Col xs={24} md={8}>
+      <Divider />
+
+      <Row gutter={20} className="py-10">
+        <Col xs={24} md={7}>
           <SystemCoverageCard />
+        </Col>
+        <Col md={1} className="flex justify-center">
+          <Divider vertical className="h-full" />
         </Col>
         <Col xs={24} md={16}>
           <DSRStatusCard />
         </Col>
       </Row>
-      <Row gutter={ROW_GUTTER} className="h-[400px] items-stretch">
+      <Row gutter={20} className="h-[400px] items-stretch">
         <Col xs={24} md={16} className="h-full">
           <ActivityFeedCard />
         </Col>

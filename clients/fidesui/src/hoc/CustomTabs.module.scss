@@ -1,0 +1,13 @@
+.inlineTitle {
+  :global(.ant-tabs-nav) {
+    margin-bottom: 0;
+  }
+
+  :global(.ant-tabs-extra-content:first-child) {
+    margin-right: auto;
+  }
+
+  :global(.ant-tabs-nav-list) {
+    margin-left: auto;
+  }
+}

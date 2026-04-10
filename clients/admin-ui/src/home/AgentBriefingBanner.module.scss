@@ -1,26 +1,44 @@
 .alertSm {
+  border: none !important;
+  border-radius: 8px !important;
+
   :global(.ant-alert-message) {
-    font-size: var(--ant-font-size-sm);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ant-color-text-description);
+  }
+
+  :global(.ant-alert-icon) {
+    color: var(--fidesui-terracotta);
   }
 }
 
 .quickActionLink {
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   text-decoration: none;
 
   &:hover {
     text-decoration: underline;
   }
+}
 
-  &.error {
-    color: var(--ant-color-error);
-  }
+.info {
+  color: var(--fidesui-terracotta);
+}
 
-  &.warning {
-    color: var(--ant-color-warning);
-  }
+.critical {
+  color: var(--fidesui-error);
+}
 
-  &.info {
-    color: var(--ant-color-info);
-  }
+.high {
+  color: var(--fidesui-warning);
+}
+
+.medium {
+  color: var(--fidesui-success);
+}
+
+.low {
+  color: var(--ant-color-text-description);
 }

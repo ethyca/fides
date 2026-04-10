@@ -195,7 +195,6 @@ export type {
   SelectProps,
   SwitchProps,
   TableProps,
-  TabsProps,
   TooltipProps,
   TreeDataNode,
   TreeProps,
@@ -203,6 +202,7 @@ export type {
   UploadProps,
 } from "antd/lib";
 export {
+  Tabs as AntTabs,
   AutoComplete,
   Badge,
   Breadcrumb,
@@ -240,7 +240,6 @@ export {
   // states on Chakra tables, so we re-export the base Spin.
   // TODO: remove when all FidesTableV2s are migrated to Ant
   Spin as TableSpinner,
-  Tabs,
   TimePicker,
   Tree,
   TreeSelect,
@@ -266,6 +265,7 @@ export type {
   CustomSpinProps as SpinProps,
   CustomStatisticProps as StatisticProps,
   StatisticTrend,
+  CustomTabsProps as TabsProps,
 } from "./hoc";
 export {
   CustomAlert as Alert,
@@ -281,6 +281,7 @@ export {
   CustomSpin as Spin,
   CustomStatistic as Statistic,
   CustomTable as Table,
+  CustomTabs as Tabs,
   CustomTag as Tag,
   CustomTooltip as Tooltip,
   CustomTypography as Typography,

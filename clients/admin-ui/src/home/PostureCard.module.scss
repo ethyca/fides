@@ -1,32 +1,43 @@
-.cardContainer {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
 
-  :global(.ant-card-head) {
-    flex-shrink: 0;
-  }
+.heroScore {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
 
-  :global(.ant-card-body) {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+  &:hover {
+    opacity: 0.7;
   }
 }
 
-.radarChartWrapper {
-  margin-left: -12px;
-  margin-right: -12px;
-  flex: 1;
-  min-height: 0;
-  position: relative;
+.heroScoreSuffix {
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--ant-color-text-disabled);
+  letter-spacing: 0;
+  margin-left: 2px;
 }
 
-.radarChartInner {
-  position: absolute;
-  inset: 0;
+.trendPill {
+  border-radius: 99px !important;
+  font-weight: 600;
+}
+
+.heroNarrative {
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 440px;
+  margin-bottom: 24px;
+}
+
+.radarChartContainer {
+  width: 100%;
+  height: 400px;
 
   :global(.recharts-radar-polygon) {
     pointer-events: none;
@@ -38,27 +49,8 @@
   }
 }
 
-.scoreOverlay {
-  position: absolute;
-  top: var(--ant-padding-lg, 24px);
-  left: var(--ant-padding-lg, 24px);
-  z-index: 1;
-  pointer-events: auto;
-}
-
-.clickableScore {
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-
-  &:hover {
-    opacity: 0.7;
-  }
-}
-
-.alertSm {
-  :global(.ant-alert-message) {
-    font-size: var(--ant-font-size-sm);
-  }
+.radarTooltip {
+  font-size: var(--ant-font-size-sm, 12px);
 }
 
 @keyframes radar-pulse {
@@ -71,10 +63,6 @@
   }
 }
 
-.radarChartInner :global(.radar-status-error) {
+.radarChartContainer :global(.radar-status-error) {
   animation: radar-pulse 2s ease-in-out infinite;
-}
-
-.radarTooltip {
-  font-size: var(--ant-font-size-sm, 12px);
 }

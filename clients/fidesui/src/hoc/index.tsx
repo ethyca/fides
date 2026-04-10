@@ -11,6 +11,7 @@ export * from "./CustomSelect";
 export * from "./CustomSpin";
 export * from "./CustomStatistic";
 export * from "./CustomTable";
+export * from "./CustomTabs";
 export * from "./CustomTag";
 export * from "./CustomTooltip";
 export * from "./CustomTypography";

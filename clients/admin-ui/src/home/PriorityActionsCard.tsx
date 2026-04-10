@@ -1,18 +1,18 @@
 import dayjs from "dayjs";
 import {
+  antTheme,
   Button,
-  Card,
   CheckOutlined,
   CUSTOM_TAG_COLOR,
   Flex,
   List,
+  Tabs,
   Tag,
   Text,
 } from "fidesui";
 import NextLink from "next/link";
 import { useMemo, useState } from "react";
 
-import { capitalize } from "~/features/common/utils";
 import {
   ACTION_CTA,
   DIMENSION_LABELS,
@@ -21,21 +21,21 @@ import {
 } from "~/features/dashboard/constants";
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 import type { PriorityAction } from "~/features/dashboard/types";
-import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./PriorityActionsCard.module.scss";
 import { clearDimensionFilter, useDimensionFilter } from "./useDimensionFilter";
 
-const SEVERITY_TAG_COLOR: Record<string, CUSTOM_TAG_COLOR> = {
-  [ActionSeverity.CRITICAL]: CUSTOM_TAG_COLOR.ERROR,
-  [ActionSeverity.HIGH]: CUSTOM_TAG_COLOR.WARNING,
-  [ActionSeverity.MEDIUM]: CUSTOM_TAG_COLOR.DEFAULT,
-  [ActionSeverity.LOW]: CUSTOM_TAG_COLOR.DEFAULT,
+const MAX_VISIBLE_ACTIONS = 5;
+
+const DUE_COLORS: Record<string, string | undefined> = {
+  overdue: "var(--fidesui-error)",
+  approaching: "var(--fidesui-warning)",
 };
 
 function getDaysRemaining(dueDate: string | null): {
   label: string;
   color: CUSTOM_TAG_COLOR;
+  urgency: string;
 } | null {
   if (!dueDate) {
     return null;
@@ -45,20 +45,31 @@ function getDaysRemaining(dueDate: string | null): {
     return {
       label: `${Math.abs(days)}d overdue`,
       color: CUSTOM_TAG_COLOR.ERROR,
+      urgency: "overdue",
     };
   }
   if (days <= 3) {
-    return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.WARNING };
+    return {
+      label: `${days}d left`,
+      color: CUSTOM_TAG_COLOR.WARNING,
+      urgency: "approaching",
+    };
   }
-  return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.DEFAULT };
+  return {
+    label: `${days}d left`,
+    color: CUSTOM_TAG_COLOR.DEFAULT,
+    urgency: "ok",
+  };
 }
 
 export const PriorityActionsCard = () => {
+  const { token } = antTheme.useToken();
   const dimensionFilter = useDimensionFilter();
   const { data, isLoading } = useGetPriorityActionsQuery(
     dimensionFilter ? { dimension: dimensionFilter } : undefined,
   );
   const [activeTab, setActiveTab] = useState("act_now");
+  const [expanded, setExpanded] = useState(false);
 
   const countsByGroup = useMemo(() => {
     const counts: Record<string, number> = {
@@ -73,6 +84,11 @@ export const PriorityActionsCard = () => {
     return counts;
   }, [data]);
 
+  const totalCount = useMemo(
+    () => Object.values(countsByGroup).reduce((a, b) => a + b, 0),
+    [countsByGroup],
+  );
+
   const filteredActions = useMemo(() => {
     if (!data?.items) {
       return [];
@@ -83,22 +99,44 @@ export const PriorityActionsCard = () => {
     );
   }, [data, activeTab]);
 
+  const visibleActions = expanded
+    ? filteredActions
+    : filteredActions.slice(0, MAX_VISIBLE_ACTIONS);
+  const hiddenCount = filteredActions.length - visibleActions.length;
+
   return (
-    <Card
-      title="Priority actions"
-      variant="borderless"
-      className={styles.cardContainer}
-      tabList={URGENCY_TABS.map((tab) => ({
-        key: tab.key,
-        label: (
-          <span>
-            {tab.label} <Tag color="default">{countsByGroup[tab.key]}</Tag>
-          </span>
-        ),
-      }))}
-      activeTabKey={activeTab}
-      onTabChange={setActiveTab}
-    >
+    <Flex vertical>
+      <Tabs
+        title={
+          <Text
+            type="secondary"
+            className={styles.sectionLabel}
+            style={{ fontFamily: token.fontFamilyCode }}
+          >
+            Total Actions:{" "}
+            <Tag color="default" className="!ml-1">
+              {totalCount}
+            </Tag>
+          </Text>
+        }
+        activeKey={activeTab}
+        onChange={(key: string) => {
+          setActiveTab(key);
+          setExpanded(false);
+        }}
+        items={URGENCY_TABS.map((tab) => ({
+          key: tab.key,
+          label: (
+            <span>
+              {tab.label}{" "}
+              <Tag color="default" className="!ml-1">
+                {countsByGroup[tab.key]}
+              </Tag>
+            </span>
+          ),
+        }))}
+      />
+
       {dimensionFilter && (
         <Flex className="mb-2">
           <Tag closable onClose={clearDimensionFilter} color="minos">
@@ -106,8 +144,9 @@ export const PriorityActionsCard = () => {
           </Tag>
         </Flex>
       )}
+
       <List
-        dataSource={filteredActions}
+        dataSource={visibleActions}
         loading={isLoading}
         locale={{
           emptyText: (
@@ -132,28 +171,37 @@ export const PriorityActionsCard = () => {
           return (
             <List.Item
               key={action.id}
+              className={styles.actionItem}
               actions={[
+                ...(daysInfo
+                  ? [
+                      <Text
+                        key="due"
+                        className={styles.dueText}
+                        style={{
+                          fontFamily: token.fontFamilyCode,
+                          color:
+                            DUE_COLORS[daysInfo.urgency] ??
+                            token.colorTextDisabled,
+                          fontWeight:
+                            daysInfo.urgency === "overdue" ? 600 : 500,
+                        }}
+                      >
+                        {daysInfo.label}
+                      </Text>,
+                    ]
+                  : []),
                 <NextLink
                   key="cta"
                   href={cta.route(action.action_data)}
-                  passHref
+                  className={styles.ctaLink}
                 >
-                  <Button size="small">{cta.label}</Button>
+                  {cta.label} &rarr;
                 </NextLink>,
               ]}
             >
               <List.Item.Meta
-                title={
-                  <Flex gap={6} align="center">
-                    {action.title}
-                    <Tag color={SEVERITY_TAG_COLOR[action.severity]}>
-                      {capitalize(action.severity)}
-                    </Tag>
-                    {daysInfo && (
-                      <Tag color={daysInfo.color}>{daysInfo.label}</Tag>
-                    )}
-                  </Flex>
-                }
+                title={action.title}
                 description={
                   <Text type="secondary" ellipsis={{ tooltip: true }}>
                     {action.message}
@@ -164,6 +212,14 @@ export const PriorityActionsCard = () => {
           );
         }}
       />
-    </Card>
+
+      {!expanded && hiddenCount > 0 && (
+        <Flex justify="flex-start" className="mb-2 mt-4">
+          <Button type="text" size="small" onClick={() => setExpanded(true)}>
+            Show all actions &rarr;
+          </Button>
+        </Flex>
+      )}
+    </Flex>
   );
 };

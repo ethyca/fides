@@ -1,0 +1,4 @@
+type: Changed
+description: Redesign home dashboard with hero posture score, radar chart, priority actions with urgency tabs, trend sparklines, and updated system coverage and DSR status layouts
+pr: 7777
+labels: []

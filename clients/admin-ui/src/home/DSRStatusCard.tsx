@@ -1,8 +1,10 @@
 import {
+  Alert,
   antTheme,
-  Card,
+  Divider,
   Flex,
-  Icons,
+  Skeleton,
+  SparkleIcon,
   StackedBarChart,
   Statistic,
   Text,
@@ -13,8 +15,6 @@ import { useCallback } from "react";
 
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import { useGetPrivacyRequestsQuery } from "~/features/dashboard/dashboard.slice";
-
-import styles from "./DSRStatusCard.module.scss";
 
 const SUB_STATS = [
   { key: "in_progress", title: "In Progress" },
@@ -42,94 +42,144 @@ export const DSRStatusCard = () => {
     [router],
   );
 
-  return (
-    <Card
-      title="DSR Status"
-      loading={isLoading}
-      extra={
-        <NextLink href={PRIVACY_REQUESTS_ROUTE} className={styles.viewAllLink}>
-          <Flex align="center" gap={4}>
-            View all requests
-            <Icons.ArrowRight size={14} />
-          </Flex>
-        </NextLink>
-      }
-      variant="borderless"
-      className={styles.cardContainer}
-    >
-      <Flex vertical gap="middle">
-        <Flex>
-          <Flex
-            vertical
-            justify="space-between"
-            className="w-[180px] shrink-0 border-r border-solid border-r-[var(--ant-color-border)] pr-5"
-          >
-            <div>
-              <Flex align="baseline" gap="middle">
-                <Statistic value={data?.active_count ?? 0} />
-                <Text type="secondary" className="text-xs">
-                  Active Requests
-                </Text>
-              </Flex>
-              <Flex vertical gap={4} className="mt-3">
-                {SUB_STATS.map(({ key, title }) => (
-                  <Flex key={key} className={styles.subStat}>
-                    <Statistic
-                      value={data?.statuses?.[key] ?? 0}
-                      title={title}
-                      valueStyle={{
-                        fontSize: token.fontSize,
-                        fontWeight: 600,
-                      }}
-                    />
-                  </Flex>
-                ))}
-              </Flex>
-            </div>
-            {(data?.overdue_count ?? 0) > 0 && (
-              <NextLink
-                href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
-                className={styles.overdueLink}
-              >
-                <Flex align="center" gap={4}>
-                  <Text strong type="danger">
-                    {data?.overdue_count} overdue
-                  </Text>
-                  <Icons.ArrowRight size={14} color={token.colorError} />
-                </Flex>
-              </NextLink>
-            )}
-          </Flex>
+  if (isLoading) {
+    return <Skeleton active paragraph={{ rows: 6 }} />;
+  }
 
-          <Flex vertical className="min-w-0 flex-1 pl-5">
-            <Text strong className="mb-3 text-xs">
-              SLA Health
-            </Text>
-            {data?.sla_health && (
-              <>
-                <Flex className="flex-1">
-                  <StackedBarChart
-                    data={data?.sla_health}
-                    segments={SLA_SEGMENTS}
-                    onCategoryClick={handleTypeClick}
-                  />
-                </Flex>
-                <Flex gap={10} className="mt-2">
-                  {SLA_SEGMENTS.map(({ color, label }) => (
-                    <Flex key={label} align="center" gap={4}>
-                      <div
-                        className="size-2 rounded-sm"
-                        style={{ backgroundColor: token[color] }}
-                      />
-                      <Text type="secondary">{label}</Text>
-                    </Flex>
-                  ))}
-                </Flex>
-              </>
-            )}
-          </Flex>
+  return (
+    <Flex vertical>
+      <Flex align="center" justify="space-between" className="mb-5">
+        <Text
+          type="secondary"
+          style={{
+            fontFamily: token.fontFamilyCode,
+            fontSize: 10,
+            fontWeight: 500,
+            letterSpacing: "1.5px",
+            textTransform: "uppercase",
+          }}
+        >
+          DSR Status
+        </Text>
+        <NextLink
+          href={PRIVACY_REQUESTS_ROUTE}
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: "var(--fidesui-terracotta)",
+            textDecoration: "none",
+          }}
+        >
+          View all requests &rarr;
+        </NextLink>
+      </Flex>
+
+      <Flex align="baseline" gap={32} className="pb-6">
+        <Flex align="baseline" gap={10}>
+          <Statistic
+            value={data?.active_count ?? 0}
+            valueStyle={{
+              fontSize: 48,
+              fontWeight: 200,
+              lineHeight: 1,
+            }}
+          />
+          <Text type="secondary" className="text-sm">
+            active requests
+          </Text>
+        </Flex>
+
+        <Flex gap={24} className="flex-1">
+          {SUB_STATS.map(({ key, title }) => (
+            <div key={key}>
+              <Statistic
+                value={data?.statuses?.[key] ?? 0}
+                valueStyle={{
+                  fontSize: 22,
+                  fontWeight: 500,
+                  lineHeight: 1.2,
+                }}
+              />
+              <Text type="secondary" className="mt-0.5 text-[11px]">
+                {title}
+              </Text>
+            </div>
+          ))}
+          {(data?.overdue_count ?? 0) > 0 && (
+            <NextLink
+              href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
+              style={{ textDecoration: "none" }}
+            >
+              <Statistic
+                value={data?.overdue_count ?? 0}
+                valueStyle={{
+                  fontSize: 22,
+                  fontWeight: 500,
+                  lineHeight: 1.2,
+                  color: token.colorError,
+                }}
+              />
+              <Text type="danger" className="mt-0.5 text-[11px]">
+                Overdue
+              </Text>
+            </NextLink>
+          )}
         </Flex>
       </Flex>
-    </Card>
+      <Divider dashed />
+
+      <Text
+        type="secondary"
+        style={{
+          fontFamily: token.fontFamilyCode,
+          fontSize: 10,
+          fontWeight: 500,
+          letterSpacing: "1.5px",
+          textTransform: "uppercase",
+          marginBottom: 8,
+        }}
+      >
+        SLA Health
+      </Text>
+      {data?.sla_health && (
+        <>
+          <div className="mb-3">
+            <StackedBarChart
+              data={data.sla_health}
+              segments={SLA_SEGMENTS}
+              onCategoryClick={handleTypeClick}
+            />
+          </div>
+          <Flex gap={16}>
+            {SLA_SEGMENTS.map(({ color, label }) => (
+              <Flex key={label} align="center" gap={5}>
+                <div
+                  className="size-1.5 rounded-sm"
+                  style={{ backgroundColor: token[color] }}
+                />
+                <Text type="secondary" className="text-[11px]">
+                  {label}
+                </Text>
+              </Flex>
+            ))}
+          </Flex>
+        </>
+      )}
+
+      {data?.agent_summary && (
+        <Alert
+          type="info"
+          showIcon
+          icon={
+            <SparkleIcon
+              size={12}
+              style={{ color: "var(--fidesui-terracotta)" }}
+            />
+          }
+          message={data.agent_summary}
+          className="mt-4"
+        />
+      )}
+    </Flex>
   );
 };

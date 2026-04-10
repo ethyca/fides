@@ -62,6 +62,7 @@ export const mockSystemCoverage: SystemCoverageResponse = {
   unclassified: 6,
   without_steward: 4,
   coverage_percentage: 72,
+  agent_summary: "3 new systems detected in AWS scan",
 };
 
 export const mockPriorityActions: PriorityAction[] = [
@@ -370,6 +371,7 @@ export const mockPrivacyRequests: PrivacyRequestsResponse = {
     consent: { on_track: 6, approaching: 2, overdue: 0 },
     update: { on_track: 5, approaching: 1, overdue: 1 },
   },
+  agent_summary: "5 requests overdue, 2 erasure SLAs breach tomorrow",
 };
 
 export const mockAgentBriefing: AgentBriefingResponse = {
@@ -578,24 +580,28 @@ export const mockTrends: TrendsResponse = {
       history: [58, 59, 61, 60, 63, 62, 64],
       metadata: {},
       diff: 3.2,
+      agent_summary: "Up 3pts after Casey cleared 34 classification reviews",
     },
     dsr_volume: {
       value: 47,
       history: [8, 12, 9, 15, 11, 18, 14],
       metadata: {},
       diff: -0.08,
+      agent_summary: "2 erasure requests approaching SLA deadline",
     },
     system_coverage: {
       value: 64.6,
       history: [55, 57, 58, 61, 60, 63, 64.6],
       metadata: {},
       diff: 2.1,
+      agent_summary: "3 new systems detected",
     },
     classification_health: {
       value: 58,
       history: [52, 51, 54, 55, 53, 56, 58],
       metadata: {},
       diff: 1.8,
+      agent_summary: "12 fields reclassified in Snowflake",
     },
   },
 };
