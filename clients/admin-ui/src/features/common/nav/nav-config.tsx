@@ -14,6 +14,8 @@ export interface NavConfigTab {
   path: string;
 }
 
+export type NavModule = "consent";
+
 export interface NavConfigRoute {
   title?: string;
   path: string;
@@ -34,12 +36,16 @@ export interface NavConfigRoute {
   routes?: NavConfigRoute[];
   /** Tabs within this page that should appear in search */
   tabs?: NavConfigTab[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export interface NavConfigGroup {
   title: string;
   icon: ReactNode;
   routes: NavConfigRoute[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export const NAV_CONFIG: NavConfigGroup[] = [
@@ -170,6 +176,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Consent",
     icon: <Icons.SettingsAdjust />,
+    module: "consent",
     routes: [
       {
         title: "Vendors",
@@ -371,6 +378,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Consent",
         path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        module: "consent",
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [
@@ -620,8 +628,6 @@ const configureNavRoute = ({
   return groupChild;
 };
 
-export const CONSENT_NAV_GROUP_TITLE = "Consent";
-
 export const configureNavGroups = ({
   config,
   userScopes,
@@ -632,8 +638,8 @@ export const configureNavGroups = ({
 }: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
   config.forEach((group) => {
-    // If consent module is disabled, skip the entire Consent nav group
-    if (!consentModuleEnabled && group.title === CONSENT_NAV_GROUP_TITLE) {
+    // If consent module is disabled, skip groups tagged with module: "consent"
+    if (!consentModuleEnabled && group.module === "consent") {
       return;
     }
 
@@ -652,12 +658,8 @@ export const configureNavGroups = ({
     };
 
     group.routes.forEach((route) => {
-      // If consent module is disabled, skip the Settings > Consent route
-      if (
-        !consentModuleEnabled &&
-        route.title === CONSENT_NAV_GROUP_TITLE &&
-        route.path === routes.GLOBAL_CONSENT_CONFIG_ROUTE
-      ) {
+      // If consent module is disabled, skip routes tagged with module: "consent"
+      if (!consentModuleEnabled && route.module === "consent") {
         return;
       }
 

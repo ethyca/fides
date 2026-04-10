@@ -2,10 +2,8 @@ import dayjs from "dayjs";
 import { Button, DatePicker, Form, Select } from "fidesui";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-import {
-  SubjectRequestStatusOptions,
-  useSubjectRequestActionTypeOptions,
-} from "~/features/privacy-requests/constants";
+import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
+import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 interface PrivacyRequestFiltersModalProps {

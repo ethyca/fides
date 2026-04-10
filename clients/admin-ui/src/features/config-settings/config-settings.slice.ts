@@ -233,15 +233,10 @@ export const selectPlusSecuritySettings: (
 
 export const selectConsentModuleEnabled: (state: RootState) => boolean =
   createSelector(
-    [
-      (state) => state,
-      configSettingsApi.endpoints.getConfigurationSettings.select({
-        api_set: false,
-      }),
-    ],
-    (_, { data: config }) => {
-      return config?.admin_ui?.consent_module_enabled ?? true;
-    },
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+    ({ data: config }) => config?.admin_ui?.consent_module_enabled ?? true,
   );
 
 const defaultDuplicateDetectionSettings: DuplicateDetectionApplicationConfig = {

@@ -9,10 +9,8 @@ import {
 import { useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import {
-  SubjectRequestStatusOptions,
-  useSubjectRequestActionTypeOptions,
-} from "~/features/privacy-requests/constants";
+import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
+import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import PrivacyRequestSortMenu, {
   SortParams,
 } from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
