@@ -65,9 +65,7 @@ class JiraTicketSchema(FidesSchema):
     # API key auth — entered manually or copied from a Jira SaaS connector
     domain: str | None = None  # e.g. "your-company.atlassian.net"
     username: str | None = None  # email address
-    api_key: str | None = Field(
-        default=None, json_schema_extra={"sensitive": True}
-    )
+    api_key: str | None = Field(default=None, json_schema_extra={"sensitive": True})
 
     @model_validator(mode="after")
     def _check_mutual_exclusivity(self) -> "JiraTicketSchema":
