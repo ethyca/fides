@@ -4,7 +4,7 @@ import {
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchDatastoreConnectionsMutation,
 } from "datastore-connections/datastore-connection.slice";
-import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
+import { DSRCustomizationModal } from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
   Button,
   Flex,
