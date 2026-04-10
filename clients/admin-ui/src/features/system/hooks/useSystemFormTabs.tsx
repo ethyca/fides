@@ -12,7 +12,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { selectConsentModuleEnabled } from "~/features/config-settings/config-settings.slice";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import {
@@ -22,6 +21,7 @@ import {
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import ToastLink from "~/features/common/ToastLink";
+import { selectConsentModuleEnabled } from "~/features/config-settings/config-settings.slice";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
 import {
