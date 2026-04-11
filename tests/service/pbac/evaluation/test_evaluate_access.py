@@ -44,7 +44,7 @@ def test_no_consumer_purposes_produces_gap(now):
         )
     }
 
-    output = evaluate_purpose(consumer, datasets, query_id="q-1")
+    output = evaluate_purpose(consumer, datasets)
 
     assert len(output.violations) == 0
     assert len(output.gaps) == 1
@@ -62,7 +62,7 @@ def test_no_consumer_purposes_with_unrestricted_dataset(now):
         )
     }
 
-    output = evaluate_purpose(consumer, datasets, query_id="q-1")
+    output = evaluate_purpose(consumer, datasets)
 
     assert len(output.violations) == 0
     assert len(output.gaps) == 1
@@ -81,7 +81,7 @@ def test_purpose_mismatch_produces_violation(now):
         )
     }
 
-    output = evaluate_purpose(consumer, datasets, query_id="q-1")
+    output = evaluate_purpose(consumer, datasets)
 
     assert len(output.violations) == 1
     assert "do not overlap" in output.violations[0].reason
@@ -96,7 +96,7 @@ def test_purpose_overlap_is_compliant(now):
         )
     }
 
-    output = evaluate_purpose(consumer, datasets, query_id="q-1")
+    output = evaluate_purpose(consumer, datasets)
 
     assert len(output.violations) == 0
 
@@ -113,7 +113,7 @@ def test_unrestricted_dataset_produces_gap(now):
         )
     }
 
-    output = evaluate_purpose(consumer, datasets, query_id="q-1")
+    output = evaluate_purpose(consumer, datasets)
 
     assert len(output.violations) == 0
     assert len(output.gaps) == 1
@@ -136,7 +136,6 @@ def test_collection_inherits_dataset_purposes(now):
     output = evaluate_purpose(
         consumer,
         datasets,
-        query_id="q-1",
         collections={"ds_billing": ("users",)},
     )
 
@@ -158,7 +157,6 @@ def test_collection_adds_own_purposes(now):
     output = evaluate_purpose(
         consumer,
         datasets,
-        query_id="q-1",
         collections={"ds_billing": ("events",)},
     )
 
@@ -179,7 +177,6 @@ def test_collection_mismatch_produces_violation(now):
     output = evaluate_purpose(
         consumer,
         datasets,
-        query_id="q-1",
         collections={"ds_billing": ("events",)},
     )
 
@@ -202,7 +199,7 @@ def test_multiple_datasets_mixed_compliance(now):
         ),
     }
 
-    output = evaluate_purpose(consumer, datasets, query_id="q-1")
+    output = evaluate_purpose(consumer, datasets)
 
     assert output.total_accesses == 2
     assert len(output.violations) == 1

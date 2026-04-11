@@ -22,10 +22,9 @@ def evaluate_purpose(
     consumer: ConsumerPurposes,
     datasets: dict[str, DatasetPurposes],
     *,
-    query_id: str,
     collections: dict[str, tuple[str, ...]] | None = None,
 ) -> PurposeEvaluationResult:
-    """Evaluate a query's dataset accesses against purpose assignments.
+    """Evaluate dataset accesses against purpose assignments.
 
     Rules:
     1. If the consumer has NO declared purposes, every dataset access is
@@ -72,7 +71,6 @@ def evaluate_purpose(
                 ds_purposes=ds_purposes,
                 dataset_key=dataset_key,
                 collection=collection,
-                query_id=query_id,
             )
             if isinstance(result, PurposeViolation):
                 violations.append(result)
@@ -92,7 +90,6 @@ def _check_access(
     ds_purposes: DatasetPurposes,
     dataset_key: str,
     collection: str | None,
-    query_id: str,
 ) -> PurposeViolation | EvaluationGap | None:
     """Check a single dataset/collection access against consumer purposes."""
 
@@ -109,7 +106,6 @@ def _check_access(
     # Purpose overlap check — this is the actual violation
     if not consumer.purpose_keys & effective:
         return PurposeViolation(
-            query_id=query_id,
             consumer_id=consumer.consumer_id,
             consumer_name=consumer.consumer_name,
             dataset_key=dataset_key,

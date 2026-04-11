@@ -18,7 +18,6 @@ def _make_violation(
     consumer_name: str = "Test Consumer",
 ) -> PurposeViolation:
     return PurposeViolation(
-        query_id="query-1",
         consumer_id=consumer_id,
         consumer_name=consumer_name,
         dataset_key=dataset_key,
@@ -129,7 +128,6 @@ class TestFilterWithDenyEvaluator:
 class TestRequestConstruction:
     def test_request_fields_from_violation(self) -> None:
         violation = PurposeViolation(
-            query_id="q1",
             consumer_id="c1",
             consumer_name="Analytics Team",
             dataset_key="postgres_main",

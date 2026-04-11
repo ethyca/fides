@@ -16,7 +16,7 @@ InProcessPBACEvaluationService.evaluate(entry)
   ├─ 2. Dataset Resolution
   │    DatasetResolver.resolve(TableRef) → fides_key | None
   │
-  ├─ 3. Engine: evaluate_purpose(consumer_purposes, datasets, query_id=...)
+  ├─ 3. Engine: evaluate_purpose(consumer_purposes, datasets)
   │    │
   │    ├─ Consumer has no purposes → GAP (unresolved_identity)
   │    ├─ Dataset has no purposes  → GAP (unconfigured_dataset)

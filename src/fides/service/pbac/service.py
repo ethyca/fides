@@ -113,11 +113,7 @@ class InProcessPBACEvaluationService:
             ds_purposes_map = self._build_dataset_purposes(dataset_keys)
 
         # 4. Purpose evaluation engine
-        result = evaluate_purpose(
-            consumer_purposes,
-            ds_purposes_map,
-            query_id=entry.external_job_id,
-        )
+        result = evaluate_purpose(consumer_purposes, ds_purposes_map)
 
         # 5. Reclassify gaps if consumer was found but has no purposes
         gaps = result.gaps + unresolved_gaps
@@ -219,7 +215,6 @@ class InProcessPBACEvaluationService:
                     break
             result.append(
                 PurposeViolation(
-                    query_id=v.query_id,
                     consumer_id=v.consumer_id,
                     consumer_name=v.consumer_name,
                     dataset_key=v.dataset_key,

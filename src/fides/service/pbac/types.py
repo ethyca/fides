@@ -113,7 +113,6 @@ class PurposeViolation:
     ``data_use`` and ``control`` before returning to callers.
     """
 
-    query_id: str
     consumer_id: str
     consumer_name: str
     dataset_key: str
