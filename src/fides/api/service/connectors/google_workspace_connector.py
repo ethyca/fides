@@ -1,11 +1,13 @@
 """Google Workspace connector for identity group resolution.
 
 This connector validates Google Workspace credentials (service account
-with domain-wide delegation). It does not support DSR traversal — it
+with domain-wide delegation). It does not support DSR traversal -- it
 exists solely to enable the connection test flow and identity resolution.
 """
 
-from typing import Any, Dict, List, NoReturn, Optional
+from __future__ import annotations
+
+from typing import Any, NoReturn
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
@@ -50,7 +52,7 @@ class GoogleWorkspaceConnector(BaseConnector):
         scoped = scoped.with_subject(config.delegation_subject)
         return scoped
 
-    def test_connection(self) -> Optional[ConnectionTestStatus]:
+    def test_connection(self) -> ConnectionTestStatus | None:
         from google.auth.transport.requests import Request as AuthRequest
 
         try:
@@ -66,8 +68,8 @@ class GoogleWorkspaceConnector(BaseConnector):
         policy: Policy,
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
-        input_data: Dict[str, List[Any]],
-    ) -> List[Row]:
+        input_data: dict[str, list[Any]],
+    ) -> list[Row]:
         raise NotImplementedError("Google Workspace does not support DSR traversal")
 
     def mask_data(
@@ -76,7 +78,7 @@ class GoogleWorkspaceConnector(BaseConnector):
         policy: Policy,
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
-        rows: List[Row],
-        input_data: Optional[Dict[str, List[Any]]] = None,
+        rows: list[Row],
+        input_data: dict[str, list[Any]] | None = None,
     ) -> int:
         raise NotImplementedError("Google Workspace does not support DSR traversal")
