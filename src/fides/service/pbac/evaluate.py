@@ -63,14 +63,27 @@ def evaluate_purpose(
         )
 
     for dataset_key, ds_purposes in datasets.items():
-        targets = list(collections.get(dataset_key, ())) or [None]
-        for collection in targets:
+        dataset_collections = collections.get(dataset_key, ())
+        if dataset_collections:
+            for collection in dataset_collections:
+                total_accesses += 1
+                result = _check_access(
+                    consumer=consumer,
+                    ds_purposes=ds_purposes,
+                    dataset_key=dataset_key,
+                    collection=collection,
+                )
+                if isinstance(result, PurposeViolation):
+                    violations.append(result)
+                elif isinstance(result, EvaluationGap):
+                    gaps.append(result)
+        else:
             total_accesses += 1
             result = _check_access(
                 consumer=consumer,
                 ds_purposes=ds_purposes,
                 dataset_key=dataset_key,
-                collection=collection,
+                collection=None,
             )
             if isinstance(result, PurposeViolation):
                 violations.append(result)
