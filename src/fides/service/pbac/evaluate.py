@@ -1,42 +1,31 @@
 """Purpose-based access control evaluation engine.
 
 Uses types from ``fides.service.pbac.types`` for all inputs and outputs.
-Given a consumer's purposes, a map of dataset purposes, and a query access
-event, it determines whether the access is compliant and produces violations
+Given a consumer's purposes, a map of dataset purposes, and a query ID,
+it determines whether the access is compliant and produces violations
 and coverage gaps.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-
 from fides.service.pbac.types import (
-    AccessCheckResult,
     ConsumerPurposes,
     DatasetPurposes,
     EvaluationGap,
     GapType,
-    QueryAccess,
-    ValidationResult,
-    Violation,
+    PurposeEvaluationResult,
+    PurposeViolation,
 )
 
 
-@dataclass
-class EvaluationOutput:
-    """Full output from evaluate_access including both violations and gaps."""
-
-    result: ValidationResult
-    gaps: list[EvaluationGap] = field(default_factory=list)
-
-
-def evaluate_access(
+def evaluate_purpose(
     consumer: ConsumerPurposes,
     datasets: dict[str, DatasetPurposes],
-    query: QueryAccess,
-) -> EvaluationOutput:
-    """Evaluate a query access event against purpose assignments.
+    *,
+    query_id: str,
+    collections: dict[str, tuple[str, ...]] | None = None,
+) -> PurposeEvaluationResult:
+    """Evaluate a query's dataset accesses against purpose assignments.
 
     Rules:
     1. If the consumer has NO declared purposes, every dataset access is
@@ -46,15 +35,19 @@ def evaluate_access(
     3. If a dataset has NO declared purposes, it is recorded as a dataset
        gap (not a violation).
 
-    Returns an EvaluationOutput containing both violations and gaps.
+    Returns a PurposeEvaluationResult containing violations, gaps, and a
+    total access count.
     """
-    violations: list[Violation] = []
+    if collections is None:
+        collections = {}
+
+    violations: list[PurposeViolation] = []
     gaps: list[EvaluationGap] = []
     total_accesses = 0
 
     # Rule 1: consumer has no purposes — record as identity gap
     if not consumer.purpose_keys:
-        for dataset_key in query.dataset_keys:
+        for dataset_key in datasets:
             total_accesses += 1
             gaps.append(
                 EvaluationGap(
@@ -64,108 +57,69 @@ def evaluate_access(
                     reason="Consumer has no declared purposes",
                 )
             )
-        return EvaluationOutput(
-            result=ValidationResult(
-                violations=[],
-                is_compliant=True,
-                total_accesses=total_accesses,
-                checked_at=datetime.now(timezone.utc),
-            ),
+        return PurposeEvaluationResult(
+            violations=[],
             gaps=gaps,
+            total_accesses=total_accesses,
         )
 
-    for dataset_key in query.dataset_keys:
-        ds_purposes = datasets.get(dataset_key)
-        collections = query.collections.get(dataset_key, ())
-
-        if collections:
-            for collection in collections:
-                total_accesses += 1
-                result = _check_access(
-                    consumer=consumer,
-                    ds_purposes=ds_purposes,
-                    dataset_key=dataset_key,
-                    collection=collection,
-                    query_id=query.query_id,
-                )
-                if result.violation:
-                    violations.append(result.violation)
-                if result.gap:
-                    gaps.append(result.gap)
-        else:
+    for dataset_key, ds_purposes in datasets.items():
+        targets = list(collections.get(dataset_key, ())) or [None]
+        for collection in targets:
             total_accesses += 1
             result = _check_access(
                 consumer=consumer,
                 ds_purposes=ds_purposes,
                 dataset_key=dataset_key,
-                collection=None,
-                query_id=query.query_id,
+                collection=collection,
+                query_id=query_id,
             )
-            if result.violation:
-                violations.append(result.violation)
-            if result.gap:
-                gaps.append(result.gap)
+            if isinstance(result, PurposeViolation):
+                violations.append(result)
+            elif isinstance(result, EvaluationGap):
+                gaps.append(result)
 
-    return EvaluationOutput(
-        result=ValidationResult(
-            violations=violations,
-            is_compliant=len(violations) == 0,
-            total_accesses=total_accesses,
-            checked_at=datetime.now(timezone.utc),
-        ),
+    return PurposeEvaluationResult(
+        violations=violations,
         gaps=gaps,
+        total_accesses=total_accesses,
     )
 
 
 def _check_access(
     *,
     consumer: ConsumerPurposes,
-    ds_purposes: DatasetPurposes | None,
+    ds_purposes: DatasetPurposes,
     dataset_key: str,
     collection: str | None,
     query_id: str,
-) -> AccessCheckResult:
+) -> PurposeViolation | EvaluationGap | None:
     """Check a single dataset/collection access against consumer purposes."""
-
-    # Dataset not registered or has no purposes — record as gap
-    if ds_purposes is None:
-        return AccessCheckResult(
-            gap=EvaluationGap(
-                gap_type=GapType.UNCONFIGURED_DATASET,
-                identifier=dataset_key,
-                dataset_key=dataset_key,
-                reason="Dataset is not registered in Fides",
-            )
-        )
 
     effective = ds_purposes.effective_purposes(collection)
 
     if not effective:
-        return AccessCheckResult(
-            gap=EvaluationGap(
-                gap_type=GapType.UNCONFIGURED_DATASET,
-                identifier=dataset_key,
-                dataset_key=dataset_key,
-                reason="Dataset has no declared purposes",
-            )
+        return EvaluationGap(
+            gap_type=GapType.UNCONFIGURED_DATASET,
+            identifier=dataset_key,
+            dataset_key=dataset_key,
+            reason="Dataset has no declared purposes",
         )
 
     # Purpose overlap check — this is the actual violation
     if not consumer.purpose_keys & effective:
-        return AccessCheckResult(
-            violation=Violation(
-                query_id=query_id,
-                consumer_id=consumer.consumer_id,
-                consumer_name=consumer.consumer_name,
-                dataset_key=dataset_key,
-                collection=collection,
-                consumer_purposes=consumer.purpose_keys,
-                dataset_purposes=effective,
-                reason=(
-                    f"Consumer purposes {sorted(consumer.purpose_keys)} do not overlap "
-                    f"with dataset purposes {sorted(effective)}"
-                ),
-            )
+        return PurposeViolation(
+            query_id=query_id,
+            consumer_id=consumer.consumer_id,
+            consumer_name=consumer.consumer_name,
+            dataset_key=dataset_key,
+            collection=collection,
+            consumer_purposes=consumer.purpose_keys,
+            dataset_purposes=effective,
+            reason=(
+                f"Consumer purposes {sorted(consumer.purpose_keys)} do not overlap "
+                f"with dataset purposes {sorted(effective)}"
+            ),
         )
 
-    return AccessCheckResult()
+    return None

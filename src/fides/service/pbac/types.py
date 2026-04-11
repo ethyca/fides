@@ -91,23 +91,27 @@ class DatasetPurposes:
         return base
 
 
+# ── Enums ─────────────────────────────────────────────────────────────
+
+
+class GapType(str, Enum):
+    """Types of PBAC coverage gaps."""
+
+    UNRESOLVED_IDENTITY = "unresolved_identity"
+    UNCONFIGURED_CONSUMER = "unconfigured_consumer"
+    UNCONFIGURED_DATASET = "unconfigured_dataset"
+
+
+# ── Violations and gaps ───────────────────────────────────────────────
+
+
 @dataclass(frozen=True)
-class QueryAccess:
-    """A single query event to validate."""
+class PurposeViolation:
+    """A purpose-based access violation.
 
-    query_id: str
-    consumer_id: str
-    dataset_keys: tuple[str, ...]
-    timestamp: datetime
-    collections: dict[str, tuple[str, ...]] = field(
-        default_factory=dict
-    )  # dataset_key -> (collection_names)
-    raw_query: str | None = None
-
-
-@dataclass(frozen=True)
-class Violation:
-    """A single purpose-based access violation."""
+    Produced by the evaluation engine. The service layer enriches
+    ``data_use`` and ``control`` before returning to callers.
+    """
 
     query_id: str
     consumer_id: str
@@ -117,42 +121,8 @@ class Violation:
     consumer_purposes: frozenset[str]
     dataset_purposes: frozenset[str]
     reason: str
-
-
-@dataclass
-class ValidationResult:
-    """The result of validating a query against purpose assignments."""
-
-    violations: list[Violation]
-    is_compliant: bool
-    total_accesses: int
-    checked_at: datetime
-
-
-# ── Enums ─────────────────────────────────────────────────────────────
-
-
-class GapType(str, Enum):
-    """Types of PBAC coverage gaps."""
-
-    UNRESOLVED_IDENTITY = "unresolved_identity"
-    UNCONFIGURED_DATASET = "unconfigured_dataset"
-
-
-# ── Service boundary types ─────────────────────────────────────────────
-
-
-@dataclass(frozen=True)
-class EvaluationViolation:
-    """A single violation produced by evaluation."""
-
-    dataset_key: str
-    collection: str | None
-    consumer_purposes: tuple[str, ...]
-    dataset_purposes: tuple[str, ...]
-    data_use: str | None  # resolved from dataset purposes
-    reason: str
-    control: str  # "purpose_restriction" for PBAC
+    data_use: str | None = None  # resolved by service, not engine
+    control: str | None = None  # set by service, not engine
 
 
 @dataclass(frozen=True)
@@ -171,28 +141,36 @@ class EvaluationGap:
     reason: str
 
 
+# ── Engine output ─────────────────────────────────────────────────────
+
+
+@dataclass
+class PurposeEvaluationResult:
+    """Output from evaluate_purpose() before policy filtering and enrichment."""
+
+    violations: list[PurposeViolation]
+    gaps: list[EvaluationGap]
+    total_accesses: int
+
+
+# ── Service boundary types ─────────────────────────────────────────────
+
+
 @dataclass(frozen=True)
-class EvaluationResult:
-    """Complete result of evaluating a RawQueryLogEntry."""
+class EvaluationRecord:
+    """Complete record of evaluating a RawQueryLogEntry.
+
+    Assembled by the service layer after identity resolution, purpose
+    evaluation, data_use enrichment, and policy filtering.
+    """
 
     query_id: str
     identity: str  # the user who ran the query
     consumer: DataConsumerEntity | None  # None if unresolved
     dataset_keys: tuple[str, ...]
     is_compliant: bool
-    violations: tuple[EvaluationViolation, ...]
+    violations: tuple[PurposeViolation, ...]
     gaps: tuple[EvaluationGap, ...]
     total_accesses: int
     timestamp: datetime
     query_text: str | None
-
-
-# ── Evaluation engine output ──────────────────────────────────────────
-
-
-@dataclass(frozen=True)
-class AccessCheckResult:
-    """Result from a single dataset/collection access check."""
-
-    violation: Violation | None = None
-    gap: EvaluationGap | None = None

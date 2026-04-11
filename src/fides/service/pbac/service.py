@@ -1,7 +1,7 @@
 """PBACEvaluationService Protocol and in-process implementation.
 
 Input: RawQueryLogEntry (platform-agnostic query log data).
-Output: EvaluationResult (flat, serializable).
+Output: EvaluationRecord (flat, serializable).
 
 The implementation owns consumer resolution, dataset resolution,
 purpose lookup, PBAC evaluation, and policy filtering.
@@ -17,7 +17,7 @@ from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.service.pbac.consumers.entities import DataConsumerEntity
 from fides.service.pbac.consumers.repository import DataConsumerRedisRepository
 from fides.service.pbac.dataset.resolver import DatasetResolver
-from fides.service.pbac.evaluate import evaluate_access
+from fides.service.pbac.evaluate import evaluate_purpose
 from fides.service.pbac.identity.interface import IdentityResolver
 from fides.service.pbac.identity.resolver import RedisIdentityResolver
 from fides.service.pbac.policies import (
@@ -30,12 +30,12 @@ from fides.service.pbac.purposes.repository import DataPurposeRedisRepository
 from fides.service.pbac.types import (
     ConsumerPurposes,
     DatasetPurposes,
-    EvaluationResult,
-    EvaluationViolation,
-    QueryAccess,
+    EvaluationGap,
+    EvaluationRecord,
+    GapType,
+    PurposeEvaluationResult,
+    PurposeViolation,
     RawQueryLogEntry,
-    ValidationResult,
-    Violation,
 )
 
 PBAC_CONTROL_TYPE = "purpose_restriction"
@@ -49,7 +49,7 @@ class PBACEvaluationService(Protocol):
         self,
         entry: RawQueryLogEntry,
         dataset_purpose_overrides: dict[str, list[str]] | None = None,
-    ) -> EvaluationResult: ...
+    ) -> EvaluationRecord: ...
 
 
 class InProcessPBACEvaluationService:
@@ -79,62 +79,77 @@ class InProcessPBACEvaluationService:
         self,
         entry: RawQueryLogEntry,
         dataset_purpose_overrides: dict[str, list[str]] | None = None,
-    ) -> EvaluationResult:
+    ) -> EvaluationRecord:
         """Evaluate a query log entry for PBAC compliance."""
         # 1. Resolve consumer
         consumer = self._identity_resolver.resolve(identity=entry.identity)
 
         # 2. Resolve datasets
         dataset_keys: list[str] = []
+        unresolved_gaps: list[EvaluationGap] = []
         for table_ref in entry.referenced_tables:
             fides_key = self._dataset_resolver.resolve(table_ref)
             if fides_key:
                 dataset_keys.append(fides_key)
+            else:
+                unresolved_gaps.append(
+                    EvaluationGap(
+                        gap_type=GapType.UNCONFIGURED_DATASET,
+                        identifier=table_ref.qualified_name,
+                        dataset_key=None,
+                        reason="Dataset is not registered in Fides",
+                    )
+                )
 
         # 3. Build engine inputs
         consumer_purposes = self._build_consumer_purposes(consumer, entry)
 
         if dataset_purpose_overrides:
-            ds_purposes_map = {
-                dataset_key: DatasetPurposes(
-                    dataset_key=dataset_key,
-                    purpose_keys=frozenset(
-                        dataset_purpose_overrides.get(dataset_key, [])
-                    ),
-                )
-                for dataset_key in dataset_keys
-            }
+            ds_purposes_map = self._build_dataset_purposes_with_overrides(
+                dataset_keys,
+                dataset_purpose_overrides,
+            )
         else:
             ds_purposes_map = self._build_dataset_purposes(dataset_keys)
 
-        query_access = QueryAccess(
+        # 4. Purpose evaluation engine
+        result = evaluate_purpose(
+            consumer_purposes,
+            ds_purposes_map,
             query_id=entry.external_job_id,
-            consumer_id=consumer.id if consumer else entry.identity,
-            dataset_keys=tuple(dataset_keys),
-            timestamp=entry.timestamp,
-            raw_query=entry.query_text,
         )
 
-        # 4. PBAC engine
-        output = evaluate_access(consumer_purposes, ds_purposes_map, query_access)
+        # 5. Reclassify gaps if consumer was found but has no purposes
+        gaps = result.gaps + unresolved_gaps
+        if consumer is not None and not consumer.purpose_fides_keys:
+            gaps = [
+                EvaluationGap(
+                    gap_type=GapType.UNCONFIGURED_CONSUMER,
+                    identifier=gap.identifier,
+                    dataset_key=gap.dataset_key,
+                    reason="Consumer has no declared purposes",
+                )
+                if gap.gap_type == GapType.UNRESOLVED_IDENTITY
+                else gap
+                for gap in gaps
+            ]
 
-        # 5. Filter through Policy v2
-        filtered_result = self._filter_violations_through_policies(
-            output.result, consumer
-        )
+        # 6. Resolve data_use on violations
+        enriched = self._resolve_data_uses(result.violations)
 
-        # 6. Build flat EvaluationResult
-        violations = self._build_evaluation_violations(filtered_result)
+        # 7. Filter through Policy v2
+        filtered = self._filter_violations_through_policies(enriched, consumer)
 
-        return EvaluationResult(
+        # 8. Build flat EvaluationRecord
+        return EvaluationRecord(
             query_id=entry.external_job_id,
             identity=entry.identity,
             consumer=consumer,
             dataset_keys=tuple(dataset_keys),
-            is_compliant=filtered_result.is_compliant,
-            violations=violations,
-            gaps=tuple(output.gaps),
-            total_accesses=filtered_result.total_accesses,
+            is_compliant=len(filtered) == 0,
+            violations=tuple(filtered),
+            gaps=tuple(gaps),
+            total_accesses=result.total_accesses,
             timestamp=entry.timestamp,
             query_text=entry.query_text,
         )
@@ -173,17 +188,62 @@ class InProcessPBACEvaluationService:
                 )
         return result
 
+    def _build_dataset_purposes_with_overrides(
+        self,
+        dataset_keys: list[str],
+        overrides: dict[str, list[str]],
+    ) -> dict[str, DatasetPurposes]:
+        """Build dataset purposes, merging overrides with cached collection_purposes."""
+        result: dict[str, DatasetPurposes] = {}
+        for key in dataset_keys:
+            cached = self._dataset_purposes.get(key)
+            result[key] = DatasetPurposes(
+                dataset_key=key,
+                purpose_keys=frozenset(overrides.get(key, [])),
+                collection_purposes=cached.collection_purposes if cached else {},
+            )
+        return result
+
+    def _resolve_data_uses(
+        self,
+        violations: list[PurposeViolation],
+    ) -> list[PurposeViolation]:
+        """Populate data_use and control on violations."""
+        result = []
+        for v in violations:
+            data_use = None
+            for purpose_key in sorted(v.dataset_purposes):
+                purpose = self._purpose_repo.get(purpose_key)
+                if purpose and purpose.data_use:
+                    data_use = purpose.data_use
+                    break
+            result.append(
+                PurposeViolation(
+                    query_id=v.query_id,
+                    consumer_id=v.consumer_id,
+                    consumer_name=v.consumer_name,
+                    dataset_key=v.dataset_key,
+                    collection=v.collection,
+                    consumer_purposes=v.consumer_purposes,
+                    dataset_purposes=v.dataset_purposes,
+                    reason=v.reason,
+                    data_use=data_use,
+                    control=PBAC_CONTROL_TYPE,
+                )
+            )
+        return result
+
     def _filter_violations_through_policies(
         self,
-        validation_result: ValidationResult,
+        violations: list[PurposeViolation],
         consumer: DataConsumerEntity | None,
-    ) -> ValidationResult:
+    ) -> list[PurposeViolation]:
         """Filter PBAC violations through the access policy evaluator."""
-        if validation_result.is_compliant:
-            return validation_result
+        if not violations:
+            return []
 
-        remaining: list[Violation] = []
-        for violation in validation_result.violations:
+        remaining: list[PurposeViolation] = []
+        for violation in violations:
             request = AccessEvaluationRequest(
                 consumer_id=violation.consumer_id,
                 consumer_name=violation.consumer_name,
@@ -204,35 +264,4 @@ class InProcessPBACEvaluationService:
             else:
                 remaining.append(violation)
 
-        return ValidationResult(
-            violations=remaining,
-            is_compliant=len(remaining) == 0,
-            total_accesses=validation_result.total_accesses,
-            checked_at=validation_result.checked_at,
-        )
-
-    def _build_evaluation_violations(
-        self,
-        validation_result: ValidationResult,
-    ) -> tuple[EvaluationViolation, ...]:
-        violations: list[EvaluationViolation] = []
-        for violation in validation_result.violations:
-            data_use = None
-            for purpose_key in violation.dataset_purposes:
-                purpose = self._purpose_repo.get(purpose_key)
-                if purpose and purpose.data_use:
-                    data_use = purpose.data_use
-                    break
-
-            violations.append(
-                EvaluationViolation(
-                    dataset_key=violation.dataset_key,
-                    collection=violation.collection,
-                    consumer_purposes=tuple(sorted(violation.consumer_purposes)),
-                    dataset_purposes=tuple(sorted(violation.dataset_purposes)),
-                    data_use=data_use,
-                    reason=violation.reason,
-                    control=PBAC_CONTROL_TYPE,
-                )
-            )
-        return tuple(violations)
+        return remaining
