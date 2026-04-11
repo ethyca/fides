@@ -56,7 +56,11 @@ export const isIdentityProviderColumns = ({
     ) => (
       <VendorMatchBadge
         vendorName={vendorId}
-        vendorLogoUrl={record.metadata?.vendor_logo_url}
+        vendorLogoUrl={
+          record.metadata?.domain
+            ? `https://logo.clearbit.com/${record.metadata.domain}`
+            : undefined
+        }
         confidence={record.metadata?.vendor_match_confidence}
       />
     ),
