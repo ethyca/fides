@@ -21,7 +21,11 @@ class DatasetResolver:
         self._mappings: dict[str, str] = dataset_mappings or {}
 
     def resolve(self, table_ref: TableRef) -> str | None:
-        """Resolve a table reference to a Fides dataset fides_key."""
+        """Resolve a table reference to a Fides dataset fides_key.
+
+        Falls back to ``table_ref.schema`` (e.g. BQ dataset name) when no
+        explicit mapping matches, treating the schema as a candidate fides_key.
+        """
         if table_ref.qualified_name in self._mappings:
             return self._mappings[table_ref.qualified_name]
 

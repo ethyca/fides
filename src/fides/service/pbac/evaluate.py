@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 from fides.service.pbac.types import (
+    AccessCheckResult,
     ConsumerPurposes,
     DatasetPurposes,
     EvaluationGap,
@@ -80,26 +81,30 @@ def evaluate_access(
         if collections:
             for collection in collections:
                 total_accesses += 1
-                _check_access(
+                result = _check_access(
                     consumer=consumer,
                     ds_purposes=ds_purposes,
                     dataset_key=dataset_key,
                     collection=collection,
                     query_id=query.query_id,
-                    violations=violations,
-                    gaps=gaps,
                 )
+                if result.violation:
+                    violations.append(result.violation)
+                if result.gap:
+                    gaps.append(result.gap)
         else:
             total_accesses += 1
-            _check_access(
+            result = _check_access(
                 consumer=consumer,
                 ds_purposes=ds_purposes,
                 dataset_key=dataset_key,
                 collection=None,
                 query_id=query.query_id,
-                violations=violations,
-                gaps=gaps,
             )
+            if result.violation:
+                violations.append(result.violation)
+            if result.gap:
+                gaps.append(result.gap)
 
     return EvaluationOutput(
         result=ValidationResult(
@@ -119,40 +124,36 @@ def _check_access(
     dataset_key: str,
     collection: str | None,
     query_id: str,
-    violations: list[Violation],
-    gaps: list[EvaluationGap],
-) -> None:
+) -> AccessCheckResult:
     """Check a single dataset/collection access against consumer purposes."""
 
     # Dataset not registered or has no purposes — record as gap
     if ds_purposes is None:
-        gaps.append(
-            EvaluationGap(
+        return AccessCheckResult(
+            gap=EvaluationGap(
                 gap_type=GapType.UNCONFIGURED_DATASET,
                 identifier=dataset_key,
                 dataset_key=dataset_key,
                 reason="Dataset is not registered in Fides",
             )
         )
-        return
 
     effective = ds_purposes.effective_purposes(collection)
 
     if not effective:
-        gaps.append(
-            EvaluationGap(
+        return AccessCheckResult(
+            gap=EvaluationGap(
                 gap_type=GapType.UNCONFIGURED_DATASET,
                 identifier=dataset_key,
                 dataset_key=dataset_key,
                 reason="Dataset has no declared purposes",
             )
         )
-        return
 
     # Purpose overlap check — this is the actual violation
     if not consumer.purpose_keys & effective:
-        violations.append(
-            Violation(
+        return AccessCheckResult(
+            violation=Violation(
                 query_id=query_id,
                 consumer_id=consumer.consumer_id,
                 consumer_name=consumer.consumer_name,
@@ -166,3 +167,5 @@ def _check_access(
                 ),
             )
         )
+
+    return AccessCheckResult()

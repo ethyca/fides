@@ -5,6 +5,7 @@ import {
   Flex,
   Space,
   Tag,
+  Tooltip,
   Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -113,7 +114,15 @@ const useDataConsumersTable = () => {
             return "N/A";
           }
           const ct = getConsumerType(type);
-          return <Tag>{getDisplayNameForScope(scope, ct?.display_key)}</Tag>;
+          const displayName = getDisplayNameForScope(scope, ct?.display_key);
+          const fullScope = Object.entries(scope)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(", ");
+          return (
+            <Tooltip title={fullScope}>
+              <Tag>{displayName}</Tag>
+            </Tooltip>
+          );
         },
       },
       {

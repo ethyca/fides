@@ -77,7 +77,7 @@ class DataConsumerEntity:
             name=obj.name,
             description=obj.description,
             type=obj.type,
-            scope={},
+            scope=getattr(obj, "scope", None) or {},
             purposes=purposes,
             purpose_fides_keys=[p.fides_key for p in purposes],
             egress=obj.egress,

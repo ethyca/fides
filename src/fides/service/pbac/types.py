@@ -185,3 +185,14 @@ class EvaluationResult:
     total_accesses: int
     timestamp: datetime
     query_text: str | None
+
+
+# ── Evaluation engine output ──────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class AccessCheckResult:
+    """Result from a single dataset/collection access check."""
+
+    violation: Violation | None = None
+    gap: EvaluationGap | None = None

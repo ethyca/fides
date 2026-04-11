@@ -195,34 +195,42 @@ const DataConsumerForm = ({
       </Form.Item>
 
       {selectedType && (
-        <Form.Item
-          label="Scope"
-          rules={[{ required: true, message: "Scope is required" }]}
-          tooltip="The specific identity to associate with this consumer"
-        >
-          {allScopeOptions.length > 0 ? (
-            <Select
-              placeholder="Select scope"
-              options={allScopeOptions}
-              value={selectedScopeValue}
-              onChange={handleScopeSelect}
-              showSearch
-              filterOption={(input, option) =>
-                String(option?.label ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              aria-label="Scope"
-              data-testid="data-consumer-scope-select"
-            />
-          ) : (
-            <Select
-              placeholder="No scopes available for this type"
-              disabled
-              aria-label="Scope"
-              data-testid="data-consumer-scope-select"
-            />
-          )}
+        <Form.Item noStyle dependencies={["scope"]}>
+          {() => {
+            const scopeErrors = form.getFieldError("scope");
+            return (
+              <Form.Item
+                label="Scope"
+                validateStatus={scopeErrors.length ? "error" : undefined}
+                help={scopeErrors[0]}
+                tooltip="The specific identity to associate with this consumer"
+              >
+                {allScopeOptions.length > 0 ? (
+                  <Select
+                    placeholder="Select scope"
+                    options={allScopeOptions}
+                    value={selectedScopeValue}
+                    onChange={handleScopeSelect}
+                    showSearch
+                    filterOption={(input, option) =>
+                      String(option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    aria-label="Scope"
+                    data-testid="data-consumer-scope-select"
+                  />
+                ) : (
+                  <Select
+                    placeholder="No scopes available for this type"
+                    disabled
+                    aria-label="Scope"
+                    data-testid="data-consumer-scope-select"
+                  />
+                )}
+              </Form.Item>
+            );
+          }}
         </Form.Item>
       )}
 
