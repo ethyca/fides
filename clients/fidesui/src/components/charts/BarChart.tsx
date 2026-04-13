@@ -126,7 +126,7 @@ export const BarChart = ({
             fontSize: token.fontSizeSM,
           }}
         >
-          {tooltipContent!(entry.value, entry.label)}
+          {tooltipContent?.(entry.value, entry.label)}
         </div>
       );
     },

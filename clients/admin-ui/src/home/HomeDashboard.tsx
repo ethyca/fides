@@ -20,6 +20,7 @@ const ROW_GUTTER = 24;
 export const HomeDashboard = () => {
   const {
     flags: {
+      alphaDarkMode,
       alphaDashboardActivityFeed,
       alphaDashboardAstralisCard,
       alphaDashboardAgentBriefing,
@@ -38,9 +39,11 @@ export const HomeDashboard = () => {
       gap={24}
       className="mx-auto w-full max-w-[1600px] px-10 py-6"
     >
-      <Flex justify="end">
-        <ThemeModeToggle />
-      </Flex>
+      {alphaDarkMode && (
+        <Flex justify="end">
+          <ThemeModeToggle />
+        </Flex>
+      )}
       {alphaDashboardAgentBriefing && <AgentBriefingBanner />}
       <Row gutter={ROW_GUTTER} className="h-[500px] items-stretch">
         <Col xs={24} md={10} className="h-full">

@@ -49,8 +49,7 @@ export const AgentBriefingBanner = () => {
     return null;
   }
 
-  const { briefing: rawText, quick_actions: quickActions } = briefing;
-  const text = rawText;
+  const { briefing: text, quick_actions: quickActions } = briefing;
 
   return (
     <ConfigProvider theme={alertTheme}>
