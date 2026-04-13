@@ -16,7 +16,6 @@ import { useMemo, useState } from "react";
 import { capitalize } from "~/features/common/utils";
 import {
   ACTION_CTA,
-  DIMENSION_LABELS,
   getUrgencyGroup,
 } from "~/features/dashboard/constants";
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
@@ -24,7 +23,6 @@ import type { PriorityAction } from "~/features/dashboard/types";
 import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./PriorityActionsCard.module.scss";
-import { clearDimensionFilter, useDimensionFilter } from "./useDimensionFilter";
 
 const SEVERITY_TAG_COLOR: Record<string, CUSTOM_TAG_COLOR> = {
   [ActionSeverity.CRITICAL]: CUSTOM_TAG_COLOR.ERROR,
@@ -69,10 +67,7 @@ const SEVERITY_FILTER_OPTIONS = [
 ];
 
 export const PriorityActionsCard = () => {
-  const dimensionFilter = useDimensionFilter();
-  const { data, isLoading } = useGetPriorityActionsQuery(
-    dimensionFilter ? { dimension: dimensionFilter } : undefined,
-  );
+  const { data, isLoading } = useGetPriorityActionsQuery();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
 
@@ -134,13 +129,6 @@ export const PriorityActionsCard = () => {
         </Flex>
       }
     >
-      {dimensionFilter && (
-        <Flex className="mb-2">
-          <Tag closable onClose={clearDimensionFilter} color="minos">
-            Filtered: {DIMENSION_LABELS[dimensionFilter] ?? dimensionFilter}
-          </Tag>
-        </Flex>
-      )}
       <List
         dataSource={filteredActions}
         loading={isLoading}

@@ -25,7 +25,6 @@ import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slic
 import styles from "./PostureCard.module.scss";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
-import { setDimensionFilter } from "./useDimensionFilter";
 
 export const PostureCard = () => {
   const { data: posture, isLoading } = useGetDashboardPostureQuery();
@@ -68,16 +67,6 @@ export const PostureCard = () => {
             "success") as RadarPointStatus,
         },
       })),
-    [posture?.dimensions],
-  );
-
-  const handleDimensionClick = useCallback(
-    (index: number) => {
-      const dim = posture?.dimensions[index];
-      if (dim) {
-        setDimensionFilter(dim.dimension);
-      }
-    },
     [posture?.dimensions],
   );
 
@@ -171,7 +160,6 @@ export const PostureCard = () => {
           <RadarChart
             data={radarData}
             outerRadius="80%"
-            onDimensionClick={handleDimensionClick}
             tooltipContent={renderTooltip}
           />
         </div>
