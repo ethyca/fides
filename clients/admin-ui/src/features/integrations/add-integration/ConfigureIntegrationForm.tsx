@@ -1,18 +1,19 @@
 import {
-  ChakraBox as Box,
-  ChakraVStack as VStack,
+  Card,
+  Flex,
+  Form,
+  Input,
+  Select,
   Spin,
+  Text,
   useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
-import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_DETAIL_ROUTE } from "~/features/common/nav/routes";
@@ -58,35 +59,7 @@ type FormValues = {
   property_ids?: string[];
 };
 
-// Helper component to handle form state communication
-const FormStateHandler = ({
-  dirty,
-  isValid,
-  submitForm,
-  loading,
-  onFormStateChange,
-}: {
-  dirty: boolean;
-  isValid: boolean;
-  submitForm: () => void;
-  loading: boolean;
-  onFormStateChange?: (formState: {
-    dirty: boolean;
-    isValid: boolean;
-    submitForm: () => void;
-    loading: boolean;
-  }) => void;
-}) => {
-  useEffect(() => {
-    if (onFormStateChange) {
-      onFormStateChange({ dirty, isValid, submitForm, loading });
-    }
-  }, [dirty, isValid, submitForm, loading, onFormStateChange]);
-
-  return null;
-};
-
-const ConfigureIntegrationForm = ({
+export const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
   onClose,
@@ -198,23 +171,35 @@ const ConfigureIntegrationForm = ({
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secrets);
 
-  const initialValues: FormValues = {
-    name: connection?.name ?? "",
-    description: connection?.description ?? "",
-    system_fides_key: initialSystemFidesKey,
-    ...(hasSecrets && {
-      secrets: mapValues(secrets?.properties, (s, key) => {
-        const value = connection?.secrets?.[key] ?? s.default;
-        // Convert booleans to strings to match select options
-        if (typeof value === "boolean") {
-          return String(value);
-        }
-        return value ?? "";
+  const initialValues: FormValues = useMemo(
+    () => ({
+      name: connection?.name ?? "",
+      description: connection?.description ?? "",
+      system_fides_key: initialSystemFidesKey,
+      ...(hasSecrets && {
+        secrets: mapValues(secrets?.properties, (s, key) => {
+          const value = connection?.secrets?.[key] ?? s.default;
+          // Convert booleans to strings to match select options
+          if (typeof value === "boolean") {
+            return String(value);
+          }
+          return value ?? "";
+        }),
       }),
+      dataset: initialDatasets,
+      property_ids: initialPropertyIds,
     }),
-    dataset: initialDatasets,
-    property_ids: initialPropertyIds,
-  };
+    [
+      connection,
+      initialSystemFidesKey,
+      hasSecrets,
+      secrets,
+      initialDatasets,
+      initialPropertyIds,
+    ],
+  );
+
+  const [form] = Form.useForm<FormValues>();
 
   const messageApi = useMessage();
 
@@ -428,6 +413,33 @@ const ConfigureIntegrationForm = ({
 
   const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
+  // Form state tracking for parent component
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  const isDirty = useMemo(
+    () => allValues !== undefined && !isEqual(allValues, initialValues),
+    [allValues, initialValues],
+  );
+
+  useEffect(() => {
+    if (onFormStateChange) {
+      onFormStateChange({
+        dirty: isDirty,
+        isValid: submittable,
+        submitForm: () => form.submit(),
+        loading,
+      });
+    }
+  }, [isDirty, submittable, loading, form, onFormStateChange]);
+
   if (secretsSchemaIsLoading) {
     return <Spin />;
   }
@@ -450,103 +462,86 @@ const ConfigureIntegrationForm = ({
   return (
     <>
       {description && (
-        <Box
-          padding="20px 24px"
-          backgroundColor="gray.50"
-          borderRadius="md"
-          border="1px solid"
-          borderColor="gray.200"
-          fontSize="sm"
-          marginTop="16px"
-        >
-          {description}
-        </Box>
+        <Card className="mt-4">
+          <Text>{description}</Text>
+        </Card>
       )}
-      <Formik
+      <Form
+        form={form}
+        layout="vertical"
         initialValues={initialValues}
-        enableReinitialize
-        onSubmit={handleSubmit}
+        onFinish={handleSubmit}
+        key={connection?.key ?? "create"}
       >
-        {({ dirty, isValid, submitForm }) => {
-          return (
-            <Form>
-              <VStack alignItems="start" spacing={6} mt={4}>
-                <CustomTextInput
-                  id="name"
-                  name="name"
-                  label="Name"
-                  variant="stacked"
-                  isRequired
+        <Flex vertical className="mt-4">
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Name is required" }]}
+            className="w-full"
+          >
+            <Input data-testid="input-name" />
+          </Form.Item>
+          <Form.Item name="description" label="Description" className="w-full">
+            <Input data-testid="input-description" />
+          </Form.Item>
+          {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+            connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
+            connectionOption.identifier !== ConnectionType.WEBSITE && (
+              <Form.Item
+                name="system_fides_key"
+                label="System"
+                tooltip="Link this integration to a system for monitoring purposes"
+                className="w-full"
+              >
+                <Select
+                  aria-label="System"
+                  data-testid="controlled-select-system_fides_key"
+                  options={systemOptions}
+                  onSearch={onSystemSearch}
+                  filterOption={false}
+                  loading={isFetchingSystems}
+                  allowClear
+                  placeholder="Search for a system..."
+                  showSearch
                 />
-                <CustomTextInput
-                  id="description"
-                  name="description"
-                  label="Description"
-                  variant="stacked"
-                />
-                {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
-                  connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
-                  connectionOption.identifier !== ConnectionType.WEBSITE && (
-                    <ControlledSelect
-                      id="system_fides_key"
-                      name="system_fides_key"
-                      label="System"
-                      tooltip="Link this integration to a system for monitoring purposes"
-                      layout="stacked"
-                      options={systemOptions}
-                      onSearch={onSystemSearch}
-                      // Refetch systems on search; disable client-side filtering
-                      filterOption={false}
-                      loading={isFetchingSystems}
-                      allowClear
-                      placeholder="Search for a system..."
-                    />
-                  )}
-                {isEditing &&
-                  hasPlus &&
-                  hasDatasets &&
-                  connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
-                  connectionOption.identifier !== ConnectionType.JIRA_TICKET &&
-                  connectionOption.identifier !== ConnectionType.WEBSITE && (
-                    <ControlledSelect
-                      id="property_ids"
-                      name="property_ids"
-                      label="Properties"
-                      tooltip="Assign properties to this integration's datasets to scope privacy request processing"
-                      layout="stacked"
-                      mode="multiple"
-                      options={propertyOptions}
-                      loading={isLoadingProperties}
-                      allowClear
-                      placeholder="Select properties..."
-                    />
-                  )}
-                {hasSecrets && secrets && generateFields(secrets)}
-                {connectionOption.identifier === ConnectionType.DATAHUB && (
-                  <ControlledSelect
-                    id="dataset"
-                    name="dataset"
-                    options={datasetOptions ?? []}
-                    label="Datasets"
-                    tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
-                    layout="stacked"
-                    mode="multiple"
-                  />
-                )}
-              </VStack>
-              <FormStateHandler
-                dirty={dirty}
-                isValid={isValid}
-                submitForm={submitForm}
-                loading={loading}
-                onFormStateChange={onFormStateChange}
+              </Form.Item>
+            )}
+          {hasSecrets && secrets && generateFields(secrets)}
+          {isEditing && hasPlus && hasDatasets && (
+            <Form.Item
+              name="property_ids"
+              label="Properties"
+              tooltip="Assign properties to this integration's datasets to scope privacy request processing"
+              className="w-full"
+            >
+              <Select
+                aria-label="Properties"
+                mode="multiple"
+                options={propertyOptions}
+                loading={isLoadingProperties}
+                allowClear
+                placeholder="Select properties..."
               />
-            </Form>
-          );
-        }}
-      </Formik>
+            </Form.Item>
+          )}
+          {connectionOption.identifier === ConnectionType.DATAHUB && (
+            <Form.Item
+              name="dataset"
+              label="Datasets"
+              tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
+              className="w-full"
+            >
+              <Select
+                aria-label="Datasets"
+                data-testid="controlled-select-dataset"
+                options={datasetOptions ?? []}
+                mode="multiple"
+              />
+            </Form.Item>
+          )}
+        </Flex>
+      </Form>
     </>
   );
 };
-
-export default ConfigureIntegrationForm;

@@ -21,9 +21,14 @@ const MonitorDetailsWidget = ({ monitorId }: MonitorDetailsWidgetProps) => {
   const {
     flags: { heliosInsights },
   } = useFlags();
-  const { data: configData } = useGetMonitorConfigQuery({
-    monitor_config_id: monitorId,
-  });
+  const { data: configData } = useGetMonitorConfigQuery(
+    {
+      monitor_config_id: monitorId,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
   const connectionKey = configData?.connection_config_key;
   const { data: connectionData } = useGetConnectionQuery(
     connectionKey ? { connection_key: connectionKey } : skipToken,
