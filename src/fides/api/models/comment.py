@@ -189,7 +189,7 @@ class Comment(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the comment, its replies, and all associated references.
-        
+
         Correspondence comments (message_to_subject, reply_from_subject) are
         protected from deletion to preserve the audit trail. Attempting to
         delete one raises ValueError.
