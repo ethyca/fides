@@ -41,7 +41,7 @@ export const AssessmentGroup = ({
             icon={<Icons.Document />}
           />
           <div>
-            <Title level={4} className="!m-0">
+            <Title level={2} className="!m-0">
               {title}
             </Title>
             <Text type="secondary">
