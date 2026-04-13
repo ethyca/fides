@@ -121,6 +121,7 @@ class Comment(Base):
         "Comment",
         foreign_keys=[parent_id],
         back_populates="parent",
+        lazy="selectin",
         uselist=True,
         order_by="Comment.created_at",
         passive_deletes=True,
@@ -168,9 +169,16 @@ class Comment(Base):
         # are added, prevent deletion of comments with those types to preserve
         # correspondence threads.
 
+        # Re-fetch from the DB to guarantee a session-bound instance.
+        # Callers (e.g. test fixture teardown) may hold a detached reference,
+        # which would raise DetachedInstanceError on any lazy relationship access.
+        comment = db.query(Comment).filter(Comment.id == self.id).first()
+        if comment is None:
+            return  # already deleted
+
         # Collect all descendants iteratively (breadth-first)
         to_delete = []
-        stack = list(self.replies)
+        stack = list(comment.replies)
         while stack:
             node = stack.pop()
             stack.extend(node.replies)
@@ -187,11 +195,11 @@ class Comment(Base):
 
         # Delete self
         AttachmentService(db).delete_for_reference(
-            self.id, AttachmentReferenceType.comment
+            comment.id, AttachmentReferenceType.comment
         )
-        for reference in self.references:
+        for reference in comment.references:
             reference.delete(db)
-        db.delete(self)
+        db.delete(comment)
 
     @staticmethod
     def delete_comments_for_reference_and_type(
