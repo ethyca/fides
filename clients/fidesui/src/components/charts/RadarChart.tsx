@@ -9,7 +9,6 @@ import {
   Radar,
   RadarChart as RechartsRadarChart,
   ResponsiveContainer,
-  Tooltip,
 } from "recharts";
 
 import type { AntColorTokenKey } from "./chart-constants";
@@ -18,7 +17,6 @@ import { useChartAnimation } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 import { ChartText } from "./ChartText";
 import styles from "./RadarChart.module.scss";
-import { RadarTooltipContent } from "./RadarTooltipContent";
 
 export type RadarPointStatus = "success" | "warning" | "error";
 
@@ -26,13 +24,22 @@ export interface RadarChartDataPoint {
   subject: string;
   value: number;
   status?: RadarPointStatus;
+  tag?: {
+    label: string;
+    status?: RadarPointStatus;
+  };
 }
 
 const EMPTY_GRID_DATA = [{ value: 100 }, { value: 100 }, { value: 100 }];
 
 const TICK_HIT_WIDTH = 80;
-const TICK_HIT_HEIGHT = 20;
+const TICK_HIT_HEIGHT = 40;
 const DOT_HIT_RADIUS = 20;
+
+const TAG_HEIGHT = 16;
+const TAG_PADDING_X = 8;
+const TAG_FONT_SIZE = 10;
+const TAG_CHAR_WIDTH = 6;
 
 export interface RadarChartProps {
   data?: RadarChartDataPoint[] | null;
@@ -52,12 +59,9 @@ interface RadarTickProps {
   data: RadarChartDataPoint[];
   statusColors: Record<RadarPointStatus, string>;
   chartColor: string;
+  bgColor: string;
   onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
-  onTickHover?: (
-    index: number,
-    rect: { x: number; y: number },
-    event: React.MouseEvent,
-  ) => void;
+  onTickHover?: (index: number, event: React.MouseEvent) => void;
   onTickLeave?: () => void;
 }
 
@@ -68,6 +72,7 @@ const RadarTick = ({
   data,
   statusColors,
   chartColor,
+  bgColor,
   onDimensionClick,
   onTickHover,
   onTickLeave,
@@ -79,23 +84,47 @@ const RadarTick = ({
   const statusColor = point?.status ? statusColors[point.status] : undefined;
   const interactive = !!onDimensionClick || !!onTickHover;
 
+  let tagElement: ReactNode = null;
+  if (point?.tag) {
+    const tagColor = point.tag.status
+      ? statusColors[point.tag.status]
+      : chartColor;
+    const tagWidth = Math.max(
+      28,
+      point.tag.label.length * TAG_CHAR_WIDTH + TAG_PADDING_X * 2,
+    );
+    tagElement = (
+      <g pointerEvents="none">
+        <rect
+          x={x - tagWidth / 2}
+          y={y + 4}
+          width={tagWidth}
+          height={TAG_HEIGHT}
+          rx={TAG_HEIGHT / 2}
+          fill={tagColor}
+          fillOpacity={0.15}
+        />
+        <text
+          x={x}
+          y={y + 4 + TAG_HEIGHT / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill={tagColor}
+          fontSize={TAG_FONT_SIZE}
+          fontWeight={600}
+        >
+          {point.tag.label}
+        </text>
+      </g>
+    );
+  }
+
   return (
     <g
       className={classNames({
         "radar-status-error": point?.status === "error",
         [styles.interactive]: interactive,
       })}
-      onClick={
-        onDimensionClick
-          ? () => onDimensionClick(payload.index, point)
-          : undefined
-      }
-      onMouseEnter={
-        onTickHover
-          ? (e) => onTickHover(payload.index, { x, y }, e)
-          : undefined
-      }
-      onMouseLeave={onTickLeave}
     >
       {interactive && (
         <rect
@@ -104,17 +133,33 @@ const RadarTick = ({
           width={TICK_HIT_WIDTH}
           height={TICK_HIT_HEIGHT}
           fill="transparent"
+          onClick={
+            onDimensionClick
+              ? () => onDimensionClick(payload.index, point)
+              : undefined
+          }
+          onMouseEnter={
+            onTickHover ? (e) => onTickHover(payload.index, e) : undefined
+          }
+          onMouseLeave={onTickLeave}
         />
       )}
       <ChartText
         x={x}
-        y={y}
+        y={point?.tag ? y - 14 : y}
         fill={statusColor ?? chartColor}
-        fillOpacity={statusColor ? 1 : 0.75}
+        fillOpacity={1}
+        stroke={bgColor}
+        strokeWidth={3}
+        strokeOpacity={0.5}
+        paintOrder="stroke"
+        strokeLinejoin="round"
         maxLines={2}
+        style={{ pointerEvents: "none" }}
       >
         {payload.value}
       </ChartText>
+      {tagElement}
     </g>
   );
 };
@@ -210,18 +255,17 @@ export const RadarChart = ({
     y: number;
   } | null>(null);
 
-  const handleTickHover = useCallback(
-    (index: number, _rect: { x: number; y: number }, e: React.MouseEvent) => {
-      if (!tooltipContent || !containerRef.current) {
-        return;
-      }
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const clientX = e.clientX - containerRect.left;
-      const clientY = e.clientY - containerRect.top;
-      setTickTooltip({ index, x: clientX, y: clientY });
-    },
-    [tooltipContent],
-  );
+  const handleTickHover = useCallback((index: number, e: React.MouseEvent) => {
+    if (!containerRef.current) {
+      return;
+    }
+    const rect = containerRef.current.getBoundingClientRect();
+    setTickTooltip({
+      index,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  }, []);
 
   const handleTickLeave = useCallback(() => {
     setTickTooltip(null);
@@ -234,6 +278,7 @@ export const RadarChart = ({
       padding: `${token.paddingXXS}px ${token.paddingXS}px`,
       boxShadow: token.boxShadow,
       fontSize: token.fontSizeSM,
+      lineHeight: 1.3,
     }),
     [token],
   );
@@ -244,6 +289,7 @@ export const RadarChart = ({
       className={classNames("w-full h-full relative", className, {
         "pointer-events-none": !interactive,
       })}
+      onMouseLeave={tooltipContent ? handleTickLeave : undefined}
     >
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart
@@ -299,11 +345,13 @@ export const RadarChart = ({
           {!empty && (
             <PolarAngleAxis
               dataKey="subject"
+              zIndex={2100}
               tick={
                 <RadarTick
                   data={data!}
                   statusColors={STATUS_COLORS}
                   chartColor={chartColor}
+                  bgColor={token.colorBgContainer}
                   onDimensionClick={onDimensionClick}
                   onTickHover={tooltipContent ? handleTickHover : undefined}
                   onTickLeave={tooltipContent ? handleTickLeave : undefined}
@@ -311,18 +359,13 @@ export const RadarChart = ({
               }
             />
           )}
-
-          {interactive && !empty && !tickTooltip && (
-            <Tooltip
-              cursor={false}
-              content={<RadarTooltipContent tooltipContent={tooltipContent} />}
-            />
-          )}
         </RechartsRadarChart>
       </ResponsiveContainer>
 
       {tickTooltip && data?.[tickTooltip.index] && tooltipContent && (
         <div
+          key={tickTooltip.index}
+          className={styles.tickTooltip}
           style={{
             ...tickTooltipStyle,
             position: "absolute",
@@ -331,6 +374,7 @@ export const RadarChart = ({
             transform: "translate(-50%, -100%) translateY(-8px)",
             pointerEvents: "none",
             zIndex: 10,
+            width: 140,
           }}
         >
           {tooltipContent(data[tickTooltip.index])}

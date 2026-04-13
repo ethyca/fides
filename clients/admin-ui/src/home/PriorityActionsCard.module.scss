@@ -15,6 +15,28 @@
   margin-top: 6px;
 }
 
+.actionRow {
+  display: block;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--ant-color-fill-quaternary);
+
+    .launchIcon {
+      color: var(--ant-color-text);
+    }
+  }
+}
+
+.launchIcon {
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: 8px;
+  color: var(--ant-color-text-quaternary);
+  transition: color 0.15s ease;
+}
+
 .cardContainer {
   height: 100%;
   display: flex;

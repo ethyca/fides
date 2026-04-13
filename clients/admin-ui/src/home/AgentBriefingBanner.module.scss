@@ -8,7 +8,7 @@
   text-decoration: none;
 }
 
-.quickActionButton {
+.quickActionButton.quickActionButton {
   font-weight: 600;
 
   &.error {
@@ -16,8 +16,8 @@
     border-color: var(--ant-color-error);
 
     &:hover {
-      color: var(--ant-color-error-hover) !important;
-      border-color: var(--ant-color-error-hover) !important;
+      color: var(--ant-color-error-hover);
+      border-color: var(--ant-color-error-hover);
     }
   }
 
@@ -26,8 +26,8 @@
     border-color: var(--ant-color-warning);
 
     &:hover {
-      color: var(--ant-color-warning-hover) !important;
-      border-color: var(--ant-color-warning-hover) !important;
+      color: var(--ant-color-warning-hover);
+      border-color: var(--ant-color-warning-hover);
     }
   }
 
@@ -36,8 +36,8 @@
     border-color: var(--ant-color-info);
 
     &:hover {
-      color: var(--ant-color-info-hover) !important;
-      border-color: var(--ant-color-info-hover) !important;
+      color: var(--ant-color-info-hover);
+      border-color: var(--ant-color-info-hover);
     }
   }
 }

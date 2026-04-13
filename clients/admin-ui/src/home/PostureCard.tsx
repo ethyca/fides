@@ -1,14 +1,17 @@
-import type { RadarChartDataPoint } from "fidesui";
+import type { RadarChartDataPoint, RadarPointStatus } from "fidesui";
 import {
   Alert,
   Card,
+  ConfigProvider,
   Flex,
   Icons,
   RadarChart,
-  SparkleIcon,
-  Statistic,
   Tag,
+  Text,
+  Tooltip,
+  useThemeMode,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo } from "react";
 
 import {
@@ -18,30 +21,36 @@ import {
   DIMENSION_LABELS,
 } from "~/features/dashboard/constants";
 import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
-import { DiffDirection } from "~/features/dashboard/types";
 
 import styles from "./PostureCard.module.scss";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 import { setDimensionFilter } from "./useDimensionFilter";
 
-function getDiffPrefix(direction: DiffDirection): React.ReactNode | undefined {
-  if (direction === DiffDirection.UNCHANGED) {
-    return undefined;
-  }
-  if (direction === DiffDirection.DOWN) {
-    return <Icons.ArrowDown size={12} />;
-  }
-  return <Icons.ArrowUp size={12} />;
-}
-
 export const PostureCard = () => {
   const { data: posture, isLoading } = useGetDashboardPostureQuery();
+  const { resolvedMode } = useThemeMode();
   const postureScore = posture?.score ?? 0;
-  const postureDiff = posture?.diff_percent ?? 0;
-  const diffDirection = posture?.diff_direction ?? DiffDirection.UNCHANGED;
 
   const animatedScore = useCountUp(postureScore);
+
+  const alertTheme = useMemo(
+    () => ({
+      components: {
+        Alert: {
+          colorInfoBg:
+            resolvedMode === "dark"
+              ? palette.FIDESUI_BG_MINOS
+              : palette.FIDESUI_LIMESTONE,
+          colorInfoBorder:
+            resolvedMode === "dark"
+              ? palette.FIDESUI_MINOS
+              : palette.FIDESUI_LIMESTONE,
+        },
+      },
+    }),
+    [resolvedMode],
+  );
 
   const openPostureDrawer = useCallback(() => {
     openDashboardDrawer({ type: "posture" });
@@ -50,10 +59,14 @@ export const PostureCard = () => {
   const radarData = useMemo(
     () =>
       posture?.dimensions.map((dimension) => ({
-        subject:
-          DIMENSION_LABELS[dimension.dimension] ?? dimension.label,
-        value: dimension.score,
+        subject: DIMENSION_LABELS[dimension.dimension] ?? dimension.label,
+        value: Math.round(dimension.score),
         status: BAND_STATUS[dimension.band],
+        tag: {
+          label: `${Math.round(dimension.score)} / 100`,
+          status: (BAND_STATUS[dimension.band] ??
+            "success") as RadarPointStatus,
+        },
       })),
     [posture?.dimensions],
   );
@@ -71,48 +84,45 @@ export const PostureCard = () => {
   const renderTooltip = useCallback(
     (point: RadarChartDataPoint) => {
       const dim = posture?.dimensions.find(
-        (d) =>
-          (DIMENSION_LABELS[d.dimension] ?? d.label) === point.subject,
+        (d) => (DIMENSION_LABELS[d.dimension] ?? d.label) === point.subject,
       );
-      const band = dim ? BAND_CONFIG[dim.band] : undefined;
       const description = dim
         ? DIMENSION_DESCRIPTIONS[dim.dimension]
         : undefined;
-      return (
-        <Flex vertical gap={2} className={styles.radarTooltip}>
-          <span className="font-semibold">{point.subject}</span>
-          {description && (
-            <span className="max-w-[200px] text-xs opacity-70">
-              {description}
-            </span>
-          )}
-          <Flex align="center" gap={6}>
-            <span>{point.value} / 100</span>
-            {band && (
-              <Tag color={band.color} className="!mr-0 !text-xs">
-                {band.label}
-              </Tag>
-            )}
-          </Flex>
-        </Flex>
-      );
+      if (!description) {
+        return null;
+      }
+      return <span className="max-w-[200px] text-xs">{description}</span>;
     },
     [posture?.dimensions],
   );
 
   return (
     <Card
-      title="Posture"
+      title={
+        <Tooltip
+          title="A composite score (0–100) measuring your organization's data governance health across coverage, classification, consent, DSR compliance, and more. Higher is better."
+          placement="bottom"
+        >
+          <Flex
+            align="center"
+            gap={4}
+            style={{ cursor: "pointer", display: "inline-flex" }}
+          >
+            <Text>Governance Posture Score</Text>
+            <Icons.Help size={14} className="opacity-30" />
+          </Flex>
+        </Tooltip>
+      }
       variant="borderless"
       loading={isLoading}
       className={styles.cardContainer}
     >
-      <Flex align="baseline" gap="small" className={styles.scoreOverlay}>
+      <ConfigProvider theme={alertTheme}>
         <div
           role="button"
           tabIndex={0}
-          aria-label="View posture breakdown"
-          className={styles.clickableScore}
+          className={styles.clickableAlert}
           onClick={openPostureDrawer}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -121,19 +131,38 @@ export const PostureCard = () => {
             }
           }}
         >
-          <Statistic value={animatedScore} valueStyle={{ fontSize: 48 }} />
+          <Alert
+            type="info"
+            showIcon={false}
+            className={styles.summaryAlert}
+            message={
+              <Flex align="center" gap="middle">
+                <div>
+                  <Flex vertical>
+                    <span className={styles.scoreValue}>
+                      {animatedScore}
+                      <span className={styles.scoreDenominator}>/100</span>
+                    </span>
+                    {posture?.band && (
+                      <Tag
+                        color={BAND_CONFIG[posture.band].color}
+                        className="mt-1 w-fit"
+                      >
+                        {BAND_CONFIG[posture.band].label}
+                      </Tag>
+                    )}
+                  </Flex>
+                </div>
+                {posture?.agent_annotation && (
+                  <span className={styles.summaryText}>
+                    {posture.agent_annotation}
+                  </span>
+                )}
+              </Flex>
+            }
+          />
         </div>
-        <Statistic
-          trend={
-            diffDirection === DiffDirection.UNCHANGED
-              ? "neutral"
-              : (diffDirection as "up" | "down")
-          }
-          value={postureDiff}
-          prefix={getDiffPrefix(diffDirection)}
-          size="sm"
-        />
-      </Flex>
+      </ConfigProvider>
       <div className={styles.radarChartWrapper}>
         <div className={styles.radarChartInner}>
           <RadarChart
@@ -144,15 +173,6 @@ export const PostureCard = () => {
           />
         </div>
       </div>
-      {posture?.agent_annotation && (
-        <Alert
-          type="info"
-          showIcon
-          icon={<SparkleIcon size={14} />}
-          message={posture.agent_annotation}
-          className={styles.alertSm}
-        />
-      )}
     </Card>
   );
 };

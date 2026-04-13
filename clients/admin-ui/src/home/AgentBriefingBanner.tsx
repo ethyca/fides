@@ -16,26 +16,6 @@ import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./AgentBriefingBanner.module.scss";
 
-/**
- * Fix common singular/plural grammar issues in server-generated briefing text.
- * e.g. "1 privacy requests are overdue" → "1 privacy request is overdue"
- */
-function fixPluralGrammar(text: string): string {
-  return text
-    .replace(
-      /\b1 privacy requests are overdue and require\b/g,
-      "1 privacy request is overdue and requires",
-    )
-    .replace(
-      /\b1 privacy requests are/g,
-      "1 privacy request is",
-    )
-    .replace(
-      /\b1 requests?\b/g,
-      "1 request",
-    );
-}
-
 const SEVERITY_STYLE: Record<ActionSeverity, string> = {
   [ActionSeverity.CRITICAL]: styles.error,
   [ActionSeverity.HIGH]: styles.error,
@@ -70,7 +50,7 @@ export const AgentBriefingBanner = () => {
   }
 
   const { briefing: rawText, quick_actions: quickActions } = briefing;
-  const text = fixPluralGrammar(rawText);
+  const text = rawText;
 
   return (
     <ConfigProvider theme={alertTheme}>

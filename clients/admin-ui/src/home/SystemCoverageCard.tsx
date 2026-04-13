@@ -1,10 +1,25 @@
-import { antTheme, Card, Divider, DonutChart, Flex, Text } from "fidesui";
+import type { AntColorTokenKey } from "fidesui";
+import {
+  antTheme,
+  Card,
+  Divider,
+  DonutChart,
+  Flex,
+  Icons,
+  Text,
+  Tooltip,
+} from "fidesui";
 import NextLink from "next/link";
 
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
 import { useGetSystemCoverageQuery } from "~/features/dashboard/dashboard.slice";
+import type { SystemCoverageResponse } from "~/features/dashboard/types";
 
-const BREAKDOWN_ITEMS = [
+const BREAKDOWN_ITEMS: {
+  key: keyof SystemCoverageResponse;
+  label: string;
+  color: AntColorTokenKey;
+}[] = [
   { key: "fully_classified", label: "Fully classified", color: "colorSuccess" },
   {
     key: "partially_classified",
@@ -17,7 +32,7 @@ const BREAKDOWN_ITEMS = [
     label: "Without steward",
     color: "colorTextQuaternary",
   },
-] as const;
+];
 
 export const SystemCoverageCard = () => {
   const { token } = antTheme.useToken();
@@ -27,7 +42,21 @@ export const SystemCoverageCard = () => {
 
   return (
     <Card
-      title="System Coverage"
+      title={
+        <Tooltip
+          placement="bottom"
+          title="What percentage of your known data systems are under active governance — connected, classified, and assigned a steward."
+        >
+          <Flex
+            style={{ cursor: "pointer", display: "inline-flex" }}
+            align="center"
+            gap={4}
+          >
+            <Text>System Coverage</Text>
+            <Icons.Help size={14} className="opacity-30" />
+          </Flex>
+        </Tooltip>
+      }
       variant="borderless"
       loading={isLoading}
       className="h-full"
@@ -42,23 +71,11 @@ export const SystemCoverageCard = () => {
           <div className="size-[100px] shrink-0">
             <DonutChart
               variant="thick"
-              segments={[
-                {
-                  value: coverage?.fully_classified ?? 0,
-                  color: "colorSuccess",
-                  name: "Fully classified",
-                },
-                {
-                  value: coverage?.partially_classified ?? 0,
-                  color: "colorWarning",
-                  name: "Partially classified",
-                },
-                {
-                  value: coverage?.unclassified ?? 0,
-                  color: "colorBorder",
-                  name: "Unclassified",
-                },
-              ]}
+              segments={BREAKDOWN_ITEMS.map(({ key, label, color }) => ({
+                value: coverage?.[key] ?? 0,
+                color,
+                name: label,
+              }))}
               centerLabel={
                 <Text strong className="text-base">
                   {percentage}%
@@ -77,8 +94,7 @@ export const SystemCoverageCard = () => {
                   <div
                     className="size-2.5 shrink-0 rounded-full"
                     style={{
-                      backgroundColor:
-                        token[color as keyof typeof token] as string,
+                      backgroundColor: token[color],
                     }}
                   />
                   <Text strong className="text-sm">
