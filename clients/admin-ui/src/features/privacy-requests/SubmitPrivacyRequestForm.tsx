@@ -3,6 +3,7 @@ import {
   Checkbox,
   Flex,
   Form,
+  type FormRule,
   Icons,
   Input,
   LocationSelect,
@@ -51,7 +52,7 @@ const IdentityFields = ({
   rules,
 }: {
   identityInputs?: IdentityInputs | null;
-  rules: Record<string, Array<Record<string, unknown>>>;
+  rules: Record<string, FormRule[]>;
 }) => {
   if (!identityInputs) {
     return null;
@@ -112,7 +113,7 @@ const CustomFields = ({
     | fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
     | LocationCustomPrivacyRequestField
   > | null;
-  rules: Record<string, Array<Record<string, unknown>>>;
+  rules: Record<string, FormRule[]>;
 }) => {
   if (!customFieldInputs) {
     return null;

@@ -1,3 +1,5 @@
+import type { FormRule } from "fidesui";
+
 import { PrivacyRequestOption } from "~/types/api";
 
 export const findActionFromPolicyKey = (
@@ -11,8 +13,8 @@ export const findActionFromPolicyKey = (
  */
 export const generateFormRulesFromAction = (
   action?: PrivacyRequestOption,
-): Record<string, Array<Record<string, unknown>>> => {
-  const rules: Record<string, Array<Record<string, unknown>>> = {
+): Record<string, FormRule[]> => {
+  const rules: Record<string, FormRule[]> = {
     policy_key: [{ required: true, message: "Request type is required" }],
   };
 
