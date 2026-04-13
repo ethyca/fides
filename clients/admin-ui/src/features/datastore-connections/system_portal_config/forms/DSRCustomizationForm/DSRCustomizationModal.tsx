@@ -7,47 +7,35 @@ import {
   CreateAccessManualWebhookRequest,
   PatchAccessManualWebhookRequest,
 } from "datastore-connections/types";
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraVStack as VStack,
-  Modal,
-  Spin,
-  Tooltip,
-  useChakraDisclosure as useDisclosure,
-  useMessage,
-} from "fidesui";
-import React, { useEffect, useRef, useState } from "react";
+import { Button, Flex, Modal, Text, Tooltip, useMessage } from "fidesui";
+import React, { useState } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
-import DSRCustomizationForm from "./DSRCustomizationForm";
+import { DSRCustomizationForm } from "./DSRCustomizationForm";
 import { Field } from "./types";
 
 type Props = {
   connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
-const DSRCustomizationModal = ({ connectionConfig }: Props) => {
-  const mounted = useRef(false);
+export const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const message = useMessage();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fields, setFields] = useState([] as Field[]);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const { data, isFetching, isLoading, isSuccess } =
-    useGetAccessManualHookQuery(connectionConfig ? connectionConfig.key : "", {
-      skip: !connectionConfig,
-    });
+  const { data } = useGetAccessManualHookQuery(
+    connectionConfig ? connectionConfig.key : "",
+    { skip: !connectionConfig },
+  );
+  const fields = data?.fields ?? [];
 
   const [createAccessManualWebhook] = useCreateAccessManualWebhookMutation();
   const [patchAccessManualWebhook] = usePatchAccessManualWebhookMutation();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSubmit = async (values: Field[], _actions: any) => {
+  const handleSubmit = async (values: { fields: Field[] }) => {
     try {
       setIsSubmitting(true);
       const params:
@@ -71,21 +59,11 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
     }
   };
 
-  useEffect(() => {
-    mounted.current = true;
-    if (isSuccess && data) {
-      setFields(data.fields);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [data, isSuccess]);
-
   const DSRButton = (
     <Button
       disabled={!connectionConfig || isSubmitting}
       loading={isSubmitting}
-      onClick={onOpen}
+      onClick={() => setIsOpen(true)}
     >
       Customize DSR
     </Button>
@@ -105,31 +83,27 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
       )}
       <Modal
         open={isOpen}
-        onCancel={onClose}
+        onCancel={() => setIsOpen(false)}
         centered
         destroyOnHidden
         title="Customize DSR"
         footer={null}
+        width={640}
       >
-        <VStack align="stretch" gap="16px">
-          <Box color="gray.700" fontSize="14px">
+        <Flex vertical gap="middle">
+          <Text>
             Customize your PII fields to create a friendly label name for your
             privacy request packages. This &quot;Package Label&quot; is the
             label your user will see in their downloaded package.
-          </Box>
-          {(isFetching || isLoading) && <Spin />}
-          {mounted.current && !isLoading ? (
-            <DSRCustomizationForm
-              data={fields}
-              isSubmitting={isSubmitting}
-              onSaveClick={handleSubmit}
-              onCancel={onClose}
-            />
-          ) : null}
-        </VStack>
+          </Text>
+          <DSRCustomizationForm
+            data={fields}
+            isSubmitting={isSubmitting}
+            onSaveClick={handleSubmit}
+            onCancel={() => setIsOpen(false)}
+          />
+        </Flex>
       </Modal>
     </>
   );
 };
-
-export default DSRCustomizationModal;

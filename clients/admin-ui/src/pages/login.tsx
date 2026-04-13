@@ -168,6 +168,7 @@ const useLogin = () => {
       dispatch(login(user));
     } catch (error) {
       setShowAnimation(false);
+      // eslint-disable-next-line no-console
       console.error(error);
       let errorMsg: string;
       if (isFromInvite) {
