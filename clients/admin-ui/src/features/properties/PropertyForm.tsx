@@ -177,7 +177,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                 <Form.Item
                   label="Property ID"
                   tooltip="Automatically generated unique ID for this property, used for developer configurations"
-                  className="!mb-0 w-full"
+                  className="!mb-0"
                 >
                   <Space.Compact className="w-full">
                     <Input readOnly value={property.id ?? ""} />
