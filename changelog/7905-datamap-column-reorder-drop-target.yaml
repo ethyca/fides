@@ -1,4 +1,4 @@
 type: Fixed
-description: Fixed column reorder in the Datamap report's "Edit columns" modal so dragging registers anywhere on a row instead of only on the drag handle icon.
+description: Fixed column reorder in the Datamap report's "Edit columns" modal so dropping registers anywhere on a row instead of only on the drag handle icon.
 pr: 7905
 labels: []
