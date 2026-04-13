@@ -1,7 +1,7 @@
 """Add google_workspace to ConnectionType
 
 Revision ID: b3c8d5e7f2a1
-Revises: c5d6e7f8a9b0
+Revises: 1724da7ee981
 Create Date: 2026-04-05 14:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b3c8d5e7f2a1"
-down_revision = "c5d6e7f8a9b0"
+down_revision = "1724da7ee981"
 branch_labels = None
 depends_on = None
 
