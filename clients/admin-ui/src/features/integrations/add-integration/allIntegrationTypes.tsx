@@ -70,7 +70,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
     },
     category: ConnectionCategory.DATA_WAREHOUSE,
     tags: ["Query Logging", "Mock"],
-    enabledFeatures: [IntegrationFeature.QUERY_LOGGING],
+    enabledFeatures: ["QUERY_LOGGING" as IntegrationFeature],
   },
 };
 
