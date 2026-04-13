@@ -8,7 +8,7 @@
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build --webpack",
     "build": "next build --webpack",
     "build:test": "NODE_ENV=test next build --webpack",
-    "build:vercel": "(cd ../fides-js && npm run build) & (cd ../admin-ui && next build --webpack) & wait",
+    "build:vercel": "(cd ../fides-js && npm run build) & (cd ../admin-ui && next build --webpack && node -e \"require('fs').writeFileSync('.next/routes-manifest-deterministic.json', '{}')\") & wait",
     "chrome:debug": "BROWSER='google chrome' BROWSER_ARGS='--remote-debugging-port=9222' npm run dev",
     "clean": "rm -rf .turbo node_modules .next",
     "copy-export": "mkdir -p ../../src/fides/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fides/ui-build/static/admin/",
