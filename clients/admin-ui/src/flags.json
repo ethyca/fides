@@ -160,5 +160,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaDashboardAgentBriefingActions": {
+    "label": "Alpha dashboard agent briefing actions",
+    "description": "Show action items inside the Astralis agent briefing banner",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }

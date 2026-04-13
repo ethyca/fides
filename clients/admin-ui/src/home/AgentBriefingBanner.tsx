@@ -10,6 +10,7 @@ import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useMemo } from "react";
 
+import { useFlags } from "~/features/common/features";
 import { ACTION_CTA } from "~/features/dashboard/constants";
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 import { ActionSeverity } from "~/features/dashboard/types";
@@ -24,6 +25,9 @@ const SEVERITY_STYLE: Record<ActionSeverity, string> = {
 };
 
 export const AgentBriefingBanner = () => {
+  const {
+    flags: { alphaDashboardAgentBriefingActions },
+  } = useFlags();
   const { data: briefing } = useGetAgentBriefingQuery();
   const { resolvedMode } = useThemeMode();
 
@@ -61,30 +65,32 @@ export const AgentBriefingBanner = () => {
         message={
           <>
             {text}
-            <Flex gap={16} className="mt-3">
-              {quickActions.map((action) => {
-                const cta = ACTION_CTA[action.action_type];
-                if (!cta) {
-                  return null;
-                }
-                const severityClass =
-                  SEVERITY_STYLE[action.severity] ?? styles.info;
-                return (
-                  <NextLink
-                    key={`${action.action_type}-${action.label}`}
-                    href={cta.route(action.action_data)}
-                    className={styles.quickActionTile}
-                  >
-                    <Button
-                      size="small"
-                      className={`${styles.quickActionButton} ${severityClass}`}
+            {alphaDashboardAgentBriefingActions && (
+              <Flex gap={16} className="mt-3">
+                {quickActions.map((action) => {
+                  const cta = ACTION_CTA[action.action_type];
+                  if (!cta) {
+                    return null;
+                  }
+                  const severityClass =
+                    SEVERITY_STYLE[action.severity] ?? styles.info;
+                  return (
+                    <NextLink
+                      key={`${action.action_type}-${action.label}`}
+                      href={cta.route(action.action_data)}
+                      className={styles.quickActionTile}
                     >
-                      {action.label}
-                    </Button>
-                  </NextLink>
-                );
-              })}
-            </Flex>
+                      <Button
+                        size="small"
+                        className={`${styles.quickActionButton} ${severityClass}`}
+                      >
+                        {action.label}
+                      </Button>
+                    </NextLink>
+                  );
+                })}
+              </Flex>
+            )}
           </>
         }
         className={styles.alertSm}
