@@ -381,10 +381,8 @@ export const ConfigureIntegrationForm = ({
   }, [form, allValues]);
 
   const isDirty = useMemo(
-    () => !isEqual(form.getFieldsValue(true), initialValues),
-    // allValues triggers recalculation when form values change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [form, allValues, initialValues],
+    () => allValues !== undefined && !isEqual(allValues, initialValues),
+    [allValues, initialValues],
   );
 
   useEffect(() => {

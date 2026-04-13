@@ -35,8 +35,7 @@ export const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const [createAccessManualWebhook] = useCreateAccessManualWebhookMutation();
   const [patchAccessManualWebhook] = usePatchAccessManualWebhookMutation();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSubmit = async (values: Field[], _actions: any) => {
+  const handleSubmit = async (values: { fields: Field[] }) => {
     try {
       setIsSubmitting(true);
       const params:

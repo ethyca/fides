@@ -20,7 +20,7 @@ import { Field } from "./types";
 type DSRCustomizationFormProps = {
   data: Field[];
   isSubmitting: boolean;
-  onSaveClick: (values: any, actions: any) => void;
+  onSaveClick: (values: { fields: Field[] }) => void;
   onCancel: () => void;
 };
 
@@ -42,7 +42,7 @@ export const DSRCustomizationForm = ({
       message.error("PII Field must be unique");
       return;
     }
-    onSaveClick(values, { setSubmitting: () => {} });
+    onSaveClick(values);
   };
 
   const initialValues = {

@@ -49,7 +49,7 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Save is clicked
    */
-  onSaveClick: (values: any, actions: any) => void;
+  onSaveClick: (values: ConnectionConfigFormValues) => void;
   /**
    * Parent callback when Test Connection is clicked
    */
@@ -164,7 +164,7 @@ export const ConnectorParametersForm = ({
 
   const handleFinish = (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
-    onSaveClick(processedValues, { setSubmitting: () => {} });
+    onSaveClick(processedValues);
   };
 
   const handleAuthorizeConnectionClick = async () => {
@@ -219,7 +219,7 @@ export const ConnectorParametersForm = ({
 
   const allValues = Form.useWatch([], form);
   const isDirty = useMemo(
-    () => !_.isEqual(allValues, initialFormValues),
+    () => allValues !== undefined && !_.isEqual(allValues, initialFormValues),
     [allValues, initialFormValues],
   );
   const authorized = !isDirty && connectionConfig?.authorized;
@@ -240,10 +240,10 @@ export const ConnectorParametersForm = ({
         <Flex vertical>
           {/* Hidden fields to preserve values in form submission */}
           <Form.Item name="name" hidden noStyle>
-            <input type="hidden" />
+            <Input />
           </Form.Item>
           <Form.Item name="description" hidden noStyle>
-            <input type="hidden" />
+            <Input />
           </Form.Item>
           {connectionConfig && (
             <Flex align="center" gap="middle" className="pb-4">
@@ -315,7 +315,7 @@ export const ConnectorParametersForm = ({
             </Form.Item>
           ) : (
             <Form.Item name="enabled_actions" hidden noStyle>
-              <input type="hidden" />
+              <Input />
             </Form.Item>
           )}
           {SystemType.DATABASE === connectionOption.type &&
