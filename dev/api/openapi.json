@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.83.0"
+    "version": "2.83.1b1.dev3+g2782ce0b3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2872,6 +2872,34 @@
                     ],
                     "title": "GoogleCloudSQLPostgresDocsSchema",
                     "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "keyfile_creds": {
+                        "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                        "title": "Keyfile creds",
+                        "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                        "sensitive": true
+                      },
+                      "delegation_subject": {
+                        "type": "string",
+                        "title": "Delegation subject",
+                        "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                      },
+                      "domain": {
+                        "type": "string",
+                        "title": "Domain",
+                        "description": "The Google Workspace domain (e.g., example.com)."
+                      }
+                    },
+                    "required": [
+                      "keyfile_creds",
+                      "delegation_subject",
+                      "domain"
+                    ],
+                    "title": "GoogleWorkspaceDocsSchema",
+                    "description": "Google Workspace Secrets Schema for API Docs"
                   },
                   {
                     "type": "object",
@@ -5799,6 +5827,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "keyfile_creds": {
+                        "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                        "title": "Keyfile creds",
+                        "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                        "sensitive": true
+                      },
+                      "delegation_subject": {
+                        "type": "string",
+                        "title": "Delegation subject",
+                        "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                      },
+                      "domain": {
+                        "type": "string",
+                        "title": "Domain",
+                        "description": "The Google Workspace domain (e.g., example.com)."
+                      }
+                    },
+                    "required": [
+                      "keyfile_creds",
+                      "delegation_subject",
+                      "domain"
+                    ],
+                    "title": "GoogleWorkspaceDocsSchema",
+                    "description": "Google Workspace Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "access_token": {
                         "anyOf": [
                           {
@@ -7323,6 +7379,34 @@
                     ],
                     "title": "GoogleCloudSQLPostgresDocsSchema",
                     "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "keyfile_creds": {
+                        "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                        "title": "Keyfile creds",
+                        "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                        "sensitive": true
+                      },
+                      "delegation_subject": {
+                        "type": "string",
+                        "title": "Delegation subject",
+                        "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                      },
+                      "domain": {
+                        "type": "string",
+                        "title": "Domain",
+                        "description": "The Google Workspace domain (e.g., example.com)."
+                      }
+                    },
+                    "required": [
+                      "keyfile_creds",
+                      "delegation_subject",
+                      "domain"
+                    ],
+                    "title": "GoogleWorkspaceDocsSchema",
+                    "description": "Google Workspace Secrets Schema for API Docs"
                   },
                   {
                     "type": "object",
@@ -20837,6 +20921,17 @@
               }
             ],
             "default": "console_only"
+          },
+          "consent_module_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Module Enabled"
           }
         },
         "additionalProperties": false,
@@ -23038,6 +23133,7 @@
           "entra",
           "google_cloud_sql_mysql",
           "google_cloud_sql_postgres",
+          "google_workspace",
           "https",
           "manual",
           "manual_webhook",
@@ -24120,6 +24216,34 @@
                 ],
                 "title": "GoogleCloudSQLPostgresDocsSchema",
                 "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+              },
+              {
+                "properties": {
+                  "keyfile_creds": {
+                    "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                    "title": "Keyfile creds",
+                    "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                    "sensitive": true
+                  },
+                  "delegation_subject": {
+                    "type": "string",
+                    "title": "Delegation subject",
+                    "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                  },
+                  "domain": {
+                    "type": "string",
+                    "title": "Domain",
+                    "description": "The Google Workspace domain (e.g., example.com)."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "keyfile_creds",
+                  "delegation_subject",
+                  "domain"
+                ],
+                "title": "GoogleWorkspaceDocsSchema",
+                "description": "Google Workspace Secrets Schema for API Docs"
               },
               {
                 "properties": {
@@ -28218,6 +28342,34 @@
         "title": "GoogleCloudSQLPostgresDocsSchema",
         "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
       },
+      "GoogleWorkspaceDocsSchema": {
+        "properties": {
+          "keyfile_creds": {
+            "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+            "title": "Keyfile creds",
+            "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+            "sensitive": true
+          },
+          "delegation_subject": {
+            "type": "string",
+            "title": "Delegation subject",
+            "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain",
+            "description": "The Google Workspace domain (e.g., example.com)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "keyfile_creds",
+          "delegation_subject",
+          "domain"
+        ],
+        "title": "GoogleWorkspaceDocsSchema",
+        "description": "Google Workspace Secrets Schema for API Docs"
+      },
       "GroupOperator": {
         "type": "string",
         "enum": [
@@ -28479,7 +28631,9 @@
           "TASKS",
           "WITHOUT_CONNECTION",
           "DSR_AUTOMATION",
-          "CONDITIONS"
+          "CONDITIONS",
+          "QUERY_LOGGING",
+          "IDENTITY_RESOLUTION"
         ],
         "title": "IntegrationFeature",
         "description": "Features that can be enabled for different integration types.\nThese control which tabs and functionality are available in the integration detail view."
@@ -35472,6 +35626,34 @@
                 ],
                 "title": "GoogleCloudSQLPostgresDocsSchema",
                 "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+              },
+              {
+                "properties": {
+                  "keyfile_creds": {
+                    "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                    "title": "Keyfile creds",
+                    "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                    "sensitive": true
+                  },
+                  "delegation_subject": {
+                    "type": "string",
+                    "title": "Delegation subject",
+                    "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                  },
+                  "domain": {
+                    "type": "string",
+                    "title": "Domain",
+                    "description": "The Google Workspace domain (e.g., example.com)."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "keyfile_creds",
+                  "delegation_subject",
+                  "domain"
+                ],
+                "title": "GoogleWorkspaceDocsSchema",
+                "description": "Google Workspace Secrets Schema for API Docs"
               },
               {
                 "properties": {
