@@ -48,6 +48,8 @@ version for audit trail. [#7773](https://github.com/ethyca/fides/pull/7773) http
 - Added monitor_aggregate_statistics table for pre-computed dashboard stats [#7808](https://github.com/ethyca/fides/pull/7808) https://github.com/ethyca/fides/labels/db-migration
 - Inject noindex meta tag in the head of all Privacy Center and Admin UI pages to prevent search engine indexing [#7798](https://github.com/ethyca/fides/pull/7798)
 - Add `cloud_infra_staged_resource` table and `CloudInfraStagedResource` ORM model for cloud infrastructure monitor resources [#7823](https://github.com/ethyca/fides/pull/7823) https://github.com/ethyca/fides/labels/db-migration
+- Added regex search toggle to datastore monitor fields UI [#7855](https://github.com/ethyca/fides/pull/7855)
+- Activity feed card on the home dashboard with infinite scroll, actor-type filtering, and real-time polling [#7842](https://github.com/ethyca/fides/pull/7842)
 
 ### Changed
 - datastore filter responsiveness [#7752](https://github.com/ethyca/fides/pull/7752)
@@ -78,6 +80,8 @@ configuration issues. [#7779](https://github.com/ethyca/fides/pull/7779)
 - Fixed pagination on the Manual Tasks tab in Privacy Requests, where users could not navigate past the first page [#7809](https://github.com/ethyca/fides/pull/7809)
 - Fixed Redis cluster connection URL generation to include SSL query parameters from Redis settings. [#7811](https://github.com/ethyca/fides/pull/7811)
 - Fixed Edit SSO Provider Save button being permanently disabled after creating a provider [#7739](https://github.com/ethyca/fides/pull/7739)
+- Fixed login page showing SSO configuration error instead of generic login failure message when entering incorrect credentials [#7882](https://github.com/ethyca/fides/pull/7882)
+- Fixed property-based DAG filtering for SaaS connector datasets. [#7868](https://github.com/ethyca/fides/pull/7868)
 
 ### Security
 - Added nosemgrep suppressions for false positive findings from Phase 1 security scan baseline [#7816](https://github.com/ethyca/fides/pull/7816)
