@@ -1,16 +1,16 @@
 import { useMemo } from "react";
 
-import { ControlGroup } from "../access-policies.slice";
+import { Control } from "../access-policies.slice";
 import { AccessPolicyListItem } from "../types";
 
 export interface PolicyGroup {
-  controlGroup: ControlGroup;
+  controlGroup: Control;
   policies: AccessPolicyListItem[];
 }
 
 export const useAccessPolicyGroups = (
   policies: AccessPolicyListItem[],
-  controlGroups: ControlGroup[] | undefined,
+  controlGroups: Control[] | undefined,
 ): PolicyGroup[] =>
   useMemo(() => {
     if (!controlGroups) {

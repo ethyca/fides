@@ -23,10 +23,10 @@ jobs:
       has_admin_ui_changes: ${{ steps.filter.outputs.admin_ui }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for Admin UI file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           list-files: shell
@@ -48,7 +48,7 @@ jobs:
       spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set matrix
         id: set-matrix
@@ -99,16 +99,16 @@ jobs:
         working-directory: clients
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v5
         with:
-          node-version: 20.x
+          node-version: 24.x
 
       - name: Cache node_modules and Cypress binary
         id: deps-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             clients/node_modules
@@ -135,7 +135,7 @@ jobs:
         run: tar -czf /tmp/cypress-build.tar.gz admin-ui/.next admin-ui/public/lib fides-js/dist
 
       - name: Upload build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-build
           path: /tmp/cypress-build.tar.gz
@@ -154,15 +154,15 @@ jobs:
         working-directory: clients
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v5
         with:
-          node-version: 20.x
+          node-version: 24.x
 
       - name: Restore node_modules and Cypress binary
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             clients/node_modules
@@ -175,7 +175,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Download build output
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: cypress-build
           path: /tmp
@@ -184,7 +184,7 @@ jobs:
         run: tar -xzf /tmp/cypress-build.tar.gz
 
       - name: Cypress Admin UI E2E Tests
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: clients/admin-ui
           install: false
@@ -195,7 +195,7 @@ jobs:
 
       # Video recording is disabled (cypress.config.ts: video: false).
       # Uncomment this step if you re-enable video for debugging.
-      # - uses: actions/upload-artifact@v4
+      # - uses: actions/upload-artifact@v7
       #   if: failure()
       #   with:
       #     name: cypress-videos-admin-ui-${{ strategy.job-index }}

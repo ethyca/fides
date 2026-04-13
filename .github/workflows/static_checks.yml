@@ -27,10 +27,10 @@ jobs:
       has_backend_changes: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for backend file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           list-files: shell
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v4
@@ -86,7 +86,7 @@ jobs:
           uv sync
 
       - name: Cache Nox virtual environment
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .nox/
           key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ matrix.session_name }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}

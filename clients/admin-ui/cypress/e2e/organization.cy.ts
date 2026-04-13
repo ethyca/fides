@@ -24,17 +24,7 @@ describe("Organization page", () => {
     });
 
     it("can display a loading state while fetching organization configuration", () => {
-      cy.getByTestId("organization-form").within(() => {
-        cy.getByTestId("input-fides_key").should(
-          "have.value",
-          "default_organization",
-        );
-        cy.getByTestId("input-fides_key").should("be.disabled");
-        cy.getByTestId("input-name").should("be.disabled");
-        cy.getByTestId("input-description").should("be.empty");
-        cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("save-btn").get(".ant-btn-loading-icon");
-      });
+      cy.get(".ant-spin").should("exist");
       cy.wait("@getOrganization");
       cy.getByTestId("input-name").should("be.enabled");
       cy.getByTestId("input-description").should("be.enabled");

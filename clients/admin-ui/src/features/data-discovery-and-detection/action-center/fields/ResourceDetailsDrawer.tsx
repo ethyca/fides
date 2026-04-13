@@ -43,7 +43,7 @@ export const ResourceDetailsDrawer = ({
     }
     const preferredDataCategories =
       "preferred_data_categories" in resource
-        ? (resource.preferred_data_categories ?? [])
+        ? ((resource.preferred_data_categories as string[] | null) ?? [])
         : [];
     return resource.classifications.filter((classification) =>
       preferredDataCategories.includes(classification.label),
@@ -77,27 +77,27 @@ export const ResourceDetailsDrawer = ({
                             {
                               key: "system",
                               label: "System",
-                              children: resource.system_key,
+                              children: resource.system_key as string,
                             },
                           ]
                         : []),
                       {
                         key: "path",
                         label: "Path",
-                        children: resource.urn,
+                        children: resource.urn as string,
                       },
                       {
                         key: "data-type",
                         label: "Data type",
                         children:
                           "source_data_type" in resource
-                            ? resource.source_data_type
+                            ? (resource.source_data_type as string)
                             : undefined,
                       },
                       {
                         key: "description",
                         label: "Description",
-                        children: resource.description,
+                        children: resource.description as string,
                       },
                     ]}
                   />
@@ -109,7 +109,10 @@ export const ResourceDetailsDrawer = ({
                         maxTagCount="responsive"
                         value={
                           "preferred_data_categories" in resource
-                            ? resource.preferred_data_categories
+                            ? (resource.preferred_data_categories as
+                                | string[]
+                                | null
+                                | undefined)
                             : []
                         }
                         autoFocus={false}
@@ -178,7 +181,7 @@ export const ResourceDetailsDrawer = ({
                     "errors" in resource && resource.errors
                       ? resource.errors?.map((error, i) => ({
                           key: i,
-                          title: error.phase,
+                          title: error.diff_status,
                           description: new Date(
                             error.timestamp,
                           ).toLocaleString(),

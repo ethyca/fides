@@ -1,0 +1,5 @@
+.avatar {
+  background-color: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+  color: var(--ant-color-text);
+}
