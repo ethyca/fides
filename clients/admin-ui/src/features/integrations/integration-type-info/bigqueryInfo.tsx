@@ -217,7 +217,8 @@ const BIGQUERY_TYPE_INFO = {
   tags: BIGQUERY_TAGS,
   enabledFeatures: [
     IntegrationFeature.DATA_DISCOVERY,
-    "QUERY_LOGGING" as IntegrationFeature,
+    IntegrationFeature.QUERY_LOGGING,
+    IntegrationFeature.IDENTITY_RESOLUTION,
   ],
 };
 
