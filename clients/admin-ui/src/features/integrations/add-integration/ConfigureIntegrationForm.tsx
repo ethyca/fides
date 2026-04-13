@@ -309,7 +309,13 @@ const ConfigureIntegrationForm = ({
 
       // Save property assignments if editing
       if (isEditing && values.property_ids) {
-        await savePropertyAssignments(values.property_ids);
+        try {
+          await savePropertyAssignments(values.property_ids);
+        } catch {
+          messageApi.error(
+            "Integration saved but failed to update properties. Please try again.",
+          );
+        }
       }
 
       messageApi.success(
@@ -361,7 +367,13 @@ const ConfigureIntegrationForm = ({
 
     // Save property assignments if editing
     if (isEditing && values.property_ids) {
-      await savePropertyAssignments(values.property_ids);
+      try {
+        await savePropertyAssignments(values.property_ids);
+      } catch {
+        messageApi.error(
+          "Integration saved but failed to update properties. Please try again.",
+        );
+      }
     }
 
     messageApi.success(

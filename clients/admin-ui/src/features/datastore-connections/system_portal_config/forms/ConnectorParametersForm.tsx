@@ -6,6 +6,7 @@ import {
   Button,
   ChakraSpacer as Spacer,
   ChakraVStack as VStack,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
@@ -93,6 +94,7 @@ export const ConnectorParametersForm = ({
   const [trigger, { isLoading, isFetching }] =
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
+  const messageApi = useMessage();
 
   const isEditingConnection = !!connectionConfig;
 
@@ -168,7 +170,13 @@ export const ConnectorParametersForm = ({
 
     // Save property assignments if editing
     if (isEditingConnection && values.property_ids) {
-      await savePropertyAssignments(values.property_ids);
+      try {
+        await savePropertyAssignments(values.property_ids);
+      } catch {
+        messageApi.error(
+          "Integration saved but failed to update properties. Please try again.",
+        );
+      }
     }
   };
 

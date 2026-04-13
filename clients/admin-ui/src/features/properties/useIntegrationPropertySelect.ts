@@ -44,7 +44,7 @@ export const useIntegrationPropertySelect = (
 
   // Fetch all properties for the dropdown options
   const { data: propertiesPage, isLoading: isLoadingProperties } =
-    useGetAllPropertiesQuery({ size: 100 });
+    useGetAllPropertiesQuery({ size: 100 }, { skip: !connectionKey });
 
   const propertyOptions = useMemo(
     () =>
