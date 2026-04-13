@@ -41,7 +41,11 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
       page: 1,
       size: 100,
     });
-  const experienceConfigs = experienceData?.items ?? [];
+
+  const experienceConfigs = useMemo(
+    () => experienceData?.items ?? [],
+    [experienceData],
+  );
 
   const experienceOptions = useMemo(
     () => experienceConfigs.map((exp) => ({ value: exp.id, label: exp.name })),
