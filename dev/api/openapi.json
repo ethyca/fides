@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.82.1b2.dev82+g5b0c2d882"
+    "version": "2.82.1b2.dev83+gef7814125"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20837,6 +20837,17 @@
               }
             ],
             "default": "console_only"
+          },
+          "consent_module_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Module Enabled"
           }
         },
         "additionalProperties": false,
