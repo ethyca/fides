@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
+import IdentityResolutionTab from "~/features/integrations/configure-identity-resolution/IdentityResolutionTab";
 import { JiraConfigTab } from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import QueryLogConfigTab from "~/features/integrations/configure-query-log/QueryLogConfigTab";
@@ -175,11 +176,19 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    if (enabledFeatures?.includes(IntegrationFeature.QUERY_LOGGING)) {
+    if (enabledFeatures?.includes("QUERY_LOGGING" as IntegrationFeature)) {
       tabItems.push({
         label: "Query logging",
         key: "query-logging",
         children: <QueryLogConfigTab integration={connection!} />,
+      });
+    }
+
+    if (enabledFeatures?.includes(IntegrationFeature.IDENTITY_RESOLUTION)) {
+      tabItems.push({
+        label: "Identity resolution",
+        key: "identity-resolution",
+        children: <IdentityResolutionTab integration={connection!} />,
       });
     }
 

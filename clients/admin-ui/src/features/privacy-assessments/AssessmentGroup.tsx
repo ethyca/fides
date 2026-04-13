@@ -43,8 +43,13 @@ export const AssessmentGroup = ({
             icon={<Icons.Policy />}
           />
           <div>
+<<<<<<< ENG-3287-assessment-grouping-by-processing-activity
             <Title level={4} className="!m-0">
               {displayName}
+=======
+            <Title level={2} className="!m-0">
+              {title}
+>>>>>>> main
             </Title>
             <Text type="secondary">
               {systemCount} {systemCount === 1 ? "system" : "systems"} •{" "}

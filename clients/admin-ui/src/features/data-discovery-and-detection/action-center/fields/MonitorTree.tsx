@@ -31,7 +31,7 @@ import {
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
-import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
+import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 
 import { DatastorePageSettings } from "../types";
 import {
@@ -69,7 +69,7 @@ const getIconComponent = (
 };
 
 const mapResponseToTreeData = (
-  data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+  data: ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
 ): CustomTreeDataNode[] => {
   const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => {
@@ -307,10 +307,10 @@ const MonitorTree = forwardRef<
           include_total?: boolean;
         };
         fastUpdateFn: (
-          data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+          data: ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
         ) => void;
         detailedUpdateFn?: (
-          data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+          data: ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
         ) => void;
       }) => {
         // Increment sequence for this node to track this request

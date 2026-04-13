@@ -1,6 +1,6 @@
 import type {
   AssessmentResponse as GeneratedAssessmentResponse,
-  CreateAssessmentRequest,
+  CreateAssessmentTaskRequest,
   Page_AssessmentResponse_,
   TemplateResponse,
 } from "~/types/api";
@@ -52,7 +52,7 @@ export interface Page_PrivacyAssessmentResponse_
 }
 
 // Re-export request and template types directly
-export type { CreateAssessmentRequest, TemplateResponse };
+export type { CreateAssessmentTaskRequest, TemplateResponse };
 
 export interface PrivacyAssessmentDetailResponse
   extends PrivacyAssessmentResponse {

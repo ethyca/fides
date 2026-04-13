@@ -1,13 +1,10 @@
-import { Field, FieldInputProps } from "formik";
+import { Form, Input, Select } from "fidesui";
 
 import { FIDES_DATASET_REFERENCE } from "~/features/common/form/useFormFieldsFromSchema";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
 } from "~/features/connection-type/types";
-
-import { ControlledSelect } from "./ControlledSelect";
-import { CustomTextArea, CustomTextInput } from "./inputs";
 
 export type FormFieldProps = {
   name: string;
@@ -44,85 +41,103 @@ export const FormFieldFromSchema = ({
     return undefined;
   };
 
+  const rules = [
+    ...(isRequired
+      ? [{ required: true, message: `${fieldSchema.title} is required` }]
+      : []),
+    ...(validate
+      ? [
+          {
+            validator: (_: unknown, value: string | undefined) => {
+              const error = validate(value);
+              return error
+                ? Promise.reject(new Error(error))
+                : Promise.resolve();
+            },
+          },
+        ]
+      : []),
+  ];
+
+  const formItemProps = {
+    name: name.split("."),
+    label: fieldSchema.title,
+    tooltip: fieldSchema.description,
+    rules,
+    layout: layout === "inline" ? ("horizontal" as const) : undefined,
+  };
+
+  if (isSelect) {
+    const options =
+      enumDefinition?.enum?.map((value) => ({
+        label: value,
+        value,
+      })) ??
+      fieldSchema.options?.map((option) => ({
+        label: option,
+        value: option,
+      }));
+
+    return (
+      <Form.Item {...formItemProps}>
+        <Select
+          aria-label={fieldSchema.title}
+          data-testid={`controlled-select-${name}`}
+          options={options}
+          mode={fieldSchema.multiselect ? "multiple" : undefined}
+        />
+      </Form.Item>
+    );
+  }
+
+  if (isBoolean) {
+    return (
+      <Form.Item {...formItemProps}>
+        <Select
+          aria-label={fieldSchema.title}
+          data-testid={`controlled-select-${name}`}
+          options={[
+            { label: "False", value: "false" },
+            { label: "True", value: "true" },
+          ]}
+        />
+      </Form.Item>
+    );
+  }
+
+  // Use textarea for multiline fields, but prioritize password input for sensitive fields
+  if (fieldSchema.multiline && !fieldSchema.sensitive) {
+    return (
+      <Form.Item {...formItemProps}>
+        <Input.TextArea
+          data-testid={`input-${name}`}
+          rows={8}
+          style={{ fontFamily: "monospace", fontSize: "12px" }}
+          placeholder={getPlaceholder()}
+        />
+      </Form.Item>
+    );
+  }
+
+  if (fieldSchema.sensitive) {
+    return (
+      <Form.Item {...formItemProps}>
+        <Input.Password
+          data-testid={`input-${name}`}
+          placeholder={getPlaceholder()}
+          autoComplete="off"
+        />
+      </Form.Item>
+    );
+  }
+
   return (
-    <Field id={name} name={name} key={name} validate={validate}>
-      {({ field }: { field: FieldInputProps<string> }) => {
-        if (isSelect) {
-          const options =
-            enumDefinition?.enum?.map((value) => ({
-              label: value,
-              value,
-            })) ??
-            fieldSchema.options?.map((option) => ({
-              label: option,
-              value: option,
-            }));
-
-          return (
-            <ControlledSelect
-              name={field.name}
-              key={field.name}
-              id={field.name}
-              label={fieldSchema.title}
-              isRequired={isRequired}
-              tooltip={fieldSchema.description}
-              layout={layout}
-              options={options}
-              mode={fieldSchema.multiselect ? "multiple" : undefined}
-            />
-          );
-        }
-
-        if (isBoolean) {
-          return (
-            <ControlledSelect
-              name={field.name}
-              key={field.name}
-              id={field.name}
-              label={fieldSchema.title}
-              isRequired={isRequired}
-              tooltip={fieldSchema.description}
-              layout={layout}
-              options={[
-                { label: "False", value: "false" },
-                { label: "True", value: "true" },
-              ]}
-            />
-          );
-        }
-
-        // Use textarea for multiline fields, but prioritize password input for sensitive fields
-        if (fieldSchema.multiline && !fieldSchema.sensitive) {
-          return (
-            <CustomTextArea
-              {...field}
-              label={fieldSchema.title}
-              tooltip={fieldSchema.description}
-              isRequired={isRequired}
-              placeholder={getPlaceholder()}
-              variant={layout}
-              textAreaProps={{
-                rows: 8,
-                style: { fontFamily: "monospace", fontSize: "12px" },
-              }}
-            />
-          );
-        }
-
-        return (
-          <CustomTextInput
-            {...field}
-            label={fieldSchema.title}
-            tooltip={fieldSchema.description}
-            isRequired={isRequired}
-            type={fieldSchema.sensitive ? "password" : "text"}
-            placeholder={getPlaceholder()}
-            autoComplete="off"
-            color="gray.700"
-            variant={layout}
-          />
-        );
-      }}
-    </Field>
+    <Form.Item {...formItemProps}>
+      <Input
+        data-testid={`input-${name}`}
+        placeholder={getPlaceholder()}
+        autoComplete="off"
+      />
+    </Form.Item>
   );
 };
