@@ -224,4 +224,8 @@ class Comment(Base):
         )
 
         for comment in comments:
-            comment.delete(db)
+            # If a reply has its own CommentReference (e.g. ENG-3299
+            # correspondence types), it may appear in the query AND be
+            # reached via a parent's delete() BFS — skip already-deleted.
+            if comment not in db.deleted:
+                comment.delete(db)

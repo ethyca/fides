@@ -515,6 +515,46 @@ def test_delete_parent_deletes_reply_attachments(
     assert db.query(Attachment).filter_by(id=attachment_id).first() is None
 
 
+def test_delete_parent_deletes_grandchild_replies(db, user):
+    """Test that deleting a parent deletes 3+ levels of nested replies (grandchild)."""
+    grandparent = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Grandparent",
+            "comment_type": CommentType.note,
+        },
+    )
+    child = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Child",
+            "comment_type": CommentType.reply,
+            "parent_id": grandparent.id,
+        },
+    )
+    grandchild = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Grandchild",
+            "comment_type": CommentType.reply,
+            "parent_id": child.id,
+        },
+    )
+    grandparent_id = grandparent.id
+    child_id = child.id
+    grandchild_id = grandchild.id
+
+    grandparent.delete(db)
+    db.commit()
+
+    assert db.query(Comment).filter_by(id=grandparent_id).first() is None
+    assert db.query(Comment).filter_by(id=child_id).first() is None
+    assert db.query(Comment).filter_by(id=grandchild_id).first() is None
+
+
 def test_delete_comments_for_reference_deletes_replies(db, user, privacy_request):
     """Test that delete_comments_for_reference_and_type also removes replies."""
     parent = Comment.create(
