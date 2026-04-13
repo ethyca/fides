@@ -9,11 +9,9 @@ import {
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
-import {
-  SaaSConfigVersionResponse,
-  useGetConnectorTemplateVersionsQuery,
-} from "~/features/connector-templates/connector-template.slice";
+import { useGetConnectorTemplateVersionsQuery } from "~/features/connector-templates/connector-template.slice";
 import SaaSVersionModal from "~/features/connector-templates/SaaSVersionModal";
+import { SaaSConfigVersionResponse } from "~/types/api";
 
 interface VersionHistoryTabProps {
   connectorType: string;
