@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.82.1"
+    "version": "2.83.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2429,6 +2429,58 @@
             "application/json": {
               "schema": {
                 "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "auth_method": {
+                        "$ref": "#/components/schemas/AWSAuthMethod",
+                        "title": "Authentication Method",
+                        "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                      },
+                      "aws_access_key_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Key ID",
+                        "description": "Part of the credentials that provide access to your AWS account."
+                      },
+                      "aws_secret_access_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Secret Access Key",
+                        "description": "Part of the credentials that provide access to your AWS account.",
+                        "sensitive": true
+                      },
+                      "aws_assume_role_arn": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Assume Role ARN",
+                        "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                      }
+                    },
+                    "required": [
+                      "auth_method"
+                    ],
+                    "title": "AWSDocsSchema",
+                    "description": "AWS Secrets Schema for API Docs"
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -5303,6 +5355,58 @@
                   {
                     "type": "object",
                     "properties": {
+                      "auth_method": {
+                        "$ref": "#/components/schemas/AWSAuthMethod",
+                        "title": "Authentication Method",
+                        "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                      },
+                      "aws_access_key_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Key ID",
+                        "description": "Part of the credentials that provide access to your AWS account."
+                      },
+                      "aws_secret_access_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Secret Access Key",
+                        "description": "Part of the credentials that provide access to your AWS account.",
+                        "sensitive": true
+                      },
+                      "aws_assume_role_arn": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Assume Role ARN",
+                        "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                      }
+                    },
+                    "required": [
+                      "auth_method"
+                    ],
+                    "title": "AWSDocsSchema",
+                    "description": "AWS Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "keyfile_creds": {
                         "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
                         "title": "Keyfile creds",
@@ -6776,6 +6880,58 @@
             "application/json": {
               "schema": {
                 "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "auth_method": {
+                        "$ref": "#/components/schemas/AWSAuthMethod",
+                        "title": "Authentication Method",
+                        "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                      },
+                      "aws_access_key_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Key ID",
+                        "description": "Part of the credentials that provide access to your AWS account."
+                      },
+                      "aws_secret_access_key": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Secret Access Key",
+                        "description": "Part of the credentials that provide access to your AWS account.",
+                        "sensitive": true
+                      },
+                      "aws_assume_role_arn": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Assume Role ARN",
+                        "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                      }
+                    },
+                    "required": [
+                      "auth_method"
+                    ],
+                    "title": "AWSDocsSchema",
+                    "description": "AWS Secrets Schema for API Docs"
+                  },
                   {
                     "type": "object",
                     "properties": {
@@ -8699,6 +8855,174 @@
             "schema": {
               "type": "string",
               "title": "Connector Template Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connector-templates/{connector_template_type}/versions": {
+      "get": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "List Connector Template Versions",
+        "description": "Returns all stored versions for a connector template type, newest first.\n\nEach entry includes the version string, whether it is a custom template,\nand when it was first recorded. Use the version string with the\n`/versions/{version}/config` and `/versions/{version}/dataset` endpoints\nto inspect the full config or dataset for that version.",
+        "operationId": "list_connector_template_versions_api_v1_connector_templates__connector_template_type__versions_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_template_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connector Template Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SaaSConfigVersionResponse"
+                  },
+                  "title": "Response List Connector Template Versions Api V1 Connector Templates  Connector Template Type  Versions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connector-templates/{connector_template_type}/versions/{version}/config": {
+      "get": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Get Connector Template Version Config",
+        "description": "Retrieves the SaaS config for a specific version of a connector template.\n\nReturns the config as raw YAML, in the same format as\n`GET /connector-templates/{type}/config`.",
+        "operationId": "get_connector_template_version_config_api_v1_connector_templates__connector_template_type__versions__version__config_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_template_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connector Template Type"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connector-templates/{connector_template_type}/versions/{version}/dataset": {
+      "get": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Get Connector Template Version Dataset",
+        "description": "Retrieves the dataset for a specific version of a connector template.\n\nReturns the dataset as raw YAML, in the same format as\n`GET /connector-templates/{type}/dataset`.",
+        "operationId": "get_connector_template_version_dataset_api_v1_connector_templates__connector_template_type__versions__version__dataset_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_template_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connector Template Type"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version"
             }
           }
         ],
@@ -17421,6 +17745,119 @@
         }
       }
     },
+    "/api/v1/connection/{connection_key}/saas-history": {
+      "get": {
+        "tags": [
+          "SaaS Configs"
+        ],
+        "summary": "List Saas Config History",
+        "description": "Returns all per-connection SaaS config snapshots for the given connection,\nordered newest first.",
+        "operationId": "list_saas_config_history_api_v1_connection__connection_key__saas_history_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "saas_config:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionConfigSaaSHistoryResponse"
+                  },
+                  "title": "Response List Saas Config History Api V1 Connection  Connection Key  Saas History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connection/{connection_key}/saas-history/{version}": {
+      "get": {
+        "tags": [
+          "SaaS Configs"
+        ],
+        "summary": "Get Saas Config History By Version",
+        "description": "Returns the most recent snapshot for the given connection and version string.",
+        "operationId": "get_saas_config_history_by_version_api_v1_connection__connection_key__saas_history__version__get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "saas_config:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version"
+            }
+          },
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionConfigSaaSHistoryDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/connection/{connection_key}/authorize": {
       "get": {
         "tags": [
@@ -18295,6 +18732,49 @@
         }
       }
     },
+    "/api/v1/user/{user_id}/reinvite": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Reinvite User",
+        "description": "Reinvite a user who has a pending invitation by generating a new invite code\nand sending a new invitation email. Requires `USER_CREATE` scope.",
+        "operationId": "reinvite_user_api_v1_user__user_id__reinvite_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:create"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/login": {
       "post": {
         "tags": [
@@ -18413,6 +18893,114 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UserForcePasswordReset"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/forgot-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Forgot Password",
+        "description": "Initiates a self-service password reset flow. Sends a reset email if the\nuser exists and has a verified email. Always returns 200 to prevent user\nenumeration (OWASP).",
+        "operationId": "forgot_password_api_v1_user_forgot_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserForgotPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Forgot Password Api V1 User Forgot Password Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/reset-password-with-token": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Reset Password With Token",
+        "description": "Resets a user's password using a valid, single-use reset token.\nReturns login credentials on success.",
+        "operationId": "reset_password_with_token_api_v1_user_reset_password_with_token_post",
+        "parameters": [
+          {
+            "name": "config_path_override",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Config Path Override"
+            }
+          },
+          {
+            "name": "verbose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Verbose"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserResetPasswordWithToken"
               }
             }
           }
@@ -20054,6 +20642,58 @@
         "title": "AWSConfig",
         "description": "The model for the connection config for AWS"
       },
+      "AWSDocsSchema": {
+        "properties": {
+          "auth_method": {
+            "$ref": "#/components/schemas/AWSAuthMethod",
+            "title": "Authentication Method",
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Key ID",
+            "description": "Part of the credentials that provide access to your AWS account."
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret Access Key",
+            "description": "Part of the credentials that provide access to your AWS account.",
+            "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role ARN",
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+          }
+        },
+        "type": "object",
+        "required": [
+          "auth_method"
+        ],
+        "title": "AWSDocsSchema",
+        "description": "AWS Secrets Schema for API Docs"
+      },
       "AccessLevel": {
         "type": "string",
         "enum": [
@@ -20442,7 +21082,10 @@
           "denied",
           "email_sent",
           "finished",
-          "policy_evaluated"
+          "policy_evaluated",
+          "pre_approval_webhook_triggered",
+          "pre_approval_eligible",
+          "pre_approval_not_eligible"
         ],
         "title": "AuditLogAction",
         "description": "Enum for audit log actions, reflecting what a user did."
@@ -21856,10 +22499,82 @@
           "ANALYTICS",
           "ECOMMERCE",
           "COMMUNICATION",
+          "CLOUD_INFRASTRUCTURE",
           "CUSTOM"
         ],
         "title": "ConnectionCategory",
         "description": "Categories for connection types, matching frontend ConnectionCategory enum"
+      },
+      "ConnectionConfigSaaSHistoryDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config"
+          },
+          "dataset": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "created_at",
+          "config"
+        ],
+        "title": "ConnectionConfigSaaSHistoryDetailResponse",
+        "description": "Full detail for a single snapshot, including config and dataset."
+      },
+      "ConnectionConfigSaaSHistoryResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "created_at"
+        ],
+        "title": "ConnectionConfigSaaSHistoryResponse",
+        "description": "Summary of a per-connection SaaS config snapshot, used for list responses."
       },
       "ConnectionConfigurationResponse": {
         "properties": {
@@ -22312,6 +23027,7 @@
         "type": "string",
         "enum": [
           "attentive_email",
+          "aws",
           "bigquery",
           "datahub",
           "dynamodb",
@@ -22961,6 +23677,58 @@
           },
           "secrets": {
             "anyOf": [
+              {
+                "properties": {
+                  "auth_method": {
+                    "$ref": "#/components/schemas/AWSAuthMethod",
+                    "title": "Authentication Method",
+                    "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                  },
+                  "aws_access_key_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Key ID",
+                    "description": "Part of the credentials that provide access to your AWS account."
+                  },
+                  "aws_secret_access_key": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Secret Access Key",
+                    "description": "Part of the credentials that provide access to your AWS account.",
+                    "sensitive": true
+                  },
+                  "aws_assume_role_arn": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Assume Role ARN",
+                    "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "auth_method"
+                ],
+                "title": "AWSDocsSchema",
+                "description": "AWS Secrets Schema for API Docs"
+              },
               {
                 "properties": {
                   "keyfile_creds": {
@@ -28286,6 +29054,7 @@
           "privacy_request_review_deny",
           "privacy_request_review_approve",
           "user_invite",
+          "password_reset",
           "external_user_welcome",
           "manual_task_digest",
           "test_message"
@@ -32319,7 +33088,9 @@
           "pending_external",
           "canceled",
           "error",
-          "duplicate"
+          "duplicate",
+          "awaiting_pre_approval",
+          "pre_approval_not_eligible"
         ],
         "title": "PrivacyRequestStatus",
         "description": "Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"
@@ -33863,6 +34634,36 @@
         "title": "SaaSConfigValidationDetails",
         "description": "Message with any validation issues with the SaaS config"
       },
+      "SaaSConfigVersionResponse": {
+        "properties": {
+          "connector_type": {
+            "type": "string",
+            "title": "Connector Type"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "is_custom": {
+            "type": "boolean",
+            "title": "Is Custom"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connector_type",
+          "version",
+          "is_custom",
+          "created_at"
+        ],
+        "title": "SaaSConfigVersionResponse",
+        "description": "Summary of a stored SaaS integration version, used for list responses."
+      },
       "SaaSDisplayInfo": {
         "properties": {
           "category": {
@@ -34228,6 +35029,58 @@
           },
           "secrets": {
             "anyOf": [
+              {
+                "properties": {
+                  "auth_method": {
+                    "$ref": "#/components/schemas/AWSAuthMethod",
+                    "title": "Authentication Method",
+                    "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+                  },
+                  "aws_access_key_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Key ID",
+                    "description": "Part of the credentials that provide access to your AWS account."
+                  },
+                  "aws_secret_access_key": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Secret Access Key",
+                    "description": "Part of the credentials that provide access to your AWS account.",
+                    "sensitive": true
+                  },
+                  "aws_assume_role_arn": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Assume Role ARN",
+                    "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "auth_method"
+                ],
+                "title": "AWSDocsSchema",
+                "description": "AWS Secrets Schema for API Docs"
+              },
               {
                 "properties": {
                   "keyfile_creds": {
@@ -37439,6 +38292,7 @@
           "email",
           "manual",
           "saas",
+          "service",
           "system",
           "website"
         ],
@@ -37861,6 +38715,21 @@
         "title": "UserForcePasswordReset",
         "description": "Only a new password, for the case where the user does not remember their password"
       },
+      "UserForgotPassword": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "UserForgotPassword",
+        "description": "Request body for the forgot-password endpoint"
+      },
       "UserLogin": {
         "properties": {
           "username": {
@@ -37996,6 +38865,30 @@
         "title": "UserPermissionsResponse",
         "description": "Response after creating, editing, or retrieving a FidesUserPermissions record."
       },
+      "UserResetPasswordWithToken": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "new_password": {
+            "type": "string",
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "token",
+          "new_password"
+        ],
+        "title": "UserResetPasswordWithToken",
+        "description": "Request body for resetting a password with a token"
+      },
       "UserResponse": {
         "properties": {
           "id": {
@@ -38067,6 +38960,40 @@
               }
             ],
             "title": "Disabled Reason"
+          },
+          "email_verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Verified At"
+          },
+          "has_invite": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Invite"
+          },
+          "invite_expired": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invite Expired"
           }
         },
         "type": "object",

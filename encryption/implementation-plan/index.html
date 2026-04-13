@@ -1357,15 +1357,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-2-encrypted_type-factory-callable-key-pure-refactor-in-progress" class="md-nav__link">
+  <a href="#pr-2-encrypted_type-factory-callable-key-pure-refactor-done" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 2: encrypted_type() factory + callable key (pure refactor) — 🔧 In progress
+        PR 2: encrypted_type() factory + callable key (pure refactor) — ✅ Done
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="PR 2: encrypted_type() factory + callable key (pure refactor) — 🔧 In progress">
+    <nav class="md-nav" aria-label="PR 2: encrypted_type() factory + callable key (pure refactor) — ✅ Done">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1385,10 +1385,10 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-3-encryption_keys-database-table-to-do" class="md-nav__link">
+  <a href="#pr-3-encryption_keys-database-table-done" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 3: encryption_keys database table — 📋 To do
+        PR 3: encryption_keys database table — ✅ Done
       
     </span>
   </a>
@@ -1396,10 +1396,10 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-4-new-config-fields-to-do" class="md-nav__link">
+  <a href="#pr-4-config-fields-keyprovider-abc-localkeyprovider-done" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 4: New config fields — 📋 To do
+        PR 4: Config fields + KeyProvider ABC + LocalKeyProvider — ✅ Done
       
     </span>
   </a>
@@ -1407,10 +1407,10 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-5-keyprovider-abc-localkeyprovider-to-do" class="md-nav__link">
+  <a href="#pr-5-awskmskeyprovider-aws-config-fields-optional-can-be-deferred-to-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 5: KeyProvider ABC + LocalKeyProvider — 📋 To do
+        PR 5: AwsKmsKeyProvider + AWS config fields (optional, can be deferred) — 📋 To do
       
     </span>
   </a>
@@ -1418,26 +1418,15 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#pr-6-awskmskeyprovider-optional-can-be-deferred-to-do" class="md-nav__link">
+  <a href="#pr-6-wire-get_encryption_key-to-envelope-mode-to-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PR 6: AwsKmsKeyProvider (optional, can be deferred) — 📋 To do
+        PR 6: Wire get_encryption_key() to envelope mode — 📋 To do
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pr-7-wire-get_encryption_key-to-envelope-mode-to-do" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PR 7: Wire get_encryption_key() to envelope mode — 📋 To do
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="PR 7: Wire get_encryption_key() to envelope mode — 📋 To do">
+    <nav class="md-nav" aria-label="PR 6: Wire get_encryption_key() to envelope mode — 📋 To do">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1530,6 +1519,17 @@ You're not viewing the latest version.
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open Questions
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1803,13 +1803,13 @@ You're not viewing the latest version.
 </ul>
 <p><strong>Note:</strong> <code>UserRegistration</code> (which uses <code>AesEngine</code> / AES-CBC) does not need a separate migration — the model will be removed entirely once fideslog is removed.</p>
 <hr />
-<h3 id="pr-2-encrypted_type-factory-callable-key-pure-refactor-in-progress">PR 2: <code>encrypted_type()</code> factory + callable key (pure refactor) — 🔧 In progress</h3>
+<h3 id="pr-2-encrypted_type-factory-callable-key-pure-refactor-done">PR 2: <code>encrypted_type()</code> factory + callable key (pure refactor) — ✅ Done</h3>
 <p><strong>Goal:</strong> Centralize all <code>StringEncryptedType</code> construction and switch from import-time key binding to a callable key. Zero behavior change.</p>
 <p>Create a new <code>get_encryption_key()</code> function (initially just returns <code>CONFIG.security.app_encryption_key</code>) and an <code>encrypted_type()</code> factory that passes it as a callable to <code>StringEncryptedType</code>. Replace all inline <code>StringEncryptedType(...)</code> calls across model files with <code>encrypted_type(...)</code>. Update <code>optionally_encrypted_type()</code>, <code>_get_sqlalchemy_compatible_key()</code>, and <code>_make_encryptor()</code> to use <code>get_encryption_key()</code>.</p>
 <p>Alembic migration files are frozen historical snapshots and are not modified.</p>
 <p><strong>Testing:</strong> All existing tests pass with zero config changes. Add unit test verifying <code>get_encryption_key()</code> returns <code>CONFIG.security.app_encryption_key</code> in legacy mode.</p>
 <h4 id="non-column-encryption-paths">Non-column encryption paths</h4>
-<p>In addition to the <code>StringEncryptedType</code> columns, several non-column code paths reference <code>CONFIG.security.app_encryption_key</code> directly. This PR updates them to use <code>get_encryption_key()</code> so that every encryption path benefits from envelope encryption once it is wired up in PR 7.</p>
+<p>In addition to the <code>StringEncryptedType</code> columns, several non-column code paths reference <code>CONFIG.security.app_encryption_key</code> directly. This PR updates them to use <code>get_encryption_key()</code> so that every encryption path benefits from envelope encryption once it is wired up in PR 6.</p>
 <table>
 <thead>
 <tr>
@@ -1884,7 +1884,7 @@ You're not viewing the latest version.
 </table>
 <p><strong>Note:</strong> The <code>aes_gcm_encryption_scheme.py</code> module in fides uses a <strong>different key derivation</strong> (raw <code>.encode()</code> instead of SHA256) and is called with per-request keys from Redis, not <code>app_encryption_key</code>. This path is unaffected by envelope encryption.</p>
 <hr />
-<h3 id="pr-3-encryption_keys-database-table-to-do">PR 3: <code>encryption_keys</code> database table — 📋 To do</h3>
+<h3 id="pr-3-encryption_keys-database-table-done">PR 3: <code>encryption_keys</code> database table — ✅ Done</h3>
 <p><strong>Goal:</strong> Create the database table used by both <code>LocalKeyProvider</code> and <code>AwsKmsKeyProvider</code> for wrapped DEK storage.</p>
 <p><strong>Table schema:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1908,8 +1908,8 @@ You're not viewing the latest version.
 </ul>
 <p><strong>No behavioral change.</strong> The table exists but nothing reads from or writes to it yet.</p>
 <hr />
-<h3 id="pr-4-new-config-fields-to-do">PR 4: New config fields — 📋 To do</h3>
-<p><strong>Goal:</strong> Add envelope encryption configuration to <code>SecuritySettings</code>. All fields are optional with backward-compatible defaults.</p>
+<h3 id="pr-4-config-fields-keyprovider-abc-localkeyprovider-done">PR 4: Config fields + <code>KeyProvider</code> ABC + <code>LocalKeyProvider</code> — ✅ Done</h3>
+<p><strong>Goal:</strong> Add local envelope encryption configuration to <code>SecuritySettings</code> and introduce the provider abstraction with the local (in-process) implementation. All fields are optional with backward-compatible defaults. AWS KMS config fields are deferred to PR 5. Nothing calls the provider yet — wiring is deferred to PR 6.</p>
 <p><strong>New fields in <code>SecuritySettings</code>:</strong></p>
 <table>
 <thead>
@@ -1923,9 +1923,9 @@ You're not viewing the latest version.
 <tbody>
 <tr>
 <td><code>key_provider</code></td>
-<td><code>str</code></td>
+<td><code>Literal</code></td>
 <td><code>"none"</code></td>
-<td>Provider type: <code>"none"</code> (legacy), <code>"local"</code>, <code>"aws_kms"</code></td>
+<td>Provider type: <code>"none"</code> (legacy), <code>"local"</code></td>
 </tr>
 <tr>
 <td><code>key_encryption_key</code></td>
@@ -1939,6 +1939,39 @@ You're not viewing the latest version.
 <td><code>""</code></td>
 <td>Previous KEK, set during rotation (see KEK Rotation below)</td>
 </tr>
+</tbody>
+</table>
+<p><strong>Validation logic:</strong></p>
+<ul>
+<li><code>key_provider = "none"</code>: require <code>app_encryption_key</code> (existing behavior)</li>
+<li><code>key_provider = "local"</code>: require <code>key_encryption_key</code> (32 chars); <code>key_encryption_key_previous</code> is optional</li>
+<li><code>key_encryption_key</code> validated to be exactly 32 characters when provided</li>
+</ul>
+<p><strong>Update to <code>check_required_webserver_config_values</code>:</strong> <code>key_encryption_key</code> is required when <code>key_provider = "local"</code>. <code>app_encryption_key</code> remains required for all modes (needed for initial bootstrap wrap).</p>
+<p><strong><code>KeyProvider</code> ABC</strong> with <code>get_dek()</code> and <code>encrypt_dek()</code> abstract methods, plus <code>LocalKeyProvider</code> implementation:</p>
+<ul>
+<li>Reads the encrypted DEK from the <code>encryption_keys</code> DB table via <code>EncryptionKey.get_by_provider()</code></li>
+<li>Decrypts with AES-256-GCM using the KEK from config (raw key bytes, NOT SHA-256 hashed)</li>
+<li><code>kek_id_hash()</code>: <code>HMAC-SHA256(key=b"fides-kek-id", msg=kek)[:16]</code> for KEK identification</li>
+<li><code>decrypt_with()</code>: public static method for KEK rotation (decrypt with a specific old KEK)</li>
+<li><code>encrypt_dek()</code>: encrypts a DEK, returns <code>base64(nonce[12] + tag[16] + ciphertext)</code></li>
+</ul>
+<p><strong>Bootstrap:</strong> Handled automatically on startup (see PR 6). When <code>key_provider = "local"</code> and no row exists in <code>encryption_keys</code>, the startup task wraps the current <code>app_encryption_key</code> with the configured KEK and inserts the row. No CLI command needed.</p>
+<p><strong>No behavioral change.</strong> The new settings and provider classes exist but nothing calls them yet. Existing deployments have <code>key_provider = "none"</code> by default.</p>
+<hr />
+<h3 id="pr-5-awskmskeyprovider-aws-config-fields-optional-can-be-deferred-to-do">PR 5: <code>AwsKmsKeyProvider</code> + AWS config fields (optional, can be deferred) — 📋 To do</h3>
+<p><strong>Goal:</strong> Add the AWS KMS provider implementation and its configuration fields.</p>
+<p><strong>New config fields in <code>SecuritySettings</code>:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><code>aws_kms_key_arn</code></td>
 <td><code>str</code></td>
@@ -1953,23 +1986,7 @@ You're not viewing the latest version.
 </tr>
 </tbody>
 </table>
-<p><strong>Validation logic:</strong></p>
-<ul>
-<li><code>key_provider = "none"</code>: require <code>app_encryption_key</code> (existing behavior)</li>
-<li><code>key_provider = "local"</code>: require <code>key_encryption_key</code> (32 chars); <code>key_encryption_key_previous</code> is optional</li>
-<li><code>key_provider = "aws_kms"</code>: require <code>aws_kms_key_arn</code> and <code>aws_kms_region</code></li>
-</ul>
-<p><strong>Update to <code>check_required_webserver_config_values</code>:</strong> <code>app_encryption_key</code> is no longer unconditionally required — it is only required when <code>key_provider = "none"</code>.</p>
-<p><strong>No behavioral change.</strong> The new settings exist but nothing reads them yet. Existing deployments have <code>key_provider = "none"</code> by default.</p>
-<hr />
-<h3 id="pr-5-keyprovider-abc-localkeyprovider-to-do">PR 5: <code>KeyProvider</code> ABC + <code>LocalKeyProvider</code> — 📋 To do</h3>
-<p><strong>Goal:</strong> Introduce the provider abstraction and the local (in-process) implementation. New code only — nothing wired up yet.</p>
-<p>Create a <code>KeyProvider</code> ABC with a <code>get_dek()</code> method, and a <code>LocalKeyProvider</code> implementation that reads the wrapped DEK from the <code>encryption_keys</code> DB table via raw SQL (not ORM) and decrypts it with AES-256-GCM using a KEK from config.</p>
-<p><strong>Bootstrap:</strong> Handled automatically on startup (see PR 7). When <code>key_provider = "local"</code> and no row exists in <code>encryption_keys</code>, the startup task wraps the current <code>app_encryption_key</code> with the configured KEK and inserts the row. No CLI command needed.</p>
-<p><strong>No behavioral change.</strong> Nothing calls these classes yet.</p>
-<hr />
-<h3 id="pr-6-awskmskeyprovider-optional-can-be-deferred-to-do">PR 6: <code>AwsKmsKeyProvider</code> (optional, can be deferred) — 📋 To do</h3>
-<p><strong>Goal:</strong> Add the AWS KMS provider implementation.</p>
+<p>Also extends the <code>key_provider</code> Literal to include <code>"aws_kms"</code>, and adds validation: <code>key_provider = "aws_kms"</code> requires <code>aws_kms_key_arn</code> and <code>aws_kms_region</code>.</p>
 <p>Create an <code>AwsKmsKeyProvider</code> that reads the wrapped DEK from the <code>encryption_keys</code> DB table (the same table used by <code>LocalKeyProvider</code>) and calls <code>kms:Decrypt</code> to unwrap it. The KEK never leaves the KMS HSM. No new dependencies — <code>boto3</code> is already in Fides's dependency tree.</p>
 <p><strong>How it works:</strong></p>
 <p>Both providers share the <code>encryption_keys</code> table for wrapped DEK storage. The only difference is who performs the wrap/unwrap:</p>
@@ -1977,11 +1994,11 @@ You're not viewing the latest version.
 <li><strong><code>LocalKeyProvider</code>:</strong> AES-256-GCM in-process using a KEK from an env var.</li>
 <li><strong><code>AwsKmsKeyProvider</code>:</strong> <code>kms:Decrypt(CiphertextBlob=wrapped_dek)</code> via boto3. KMS identifies the correct key and backing key version from metadata embedded in the ciphertext blob — no key ARN is needed at decrypt time, though we pass it for validation.</li>
 </ul>
-<p><strong>Bootstrap:</strong> Handled automatically on startup (see PR 7). When <code>key_provider = "aws_kms"</code> and no row exists in <code>encryption_keys</code>, the startup task calls <code>kms:Encrypt(KeyId=aws_kms_key_arn, Plaintext=app_encryption_key)</code> and stores the resulting <code>CiphertextBlob</code> in the <code>encryption_keys</code> table. After the first successful startup, <code>app_encryption_key</code> can be removed from the environment.</p>
+<p><strong>Bootstrap:</strong> Handled automatically on startup (see PR 6). When <code>key_provider = "aws_kms"</code> and no row exists in <code>encryption_keys</code>, the startup task calls <code>kms:Encrypt(KeyId=aws_kms_key_arn, Plaintext=app_encryption_key)</code> and stores the resulting <code>CiphertextBlob</code> in the <code>encryption_keys</code> table. After the first successful startup, <code>app_encryption_key</code> can be removed from the environment.</p>
 <p><strong>Required IAM permissions:</strong> <code>kms:Encrypt</code> (bootstrap only) and <code>kms:Decrypt</code> (runtime) on the configured KMS key ARN.</p>
-<p><strong>Independent of PR 5.</strong> Can land before or after. Can also be deferred to a later phase.</p>
+<p><strong>Independent of PR 4's <code>LocalKeyProvider</code>.</strong> Can also be deferred to a later phase.</p>
 <hr />
-<h3 id="pr-7-wire-get_encryption_key-to-envelope-mode-to-do">PR 7: Wire <code>get_encryption_key()</code> to envelope mode — 📋 To do</h3>
+<h3 id="pr-6-wire-get_encryption_key-to-envelope-mode-to-do">PR 6: Wire <code>get_encryption_key()</code> to envelope mode — 📋 To do</h3>
 <p><strong>Goal:</strong> Connect the callable key resolver to the provider system. This is the PR that activates envelope encryption.</p>
 <h4 id="startup-task">Startup task</h4>
 <p>On application startup, before any request is served, a startup task runs the envelope encryption initialization. This handles three scenarios: first-time bootstrap, normal operation, and KEK rotation.</p>
@@ -2139,7 +2156,7 @@ You're not viewing the latest version.
 <li>Integration test: write and read an encrypted column with envelope mode enabled</li>
 <li>Integration test: verify backward compat — existing config with only <code>app_encryption_key</code> works identically</li>
 </ul>
-<p><strong>Depends on:</strong> PR 2 (callable key), PR 3 (DB table), PR 4 (config fields), PR 5 or 6 (at least one provider).</p>
+<p><strong>Depends on:</strong> PR 2 (callable key), PR 3 (DB table), PR 4 (config + provider).</p>
 <hr />
 <h2 id="pr-dependency-graph">PR Dependency Graph</h2>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2152,24 +2169,26 @@ You're not viewing the latest version.
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>          PR 1 (migrate Organization)
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code>          PR 1 (migrate Organization)          ✅
                │
-          PR 2 (factory refactor)
+          PR 2 (factory refactor)              ✅
                │
-               │     PR 3 (DB table)     PR 4 (config fields)
-               │         │                    │
-               │     PR 5 (LocalKeyProvider)  PR 6 (AwsKmsKeyProvider)
-               │         │                    │
-               └─────────┴────────────────────┘
-                            │
-                       PR 7 (wire it together)
+               │     PR 3 (DB table)           ✅
+               │         │
+               │     PR 4 (config + provider)  ✅
+               │         │
+               │         │     PR 5 (AwsKmsKeyProvider, optional)
+               │         │         │
+               └─────────┴─────────┘
+                         │
+                    PR 6 (wire it together)
 </code></pre></div></td></tr></table></div>
 <ul>
-<li>PR 1 must land before PR 2 (PR 2 converts the migrated columns to use the factory).</li>
-<li>PRs 3 and 4 are independent of each other and of PR 2. They can land in any order or in parallel.</li>
-<li>PRs 5 and 6 are independent of each other. Both depend on PR 3 (DB table). PR 6 is optional and can be deferred.</li>
-<li>PR 2 must land before PR 7.</li>
-<li>PRs 3, 4, and 5 (or 6) must all land before PR 7.</li>
+<li>PRs 1–4 are all done.</li>
+<li>PR 5 (AWS KMS) is optional and can be deferred.</li>
+<li>PR 6 requires PRs 2, 3, and 4. If AWS KMS support is needed, PR 5 must also land before PR 6.</li>
 </ul>
 <hr />
 <h2 id="what-this-enables">What This Enables</h2>
@@ -2201,6 +2220,12 @@ You're not viewing the latest version.
 <li>A background task lazily re-encrypts old rows on read (read-old/write-new pattern)</li>
 <li>The TTL-based cache in <code>get_encryption_key()</code> ensures all pods converge to the new DEK without restarts</li>
 </ul>
+<h2 id="open-questions">Open Questions</h2>
+<ol>
+<li>Sometimes customers like to bring their own key (BYOK), should be transparent if they plug their own key into AWS KMS?</li>
+<li>How do we track when key rotation is done? (perhaps our post_upgrade_migration_tasks table )</li>
+<li>key rotation via AWS KMS?</li>
+</ol>
 
 
 
