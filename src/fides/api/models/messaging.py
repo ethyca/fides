@@ -152,7 +152,7 @@ class MessagingConfig(Base):
             # We don't want to handle these explicitly here, only in the API view
             raise
 
-        self.secrets = messaging_secrets
+        self.secrets = messaging_secrets.model_dump(mode="json")
         self.save(db=db)
 
     @classmethod
