@@ -1,7 +1,7 @@
 """add_correspondence_enums_and_encrypt_comment_text
 
 Revision ID: 6465b161a450
-Revises: b9c4d5e6f7a8
+Revises: 1724da7ee981
 Create Date: 2026-04-08 22:52:01.736340
 
 Encrypts existing comment_text rows and seeds RBAC permissions for
@@ -23,7 +23,7 @@ from sqlalchemy import String, text
 
 # revision identifiers, used by Alembic.
 revision = "6465b161a450"
-down_revision = "b9c4d5e6f7a8"
+down_revision = "1724da7ee981"
 branch_labels = None
 depends_on = None
 
