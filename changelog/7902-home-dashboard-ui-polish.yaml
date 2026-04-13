@@ -1,4 +1,0 @@
-type: Changed
-description: Home dashboard UI polish — improved posture score card, trend charts with x-axis labels and tooltips, flat priority actions list with filters, radar chart label z-ordering and tooltips, and card title help tooltips
-pr: 7902
-labels: []
