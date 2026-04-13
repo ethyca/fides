@@ -1,12 +1,4 @@
-import {
-  Button,
-  ChakraFlex as Flex,
-  ChakraListItem as ListItem,
-  ChakraSimpleGrid as SimpleGrid,
-  ChakraText as Text,
-  ChakraUnorderedList as UnorderedList,
-  Modal,
-} from "fidesui";
+import { Button, Flex, Modal, Typography } from "fidesui";
 import React, { useCallback } from "react";
 
 import { PrivacyRequestResponse } from "~/types/api";
@@ -61,8 +53,12 @@ const ApprovePrivacyRequestModal = ({
       destroyOnHidden
       title="Privacy request approval"
       footer={
-        <SimpleGrid columns={2} width="100%">
-          <Button onClick={onClose} className="mr-3" data-testid="cancel-btn">
+        <Flex className="w-full" gap={12}>
+          <Button
+            onClick={onClose}
+            className="mr-3 flex-1"
+            data-testid="cancel-btn"
+          >
             Cancel
           </Button>
           <Button
@@ -70,45 +66,54 @@ const ApprovePrivacyRequestModal = ({
             data-testid="continue-btn"
             onClick={handleSubmit}
             loading={isLoading}
+            className="flex-1"
           >
             Confirm
           </Button>
-        </SimpleGrid>
+        </Flex>
       }
     >
-      <Text color="gray.500" fontSize="14px" marginBottom={4}>
+      <Typography.Text type="secondary" size="sm" className="mb-4 block">
         Are you sure you want to approve this privacy request?
-      </Text>
-      <UnorderedList>
+      </Typography.Text>
+      <ul className="list-disc pl-5">
         {allIdentities.map((identityItem) => (
-          <ListItem key={identityItem.key}>
-            <Flex alignItems="flex-start">
-              <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+          <li key={identityItem.key}>
+            <Flex align="flex-start">
+              <Typography.Text strong size="sm" className="mr-2">
                 {identityItem.label}:
-              </Text>
-              <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+              </Typography.Text>
+              <Typography.Text
+                type="secondary"
+                size="sm"
+                className="mr-2 font-medium"
+              >
                 {identityItem.value}
-              </Text>
+              </Typography.Text>
               ({identityVerifiedAt ? "Verified" : "Unverified"})
             </Flex>
-          </ListItem>
+          </li>
         ))}
         {customFields.map((field) => (
-          <ListItem key={field.key}>
-            <Flex alignItems="flex-start">
-              <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+          <li key={field.key}>
+            <Flex align="flex-start">
+              <Typography.Text strong size="sm" className="mr-2">
                 {field.label}:
-              </Text>
-              <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+              </Typography.Text>
+              <Typography.Text
+                type="secondary"
+                size="sm"
+                className="mr-2 font-medium"
+              >
                 {Array.isArray(field.value)
                   ? field.value.join(", ")
                   : String(field.value)}
-              </Text>
+              </Typography.Text>
               (Unverified)
             </Flex>
-          </ListItem>
+          </li>
         ))}
-      </UnorderedList>
+      </ul>
     </Modal>
   );
 };

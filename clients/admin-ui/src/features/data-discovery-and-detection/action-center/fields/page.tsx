@@ -19,13 +19,17 @@ import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import {
+  getErrorMessage,
+  isFetchBaseQueryError,
+} from "~/features/common/helpers";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import {
   useGetDatastoreFiltersQuery,
   useGetMonitorConfigQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
@@ -60,6 +64,7 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -90,6 +95,7 @@ const ActionCenterFields = ({
       query: {
         staged_resource_urn?: string[];
         search?: string;
+        search_regex?: boolean;
         diff_status?: DiffStatus[];
         confidence_bucket?: ConfidenceBucket[];
         data_category?: string[];
@@ -112,6 +118,7 @@ const ActionCenterFields = ({
           ),
         ],
         search: query.search ?? undefined,
+        search_regex: query.search_regex ?? undefined,
         staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
       },
     }),
@@ -252,7 +259,18 @@ const ActionCenterFields = ({
     () => listQueryMeta.refetch(),
   );
 
-  if (listQueryMeta.error) {
+  const isRegexValidationError =
+    listQueryMeta.error &&
+    isFetchBaseQueryError(listQueryMeta.error) &&
+    listQueryMeta.error.status === 422 &&
+    !!requestData.query?.search_regex;
+
+  const regexErrorMessage =
+    isRegexValidationError && listQueryMeta.error
+      ? getErrorMessage(listQueryMeta.error, "Invalid regex pattern")
+      : null;
+
+  if (listQueryMeta.error && !isRegexValidationError) {
     return (
       <ErrorPage
         error={listQueryMeta.error}
@@ -331,7 +349,7 @@ const ActionCenterFields = ({
                 )}
               </Flex>
             </Flex>
-            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto,auto] grid-rows-2 gap-2 xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto,auto] xl:grid-rows-1">
+            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto] 2xl:grid-rows-1">
               <MonitorFieldsSearchForm
                 form={form}
                 {...formProps}
@@ -343,6 +361,7 @@ const ActionCenterFields = ({
                 availableFilters={{
                   data_category: availableFilters?.data_category ?? undefined,
                 }}
+                regexError={regexErrorMessage}
                 shortcutCallback={() => setHotkeysHelperModalOpen(true)}
               />
               <Dropdown
@@ -392,13 +411,6 @@ const ActionCenterFields = ({
                   Actions
                 </Button>
               </Dropdown>
-              <Tooltip title="Refresh">
-                <Button
-                  icon={<Icons.Renew />}
-                  onClick={() => listQueryMeta.refetch()}
-                  aria-label="Refresh"
-                />
-              </Tooltip>
             </div>
             <Flex gap="medium" align="center">
               <Checkbox id="select-all" {...checkboxProps} />

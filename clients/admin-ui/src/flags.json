@@ -98,11 +98,11 @@
     "test": false,
     "production": false
   },
-  "alphaJiraIntegration": {
-    "label": "Alpha Jira integration",
+  "jiraIntegration": {
+    "label": "Jira integration",
     "description": "Enable Jira DSR integration for creating and managing Jira issues from privacy requests",
     "development": true,
-    "test": false,
+    "test": true,
     "production": false
   },
   "alphaPurposeBasedAccessControl": {
@@ -136,6 +136,34 @@
   "alphaPrivacyDocUpload": {
     "label": "Alpha Privacy Document Upload",
     "description": "Enable users to use and see the UI in PBAC",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaDashboardActivityFeed": {
+    "label": "Alpha dashboard activity feed",
+    "description": "Show the activity feed card on the dashboard",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaDashboardAstralisCard": {
+    "label": "Alpha dashboard Astralis card",
+    "description": "Show the Astralis agent card on the dashboard",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaDashboardAgentBriefing": {
+    "label": "Alpha dashboard agent briefing",
+    "description": "Show the Astralis agent summary banner on the dashboard",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaDashboardAgentBriefingActions": {
+    "label": "Alpha dashboard agent briefing actions",
+    "description": "Show action items inside the Astralis agent briefing banner",
     "development": true,
     "test": false,
     "production": false

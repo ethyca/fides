@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Migrated admin-ui API type generation to @hey-api/openapi-ts v0.88.2
+pr: 7757
+labels: []
