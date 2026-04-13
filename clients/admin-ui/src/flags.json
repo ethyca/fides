@@ -91,11 +91,11 @@
     "test": false,
     "production": false
   },
-  "alphaJiraIntegration": {
-    "label": "Alpha Jira integration",
+  "jiraIntegration": {
+    "label": "Jira integration",
     "description": "Enable Jira DSR integration for creating and managing Jira issues from privacy requests",
     "development": true,
-    "test": false,
+    "test": true,
     "production": false
   },
   "alphaPurposeBasedAccessControl": {

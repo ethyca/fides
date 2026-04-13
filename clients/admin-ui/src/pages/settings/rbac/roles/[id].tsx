@@ -34,7 +34,10 @@ import {
   useUpdateRoleMutation,
   useUpdateRolePermissionsMutation,
 } from "~/features/rbac";
-import type { RBACPermission, RBACRole } from "~/types/api";
+import type {
+  RBACPermissionResponse as RBACPermission,
+  RBACRoleResponse as RBACRole,
+} from "~/types/api";
 import type { RTKErrorResult } from "~/types/errors/api";
 
 /**
@@ -158,7 +161,7 @@ const RoleDetailPage: NextPage = () => {
         priority: role.priority,
         is_active: role.is_active,
       });
-      setSelectedPermissions(role.permissions);
+      setSelectedPermissions(role.permissions ?? []);
     }
   }, [role, form]);
 
@@ -196,7 +199,7 @@ const RoleDetailPage: NextPage = () => {
             isGroup: false,
             id: perm.id,
             isInherited:
-              role?.inherited_permissions.includes(perm.code) ?? false,
+              role?.inherited_permissions?.includes(perm.code) ?? false,
             isSelected: selectedPermissions.includes(perm.code),
           }),
         ),

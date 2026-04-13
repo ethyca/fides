@@ -16,6 +16,7 @@ import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
+import { CreateAssessmentTaskRequest } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import {
@@ -91,7 +92,8 @@ export const GenerateAssessmentsModal = ({
   const handleSubmit = async (values: FormValues) => {
     try {
       await createAssessment({
-        assessment_types: values.assessment_types,
+        assessment_types:
+          values.assessment_types as CreateAssessmentTaskRequest["assessment_types"],
         system_fides_keys: values.system_fides_keys?.length
           ? values.system_fides_keys
           : null,

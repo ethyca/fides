@@ -2,7 +2,7 @@ import { saveAs } from "file-saver";
 
 import { baseApi } from "~/features/common/api.slice";
 import type {
-  CreateAssessmentRequest,
+  CreateAssessmentTaskRequest,
   Page_TemplateResponse_,
 } from "~/types/api";
 
@@ -66,7 +66,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 
     createPrivacyAssessment: build.mutation<
       CreateAssessmentTaskResponse,
-      CreateAssessmentRequest
+      CreateAssessmentTaskRequest
     >({
       query: (body) => ({
         url: "plus/privacy-assessments",

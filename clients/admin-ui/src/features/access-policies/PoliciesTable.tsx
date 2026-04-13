@@ -16,7 +16,7 @@ import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 
-import { ControlGroup } from "./access-policies.slice";
+import { Control } from "./access-policies.slice";
 import DecisionTag from "./DecisionTag";
 import styles from "./PoliciesTable.module.scss";
 import { AccessPolicyListItem } from "./types";
@@ -196,7 +196,7 @@ const EditablePriorityCell = ({ value, onEdit }: EditablePriorityCellProps) => {
 
 interface PoliciesTableProps {
   policies: AccessPolicyListItem[];
-  controlGroups: ControlGroup[];
+  controlGroups: Control[];
   onToggle: (policy: AccessPolicyListItem) => void;
   onReorder: (
     policies: AccessPolicyListItem[],
