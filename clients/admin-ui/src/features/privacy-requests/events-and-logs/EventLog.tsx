@@ -11,6 +11,7 @@ import {
   ChakraTr as Tr,
   CUSTOM_TAG_COLOR,
   Tag,
+  Tooltip,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import {
@@ -162,25 +163,26 @@ const extractRecordCountOrTotal = (
 };
 
 const VersionBadge = ({
-  ver,
+  versionIdentifier,
   onClick,
 }: {
-  ver: string;
+  versionIdentifier: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) =>
   onClick ? (
-    <button
-      type="button"
-      className={styles.versionButton}
-      onClick={onClick}
-      title="View version config"
-      data-testid="version-badge-wrapper"
-    >
-      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
-    </button>
+    <Tooltip title="View version details">
+      <button
+        type="button"
+        className={styles.versionButton}
+        onClick={onClick}
+        data-testid="version-badge-wrapper"
+      >
+        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
+      </button>
+    </Tooltip>
   ) : (
     <span data-testid="version-badge-wrapper">
-      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{ver}</Tag>
+      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
     </span>
   );
 
@@ -223,8 +225,8 @@ const EventLog = ({
   };
 
   const renderVersionCell = (log: ExecutionLog) => {
-    const { saas_version: ver, connection_key: key } = log;
-    if (!ver) {
+    const { saas_version: versionIdentifier, connection_key: key } = log;
+    if (!versionIdentifier) {
       return (
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
           -
@@ -233,12 +235,12 @@ const EventLog = ({
     }
     return (
       <VersionBadge
-        ver={ver}
+        versionIdentifier={versionIdentifier}
         onClick={
           key
             ? (e) => {
                 e.stopPropagation();
-                openVersionModal(key, ver);
+                openVersionModal(key, versionIdentifier);
               }
             : undefined
         }
