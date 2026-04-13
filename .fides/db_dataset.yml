@@ -378,6 +378,9 @@ dataset:
     - name: id
       data_categories:
       - system.operations
+    - name: parent_id
+      data_categories:
+      - system.operations
     - name: updated_at
       data_categories:
       - system.operations
