@@ -404,11 +404,12 @@ def check_and_create_objects(
                 create_object(db, object_data["statement"], object_data["name"])
                 mark_index_completed(db, migration_key)
                 object_info[object_data["name"]] = "created"
-                lock.reacquire()
-            except Exception as e:
+            except Exception:
                 logger.exception(
-                    f"An error occurred when trying to create {object_data['name']}", e
+                    f"An error occurred when trying to create {object_data['name']}"
                 )
+            finally:
+                lock.reacquire()
 
     return object_info
 
