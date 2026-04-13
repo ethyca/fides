@@ -1,4 +1,3 @@
-from enum import Enum as EnumType
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
@@ -6,19 +5,10 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
+from fides.api.models.comment import CorrespondenceDeliveryStatus
 
 if TYPE_CHECKING:
     from fides.api.models.comment import Comment
-
-
-class CorrespondenceDeliveryStatus(str, EnumType):
-    """Delivery status for correspondence messages."""
-
-    pending = "pending"
-    sent = "sent"
-    delivered = "delivered"
-    bounced = "bounced"
-    failed = "failed"
 
 
 class CorrespondenceMetadata(Base):
