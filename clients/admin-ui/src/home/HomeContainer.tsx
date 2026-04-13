@@ -13,7 +13,6 @@ import * as React from "react";
 import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 
-import { CommandBar } from "./CommandBar";
 import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
 import { HomeDashboard } from "./HomeDashboard";
@@ -34,7 +33,6 @@ const HomeContainerInner = () => {
     return (
       <ConfigProvider theme={activeTheme}>
         <AntLayout className="h-screen">
-          <CommandBar />
           <AntLayout.Content className="overflow-auto">
             <HomeDashboard />
           </AntLayout.Content>
