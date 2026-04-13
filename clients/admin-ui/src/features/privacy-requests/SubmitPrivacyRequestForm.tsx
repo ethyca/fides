@@ -65,7 +65,7 @@ const IdentityFields = ({
           rules={rules["identity.email"]}
           layout="vertical"
         >
-          <Input />
+          <Input data-testid="input-identity.email" />
         </Form.Item>
       ) : null}
       {identityInputs.phone ? (
@@ -75,7 +75,7 @@ const IdentityFields = ({
           rules={rules["identity.phone_number"]}
           layout="vertical"
         >
-          <Input />
+          <Input data-testid="input-identity.phone_number" />
         </Form.Item>
       ) : null}
     </>
@@ -137,7 +137,9 @@ const CustomFields = ({
             rules={rules[`custom_privacy_request_fields.${fieldName}.value`]}
             layout="vertical"
           >
-            <Input />
+            <Input
+              data-testid={`input-custom_privacy_request_fields.${fieldName}.value`}
+            />
           </Form.Item>
         );
       })}
@@ -241,7 +243,7 @@ const SubmitPrivacyRequestForm = ({
               })) ?? []
             }
             onChange={handleResetCustomFields}
-            data-testid="input-policy_key"
+            data-testid="controlled-select-policy_key"
           />
         </Form.Item>
         <IdentityFields
