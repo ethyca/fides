@@ -58,7 +58,14 @@ def upgrade():
     # Under normal Alembic operation the transaction guarantees all-or-nothing,
     # but the guard protects against manual version-stamp edits or future
     # refactors that add per-batch commits.
-    from fides.api.db.encryption_utils import encrypted_type
+    from fides.api.db.encryption_utils import encrypted_type, get_encryption_key
+
+    key = get_encryption_key()
+    if not key:
+        raise RuntimeError(
+            "FIDES__SECURITY__APP_ENCRYPTION_KEY must be set to run this migration. "
+            "Refusing to proceed — encrypting with an empty key would corrupt data."
+        )
 
     enc = encrypted_type(type_in=String())
 
@@ -67,6 +74,8 @@ def upgrade():
     total_encrypted = 0
     total_skipped = 0
     while True:
+        # LIMIT/OFFSET is safe here because ORDER BY id is stable across UPDATEs
+        # (we only modify comment_text, never id).
         rows = bind.execute(
             text(
                 "SELECT id, comment_text FROM comment "
@@ -76,18 +85,20 @@ def upgrade():
         ).fetchall()
         if not rows:
             break
+        batch_skipped = 0
         for row in rows:
             if row.comment_text is None or _is_encrypted(
                 enc, row.comment_text, bind.dialect
             ):
-                total_skipped += 1
+                batch_skipped += 1
                 continue
             encrypted = enc.process_bind_param(row.comment_text, bind.dialect)
             bind.execute(
                 text("UPDATE comment SET comment_text = :val WHERE id = :id"),
                 {"val": encrypted, "id": row.id},
             )
-        total_encrypted += len(rows) - total_skipped
+        total_encrypted += len(rows) - batch_skipped
+        total_skipped += batch_skipped
         offset += batch_size
     if total_encrypted:
         logger.info("Encrypted {} existing comment_text rows", total_encrypted)
@@ -158,7 +169,14 @@ def downgrade():
 
     # 2. Decrypt comment_text rows back to plaintext (reverse encryption)
     # Idempotency: skip rows that are already plaintext (can't be decrypted).
-    from fides.api.db.encryption_utils import encrypted_type
+    from fides.api.db.encryption_utils import encrypted_type, get_encryption_key
+
+    key = get_encryption_key()
+    if not key:
+        raise RuntimeError(
+            "FIDES__SECURITY__APP_ENCRYPTION_KEY must be set to run this migration downgrade. "
+            "Refusing to proceed — decrypting with an empty key would corrupt data."
+        )
 
     enc = encrypted_type(type_in=String())
 
