@@ -20,13 +20,13 @@ const { Title } = Typography;
 interface AssessmentGroupProps {
   dataUseName: string | null;
   systemCount: number;
-  assessments: PrivacyAssessmentResponse[];
+  assessments?: PrivacyAssessmentResponse[];
 }
 
 export const AssessmentGroup = ({
   dataUseName,
   systemCount,
-  assessments,
+  assessments = [],
 }: AssessmentGroupProps) => {
   const router = useRouter();
 
@@ -43,7 +43,7 @@ export const AssessmentGroup = ({
             icon={<Icons.Policy />}
           />
           <div>
-            <Title level={4} className="!m-0">
+            <Title level={2} className="!m-0">
               {displayName}
             </Title>
             <Text type="secondary">

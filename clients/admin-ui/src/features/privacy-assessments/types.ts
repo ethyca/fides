@@ -246,7 +246,7 @@ export interface AssessmentGroupResponse {
   data_use: string | null;
   data_use_name: string | null;
   system_count: number;
-  assessments: PrivacyAssessmentResponse[];
+  assessments?: PrivacyAssessmentResponse[];
 }
 
 export interface GroupedAssessmentsResponse {
