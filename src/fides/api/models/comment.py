@@ -1,6 +1,7 @@
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, Any
 
+from loguru import logger
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, func, orm
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.ext.declarative import declared_attr
@@ -121,7 +122,6 @@ class Comment(Base):
         "Comment",
         foreign_keys=[parent_id],
         back_populates="parent",
-        lazy="selectin",
         uselist=True,
         order_by="Comment.created_at",
         passive_deletes=True,
@@ -174,7 +174,8 @@ class Comment(Base):
         # which would raise DetachedInstanceError on any lazy relationship access.
         comment = db.query(Comment).filter(Comment.id == self.id).first()
         if comment is None:
-            return  # already deleted
+            logger.debug("Comment {} already deleted, skipping", self.id)
+            return
 
         # Collect all descendants iteratively (breadth-first)
         to_delete = []
