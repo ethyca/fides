@@ -1,3 +1,13 @@
+// React 19 no longer declares JSX as a global namespace.
+// This re-exports it globally for compatibility with existing code.
+interface ImportedJSX extends React.JSX.Element {}
+declare namespace JSX {
+  export type Element = React.JSX.Element;
+  export type IntrinsicElements = React.JSX.IntrinsicElements;
+  export type IntrinsicAttributes = React.JSX.IntrinsicAttributes;
+  export type ElementChildrenAttribute = React.JSX.ElementChildrenAttribute;
+}
+
 declare module "process" {
   declare global {
     namespace NodeJS {
