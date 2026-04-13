@@ -6,7 +6,10 @@ import {
   stubTranslationConfig,
 } from "cypress/support/stubs";
 
-import { ADD_PROPERTY_ROUTE, PROPERTIES_ROUTE } from "~/features/common/nav/routes";
+import {
+  ADD_PROPERTY_ROUTE,
+  PROPERTIES_ROUTE,
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Properties page", () => {
@@ -81,7 +84,13 @@ describe("Properties page", () => {
     it("Should create a new property", () => {
       cy.intercept("POST", "/api/v1/plus/property", {
         statusCode: 200,
-        body: { id: "FDS-NEW123", name: "Test Property", type: "Website", paths: [], experiences: [] },
+        body: {
+          id: "FDS-NEW123",
+          name: "Test Property",
+          type: "Website",
+          paths: [],
+          experiences: [],
+        },
       }).as("createProperty");
 
       cy.visit(ADD_PROPERTY_ROUTE);
