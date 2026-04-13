@@ -6,15 +6,15 @@ import { selectUser } from "~/features/auth";
 import SearchInput from "~/features/common/SearchInput";
 import { formatUser } from "~/features/common/utils";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
-import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetAllUsersQuery } from "~/features/user-management";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import { MonitorSearchForm } from "../MonitorList.const";
 
-const MONITOR_FILTER_LABEL: Record<MONITOR_TYPES, string> = {
-  [MONITOR_TYPES.DATASTORE]: "Data store monitors",
-  [MONITOR_TYPES.WEBSITE]: "Website monitors",
-  [MONITOR_TYPES.INFRASTRUCTURE]: "Infrastructure monitors",
+const MONITOR_FILTER_LABEL: Record<APIMonitorType, string> = {
+  [APIMonitorType.DATASTORE]: "Data store monitors",
+  [APIMonitorType.WEBSITE]: "Website monitors",
+  [APIMonitorType.INFRASTRUCTURE]: "Infrastructure monitors",
 };
 
 const MonitorListSearchForm = ({
@@ -25,7 +25,7 @@ const MonitorListSearchForm = ({
   ReturnType<typeof useSearchForm<any, MonitorSearchForm>>,
   "requestData"
 > & {
-  availableMonitorTypes: readonly MONITOR_TYPES[];
+  availableMonitorTypes: readonly APIMonitorType[];
 }) => {
   const currentUser = useAppSelector(selectUser);
 

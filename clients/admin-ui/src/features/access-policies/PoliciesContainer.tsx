@@ -1,7 +1,7 @@
 import { Spin } from "fidesui";
 import { useMemo } from "react";
 
-import { useGetControlGroupsQuery } from "./access-policies.slice";
+import { useGetControlsQuery } from "./access-policies.slice";
 import { useAccessPoliciesList } from "./hooks/useAccessPoliciesList";
 import { useAccessPolicyGroups } from "./hooks/useAccessPolicyGroups";
 import { usePoliciesFilters } from "./hooks/usePoliciesFilters";
@@ -15,7 +15,7 @@ import PoliciesToolbar, { ViewMode } from "./PoliciesToolbar";
 
 const PoliciesContainer = () => {
   const { policies, isLoading } = useAccessPoliciesList();
-  const { data: controlGroups } = useGetControlGroupsQuery();
+  const { data: controlGroups } = useGetControlsQuery();
   const toggleEnabled = useTogglePolicyEnabled();
   const reorderPolicies = useReorderPolicies();
   const updatePriority = useUpdatePolicyPriority();

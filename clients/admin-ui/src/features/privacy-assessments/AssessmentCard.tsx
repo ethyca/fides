@@ -74,7 +74,7 @@ export const AssessmentCard = ({
     >
       <Flex vertical gap="small" justify="space-between" className="flex-1">
         <div>
-          <Title level={5} className={`!mb-1 ${styles.titleLink}`}>
+          <Title level={3} className={`!mb-1 ${styles.titleLink}`}>
             <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
               {assessment.name}
             </NextLink>
