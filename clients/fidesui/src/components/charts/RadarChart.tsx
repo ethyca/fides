@@ -133,6 +133,7 @@ const RadarTick = ({
           width={TICK_HIT_WIDTH}
           height={TICK_HIT_HEIGHT}
           fill="transparent"
+          cursor="pointer"
           onClick={
             onDimensionClick
               ? () => onDimensionClick(payload.index, point)
@@ -288,6 +289,7 @@ export const RadarChart = ({
       ref={containerRef}
       className={classNames("w-full h-full relative", className, {
         "pointer-events-none": !interactive,
+        [styles.interactiveContainer]: interactive,
       })}
       onMouseLeave={tooltipContent ? handleTickLeave : undefined}
     >

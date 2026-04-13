@@ -2,6 +2,13 @@
   cursor: pointer;
 }
 
+.interactiveContainer {
+  &,
+  & * {
+    cursor: pointer;
+  }
+}
+
 .tickTooltip {
   animation: tickTooltipIn 150ms ease-out;
 }
