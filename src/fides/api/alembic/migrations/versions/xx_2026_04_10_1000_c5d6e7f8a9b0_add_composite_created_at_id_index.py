@@ -1,12 +1,16 @@
-"""Add composite (created_at, id) index to privacy_preferences
+"""Add composite (created_at, id) indexes to privacy_preferences partitions
 
-Adds a composite index on (created_at, id) to the privacy_preferences table.
-Postgres automatically creates matching indexes on both partitions.
-This enables efficient cursor-based pagination with ORDER BY created_at, id
-when filtering by time window, avoiding full-table sorts at scale.
+Registers one composite (created_at, id) index per child partition of the
+privacy_preferences partitioned table. These support efficient cursor-based
+pagination with ORDER BY created_at, id and created_at range filters, via
+Merge Append across per-partition index scans.
 
-For large tables (>1M rows), index creation is deferred to the post-upgrade
-background task (post_upgrade_index_creation.py).
+CREATE INDEX CONCURRENTLY is not supported on partitioned parent tables, so
+the indexes are created directly on each child partition (the same
+convention used by idx_privacy_preferences_current_unique_identity in
+migration a4b7c8d9e0f1). Creation is deferred to the post-upgrade
+background task (post_upgrade_index_creation.py) because
+CREATE INDEX CONCURRENTLY cannot run inside the migration transaction.
 
 Revision ID: c5d6e7f8a9b0
 Revises: b9c4d5e6f7a8
@@ -16,7 +20,6 @@ Create Date: 2026-04-10 10:00:00.000000
 
 import sqlalchemy as sa
 from alembic import op
-from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "c5d6e7f8a9b0"
@@ -24,60 +27,37 @@ down_revision = "b9c4d5e6f7a8"
 branch_labels = None
 depends_on = None
 
-INDEX_NAME = "idx_privacy_preferences_created_at_id"
-MIGRATION_KEY = INDEX_NAME
+CURRENT_INDEX_NAME = "idx_privacy_preferences_current_created_at_id"
+HISTORIC_INDEX_NAME = "idx_privacy_preferences_historic_created_at_id"
+MIGRATION_KEYS = (CURRENT_INDEX_NAME, HISTORIC_INDEX_NAME)
 
 
 def upgrade() -> None:
-    connection = op.get_bind()
-
-    # Register in post_upgrade_background_migration_tasks
-    op.execute(
-        sa.text(
-            "INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
-            "VALUES (:key, 'index', NULL) ON CONFLICT (task_type, key) DO NOTHING"
-        ).bindparams(key=MIGRATION_KEY)
-    )
-
-    # Use approximate row count from pg_class to avoid a sequential scan
-    # on large tables during the migration transaction
-    table_size = connection.execute(
-        sa.text(
-            "SELECT reltuples::bigint FROM pg_class WHERE relname = 'privacy_preferences'"
-        )
-    ).scalar() or 0
-    # reltuples is -1 when the table has never been analyzed; treat as small
-    table_size = max(table_size, 0)
-
-    if table_size < 1000000:
-        logger.info(
-            f"privacy_preferences has ~{table_size} rows, creating composite index directly"
-        )
-        op.create_index(
-            INDEX_NAME, "privacy_preferences", ["created_at", "id"]
-        )
-        # Mark as completed so the post-upgrade startup task doesn't re-check
+    # Register each per-partition index for deferred creation by the
+    # post-upgrade startup task (see post_upgrade_index_creation.py).
+    for key in MIGRATION_KEYS:
         op.execute(
             sa.text(
-                "UPDATE post_upgrade_background_migration_tasks "
-                "SET completed_at = now() "
-                "WHERE key = :key AND task_type = 'index' AND completed_at IS NULL"
-            ).bindparams(key=MIGRATION_KEY)
-        )
-        logger.info(f"{INDEX_NAME} created successfully")
-    else:
-        logger.info(
-            f"privacy_preferences has ~{table_size} rows (>1M), "
-            "deferring index creation to application startup "
-            "via post_upgrade_index_creation.py"
+                "INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
+                "VALUES (:key, 'index', NULL) ON CONFLICT (task_type, key) DO NOTHING"
+            ).bindparams(key=key)
         )
 
 
 def downgrade() -> None:
-    op.execute(sa.text(f"DROP INDEX IF EXISTS {INDEX_NAME}"))
+    op.drop_index(
+        CURRENT_INDEX_NAME,
+        table_name="privacy_preferences_current",
+        if_exists=True,
+    )
+    op.drop_index(
+        HISTORIC_INDEX_NAME,
+        table_name="privacy_preferences_historic",
+        if_exists=True,
+    )
     op.execute(
         sa.text(
             "DELETE FROM post_upgrade_background_migration_tasks "
-            "WHERE key = :key AND task_type = 'index'"
-        ).bindparams(key=MIGRATION_KEY)
+            "WHERE key = ANY(:keys) AND task_type = 'index'"
+        ).bindparams(keys=list(MIGRATION_KEYS))
     )
