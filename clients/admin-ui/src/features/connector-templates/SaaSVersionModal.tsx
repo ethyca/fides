@@ -45,7 +45,7 @@ const SaaSVersionContent = ({
     }
     if (configError) {
       return (
-        <Text className="text-sm text-red-500">
+        <Text type="danger" className="text-sm">
           Could not load version config.
         </Text>
       );
@@ -63,14 +63,14 @@ const SaaSVersionContent = ({
     }
     if (datasetError) {
       return (
-        <Text className="text-sm text-red-500">
+        <Text type="danger" className="text-sm">
           Could not load dataset for this version.
         </Text>
       );
     }
     if (!datasetYaml) {
       return (
-        <Text className="text-sm text-gray-500">
+        <Text type="secondary" className="text-sm">
           No dataset available for this version.
         </Text>
       );
