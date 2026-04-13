@@ -26,6 +26,7 @@ export interface FormValues {
   id?: string | null;
   name: string;
   type: PropertyType;
+  paths: Array<string>;
   messaging_templates?: Array<MinimalMessagingTemplate> | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
 }
@@ -149,6 +150,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                   data-testid="input-type"
                 />
               </Form.Item>
+              <Form.Item name="paths" hidden />
               <Form.Item
                 name="experiences"
                 label="Experiences"
@@ -175,7 +177,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                 <Form.Item
                   label="Property ID"
                   tooltip="Automatically generated unique ID for this property, used for developer configurations"
-                  className="!mb-0"
+                  className="!mb-0 w-full"
                 >
                   <Space.Compact>
                     <Input readOnly value={property.id ?? ""} />
