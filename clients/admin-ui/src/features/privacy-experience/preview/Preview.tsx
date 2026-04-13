@@ -1,4 +1,3 @@
-import { FidesGlobal } from "fides-js/src/lib/consent-types";
 import { Flex, Form, Typography, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import Script from "next/script";
@@ -23,6 +22,12 @@ import {
 } from "~/types/api";
 
 import { COMPONENT_MAP } from "../constants";
+
+// Minimal local type — Preview.tsx only uses `init`. Avoids reaching into
+// fides-js/src internals, which `moduleResolution: "bundler"` now blocks.
+interface FidesGlobal {
+  init: (config?: unknown) => Promise<void>;
+}
 
 declare global {
   interface Window {
