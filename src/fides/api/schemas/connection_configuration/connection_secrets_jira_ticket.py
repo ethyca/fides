@@ -3,7 +3,8 @@
 Supports two authentication modes:
 
 1. **OAuth 2.0 (3LO)** — tokens and Jira Cloud metadata are populated by the
-   OAuth callback flow in Fidesplus.
+   OAuth callback flow in Fidesplus.  OAuth app credentials (client_id,
+   client_secret, redirect_uri) can be stored here or provided via env vars.
 2. **API key** — email + API token entered manually or copied from an existing
    Jira SaaS connector.
 
@@ -56,7 +57,7 @@ class JiraTicketSchema(FidesSchema):
     site_url: str | None = None
 
     # OAuth app credentials — set via API or fall back to env vars in Fidesplus
-    client_id: str | None = None
+    client_id: str | None = None  # not sensitive: visible in OAuth redirect URLs
     client_secret: str | None = Field(
         default=None, json_schema_extra={"sensitive": True}
     )
