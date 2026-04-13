@@ -45,8 +45,7 @@ const ExperienceDescription = ({
     // Swap out reference to "vendors page" with a button that can go to the vendor page
     if (description) {
       if (description.includes(VENDOR_COUNT_LINK) && onVendorPageClick) {
-        const parts: (string | VNode)[] =
-          description.split(VENDOR_COUNT_LINK);
+        const parts: (string | VNode)[] = description.split(VENDOR_COUNT_LINK);
         // inject vendor count button each time it appeared in the description
         for (let i = 1; i < parts.length; i += 2) {
           parts.splice(

@@ -167,8 +167,8 @@ const pushConsentToGtag = (
   const dataLayer = window.dataLayer ?? [];
   window.dataLayer = dataLayer;
   // define gtag if it doesn't exist and push to dataLayer
-  function gtag() {
-    dataLayer.push(arguments);
+  function gtag(...args: any[]) {
+    dataLayer.push(args);
   }
   window.gtag = window.gtag ?? gtag;
 

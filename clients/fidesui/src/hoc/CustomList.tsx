@@ -35,7 +35,7 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
 
 const getItemKey = <T,>(item: T, index: number): React.Key => {
   if (item && typeof item === "object" && "key" in item) {
-    const key = (item as Record<string, unknown>).key;
+    const { key } = item as Record<string, unknown>;
     if (typeof key === "string" || typeof key === "number") {
       return key;
     }
