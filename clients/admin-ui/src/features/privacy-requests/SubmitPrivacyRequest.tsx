@@ -1,10 +1,4 @@
-import {
-  ChakraStack as Stack,
-  Dropdown,
-  Icons,
-  Modal,
-  useMessage,
-} from "fidesui";
+import { Dropdown, Flex, Icons, Modal, useMessage } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -72,13 +66,13 @@ const SubmitPrivacyRequestModal = ({
       title="Create privacy request"
       footer={null}
     >
-      <Stack spacing={4}>
+      <Flex vertical gap="large">
         <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
         <SubmitPrivacyRequestForm
           onSubmit={handleSubmit}
           onCancel={() => onClose()}
         />
-      </Stack>
+      </Flex>
     </Modal>
   );
 };
@@ -101,7 +95,6 @@ const PrivacyRequestLinkModal = ({
       title="Create a Privacy Request Link"
       footer={null}
     >
-      <Stack spacing={4} />
       <CopyPrivacyRequestLinkForm
         privacyCenterUrl={privacyCenterUrl}
         onSubmit={onClose}
@@ -128,13 +121,13 @@ const SubmitPrivacyRequest = () => {
 
   return (
     <>
-      {hasPrivacyCenterUrl ? (
+      {hasPrivacyCenterUrl && (
         <PrivacyRequestLinkModal
           isOpen={createLinkOpen}
           onClose={handleClose}
           privacyCenterUrl={privacyCenterUrl}
         />
-      ) : null}
+      )}
       <SubmitPrivacyRequestModal
         isOpen={submitRequestOpen}
         onClose={handleClose}

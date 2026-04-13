@@ -2,10 +2,8 @@ import dayjs from "dayjs";
 import { Button, DatePicker, Form, Select } from "fidesui";
 
 import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
-import {
-  SubjectRequestActionTypeOptions,
-  SubjectRequestStatusOptions,
-} from "~/features/privacy-requests/constants";
+import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
+import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 interface PrivacyRequestFiltersModalProps {
@@ -37,6 +35,7 @@ export const PrivacyRequestFiltersModal = ({
   modalFilters,
   setModalFilters,
 }: PrivacyRequestFiltersModalProps) => {
+  const actionTypeOptions = useSubjectRequestActionTypeOptions();
   const [form] = Form.useForm<FormValues>();
 
   // Convert modalFilters to form initial values
@@ -139,7 +138,7 @@ export const PrivacyRequestFiltersModal = ({
           <Select
             mode="multiple"
             placeholder="Select request type"
-            options={SubjectRequestActionTypeOptions}
+            options={actionTypeOptions}
             data-testid="request-action-type-filter"
             aria-label="Request type"
           />

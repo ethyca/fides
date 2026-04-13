@@ -16,7 +16,16 @@ if TYPE_CHECKING:
 
 @dataclass
 class DataConsumerEntity:
-    """Unified domain entity for both DataConsumer rows and System-as-consumer."""
+    """Unified domain entity for both DataConsumer rows and System-as-consumer.
+
+    Identity is defined by `type` + `scope`. The scope dict contains
+    all platform-specific identifiers needed to uniquely identify this
+    consumer within its identity system (e.g., domain + group_email for
+    Google Groups, domain + project_id + role for GCP IAM roles).
+
+    Purposes are universal — they describe the business reason for data
+    access, not tied to any specific data platform.
+    """
 
     id: str
     name: str
@@ -24,7 +33,7 @@ class DataConsumerEntity:
     created_at: datetime
     updated_at: datetime
     description: Optional[str] = None
-    external_id: Optional[str] = None
+    scope: dict[str, str] = field(default_factory=dict)
     purposes: list[DataPurposeEntity] = field(default_factory=list)
     purpose_fides_keys: list[str] = field(default_factory=list)
     system_fides_key: Optional[str] = None
@@ -55,6 +64,7 @@ class DataConsumerEntity:
         d["updated_at"] = datetime.fromisoformat(d["updated_at"])
         d.setdefault("purpose_fides_keys", [])
         d.setdefault("purposes", [])
+        d.setdefault("scope", {})
         return cls(**d)
 
     @classmethod
@@ -67,7 +77,7 @@ class DataConsumerEntity:
             name=obj.name,
             description=obj.description,
             type=obj.type,
-            external_id=obj.external_id,
+            scope=getattr(obj, "scope", None) or {},
             purposes=purposes,
             purpose_fides_keys=[p.fides_key for p in purposes],
             egress=obj.egress,
@@ -93,6 +103,7 @@ class DataConsumerEntity:
             name=obj.name or obj.fides_key,
             description=obj.description,
             type="system",
+            scope={},
             purposes=purposes,
             purpose_fides_keys=[p.fides_key for p in purposes],
             system_fides_key=obj.fides_key,
