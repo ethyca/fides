@@ -86,7 +86,7 @@ describe("Properties page", () => {
 
       cy.visit(ADD_PROPERTY_ROUTE);
       cy.getByTestId("input-name").type("Test Property");
-      cy.get("button[type='submit']").click();
+      cy.getByTestId("save-btn").click();
 
       cy.wait("@createProperty").then((interception) => {
         const { body } = interception.request;

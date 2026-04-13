@@ -208,6 +208,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
               type="primary"
               disabled={isSubmitting || !form.isFieldsTouched() || !submittable}
               loading={isSubmitting}
+              data-testid="save-btn"
             >
               Save
             </Button>
