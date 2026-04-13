@@ -179,7 +179,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                   tooltip="Automatically generated unique ID for this property, used for developer configurations"
                   className="!mb-0 w-full"
                 >
-                  <Space.Compact>
+                  <Space.Compact className="w-full">
                     <Input readOnly value={property.id ?? ""} />
                     <Space.Addon>
                       <ClipboardButton copyText={property.id ?? ""} />
