@@ -106,6 +106,8 @@ export type { ConfirmResourcesResponse } from "./models/ConfirmResourcesResponse
 export { ConnectionCategory } from "./models/ConnectionCategory";
 export type { ConnectionConfigurationResponse } from "./models/ConnectionConfigurationResponse";
 export type { ConnectionConfigurationResponseWithSystemKey } from "./models/ConnectionConfigurationResponseWithSystemKey";
+export type { ConnectionConfigSaaSHistoryDetailResponse } from "./models/ConnectionConfigSaaSHistoryDetailResponse";
+export type { ConnectionConfigSaaSHistoryResponse } from "./models/ConnectionConfigSaaSHistoryResponse";
 export type { ConnectionDatahubSyncDetail } from "./models/ConnectionDatahubSyncDetail";
 export { ConnectionDatahubSyncDetailStatus } from "./models/ConnectionDatahubSyncDetailStatus";
 export type { ConnectionDatahubSyncPayload } from "./models/ConnectionDatahubSyncPayload";
@@ -569,6 +571,7 @@ export type { S3MonitorParams } from "./models/S3MonitorParams";
 export type { SaaSConfig } from "./models/SaaSConfig";
 export type { SaaSConfigBase } from "./models/SaaSConfigBase";
 export type { SaaSConfigValidationDetails } from "./models/SaaSConfigValidationDetails";
+export type { SaaSConfigVersionResponse } from "./models/SaaSConfigVersionResponse";
 export type { SaasConnectionTemplateResponse } from "./models/SaasConnectionTemplateResponse";
 export type { SaasConnectionTemplateValues } from "./models/SaasConnectionTemplateValues";
 export type { SaasConnectionTemplateValuesExtended } from "./models/SaasConnectionTemplateValuesExtended";
