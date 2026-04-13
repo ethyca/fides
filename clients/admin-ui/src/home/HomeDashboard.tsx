@@ -1,6 +1,7 @@
-import { Col, Flex, Row, Text } from "fidesui";
+import { Col, Divider, Flex, Row, Text } from "fidesui";
 
-import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
+import { useFlags } from "~/features/common/features";
+import { ThemeModeToggle } from "~/features/common/ThemeModeToggle";
 import { useGetDashboardTrendsQuery } from "~/features/dashboard/dashboard.slice";
 import { TrendPeriod } from "~/features/dashboard/types";
 
@@ -17,6 +18,13 @@ import { TREND_METRIC_KEYS, TrendCard } from "./TrendCard";
 const ROW_GUTTER = 24;
 
 export const HomeDashboard = () => {
+  const {
+    flags: {
+      alphaDashboardActivityFeed,
+      alphaDashboardAstralisCard,
+      alphaDashboardAgentBriefing,
+    },
+  } = useFlags();
   const { data: trends, isLoading: isTrendsLoading } =
     useGetDashboardTrendsQuery({
       period: TrendPeriod.THIRTY_DAYS,
@@ -31,25 +39,22 @@ export const HomeDashboard = () => {
       className="mx-auto w-full max-w-[1600px] px-10 py-6"
     >
       <Flex justify="end">
-        <ThemeModeSegmented />
+        <ThemeModeToggle />
       </Flex>
-      <AgentBriefingBanner />
-      <Row
-        gutter={ROW_GUTTER}
-        className="min-h-[480px] items-stretch"
-      >
-        <Col xs={24} md={8} lg={8} xxl={8} className="h-full">
+      {alphaDashboardAgentBriefing && <AgentBriefingBanner />}
+      <Row gutter={ROW_GUTTER} className="h-[500px] items-stretch">
+        <Col xs={24} md={10} className="h-full">
           <PostureCard />
         </Col>
-        <Col xs={24} md={16} lg={16} xxl={16} className="h-full">
+        <Col xs={24} md={14} className="h-full">
           <PriorityActionsCard />
         </Col>
       </Row>
-      <Flex justify="end" className="-mb-4">
+      <Divider titlePlacement="right" dashed className="!mb-0">
         <Text type="secondary" className="text-xs">
           Last 30 days
         </Text>
-      </Flex>
+      </Divider>
       <Row gutter={ROW_GUTTER}>
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>
@@ -69,14 +74,28 @@ export const HomeDashboard = () => {
           <DSRStatusCard />
         </Col>
       </Row>
-      <Row gutter={ROW_GUTTER} className="h-[400px] items-stretch">
-        <Col xs={24} md={16} className="h-full">
-          <ActivityFeedCard />
-        </Col>
-        <Col xs={24} md={8} className="h-full">
-          <AstralisPanel />
-        </Col>
-      </Row>
+      {(alphaDashboardActivityFeed || alphaDashboardAstralisCard) && (
+        <Row gutter={ROW_GUTTER} className="h-[400px] items-stretch">
+          {alphaDashboardActivityFeed && (
+            <Col
+              xs={24}
+              md={alphaDashboardAstralisCard ? 16 : 24}
+              className="h-full"
+            >
+              <ActivityFeedCard />
+            </Col>
+          )}
+          {alphaDashboardAstralisCard && (
+            <Col
+              xs={24}
+              md={alphaDashboardActivityFeed ? 8 : 24}
+              className="h-full"
+            >
+              <AstralisPanel />
+            </Col>
+          )}
+        </Row>
+      )}
       <DashboardDrawer />
     </Flex>
   );

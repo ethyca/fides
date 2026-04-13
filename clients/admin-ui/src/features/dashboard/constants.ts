@@ -153,8 +153,13 @@ export function getUrgencyGroup(
   dueDate: string | null,
 ): UrgencyGroup {
   // Past due date → Overdue, regardless of severity
-  if (dueDate && new Date(dueDate) < new Date()) {
-    return "overdue";
+  // Normalize to end-of-day to avoid timezone boundary issues with date-only strings
+  if (dueDate) {
+    const due = new Date(dueDate);
+    due.setHours(23, 59, 59, 999);
+    if (due < new Date()) {
+      return "overdue";
+    }
   }
   // High severity but not overdue → Requires Attention
   if (
