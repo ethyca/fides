@@ -55,10 +55,15 @@ export const AuthenticateAwsForm = () => {
   const [submittable, setSubmittable] = useState(false);
 
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
+    const checkValidity = async () => {
+      try {
+        await form.validateFields({ validateOnly: true });
+        setSubmittable(true);
+      } catch {
+        setSubmittable(false);
+      }
+    };
+    checkValidity();
   }, [form, allValues]);
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
@@ -198,8 +203,14 @@ export const AuthenticateAwsForm = () => {
                   tooltip="The session token when using temporary credentials."
                   rules={[
                     {
-                      pattern: /^[^\s]+$/,
-                      message: "Cannot contain spaces",
+                      validator: (_, value) => {
+                        if (!value || !/\s/.test(value)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error("Cannot contain spaces"),
+                        );
+                      },
                     },
                   ]}
                 >

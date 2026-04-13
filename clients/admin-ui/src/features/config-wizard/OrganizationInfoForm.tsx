@@ -43,10 +43,15 @@ export const OrganizationInfoForm = () => {
   const [submittable, setSubmittable] = useState(false);
 
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
+    const checkValidity = async () => {
+      try {
+        await form.validateFields({ validateOnly: true });
+        setSubmittable(true);
+      } catch {
+        setSubmittable(false);
+      }
+    };
+    checkValidity();
   }, [form, allValues]);
 
   // Auto-skip step if org already has name+description

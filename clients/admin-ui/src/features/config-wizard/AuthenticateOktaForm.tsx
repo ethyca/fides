@@ -54,10 +54,15 @@ export const AuthenticateOktaForm = () => {
   const [submittable, setSubmittable] = useState(false);
 
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
+    const checkValidity = async () => {
+      try {
+        await form.validateFields({ validateOnly: true });
+        setSubmittable(true);
+      } catch {
+        setSubmittable(false);
+      }
+    };
+    checkValidity();
   }, [form, allValues]);
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
@@ -77,7 +82,7 @@ export const AuthenticateOktaForm = () => {
   const onFinish = async (values: FormValues) => {
     setScannerError(undefined);
 
-    const config: Omit<OktaConfig, "scopes"> & { scopes: string[] } = {
+    const config: OktaConfig = {
       ...values,
       scopes: values.scopes
         ? values.scopes.split(",").map((s) => s.trim())
@@ -88,7 +93,7 @@ export const AuthenticateOktaForm = () => {
       const result = await generate({
         organization_key: organizationKey,
         generate: {
-          config: config as OktaConfig,
+          config,
           target: ValidTargets.OKTA,
           type: GenerateTypes.SYSTEMS,
         },
