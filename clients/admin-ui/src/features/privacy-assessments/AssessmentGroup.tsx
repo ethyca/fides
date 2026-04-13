@@ -20,13 +20,13 @@ const { Title } = Typography;
 interface AssessmentGroupProps {
   dataUseName: string | null;
   systemCount: number;
-  assessments: PrivacyAssessmentResponse[];
+  assessments?: PrivacyAssessmentResponse[];
 }
 
 export const AssessmentGroup = ({
   dataUseName,
   systemCount,
-  assessments,
+  assessments = [],
 }: AssessmentGroupProps) => {
   const router = useRouter();
 
@@ -43,13 +43,8 @@ export const AssessmentGroup = ({
             icon={<Icons.Policy />}
           />
           <div>
-<<<<<<< ENG-3287-assessment-grouping-by-processing-activity
-            <Title level={4} className="!m-0">
-              {displayName}
-=======
             <Title level={2} className="!m-0">
-              {title}
->>>>>>> main
+              {displayName}
             </Title>
             <Text type="secondary">
               {systemCount} {systemCount === 1 ? "system" : "systems"} •{" "}
