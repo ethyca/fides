@@ -1,6 +1,7 @@
 {
   "name": "admin-ui",
   "private": true,
+  "//webpack-flag": "The `--webpack` flag on next build/dev scripts pins us to the PostCSS pipeline. Turbopack uses Lightning CSS, which can't parse the `:export` pseudo-class in fidesui's palette.module.scss. Remove these flags once ENG-3410 (palette migration) is done.",
   "scripts": {
     "analyze": "cross-env ANALYZE=true next build --webpack",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build --webpack",
@@ -15,8 +16,8 @@
     "cy:run": "cypress run",
     "cy:start": "npm run build:test && npm run start",
     "cy:start:dev": "NEXT_PUBLIC_FIDESCTL_API_SERVER=http://localhost:8080 npm run cy:start",
-    "dev": "next dev -p 3000",
-    "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
+    "dev": "next dev -p 3000 --webpack",
+    "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true npm run dev",
     "export": "PROD_EXPORT=true next build --webpack",
     "prod-export": "npm run export && npm run copy-export",
     "format": "prettier --write --log-level warn .",
