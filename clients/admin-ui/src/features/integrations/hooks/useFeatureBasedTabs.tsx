@@ -175,7 +175,7 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    if (enabledFeatures?.includes(IntegrationFeature.QUERY_LOGGING)) {
+    if (enabledFeatures?.includes("QUERY_LOGGING" as IntegrationFeature)) {
       tabItems.push({
         label: "Query logging",
         key: "query-logging",

@@ -28,12 +28,14 @@ const SystemDataTags = ({
 
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState<number | null>(null);
-  const [longestValue, setLongestValue] = useState([]);
+  const [longestValue, setLongestValue] = useState<any[]>([]);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
   useEffect(() => {
-    const beforeValue = _.get(selectedHistory?.before, props.name) || [];
-    const afterValue = _.get(selectedHistory?.after, props.name) || [];
+    const beforeValue =
+      (_.get(selectedHistory?.before, props.name) as any[]) || [];
+    const afterValue =
+      (_.get(selectedHistory?.after, props.name) as any[]) || [];
 
     // Determine whether to highlight
     setShouldHighlight(!_.isEqual(beforeValue, afterValue));

@@ -229,7 +229,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
       {notificationHolder}
       <div>
         <Flex align="center" gap="small" className="mb-1">
-          <Typography.Title level={4} className="m-0">
+          <Typography.Title level={2} className="m-0">
             {assessment.name}
           </Typography.Title>
           <Tag
