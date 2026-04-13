@@ -20,7 +20,7 @@ class DatasetResolver:
     ) -> None:
         self._mappings: dict[str, str] = dataset_mappings or {}
 
-    def resolve(self, table_ref: TableRef) -> str | None:
+    def resolve(self, table_ref: TableRef) -> str:
         """Resolve a table reference to a Fides dataset fides_key.
 
         Falls back to ``table_ref.schema`` (e.g. BQ dataset name) when no
