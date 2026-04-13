@@ -37,6 +37,19 @@
   transition: color 0.15s ease;
 }
 
+.filterSelect {
+  :global(.ant-select-selector) {
+    background-color: var(--ant-color-bg-container) !important;
+  }
+
+  &:global(.ant-select:not(.ant-select-disabled):hover)
+    :global(.ant-select-selector),
+  &:global(.ant-select-focused:not(.ant-select-disabled))
+    :global(.ant-select-selector) {
+    background-color: var(--ant-color-fill-quaternary) !important;
+  }
+}
+
 .cardContainer {
   height: 100%;
   display: flex;

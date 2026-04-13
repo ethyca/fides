@@ -155,7 +155,10 @@ export const PostureCard = () => {
                 </div>
                 {posture?.agent_annotation && (
                   <span className={styles.summaryText}>
-                    {posture.agent_annotation}
+                    {posture.agent_annotation}{" "}
+                    <span className={styles.viewDetailsCta}>
+                      View details <Icons.ArrowRight size={12} />
+                    </span>
                   </span>
                 )}
               </Flex>

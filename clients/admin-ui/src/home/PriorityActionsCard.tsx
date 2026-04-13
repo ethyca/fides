@@ -112,6 +112,7 @@ export const PriorityActionsCard = () => {
               onChange={setStatusFilter}
               options={STATUS_FILTER_OPTIONS}
               style={{ width: 130, cursor: "pointer" }}
+              className={styles.filterSelect}
               aria-label="Status"
             />
           </Flex>
@@ -126,6 +127,7 @@ export const PriorityActionsCard = () => {
               onChange={setSeverityFilter}
               options={SEVERITY_FILTER_OPTIONS}
               style={{ width: 110, cursor: "pointer" }}
+              className={styles.filterSelect}
               aria-label="Severity"
             />
           </Flex>

@@ -85,6 +85,15 @@
   min-width: 0;
 }
 
+.viewDetailsCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--ant-color-text);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
 .alertSm {
   :global(.ant-alert-message) {
     font-size: var(--ant-font-size-sm);

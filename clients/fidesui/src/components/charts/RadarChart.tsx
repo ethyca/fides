@@ -347,7 +347,6 @@ export const RadarChart = ({
           {!empty && (
             <PolarAngleAxis
               dataKey="subject"
-              zIndex={2100}
               tick={
                 <RadarTick
                   data={data!}
