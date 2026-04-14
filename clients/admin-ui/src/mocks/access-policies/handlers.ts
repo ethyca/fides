@@ -117,7 +117,11 @@ export const accessPoliciesHandlers = () => {
           }),
         );
       }
-      const newControl: Control = { key: body.key, label: body.label };
+      const newControl: Control = {
+        key: body.key,
+        label: body.label,
+        description: body.description,
+      };
       controls.push(newControl);
       return res(ctx.status(201), ctx.json(newControl));
     }),
@@ -133,7 +137,11 @@ export const accessPoliciesHandlers = () => {
         );
       }
       const body = await req.json();
-      controls[index] = { ...controls[index], label: body.label };
+      controls[index] = {
+        ...controls[index],
+        label: body.label,
+        description: body.description,
+      };
       return res(ctx.status(200), ctx.json(controls[index]));
     }),
 

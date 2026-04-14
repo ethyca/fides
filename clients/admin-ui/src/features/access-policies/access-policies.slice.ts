@@ -10,6 +10,7 @@ import type {
 export interface Control {
   key: string;
   label: string;
+  description?: string;
 }
 
 export interface AccessPolicy {
@@ -98,7 +99,19 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Controls"],
     }),
-    createControl: build.mutation<Control, { key: string; label: string }>({
+    getControl: build.query<Control | undefined, string>({
+      query: () => ({
+        method: "GET",
+        url: "plus/controls",
+      }),
+      transformResponse: (response: Control[], _meta, key: string) =>
+        response.find((c) => c.key === key),
+      providesTags: (_result, _error, key) => [{ type: "Controls", id: key }],
+    }),
+    createControl: build.mutation<
+      Control,
+      { key: string; label: string; description?: string }
+    >({
       query: (body) => ({
         method: "POST",
         url: "plus/controls",
@@ -106,7 +119,10 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Controls"],
     }),
-    updateControl: build.mutation<Control, { key: string; label: string }>({
+    updateControl: build.mutation<
+      Control,
+      { key: string; label: string; description?: string }
+    >({
       query: ({ key, ...body }) => ({
         method: "PATCH",
         url: `plus/controls/${key}`,
@@ -166,6 +182,7 @@ export const {
   useDeleteAccessPolicyMutation,
   useReorderAccessPolicyMutation,
   useGetControlsQuery,
+  useGetControlQuery,
   useCreateControlMutation,
   useUpdateControlMutation,
   useDeleteControlMutation,
