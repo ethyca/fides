@@ -74,6 +74,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
     GoogleCloudSQLPostgresSchema as GoogleCloudSQLPostgresSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_google_workspace import (
+    GoogleWorkspaceDocsSchema as GoogleWorkspaceDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_google_workspace import (
+    GoogleWorkspaceSchema as GoogleWorkspaceSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_jira_ticket import (
     JiraTicketDocsSchema as JiraTicketDocsSchema,
 )
@@ -193,6 +199,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.generic_erasure_email.value: EmailSchema,
     ConnectionType.google_cloud_sql_mysql.value: GoogleCloudSQLMySQLSchema,
     ConnectionType.google_cloud_sql_postgres.value: GoogleCloudSQLPostgresSchema,
+    ConnectionType.google_workspace.value: GoogleWorkspaceSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.jira_ticket.value: JiraTicketSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
@@ -257,6 +264,7 @@ connection_secrets_schemas = Union[
     FidesDocsSchema,
     GoogleCloudSQLMySQLDocsSchema,
     GoogleCloudSQLPostgresDocsSchema,
+    GoogleWorkspaceDocsSchema,
     JiraTicketDocsSchema,
     ManualWebhookDocsSchema,
     MariaDBDocsSchema,

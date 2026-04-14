@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
+import IdentityResolutionTab from "~/features/integrations/configure-identity-resolution/IdentityResolutionTab";
 import { JiraConfigTab } from "~/features/integrations/configure-jira";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import QueryLogConfigTab from "~/features/integrations/configure-query-log/QueryLogConfigTab";
@@ -20,14 +21,16 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
+import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 import {
+  ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
   IntegrationFeature,
 } from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
-  connection: any;
+  connection: ConnectionConfigurationResponse | null | undefined;
   enabledFeatures?: IntegrationFeature[];
   integrationOption?: ConnectionSystemTypeMap;
   testData: ConnectionStatusData;
@@ -179,7 +182,29 @@ export const useFeatureBasedTabs = ({
       tabItems.push({
         label: "Query logging",
         key: "query-logging",
-        children: <QueryLogConfigTab integration={connection!} />,
+        children: (
+          <QueryLogConfigTab
+            integration={{
+              ...connection!,
+              name: connection!.name ?? undefined,
+            }}
+          />
+        ),
+      });
+    }
+
+    if (enabledFeatures?.includes(IntegrationFeature.IDENTITY_RESOLUTION)) {
+      tabItems.push({
+        label: "Identity resolution",
+        key: "identity-resolution",
+        children: (
+          <IdentityResolutionTab
+            integration={{
+              ...connection!,
+              name: connection!.name ?? undefined,
+            }}
+          />
+        ),
       });
     }
 
@@ -204,6 +229,15 @@ export const useFeatureBasedTabs = ({
         label: "Ticket setup",
         key: "configuration",
         children: <JiraConfigTab connection={connection!} />,
+      });
+    }
+
+    const connectorType = connection?.saas_config?.type;
+    if (connectorType) {
+      tabItems.push({
+        label: "Version history",
+        key: "version-history",
+        children: <VersionHistoryTab connectorType={connectorType} />,
       });
     }
 
