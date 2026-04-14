@@ -4,6 +4,7 @@ import NextLink from "next/link";
 import { useState } from "react";
 
 import { useGetAccessPoliciesQuery } from "~/features/access-policies/access-policies.slice";
+import ManageControlsModal from "~/features/access-policies/ManageControlsModal";
 import PoliciesContainer from "~/features/access-policies/PoliciesContainer";
 import PolicySettingsModal from "~/features/access-policies/PolicySettingsModal";
 import { useFlags } from "~/features/common/features";
@@ -16,6 +17,7 @@ const AccessPoliciesPage: NextPage = () => {
   const { data, isLoading } = useGetAccessPoliciesQuery({});
   const hasPolicies = !isLoading && (data?.items?.length ?? 0) > 0;
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [controlsModalOpen, setControlsModalOpen] = useState(false);
 
   return (
     <Layout title="Access policies">
@@ -24,6 +26,9 @@ const AccessPoliciesPage: NextPage = () => {
         rightContent={
           hasPolicies ? (
             <Flex gap={8}>
+              <Button onClick={() => setControlsModalOpen(true)}>
+                Manage controls
+              </Button>
               {flags.alphaPrivacyDocUpload && (
                 <Button onClick={() => setSettingsOpen(true)}>
                   Policy settings
@@ -46,6 +51,10 @@ const AccessPoliciesPage: NextPage = () => {
         </div>
       </PageHeader>
       <PoliciesContainer />
+      <ManageControlsModal
+        open={controlsModalOpen}
+        onClose={() => setControlsModalOpen(false)}
+      />
       {flags.alphaPrivacyDocUpload && (
         <PolicySettingsModal
           open={settingsOpen}

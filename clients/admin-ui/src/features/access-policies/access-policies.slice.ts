@@ -98,6 +98,29 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Controls"],
     }),
+    createControl: build.mutation<Control, { key: string; label: string }>({
+      query: (body) => ({
+        method: "POST",
+        url: "plus/controls",
+        body,
+      }),
+      invalidatesTags: ["Controls"],
+    }),
+    updateControl: build.mutation<Control, { key: string; label: string }>({
+      query: ({ key, ...body }) => ({
+        method: "PATCH",
+        url: `plus/controls/${key}`,
+        body,
+      }),
+      invalidatesTags: ["Controls"],
+    }),
+    deleteControl: build.mutation<void, string>({
+      query: (key) => ({
+        method: "DELETE",
+        url: `plus/controls/${key}`,
+      }),
+      invalidatesTags: ["Controls", "Access Policies"],
+    }),
     getOnboardingIndustries: build.query<OnboardingIndustriesResponse, void>({
       query: () => ({
         method: "GET",
@@ -143,6 +166,9 @@ export const {
   useDeleteAccessPolicyMutation,
   useReorderAccessPolicyMutation,
   useGetControlsQuery,
+  useCreateControlMutation,
+  useUpdateControlMutation,
+  useDeleteControlMutation,
   useGetOnboardingIndustriesQuery,
   useGetOnboardingDataUsesQuery,
   useGetOnboardingConfigQuery,
