@@ -23,7 +23,6 @@ const NewControlPage: NextPage = () => {
   const handleSubmit = async (values: ControlFormValues) => {
     try {
       await createControl({
-        key: values.key,
         label: values.label,
         description: values.description || undefined,
       }).unwrap();

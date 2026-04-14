@@ -37,11 +37,12 @@ const EditControlPage: NextPage = () => {
   const handleSubmit = async (values: ControlFormValues) => {
     try {
       await updateControl({
-        key: values.key,
+        key: controlKey as string,
         label: values.label,
         description: values.description || undefined,
       }).unwrap();
       message.success(`Control "${values.label}" updated successfully`);
+      router.push(CONTROLS_ROUTE);
     } catch (err) {
       message.error(getErrorMessage(err as RTKErrorResult["error"]));
     }

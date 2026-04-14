@@ -110,7 +110,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     }),
     createControl: build.mutation<
       Control,
-      { key: string; label: string; description?: string }
+      { key?: string; label: string; description?: string }
     >({
       query: (body) => ({
         method: "POST",

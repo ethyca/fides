@@ -1,12 +1,4 @@
-import {
-  Button,
-  Flex,
-  List,
-  Text,
-  Typography,
-  useMessage,
-  useModal,
-} from "fidesui";
+import { Button, List, Text, Typography, useMessage, useModal } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -121,16 +113,7 @@ const ControlsPage: NextPage = () => {
           >
             <List.Item.Meta
               title={control.label}
-              description={
-                <Flex vertical gap={2}>
-                  <Text type="secondary" className="text-xs">
-                    {control.key}
-                  </Text>
-                  {control.description && (
-                    <Text type="secondary">{control.description}</Text>
-                  )}
-                </Flex>
-              }
+              description={control.description}
             />
           </List.Item>
         )}

@@ -1,4 +1,4 @@
-import { Button, Flex, Text } from "fidesui";
+import { Button, Flex, Icons, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
@@ -31,9 +31,11 @@ const AccessPoliciesPage: NextPage = () => {
                 <Button>Manage controls</Button>
               </NextLink>
               {flags.alphaPrivacyDocUpload && (
-                <Button onClick={() => setSettingsOpen(true)}>
-                  Policy settings
-                </Button>
+                <Button
+                  aria-label="Policy settings"
+                  icon={<Icons.Settings />}
+                  onClick={() => setSettingsOpen(true)}
+                />
               )}
               <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
                 <Button type="primary">New policy</Button>
