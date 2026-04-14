@@ -678,6 +678,16 @@ class StagedResource(StagedResourceBase):
     # frontend to show a sparkle icon only for system-generated descriptions.
     user_assigned_description = Column(String, nullable=True)
 
+    # Nullable to distinguish "not set" (None, use monitor fallback on promotion)
+    # from "explicitly empty" ([], skip monitor fallback). Same convention as
+    # user_assigned_data_uses.
+    steward_ids = Column(
+        ARRAY(String),
+        nullable=True,
+        server_default=None,
+        default=None,
+    )
+
     # pointers to child and parent URNs
     children = Column(
         ARRAY(String),
