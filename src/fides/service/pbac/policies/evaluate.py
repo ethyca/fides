@@ -41,6 +41,15 @@ def evaluate_access_policies(
 
         if unless_triggered:
             if decision == "ALLOW":
+                evaluated.append(
+                    {
+                        "policy_key": policy.get("key"),
+                        "priority": policy.get("priority"),
+                        "matched": True,
+                        "result": "DENY",
+                        "unless_triggered": True,
+                    }
+                )
                 return {
                     "decision": "DENY",
                     "decisive_policy_key": policy.get("key"),
@@ -50,17 +59,28 @@ def evaluate_access_policies(
                     "evaluated_policies": evaluated,
                 }
             # DENY suppressed
-            evaluated.append({
-                "policy_key": policy.get("key"),
-                "priority": policy.get("priority"),
-                "matched": True,
-                "result": "SUPPRESSED",
-                "unless_triggered": True,
-            })
+            evaluated.append(
+                {
+                    "policy_key": policy.get("key"),
+                    "priority": policy.get("priority"),
+                    "matched": True,
+                    "result": "SUPPRESSED",
+                    "unless_triggered": True,
+                }
+            )
             continue
 
         # Decision stands
         action = policy.get("action") if decision == "DENY" else None
+        evaluated.append(
+            {
+                "policy_key": policy.get("key"),
+                "priority": policy.get("priority"),
+                "matched": True,
+                "result": decision,
+                "unless_triggered": False,
+            }
+        )
         return {
             "decision": decision,
             "decisive_policy_key": policy.get("key"),
@@ -116,7 +136,10 @@ def _taxonomy_match(match_key: str, request_value: str) -> bool:
 
     "user.contact" matches "user.contact.email" (prefix + dot boundary).
     "user" does NOT match "user_data".
+    Empty match_key never matches — prevents accidental catch-all.
     """
+    if not match_key:
+        return False
     if match_key == request_value:
         return True
     return request_value.startswith(match_key + ".")

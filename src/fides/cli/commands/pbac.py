@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sys
+from typing import TextIO
 
 import rich_click as click
 
@@ -26,7 +27,7 @@ def pbac(ctx: click.Context) -> None:
 
 @pbac.command(name="evaluate-purpose")
 @click.argument("input_file", type=click.File("r"), default="-")
-def evaluate_purpose_cmd(input_file: click.utils.LazyFile) -> None:
+def evaluate_purpose_cmd(input_file: TextIO) -> None:
     """Evaluate purpose overlap between a consumer and datasets.
 
     Reads JSON from INPUT_FILE (or stdin if omitted).
@@ -111,7 +112,7 @@ def evaluate_purpose_cmd(input_file: click.utils.LazyFile) -> None:
 
 @pbac.command(name="evaluate-policies")
 @click.argument("input_file", type=click.File("r"), default="-")
-def evaluate_policies_cmd(input_file: click.utils.LazyFile) -> None:
+def evaluate_policies_cmd(input_file: TextIO) -> None:
     """Evaluate access policies against a PBAC violation.
 
     Reads JSON from INPUT_FILE (or stdin if omitted).

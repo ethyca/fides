@@ -16,14 +16,16 @@ import (
 //  6. Unless not triggered → decision stands as-is (decisive, stop)
 //  7. No policy matched → NO_DECISION
 func EvaluatePolicies(policies []AccessPolicy, request *AccessEvaluationRequest) *PolicyEvaluationResult {
-	// Filter to enabled policies and sort by priority descending
+	// Filter to enabled policies and sort by priority descending.
+	// Enabled defaults to true when omitted (nil pointer) to match
+	// the Python implementation and database schema default.
 	enabled := make([]AccessPolicy, 0, len(policies))
 	for _, p := range policies {
-		if p.Enabled {
+		if p.Enabled == nil || *p.Enabled {
 			enabled = append(enabled, p)
 		}
 	}
-	sort.Slice(enabled, func(i, j int) bool {
+	sort.SliceStable(enabled, func(i, j int) bool {
 		return enabled[i].Priority > enabled[j].Priority
 	})
 
@@ -41,6 +43,13 @@ func EvaluatePolicies(policies []AccessPolicy, request *AccessEvaluationRequest)
 				// ALLOW inverted to DENY — decisive, stop
 				key := policy.Key
 				priority := policy.Priority
+				evaluated = append(evaluated, EvaluatedPolicyInfo{
+					PolicyKey:       policy.Key,
+					Priority:        policy.Priority,
+					Matched:         true,
+					Result:          "DENY",
+					UnlessTriggered: true,
+				})
 				return &PolicyEvaluationResult{
 					Decision:               PolicyDeny,
 					DecisivePolicyKey:      &key,
@@ -68,6 +77,13 @@ func EvaluatePolicies(policies []AccessPolicy, request *AccessEvaluationRequest)
 		if policy.Decision == PolicyDeny {
 			action = policy.Action
 		}
+		evaluated = append(evaluated, EvaluatedPolicyInfo{
+			PolicyKey:       policy.Key,
+			Priority:        policy.Priority,
+			Matched:         true,
+			Result:          string(policy.Decision),
+			UnlessTriggered: false,
+		})
 		return &PolicyEvaluationResult{
 			Decision:               policy.Decision,
 			DecisivePolicyKey:      &key,
@@ -145,7 +161,11 @@ func taxonomyMatchesAny(matchKey string, requestValues []string) bool {
 // "user.contact" matches "user.contact.email" (prefix + dot boundary).
 // "user.contact" matches "user.contact" (exact match).
 // "user" does NOT match "user_data" (must be a dot boundary).
+// Empty matchKey never matches — prevents accidental catch-all.
 func taxonomyMatch(matchKey, requestValue string) bool {
+	if matchKey == "" {
+		return false
+	}
 	if matchKey == requestValue {
 		return true
 	}

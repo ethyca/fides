@@ -4,19 +4,19 @@ import (
 	"testing"
 )
 
-func intPtr(i int) *int { return &i }
+func boolPtr(b bool) *bool { return &b }
 
 func basePolicies() []AccessPolicy {
 	return []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-marketing", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-marketing", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match: MatchBlock{
 				DataUse: &MatchDimension{Any: []string{"marketing"}},
 			},
 		},
 		{
-			ID: "p2", Key: "deny-financial", Priority: 200, Enabled: true,
+			ID: "p2", Key: "deny-financial", Priority: 200, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match: MatchBlock{
 				DataCategory: &MatchDimension{Any: []string{"user.financial"}},
@@ -24,7 +24,7 @@ func basePolicies() []AccessPolicy {
 			Action: &PolicyAction{Message: "Financial data access denied"},
 		},
 		{
-			ID: "p3", Key: "catch-all-deny", Priority: 0, Enabled: true,
+			ID: "p3", Key: "catch-all-deny", Priority: 0, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match:    MatchBlock{}, // empty = matches everything
 			Action:   &PolicyAction{Message: "Default deny"},
@@ -97,7 +97,7 @@ func TestEvaluatePolicies_NoDecisionWhenNoPolicies(t *testing.T) {
 func TestEvaluatePolicies_DisabledPoliciesSkipped(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "disabled", Priority: 100, Enabled: false,
+			ID: "p1", Key: "disabled", Priority: 100, Enabled: boolPtr(false),
 			Decision: PolicyDeny,
 			Match:    MatchBlock{},
 		},
@@ -115,7 +115,7 @@ func TestEvaluatePolicies_DisabledPoliciesSkipped(t *testing.T) {
 func TestUnless_ConsentOptOut_InvertsAllow(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless-optout", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless-optout", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match: MatchBlock{
 				DataUse: &MatchDimension{Any: []string{"marketing"}},
@@ -154,7 +154,7 @@ func TestUnless_ConsentOptOut_InvertsAllow(t *testing.T) {
 func TestUnless_ConsentNotTriggered_AllowStands(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless-optout", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless-optout", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match: MatchBlock{
 				DataUse: &MatchDimension{Any: []string{"marketing"}},
@@ -191,7 +191,7 @@ func TestUnless_ConsentNotTriggered_AllowStands(t *testing.T) {
 func TestUnless_DenySuppressed_ContinuesToNext(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "deny-unless-geo", Priority: 200, Enabled: true,
+			ID: "p1", Key: "deny-unless-geo", Priority: 200, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match:    MatchBlock{},
 			Unless: []Constraint{
@@ -204,7 +204,7 @@ func TestUnless_DenySuppressed_ContinuesToNext(t *testing.T) {
 			},
 		},
 		{
-			ID: "p2", Key: "fallback-allow", Priority: 100, Enabled: true,
+			ID: "p2", Key: "fallback-allow", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match:    MatchBlock{},
 		},
@@ -227,19 +227,22 @@ func TestUnless_DenySuppressed_ContinuesToNext(t *testing.T) {
 	if result.DecisivePolicyKey == nil || *result.DecisivePolicyKey != "fallback-allow" {
 		t.Errorf("expected decisive policy 'fallback-allow'")
 	}
-	// The suppressed policy should be in the audit trail
-	if len(result.EvaluatedPolicies) != 1 {
-		t.Fatalf("expected 1 evaluated policy (suppressed), got %d", len(result.EvaluatedPolicies))
+	// Audit trail: suppressed deny + decisive allow
+	if len(result.EvaluatedPolicies) != 2 {
+		t.Fatalf("expected 2 evaluated policies, got %d", len(result.EvaluatedPolicies))
 	}
 	if result.EvaluatedPolicies[0].Result != "SUPPRESSED" {
-		t.Errorf("expected SUPPRESSED, got %s", result.EvaluatedPolicies[0].Result)
+		t.Errorf("expected first policy SUPPRESSED, got %s", result.EvaluatedPolicies[0].Result)
+	}
+	if result.EvaluatedPolicies[1].Result != "ALLOW" {
+		t.Errorf("expected second policy ALLOW, got %s", result.EvaluatedPolicies[1].Result)
 	}
 }
 
 func TestUnless_GeoNotIn(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "deny-outside-ca", Priority: 100, Enabled: true,
+			ID: "p1", Key: "deny-outside-ca", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match:    MatchBlock{},
 			Unless: []Constraint{
@@ -285,7 +288,7 @@ func TestUnless_GeoNotIn(t *testing.T) {
 func TestUnless_DataFlow(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless-egress", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless-egress", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match:    MatchBlock{},
 			Unless: []Constraint{
@@ -317,7 +320,7 @@ func TestUnless_DataFlow(t *testing.T) {
 func TestUnless_MultipleConstraints_AllMustTrigger(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless-both", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless-both", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match:    MatchBlock{},
 			Unless: []Constraint{

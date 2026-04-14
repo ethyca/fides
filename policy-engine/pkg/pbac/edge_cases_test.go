@@ -207,8 +207,8 @@ func TestPolicy_EmptyPoliciesList(t *testing.T) {
 
 func TestPolicy_AllDisabled(t *testing.T) {
 	policies := []AccessPolicy{
-		{ID: "p1", Key: "disabled-1", Priority: 100, Enabled: false, Decision: PolicyDeny, Match: MatchBlock{}},
-		{ID: "p2", Key: "disabled-2", Priority: 200, Enabled: false, Decision: PolicyAllow, Match: MatchBlock{}},
+		{ID: "p1", Key: "disabled-1", Priority: 100, Enabled: boolPtr(false), Decision: PolicyDeny, Match: MatchBlock{}},
+		{ID: "p2", Key: "disabled-2", Priority: 200, Enabled: boolPtr(false), Decision: PolicyAllow, Match: MatchBlock{}},
 	}
 
 	result := EvaluatePolicies(policies, &AccessEvaluationRequest{})
@@ -220,7 +220,7 @@ func TestPolicy_AllDisabled(t *testing.T) {
 func TestPolicy_NoMatchDimensions_CatchAll(t *testing.T) {
 	// An empty MatchBlock should match any request, even with empty data_uses
 	policies := []AccessPolicy{
-		{ID: "p1", Key: "catch-all", Priority: 1, Enabled: true, Decision: PolicyDeny, Match: MatchBlock{}},
+		{ID: "p1", Key: "catch-all", Priority: 1, Enabled: boolPtr(true), Decision: PolicyDeny, Match: MatchBlock{}},
 	}
 
 	result := EvaluatePolicies(policies, &AccessEvaluationRequest{})
@@ -232,7 +232,7 @@ func TestPolicy_NoMatchDimensions_CatchAll(t *testing.T) {
 func TestPolicy_MatchAll_RequiresEveryValue(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "require-both", Priority: 100, Enabled: true,
+			ID: "p1", Key: "require-both", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match: MatchBlock{
 				DataCategory: &MatchDimension{
@@ -264,7 +264,7 @@ func TestPolicy_MatchAll_RequiresEveryValue(t *testing.T) {
 func TestPolicy_MatchAnyAndAll_Combined(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "combined", Priority: 100, Enabled: true,
+			ID: "p1", Key: "combined", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match: MatchBlock{
 				DataUse: &MatchDimension{Any: []string{"marketing"}},
@@ -297,7 +297,7 @@ func TestPolicy_MatchAnyAndAll_Combined(t *testing.T) {
 func TestPolicy_UnlessNoContext_DoesNotTrigger(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match:    MatchBlock{},
 			Unless: []Constraint{
@@ -316,7 +316,7 @@ func TestPolicy_UnlessNoContext_DoesNotTrigger(t *testing.T) {
 func TestPolicy_DenyAction_OnlyReturnedForDeny(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-with-action", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-with-action", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow,
 			Match:    MatchBlock{},
 			Action:   &PolicyAction{Message: "this should not appear"},
@@ -374,7 +374,7 @@ func TestPolicy_ResolveContextField_NonStringValue(t *testing.T) {
 func TestPolicy_MatchDataSubject(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "deny-employee-data", Priority: 100, Enabled: true,
+			ID: "p1", Key: "deny-employee-data", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match: MatchBlock{
 				DataSubject: &MatchDimension{Any: []string{"employee"}},
@@ -402,7 +402,7 @@ func TestPolicy_MatchDataSubject(t *testing.T) {
 func TestPolicy_MatchThreeDimensions(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "specific-deny", Priority: 100, Enabled: true,
+			ID: "p1", Key: "specific-deny", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match: MatchBlock{
 				DataUse:      &MatchDimension{Any: []string{"marketing"}},
@@ -438,7 +438,7 @@ func TestPolicy_MatchThreeDimensions(t *testing.T) {
 func TestUnless_ConsentNotOptIn(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless-not-optin", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless-not-optin", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow, Match: MatchBlock{},
 			Unless: []Constraint{
 				{Type: ConstraintConsent, PrivacyNoticeKey: "notice", Requirement: "not_opt_in"},
@@ -470,7 +470,7 @@ func TestUnless_ConsentNotOptIn(t *testing.T) {
 func TestUnless_ConsentNotOptOut(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless-not-optout", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless-not-optout", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow, Match: MatchBlock{},
 			Unless: []Constraint{
 				{Type: ConstraintConsent, PrivacyNoticeKey: "notice", Requirement: "not_opt_out"},
@@ -504,7 +504,7 @@ func TestUnless_ConsentNotOptOut(t *testing.T) {
 func TestUnless_DataFlowNoneOf(t *testing.T) {
 	policies := []AccessPolicy{
 		{
-			ID: "p1", Key: "allow-unless-egress-to-vendor", Priority: 100, Enabled: true,
+			ID: "p1", Key: "allow-unless-egress-to-vendor", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyAllow, Match: MatchBlock{},
 			Unless: []Constraint{
 				{Type: ConstraintDataFlow, Direction: "egress", Operator: "none_of", Systems: []string{"trusted_partner"}},
@@ -534,5 +534,88 @@ func TestUnless_DataFlowNoneOf(t *testing.T) {
 	})
 	if result2.Decision != PolicyDeny {
 		t.Errorf("expected DENY (trusted partner absent, none_of true), got %s", result2.Decision)
+	}
+}
+
+// ── Review items #12, #13, #14 ───────────────────────────────────────
+
+func TestMatchDimension_BothAnyAndAll(t *testing.T) {
+	// A single dimension with both Any and All populated.
+	// Both conditions must pass for the dimension to match.
+	dim := &MatchDimension{
+		Any: []string{"marketing", "analytics"},
+		All: []string{"user.contact", "user.financial"},
+	}
+
+	// Any matches (marketing) AND all matches (both categories) → true
+	if !matchesDimension(dim, []string{"marketing.advertising", "user.contact.email", "user.financial.bank_account"}) {
+		t.Error("expected match when both any and all are satisfied")
+	}
+
+	// Any matches but all doesn't (missing financial) → false
+	if matchesDimension(dim, []string{"marketing.advertising", "user.contact.email"}) {
+		t.Error("expected no match when all is not satisfied")
+	}
+
+	// All matches but any doesn't → false
+	if matchesDimension(dim, []string{"essential.service", "user.contact.email", "user.financial.bank_account"}) {
+		t.Error("expected no match when any is not satisfied")
+	}
+}
+
+func TestUnless_DuplicateConstraints(t *testing.T) {
+	// Duplicate constraints should be a no-op (AND of identical = same condition)
+	policies := []AccessPolicy{
+		{
+			ID: "p1", Key: "allow-unless-dup", Priority: 100, Enabled: boolPtr(true),
+			Decision: PolicyAllow, Match: MatchBlock{},
+			Unless: []Constraint{
+				{Type: ConstraintConsent, PrivacyNoticeKey: "notice", Requirement: "opt_out"},
+				{Type: ConstraintConsent, PrivacyNoticeKey: "notice", Requirement: "opt_out"},
+			},
+		},
+	}
+
+	// Both trigger → DENY
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"consent": map[string]interface{}{"notice": "opt_out"},
+		},
+	})
+	if result.Decision != PolicyDeny {
+		t.Errorf("expected DENY, got %s", result.Decision)
+	}
+
+	// Neither triggers → ALLOW
+	result2 := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"consent": map[string]interface{}{"notice": "opt_in"},
+		},
+	})
+	if result2.Decision != PolicyAllow {
+		t.Errorf("expected ALLOW, got %s", result2.Decision)
+	}
+}
+
+func TestTaxonomyMatch_EmptyKey_NeverMatches(t *testing.T) {
+	if taxonomyMatch("", "anything") {
+		t.Error("empty match key should never match")
+	}
+	if taxonomyMatch("", "") {
+		t.Error("empty match key should not match empty value")
+	}
+	if taxonomyMatch("", ".prefixed") {
+		t.Error("empty match key should not match dot-prefixed values")
+	}
+}
+
+func TestPolicy_EnabledDefaultsToTrue(t *testing.T) {
+	// Enabled=nil (omitted from JSON) should be treated as enabled
+	policies := []AccessPolicy{
+		{ID: "p1", Key: "no-enabled-field", Priority: 100, Decision: PolicyDeny, Match: MatchBlock{}},
+	}
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{})
+	if result.Decision != PolicyDeny {
+		t.Errorf("expected DENY (nil enabled = active), got %s", result.Decision)
 	}
 }

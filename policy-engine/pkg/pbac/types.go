@@ -15,8 +15,12 @@ type GapType string
 
 const (
 	GapUnresolvedIdentity  GapType = "unresolved_identity"
-	GapUnconfiguredConsumer GapType = "unconfigured_consumer"
-	GapUnconfiguredDataset  GapType = "unconfigured_dataset"
+	GapUnconfiguredDataset GapType = "unconfigured_dataset"
+	// GapUnconfiguredConsumer ("unconfigured_consumer") is produced by the
+	// Python service layer (step 5) when reclassifying identity gaps for
+	// consumers that exist but have no purposes. The Go engine does not
+	// produce this gap type — it's a service-layer concern, not an engine
+	// concern.
 )
 
 // ConsumerPurposes holds the declared purposes for a data consumer.

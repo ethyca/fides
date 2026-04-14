@@ -10,11 +10,15 @@ const (
 )
 
 // AccessPolicy represents a parsed YAML access policy ready for evaluation.
+//
+// Enabled defaults to true (via pointer) to match the Python implementation
+// and the database schema default. A policy omitting the enabled field is
+// treated as active.
 type AccessPolicy struct {
 	ID       string         `json:"id"`
 	Key      string         `json:"key"`
 	Priority int            `json:"priority"`
-	Enabled  bool           `json:"enabled"`
+	Enabled  *bool          `json:"enabled,omitempty"`
 	Decision PolicyDecision `json:"decision"` // ALLOW or DENY
 	Match    MatchBlock     `json:"match"`
 	Unless   []Constraint   `json:"unless,omitempty"`
@@ -49,16 +53,20 @@ const (
 type Constraint struct {
 	Type ConstraintType `json:"type"`
 
-	// Consent fields
+	// Consent fields (type=consent)
 	PrivacyNoticeKey string `json:"privacy_notice_key,omitempty"`
 	Requirement      string `json:"requirement,omitempty"` // opt_in, opt_out, not_opt_in, not_opt_out
 
-	// Geo location fields
-	Field    string   `json:"field,omitempty"`    // e.g. "environment.geo_location"
-	Operator string   `json:"operator,omitempty"` // "in", "not_in", "any_of", "none_of"
-	Values   []string `json:"values,omitempty"`
+	// Geo location fields (type=geo_location)
+	Field string   `json:"field,omitempty"` // dotted context path, e.g. "environment.geo_location"
+	Values []string `json:"values,omitempty"`
 
-	// Data flow fields
+	// Operator is shared between geo_location and data_flow constraints:
+	//   geo_location: "in", "not_in"
+	//   data_flow:    "any_of", "none_of"
+	Operator string `json:"operator,omitempty"`
+
+	// Data flow fields (type=data_flow)
 	Direction string   `json:"direction,omitempty"` // "ingress", "egress"
 	Systems   []string `json:"systems,omitempty"`
 }

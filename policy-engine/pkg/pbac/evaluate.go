@@ -1,5 +1,7 @@
 package pbac
 
+import "sort"
+
 // EvaluatePurpose checks dataset accesses against purpose assignments.
 //
 // Rules (matching the Python engine in fides/service/pbac/evaluate.py):
@@ -19,6 +21,15 @@ func EvaluatePurpose(
 		collections = map[string][]string{}
 	}
 
+	// Sort dataset keys for deterministic iteration order.
+	// Go map iteration is randomized; sorting ensures stable output
+	// for audit trails, diff-ability, and test reliability.
+	datasetKeys := make([]string, 0, len(datasets))
+	for k := range datasets {
+		datasetKeys = append(datasetKeys, k)
+	}
+	sort.Strings(datasetKeys)
+
 	var violations []PurposeViolation
 	var gaps []EvaluationGap
 	totalAccesses := 0
@@ -27,7 +38,7 @@ func EvaluatePurpose(
 
 	// Rule 1: consumer has no purposes — record as identity gap
 	if len(consumer.PurposeKeys) == 0 {
-		for datasetKey := range datasets {
+		for _, datasetKey := range datasetKeys {
 			totalAccesses++
 			dk := datasetKey
 			gaps = append(gaps, EvaluationGap{
@@ -44,7 +55,8 @@ func EvaluatePurpose(
 		}
 	}
 
-	for datasetKey, dsPurposes := range datasets {
+	for _, datasetKey := range datasetKeys {
+		dsPurposes := datasets[datasetKey]
 		dk := datasetKey
 		datasetCollections := collections[datasetKey]
 
@@ -53,21 +65,19 @@ func EvaluatePurpose(
 				totalAccesses++
 				col := collection
 				result := checkAccess(consumerPurposeSet, consumer, &dsPurposes, dk, &col)
-				switch r := result.(type) {
-				case PurposeViolation:
-					violations = append(violations, r)
-				case EvaluationGap:
-					gaps = append(gaps, r)
+				if result.Violation != nil {
+					violations = append(violations, *result.Violation)
+				} else if result.Gap != nil {
+					gaps = append(gaps, *result.Gap)
 				}
 			}
 		} else {
 			totalAccesses++
 			result := checkAccess(consumerPurposeSet, consumer, &dsPurposes, dk, nil)
-			switch r := result.(type) {
-			case PurposeViolation:
-				violations = append(violations, r)
-			case EvaluationGap:
-				gaps = append(gaps, r)
+			if result.Violation != nil {
+				violations = append(violations, *result.Violation)
+			} else if result.Gap != nil {
+				gaps = append(gaps, *result.Gap)
 			}
 		}
 	}
@@ -79,15 +89,21 @@ func EvaluatePurpose(
 	}
 }
 
+// accessCheckResult holds the outcome of a single dataset/collection check.
+// Exactly one of Violation or Gap is set, or both are nil (compliant).
+type accessCheckResult struct {
+	Violation *PurposeViolation
+	Gap       *EvaluationGap
+}
+
 // checkAccess checks a single dataset/collection access against consumer purposes.
-// Returns a PurposeViolation, EvaluationGap, or nil (compliant).
 func checkAccess(
 	consumerPurposeSet map[string]bool,
 	consumer ConsumerPurposes,
 	dsPurposes *DatasetPurposes,
 	datasetKey string,
 	collection *string,
-) interface{} {
+) accessCheckResult {
 	col := ""
 	if collection != nil {
 		col = *collection
@@ -97,17 +113,17 @@ func checkAccess(
 	// Rule 3: no effective purposes → dataset gap
 	if len(effective) == 0 {
 		dk := datasetKey
-		return EvaluationGap{
+		return accessCheckResult{Gap: &EvaluationGap{
 			GapType:    GapUnconfiguredDataset,
 			Identifier: datasetKey,
 			DatasetKey: &dk,
 			Reason:     "Dataset has no declared purposes",
-		}
+		}}
 	}
 
 	// Rule 2: no overlap → violation
 	if !intersects(consumerPurposeSet, effective) {
-		return PurposeViolation{
+		return accessCheckResult{Violation: &PurposeViolation{
 			ConsumerID:       consumer.ConsumerID,
 			ConsumerName:     consumer.ConsumerName,
 			DatasetKey:       datasetKey,
@@ -115,11 +131,11 @@ func checkAccess(
 			ConsumerPurposes: sortedKeys(consumerPurposeSet),
 			DatasetPurposes:  sortedKeys(effective),
 			Reason:           violationReason(consumerPurposeSet, effective),
-		}
+		}}
 	}
 
 	// Compliant
-	return nil
+	return accessCheckResult{}
 }
 
 // Ensure non-nil slices for JSON serialization.
