@@ -2,7 +2,7 @@ import { Flex, Tabs } from "fidesui";
 import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";
-import { useFlags } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { useHasPermission } from "../common/Restrict";
@@ -20,8 +20,7 @@ const UserManagementTabs = ({
   ...props
 }: UserFormProps) => {
   const activeUserId = useAppSelector(selectActiveUserId);
-  const { flags } = useFlags();
-  const isRbacEnabled = flags.alphaRbac;
+  const { rbac: isRbacEnabled } = useFeatures();
 
   // Subscribe to active user
   useGetUserByIdQuery(activeUserId as string, { skip: !activeUserId });
