@@ -120,9 +120,7 @@ describe("validateConfig", () => {
         draft.actions = [];
       }),
       expected: {
-        isValid: false,
-        message:
-          "Missing required field(s): actions (must be a non-empty array)",
+        isValid: true,
       },
     },
     {
@@ -131,9 +129,7 @@ describe("validateConfig", () => {
         delete draft.actions;
       }),
       expected: {
-        isValid: false,
-        message:
-          "Missing required field(s): actions (must be a non-empty array)",
+        isValid: true,
       },
     },
     {

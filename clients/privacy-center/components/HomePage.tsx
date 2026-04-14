@@ -145,7 +145,7 @@ const HomePage: NextPage = () => {
 
   const content: ReactNode[] = [];
 
-  config.actions.forEach((action, index) => {
+  (config.actions ?? []).forEach((action, index) => {
     content.push(
       <PrivacyCard
         // eslint-disable-next-line react/no-array-index-key
