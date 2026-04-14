@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "id": "plu_sys_ico",
+      "type": "datamap",
+      "name": "ICO Record of Processing (UK)",
+      "system_template_key": "ico"
+    },
+    {
+      "id": "plu_1234",
+      "type": "datamap",
+      "name": "My Custom Report",
+      "system_template_key": null
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 50,
+  "pages": 1
+}

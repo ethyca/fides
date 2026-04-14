@@ -17,4 +17,8 @@ export type CustomReportResponseMinimal = {
    * Name
    */
   name: string;
+  /**
+   * Stable key of the OOTB regulatory reporting template that owns this report (e.g. 'ico', 'dpc', 'cnil'). When set, the report is system-managed: clients should render it with a 'Standard' badge and disable the delete affordance.
+   */
+  system_template_key?: string | null;
 };
