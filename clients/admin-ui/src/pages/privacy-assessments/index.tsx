@@ -25,7 +25,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
   } = useGetPrivacyAssessmentsQuery();
 
   const groups = assessmentsData?.items ?? [];
-  const hasAssessments = (assessmentsData?.total ?? 0) > 0;
+  const hasAssessments = groups.length > 0;
 
   if (isLoading) {
     return (
@@ -85,9 +85,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
       ) : (
         <div className="py-6">
           <Space direction="vertical" size="large" className="w-full">
-            {groups.map((group) => (
+            {groups.map((group, i) => (
               <AssessmentGroup
-                key={group.data_use ?? "uncategorized"}
+                key={group.data_use ?? `uncategorized-${i}`}
                 dataUseName={group.data_use_name}
                 systemCount={group.system_count}
                 assessments={group.assessments}

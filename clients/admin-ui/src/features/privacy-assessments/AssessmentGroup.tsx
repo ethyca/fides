@@ -30,7 +30,7 @@ export const AssessmentGroup = ({
 }: AssessmentGroupProps) => {
   const router = useRouter();
 
-  const displayName = dataUseName || "Uncategorized";
+  const displayName = dataUseName ?? "Uncategorized";
 
   return (
     <div>

@@ -80,11 +80,9 @@ export const AssessmentCard = ({
             </NextLink>
           </Title>
           {assessment.system_name && (
-            <div>
-              <Text type="secondary" size="sm">
-                {assessment.system_name}
-              </Text>
-            </div>
+            <Text type="secondary" size="sm" className="block">
+              {assessment.system_name}
+            </Text>
           )}
           <div className={styles.textWithTags}>
             {(assessment.data_categories ?? []).length > 0 ? (

@@ -8,6 +8,7 @@ import type {
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentStatus,
   AssessmentTaskPage,
   AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
@@ -35,7 +36,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getPrivacyAssessments: build.query<
       GroupedAssessmentsResponse,
-      { page?: number; size?: number; status?: string } | void
+      { page?: number; size?: number; status?: AssessmentStatus } | void
     >({
       query: (params) => ({
         url: "plus/privacy-assessments",
