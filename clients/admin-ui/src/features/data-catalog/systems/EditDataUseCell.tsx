@@ -43,7 +43,8 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
   const { createDataUse, deleteDeclarationByDataUse, updateDataUse } =
     useSystemDataUseCrud(system);
 
-  const dataUses = system.privacy_declarations?.map((pd) => pd.data_use) ?? [];
+  const declarations = system.privacy_declarations ?? [];
+  const dataUses = declarations.map((pd) => pd.data_use);
 
   const addDataUse = (use: string) => {
     const declaration = createMinimalDataUse(use);
@@ -60,9 +61,7 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
               key={d}
               data-testid={`data-use-${d}`}
               color="white"
-              onClick={() =>
-                handleOpenEditForm(system.privacy_declarations[idx])
-              }
+              onClick={() => handleOpenEditForm(declarations[idx])}
               closable
               onClose={() => deleteDeclarationByDataUse(d)}
               closeButtonLabel="Remove data use"
