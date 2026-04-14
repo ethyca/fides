@@ -1,3 +1,0 @@
-type: Fixed
-description: Allow Privacy Center to start with an empty or missing `actions` array in config, so deployments that only serve fides.js are not blocked by validation.
-pr: 7919
