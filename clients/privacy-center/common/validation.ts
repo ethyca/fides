@@ -59,8 +59,9 @@ export const validateConfig = (
 
   // Validate required fields within each action (if provided)
   if (Array.isArray(input.actions)) {
-    const requiredActionFields: (keyof NonNullable<Config["actions"]>[number])[] =
-      ["title", "description", "icon_path"];
+    const requiredActionFields: (keyof NonNullable<
+      Config["actions"]
+    >[number])[] = ["title", "description", "icon_path"];
     for (let i = 0; i < input.actions.length; i += 1) {
       const action = input.actions[i];
       const missingActionFields = requiredActionFields.filter((field) => {
