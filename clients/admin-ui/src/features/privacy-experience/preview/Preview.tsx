@@ -1,3 +1,4 @@
+import type { Fides } from "fides-js/types";
 import { Flex, Form, Typography, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import Script from "next/script";
@@ -20,8 +21,6 @@ import {
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeResponse,
 } from "~/types/api";
-
-import type { Fides } from "fides-js/types";
 
 import { COMPONENT_MAP } from "../constants";
 
