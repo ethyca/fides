@@ -63,9 +63,11 @@ const MonitorStatsWidget = ({
                     },
                   }}
                 >
-                  {numericStats?.data
-                    .map((stat) => `${stat.count} ${stat.label}`)
-                    .join(", ")}
+                  {numericStats && (numericStats?.data.length ?? 0) > 0
+                    ? numericStats.data
+                        .map((stat) => `${stat.count} ${stat.label}`)
+                        .join(", ")
+                    : "None"}
                 </Paragraph>
               ),
               span: "filled",
@@ -83,9 +85,15 @@ const MonitorStatsWidget = ({
                       .join(", "),
                   }}
                 >
-                  {percentageStats?.data
-                    .map((stat) => `${stat.label} (${nFormatter(stat.value)}%)`)
-                    .join(", ")}
+                  {percentageStats?.data &&
+                  (percentageStats?.data.length ?? 0) > 0
+                    ? percentageStats.data
+                        .map(
+                          (stat) =>
+                            `${stat.label} (${nFormatter(stat.value)}%)`,
+                        )
+                        .join(", ")
+                    : "None"}
                 </Paragraph>
               ),
 

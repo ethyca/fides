@@ -231,6 +231,14 @@ export const selectPlusSecuritySettings: (
   },
 );
 
+export const selectConsentModuleEnabled: (state: RootState) => boolean =
+  createSelector(
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+    ({ data: config }) => config?.admin_ui?.consent_module_enabled ?? true,
+  );
+
 const defaultDuplicateDetectionSettings: DuplicateDetectionApplicationConfig = {
   enabled: false,
   time_window_days: 365,

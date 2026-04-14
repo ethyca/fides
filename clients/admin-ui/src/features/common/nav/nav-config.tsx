@@ -14,6 +14,8 @@ export interface NavConfigTab {
   path: string;
 }
 
+export type NavModule = "consent";
+
 export interface NavConfigRoute {
   title?: string;
   path: string;
@@ -34,12 +36,16 @@ export interface NavConfigRoute {
   routes?: NavConfigRoute[];
   /** Tabs within this page that should appear in search */
   tabs?: NavConfigTab[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export interface NavConfigGroup {
   title: string;
   icon: ReactNode;
   routes: NavConfigRoute[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export const NAV_CONFIG: NavConfigGroup[] = [
@@ -170,6 +176,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Consent",
     icon: <Icons.SettingsAdjust />,
+    module: "consent",
     routes: [
       {
         title: "Vendors",
@@ -371,6 +378,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Consent",
         path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        module: "consent",
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [
@@ -529,6 +537,7 @@ interface ConfigureNavProps {
   hasPlus?: boolean;
   hasFidesCloud?: boolean;
   flags?: Record<string, boolean>;
+  consentModuleEnabled?: boolean;
 }
 
 const configureNavRoute = ({
@@ -625,9 +634,15 @@ export const configureNavGroups = ({
   hasPlus = false,
   hasFidesCloud = false,
   flags,
+  consentModuleEnabled = true,
 }: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
   config.forEach((group) => {
+    // If consent module is disabled, skip groups tagged with module: "consent"
+    if (!consentModuleEnabled && group.module === "consent") {
+      return;
+    }
+
     // if no nav routes are scoped for the user or all require plus
     if (
       !navGroupInScope(group, userScopes) ||
@@ -643,6 +658,11 @@ export const configureNavGroups = ({
     };
 
     group.routes.forEach((route) => {
+      // If consent module is disabled, skip routes tagged with module: "consent"
+      if (!consentModuleEnabled && route.module === "consent") {
+        return;
+      }
+
       const routeConfig = configureNavRoute({
         route,
         hasPlus,

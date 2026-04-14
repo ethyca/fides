@@ -7,6 +7,7 @@ import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dyna
 import ENTRA_TYPE_INFO from "~/features/integrations/integration-type-info/entraInfo";
 import GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLMySQLInfo";
 import GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLPostgresInfo";
+import GOOGLE_WORKSPACE_TYPE_INFO from "~/features/integrations/integration-type-info/googleWorkspaceInfo";
 import JIRA_TICKET_TYPE_INFO from "~/features/integrations/integration-type-info/jiraTicketInfo";
 import MANUAL_TYPE_INFO from "~/features/integrations/integration-type-info/manualInfo";
 import MICROSOFT_SQL_SERVER_TYPE_INFO from "~/features/integrations/integration-type-info/microsoftSQLServerInfo";
@@ -48,6 +49,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.GOOGLE_CLOUD_SQL_MYSQL]: GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO,
   [ConnectionType.GOOGLE_CLOUD_SQL_POSTGRES]:
     GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO,
+  [ConnectionType.GOOGLE_WORKSPACE]: GOOGLE_WORKSPACE_TYPE_INFO,
   [ConnectionType.JIRA_TICKET]: JIRA_TICKET_TYPE_INFO,
   [ConnectionType.MSSQL]: MICROSOFT_SQL_SERVER_TYPE_INFO,
   [ConnectionType.OKTA]: OKTA_TYPE_INFO,
@@ -60,19 +62,26 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
   [ConnectionType.MANUAL_TASK]: MANUAL_TYPE_INFO,
-  [ConnectionType.TEST_DATASTORE]: {
+};
+
+// Mock integration only available in development environments
+if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
+  INTEGRATION_TYPE_MAP[ConnectionType.TEST_DATASTORE] = {
     placeholder: {
-      name: "Mock query log",
+      name: "Mock integration",
       key: "test_datastore_placeholder",
       connection_type: ConnectionType.TEST_DATASTORE,
       access: AccessLevel.READ,
       created_at: "",
     },
     category: ConnectionCategory.DATA_WAREHOUSE,
-    tags: ["Query Logging", "Mock"],
-    enabledFeatures: ["QUERY_LOGGING" as IntegrationFeature],
-  },
-};
+    tags: ["Query Logging", "Identity Resolution", "Mock"],
+    enabledFeatures: [
+      IntegrationFeature.QUERY_LOGGING,
+      IntegrationFeature.IDENTITY_RESOLUTION,
+    ],
+  };
+}
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
   ...Object.values(INTEGRATION_TYPE_MAP),
