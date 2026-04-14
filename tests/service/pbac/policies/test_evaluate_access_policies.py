@@ -37,11 +37,11 @@ def req(**kwargs) -> AccessEvaluationRequest:
 class TestPriorityOrdering:
     def test_highest_priority_wins(self):
         policies = [
-            ParsedPolicy(key="low-allow", priority=10, decision="ALLOW"),
+            ParsedPolicy(key="low-allow", priority=10, decision=PolicyDecision.ALLOW),
             ParsedPolicy(
                 key="high-deny",
                 priority=200,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 action=PolicyAction(message="Highest priority wins"),
             ),
         ]
@@ -55,13 +55,13 @@ class TestPriorityOrdering:
             ParsedPolicy(
                 key="deny-financial",
                 priority=200,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_category": {"any": ["user.financial"]}},
             ),
             ParsedPolicy(
                 key="allow-marketing",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 match={"data_use": {"any": ["marketing"]}},
             ),
         ]
@@ -81,7 +81,7 @@ class TestPriorityOrdering:
             ParsedPolicy(
                 key="catch-all",
                 priority=0,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 action=PolicyAction(message="Default deny"),
             ),
         ]
@@ -101,7 +101,12 @@ class TestNoDecision:
 
     def test_disabled_policies_skipped(self):
         policies = [
-            ParsedPolicy(key="disabled", priority=100, enabled=False, decision="DENY")
+            ParsedPolicy(
+                key="disabled",
+                priority=100,
+                enabled=False,
+                decision=PolicyDecision.DENY,
+            )
         ]
         result = evaluate_policies(policies, req())
         assert result.decision == PolicyDecision.NO_DECISION
@@ -111,7 +116,7 @@ class TestNoDecision:
             ParsedPolicy(
                 key="deny-financial",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_category": {"any": ["user.financial"]}},
             ),
         ]
@@ -127,7 +132,7 @@ class TestTaxonomyMatching:
             ParsedPolicy(
                 key="deny-user",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_category": {"any": ["user"]}},
             ),
         ]
@@ -141,7 +146,7 @@ class TestTaxonomyMatching:
             ParsedPolicy(
                 key="deny-child",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_category": {"any": ["user.contact.email"]}},
             ),
         ]
@@ -153,7 +158,7 @@ class TestTaxonomyMatching:
             ParsedPolicy(
                 key="deny-user",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_category": {"any": ["user"]}},
             ),
         ]
@@ -165,7 +170,7 @@ class TestTaxonomyMatching:
             ParsedPolicy(
                 key="require-both",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_category": {"all": ["user.contact", "user.financial"]}},
             ),
         ]
@@ -188,7 +193,7 @@ class TestUnlessConsent:
             ParsedPolicy(
                 key="allow-unless-optout",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 match={"data_use": {"any": ["marketing"]}},
                 unless=[
                     {
@@ -216,7 +221,7 @@ class TestUnlessConsent:
             ParsedPolicy(
                 key="allow-unless-optout",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 match={"data_use": {"any": ["marketing"]}},
                 unless=[
                     {
@@ -244,7 +249,7 @@ class TestUnlessGeo:
             ParsedPolicy(
                 key="deny-unless-geo",
                 priority=200,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 unless=[
                     {
                         "type": "geo_location",
@@ -254,7 +259,9 @@ class TestUnlessGeo:
                     }
                 ],
             ),
-            ParsedPolicy(key="fallback-allow", priority=100, decision="ALLOW"),
+            ParsedPolicy(
+                key="fallback-allow", priority=100, decision=PolicyDecision.ALLOW
+            ),
         ]
         result = evaluate_policies(
             policies, req(context={"environment": {"geo_location": "US-CA"}})
@@ -273,7 +280,7 @@ class TestUnlessDataFlow:
             ParsedPolicy(
                 key="allow-unless-egress",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 unless=[
                     {
                         "type": "data_flow",
@@ -297,7 +304,7 @@ class TestUnlessMultipleConstraints:
             ParsedPolicy(
                 key="allow-unless-both",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 unless=[
                     {
                         "type": "consent",
@@ -343,7 +350,7 @@ class TestMatchDataSubject:
             ParsedPolicy(
                 key="deny-employee",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_subject": {"any": ["employee"]}},
             ),
         ]
@@ -355,7 +362,7 @@ class TestMatchDataSubject:
             ParsedPolicy(
                 key="deny-employee",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_subject": {"any": ["employee"]}},
             ),
         ]
@@ -367,7 +374,7 @@ class TestMatchDataSubject:
             ParsedPolicy(
                 key="specific",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={
                     "data_use": {"any": ["marketing"]},
                     "data_category": {"any": ["user.contact"]},
@@ -402,7 +409,7 @@ class TestMatchCombined:
             ParsedPolicy(
                 key="combined",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={
                     "data_use": {"any": ["marketing"]},
                     "data_category": {"all": ["user.contact", "user.financial"]},
@@ -434,7 +441,7 @@ class TestConsentVariants:
             ParsedPolicy(
                 key="allow-unless",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 unless=[
                     {
                         "type": "consent",
@@ -455,7 +462,7 @@ class TestConsentVariants:
             ParsedPolicy(
                 key="allow-unless",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 unless=[
                     {
                         "type": "consent",
@@ -480,7 +487,7 @@ class TestGeoNotIn:
             ParsedPolicy(
                 key="deny-unless-outside",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 unless=[
                     {
                         "type": "geo_location",
@@ -508,7 +515,7 @@ class TestDataFlowNoneOf:
             ParsedPolicy(
                 key="allow-unless",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 unless=[
                     {
                         "type": "data_flow",
@@ -536,7 +543,7 @@ class TestEdgeCases:
             ParsedPolicy(
                 key="allow-unless",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 unless=[
                     {
                         "type": "consent",
@@ -554,7 +561,7 @@ class TestEdgeCases:
             ParsedPolicy(
                 key="allow-with-action",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 action=PolicyAction(message="should not appear"),
             ),
         ]
@@ -563,7 +570,9 @@ class TestEdgeCases:
         assert result.action is None
 
     def test_empty_match_catches_everything(self):
-        policies = [ParsedPolicy(key="catch-all", priority=1, decision="DENY")]
+        policies = [
+            ParsedPolicy(key="catch-all", priority=1, decision=PolicyDecision.DENY)
+        ]
         result = evaluate_policies(policies, req())
         assert result.decision == PolicyDecision.DENY
 
@@ -572,7 +581,7 @@ class TestEdgeCases:
             ParsedPolicy(
                 key="deny-unless-nested",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 unless=[
                     {
                         "type": "geo_location",
@@ -593,7 +602,7 @@ class TestEdgeCases:
             ParsedPolicy(
                 key="empty-key",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={"data_use": {"any": [""]}},
             ),
         ]
@@ -601,7 +610,11 @@ class TestEdgeCases:
         assert result.decision == PolicyDecision.NO_DECISION
 
     def test_enabled_defaults_to_true(self):
-        policies = [ParsedPolicy(key="default-enabled", priority=100, decision="DENY")]
+        policies = [
+            ParsedPolicy(
+                key="default-enabled", priority=100, decision=PolicyDecision.DENY
+            )
+        ]
         result = evaluate_policies(policies, req())
         assert result.decision == PolicyDecision.DENY
 
@@ -610,7 +623,7 @@ class TestEdgeCases:
             ParsedPolicy(
                 key="allow-unless-dup",
                 priority=100,
-                decision="ALLOW",
+                decision=PolicyDecision.ALLOW,
                 unless=[
                     {
                         "type": "consent",
@@ -636,7 +649,7 @@ class TestEdgeCases:
             ParsedPolicy(
                 key="both-ops",
                 priority=100,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 match={
                     "data_category": {
                         "any": ["user.contact", "user.financial"],
@@ -659,8 +672,10 @@ class TestEdgeCases:
     def test_priority_tie_preserves_insertion_order(self):
         """Stable sort: policies at the same priority keep their original order."""
         policies = [
-            ParsedPolicy(key="first-allow", priority=100, decision="ALLOW"),
-            ParsedPolicy(key="second-deny", priority=100, decision="DENY"),
+            ParsedPolicy(
+                key="first-allow", priority=100, decision=PolicyDecision.ALLOW
+            ),
+            ParsedPolicy(key="second-deny", priority=100, decision=PolicyDecision.DENY),
         ]
         result = evaluate_policies(policies, req())
         assert result.decision == PolicyDecision.ALLOW
@@ -670,7 +685,9 @@ class TestEdgeCases:
 class TestProtocolConformance:
     def test_evaluator_conforms_to_protocol(self):
         evaluator = InProcessAccessPolicyEvaluator(
-            policies=[ParsedPolicy(key="deny-all", priority=0, decision="DENY")]
+            policies=[
+                ParsedPolicy(key="deny-all", priority=0, decision=PolicyDecision.DENY)
+            ]
         )
         result = evaluator.evaluate(req())
         assert result.decision == PolicyDecision.DENY
@@ -681,7 +698,7 @@ class TestProtocolConformance:
         assert result.decision == PolicyDecision.NO_DECISION
 
         evaluator.set_policies(
-            [ParsedPolicy(key="deny-all", priority=0, decision="DENY")]
+            [ParsedPolicy(key="deny-all", priority=0, decision=PolicyDecision.DENY)]
         )
         result = evaluator.evaluate(req())
         assert result.decision == PolicyDecision.DENY
@@ -702,7 +719,7 @@ class TestJsonConversion:
         assert p.key == "test"
         assert p.priority == 50
         assert p.enabled is False
-        assert p.decision == "ALLOW"
+        assert p.decision == PolicyDecision.ALLOW
         assert p.action is not None
         assert p.action.message == "hello"
 
@@ -710,7 +727,7 @@ class TestJsonConversion:
         p = parsed_policy_from_dict({})
         assert p.key == ""
         assert p.enabled is True
-        assert p.decision == "DENY"
+        assert p.decision == PolicyDecision.DENY
 
     def test_request_from_dict(self):
         r = request_from_dict(
@@ -729,7 +746,7 @@ class TestJsonConversion:
             ParsedPolicy(
                 key="deny-all",
                 priority=0,
-                decision="DENY",
+                decision=PolicyDecision.DENY,
                 action=PolicyAction(message="denied"),
             )
         ]
