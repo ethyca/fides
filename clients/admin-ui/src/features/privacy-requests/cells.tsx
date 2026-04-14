@@ -125,7 +125,11 @@ export const RequestDaysLeftCell = ({
 
   return (
     <BadgeCell
-      value={includeText ? `${daysLeft} days left` : daysLeft.toString()}
+      value={
+        includeText
+          ? `${Math.abs(daysLeft)} days ${daysLeft < 0 ? "overdue" : "left"}`
+          : daysLeft.toString()
+      }
       color={colorScheme}
     />
   );
