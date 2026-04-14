@@ -57,6 +57,14 @@ export const validateConfig = (
     };
   }
 
+  // Validate actions is an array when present
+  if (input.actions !== undefined && !Array.isArray(input.actions)) {
+    return {
+      isValid: false,
+      message: "Invalid field: actions (must be an array)",
+    };
+  }
+
   // Validate required fields within each action (if provided)
   if (Array.isArray(input.actions)) {
     const requiredActionFields: (keyof NonNullable<

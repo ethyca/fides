@@ -133,6 +133,16 @@ describe("validateConfig", () => {
       },
     },
     {
+      name: "invalid actions type",
+      config: produce(minimalJson, (draft: any) => {
+        draft.actions = "not an array";
+      }),
+      expected: {
+        isValid: false,
+        message: "Invalid field: actions (must be an array)",
+      },
+    },
+    {
       name: "missing required action fields",
       config: produce(minimalJson, (draft: any) => {
         delete draft.actions[0].title;
