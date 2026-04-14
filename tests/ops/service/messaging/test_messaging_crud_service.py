@@ -36,6 +36,8 @@ class TestMessagingTemplates:
     def test_get_all_basic_messaging_templates(self, db: Session):
         templates = get_all_basic_messaging_templates(db=db)
         assert len(templates) == len(DEFAULT_MESSAGING_TEMPLATES)
+        for template in templates:
+            assert template.label == DEFAULT_MESSAGING_TEMPLATES[template.type]["label"]
 
     def test_get_basic_messaging_template_by_type_existing(self, db: Session):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
@@ -57,6 +59,7 @@ class TestMessagingTemplates:
         )
         assert template.type == template_type
         assert template.content == content
+        assert template.label is not None
 
     def test_get_basic_messaging_template_by_type_default(self, db: Session):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
@@ -67,6 +70,7 @@ class TestMessagingTemplates:
         )
         assert template.type == template_type
         assert template.content == content
+        assert template.label == DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
 
     def test_get_basic_messaging_template_by_type_invalid(self, db: Session):
         assert (
@@ -123,6 +127,7 @@ class TestMessagingTemplates:
         templates = MessagingTemplate.query(db=db)
         assert len(templates.all()) == 1
         assert templates[0].content["subject"] == "Test new subject"
+        assert templates[0].label == messaging_template_no_property.label
 
     def test_create_or_update_basic_templates_new_type(
         self, db: Session, messaging_template_privacy_request_receipt
@@ -145,6 +150,12 @@ class TestMessagingTemplates:
             db, object_id=new_template.id
         )
         assert messaging_template.content["subject"] == "Test new subject"
+        assert (
+            messaging_template.label
+            == DEFAULT_MESSAGING_TEMPLATES[
+                MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+            ]["label"]
+        )
 
     def test_patch_messaging_template_to_disable(
         self,
@@ -692,6 +703,7 @@ class TestMessagingTemplates:
         )
         assert template.type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         assert template.content is not None
+        assert template.label == "Subject identity verification"
         assert len(template.properties) == 1
         assert template.is_enabled is True
 
@@ -706,6 +718,12 @@ class TestMessagingTemplates:
         assert default.is_enabled is False
         assert default.type is MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         assert default.content is not None
+        assert (
+            default.label
+            == DEFAULT_MESSAGING_TEMPLATES[
+                MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+            ]["label"]
+        )
 
     def test_get_default_template_by_type_invalid(self, db: Session):
         with pytest.raises(MessagingTemplateValidationException) as exc:
@@ -717,6 +735,8 @@ class TestMessagingTemplates:
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
         assert len(all_templates) == 9
+        for template in all_templates:
+            assert template.label == DEFAULT_MESSAGING_TEMPLATES[template.type]["label"]
 
     def test_save_defaults_for_all_messaging_template_types_some_db_templates(
         self,
@@ -752,14 +772,7 @@ class TestMessagingTemplates:
 
 
 class TestMessagingTemplateLabels:
-    """Tests for the label column added in ENG-3300."""
-
-    def test_get_all_basic_messaging_templates_returns_labels(self, db: Session):
-        templates = get_all_basic_messaging_templates(db=db)
-        for template in templates:
-            assert template.label is not None
-            expected_label = DEFAULT_MESSAGING_TEMPLATES[template.type]["label"]
-            assert template.label == expected_label
+    """Tests for the label column and uniqueness constraint added in ENG-3300."""
 
     def test_get_all_basic_messaging_templates_uses_db_label(
         self, db: Session, messaging_template_no_property
@@ -772,44 +785,6 @@ class TestMessagingTemplateLabels:
             if t.type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         )
         assert siv_template.label == messaging_template_no_property.label
-
-    @pytest.mark.parametrize(
-        "getter,expected_label_source",
-        [
-            ("by_type_default", "default"),
-            ("get_default", "default"),
-        ],
-        ids=["get_by_type_or_default", "get_default_template"],
-    )
-    def test_getter_returns_default_label(
-        self, db: Session, getter, expected_label_source
-    ):
-        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-        expected = DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
-        if getter == "by_type_default":
-            result = get_basic_messaging_template_by_type_or_default(
-                db=db, template_type=template_type
-            )
-        else:
-            result = get_default_template_by_type(template_type)
-        assert result.label == expected
-
-    def test_get_basic_messaging_template_by_type_existing_has_label(
-        self, db: Session, messaging_template_no_property
-    ):
-        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-        template = get_basic_messaging_template_by_type_or_default(
-            db=db, template_type=template_type
-        )
-        assert template.label == messaging_template_no_property.label
-
-    def test_get_template_by_id_has_label(
-        self, db: Session, messaging_template_subject_identity_verification
-    ):
-        template = get_template_by_id(
-            db, template_id=messaging_template_subject_identity_verification.id
-        )
-        assert template.label == "Subject identity verification"
 
     # --- get_templates_by_type ---
 
@@ -922,14 +897,39 @@ class TestMessagingTemplateLabels:
         assert created.type == template_type
 
     def test_create_template_default_label(self, db: Session, property_a):
-        """When no label is provided, it should default to 'Default'."""
+        """When no label is provided, it should fall back to the default label for the type."""
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {"subject": "Code __CODE__", "body": "Verify __CODE__"},
             "properties": [property_a.id],
             "is_enabled": True,
         }
-        body = MessagingTemplateWithPropertiesBodyParams(**create_body)
-        assert body.label == "Default"
+        created = create_property_specific_template_by_type(
+            db,
+            template_type,
+            MessagingTemplateWithPropertiesBodyParams(**create_body),
+        )
+        assert created.label == DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
+
+    def test_update_template_preserves_label_when_omitted(
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        property_a,
+    ):
+        """Updating a template without providing label should preserve the existing one."""
+        original_label = messaging_template_subject_identity_verification.label
+        update_body = {
+            "content": {"subject": "New subject __CODE__", "body": "New body __CODE__"},
+            "properties": [property_a.id],
+            "is_enabled": True,
+        }
+        updated = update_property_specific_template(
+            db,
+            messaging_template_subject_identity_verification.id,
+            MessagingTemplateWithPropertiesBodyParams(**update_body),
+        )
+        assert updated.label == original_label
 
     def test_update_template_same_label_unchanged_succeeds(
         self,
@@ -966,41 +966,3 @@ class TestMessagingTemplateLabels:
             patch_data,
         )
         assert patched.label == "Renamed verification template"
-
-    # --- Label preservation in basic templates ---
-
-    def test_create_or_update_basic_templates_preserves_existing_label(
-        self, db: Session, messaging_template_no_property
-    ):
-        """Updating a basic template without providing a label should preserve the existing one."""
-        original_label = messaging_template_no_property.label
-        updated = create_or_update_basic_templates(
-            db,
-            data={
-                "type": MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
-                "content": {"subject": "Updated subject", "body": "Updated body"},
-                "is_enabled": False,
-            },
-        )
-        assert updated.label == original_label
-
-    def test_create_or_update_basic_templates_new_gets_default_label(self, db: Session):
-        """Creating a new basic template without a label should use the default label."""
-        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-        created = create_or_update_basic_templates(
-            db,
-            data={
-                "type": template_type,
-                "content": {"subject": "New subject", "body": "New body"},
-                "is_enabled": False,
-            },
-        )
-        assert created.label == DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
-
-    def test_save_defaults_includes_labels(self, db: Session):
-        """save_defaults_for_all_messaging_template_types should set labels from defaults."""
-        save_defaults_for_all_messaging_template_types(db)
-        all_templates = MessagingTemplate.query(db).all()
-        for template in all_templates:
-            expected_label = DEFAULT_MESSAGING_TEMPLATES[template.type]["label"]
-            assert template.label == expected_label

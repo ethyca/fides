@@ -572,7 +572,7 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
-    label: str = "Default"
+    label: str | None = None
     content: Dict[str, Any] = Field(
         examples=[
             {

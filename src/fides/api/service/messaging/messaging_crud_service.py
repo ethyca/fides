@@ -393,9 +393,10 @@ def update_property_specific_template(
     Updating template type is not allowed once it is created, so we don't intake it here.
     """
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
-    _validate_unique_label(
-        db, messaging_template.type, template_update_body.label, exclude_id=template_id
-    )
+    # Preserve existing label when not provided (backward compat with clients
+    # that don't yet send label on PUT).
+    label = template_update_body.label or messaging_template.label
+    _validate_unique_label(db, messaging_template.type, label, exclude_id=template_id)
     _validate_enabled_template_has_properties(
         template_update_body.properties, template_update_body.is_enabled
     )
@@ -408,7 +409,7 @@ def update_property_specific_template(
     )
 
     data: dict[str, Any] = {
-        "label": template_update_body.label,
+        "label": label,
         "content": template_update_body.content,
         "is_enabled": template_update_body.is_enabled,
     }
@@ -432,7 +433,11 @@ def create_property_specific_template_by_type(
         raise MessagingTemplateValidationException(
             f"Messaging template type {template_type} is not supported."
         )
-    _validate_unique_label(db, template_type, template_create_body.label)
+    label = (
+        template_create_body.label
+        or DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
+    )
+    _validate_unique_label(db, template_type, label)
     _validate_enabled_template_has_properties(
         template_create_body.properties, template_create_body.is_enabled
     )
@@ -445,7 +450,7 @@ def create_property_specific_template_by_type(
     )
 
     data: dict[str, Any] = {
-        "label": template_create_body.label,
+        "label": label,
         "content": template_create_body.content,
         "is_enabled": template_create_body.is_enabled,
         "type": template_type,
