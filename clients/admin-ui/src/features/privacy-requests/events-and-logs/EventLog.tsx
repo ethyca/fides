@@ -170,9 +170,10 @@ const VersionBadge = ({
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) =>
   onClick ? (
-    <Tooltip title="View version details">
+    <Tooltip title="View version config">
       <button
         type="button"
+        title="View version config"
         className={styles.versionButton}
         onClick={onClick}
         data-testid="version-badge-wrapper"
