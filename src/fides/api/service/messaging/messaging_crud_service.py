@@ -395,7 +395,11 @@ def update_property_specific_template(
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
     # Preserve existing label when not provided (backward compat with clients
     # that don't yet send label on PUT).
-    label = template_update_body.label or messaging_template.label
+    label = (
+        template_update_body.label
+        if template_update_body.label is not None
+        else messaging_template.label
+    )
     _validate_unique_label(db, messaging_template.type, label, exclude_id=template_id)
     _validate_enabled_template_has_properties(
         template_update_body.properties, template_update_body.is_enabled
@@ -435,7 +439,8 @@ def create_property_specific_template_by_type(
         )
     label = (
         template_create_body.label
-        or DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
+        if template_create_body.label is not None
+        else DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
     )
     _validate_unique_label(db, template_type, label)
     _validate_enabled_template_has_properties(

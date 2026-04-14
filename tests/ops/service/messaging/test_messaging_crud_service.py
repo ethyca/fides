@@ -784,10 +784,12 @@ class TestMessagingTemplateLabels:
         siv_template = next(t for t in templates if t.type == self._SIV)
         assert siv_template.label == messaging_template_no_property.label
 
-    def test_get_templates_by_type(
+    def test_get_templates_by_type_returns_matching(
         self, db: Session, messaging_template_subject_identity_verification
     ):
         assert len(get_templates_by_type(db, self._SIV)) >= 1
+
+    def test_get_templates_by_type_no_match(self, db: Session):
         assert get_templates_by_type(db, "nonexistent_type") == []
 
     # --- Label uniqueness ---
