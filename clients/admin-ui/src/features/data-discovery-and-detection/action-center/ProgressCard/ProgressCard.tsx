@@ -124,7 +124,7 @@ export const ProgressCard = ({
           </Tooltip>
         )}
       />
-      <Text>resources need review across {subtitle}</Text>
+      <Text>resources need review{!compact && <> across {subtitle}</>}</Text>
       <div>
         {barChartProps && <StackedBarChart {...barChartProps} hideTooltip />}
         <Tooltip
