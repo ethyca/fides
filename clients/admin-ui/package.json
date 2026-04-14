@@ -62,7 +62,7 @@
     "lodash.snakecase": "^4.1.1",
     "motion": "^12.23.26",
     "narrow-minded": "^1.2.1",
-    "next": "^14.2.35",
+    "next": "^16.2.3",
     "next-swagger-doc": "^0.4.0",
     "next-transpile-modules": "^10.0.0",
     "nuqs": "^2.8.8",
