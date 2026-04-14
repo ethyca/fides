@@ -14,10 +14,7 @@ import NextLink from "next/link";
 import { useMemo, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
-import {
-  ACTION_CTA,
-  getUrgencyGroup,
-} from "~/features/dashboard/constants";
+import { ACTION_CTA, getUrgencyGroup } from "~/features/dashboard/constants";
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 import type { PriorityAction } from "~/features/dashboard/types";
 import { ActionSeverity } from "~/features/dashboard/types";
