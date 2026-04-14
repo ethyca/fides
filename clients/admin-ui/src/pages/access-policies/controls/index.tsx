@@ -11,6 +11,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
   ACCESS_POLICIES_ROUTE,
+  CONTROLS_EDIT_ROUTE,
   CONTROLS_NEW_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -24,7 +25,10 @@ const ControlsPage: NextPage = () => {
   const [deleteControl] = useDeleteControlMutation();
 
   const handleEdit = (control: Control) => {
-    router.push(`/access-policies/controls/${control.key}`);
+    router.push({
+      pathname: CONTROLS_EDIT_ROUTE,
+      query: { controlKey: control.key },
+    });
   };
 
   const handleDelete = (control: Control) => {

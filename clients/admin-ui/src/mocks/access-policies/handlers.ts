@@ -109,16 +109,22 @@ export const accessPoliciesHandlers = () => {
     // POST /api/v1/plus/controls - create control
     rest.post(`${apiBase}/plus/controls`, async (req, res, ctx) => {
       const body = await req.json();
-      if (controls.find((c) => c.key === body.key)) {
+      const key =
+        body.key ??
+        body.label
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_|_$/g, "");
+      if (controls.find((c) => c.key === key)) {
         return res(
           ctx.status(409),
           ctx.json({
-            detail: `Control with key '${body.key}' already exists`,
+            detail: `Control with key '${key}' already exists`,
           }),
         );
       }
       const newControl: Control = {
-        key: body.key,
+        key,
         label: body.label,
         description: body.description,
       };
