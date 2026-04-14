@@ -1,19 +1,15 @@
 import {
-  ChakraBox as Box,
-  ChakraFlex as Flex,
-  ChakraSpacer as Spacer,
-  ChakraText as Text,
-  Icons,
-  SecondaryLink,
+  Divider,
+  Flex,
+  Form,
+  Input,
+  Title,
+  Typography,
   useMessage,
 } from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
-import React from "react";
-import * as Yup from "yup";
+import NextLink from "next/link";
 
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
-import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { SystemInfoFormValues } from "~/features/datamap/datamap-drawer/types";
 import { useUpsertSystemsMutation } from "~/features/system/system.slice";
 import { System } from "~/types/api";
@@ -23,13 +19,13 @@ type SystemInfoProps = {
   system: System;
 };
 
-const useSystemInfo = (system: System) => {
+const useSystemInfo = (
+  system: System,
+  form: ReturnType<typeof Form.useForm<SystemInfoFormValues>>[0],
+) => {
   const [upsertSystem] = useUpsertSystemsMutation();
   const message = useMessage();
-  const handleUpsertSystem = async (
-    values: SystemInfoFormValues,
-    helpers: FormikHelpers<SystemInfoFormValues>,
-  ) => {
+  const handleUpsertSystem = async (values: SystemInfoFormValues) => {
     const requestBody: System[] = [
       {
         ...system,
@@ -43,88 +39,50 @@ const useSystemInfo = (system: System) => {
       message.error(getErrorMessage(result.error));
     } else {
       message.success("Successfully saved system info");
-      // this is required so the initial state doesn't flash
-      helpers.resetForm({ values });
+      form.setFieldsValue(values);
     }
   };
 
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().required().label("Name"),
-    description: Yup.string().required().label("Description"),
-  });
-
-  return {
-    handleUpsertSystem,
-    validationSchema,
-  };
+  return { handleUpsertSystem };
 };
 
-const defaultInitialValues: SystemInfoFormValues = {
-  name: "",
-  description: "",
-};
-
-const SystemInfo = ({ system }: SystemInfoProps) => {
+export const SystemInfo = ({ system }: SystemInfoProps) => {
   const systemHref = `/systems/configure/${system.fides_key}`;
+  const [form] = Form.useForm<SystemInfoFormValues>();
 
-  const { handleUpsertSystem, validationSchema } = useSystemInfo(system);
+  const { handleUpsertSystem } = useSystemInfo(system, form);
   return (
-    <Box>
-      <Flex alignItems="center">
-        <Text
-          color="gray.600"
-          size="md"
-          lineHeight={6}
-          fontWeight="semibold"
-          marginBottom={2}
-        >
-          System details
-        </Text>
-        <Spacer />
-        <SecondaryLink color="complimentary.500" href={systemHref}>
-          View more
-          <Icons.Launch className="ml-2 inline" size={14} />
-        </SecondaryLink>
+    <div>
+      <Flex align="center">
+        <Title level={5}>System details</Title>
+        <div className="grow" />
+        <NextLink href={systemHref} passHref legacyBehavior>
+          <Typography.Link>View more</Typography.Link>
+        </NextLink>
       </Flex>
-      <Box
-        width="100%"
-        padding={4}
-        borderTop="1px solid"
-        borderColor="gray.200"
+      <Divider size="small" className="pb-4" />
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={system as SystemInfoFormValues}
+        onFinish={handleUpsertSystem}
+        key={system.fides_key}
       >
-        <Formik
-          enableReinitialize
-          initialValues={
-            (system as SystemInfoFormValues) ?? defaultInitialValues
-          }
-          validationSchema={validationSchema}
-          onSubmit={handleUpsertSystem}
+        <Form.Item
+          name="name"
+          label="System name"
+          rules={[{ required: true, message: "Name is required" }]}
         >
-          {() => (
-            <Form>
-              <FormGuard id="SystemInfoDrawer" name="System Info" />
-              <Box marginTop={3}>
-                <CustomTextInput
-                  label="System name"
-                  name="name"
-                  variant="stacked"
-                  disabled
-                />
-              </Box>
-              <Box marginTop={3}>
-                <CustomTextArea
-                  label="System description"
-                  name="description"
-                  variant="stacked"
-                  disabled
-                />
-              </Box>
-            </Form>
-          )}
-        </Formik>
-      </Box>
-    </Box>
+          <Input disabled data-testid="input-name" />
+        </Form.Item>
+        <Form.Item
+          name="description"
+          label="System description"
+          rules={[{ required: true, message: "Description is required" }]}
+        >
+          <Input.TextArea disabled data-testid="input-description" />
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
-
-export default SystemInfo;
