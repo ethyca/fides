@@ -11,26 +11,47 @@ export enum SystemCapability {
   CLASSIFICATION = "Classification",
 }
 
+export enum RiskSeverity {
+  CRITICAL = "critical",
+  HIGH = "high",
+  MEDIUM = "medium",
+  LOW = "low",
+}
+
+export enum PillarKey {
+  COVERAGE = "coverage",
+  CLASSIFICATION = "classification",
+  RISK = "risk",
+}
+
+export enum RiskFreshness {
+  WEEK = "week",
+  MONTH = "month",
+  OLDER = "older",
+}
+
 export interface GovernanceDimension {
+  key: PillarKey;
   label: string;
   score: number;
+  numerator: number;
+  denominator: number;
   color: string;
 }
 
 export interface GovernanceHealthData {
   score: number;
   dimensions: GovernanceDimension[];
-  annotationAvg: number;
-  systemsWithPurposes: number;
-  systemsWithStewards: number;
-  totalIssues: number;
+  coverageAvg: number;
+  classificationAvg: number;
+  totalRiskScore: number;
   healthBreakdown: {
     healthy: number;
     issues: number;
   };
-  annotationTrend: number[];
-  stewardTrend: number[];
-  purposeTrend: number[];
+  coverageTrend: number[];
+  classificationTrend: number[];
+  riskTrend: number[];
 }
 
 export interface SystemQuickAction {
@@ -38,10 +59,13 @@ export interface SystemQuickAction {
   href: string;
 }
 
-export interface GovernanceIssue {
+export interface SystemRisk {
+  id: string;
   title: string;
-  severity: "error" | "warning";
+  severity: RiskSeverity;
+  detectedAt: string;
   resolveHref: string;
+  category?: string;
 }
 
 export interface MockSteward {
@@ -104,6 +128,7 @@ export interface MockDataset {
   dsrScope?: string[];
   dataCategories?: string[];
   status?: "approved" | "pending" | "draft";
+  steward?: string;
 }
 
 export interface MockPrivacyRequests {
@@ -163,8 +188,8 @@ export interface MockSystem {
   purposes: MockPurpose[];
   annotation_percent: number;
   health: HealthStatus;
-  issues: GovernanceIssue[];
-  issue_count: number;
+  risks: SystemRisk[];
+  risk_count: number;
   stewards: MockSteward[];
   group: string | null;
   logoDomain: string | null;
@@ -184,6 +209,6 @@ export interface MockSystem {
 export interface SystemInventoryStats {
   total: number;
   violations: number;
-  issues: number;
+  risks: number;
   healthy: number;
 }

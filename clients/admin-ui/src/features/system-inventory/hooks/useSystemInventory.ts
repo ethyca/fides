@@ -4,14 +4,23 @@ import { MOCK_SYSTEMS } from "../mock-data";
 import {
   type GovernanceHealthData,
   HealthStatus,
+  RiskFreshness,
+  RiskSeverity,
   type SystemInventoryStats,
 } from "../types";
-import { computeGovernanceHealth } from "../utils";
+import {
+  computeGovernanceHealth,
+  getRiskFreshness,
+  latestRiskTimestamp,
+} from "../utils";
 
 export const useSystemInventory = () => {
   const [search, setSearch] = useState("");
   const [healthFilter, setHealthFilter] = useState<HealthStatus | null>(null);
-  const [purposeFilter, setPurposeFilter] = useState<string | null>(null);
+  const [severityFilter, setSeverityFilter] = useState<RiskSeverity[]>([]);
+  const [freshnessFilter, setFreshnessFilter] = useState<RiskFreshness | null>(
+    null,
+  );
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [groupFilter, setGroupFilter] = useState<string | null>(null);
 
@@ -33,9 +42,15 @@ export const useSystemInventory = () => {
       result = result.filter((s) => s.health === healthFilter);
     }
 
-    if (purposeFilter) {
+    if (severityFilter.length > 0) {
       result = result.filter((s) =>
-        s.purposes.some((p) => p.name === purposeFilter),
+        s.risks.some((r) => severityFilter.includes(r.severity)),
+      );
+    }
+
+    if (freshnessFilter) {
+      result = result.filter((s) =>
+        s.risks.some((r) => getRiskFreshness(r.detectedAt) === freshnessFilter),
       );
     }
 
@@ -47,14 +62,23 @@ export const useSystemInventory = () => {
       result = result.filter((s) => s.group === groupFilter);
     }
 
+    // Default sort by name; specific sections re-sort below.
     return [...result].sort((a, b) => a.name.localeCompare(b.name));
-  }, [systems, search, healthFilter, purposeFilter, typeFilter, groupFilter]);
+  }, [
+    systems,
+    search,
+    healthFilter,
+    severityFilter,
+    freshnessFilter,
+    typeFilter,
+    groupFilter,
+  ]);
 
   const stats: SystemInventoryStats = useMemo(
     () => ({
       total: systems.length,
       violations: 0,
-      issues: systems.filter((s) => s.health === HealthStatus.ISSUES).length,
+      risks: systems.filter((s) => s.risk_count > 0).length,
       healthy: systems.filter((s) => s.health === HealthStatus.HEALTHY).length,
     }),
     [systems],
@@ -69,20 +93,26 @@ export const useSystemInventory = () => {
     () =>
       filtered
         .filter((s) => s.health !== HealthStatus.HEALTHY)
-        .sort((a, b) => b.issue_count - a.issue_count),
+        .sort((a, b) => {
+          if (b.risk_count !== a.risk_count) {
+            return b.risk_count - a.risk_count;
+          }
+          return latestRiskTimestamp(b.risks) - latestRiskTimestamp(a.risks);
+        }),
     [filtered],
   );
 
   const healthy = useMemo(
-    () => filtered.filter((s) => s.health === HealthStatus.HEALTHY),
+    () =>
+      filtered
+        .filter((s) => s.health === HealthStatus.HEALTHY)
+        .sort(
+          (a, b) =>
+            latestRiskTimestamp(b.risks) - latestRiskTimestamp(a.risks) ||
+            a.name.localeCompare(b.name),
+        ),
     [filtered],
   );
-
-  const purposeOptions = useMemo(() => {
-    const names = new Set<string>();
-    systems.forEach((s) => s.purposes.forEach((p) => names.add(p.name)));
-    return [...names].sort().map((n) => ({ label: n, value: n }));
-  }, [systems]);
 
   const typeOptions = useMemo(() => {
     const types = [...new Set(systems.map((s) => s.system_type))].sort();
@@ -106,13 +136,14 @@ export const useSystemInventory = () => {
     setSearch,
     healthFilter,
     setHealthFilter,
-    purposeFilter,
-    setPurposeFilter,
+    severityFilter,
+    setSeverityFilter,
+    freshnessFilter,
+    setFreshnessFilter,
     typeFilter,
     setTypeFilter,
     groupFilter,
     setGroupFilter,
-    purposeOptions,
     typeOptions,
     groupOptions,
   };

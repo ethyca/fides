@@ -1,9 +1,9 @@
-import { Button, Flex, SparkleIcon, Tag, Text } from "fidesui";
+import { Button, Flex, Icons, SparkleIcon, Tag, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import NextLink from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
-import { type MockSystem } from "../types";
+import { SEVERITY_COLORS } from "../constants";
+import { type MockSystem, RiskSeverity } from "../types";
 
 interface SystemBriefingBannerProps {
   system: MockSystem;
@@ -50,141 +50,110 @@ function buildRichBriefing(system: MockSystem): string {
   return parts.join(" ");
 }
 
-interface Issue {
+interface BannerRisk {
+  id: string;
   label: string;
-  action: string;
-  href: string;
-  severity: "error" | "warning";
+  severity: RiskSeverity;
 }
 
-function getIssues(system: MockSystem): Issue[] {
-  const issues: Issue[] = [];
-  const base = `/system-inventory/${system.fides_key}`;
+function getBannerRisks(system: MockSystem): BannerRisk[] {
+  const risks: BannerRisk[] = [];
 
-  if (system.stewards.length === 0) {
-    issues.push({
-      label: "No steward assigned",
-      action: "Assign steward",
-      href: `${base}#config`,
-      severity: "warning",
-    });
-  }
   const needsReview =
     system.classification.unreviewed + system.classification.pending;
   if (needsReview > 0) {
-    issues.push({
+    risks.push({
+      id: "classification",
       label: `${needsReview.toLocaleString()} fields need review`,
-      action: "Review fields",
-      href: `${base}#assets`,
-      severity: "warning",
+      severity: RiskSeverity.MEDIUM,
     });
   }
-  if (system.purposes.length === 0) {
-    issues.push({
-      label: "No purposes defined",
-      action: "Define purposes",
-      href: `${base}#config`,
-      severity: "warning",
-    });
-  }
-  if (!system.privacyRequests.dsarEnabled && system.integrations.length > 0) {
-    issues.push({
-      label: "DSAR not enabled",
-      action: "Enable DSARs",
-      href: `${base}#config`,
-      severity: "warning",
-    });
-  }
-  system.issues.forEach((issue) => {
-    issues.push({
-      label: issue.title,
-      action: "Resolve",
-      href: issue.resolveHref,
-      severity: issue.severity === "error" ? "error" : "warning",
-    });
+
+  risks.push({
+    id: "steward",
+    label: "No steward assigned",
+    severity: RiskSeverity.LOW,
   });
-  return issues;
+
+  return risks;
 }
 
 const SystemBriefingBanner = ({ system }: SystemBriefingBannerProps) => {
-  const storageKey = `system_briefing_dismissed_${system.fides_key}`;
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    if (sessionStorage.getItem(storageKey) === "true") {
-      setVisible(false);
-    }
-  }, [storageKey]);
-
-  const dismiss = useCallback(() => {
-    setVisible(false);
-    sessionStorage.setItem(storageKey, "true");
-  }, [storageKey]);
-
-  if (!visible) {
-    return null;
-  }
-
   const briefing = system.agentBriefing ?? buildRichBriefing(system);
-  const issues = getIssues(system);
+  const allRisks = getBannerRisks(system);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+
+  const dismiss = useCallback((id: string) => {
+    setDismissed((prev) => new Set(prev).add(id));
+  }, []);
+
+  const visibleRisks = allRisks.filter((r) => !dismissed.has(r.id));
 
   return (
     <div
       className="mb-6 rounded-lg px-5 py-4"
       style={{ backgroundColor: palette.FIDESUI_BG_DEFAULT }}
     >
-      <Flex justify="space-between" align="flex-start">
-        <Flex gap={12} align="flex-start" className="min-w-0 flex-1">
-          <SparkleIcon size={16} className="mt-1 shrink-0" />
-          <Flex vertical gap={8}>
-            <Text className="text-sm leading-relaxed">{briefing}</Text>
+      <Flex gap={12} align="flex-start" className="min-w-0">
+        <SparkleIcon size={16} className="mt-1 shrink-0" />
+        <Flex vertical gap={6} className="min-w-0 flex-1">
+          <Text className="text-sm leading-relaxed">{briefing}</Text>
 
-            {issues.length > 0 && (
-              <Flex vertical gap={6}>
+          {visibleRisks.length > 0 && (
+            <Flex vertical gap={4}>
+              <Flex justify="space-between" align="center">
                 <Text strong className="text-[10px] uppercase tracking-wider">
-                  Needs attention
+                  Risks
                 </Text>
-                <Flex gap={8} wrap>
-                  {issues.map((issue) => (
-                    <Flex key={issue.label} align="center" gap={6}>
-                      <Tag
-                        bordered={false}
-                        color="error"
-                        className="!text-[10px]"
-                      >
-                        {issue.label}
-                      </Tag>
-                      <NextLink href={issue.href}>
-                        <Button
-                          type="text"
-                          size="small"
-                          className="!px-0 !text-[11px] !font-medium"
-                          style={{ color: palette.FIDESUI_MINOS }}
-                        >
-                          {issue.action} &rarr;
-                        </Button>
-                      </NextLink>
-                    </Flex>
-                  ))}
-                </Flex>
+                <Button
+                  type="text"
+                  size="small"
+                  className="!px-0 !text-[10px]"
+                  style={{ color: palette.FIDESUI_NEUTRAL_500 }}
+                  onClick={() => {
+                    visibleRisks.forEach((r) => dismiss(r.id));
+                  }}
+                >
+                  Dismiss all
+                </Button>
               </Flex>
-            )}
+              {visibleRisks.map((risk) => (
+                <Flex key={risk.id} align="center" gap={6}>
+                  <div
+                    className="size-2 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: SEVERITY_COLORS[risk.severity],
+                    }}
+                  />
+                  <Text className="min-w-0 flex-1 text-xs">{risk.label}</Text>
+                  <span
+                    role="button"
+                    aria-label={`Dismiss ${risk.label}`}
+                    tabIndex={0}
+                    className="shrink-0 cursor-pointer"
+                    onClick={() => dismiss(risk.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        dismiss(risk.id);
+                      }
+                    }}
+                  >
+                    <Icons.Close
+                      size={12}
+                      style={{ color: palette.FIDESUI_NEUTRAL_500 }}
+                    />
+                  </span>
+                </Flex>
+              ))}
+            </Flex>
+          )}
 
-            {issues.length === 0 && (
-              <Tag bordered={false} color="success" className="!text-[10px]">
-                No issues — this system is in good health
-              </Tag>
-            )}
-          </Flex>
+          {visibleRisks.length === 0 && allRisks.length === 0 && (
+            <Tag bordered={false} color="success" className="!text-[10px]">
+              No risks — this system is in good health
+            </Tag>
+          )}
         </Flex>
-        <Button
-          type="text"
-          size="small"
-          className="shrink-0 pl-4 text-xs"
-          onClick={dismiss}
-        >
-          Dismiss
-        </Button>
       </Flex>
     </div>
   );

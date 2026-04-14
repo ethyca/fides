@@ -10,65 +10,61 @@ import {
   YAxis,
 } from "recharts";
 
-import type { GovernanceHealthData } from "../types";
+import { PILLAR_CONFIG } from "../constants";
+import { type GovernanceHealthData, PillarKey } from "../types";
 import GovernanceScoreCard from "./GovernanceScoreCard";
 
 interface GovernanceHealthDashboardProps {
   data: GovernanceHealthData;
 }
 
-// Each pillar contributes score/4 so they stack to the overall score
-const TREND_DATA = [
-  {
-    month: "Oct",
-    annotation: 5.5,
-    compliance: 12,
-    purpose: 8.75,
-    ownership: 7.5,
-  },
-  {
-    month: "Nov",
-    annotation: 7.5,
-    compliance: 13.75,
-    purpose: 10.5,
-    ownership: 9.5,
-  },
-  {
-    month: "Dec",
-    annotation: 9.5,
-    compliance: 15.5,
-    purpose: 13.75,
-    ownership: 11.25,
-  },
-  {
-    month: "Jan",
-    annotation: 10.5,
-    compliance: 17.5,
-    purpose: 17,
-    ownership: 13,
-  },
-  {
-    month: "Feb",
-    annotation: 12.5,
-    compliance: 20.5,
-    purpose: 19.5,
-    ownership: 14.5,
-  },
-  {
-    month: "Mar",
-    annotation: 14.5,
-    compliance: 23,
-    purpose: 21,
-    ownership: 16.5,
-  },
-];
-// Stacked totals: 34 → 41 → 50 → 58 → 67 → 75
+// Each pillar contributes score/3 so they stack to the overall score.
+// Historical months are hardcoded; the final month is derived from live data.
+type TrendPoint = {
+  month: string;
+  [PillarKey.COVERAGE]: number;
+  [PillarKey.CLASSIFICATION]: number;
+  [PillarKey.RISK]: number;
+};
 
-const PILLAR_SERIES = [
-  { key: "annotation", name: "Classification", color: palette.FIDESUI_TERRACOTTA },
-  { key: "compliance", name: "Compliance", color: palette.FIDESUI_SANDSTONE },
-  { key: "purpose", name: "Purpose", color: palette.FIDESUI_OLIVE },
-  { key: "ownership", name: "Ownership", color: palette.FIDESUI_MINOS },
+const TREND_HISTORY: TrendPoint[] = [
+  { month: "Oct", coverage: 12, classification: 10, risk: 12 },
+  { month: "Nov", coverage: 14, classification: 12, risk: 15 },
+  { month: "Dec", coverage: 17, classification: 15, risk: 18 },
+  { month: "Jan", coverage: 20, classification: 18, risk: 20 },
+  { month: "Feb", coverage: 23, classification: 21, risk: 23 },
+];
+
+function buildTrendData(data: GovernanceHealthData): TrendPoint[] {
+  const dimScore = (key: PillarKey) =>
+    Math.round((data.dimensions.find((d) => d.key === key)?.score ?? 0) / 3);
+  return [
+    ...TREND_HISTORY,
+    {
+      month: "Mar",
+      [PillarKey.COVERAGE]: dimScore(PillarKey.COVERAGE),
+      [PillarKey.CLASSIFICATION]: dimScore(PillarKey.CLASSIFICATION),
+      [PillarKey.RISK]: dimScore(PillarKey.RISK),
+    },
+  ];
+}
+
+const PILLAR_SERIES: { key: PillarKey; name: string; color: string }[] = [
+  {
+    key: PillarKey.COVERAGE,
+    name: PILLAR_CONFIG[PillarKey.COVERAGE].label,
+    color: PILLAR_CONFIG[PillarKey.COVERAGE].color,
+  },
+  {
+    key: PillarKey.CLASSIFICATION,
+    name: PILLAR_CONFIG[PillarKey.CLASSIFICATION].label,
+    color: PILLAR_CONFIG[PillarKey.CLASSIFICATION].color,
+  },
+  {
+    key: PillarKey.RISK,
+    name: PILLAR_CONFIG[PillarKey.RISK].label,
+    color: PILLAR_CONFIG[PillarKey.RISK].color,
+  },
 ];
 
 interface ActivityItem {
@@ -86,7 +82,7 @@ const ACTIVITY: ActivityItem[] = [
     steward: { initials: "MB" },
   },
   {
-    message: "3 new issues flagged in 'Salesforce'",
+    message: "3 new risks flagged in 'Salesforce'",
     time: "5h ago",
     color: palette.FIDESUI_WARNING,
     steward: { initials: "LT" },
@@ -113,150 +109,172 @@ const ACTIVITY: ActivityItem[] = [
 
 const GovernanceHealthDashboard = ({
   data,
-}: GovernanceHealthDashboardProps) => (
-  <div className="mb-2">
-    <Flex gap={32}>
-      {/* Panel 1: Donut + legend */}
-      <div className="shrink-0">
-        <GovernanceScoreCard data={data} />
-      </div>
+}: GovernanceHealthDashboardProps) => {
+  const trendData = buildTrendData(data);
 
-      {/* Panel 2: Health Over Time (stacked pillar contributions) */}
-      <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
-        <Flex justify="space-between" align="center" className="mb-6">
-          <Text strong className="text-[10px] uppercase tracking-wider">
-            Health Over Time
-          </Text>
-          <Flex gap={12}>
-            {PILLAR_SERIES.map((s) => (
-              <Flex key={s.key} align="center" gap={4}>
-                <div
-                  className="size-[5px] shrink-0 rounded-full"
-                  style={{ backgroundColor: s.color }}
+  return (
+    <div className="mb-2">
+      <Flex gap={32}>
+        {/* Panel 1: Donut + legend */}
+        <div className="shrink-0">
+          <GovernanceScoreCard data={data} />
+        </div>
+
+        {/* Panel 2: Health Over Time (stacked pillar contributions) */}
+        <div
+          className="min-w-0 flex-1 border-l border-solid pl-8"
+          style={{ borderColor: palette.FIDESUI_NEUTRAL_100 }}
+        >
+          <Flex justify="space-between" align="center" className="mb-6">
+            <Text strong className="text-[10px] uppercase tracking-wider">
+              Health over time
+            </Text>
+            <Flex gap={12}>
+              {PILLAR_SERIES.map((series) => (
+                <Flex key={series.key} align="center" gap={4}>
+                  <div
+                    className="size-[5px] shrink-0 rounded-full"
+                    style={{ backgroundColor: series.color }}
+                  />
+                  <Text
+                    className="text-[10px]"
+                    style={{ color: palette.FIDESUI_MINOS }}
+                  >
+                    {series.name}
+                  </Text>
+                </Flex>
+              ))}
+            </Flex>
+          </Flex>
+          <div className="h-[170px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={trendData}
+                margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
+              >
+                <defs>
+                  {PILLAR_SERIES.map((series) => (
+                    <linearGradient
+                      key={series.key}
+                      id={`dash-grad-${series.key}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={series.color}
+                        stopOpacity={0.7}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={series.color}
+                        stopOpacity={0.2}
+                      />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={palette.FIDESUI_NEUTRAL_100}
+                  vertical={false}
                 />
-                <Text
-                  className="text-[10px]"
-                  style={{ color: palette.FIDESUI_MINOS }}
-                >
-                  {s.name}
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: palette.FIDESUI_NEUTRAL_500 }}
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: palette.FIDESUI_NEUTRAL_500 }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 6,
+                    border: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
+                    fontSize: 11,
+                  }}
+                />
+                {PILLAR_SERIES.map((series) => (
+                  <Area
+                    key={series.key}
+                    type="monotone"
+                    dataKey={series.key}
+                    name={series.name}
+                    stroke={series.color}
+                    strokeWidth={1}
+                    fill={`url(#dash-grad-${series.key})`}
+                    stackId="health"
+                    dot={false}
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Panel 3: Recent activity */}
+        <div
+          className="min-w-0 flex-1 border-l border-solid pl-8"
+          style={{ borderColor: palette.FIDESUI_NEUTRAL_100 }}
+        >
+          <Text
+            strong
+            className="mb-3 block text-[10px] uppercase tracking-wider"
+          >
+            Recent activity
+          </Text>
+          <Flex vertical gap={0}>
+            {ACTIVITY.map((item) => (
+              <Flex
+                key={item.message}
+                justify="space-between"
+                align="center"
+                className="border-b border-solid py-1.5 last:border-b-0"
+                style={{ borderColor: palette.FIDESUI_NEUTRAL_75 }}
+              >
+                <Text className="min-w-0 flex-1 truncate text-[11px]">
+                  {item.message}
                 </Text>
+                <Flex align="center" className="shrink-0 pl-8">
+                  <div className="w-[32px]">
+                    <Avatar
+                      size={20}
+                      style={{
+                        backgroundColor: palette.FIDESUI_NEUTRAL_100,
+                        color: palette.FIDESUI_NEUTRAL_800,
+                        fontSize: 9,
+                      }}
+                    >
+                      {item.steward.initials}
+                    </Avatar>
+                  </div>
+                  <Text
+                    type="secondary"
+                    className="w-[48px] text-right text-xs"
+                  >
+                    {item.time}
+                  </Text>
+                  <Text
+                    className="w-[52px] cursor-pointer text-right text-xs"
+                    style={{ color: palette.FIDESUI_MINOS }}
+                  >
+                    View &rarr;
+                  </Text>
+                </Flex>
               </Flex>
             ))}
           </Flex>
-        </Flex>
-        <div className="h-[170px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={TREND_DATA}
-              margin={{ top: 4, right: 4, bottom: 0, left: -20 }}
-            >
-              <defs>
-                {PILLAR_SERIES.map((s) => (
-                  <linearGradient
-                    key={s.key}
-                    id={`dash-grad-${s.key}`}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="0%" stopColor={s.color} stopOpacity={0.7} />
-                    <stop offset="100%" stopColor={s.color} stopOpacity={0.2} />
-                  </linearGradient>
-                ))}
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#f0f0f0"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: "#93969a" }}
-              />
-              <YAxis
-                domain={[0, 100]}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: "#93969a" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 6,
-                  border: "1px solid #f0f0f0",
-                  fontSize: 11,
-                }}
-              />
-              {PILLAR_SERIES.map((s) => (
-                <Area
-                  key={s.key}
-                  type="monotone"
-                  dataKey={s.key}
-                  name={s.name}
-                  stroke={s.color}
-                  strokeWidth={1}
-                  fill={`url(#dash-grad-${s.key})`}
-                  stackId="health"
-                  dot={false}
-                />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
         </div>
-      </div>
+      </Flex>
 
-      {/* Panel 3: Recent activity */}
-      <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
-        <Text
-          strong
-          className="mb-3 block text-[10px] uppercase tracking-wider"
-        >
-          Recent Activity
-        </Text>
-        <Flex vertical gap={0}>
-          {ACTIVITY.map((item) => (
-            <Flex
-              key={item.message}
-              justify="space-between"
-              align="center"
-              className="border-b border-solid border-[#f5f5f5] py-1.5 last:border-b-0"
-            >
-              <Text className="min-w-0 flex-1 truncate text-[11px]">
-                {item.message}
-              </Text>
-              <Flex align="center" className="shrink-0 pl-8">
-                <div className="w-[32px]">
-                  <Avatar
-                    size={20}
-                    style={{
-                      backgroundColor: "#e6e6e8",
-                      color: "#53575c",
-                      fontSize: 9,
-                    }}
-                  >
-                    {item.steward.initials}
-                  </Avatar>
-                </div>
-                <Text type="secondary" className="w-[48px] text-right text-xs">
-                  {item.time}
-                </Text>
-                <Text
-                  className="w-[52px] cursor-pointer text-right text-xs"
-                  style={{ color: palette.FIDESUI_MINOS }}
-                >
-                  View &rarr;
-                </Text>
-              </Flex>
-            </Flex>
-          ))}
-        </Flex>
-      </div>
-    </Flex>
-
-    <Divider className="!mb-0 !mt-4" />
-  </div>
-);
+      <Divider className="!mb-0 !mt-4" />
+    </div>
+  );
+};
 
 export default GovernanceHealthDashboard;

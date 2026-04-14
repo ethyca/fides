@@ -1,0 +1,21 @@
+.accentError {
+  border-left: 3px solid var(--fidesui-error);
+}
+
+.accentWarning {
+  border-left: 3px solid var(--fidesui-warning);
+}
+
+.expandWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+
+.expandWrapperOpen {
+  grid-template-rows: 1fr;
+}
+
+.expandInner {
+  overflow: hidden;
+}

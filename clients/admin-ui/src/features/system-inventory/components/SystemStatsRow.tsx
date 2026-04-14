@@ -46,9 +46,9 @@ const SystemStatsRow = ({ stats }: SystemStatsRowProps) => (
     </Col>
     <Col span={6}>
       <StatCard
-        value={stats.issues}
-        label="Governance issues"
-        subtitle={`Across ${stats.issues} systems`}
+        value={stats.risks}
+        label="Governance risks"
+        subtitle={`Across ${stats.risks} systems`}
       />
     </Col>
     <Col span={6}>

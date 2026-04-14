@@ -137,7 +137,10 @@ const OverviewTab = ({ system }: OverviewTabProps) => {
         </Col>
         <Col span={12}>
           <Flex vertical gap="large">
-            <IntegrationsSummaryCard integrations={system.integrations} />
+            <IntegrationsSummaryCard
+              integrations={system.integrations}
+              systemFidesKey={system.fides_key}
+            />
             <MonitorsCard monitors={system.monitors} />
           </Flex>
         </Col>

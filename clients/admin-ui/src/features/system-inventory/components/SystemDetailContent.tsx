@@ -4,8 +4,10 @@ import {
   Button,
   Card,
   Col,
+  DateRangePicker,
   Divider,
   Flex,
+  Icons,
   Input,
   Modal,
   Row,
@@ -17,8 +19,12 @@ import {
   Title,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
+
+import LinkExistingIntegrationModal from "../detail/modals/LinkExistingIntegrationModal";
+import DataFlowSection from "../detail/sections/DataFlowSection";
 import AssetsTab from "../detail/tabs/AssetsTab";
 import DatasetsTab from "../detail/tabs/DatasetsTab";
 import type { MockSystem } from "../types";
@@ -736,19 +742,19 @@ const ClassificationSection = ({ system }: { system: MockSystem }) => {
                 <div
                   style={{
                     width: `${(approved / total) * 100}%`,
-                    backgroundColor: "#5a9a68",
+                    backgroundColor: palette.FIDESUI_SUCCESS,
                   }}
                 />
                 <div
                   style={{
                     width: `${(pending / total) * 100}%`,
-                    backgroundColor: "#4a90e2",
+                    backgroundColor: palette.FIDESUI_WARNING,
                   }}
                 />
                 <div
                   style={{
                     width: `${(unreviewed / total) * 100}%`,
-                    backgroundColor: "#e6e6e8",
+                    backgroundColor: palette.FIDESUI_NEUTRAL_100,
                   }}
                 />
               </Flex>
@@ -756,21 +762,21 @@ const ClassificationSection = ({ system }: { system: MockSystem }) => {
                 <Flex align="center" gap={4}>
                   <div
                     className="size-[6px] rounded-full"
-                    style={{ backgroundColor: "#5a9a68" }}
+                    style={{ backgroundColor: palette.FIDESUI_SUCCESS }}
                   />
                   <Text className="text-[10px]">{approved} approved</Text>
                 </Flex>
                 <Flex align="center" gap={4}>
                   <div
                     className="size-[6px] rounded-full"
-                    style={{ backgroundColor: "#4a90e2" }}
+                    style={{ backgroundColor: palette.FIDESUI_WARNING }}
                   />
                   <Text className="text-[10px]">{pending} classified</Text>
                 </Flex>
                 <Flex align="center" gap={4}>
                   <div
                     className="size-[6px] rounded-full"
-                    style={{ backgroundColor: "#e6e6e8" }}
+                    style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
                   />
                   <Text className="text-[10px]">{unreviewed} unlabeled</Text>
                 </Flex>
@@ -793,15 +799,12 @@ const ClassificationSection = ({ system }: { system: MockSystem }) => {
                 <Flex key={mon.name} justify="space-between" align="center">
                   <Text className="text-xs">{mon.name}</Text>
                   <Flex align="center" gap={6}>
-                    <Text type="secondary" className="text-[10px]">
-                      {mon.resourceCount}
-                    </Text>
                     <Tag
                       color={getMonitorStatusColor(mon.status)}
                       bordered={false}
                       className="!text-[9px]"
                     >
-                      {mon.status}
+                      {mon.status === "processing" ? "In review" : mon.status}
                     </Tag>
                   </Flex>
                 </Flex>
@@ -846,167 +849,6 @@ const ClassificationSection = ({ system }: { system: MockSystem }) => {
         </Col>
       </Row>
     </Card>
-  );
-};
-
-// --- Integrations (with Scopes header + button actions) ---
-
-// --- Integration picker modal ---
-
-const AVAILABLE_INTEGRATIONS = [
-  {
-    name: "Snowflake Connector",
-    type: "Snowflake",
-    capabilities: ["access", "erasure"],
-  },
-  {
-    name: "PostgreSQL",
-    type: "PostgreSQL",
-    capabilities: ["access", "erasure"],
-  },
-  { name: "MongoDB", type: "MongoDB", capabilities: ["access", "erasure"] },
-  { name: "S3 Bucket", type: "AWS S3", capabilities: ["access"] },
-  { name: "Redshift", type: "Redshift", capabilities: ["access", "erasure"] },
-  { name: "MySQL", type: "MySQL", capabilities: ["access", "erasure"] },
-  { name: "DynamoDB", type: "DynamoDB", capabilities: ["access"] },
-  { name: "Stripe API", type: "Stripe", capabilities: ["access", "erasure"] },
-  {
-    name: "Salesforce API",
-    type: "Salesforce",
-    capabilities: ["access", "erasure"],
-  },
-  { name: "HubSpot API", type: "HubSpot", capabilities: ["access"] },
-];
-
-const IntegrationPickerModal = ({
-  open,
-  onClose,
-  existing,
-}: {
-  open: boolean;
-  onClose: () => void;
-  existing: string[];
-}) => {
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const filtered = AVAILABLE_INTEGRATIONS.filter((intg) => {
-    if (existing.includes(intg.name)) {
-      return false;
-    }
-    if (
-      search &&
-      !intg.name.toLowerCase().includes(search.toLowerCase()) &&
-      !intg.type.toLowerCase().includes(search.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
-  });
-
-  return (
-    <Modal
-      title="Add integration"
-      open={open}
-      onCancel={() => {
-        setSelected([]);
-        setSearch("");
-        onClose();
-      }}
-      onOk={() => {
-        setSelected([]);
-        setSearch("");
-        onClose();
-      }}
-      okText={`Add ${selected.length || ""} integration${selected.length !== 1 ? "s" : ""}`}
-      okButtonProps={{ disabled: selected.length === 0 }}
-      width={560}
-    >
-      <Flex vertical gap={12} className="mt-3">
-        <Input
-          placeholder="Search integrations..."
-          value={search}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSearch(e.target.value)
-          }
-          allowClear
-          size="small"
-        />
-        <div className="max-h-[350px] overflow-y-auto">
-          <Flex
-            className="border-b border-solid border-[#f0f0f0] px-3 py-1.5"
-            style={{ backgroundColor: palette.FIDESUI_NEUTRAL_75 }}
-          >
-            <Text
-              strong
-              className="w-[35%] text-[10px] uppercase tracking-wider"
-            >
-              Name
-            </Text>
-            <Text strong className="w-1/4 text-[10px] uppercase tracking-wider">
-              Type
-            </Text>
-            <Text strong className="w-2/5 text-[10px] uppercase tracking-wider">
-              Capabilities
-            </Text>
-          </Flex>
-          {filtered.map((intg) => {
-            const isSelected = selected.includes(intg.name);
-            return (
-              <Flex
-                key={intg.name}
-                align="center"
-                className="cursor-pointer border-b border-solid border-[#f5f5f5] px-3 py-2 hover:bg-[#fafafa]"
-                onClick={() =>
-                  setSelected(
-                    isSelected
-                      ? selected.filter((n) => n !== intg.name)
-                      : [...selected, intg.name],
-                  )
-                }
-              >
-                <Text strong={isSelected} className="w-[35%] text-xs">
-                  {intg.name}
-                </Text>
-                <Text type="secondary" className="w-1/4 text-xs">
-                  {intg.type}
-                </Text>
-                <Flex className="w-2/5" justify="space-between" align="center">
-                  <Flex gap={4}>
-                    {intg.capabilities.map((c) => (
-                      <Tag
-                        key={c}
-                        bordered={false}
-                        color="olive"
-                        className="!text-[9px]"
-                      >
-                        {c}
-                      </Tag>
-                    ))}
-                  </Flex>
-                  {isSelected && (
-                    <Tag
-                      color="success"
-                      bordered={false}
-                      className="!text-[10px]"
-                    >
-                      Selected
-                    </Tag>
-                  )}
-                </Flex>
-              </Flex>
-            );
-          })}
-          {filtered.length === 0 && (
-            <Flex justify="center" className="py-6">
-              <Text type="secondary" className="text-xs">
-                No integrations available
-              </Text>
-            </Flex>
-          )}
-        </div>
-      </Flex>
-    </Modal>
   );
 };
 
@@ -1137,7 +979,8 @@ const IntegrationEditModal = ({
 // --- Integrations section ---
 
 const IntegrationsSection = ({ system }: { system: MockSystem }) => {
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [linkOpen, setLinkOpen] = useState(false);
   const [editIntg, setEditIntg] = useState<
     MockSystem["integrations"][0] | null
   >(null);
@@ -1153,9 +996,18 @@ const IntegrationsSection = ({ system }: { system: MockSystem }) => {
           schema changes, scanning for sensitive data, and enforcing consent
           preferences.
         </Text>
-        <Button type="primary" size="small" onClick={() => setPickerOpen(true)}>
-          + Add integration
-        </Button>
+        <Flex gap="small">
+          <Button size="small" onClick={() => setLinkOpen(true)}>
+            Link existing
+          </Button>
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => setCreateOpen(true)}
+          >
+            + Create integration
+          </Button>
+        </Flex>
       </Flex>
       {system.integrations.length > 0 ? (
         <Flex vertical gap={0}>
@@ -1257,10 +1109,14 @@ const IntegrationsSection = ({ system }: { system: MockSystem }) => {
           No integrations configured
         </Text>
       )}
-      <IntegrationPickerModal
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        existing={system.integrations.map((i) => i.name)}
+      <AddIntegrationModal
+        isOpen={createOpen}
+        onClose={() => setCreateOpen(false)}
+      />
+      <LinkExistingIntegrationModal
+        open={linkOpen}
+        onClose={() => setLinkOpen(false)}
+        systemFidesKey={system.fides_key}
       />
       <IntegrationEditModal
         open={!!editIntg}
@@ -1307,14 +1163,22 @@ const HistoryChangeCell = ({
   oldValue?: string;
   newValue?: string;
 }) => {
-  if (oldValue) {
+  if (oldValue && newValue) {
     return (
       <Text className="text-[10px]">
-        <Text type="secondary" className="text-[10px]" delete>
+        <Text
+          className="text-[10px]"
+          delete
+          style={{ color: palette.FIDESUI_ERROR_TEXT }}
+        >
           {oldValue}
         </Text>
         {" → "}
-        <Text strong className="text-[10px]">
+        <Text
+          strong
+          className="text-[10px]"
+          style={{ color: palette.FIDESUI_SUCCESS_TEXT }}
+        >
           {newValue}
         </Text>
       </Text>
@@ -1322,7 +1186,11 @@ const HistoryChangeCell = ({
   }
   if (newValue) {
     return (
-      <Text strong className="text-[10px]">
+      <Text
+        strong
+        className="text-[10px]"
+        style={{ color: palette.FIDESUI_SUCCESS_TEXT }}
+      >
         {newValue}
       </Text>
     );
@@ -1334,49 +1202,186 @@ const HistoryChangeCell = ({
   );
 };
 
+type SortKey = "timestamp" | "category" | "action" | "user";
+type SortDir = "asc" | "desc" | null;
+
+function exportCsv(entries: MockSystem["history"], systemName: string): void {
+  const header = [
+    "Date",
+    "Category",
+    "Action",
+    "User",
+    "Detail",
+    "Field",
+    "Old Value",
+    "New Value",
+    "Reason",
+  ];
+  const escape = (val: string) =>
+    val.includes(",") || val.includes('"')
+      ? `"${val.replace(/"/g, '""')}"`
+      : val;
+  const rows = entries.map((e) =>
+    [
+      new Date(e.timestamp).toISOString(),
+      e.category,
+      e.action,
+      e.user,
+      e.detail,
+      e.fieldName ?? "",
+      e.oldValue ?? "",
+      e.newValue ?? "",
+      e.reason ?? "",
+    ]
+      .map(escape)
+      .join(","),
+  );
+  const csv = [header.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `${systemName.replace(/\s+/g, "_")}_audit_log_${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const HistoryContent = ({ system }: { system: MockSystem }) => {
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [userFilter, setUserFilter] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const [dateRange, setDateRange] = useState<[string | null, string | null]>([
+    null,
+    null,
+  ]);
+  const [sortKey, setSortKey] = useState<SortKey>("timestamp");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const categories = [...new Set(system.history.map((e) => e.category))].sort();
   const users = [...new Set(system.history.map((e) => e.user))].sort();
 
-  const filtered = system.history.filter((entry) => {
-    if (categoryFilter.length > 0 && !categoryFilter.includes(entry.category)) {
-      return false;
+  const toggleSort = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir("desc");
+    } else if (sortDir === "desc") {
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir(null);
+    } else {
+      setSortDir("desc");
     }
-    if (userFilter.length > 0 && !userFilter.includes(entry.user)) {
-      return false;
-    }
-    if (search) {
-      const q = search.toLowerCase();
+  };
+
+  const filtered = useMemo(() => {
+    let result = system.history.filter((entry) => {
       if (
-        !entry.action.toLowerCase().includes(q) &&
-        !entry.detail.toLowerCase().includes(q) &&
-        !entry.fieldName?.toLowerCase().includes(q)
+        categoryFilter.length > 0 &&
+        !categoryFilter.includes(entry.category)
       ) {
         return false;
       }
+      if (userFilter.length > 0 && !userFilter.includes(entry.user)) {
+        return false;
+      }
+      if (search) {
+        const q = search.toLowerCase();
+        if (
+          !entry.action.toLowerCase().includes(q) &&
+          !entry.detail.toLowerCase().includes(q) &&
+          !entry.fieldName?.toLowerCase().includes(q)
+        ) {
+          return false;
+        }
+      }
+      if (dateRange[0]) {
+        const entryDate = new Date(entry.timestamp).getTime();
+        const start = new Date(dateRange[0]).getTime();
+        if (entryDate < start) {
+          return false;
+        }
+      }
+      if (dateRange[1]) {
+        const entryDate = new Date(entry.timestamp).getTime();
+        const end = new Date(dateRange[1]).getTime() + 86400000;
+        if (entryDate > end) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    if (sortDir && sortKey) {
+      result = [...result].sort((a, b) => {
+        const aVal = a[sortKey];
+        const bVal = b[sortKey];
+        const cmp = aVal.localeCompare(bVal);
+        return sortDir === "asc" ? cmp : -cmp;
+      });
     }
-    return true;
-  });
+
+    return result;
+  }, [
+    system.history,
+    categoryFilter,
+    userFilter,
+    search,
+    dateRange,
+    sortKey,
+    sortDir,
+  ]);
+
+  const uniqueUsers = new Set(filtered.map((e) => e.user)).size;
+  const uniqueCategories = new Set(filtered.map((e) => e.category)).size;
+
+  const renderSortIcon = (col: SortKey) => {
+    if (sortKey !== col || !sortDir) {
+      return null;
+    }
+    return sortDir === "asc" ? (
+      <Icons.SortAscending size={10} />
+    ) : (
+      <Icons.SortDescending size={10} />
+    );
+  };
+
+  const sortableHeader = (label: string, col: SortKey, width: string) => (
+    <Flex
+      align="center"
+      gap={2}
+      className={`${width} cursor-pointer select-none`}
+      onClick={() => toggleSort(col)}
+    >
+      <Text strong className="text-[10px] uppercase tracking-wider">
+        {label}
+      </Text>
+      {renderSortIcon(col)}
+    </Flex>
+  );
 
   return (
     <Flex vertical gap={12}>
-      {/* Search + Filters */}
-      <Flex justify="space-between" align="center">
-        <Input
-          placeholder="Search history..."
-          value={search}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSearch(e.target.value)
-          }
-          allowClear
-          size="small"
-          style={{ width: 260 }}
-        />
-        <Flex gap={12} align="center">
+      {/* Filters */}
+      <Flex justify="space-between" align="center" wrap gap={8}>
+        <Flex gap={8} align="center">
+          <Input
+            placeholder="Search history..."
+            value={search}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearch(e.target.value)
+            }
+            allowClear
+            size="small"
+            style={{ width: 220 }}
+          />
+          <DateRangePicker
+            size="small"
+            onChange={(_dates, dateStrings) =>
+              setDateRange([dateStrings[0] || null, dateStrings[1] || null])
+            }
+            style={{ width: 240 }}
+          />
           <Select
             aria-label="Filter by category"
             mode="multiple"
@@ -1384,8 +1389,9 @@ const HistoryContent = ({ system }: { system: MockSystem }) => {
             value={categoryFilter}
             onChange={setCategoryFilter}
             allowClear
-            className="w-[180px]"
+            style={{ width: 180 }}
             size="small"
+            maxTagCount="responsive"
             options={categories.map((c) => ({
               label: c.charAt(0).toUpperCase() + c.slice(1),
               value: c,
@@ -1398,35 +1404,47 @@ const HistoryContent = ({ system }: { system: MockSystem }) => {
             value={userFilter}
             onChange={setUserFilter}
             allowClear
-            className="w-[180px]"
+            style={{ width: 180 }}
             size="small"
+            maxTagCount="responsive"
             options={users.map((u) => ({ label: u, value: u }))}
           />
-          <Text type="secondary" className="text-xs">
-            {filtered.length} entries
-          </Text>
         </Flex>
+        <Button
+          size="small"
+          icon={<Icons.Download size={14} />}
+          onClick={() => exportCsv(filtered, system.name)}
+        >
+          Export CSV
+        </Button>
+      </Flex>
+
+      {/* Stats bar */}
+      <Flex gap={16} align="center">
+        <Text type="secondary" className="text-[10px]">
+          {filtered.length} events
+        </Text>
+        <Text type="secondary" className="text-[10px]">
+          {uniqueUsers} users
+        </Text>
+        <Text type="secondary" className="text-[10px]">
+          {uniqueCategories} categories
+        </Text>
       </Flex>
 
       {/* Table */}
       <div className="max-h-[700px] overflow-y-auto">
-        {/* Header */}
         <Flex
-          className="sticky top-0 z-10 border-b border-solid border-[#f0f0f0] px-3 py-2"
-          style={{ backgroundColor: palette.FIDESUI_CORINTH }}
+          className="sticky top-0 z-10 border-b border-solid px-3 py-2"
+          style={{
+            backgroundColor: palette.FIDESUI_CORINTH,
+            borderColor: palette.FIDESUI_NEUTRAL_100,
+          }}
         >
-          <Text strong className="w-[12%] text-[10px] uppercase tracking-wider">
-            Date
-          </Text>
-          <Text strong className="w-[10%] text-[10px] uppercase tracking-wider">
-            Category
-          </Text>
-          <Text strong className="w-[14%] text-[10px] uppercase tracking-wider">
-            Action
-          </Text>
-          <Text strong className="w-[10%] text-[10px] uppercase tracking-wider">
-            User
-          </Text>
+          {sortableHeader("Date", "timestamp", "w-[12%]")}
+          {sortableHeader("Category", "category", "w-[10%]")}
+          {sortableHeader("Action", "action", "w-[14%]")}
+          {sortableHeader("User", "user", "w-[10%]")}
           <Text strong className="w-[12%] text-[10px] uppercase tracking-wider">
             Field
           </Text>
@@ -1438,12 +1456,12 @@ const HistoryContent = ({ system }: { system: MockSystem }) => {
           </Text>
         </Flex>
 
-        {/* Rows */}
         {filtered.map((entry) => (
           <Flex
             key={`${entry.timestamp}-${entry.action}-${entry.category}`}
             align="center"
-            className="border-b border-solid border-[#f5f5f5] px-3 py-2"
+            className="border-b border-solid px-3 py-2"
+            style={{ borderColor: palette.FIDESUI_NEUTRAL_75 }}
           >
             <Text type="secondary" className="w-[12%] text-[10px]">
               {new Date(entry.timestamp).toLocaleString(undefined, {
@@ -1467,8 +1485,8 @@ const HistoryContent = ({ system }: { system: MockSystem }) => {
               <Avatar
                 size={18}
                 style={{
-                  backgroundColor: "#e6e6e8",
-                  color: "#53575c",
+                  backgroundColor: palette.FIDESUI_NEUTRAL_100,
+                  color: palette.FIDESUI_NEUTRAL_800,
                   fontSize: 8,
                 }}
               >
@@ -1694,6 +1712,7 @@ const SystemDetailContent = ({ system }: SystemDetailContentProps) => {
         </Row>
       </div>
       <IntegrationsSection system={system} />
+      <DataFlowSection system={system} />
       <div>
         <SectionHeader title="Classification" />
         <Text type="secondary" className="mb-4 block text-xs">

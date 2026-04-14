@@ -21,7 +21,6 @@ const SystemDetailPage: NextPage = () => {
   return (
     <FixedLayout title={system.name}>
       <PageHeader
-        heading="Systems"
         breadcrumbItems={[
           { title: "All systems", href: "/system-inventory" },
           { title: system.name },

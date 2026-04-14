@@ -5,41 +5,38 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 import { useCountUp } from "~/home/useCountUp";
 
+import { PILLAR_CONFIG } from "../constants";
 import type { GovernanceHealthData } from "../types";
-
-const DIMENSION_COLORS = [
-  palette.FIDESUI_TERRACOTTA,
-  palette.FIDESUI_SANDSTONE,
-  palette.FIDESUI_OLIVE,
-  palette.FIDESUI_MINOS,
-];
 
 interface GovernanceScoreCardProps {
   data: GovernanceHealthData;
 }
 
 const ScorePopoverContent = ({ data }: { data: GovernanceHealthData }) => (
-  <Flex vertical gap={8} className="max-w-[260px]">
+  <Flex vertical gap={8} className="max-w-[280px]">
     <Text strong className="text-xs">
       How is this score calculated?
     </Text>
     <Text type="secondary" className="text-xs">
-      The inventory health score is the average of four governance pillars, each
-      measured as a percentage across all registered systems:
+      The inventory health score is the average of three governance pillars,
+      each measured 0–100 across all registered systems:
     </Text>
-    {data.dimensions.map((dim, i) => (
-      <Flex key={dim.label} justify="space-between" align="center">
-        <Flex align="center" gap={6}>
-          <div
-            className="size-2 shrink-0 rounded-full"
-            style={{
-              backgroundColor: DIMENSION_COLORS[i % DIMENSION_COLORS.length],
-            }}
-          />
-          <Text className="text-xs">{dim.label}</Text>
+    {data.dimensions.map((dim) => (
+      <Flex key={dim.key} vertical gap={2}>
+        <Flex justify="space-between" align="center">
+          <Flex align="center" gap={6}>
+            <div
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: dim.color }}
+            />
+            <Text className="text-xs">{dim.label}</Text>
+          </Flex>
+          <Text strong className="text-xs">
+            {dim.score}%
+          </Text>
         </Flex>
-        <Text strong className="text-xs">
-          {dim.score}%
+        <Text type="secondary" className="pl-4 text-[10px]">
+          {PILLAR_CONFIG[dim.key].description}
         </Text>
       </Flex>
     ))}
@@ -55,18 +52,18 @@ const GovernanceScoreCard = ({ data }: GovernanceScoreCardProps) => {
   const totalSystems =
     data.healthBreakdown.healthy + data.healthBreakdown.issues;
 
-  // Each pillar gets exactly 25% of the donut (value=100 per pillar).
-  // Within each 25%, the colored fill represents the score, the rest is gray.
-  const pieData = data.dimensions.flatMap((dim, i) => [
+  // Each pillar gets an equal slice of the donut. Within its slice, the
+  // colored fill represents the score (0–100) and the rest is neutral.
+  const pieData = data.dimensions.flatMap((dim) => [
     {
       name: dim.label,
       value: dim.score,
-      color: DIMENSION_COLORS[i % DIMENSION_COLORS.length],
+      color: dim.color,
     },
     {
       name: `${dim.label}-bg`,
       value: 100 - dim.score,
-      color: "#f0f0f0",
+      color: palette.FIDESUI_NEUTRAL_100,
     },
   ]);
 
@@ -75,17 +72,21 @@ const GovernanceScoreCard = ({ data }: GovernanceScoreCardProps) => {
       {/* Header row */}
       <Flex align="center" gap={4}>
         <Text strong className="text-[10px] uppercase tracking-wider">
-          Inventory Health
+          Inventory health
         </Text>
         <Popover
           content={<ScorePopoverContent data={data} />}
           trigger="hover"
           placement="bottomLeft"
         >
-          <Information size={12} className="cursor-help text-[#93969a]" />
+          <Information
+            size={12}
+            className="cursor-help"
+            style={{ color: palette.FIDESUI_NEUTRAL_500 }}
+          />
         </Popover>
         <Text type="secondary" className="ml-auto text-[10px]">
-          {totalSystems} systems &middot; {data.totalIssues} issues
+          {totalSystems} systems &middot; {data.totalRiskScore} risks
         </Text>
       </Flex>
 
@@ -130,14 +131,11 @@ const GovernanceScoreCard = ({ data }: GovernanceScoreCardProps) => {
         </div>
 
         <Flex vertical gap={6}>
-          {data.dimensions.map((dim, i) => (
-            <Flex key={dim.label} align="center" gap={8}>
+          {data.dimensions.map((dim) => (
+            <Flex key={dim.key} align="center" gap={8}>
               <div
                 className="size-2 shrink-0 rounded-full"
-                style={{
-                  backgroundColor:
-                    DIMENSION_COLORS[i % DIMENSION_COLORS.length],
-                }}
+                style={{ backgroundColor: dim.color }}
               />
               <Text
                 className="text-xs"

@@ -8,9 +8,9 @@ interface SystemDetailAlertsProps {
 
 const SystemDetailAlerts = ({ system }: SystemDetailAlertsProps) => {
   const violations = system.relationships.filter((r) => r.hasViolation);
-  const { issues } = system;
+  const { risks } = system;
 
-  if (violations.length === 0 && issues.length === 0) {
+  if (violations.length === 0 && risks.length === 0) {
     return null;
   }
 
@@ -35,18 +35,18 @@ const SystemDetailAlerts = ({ system }: SystemDetailAlertsProps) => {
           }
         />
       )}
-      {issues.length > 0 && (
+      {risks.length > 0 && (
         <Alert
           type="warning"
           showIcon
           message={
             <Flex gap="small" align="center" wrap>
               <span>
-                {issues.length} governance issue{issues.length > 1 ? "s" : ""}
+                {risks.length} open risk{risks.length > 1 ? "s" : ""}
               </span>
-              {issues.map((issue) => (
-                <Tag key={issue.title} color="warning" bordered={false}>
-                  {issue.title}
+              {risks.map((risk) => (
+                <Tag key={risk.id} color="warning" bordered={false}>
+                  {risk.title}
                 </Tag>
               ))}
             </Flex>

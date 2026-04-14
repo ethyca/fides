@@ -1,7 +1,12 @@
 import { Flex, Input, Select } from "fidesui";
+import { ReactNode } from "react";
 
-import { HEALTH_FILTER_OPTIONS } from "../constants";
-import { HealthStatus } from "../types";
+import {
+  FRESHNESS_FILTER_OPTIONS,
+  HEALTH_FILTER_OPTIONS,
+  SEVERITY_FILTER_OPTIONS,
+} from "../constants";
+import { HealthStatus, RiskFreshness, RiskSeverity } from "../types";
 
 interface SystemInventoryFiltersProps {
   search: string;
@@ -12,11 +17,13 @@ interface SystemInventoryFiltersProps {
   onTypeFilterChange: (value: string | null) => void;
   groupFilter: string | null;
   onGroupFilterChange: (value: string | null) => void;
-  purposeFilter: string | null;
-  onPurposeFilterChange: (value: string | null) => void;
+  severityFilter: RiskSeverity[];
+  onSeverityFilterChange: (value: RiskSeverity[]) => void;
+  freshnessFilter: RiskFreshness | null;
+  onFreshnessFilterChange: (value: RiskFreshness | null) => void;
   typeOptions: { label: string; value: string }[];
   groupOptions: { label: string; value: string }[];
-  purposeOptions: { label: string; value: string }[];
+  expandToggle?: ReactNode;
 }
 
 const SystemInventoryFilters = ({
@@ -28,13 +35,15 @@ const SystemInventoryFilters = ({
   onTypeFilterChange,
   groupFilter,
   onGroupFilterChange,
-  purposeFilter,
-  onPurposeFilterChange,
+  severityFilter,
+  onSeverityFilterChange,
+  freshnessFilter,
+  onFreshnessFilterChange,
   typeOptions,
   groupOptions,
-  purposeOptions,
+  expandToggle,
 }: SystemInventoryFiltersProps) => (
-  <Flex gap="small" align="center" className="mb-4">
+  <Flex gap="small" align="center" wrap className="mb-4">
     <Input
       placeholder="Search systems..."
       value={search}
@@ -55,6 +64,26 @@ const SystemInventoryFilters = ({
       style={{ width: 160 }}
     />
     <Select
+      aria-label="Filter by risk severity"
+      placeholder="Any severity"
+      mode="multiple"
+      options={SEVERITY_FILTER_OPTIONS}
+      value={severityFilter}
+      onChange={onSeverityFilterChange}
+      allowClear
+      maxTagCount="responsive"
+      style={{ width: 200 }}
+    />
+    <Select
+      aria-label="Filter by risk freshness"
+      placeholder="Any freshness"
+      options={FRESHNESS_FILTER_OPTIONS}
+      value={freshnessFilter}
+      onChange={onFreshnessFilterChange}
+      allowClear
+      style={{ width: 200 }}
+    />
+    <Select
       aria-label="Filter by system type"
       placeholder="All types"
       options={typeOptions}
@@ -72,15 +101,7 @@ const SystemInventoryFilters = ({
       allowClear
       style={{ width: 180 }}
     />
-    <Select
-      aria-label="Filter by purpose"
-      placeholder="All purposes"
-      options={purposeOptions}
-      value={purposeFilter}
-      onChange={onPurposeFilterChange}
-      allowClear
-      style={{ width: 180 }}
-    />
+    {expandToggle}
   </Flex>
 );
 

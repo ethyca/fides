@@ -1,3 +1,4 @@
+import type { CarbonIconType } from "@carbon/icons-react";
 import {
   Activity,
   DataBase,
@@ -5,7 +6,6 @@ import {
   Policy,
   SettingsCheck,
 } from "@carbon/icons-react";
-import type { CarbonIconType } from "@carbon/icons-react";
 import { Flex, Statistic, Tag, Text, Title } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
@@ -19,13 +19,6 @@ import { computeSystemDimensions, getSystemCapabilities } from "../utils";
 interface SystemDetailDashboardV2Props {
   system: MockSystem;
 }
-
-const DIMENSION_COLORS = [
-  palette.FIDESUI_TERRACOTTA,
-  palette.FIDESUI_OLIVE,
-  palette.FIDESUI_SANDSTONE,
-  palette.FIDESUI_MINOS,
-];
 
 const CAPABILITY_ICONS: Record<SystemCapability, CarbonIconType> = {
   [SystemCapability.DSAR]: Locked,
@@ -51,19 +44,19 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
   const animatedScore = useCountUp(score);
   const capabilities = getSystemCapabilities(system);
 
-  const pieData = dimensions.flatMap((dim, i) => {
+  const pieData = dimensions.flatMap((dim) => {
     const segments = [
       {
         name: dim.label,
         value: dim.score,
-        color: DIMENSION_COLORS[i % DIMENSION_COLORS.length],
+        color: dim.color,
       },
     ];
     if (dim.score < 100) {
       segments.push({
         name: `${dim.label}-bg`,
         value: 100 - dim.score,
-        color: "#e6e6e8",
+        color: palette.FIDESUI_NEUTRAL_100,
       });
     }
     return segments;
@@ -88,7 +81,7 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
             type="secondary"
             className="mb-2 block text-[10px] uppercase tracking-wider"
           >
-            System Health
+            System health
           </Text>
           <Flex align="center" gap={8}>
             <div className="relative size-[72px] shrink-0">
@@ -123,18 +116,16 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-              {dimensions.map((dim, i) => (
-                <Flex key={dim.label} align="center" gap={4}>
+            <div className="grid grid-cols-1 gap-x-3 gap-y-1">
+              {dimensions.map((dim) => (
+                <Flex key={dim.key} align="center" gap={4}>
                   <div
                     className="size-[5px] shrink-0 rounded-full"
-                    style={{
-                      backgroundColor:
-                        DIMENSION_COLORS[i % DIMENSION_COLORS.length],
-                    }}
+                    style={{ backgroundColor: dim.color }}
                   />
                   <Text className="whitespace-nowrap text-[10px]">
-                    {dim.label} {dim.score}%
+                    {dim.label} {dim.numerator.toLocaleString()}/
+                    {dim.denominator.toLocaleString()}
                   </Text>
                 </Flex>
               ))}
@@ -143,7 +134,10 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
         </div>
 
         {/* Capabilities */}
-        <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
+        <div
+          className="min-w-0 flex-1 border-l border-solid pl-8"
+          style={{ borderColor: palette.FIDESUI_NEUTRAL_100 }}
+        >
           <Text
             type="secondary"
             className="mb-2 block text-[10px] uppercase tracking-wider"
@@ -159,7 +153,7 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
                     key={cap}
                     bordered={false}
                     style={{
-                      backgroundColor: palette.FIDESUI_NEUTRAL_100,
+                      backgroundColor: palette.FIDESUI_BG_DEFAULT,
                     }}
                   >
                     <Flex align="center" gap={4}>
@@ -181,12 +175,15 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
         </div>
 
         {/* Privacy Requests */}
-        <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
+        <div
+          className="min-w-0 flex-1 border-l border-solid pl-8"
+          style={{ borderColor: palette.FIDESUI_NEUTRAL_100 }}
+        >
           <Text
             type="secondary"
             className="text-[10px] uppercase tracking-wider"
           >
-            Privacy Requests
+            Privacy requests
           </Text>
           <Title level={3} className="!mb-0 !mt-1">
             {system.privacyRequests.open}{" "}
@@ -201,7 +198,10 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
         </div>
 
         {/* Datasets */}
-        <div className="min-w-0 flex-1 border-l border-solid border-[#f0f0f0] pl-8">
+        <div
+          className="min-w-0 flex-1 border-l border-solid pl-8"
+          style={{ borderColor: palette.FIDESUI_NEUTRAL_100 }}
+        >
           <Text
             type="secondary"
             className="text-[10px] uppercase tracking-wider"
@@ -212,8 +212,8 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
             {totalDatasets}
           </Title>
           <Text type="secondary" className="text-[10px]">
-            {totalFieldCount.toLocaleString()} fields across{" "}
-            {totalCollections} collections
+            {totalFieldCount.toLocaleString()} fields across {totalCollections}{" "}
+            collections
           </Text>
         </div>
       </Flex>

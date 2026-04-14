@@ -1,30 +1,43 @@
-import { Avatar, Card, Divider, Flex, Progress, Tag, Text } from "fidesui";
+import classNames from "classnames";
+import { Avatar, Card, Divider, Flex, Progress, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 
 import { getBrandIconUrl } from "~/features/common/utils";
 
-import type { MockSystem } from "../types";
+import { SEVERITY_COLORS, SEVERITY_LABELS } from "../constants";
+import type { MockSystem, SystemRisk } from "../types";
+import { formatFreshness } from "../utils";
 import HealthBadge from "./HealthBadge";
+import styles from "./SystemCard.module.scss";
 
 interface SystemCardProps {
   system: MockSystem;
+  accentBorder?: boolean;
+  expanded?: boolean;
 }
 
-const getAnnotationColor = (pct: number): string => {
-  if (pct >= 75) {
-    return palette.FIDESUI_SUCCESS;
-  }
-  if (pct >= 40) {
-    return palette.FIDESUI_WARNING;
-  }
-  return palette.FIDESUI_ERROR;
-};
+const ANNOTATION_COLOR = palette.FIDESUI_NEUTRAL_500;
 
-const SystemCard = ({ system }: SystemCardProps) => {
+const RiskRow = ({ risk }: { risk: SystemRisk }) => (
+  <Flex align="center" gap={6} className="min-w-0">
+    <div
+      aria-label={`Severity ${SEVERITY_LABELS[risk.severity]}`}
+      className="size-2 shrink-0 rounded-full"
+      style={{ backgroundColor: SEVERITY_COLORS[risk.severity] }}
+    />
+    <Text className="min-w-0 flex-1 truncate text-xs">{risk.title}</Text>
+    <Text type="secondary" className="shrink-0 text-[10px]">
+      {formatFreshness(risk.detectedAt)}
+    </Text>
+  </Flex>
+);
+
+const SystemCard = ({ system, accentBorder, expanded }: SystemCardProps) => {
   const router = useRouter();
+  const totalRisks = system.risk_count;
+  const hasRisks = totalRisks > 0;
 
-  const totalIssues = system.issue_count;
   return (
     <Card
       size="small"
@@ -33,13 +46,20 @@ const SystemCard = ({ system }: SystemCardProps) => {
         height: "100%",
         backgroundColor: palette.FIDESUI_CORINTH,
       }}
-      className="transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+      className={classNames(
+        "transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]",
+        {
+          [styles.accentError]: accentBorder && totalRisks >= 3,
+          [styles.accentWarning]:
+            accentBorder && totalRisks > 0 && totalRisks < 3,
+        },
+      )}
       onClick={() => router.push(`/system-inventory/${system.fides_key}`)}
     >
-      <Flex vertical gap={8} className="h-full">
-        {/* Header: name + role icons + health */}
+      <Flex vertical gap={4} className="h-full">
+        {/* Header: name + health badge */}
         <Flex justify="space-between" align="flex-start">
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap={6}>
             <Avatar
               size={24}
               shape="square"
@@ -52,8 +72,8 @@ const SystemCard = ({ system }: SystemCardProps) => {
               style={
                 !system.logoDomain && !system.logoUrl
                   ? {
-                      backgroundColor: "#e6e6e8",
-                      color: "#53575c",
+                      backgroundColor: palette.FIDESUI_NEUTRAL_100,
+                      color: palette.FIDESUI_NEUTRAL_800,
                       fontSize: 10,
                     }
                   : undefined
@@ -67,40 +87,39 @@ const SystemCard = ({ system }: SystemCardProps) => {
           </Flex>
           <HealthBadge
             health={system.health}
-            count={totalIssues > 0 ? totalIssues : undefined}
+            count={hasRisks ? totalRisks : undefined}
           />
         </Flex>
 
-        {/* Purpose tags */}
-        <Flex gap={4} className="flex-nowrap overflow-hidden">
-          {system.purposes.length > 0 ? (
-            <>
-              {system.purposes.slice(0, 4).map((p) => (
-                <Tag
-                  key={p.name}
-                  bordered={false}
-                  className="shrink-0 text-xs"
-                  style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
-                >
-                  {p.name}
-                </Tag>
-              ))}
-              {system.purposes.length > 4 && (
-                <Tag
-                  bordered={false}
-                  className="shrink-0 text-xs"
-                  style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
-                >
-                  +{system.purposes.length - 4} more
-                </Tag>
+        {/* Risks block — animated expand/collapse */}
+        <div
+          className={classNames(styles.expandWrapper, {
+            [styles.expandWrapperOpen]: expanded,
+          })}
+        >
+          <div className={styles.expandInner}>
+            <Flex vertical gap={4} className="min-w-0">
+              {hasRisks ? (
+                system.risks.map((risk) => (
+                  <RiskRow key={risk.id} risk={risk} />
+                ))
+              ) : (
+                <Flex align="center" gap={6}>
+                  <div
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: palette.FIDESUI_SUCCESS }}
+                  />
+                  <Text
+                    className="text-xs"
+                    style={{ color: palette.FIDESUI_SUCCESS_TEXT }}
+                  >
+                    No risks detected
+                  </Text>
+                </Flex>
               )}
-            </>
-          ) : (
-            <Text type="secondary" className="text-xs">
-              No purpose defined
-            </Text>
-          )}
-        </Flex>
+            </Flex>
+          </div>
+        </div>
 
         {/* Bottom section */}
         <div className="mt-auto">
@@ -111,7 +130,7 @@ const SystemCard = ({ system }: SystemCardProps) => {
                 type="circle"
                 percent={system.annotation_percent}
                 size={20}
-                strokeColor={getAnnotationColor(system.annotation_percent)}
+                strokeColor={ANNOTATION_COLOR}
                 strokeWidth={14}
                 format={() => null}
               />
@@ -126,10 +145,10 @@ const SystemCard = ({ system }: SystemCardProps) => {
                     key={st.initials}
                     size="small"
                     style={{
-                      backgroundColor: "#e6e6e8",
-                      color: "#53575c",
+                      backgroundColor: palette.FIDESUI_NEUTRAL_100,
+                      color: palette.FIDESUI_NEUTRAL_800,
                       fontSize: 10,
-                      border: "2px solid white",
+                      border: `2px solid ${palette.FIDESUI_FULL_WHITE}`,
                     }}
                   >
                     {st.initials}

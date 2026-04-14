@@ -1,5 +1,4 @@
-import { TrashCan } from "@carbon/icons-react";
-import { Avatar, Button, Flex, Modal, Text, Title } from "fidesui";
+import { Avatar, Button, Flex, Icons, Modal, Text, Title } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -41,22 +40,16 @@ const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
         >
           {!system.logoDomain && !system.logoUrl ? initials : null}
         </Avatar>
-        <div>
-          <Title level={2} className="!mb-0">
-            {system.name}
-          </Title>
-          <Text type="secondary">
-            {system.system_type} &middot; {system.department} &middot;{" "}
-            {system.responsibility}
-          </Text>
-        </div>
+        <Title level={2} className="!mb-0">
+          {system.name}
+        </Title>
       </Flex>
       <Flex gap="small">
         <Button
           type="text"
           danger
           aria-label="Delete system"
-          icon={<TrashCan size={16} />}
+          icon={<Icons.TrashCan size={16} />}
           onClick={() => setDeleteOpen(true)}
         />
         <Button type="default">Export CSV</Button>

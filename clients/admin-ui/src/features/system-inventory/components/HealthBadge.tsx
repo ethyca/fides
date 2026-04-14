@@ -1,4 +1,5 @@
 import { Flex, Text } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import { HealthStatus } from "../types";
 
@@ -9,16 +10,18 @@ interface HealthBadgeProps {
 
 function getBadgeConfig(health: HealthStatus, count?: number) {
   if (health === HealthStatus.HEALTHY) {
-    return { dotColor: "#5a9a68", label: "Healthy" };
+    return { dotColor: palette.FIDESUI_SUCCESS, label: "Healthy" };
   }
   if (count !== undefined && count >= 3) {
-    return { dotColor: "#d9534f", label: "Issues" };
+    return { dotColor: palette.FIDESUI_ERROR, label: "Risks" };
   }
-  return { dotColor: "#e59d47", label: "Issues" };
+  return { dotColor: palette.FIDESUI_WARNING, label: "Risks" };
 }
 
 const HealthBadge = ({ health, count }: HealthBadgeProps) => {
   const config = getBadgeConfig(health, count);
+  const displayLabel =
+    count !== undefined && count === 1 ? "Risk" : config.label;
 
   return (
     <Flex align="center" gap={6}>
@@ -33,9 +36,7 @@ const HealthBadge = ({ health, count }: HealthBadgeProps) => {
       />
       <Text className="text-xs">
         {count !== undefined && count > 0 ? `${count} ` : ""}
-        {count !== undefined && count > 1
-          ? config.label.toLowerCase()
-          : config.label}
+        {displayLabel.toLowerCase()}
       </Text>
     </Flex>
   );
