@@ -129,6 +129,7 @@ export interface PrivacyRequestEntity {
   days_left?: number;
   source?: string;
   location?: string;
+  property_id?: string | null;
 }
 
 export interface PrivacyRequestResponse {

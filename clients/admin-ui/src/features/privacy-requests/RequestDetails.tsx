@@ -2,9 +2,11 @@ import { Button, Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures, useFlags } from "~/features/common/features";
+import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { useGetPropertyByIdQuery } from "~/features/properties/property.slice";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ClipboardButton from "../common/ClipboardButton";
@@ -30,6 +32,11 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
     identity_verified_at: identityVerifiedAt,
   } = subjectRequest;
 
+  const { data: propertyData } = useGetPropertyByIdQuery(
+    subjectRequest.property_id!,
+    { skip: !hasPlus || !subjectRequest.property_id },
+  );
+
   return (
     <div>
       <div className="mb-6">
@@ -54,6 +61,19 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
             <Typography.Text>{subjectRequest.source || "-"}</Typography.Text>
           )}
         </RequestDetailsRow>
+        {hasPlus && subjectRequest.property_id && (
+          <RequestDetailsRow label="Property">
+            <Typography.Link
+              href={EDIT_PROPERTY_ROUTE.replace(
+                "[id]",
+                subjectRequest.property_id,
+              )}
+              ellipsis
+            >
+              {propertyData?.name ?? subjectRequest.property_id}
+            </Typography.Link>
+          </RequestDetailsRow>
+        )}
         {subjectRequest.submitted_by && (
           <RequestDetailsRow label="Created by">
             <Typography.Text>
