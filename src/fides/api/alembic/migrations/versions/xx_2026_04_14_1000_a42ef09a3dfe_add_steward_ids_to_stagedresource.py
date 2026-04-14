@@ -1,7 +1,7 @@
 """add steward_ids to stagedresource
 
 Revision ID: a42ef09a3dfe
-Revises: c5d6e7f8a9b0
+Revises: b3c8d5e7f2a1
 Create Date: 2026-04-14 10:00:00.000000
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 # revision identifiers, used by Alembic.
 revision = "a42ef09a3dfe"
-down_revision = "c5d6e7f8a9b0"
+down_revision = "b3c8d5e7f2a1"
 branch_labels = None
 depends_on = None
 
