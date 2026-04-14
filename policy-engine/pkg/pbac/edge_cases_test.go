@@ -368,3 +368,171 @@ func TestPolicy_ResolveContextField_NonStringValue(t *testing.T) {
 		t.Errorf("expected empty string for non-string value, got '%s'", val)
 	}
 }
+
+// ── Missing coverage: data_subject dimension ─────────────────────────
+
+func TestPolicy_MatchDataSubject(t *testing.T) {
+	policies := []AccessPolicy{
+		{
+			ID: "p1", Key: "deny-employee-data", Priority: 100, Enabled: true,
+			Decision: PolicyDeny,
+			Match: MatchBlock{
+				DataSubject: &MatchDimension{Any: []string{"employee"}},
+			},
+		},
+	}
+
+	// Matches
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		DataSubjects: []string{"employee"},
+	})
+	if result.Decision != PolicyDeny {
+		t.Errorf("expected DENY, got %s", result.Decision)
+	}
+
+	// Doesn't match
+	result2 := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		DataSubjects: []string{"customer"},
+	})
+	if result2.Decision != PolicyNoDecision {
+		t.Errorf("expected NO_DECISION, got %s", result2.Decision)
+	}
+}
+
+func TestPolicy_MatchThreeDimensions(t *testing.T) {
+	policies := []AccessPolicy{
+		{
+			ID: "p1", Key: "specific-deny", Priority: 100, Enabled: true,
+			Decision: PolicyDeny,
+			Match: MatchBlock{
+				DataUse:      &MatchDimension{Any: []string{"marketing"}},
+				DataCategory: &MatchDimension{Any: []string{"user.contact"}},
+				DataSubject:  &MatchDimension{Any: []string{"customer"}},
+			},
+		},
+	}
+
+	// All three match
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		DataUses:       []string{"marketing.advertising"},
+		DataCategories: []string{"user.contact.email"},
+		DataSubjects:   []string{"customer"},
+	})
+	if result.Decision != PolicyDeny {
+		t.Errorf("expected DENY (all dimensions match), got %s", result.Decision)
+	}
+
+	// Two of three match — subject doesn't
+	result2 := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		DataUses:       []string{"marketing.advertising"},
+		DataCategories: []string{"user.contact.email"},
+		DataSubjects:   []string{"employee"},
+	})
+	if result2.Decision != PolicyNoDecision {
+		t.Errorf("expected NO_DECISION (subject mismatch), got %s", result2.Decision)
+	}
+}
+
+// ── Missing coverage: consent not_opt_in / not_opt_out ───────────────
+
+func TestUnless_ConsentNotOptIn(t *testing.T) {
+	policies := []AccessPolicy{
+		{
+			ID: "p1", Key: "allow-unless-not-optin", Priority: 100, Enabled: true,
+			Decision: PolicyAllow, Match: MatchBlock{},
+			Unless: []Constraint{
+				{Type: ConstraintConsent, PrivacyNoticeKey: "notice", Requirement: "not_opt_in"},
+			},
+		},
+	}
+
+	// Status is "opt_out" → not_opt_in is true → unless triggers
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"consent": map[string]interface{}{"notice": "opt_out"},
+		},
+	})
+	if result.Decision != PolicyDeny {
+		t.Errorf("expected DENY (not_opt_in triggered), got %s", result.Decision)
+	}
+
+	// Status is "opt_in" → not_opt_in is false → unless doesn't trigger
+	result2 := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"consent": map[string]interface{}{"notice": "opt_in"},
+		},
+	})
+	if result2.Decision != PolicyAllow {
+		t.Errorf("expected ALLOW (opt_in, not_opt_in is false), got %s", result2.Decision)
+	}
+}
+
+func TestUnless_ConsentNotOptOut(t *testing.T) {
+	policies := []AccessPolicy{
+		{
+			ID: "p1", Key: "allow-unless-not-optout", Priority: 100, Enabled: true,
+			Decision: PolicyAllow, Match: MatchBlock{},
+			Unless: []Constraint{
+				{Type: ConstraintConsent, PrivacyNoticeKey: "notice", Requirement: "not_opt_out"},
+			},
+		},
+	}
+
+	// Status is "opt_in" → not_opt_out is true → unless triggers
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"consent": map[string]interface{}{"notice": "opt_in"},
+		},
+	})
+	if result.Decision != PolicyDeny {
+		t.Errorf("expected DENY (not_opt_out triggered), got %s", result.Decision)
+	}
+
+	// Status is "opt_out" → not_opt_out is false → unless doesn't trigger
+	result2 := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"consent": map[string]interface{}{"notice": "opt_out"},
+		},
+	})
+	if result2.Decision != PolicyAllow {
+		t.Errorf("expected ALLOW (opt_out, not_opt_out is false), got %s", result2.Decision)
+	}
+}
+
+// ── Missing coverage: data_flow none_of ──────────────────────────────
+
+func TestUnless_DataFlowNoneOf(t *testing.T) {
+	policies := []AccessPolicy{
+		{
+			ID: "p1", Key: "allow-unless-egress-to-vendor", Priority: 100, Enabled: true,
+			Decision: PolicyAllow, Match: MatchBlock{},
+			Unless: []Constraint{
+				{Type: ConstraintDataFlow, Direction: "egress", Operator: "none_of", Systems: []string{"trusted_partner"}},
+			},
+		},
+	}
+
+	// trusted_partner is present → none_of is false → unless doesn't trigger
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"data_flows": map[string]interface{}{
+				"egress": []interface{}{"trusted_partner", "analytics"},
+			},
+		},
+	})
+	if result.Decision != PolicyAllow {
+		t.Errorf("expected ALLOW (trusted partner present, none_of false), got %s", result.Decision)
+	}
+
+	// trusted_partner NOT present → none_of is true → unless triggers
+	result2 := EvaluatePolicies(policies, &AccessEvaluationRequest{
+		Context: map[string]interface{}{
+			"data_flows": map[string]interface{}{
+				"egress": []interface{}{"unknown_vendor"},
+			},
+		},
+	})
+	if result2.Decision != PolicyDeny {
+		t.Errorf("expected DENY (trusted partner absent, none_of true), got %s", result2.Decision)
+	}
+}

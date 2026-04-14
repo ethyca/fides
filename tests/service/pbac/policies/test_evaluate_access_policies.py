@@ -351,6 +351,213 @@ class TestUnlessMultipleConstraints:
         assert result2["decision"] == "DENY"
 
 
+class TestMatchDataSubject:
+    def test_data_subject_matches(self):
+        policies = [
+            {
+                "key": "deny-employee",
+                "priority": 100,
+                "enabled": True,
+                "decision": "DENY",
+                "match": {"data_subject": {"any": ["employee"]}},
+            },
+        ]
+        result = evaluate_access_policies(
+            policies, {"data_subjects": ["employee"]}
+        )
+        assert result["decision"] == "DENY"
+
+    def test_data_subject_no_match(self):
+        policies = [
+            {
+                "key": "deny-employee",
+                "priority": 100,
+                "enabled": True,
+                "decision": "DENY",
+                "match": {"data_subject": {"any": ["employee"]}},
+            },
+        ]
+        result = evaluate_access_policies(
+            policies, {"data_subjects": ["customer"]}
+        )
+        assert result["decision"] == "NO_DECISION"
+
+    def test_three_dimensions_all_must_match(self):
+        policies = [
+            {
+                "key": "specific",
+                "priority": 100,
+                "enabled": True,
+                "decision": "DENY",
+                "match": {
+                    "data_use": {"any": ["marketing"]},
+                    "data_category": {"any": ["user.contact"]},
+                    "data_subject": {"any": ["customer"]},
+                },
+            },
+        ]
+        # All three match
+        result = evaluate_access_policies(policies, {
+            "data_uses": ["marketing.advertising"],
+            "data_categories": ["user.contact.email"],
+            "data_subjects": ["customer"],
+        })
+        assert result["decision"] == "DENY"
+
+        # Subject doesn't match
+        result2 = evaluate_access_policies(policies, {
+            "data_uses": ["marketing.advertising"],
+            "data_categories": ["user.contact.email"],
+            "data_subjects": ["employee"],
+        })
+        assert result2["decision"] == "NO_DECISION"
+
+
+class TestMatchCombined:
+    def test_any_and_all_on_different_dimensions(self):
+        policies = [
+            {
+                "key": "combined",
+                "priority": 100,
+                "enabled": True,
+                "decision": "DENY",
+                "match": {
+                    "data_use": {"any": ["marketing"]},
+                    "data_category": {"all": ["user.contact", "user.financial"]},
+                },
+            },
+        ]
+        # Both categories present → match
+        result = evaluate_access_policies(policies, {
+            "data_uses": ["marketing.advertising"],
+            "data_categories": ["user.contact.email", "user.financial.bank_account"],
+        })
+        assert result["decision"] == "DENY"
+
+        # Only one category → no match
+        result2 = evaluate_access_policies(policies, {
+            "data_uses": ["marketing.advertising"],
+            "data_categories": ["user.contact.email"],
+        })
+        assert result2["decision"] == "NO_DECISION"
+
+
+class TestConsentVariants:
+    def test_not_opt_in(self):
+        policies = [
+            {
+                "key": "allow-unless",
+                "priority": 100,
+                "enabled": True,
+                "decision": "ALLOW",
+                "match": {},
+                "unless": [
+                    {"type": "consent", "privacy_notice_key": "n", "requirement": "not_opt_in"},
+                ],
+            },
+        ]
+        # opt_out → not_opt_in is true → DENY
+        result = evaluate_access_policies(
+            policies, {"context": {"consent": {"n": "opt_out"}}}
+        )
+        assert result["decision"] == "DENY"
+
+        # opt_in → not_opt_in is false → ALLOW
+        result2 = evaluate_access_policies(
+            policies, {"context": {"consent": {"n": "opt_in"}}}
+        )
+        assert result2["decision"] == "ALLOW"
+
+    def test_not_opt_out(self):
+        policies = [
+            {
+                "key": "allow-unless",
+                "priority": 100,
+                "enabled": True,
+                "decision": "ALLOW",
+                "match": {},
+                "unless": [
+                    {"type": "consent", "privacy_notice_key": "n", "requirement": "not_opt_out"},
+                ],
+            },
+        ]
+        # opt_in → not_opt_out is true → DENY
+        result = evaluate_access_policies(
+            policies, {"context": {"consent": {"n": "opt_in"}}}
+        )
+        assert result["decision"] == "DENY"
+
+        # opt_out → not_opt_out is false → ALLOW
+        result2 = evaluate_access_policies(
+            policies, {"context": {"consent": {"n": "opt_out"}}}
+        )
+        assert result2["decision"] == "ALLOW"
+
+
+class TestGeoNotIn:
+    def test_not_in_operator(self):
+        policies = [
+            {
+                "key": "deny-unless-outside",
+                "priority": 100,
+                "enabled": True,
+                "decision": "DENY",
+                "match": {},
+                "unless": [
+                    {
+                        "type": "geo_location",
+                        "field": "environment.geo_location",
+                        "operator": "not_in",
+                        "values": ["US-CA"],
+                    }
+                ],
+            },
+        ]
+        # In CA → not_in false → unless doesn't trigger → DENY
+        result = evaluate_access_policies(policies, {
+            "context": {"environment": {"geo_location": "US-CA"}},
+        })
+        assert result["decision"] == "DENY"
+
+        # In DE → not_in true → unless triggers → DENY suppressed → NO_DECISION
+        result2 = evaluate_access_policies(policies, {
+            "context": {"environment": {"geo_location": "EU-DE"}},
+        })
+        assert result2["decision"] == "NO_DECISION"
+
+
+class TestDataFlowNoneOf:
+    def test_none_of_operator(self):
+        policies = [
+            {
+                "key": "allow-unless",
+                "priority": 100,
+                "enabled": True,
+                "decision": "ALLOW",
+                "match": {},
+                "unless": [
+                    {
+                        "type": "data_flow",
+                        "direction": "egress",
+                        "operator": "none_of",
+                        "systems": ["trusted_partner"],
+                    }
+                ],
+            },
+        ]
+        # trusted_partner present → none_of false → ALLOW
+        result = evaluate_access_policies(policies, {
+            "context": {"data_flows": {"egress": ["trusted_partner"]}},
+        })
+        assert result["decision"] == "ALLOW"
+
+        # trusted_partner absent → none_of true → DENY
+        result2 = evaluate_access_policies(policies, {
+            "context": {"data_flows": {"egress": ["unknown_vendor"]}},
+        })
+        assert result2["decision"] == "DENY"
+
+
 class TestEdgeCases:
     def test_no_context_unless_does_not_trigger(self):
         policies = [
@@ -389,3 +596,27 @@ class TestEdgeCases:
         ]
         result = evaluate_access_policies(policies, {})
         assert result["decision"] == "DENY"
+
+    def test_context_nested_field_resolution(self):
+        policies = [
+            {
+                "key": "deny-unless-nested",
+                "priority": 100,
+                "enabled": True,
+                "decision": "DENY",
+                "match": {},
+                "unless": [
+                    {
+                        "type": "geo_location",
+                        "field": "a.b.c",
+                        "operator": "in",
+                        "values": ["deep_value"],
+                    }
+                ],
+            },
+        ]
+        result = evaluate_access_policies(policies, {
+            "context": {"a": {"b": {"c": "deep_value"}}},
+        })
+        # Unless triggers → DENY suppressed → NO_DECISION
+        assert result["decision"] == "NO_DECISION"
