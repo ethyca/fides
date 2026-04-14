@@ -167,9 +167,8 @@ const pushConsentToGtag = (
   const dataLayer = window.dataLayer ?? [];
   window.dataLayer = dataLayer;
   // define gtag if it doesn't exist and push to dataLayer
-  function gtag(...args: any[]) {
-    dataLayer.push(args);
-  }
+  // eslint-disable-next-line prefer-rest-params
+  function gtag() { dataLayer.push(arguments); }
   window.gtag = window.gtag ?? gtag;
 
   fidesDebugger(
