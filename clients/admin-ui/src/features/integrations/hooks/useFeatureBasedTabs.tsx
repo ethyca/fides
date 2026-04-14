@@ -199,7 +199,10 @@ export const useFeatureBasedTabs = ({
         key: "identity-resolution",
         children: (
           <IdentityResolutionTab
-            integration={{ ...connection!, name: connection!.name ?? undefined }}
+            integration={{
+              ...connection!,
+              name: connection!.name ?? undefined,
+            }}
           />
         ),
       });
