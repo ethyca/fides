@@ -158,14 +158,14 @@
     "label": "Alpha dashboard agent briefing",
     "description": "Show the Astralis agent summary banner on the dashboard",
     "development": true,
-    "test": false,
-    "production": false
+    "test": true,
+    "production": true
   },
   "alphaDashboardAgentBriefingActions": {
     "label": "Alpha dashboard agent briefing actions",
     "description": "Show action items inside the Astralis agent briefing banner",
     "development": true,
-    "test": false,
-    "production": false
+    "test": true,
+    "production": true
   }
 }
