@@ -18,17 +18,19 @@ import { PrivacyAssessmentResponse } from "./types";
 const { Title } = Typography;
 
 interface AssessmentGroupProps {
-  templateId: string;
-  title: string;
-  assessments: PrivacyAssessmentResponse[];
+  dataUseName: string | null;
+  systemCount: number;
+  assessments?: PrivacyAssessmentResponse[];
 }
 
 export const AssessmentGroup = ({
-  templateId,
-  title,
-  assessments,
+  dataUseName,
+  systemCount,
+  assessments = [],
 }: AssessmentGroupProps) => {
   const router = useRouter();
+
+  const displayName = dataUseName ?? "Uncategorized";
 
   return (
     <div>
@@ -38,15 +40,15 @@ export const AssessmentGroup = ({
             shape="square"
             variant="outlined"
             size={40}
-            icon={<Icons.Document />}
+            icon={<Icons.Policy />}
           />
           <div>
             <Title level={2} className="!m-0">
-              {title}
+              {displayName}
             </Title>
             <Text type="secondary">
-              Template ID: {templateId} • {assessments.length} active
-              assessments
+              {systemCount} {systemCount === 1 ? "system" : "systems"} •{" "}
+              {assessments.length} active assessments
             </Text>
           </div>
         </Flex>
