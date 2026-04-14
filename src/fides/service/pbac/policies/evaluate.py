@@ -1,8 +1,11 @@
 """Access Policy v2 evaluation engine — Python implementation.
 
+Implements the AccessPolicyEvaluator Protocol defined in interface.py,
+using the existing typed dataclasses for inputs and outputs.
+
 Mirrors the Go implementation in policy-engine/pkg/pbac/policy_evaluate.go.
-Used by the CLI (fides pbac evaluate-policies) and as the reference
-implementation. The Go sidecar is the production path for API throughput.
+The Go sidecar is the production path for API throughput; this Python
+implementation is used by the CLI and as the in-process fallback.
 
 Algorithm (from IMPLEMENTATION_GUIDE.md):
   1. Sort enabled policies by priority (highest first)
@@ -16,97 +19,215 @@ Algorithm (from IMPLEMENTATION_GUIDE.md):
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
 
+from fides.service.pbac.policies.interface import (
+    AccessEvaluationRequest,
+    EvaluatedPolicyInfo,
+    PolicyAction,
+    PolicyDecision,
+    PolicyEvaluationResult,
+)
 
-def evaluate_access_policies(
-    policies: list[dict[str, Any]],
-    request: dict[str, Any],
-) -> dict[str, Any]:
-    """Evaluate a list of access policies against a request.
 
-    Takes and returns plain dicts for easy JSON round-tripping from the CLI.
+# ── Policy representation (parsed from YAML + DB metadata) ────────────
+
+
+@dataclass
+class ParsedPolicy:
+    """A policy ready for evaluation.
+
+    Constructed from the DB entity + parsed YAML by the service layer
+    or from JSON by the CLI.
     """
-    enabled = [p for p in policies if p.get("enabled", True)]
-    enabled.sort(key=lambda p: p.get("priority", 0), reverse=True)
 
-    evaluated: list[dict[str, Any]] = []
+    key: str
+    priority: int = 0
+    enabled: bool = True
+    decision: str = "DENY"  # "ALLOW" or "DENY"
+    match: dict[str, Any] = field(default_factory=dict)
+    unless: list[dict[str, Any]] = field(default_factory=list)
+    action: PolicyAction | None = None
+
+
+# ── Protocol-conformant evaluator ─────────────────────────────────────
+
+
+class InProcessAccessPolicyEvaluator:
+    """Evaluates access policies in-process using the Python engine.
+
+    Conforms to the AccessPolicyEvaluator Protocol from interface.py.
+    Injected into InProcessPBACEvaluationService or
+    SidecarPBACEvaluationService as the policy_evaluator.
+    """
+
+    def __init__(self, policies: list[ParsedPolicy] | None = None) -> None:
+        self._policies = policies or []
+
+    def set_policies(self, policies: list[ParsedPolicy]) -> None:
+        """Update the policy set (e.g., after a reload from DB)."""
+        self._policies = policies
+
+    def evaluate(self, request: AccessEvaluationRequest) -> PolicyEvaluationResult:
+        """Evaluate access policies against a PBAC violation."""
+        return evaluate_policies(self._policies, request)
+
+
+# ── Core evaluation function ──────────────────────────────────────────
+
+
+def evaluate_policies(
+    policies: list[ParsedPolicy],
+    request: AccessEvaluationRequest,
+) -> PolicyEvaluationResult:
+    """Evaluate a list of parsed policies against a typed request.
+
+    This is the pure evaluation function — no I/O, no DB access.
+    """
+    enabled = [p for p in policies if p.enabled]
+    enabled.sort(key=lambda p: p.priority, reverse=True)
+
+    evaluated: list[EvaluatedPolicyInfo] = []
 
     for policy in enabled:
-        if not _matches_request(policy.get("match", {}), request):
+        if not _matches_request(policy.match, request):
             continue
 
-        unless_triggered = _evaluate_unless(policy.get("unless", []), request)
-        decision = policy.get("decision", "DENY")
+        unless_triggered = _evaluate_unless(policy.unless, request)
 
         if unless_triggered:
-            if decision == "ALLOW":
+            if policy.decision == "ALLOW":
                 evaluated.append(
-                    {
-                        "policy_key": policy.get("key"),
-                        "priority": policy.get("priority"),
-                        "matched": True,
-                        "result": "DENY",
-                        "unless_triggered": True,
-                    }
+                    EvaluatedPolicyInfo(
+                        policy_key=policy.key,
+                        priority=policy.priority,
+                        matched=True,
+                        result="DENY",
+                        unless_triggered=True,
+                    )
                 )
-                return {
-                    "decision": "DENY",
-                    "decisive_policy_key": policy.get("key"),
-                    "decisive_policy_priority": policy.get("priority"),
-                    "unless_triggered": True,
-                    "action": policy.get("action"),
-                    "evaluated_policies": evaluated,
-                }
+                return PolicyEvaluationResult(
+                    decision=PolicyDecision.DENY,
+                    decisive_policy_key=policy.key,
+                    decisive_policy_priority=policy.priority,
+                    unless_triggered=True,
+                    action=policy.action,
+                    evaluated_policies=evaluated,
+                )
             # DENY suppressed
             evaluated.append(
-                {
-                    "policy_key": policy.get("key"),
-                    "priority": policy.get("priority"),
-                    "matched": True,
-                    "result": "SUPPRESSED",
-                    "unless_triggered": True,
-                }
+                EvaluatedPolicyInfo(
+                    policy_key=policy.key,
+                    priority=policy.priority,
+                    matched=True,
+                    result="SUPPRESSED",
+                    unless_triggered=True,
+                )
             )
             continue
 
         # Decision stands
-        action = policy.get("action") if decision == "DENY" else None
+        action = policy.action if policy.decision == "DENY" else None
         evaluated.append(
-            {
-                "policy_key": policy.get("key"),
-                "priority": policy.get("priority"),
-                "matched": True,
-                "result": decision,
-                "unless_triggered": False,
-            }
+            EvaluatedPolicyInfo(
+                policy_key=policy.key,
+                priority=policy.priority,
+                matched=True,
+                result=policy.decision,
+                unless_triggered=False,
+            )
         )
-        return {
-            "decision": decision,
-            "decisive_policy_key": policy.get("key"),
-            "decisive_policy_priority": policy.get("priority"),
-            "unless_triggered": False,
-            "action": action,
-            "evaluated_policies": evaluated,
-        }
+        return PolicyEvaluationResult(
+            decision=PolicyDecision(policy.decision),
+            decisive_policy_key=policy.key,
+            decisive_policy_priority=policy.priority,
+            unless_triggered=False,
+            action=action,
+            evaluated_policies=evaluated,
+        )
 
-    return {
-        "decision": "NO_DECISION",
-        "evaluated_policies": evaluated,
+    return PolicyEvaluationResult(
+        decision=PolicyDecision.NO_DECISION,
+        evaluated_policies=evaluated,
+    )
+
+
+# ── JSON conversion helpers (CLI boundary) ────────────────────────────
+
+
+def parsed_policy_from_dict(data: dict[str, Any]) -> ParsedPolicy:
+    """Construct a ParsedPolicy from a JSON dict (CLI/API boundary)."""
+    action_data = data.get("action")
+    action = PolicyAction(message=action_data.get("message")) if action_data else None
+    return ParsedPolicy(
+        key=data.get("key", ""),
+        priority=data.get("priority", 0),
+        enabled=data.get("enabled", True),
+        decision=data.get("decision", "DENY"),
+        match=data.get("match", {}),
+        unless=data.get("unless", []),
+        action=action,
+    )
+
+
+def request_from_dict(data: dict[str, Any]) -> AccessEvaluationRequest:
+    """Construct an AccessEvaluationRequest from a JSON dict (CLI/API boundary)."""
+    return AccessEvaluationRequest(
+        consumer_id=data.get("consumer_id", ""),
+        consumer_name=data.get("consumer_name", ""),
+        consumer_purposes=frozenset(data.get("consumer_purposes", [])),
+        dataset_key=data.get("dataset_key", ""),
+        dataset_purposes=frozenset(data.get("dataset_purposes", [])),
+        collection=data.get("collection"),
+        system_fides_key=data.get("system_fides_key"),
+        data_uses=tuple(data.get("data_uses", [])),
+        data_categories=tuple(data.get("data_categories", [])),
+        data_subjects=tuple(data.get("data_subjects", [])),
+        context=data.get("context", {}),
+    )
+
+
+def result_to_dict(result: PolicyEvaluationResult) -> dict[str, Any]:
+    """Serialize a PolicyEvaluationResult to a JSON-safe dict (CLI boundary)."""
+    output: dict[str, Any] = {
+        "decision": result.decision.value,
     }
+    if result.decisive_policy_key is not None:
+        output["decisive_policy_key"] = result.decisive_policy_key
+    if result.decisive_policy_priority is not None:
+        output["decisive_policy_priority"] = result.decisive_policy_priority
+    output["unless_triggered"] = result.unless_triggered
+    if result.action:
+        output["action"] = {"message": result.action.message}
+    else:
+        output["action"] = None
+    output["evaluated_policies"] = [
+        {
+            "policy_key": ep.policy_key,
+            "priority": ep.priority,
+            "matched": ep.matched,
+            "result": ep.result,
+            "unless_triggered": ep.unless_triggered,
+        }
+        for ep in result.evaluated_policies
+    ]
+    return output
 
 
-def _matches_request(match: dict[str, Any], request: dict[str, Any]) -> bool:
+# ── Match evaluation (private) ────────────────────────────────────────
+
+
+def _matches_request(match: dict[str, Any], request: AccessEvaluationRequest) -> bool:
     """Check if a policy's match block applies to the request."""
-    for dimension, field in [
-        ("data_use", "data_uses"),
-        ("data_category", "data_categories"),
-        ("data_subject", "data_subjects"),
+    for dimension, values in [
+        ("data_use", request.data_uses),
+        ("data_category", request.data_categories),
+        ("data_subject", request.data_subjects),
     ]:
         dim = match.get(dimension)
         if dim is not None:
-            values = request.get(field, [])
-            if not _matches_dimension(dim, values):
+            if not _matches_dimension(dim, list(values)):
                 return False
     return True
 
@@ -127,15 +248,12 @@ def _matches_dimension(dim: dict[str, Any], request_values: list[str]) -> bool:
 
 
 def _taxonomy_matches_any(match_key: str, request_values: list[str]) -> bool:
-    """Check if a taxonomy key matches any request value via prefix matching."""
     return any(_taxonomy_match(match_key, rv) for rv in request_values)
 
 
 def _taxonomy_match(match_key: str, request_value: str) -> bool:
-    """Check if match_key equals or is a parent of request_value.
+    """Taxonomy prefix match with dot boundary guard.
 
-    "user.contact" matches "user.contact.email" (prefix + dot boundary).
-    "user" does NOT match "user_data".
     Empty match_key never matches — prevents accidental catch-all.
     """
     if not match_key:
@@ -145,8 +263,11 @@ def _taxonomy_match(match_key: str, request_value: str) -> bool:
     return request_value.startswith(match_key + ".")
 
 
+# ── Unless evaluation (private) ───────────────────────────────────────
+
+
 def _evaluate_unless(
-    constraints: list[dict[str, Any]], request: dict[str, Any]
+    constraints: list[dict[str, Any]], request: AccessEvaluationRequest
 ) -> bool:
     """All constraints must trigger (AND logic) for the unless to fire."""
     if not constraints:
@@ -154,10 +275,11 @@ def _evaluate_unless(
     return all(_evaluate_constraint(c, request) for c in constraints)
 
 
-def _evaluate_constraint(constraint: dict[str, Any], request: dict[str, Any]) -> bool:
-    """Evaluate a single unless condition."""
+def _evaluate_constraint(
+    constraint: dict[str, Any], request: AccessEvaluationRequest
+) -> bool:
     ctype = constraint.get("type")
-    context = request.get("context", {})
+    context = request.context
 
     if ctype == "consent":
         return _eval_consent(constraint, context)
@@ -218,7 +340,6 @@ def _eval_data_flow(constraint: dict[str, Any], context: dict[str, Any]) -> bool
 
 
 def _resolve_field(context: dict[str, Any], field_path: str) -> str | None:
-    """Traverse a dotted path in the context dict."""
     current: Any = context
     for part in field_path.split("."):
         if not isinstance(current, dict):

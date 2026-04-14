@@ -85,7 +85,8 @@ type PurposeEvaluationResult struct {
 	TotalAccesses int                `json:"total_accesses"`
 }
 
-// EvaluatePurposeRequest is the JSON request body for purpose evaluation.
+// EvaluatePurposeRequest is the JSON request body used by the fidesplus
+// sidecar HTTP handler for POST /v1/evaluate-purpose.
 type EvaluatePurposeRequest struct {
 	Consumer    ConsumerPurposes           `json:"consumer"`
 	Datasets    map[string]DatasetPurposes `json:"datasets"`

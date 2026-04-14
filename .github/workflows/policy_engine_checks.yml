@@ -36,6 +36,9 @@ jobs:
           go-version: "1.23"
           cache-dependency-path: policy-engine/go.mod
 
+      - name: Verify module
+        run: go mod tidy && git diff --exit-code go.mod go.sum
+
       - name: Build
         run: go build ./...
 

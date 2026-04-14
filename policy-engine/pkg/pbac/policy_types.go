@@ -117,7 +117,8 @@ type PolicyEvaluationResult struct {
 	Reason               *string               `json:"reason,omitempty"`
 }
 
-// EvaluatePoliciesRequest is the JSON request body for the policy evaluation endpoint.
+// EvaluatePoliciesRequest is the JSON request body used by the fidesplus
+// sidecar HTTP handler for POST /v1/evaluate-policies.
 type EvaluatePoliciesRequest struct {
 	Policies []AccessPolicy          `json:"policies"`
 	Request  AccessEvaluationRequest `json:"request"`

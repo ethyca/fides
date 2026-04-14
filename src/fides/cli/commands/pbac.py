@@ -9,11 +9,18 @@ from __future__ import annotations
 
 import json
 import sys
+from dataclasses import asdict
 from typing import TextIO
 
 import rich_click as click
 
 from fides.service.pbac.evaluate import evaluate_purpose
+from fides.service.pbac.policies.evaluate import (
+    evaluate_policies,
+    parsed_policy_from_dict,
+    request_from_dict,
+    result_to_dict,
+)
 from fides.service.pbac.types import ConsumerPurposes, DatasetPurposes
 
 
@@ -140,11 +147,6 @@ def evaluate_policies_cmd(input_file: TextIO) -> None:
         "context": {"consent": {"do_not_sell": "opt_out"}}
       }
     }
-
-    \b
-    This is the same evaluation the Go sidecar performs at API speed.
-    The CLI runs it through Python for convenience — use the sidecar
-    for production throughput.
     """
     try:
         data = json.load(input_file)
@@ -152,11 +154,9 @@ def evaluate_policies_cmd(input_file: TextIO) -> None:
         click.echo(f"Error parsing JSON: {e}", err=True)
         sys.exit(1)
 
-    from fides.service.pbac.policies.evaluate import evaluate_access_policies
+    policies = [parsed_policy_from_dict(p) for p in data.get("policies", [])]
+    request = request_from_dict(data.get("request", {}))
 
-    policies = data.get("policies", [])
-    request = data.get("request", {})
+    result = evaluate_policies(policies, request)
 
-    result = evaluate_access_policies(policies, request)
-
-    click.echo(json.dumps(result, indent=2))
+    click.echo(json.dumps(result_to_dict(result), indent=2))

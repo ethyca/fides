@@ -619,3 +619,18 @@ func TestPolicy_EnabledDefaultsToTrue(t *testing.T) {
 		t.Errorf("expected DENY (nil enabled = active), got %s", result.Decision)
 	}
 }
+
+func TestPolicy_PriorityTie_PreservesInsertionOrder(t *testing.T) {
+	// SliceStable preserves original order for equal priorities.
+	policies := []AccessPolicy{
+		{ID: "p1", Key: "first-allow", Priority: 100, Enabled: boolPtr(true), Decision: PolicyAllow, Match: MatchBlock{}},
+		{ID: "p2", Key: "second-deny", Priority: 100, Enabled: boolPtr(true), Decision: PolicyDeny, Match: MatchBlock{}},
+	}
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{})
+	if result.Decision != PolicyAllow {
+		t.Errorf("expected ALLOW (first in insertion order), got %s", result.Decision)
+	}
+	if result.DecisivePolicyKey == nil || *result.DecisivePolicyKey != "first-allow" {
+		t.Errorf("expected decisive policy 'first-allow'")
+	}
+}
