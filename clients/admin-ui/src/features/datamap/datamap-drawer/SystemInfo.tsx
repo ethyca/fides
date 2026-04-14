@@ -68,18 +68,10 @@ export const SystemInfo = ({ system }: SystemInfoProps) => {
         onFinish={handleUpsertSystem}
         key={system.fides_key}
       >
-        <Form.Item
-          name="name"
-          label="System name"
-          rules={[{ required: true, message: "Name is required" }]}
-        >
+        <Form.Item name="name" label="System name">
           <Input disabled data-testid="input-name" />
         </Form.Item>
-        <Form.Item
-          name="description"
-          label="System description"
-          rules={[{ required: true, message: "Description is required" }]}
-        >
+        <Form.Item name="description" label="System description">
           <Input.TextArea disabled data-testid="input-description" />
         </Form.Item>
       </Form>
