@@ -28,6 +28,8 @@ export interface NavConfigRoute {
   /** Hide route if this flag is enabled */
   hidesIfFlag?: FlagNames;
   requiresFidesCloud?: boolean;
+  /** Requires the backend RBAC feature to be enabled (from Plus health endpoint) */
+  requiresRbac?: boolean;
   /** Hide this route from the navigation UI but still allow access */
   hidden?: boolean;
   /** This route is only available if the user has ANY of these scopes */
@@ -355,7 +357,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Role Management",
         path: routes.RBAC_ROUTE,
         requiresPlus: true,
-        requiresFlag: "alphaRbac",
+        requiresRbac: true,
         scopes: [
           // Only Owners can access Role Management - they have assign_owners scope
           ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
@@ -536,6 +538,7 @@ interface ConfigureNavProps {
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
   hasFidesCloud?: boolean;
+  hasRbac?: boolean;
   flags?: Record<string, boolean>;
   consentModuleEnabled?: boolean;
 }
@@ -546,6 +549,7 @@ const configureNavRoute = ({
   flags,
   userScopes,
   hasFidesCloud,
+  hasRbac,
   navGroupTitle,
 }: Omit<ConfigureNavProps, "config"> & {
   route: NavConfigRoute;
@@ -566,6 +570,12 @@ const configureNavRoute = ({
   // If the target route would require fides cloud in a non-fides-cloud environment,
   // exclude it from the group.
   if (route.requiresFidesCloud && !hasFidesCloud) {
+    return undefined;
+  }
+
+  // If the target route requires RBAC to be enabled on the backend,
+  // exclude it when RBAC is not active.
+  if (route.requiresRbac && !hasRbac) {
     return undefined;
   }
 
@@ -608,6 +618,7 @@ const configureNavRoute = ({
         hasPlus,
         flags,
         hasFidesCloud,
+        hasRbac,
         navGroupTitle,
       });
       if (configuredChildRoute) {
@@ -633,6 +644,7 @@ export const configureNavGroups = ({
   userScopes,
   hasPlus = false,
   hasFidesCloud = false,
+  hasRbac = false,
   flags,
   consentModuleEnabled = true,
 }: ConfigureNavProps): NavGroup[] => {
@@ -669,6 +681,7 @@ export const configureNavGroups = ({
         flags,
         userScopes,
         hasFidesCloud,
+        hasRbac,
         navGroupTitle: group.title,
       });
       if (routeConfig) {
