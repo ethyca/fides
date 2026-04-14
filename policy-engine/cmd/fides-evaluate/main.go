@@ -1,9 +1,8 @@
-// fides-evaluate is a CLI tool for running the Fides policy evaluation engine.
+// fides-evaluate is a CLI tool for running the Fides PBAC evaluation engine.
 //
 // Usage:
 //
 //	echo '{"consumer": {...}, "datasets": {...}}' | fides-evaluate purpose
-//	echo '{"taxonomy": {...}, "policy_rule": {...}, "privacy_declaration": {...}}' | fides-evaluate policy-rule
 package main
 
 import (
@@ -12,13 +11,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/ethyca/fides/policy-engine/pkg/fideslang"
 	"github.com/ethyca/fides/policy-engine/pkg/pbac"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: fides-evaluate <purpose|policy-rule> [file]\n")
+		fmt.Fprintf(os.Stderr, "Usage: fides-evaluate <purpose> [file]\n")
 		os.Exit(1)
 	}
 
@@ -51,17 +49,8 @@ func main() {
 		result := pbac.EvaluatePurpose(req.Consumer, req.Datasets, req.Collections)
 		writeJSON(result)
 
-	case "policy-rule":
-		var req fideslang.EvaluateRequest
-		if err := json.Unmarshal(input, &req); err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing JSON: %v\n", err)
-			os.Exit(1)
-		}
-		result := fideslang.Evaluate(&req)
-		writeJSON(result)
-
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\nUse 'purpose' or 'policy-rule'\n", command)
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\nUse 'purpose'\n", command)
 		os.Exit(1)
 	}
 }
