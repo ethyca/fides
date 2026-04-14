@@ -3,6 +3,7 @@
 // Usage:
 //
 //	echo '{"consumer": {...}, "datasets": {...}}' | fides-evaluate purpose
+//	echo '{"policies": [...], "request": {...}}' | fides-evaluate policies
 package main
 
 import (
@@ -16,7 +17,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: fides-evaluate <purpose> [file]\n")
+		fmt.Fprintf(os.Stderr, "Usage: fides-evaluate <purpose|policies> [file]\n")
 		os.Exit(1)
 	}
 
@@ -49,8 +50,17 @@ func main() {
 		result := pbac.EvaluatePurpose(req.Consumer, req.Datasets, req.Collections)
 		writeJSON(result)
 
+	case "policies":
+		var req pbac.EvaluatePoliciesRequest
+		if err := json.Unmarshal(input, &req); err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing JSON: %v\n", err)
+			os.Exit(1)
+		}
+		result := pbac.EvaluatePolicies(req.Policies, &req.Request)
+		writeJSON(result)
+
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\nUse 'purpose'\n", command)
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\nUse 'purpose' or 'policies'\n", command)
 		os.Exit(1)
 	}
 }
