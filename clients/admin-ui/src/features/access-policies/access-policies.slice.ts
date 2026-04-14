@@ -99,13 +99,11 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Controls"],
     }),
-    getControl: build.query<Control | undefined, string>({
-      query: () => ({
+    getControl: build.query<Control, string>({
+      query: (key) => ({
         method: "GET",
-        url: "plus/controls",
+        url: `plus/controls/${key}`,
       }),
-      transformResponse: (response: Control[], _meta, key: string) =>
-        response.find((c) => c.key === key),
       providesTags: (_result, _error, key) => [{ type: "Controls", id: key }],
     }),
     createControl: build.mutation<

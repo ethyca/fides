@@ -101,6 +101,20 @@ export const accessPoliciesHandlers = () => {
       },
     ),
 
+    // GET /api/v1/plus/controls/:key - get single control
+    // Must be registered before the list handler so MSW matches the parameterized route
+    rest.get(`${apiBase}/plus/controls/:key`, (req, res, ctx) => {
+      const { key } = req.params;
+      const control = controls.find((c) => c.key === key);
+      if (!control) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `No control found with key '${key}'` }),
+        );
+      }
+      return res(ctx.status(200), ctx.json(control));
+    }),
+
     // GET /api/v1/plus/controls - list controls
     rest.get(`${apiBase}/plus/controls`, (_req, res, ctx) =>
       res(ctx.status(200), ctx.json(controls)),
