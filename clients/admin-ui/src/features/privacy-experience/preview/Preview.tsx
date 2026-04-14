@@ -21,19 +21,13 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-import { COMPONENT_MAP } from "../constants";
+import type { Fides } from "fides-js/types";
 
-// TODO(ENG-3409): Replace with proper import once fides-js exports
-// FidesGlobal from its public entry. Under moduleResolution: "bundler"
-// we can't reach into fides-js/src internals, so this is a minimal
-// local shape matching only the `init` method Preview.tsx uses.
-interface FidesGlobal {
-  init: (config?: unknown) => Promise<void>;
-}
+import { COMPONENT_MAP } from "../constants";
 
 declare global {
   interface Window {
-    Fides: FidesGlobal;
+    Fides: Fides;
   }
   interface Navigator {
     globalPrivacyControl?: boolean;
