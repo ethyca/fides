@@ -30,7 +30,6 @@ from fides.service.pbac.policies.interface import (
     PolicyEvaluationResult,
 )
 
-
 # ── Policy representation (parsed from YAML + DB metadata) ────────────
 
 
@@ -45,7 +44,7 @@ class ParsedPolicy:
     key: str
     priority: int = 0
     enabled: bool = True
-    decision: str = "DENY"  # "ALLOW" or "DENY"
+    decision: PolicyDecision = PolicyDecision.DENY
     match: dict[str, Any] = field(default_factory=dict)
     unless: list[dict[str, Any]] = field(default_factory=list)
     action: PolicyAction | None = None
@@ -97,7 +96,7 @@ def evaluate_policies(
         unless_triggered = _evaluate_unless(policy.unless, request)
 
         if unless_triggered:
-            if policy.decision == "ALLOW":
+            if policy.decision == PolicyDecision.ALLOW:
                 evaluated.append(
                     EvaluatedPolicyInfo(
                         policy_key=policy.key,
@@ -128,18 +127,18 @@ def evaluate_policies(
             continue
 
         # Decision stands
-        action = policy.action if policy.decision == "DENY" else None
+        action = policy.action if policy.decision == PolicyDecision.DENY else None
         evaluated.append(
             EvaluatedPolicyInfo(
                 policy_key=policy.key,
                 priority=policy.priority,
                 matched=True,
-                result=policy.decision,
+                result=policy.decision.value,
                 unless_triggered=False,
             )
         )
         return PolicyEvaluationResult(
-            decision=PolicyDecision(policy.decision),
+            decision=policy.decision,
             decisive_policy_key=policy.key,
             decisive_policy_priority=policy.priority,
             unless_triggered=False,
@@ -157,14 +156,18 @@ def evaluate_policies(
 
 
 def parsed_policy_from_dict(data: dict[str, Any]) -> ParsedPolicy:
-    """Construct a ParsedPolicy from a JSON dict (CLI/API boundary)."""
+    """Construct a ParsedPolicy from a JSON dict (CLI/API boundary).
+
+    Validates the decision field at construction time rather than
+    deferring to evaluation time.
+    """
     action_data = data.get("action")
     action = PolicyAction(message=action_data.get("message")) if action_data else None
     return ParsedPolicy(
         key=data.get("key", ""),
         priority=data.get("priority", 0),
         enabled=data.get("enabled", True),
-        decision=data.get("decision", "DENY"),
+        decision=PolicyDecision(data.get("decision", "DENY")),
         match=data.get("match", {}),
         unless=data.get("unless", []),
         action=action,
