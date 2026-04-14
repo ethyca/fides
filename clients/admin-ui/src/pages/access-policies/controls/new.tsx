@@ -18,7 +18,7 @@ import { RTKErrorResult } from "~/types/errors/api";
 const NewControlPage: NextPage = () => {
   const message = useMessage();
   const router = useRouter();
-  const [createControl] = useCreateControlMutation();
+  const [createControl, { isLoading }] = useCreateControlMutation();
 
   const handleSubmit = async (values: ControlFormValues) => {
     try {
@@ -43,8 +43,8 @@ const NewControlPage: NextPage = () => {
           { title: "New control" },
         ]}
       />
-      <div style={{ maxWidth: 720 }}>
-        <ControlForm handleSubmit={handleSubmit} />
+      <div className="max-w-3xl">
+        <ControlForm handleSubmit={handleSubmit} isSubmitting={isLoading} />
       </div>
     </Layout>
   );

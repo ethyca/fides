@@ -32,7 +32,7 @@ const EditControlPage: NextPage = () => {
     skip: !controlKey,
   });
 
-  const [updateControl] = useUpdateControlMutation();
+  const [updateControl, { isLoading: isUpdating }] = useUpdateControlMutation();
 
   const handleSubmit = async (values: ControlFormValues) => {
     try {
@@ -70,8 +70,12 @@ const EditControlPage: NextPage = () => {
       {isLoading ? (
         <Spin />
       ) : (
-        <div style={{ maxWidth: 720 }}>
-          <ControlForm control={control} handleSubmit={handleSubmit} />
+        <div className="max-w-3xl">
+          <ControlForm
+            control={control}
+            handleSubmit={handleSubmit}
+            isSubmitting={isUpdating}
+          />
         </div>
       )}
     </Layout>

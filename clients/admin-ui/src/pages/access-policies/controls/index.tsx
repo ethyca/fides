@@ -1,6 +1,6 @@
 import { Button, List, Text, Typography, useMessage, useModal } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
+import NextLink from "next/link";
 
 import {
   Control,
@@ -11,25 +11,16 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
   ACCESS_POLICIES_ROUTE,
-  CONTROLS_EDIT_ROUTE,
   CONTROLS_NEW_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { RTKErrorResult } from "~/types/errors/api";
 
 const ControlsPage: NextPage = () => {
-  const router = useRouter();
   const message = useMessage();
   const modal = useModal();
   const { data: controls = [], isLoading } = useGetControlsQuery();
   const [deleteControl] = useDeleteControlMutation();
-
-  const handleEdit = (control: Control) => {
-    router.push({
-      pathname: CONTROLS_EDIT_ROUTE,
-      query: { controlKey: control.key },
-    });
-  };
 
   const handleDelete = (control: Control) => {
     modal.confirm({
@@ -41,6 +32,7 @@ const ControlsPage: NextPage = () => {
         </span>
       ),
       okText: "Delete",
+      okButtonProps: { danger: true },
       centered: true,
       onOk: async () => {
         try {
@@ -62,12 +54,9 @@ const ControlsPage: NextPage = () => {
           { title: "Controls" },
         ]}
         rightContent={
-          <Button
-            type="primary"
-            onClick={() => router.push(CONTROLS_NEW_ROUTE)}
-          >
-            New control
-          </Button>
+          <NextLink href={CONTROLS_NEW_ROUTE} passHref>
+            <Button type="primary">New control</Button>
+          </NextLink>
         }
       >
         <div className="max-w-3xl">
@@ -104,15 +93,19 @@ const ControlsPage: NextPage = () => {
               >
                 Delete
               </Button>,
-              <Button
+              <NextLink
                 key="edit"
-                type="link"
-                onClick={() => handleEdit(control)}
-                data-testid="edit-list-btn"
-                className="px-1"
+                href={`/access-policies/controls/${control.key}`}
+                passHref
               >
-                Edit
-              </Button>,
+                <Button
+                  type="link"
+                  data-testid="edit-list-btn"
+                  className="px-1"
+                >
+                  Edit
+                </Button>
+              </NextLink>,
             ]}
           >
             <List.Item.Meta

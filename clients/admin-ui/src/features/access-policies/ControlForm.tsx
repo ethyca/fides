@@ -1,5 +1,5 @@
 import { Button, Flex, Form, Input } from "fidesui";
-import { useRouter } from "next/router";
+import NextLink from "next/link";
 import { useMemo } from "react";
 
 import { CONTROLS_ROUTE } from "~/features/common/nav/routes";
@@ -13,12 +13,16 @@ export interface ControlFormValues {
 
 interface ControlFormProps {
   control?: Control;
+  isSubmitting?: boolean;
   handleSubmit: (values: ControlFormValues) => Promise<void>;
 }
 
-const ControlForm = ({ control, handleSubmit }: ControlFormProps) => {
+const ControlForm = ({
+  control,
+  isSubmitting,
+  handleSubmit,
+}: ControlFormProps) => {
   const [form] = Form.useForm<ControlFormValues>();
-  const router = useRouter();
   const isEditing = !!control;
 
   const initialValues = useMemo<ControlFormValues>(
@@ -52,10 +56,12 @@ const ControlForm = ({ control, handleSubmit }: ControlFormProps) => {
       </Form.Item>
 
       <Flex gap={8}>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" loading={isSubmitting}>
           {isEditing ? "Save" : "Create control"}
         </Button>
-        <Button onClick={() => router.push(CONTROLS_ROUTE)}>Cancel</Button>
+        <NextLink href={CONTROLS_ROUTE} passHref>
+          <Button>Cancel</Button>
+        </NextLink>
       </Flex>
     </Form>
   );
