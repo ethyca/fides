@@ -32,6 +32,18 @@ describe("RouterLink", () => {
       expect(anchor.querySelector("button")).not.toBeNull();
     });
 
+    it("forwards target and rel to the next/link anchor", () => {
+      render(
+        <RouterLink href="/dashboard" target="_blank" rel="noopener noreferrer">
+          <Button>External</Button>
+        </RouterLink>,
+      );
+
+      const anchor = screen.getByRole("link", { name: "External" });
+      expect(anchor).toHaveAttribute("target", "_blank");
+      expect(anchor).toHaveAttribute("rel", "noopener noreferrer");
+    });
+
     it("does not call router.push on click (next/link handles it)", () => {
       render(
         <RouterLink href="/dashboard">
@@ -98,6 +110,20 @@ describe("RouterLink", () => {
 
       fireEvent.click(screen.getByRole("link", { name: "Details" }));
       expect(onClick).toHaveBeenCalledTimes(1);
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it("does not intercept clicks when target=_blank", () => {
+      render(
+        <RouterLink href="/details" target="_blank" rel="noopener noreferrer">
+          External details
+        </RouterLink>,
+      );
+      const anchor = screen.getByRole("link", { name: "External details" });
+      expect(anchor).toHaveAttribute("target", "_blank");
+      expect(anchor).toHaveAttribute("rel", "noopener noreferrer");
+
+      fireEvent.click(anchor, { button: 0 });
       expect(mockPush).not.toHaveBeenCalled();
     });
 

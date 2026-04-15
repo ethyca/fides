@@ -63,6 +63,8 @@ export const RouterLink = ({
   replace,
   scroll,
   prefetch,
+  target,
+  rel,
   ...typographyProps
 }: RouterLinkProps) => {
   const router = useRouter();
@@ -74,6 +76,8 @@ export const RouterLink = ({
         replace={replace}
         scroll={scroll}
         prefetch={prefetch}
+        target={target}
+        rel={rel}
       >
         {children}
       </NextLink>
@@ -85,6 +89,8 @@ export const RouterLink = ({
   return (
     <TypographyLink
       href={hrefString}
+      target={target}
+      rel={rel}
       onClick={(e) => {
         onClick?.(e);
         if (
@@ -93,7 +99,8 @@ export const RouterLink = ({
           e.metaKey ||
           e.ctrlKey ||
           e.shiftKey ||
-          e.altKey
+          e.altKey ||
+          target === "_blank"
         ) {
           // Let the browser handle new-tab / modified clicks natively.
           return;
