@@ -23,7 +23,7 @@ const MonitorListSearchForm = ({
   ...formProps
 }: Omit<
   ReturnType<typeof useSearchForm<any, MonitorSearchForm>>,
-  "requestData"
+  "requestData" | "setSearchForm"
 > & {
   availableMonitorTypes: readonly APIMonitorType[];
 }) => {
@@ -87,8 +87,9 @@ const MonitorListSearchForm = ({
           popupMatchSelectWidth
           placeholder="Data steward"
           allowClear
-          showSearch
-          optionFilterProp="label"
+          showSearch={{
+            optionFilterProp: "label",
+          }}
           aria-label="Filter by data steward"
           className="min-w-[220px]"
         />

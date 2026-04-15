@@ -49,15 +49,12 @@ const MonitorList = () => {
   const defaultStewardFilter =
     (userMonitors ?? []).length > 0 ? currentUser?.id : undefined;
 
-  const { requestData, ...formProps } = useSearchForm<
+  const { requestData, setSearchForm, ...formProps } = useSearchForm<
     Partial<Parameters<typeof useGetAggregateMonitorResultsQuery>[0]>,
     MonitorSearchForm
   >({
     schema: MonitorSearchFormQuerySchema([...availableMonitorTypes]),
-    queryState: SearchFormQueryState(
-      [...availableMonitorTypes],
-      defaultStewardFilter,
-    ),
+    queryState: SearchFormQueryState([...availableMonitorTypes]),
     initialValues: {
       search: null,
       monitor_type: null,
@@ -84,6 +81,12 @@ const MonitorList = () => {
     page: pageIndex,
     size: pageSize,
   });
+
+  useEffect(() => {
+    if (defaultStewardFilter) {
+      setSearchForm({ steward_key: defaultStewardFilter });
+    }
+  }, [setSearchForm, defaultStewardFilter]);
 
   useEffect(() => {
     if (isError) {
