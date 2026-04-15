@@ -78,6 +78,11 @@ const EditorSection = ({
     refetch: refetchDatasets,
   } = useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
     skip: !connectionKey,
+    // Always refetch when the editor is opened: deleting + rebuilding an
+    // integration with the same key otherwise serves cached ctl_dataset
+    // (incl. stale user edits). Drilling into collections is in-memory and
+    // doesn't re-fire this query.
+    refetchOnMountOrArgChange: true,
   });
 
   // Reachability only applies on the test-datasets page (no connectionType),
@@ -114,18 +119,21 @@ const EditorSection = ({
   );
 
   useEffect(() => {
-    if (datasetConfigs?.items.length) {
-      if (
-        !currentDataset ||
-        !datasetConfigs.items.find(
-          (item) => item.fides_key === currentDataset.fides_key,
-        )
-      ) {
-        const initialDataset = datasetConfigs.items[0];
-        dispatch(setCurrentDataset(initialDataset));
-      }
+    if (!datasetConfigs?.items.length) {
+      return;
     }
-  }, [datasetConfigs, currentDataset, dispatch]);
+    // Always pull the freshest DatasetConfig from the server response into
+    // Redux — not only on key mismatch. Otherwise deleting + rebuilding an
+    // integration with the same fides_key keeps the previously-edited
+    // ctl_dataset in Redux and re-seeds localDataset with stale fields.
+    const matched = datasetConfigs.items.find(
+      (item) => item.fides_key === currentDataset?.fides_key,
+    );
+    dispatch(setCurrentDataset(matched ?? datasetConfigs.items[0]));
+    // currentDataset intentionally excluded from deps: we only want to re-sync
+    // when a new server response arrives, not when Redux updates in response.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datasetConfigs, dispatch]);
 
   // SaaS: store as Dataset object; DB: store as YAML string
   useEffect(() => {
