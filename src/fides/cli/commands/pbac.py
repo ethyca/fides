@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import sys
-from dataclasses import asdict
 from typing import TextIO
 
 import rich_click as click

@@ -15,28 +15,28 @@ const (
 // and the database schema default. A policy omitting the enabled field is
 // treated as active.
 type AccessPolicy struct {
-	ID       string         `json:"id"`
-	Key      string         `json:"key"`
-	Priority int            `json:"priority"`
-	Enabled  *bool          `json:"enabled,omitempty"`
-	Decision PolicyDecision `json:"decision"` // ALLOW or DENY
-	Match    MatchBlock     `json:"match"`
-	Unless   []Constraint   `json:"unless,omitempty"`
-	Action   *PolicyAction  `json:"action,omitempty"`
+	ID       string         `json:"id"                   yaml:"id,omitempty"`
+	Key      string         `json:"key"                  yaml:"key"`
+	Priority int            `json:"priority"             yaml:"priority"`
+	Enabled  *bool          `json:"enabled,omitempty"    yaml:"enabled,omitempty"`
+	Decision PolicyDecision `json:"decision"             yaml:"decision"` // ALLOW or DENY
+	Match    MatchBlock     `json:"match"                yaml:"match"`
+	Unless   []Constraint   `json:"unless,omitempty"     yaml:"unless,omitempty"`
+	Action   *PolicyAction  `json:"action,omitempty"     yaml:"action,omitempty"`
 }
 
 // MatchBlock declares which taxonomy dimensions a policy applies to.
 // An empty MatchBlock matches everything (catch-all).
 type MatchBlock struct {
-	DataUse      *MatchDimension `json:"data_use,omitempty"`
-	DataCategory *MatchDimension `json:"data_category,omitempty"`
-	DataSubject  *MatchDimension `json:"data_subject,omitempty"`
+	DataUse      *MatchDimension `json:"data_use,omitempty"      yaml:"data_use,omitempty"`
+	DataCategory *MatchDimension `json:"data_category,omitempty" yaml:"data_category,omitempty"`
+	DataSubject  *MatchDimension `json:"data_subject,omitempty"  yaml:"data_subject,omitempty"`
 }
 
 // MatchDimension specifies the any/all operators for one taxonomy dimension.
 type MatchDimension struct {
-	Any []string `json:"any,omitempty"` // at least one must match
-	All []string `json:"all,omitempty"` // all must match
+	Any []string `json:"any,omitempty" yaml:"any,omitempty"` // at least one must match
+	All []string `json:"all,omitempty" yaml:"all,omitempty"` // all must match
 }
 
 // ConstraintType identifies the kind of unless condition.
@@ -51,29 +51,29 @@ const (
 // Constraint is one condition in an unless block.
 // All constraints in a block are AND'd — all must trigger for the unless to fire.
 type Constraint struct {
-	Type ConstraintType `json:"type"`
+	Type ConstraintType `json:"type" yaml:"type"`
 
 	// Consent fields (type=consent)
-	PrivacyNoticeKey string `json:"privacy_notice_key,omitempty"`
-	Requirement      string `json:"requirement,omitempty"` // opt_in, opt_out, not_opt_in, not_opt_out
+	PrivacyNoticeKey string `json:"privacy_notice_key,omitempty" yaml:"privacy_notice_key,omitempty"`
+	Requirement      string `json:"requirement,omitempty"        yaml:"requirement,omitempty"` // opt_in, opt_out, not_opt_in, not_opt_out
 
 	// Geo location fields (type=geo_location)
-	Field  string   `json:"field,omitempty"` // dotted context path, e.g. "environment.geo_location"
-	Values []string `json:"values,omitempty"`
+	Field  string   `json:"field,omitempty"  yaml:"field,omitempty"` // dotted context path, e.g. "environment.geo_location"
+	Values []string `json:"values,omitempty" yaml:"values,omitempty"`
 
 	// Operator is shared between geo_location and data_flow constraints:
 	//   geo_location: "in", "not_in"
 	//   data_flow:    "any_of", "none_of"
-	Operator string `json:"operator,omitempty"`
+	Operator string `json:"operator,omitempty" yaml:"operator,omitempty"`
 
 	// Data flow fields (type=data_flow)
-	Direction string   `json:"direction,omitempty"` // "ingress", "egress"
-	Systems   []string `json:"systems,omitempty"`
+	Direction string   `json:"direction,omitempty" yaml:"direction,omitempty"` // "ingress", "egress"
+	Systems   []string `json:"systems,omitempty"   yaml:"systems,omitempty"`
 }
 
 // PolicyAction is the action block from a decisive policy.
 type PolicyAction struct {
-	Message string `json:"message,omitempty"`
+	Message string `json:"message,omitempty" yaml:"message,omitempty"`
 }
 
 // AccessEvaluationRequest is the context provided to the policy evaluator
