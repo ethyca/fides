@@ -227,7 +227,7 @@ class PrivacyCenterConfig(FidesSchema):
     logo_url: Optional[str] = None
     favicon_path: Optional[str] = None
     page_title: Optional[str] = None
-    actions: List[PrivacyRequestOption]
+    actions: List[PrivacyRequestOption] = []
     include_consent: Optional[bool] = Field(alias="includeConsent", default=None)
     consent: ConsentConfig
     # Deprecated: prefer `links`. Kept for backwards compatibility.
@@ -262,7 +262,7 @@ class PartialPrivacyRequestOption(FidesSchema):
 class PartialPrivacyCenterConfig(FidesSchema):
     """Partial schema for the Admin UI privacy request submission."""
 
-    actions: List[PartialPrivacyRequestOption]
+    actions: List[PartialPrivacyRequestOption] = []
 
 
 def reorder_custom_privacy_request_fields(config: dict[str, Any]) -> dict[str, Any]:

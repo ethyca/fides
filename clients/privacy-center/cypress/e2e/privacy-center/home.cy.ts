@@ -13,7 +13,8 @@ describe("Home", () => {
       cy.getByTestId("description").contains(config.description);
       cy.getByTestId("logo").should("have.attr", "src", config.logo_path);
 
-      config.actions.forEach((action) => {
+      const actions = config.actions ?? [];
+      actions.forEach((action) => {
         cy.contains(action.title);
       });
     });
