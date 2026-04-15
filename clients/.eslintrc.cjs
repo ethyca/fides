@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ["airbnb", "airbnb-typescript", "plugin:prettier/recommended"],
+  extends: ["airbnb", "airbnb-typescript"],
   plugins: ["simple-import-sort"],
   root: true,
   settings: {
@@ -38,6 +38,27 @@ module.exports = {
     },
   },
   rules: {
+    /** Rules overriden by prettier **/
+    "max-len": "off",
+    "no-tabs": "off",
+    "operator-linebreak": "off",
+    "function-paren-newline": "off",
+    "no-confusing-arrow": "off",
+    "object-curly-newline": "off",
+    "implicit-arrow-linebreak": "off",
+    "arrow-body-style": "off",
+    "no-spaced-func": "off",
+    "newline-per-chained-call": "off",
+    "@typescript-eslint/quotes": "off",
+    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/comma-dangle": "off",
+    "@typescript-eslint/brace-style": "off",
+    "react/jsx-one-expression-per-line": "off",
+    "react/jsx-wrap-multilines": "off",
+    "react/jsx-curly-newline": "off",
+    "react/jsx-indent": "off",
+    "react/jsx-closing-tag-location": "off",
+
     "jsx-a11y/label-has-associated-control": [
       "error",
       { assert: "either", depth: 25 }, // overrides airbnb to be "either" instead of "both" which is too strict for this project. TODO: maybe remove this rule as part of Ant Forms migration
@@ -58,6 +79,7 @@ module.exports = {
     "simple-import-sort/exports": "error",
     // Default exports are slightly preferred for component files, but this rule has too many false positives.
     "import/prefer-default-export": "off",
+    "import/no-cycle": "off",
     // since defaultProps are deprecated for function components
     "react/require-default-props": "off",
     // Redux Toolkit reducers pass writable drafts for state updates which are cleaner than object spreading.
@@ -89,6 +111,5 @@ module.exports = {
         minimumDescriptionLength: 10, // require at least 10 chars on ts-expect-error explaining why
       },
     ],
-    "prettier/prettier": "warn",
   },
 };
