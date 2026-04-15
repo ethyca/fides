@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 import fides
 from fides.api.common_exceptions import RedisConnectionError
+from fides.api.db.database import get_db_health
 from fides.api.db.ctl_session import (
     async_session,
     ensure_async_readonly_pool_prewarmed,
@@ -27,6 +28,7 @@ from fides.config import CONFIG
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured", "skipped"]
 PoolHealth = Literal["healthy", "unhealthy", "skipped"]
+DatabaseResponseHealth = Literal["healthy", "unhealthy", "needs migration"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
 
 
@@ -41,7 +43,7 @@ class CoreHealthCheck(BaseModel):
 class DatabaseHealthCheck(BaseModel):
     """Database Healthcheck Schema"""
 
-    database: PoolHealth
+    database: DatabaseResponseHealth
     pools: Dict[str, "PoolStatus"]
     async_readonly_pool_prewarmed: Optional[bool] = None
     database_revision: Optional[str] = None
@@ -59,7 +61,7 @@ class PoolPrewarming(BaseModel):
 class PoolStatus(BaseModel):
     """Per-pool health details."""
 
-    healthy: bool
+    health: PoolHealth
     prewarming: Optional[PoolPrewarming] = None
 
 
@@ -115,27 +117,33 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
     pools: Dict[str, PoolStatus] = {}
     async_readonly_pool_prewarmed: Optional[bool] = None
 
+    migration_health, current_revision = get_db_health(
+        CONFIG.database.sync_database_uri, db=db
+    )
+
     # Primary sync pool (already checked out by dependency-injected session).
-    pools["api_sync_primary"] = PoolStatus(healthy=_check_sync_session(db) == "healthy")
+    pools["api_sync_primary"] = PoolStatus(health=_check_sync_session(db))
 
     # Optional sync readonly pool.
     if CONFIG.database.sqlalchemy_readonly_database_uri:
         readonly_db: Optional[Session] = None
         try:
             readonly_db = get_readonly_api_session()
-            pools["api_sync_readonly"] = PoolStatus(
-                healthy=_check_sync_session(readonly_db) == "healthy"
+            pools["api_sync_readonly"] = PoolStatus(health=_check_sync_session(readonly_db))
+        except Exception as error:  # pylint: disable=broad-except
+            logger.error(
+                "Unable to open sync readonly database pool session: {}",
+                Pii(str(error)),
             )
+            pools["api_sync_readonly"] = PoolStatus(health="unhealthy")
         finally:
             if readonly_db:
                 readonly_db.close()
     else:
-        pools["api_sync_readonly"] = PoolStatus(healthy=True)
+        pools["api_sync_readonly"] = PoolStatus(health="skipped")
 
     # Primary async pool.
-    pools["api_async_primary"] = PoolStatus(
-        healthy=(await _check_async_session(async_session) == "healthy")
-    )
+    pools["api_async_primary"] = PoolStatus(health=await _check_async_session(async_session))
 
     # Optional readonly async pool with prewarm awareness.
     if CONFIG.database.async_readonly_database_uri:
@@ -146,22 +154,34 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
             async_readonly_pool_prewarmed = False
 
         pools["api_async_readonly"] = PoolStatus(
-            healthy=(await _check_async_session(readonly_async_session) == "healthy"),
+            health=await _check_async_session(readonly_async_session),
             prewarming=_get_async_readonly_prewarming_details(),
         )
     else:
-        pools["api_async_readonly"] = PoolStatus(healthy=True)
+        pools["api_async_readonly"] = PoolStatus(health="skipped")
         async_readonly_pool_prewarmed = None
 
-    has_unhealthy_pool = any(not status.healthy for status in pools.values())
-    response = DatabaseHealthCheck(
-        database="unhealthy" if has_unhealthy_pool else "healthy",
-        pools=pools,
-        async_readonly_pool_prewarmed=async_readonly_pool_prewarmed,
-        database_revision=None,
-    ).model_dump(mode="json")
+    has_unhealthy_pool = any(
+        pool_status.health == "unhealthy" for pool_status in pools.values()
+    )
 
     if has_unhealthy_pool:
+        overall_database: DatabaseResponseHealth = "unhealthy"
+    elif migration_health == "needs migration":
+        overall_database = "needs migration"
+    elif migration_health == "unhealthy":
+        overall_database = "unhealthy"
+    else:
+        overall_database = "healthy"
+
+    response = DatabaseHealthCheck(
+        database=overall_database,
+        pools=pools,
+        async_readonly_pool_prewarmed=async_readonly_pool_prewarmed,
+        database_revision=current_revision if current_revision else "unknown",
+    ).model_dump(mode="json")
+
+    if overall_database != "healthy":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
         )
@@ -182,9 +202,9 @@ def _check_sync_session(db: Session) -> PoolHealth:
 async def _check_async_session(session_factory: Any) -> PoolHealth:
     """Return health status for an async pool-backed session factory."""
     try:
-        async with session_factory() as session:
-            session = session  # type: AsyncSession
-            await session.execute(text("SELECT 1"))
+        async with session_factory() as raw_session:
+            sess: AsyncSession = raw_session
+            await sess.execute(text("SELECT 1"))
         return "healthy"
     except Exception as error:  # pylint: disable=broad-except
         logger.error("Unable to reach async database pool: {}", Pii(str(error)))
