@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from loguru import logger
 
@@ -110,20 +110,39 @@ class RateLimiter:
             pipe.decrby(redis_key, 1)
         pipe.execute()
 
+    def seconds_until_next_bucket(
+        self, current_seconds: int, request: RateLimiterRequest
+    ) -> float:
+        """
+        Returns the number of seconds until the next time bucket starts for the given request.
+        """
+        fixed_time_filter = (
+            int(current_seconds / request.period.factor) * request.period.factor
+        )
+        return (fixed_time_filter + request.period.factor) - current_seconds
+
     def limit(
-        self, requests: List[RateLimiterRequest], timeout_seconds: int = 30
+        self, requests: List[RateLimiterRequest], timeout_seconds: Optional[int] = None
     ) -> None:
         """
         Increments call count for the current time bucket and verifies that it is within the
-        rate limit provided. If limit is breached it will decrement the count and try again
-        until it can successfully reserve a call, or timeout. Because we rely on optimistic
-        locking for many keys at a time, it is possible that concurrent rate limiters could
-        make the wrong decision in between increment to decrement operations.
+        rate limit provided. If limit is breached it will decrement the count and sleep until
+        the current bucket rolls over before retrying. Because we rely on optimistic locking
+        for many keys at a time, it is possible that concurrent rate limiters could make the
+        wrong decision in between increment to decrement operations.
 
         If connection to the redis cluster fails then rate limiter will be skipped.
 
-        Expiration is set on any keys which are stored in the cluster
+        Expiration is set on any keys which are stored in the cluster.
+
+        timeout_seconds defaults to the longest period factor + 5s, giving the limiter at
+        least one full bucket rollover window before giving up.
         """
+        if timeout_seconds is None:
+            timeout_seconds = (
+                max(r.period.factor for r in requests) + 5 if requests else 30
+            )
+
         try:
             redis: FidesopsRedis = get_cache()
         except RedisConnectionError as exc:
@@ -135,6 +154,7 @@ class RateLimiter:
             return
 
         start_time = time.time()
+        breached_requests: List[RateLimiterRequest] = []
         while time.time() - start_time < timeout_seconds:
             current_seconds = int(time.time())
 
@@ -156,7 +176,17 @@ class RateLimiter:
                 self.decrement_usage(
                     redis=redis, current_seconds=current_seconds, requests=requests
                 )
-                time.sleep(0.1)
+                # Sleep until the next bucket boundary for the longest-period breached
+                # request. This avoids hammering Redis every 100ms for minute/hour/day
+                # limits where the bucket won't roll for a long time.
+                sleep_seconds = max(
+                    self.seconds_until_next_bucket(current_seconds, r)
+                    for r in breached_requests
+                )
+                # Add a small buffer to avoid landing exactly on the boundary, but
+                # never sleep longer than the remaining timeout.
+                remaining = timeout_seconds - (time.time() - start_time)
+                time.sleep(min(sleep_seconds + 0.05, max(remaining, 0)))
             else:
                 # success
                 return
