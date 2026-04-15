@@ -168,6 +168,8 @@ const pushConsentToGtag = (
   window.dataLayer = dataLayer;
   // define gtag if it doesn't exist and push to dataLayer
   function gtag() {
+    // ignore rest parameters lint error to maintain compatibility with gtag's expected function signature
+    // eslint-disable-next-line prefer-rest-params
     dataLayer.push(arguments);
   }
   window.gtag = window.gtag ?? gtag;
