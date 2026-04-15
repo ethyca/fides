@@ -183,7 +183,7 @@ const TestDatastoreMonitor = () => {
                 min={0}
                 max={100}
                 step={5}
-                addonAfter="%"
+                suffix="%"
                 className="w-full"
               />
             </Form.Item>

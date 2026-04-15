@@ -203,7 +203,7 @@ const AddVendor = ({
             open={isOpen}
             onCancel={handleCloseModal}
             centered
-            destroyOnClose
+            destroyOnHidden
             title="Add a vendor"
             footer={null}
           >

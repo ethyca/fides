@@ -1,4 +1,12 @@
-import { Dropdown, Flex, Icons, Modal, useMessage } from "fidesui";
+import {
+  Button,
+  Dropdown,
+  Flex,
+  Icons,
+  Modal,
+  Space,
+  useMessage,
+} from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -132,25 +140,30 @@ const SubmitPrivacyRequest = () => {
         isOpen={submitRequestOpen}
         onClose={handleClose}
       />
-      <Dropdown.Button
-        type="primary"
-        onClick={handleSubmitRequestOpen}
-        data-testid="submit-request-btn"
-        menu={{
-          items: [
-            {
-              label: "Create request link",
-              key: "create-request-link",
-              icon: <Icons.Link />,
-              onClick: handleCreateLinkOpen,
-              disabled: !hasPrivacyCenterUrl,
-            },
-          ],
-        }}
-        icon={<Icons.ChevronDown />}
-      >
-        Create request
-      </Dropdown.Button>
+      <Space.Compact data-testid="submit-request-btn">
+        <Button type="primary" onClick={handleSubmitRequestOpen}>
+          Create request
+        </Button>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                label: "Create request link",
+                key: "create-request-link",
+                icon: <Icons.Link />,
+                onClick: handleCreateLinkOpen,
+                disabled: !hasPrivacyCenterUrl,
+              },
+            ],
+          }}
+        >
+          <Button
+            type="primary"
+            icon={<Icons.ChevronDown />}
+            aria-label="More privacy request options"
+          />
+        </Dropdown>
+      </Space.Compact>
     </>
   );
 };
