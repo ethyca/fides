@@ -1,15 +1,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraFlex as Flex,
-  useMessage,
-} from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Button, Card, Flex, Form, Input, useMessage } from "fidesui";
 
-import FormSection from "~/features/common/form/FormSection";
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 
 import {
@@ -36,11 +28,17 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
   const [updateMessagingTemplates, { isLoading }] =
     useUpdateMessagingTemplatesMutation();
   const message = useMessage();
+  const [form] = Form.useForm<EmailTemplatesFormValues>();
 
-  const handleSubmit = async (
-    values: EmailTemplatesFormValues,
-    formikHelpers: FormikHelpers<EmailTemplatesFormValues>,
-  ) => {
+  const initialValues = emailTemplates.reduce(
+    (acc, template) => ({
+      ...acc,
+      [template.type]: { label: template.label, content: template.content },
+    }),
+    {} as EmailTemplatesFormValues,
+  );
+
+  const handleSubmit = async (values: EmailTemplatesFormValues) => {
     const handleResult = (
       result:
         | { data: object }
@@ -54,7 +52,9 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
         message.error(errorMsg);
       } else {
         message.success("Email templates saved.");
-        formikHelpers.resetForm({ values });
+        // Re-baseline the form so Save becomes disabled again until the next edit.
+        form.resetFields();
+        form.setFieldsValue(values);
       }
     };
 
@@ -70,52 +70,54 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
     handleResult(result);
   };
 
-  const initialValues = emailTemplates.reduce(
-    (acc, template) => ({
-      ...acc,
-      [template.type]: { label: template.label, content: template.content },
-    }),
-    {} as EmailTemplatesFormValues,
-  );
-
   return (
-    <Formik
-      enableReinitialize
+    <Form
+      form={form}
+      layout="vertical"
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onFinish={handleSubmit}
+      className="py-3"
     >
-      {() => (
-        <Form
-          style={{
-            paddingTop: "12px",
-            paddingBottom: "12px",
-          }}
-        >
-          {Object.entries(initialValues).map(([key, value]) => (
-            <Box key={key} py={3}>
-              <FormSection title={value.label}>
-                <CustomTextInput
-                  label="Message subject"
-                  name={`${key}.content.subject`}
-                  variant="stacked"
-                />
-                <CustomTextArea
-                  label="Message body"
-                  name={`${key}.content.body`}
-                  variant="stacked"
-                  resize
-                />
-              </FormSection>
-            </Box>
-          ))}
-          <Flex justifyContent="right" width="100%" paddingTop={2}>
-            <Button htmlType="submit" type="primary" loading={isLoading}>
+      {Object.entries(initialValues).map(([key, value]) => (
+        <Card key={key} title={value.label} className="my-3">
+          <Form.Item
+            name={[key, "content", "subject"]}
+            label="Message subject"
+            rules={[{ required: true, message: "Subject is required" }]}
+          >
+            <Input data-testid={`input-${key}.content.subject`} />
+          </Form.Item>
+          <Form.Item
+            name={[key, "content", "body"]}
+            label="Message body"
+            rules={[{ required: true, message: "Body is required" }]}
+          >
+            <Input.TextArea
+              autoSize={{ minRows: 3 }}
+              data-testid={`input-${key}.content.body`}
+            />
+          </Form.Item>
+        </Card>
+      ))}
+      <Flex justify="flex-end" className="w-full pt-2">
+        <Form.Item shouldUpdate noStyle>
+          {() => (
+            <Button
+              htmlType="submit"
+              type="primary"
+              disabled={
+                !form.isFieldsTouched() ||
+                form.getFieldsError().some(({ errors }) => errors.length > 0)
+              }
+              loading={isLoading}
+              data-testid="submit-btn"
+            >
               Save
             </Button>
-          </Flex>
-        </Form>
-      )}
-    </Formik>
+          )}
+        </Form.Item>
+      </Flex>
+    </Form>
   );
 };
 

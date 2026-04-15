@@ -21,7 +21,8 @@ const AddNotificationTemplatePage: NextPage = () => {
   const message = useMessage();
   const router = useRouter();
   const { templateType } = router.query;
-  const [createMessagingTemplate] = useCreateMessagingTemplateByTypeMutation();
+  const [createMessagingTemplate, { isLoading: isSaving }] =
+    useCreateMessagingTemplateByTypeMutation();
   const { data: messagingTemplate, isLoading } =
     useGetMessagingTemplateDefaultQuery(templateType as string);
 
@@ -75,6 +76,7 @@ const AddNotificationTemplatePage: NextPage = () => {
             <PropertySpecificMessagingTemplateForm
               template={messagingTemplate}
               handleSubmit={handleSubmit}
+              isSaving={isSaving}
             />
           </Box>
         </Box>

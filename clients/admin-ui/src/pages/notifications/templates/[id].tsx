@@ -37,7 +37,8 @@ const EditNotificationTemplatePage: NextPage = () => {
     error,
   } = useGetMessagingTemplateByIdQuery(templateId as string);
 
-  const [putMessagingTemplate] = usePutMessagingTemplateByIdMutation();
+  const [putMessagingTemplate, { isLoading: isSaving }] =
+    usePutMessagingTemplateByIdMutation();
   const [deleteMessagingTemplate] = useDeleteMessagingTemplateByIdMutation();
 
   const handleSubmit = async (values: FormValues) => {
@@ -128,6 +129,7 @@ const EditNotificationTemplatePage: NextPage = () => {
           template={messagingTemplate}
           handleSubmit={handleSubmit}
           handleDelete={onDeleteOpen}
+          isSaving={isSaving}
         />
       </Box>
       <ConfirmationModal
