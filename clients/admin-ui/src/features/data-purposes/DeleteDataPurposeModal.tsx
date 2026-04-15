@@ -12,7 +12,9 @@ import { RTKErrorResult } from "~/types/errors/api";
 
 interface Props {
   purpose: DataPurpose;
-  triggerComponent: React.ReactElement;
+  triggerComponent: React.ReactElement<{
+    onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+  }>;
 }
 
 const DeleteDataPurposeModal = ({ purpose, triggerComponent }: Props) => {
