@@ -15,7 +15,7 @@ const ConfigurationNotificationBanner = () => {
       className="my-5"
       type="info"
       showIcon
-      message="Configure your storage and messaging provider"
+      title="Configure your storage and messaging provider"
       description="Before Fides can process your privacy requests we need two simple steps to configure your storage and email client."
       action={<Button onClick={handleClick}>Configure</Button>}
     />

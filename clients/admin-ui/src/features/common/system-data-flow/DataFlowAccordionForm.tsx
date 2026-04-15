@@ -146,7 +146,7 @@ export const DataFlowAccordionForm = ({
                   type="primary"
                   size="small"
                   icon={<Icons.Settings />}
-                  iconPosition="end"
+                  iconPlacement="end"
                   className="mb-4"
                   data-testid="assign-systems-btn"
                 >
