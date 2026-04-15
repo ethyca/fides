@@ -35,7 +35,10 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
 
 const getItemKey = <T,>(item: T, index: number): React.Key => {
   if (item && typeof item === "object" && "key" in item) {
-    return (item as { key: React.Key }).key;
+    const { key } = item as Record<string, unknown>;
+    if (typeof key === "string" || typeof key === "number") {
+      return key;
+    }
   }
   return index;
 };
@@ -83,7 +86,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
           return;
         }
 
-        const newSelectedRowKeys = checked
+        const newSelectedRowKeys: React.Key[] = checked
           ? [...selectedRowKeys, itemKey]
           : selectedRowKeys.filter((key) => key !== itemKey);
 
@@ -206,7 +209,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
             checked={isSelected}
             onChange={(e) => handleCheckboxChange(itemKey, e.target.checked)}
             {...checkboxProps}
-            aria-label={`Select item ${itemKey}`}
+            aria-label={`Select item ${String(itemKey)}`}
             className={enableKeyboardShortcuts ? "ml-2" : undefined} // active rows need a bit of padding to the left or it will be too close to edge
           />
         );
