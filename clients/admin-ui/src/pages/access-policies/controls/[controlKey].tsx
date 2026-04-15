@@ -39,7 +39,7 @@ const EditControlPage: NextPage = () => {
       await updateControl({
         key: controlKey as string,
         label: values.label,
-        description: values.description || undefined,
+        description: values.description.trim() || null,
       }).unwrap();
       message.success(`Control "${values.label}" updated successfully`);
       router.push(CONTROLS_ROUTE);

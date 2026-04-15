@@ -119,7 +119,7 @@ const accessPoliciesApi = baseApi.injectEndpoints({
     }),
     updateControl: build.mutation<
       Control,
-      { key: string; label: string; description?: string }
+      { key: string; label?: string; description?: string | null }
     >({
       query: ({ key, ...body }) => ({
         method: "PATCH",

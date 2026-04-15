@@ -24,7 +24,7 @@ const NewControlPage: NextPage = () => {
     try {
       await createControl({
         label: values.label,
-        description: values.description || undefined,
+        description: values.description.trim() || undefined,
       }).unwrap();
       message.success(`Control "${values.label}" created successfully`);
       router.push(CONTROLS_ROUTE);
