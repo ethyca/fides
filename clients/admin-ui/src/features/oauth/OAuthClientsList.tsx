@@ -42,7 +42,7 @@ const ClientListItem = ({
                 </LinkCell>
               </span>
             </Tooltip>
-            <Tag>{client.scopes.length} scopes</Tag>
+            <Tag>{client.scopes?.length ?? 0} scopes</Tag>
           </Flex>
         }
         description={
