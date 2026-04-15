@@ -681,7 +681,7 @@ class StagedResource(StagedResourceBase):
     # Nullable to distinguish "not set" (None, use monitor fallback on promotion)
     # from "explicitly empty" ([], skip monitor fallback). Same convention as
     # user_assigned_data_uses.
-    steward_ids = Column(
+    target_system_steward_ids = Column(
         ARRAY(String),
         nullable=True,
         server_default=None,

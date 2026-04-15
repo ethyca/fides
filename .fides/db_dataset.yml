@@ -3266,7 +3266,7 @@ dataset:
       data_categories: [system]
     - name: source_modified
       data_categories: [system]
-    - name: steward_ids
+    - name: target_system_steward_ids
       data_categories: [system]
     - name: updated_at
       data_categories: [system]

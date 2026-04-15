@@ -1,4 +1,4 @@
-"""add steward_ids to stagedresource
+"""add target_system_steward_ids to stagedresource
 
 Revision ID: a42ef09a3dfe
 Revises: b3c8d5e7f2a1
@@ -20,9 +20,9 @@ depends_on = None
 def upgrade():
     op.add_column(
         "stagedresource",
-        sa.Column("steward_ids", ARRAY(sa.String()), nullable=True),
+        sa.Column("target_system_steward_ids", ARRAY(sa.String()), nullable=True),
     )
 
 
 def downgrade():
-    op.drop_column("stagedresource", "steward_ids")
+    op.drop_column("stagedresource", "target_system_steward_ids")
