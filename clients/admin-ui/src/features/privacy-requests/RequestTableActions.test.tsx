@@ -42,9 +42,6 @@ jest.mock("~/features/common/Restrict", () => ({
 }));
 
 jest.mock("fidesui", () => {
-  // eslint-disable-next-line global-require
-  const react = require("react");
-
   return {
     Button: ({ children, onClick, loading, disabled, icon, ...props }: any) => (
       <button
@@ -58,26 +55,16 @@ jest.mock("fidesui", () => {
         {children}
       </button>
     ),
-    ChakraHStack: ({ children, ...props }: any) => (
-      <div {...props}>{children}</div>
-    ),
-    ChakraPortal: ({ children }: any) => <div>{children}</div>,
-    ChakraText: ({ children }: any) => <span>{children}</span>,
-    ChakraStackProps: {},
+    Flex: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    FlexProps: {},
+    Typography: {
+      Text: ({ children }: any) => <span>{children}</span>,
+    },
     Icons: {
       Checkmark: () => <span>✓</span>,
       Close: () => <span>✕</span>,
       Stamp: () => <span>🔖</span>,
       TrashCan: ({ size }: any) => <span data-size={size}>🗑</span>,
-    },
-    useChakraDisclosure: () => {
-      const [isOpen, setIsOpen] = react.useState(false);
-
-      return {
-        isOpen,
-        onOpen: () => setIsOpen(true),
-        onClose: () => setIsOpen(false),
-      };
     },
     useModal: () => ({
       confirm: jest.fn(),

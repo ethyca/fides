@@ -335,6 +335,64 @@ class TestPrivacyCenterConfig:
             exc_info.value
         )
 
+    def test_valid_url_fields(self, privacy_center_config: PrivacyCenterConfig):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["server_url_development"] = "http://localhost:8080"
+        config_data["server_url_production"] = "https://api.example.com"
+        config_data["logo_url"] = "https://cdn.example.com/logo.png"
+        config_data["privacy_policy_url"] = "https://example.com/privacy"
+        config = PrivacyCenterConfig(**config_data)
+        assert config.server_url_development == "http://localhost:8080"
+        assert config.server_url_production == "https://api.example.com"
+        assert config.logo_url == "https://cdn.example.com/logo.png"
+        assert config.privacy_policy_url == "https://example.com/privacy"
+
+    def test_invalid_server_url_development(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["server_url_development"] = "ftp://example.com"
+        with pytest.raises(ValidationError) as exc:
+            PrivacyCenterConfig(**config_data)
+        assert "URL must use the http or https scheme" in str(exc.value)
+
+    def test_invalid_logo_url(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["logo_url"] = "not-a-url"
+        with pytest.raises(ValidationError) as exc:
+            PrivacyCenterConfig(**config_data)
+        assert "URL must use the http or https scheme" in str(exc.value)
+
+    def test_null_url_fields_are_valid(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["server_url_development"] = None
+        config_data["logo_url"] = None
+        config = PrivacyCenterConfig(**config_data)
+        assert config.server_url_development is None
+        assert config.logo_url is None
+
+    def test_empty_actions(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"] = []
+        config = PrivacyCenterConfig(**config_data)
+        assert config.actions == []
+
+    def test_missing_actions_defaults_to_empty(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        del config_data["actions"]
+        config = PrivacyCenterConfig(**config_data)
+        assert config.actions == []
+
     def test_invalid_executable_consent(
         self, privacy_center_config: PrivacyCenterConfig
     ):

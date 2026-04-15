@@ -9,7 +9,6 @@ import {
   List,
   Pagination,
   Text,
-  Tooltip,
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
@@ -180,14 +179,6 @@ export const DiscoveredInfrastructureSystemsTable = ({
               Actions
             </Button>
           </Dropdown>
-          <Tooltip title="Refresh">
-            <Button
-              icon={<Icons.Renew />}
-              aria-label="Refresh"
-              onClick={refetch}
-              loading={isLoading}
-            />
-          </Tooltip>
         </Flex>
       </Flex>
       <Flex gap="medium" align="center">

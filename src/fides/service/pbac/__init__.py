@@ -2,8 +2,8 @@
 
 Import types and pure functions directly::
 
-    from fides.service.pbac.types import RawQueryLogEntry, EvaluationResult
-    from fides.service.pbac.evaluate import evaluate_access
+    from fides.service.pbac.types import RawQueryLogEntry, EvaluationRecord
+    from fides.service.pbac.evaluate import evaluate_purpose
     from fides.service.pbac.service import PBACEvaluationService
 
 The service module (PBACEvaluationService, InProcessPBACEvaluationService)

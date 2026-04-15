@@ -1,6 +1,13 @@
 import { baseApi } from "~/features/common/api.slice";
 
-export interface ControlGroup {
+import type {
+  GeneratePoliciesResponse,
+  OnboardingConfigResponse,
+  OnboardingDataUsesResponse,
+  OnboardingIndustriesResponse,
+} from "./types";
+
+export interface Control {
   key: string;
   label: string;
 }
@@ -84,12 +91,46 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Access Policies"],
     }),
-    getControlGroups: build.query<ControlGroup[], void>({
+    getControls: build.query<Control[], void>({
       query: () => ({
         method: "GET",
-        url: "plus/access-policy/control-group",
+        url: "plus/controls",
       }),
-      providesTags: ["Access Policy Control Groups"],
+      providesTags: ["Controls"],
+    }),
+    getOnboardingIndustries: build.query<OnboardingIndustriesResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/presets/industries",
+      }),
+    }),
+    getOnboardingDataUses: build.query<
+      OnboardingDataUsesResponse,
+      { industry: string; geographies: string[] }
+    >({
+      query: ({ industry, geographies }) => {
+        const params = new URLSearchParams();
+        params.append("industry", industry);
+        geographies.forEach((g) => params.append("geographies", g));
+        return {
+          method: "GET",
+          url: `plus/access-policy/presets/data-uses?${params.toString()}`,
+        };
+      },
+    }),
+    getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/presets/config",
+      }),
+    }),
+    generatePolicies: build.mutation<GeneratePoliciesResponse, FormData>({
+      query: (formData) => ({
+        method: "POST",
+        url: "plus/access-policy/presets/generate",
+        body: formData,
+      }),
+      invalidatesTags: ["Access Policies"],
     }),
   }),
 });
@@ -101,5 +142,9 @@ export const {
   useUpdateAccessPolicyMutation,
   useDeleteAccessPolicyMutation,
   useReorderAccessPolicyMutation,
-  useGetControlGroupsQuery,
+  useGetControlsQuery,
+  useGetOnboardingIndustriesQuery,
+  useGetOnboardingDataUsesQuery,
+  useGetOnboardingConfigQuery,
+  useGeneratePoliciesMutation,
 } = accessPoliciesApi;

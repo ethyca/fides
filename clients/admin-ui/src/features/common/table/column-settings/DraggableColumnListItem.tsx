@@ -29,7 +29,11 @@ const useDraggableColumnListItem = ({
   DraggableColumnListItemProps,
   "id" | "index" | "moveColumn" | "setColumnVisible"
 >) => {
-  const ref = useRef<HTMLDivElement>(null);
+  // rowRef is the drop target (the full row, so hover triggers anywhere on it).
+  // dragRef is the drag source (the drag handle icon only).
+  const rowRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<HTMLDivElement>(null);
+
   const [{ handlerId }, drop] = useDrop<
     DragItem,
     void,
@@ -42,7 +46,7 @@ const useDraggableColumnListItem = ({
       };
     },
     hover(item: DragItem, monitor) {
-      if (!ref.current) {
+      if (!rowRef.current) {
         return;
       }
       const dragIndex = item.index;
@@ -52,7 +56,7 @@ const useDraggableColumnListItem = ({
         return;
       }
 
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverBoundingRect = rowRef.current?.getBoundingClientRect();
       const hoverMiddleY =
         (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
@@ -80,13 +84,21 @@ const useDraggableColumnListItem = ({
     }),
   });
 
-  drag(drop(ref));
+  drop(rowRef);
+  drag(dragRef);
+  preview(rowRef);
 
   const handleColumnVisibleToggle = (checked: boolean) => {
     setColumnVisible(index, checked);
   };
 
-  return { isDragging, ref, handlerId, preview, handleColumnVisibleToggle };
+  return {
+    isDragging,
+    rowRef,
+    dragRef,
+    handlerId,
+    handleColumnVisibleToggle,
+  };
 };
 
 export const DraggableColumnListItem = ({
@@ -97,7 +109,7 @@ export const DraggableColumnListItem = ({
   setColumnVisible,
   text,
 }: DraggableColumnListItemProps) => {
-  const { ref, isDragging, handlerId, preview, handleColumnVisibleToggle } =
+  const { rowRef, dragRef, isDragging, handlerId, handleColumnVisibleToggle } =
     useDraggableColumnListItem({
       index,
       id,
@@ -108,9 +120,7 @@ export const DraggableColumnListItem = ({
   return (
     <Flex
       align="center"
-      ref={(element) => {
-        preview(element);
-      }}
+      ref={rowRef}
       data-handler-id={handlerId}
       style={{ opacity: isDragging ? 0.2 : 1 }}
       data-testid={`column-list-item-${id}`}
@@ -118,7 +128,7 @@ export const DraggableColumnListItem = ({
       className="py-1" // use padding instead of parent flex gap to better support dragging
     >
       <div
-        ref={ref}
+        ref={dragRef}
         style={{ cursor: isDragging ? "grabbing" : "grab" }}
         className="-ml-1 shrink-0"
         data-testid={`column-dragger-${id}`}

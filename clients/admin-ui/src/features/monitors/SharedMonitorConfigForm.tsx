@@ -3,6 +3,7 @@ import {
   Col,
   Flex,
   Form,
+  FormInstance,
   Icons,
   Input,
   Row,
@@ -46,11 +47,14 @@ const TOOLTIP_COPY = `Upload a CSV to map regex patterns to data categories. For
 const SharedMonitorConfigForm = ({
   config,
   onBackClick,
+  form: formProp,
 }: {
   config?: SharedMonitorConfig;
   onBackClick: () => void;
+  form?: FormInstance<SharedMonitorConfigFormValues>;
 }) => {
-  const [form] = Form.useForm<SharedMonitorConfigFormValues>();
+  const [internalForm] = Form.useForm<SharedMonitorConfigFormValues>();
+  const form = formProp ?? internalForm;
   const message = useMessage();
 
   const [createMonitorTemplate, { isLoading: createIsLoading }] =
@@ -80,9 +84,12 @@ const SharedMonitorConfigForm = ({
       name: values.name,
       description: values.description,
       classify_params: {
-        context_regex_pattern_mapping: values.rules.map(
-          ({ regex, dataCategory }) => [regex, dataCategory],
-        ),
+        context_regex_pattern_mapping: values.rules
+          .filter(
+            (rule): rule is { regex: string; dataCategory: string } =>
+              !!rule.regex && !!rule.dataCategory,
+          )
+          .map(({ regex, dataCategory }) => [regex, dataCategory]),
       },
     };
   };

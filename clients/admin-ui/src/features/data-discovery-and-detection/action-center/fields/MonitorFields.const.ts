@@ -2,7 +2,7 @@ import { CUSTOM_TAG_COLOR, Icons } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue, StatusCounts } from "~/types/api";
 
 export const TREE_PAGE_SIZE = 100;
 export const TREE_NODE_LOAD_MORE_TEXT = "Load more...";
@@ -45,6 +45,27 @@ export const DEFAULT_FILTER_STATUSES: Exclude<
   "Removed",
   "Error",
 ];
+
+export const STATUS_COUNTS: Record<keyof StatusCounts, keyof StatusCounts> = {
+  addition: "addition",
+  reviewed: "reviewed",
+  classified: "classifying",
+  classifying: "classifying",
+  monitored: "monitored",
+  removal: "removal",
+} as const;
+
+export const STATUS_COUNTS_TO_RESOURCE_STATUS: Record<
+  keyof StatusCounts,
+  ResourceStatusLabel
+> = {
+  addition: "Unlabeled",
+  reviewed: "Reviewed",
+  classified: "Classified",
+  classifying: "Classifying",
+  monitored: "Approved",
+  removal: "Removed",
+} as const;
 
 export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
   {

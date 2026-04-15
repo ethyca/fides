@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import TemplateVariableInput from "~/features/common/TemplateVariableInput";
 import { usePatchDatastoreConnectionSecretsMutation } from "~/features/datastore-connections";
 import {
   useGetJiraIssueTypesQuery,
@@ -17,8 +18,6 @@ import {
   usePreviewJiraTicketMutation,
 } from "~/features/plus/plus.slice";
 import { ConnectionConfigurationResponse, JiraTicketData } from "~/types/api";
-
-import TemplateVariableTextArea from "./TemplateVariableTextArea";
 
 const DUE_DATE_TYPE_NONE = "none";
 const DUE_DATE_TYPE_FIXED_DAYS = "fixed_days";
@@ -196,7 +195,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           rules={[{ required: true, message: "Enter a summary template" }]}
           tooltip="Insert template variables with /"
         >
-          <TemplateVariableTextArea
+          <TemplateVariableInput
             variables={templateVariables ?? []}
             rows={2}
             placeholder={`e.g. "DSR: __REQUEST_TYPE__ for __EMAIL__"; Enter / for variables`}
@@ -208,7 +207,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
           label="Description template"
           tooltip="Insert template variables with /"
         >
-          <TemplateVariableTextArea
+          <TemplateVariableInput
             variables={templateVariables ?? []}
             rows={6}
             placeholder={`e.g. "Privacy request __REQUEST_ID__ submitted on __SUBMISSION_DATE__"; Enter / for variables`}
