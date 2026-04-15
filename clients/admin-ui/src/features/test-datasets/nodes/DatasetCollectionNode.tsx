@@ -19,7 +19,12 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
   );
   const actions = useContext(DatasetEditorActionsContext);
   const hoverStatus = getNodeHoverStatus(id);
-  const hasFields = (nodeData.collection.fields?.length ?? 0) > 0;
+  // data.hasChildren is set by the draft-node injection in DatasetNodeEditor
+  // so that the source handle renders even on a still-empty collection —
+  // otherwise the animated edge to the draft input has no anchor.
+  const hasFields =
+    (nodeData as { hasChildren?: boolean }).hasChildren === true ||
+    (nodeData.collection.fields?.length ?? 0) > 0;
 
   return (
     <div

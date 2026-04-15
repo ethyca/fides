@@ -4,6 +4,7 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  Edge,
   EdgeTypes,
   MiniMap,
   Node,
@@ -20,7 +21,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Editor } from "~/features/common/yaml/helpers";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
-import AddNodeModal from "./AddNodeModal";
 import DatasetEditorActionsContext, {
   DatasetEditorActions,
 } from "./context/DatasetEditorActionsContext";
@@ -39,6 +39,9 @@ import { removeNulls } from "./helpers";
 import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
 import DatasetFieldNode from "./nodes/DatasetFieldNode";
 import DatasetRootNode from "./nodes/DatasetRootNode";
+import DatasetTextInputNode, {
+  DatasetTextInputNodeType,
+} from "./nodes/DatasetTextInputNode";
 import useDatasetGraph, {
   collectDatasetCategories,
   COLLECTION_ROOT_PREFIX,
@@ -48,6 +51,8 @@ import useDatasetGraph, {
   ProtectedFieldsInfo,
 } from "./useDatasetGraph";
 import useDatasetNodeLayout from "./useDatasetNodeLayout";
+
+const DRAFT_NODE_ID = "draft-node";
 
 const LAYOUT_OPTIONS = { direction: "LR" } as const;
 
@@ -62,27 +67,22 @@ const nodeTypes: NodeTypes = {
   datasetRootNode: DatasetRootNode,
   datasetCollectionNode: DatasetCollectionNode,
   datasetFieldNode: DatasetFieldNode,
+  datasetTextInputNode: DatasetTextInputNode,
 };
 
 const edgeTypes: EdgeTypes = {
   datasetTreeEdge: DatasetTreeEdge,
 };
 
-interface AddModalState {
-  open: boolean;
-  title: string;
-  existingNames: string[];
+interface DraftNodeState {
+  parentId: string;
   mode: "collection" | "field";
-  onConfirm: (name: string, fieldData?: Partial<DatasetField>) => void;
+  existingNames: string[];
+  /** Only set when mode is "field" — the collection the field is being added to. */
+  collectionName?: string;
+  /** Only set when adding a nested field — dot path of the parent field. */
+  parentFieldPath?: string;
 }
-
-const CLOSED_MODAL: AddModalState = {
-  open: false,
-  title: "",
-  existingNames: [],
-  mode: "collection",
-  onConfirm: () => {},
-};
 
 const DatasetNodeEditorInner = ({
   dataset,
@@ -102,7 +102,7 @@ const DatasetNodeEditorInner = ({
     null,
   );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [addModal, setAddModal] = useState<AddModalState>(CLOSED_MODAL);
+  const [draftNode, setDraftNode] = useState<DraftNodeState | null>(null);
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(
     null,
   );
@@ -234,11 +234,6 @@ const DatasetNodeEditorInner = ({
     focusedCollection,
     categoryFilter,
   );
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useDatasetNodeLayout({
-    nodes: rawNodes,
-    edges,
-    options: LAYOUT_OPTIONS,
-  });
 
   const selectedNodeData = useMemo(() => {
     if (!selectedNodeId) {
@@ -247,20 +242,6 @@ const DatasetNodeEditorInner = ({
     const node = rawNodes.find((n) => n.id === selectedNodeId);
     return (node?.data as CollectionNodeData | FieldNodeData) ?? null;
   }, [rawNodes, selectedNodeId]);
-
-  // Merge selection + highlight state into nodes
-  const nodes = useMemo(
-    () =>
-      layoutedNodes.map((node) => ({
-        ...node,
-        selected: node.id === selectedNodeId,
-        data: {
-          ...node.data,
-          isHighlighted: node.id === highlightedNodeId,
-        },
-      })),
-    [layoutedNodes, selectedNodeId, highlightedNodeId],
-  );
 
   // Fit view only when the graph structure changes (drill-down or node count),
   // not on metadata edits which don't affect layout.
@@ -275,14 +256,17 @@ const DatasetNodeEditorInner = ({
     return undefined;
   }, [nodeCount, focusedCollection, reactFlowInstance]);
 
-  // Clear selection when drilling in/out
+  // Clear selection and any pending draft when drilling in/out
   useEffect(() => {
     setSelectedNodeId(null);
+    setDraftNode(null);
   }, [focusedCollection]);
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      if (node.id === DATASET_ROOT_ID) {
+      // The draft input node handles its own focus/submit/cancel — ignore
+      // ReactFlow's click events for it so we don't blur the input.
+      if (node.id === DRAFT_NODE_ID || node.id === DATASET_ROOT_ID) {
         return;
       }
       // If clicking a collection in overview mode, drill in
@@ -350,7 +334,7 @@ const DatasetNodeEditorInner = ({
           }
           return {
             ...c,
-            fields: updateFieldAtPath(c.fields, segments, updates),
+            fields: updateFieldAtPath(c.fields ?? [], segments, updates),
           };
         }),
       };
@@ -378,14 +362,9 @@ const DatasetNodeEditorInner = ({
   );
 
   const handleAddField = useCallback(
-    (
-      collectionName: string,
-      name: string,
-      parentFieldPath?: string,
-      fieldData?: Partial<DatasetField>,
-    ) => {
+    (collectionName: string, name: string, parentFieldPath?: string) => {
       const { current } = datasetRef;
-      const newField: DatasetField = { name, ...fieldData };
+      const newField: DatasetField = { name };
       onDatasetChange({
         ...current,
         collections: current.collections.map((c) => {
@@ -393,12 +372,12 @@ const DatasetNodeEditorInner = ({
             return c;
           }
           if (!parentFieldPath) {
-            return { ...c, fields: [...c.fields, newField] };
+            return { ...c, fields: [...(c.fields ?? []), newField] };
           }
           const segments = parentFieldPath.split(".");
           return {
             ...c,
-            fields: addNestedField(c.fields, segments, newField),
+            fields: addNestedField(c.fields ?? [], segments, newField),
           };
         }),
       });
@@ -406,6 +385,86 @@ const DatasetNodeEditorInner = ({
       highlightNode(`field-${collectionName}-${fieldPath}`);
     },
     [onDatasetChange, highlightNode],
+  );
+
+  // Inject the inline text-input node + animated edge when a draft is active.
+  // The submit/cancel callbacks are baked into node data (React Flow custom
+  // nodes only receive `data`), so this memo rebuilds whenever the draft
+  // descriptor or the add handlers change.
+  const { nodesWithDraft, edgesWithDraft } = useMemo(() => {
+    if (!draftNode) {
+      return { nodesWithDraft: rawNodes, edgesWithDraft: edges };
+    }
+    const inputNode: DatasetTextInputNodeType = {
+      id: DRAFT_NODE_ID,
+      position: { x: 0, y: 0 },
+      type: "datasetTextInputNode",
+      draggable: false,
+      selectable: false,
+      data: {
+        parentId: draftNode.parentId,
+        mode: draftNode.mode,
+        existingNames: draftNode.existingNames,
+        onCancel: () => setDraftNode(null),
+        onSubmit: (name: string) => {
+          if (draftNode.mode === "collection") {
+            handleAddCollection(name);
+            setSelectedNodeId(`${COLLECTION_ROOT_PREFIX}${name}`);
+          } else if (draftNode.collectionName) {
+            handleAddField(
+              draftNode.collectionName,
+              name,
+              draftNode.parentFieldPath,
+            );
+            const fieldPath = draftNode.parentFieldPath
+              ? `${draftNode.parentFieldPath}.${name}`
+              : name;
+            setSelectedNodeId(`field-${draftNode.collectionName}-${fieldPath}`);
+          }
+          setDraftNode(null);
+        },
+      },
+    };
+    const draftEdge: Edge = {
+      id: "draft-edge",
+      source: draftNode.parentId,
+      target: DRAFT_NODE_ID,
+      animated: true,
+    };
+    // Patch the parent node so it renders its source handle even if it has no
+    // real children yet — otherwise the draft edge has nowhere to anchor and
+    // the connecting line doesn't appear (e.g. adding the first nested field
+    // to a leaf field, or the first field to an empty collection).
+    const patchedNodes = rawNodes.map((n) =>
+      n.id === draftNode.parentId
+        ? { ...n, data: { ...n.data, hasChildren: true } }
+        : n,
+    );
+    return {
+      nodesWithDraft: [...patchedNodes, inputNode],
+      edgesWithDraft: [...edges, draftEdge],
+    };
+  }, [rawNodes, edges, draftNode, handleAddCollection, handleAddField]);
+
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useDatasetNodeLayout({
+    nodes: nodesWithDraft,
+    edges: edgesWithDraft,
+    options: LAYOUT_OPTIONS,
+  });
+
+  // Merge selection + highlight state into nodes. The draft node is not a
+  // real dataset node, so it never matches selectedNodeId / highlightedNodeId.
+  const nodes = useMemo(
+    () =>
+      layoutedNodes.map((node) => ({
+        ...node,
+        selected: node.id === selectedNodeId,
+        data: {
+          ...node.data,
+          isHighlighted: node.id === highlightedNodeId,
+        },
+      })),
+    [layoutedNodes, selectedNodeId, highlightedNodeId],
   );
 
   const handleDeleteCollection = useCallback(
@@ -435,7 +494,10 @@ const DatasetNodeEditorInner = ({
           if (c.name !== collectionName) {
             return c;
           }
-          return { ...c, fields: removeFieldAtPath(c.fields, segments) };
+          return {
+            ...c,
+            fields: removeFieldAtPath(c.fields ?? [], segments),
+          };
         }),
       });
       setSelectedNodeId(null);
@@ -447,15 +509,10 @@ const DatasetNodeEditorInner = ({
     () => ({
       addCollection: () => {
         const currentDataset = datasetRef.current;
-        setAddModal({
-          open: true,
-          title: "Add Collection",
-          existingNames: currentDataset.collections.map((c) => c.name),
+        setDraftNode({
+          parentId: DATASET_ROOT_ID,
           mode: "collection",
-          onConfirm: (name: string) => {
-            handleAddCollection(name);
-            setAddModal(CLOSED_MODAL);
-          },
+          existingNames: currentDataset.collections.map((c) => c.name),
         });
       },
       addField: (collectionName: string, parentFieldPath?: string) => {
@@ -469,29 +526,21 @@ const DatasetNodeEditorInner = ({
               parentFieldPath.split("."),
             )
           : (collection?.fields ?? []);
-        const label = parentFieldPath
-          ? `Add nested field to "${parentFieldPath}"`
-          : `Add field to "${collectionName}"`;
-        setAddModal({
-          open: true,
-          title: label,
-          existingNames: siblingFields.map((f) => f.name),
+        const parentId = parentFieldPath
+          ? `field-${collectionName}-${parentFieldPath}`
+          : `${COLLECTION_ROOT_PREFIX}${collectionName}`;
+        setDraftNode({
+          parentId,
           mode: "field",
-          onConfirm: (name: string, fieldData?: Partial<DatasetField>) => {
-            handleAddField(collectionName, name, parentFieldPath, fieldData);
-            setAddModal(CLOSED_MODAL);
-          },
+          existingNames: siblingFields.map((f) => f.name),
+          collectionName,
+          parentFieldPath,
         });
       },
       deleteCollection: handleDeleteCollection,
       deleteField: handleDeleteField,
     }),
-    [
-      handleAddCollection,
-      handleAddField,
-      handleDeleteCollection,
-      handleDeleteField,
-    ],
+    [handleDeleteCollection, handleDeleteField],
   );
 
   const datasetLabel = dataset.name || dataset.fides_key;
@@ -672,14 +721,6 @@ const DatasetNodeEditorInner = ({
           onUpdateCollection={handleUpdateCollection}
           onUpdateField={handleUpdateField}
           allowNameEditing={allowNameEditing}
-        />
-        <AddNodeModal
-          open={addModal.open}
-          title={addModal.title}
-          existingNames={addModal.existingNames}
-          mode={addModal.mode}
-          onConfirm={addModal.onConfirm}
-          onCancel={() => setAddModal(CLOSED_MODAL)}
         />
       </Flex>
     </DatasetEditorActionsContext.Provider>
