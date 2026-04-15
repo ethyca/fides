@@ -84,6 +84,12 @@ func TestAlice_Orders_ViolationSuppressedByPolicy(t *testing.T) {
 	if *v.SuppressedByPolicy != "allow-analytics-on-billing-data" {
 		t.Errorf("expected policy key 'allow-analytics-on-billing-data', got %q", *v.SuppressedByPolicy)
 	}
+	// The ALLOW policy in the fixture set declares an action message; the
+	// pipeline should surface it on the suppressed violation even though
+	// EvaluatePolicies by design only returns Action on DENY decisions.
+	if v.SuppressedByAction == nil {
+		t.Fatalf("expected SuppressedByAction to be populated from the policy's action block")
+	}
 }
 
 func TestAlice_Invoices_CompliantViaCollectionPurpose(t *testing.T) {

@@ -259,8 +259,11 @@ func filterViolationsThroughPolicies(
 		if result.Decision == pbac.PolicyAllow && result.DecisivePolicyKey != nil {
 			key := *result.DecisivePolicyKey
 			v.SuppressedByPolicy = &key
-			if result.Action != nil {
-				v.SuppressedByAction = result.Action
+			// EvaluatePolicies deliberately only returns Action on
+			// DENY decisions, so look up the decisive ALLOW policy's
+			// action ourselves for auditability.
+			if action := findPolicyAction(policies, key); action != nil {
+				v.SuppressedByAction = action
 			}
 		}
 		out = append(out, v)
@@ -286,6 +289,19 @@ func dataUsesForDatasetPurposes(
 	}
 	sort.Strings(out)
 	return out
+}
+
+// findPolicyAction returns the Action of the policy with the matching
+// key, or nil if not found or it has no action. Used when the pipeline
+// wants to attribute an ALLOW suppression to the policy's action (the
+// engine itself only returns Action on DENY decisions by design).
+func findPolicyAction(policies []pbac.AccessPolicy, key string) *pbac.PolicyAction {
+	for _, p := range policies {
+		if p.Key == key {
+			return p.Action
+		}
+	}
+	return nil
 }
 
 func allSuppressed(violations []pbac.PurposeViolation) bool {
