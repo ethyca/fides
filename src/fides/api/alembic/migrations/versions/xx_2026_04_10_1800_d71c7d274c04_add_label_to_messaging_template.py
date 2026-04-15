@@ -1,7 +1,7 @@
 """Add label column to messaging_template
 
 Revision ID: d71c7d274c04
-Revises: b3c8d5e7f2a1
+Revises: a42ef09a3dfe
 Create Date: 2026-04-10 18:00:00.000000
 
 """
@@ -10,12 +10,12 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "d71c7d274c04"
-down_revision = "b3c8d5e7f2a1"
+down_revision = "a42ef09a3dfe"
 branch_labels = None
 depends_on = None
 
-# Maps MessagingActionType values to their default labels.
-# Must stay in sync with DEFAULT_MESSAGING_TEMPLATES in messaging_template.py.
+# Default labels at the time this migration was written (2026-04-10).
+# Intentionally hardcoded — migrations must not import application code.
 DEFAULT_LABELS = {
     "subject_identity_verification": "Subject identity verification",
     "privacy_request_receipt": "Privacy request received",

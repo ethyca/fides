@@ -924,3 +924,42 @@ class TestMessagingTemplateLabels:
             {"label": "Renamed verification template"},
         )
         assert patched.label == "Renamed verification template"
+
+    @pytest.mark.parametrize(
+        "num_templates,expected_labels",
+        [
+            (1, ["Subject identity verification"]),
+            (2, ["Subject identity verification", "Subject identity verification (2)"]),
+            (
+                3,
+                [
+                    "Subject identity verification",
+                    "Subject identity verification (2)",
+                    "Subject identity verification (3)",
+                ],
+            ),
+        ],
+        ids=["first_gets_default", "second_gets_suffix_2", "third_gets_suffix_3"],
+    )
+    def test_auto_label_numbering(
+        self, db: Session, property_a, num_templates, expected_labels
+    ):
+        """Creating multiple templates without explicit labels produces
+        incrementing labels: default, (2), (3), etc."""
+        created: list[MessagingTemplate] = []
+        try:
+            for _ in range(num_templates):
+                template = create_property_specific_template_by_type(
+                    db,
+                    self._SIV,
+                    MessagingTemplateWithPropertiesBodyParams(
+                        content=self._CONTENT,
+                        properties=[property_a.id],
+                        is_enabled=False,
+                    ),
+                )
+                created.append(template)
+            assert [t.label for t in created] == expected_labels
+        finally:
+            for t in reversed(created):
+                t.delete(db)

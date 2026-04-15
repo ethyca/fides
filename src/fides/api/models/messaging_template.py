@@ -112,7 +112,9 @@ class MessagingTemplate(Base):
     )
 
     type = Column(String, index=True, nullable=False)
-    label = Column(String, nullable=False, default="Default")
+    # Defensive fallback — the service layer always sets an explicit label.
+    # "Unnamed" signals a missing label rather than implying "the default template".
+    label = Column(String, nullable=False, default="Unnamed")
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
     properties: RelationshipProperty[List[Property]] = relationship(
         "Property",

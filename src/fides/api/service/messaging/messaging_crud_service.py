@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -95,7 +96,7 @@ def get_all_basic_messaging_templates(db: Session) -> List[MessagingTemplate]:
             templates.append(
                 MessagingTemplate(
                     type=template_type,
-                    label=template_from_db.label or template["label"],
+                    label=template_from_db.label,
                     content=template_from_db.content,
                 )
             )
@@ -374,7 +375,7 @@ def patch_property_specific_template(
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
     # Validate label uniqueness if label is being changed
     new_label = template_patch_data.get("label")
-    if new_label and new_label != messaging_template.label:
+    if new_label is not None and new_label != messaging_template.label:
         _validate_unique_label(
             db, messaging_template.type, new_label, exclude_id=template_id
         )
@@ -489,7 +490,13 @@ def create_property_specific_template_by_type(
         data["properties"] = [
             {"id": property_id} for property_id in template_create_body.properties
         ]
-    return MessagingTemplate.create(db=db, data=data)
+    try:
+        return MessagingTemplate.create(db=db, data=data)
+    except IntegrityError:
+        db.rollback()
+        raise MessagingTemplateValidationException(
+            f"A template with type '{template_type}' and label '{label}' already exists."
+        )
 
 
 def delete_template_by_id(db: Session, template_id: str) -> None:

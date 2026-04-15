@@ -572,7 +572,7 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
-    label: str | None = None
+    label: str | None = Field(None, min_length=1)
     content: Dict[str, Any] = Field(
         examples=[
             {
@@ -586,7 +586,7 @@ class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
 
 class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
-    label: str | None = None
+    label: str | None = Field(None, min_length=1)
     content: Optional[Dict[str, Any]] = Field(
         None,
         examples=[
