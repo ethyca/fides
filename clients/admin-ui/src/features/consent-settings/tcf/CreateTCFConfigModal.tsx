@@ -43,7 +43,7 @@ export const CreateTCFConfigModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={null}
     >
       <Formik
@@ -53,7 +53,7 @@ export const CreateTCFConfigModal = ({
       >
         {({ isValid, dirty }) => (
           <Form>
-            <Space direction="vertical" size="small" className="w-full">
+            <Space orientation="vertical" size="small" className="w-full">
               <Text>
                 TCF configurations allow you to define unique sets of publisher
                 restrictions. These configurations can be added to privacy

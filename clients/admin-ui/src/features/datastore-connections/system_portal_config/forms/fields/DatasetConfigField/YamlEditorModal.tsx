@@ -29,7 +29,7 @@ const YamlEditorModal = ({
     open={isOpen}
     onCancel={onClose}
     centered
-    destroyOnClose
+    destroyOnHidden
     width={MODAL_SIZE.lg}
     title={title ?? "Edit Dataset"}
     footer={null}

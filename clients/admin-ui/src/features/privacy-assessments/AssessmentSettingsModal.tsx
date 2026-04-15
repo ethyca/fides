@@ -189,7 +189,7 @@ const AssessmentSettingsModal = ({
           {channelOptions.length === 0 && !isLoadingChannels ? (
             <Alert
               type="info"
-              message="Configure Slack to enable channel notifications."
+              title="Configure Slack to enable channel notifications."
               action={
                 <NextLink href={CHAT_PROVIDERS_ROUTE} target="_blank" passHref>
                   <Button size="small" type="link">

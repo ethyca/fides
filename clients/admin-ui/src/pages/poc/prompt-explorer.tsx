@@ -261,7 +261,7 @@ const PromptExplorer: NextPage = () => {
       <Layout>
         <Content className="overflow-auto px-10 py-6">
           <Alert
-            message="Plus Required"
+            title="Plus Required"
             description="The Prompt Explorer requires Fides Plus."
             type="warning"
             showIcon
@@ -282,7 +282,7 @@ const PromptExplorer: NextPage = () => {
 
         {promptsError && (
           <Alert
-            message="Failed to load prompts"
+            title="Failed to load prompts"
             description="Make sure fidesplus is running in dev mode."
             type="error"
             showIcon
@@ -321,7 +321,7 @@ const PromptExplorer: NextPage = () => {
                   onChange={(e) => setSelectedPromptId(e.target.value)}
                   className="w-full"
                 >
-                  <Space direction="vertical" className="w-full">
+                  <Space orientation="vertical" className="w-full">
                     {prompts?.map((prompt: PromptInfo) => (
                       <Card
                         key={prompt.id}
@@ -351,14 +351,14 @@ const PromptExplorer: NextPage = () => {
 
           {/* Middle - Configuration */}
           <Col xs={24} md={6}>
-            <Space direction="vertical" className="w-full" size="medium">
+            <Space orientation="vertical" className="w-full" size="medium">
               {/* Data Sections - only for assessment prompts */}
               {selectedPrompt?.category === "assessment" && (
                 <Card title="Data Sections" size="small">
                   <Text type="secondary" className="mb-3 block">
                     Toggle which Fides data to include in the prompt context.
                   </Text>
-                  <Space direction="vertical" className="w-full">
+                  <Space orientation="vertical" className="w-full">
                     {dataSectionsList?.map(
                       (section: { id: string; name: string }) => (
                         <Checkbox
@@ -386,7 +386,7 @@ const PromptExplorer: NextPage = () => {
                   <Text type="secondary" className="mb-3 block">
                     Select a template for questions, or an existing assessment.
                   </Text>
-                  <Space direction="vertical" className="w-full">
+                  <Space orientation="vertical" className="w-full">
                     <div>
                       <Text strong className="mb-1 block">
                         Template (for questions)
@@ -466,7 +466,7 @@ const PromptExplorer: NextPage = () => {
 
               {/* Actions */}
               <Card size="small">
-                <Space direction="vertical" className="w-full">
+                <Space orientation="vertical" className="w-full">
                   <Button
                     type="primary"
                     block
@@ -503,7 +503,7 @@ const PromptExplorer: NextPage = () => {
 
           {/* Right - Output */}
           <Col xs={24} md={12}>
-            <Space direction="vertical" className="size-full" size="medium">
+            <Space orientation="vertical" className="size-full" size="medium">
               {/* Rendered Prompt */}
               <Card
                 title="Rendered Prompt"

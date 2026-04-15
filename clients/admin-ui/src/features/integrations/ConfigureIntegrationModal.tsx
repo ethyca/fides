@@ -75,7 +75,7 @@ const ConfigureIntegrationModal = ({
       onClose={onClose}
       getIsDirty={() => formState?.dirty ?? false}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={modalFooter}
     >
       <ConfigureIntegrationForm

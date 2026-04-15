@@ -294,11 +294,11 @@ export const DatamapReportTable = ({
                     },
                   ],
                 }}
-                overlayClassName="group-by-menu-list"
+                classNames={{ root: "group-by-menu-list" }}
               >
                 <Button
                   icon={<Icons.ChevronDown size={14} />}
-                  iconPosition="end"
+                  iconPlacement="end"
                   loading={groupChangeStarted}
                   data-testid="group-by-menu"
                 >
@@ -335,7 +335,7 @@ export const DatamapReportTable = ({
                   ],
                 }}
                 placement="bottomRight"
-                overlayClassName="more-menu-list"
+                classNames={{ root: "more-menu-list" }}
               >
                 <Button
                   icon={<Icons.OverflowMenuVertical />}

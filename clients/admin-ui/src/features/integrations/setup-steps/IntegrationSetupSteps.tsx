@@ -128,7 +128,7 @@ export const IntegrationSetupSteps = ({
   return (
     <Card title="Integration setup" data-testid="integration-setup-card">
       <Steps
-        direction="vertical"
+        orientation="vertical"
         current={getCurrentStep()}
         status={getStepStatus()}
         items={stepsWithIcons}
