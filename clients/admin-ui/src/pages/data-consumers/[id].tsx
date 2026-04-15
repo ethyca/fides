@@ -1,15 +1,24 @@
-import { Spin, useMessage } from "fidesui";
+import { Button, Flex, Tabs, Tag, Text, Title, useMessage } from "fidesui";
 import type { NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from "next/router";
 
 import FixedLayout from "~/features/common/FixedLayout";
-import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
+import {
+  ACCESS_CONTROL_ROUTE,
+  DATA_CONSUMERS_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import ConsumerSummaryBanner from "~/features/data-consumers/ConsumerSummaryBanner";
+import {
+  CONSUMER_TYPE_UI_LABELS,
+  PLATFORM_LABELS,
+} from "~/features/data-consumers/constants";
+import ConsumerDetailOverview from "~/features/data-consumers/ConsumerDetailOverview";
 import DataConsumerForm, {
   DataConsumerFormValues,
 } from "~/features/data-consumers/DataConsumerForm";
 import { MOCK_DATA_CONSUMERS } from "~/features/data-consumers/mockData";
+import type { ConsumerType } from "~/features/data-consumers/types";
 
 const EditDataConsumerPage: NextPage = () => {
   const message = useMessage();
@@ -28,7 +37,7 @@ const EditDataConsumerPage: NextPage = () => {
             { title: "Not found" },
           ]}
         />
-        <Typography.Text>Consumer not found.</Typography.Text>
+        <Text>Consumer not found.</Text>
       </FixedLayout>
     );
   }
@@ -38,22 +47,27 @@ const EditDataConsumerPage: NextPage = () => {
     router.push(DATA_CONSUMERS_ROUTE);
   };
 
-  if (error) {
-    return (
-      <ErrorPage
-        error={error}
-        defaultMessage="A problem occurred while fetching the data consumer"
-      />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <Layout title="Data consumer">
-        <Spin />
-      </Layout>
-    );
-  }
+  const tabItems = [
+    {
+      key: "overview",
+      label: (
+        <Flex align="center" gap={6}>
+          Activity
+          {consumer && consumer.findingsCount > 0 && (
+            <Tag>{consumer.findingsCount}</Tag>
+          )}
+        </Flex>
+      ),
+      children: consumer ? (
+        <ConsumerDetailOverview consumer={consumer} />
+      ) : null,
+    },
+    {
+      key: "configuration",
+      label: "Configuration",
+      children: <DataConsumerForm consumer={consumer} onSubmit={handleSubmit} />,
+    },
+  ];
 
   return (
     <FixedLayout title={consumer?.name ?? "Data consumer"}>
@@ -63,12 +77,31 @@ const EditDataConsumerPage: NextPage = () => {
           { title: "All data consumers", href: DATA_CONSUMERS_ROUTE },
           { title: consumer?.name ?? "Data consumer" },
         ]}
+        rightContent={
+          <Link href={ACCESS_CONTROL_ROUTE}>
+            <Button type="default">View in access control ↗</Button>
+          </Link>
+        }
       />
-      <Flex vertical gap="middle">
-        {consumer && <ConsumerSummaryBanner consumer={consumer} />}
-        <Card size="small" title="Configuration">
-          <DataConsumerForm consumer={consumer} onSubmit={handleSubmit} />
-        </Card>
+      <Flex vertical gap="middle" className="h-full overflow-y-auto pr-2">
+        <div>
+          <Title level={2} style={{ marginBottom: 4 }}>
+            {consumer?.name}
+          </Title>
+          <Flex gap="middle" align="center">
+            <Text type="secondary">Scope: {consumer?.identifier}</Text>
+            <Tag>
+              {CONSUMER_TYPE_UI_LABELS[consumer?.type as ConsumerType] ??
+                consumer?.type}
+            </Tag>
+            {consumer?.platform && (
+              <Text type="secondary">
+                {PLATFORM_LABELS[consumer.platform] ?? consumer.platform}
+              </Text>
+            )}
+          </Flex>
+        </div>
+        <Tabs items={tabItems} defaultActiveKey="overview" />
       </Flex>
     </FixedLayout>
   );

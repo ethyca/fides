@@ -1,4 +1,9 @@
-import type { ConsumerViolation, MockDataConsumer } from "./types";
+import type {
+  ConsumerViolation,
+  MockDataConsumer,
+  PolicyGap,
+  PolicyViolationGroup,
+} from "./types";
 
 export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
   {
@@ -8,7 +13,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "team",
     platform: "google_groups",
     purposes: ["Campaign targeting", "Audience segmentation"],
-    violationCount: 4,
+    findingsCount: 3,
     linkedSystem: null,
   },
   {
@@ -18,7 +23,8 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "ai_agent",
     platform: "service_account",
     purposes: ["Customer support", "Ticket resolution"],
-    violationCount: 2,
+    findingsCount: 2,
+    // 2 policy deviations
     linkedSystem: null,
   },
   {
@@ -28,7 +34,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "project",
     platform: "okta",
     purposes: ["Predictive analytics"],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
   {
@@ -38,7 +44,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "ai_agent",
     platform: "service_account",
     purposes: ["Fraud prevention", "Transaction monitoring"],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
   {
@@ -48,7 +54,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "system",
     platform: null,
     purposes: ["Profile unification", "Campaign targeting", "Analytics"],
-    violationCount: 1,
+    findingsCount: 1,
     linkedSystem: "cdp-production",
   },
   {
@@ -58,7 +64,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "team",
     platform: "google_groups",
     purposes: [],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
   {
@@ -68,7 +74,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "team",
     platform: "active_directory",
     purposes: ["Employee admin", "Payroll processing"],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
   {
@@ -78,7 +84,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "team",
     platform: "google_groups",
     purposes: ["Product improvement", "Usage analytics"],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
   {
@@ -88,7 +94,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "project",
     platform: "okta",
     purposes: ["Regulatory reporting"],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
   {
@@ -98,7 +104,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "system",
     platform: null,
     purposes: ["Transactional email", "Marketing email"],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: "sendgrid",
   },
   {
@@ -108,7 +114,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "service_account",
     platform: "service_account",
     purposes: [],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
   {
@@ -118,7 +124,7 @@ export const MOCK_DATA_CONSUMERS: MockDataConsumer[] = [
     type: "ai_agent",
     platform: "service_account",
     purposes: ["Personalization", "Product improvement"],
-    violationCount: 0,
+    findingsCount: 0,
     linkedSystem: null,
   },
 ];
@@ -190,3 +196,91 @@ export const MOCK_VIOLATIONS: ConsumerViolation[] = [
       "Accessed raw_clickstream behavioral data not covered by declared purposes (Profile unification, Campaign targeting, Analytics).",
   },
 ];
+
+export const MOCK_VIOLATION_GROUPS: Record<string, PolicyViolationGroup[]> = {
+  "1": [
+    {
+      purpose: "Campaign targeting",
+      totalQueries: 847,
+      datasets: [
+        {
+          name: "Snowflake — raw_events",
+          tables: ["payment_transactions", "user_sessions"],
+          queryCount: 612,
+          lastSeen: "2026-03-30T09:14:00Z",
+        },
+        {
+          name: "BigQuery — customer_pii",
+          tables: ["identity_documents"],
+          queryCount: 235,
+          lastSeen: "2026-03-28T11:03:00Z",
+        },
+      ],
+    },
+    {
+      purpose: "Audience segmentation",
+      totalQueries: 203,
+      datasets: [
+        {
+          name: "PostgreSQL — app_db",
+          tables: ["user_preferences", "account_settings"],
+          queryCount: 203,
+          lastSeen: "2026-03-27T08:51:00Z",
+        },
+      ],
+    },
+  ],
+  "2": [
+    {
+      purpose: "Customer support",
+      totalQueries: 156,
+      datasets: [
+        {
+          name: "PostgreSQL — app_db",
+          tables: ["employee_records"],
+          queryCount: 98,
+          lastSeen: "2026-03-30T13:22:00Z",
+        },
+      ],
+    },
+    {
+      purpose: "Ticket resolution",
+      totalQueries: 72,
+      datasets: [
+        {
+          name: "Snowflake — analytics",
+          tables: ["revenue_metrics"],
+          queryCount: 72,
+          lastSeen: "2026-03-29T10:05:00Z",
+        },
+      ],
+    },
+  ],
+  "5": [
+    {
+      purpose: "Profile unification",
+      totalQueries: 41,
+      datasets: [
+        {
+          name: "Segment — events",
+          tables: ["raw_clickstream"],
+          queryCount: 41,
+          lastSeen: "2026-03-30T16:38:00Z",
+        },
+      ],
+    },
+  ],
+};
+
+export const MOCK_POLICY_GAPS: Record<string, PolicyGap[]> = {
+  "1": [
+    {
+      dataset: "Snowflake — ml_features",
+      tables: ["churn_predictions", "ltv_scores"],
+      queryCount: 312,
+      lastSeen: "2026-03-30T14:22:00Z",
+      description:
+        "This consumer is querying ML feature tables that don't fall under any declared purpose. Consider creating a purpose like \"Predictive analytics\" to cover this activity.",
+    },
+  ],
+};

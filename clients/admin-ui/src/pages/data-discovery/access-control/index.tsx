@@ -4,7 +4,6 @@ import { useMemo } from "react";
 
 import { useGetFiltersQuery } from "~/features/access-control/access-control.slice";
 import { AccessControlTableTabs } from "~/features/access-control/AccessControlTableTabs";
-import { DataConsumersCard } from "~/features/access-control/DataConsumersCard";
 import {
   type FacetDefinition,
   FacetedSearchInput,
@@ -13,8 +12,8 @@ import {
   RequestLogFilterContext,
   useRequestLogFilters,
 } from "~/features/access-control/hooks/useRequestLogFilters";
+import { PendingActionsCard } from "~/features/access-control/PendingActionsCard";
 import type { FiltersResponse } from "~/features/access-control/types";
-import { ViolationRateCard } from "~/features/access-control/ViolationRateCard";
 import { ViolationsChartCard } from "~/features/access-control/ViolationsChartCard";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
@@ -98,14 +97,11 @@ const AccessControlPage: NextPage = () => {
           </Flex>
 
           <Row gutter={16}>
-            <Col span={14}>
+            <Col span={17}>
               <ViolationsChartCard />
             </Col>
-            <Col span={5}>
-              <ViolationRateCard />
-            </Col>
-            <Col span={5}>
-              <DataConsumersCard />
+            <Col span={7}>
+              <PendingActionsCard />
             </Col>
           </Row>
 

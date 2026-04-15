@@ -1,4 +1,4 @@
-import { Flex, Tabs, Tag, Text, Title, Tooltip } from "fidesui";
+import { Flex, Tag, Tabs, Text, Title, Tooltip } from "fidesui";
 
 import {
   getFeatureLabel,
@@ -72,7 +72,7 @@ const PurposeDetail = ({
 
   const tabItems = [
     {
-      key: "dashboard",
+      key: "overview",
       label: "Overview",
       children: (
         <PurposeDashboard
@@ -127,7 +127,7 @@ const PurposeDetail = ({
           </Flex>
         )}
       </Flex>
-      <Tabs items={tabItems} defaultActiveKey="dashboard" />
+      <Tabs items={tabItems} defaultActiveKey="overview" />
     </Flex>
   );
 };

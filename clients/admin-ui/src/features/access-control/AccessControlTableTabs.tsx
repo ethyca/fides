@@ -2,16 +2,14 @@ import { Tabs } from "fidesui";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useCallback, useMemo } from "react";
 
-import { FindingsTable } from "./FindingsTable";
-import { useRequestLogFilterContext } from "./hooks/useRequestLogFilters";
 import { RequestLogTable } from "./RequestLogTable";
-import type { PolicyViolationAggregate, PolicyViolationLog } from "./types";
+import { SummaryCards } from "./SummaryCards";
+import type { PolicyViolationLog } from "./types";
 import { ViolationDetailDrawer } from "./ViolationDetailDrawer";
 
 type TableTab = "summary" | "log";
 
 export const AccessControlTableTabs = () => {
-  const { applyFacets } = useRequestLogFilterContext();
 
   const [activeTab, setActiveTab] = useQueryState(
     "tab",
@@ -23,21 +21,6 @@ export const AccessControlTableTabs = () => {
   const [selectedViolationId, setSelectedViolationId] = useQueryState(
     "violationId",
     parseAsString.withOptions({ history: "push" }),
-  );
-
-  const handleSummaryRowClick = useCallback(
-    (record: PolicyViolationAggregate) => {
-      const facets: Record<string, string> = {};
-      if (record.policy) {
-        facets.policy = record.policy;
-      }
-      if (record.control) {
-        facets.control = record.control;
-      }
-      applyFacets(facets);
-      setActiveTab("log");
-    },
-    [applyFacets, setActiveTab],
   );
 
   const handleLogRowClick = useCallback(
@@ -52,7 +35,7 @@ export const AccessControlTableTabs = () => {
       {
         key: "summary",
         label: "Summary",
-        children: <FindingsTable onRowClick={handleSummaryRowClick} />,
+        children: <SummaryCards />,
       },
       {
         key: "log",
@@ -60,7 +43,7 @@ export const AccessControlTableTabs = () => {
         children: <RequestLogTable onRowClick={handleLogRowClick} />,
       },
     ],
-    [handleSummaryRowClick, handleLogRowClick],
+    [handleLogRowClick],
   );
 
   return (

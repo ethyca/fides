@@ -115,14 +115,14 @@ const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
 
       <Form.Item
         name="purposes"
-        label="Assigned purposes"
+        label="Approved purposes"
         tooltip="Which data purposes is this consumer authorized for?"
       >
         <Select
           mode="multiple"
           placeholder="Select purposes"
           options={MOCK_PURPOSE_OPTIONS}
-          aria-label="Assigned purposes"
+          aria-label="Approved purposes"
         />
       </Form.Item>
 

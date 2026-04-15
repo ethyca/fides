@@ -1,12 +1,10 @@
-import { Card, Flex, Progress, Tag, Text } from "fidesui";
+import { Card, Flex, Tag, Text } from "fidesui";
 import { useRouter } from "next/router";
 
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 
 import {
-  getCompleteness,
   getFeatureLabel,
-  getStrokeColor,
   LEGAL_BASIS_LABELS,
   LEGAL_BASIS_TAG_COLORS,
 } from "./purposeUtils";
@@ -32,7 +30,6 @@ const getRelativeTime = (dateStr: string): string => {
 
 const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
   const router = useRouter();
-  const completeness = getCompleteness(purpose);
   const legalBasisColor = LEGAL_BASIS_TAG_COLORS[purpose.legal_basis];
   const legalBasisLabel =
     LEGAL_BASIS_LABELS[purpose.legal_basis] || purpose.legal_basis;
@@ -49,18 +46,7 @@ const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
       onClick={() => router.push(`${DATA_PURPOSES_ROUTE}/${purpose.id}`)}
     >
       <Flex vertical gap={8} className="h-full">
-        <Flex justify="space-between" align="start">
-          <Text strong className="mr-2 flex-1">
-            {purpose.name}
-          </Text>
-          <Progress
-            type="circle"
-            size={32}
-            percent={completeness}
-            strokeColor={getStrokeColor(completeness)}
-            format={(p) => `${p}`}
-          />
-        </Flex>
+        <Text strong>{purpose.name}</Text>
         <Text type="secondary" className="line-clamp-2 text-xs">
           {purpose.description}
         </Text>
