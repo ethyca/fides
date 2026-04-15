@@ -26,8 +26,8 @@ import (
 // QualifiedName is used as the identifier on UNCONFIGURED_DATASET gaps
 // when Collection does not resolve to a known dataset.
 type TableRef struct {
-	Collection    string
-	QualifiedName string
+	Collection    string `json:"collection"`
+	QualifiedName string `json:"qualified_name,omitempty"`
 }
 
 // EvaluationRecord is the per-statement result. Mirrors
@@ -52,13 +52,13 @@ type EvaluationRecord struct {
 // from any other source).
 type Fixtures struct {
 	// Consumers maps member identity (e.g. email) to its owning consumer.
-	Consumers map[string]fixtures.Consumer
+	Consumers map[string]fixtures.Consumer `json:"consumers"`
 	// Purposes maps purpose fides_key to the full Purpose entity.
-	Purposes map[string]fixtures.Purpose
+	Purposes map[string]fixtures.Purpose `json:"purposes"`
 	// Datasets bundles per-dataset purposes + the table-name index.
-	Datasets fixtures.Datasets
+	Datasets fixtures.Datasets `json:"datasets"`
 	// Policies is the enabled access policy list, in load order.
-	Policies []pbac.AccessPolicy
+	Policies []pbac.AccessPolicy `json:"policies"`
 }
 
 // Input is one pipeline invocation: which identity, which tables, and
@@ -66,11 +66,11 @@ type Fixtures struct {
 // conditions. QueryID and QueryText are echoed back in the record
 // unchanged so callers can correlate results to source SQL.
 type Input struct {
-	QueryID   string
-	Identity  string
-	QueryText string
-	Tables    []TableRef
-	Context   map[string]interface{}
+	QueryID   string                 `json:"query_id,omitempty"`
+	Identity  string                 `json:"identity"`
+	QueryText string                 `json:"query_text,omitempty"`
+	Tables    []TableRef             `json:"tables"`
+	Context   map[string]interface{} `json:"context,omitempty"`
 }
 
 // Evaluate runs the full PBAC pipeline for a single statement.

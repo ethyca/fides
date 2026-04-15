@@ -23,10 +23,10 @@ import (
 // Consumer is a data consumer loaded from YAML. Members is the list of
 // identities (typically email addresses) that resolve to this consumer.
 type Consumer struct {
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description,omitempty"`
-	Members     []string `yaml:"members"`
-	Purposes    []string `yaml:"purposes"`
+	Name        string   `yaml:"name" json:"name"`
+	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
+	Members     []string `yaml:"members" json:"members"`
+	Purposes    []string `yaml:"purposes" json:"purposes"`
 }
 
 type consumerFile struct {
@@ -35,12 +35,12 @@ type consumerFile struct {
 
 // Purpose is a declared purpose loaded from YAML.
 type Purpose struct {
-	FidesKey       string   `yaml:"fides_key"`
-	Name           string   `yaml:"name"`
-	DataUse        string   `yaml:"data_use"`
-	DataSubject    string   `yaml:"data_subject,omitempty"`
-	DataCategories []string `yaml:"data_categories,omitempty"`
-	Description    string   `yaml:"description,omitempty"`
+	FidesKey       string   `yaml:"fides_key" json:"fides_key"`
+	Name           string   `yaml:"name" json:"name"`
+	DataUse        string   `yaml:"data_use" json:"data_use"`
+	DataSubject    string   `yaml:"data_subject,omitempty" json:"data_subject,omitempty"`
+	DataCategories []string `yaml:"data_categories,omitempty" json:"data_categories,omitempty"`
+	Description    string   `yaml:"description,omitempty" json:"description,omitempty"`
 }
 
 type purposeFile struct {
@@ -79,11 +79,11 @@ type datasetFile struct {
 // (table resolution).
 type Datasets struct {
 	// Purposes is keyed by dataset fides_key and fed to the engine.
-	Purposes map[string]pbac.DatasetPurposes
+	Purposes map[string]pbac.DatasetPurposes `json:"purposes"`
 	// Tables maps a lowercase table name to its owning dataset's
 	// fides_key. Assumes table names are globally unique across
 	// datasets; on collision the last one loaded wins.
-	Tables map[string]string
+	Tables map[string]string `json:"tables"`
 }
 
 // LoadConsumers walks dir for *.yml files and returns a map from member
