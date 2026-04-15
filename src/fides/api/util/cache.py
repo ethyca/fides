@@ -15,18 +15,7 @@ except ImportError:
 
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
-from fides.api.tasks import (
-    CONSENT_WEBHOOK_QUEUE_NAME,
-    DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
-    DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
-    DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
-    DSR_QUEUE_NAME,
-    MESSAGING_QUEUE_NAME,
-    PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME,
-    PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME,
-    PRIVACY_PREFERENCES_QUEUE_NAME,
-    celery_app,
-)
+from fides.api.tasks import celery_app
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
@@ -549,29 +538,22 @@ def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
 
 def get_queue_counts() -> Dict[str, int]:
     """
-    Returns a count of the list of the tasks in each queue
+    Returns a count of the list of the tasks in each queue.
+
+    Delegates to the configured ``QueueStatsProvider`` so the count source
+    (Redis ``LLEN`` vs SQS ``GetQueueAttributes``) tracks the
+    ``FIDES__QUEUE__USE_SQS_QUEUE`` feature flag.
     """
+    # Lazy import to avoid circular dependency: ``queue_stats`` imports from
+    # ``fides.api.tasks.broker`` which is fine, but ``queue_stats`` also
+    # lazy-imports ``get_cache`` from this module for the Redis path.
+    from fides.api.util.queue_stats import get_queue_stats_provider
+
     try:
-        queue_counts: Dict[str, int] = {}
-        redis_conn = get_cache()
-        default_queue_name = celery_app.conf.get("task_default_queue", "celery")
-        for queue in [
-            MESSAGING_QUEUE_NAME,
-            PRIVACY_PREFERENCES_QUEUE_NAME,
-            PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME,
-            PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME,
-            DSR_QUEUE_NAME,
-            CONSENT_WEBHOOK_QUEUE_NAME,
-            DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
-            DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
-            DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
-            default_queue_name,
-        ]:
-            queue_counts[queue] = redis_conn.llen(queue)
+        return get_queue_stats_provider(CONFIG).get_queue_counts()
     except Exception as exception:
         logger.critical(exception)
-        queue_counts = {}
-    return queue_counts
+        return {}
 
 
 def get_all_masking_secret_keys(privacy_request_id: str) -> List[str]:

@@ -243,6 +243,15 @@ services:
         target: /usr/local/etc/redis
         read_only: False
 
+  elasticmq:
+    image: softwaremill/elasticmq-native:latest
+    container_name: fides-elasticmq
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./docker/elasticmq/elasticmq.conf:/opt/elasticmq.conf:ro
+
   flower:
     image: mher/flower:2.0
     command: celery flower --broker=redis://:redispassword@redis:6379/0

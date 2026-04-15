@@ -18,6 +18,11 @@ from tenacity import (
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
+from fides.api.tasks.broker import (
+    _resolve_result_backend,
+    get_broker_transport_options,
+    get_broker_url,
+)
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
@@ -121,31 +126,9 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
                 getattr(app.loader, "override_backends", {}) | cluster_backends
             )
 
-    # Broker and result backend. When redis.cluster_enabled is True we use redis+cluster://
-    # (via celery-redis-cluster) unless overridden. Otherwise use redis.connection_url.
-    if config.celery.broker_url is not None:
-        broker_url = config.celery.broker_url
-    elif config.redis.cluster_enabled:
-        broker_url = config.redis.get_cluster_connection_url()
-    else:
-        connection_url = config.redis.connection_url
-        if connection_url is None:
-            raise ValueError(
-                "Redis connection_url is required when cluster is disabled"
-            )
-        broker_url = connection_url
-
-    if config.celery.result_backend is not None:
-        result_backend = config.celery.result_backend
-    elif config.redis.cluster_enabled:
-        result_backend = config.redis.get_cluster_connection_url()
-    else:
-        connection_url = config.redis.connection_url
-        if connection_url is None:
-            raise ValueError(
-                "Redis connection_url is required when cluster is disabled"
-            )
-        result_backend = connection_url
+    broker_url = get_broker_url(config)
+    result_backend = _resolve_result_backend(config)
+    transport_options = get_broker_transport_options(config)
 
     celery_config: Dict[str, Any] = {
         "broker_url": broker_url,
@@ -160,10 +143,15 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
         "healthcheck_ping_timeout": config.celery.healthcheck_ping_timeout,
     }
 
+    if transport_options:
+        celery_config["broker_transport_options"] = transport_options
+
     celery_config.update(config.celery)
-    # Preserve broker/backend in case config.celery overwrote them with None
+    # Preserve broker/backend/transport_options in case config.celery overwrote them
     celery_config["broker_url"] = broker_url
     celery_config["result_backend"] = result_backend
+    if transport_options:
+        celery_config["broker_transport_options"] = transport_options
 
     app.conf.update(celery_config)
 

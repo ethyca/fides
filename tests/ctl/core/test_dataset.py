@@ -5,9 +5,15 @@ from typing import Dict, Generator, List
 from urllib.parse import quote_plus
 from uuid import uuid4
 
-import pymssql
 import pytest
 import sqlalchemy
+import importlib.util
+
+try:
+    import pymssql
+except ImportError:
+    pymssql = None
+
 from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from sqlalchemy.orm import Session
@@ -520,15 +526,18 @@ class TestDatabase:
                     for query in queries:
                         engine.execute(sqlalchemy.sql.text(query))
                 else:
-                    with pymssql.connect(
-                        database_parameters["server"],
-                        database_parameters["username"],
-                        database_parameters["password"],
-                        autocommit=True,
-                    ) as connection:
-                        for query in queries:
-                            with connection.cursor() as cursor:
-                                cursor.execute(query)
+                    if pymssql is None:
+                        print("Skipping MSSQL setup because pymssql is not installed")
+                    else:
+                        with pymssql.connect(
+                            database_parameters["server"],
+                            database_parameters["username"],
+                            database_parameters["password"],
+                            autocommit=True,
+                        ) as connection:
+                            for query in queries:
+                                with connection.cursor() as cursor:
+                                    cursor.execute(query)
             except:
                 print(f"> FAILED DB SETUP: {database_parameters.get('setup_url')}")
                 # We don't want to error all tests if a single setup fails
