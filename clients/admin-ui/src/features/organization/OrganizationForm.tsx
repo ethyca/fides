@@ -1,5 +1,5 @@
 import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Button, Form, Input, Spin, useMessage } from "fidesui";
 import { useMemo, useState } from "react";
 

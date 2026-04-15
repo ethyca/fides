@@ -305,7 +305,7 @@ const RoleDetailPage: NextPage = () => {
       key: "code",
       width: 300,
       onFilter: (
-        value: boolean | string | number | bigint,
+        value: boolean | React.Key,
         record: PermissionRow,
       ): boolean => {
         const searchLower = String(value).toLowerCase();
