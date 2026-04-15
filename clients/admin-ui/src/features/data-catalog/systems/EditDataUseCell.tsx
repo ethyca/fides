@@ -43,6 +43,10 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
   const { createDataUse, deleteDeclarationByDataUse, updateDataUse } =
     useSystemDataUseCrud(system);
 
+  if (!system) {
+    return null;
+  }
+
   const declarations = system.privacy_declarations ?? [];
   const dataUses = declarations.map((pd) => pd.data_use);
 
