@@ -6,7 +6,7 @@ import { usePrivacyDeclarationData } from "~/features/system/privacy-declaration
 import PrivacyDeclarationManager from "~/features/system/privacy-declarations/PrivacyDeclarationManager";
 import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";
 
-import SystemInfo from "./SystemInfo";
+import { SystemInfo } from "./SystemInfo";
 
 type DatamapDrawerProps = {
   selectedSystemId?: string;

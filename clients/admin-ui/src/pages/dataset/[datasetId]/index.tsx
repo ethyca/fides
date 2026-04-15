@@ -37,7 +37,7 @@ import {
 } from "~/features/common/table/v2";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
 import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
-import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
+import { EditCollectionDrawer } from "~/features/dataset/EditCollectionDrawer";
 import { DatasetCollection } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetCollection>();

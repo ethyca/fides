@@ -9,7 +9,7 @@ import { RBAC_ROLE_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useGetRolesQuery } from "~/features/rbac";
-import type { RBACRole } from "~/types/api";
+import type { RBACRoleResponse as RBACRole } from "~/types/api";
 
 const RBACPage: NextPage = () => {
   const {
@@ -55,8 +55,8 @@ const RBACPage: NextPage = () => {
       title: "Permissions",
       key: "permissions",
       render: (_: unknown, record: RBACRole) => {
-        const directCount = record.permissions.length;
-        const inheritedCount = record.inherited_permissions.length;
+        const directCount = (record.permissions ?? []).length;
+        const inheritedCount = (record.inherited_permissions ?? []).length;
         return (
           <Space>
             <Tag color="corinth">{directCount} Direct</Tag>

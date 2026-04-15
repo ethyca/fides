@@ -19,6 +19,7 @@ import { ExportFormat } from "~/features/datamap/constants";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import { DatamapReportFilterModal } from "~/features/datamap/reporting/DatamapReportFilterModal";
+import { DatamapReportFilterSelections } from "~/features/datamap/types";
 import {
   CustomReportResponse,
   DATAMAP_GROUPING,
@@ -172,7 +173,11 @@ export const DatamapReportTable = ({
             groupBy: savedGroupBy,
             filters: savedFilters,
             columnOrder: savedColumnOrder,
-          } = savedReport.config.table_state;
+          } = savedReport.config.table_state as {
+            groupBy?: DATAMAP_GROUPING;
+            filters?: DatamapReportFilterSelections;
+            columnOrder?: string[];
+          };
           const savedColumnVisibility: Record<string, boolean> = {};
 
           Object.entries(savedReport.config.column_map ?? {}).forEach(

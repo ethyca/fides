@@ -137,6 +137,7 @@ export type Features = {
   connectionsCount: number;
   dictionaryService: boolean;
   fidesCloud: boolean;
+  rbac: boolean;
   tcf: boolean;
 
   flags: FlagsFor<FlagConfig>;
@@ -157,6 +158,7 @@ export const useFeatures = (): Features => {
     : false;
   const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
+  const rbac = plusHealth ? !!plusHealth?.rbac?.enabled : false;
   const tcf = plusHealth ? !!plusHealth.tcf.enabled : false;
 
   const connectionsCount = initialConnections?.total ?? 0;
@@ -171,6 +173,7 @@ export const useFeatures = (): Features => {
     connectionsCount,
     dictionaryService,
     fidesCloud,
+    rbac,
     tcf,
     flags,
   };

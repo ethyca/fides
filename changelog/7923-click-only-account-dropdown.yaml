@@ -1,0 +1,4 @@
+type: Changed
+description: Changed account dropdown menu to open on click only, not hover
+pr: 7923
+labels: []

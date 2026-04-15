@@ -5,15 +5,15 @@ import {
   ChakraText as Text,
   Flex,
   Icons,
-  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
 import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
 import { PrivacyDeclarationResponse } from "~/types/api";
@@ -66,155 +66,154 @@ const EditMinimalDataUseModal = ({
   const { specialCategoryLegalBasisOptions } =
     useSpecialCategoryLegalBasisOptions();
 
+  const formik = useFormik({
+    initialValues: declaration,
+    enableReinitialize: true,
+    onSubmit: handleSubmit,
+    validationSchema,
+  });
+  const { values, dirty, isValid, resetForm } = formik;
+
   return (
-    <Formik
-      initialValues={declaration}
-      enableReinitialize
-      onSubmit={handleSubmit}
-      validationSchema={validationSchema}
-    >
-      {({ dirty, isValid, values, resetForm }) => (
-        <Modal
-          title="Edit data use"
-          open={isOpen}
-          onCancel={onClose}
-          centered
-          destroyOnClose
-          footer={null}
-        >
-          <Form>
-            <Flex vertical className="gap-6 py-4">
-              <ControlledSelect
-                name="data_use"
-                label="Data use"
-                options={dataUseOptions}
-                layout="stacked"
-                isRequired
-              />
-              <ControlledSelect
-                name="data_categories"
-                label="Data categories"
-                options={dataCategoryOptions}
-                mode="multiple"
-                layout="stacked"
-              />
-              <ControlledSelect
-                name="data_subjects"
-                label="Data subjects"
-                options={dataSubjectOptions}
-                mode="multiple"
-                layout="stacked"
-              />
-              <CustomTextInput
-                name="name"
-                label="Declaration name"
-                variant="stacked"
-              />
+    <FormikProvider value={formik}>
+      <ConfirmCloseModal
+        title="Edit data use"
+        open={isOpen}
+        onClose={onClose}
+        getIsDirty={() => formik.dirty}
+        centered
+        destroyOnClose
+        footer={null}
+      >
+        <Form>
+          <Flex vertical className="gap-6 py-4">
+            <ControlledSelect
+              name="data_use"
+              label="Data use"
+              options={dataUseOptions}
+              layout="stacked"
+              isRequired
+            />
+            <ControlledSelect
+              name="data_categories"
+              label="Data categories"
+              options={dataCategoryOptions}
+              mode="multiple"
+              layout="stacked"
+            />
+            <ControlledSelect
+              name="data_subjects"
+              label="Data subjects"
+              options={dataSubjectOptions}
+              mode="multiple"
+              layout="stacked"
+            />
+            <CustomTextInput
+              name="name"
+              label="Declaration name"
+              variant="stacked"
+            />
+            <Flex
+              vertical
+              // eslint-disable-next-line tailwindcss/no-custom-classname
+              className={`gap-6 p-4 ${styles.advancedSettings}`}
+            >
               <Flex
-                vertical
-                // eslint-disable-next-line tailwindcss/no-custom-classname
-                className={`gap-6 p-4 ${styles.advancedSettings}`}
+                className="cursor-pointer justify-between"
+                onClick={onToggleAdvancedSettings}
               >
-                <Flex
-                  className="cursor-pointer justify-between"
-                  onClick={onToggleAdvancedSettings}
-                >
-                  <Text fontSize="xs">Advanced settings</Text>
-                  <Icons.ChevronDown
-                    className={
-                      isAdvancedSettingsOpen ? "rotate-180" : undefined
-                    }
+                <Text fontSize="xs">Advanced settings</Text>
+                <Icons.ChevronDown
+                  className={isAdvancedSettingsOpen ? "rotate-180" : undefined}
+                />
+              </Flex>
+              <Collapse in={isAdvancedSettingsOpen}>
+                <Flex vertical className="gap-4">
+                  <ControlledSelect
+                    name="legal_basis_for_processing"
+                    label="Legal basis for processing"
+                    options={legalBasisOptions}
+                    layout="stacked"
                   />
-                </Flex>
-                <Collapse in={isAdvancedSettingsOpen}>
-                  <Flex vertical className="gap-4">
-                    <ControlledSelect
-                      name="legal_basis_for_processing"
-                      label="Legal basis for processing"
-                      options={legalBasisOptions}
-                      layout="stacked"
+                  <Collapse
+                    in={
+                      values?.legal_basis_for_processing ===
+                      "Legitimate interests"
+                    }
+                    animateOpacity
+                    style={{ overflow: "visible" }}
+                  >
+                    <div className="mt-4">
+                      <CustomTextInput
+                        name="impact_assessment_location"
+                        label="Impact assessment location"
+                        tooltip="Where is the legitimate interest impact assessment stored?"
+                        variant="stacked"
+                      />
+                    </div>
+                  </Collapse>
+                  <CustomSwitch
+                    name="flexible_legal_basis_for_processing"
+                    label="This legal basis is flexible"
+                    tooltip="Has the vendor declared that the legal basis may be overridden?"
+                    variant="stacked"
+                  />
+                  <CustomTextInput
+                    name="retention_period"
+                    label="Retention period (days)"
+                    tooltip="How long is personal data retained for this purpose?"
+                    variant="stacked"
+                  />
+
+                  <Stack spacing={0}>
+                    <CustomSwitch
+                      name="processes_special_category_data"
+                      label="This system processes special category data"
+                      tooltip="Is this system processing special category data as defined by GDPR Article 9?"
+                      variant="stacked"
                     />
                     <Collapse
-                      in={
-                        values?.legal_basis_for_processing ===
-                        "Legitimate interests"
-                      }
+                      in={values?.processes_special_category_data}
                       animateOpacity
                       style={{ overflow: "visible" }}
                     >
                       <div className="mt-4">
-                        <CustomTextInput
-                          name="impact_assessment_location"
-                          label="Impact assessment location"
-                          tooltip="Where is the legitimate interest impact assessment stored?"
-                          variant="stacked"
+                        <ControlledSelect
+                          isRequired
+                          name="special_category_legal_basis"
+                          label="Legal basis for processing"
+                          options={specialCategoryLegalBasisOptions}
+                          tooltip="What is the legal basis under which the special category data is processed?"
+                          layout="stacked"
                         />
                       </div>
                     </Collapse>
-                    <CustomSwitch
-                      name="flexible_legal_basis_for_processing"
-                      label="This legal basis is flexible"
-                      tooltip="Has the vendor declared that the legal basis may be overridden?"
-                      variant="stacked"
-                    />
-                    <CustomTextInput
-                      name="retention_period"
-                      label="Retention period (days)"
-                      tooltip="How long is personal data retained for this purpose?"
-                      variant="stacked"
-                    />
-
-                    <Stack spacing={0}>
-                      <CustomSwitch
-                        name="processes_special_category_data"
-                        label="This system processes special category data"
-                        tooltip="Is this system processing special category data as defined by GDPR Article 9?"
-                        variant="stacked"
-                      />
-                      <Collapse
-                        in={values?.processes_special_category_data}
-                        animateOpacity
-                        style={{ overflow: "visible" }}
-                      >
-                        <div className="mt-4">
-                          <ControlledSelect
-                            isRequired
-                            name="special_category_legal_basis"
-                            label="Legal basis for processing"
-                            options={specialCategoryLegalBasisOptions}
-                            tooltip="What is the legal basis under which the special category data is processed?"
-                            layout="stacked"
-                          />
-                        </div>
-                      </Collapse>
-                    </Stack>
-                  </Flex>
-                </Collapse>
-              </Flex>
+                  </Stack>
+                </Flex>
+              </Collapse>
             </Flex>
-            <div className="flex w-full justify-between">
-              <Button
-                onClick={() => {
-                  resetForm();
-                  onClose();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                disabled={!dirty || !isValid}
-                loading={false}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </div>
-          </Form>
-        </Modal>
-      )}
-    </Formik>
+          </Flex>
+          <div className="flex w-full justify-between">
+            <Button
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={!dirty || !isValid}
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
+          </div>
+        </Form>
+      </ConfirmCloseModal>
+    </FormikProvider>
   );
 };
 

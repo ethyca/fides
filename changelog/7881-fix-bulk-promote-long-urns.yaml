@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed bulk promote failing with 500 for assets with long URNs
+pr: 7881
+labels: []

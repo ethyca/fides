@@ -51,7 +51,7 @@ const BrandLink = ({
       right={right}
       textDecoration="none"
       _hover={{ textDecoration: "none" }}
-      href="https://ethyca.com/"
+      href="https://ethyca.com/?utm_source=fides_consent&utm_medium=referral&utm_campaign=cmp_backlinks&utm_term=home"
       {...props}
     >
       <Space size={4}>

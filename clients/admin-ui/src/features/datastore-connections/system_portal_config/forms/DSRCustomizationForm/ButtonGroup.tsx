@@ -1,4 +1,4 @@
-import { ChakraButton, ChakraButtonGroup } from "fidesui";
+import { Button, Flex } from "fidesui";
 import React from "react";
 
 type ButtonGroupProps = {
@@ -10,24 +10,15 @@ export const ButtonGroup = ({
   isSubmitting = false,
   onCancelClick,
 }: ButtonGroupProps) => (
-  <ChakraButtonGroup size="sm" spacing="8px" variant="outline">
-    <ChakraButton onClick={onCancelClick} variant="outline">
-      Cancel
-    </ChakraButton>
-    <ChakraButton
-      bg="primary.800"
-      color="white"
-      isDisabled={isSubmitting}
-      isLoading={isSubmitting}
-      loadingText="Submitting"
-      size="sm"
-      variant="solid"
-      type="submit"
-      _active={{ bg: "primary.500" }}
-      _disabled={{ opacity: "inherit" }}
-      _hover={{ bg: "primary.400" }}
+  <Flex gap="small">
+    <Button onClick={onCancelClick}>Cancel</Button>
+    <Button
+      type="primary"
+      disabled={isSubmitting}
+      loading={isSubmitting}
+      htmlType="submit"
     >
       Save
-    </ChakraButton>
-  </ChakraButtonGroup>
+    </Button>
+  </Flex>
 );
