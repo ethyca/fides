@@ -273,3 +273,126 @@ def call_log_spy(method_to_decorate: Callable) -> Callable:
 
     wrapper.call_log = call_log
     return wrapper
+
+
+# ── Unit tests (no Redis required) ────────────────────────────────────────────
+
+
+class TestSecondsUntilNextBucket:
+    """Unit tests for RateLimiter.seconds_until_next_bucket."""
+
+    def _req(self, period: RateLimiterPeriod) -> RateLimiterRequest:
+        return RateLimiterRequest(key="k", rate_limit=10, period=period)
+
+    def test_second_at_boundary(self) -> None:
+        # At the start of a second (e.g. t=1000), 1s remains.
+        assert RateLimiter().seconds_until_next_bucket(1000, self._req(RateLimiterPeriod.SECOND)) == 1
+
+    def test_second_mid_bucket(self) -> None:
+        # 0.5s into a second → 0.5s remains (integer math gives 0 here)
+        result = RateLimiter().seconds_until_next_bucket(1000, self._req(RateLimiterPeriod.SECOND))
+        assert 0 < result <= 1
+
+    def test_minute_at_start(self) -> None:
+        # At the exact start of a minute (e.g. t=600), 60s remain.
+        assert RateLimiter().seconds_until_next_bucket(600, self._req(RateLimiterPeriod.MINUTE)) == 60
+
+    def test_minute_30s_in(self) -> None:
+        # 30 seconds into a minute → 30s remain.
+        assert RateLimiter().seconds_until_next_bucket(630, self._req(RateLimiterPeriod.MINUTE)) == 30
+
+    def test_minute_59s_in(self) -> None:
+        # 59 seconds into a minute → 1s remains.
+        assert RateLimiter().seconds_until_next_bucket(659, self._req(RateLimiterPeriod.MINUTE)) == 1
+
+    def test_hour_at_start(self) -> None:
+        assert RateLimiter().seconds_until_next_bucket(3600, self._req(RateLimiterPeriod.HOUR)) == 3600
+
+    def test_hour_mid(self) -> None:
+        assert RateLimiter().seconds_until_next_bucket(5400, self._req(RateLimiterPeriod.HOUR)) == 1800
+
+
+class TestLimitDynamicTimeout:
+    """Unit tests for the dynamic timeout defaulting in RateLimiter.limit()."""
+
+    def test_default_timeout_uses_max_period_factor(self) -> None:
+        """When timeout_seconds is not passed, the limiter derives it from max period factor."""
+        limiter = RateLimiter()
+        mock_redis = mock.MagicMock()
+        # Always return usage within limit so limit() returns immediately (success path).
+        limiter.increment_usage = mock.MagicMock(return_value=[1])
+
+        with mock.patch("fides.api.service.connectors.limiter.rate_limiter.get_cache", return_value=mock_redis):
+            with mock.patch.object(limiter, "increment_usage", return_value=[1]):
+                limiter.limit(
+                    requests=[RateLimiterRequest(key="k", rate_limit=10, period=RateLimiterPeriod.MINUTE)]
+                )
+        # If we reach here, the call succeeded — the dynamic timeout didn't reject it.
+
+    def test_explicit_timeout_is_respected(self) -> None:
+        """Explicit timeout_seconds overrides the dynamic default."""
+        limiter = RateLimiter()
+        mock_redis = mock.MagicMock()
+
+        # Always report the bucket as over-limit so the loop runs until timeout.
+        with mock.patch("fides.api.service.connectors.limiter.rate_limiter.get_cache", return_value=mock_redis):
+            with mock.patch.object(limiter, "increment_usage", return_value=[999]):
+                with mock.patch.object(limiter, "decrement_usage"):
+                    with mock.patch("time.sleep"):  # skip actual sleeping
+                        start = time.time()
+                        with pytest.raises(RateLimiterTimeoutException):
+                            limiter.limit(
+                                requests=[RateLimiterRequest(key="k", rate_limit=10, period=RateLimiterPeriod.MINUTE)],
+                                timeout_seconds=1,
+                            )
+                        elapsed = time.time() - start
+                        # Should have respected the 1s timeout, not the default 65s.
+                        assert elapsed < 5
+
+
+class TestLimitSleepsToBucketBoundary:
+    """Verify that on breach the limiter sleeps to the next bucket boundary."""
+
+    def test_sleep_duration_targets_next_minute_bucket(self) -> None:
+        """When a MINUTE-period limit is breached, sleep should be ~seconds until next minute."""
+        limiter = RateLimiter()
+
+        # Simulate being 30s into a minute → expect ~30s sleep.
+        frozen_seconds = 630  # 10m30s epoch — 30s into the current minute
+
+        call_count = 0
+
+        def fake_increment(redis, current_seconds, requests):
+            nonlocal call_count
+            call_count += 1
+            # Breach on first call, succeed on second.
+            return [999] if call_count == 1 else [1]
+
+        sleep_calls: List[float] = []
+
+        with mock.patch("fides.api.service.connectors.limiter.rate_limiter.get_cache"):
+            with mock.patch.object(limiter, "increment_usage", side_effect=fake_increment):
+                with mock.patch.object(limiter, "decrement_usage"):
+                    with mock.patch("time.time", side_effect=[
+                        # start_time
+                        float(frozen_seconds),
+                        # while check (1st iteration)
+                        float(frozen_seconds),
+                        # current_seconds inside loop
+                        float(frozen_seconds),
+                        # remaining calculation inside sleep block
+                        float(frozen_seconds),
+                        # while check (2nd iteration — after sleep)
+                        float(frozen_seconds) + 30.05,
+                        # current_seconds inside loop (2nd)
+                        float(frozen_seconds) + 30.05,
+                    ]):
+                        with mock.patch("time.sleep", side_effect=lambda s: sleep_calls.append(s)):
+                            limiter.limit(
+                                requests=[RateLimiterRequest(key="k", rate_limit=10, period=RateLimiterPeriod.MINUTE)],
+                                timeout_seconds=65,
+                            )
+
+        assert len(sleep_calls) == 1
+        # At t=630 (30s into minute), next boundary is t=660 → 30s + 0.05 buffer.
+        assert 29.9 < sleep_calls[0] <= 30.1
