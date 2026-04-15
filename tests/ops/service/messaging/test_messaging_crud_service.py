@@ -605,6 +605,8 @@ class TestMessagingTemplates:
         )
         assert len(messaging_template.properties) == 1
         assert messaging_template.properties[0].id == property_a.id
+        # Label is auto-numbered since the default label is already taken
+        assert messaging_template.label == "Subject identity verification (2)"
 
         # assert relationship to properties
         property_a_db = Property.get(db, object_id=property_a.id)

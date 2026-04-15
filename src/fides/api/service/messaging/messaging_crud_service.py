@@ -252,6 +252,30 @@ def get_templates_by_type(db: Session, template_type: str) -> list[MessagingTemp
     )
 
 
+def _next_available_label(
+    db: Session,
+    template_type: str,
+    base_label: str,
+) -> str:
+    """Return ``base_label`` if available, otherwise append an incrementing number.
+
+    Produces labels like "Subject identity verification",
+    "Subject identity verification (2)", "Subject identity verification (3)", etc.
+    """
+    existing_labels: set[str] = {
+        row[0]  # column query returns Row tuples, not model instances
+        for row in db.query(MessagingTemplate.label).filter(
+            MessagingTemplate.type == template_type,
+        )
+    }
+    if base_label not in existing_labels:
+        return base_label
+    counter = 2
+    while f"{base_label} ({counter})" in existing_labels:
+        counter += 1
+    return f"{base_label} ({counter})"
+
+
 def _validate_unique_label(
     db: Session,
     template_type: str,
@@ -437,11 +461,12 @@ def create_property_specific_template_by_type(
         raise MessagingTemplateValidationException(
             f"Messaging template type {template_type} is not supported."
         )
-    label = (
-        template_create_body.label
-        if template_create_body.label is not None
-        else DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
-    )
+    if template_create_body.label is not None:
+        label = template_create_body.label
+    else:
+        label = _next_available_label(
+            db, template_type, DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
+        )
     _validate_unique_label(db, template_type, label)
     _validate_enabled_template_has_properties(
         template_create_body.properties, template_create_body.is_enabled
