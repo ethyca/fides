@@ -40,7 +40,7 @@ export const useCreateMonitorStep = (
 
   return {
     title: "Create monitor",
-    description: hasMonitors
+    content: hasMonitors
       ? "Data monitor created successfully"
       : "Use the Data discovery tab in this page to add a new monitor",
     state: hasMonitors ? "finish" : "process",

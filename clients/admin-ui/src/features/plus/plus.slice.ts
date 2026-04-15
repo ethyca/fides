@@ -618,6 +618,11 @@ export const {
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
 
+export const selectRbacEnabled: (state: RootState) => boolean = createSelector(
+  selectHealth,
+  (health) => !!health?.rbac?.enabled,
+);
+
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(
   plusApi.endpoints.getAllClassifyInstances.select({

@@ -6,7 +6,10 @@ import {
   stubTranslationConfig,
 } from "cypress/support/stubs";
 
-import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
+import {
+  ADD_PROPERTY_ROUTE,
+  PROPERTIES_ROUTE,
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Properties page", () => {
@@ -74,6 +77,32 @@ describe("Properties page", () => {
           cy.url().should("not.contain", "/property/FDS-");
         },
       );
+    });
+  });
+
+  describe("Create", () => {
+    it("Should create a new property", () => {
+      cy.intercept("POST", "/api/v1/plus/property", {
+        statusCode: 200,
+        body: {
+          id: "FDS-NEW123",
+          name: "Test Property",
+          type: "Website",
+          paths: [],
+          experiences: [],
+        },
+      }).as("createProperty");
+
+      cy.visit(ADD_PROPERTY_ROUTE);
+      cy.getByTestId("input-name").type("Test Property");
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@createProperty").then((interception) => {
+        const { body } = interception.request;
+        expect(body.name).to.eq("Test Property");
+        expect(body.type).to.eq("Website");
+        expect(body.paths).to.eql([]);
+      });
     });
   });
 

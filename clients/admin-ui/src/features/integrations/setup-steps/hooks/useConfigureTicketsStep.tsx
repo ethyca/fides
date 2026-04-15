@@ -20,7 +20,7 @@ export const useConfigureTicketsStep = ({
 
   return {
     title: "Configure tickets",
-    description: isComplete ? (
+    content: isComplete ? (
       <span>Ticket configuration saved</span>
     ) : (
       <span>Set up project, issue type, and templates</span>

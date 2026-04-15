@@ -405,7 +405,7 @@ const ActionCenterFields = ({
                 <Button
                   type="primary"
                   icon={<Icons.ChevronDown />}
-                  iconPosition="end"
+                  iconPlacement="end"
                   loading={isFetchingAllowedActions}
                 >
                   Actions

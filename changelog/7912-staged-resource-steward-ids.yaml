@@ -1,0 +1,4 @@
+type: Added
+description: Added target_system_steward_ids column to StagedResource for per-resource steward assignment
+pr: 7912
+labels: ["db-migration"]

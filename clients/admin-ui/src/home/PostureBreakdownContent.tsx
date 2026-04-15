@@ -67,7 +67,7 @@ export const PostureBreakdownContent = () => {
           type="info"
           showIcon
           icon={<SparkleIcon size={14} />}
-          message={posture.agent_annotation}
+          title={posture.agent_annotation}
         />
       )}
 
