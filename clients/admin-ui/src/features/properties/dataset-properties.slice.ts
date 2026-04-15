@@ -1,28 +1,10 @@
 import { baseApi } from "~/features/common/api.slice";
-
-interface DatasetPropertyIdsResponse {
-  property_ids: string[];
-}
-
-interface BulkPropertyAssignment {
-  dataset_config_ids: string[];
-  property_ids: string[];
-}
-
-interface BulkPropertyRemoval {
-  dataset_config_ids: string[];
-  property_ids: string[];
-}
-
-interface DatasetPropertyResponse {
-  fides_key: string;
-  property_ids: string[];
-}
-
-interface BulkDatasetPropertyResponse {
-  succeeded: DatasetPropertyResponse[];
-  failed?: Record<string, unknown>[] | null;
-}
+import type {
+  BulkDatasetPropertyResponse,
+  BulkPropertyAssignment,
+  BulkPropertyRemoval,
+  DatasetPropertyIdsResponse,
+} from "~/types/api";
 
 export const datasetPropertiesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

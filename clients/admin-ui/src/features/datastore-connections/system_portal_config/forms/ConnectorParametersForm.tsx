@@ -51,7 +51,7 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Save is clicked
    */
-  onSaveClick: (values: ConnectionConfigFormValues) => void;
+  onSaveClick: (values: ConnectionConfigFormValues) => Promise<void>;
   /**
    * Parent callback when Test Connection is clicked
    */
@@ -181,10 +181,14 @@ export const ConnectorParametersForm = ({
 
   const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
-    onSaveClick(processedValues);
+    await onSaveClick(processedValues);
 
     // Save property assignments if editing
-    if (isEditingConnection && values.property_ids) {
+    if (
+      isEditingConnection &&
+      values.property_ids !== undefined &&
+      hasDatasets
+    ) {
       try {
         await savePropertyAssignments(values.property_ids);
       } catch {

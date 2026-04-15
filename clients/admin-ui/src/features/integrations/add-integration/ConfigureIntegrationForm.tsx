@@ -104,7 +104,7 @@ export const ConfigureIntegrationForm = ({
     savePropertyAssignments,
     hasDatasets,
     isLoading: isLoadingProperties,
-  } = useIntegrationPropertySelect(isEditing ? connection?.key : undefined);
+  } = useIntegrationPropertySelect(connection?.key);
 
   const hasSecrets =
     connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
@@ -218,6 +218,16 @@ export const ConfigureIntegrationForm = ({
       isUndefined,
     );
 
+  const handlePropertySave = async (propertyIds: string[]) => {
+    try {
+      await savePropertyAssignments(propertyIds);
+    } catch {
+      messageApi.error(
+        "Integration saved but failed to update properties. Please try again.",
+      );
+    }
+  };
+
   const handleSubmit = async (values: FormValues) => {
     const processedValues = preprocessValues(values);
 
@@ -293,14 +303,8 @@ export const ConfigureIntegrationForm = ({
       }
 
       // Save property assignments if editing
-      if (isEditing && values.property_ids) {
-        try {
-          await savePropertyAssignments(values.property_ids);
-        } catch {
-          messageApi.error(
-            "Integration saved but failed to update properties. Please try again.",
-          );
-        }
+      if (isEditing && values.property_ids !== undefined && hasDatasets) {
+        await handlePropertySave(values.property_ids);
       }
 
       messageApi.success(

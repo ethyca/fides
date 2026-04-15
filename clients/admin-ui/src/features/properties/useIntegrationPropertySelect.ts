@@ -7,6 +7,7 @@ import {
   useGetPropertyIdsForDatasetQuery,
 } from "~/features/properties/dataset-properties.slice";
 import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
+import type { BulkDatasetPropertyResponse } from "~/types/api";
 
 /**
  * Hook that manages property assignments for an integration's dataset configs.
@@ -95,7 +96,15 @@ export const useIntegrationPropertySelect = (
         );
       }
 
-      await Promise.all(promises);
+      const results = await Promise.all(promises);
+      const failedResult = (results as BulkDatasetPropertyResponse[]).find(
+        (result) => result.failed?.length,
+      );
+      if (failedResult) {
+        throw new Error(
+          `Property update partially failed for ${failedResult.failed!.length} dataset config(s).`,
+        );
+      }
     },
     [datasetFidesKeys, initialPropertyIds, bulkAssign, bulkRemove],
   );
