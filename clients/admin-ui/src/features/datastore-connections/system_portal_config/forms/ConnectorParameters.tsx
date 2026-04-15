@@ -217,7 +217,7 @@ export const useConnectorForm = ({
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
-    () => connectionConfig?.secrets ?? {},
+    () => (connectionConfig?.secrets as Record<string, string>) ?? {},
     [connectionConfig],
   );
 

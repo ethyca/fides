@@ -44,7 +44,7 @@ const { Text } = Typography;
 /**
  * Legacy permissions form for non-RBAC mode.
  *
- * When RBAC is enabled (alphaRbac flag), UserManagementTabs renders RolesForm
+ * When RBAC is enabled (via Plus health endpoint), UserManagementTabs renders RolesForm
  * instead of this component. This component only handles legacy permissions.
  */
 const PermissionsForm = () => {

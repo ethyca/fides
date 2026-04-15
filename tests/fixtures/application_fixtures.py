@@ -4259,7 +4259,8 @@ def comment_data(user):
 def comment(db, comment_data):
     comment = Comment.create(db, data=comment_data)
     yield comment
-    comment.delete(db)
+    if db.query(Comment).filter_by(id=comment.id).first():
+        comment.delete(db)
 
 
 @pytest.fixture(scope="function")

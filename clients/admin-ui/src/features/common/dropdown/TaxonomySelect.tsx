@@ -114,7 +114,7 @@ export const TaxonomySelect = ({ options, ...props }: TaxonomySelectProps) => {
       variant="borderless"
       optionRender={TaxonomyOption}
       styles={{ popup: { root: { minWidth: "500px" } } }}
-      className="w-full p-0"
+      className="w-full"
       data-testid="taxonomy-select"
       {...props}
     />

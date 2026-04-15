@@ -573,13 +573,13 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My Custom Report").blur();
-        cy.getByTestId("error-reportName").should("exist");
+        cy.getAntFormError("reportName").should("exist");
         cy.get("#reportName").clear();
       });
       cy.getByTestId("custom-report-form").should("be.visible");
       cy.getByTestId("custom-report-form").within(() => {
         cy.get("#reportName").type("My new report");
-        cy.getByTestId("error-reportName").should("not.exist");
+        cy.getAntFormError("reportName").should("not.exist");
         cy.getByTestId("custom-report-form-submit").click();
       });
       cy.wait("@createCustomReport").then((interception) => {
@@ -596,10 +596,8 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("delete-report-button").first().click();
       });
-      cy.getByTestId("confirmation-modal").should("be.visible");
-      cy.getByTestId("confirmation-modal").within(() => {
-        cy.getByTestId("continue-btn").click();
-      });
+      cy.getAntModalConfirmButtons().should("be.visible");
+      cy.getAntModalConfirmButtons().find(".ant-btn-dangerous").click();
       cy.wait("@deleteCustomReport")
         .its("request.url")
         .should("include", "1234");

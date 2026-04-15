@@ -1,9 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraStack as Stack,
-  ChakraText as Text,
-} from "fidesui";
+import { Alert, Button } from "fidesui";
 import { useRouter } from "next/router";
 
 import { MESSAGING_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
@@ -16,33 +11,14 @@ const ConfigurationNotificationBanner = () => {
   };
 
   return (
-    <Box
-      bg="gray.50"
-      border="1px solid"
-      borderColor="blue.400"
-      borderRadius="md"
-      justifyContent="space-between"
-      p={5}
-      mb={5}
-      mt={5}
-    >
-      <Box>
-        <Stack
-          direction={{ base: "column", sm: "row" }}
-          justifyContent="space-between"
-        >
-          <Text fontWeight="semibold">
-            Configure your storage and messaging provider
-          </Text>
-          <Button onClick={handleClick}>Configure</Button>
-        </Stack>
-
-        <Text>
-          Before Fides can process your privacy requests we need two simple
-          steps to configure your storage and email client.{" "}
-        </Text>
-      </Box>
-    </Box>
+    <Alert
+      className="my-5"
+      type="info"
+      showIcon
+      message="Configure your storage and messaging provider"
+      description="Before Fides can process your privacy requests we need two simple steps to configure your storage and email client."
+      action={<Button onClick={handleClick}>Configure</Button>}
+    />
   );
 };
 export default ConfigurationNotificationBanner;

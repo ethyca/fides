@@ -108,7 +108,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
 }) => {
   const preferredDataCategories =
     "preferred_data_categories" in restProps
-      ? restProps.preferred_data_categories
+      ? (restProps.preferred_data_categories as string[] | null | undefined)
       : [];
 
   const onSelectDataCategory = (value: string) => {

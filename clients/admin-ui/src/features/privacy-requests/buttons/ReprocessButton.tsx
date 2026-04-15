@@ -1,12 +1,5 @@
-import {
-  Button,
-  ChakraBox as Box,
-  chakraForwardRef as forwardRef,
-  ChakraText as Text,
-  Icons,
-  useMessage,
-} from "fidesui";
-import { ForwardedRef, useState } from "react";
+import { Button, Icons, Typography, useMessage } from "fidesui";
+import { ForwardedRef, forwardRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -24,8 +17,8 @@ type ReprocessButtonProps = {
   subjectRequest?: PrivacyRequestEntity;
 };
 
-const ReprocessButton = forwardRef(
-  ({ handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
+const ReprocessButton = forwardRef<HTMLButtonElement, ReprocessButtonProps>(
+  ({ handleBlur, subjectRequest }, ref) => {
     const dispatch = useAppDispatch();
     const [isReprocessing, setIsReprocessing] = useState(false);
     const message = useMessage();
@@ -47,14 +40,14 @@ const ReprocessButton = forwardRef(
         if (payload.data.failed.length > 0) {
           message.error({
             content: (
-              <Box>
+              <div>
                 DSR automation has failed for{" "}
-                <Text as="span" fontWeight="semibold">
+                <Typography.Text strong>
                   {payload.data.failed.length}
-                </Text>{" "}
+                </Typography.Text>{" "}
                 privacy request(s). Please review the event log for further
                 details.
-              </Box>
+              </div>
             ),
             duration: 0,
           });
@@ -103,5 +96,7 @@ const ReprocessButton = forwardRef(
     );
   },
 );
+
+ReprocessButton.displayName = "ReprocessButton";
 
 export default ReprocessButton;
