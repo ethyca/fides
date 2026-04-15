@@ -16,6 +16,10 @@ max_privacy_request_download_rows = 100000 # integer
 # This setting controls how errors are notified to users.
 error_notification_mode = "console_only" # string
 
+# Toggle whether consent-related UI is shown in the Admin UI
+# navigation.
+consent_module_enabled = true # boolean
+
 #------------#
 #-- CELERY --#
 #--------------------------------------------------------------------#
