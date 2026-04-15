@@ -1,4 +1,4 @@
-import { Button, Icons, Input, Modal, Tooltip } from "fidesui";
+import { Alert, Button, Flex, Icons, Input, Modal, Tooltip } from "fidesui";
 import { useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -81,17 +81,15 @@ const ClientSecretModal = ({
     }
     data-testid="client-secret-modal"
   >
-    <div className="flex flex-col gap-4 py-2">
-      <div
-        className="flex items-start gap-2 rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-800"
-        data-testid="secret-warning"
-      >
-        <Icons.WarningAlt className="mt-0.5 shrink-0" />
-        <span>Copy this secret now. It will not be shown again.</span>
-      </div>
+    <Flex gap="middle" vertical>
+      <Alert
+        type="warning"
+        showIcon
+        message={<span>Copy this secret now. It will not be shown again.</span>}
+      />
       <SecretField label="Client ID" value={clientId} />
       <SecretField label="Client secret" value={secret} redact />
-    </div>
+    </Flex>
   </Modal>
 );
 
