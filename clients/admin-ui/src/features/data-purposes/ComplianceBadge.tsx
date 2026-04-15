@@ -33,7 +33,8 @@ const ComplianceBadge = ({ status, driftCount = 0 }: ComplianceBadgeProps) => {
   const config = STATUS_CONFIG[status];
   return (
     <Tooltip title={config.tooltip}>
-      <Tag color={config.color}>{config.label(driftCount)}</Tag>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Tag color={config.color as any}>{config.label(driftCount)}</Tag>
     </Tooltip>
   );
 };

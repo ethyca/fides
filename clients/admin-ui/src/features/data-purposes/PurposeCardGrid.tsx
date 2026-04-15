@@ -1,8 +1,9 @@
-import { Col, Divider, Flex, Input, Row, Select, Text, Title } from "fidesui";
+import { Col, Divider, Flex, Icons, Input, Row, Segmented, Select, Text, Title } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { MOCK_SYSTEM_ASSIGNMENTS } from "./mockData";
 import PurposeCard from "./PurposeCard";
+import PurposeNetworkView from "./PurposeNetworkView";
 import { computeCategoryDrift, formatDataUse } from "./purposeUtils";
 import type { DataPurpose, PurposeSummary } from "./types";
 
@@ -12,6 +13,7 @@ interface PurposeCardGridProps {
 }
 
 const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
+  const [viewMode, setViewMode] = useState<"grid" | "network">("grid");
   const [search, setSearch] = useState("");
   const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
   const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
@@ -98,8 +100,14 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
   }, [filtered]);
 
   return (
-    <div>
-      <Flex justify="space-between" align="center" className="mb-6">
+    <div
+      style={
+        viewMode === "network"
+          ? { flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }
+          : undefined
+      }
+    >
+      <Flex justify="space-between" align="center" className="mb-4">
         <Input
           placeholder="Search purposes..."
           value={search}
@@ -109,7 +117,7 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
           allowClear
           style={{ width: 280 }}
         />
-        <Flex gap={8}>
+        <Flex gap={8} align="center">
           <Select
             placeholder="Status"
             allowClear
@@ -142,9 +150,22 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
             value={dataUseFilter}
             onChange={(v) => setDataUseFilter(v ?? null)}
           />
+          <Segmented
+            value={viewMode}
+            onChange={(v) => setViewMode(v as "grid" | "network")}
+            options={[
+              { label: <Icons.ShowDataCards size={16} />, value: "grid" },
+              { label: <Icons.Fork size={16} />, value: "network" },
+            ]}
+          />
         </Flex>
       </Flex>
-      {groups.map(([dataUse, items]) => {
+      {viewMode === "network" ? (
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <PurposeNetworkView purposes={filtered} summaries={summaries} />
+        </div>
+      ) : null}
+      {viewMode === "grid" && groups.map(([dataUse, items]) => {
         const groupSystemCount = items.reduce((sum, p) => {
           const s = summaries.find((su) => su.id === p.id);
           return sum + (s?.system_count ?? 0);

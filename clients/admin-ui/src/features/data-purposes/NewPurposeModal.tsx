@@ -43,6 +43,7 @@ const NewPurposeModal = ({ open, onClose, onCreated, createPurpose }: NewPurpose
       data_use: values.data_use,
       description: values.description || "",
       data_categories: [],
+      detected_data_categories: [],
       data_subjects: [],
       legal_basis: "",
       legal_basis_is_flexible: false,
