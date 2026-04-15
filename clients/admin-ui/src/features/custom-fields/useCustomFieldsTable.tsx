@@ -41,7 +41,7 @@ const useCustomFieldsTable = () => {
     totalRows: data?.length || 0,
     isLoading,
     customTableProps: {
-      layout: "fixed",
+      tableLayout: "fixed",
       sticky: {
         offsetHeader: 40,
       },
