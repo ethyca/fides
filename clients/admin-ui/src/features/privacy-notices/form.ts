@@ -2,12 +2,10 @@ import * as Yup from "yup";
 
 import { getOptionsFromMap } from "~/features/common/utils";
 import {
-  ENFORCEMENT_LEVEL_MAP,
   MECHANISM_MAP,
 } from "~/features/privacy-notices/constants";
 import {
   ConsentMechanism,
-  EnforcementLevel,
   NoticeTranslationCreate,
   PrivacyNoticeCreation,
   PrivacyNoticeResponse,
@@ -19,10 +17,6 @@ interface PrivacyNoticeUpdateOrCreate extends PrivacyNoticeCreation {
 }
 
 export const CONSENT_MECHANISM_OPTIONS = getOptionsFromMap(MECHANISM_MAP);
-
-export const ENFORCEMENT_LEVEL_OPTIONS = getOptionsFromMap(
-  ENFORCEMENT_LEVEL_MAP,
-);
 
 export const defaultInitialTranslations: NoticeTranslationCreate[] = [
   {
@@ -36,7 +30,6 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   name: "",
   consent_mechanism: ConsentMechanism.OPT_IN,
   data_uses: [],
-  enforcement_level: EnforcementLevel.FRONTEND,
   // When creating, set to disabled to start
   disabled: true,
   translations: defaultInitialTranslations,
@@ -50,8 +43,6 @@ export const transformPrivacyNoticeResponseToCreation = (
   consent_mechanism:
     notice.consent_mechanism ?? defaultInitialValues.consent_mechanism,
   data_uses: notice.data_uses ?? defaultInitialValues.data_uses,
-  enforcement_level:
-    notice.enforcement_level ?? defaultInitialValues.enforcement_level,
   notice_key: notice.notice_key,
   disabled: notice.disabled,
   has_gpc_flag: notice.has_gpc_flag,
