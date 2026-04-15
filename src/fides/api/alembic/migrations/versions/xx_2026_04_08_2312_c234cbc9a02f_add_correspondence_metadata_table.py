@@ -1,7 +1,7 @@
 """add_correspondence_metadata_table
 
 Revision ID: c234cbc9a02f
-Revises: 6465b161a450
+Revises: f26bf4ecec76
 Create Date: 2026-04-08 23:12:32.601075
 
 """
