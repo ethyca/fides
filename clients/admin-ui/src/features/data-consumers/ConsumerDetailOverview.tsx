@@ -3,22 +3,21 @@ import {
   Card,
   Col,
   CUSTOM_TAG_COLOR,
-  Descriptions,
   Flex,
+  Input,
   Row,
+  Segmented,
   Tag,
   Text,
   Title,
 } from "fidesui";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import {
   ACCESS_CONTROL_ROUTE,
   DATA_PURPOSES_ROUTE,
 } from "~/features/common/nav/routes";
-
-import { CONSUMER_TYPE_UI_LABELS, PLATFORM_LABELS } from "./constants";
 import { MOCK_POLICY_GAPS, MOCK_VIOLATION_GROUPS } from "./mockData";
 import type { MockDataConsumer } from "./types";
 
@@ -36,42 +35,41 @@ const formatTableList = (tables: string[]): string => {
 const ConsumerDetailOverview = ({
   consumer,
 }: ConsumerDetailOverviewProps) => {
-  const violationGroups = useMemo(
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "non_compliant" | "no_policy"
+  >("all");
+
+  const allViolationGroups = useMemo(
     () => MOCK_VIOLATION_GROUPS[consumer.id] ?? [],
     [consumer.id],
   );
 
-  const policyGaps = useMemo(
+  const allPolicyGaps = useMemo(
     () => MOCK_POLICY_GAPS[consumer.id] ?? [],
     [consumer.id],
   );
 
-  const hasFindings = violationGroups.length > 0 || policyGaps.length > 0;
+  const hasFindings = allViolationGroups.length > 0 || allPolicyGaps.length > 0;
+
+  const needle = search.toLowerCase();
+
+  const violationGroups =
+    statusFilter === "no_policy"
+      ? []
+      : allViolationGroups.filter((g) =>
+          g.purpose.toLowerCase().includes(needle),
+        );
+
+  const policyGaps =
+    statusFilter === "non_compliant"
+      ? []
+      : allPolicyGaps.filter((g) =>
+          g.dataset.toLowerCase().includes(needle),
+        );
 
   return (
     <Flex vertical gap="large">
-      {/* Details */}
-      <Card size="small">
-        <Descriptions column={2} size="small">
-          <Descriptions.Item label="Platform">
-            {consumer.platform
-              ? (PLATFORM_LABELS[consumer.platform] ?? consumer.platform)
-              : "—"}
-          </Descriptions.Item>
-          <Descriptions.Item label="Type">
-            {CONSUMER_TYPE_UI_LABELS[consumer.type] ?? consumer.type}
-          </Descriptions.Item>
-          <Descriptions.Item label="Scope">
-            {consumer.identifier}
-          </Descriptions.Item>
-          <Descriptions.Item label="Purposes">
-            {consumer.purposes.length > 0
-              ? consumer.purposes.join(", ")
-              : "None assigned"}
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-
       {/* No-purposes warning */}
       {consumer.purposes.length === 0 && (
         <Alert
@@ -89,10 +87,31 @@ const ConsumerDetailOverview = ({
             Activity
           </Title>
           <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
-            This consumer's data access, grouped by policy. Non-compliant
+            This consumer's data access, grouped by policy. Violation
             entries show queries outside an approved purpose boundary. No policy
             entries show activity with no matching purpose at all.
           </Text>
+
+          <Flex gap="small" align="center" justify="space-between" style={{ marginBottom: 12 }}>
+            <Input
+              placeholder="Search policies…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              allowClear
+              style={{ maxWidth: 240 }}
+            />
+            <Segmented
+              value={statusFilter}
+              onChange={(v) =>
+                setStatusFilter(v as "all" | "non_compliant" | "no_policy")
+              }
+              options={[
+                { label: "All", value: "all" },
+                { label: "Violation", value: "non_compliant" },
+                { label: "No policy", value: "no_policy" },
+              ]}
+            />
+          </Flex>
 
           <Row gutter={[12, 12]}>
             {violationGroups.map((group) => {
@@ -103,31 +122,43 @@ const ConsumerDetailOverview = ({
               ).lastSeen;
 
               return (
-                <Col key={group.purpose} xs={24} sm={12}>
+                <Col key={group.purpose} xs={24} sm={12} md={8}>
                   <Card
                     size="small"
-                    className="h-full"
-                    title={
-                      <Flex align="center" gap="small">
-                        <Tag color={CUSTOM_TAG_COLOR.ERROR}>Non-compliant</Tag>
-                        <Text strong style={{ fontSize: 13 }}>
-                          {group.purpose}
-                        </Text>
-                      </Flex>
-                    }
+                    className="h-full transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+                    style={{
+                      backgroundColor: "#fafafa",
+                      borderLeft: "3px solid #ff4d4f",
+                    }}
                   >
-                    <Text type="secondary" className="text-xs">
-                      Accessed {tableList} outside this purpose&apos;s approved
-                      boundary — {group.totalQueries.toLocaleString()} queries,
-                      last seen {new Date(lastSeen).toLocaleDateString()}.
-                    </Text>
-                    <div style={{ marginTop: 10 }}>
-                      <Link href={ACCESS_CONTROL_ROUTE}>
+                    <Flex vertical gap={8} className="h-full">
+                      <Tag
+                        color={CUSTOM_TAG_COLOR.ERROR}
+                        style={{ alignSelf: "flex-start" }}
+                      >
+                        Violation
+                      </Tag>
+                      <Text strong style={{ fontSize: 13 }}>
+                        Policy: {group.purpose}
+                      </Text>
+                      <Text type="secondary" className="line-clamp-2 text-xs">
+                        Accessed {tableList} outside this purpose&apos;s
+                        approved boundary.
+                      </Text>
+                      <div className="mt-auto">
                         <Text type="secondary" className="text-xs">
-                          View in Access Control →
+                          {group.totalQueries.toLocaleString()} queries · last{" "}
+                          {new Date(lastSeen).toLocaleDateString()}
                         </Text>
-                      </Link>
-                    </div>
+                        <div style={{ marginTop: 6 }}>
+                          <Link href={ACCESS_CONTROL_ROUTE}>
+                            <Text type="secondary" className="text-xs">
+                              View in Access Control →
+                            </Text>
+                          </Link>
+                        </div>
+                      </div>
+                    </Flex>
                   </Card>
                 </Col>
               );
@@ -137,31 +168,42 @@ const ConsumerDetailOverview = ({
               const tableList = formatTableList(gap.tables);
 
               return (
-                <Col key={gap.dataset} xs={24} sm={12}>
+                <Col key={gap.dataset} xs={24} sm={12} md={8}>
                   <Card
                     size="small"
-                    className="h-full"
-                    title={
-                      <Flex align="center" gap="small">
-                        <Tag color={CUSTOM_TAG_COLOR.WARNING}>No policy</Tag>
-                        <Text strong style={{ fontSize: 13 }}>
-                          {gap.dataset}
-                        </Text>
-                      </Flex>
-                    }
+                    className="h-full transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+                    style={{
+                      backgroundColor: "#fafafa",
+                      borderLeft: "3px solid #faad14",
+                    }}
                   >
-                    <Text type="secondary" className="text-xs">
-                      Querying {tableList} with no matching declared purpose —{" "}
-                      {gap.queryCount.toLocaleString()} queries, last seen{" "}
-                      {new Date(gap.lastSeen).toLocaleDateString()}.
-                    </Text>
-                    <div style={{ marginTop: 10 }}>
-                      <Link href={`${DATA_PURPOSES_ROUTE}/new`}>
+                    <Flex vertical gap={8} className="h-full">
+                      <Tag
+                        color={CUSTOM_TAG_COLOR.WARNING}
+                        style={{ alignSelf: "flex-start" }}
+                      >
+                        No policy
+                      </Tag>
+                      <Text strong style={{ fontSize: 13 }}>
+                        Policy: {gap.dataset}
+                      </Text>
+                      <Text type="secondary" className="line-clamp-2 text-xs">
+                        Querying {tableList} with no matching declared purpose.
+                      </Text>
+                      <div className="mt-auto">
                         <Text type="secondary" className="text-xs">
-                          Create policy →
+                          {gap.queryCount.toLocaleString()} queries · last{" "}
+                          {new Date(gap.lastSeen).toLocaleDateString()}
                         </Text>
-                      </Link>
-                    </div>
+                        <div style={{ marginTop: 6 }}>
+                          <Link href={`${DATA_PURPOSES_ROUTE}/new`}>
+                            <Text type="secondary" className="text-xs">
+                              Create policy →
+                            </Text>
+                          </Link>
+                        </div>
+                      </div>
+                    </Flex>
                   </Card>
                 </Col>
               );

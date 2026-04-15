@@ -403,7 +403,7 @@ const AssignedDatasetsSection = ({
             checked={issuesOnly}
             onChange={setIssuesOnly}
           />
-          <Text className="text-sm">Issues only</Text>
+          <Text className="text-sm">Risks only</Text>
         </Flex>
         <Select
           placeholder="All systems"

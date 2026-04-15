@@ -28,7 +28,7 @@ const DeleteDataPurposeModal = ({ purpose, triggerComponent }: Props) => {
       title: `Delete ${purpose.name}`,
       content: (
         <span className="text-gray-500">
-          You are about to delete data purpose &quot;{purpose.name}&quot;. This
+          You are about to delete purpose &quot;{purpose.name}&quot;. This
           action is not reversible. Are you sure you want to proceed?
         </span>
       ),
@@ -41,7 +41,7 @@ const DeleteDataPurposeModal = ({ purpose, triggerComponent }: Props) => {
             force: true,
           }).unwrap();
           message.success(
-            `Data purpose "${purpose.name}" deleted successfully`,
+            `Purpose "${purpose.name}" deleted successfully`,
           );
         } catch (error) {
           message.error(getErrorMessage(error as RTKErrorResult["error"]));

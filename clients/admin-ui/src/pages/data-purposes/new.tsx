@@ -20,7 +20,7 @@ const AddDataPurposePage: NextPage = () => {
   const handleSubmit = async (values: DataPurposeFormValues) => {
     try {
       await createDataPurpose(values).unwrap();
-      message.success(`Data purpose "${values.name}" created successfully`);
+      message.success(`Purpose "${values.name}" created successfully`);
       router.push(DATA_PURPOSES_ROUTE);
     } catch (error) {
       message.error(getErrorMessage(error as RTKErrorResult["error"]));
@@ -28,16 +28,16 @@ const AddDataPurposePage: NextPage = () => {
   };
 
   return (
-    <Layout title="Add data purpose">
+    <Layout title="Add purpose">
       <PageHeader
-        heading="Data Purposes"
+        heading="Purposes"
         breadcrumbItems={[
           {
-            title: "All data purposes",
+            title: "All purposes",
             href: DATA_PURPOSES_ROUTE,
           },
           {
-            title: "Add data purpose",
+            title: "Add purpose",
           },
         ]}
       />

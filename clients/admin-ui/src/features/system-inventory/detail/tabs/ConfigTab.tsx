@@ -110,12 +110,11 @@ const ConfigTab = ({ system }: ConfigTabProps) => {
     },
     {
       key: "purposes",
-      label: "Data Uses & Purposes",
+      label: "Uses & purposes",
       children: (
         <Flex vertical gap={12}>
           <Text type="secondary">
-            Assign data purposes to describe how this system processes personal
-            data.
+            Assign purposes to describe how this system processes personal data.
           </Text>
           <Form.Item name="purposes">
             <Select

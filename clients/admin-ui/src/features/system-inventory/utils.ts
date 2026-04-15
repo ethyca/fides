@@ -27,12 +27,6 @@ export function getSystemCapabilities(system: MockSystem): SystemCapability[] {
   if (totalClassified > 0) {
     caps.push(SystemCapability.CLASSIFICATION);
   }
-  if (
-    system.purposes.some((p) => ["Marketing", "Analytics"].includes(p.name)) &&
-    system.integrations.length > 0
-  ) {
-    caps.push(SystemCapability.CONSENT);
-  }
   return caps;
 }
 
@@ -357,7 +351,7 @@ export function generateSystemBriefing(system: MockSystem): string {
   }
 
   if (system.purposes.length === 0) {
-    parts.push("No data purposes are defined for this system.");
+    parts.push("No purposes are defined for this system.");
   }
 
   if (system.risk_count === 0 && system.annotation_percent >= 80) {

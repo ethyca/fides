@@ -279,7 +279,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Data purposes",
+        title: "Purposes",
         path: routes.DATA_PURPOSES_ROUTE,
         requiresPlus: true,
         requiresFlag: "alphaPurposeBasedAccessControl",

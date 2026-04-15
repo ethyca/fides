@@ -13,9 +13,9 @@ const DataPurposesPage: NextPage = () => {
   const { purposes, getSummaries, createPurpose } = usePurposes();
 
   return (
-    <FixedLayout title="Data purposes">
+    <FixedLayout title="Purposes">
       <PageHeader
-        heading="Data purposes"
+        heading="Purposes"
         rightContent={
           <Button type="primary" onClick={() => setModalOpen(true)}>
             + New purpose

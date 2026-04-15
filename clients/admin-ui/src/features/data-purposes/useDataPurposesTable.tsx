@@ -58,14 +58,14 @@ const useDataPurposesTable = () => {
               description={
                 <Flex vertical gap="small" align="center">
                   <Typography.Paragraph>
-                    No data purposes found.
+                    No purposes found.
                   </Typography.Paragraph>
                   <Flex>
                     <Button
                       type="primary"
                       onClick={() => router.push(DATA_PURPOSES_NEW_ROUTE)}
                     >
-                      Add data purpose
+                      Add purpose
                     </Button>
                   </Flex>
                 </Flex>

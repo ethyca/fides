@@ -21,6 +21,9 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo, useState } from "react";
 
+import ConnectionTypeLogo, {
+  connectionLogoFromKey,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
 
 import LinkExistingIntegrationModal from "../detail/modals/LinkExistingIntegrationModal";
@@ -613,8 +616,8 @@ const PurposesSection = ({ system }: { system: MockSystem }) => {
           {system.purposes.map((p) => (
             <Tag
               key={p.name}
+              color="olive"
               bordered={false}
-              style={{ backgroundColor: palette.FIDESUI_NEUTRAL_100 }}
             >
               {p.name}
             </Tag>
@@ -917,7 +920,6 @@ const IntegrationEditModal = ({
                 { label: "DSR erasure", value: "DSR erasure" },
                 { label: "Monitoring", value: "monitoring" },
                 { label: "Classification", value: "classification" },
-                { label: "Consent", value: "consent" },
               ]}
             />
           </div>
@@ -1019,7 +1021,7 @@ const IntegrationsSection = ({ system }: { system: MockSystem }) => {
               strong
               className="w-[26%] text-[10px] uppercase tracking-wider"
             >
-              Name
+              Integration
             </Text>
             <Text
               strong
@@ -1058,7 +1060,13 @@ const IntegrationsSection = ({ system }: { system: MockSystem }) => {
               align="center"
               className="border-b border-solid border-[#f5f5f5] px-3 py-2.5"
             >
-              <Text className="w-[26%] text-xs">{intg.name}</Text>
+              <Flex align="center" gap={8} className="w-[26%] min-w-0">
+                <ConnectionTypeLogo
+                  data={connectionLogoFromKey(intg.type.toLowerCase())}
+                  size={20}
+                />
+                <Text className="truncate text-xs">{intg.name}</Text>
+              </Flex>
               <Text type="secondary" className="w-[12%] text-xs">
                 {intg.type}
               </Text>
@@ -1077,7 +1085,9 @@ const IntegrationsSection = ({ system }: { system: MockSystem }) => {
                   : "—"}
               </Text>
               <Text type="secondary" className="w-[14%] text-xs">
-                {intg.enabledActions.join(", ")}
+                {intg.enabledActions
+                  .filter((a) => a !== "consent")
+                  .join(", ")}
               </Text>
               <Flex className="w-[24%]" justify="flex-end" gap={6}>
                 <Button
@@ -1692,11 +1702,11 @@ const AdvancedContent = () => (
 
 const SystemDetailContent = ({ system }: SystemDetailContentProps) => {
   const overviewContent = (
-    <Flex vertical gap={40}>
+    <Flex vertical gap={64}>
       <AboutSection system={system} />
       <div>
         <SectionHeader title="Governance" />
-        <Text type="secondary" className="mb-4 block text-xs">
+        <Text type="secondary" className="mb-5 block text-xs">
           Purposes define the legal basis and business reason for processing
           personal data in this system. Stewards are the individuals accountable
           for maintaining governance compliance and responding to data subject
@@ -1715,7 +1725,7 @@ const SystemDetailContent = ({ system }: SystemDetailContentProps) => {
       <DataFlowSection system={system} />
       <div>
         <SectionHeader title="Classification" />
-        <Text type="secondary" className="mb-4 block text-xs">
+        <Text type="secondary" className="mb-5 block text-xs">
           Classification tracks how fields across this system&apos;s datasets
           are labeled with data categories. Approved fields have been reviewed
           and confirmed, classified fields are pending steward review, and

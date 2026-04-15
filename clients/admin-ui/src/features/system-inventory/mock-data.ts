@@ -697,14 +697,6 @@ export const MOCK_SYSTEMS: MockSystem[] = [
           enabledActions: ["monitoring", "classification"],
         },
         {
-          name: "BigQuery — Consent",
-          type: "BigQuery",
-          accessLevel: "Read/Write",
-          status: "active",
-          lastTested: "2026-03-24T10:00:00Z",
-          enabledActions: ["consent"],
-        },
-        {
           name: "Fivetran — BigQuery Sync",
           type: "Fivetran",
           accessLevel: "Read",

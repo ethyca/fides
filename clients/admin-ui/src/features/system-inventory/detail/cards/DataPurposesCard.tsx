@@ -10,7 +10,7 @@ const DataPurposesCard = ({ purposes }: DataPurposesCardProps) => (
   <Card
     title={
       <span className="text-[10px] uppercase tracking-wider">
-        Data purposes
+        Purposes
       </span>
     }
     size="small"

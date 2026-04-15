@@ -23,9 +23,9 @@ const PurposeDetailPage: NextPage = () => {
   }
 
   return (
-    <FixedLayout title="Data purposes">
+    <FixedLayout title="Purposes">
       <PageHeader
-        heading="Data purposes"
+        heading="Purposes"
         breadcrumbItems={[
           { title: "All purposes", href: DATA_PURPOSES_ROUTE },
           { title: purpose.name },

@@ -190,7 +190,7 @@ const AccessIssueCard = ({ item }: { item: AccessIssue }) => {
     <Card size="small" style={cardStyle}>
       <Flex vertical gap={8}>
         <Flex gap={8} align="center">
-          <Tag color={isViolation ? "error" : "gold"}>
+          <Tag color={isViolation ? "error" : "caution"}>
             {isViolation ? "Non-compliant" : "No policy"}
           </Tag>
           <Text strong className="text-xs">

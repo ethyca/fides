@@ -102,7 +102,7 @@ const SEED_SCENARIOS: SeedScenario[] = [
     key: "pbac",
     label: "PBAC (Access Control)",
     description:
-      "Seed data purposes, data consumers, datasets, a mock query log integration, and 60 days of access control history.",
+      "Seed purposes, data consumers, datasets, a mock query log integration, and 60 days of access control history.",
   },
   {
     key: "dashboard",

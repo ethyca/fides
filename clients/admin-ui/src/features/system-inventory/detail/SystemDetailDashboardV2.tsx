@@ -3,7 +3,6 @@ import {
   Activity,
   DataBase,
   Locked,
-  Policy,
   SettingsCheck,
 } from "@carbon/icons-react";
 import { Flex, Statistic, Tag, Text, Title } from "fidesui";
@@ -20,10 +19,9 @@ interface SystemDetailDashboardV2Props {
   system: MockSystem;
 }
 
-const CAPABILITY_ICONS: Record<SystemCapability, CarbonIconType> = {
+const CAPABILITY_ICONS: Partial<Record<SystemCapability, CarbonIconType>> = {
   [SystemCapability.DSAR]: Locked,
   [SystemCapability.MONITORING]: Activity,
-  [SystemCapability.CONSENT]: Policy,
   [SystemCapability.INTEGRATIONS]: SettingsCheck,
   [SystemCapability.CLASSIFICATION]: DataBase,
 };
@@ -148,6 +146,7 @@ const SystemDetailDashboardV2 = ({ system }: SystemDetailDashboardV2Props) => {
             <Flex gap={6} wrap className="mt-1">
               {capabilities.map((cap) => {
                 const Icon = CAPABILITY_ICONS[cap];
+                if (!Icon) return null;
                 return (
                   <Tag
                     key={cap}
