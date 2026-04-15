@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.83.1b1.dev17+g41f955592"
+    "version": "2.83.1b1.dev18+gb3048ee0a"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2913,6 +2913,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Access Token"
                       },
                       "refresh_token": {
@@ -2924,6 +2925,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Refresh Token"
                       },
                       "token_expiry": {
@@ -2960,6 +2962,40 @@
                         ],
                         "title": "Site Url"
                       },
+                      "client_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Client Id"
+                      },
+                      "client_secret": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "sensitive": true,
+                        "title": "Client Secret"
+                      },
+                      "redirect_uri": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Redirect Uri"
+                      },
                       "domain": {
                         "anyOf": [
                           {
@@ -2991,6 +3027,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Api Key"
                       }
                     },
@@ -5864,6 +5901,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Access Token"
                       },
                       "refresh_token": {
@@ -5875,6 +5913,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Refresh Token"
                       },
                       "token_expiry": {
@@ -5911,6 +5950,40 @@
                         ],
                         "title": "Site Url"
                       },
+                      "client_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Client Id"
+                      },
+                      "client_secret": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "sensitive": true,
+                        "title": "Client Secret"
+                      },
+                      "redirect_uri": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Redirect Uri"
+                      },
                       "domain": {
                         "anyOf": [
                           {
@@ -5942,6 +6015,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Api Key"
                       }
                     },
@@ -7420,6 +7494,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Access Token"
                       },
                       "refresh_token": {
@@ -7431,6 +7506,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Refresh Token"
                       },
                       "token_expiry": {
@@ -7467,6 +7543,40 @@
                         ],
                         "title": "Site Url"
                       },
+                      "client_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Client Id"
+                      },
+                      "client_secret": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "sensitive": true,
+                        "title": "Client Secret"
+                      },
+                      "redirect_uri": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Redirect Uri"
+                      },
                       "domain": {
                         "anyOf": [
                           {
@@ -7498,6 +7608,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Api Key"
                       }
                     },
@@ -24256,7 +24367,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Access Token"
+                    "title": "Access Token",
+                    "sensitive": true
                   },
                   "refresh_token": {
                     "anyOf": [
@@ -24267,7 +24379,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Refresh Token"
+                    "title": "Refresh Token",
+                    "sensitive": true
                   },
                   "token_expiry": {
                     "anyOf": [
@@ -24303,6 +24416,40 @@
                     ],
                     "title": "Site Url"
                   },
+                  "client_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Id"
+                  },
+                  "client_secret": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Secret",
+                    "sensitive": true
+                  },
+                  "redirect_uri": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Redirect Uri"
+                  },
                   "domain": {
                     "anyOf": [
                       {
@@ -24334,7 +24481,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Api Key"
+                    "title": "Api Key",
+                    "sensitive": true
                   }
                 },
                 "additionalProperties": true,
@@ -28649,7 +28797,8 @@
                 "type": "null"
               }
             ],
-            "title": "Access Token"
+            "title": "Access Token",
+            "sensitive": true
           },
           "refresh_token": {
             "anyOf": [
@@ -28660,7 +28809,8 @@
                 "type": "null"
               }
             ],
-            "title": "Refresh Token"
+            "title": "Refresh Token",
+            "sensitive": true
           },
           "token_expiry": {
             "anyOf": [
@@ -28696,6 +28846,40 @@
             ],
             "title": "Site Url"
           },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Secret",
+            "sensitive": true
+          },
+          "redirect_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redirect Uri"
+          },
           "domain": {
             "anyOf": [
               {
@@ -28727,7 +28911,8 @@
                 "type": "null"
               }
             ],
-            "title": "Api Key"
+            "title": "Api Key",
+            "sensitive": true
           }
         },
         "additionalProperties": true,
@@ -35666,7 +35851,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Access Token"
+                    "title": "Access Token",
+                    "sensitive": true
                   },
                   "refresh_token": {
                     "anyOf": [
@@ -35677,7 +35863,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Refresh Token"
+                    "title": "Refresh Token",
+                    "sensitive": true
                   },
                   "token_expiry": {
                     "anyOf": [
@@ -35713,6 +35900,40 @@
                     ],
                     "title": "Site Url"
                   },
+                  "client_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Id"
+                  },
+                  "client_secret": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Secret",
+                    "sensitive": true
+                  },
+                  "redirect_uri": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Redirect Uri"
+                  },
                   "domain": {
                     "anyOf": [
                       {
@@ -35744,7 +35965,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Api Key"
+                    "title": "Api Key",
+                    "sensitive": true
                   }
                 },
                 "additionalProperties": true,
