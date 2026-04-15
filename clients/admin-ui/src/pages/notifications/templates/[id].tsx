@@ -41,7 +41,7 @@ const EditNotificationTemplatePage: NextPage = () => {
     usePutMessagingTemplateByIdMutation();
   const [deleteMessagingTemplate] = useDeleteMessagingTemplateByIdMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: FormValues): Promise<boolean> => {
     const templateData: MessagingTemplateCreateOrUpdate = {
       is_enabled: values.is_enabled,
       content: {
@@ -61,10 +61,11 @@ const EditNotificationTemplatePage: NextPage = () => {
 
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
-      return;
+      return false;
     }
 
     message.success(`Messaging template updated successfully`);
+    return true;
   };
 
   const {

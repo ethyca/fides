@@ -52,7 +52,10 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
         message.error(errorMsg);
       } else {
         message.success("Email templates saved.");
-        // Re-baseline the form so Save becomes disabled again until the next edit.
+        // Re-baseline the form: resetFields() clears antd's touched flags (but
+        // reverts to the original initialValues), then setFieldsValue re-applies
+        // the just-saved data on top. Together they make the saved values the
+        // new baseline so Save becomes disabled until the next edit.
         form.resetFields();
         form.setFieldsValue(values);
       }

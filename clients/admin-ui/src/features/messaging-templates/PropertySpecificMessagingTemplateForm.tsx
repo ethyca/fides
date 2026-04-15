@@ -1,6 +1,6 @@
 import { NOTIFICATIONS_TEMPLATES_ROUTE } from "common/nav/routes";
 import { Button, Card, Flex, Form, Input, Switch } from "fidesui";
-import { useRouter } from "next/router";
+import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import ScrollableList from "~/features/common/ScrollableList";
@@ -17,7 +17,7 @@ import { MinimalProperty } from "~/types/api";
 
 interface Props {
   template: MessagingTemplateResponse;
-  handleSubmit: (values: FormValues) => Promise<void>;
+  handleSubmit: (values: FormValues) => Promise<boolean>;
   handleDelete?: () => void;
   isSaving?: boolean;
 }
@@ -70,12 +70,7 @@ const PropertySpecificMessagingTemplateForm = ({
   handleDelete,
   isSaving,
 }: Props) => {
-  const router = useRouter();
   const [form] = Form.useForm<FormValues>();
-
-  const handleCancel = () => {
-    router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
-  };
 
   const initialValues: FormValues = {
     type: template.type,
@@ -85,10 +80,21 @@ const PropertySpecificMessagingTemplateForm = ({
     id: template.id || "",
   };
 
-  // Re-mount the form whenever the upstream template data meaningfully changes
-  // (e.g. after a successful save returning fresh data). This resets antd's
-  // "touched" state without needing a useEffect + setFieldsValue dance.
-  const formKey = `${template.id || template.type}-${template.is_enabled}-${template.content.subject}-${template.content.body}`;
+  // Re-mount the form only when the underlying template identity changes, not
+  // on every content update. Scoping the key this narrowly avoids discarding
+  // in-progress edits if a background refetch returns data that differs from
+  // what the user has typed.
+  const formKey = template.id || template.type;
+
+  const onFinish = async (values: FormValues) => {
+    const succeeded = await handleSubmit(values);
+    if (succeeded) {
+      // Re-baseline after a successful save so `isFieldsTouched()` flips back
+      // to false and Save becomes disabled again until the next edit.
+      form.resetFields();
+      form.setFieldsValue(values);
+    }
+  };
 
   return (
     <Form
@@ -96,7 +102,7 @@ const PropertySpecificMessagingTemplateForm = ({
       form={form}
       layout="vertical"
       initialValues={initialValues}
-      onFinish={handleSubmit}
+      onFinish={onFinish}
       className="py-3"
     >
       <Card
@@ -146,9 +152,9 @@ const PropertySpecificMessagingTemplateForm = ({
           </Button>
         )}
         <Flex justify="flex-end" className="w-full pt-2">
-          <Button className="mr-3" onClick={handleCancel}>
-            Cancel
-          </Button>
+          <NextLink href={NOTIFICATIONS_TEMPLATES_ROUTE} passHref>
+            <Button className="mr-3">Cancel</Button>
+          </NextLink>
           <Form.Item shouldUpdate noStyle>
             {() => (
               <Button
