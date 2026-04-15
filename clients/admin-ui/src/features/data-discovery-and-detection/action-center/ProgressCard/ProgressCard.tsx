@@ -53,7 +53,6 @@ export interface ProgressCardProps {
 export const ProgressCard = ({
   title,
   subtitle,
-  progress,
   barChartProps,
   percentageStats,
   numericStats,
@@ -91,7 +90,10 @@ export const ProgressCard = ({
         </Flex>
       )}
       <EnterExitList
-        dataSource={[progress.denominator ?? 0]}
+        dataSource={[
+          (barChartProps?.data?.progress?.classified ?? 0) +
+            (barChartProps?.data?.progress?.unlabeled ?? 0),
+        ]}
         itemKey={(key) => key}
         renderItem={(item) => (
           <Tooltip
@@ -122,7 +124,7 @@ export const ProgressCard = ({
           </Tooltip>
         )}
       />
-      <Text>resources need review across {subtitle}</Text>
+      <Text>resources need review{!compact && <> across {subtitle}</>}</Text>
       <div>
         {barChartProps && <StackedBarChart {...barChartProps} hideTooltip />}
         <Tooltip
@@ -160,7 +162,7 @@ export const ProgressCard = ({
             />
             <Badge
               status="default"
-              text={`${nFormatter(progress.denominator)} unlabeled`}
+              text={`${nFormatter(barChartProps?.data?.progress?.unlabeled)} unlabeled`}
             />
           </Flex>
         </Tooltip>

@@ -18,6 +18,7 @@ export enum ConnectionType {
   ENTRA = "entra",
   GOOGLE_CLOUD_SQL_MYSQL = "google_cloud_sql_mysql",
   GOOGLE_CLOUD_SQL_POSTGRES = "google_cloud_sql_postgres",
+  GOOGLE_WORKSPACE = "google_workspace",
   HTTPS = "https",
   MANUAL = "manual",
   MANUAL_WEBHOOK = "manual_webhook",

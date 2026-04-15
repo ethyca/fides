@@ -22,6 +22,7 @@ const MonitorStats = ({ monitorId, monitorType }: MonitorStatsProps) => {
     heliosInsights && (
       <Flex className={classNames("w-full")} gap="middle">
         {Object.values(monitorType ? [monitorType] : APIMonitorType)
+          .toReversed()
           .map((mType) => (
             <MonitorProgressWidget
               monitorType={mType}
