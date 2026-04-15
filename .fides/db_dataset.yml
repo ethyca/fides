@@ -3447,6 +3447,8 @@ dataset:
         data_categories: [system.operations]
       - name: label
         data_categories: [system.operations]
+      - name: description
+        data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at
