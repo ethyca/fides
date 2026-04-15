@@ -1,4 +1,4 @@
-import { Button, useMessage } from "fidesui";
+import { Button, Flex, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
@@ -60,7 +60,7 @@ const OAuthClientForm = ({ onClose, onCreated }: OAuthClientFormProps) => {
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form data-testid="oauth-client-form">
-          <div className="flex flex-col gap-4">
+          <Flex gap="middle" vertical>
             <CustomTextInput
               name="name"
               label="Name"
@@ -92,7 +92,7 @@ const OAuthClientForm = ({ onClose, onCreated }: OAuthClientFormProps) => {
                 Create client
               </Button>
             </div>
-          </div>
+          </Flex>
         </Form>
       )}
     </Formik>
