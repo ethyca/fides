@@ -1,8 +1,10 @@
-import { Button, Flex, Form, Input, Select } from "fidesui";
+import { Button, Flex, Form, Input, Select, Tag } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
+import AddDatasetsModal from "~/features/data-purposes/AddDatasetsModal";
+import { MOCK_AVAILABLE_DATASETS } from "~/features/data-purposes/mockData";
 
 import { CONSUMER_TYPE_UI_OPTIONS, PLATFORM_OPTIONS } from "./constants";
 import type { MockDataConsumer } from "./types";
@@ -13,6 +15,7 @@ export interface DataConsumerFormValues {
   identifier: string;
   platform: string | null;
   purposes: string[];
+  datasets: string[];
   description: string;
 }
 
@@ -41,9 +44,15 @@ const MOCK_PURPOSE_OPTIONS = [
   { value: "Analytics", label: "Analytics" },
 ];
 
+const datasetLabel = (key: string): string => {
+  const match = MOCK_AVAILABLE_DATASETS.find((d) => d.dataset_fides_key === key);
+  return match ? match.dataset_name : key;
+};
+
 const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
   const [form] = Form.useForm<DataConsumerFormValues>();
   const router = useRouter();
+  const [modalOpen, setModalOpen] = useState(false);
 
   const initialValues = useMemo<DataConsumerFormValues>(
     () => ({
@@ -52,6 +61,7 @@ const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
       identifier: consumer?.identifier ?? "",
       platform: consumer?.platform ?? null,
       purposes: consumer?.purposes ?? [],
+      datasets: consumer?.datasets ?? [],
       description: "",
     }),
     [consumer],
@@ -122,6 +132,15 @@ const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
         />
       </Form.Item>
 
+      <Form.Item
+        name="datasets"
+        label="Datasets"
+        tooltip="Which datasets is this consumer authorized to access? Scope is applied in combination with approved purposes."
+      >
+        {/* Custom form control pattern — Form.Item injects value/onChange */}
+        <DatasetPickerControl onRequestOpen={() => setModalOpen(true)} />
+      </Form.Item>
+
       <Form.Item name="description" label="Description">
         <Input.TextArea placeholder="Enter a description" rows={3} />
       </Form.Item>
@@ -132,7 +151,62 @@ const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
           Save
         </Button>
       </Flex>
+
+      <AddDatasetsModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={(keys) => {
+          form.setFieldValue("datasets", keys);
+          setModalOpen(false);
+        }}
+        assignedKeys={form.getFieldValue("datasets") ?? []}
+      />
     </Form>
+  );
+};
+
+interface DatasetPickerControlProps {
+  value?: string[];
+  onChange?: (value: string[]) => void;
+  onRequestOpen: () => void;
+}
+
+const DatasetPickerControl = ({
+  value = [],
+  onChange,
+  onRequestOpen,
+}: DatasetPickerControlProps) => {
+  const removeKey = (key: string) => {
+    onChange?.(value.filter((v) => v !== key));
+  };
+
+  return (
+    <Flex vertical gap={8} align="flex-start">
+      <Flex gap={8} align="center">
+        <Button onClick={onRequestOpen}>
+          {value.length === 0
+            ? "Select datasets"
+            : `Select datasets (${value.length} selected)`}
+        </Button>
+      </Flex>
+      {value.length > 0 && (
+        <Flex gap={4} wrap="wrap">
+          {value.map((key) => (
+            <Tag
+              key={key}
+              closable
+              bordered={false}
+              onClose={(e) => {
+                e.preventDefault();
+                removeKey(key);
+              }}
+            >
+              {datasetLabel(key)}
+            </Tag>
+          ))}
+        </Flex>
+      )}
+    </Flex>
   );
 };
 

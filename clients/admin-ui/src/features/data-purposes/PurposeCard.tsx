@@ -1,14 +1,61 @@
-import { Card, Flex, Tag, Text } from "fidesui";
+import { Card, Flex, Text } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 
-import {
-  getFeatureLabel,
-  LEGAL_BASIS_LABELS,
-  LEGAL_BASIS_TAG_COLORS,
-} from "./purposeUtils";
+import { computeCategoryDrift } from "./purposeUtils";
 import type { DataPurpose, PurposeSummary } from "./types";
+
+const Dot = ({ color }: { color: string }) => (
+  <span
+    style={{
+      display: "inline-block",
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      backgroundColor: color,
+      flexShrink: 0,
+    }}
+  />
+);
+
+const RiskIndicator = ({
+  status,
+  riskCount,
+}: {
+  status: string;
+  riskCount: number;
+}) => {
+  if (status === "drift") {
+    return (
+      <Flex align="center" gap={5}>
+        <Dot color={palette.FIDESUI_ERROR} />
+        <Text className="text-xs" style={{ color: palette.FIDESUI_MINOS }}>
+          {riskCount} {riskCount === 1 ? "risk" : "risks"}
+        </Text>
+      </Flex>
+    );
+  }
+  if (status === "compliant") {
+    return (
+      <Flex align="center" gap={5}>
+        <Dot color={palette.FIDESUI_SUCCESS} />
+        <Text className="text-xs" style={{ color: palette.FIDESUI_MINOS }}>
+          Compliant
+        </Text>
+      </Flex>
+    );
+  }
+  return (
+    <Flex align="center" gap={5}>
+      <Dot color="#d9d9d9" />
+      <Text type="secondary" className="text-xs">
+        Not scanned
+      </Text>
+    </Flex>
+  );
+};
 
 interface PurposeCardProps {
   purpose: DataPurpose;
@@ -30,9 +77,10 @@ const getRelativeTime = (dateStr: string): string => {
 
 const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
   const router = useRouter();
-  const legalBasisColor = LEGAL_BASIS_TAG_COLORS[purpose.legal_basis];
-  const legalBasisLabel =
-    LEGAL_BASIS_LABELS[purpose.legal_basis] || purpose.legal_basis;
+  const drift = computeCategoryDrift(
+    purpose.data_categories,
+    purpose.detected_data_categories,
+  );
 
   return (
     <Card
@@ -50,20 +98,11 @@ const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
         <Text type="secondary" className="line-clamp-2 text-xs">
           {purpose.description}
         </Text>
-        <Flex gap={4} wrap="wrap">
-          {legalBasisLabel && (
-            <Tag color={legalBasisColor}>{legalBasisLabel}</Tag>
-          )}
-          {purpose.features.map((f) => (
-            <Tag key={f} color="marble">
-              {getFeatureLabel(f)}
-            </Tag>
-          ))}
-        </Flex>
+        <RiskIndicator status={drift.status} riskCount={drift.undeclared.length} />
         <div className="mt-auto">
           <Text type="secondary" className="text-xs">
             {summary?.system_count ?? 0} data consumers &middot;{" "}
-            {summary?.dataset_count ?? 0} datasets
+            {purpose.data_categories.length} categories
           </Text>
           <br />
           <Text type="secondary" className="text-xs">

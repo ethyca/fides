@@ -1,10 +1,5 @@
 import { Flex, Tag, Tabs, Text, Title, Tooltip } from "fidesui";
 
-import {
-  getFeatureLabel,
-  LEGAL_BASIS_LABELS,
-  LEGAL_BASIS_TAG_COLORS,
-} from "./purposeUtils";
 import PurposeConfigForm from "./PurposeConfigForm";
 import PurposeDashboard from "./PurposeDashboard";
 import type {
@@ -66,10 +61,6 @@ const PurposeDetail = ({
   systems,
   datasets,
 }: PurposeDetailProps) => {
-  const legalBasisColor = LEGAL_BASIS_TAG_COLORS[purpose.legal_basis];
-  const legalBasisLabel =
-    LEGAL_BASIS_LABELS[purpose.legal_basis] || purpose.legal_basis;
-
   const tabItems = [
     {
       key: "overview",
@@ -102,30 +93,10 @@ const PurposeDetail = ({
         <LabeledTags label="Data use" values={[purpose.data_use]} />
         <LabeledTags label="Subject" values={purpose.data_subjects} />
         <LabeledTags
-          label="Categories"
+          label="Data categories"
           values={purpose.data_categories}
           maxVisible={MAX_VISIBLE_CATEGORIES}
         />
-        {legalBasisLabel && (
-          <Flex align="center" gap="small">
-            <Text type="secondary" className="text-xs font-medium">
-              Legal basis
-            </Text>
-            <Tag color={legalBasisColor}>{legalBasisLabel}</Tag>
-          </Flex>
-        )}
-        {purpose.features.length > 0 && (
-          <Flex align="center" gap="small">
-            <Text type="secondary" className="text-xs font-medium">
-              Features
-            </Text>
-            {purpose.features.map((f) => (
-              <Tag key={f} color="marble">
-                {getFeatureLabel(f)}
-              </Tag>
-            ))}
-          </Flex>
-        )}
       </Flex>
       <Tabs items={tabItems} defaultActiveKey="overview" />
     </Flex>

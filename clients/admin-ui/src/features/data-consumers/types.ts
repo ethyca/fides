@@ -12,6 +12,8 @@ export interface MockDataConsumer {
   type: ConsumerType;
   platform: string | null;
   purposes: string[];
+  /** Dataset fides_keys this consumer is authorized to access. */
+  datasets: string[];
   findingsCount: number;
   linkedSystem: string | null;
 }

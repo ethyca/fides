@@ -1,7 +1,7 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import type { DataPurpose } from "./types";
+import type { CategoryDrift, DataPurpose } from "./types";
 
 export const DATA_USE_LABELS: Record<string, string> = {
   analytics: "Analytics",
@@ -61,4 +61,33 @@ export const getStrokeColor = (percent: number): string => {
   if (percent >= 80) return palette.FIDESUI_SUCCESS;
   if (percent >= 50) return palette.FIDESUI_WARNING;
   return palette.FIDESUI_ERROR;
+};
+
+/**
+ * Compare the purpose's human-authored `defined` categories against the
+ * classifier's `detected` categories and classify the result.
+ *
+ * - `unknown` when nothing has been detected yet (no signal).
+ * - `drift` when detected includes categories not in the defined set.
+ * - `compliant` when detected is a subset of defined.
+ *
+ * `unused` surfaces defined categories with no detection — a data minimization
+ * signal, not a compliance failure.
+ */
+export const computeCategoryDrift = (
+  defined: string[],
+  detected: string[],
+): CategoryDrift => {
+  if (detected.length === 0) {
+    return { status: "unknown", undeclared: [], unused: [] };
+  }
+  const definedSet = new Set(defined);
+  const detectedSet = new Set(detected);
+  const undeclared = detected.filter((c) => !definedSet.has(c));
+  const unused = defined.filter((c) => !detectedSet.has(c));
+  return {
+    status: undeclared.length > 0 ? "drift" : "compliant",
+    undeclared,
+    unused,
+  };
 };

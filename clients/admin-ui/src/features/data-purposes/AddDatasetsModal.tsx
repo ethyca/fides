@@ -1,4 +1,4 @@
-import { Flex, Input, Modal, Select, Table, Tag } from "fidesui";
+import { Button, Flex, Input, Modal, Select, Table, Tag } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { MOCK_AVAILABLE_DATASETS } from "./mockData";
@@ -71,6 +71,23 @@ const AddDatasetsModal = ({
     onClose();
   };
 
+  const filteredKeys = useMemo(
+    () => filtered.map((d) => d.dataset_fides_key),
+    [filtered],
+  );
+  const allFilteredSelected =
+    filteredKeys.length > 0 &&
+    filteredKeys.every((k) => selectedKeys.includes(k));
+  const toggleSelectAllFiltered = () => {
+    if (allFilteredSelected) {
+      setSelectedKeys((prev) => prev.filter((k) => !filteredKeys.includes(k)));
+    } else {
+      setSelectedKeys((prev) =>
+        Array.from(new Set([...prev, ...filteredKeys])),
+      );
+    }
+  };
+
   return (
     <Modal
       title={
@@ -104,6 +121,13 @@ const AddDatasetsModal = ({
           allowClear
           style={{ width: 180 }}
         />
+        <Button
+          size="middle"
+          onClick={toggleSelectAllFiltered}
+          disabled={filteredKeys.length === 0}
+        >
+          {allFilteredSelected ? "Clear all" : "Select all"}
+        </Button>
       </Flex>
       <Table<AvailableDataset>
         dataSource={filtered}

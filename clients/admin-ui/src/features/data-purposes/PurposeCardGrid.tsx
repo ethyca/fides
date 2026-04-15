@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import { MOCK_SYSTEM_ASSIGNMENTS } from "./mockData";
 import PurposeCard from "./PurposeCard";
-import { formatDataUse } from "./purposeUtils";
+import { computeCategoryDrift, formatDataUse } from "./purposeUtils";
 import type { DataPurpose, PurposeSummary } from "./types";
 
 interface PurposeCardGridProps {
@@ -15,6 +15,8 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
   const [search, setSearch] = useState("");
   const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
   const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const consumerOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -41,6 +43,20 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
     [purposes],
   );
 
+  const statusOptions = [
+    { value: "drift", label: "Has risks" },
+    { value: "compliant", label: "Compliant" },
+    { value: "unknown", label: "Not scanned" },
+  ];
+
+  const categoryOptions = useMemo(() => {
+    const all = new Set<string>();
+    purposes.forEach((p) => p.data_categories.forEach((c) => all.add(c)));
+    return Array.from(all)
+      .sort()
+      .map((c) => ({ value: c, label: c }));
+  }, [purposes]);
+
   const filtered = useMemo(
     () =>
       purposes.filter((p) => {
@@ -56,9 +72,18 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
           )
             return false;
         }
+        if (statusFilter) {
+          const drift = computeCategoryDrift(
+            p.data_categories,
+            p.detected_data_categories,
+          );
+          if (drift.status !== statusFilter) return false;
+        }
+        if (categoryFilter && !p.data_categories.includes(categoryFilter))
+          return false;
         return true;
       }),
-    [purposes, search, dataUseFilter, consumerFilter],
+    [purposes, search, dataUseFilter, consumerFilter, statusFilter, categoryFilter],
   );
 
   const groups = useMemo(() => {
@@ -85,6 +110,22 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
           style={{ width: 280 }}
         />
         <Flex gap={8}>
+          <Select
+            placeholder="Status"
+            allowClear
+            style={{ width: 160 }}
+            options={statusOptions}
+            value={statusFilter}
+            onChange={(v) => setStatusFilter(v ?? null)}
+          />
+          <Select
+            placeholder="Data category"
+            allowClear
+            style={{ width: 200 }}
+            options={categoryOptions}
+            value={categoryFilter}
+            onChange={(v) => setCategoryFilter(v ?? null)}
+          />
           <Select
             placeholder="Consumer"
             allowClear

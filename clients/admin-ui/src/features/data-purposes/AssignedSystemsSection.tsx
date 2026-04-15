@@ -1,48 +1,96 @@
-import { Button, Card, CloseOutlined, Col, Flex, Input, Row, Select, Text, Title } from "fidesui";
+import {
+  Button,
+  Card,
+  CloseOutlined,
+  Col,
+  Flex,
+  Icons,
+  Input,
+  Row,
+  Select,
+  Text,
+  Title,
+  Tooltip,
+} from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo, useState } from "react";
 
 import AssignSystemsPickerModal from "./AssignSystemsPickerModal";
 import { MOCK_AVAILABLE_SYSTEMS } from "./mockData";
-import type { PurposeSystemAssignment } from "./types";
+import type {
+  PurposeDatasetAssignment,
+  PurposeSystemAssignment,
+} from "./types";
 
 interface AssignedSystemsSectionProps {
   systems: PurposeSystemAssignment[];
+  datasets: PurposeDatasetAssignment[];
+  definedCategories: string[];
+  onSystemsChange: (next: PurposeSystemAssignment[]) => void;
 }
 
 const VISIBLE_COUNT = 8;
 
-const AssignedSystemsSection = ({ systems }: AssignedSystemsSectionProps) => {
-  const [localSystems, setLocalSystems] =
-    useState<PurposeSystemAssignment[]>(systems);
+const AssignedSystemsSection = ({
+  systems,
+  datasets,
+  definedCategories,
+  onSystemsChange,
+}: AssignedSystemsSectionProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
   const typeOptions = useMemo(() => {
-    const types = [...new Set(localSystems.map((s) => s.system_type))];
+    const types = [...new Set(systems.map((s) => s.system_type))];
     return types.map((t) => ({ label: t, value: t }));
-  }, [localSystems]);
+  }, [systems]);
+
+  const datasetCountBySystem = useMemo(() => {
+    const counts = new Map<string, number>();
+    datasets.forEach((d) => {
+      counts.set(d.system_name, (counts.get(d.system_name) ?? 0) + 1);
+    });
+    return counts;
+  }, [datasets]);
+
+  const definedSet = useMemo(
+    () => new Set(definedCategories),
+    [definedCategories],
+  );
+
+  const riskBySystem = useMemo(() => {
+    const map = new Map<string, string[]>();
+    datasets.forEach((d) => {
+      const undeclared = d.data_categories.filter((c) => !definedSet.has(c));
+      if (undeclared.length === 0) return;
+      const prior = map.get(d.system_name) ?? [];
+      const merged = Array.from(new Set([...prior, ...undeclared]));
+      map.set(d.system_name, merged);
+    });
+    return map;
+  }, [datasets, definedSet]);
 
   const filtered = useMemo(
     () =>
-      localSystems.filter((s) => {
+      systems.filter((s) => {
         const matchesSearch = s.system_name
           .toLowerCase()
           .includes(search.toLowerCase());
         const matchesType = !typeFilter || s.system_type === typeFilter;
         return matchesSearch && matchesType;
       }),
-    [localSystems, search, typeFilter],
+    [systems, search, typeFilter],
   );
 
   const visible = expanded ? filtered : filtered.slice(0, VISIBLE_COUNT);
   const hiddenCount = filtered.length - VISIBLE_COUNT;
 
   const handleConfirm = (systemIds: string[]) => {
-    const updated = systemIds
+    const updatedSystems = systemIds
       .map((id) => {
-        const existing = localSystems.find((s) => s.system_id === id);
+        const existing = systems.find((s) => s.system_id === id);
         if (existing) return existing;
         const available = MOCK_AVAILABLE_SYSTEMS.find(
           (s) => s.system_id === id,
@@ -56,16 +104,25 @@ const AssignedSystemsSection = ({ systems }: AssignedSystemsSectionProps) => {
         };
       })
       .filter(Boolean) as PurposeSystemAssignment[];
-    setLocalSystems(updated);
+    onSystemsChange(updatedSystems);
     setModalOpen(false);
+  };
+
+  const handleRemoveSystem = (systemId: string) => {
+    onSystemsChange(systems.filter((s) => s.system_id !== systemId));
   };
 
   return (
     <div>
-      <Flex justify="space-between" align="center" className="mb-3">
-        <Title level={5} className="!mb-0">
-          Data consumers
-        </Title>
+      <Flex justify="space-between" align="flex-start" className="mb-3">
+        <div>
+          <Title level={5} className="!mb-1">
+            Data consumers
+          </Title>
+          <Text type="secondary" className="text-xs">
+            Systems and groups authorized to access data under this purpose.
+          </Text>
+        </div>
         <Button size="small" type="default" onClick={() => setModalOpen(true)}>
           + Add data consumers
         </Button>
@@ -92,41 +149,86 @@ const AssignedSystemsSection = ({ systems }: AssignedSystemsSectionProps) => {
         />
       </Flex>
       <Row gutter={[12, 12]}>
-        {visible.map((system) => (
-          <Col key={system.system_id} span={6}>
-            <Card
-              size="small"
-              style={{ backgroundColor: "#fafafa", cursor: "pointer", position: "relative" }}
-              className="group transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
-              onClick={() =>
-                window.open(
-                  `/systems/configure/${system.system_id}`,
-                  "_self",
-                )
-              }
-            >
-              <Button
-                type="text"
+        {visible.map((system) => {
+          const datasetCount = datasetCountBySystem.get(system.system_name) ?? 0;
+          const riskCategories = riskBySystem.get(system.system_name) ?? [];
+          // Only surface the red indicator for BigQuery so the page tells a
+          // focused story rather than flagging every at-risk consumer.
+          const isAtRisk =
+            system.system_name === "BigQuery" && riskCategories.length > 0;
+          // Only show the dataset count on cards that actually have datasets
+          // assigned via the purpose (BigQuery and Snowflake in the mock).
+          const showDatasetCount =
+            system.system_name === "BigQuery" ||
+            system.system_name === "Snowflake";
+          return (
+            <Col key={system.system_id} span={6}>
+              <Card
                 size="small"
-                icon={<CloseOutlined style={{ fontSize: 10 }} />}
-                className="!absolute right-1 top-1 hidden !h-5 !w-5 !min-w-0 group-hover:inline-flex"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setLocalSystems((prev) =>
-                    prev.filter((s) => s.system_id !== system.system_id),
-                  );
+                style={{
+                  backgroundColor: isAtRisk ? "#fff1f0" : "#fafafa",
+                  cursor: "pointer",
+                  position: "relative",
+                  border: isAtRisk
+                    ? `1px solid ${palette.FIDESUI_ERROR}`
+                    : undefined,
                 }}
-              />
-              <Text strong className="text-sm">
-                {system.system_name}
-              </Text>
-              <br />
-              <Text type="secondary" className="text-xs">
-                {system.system_type}
-              </Text>
-            </Card>
-          </Col>
-        ))}
+                className="group transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+                onClick={() =>
+                  window.open(
+                    `/systems/configure/${system.system_id}`,
+                    "_self",
+                  )
+                }
+              >
+                {showDatasetCount && (
+                  <Text
+                    type="secondary"
+                    className="!absolute right-2 top-2 text-xs group-hover:hidden"
+                  >
+                    {datasetCount} {datasetCount === 1 ? "dataset" : "datasets"}
+                  </Text>
+                )}
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<CloseOutlined style={{ fontSize: 10 }} />}
+                  className="!absolute right-1 top-1 hidden !h-5 !w-5 !min-w-0 group-hover:inline-flex"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveSystem(system.system_id);
+                  }}
+                />
+                <Flex align="center" gap={6}>
+                  {isAtRisk && (
+                    <Tooltip
+                      title={`At risk: introduces undeclared ${riskCategories.length === 1 ? "category" : "categories"} (${riskCategories.join(", ")})`}
+                    >
+                      <span
+                        style={{
+                          color: palette.FIDESUI_ERROR,
+                          lineHeight: 0,
+                        }}
+                      >
+                        <Icons.WarningFilled size={14} />
+                      </span>
+                    </Tooltip>
+                  )}
+                  <Text strong className="text-sm">
+                    {system.system_name}
+                  </Text>
+                </Flex>
+                <div>
+                  <Text type="secondary" className="text-xs">
+                    {system.consumer_category === "group"
+                      ? "Google group"
+                      : system.system_type}
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+          );
+        })}
       </Row>
       {!expanded && hiddenCount > 0 && (
         <Button
@@ -152,7 +254,7 @@ const AssignedSystemsSection = ({ systems }: AssignedSystemsSectionProps) => {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onConfirm={handleConfirm}
-        assignedIds={localSystems.map((s) => s.system_id)}
+        assignedIds={systems.map((s) => s.system_id)}
       />
     </div>
   );

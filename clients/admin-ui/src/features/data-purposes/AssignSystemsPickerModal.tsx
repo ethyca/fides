@@ -41,7 +41,9 @@ const AssignSystemsPickerModal = ({
   }, [open, assignedIds]);
 
   const typeOptions = useMemo(() => {
-    const types = [...new Set(MOCK_AVAILABLE_SYSTEMS.map((s) => s.system_type))];
+    const types = [
+      ...new Set(MOCK_AVAILABLE_SYSTEMS.map((s) => s.system_type)),
+    ];
     return types.map((t) => ({ label: t, value: t }));
   }, []);
 
@@ -73,8 +75,10 @@ const AssignSystemsPickerModal = ({
     <Modal
       title={
         <Flex align="center" justify="space-between" className="pr-6">
-          <span>Data consumers</span>
-          <Tag color="default" bordered={false}>{selectedKeys.length} selected</Tag>
+          <span>Add data consumers</span>
+          <Tag color="default" bordered={false}>
+            {selectedKeys.length} selected
+          </Tag>
         </Flex>
       }
       open={open}
