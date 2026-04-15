@@ -1,0 +1,4 @@
+type: Changed
+description: Dashboard animated counts now respect the "Reduce Motion" user preference.
+pr: 7924
+labels: []
