@@ -1,4 +1,4 @@
-import { Button, Icons, Modal, Tooltip } from "fidesui";
+import { Button, Icons, Input, Modal, Tooltip } from "fidesui";
 import { useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -22,27 +22,35 @@ const SecretField = ({
   redact?: boolean;
 }) => {
   const [revealed, setRevealed] = useState(!redact);
-  const displayed = revealed ? value : "•".repeat(32);
+
+  const suffix = (
+    <span className="flex items-center gap-1">
+      {redact && (
+        <Tooltip title={revealed ? "Hide" : "Reveal"} placement="top">
+          <Button
+            type="text"
+            size="small"
+            icon={revealed ? <Icons.ViewOff /> : <Icons.View />}
+            aria-label={revealed ? "Hide value" : "Reveal value"}
+            onClick={() => setRevealed((v) => !v)}
+            data-testid={`toggle-reveal-${label.toLowerCase().replace(/\s+/g, "-")}`}
+          />
+        </Tooltip>
+      )}
+      <ClipboardButton copyText={value} size="small" />
+    </span>
+  );
 
   return (
     <div className="flex flex-col gap-1">
       <span className="text-sm font-medium">{label}</span>
-      <div className="flex items-center gap-1 rounded-md border bg-gray-50 px-3 py-2 font-mono text-sm">
-        <span className="flex-1 break-all">{displayed}</span>
-        {redact && (
-          <Tooltip title={revealed ? "Hide" : "Reveal"} placement="top">
-            <Button
-              type="text"
-              size="small"
-              icon={revealed ? <Icons.ViewOff /> : <Icons.View />}
-              aria-label={revealed ? "Hide value" : "Reveal value"}
-              onClick={() => setRevealed((v) => !v)}
-              data-testid={`toggle-reveal-${label.toLowerCase().replace(/\s+/g, "-")}`}
-            />
-          </Tooltip>
-        )}
-        <ClipboardButton copyText={value} size="small" />
-      </div>
+      <Input
+        readOnly
+        type={redact && !revealed ? "password" : "text"}
+        value={value}
+        suffix={suffix}
+        className="font-mono"
+      />
     </div>
   );
 };
