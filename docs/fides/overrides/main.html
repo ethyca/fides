@@ -1,6 +1,8 @@
-{% extends "base.html" %} {% block outdated %} You're not viewing the latest
-version.
+{% extends "base.html" %}
+
+{% block outdated %}
+You're not viewing the latest version.
 <a href="{{ '../' ~ base_url }}">
-  <strong>Latest stable version</strong>
+    <strong>Latest stable version</strong>
 </a>
 {% endblock %}
