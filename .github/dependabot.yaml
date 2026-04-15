@@ -22,9 +22,6 @@ updates:
       - dependabot
     open-pull-requests-limit: 0
     versioning-strategy: "increase"
-    ignore:
-      - dependency-name: "next"
-        # NextJS upgrades break admin-ui export configuration; ignore until resolved
 
   - package-ecosystem: "npm"
     directory: "/clients/sample-app"

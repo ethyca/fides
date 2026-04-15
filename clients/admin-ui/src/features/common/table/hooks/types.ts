@@ -1,7 +1,9 @@
+import type { TableProps } from "antd";
 import type { FilterValue } from "fidesui";
 
 import type { PaginationConfig, PaginationState } from "../../pagination";
-import type { SearchConfig, SortingConfig, SortOrder } from "../../search";
+import type { SearchConfig } from "../../search";
+import type { SortingConfig, SortOrder } from "../../sorting";
 
 /**
  * Base interface for table state that can be synchronized with URL
