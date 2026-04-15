@@ -238,6 +238,86 @@ class TestPrivacyRequestService:
         assert resubmitted_request.status == PrivacyRequestStatus.complete
         assert resubmitted_request.get_persisted_identity().email == "user@example.com"
 
+    def test_resubmit_preserves_location_when_required(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """
+        Regression test: resubmit_privacy_request must carry forward the persisted
+        location value so that _validate_required_location_fields does not re-raise
+        when the Redis identity cache has expired and the PC config requires location.
+        """
+        privacy_center_config_data = {
+            "config": {
+                "title": "Test Privacy Center",
+                "description": "Test privacy center for location validation",
+                "actions": [
+                    {
+                        "policy_key": policy.key,
+                        "title": "Test Action",
+                        "description": "Test action for location validation",
+                        "icon_path": "/test-icon.svg",
+                        "identity_inputs": {"email": "required"},
+                        "custom_privacy_request_fields": {
+                            "location": {
+                                "label": "Your Location",
+                                "field_type": "location",
+                                "required": True,
+                                "ip_geolocation_hint": False,
+                            }
+                        },
+                    }
+                ],
+                "consent": {
+                    "button": {
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "icon_path": "/consent.svg",
+                        "identity_inputs": {"email": "optional"},
+                        "title": "Manage preferences",
+                        "modalTitle": "Manage your consent preferences",
+                        "confirmButtonText": "Continue",
+                        "cancelButtonText": "Cancel",
+                    },
+                    "page": {
+                        "consentOptions": [],
+                        "description": "Manage your consent preferences",
+                        "description_subtext": [],
+                        "policy_key": "default_consent_policy",
+                        "title": "Manage your consent",
+                    },
+                },
+            }
+        }
+
+        privacy_center_config = PrivacyCenterConfig.create_or_update(
+            db=db, data=privacy_center_config_data
+        )
+
+        try:
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    identity=Identity(email="user@example.com"),
+                    policy_key=policy.key,
+                    location="US-CA",
+                ),
+                authenticated=True,
+            )
+            assert privacy_request.location == "US-CA"
+
+            resubmitted = privacy_request_service.resubmit_privacy_request(
+                privacy_request.id
+            )
+            db.refresh(resubmitted)
+
+            assert resubmitted is not None
+            assert resubmitted.location == "US-CA"
+            assert resubmitted.status == PrivacyRequestStatus.pending
+        finally:
+            privacy_center_config.delete(db)
+
     def test_cannot_resubmit_non_existent_privacy_request(
         self,
         privacy_request_service: PrivacyRequestService,
