@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Literal, Optional
+from collections.abc import Callable
+from typing import AsyncContextManager, Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, Query, status
 from loguru import logger
@@ -10,7 +11,6 @@ from sqlalchemy.orm import Session
 
 import fides
 from fides.api.common_exceptions import RedisConnectionError
-from fides.api.db.database import get_db_health
 from fides.api.db.ctl_session import (
     async_session,
     ensure_async_readonly_pool_prewarmed,
@@ -18,6 +18,7 @@ from fides.api.db.ctl_session import (
     readonly_async_engine,
     readonly_async_session,
 )
+from fides.api.db.database import get_db_health
 from fides.api.deps import get_db
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
@@ -129,7 +130,9 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
         readonly_db: Optional[Session] = None
         try:
             readonly_db = get_readonly_api_session()
-            pools["api_sync_readonly"] = PoolStatus(health=_check_sync_session(readonly_db))
+            pools["api_sync_readonly"] = PoolStatus(
+                health=_check_sync_session(readonly_db)
+            )
         except Exception as error:  # pylint: disable=broad-except
             logger.error(
                 "Unable to open sync readonly database pool session: {}",
@@ -143,7 +146,9 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
         pools["api_sync_readonly"] = PoolStatus(health="skipped")
 
     # Primary async pool.
-    pools["api_async_primary"] = PoolStatus(health=await _check_async_session(async_session))
+    pools["api_async_primary"] = PoolStatus(
+        health=await _check_async_session(async_session)
+    )
 
     # Optional readonly async pool with prewarm awareness.
     if CONFIG.database.async_readonly_database_uri:
@@ -170,6 +175,7 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
     elif migration_health == "needs migration":
         overall_database = "needs migration"
     elif migration_health == "unhealthy":
+        # Rare: get_db_health() can fail (e.g. Alembic metadata) while pool pings still pass.
         overall_database = "unhealthy"
     else:
         overall_database = "healthy"
@@ -199,12 +205,13 @@ def _check_sync_session(db: Session) -> PoolHealth:
         return "unhealthy"
 
 
-async def _check_async_session(session_factory: Any) -> PoolHealth:
+async def _check_async_session(
+    session_factory: Callable[[], AsyncContextManager[AsyncSession]],
+) -> PoolHealth:
     """Return health status for an async pool-backed session factory."""
     try:
-        async with session_factory() as raw_session:
-            sess: AsyncSession = raw_session
-            await sess.execute(text("SELECT 1"))
+        async with session_factory() as session:
+            await session.execute(text("SELECT 1"))
         return "healthy"
     except Exception as error:  # pylint: disable=broad-except
         logger.error("Unable to reach async database pool: {}", Pii(str(error)))

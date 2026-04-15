@@ -205,6 +205,8 @@ async def ensure_async_readonly_pool_prewarmed() -> bool:
             )
             ASYNC_READONLY_POOL_WARMED = True
 
+    # Lock only serializes warm_async_pool; the flag read below is safe without the lock
+    # (bool write above is atomic; we only need to avoid concurrent double-warming).
     return ASYNC_READONLY_POOL_WARMED
 
 

@@ -3419,12 +3419,12 @@ def test_404_on_api_routes(test_config: FidesConfig) -> None:
 # Integration Tests
 @pytest.mark.integration
 class TestHealthchecks:
-    def test_database_healthcheck(
+    def test_database_healthcheck_primary_pools_and_migration_metadata(
         self,
         test_config: FidesConfig,
         test_client: TestClient,
     ) -> None:
-        """Test the database health checks."""
+        """Primary sync/async pools and migration revision fields are healthy."""
         response = test_client.get(test_config.cli.server_url + "/health/database")
         assert response.status_code == 200, f"Request failed: {response.text}"
         payload = response.json()
@@ -3434,6 +3434,16 @@ class TestHealthchecks:
         assert payload["pools"]["api_sync_primary"]["prewarming"] is None
         assert payload["pools"]["api_async_primary"]["health"] == "healthy"
         assert payload["pools"]["api_async_primary"]["prewarming"] is None
+
+    def test_database_healthcheck_optional_readonly_pools_match_configuration(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Optional readonly pools report healthy or skipped depending on config."""
+        response = test_client.get(test_config.cli.server_url + "/health/database")
+        assert response.status_code == 200, f"Request failed: {response.text}"
+        payload = response.json()
 
         if test_config.database.sqlalchemy_readonly_database_uri:
             assert payload["pools"]["api_sync_readonly"]["health"] == "healthy"
