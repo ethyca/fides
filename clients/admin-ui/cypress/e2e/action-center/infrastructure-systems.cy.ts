@@ -543,7 +543,7 @@ describe("Action center infrastructure systems", () => {
 
         cy.get('input[type="checkbox"]').eq(1).check();
         cy.contains("button", "Actions").click();
-        cy.contains("Approve").click();
+        cy.contains("li", "Approve").click();
 
         cy.wait("@bulkPromoteInfrastructureSystems").then((interception) => {
           expect(interception.request.body).to.be.an("array");
@@ -559,7 +559,7 @@ describe("Action center infrastructure systems", () => {
 
         cy.get('input[type="checkbox"]').eq(1).check();
         cy.contains("button", "Actions").click();
-        cy.contains("Ignore").click();
+        cy.contains("li", "Ignore").click();
 
         cy.wait("@bulkMuteInfrastructureSystems").then((interception) => {
           expect(interception.request.body).to.be.an("array");
@@ -607,7 +607,7 @@ describe("Action center infrastructure systems", () => {
 
         cy.contains("Select all").click();
         cy.contains("button", "Actions").click();
-        cy.contains("Approve").click();
+        cy.contains("li", "Approve").click();
 
         cy.wait("@bulkPromoteInfrastructureSystems").then((interception) => {
           expect(interception.request.body).to.have.property("filters");
@@ -621,7 +621,7 @@ describe("Action center infrastructure systems", () => {
 
         cy.get('input[type="checkbox"]').eq(1).check();
         cy.contains("button", "Actions").click();
-        cy.contains("Approve").click();
+        cy.contains("li", "Approve").click();
 
         cy.contains("button", "Actions").should("be.disabled");
       });
@@ -639,7 +639,7 @@ describe("Action center infrastructure systems", () => {
         cy.get('input[type="checkbox"]').eq(1).uncheck();
 
         cy.contains("button", "Actions").click();
-        cy.contains("Approve").click();
+        cy.contains("li", "Approve").click();
 
         cy.wait("@bulkPromoteInfrastructureSystems").then((interception) => {
           expect(interception.request.body).to.have.property("exclude_urns");

@@ -34,6 +34,8 @@ import {
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
+  JiraPreviewRequest,
+  JiraTicketData,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   SystemPurposeSummary,
@@ -555,6 +557,16 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/connection/${connectionKey}/jira/template-variables`,
       }),
     }),
+    previewJiraTicket: build.mutation<
+      JiraTicketData,
+      { connectionKey: string } & JiraPreviewRequest
+    >({
+      query: ({ connectionKey, ...body }) => ({
+        url: `plus/connection/${connectionKey}/jira/preview`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -600,10 +612,16 @@ export const {
   useGetJiraProjectsQuery,
   useGetJiraIssueTypesQuery,
   useGetJiraTemplateVariablesQuery,
+  usePreviewJiraTicketMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
+
+export const selectRbacEnabled: (state: RootState) => boolean = createSelector(
+  selectHealth,
+  (health) => !!health?.rbac?.enabled,
+);
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(

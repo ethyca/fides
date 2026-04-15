@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -5,9 +7,16 @@ from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
     AttachmentReferenceType,
+    AttachmentType,
 )
-from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
+from fides.api.models.comment import (
+    Comment,
+    CommentReference,
+    CommentReferenceType,
+    CommentType,
+)
 from fides.api.models.fides_user import FidesUser
+from fides.service.attachment_service import AttachmentService
 
 
 @pytest.fixture
@@ -393,6 +402,196 @@ def test_comment_attachment_relationship(
     # Clean up
     attachment_ref.delete(db)
     attachment.delete(db)
+
+
+def test_reply_relationship(db, comment):
+    """Test that parent/replies relationships load correctly on a threaded comment."""
+    reply = Comment.create(
+        db,
+        data={
+            "user_id": comment.user_id,
+            "comment_text": "This is a reply",
+            "comment_type": CommentType.reply,
+            "parent_id": comment.id,
+        },
+    )
+    db.refresh(comment)
+
+    assert reply.parent_id == comment.id
+    assert reply.parent.id == comment.id
+    assert reply in comment.replies
+
+
+def test_delete_parent_comment_deletes_replies(db, user):
+    """Test that deleting a parent comment also deletes its replies via delete()."""
+    parent = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Parent comment",
+            "comment_type": CommentType.note,
+        },
+    )
+    reply = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Reply comment",
+            "comment_type": CommentType.reply,
+            "parent_id": parent.id,
+        },
+    )
+    parent_id = parent.id
+    reply_id = reply.id
+
+    parent.delete(db)
+    db.commit()
+
+    assert db.query(Comment).filter_by(id=parent_id).first() is None
+    assert db.query(Comment).filter_by(id=reply_id).first() is None
+
+
+def test_delete_parent_deletes_reply_attachments(
+    s3_client, db, user, storage_config, monkeypatch
+):
+    """Test that deleting a parent comment cleans up reply attachments."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+
+    parent = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Parent comment",
+            "comment_type": CommentType.note,
+        },
+    )
+    reply = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Reply comment",
+            "comment_type": CommentType.reply,
+            "parent_id": parent.id,
+        },
+    )
+
+    # Attach a file to the reply
+    attachment = AttachmentService(db).create_and_upload(
+        data={
+            "user_id": user.id,
+            "file_name": "reply_attachment.txt",
+            "attachment_type": AttachmentType.internal_use_only,
+            "storage_key": storage_config.key,
+        },
+        file_data=BytesIO(b"reply attachment content"),
+    )
+    attachment_ref = AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": reply.id,
+            "reference_type": AttachmentReferenceType.comment,
+        },
+    )
+    db.commit()
+
+    parent_id = parent.id
+    reply_id = reply.id
+    attachment_id = attachment.id
+    attachment_ref_id = attachment_ref.id
+
+    parent.delete(db)
+    db.commit()
+
+    assert db.query(Comment).filter_by(id=parent_id).first() is None
+    assert db.query(Comment).filter_by(id=reply_id).first() is None
+    assert db.query(AttachmentReference).filter_by(id=attachment_ref_id).first() is None
+    assert db.query(Attachment).filter_by(id=attachment_id).first() is None
+
+
+def test_delete_parent_deletes_grandchild_replies(db, user):
+    """Test that deleting a parent deletes 3+ levels of nested replies (grandchild)."""
+    grandparent = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Grandparent",
+            "comment_type": CommentType.note,
+        },
+    )
+    child = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Child",
+            "comment_type": CommentType.reply,
+            "parent_id": grandparent.id,
+        },
+    )
+    grandchild = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Grandchild",
+            "comment_type": CommentType.reply,
+            "parent_id": child.id,
+        },
+    )
+    grandparent_id = grandparent.id
+    child_id = child.id
+    grandchild_id = grandchild.id
+
+    grandparent.delete(db)
+    db.commit()
+
+    assert db.query(Comment).filter_by(id=grandparent_id).first() is None
+    assert db.query(Comment).filter_by(id=child_id).first() is None
+    assert db.query(Comment).filter_by(id=grandchild_id).first() is None
+
+
+def test_delete_comments_for_reference_deletes_replies(db, user, privacy_request):
+    """Test that delete_comments_for_reference_and_type also removes replies."""
+    parent = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Parent comment",
+            "comment_type": CommentType.note,
+        },
+    )
+    CommentReference.create(
+        db,
+        data={
+            "comment_id": parent.id,
+            "reference_id": privacy_request.id,
+            "reference_type": CommentReferenceType.privacy_request,
+        },
+    )
+    reply = Comment.create(
+        db,
+        data={
+            "user_id": user.id,
+            "comment_text": "Reply comment",
+            "comment_type": CommentType.reply,
+            "parent_id": parent.id,
+        },
+    )
+    parent_id = parent.id
+    reply_id = reply.id
+
+    Comment.delete_comments_for_reference_and_type(
+        db, privacy_request.id, CommentReferenceType.privacy_request
+    )
+    db.commit()
+
+    assert db.query(Comment).filter_by(id=parent_id).first() is None
+    assert db.query(Comment).filter_by(id=reply_id).first() is None
 
 
 def test_comment_to_multiple_attachments_relationship(

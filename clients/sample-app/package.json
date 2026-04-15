@@ -6,7 +6,7 @@
     "build": "next build",
     "clean": "rm -rf node_modules",
     "dev": "next dev",
-    "format": "prettier --write .",
+    "format": "prettier --write --log-level warn .",
     "format:ci": "prettier --check .",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

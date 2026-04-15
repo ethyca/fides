@@ -1,10 +1,9 @@
 import dayjs from "dayjs";
-import { Button, DatePicker, Form, Modal, Select } from "fidesui";
+import { Button, DatePicker, Form, Select } from "fidesui";
 
-import {
-  SubjectRequestActionTypeOptions,
-  SubjectRequestStatusOptions,
-} from "~/features/privacy-requests/constants";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
+import { SubjectRequestStatusOptions } from "~/features/privacy-requests/constants";
+import { useSubjectRequestActionTypeOptions } from "~/features/privacy-requests/hooks/useSubjectRequestActionTypeOptions";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 interface PrivacyRequestFiltersModalProps {
@@ -36,6 +35,7 @@ export const PrivacyRequestFiltersModal = ({
   modalFilters,
   setModalFilters,
 }: PrivacyRequestFiltersModalProps) => {
+  const actionTypeOptions = useSubjectRequestActionTypeOptions();
   const [form] = Form.useForm<FormValues>();
 
   // Convert modalFilters to form initial values
@@ -84,13 +84,16 @@ export const PrivacyRequestFiltersModal = ({
       status: [],
       action_type: [],
     });
+    onClose();
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       open={open}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       title="All filters"
+      destroyOnHidden
       footer={[
         <Button
           key="clear"
@@ -135,12 +138,12 @@ export const PrivacyRequestFiltersModal = ({
           <Select
             mode="multiple"
             placeholder="Select request type"
-            options={SubjectRequestActionTypeOptions}
+            options={actionTypeOptions}
             data-testid="request-action-type-filter"
             aria-label="Request type"
           />
         </Form.Item>
       </Form>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };

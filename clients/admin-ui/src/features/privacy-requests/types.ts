@@ -1,6 +1,7 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
+import { ExecutionAndAuditLogResponse } from "~/types/api/models/ExecutionAndAuditLogResponse";
 import { PrivacyRequestUser } from "~/types/api/models/PrivacyRequestUser";
 
 export interface DenyPrivacyRequest {
@@ -24,6 +25,12 @@ export enum ExecutionLogStatus {
   RETRYING = "retrying",
   SKIPPED = "skipped",
   POLLING = "polling",
+  // Audit log statuses for pre-approval webhooks
+  APPROVED = "approved",
+  DENIED = "denied",
+  PRE_APPROVAL_WEBHOOK_TRIGGERED = "pre_approval_webhook_triggered",
+  PRE_APPROVAL_ELIGIBLE = "pre_approval_eligible",
+  PRE_APPROVAL_NOT_ELIGIBLE = "pre_approval_not_eligible",
 }
 
 export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
@@ -36,6 +43,11 @@ export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
   [ExecutionLogStatus.RETRYING]: "Retrying",
   [ExecutionLogStatus.SKIPPED]: "Skipped",
   [ExecutionLogStatus.POLLING]: "Awaiting polling",
+  [ExecutionLogStatus.APPROVED]: "Approved",
+  [ExecutionLogStatus.DENIED]: "Denied",
+  [ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED]: "Webhooks triggered",
+  [ExecutionLogStatus.PRE_APPROVAL_ELIGIBLE]: "Eligible",
+  [ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE]: "Not eligible",
 };
 
 export const ExecutionLogStatusColors: Record<
@@ -51,16 +63,24 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.PAUSED]: undefined,
   [ExecutionLogStatus.RETRYING]: undefined,
   [ExecutionLogStatus.POLLING]: CUSTOM_TAG_COLOR.WARNING,
+  [ExecutionLogStatus.APPROVED]: CUSTOM_TAG_COLOR.SUCCESS,
+  [ExecutionLogStatus.DENIED]: CUSTOM_TAG_COLOR.WARNING,
+  [ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED]: CUSTOM_TAG_COLOR.INFO,
+  [ExecutionLogStatus.PRE_APPROVAL_ELIGIBLE]: CUSTOM_TAG_COLOR.SUCCESS,
+  [ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE]: CUSTOM_TAG_COLOR.WARNING,
 };
 
-export interface ExecutionLog {
+export interface ExecutionLog
+  extends Pick<
+    ExecutionAndAuditLogResponse,
+    "connection_key" | "saas_version"
+  > {
   collection_name: string | null;
   fields_affected: FieldsAffected[];
   message: string;
   action_type: string;
   status: ExecutionLogStatus;
   updated_at: string;
-  saas_version?: string | null;
 }
 
 export type GetUploadedManualWebhookDataRequest = {
