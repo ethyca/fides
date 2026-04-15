@@ -112,6 +112,13 @@
     "test": false,
     "production": false
   },
+  "dataPurposes": {
+    "label": "Data purposes",
+    "description": "Purpose-based configuration view for systems and datasets",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "awsMonitor": {
     "label": "AWS monitor",
     "description": "Enable AWS monitoring",

@@ -1,137 +1,68 @@
-import { Button, Flex, Form, Input, Select, Spin } from "fidesui";
+import { Button, Flex, Form, Input, Select, Tag } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
-import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpose.slice";
+import AddDatasetsModal from "~/features/data-purposes/AddDatasetsModal";
+import { MOCK_AVAILABLE_DATASETS } from "~/features/data-purposes/mockData";
 
-import { getDisplayNameForScope } from "./constants";
-import {
-  DataConsumer,
-  useGetAvailableScopesQuery,
-} from "./data-consumer.slice";
-import useConsumerTypeOptions from "./useConsumerTypeOptions";
+import { CONSUMER_TYPE_UI_OPTIONS, PLATFORM_OPTIONS } from "./constants";
+import type { MockDataConsumer } from "./types";
 
 export interface DataConsumerFormValues {
   name: string;
   type: string;
-  scope: Record<string, string>;
+  identifier: string;
+  platform: string | null;
+  purposes: string[];
+  datasets: string[];
   description: string;
-  purposeFidesKeys: string[];
 }
 
 interface DataConsumerFormProps {
-  consumer?: DataConsumer;
-  handleSubmit: (values: DataConsumerFormValues) => Promise<void>;
+  consumer?: MockDataConsumer;
+  onSubmit: (values: DataConsumerFormValues) => void;
 }
 
-const DataConsumerForm = ({
-  consumer,
-  handleSubmit,
-}: DataConsumerFormProps) => {
+const MOCK_PURPOSE_OPTIONS = [
+  { value: "Campaign targeting", label: "Campaign targeting" },
+  { value: "Audience segmentation", label: "Audience segmentation" },
+  { value: "Customer support", label: "Customer support" },
+  { value: "Ticket resolution", label: "Ticket resolution" },
+  { value: "Predictive analytics", label: "Predictive analytics" },
+  { value: "Fraud prevention", label: "Fraud prevention" },
+  { value: "Transaction monitoring", label: "Transaction monitoring" },
+  { value: "Profile unification", label: "Profile unification" },
+  { value: "Employee admin", label: "Employee admin" },
+  { value: "Payroll processing", label: "Payroll processing" },
+  { value: "Product improvement", label: "Product improvement" },
+  { value: "Usage analytics", label: "Usage analytics" },
+  { value: "Regulatory reporting", label: "Regulatory reporting" },
+  { value: "Transactional email", label: "Transactional email" },
+  { value: "Marketing email", label: "Marketing email" },
+  { value: "Personalization", label: "Personalization" },
+  { value: "Analytics", label: "Analytics" },
+];
+
+const datasetLabel = (key: string): string => {
+  const match = MOCK_AVAILABLE_DATASETS.find((d) => d.dataset_fides_key === key);
+  return match ? match.dataset_name : key;
+};
+
+const DataConsumerForm = ({ consumer, onSubmit }: DataConsumerFormProps) => {
   const [form] = Form.useForm<DataConsumerFormValues>();
   const router = useRouter();
-
-  const { data: purposesData, isLoading: purposesLoading } =
-    useGetAllDataPurposesQuery({ size: 200 });
-
-  const {
-    typeOptions,
-    getConsumerType,
-    isLoading: typesLoading,
-  } = useConsumerTypeOptions();
-
-  const { data: availableScopes, isLoading: scopesLoading } =
-    useGetAvailableScopesQuery();
-
-  const selectedType = Form.useWatch("type", form);
-  const [selectedScopeValue, setSelectedScopeValue] = useState<
-    string | undefined
-  >(
-    consumer?.scope && Object.keys(consumer.scope).length > 0
-      ? JSON.stringify(consumer.scope)
-      : undefined,
-  );
-
-  // Clear scope when type changes (only after user interaction)
-  useEffect(() => {
-    if (form.isFieldTouched("type")) {
-      form.setFieldValue("scope", {});
-      setSelectedScopeValue(undefined);
-    }
-  }, [selectedType, form]);
-
-  // Filter available scopes to selected type
-  const scopeOptionsForType = useMemo(() => {
-    if (!selectedType || !availableScopes) {
-      return [];
-    }
-    return availableScopes
-      .filter((s) => s.type === selectedType)
-      .map((s) => ({
-        value: JSON.stringify(s.scope),
-        label: s.display_name,
-        scope: s.scope,
-      }));
-  }, [selectedType, availableScopes]);
-
-  // On edit, include the current consumer's scope as an option
-  const allScopeOptions = useMemo(() => {
-    if (!consumer?.scope || !Object.keys(consumer.scope).length) {
-      return scopeOptionsForType;
-    }
-    const currentScopeJson = JSON.stringify(consumer.scope);
-    const alreadyIncluded = scopeOptionsForType.some(
-      (o) => o.value === currentScopeJson,
-    );
-    if (alreadyIncluded) {
-      return scopeOptionsForType;
-    }
-    // Add current scope as an option (it's already assigned to this consumer)
-    const currentType = getConsumerType(consumer.type);
-    const displayName = getDisplayNameForScope(
-      consumer.scope,
-      currentType?.display_key,
-    );
-    return [
-      {
-        value: currentScopeJson,
-        label: `${displayName}${currentType ? "" : ` (${consumer.type})`}`,
-        scope: consumer.scope,
-      },
-      ...scopeOptionsForType,
-    ];
-  }, [scopeOptionsForType, consumer, getConsumerType]);
-
-  const handleScopeSelect = useCallback(
-    (value: string) => {
-      try {
-        const scope = JSON.parse(value) as Record<string, string>;
-        form.setFieldsValue({ scope });
-        setSelectedScopeValue(value);
-      } catch {
-        // Malformed scope value — ignore
-      }
-    },
-    [form],
-  );
-
-  const purposeOptions = useMemo(
-    () =>
-      (purposesData?.items ?? []).map((p) => ({
-        value: p.fides_key,
-        label: p.name || p.fides_key,
-      })),
-    [purposesData],
-  );
+  const [modalOpen, setModalOpen] = useState(false);
 
   const initialValues = useMemo<DataConsumerFormValues>(
     () => ({
       name: consumer?.name ?? "",
       type: consumer?.type ?? "",
-      scope: consumer?.scope ?? {},
-      description: consumer?.description ?? "",
-      purposeFidesKeys: consumer?.purpose_fides_keys ?? [],
+      identifier: consumer?.identifier ?? "",
+      platform: consumer?.platform ?? null,
+      purposes: consumer?.purposes ?? [],
+      datasets: consumer?.datasets ?? [],
+      description: "",
     }),
     [consumer],
   );
@@ -140,150 +71,142 @@ const DataConsumerForm = ({
     router.push(DATA_CONSUMERS_ROUTE);
   }, [router]);
 
-  if (purposesLoading || typesLoading || scopesLoading) {
-    return (
-      <Flex justify="center" align="center" className="py-12">
-        <Spin />
-      </Flex>
-    );
-  }
-
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={handleSubmit}
+      onFinish={onSubmit}
       initialValues={initialValues}
       key={consumer?.id ?? "create"}
       data-testid="data-consumer-form"
       style={{ maxWidth: 720 }}
     >
       <Form.Item
-        name="type"
-        label="Type"
-        rules={[{ required: true, message: "Type is required" }]}
-        tooltip="The identity type used to resolve this consumer in query logs"
-      >
-        <Select
-          placeholder="Select consumer type"
-          options={typeOptions}
-          showSearch
-          filterOption={(input, option) =>
-            String(option?.label ?? "")
-              .toLowerCase()
-              .includes(input.toLowerCase())
-          }
-          aria-label="Type"
-          data-testid="data-consumer-type-select"
-        />
-      </Form.Item>
-
-      {/* Hidden form item to track scope in form values */}
-      <Form.Item
-        name="scope"
-        hidden
-        rules={[
-          {
-            validator: (_, value) =>
-              value && Object.keys(value).length > 0
-                ? Promise.resolve()
-                : Promise.reject(new Error("Scope is required")),
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
-
-      {selectedType && (
-        <Form.Item noStyle dependencies={["scope"]}>
-          {() => {
-            const scopeErrors = form.getFieldError("scope");
-            return (
-              <Form.Item
-                label="Scope"
-                validateStatus={scopeErrors.length ? "error" : undefined}
-                help={scopeErrors[0]}
-                tooltip="The specific identity to associate with this consumer"
-              >
-                {allScopeOptions.length > 0 ? (
-                  <Select
-                    placeholder="Select scope"
-                    options={allScopeOptions}
-                    value={selectedScopeValue}
-                    onChange={handleScopeSelect}
-                    showSearch
-                    filterOption={(input, option) =>
-                      String(option?.label ?? "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    aria-label="Scope"
-                    data-testid="data-consumer-scope-select"
-                  />
-                ) : (
-                  <Select
-                    placeholder="No scopes available for this type"
-                    disabled
-                    aria-label="Scope"
-                    data-testid="data-consumer-scope-select"
-                  />
-                )}
-              </Form.Item>
-            );
-          }}
-        </Form.Item>
-      )}
-
-      <Form.Item
         name="name"
         label="Name"
         rules={[{ required: true, message: "Name is required" }]}
       >
-        <Input
-          placeholder="Enter consumer name"
-          data-testid="data-consumer-name-input"
+        <Input placeholder="Enter consumer name" />
+      </Form.Item>
+
+      <Form.Item
+        name="type"
+        label="Type"
+        rules={[{ required: true, message: "Type is required" }]}
+        tooltip="The type of data consumer"
+      >
+        <Select
+          placeholder="Select consumer type"
+          options={CONSUMER_TYPE_UI_OPTIONS}
+          aria-label="Type"
         />
       </Form.Item>
 
       <Form.Item
-        name="purposeFidesKeys"
-        label="Assigned purposes"
+        name="identifier"
+        label="Identifier"
+        tooltip="Email address, service account ID, or agent identifier"
+      >
+        <Input placeholder="e.g. team@acme.com or agent:name-v1" />
+      </Form.Item>
+
+      <Form.Item name="platform" label="Platform">
+        <Select
+          allowClear
+          placeholder="Select platform"
+          options={PLATFORM_OPTIONS}
+          aria-label="Platform"
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="purposes"
+        label="Approved purposes"
         tooltip="Which data purposes is this consumer authorized for?"
       >
         <Select
           mode="multiple"
           placeholder="Select purposes"
-          options={purposeOptions}
-          aria-label="Assigned purposes"
-          data-testid="data-consumer-purposes-select"
+          options={MOCK_PURPOSE_OPTIONS}
+          aria-label="Approved purposes"
         />
       </Form.Item>
 
       <Form.Item
-        name="description"
-        label="Description"
-        tooltip="An optional description of this data consumer"
+        name="datasets"
+        label="Datasets"
+        tooltip="Which datasets is this consumer authorized to access? Scope is applied in combination with approved purposes."
       >
-        <Input.TextArea
-          placeholder="Enter a description"
-          rows={3}
-          data-testid="data-consumer-description-input"
-        />
+        {/* Custom form control pattern — Form.Item injects value/onChange */}
+        <DatasetPickerControl onRequestOpen={() => setModalOpen(true)} />
+      </Form.Item>
+
+      <Form.Item name="description" label="Description">
+        <Input.TextArea placeholder="Enter a description" rows={3} />
       </Form.Item>
 
       <Flex justify="space-between" className="pt-4">
-        <Button onClick={handleCancel} data-testid="cancel-button">
-          Cancel
-        </Button>
-        <Button
-          type="primary"
-          htmlType="submit"
-          data-testid="save-data-consumer-button"
-        >
+        <Button onClick={handleCancel}>Cancel</Button>
+        <Button type="primary" htmlType="submit">
           Save
         </Button>
       </Flex>
+
+      <AddDatasetsModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={(keys) => {
+          form.setFieldValue("datasets", keys);
+          setModalOpen(false);
+        }}
+        assignedKeys={form.getFieldValue("datasets") ?? []}
+      />
     </Form>
+  );
+};
+
+interface DatasetPickerControlProps {
+  value?: string[];
+  onChange?: (value: string[]) => void;
+  onRequestOpen: () => void;
+}
+
+const DatasetPickerControl = ({
+  value = [],
+  onChange,
+  onRequestOpen,
+}: DatasetPickerControlProps) => {
+  const removeKey = (key: string) => {
+    onChange?.(value.filter((v) => v !== key));
+  };
+
+  return (
+    <Flex vertical gap={8} align="flex-start">
+      <Flex gap={8} align="center">
+        <Button onClick={onRequestOpen}>
+          {value.length === 0
+            ? "Select datasets"
+            : `Select datasets (${value.length} selected)`}
+        </Button>
+      </Flex>
+      {value.length > 0 && (
+        <Flex gap={4} wrap="wrap">
+          {value.map((key) => (
+            <Tag
+              key={key}
+              closable
+              bordered={false}
+              onClose={(e) => {
+                e.preventDefault();
+                removeKey(key);
+              }}
+            >
+              {datasetLabel(key)}
+            </Tag>
+          ))}
+        </Flex>
+      )}
+    </Flex>
   );
 };
 

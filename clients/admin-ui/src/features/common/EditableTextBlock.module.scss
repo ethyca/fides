@@ -1,0 +1,21 @@
+.root {
+  position: relative;
+  padding-right: 30px;
+
+  :global(.ant-typography-edit) {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 10;
+    transition: background-color 0.2s ease;
+  }
+}
+
+.placeholder {
+  font-style: italic;
+  color: var(--ant-color-text-tertiary);
+}
+
+.editIcon {
+  color: var(--ant-color-text);
+}

@@ -1,35 +1,43 @@
-import { Typography } from "fidesui";
+import { Button, Typography } from "fidesui";
 import type { NextPage } from "next";
+import { useRouter } from "next/router";
 
-import ErrorPage from "~/features/common/errors/ErrorPage";
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
+import {
+  DATA_CONSUMERS_NEW_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { useGetAllDataConsumersQuery } from "~/features/data-consumers/data-consumer.slice";
 import DataConsumersTable from "~/features/data-consumers/DataConsumersTable";
 
 const DataConsumersPage: NextPage = () => {
-  const { error } = useGetAllDataConsumersQuery({});
-
-  if (error) {
-    return (
-      <ErrorPage
-        error={error}
-        defaultMessage="A problem occurred while fetching data consumers"
-      />
-    );
-  }
+  const router = useRouter();
 
   return (
-    <Layout title="Data consumers">
-      <PageHeader heading="Data consumers">
-        <Typography.Text>
-          Review and manage your data consumers below. Data consumers represent
-          the services, applications, groups, or users that access personal
-          data.
+    <FixedLayout title="Data consumers">
+      <PageHeader
+        heading="Data consumers"
+        rightContent={
+          <Button
+            type="primary"
+            onClick={() => router.push(DATA_CONSUMERS_NEW_ROUTE)}
+            data-testid="add-consumer-button"
+          >
+            + Add consumer
+          </Button>
+        }
+      >
+        <Typography.Text type="secondary">
+          Teams, projects, agents, and service accounts that access data. Import
+          consumers automatically by connecting an{" "}
+          <Typography.Link href={INTEGRATION_MANAGEMENT_ROUTE}>
+            identity provider integration
+          </Typography.Link>{" "}
+          like Google Groups, Active Directory, or Okta.
         </Typography.Text>
       </PageHeader>
       <DataConsumersTable />
-    </Layout>
+    </FixedLayout>
   );
 };
 

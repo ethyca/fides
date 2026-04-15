@@ -1,34 +1,35 @@
-import { Typography } from "fidesui";
-import type { NextPage } from "next";
+import { Button } from "fidesui";
+import { NextPage } from "next";
+import { useState } from "react";
 
-import ErrorPage from "~/features/common/errors/ErrorPage";
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpose.slice";
-import DataPurposesTable from "~/features/data-purposes/DataPurposesTable";
+import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
+import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
+import { usePurposes } from "~/features/data-purposes/usePurposes";
 
 const DataPurposesPage: NextPage = () => {
-  const { error } = useGetAllDataPurposesQuery({});
-
-  if (error) {
-    return (
-      <ErrorPage
-        error={error}
-        defaultMessage="A problem occurred while fetching data purposes"
-      />
-    );
-  }
+  const [modalOpen, setModalOpen] = useState(false);
+  const { purposes, getSummaries, createPurpose } = usePurposes();
 
   return (
-    <Layout title="Data Purposes">
-      <PageHeader heading="Data Purposes">
-        <Typography.Text>
-          Review and manage your data purposes below. Data purposes define the
-          reasons data is collected and processed within your organization.
-        </Typography.Text>
-      </PageHeader>
-      <DataPurposesTable />
-    </Layout>
+    <FixedLayout title="Data purposes">
+      <PageHeader
+        heading="Data purposes"
+        rightContent={
+          <Button type="primary" onClick={() => setModalOpen(true)}>
+            + New purpose
+          </Button>
+        }
+      />
+      <PurposeCardGrid purposes={purposes} summaries={getSummaries} />
+      <NewPurposeModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreated={() => setModalOpen(false)}
+        createPurpose={createPurpose}
+      />
+    </FixedLayout>
   );
 };
 

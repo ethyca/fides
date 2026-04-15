@@ -4,7 +4,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import { AnswerStatusTags } from "./AnswerStatusTags";
-import { EditableTextBlock } from "./EditableTextBlock";
+import { EditableTextBlock } from "~/features/common/EditableTextBlock";
 import { useUpdateAssessmentAnswerMutation } from "./privacy-assessments.slice";
 import styles from "./QuestionCard.module.scss";
 import { AssessmentQuestion } from "./types";
