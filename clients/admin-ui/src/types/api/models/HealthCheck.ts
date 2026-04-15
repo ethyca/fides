@@ -2,6 +2,7 @@
 
 import type { DictionaryStatus } from "./DictionaryStatus";
 import type { FidesCloudStatus } from "./FidesCloudStatus";
+import type { RBACStatus } from "./RBACStatus";
 import type { TCFStatus } from "./TCFStatus";
 
 /**
@@ -24,5 +25,6 @@ export type HealthCheck = {
   fidesplus_server: string;
   dictionary: DictionaryStatus;
   fides_cloud: FidesCloudStatus;
+  rbac: RBACStatus;
   tcf: TCFStatus;
 };

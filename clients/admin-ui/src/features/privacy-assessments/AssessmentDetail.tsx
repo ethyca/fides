@@ -240,32 +240,28 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
             {isComplete ? "Completed" : "In progress"}
           </Tag>
         </Flex>
-        <Text type="secondary" size="sm" className="block">
-          System: {assessment.system_name}
-        </Text>
+        {assessment.template_name && (
+          <Text type="secondary" size="sm" className="block">
+            {assessment.template_name}
+          </Text>
+        )}
       </div>
 
       <Flex justify="space-between" align="center" className="mb-2 w-full">
-        <Text type="secondary" className="leading-loose">
-          Processing{" "}
+        <div>
           {(assessment.data_categories ?? []).length > 0 ? (
             <TagList
               tags={(assessment.data_categories ?? []).map((key) => ({
                 value: key,
                 label: getDataCategoryDisplayName(key),
               }))}
-              maxTags={1}
+              maxTags={2}
               expandable
             />
           ) : (
             <Tag>0 data categories</Tag>
-          )}{" "}
-          for{" "}
-          <TagList
-            tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-            maxTags={1}
-          />
-        </Text>
+          )}
+        </div>
         {!isComplete && (
           <Tooltip
             title={
