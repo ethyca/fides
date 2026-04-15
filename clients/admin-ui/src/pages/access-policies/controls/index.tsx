@@ -11,6 +11,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
   ACCESS_POLICIES_ROUTE,
+  CONTROLS_EDIT_ROUTE,
   CONTROLS_NEW_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -95,7 +96,10 @@ const ControlsPage: NextPage = () => {
               </Button>,
               <NextLink
                 key="edit"
-                href={`/access-policies/controls/${control.key}`}
+                href={{
+                  pathname: CONTROLS_EDIT_ROUTE,
+                  query: { controlKey: control.key },
+                }}
                 passHref
               >
                 <Button

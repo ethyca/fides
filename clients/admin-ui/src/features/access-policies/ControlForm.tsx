@@ -55,7 +55,7 @@ const ControlForm = ({
         />
       </Form.Item>
 
-      <Flex gap={8}>
+      <Flex gap="small">
         <Button type="primary" htmlType="submit" loading={isSubmitting}>
           {isEditing ? "Save" : "Create control"}
         </Button>
