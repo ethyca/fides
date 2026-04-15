@@ -155,19 +155,34 @@ def evaluate_policies(
 # ── JSON conversion helpers (CLI boundary) ────────────────────────────
 
 
+class InvalidPolicyError(ValueError):
+    """Raised when a policy dict contains invalid values at the JSON boundary."""
+
+
 def parsed_policy_from_dict(data: dict[str, Any]) -> ParsedPolicy:
     """Construct a ParsedPolicy from a JSON dict (CLI/API boundary).
 
     Validates the decision field at construction time rather than
-    deferring to evaluation time.
+    deferring to evaluation time. Raises InvalidPolicyError with a
+    friendly message on bad input instead of an ugly enum ValueError.
     """
+    decision_raw = data.get("decision", "DENY")
+    try:
+        decision = PolicyDecision(decision_raw)
+    except ValueError:
+        valid = ", ".join(d.value for d in PolicyDecision)
+        raise InvalidPolicyError(
+            f"Invalid decision value {decision_raw!r} in policy "
+            f"{data.get('key', '<no-key>')!r}. Must be one of: {valid}"
+        ) from None
+
     action_data = data.get("action")
     action = PolicyAction(message=action_data.get("message")) if action_data else None
     return ParsedPolicy(
         key=data.get("key", ""),
         priority=data.get("priority", 0),
         enabled=data.get("enabled", True),
-        decision=PolicyDecision(data.get("decision", "DENY")),
+        decision=decision,
         match=data.get("match", {}),
         unless=data.get("unless", []),
         action=action,
@@ -203,8 +218,7 @@ def result_to_dict(result: PolicyEvaluationResult) -> dict[str, Any]:
     output["unless_triggered"] = result.unless_triggered
     if result.action:
         output["action"] = {"message": result.action.message}
-    else:
-        output["action"] = None
+    # Omit "action" entirely when unset (matches Go's omitempty behavior)
     output["evaluated_policies"] = [
         {
             "policy_key": ep.policy_key,

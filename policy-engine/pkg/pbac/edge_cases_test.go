@@ -267,7 +267,7 @@ func TestPolicy_MatchAnyAndAll_Combined(t *testing.T) {
 			ID: "p1", Key: "combined", Priority: 100, Enabled: boolPtr(true),
 			Decision: PolicyDeny,
 			Match: MatchBlock{
-				DataUse: &MatchDimension{Any: []string{"marketing"}},
+				DataUse:      &MatchDimension{Any: []string{"marketing"}},
 				DataCategory: &MatchDimension{All: []string{"user.contact", "user.financial"}},
 			},
 		},

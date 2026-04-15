@@ -16,6 +16,7 @@ import rich_click as click
 
 from fides.service.pbac.evaluate import evaluate_purpose
 from fides.service.pbac.policies.evaluate import (
+    InvalidPolicyError,
     evaluate_policies,
     parsed_policy_from_dict,
     request_from_dict,
@@ -154,9 +155,13 @@ def evaluate_policies_cmd(input_file: TextIO) -> None:
         click.echo(f"Error parsing JSON: {e}", err=True)
         sys.exit(1)
 
-    policies = [parsed_policy_from_dict(p) for p in data.get("policies", [])]
-    request = request_from_dict(data.get("request", {}))
+    try:
+        policies = [parsed_policy_from_dict(p) for p in data.get("policies", [])]
+    except InvalidPolicyError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
 
+    request = request_from_dict(data.get("request", {}))
     result = evaluate_policies(policies, request)
 
     click.echo(json.dumps(result_to_dict(result), indent=2))

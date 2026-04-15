@@ -8,6 +8,7 @@ import pytest
 
 from fides.service.pbac.policies.evaluate import (
     InProcessAccessPolicyEvaluator,
+    InvalidPolicyError,
     ParsedPolicy,
     evaluate_policies,
     parsed_policy_from_dict,
@@ -756,3 +757,22 @@ class TestJsonConversion:
         assert d["decisive_policy_key"] == "deny-all"
         assert d["action"]["message"] == "denied"
         assert len(d["evaluated_policies"]) == 1
+
+    def test_result_omits_null_action(self):
+        """Matches Go's omitempty: ALLOW decisions have no action, so the key is absent."""
+        policies = [
+            ParsedPolicy(key="allow-all", priority=0, decision=PolicyDecision.ALLOW),
+        ]
+        result = evaluate_policies(policies, req())
+        d = result_to_dict(result)
+        assert d["decision"] == "ALLOW"
+        assert "action" not in d
+
+    def test_invalid_decision_raises_friendly_error(self):
+        """Bad decision strings produce InvalidPolicyError, not raw ValueError."""
+        with pytest.raises(InvalidPolicyError) as exc:
+            parsed_policy_from_dict({"key": "bad", "decision": "MAYBE"})
+        msg = str(exc.value)
+        assert "MAYBE" in msg
+        assert "bad" in msg
+        assert "ALLOW" in msg and "DENY" in msg  # lists valid values

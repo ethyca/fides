@@ -58,7 +58,7 @@ type Constraint struct {
 	Requirement      string `json:"requirement,omitempty"` // opt_in, opt_out, not_opt_in, not_opt_out
 
 	// Geo location fields (type=geo_location)
-	Field string   `json:"field,omitempty"` // dotted context path, e.g. "environment.geo_location"
+	Field  string   `json:"field,omitempty"` // dotted context path, e.g. "environment.geo_location"
 	Values []string `json:"values,omitempty"`
 
 	// Operator is shared between geo_location and data_flow constraints:
@@ -99,22 +99,22 @@ type AccessEvaluationRequest struct {
 
 // EvaluatedPolicyInfo is the audit trail for a single policy evaluation.
 type EvaluatedPolicyInfo struct {
-	PolicyKey      string `json:"policy_key"`
-	Priority       int    `json:"priority"`
-	Matched        bool   `json:"matched"`
-	Result         string `json:"result"` // "ALLOW", "DENY", "SUPPRESSED"
-	UnlessTriggered bool  `json:"unless_triggered"`
+	PolicyKey       string `json:"policy_key"`
+	Priority        int    `json:"priority"`
+	Matched         bool   `json:"matched"`
+	Result          string `json:"result"` // "ALLOW", "DENY", "SUPPRESSED"
+	UnlessTriggered bool   `json:"unless_triggered"`
 }
 
 // PolicyEvaluationResult is the output of evaluating access policies.
 type PolicyEvaluationResult struct {
-	Decision             PolicyDecision        `json:"decision"`
-	DecisivePolicyKey    *string               `json:"decisive_policy_key,omitempty"`
-	DecisivePolicyPriority *int                `json:"decisive_policy_priority,omitempty"`
-	UnlessTriggered      bool                  `json:"unless_triggered"`
-	EvaluatedPolicies    []EvaluatedPolicyInfo `json:"evaluated_policies"`
-	Action               *PolicyAction         `json:"action,omitempty"`
-	Reason               *string               `json:"reason,omitempty"`
+	Decision               PolicyDecision        `json:"decision"`
+	DecisivePolicyKey      *string               `json:"decisive_policy_key,omitempty"`
+	DecisivePolicyPriority *int                  `json:"decisive_policy_priority,omitempty"`
+	UnlessTriggered        bool                  `json:"unless_triggered"`
+	EvaluatedPolicies      []EvaluatedPolicyInfo `json:"evaluated_policies"`
+	Action                 *PolicyAction         `json:"action,omitempty"`
+	Reason                 *string               `json:"reason,omitempty"`
 }
 
 // EvaluatePoliciesRequest is the JSON request body used by the fidesplus

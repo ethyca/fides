@@ -37,7 +37,10 @@ jobs:
           cache-dependency-path: policy-engine/go.mod
 
       - name: Verify module
-        run: go mod tidy && git diff --exit-code go.mod
+        run: go mod tidy && git diff --exit-code go.mod go.sum
+
+      - name: Format
+        run: test -z "$(gofmt -l .)"
 
       - name: Build
         run: go build ./...
