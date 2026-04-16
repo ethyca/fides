@@ -6,7 +6,6 @@ import {
   Controls,
   Edge,
   EdgeTypes,
-  MiniMap,
   Node,
   NodeTypes,
   ReactFlow,
@@ -644,7 +643,6 @@ const DatasetNodeEditorInner = ({
                 variant={BackgroundVariant.Dots}
                 size={3}
               />
-              <MiniMap nodeStrokeWidth={3} pannable />
               <Controls showInteractive={false} />
             </ReactFlow>
           </DatasetTreeHoverProvider>
