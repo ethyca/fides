@@ -27,9 +27,9 @@ const AccessPoliciesPage: NextPage = () => {
         rightContent={
           hasPolicies ? (
             <Flex gap={8}>
-              <NextLink href={CONTROLS_ROUTE} passHref>
+              <RouterLink href={CONTROLS_ROUTE}>
                 <Button>Manage controls</Button>
-              </NextLink>
+              </RouterLink>
               {flags.alphaPrivacyDocUpload && (
                 <Button
                   aria-label="Policy settings"

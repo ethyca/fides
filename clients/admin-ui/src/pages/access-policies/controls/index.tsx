@@ -1,6 +1,5 @@
 import { Button, List, Text, Typography, useMessage, useModal } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 
 import {
   Control,
@@ -9,6 +8,7 @@ import {
 } from "~/features/access-policies/access-policies.slice";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   ACCESS_POLICIES_ROUTE,
   CONTROLS_EDIT_ROUTE,
@@ -55,9 +55,9 @@ const ControlsPage: NextPage = () => {
           { title: "Controls" },
         ]}
         rightContent={
-          <NextLink href={CONTROLS_NEW_ROUTE} passHref>
+          <RouterLink href={CONTROLS_NEW_ROUTE}>
             <Button type="primary">New control</Button>
-          </NextLink>
+          </RouterLink>
         }
       >
         <div className="max-w-3xl">
@@ -94,13 +94,12 @@ const ControlsPage: NextPage = () => {
               >
                 Delete
               </Button>,
-              <NextLink
+              <RouterLink
                 key="edit"
                 href={{
                   pathname: CONTROLS_EDIT_ROUTE,
                   query: { controlKey: control.key },
                 }}
-                passHref
               >
                 <Button
                   type="link"
@@ -109,7 +108,7 @@ const ControlsPage: NextPage = () => {
                 >
                   Edit
                 </Button>
-              </NextLink>,
+              </RouterLink>,
             ]}
           >
             <List.Item.Meta
