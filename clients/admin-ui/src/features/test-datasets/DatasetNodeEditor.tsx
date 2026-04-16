@@ -602,7 +602,7 @@ const DatasetNodeEditorInner = ({
           ) : (
             <div />
           )}
-          <Flex align="center" gap="small">
+          <Flex align="center" gap="small" style={{ flexShrink: 0 }}>
             {availableCategories.length > 0 && (
               <Select
                 mode="multiple"
@@ -617,14 +617,9 @@ const DatasetNodeEditorInner = ({
                 showSearch
               />
             )}
-            <Flex align="center" gap={6}>
-              <div>
-                <Icons.Code size={14} />
-              </div>
-              <Typography.Text
-                className="shrink-0"
-                style={{ fontSize: 12, userSelect: "none" }}
-              >
+            <Flex align="center" gap={6} style={{ flexShrink: 0 }}>
+              <Icons.Code size={14} />
+              <Typography.Text style={{ fontSize: 12, userSelect: "none" }}>
                 YAML
               </Typography.Text>
               <Switch
