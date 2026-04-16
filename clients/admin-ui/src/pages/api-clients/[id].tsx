@@ -3,7 +3,9 @@ import {
   Button,
   Flex,
   Modal,
+  Paragraph,
   Tabs,
+  Tooltip,
   Typography,
   useMessage,
 } from "fidesui";
@@ -17,7 +19,7 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import Restrict from "~/features/common/Restrict";
+import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
 import {
   useDeleteOAuthClientMutation,
@@ -32,6 +34,7 @@ const SecretManagementTab = ({ clientId }: { clientId: string }) => {
   const [secretModalOpen, setSecretModalOpen] = useState(false);
   const [rotatedSecret, setRotatedSecret] = useState("");
   const [rotateSecret, { isLoading }] = useRotateOAuthClientSecretMutation();
+  const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
 
   const handleRotate = async () => {
     const result = await rotateSecret(clientId);
@@ -56,27 +59,39 @@ const SecretManagementTab = ({ clientId }: { clientId: string }) => {
 
   return (
     <>
-      <div
-        className="flex max-w-lg flex-col gap-3"
+      <Flex
+        gap="middle"
+        className="max-w-lg"
+        vertical
         data-testid="secret-management-tab"
       >
-        <p className="font-medium">Rotate secret</p>
-        <p className="text-sm text-gray-600">
+        <Paragraph>Rotate secret</Paragraph>
+        <Paragraph type="secondary" className="text-sm">
           Rotating the secret immediately invalidates the current one. Any
           integrations using this client will need to be updated with the new
           secret.
-        </p>
-        <div>
-          <Button
-            danger
-            onClick={confirmRotate}
-            loading={isLoading}
-            data-testid="rotate-secret-btn"
-          >
-            Rotate secret
-          </Button>
-        </div>
-      </div>
+        </Paragraph>
+
+        <Tooltip
+          title={
+            !canUpdate
+              ? "You don't have permission to update API clients."
+              : undefined
+          }
+        >
+          <span>
+            <Button
+              disabled={!canUpdate}
+              danger
+              onClick={confirmRotate}
+              loading={isLoading}
+              data-testid="rotate-secret-btn"
+            >
+              Rotate secret
+            </Button>
+          </span>
+        </Tooltip>
+      </Flex>
       <ClientSecretModal
         clientId={clientId}
         secret={rotatedSecret}
@@ -126,22 +141,16 @@ const ApiClientDetailPage: NextPage = () => {
           key: "details",
           label: "Details",
           children: (
-            <Restrict scopes={[ScopeRegistryEnum.CLIENT_UPDATE]}>
-              <OAuthClientForm
-                client={client}
-                onClose={() => router.push(API_CLIENTS_ROUTE)}
-              />
-            </Restrict>
+            <OAuthClientForm
+              client={client}
+              onClose={() => router.push(API_CLIENTS_ROUTE)}
+            />
           ),
         },
         {
           key: "secret",
           label: "Secret management",
-          children: (
-            <Restrict scopes={[ScopeRegistryEnum.CLIENT_UPDATE]}>
-              <SecretManagementTab clientId={client.client_id} />
-            </Restrict>
-          ),
+          children: <SecretManagementTab clientId={client.client_id} />,
         },
       ]
     : [];

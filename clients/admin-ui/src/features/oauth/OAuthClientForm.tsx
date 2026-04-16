@@ -4,7 +4,8 @@ import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { ClientResponse } from "~/types/api";
+import { useHasPermission } from "~/features/common/Restrict";
+import { ClientResponse, ScopeRegistryEnum } from "~/types/api";
 
 import {
   useCreateOAuthClientMutation,
@@ -37,6 +38,7 @@ const OAuthClientForm = ({
   const message = useMessage();
   const [createClient] = useCreateOAuthClientMutation();
   const [updateClient] = useUpdateOAuthClientMutation();
+  const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
 
   const initialValues: OAuthClientFormValues = {
     name: client?.name ?? "",
@@ -95,12 +97,14 @@ const OAuthClientForm = ({
               variant="stacked"
               isRequired
               data-testid="client-name-input"
+              disabled={!canUpdate}
             />
             <CustomTextInput
               name="description"
               label="Description"
               variant="stacked"
               data-testid="client-description-input"
+              disabled={!canUpdate}
             />
             <div className="flex justify-end gap-3">
               <Button
@@ -113,7 +117,7 @@ const OAuthClientForm = ({
               <Button
                 htmlType="submit"
                 type="primary"
-                disabled={!dirty || !isValid}
+                disabled={!dirty || !isValid || !canUpdate}
                 loading={isSubmitting}
                 data-testid="save-btn"
               >
