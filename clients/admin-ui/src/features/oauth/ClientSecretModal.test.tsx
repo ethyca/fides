@@ -72,7 +72,7 @@ describe("ClientSecretModal", () => {
   describe("client ID field", () => {
     it("displays the client ID in plain text by default", () => {
       render(<ClientSecretModal {...defaultProps} context="created" />);
-      expect(screen.getByText("test-client-id")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("test-client-id")).toBeInTheDocument();
     });
 
     it("has a copy button for the client ID", () => {
@@ -95,12 +95,14 @@ describe("ClientSecretModal", () => {
   describe("secret field", () => {
     it("hides the secret by default", () => {
       render(<ClientSecretModal {...defaultProps} context="created" />);
-      expect(screen.queryByText("super-secret-value")).not.toBeInTheDocument();
+      expect(
+        screen.queryByDisplayValue("super-secret-value"),
+      ).not.toBeInTheDocument();
     });
 
     it("shows bullet placeholders when hidden", () => {
       render(<ClientSecretModal {...defaultProps} context="created" />);
-      expect(screen.getByText(/^•+$/)).toBeInTheDocument();
+      expect(screen.getByDisplayValue(/^•+$/)).toBeInTheDocument();
     });
 
     it("reveals the secret when the toggle button is clicked", async () => {
@@ -109,7 +111,7 @@ describe("ClientSecretModal", () => {
 
       await user.click(screen.getByTestId("toggle-reveal-client-secret"));
 
-      expect(screen.getByText("super-secret-value")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("super-secret-value")).toBeInTheDocument();
     });
 
     it("hides the secret again when toggle is clicked a second time", async () => {
@@ -117,10 +119,14 @@ describe("ClientSecretModal", () => {
       render(<ClientSecretModal {...defaultProps} context="created" />);
 
       await user.click(screen.getByTestId("toggle-reveal-client-secret"));
-      expect(screen.getByText("super-secret-value")).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue("super-secret-value"),
+      ).toBeInTheDocument();
 
       await user.click(screen.getByTestId("toggle-reveal-client-secret"));
-      expect(screen.queryByText("super-secret-value")).not.toBeInTheDocument();
+      expect(
+        screen.queryByDisplayValue("super-secret-value"),
+      ).not.toBeInTheDocument();
     });
 
     it("copy button always receives the real secret value even when field is hidden", () => {

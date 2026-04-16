@@ -46,8 +46,7 @@ const SecretField = ({
       <span className="text-sm font-medium">{label}</span>
       <Input
         readOnly
-        type={redact && !revealed ? "password" : "text"}
-        value={value}
+        value={redact && !revealed ? "•".repeat(value.length) : value}
         suffix={suffix}
         className="font-mono"
       />
@@ -85,7 +84,8 @@ const ClientSecretModal = ({
       <Alert
         type="warning"
         showIcon
-        message={<span>Copy this secret now. It will not be shown again.</span>}
+        data-testid="secret-warning"
+        title="Copy this secret now. It will not be shown again."
       />
       <SecretField label="Client ID" value={clientId} />
       <SecretField label="Client secret" value={secret} redact />
