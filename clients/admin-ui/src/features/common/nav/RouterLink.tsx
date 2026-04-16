@@ -115,6 +115,8 @@ export const RouterLink = (props: RouterLinkProps) => {
     prefetch,
     unstyled,
     className,
+    target,
+    rel,
     ...rest
   } = props;
 
@@ -122,8 +124,6 @@ export const RouterLink = (props: RouterLinkProps) => {
   const isButtonChild = isAntButtonChild(children);
   const useNextLink = isButtonChild || unstyled;
   const hrefString = typeof href === "string" ? href : formatHref(href);
-  const { target } = rest;
-  const { rel } = rest;
 
   // Text-mode prefetch (hooks must be called unconditionally)
   const prefetchHref = useCallback(() => {
@@ -147,12 +147,6 @@ export const RouterLink = (props: RouterLinkProps) => {
 
   // Modes 1 & 2: delegate to NextLink (button child or unstyled)
   if (useNextLink) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure to exclude from spread
-    const {
-      target: anchorTarget,
-      rel: anchorRel,
-      ...anchorProps
-    } = rest as AnchorProps;
     return (
       <NextLink
         href={href}
@@ -163,19 +157,13 @@ export const RouterLink = (props: RouterLinkProps) => {
         rel={rel}
         className={className}
         onClick={onClick}
-        {...anchorProps}
+        {...(rest as AnchorProps)}
       >
         {children}
       </NextLink>
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure to exclude from spread
-  const {
-    target: typTarget,
-    rel: typRel,
-    ...typographyProps
-  } = rest as TypographyLinkProps;
   return (
     <TypographyLink
       href={hrefString}
@@ -205,7 +193,7 @@ export const RouterLink = (props: RouterLinkProps) => {
           // navigation errors are surfaced by Next's own error handling
         });
       }}
-      {...typographyProps}
+      {...(rest as TypographyLinkProps)}
     >
       {children}
     </TypographyLink>
