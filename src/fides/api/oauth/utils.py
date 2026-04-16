@@ -255,6 +255,10 @@ def is_token_invalidated_offline(
     was issued before a password reset, using the password_reset_at value
     embedded in the token payload itself rather than querying the database.
 
+    Handles mixed timezone inputs defensively: if one datetime is
+    timezone-aware and the other is naive, the aware one is stripped
+    to naive for comparison (both are assumed UTC by convention).
+
     Args:
         issued_at: When the token was issued
         password_reset_at_str: ISO format string of password reset timestamp from token payload
@@ -267,6 +271,12 @@ def is_token_invalidated_offline(
         return False
     try:
         password_reset_at = datetime.fromisoformat(password_reset_at_str)
+        # Normalize timezone: compare both as naive (UTC by convention)
+        # to avoid TypeError when mixing aware and naive datetimes.
+        if issued_at.tzinfo is None and password_reset_at.tzinfo is not None:
+            password_reset_at = password_reset_at.replace(tzinfo=None)
+        elif issued_at.tzinfo is not None and password_reset_at.tzinfo is None:
+            issued_at = issued_at.replace(tzinfo=None)
         return issued_at < password_reset_at
     except (TypeError, ValueError):
         return False  # Treat parse errors as non-invalidating
@@ -620,15 +630,16 @@ def extract_token_and_load_client(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Invalidate tokens issued prior to the user's most recent password reset.
-    # This ensures any existing sessions are expired immediately after a password change.
-    # First try stateless check using payload data (for newer tokens with password-reset-at)
+    # Two checks run in sequence:
+    # 1. Offline (fast, no DB) — uses password-reset-at embedded in the token.
+    # 2. DB (authoritative) — catches resets that happened after the token was issued.
+    # Both always run on the fides server path. The sidecar (no DB) uses #1 only.
     password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
     if is_token_invalidated_offline(issued_at_dt, password_reset_at_str):
         logger.debug("Auth token issued before password reset (offline check).")
         raise AuthorizationError(detail="Not Authorized for this action")
-    # Fall back to DB check for older tokens without password-reset-at in payload
-    if password_reset_at_str is None and is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before password reset (DB fallback).")
+    if is_token_invalidated(issued_at_dt, client):
+        logger.debug("Auth token issued before password reset (DB check).")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Populate request-scoped context with the authenticated user identifier.
@@ -708,15 +719,16 @@ async def extract_token_and_load_client_async(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Invalidate tokens issued prior to the user's most recent password reset.
-    # This ensures any existing sessions are expired immediately after a password change.
-    # First try stateless check using payload data (for newer tokens with password-reset-at)
+    # Two checks run in sequence:
+    # 1. Offline (fast, no DB) — uses password-reset-at embedded in the token.
+    # 2. DB (authoritative) — catches resets that happened after the token was issued.
+    # Both always run on the fides server path. The sidecar (no DB) uses #1 only.
     password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
     if is_token_invalidated_offline(issued_at_dt, password_reset_at_str):
         logger.debug("Auth token issued before password reset (offline check).")
         raise AuthorizationError(detail="Not Authorized for this action")
-    # Fall back to DB check for older tokens without password-reset-at in payload
-    if password_reset_at_str is None and is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before password reset (DB fallback).")
+    if is_token_invalidated(issued_at_dt, client):
+        logger.debug("Auth token issued before password reset (DB check).")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Populate request-scoped context with the authenticated user identifier.

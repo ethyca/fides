@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from sqlalchemy import ARRAY, Column, ForeignKey, String
@@ -174,7 +174,7 @@ class ClientDetail(Base):
         If the client is associated with a user who has a password_reset_at timestamp,
         it is included in the payload for stateless token invalidation checks.
         """
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         # Get password_reset_at if user is associated
         password_reset_at = None

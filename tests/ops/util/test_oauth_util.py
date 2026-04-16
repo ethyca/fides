@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -96,3 +96,37 @@ class TestIsTokenInvalidatedOffline:
     def test_is_token_invalidated_offline_empty_string(self):
         """Empty string treated as invalid format."""
         assert is_token_invalidated_offline(datetime.now(), "") is False
+
+    def test_offline_check_insufficient_for_second_reset(self):
+        """Offline check passes for tokens issued after the embedded reset.
+
+        A second password reset (after the token was issued) can only be
+        caught by the DB check — the embedded value is frozen at token
+        creation time. This test documents the design boundary: the
+        offline check alone is NOT sufficient for the fides server path.
+        """
+        first_reset = datetime(2024, 1, 1, 12, 0, 0)
+        issued = datetime(2024, 1, 2, 12, 0, 0)  # After first reset
+        # Offline check with first_reset embedded: issued > first_reset → valid
+        assert is_token_invalidated_offline(issued, first_reset.isoformat()) is False
+        # A second reset at 2024-01-03 would invalidate this token, but only
+        # the DB check (is_token_invalidated) can catch it — the embedded
+        # password-reset-at is still the first reset's timestamp.
+
+    def test_timezone_aware_reset_with_naive_issued(self):
+        """Timezone-aware password_reset_at compared to naive issued_at."""
+        reset = datetime(2024, 1, 2, 12, 0, 0, tzinfo=timezone.utc)
+        issued = datetime(2024, 1, 1, 12, 0, 0)  # naive, before reset
+        assert is_token_invalidated_offline(issued, reset.isoformat()) is True
+
+    def test_naive_reset_with_timezone_aware_issued(self):
+        """Naive password_reset_at compared to timezone-aware issued_at."""
+        reset = datetime(2024, 1, 2, 12, 0, 0)  # naive
+        issued = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        assert is_token_invalidated_offline(issued, reset.isoformat()) is True
+
+    def test_both_timezone_aware(self):
+        """Both timezone-aware datetimes compare correctly."""
+        reset = datetime(2024, 1, 2, 12, 0, 0, tzinfo=timezone.utc)
+        issued = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        assert is_token_invalidated_offline(issued, reset.isoformat()) is True
