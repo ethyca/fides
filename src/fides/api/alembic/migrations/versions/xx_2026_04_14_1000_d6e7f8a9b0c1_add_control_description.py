@@ -1,7 +1,7 @@
 """add description column to plus_control
 
 Revision ID: d6e7f8a9b0c1
-Revises: b3c8d5e7f2a1
+Revises: a42ef09a3dfe
 Create Date: 2026-04-14 10:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d6e7f8a9b0c1"
-down_revision = "b3c8d5e7f2a1"
+down_revision = "a42ef09a3dfe"
 branch_labels = None
 depends_on = None
 
