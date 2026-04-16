@@ -1,10 +1,10 @@
-import { Button } from "fidesui";
+import { Button, Tooltip } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import Restrict from "~/features/common/Restrict";
+import { useHasPermission } from "~/features/common/Restrict";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
 import CreateOAuthClientModal from "~/features/oauth/CreateOAuthClientModal";
 import OAuthClientsList from "~/features/oauth/OAuthClientsList";
@@ -15,6 +15,8 @@ const ApiClientsPage: NextPage = () => {
   const [secretModalOpen, setSecretModalOpen] = useState(false);
   const [newClientId, setNewClientId] = useState("");
   const [newClientSecret, setNewClientSecret] = useState("");
+
+  const canCreate = useHasPermission([ScopeRegistryEnum.CLIENT_CREATE]);
 
   const handleCreated = (clientId: string, secret: string) => {
     setNewClientId(clientId);
@@ -30,15 +32,25 @@ const ApiClientsPage: NextPage = () => {
         breadcrumbItems={[{ title: "All API clients" }]}
         isSticky={false}
         rightContent={
-          <Restrict scopes={[ScopeRegistryEnum.CLIENT_CREATE]}>
-            <Button
-              type="primary"
-              onClick={() => setCreateModalOpen(true)}
-              data-testid="create-api-client-btn"
-            >
-              Create API client
-            </Button>
-          </Restrict>
+          <Tooltip
+            title={
+              !canCreate
+                ? "You don't have permission to create API clients."
+                : undefined
+            }
+          >
+            {/* Disabled buttons swallow mouse events, preventing the tooltip from firing */}
+            <span>
+              <Button
+                type="primary"
+                disabled={!canCreate}
+                onClick={() => setCreateModalOpen(true)}
+                data-testid="create-api-client-btn"
+              >
+                Create API client
+              </Button>
+            </span>
+          </Tooltip>
         }
       />
       <OAuthClientsList />
