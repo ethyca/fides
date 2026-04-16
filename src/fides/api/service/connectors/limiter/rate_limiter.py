@@ -53,6 +53,8 @@ class RateLimiter:
     """
 
     EXPIRE_AFTER_PERIOD_SECONDS: int = 500
+    MAX_DEFAULT_TIMEOUT_SECONDS: int = 120
+    MIN_DEFAULT_TIMEOUT_SECONDS: int = 30
 
     def build_redis_key(self, current_seconds: int, request: RateLimiterRequest) -> str:
         """
@@ -112,7 +114,7 @@ class RateLimiter:
 
     def seconds_until_next_bucket(
         self, current_seconds: int, request: RateLimiterRequest
-    ) -> float:
+    ) -> int:
         """
         Returns the number of seconds until the next time bucket starts for the given request.
         """
@@ -143,8 +145,8 @@ class RateLimiter:
         """
         if timeout_seconds is None:
             timeout_seconds = min(
-                max(r.period.factor for r in requests) + 5 if requests else 30,
-                120,
+                max(r.period.factor for r in requests) + 5 if requests else self.MIN_DEFAULT_TIMEOUT_SECONDS,
+                self.MAX_DEFAULT_TIMEOUT_SECONDS,
             )
 
         try:
