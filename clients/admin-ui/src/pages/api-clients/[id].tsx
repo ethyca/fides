@@ -14,7 +14,6 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
