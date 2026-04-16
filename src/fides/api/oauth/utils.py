@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import update_wrapper
 from types import FunctionType
 from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional, Tuple, cast
@@ -185,7 +185,11 @@ def is_token_expired(
     """Check if a token has expired based on its issued_at timestamp and duration."""
     if issued_at is None:
         return True
-    return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
+    now = datetime.now(timezone.utc)
+    # Handle mixed tz: if issued_at is naive, treat as UTC
+    if issued_at.tzinfo is None:
+        issued_at = issued_at.replace(tzinfo=timezone.utc)
+    return (now - issued_at).total_seconds() / 60.0 > token_duration_minutes
 
 
 def is_token_expired_by_payload(
