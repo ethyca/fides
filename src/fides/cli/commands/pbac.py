@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import sys
-from dataclasses import asdict
 from typing import TextIO
 
 import rich_click as click
@@ -64,24 +63,28 @@ def evaluate_purpose_cmd(input_file: TextIO) -> None:
         click.echo(f"Error parsing JSON: {e}", err=True)
         sys.exit(1)
 
-    consumer_data = data.get("consumer", {})
-    consumer = ConsumerPurposes(
-        consumer_id=consumer_data.get("consumer_id", ""),
-        consumer_name=consumer_data.get("consumer_name", ""),
-        purpose_keys=frozenset(consumer_data.get("purpose_keys", [])),
-    )
-
-    datasets: dict[str, DatasetPurposes] = {}
-    for key, ds_data in data.get("datasets", {}).items():
-        collection_purposes = {
-            col: frozenset(purposes)
-            for col, purposes in ds_data.get("collection_purposes", {}).items()
-        }
-        datasets[key] = DatasetPurposes(
-            dataset_key=ds_data.get("dataset_key", key),
-            purpose_keys=frozenset(ds_data.get("purpose_keys", [])),
-            collection_purposes=collection_purposes,
+    try:
+        consumer_data = data.get("consumer", {})
+        consumer = ConsumerPurposes(
+            consumer_id=consumer_data.get("consumer_id", ""),
+            consumer_name=consumer_data.get("consumer_name", ""),
+            purpose_keys=frozenset(consumer_data.get("purpose_keys", [])),
         )
+
+        datasets: dict[str, DatasetPurposes] = {}
+        for key, ds_data in data.get("datasets", {}).items():
+            collection_purposes = {
+                col: frozenset(purposes)
+                for col, purposes in ds_data.get("collection_purposes", {}).items()
+            }
+            datasets[key] = DatasetPurposes(
+                dataset_key=ds_data.get("dataset_key", key),
+                purpose_keys=frozenset(ds_data.get("purpose_keys", [])),
+                collection_purposes=collection_purposes,
+            )
+    except (TypeError, AttributeError) as e:
+        click.echo(f"Error: malformed input — {e}", err=True)
+        sys.exit(1)
 
     collections_raw = data.get("collections", {})
     collections: dict[str, tuple[str, ...]] | None = (

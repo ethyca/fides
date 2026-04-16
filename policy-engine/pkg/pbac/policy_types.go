@@ -114,7 +114,6 @@ type PolicyEvaluationResult struct {
 	UnlessTriggered        bool                  `json:"unless_triggered"`
 	EvaluatedPolicies      []EvaluatedPolicyInfo `json:"evaluated_policies"`
 	Action                 *PolicyAction         `json:"action,omitempty"`
-	Reason                 *string               `json:"reason,omitempty"`
 }
 
 // EvaluatePoliciesRequest is the JSON request body used by the fidesplus

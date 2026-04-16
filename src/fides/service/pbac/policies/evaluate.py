@@ -170,11 +170,15 @@ def parsed_policy_from_dict(data: dict[str, Any]) -> ParsedPolicy:
     try:
         decision = PolicyDecision(decision_raw)
     except ValueError:
-        valid = ", ".join(d.value for d in PolicyDecision)
         raise InvalidPolicyError(
             f"Invalid decision value {decision_raw!r} in policy "
-            f"{data.get('key', '<no-key>')!r}. Must be one of: {valid}"
+            f"{data.get('key', '<no-key>')!r}. Must be ALLOW or DENY."
         ) from None
+    if decision == PolicyDecision.NO_DECISION:
+        raise InvalidPolicyError(
+            f"NO_DECISION is not a valid policy decision in policy "
+            f"{data.get('key', '<no-key>')!r}. Must be ALLOW or DENY."
+        )
 
     action_data = data.get("action")
     action = PolicyAction(message=action_data.get("message")) if action_data else None
@@ -304,11 +308,18 @@ def _evaluate_constraint(
         return _eval_geo(constraint, context)
     if ctype == "data_flow":
         return _eval_data_flow(constraint, context)
+    import logging
+
+    logging.getLogger(__name__).warning(
+        "Unknown constraint type %r — treating as not triggered", ctype
+    )
     return False
 
 
 def _eval_consent(constraint: dict[str, Any], context: dict[str, Any]) -> bool:
     consent_map = context.get("consent", {})
+    if not isinstance(consent_map, dict):
+        return False
     status = consent_map.get(constraint.get("privacy_notice_key"))
     if status is None:
         return False
@@ -343,7 +354,11 @@ def _eval_geo(constraint: dict[str, Any], context: dict[str, Any]) -> bool:
 
 def _eval_data_flow(constraint: dict[str, Any], context: dict[str, Any]) -> bool:
     flows_map = context.get("data_flows", {})
+    if not isinstance(flows_map, dict):
+        return False
     direction_flows = flows_map.get(constraint.get("direction"), [])
+    if not isinstance(direction_flows, list):
+        return False
     system_set = set(direction_flows)
 
     operator = constraint.get("operator")
