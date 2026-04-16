@@ -59,6 +59,9 @@ type FormValues = {
   property_ids?: string[];
 };
 
+const PROPERTY_UPDATE_FAILED_MSG =
+  "Integration saved but failed to update properties. Please try again";
+
 export const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
@@ -222,9 +225,7 @@ export const ConfigureIntegrationForm = ({
     try {
       await savePropertyAssignments(propertyIds);
     } catch {
-      messageApi.error(
-        "Integration saved but failed to update properties. Please try again.",
-      );
+      messageApi.error(PROPERTY_UPDATE_FAILED_MSG);
     }
   };
 
@@ -359,9 +360,7 @@ export const ConfigureIntegrationForm = ({
       try {
         await savePropertyAssignments(values.property_ids);
       } catch {
-        messageApi.error(
-          "Integration saved but failed to update properties. Please try again.",
-        );
+        messageApi.error(PROPERTY_UPDATE_FAILED_MSG);
       }
     }
 
