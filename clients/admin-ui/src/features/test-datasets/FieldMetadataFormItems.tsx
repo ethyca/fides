@@ -85,7 +85,7 @@ export const DataCategoryTagSelect = ({
  */
 const FieldMetadataFormItems = () => (
   <>
-    <Form.Item label="Data Type" name="data_type">
+    <Form.Item label="Data Type" name="data_type" layout="horizontal">
       <Select
         allowClear
         placeholder="Select data type..."
@@ -93,17 +93,27 @@ const FieldMetadataFormItems = () => (
         options={DATA_TYPE_OPTIONS}
       />
     </Form.Item>
-    <Form.Item label="Identity" name="identity">
+    <Form.Item label="Redact" name="redact" layout="horizontal">
+      <Select aria-label="Redact" options={REDACT_OPTIONS} />
+    </Form.Item>
+    <Form.Item label="Identity" name="identity" layout="horizontal">
       <Input placeholder="e.g. email, phone_number" />
     </Form.Item>
-    <Form.Item label="Primary Key" name="primary_key" valuePropName="checked">
+    <Form.Item
+      label="Primary Key"
+      name="primary_key"
+      valuePropName="checked"
+      layout="horizontal"
+    >
       <Switch aria-label="Primary Key" />
     </Form.Item>
-    <Form.Item label="Read Only" name="read_only" valuePropName="checked">
+    <Form.Item
+      label="Read Only"
+      name="read_only"
+      valuePropName="checked"
+      layout="horizontal"
+    >
       <Switch aria-label="Read Only" />
-    </Form.Item>
-    <Form.Item label="Redact" name="redact">
-      <Select aria-label="Redact" options={REDACT_OPTIONS} />
     </Form.Item>
   </>
 );

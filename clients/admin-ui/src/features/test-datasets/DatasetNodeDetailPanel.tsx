@@ -213,7 +213,7 @@ const DatasetNodeDetailPanel = forwardRef<
         mask={false}
       >
         {nodeData && (
-          <Form form={form} layout="vertical" size="small">
+          <Form form={form} layout="vertical">
             <Form.Item label="Name" name="name">
               <Input disabled={!allowNameEditing} aria-label="Name" />
             </Form.Item>
@@ -294,11 +294,11 @@ const DatasetNodeDetailPanel = forwardRef<
               justify={isProtected ? "end" : "space-between"}
             >
               {!isProtected && (
-                <Button danger size="small" onClick={handleDelete}>
+                <Button danger onClick={handleDelete}>
                   Delete {nodeData.nodeType}
                 </Button>
               )}
-              <Button type="primary" size="small" onClick={handleClose}>
+              <Button type="primary" onClick={handleClose}>
                 Done
               </Button>
             </Flex>
