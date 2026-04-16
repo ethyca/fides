@@ -111,7 +111,9 @@ describe("ClientSecretModal", () => {
 
       await user.click(screen.getByTestId("toggle-reveal-client-secret"));
 
-      expect(screen.getByDisplayValue("super-secret-value")).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue("super-secret-value"),
+      ).toBeInTheDocument();
     });
 
     it("hides the secret again when toggle is clicked a second time", async () => {
