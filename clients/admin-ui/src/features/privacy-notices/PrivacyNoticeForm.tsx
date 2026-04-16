@@ -1,26 +1,25 @@
 import ScrollableList from "common/ScrollableList";
 import {
   Button,
-  ChakraBox as Box,
-  ChakraDivider as Divider,
-  ChakraFlex as Flex,
-  ChakraFormLabel as FormLabel,
-  ChakraStack as Stack,
-  ChakraVStack as VStack,
+  Card,
+  Divider,
+  Flex,
+  Form,
   formatIsoLocation,
+  Input,
   isoStringToEntry,
+  Select,
   Space,
+  Switch,
   Tag,
   Typography,
   useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { isEqual } from "lodash";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import FormSection from "~/features/common/form/FormSection";
-import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { RouterLink } from "~/features/common/nav/RouterLink";
@@ -31,7 +30,7 @@ import {
   selectEnabledDataUseOptions,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
-import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
+import { PrivacyNoticeTranslationForm } from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
 import {
   LimitedPrivacyNoticeResponseSchema,
   NoticeTranslation,
@@ -41,15 +40,13 @@ import {
 } from "~/types/api";
 import type { MinimalPrivacyNotice } from "~/types/api/models/MinimalPrivacyNotice";
 
-import { ControlledSelect } from "../common/form/ControlledSelect";
 import {
   CONSENT_MECHANISM_OPTIONS,
   defaultInitialValues,
   ENFORCEMENT_LEVEL_OPTIONS,
   transformPrivacyNoticeResponseToCreation,
-  ValidationSchema,
 } from "./form";
-import NoticeKeyField from "./NoticeKeyField";
+import { NoticeKeyField } from "./NoticeKeyField";
 import {
   selectAllPrivacyNotices,
   selectPage as selectNoticePage,
@@ -70,17 +67,13 @@ const PrivacyNoticeLocationDisplay = ({
   label: string;
   tooltip: string;
 }) => (
-  <VStack align="start">
+  <Flex vertical align="start" gap="small">
     <Flex align="start">
-      {label ? (
-        <FormLabel htmlFor="regions" fontSize="xs" my={0} mr={1}>
-          {label}
-        </FormLabel>
-      ) : null}
+      {label ? <label className="mr-1 text-xs">{label}</label> : null}
       <InfoTooltip label={tooltip} />
     </Flex>
-    <Box w="100%" data-testid="notice-locations">
-      <Space size={[0, 2]} wrap>
+    <div className="w-full" data-testid="notice-locations">
+      <Space size={[4, 6]} wrap>
         {regions?.map((region) => {
           const isoEntry = isoStringToEntry(region);
 
@@ -102,8 +95,8 @@ const PrivacyNoticeLocationDisplay = ({
           </Text>
         )}
       </Space>
-    </Box>
-  </VStack>
+    </div>
+  </Flex>
 );
 
 const PrivacyNoticeForm = ({
@@ -115,9 +108,15 @@ const PrivacyNoticeForm = ({
 }) => {
   const router = useRouter();
   const message = useMessage();
-  const initialValues = passedInPrivacyNotice
-    ? transformPrivacyNoticeResponseToCreation(passedInPrivacyNotice)
-    : defaultInitialValues;
+  const [form] = Form.useForm<PrivacyNoticeCreation>();
+
+  const initialValues = useMemo(
+    () =>
+      passedInPrivacyNotice
+        ? transformPrivacyNoticeResponseToCreation(passedInPrivacyNotice)
+        : defaultInitialValues,
+    [passedInPrivacyNotice],
+  );
 
   // Query for data uses
   useGetAllDataUsesQuery();
@@ -139,13 +138,13 @@ const PrivacyNoticeForm = ({
     p.children?.some((c) => c.id === passedInPrivacyNotice?.id),
   );
 
-  const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
-  const [postNoticesMutationTrigger] = usePostPrivacyNoticeMutation();
+  const [patchNoticesMutationTrigger, { isLoading: isPatching }] =
+    usePatchPrivacyNoticesMutation();
+  const [postNoticesMutationTrigger, { isLoading: isPosting }] =
+    usePostPrivacyNoticeMutation();
+  const isSubmitting = isPatching || isPosting;
 
-  const isEditing = useMemo(
-    () => !!passedInPrivacyNotice,
-    [passedInPrivacyNotice],
-  );
+  const isEditing = !!passedInPrivacyNotice;
 
   const handleSubmit = async (values: PrivacyNoticeCreation) => {
     let result;
@@ -171,108 +170,160 @@ const PrivacyNoticeForm = ({
     }
   };
 
+  // Watch all registered fields (including hidden Form.Items below) to drive
+  // dirty/submittable re-computation.
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  const isDirty = useMemo(
+    () =>
+      !allValues ? false : !isEqual(form.getFieldsValue(true), initialValues),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- allValues triggers re-eval
+    [allValues, initialValues],
+  );
+
+  // Read children and translations reactively via useWatch so ScrollableList
+  // and the translation form stay in sync with the hidden Form.Items below.
+  const children =
+    (Form.useWatch("children", form) as MinimalPrivacyNotice[] | undefined) ??
+    [];
+
   return (
-    <Formik
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={handleSubmit}
       initialValues={initialValues}
-      enableReinitialize
-      onSubmit={handleSubmit}
-      validationSchema={ValidationSchema}
+      key={passedInPrivacyNotice?.id ?? "create"}
+      data-testid="privacy-notice-form"
     >
-      {({ values, setFieldValue, dirty, isValid, isSubmitting }) => (
-        <Form>
-          <Stack spacing={10}>
-            <Stack spacing={6}>
-              <FormSection title="Privacy notice details">
-                <CustomTextInput
-                  label="Notice title"
-                  name="name"
-                  isRequired
-                  variant="stacked"
-                />
-                <ControlledSelect
-                  name="consent_mechanism"
-                  label="Consent mechanism"
-                  options={CONSENT_MECHANISM_OPTIONS}
-                  isRequired
-                  layout="stacked"
-                />
-                <NoticeKeyField isEditing={isEditing} />
-                <CustomSwitch
-                  name="has_gpc_flag"
-                  label="Configure whether this notice conforms to the Global Privacy Control"
-                  variant="stacked"
-                />
-                <PrivacyNoticeLocationDisplay
-                  regions={passedInPrivacyNotice?.configured_regions}
-                  label="Locations where privacy notice is shown to visitors"
-                  tooltip="To configure locations, change the privacy experiences where this notice is shown"
-                />
-                <Divider />
-                {!isChildNotice && (
-                  <ScrollableList<MinimalPrivacyNotice>
-                    label="Child notices"
-                    addButtonLabel="Add notice children"
-                    allItems={allPrivacyNotices.map((n) => ({
-                      id: n.id,
-                      name: n.name,
-                    }))}
-                    values={
-                      values.children?.map((n) => ({
-                        id: n.id,
-                        name: n.name,
-                      })) ?? []
-                    }
-                    setValues={(newValue) =>
-                      setFieldValue("children", newValue)
-                    }
-                    idField="id"
-                    getItemLabel={getPrivacyNoticeName}
-                    draggable
-                    baseTestId="children"
-                  />
-                )}
-                <ControlledSelect
-                  name="data_uses"
-                  label="Data use"
-                  options={dataUseOptions}
-                  mode="multiple"
-                  layout="stacked"
-                />
-                <ControlledSelect
-                  name="enforcement_level"
-                  label="Enforcement level"
-                  options={ENFORCEMENT_LEVEL_OPTIONS}
-                  isRequired
-                  layout="stacked"
-                />
-              </FormSection>
-              <PrivacyNoticeTranslationForm
-                availableTranslations={availableTranslations}
+      {/* Register fields managed outside of Form.Item (ScrollableList, the
+          translations tab form) so Form.useWatch and getFieldsValue track them
+          reactively. */}
+      <Form.Item name="children" hidden noStyle>
+        <Input />
+      </Form.Item>
+      <Form.Item name="translations" hidden noStyle>
+        <Input />
+      </Form.Item>
+      <Flex vertical gap="large">
+        <Flex vertical gap="middle">
+          <Card title="Privacy notice details">
+            <Form.Item
+              name="name"
+              label="Notice title"
+              rules={[{ required: true, message: "Title is required" }]}
+            >
+              <Input data-testid="input-name" />
+            </Form.Item>
+            <Form.Item
+              name="consent_mechanism"
+              label="Consent mechanism"
+              rules={[
+                {
+                  required: true,
+                  message: "Consent mechanism is required",
+                },
+              ]}
+            >
+              <Select
+                options={CONSENT_MECHANISM_OPTIONS}
+                aria-label="Consent mechanism"
+                data-testid="select-consent_mechanism"
               />
-            </Stack>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  router.back();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={isSubmitting || !dirty || !isValid}
-                loading={isSubmitting}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </div>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+            </Form.Item>
+            <NoticeKeyField isEditing={isEditing} />
+            <Form.Item
+              name="has_gpc_flag"
+              label="Conforms to Global Privacy Control (GPC)"
+              valuePropName="checked"
+            >
+              <Switch data-testid="input-has_gpc_flag" />
+            </Form.Item>
+            <PrivacyNoticeLocationDisplay
+              regions={passedInPrivacyNotice?.configured_regions}
+              label="Locations where privacy notice is shown to visitors"
+              tooltip="To configure locations, change the privacy experiences where this notice is shown"
+            />
+            <Divider />
+            {!isChildNotice && (
+              <div className="mb-4">
+                <ScrollableList<MinimalPrivacyNotice>
+                  label="Child notices"
+                  addButtonLabel="Add notice children"
+                  allItems={allPrivacyNotices.map((n) => ({
+                    id: n.id,
+                    name: n.name,
+                  }))}
+                  values={children}
+                  setValues={(newValue) =>
+                    form.setFieldValue("children", newValue)
+                  }
+                  idField="id"
+                  getItemLabel={getPrivacyNoticeName}
+                  draggable
+                  baseTestId="children"
+                />
+              </div>
+            )}
+            <Form.Item name="data_uses" label="Data use">
+              <Select
+                options={dataUseOptions}
+                mode="multiple"
+                aria-label="Data use"
+                data-testid="select-data_uses"
+              />
+            </Form.Item>
+            <Form.Item
+              name="enforcement_level"
+              label="Enforcement level"
+              rules={[
+                {
+                  required: true,
+                  message: "Enforcement level is required",
+                },
+              ]}
+            >
+              <Select
+                options={ENFORCEMENT_LEVEL_OPTIONS}
+                aria-label="Enforcement level"
+                data-testid="select-enforcement_level"
+              />
+            </Form.Item>
+          </Card>
+          <PrivacyNoticeTranslationForm
+            availableTranslations={availableTranslations}
+            initialTranslations={initialValues.translations ?? []}
+            form={form}
+          />
+        </Flex>
+        <Flex gap="small">
+          <Button
+            onClick={() => {
+              router.back();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            htmlType="submit"
+            type="primary"
+            disabled={isSubmitting || !isDirty || !submittable}
+            loading={isSubmitting}
+            data-testid="save-btn"
+          >
+            Save
+          </Button>
+        </Flex>
+      </Flex>
+    </Form>
   );
 };
 
-export default PrivacyNoticeForm;
+export { PrivacyNoticeForm };

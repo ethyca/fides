@@ -1,4 +1,4 @@
-import { ChakraBox as Box, ChakraText as Text, Spin } from "fidesui";
+import { Spin, Typography } from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
@@ -8,7 +8,9 @@ import {
   useGetAvailableNoticeTranslationsQuery,
   useGetPrivacyNoticeByIdQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
+import { PrivacyNoticeForm } from "~/features/privacy-notices/PrivacyNoticeForm";
+
+const { Paragraph, Text } = Typography;
 
 const PrivacyNoticeDetailPage = () => {
   const router = useRouter();
@@ -49,20 +51,20 @@ const PrivacyNoticeDetailPage = () => {
           { title: data.name },
         ]}
       />
-      <Box
-        width={{ base: "100%", lg: "70%" }}
+      <div
+        className="w-full lg:w-[70%]"
         data-testid="privacy-notice-detail-page"
       >
-        <Text fontSize="sm" mb={8}>
+        <Paragraph className="mb-8">
           Configure your privacy notice including consent mechanism, associated
           data uses and the locations in which this should be displayed to
           users.
-        </Text>
+        </Paragraph>
         <PrivacyNoticeForm
           privacyNotice={data}
           availableTranslations={availableTranslations}
         />
-      </Box>
+      </div>
     </Layout>
   );
 };
