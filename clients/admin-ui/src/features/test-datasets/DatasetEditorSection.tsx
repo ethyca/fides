@@ -383,7 +383,7 @@ const EditorSection = ({
           {reachability && (
             <Alert
               type={reachability?.reachable ? "success" : "error"}
-              message={
+              title={
                 reachability?.reachable
                   ? "Dataset is reachable"
                   : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`

@@ -23,6 +23,7 @@ class Control(Base):
 
     key = Column(String, nullable=False, unique=True, index=True)
     label = Column(String, nullable=False)
+    description = Column(String, nullable=True)
 
 
 class AccessPolicyControl(Base):

@@ -43,7 +43,7 @@ const EmptyTableNotice = () => {
   return (
     <Empty
       description={
-        <Space direction="vertical" size="small">
+        <Space orientation="vertical" size="small">
           <Text strong>No chat providers found.</Text>
           <Text type="secondary">
             Click &quot;Add a chat provider&quot; to configure Slack or other
@@ -296,7 +296,7 @@ export const ChatConfigurations = () => {
           </Button>,
         ]}
       >
-        <Space direction="vertical">
+        <Space orientation="vertical">
           <Text>
             Are you sure you want to delete the Slack provider for{" "}
             <strong>
@@ -329,7 +329,7 @@ export const ChatConfigurations = () => {
               role="link"
               type="primary"
               icon={<Icons.Add />}
-              iconPosition="end"
+              iconPlacement="end"
               data-testid="add-chat-provider-btn"
             >
               Add a chat provider
