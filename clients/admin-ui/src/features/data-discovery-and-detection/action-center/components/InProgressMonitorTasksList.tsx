@@ -139,7 +139,7 @@ export const InProgressMonitorTasksList = ({
           open={filterPopoverOpen}
           onOpenChange={setFilterPopoverOpen}
         >
-          <Button icon={<Icons.ChevronDown />} iconPosition="end">
+          <Button icon={<Icons.ChevronDown />} iconPlacement="end">
             Filter
           </Button>
         </Popover>

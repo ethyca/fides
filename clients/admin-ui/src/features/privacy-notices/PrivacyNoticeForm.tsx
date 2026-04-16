@@ -15,7 +15,6 @@ import {
   useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
@@ -24,6 +23,7 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import * as routes from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -95,9 +95,9 @@ const PrivacyNoticeLocationDisplay = ({
         {!regions?.length && (
           <Text italic>
             No locations assigned. Navigate to the{" "}
-            <NextLink href={routes.PRIVACY_EXPERIENCE_ROUTE}>
+            <RouterLink href={routes.PRIVACY_EXPERIENCE_ROUTE}>
               experiences view
-            </NextLink>{" "}
+            </RouterLink>{" "}
             configure.
           </Text>
         )}
