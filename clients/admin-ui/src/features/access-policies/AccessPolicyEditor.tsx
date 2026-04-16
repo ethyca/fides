@@ -21,6 +21,7 @@ import {
   Popconfirm,
   SelectProps,
   Space,
+  Splitter,
   Tabs,
   useMessage,
 } from "fidesui";
@@ -30,9 +31,11 @@ import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
 import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
+import AgentChatPanel from "./AgentChatPanel";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
@@ -795,6 +798,12 @@ const AccessPolicyEditor = ({
   const isNew = !policyId;
   const messageApi = useMessage();
 
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const agentChatEnabled =
+    !!appConfig?.detection_discovery?.access_policy_agent_enabled;
+
   const { data: controlGroups = [] } = useGetControlsQuery();
 
   const controlOptions = useMemo(
@@ -845,6 +854,15 @@ const AccessPolicyEditor = ({
     [],
   );
 
+  const handleYamlProposed = useCallback((newYaml: string) => {
+    setYamlValue(newYaml);
+    setSyncKey((k) => k + 1);
+    const parsed = parseYaml(newYaml);
+    if (parsed?.controls) {
+      setControls(parsed.controls);
+    }
+  }, []);
+
   const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
   const displayName = parsedForDisplay?.name ?? "";
 
@@ -872,6 +890,70 @@ const AccessPolicyEditor = ({
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
     />
+  );
+
+  const tabItems = useMemo(
+    () => [
+      {
+        key: EditorMode.Builder,
+        label: "Builder",
+        children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
+      },
+      ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
+        ? [
+            {
+              key: EditorMode.Split,
+              label: "Split (dev only)",
+              children: (
+                <Flex gap="middle">
+                  <div style={{ flex: "0 0 60%" }}>
+                    <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
+                  </div>
+                  <div style={{ flex: "0 0 calc(40% - 8px)" }}>
+                    <Editor
+                      defaultLanguage="yaml"
+                      value={yamlValue}
+                      height="calc(100vh - 220px)"
+                      options={{
+                        fontFamily: "Menlo",
+                        fontSize: 13,
+                        minimap: { enabled: false },
+                        readOnly: true,
+                        domReadOnly: true,
+                      }}
+                      theme="light"
+                    />
+                  </div>
+                </Flex>
+              ),
+            },
+          ]
+        : []),
+      {
+        key: EditorMode.Code,
+        label: "Code",
+        children: (
+          <Editor
+            defaultLanguage="yaml"
+            value={yamlValue}
+            height="calc(100vh - 220px)"
+            onChange={(val) => setYamlValue(val ?? "")}
+            options={{
+              fontFamily: "Menlo",
+              fontSize: 13,
+              minimap: { enabled: false },
+            }}
+            theme="light"
+          />
+        ),
+      },
+    ],
+    // canvasPanel is a JSX expression that changes on every render, but the
+    // underlying props it depends on are already captured. We intentionally
+    // keep the dep array minimal to avoid stale-closure issues with
+    // ReactFlowProvider children.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [yamlValue, mode],
   );
 
   return (
@@ -916,66 +998,31 @@ const AccessPolicyEditor = ({
         }
       />
 
-      <Tabs
-        activeKey={mode}
-        onChange={(key) => handleModeChange(key as EditorMode)}
-        data-testid="mode-toggle"
-        items={[
-          {
-            key: EditorMode.Builder,
-            label: "Builder",
-            children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
-          },
-          ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
-            ? [
-                {
-                  key: EditorMode.Split,
-                  label: "Split (dev only)",
-                  children: (
-                    <Flex gap="middle">
-                      <div style={{ flex: "0 0 60%" }}>
-                        <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
-                      </div>
-                      <div style={{ flex: "0 0 calc(40% - 8px)" }}>
-                        <Editor
-                          defaultLanguage="yaml"
-                          value={yamlValue}
-                          height="calc(100vh - 220px)"
-                          options={{
-                            fontFamily: "Menlo",
-                            fontSize: 13,
-                            minimap: { enabled: false },
-                            readOnly: true,
-                            domReadOnly: true,
-                          }}
-                          theme="light"
-                        />
-                      </div>
-                    </Flex>
-                  ),
-                },
-              ]
-            : []),
-          {
-            key: EditorMode.Code,
-            label: "Code",
-            children: (
-              <Editor
-                defaultLanguage="yaml"
-                value={yamlValue}
-                height="calc(100vh - 220px)"
-                onChange={(val) => setYamlValue(val ?? "")}
-                options={{
-                  fontFamily: "Menlo",
-                  fontSize: 13,
-                  minimap: { enabled: false },
-                }}
-                theme="light"
-              />
-            ),
-          },
-        ]}
-      />
+      {agentChatEnabled ? (
+        <Splitter>
+          <Splitter.Panel>
+            <Tabs
+              activeKey={mode}
+              onChange={(key) => handleModeChange(key as EditorMode)}
+              data-testid="mode-toggle"
+              items={tabItems}
+            />
+          </Splitter.Panel>
+          <Splitter.Panel defaultSize={300} min={260} max="50%" collapsible>
+            <AgentChatPanel
+              currentYaml={yamlValue}
+              onYamlProposed={handleYamlProposed}
+            />
+          </Splitter.Panel>
+        </Splitter>
+      ) : (
+        <Tabs
+          activeKey={mode}
+          onChange={(key) => handleModeChange(key as EditorMode)}
+          data-testid="mode-toggle"
+          items={tabItems}
+        />
+      )}
     </Layout>
   );
 };
