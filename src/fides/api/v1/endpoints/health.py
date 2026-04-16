@@ -1,5 +1,6 @@
+import asyncio
 from collections.abc import Callable
-from typing import AsyncContextManager, Dict, List, Literal, Optional
+from typing import Any, AsyncContextManager, Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, Query, status
 from loguru import logger
@@ -31,6 +32,37 @@ CacheHealth = Literal["healthy", "unhealthy", "no cache configured", "skipped"]
 PoolHealth = Literal["healthy", "unhealthy", "skipped"]
 DatabaseResponseHealth = Literal["healthy", "unhealthy", "needs migration"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
+
+# Per-pool ping: cap how long the health endpoint can block on each async check, and bound
+# statement runtime on PostgreSQL (SET LOCAL is a no-op on other dialects we skip).
+DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS = 1.0
+
+
+def _healthcheck_statement_timeout_ms() -> int:
+    return max(1, int(DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS * 1000))
+
+
+def _bind_dialect_name(bind: Any) -> str:
+    """Resolve dialect name for sync Engine or AsyncEngine."""
+    sync_engine = getattr(bind, "sync_engine", bind)
+    return sync_engine.dialect.name
+
+
+def _sync_healthcheck_ping(db: Session) -> None:
+    """Run a lightweight SELECT 1 with a PostgreSQL per-statement timeout."""
+    if _bind_dialect_name(db.get_bind()) == "postgresql":
+        # GUC value must be a literal in the statement; asyncpg rejects bound params here.
+        timeout_ms = _healthcheck_statement_timeout_ms()
+        db.execute(text(f"SET LOCAL statement_timeout = {timeout_ms}"))
+    db.execute(text("SELECT 1"))
+
+
+async def _async_healthcheck_ping(session: AsyncSession) -> None:
+    """Run a lightweight SELECT 1 with a PostgreSQL per-statement timeout."""
+    if _bind_dialect_name(session.get_bind()) == "postgresql":
+        timeout_ms = _healthcheck_statement_timeout_ms()
+        await session.execute(text(f"SET LOCAL statement_timeout = {timeout_ms}"))
+    await session.execute(text("SELECT 1"))
 
 
 class CoreHealthCheck(BaseModel):
@@ -198,7 +230,7 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
 def _check_sync_session(db: Session) -> PoolHealth:
     """Return health status for a sync pool-backed session."""
     try:
-        db.execute(text("SELECT 1"))
+        _sync_healthcheck_ping(db)
         return "healthy"
     except Exception as error:  # pylint: disable=broad-except
         logger.error("Unable to reach sync database pool: {}", Pii(str(error)))
@@ -209,10 +241,23 @@ async def _check_async_session(
     session_factory: Callable[[], AsyncContextManager[AsyncSession]],
 ) -> PoolHealth:
     """Return health status for an async pool-backed session factory."""
-    try:
+
+    async def _ping_with_session() -> None:
         async with session_factory() as session:
-            await session.execute(text("SELECT 1"))
+            await _async_healthcheck_ping(session)
+
+    try:
+        await asyncio.wait_for(
+            _ping_with_session(),
+            timeout=DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS,
+        )
         return "healthy"
+    except asyncio.TimeoutError:
+        logger.error(
+            "Async database healthcheck timed out after {}s",
+            DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS,
+        )
+        return "unhealthy"
     except Exception as error:  # pylint: disable=broad-except
         logger.error("Unable to reach async database pool: {}", Pii(str(error)))
         return "unhealthy"
