@@ -77,9 +77,8 @@ export const agentChatHandlers = () => {
       res(
         ctx.status(200),
         ctx.json({
-          detection_discovery: {
-            access_policy_agent_enabled: true,
-            llm_classifier_enabled: true,
+          access_policies: {
+            agent_enabled: true,
           },
         }),
       ),
