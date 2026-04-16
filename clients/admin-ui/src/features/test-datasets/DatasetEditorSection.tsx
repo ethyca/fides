@@ -1,16 +1,12 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Alert,
   Button,
   Card,
   Flex,
-  Icons,
   Select,
   Space,
-  Tooltip,
   Typography,
   useMessage,
-  useModal,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -60,7 +56,6 @@ const EditorSection = ({
   connectionType,
 }: EditorSectionProps) => {
   const messageApi = useMessage();
-  const modal = useModal();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
 
@@ -72,18 +67,15 @@ const EditorSection = ({
   const currentDataset = useAppSelector(selectCurrentDataset);
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
-  const {
-    data: datasetConfigs,
-    isLoading: isDatasetConfigsLoading,
-    refetch: refetchDatasets,
-  } = useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
-    skip: !connectionKey,
-    // Always refetch when the editor is opened: deleting + rebuilding an
-    // integration with the same key otherwise serves cached ctl_dataset
-    // (incl. stale user edits). Drilling into collections is in-memory and
-    // doesn't re-fire this query.
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: datasetConfigs, refetch: refetchDatasets } =
+    useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
+      skip: !connectionKey,
+      // Always refetch when the editor is opened: deleting + rebuilding an
+      // integration with the same key otherwise serves cached ctl_dataset
+      // (incl. stale user edits). Drilling into collections is in-memory and
+      // doesn't re-fire this query.
+      refetchOnMountOrArgChange: true,
+    });
 
   // Reachability only applies on the test-datasets page (no connectionType),
   // where the user selects a policy. The edit-dataset page has no policy
@@ -238,39 +230,15 @@ const EditorSection = ({
     }
   };
 
-  const doRefresh = async () => {
-    try {
-      const { data } = await refetchDatasets();
-      const refreshedDataset = data?.items.find(
-        (item) => item.fides_key === currentDataset?.fides_key,
-      );
-      if (refreshedDataset?.ctl_dataset) {
-        const cleaned = removeNulls(refreshedDataset.ctl_dataset);
-        if (isSaas) {
-          setLocalDataset(cleaned as Dataset);
-        } else {
-          setEditorContent(yaml.dump(cleaned));
-        }
-      }
-      messageApi.success("Successfully refreshed datasets");
-    } catch (error) {
-      messageApi.error(getErrorMessage(error as FetchBaseQueryError));
+  const handleDiscard = () => {
+    if (!currentDataset?.ctl_dataset) {
+      return;
     }
-  };
-
-  const handleRefresh = () => {
-    if (isDirty) {
-      modal.confirm({
-        title: "Unsaved changes",
-        content:
-          "You have unsaved changes that will be lost. Are you sure you want to refresh?",
-        okText: "Discard and refresh",
-        okButtonProps: { danger: true },
-        cancelText: "Cancel",
-        onOk: doRefresh,
-      });
+    const cleaned = removeNulls(currentDataset.ctl_dataset);
+    if (isSaas) {
+      setLocalDataset(cleaned as Dataset);
     } else {
-      doRefresh();
+      setEditorContent(yaml.dump(cleaned));
     }
   };
 
@@ -284,9 +252,7 @@ const EditorSection = ({
     >
       <Flex align="center" justify="space-between">
         <Space>
-          <Typography.Title level={3} style={{ margin: 0 }}>
-            Edit dataset:
-          </Typography.Title>
+          <Typography.Text className="!mb-0">Dataset:</Typography.Text>
           <Select
             id="format"
             aria-label="Select a dataset"
@@ -304,19 +270,11 @@ const EditorSection = ({
             </Typography.Text>
           )}
           {!isSaas && <ClipboardButton copyText={editorContent} />}
-          <Tooltip
-            title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
-            placement="top"
-          >
-            <Button
-              data-testid="refresh-btn"
-              onClick={handleRefresh}
-              loading={isDatasetConfigsLoading}
-              icon={<Icons.Renew />}
-              aria-label="Refresh"
-            />
-          </Tooltip>
-
+          {isDirty && (
+            <Button data-testid="discard-btn" onClick={handleDiscard}>
+              Reset
+            </Button>
+          )}
           <Button
             htmlType="submit"
             type="primary"
