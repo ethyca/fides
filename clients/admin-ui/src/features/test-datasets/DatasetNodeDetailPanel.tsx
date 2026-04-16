@@ -207,10 +207,24 @@ const DatasetNodeDetailPanel = forwardRef<
           </Flex>
         }
         placement="right"
-        width={400}
+        size={400}
         open={open}
         onClose={handleClose}
         mask={false}
+        footer={
+          nodeData && (
+            <Flex gap={8} justify={isProtected ? "end" : "space-between"}>
+              {!isProtected && (
+                <Button danger onClick={handleDelete}>
+                  Delete {nodeData.nodeType}
+                </Button>
+              )}
+              <Button type="primary" onClick={handleClose}>
+                Done
+              </Button>
+            </Flex>
+          )
+        }
       >
         {nodeData && (
           <Form form={form} layout="vertical">
@@ -287,21 +301,6 @@ const DatasetNodeDetailPanel = forwardRef<
                 its metadata.
               </Typography.Text>
             )}
-
-            <Flex
-              gap={8}
-              style={{ marginTop: 24 }}
-              justify={isProtected ? "end" : "space-between"}
-            >
-              {!isProtected && (
-                <Button danger onClick={handleDelete}>
-                  Delete {nodeData.nodeType}
-                </Button>
-              )}
-              <Button type="primary" onClick={handleClose}>
-                Done
-              </Button>
-            </Flex>
           </Form>
         )}
       </Drawer>
