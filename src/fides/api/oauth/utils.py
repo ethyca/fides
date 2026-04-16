@@ -244,6 +244,29 @@ def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
         return False
 
 
+def check_token_invalidation(
+    issued_at: datetime,
+    token_data: dict,
+    client: "ClientDetail",
+) -> None:
+    """Raise AuthorizationError if the token was issued before a password reset.
+
+    Runs two checks in sequence:
+    1. Offline (fast, no DB) — uses password-reset-at embedded in the token.
+    2. DB (authoritative) — catches resets that happened after token issuance.
+
+    Both always run on the fides server path. The Go sidecar (no DB)
+    uses only the offline check via its own JWE validator.
+    """
+    password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
+    if is_token_invalidated_offline(issued_at, password_reset_at_str):
+        logger.debug("Auth token issued before password reset (offline check).")
+        raise AuthorizationError(detail="Not Authorized for this action")
+    if is_token_invalidated(issued_at, client):
+        logger.debug("Auth token issued before password reset (DB check).")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+
 def is_token_invalidated_offline(
     issued_at: datetime,
     password_reset_at_str: Optional[str],
@@ -251,9 +274,14 @@ def is_token_invalidated_offline(
     """
     Check token invalidation using payload data only (no DB lookup).
 
-    This function enables stateless token validation by checking if a token
-    was issued before a password reset, using the password_reset_at value
-    embedded in the token payload itself rather than querying the database.
+    Designed for the Go policy engine sidecar which cannot reach the
+    database. Compares the token's issued-at against the password_reset_at
+    snapshot embedded at token creation time.
+
+    Limitation: if a user resets their password multiple times, tokens
+    issued between resets carry a stale snapshot. The exposure window
+    is bounded by the token's TTL. The fides server retains the
+    DB-backed check (via check_token_invalidation) for full coverage.
 
     Handles mixed timezone inputs defensively: if one datetime is
     timezone-aware and the other is naive, the aware one is stripped
@@ -630,17 +658,7 @@ def extract_token_and_load_client(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Invalidate tokens issued prior to the user's most recent password reset.
-    # Two checks run in sequence:
-    # 1. Offline (fast, no DB) — uses password-reset-at embedded in the token.
-    # 2. DB (authoritative) — catches resets that happened after the token was issued.
-    # Both always run on the fides server path. The sidecar (no DB) uses #1 only.
-    password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
-    if is_token_invalidated_offline(issued_at_dt, password_reset_at_str):
-        logger.debug("Auth token issued before password reset (offline check).")
-        raise AuthorizationError(detail="Not Authorized for this action")
-    if is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before password reset (DB check).")
-        raise AuthorizationError(detail="Not Authorized for this action")
+    check_token_invalidation(issued_at_dt, token_data, client)
 
     # Populate request-scoped context with the authenticated user identifier.
     # Prefer the linked user_id; fall back to the client id when this is the
@@ -719,17 +737,7 @@ async def extract_token_and_load_client_async(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Invalidate tokens issued prior to the user's most recent password reset.
-    # Two checks run in sequence:
-    # 1. Offline (fast, no DB) — uses password-reset-at embedded in the token.
-    # 2. DB (authoritative) — catches resets that happened after the token was issued.
-    # Both always run on the fides server path. The sidecar (no DB) uses #1 only.
-    password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
-    if is_token_invalidated_offline(issued_at_dt, password_reset_at_str):
-        logger.debug("Auth token issued before password reset (offline check).")
-        raise AuthorizationError(detail="Not Authorized for this action")
-    if is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before password reset (DB check).")
-        raise AuthorizationError(detail="Not Authorized for this action")
+    check_token_invalidation(issued_at_dt, token_data, client)
 
     # Populate request-scoped context with the authenticated user identifier.
     # Prefer the linked user_id; fall back to the client id when this is the
