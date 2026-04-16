@@ -22,6 +22,13 @@ func EvaluatePolicies(policies []AccessPolicy, request *AccessEvaluationRequest)
 	enabled := make([]AccessPolicy, 0, len(policies))
 	for _, p := range policies {
 		if p.Enabled == nil || *p.Enabled {
+			// NO_DECISION is an output state meaning "no policy matched",
+			// not a valid policy decision. Skip rather than panic so
+			// callers with misconfigured data get NO_DECISION (safe)
+			// rather than a false match.
+			if p.Decision != PolicyAllow && p.Decision != PolicyDeny {
+				continue
+			}
 			enabled = append(enabled, p)
 		}
 	}

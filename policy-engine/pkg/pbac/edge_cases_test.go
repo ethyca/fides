@@ -634,3 +634,19 @@ func TestPolicy_PriorityTie_PreservesInsertionOrder(t *testing.T) {
 		t.Errorf("expected decisive policy 'first-allow'")
 	}
 }
+
+func TestPolicy_NoDecisionPoliciesSkipped(t *testing.T) {
+	// NO_DECISION is an output state, not a valid policy decision.
+	// Policies with decision=NO_DECISION should be silently skipped.
+	policies := []AccessPolicy{
+		{ID: "p1", Key: "bad-policy", Priority: 100, Enabled: boolPtr(true), Decision: PolicyNoDecision, Match: MatchBlock{}},
+	}
+	result := EvaluatePolicies(policies, &AccessEvaluationRequest{})
+	if result.Decision != PolicyNoDecision {
+		t.Errorf("expected NO_DECISION (bad policy skipped), got %s", result.Decision)
+	}
+	// Ensure it's treated as "no policy matched", not "policy matched with NO_DECISION"
+	if result.DecisivePolicyKey != nil {
+		t.Errorf("expected no decisive policy, got %s", *result.DecisivePolicyKey)
+	}
+}
