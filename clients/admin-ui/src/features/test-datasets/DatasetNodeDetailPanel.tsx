@@ -220,7 +220,7 @@ const DatasetNodeDetailPanel = forwardRef<
                 </Button>
               )}
               <Button type="primary" onClick={handleClose}>
-                Done
+                Save
               </Button>
             </Flex>
           )
