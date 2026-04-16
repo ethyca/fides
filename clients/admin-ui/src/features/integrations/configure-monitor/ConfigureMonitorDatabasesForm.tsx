@@ -13,8 +13,6 @@ import MonitorDatabasePicker from "~/features/integrations/configure-monitor/Mon
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
 import { EditableMonitorConfig } from "~/types/api";
 
-const TOOLTIP_COPY =
-  "Selecting a project will monitor all current and future datasets within that project.";
 const TIMEOUT_COPY =
   "Loading resources is taking longer than expected. The monitor has been saved and is tracking all available resources. You can return later to limit its scope if needed";
 
@@ -25,6 +23,7 @@ const ConfigureMonitorDatabasesForm = ({
   integrationKey,
   onSubmit,
   onClose,
+  contentTaxonomy = ["project", "projects"],
 }: {
   monitor: EditableMonitorConfig;
   isEditing?: boolean;
@@ -32,6 +31,7 @@ const ConfigureMonitorDatabasesForm = ({
   integrationKey: string;
   onSubmit: (monitor: EditableMonitorConfig) => void;
   onClose: () => void;
+  contentTaxonomy?: readonly [string, string];
 }) => {
   const message = useMessage();
 
@@ -85,8 +85,10 @@ const ConfigureMonitorDatabasesForm = ({
     <>
       <Flex p={4} direction="column">
         <Flex direction="row" mb={4} gap={1} align="center">
-          <Text fontSize="sm">Select projects to monitor</Text>
-          <InfoTooltip label={TOOLTIP_COPY} />
+          <Text fontSize="sm">{`Select ${contentTaxonomy[1]} to monitor`}</Text>
+          <InfoTooltip
+            label={`Selecting a ${contentTaxonomy[0]} will monitor all current and future datasets within that ${contentTaxonomy[0]}.`}
+          />
         </Flex>
         <MonitorDatabasePicker
           items={databases}
@@ -105,7 +107,9 @@ const ConfigureMonitorDatabasesForm = ({
         <Button onClick={onClose}>Cancel</Button>
         <Tooltip
           title={
-            saveIsDisabled ? "Select one or more projects to save" : undefined
+            saveIsDisabled
+              ? `Select one or more ${contentTaxonomy[1]} to save`
+              : undefined
           }
         >
           <Button
