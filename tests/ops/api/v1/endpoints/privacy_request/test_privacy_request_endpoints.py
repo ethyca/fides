@@ -890,7 +890,8 @@ class TestCreatePrivacyRequest:
         "set_notification_service_type_to_mailgun",
     )
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"

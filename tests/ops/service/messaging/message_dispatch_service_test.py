@@ -34,12 +34,14 @@ from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_TEMPLATE_NAME,
-    _compose_twilio_mail,
-    _get_dispatcher_from_config_type,
-    _get_template_id_if_exists,
-    _twilio_email_dispatcher,
-    _twilio_sms_dispatcher,
+    PROVIDER_MAP,
     dispatch_message,
+)
+from fides.api.service.messaging.messaging_providers.twilio_email_service import (
+    TwilioEmailService,
+)
+from fides.api.service.messaging.messaging_providers.twilio_sms_service import (
+    TwilioSmsService,
 )
 from fides.config import CONFIG
 
@@ -78,11 +80,12 @@ def test_message_body():
 @pytest.mark.unit
 class TestMessageDispatchService:
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_success(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -95,14 +98,13 @@ class TestMessageDispatchService:
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Your one-time code is 2348",
-                body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
-                template_variables={"code": "2348", "minutes": 10},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Your one-time code is 2348",
+            body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
+            template_variables={"code": "2348", "minutes": 10},
         )
 
     """
@@ -115,11 +117,12 @@ class TestMessageDispatchService:
     """
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_property_specific_templates_enabled_no_template(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
         set_property_specific_messaging_enabled,
@@ -134,7 +137,7 @@ class TestMessageDispatchService:
             ),
             property_id=None,
         )
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_mailgun_cls.assert_not_called()
 
     """
     Test scenario:
@@ -145,11 +148,12 @@ class TestMessageDispatchService:
     """
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_property_specific_templates_disabled_with_template(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
         messaging_template_no_property,
@@ -164,14 +168,13 @@ class TestMessageDispatchService:
             ),
             property_id=None,
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Here is your code 2348",
-                body="Use code 2348 to verify your identity, you have 10 minutes!",
-                template_variables={"code": "2348", "minutes": 10},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Here is your code 2348",
+            body="Use code 2348 to verify your identity, you have 10 minutes!",
+            template_variables={"code": "2348", "minutes": 10},
         )
 
     """
@@ -183,11 +186,12 @@ class TestMessageDispatchService:
     """
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_property_specific_templates_disabled_no_template(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -201,14 +205,13 @@ class TestMessageDispatchService:
             ),
             property_id=None,
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Your one-time code is 2348",
-                body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
-                template_variables={"code": "2348", "minutes": 10},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Your one-time code is 2348",
+            body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
+            template_variables={"code": "2348", "minutes": 10},
         )
 
     """
@@ -222,11 +225,12 @@ class TestMessageDispatchService:
     """
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_property_specific_templates_enabled_with_template_no_property(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
         set_property_specific_messaging_enabled,
@@ -242,7 +246,7 @@ class TestMessageDispatchService:
             ),
             property_id=None,
         )
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_mailgun_cls.assert_not_called()
 
     """
     Test scenario:
@@ -256,11 +260,12 @@ class TestMessageDispatchService:
     """
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_property_specific_templates_enabled_with_template_has_property(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
         set_property_specific_messaging_enabled,
@@ -277,15 +282,14 @@ class TestMessageDispatchService:
             ),
             property_id=None,
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                # this text is built from the property-specific messaging template
-                subject="Here is your code 2348",
-                body="Use code 2348 to verify your identity, you have 10 minutes!",
-                template_variables={"code": "2348", "minutes": 10},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            # this text is built from the property-specific messaging template
+            subject="Here is your code 2348",
+            body="Use code 2348 to verify your identity, you have 10 minutes!",
+            template_variables={"code": "2348", "minutes": 10},
         )
 
     """
@@ -299,11 +303,12 @@ class TestMessageDispatchService:
     """
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_property_specific_templates_enabled_with_template_no_property_default_request(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
         set_property_specific_messaging_enabled,
@@ -320,7 +325,7 @@ class TestMessageDispatchService:
             ),
             property_id=property_a.id,
         )
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_mailgun_cls.assert_not_called()
 
     """
    Test scenario:
@@ -333,11 +338,12 @@ class TestMessageDispatchService:
    """
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_property_specific_templates_enabled_with_property_matching_template(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
         set_property_specific_messaging_enabled,
@@ -354,22 +360,22 @@ class TestMessageDispatchService:
             ),
             property_id=property_a.id,
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                # this text is built from the property-specific messaging template
-                subject="Here is your code 2348",
-                body="Use code 2348 to verify your identity, you have 10 minutes!",
-                template_variables={"code": "2348", "minutes": 10},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            # this text is built from the property-specific messaging template
+            subject="Here is your code 2348",
+            body="Use code 2348 to verify your identity, you have 10 minutes!",
+            template_variables={"code": "2348", "minutes": 10},
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_privacy_request_complete_access(
-        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+        self, mock_mailgun_cls: Mock, db: Session, messaging_config
     ) -> None:
         download_link = "https://localhost"
         days = 5
@@ -383,21 +389,21 @@ class TestMessageDispatchService:
                 subject_request_download_time_in_days=days,
             ),
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Your data is ready to be downloaded",
-                body=f"Your access request has been completed and can be downloaded at {download_link}. For security purposes, this secret link will expire in {days} days.",
-                template_variables={"download_link": download_link, "days": days},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Your data is ready to be downloaded",
+            body=f"Your access request has been completed and can be downloaded at {download_link}. For security purposes, this secret link will expire in {days} days.",
+            template_variables={"download_link": download_link, "days": days},
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_privacy_request_complete_consent(
-        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+        self, mock_mailgun_cls: Mock, db: Session, messaging_config
     ) -> None:
         dispatch_message(
             db=db,
@@ -406,20 +412,20 @@ class TestMessageDispatchService:
             service_type=MessagingServiceType.mailgun.value,
             message_body_params=None,
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Your consent preferences have been saved",
-                body="Your consent request has been completed.",
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Your consent preferences have been saved",
+            body="Your consent request has been completed.",
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_privacy_request_review_deny(
-        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+        self, mock_mailgun_cls: Mock, db: Session, messaging_config
     ) -> None:
         denial_reason = "Accounts with an unpaid balance cannot be deleted."
 
@@ -432,21 +438,21 @@ class TestMessageDispatchService:
                 rejection_reason=denial_reason
             ),
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Your privacy request has been denied",
-                body=f"Your privacy request has been denied. {denial_reason}.",
-                template_variables={"denial_reason": denial_reason},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Your privacy request has been denied",
+            body=f"Your privacy request has been denied. {denial_reason}.",
+            template_variables={"denial_reason": denial_reason},
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_config_not_found(
-        self, mock_mailgun_dispatcher: Mock, db: Session
+        self, mock_mailgun_cls: Mock, db: Session
     ) -> None:
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
@@ -462,13 +468,14 @@ class TestMessageDispatchService:
             exc.value.args[0] == "No messaging config found for service_type mailgun."
         )
 
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_mailgun_cls.assert_not_called()
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_config_no_secrets(
-        self, mock_mailgun_dispatcher: Mock, db: Session
+        self, mock_mailgun_cls: Mock, db: Session
     ) -> None:
         messaging_config = MessagingConfig.create(
             db=db,
@@ -497,7 +504,7 @@ class TestMessageDispatchService:
             == "Messaging secrets not found for config with key: my_mailgun_messaging_config"
         )
 
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_mailgun_cls.assert_not_called()
 
         messaging_config.delete(db)
 
@@ -527,16 +534,14 @@ class TestMessageDispatchService:
                         verification_code="2348", verification_code_ttl_seconds=600
                     ),
                 )
-            assert (
-                exc.value.args[0]
-                == "Email failed to send due to: Email failed to send with status code 403"
-            )
+            assert exc.value.args[0] == "Email failed to send with status code 403"
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_test_message(
-        self, mock_mailgun_dispatcher, db, messaging_config
+        self, mock_mailgun_cls, db, messaging_config
     ):
         dispatch_message(
             db=db,
@@ -545,20 +550,20 @@ class TestMessageDispatchService:
             service_type=MessagingServiceType.mailgun.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Test message from fides",
-                body=body,
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Test message from fides",
+            body=body,
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_email_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioEmailService",
+        autospec=True,
     )
     def test_email_dispatch_twilio_email_test_message(
-        self, mock_twilio_dispatcher, db, messaging_config_twilio_email
+        self, mock_twilio_cls, db, messaging_config_twilio_email
     ):
         dispatch_message(
             db=db,
@@ -567,20 +572,20 @@ class TestMessageDispatchService:
             service_type=MessagingServiceType.twilio_email.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
-        mock_twilio_dispatcher.assert_called_with(
-            messaging_config_twilio_email,
-            EmailForActionType(
-                subject="Test message from fides",
-                body=body,
-            ),
-            "test@email.com",
+        mock_twilio_cls.assert_called_once_with(messaging_config_twilio_email)
+        call_args = mock_twilio_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Test message from fides",
+            body=body,
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
     def test_email_dispatch_twilio_sms_test_message(
-        self, mock_twilio_dispatcher, db, messaging_config_twilio_sms
+        self, mock_twilio_cls, db, messaging_config_twilio_sms
     ):
         dispatch_message(
             db=db,
@@ -588,15 +593,13 @@ class TestMessageDispatchService:
             to_identity=Identity(phone_number="+19198675309"),
             service_type=MessagingServiceType.twilio_text.value,
         )
-        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
-        mock_twilio_dispatcher.assert_called_with(
-            messaging_config_twilio_sms,
-            "Test message from Fides.",
-            "+19198675309",
-        )
+        mock_twilio_cls.assert_called_once_with(messaging_config_twilio_sms)
+        call_args = mock_twilio_cls.return_value.send_sms.call_args
+        assert call_args[0][0] == "+19198675309"
+        assert call_args[0][1] == "Test message from Fides."
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.AWS_SES_Service",
+        "fides.api.service.messaging.message_dispatch_service.AwsSesService",
         autospec=True,
     )
     def test_email_dispatch_aws_ses_email_test_message(
@@ -610,21 +613,22 @@ class TestMessageDispatchService:
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
         mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
-        mock_aws_ses_service.return_value.send_email.assert_called_once_with(
-            "test@email.com",
-            "Test message from fides",
-            body,
-        )
+        call_args = mock_aws_ses_service.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1].subject == "Test message from fides"
+        assert call_args[0][1].body == body
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.AWS_SES_Service",
+        "fides.api.service.messaging.message_dispatch_service.AwsSesService",
         autospec=True,
     )
     def test_email_dispatch_aws_ses_email_raises_exception(
         self, mock_aws_ses_service, db, messaging_config_aws_ses
     ):
-        mock_aws_ses_service.return_value.send_email.side_effect = Exception(
-            "Oops! Something went wrong"
+        mock_aws_ses_service.return_value.send_email.side_effect = (
+            MessageDispatchException(
+                "AWS SES email failed to send due to: Oops! Something went wrong"
+            )
         )
 
         with pytest.raises(MessageDispatchException) as exc:
@@ -637,11 +641,10 @@ class TestMessageDispatchService:
 
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
         mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
-        mock_aws_ses_service.return_value.send_email.assert_called_once_with(
-            "test@email.com",
-            "Test message from fides",
-            body,
-        )
+        call_args = mock_aws_ses_service.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1].subject == "Test message from fides"
+        assert call_args[0][1].body == body
 
         assert "AWS SES email failed to send due to: Oops! Something went wrong" in str(
             exc.value
@@ -670,10 +673,11 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
     def test_sms_dispatch_twilio_success(
-        self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms
+        self, mock_twilio_cls: Mock, db: Session, messaging_config_twilio_sms
     ) -> None:
         dispatch_message(
             db=db,
@@ -684,12 +688,13 @@ class TestMessageDispatchService:
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
         )
-        mock_twilio_dispatcher.assert_called_with(
-            messaging_config_twilio_sms,
+        mock_twilio_cls.assert_called_once_with(messaging_config_twilio_sms)
+        call_args = mock_twilio_cls.return_value.send_sms.call_args
+        assert call_args[0][0] == "+12312341231"
+        assert call_args[0][1] == (
             "Your privacy request verification code is 2348. "
             + "Please return to the Privacy Center and enter the code to continue. "
-            + "This code will expire in 10 minutes",
-            "+12312341231",
+            + "This code will expire in 10 minutes"
         )
 
     def test_sms_dispatch_twilio_no_to(self, db, messaging_config_twilio_sms):
@@ -707,10 +712,11 @@ class TestMessageDispatchService:
         assert "No phone identity supplied." in str(err.value)
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
     def test_sms_dispatch_twilio_config_not_found(
-        self, mock_twilio_dispatcher: Mock, db: Session
+        self, mock_twilio_cls: Mock, db: Session
     ) -> None:
         with pytest.raises(MessageDispatchException) as exc:
             dispatch_message(
@@ -727,13 +733,14 @@ class TestMessageDispatchService:
             == "No messaging config found for service_type twilio_text."
         )
 
-        mock_twilio_dispatcher.assert_not_called()
+        mock_twilio_cls.assert_not_called()
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
     def test_sms_dispatch_twilio_config_no_secrets(
-        self, mock_twilio_sms_dispatcher: Mock, db: Session
+        self, mock_twilio_cls: Mock, db: Session
     ) -> None:
         messaging_config = MessagingConfig.create(
             db=db,
@@ -759,16 +766,15 @@ class TestMessageDispatchService:
             == "Messaging secrets not found for config with key: my_twilio_sms_config"
         )
 
-        mock_twilio_sms_dispatcher.assert_not_called()
+        mock_twilio_cls.assert_not_called()
 
         messaging_config.delete(db)
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
-    def test_dispatch_no_identity(
-        self, mock_twilio_sms_dispatcher: Mock, db: Session
-    ) -> None:
+    def test_dispatch_no_identity(self, mock_twilio_cls: Mock, db: Session) -> None:
         MessagingConfig.create(
             db=db,
             data={
@@ -791,14 +797,15 @@ class TestMessageDispatchService:
 
         assert "No identity supplied" in exc.value.args[0]
 
-        mock_twilio_sms_dispatcher.assert_not_called()
+        mock_twilio_cls.assert_not_called()
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_mailgun_no_identity_for_type(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -816,14 +823,15 @@ class TestMessageDispatchService:
             )
 
         assert "No email identity supplied." in str(err.value)
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_mailgun_cls.return_value.send_email.assert_not_called()
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
     def test_email_dispatch_twilio_sms_no_identity_for_type(
         self,
-        mock_twilio_sms_dispatcher: Mock,
+        mock_twilio_cls: Mock,
         db: Session,
         messaging_config_twilio_sms,
     ) -> None:
@@ -841,14 +849,15 @@ class TestMessageDispatchService:
             )
 
         assert "No phone identity supplied." in str(err.value)
-        mock_twilio_sms_dispatcher.assert_not_called()
+        mock_twilio_cls.return_value.send_sms.assert_not_called()
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_email_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioEmailService",
+        autospec=True,
     )
     def test_email_dispatch_twilio_email_no_identity_for_type(
         self,
-        mock_twilio_email_dispatcher: Mock,
+        mock_twilio_cls: Mock,
         db: Session,
         messaging_config_twilio_email,
     ) -> None:
@@ -866,14 +875,15 @@ class TestMessageDispatchService:
             )
 
         assert "No email identity supplied." in str(err.value)
-        mock_twilio_email_dispatcher.assert_not_called()
+        mock_twilio_cls.return_value.send_email.assert_not_called()
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._aws_ses_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.AwsSesService",
+        autospec=True,
     )
     def test_email_dispatch_aws_ses_no_identity_for_type(
         self,
-        mock_aws_ses_dispatcher: Mock,
+        mock_aws_ses_cls: Mock,
         db: Session,
         messaging_config_aws_ses,
     ) -> None:
@@ -891,14 +901,13 @@ class TestMessageDispatchService:
             )
 
         assert "No email identity supplied." in str(err.value)
-        mock_aws_ses_dispatcher.assert_not_called()
+        mock_aws_ses_cls.return_value.send_email.assert_not_called()
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
-    def test_dispatch_no_service_type(
-        self, mock_mailgun_dispatcher: Mock, db: Session
-    ) -> None:
+    def test_dispatch_no_service_type(self, mock_twilio_cls: Mock, db: Session) -> None:
         MessagingConfig.create(
             db=db,
             data={
@@ -921,20 +930,21 @@ class TestMessageDispatchService:
 
         assert "No notification service type configured" in exc.value.args[0]
 
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_twilio_cls.assert_not_called()
 
     def test_dispatch_invalid_action_type(self, db):
         with pytest.raises(MessageDispatchException):
             dispatch_message(db, "bad", to_identity=None, service_type=None)
 
-    def test_dispatcher_from_config_type_unknown(self):
-        assert _get_dispatcher_from_config_type("bad") is None
+    def test_provider_map_unknown_type(self):
+        assert PROVIDER_MAP.get("bad") is None
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_consent_request_email_fulfillment_for_sovrn_old_workflow(
-        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+        self, mock_mailgun_cls: Mock, db: Session, messaging_config
     ) -> None:
         dispatch_message(
             db=db,
@@ -962,20 +972,20 @@ class TestMessageDispatchService:
         )
 
         body = '<!DOCTYPE html>\n<html lang="en">\n   <head>\n      <meta charset="UTF-8">\n      <title>Notification of users\' consent preference changes from Test Organization</title>\n      <style>\n         .consent_preferences {\n           padding: 5px;\n           border-bottom: 1px solid #121439;\n           text-align: left;\n         }\n         .identity_column {\n           padding-right: 15px;\n         }\n      </style>\n   </head>\n   <body>\n      <main>\n         <p> The following users of Test Organization have made changes to their consent preferences. You are notified of the changes because\n            Sovrn has been identified as a third-party processor to Test Organization that processes user information. </p>\n\n         <p> Please find below the updated list of users and their consent preferences:\n            <table>\n               <tr>\n                 <th class="identity_column"> ljt_readerID</th>\n                 <th>Preferences</th>\n               </tr>\n               <tr class="consent_preferences">\n                     <td class="identity_column"> test_user_id</td>\n                     <td>\n                        Advertising, Marketing or Promotion: Opt-out, First Party Advertising: Opt-in\n                        \n                     </td>\n                  </tr>\n            </table>\n         </p>\n\n         <p> You are legally obligated to honor the users\' consent preferences. </p>\n\n      </main>\n   </body>\n</html>'
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Notification of users' consent preference changes",
-                body=body,
-            ),
-            "sovrn_test@example.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "sovrn_test@example.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Notification of users' consent preference changes",
+            body=body,
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_consent_request_email_fulfillment_for_sovrn_new_workflow(
-        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+        self, mock_mailgun_cls: Mock, db: Session, messaging_config
     ) -> None:
         dispatch_message(
             db=db,
@@ -1013,13 +1023,12 @@ class TestMessageDispatchService:
 
         body = '<!DOCTYPE html>\n<html lang="en">\n   <head>\n      <meta charset="UTF-8">\n      <title>Notification of users\' consent preference changes from Test Organization</title>\n      <style>\n         .consent_preferences {\n           padding: 5px;\n           border-bottom: 1px solid #121439;\n           text-align: left;\n         }\n         .identity_column {\n           padding-right: 15px;\n         }\n      </style>\n   </head>\n   <body>\n      <main>\n         <p> The following users of Test Organization have made changes to their consent preferences. You are notified of the changes because\n            Sovrn has been identified as a third-party processor to Test Organization that processes user information. </p>\n\n         <p> Please find below the updated list of users and their consent preferences:\n            <table>\n               <tr>\n                 <th class="identity_column"> ljt_readerID</th>\n                 <th>Preferences</th>\n               </tr>\n               <tr class="consent_preferences">\n                     <td class="identity_column"> test_user_id</td>\n                     <td>\n                        \n                        Analytics: Opt-out\n                     </td>\n                  </tr>\n            </table>\n         </p>\n\n         <p> You are legally obligated to honor the users\' consent preferences. </p>\n\n      </main>\n   </body>\n</html>'
 
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Notification of users' consent preference changes",
-                body=body,
-            ),
-            "sovrn_test@example.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "sovrn_test@example.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Notification of users' consent preference changes",
+            body=body,
         )
 
     @pytest.fixture
@@ -1033,11 +1042,12 @@ class TestMessageDispatchService:
 
     @pytest.mark.usefixtures("mock_config_admin_ui_url")
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_email_dispatch_user_invite_email(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -1053,42 +1063,37 @@ class TestMessageDispatchService:
 
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Welcome to Fides</title>\n  </head>\n  <body>\n    <main>\n      <p>You\'ve been invited to join Fides, click <a href=http://localhost:3000/login?invite_code=123&username=test>here</a> to accept the invite and setup your account.</p>\n    </main>\n  </body>\n</html>'
 
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Welcome to Fides",
-                body=body,
-            ),
-            "test@example.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@example.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Welcome to Fides",
+            body=body,
         )
 
 
-class TestTwilioEmailDispatcher:
+class TestTwilioEmailProvider:
     def test_dispatch_no_secrets(self, messaging_config_twilio_email):
         messaging_config_twilio_email.secrets = None
         with pytest.raises(MessageDispatchException) as exc:
-            _twilio_email_dispatcher(
-                messaging_config_twilio_email,
-                EmailForActionType(subject="test", body="test body"),
-                "test@email.com",
-            )
+            TwilioEmailService(messaging_config_twilio_email)
 
         assert "No Twilio email config details or secrets" in str(exc.value)
 
     def test_template_found(self, test_template_response_body):
-        template_test = _get_template_id_if_exists(
+        template_test = TwilioEmailService._get_template_id_if_exists(
             test_template_response_body, EMAIL_TEMPLATE_NAME
         )
         assert template_test
 
     def test_no_template_found(self, test_template_response_body):
-        template_test = _get_template_id_if_exists(
+        template_test = TwilioEmailService._get_template_id_if_exists(
             test_template_response_body, f"not_{EMAIL_TEMPLATE_NAME}"
         )
         assert template_test is None
 
     def test_templated_mail(self, test_message_body):
-        mail = _compose_twilio_mail(
+        mail = TwilioEmailService._compose_mail(
             Email("test@test.com"),
             To("test@test.com"),
             "Test DSR EMail",
@@ -1098,21 +1103,21 @@ class TestTwilioEmailDispatcher:
         assert "template_id" in mail.get()
 
     def test_non_templated_mail(self, test_message_body):
-        mail = _compose_twilio_mail(
+        mail = TwilioEmailService._compose_mail(
             Email("test@test.com"),
             To("test@test.com"),
             "Test DSR EMail",
             test_message_body,
-            template_test=None,
+            template_id=None,
         )
         assert "template_id" not in mail.get()
 
 
-class TestTwilioSmsDispatcher:
+class TestTwilioSmsProvider:
     def test_dispatch_no_secrets(self, messaging_config_twilio_sms):
         messaging_config_twilio_sms.secrets = None
         with pytest.raises(MessageDispatchException) as exc:
-            _twilio_sms_dispatcher(messaging_config_twilio_sms, "test", "+9198675309")
+            TwilioSmsService(messaging_config_twilio_sms)
 
         assert "No Twilio SMS config secrets supplied" in str(exc.value)
 
@@ -1123,16 +1128,18 @@ class TestTwilioSmsDispatcher:
         messaging_config_twilio_sms.secrets[
             MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
         ] = None
+        service = TwilioSmsService(messaging_config_twilio_sms)
         with pytest.raises(MessageDispatchException) as exc:
-            _twilio_sms_dispatcher(messaging_config_twilio_sms, "test", "+9198675309")
+            service.send_sms("+9198675309", "test")
 
         assert "must be provided" in str(exc.value)
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_subject_override_for_email(
-        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+        self, mock_mailgun_cls: Mock, db: Session, messaging_config
     ) -> None:
         dispatch_message(
             db=db,
@@ -1144,21 +1151,21 @@ class TestTwilioSmsDispatcher:
             ),
             subject_override="Testing subject override",
         )
-        mock_mailgun_dispatcher.assert_called_with(
-            messaging_config,
-            EmailForActionType(
-                subject="Testing subject override",
-                body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
-                template_variables={"code": "2348", "minutes": 10},
-            ),
-            "test@email.com",
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
+        assert call_args[0][0] == "test@email.com"
+        assert call_args[0][1] == EmailForActionType(
+            subject="Testing subject override",
+            body="Your privacy request verification code is 2348. Please return to the Privacy Center and enter the code to continue. This code will expire in 10 minutes.",
+            template_variables={"code": "2348", "minutes": 10},
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.TwilioSmsService",
+        autospec=True,
     )
     def test_sms_subject_override_ignored(
-        self, mock_twilio_dispatcher: Mock, db: Session, messaging_config_twilio_sms
+        self, mock_twilio_cls: Mock, db: Session, messaging_config_twilio_sms
     ) -> None:
         dispatch_message(
             db=db,
@@ -1170,10 +1177,11 @@ class TestTwilioSmsDispatcher:
             ),
             subject_override="override subject",
         )
-        mock_twilio_dispatcher.assert_called_with(
-            messaging_config_twilio_sms,
+        mock_twilio_cls.assert_called_once_with(messaging_config_twilio_sms)
+        call_args = mock_twilio_cls.return_value.send_sms.call_args
+        assert call_args[0][0] == "+12312341231"
+        assert call_args[0][1] == (
             "Your privacy request verification code is 2348. "
             + "Please return to the Privacy Center and enter the code to continue. "
-            + "This code will expire in 10 minutes",
-            "+12312341231",
+            + "This code will expire in 10 minutes"
         )
