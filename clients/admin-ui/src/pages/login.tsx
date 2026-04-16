@@ -9,6 +9,7 @@ import {
   Input,
   Typography,
   useMessage,
+  usePrefersReducedMotion,
 } from "fidesui";
 import { motion } from "motion/react";
 import type { NextPage } from "next";
@@ -28,7 +29,6 @@ import {
 } from "~/features/auth";
 import { passwordRules as strongPasswordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
-import { usePrefersReducedMotion } from "~/features/common/hooks";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 import { RTKErrorResult } from "~/types/errors/api";
 
