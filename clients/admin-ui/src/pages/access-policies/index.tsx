@@ -1,6 +1,5 @@
 import { Button, Flex, Icons, Text } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useState } from "react";
 
 import { useGetAccessPoliciesQuery } from "~/features/access-policies/access-policies.slice";
@@ -8,6 +7,7 @@ import PoliciesContainer from "~/features/access-policies/PoliciesContainer";
 import PolicySettingsModal from "~/features/access-policies/PolicySettingsModal";
 import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   ACCESS_POLICIES_NEW_ROUTE,
   CONTROLS_ROUTE,
@@ -27,9 +27,9 @@ const AccessPoliciesPage: NextPage = () => {
         rightContent={
           hasPolicies ? (
             <Flex gap={8}>
-              <NextLink href={CONTROLS_ROUTE} passHref>
+              <RouterLink href={CONTROLS_ROUTE}>
                 <Button>Manage controls</Button>
-              </NextLink>
+              </RouterLink>
               {flags.alphaPrivacyDocUpload && (
                 <Button
                   aria-label="Policy settings"
@@ -37,9 +37,9 @@ const AccessPoliciesPage: NextPage = () => {
                   onClick={() => setSettingsOpen(true)}
                 />
               )}
-              <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
+              <RouterLink href={ACCESS_POLICIES_NEW_ROUTE}>
                 <Button type="primary">New policy</Button>
-              </NextLink>
+              </RouterLink>
             </Flex>
           ) : undefined
         }

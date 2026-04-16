@@ -1,7 +1,7 @@
 import { Button, Flex, Form, Input } from "fidesui";
-import NextLink from "next/link";
 import { useMemo } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { CONTROLS_ROUTE } from "~/features/common/nav/routes";
 
 import type { Control } from "./access-policies.slice";
@@ -59,9 +59,9 @@ const ControlForm = ({
         <Button type="primary" htmlType="submit" loading={isSubmitting}>
           {isEditing ? "Save" : "Create control"}
         </Button>
-        <NextLink href={CONTROLS_ROUTE} passHref>
+        <RouterLink href={CONTROLS_ROUTE}>
           <Button>Cancel</Button>
-        </NextLink>
+        </RouterLink>
       </Flex>
     </Form>
   );
