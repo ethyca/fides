@@ -4,6 +4,7 @@ import {
   Flex,
   Modal,
   Paragraph,
+  Spin,
   Tabs,
   Tooltip,
   Typography,
@@ -199,23 +200,22 @@ const ApiClientDetailPage: NextPage = () => {
       />
       {client && (
         <Flex align="center" gap={4} className="-mt-2 mb-4">
-          <Typography.Text type="secondary" className="font-mono text-xs">
+          <Typography.Text
+            type="secondary"
+            className="font-mono text-xs"
+            copyable
+          >
             {client.client_id}
           </Typography.Text>
-          <ClipboardButton
-            copyText={client.client_id}
-            size="small"
-            data-testid="copy-client-id-btn"
-          />
         </Flex>
       )}
       {isLoading && (
         <Flex justify="center" align="center" className="h-32">
-          <div className="size-8 animate-spin rounded-full border-b-2 border-gray-900" />
+          <Spin />
         </Flex>
       )}
       {!isLoading && !client && (
-        <Alert message="API client not found." type="warning" showIcon />
+        <Alert title="API client not found." type="warning" showIcon />
       )}
       {client && <Tabs items={tabItems} className="w-full" />}
     </FixedLayout>
