@@ -23,7 +23,7 @@ const ConfigureMonitorDatabasesForm = ({
   integrationKey,
   onSubmit,
   onClose,
-  contentTaxonomy = ["project", "projects"],
+  contentTaxonomy = ["database", "databases"],
 }: {
   monitor: EditableMonitorConfig;
   isEditing?: boolean;
