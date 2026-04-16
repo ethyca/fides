@@ -21,10 +21,17 @@ import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 describe("ENG-3137: Viewer with assigned system should be able to edit", () => {
   beforeEach(() => {
     cy.login();
-    cy.overrideFeatureFlag("alphaRbac", true);
     stubSystemCrud();
     stubTaxonomyEntities();
-    stubPlus(true);
+    stubPlus(true, {
+      core_fides_version: "2.2.0",
+      fidesplus_server: "healthy",
+      fidesplus_version: "2.2.0",
+      dictionary: { enabled: true, service_health: null, service_error: null },
+      fides_cloud: { enabled: true },
+      rbac: { enabled: true },
+      tcf: { enabled: true },
+    });
     cy.intercept("GET", "/api/v1/system", {
       fixture: "systems/systems.json",
     }).as("getSystems");

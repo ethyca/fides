@@ -154,7 +154,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                 <Flex align="center" gap={12} className="mb-4">
                   <Button
                     icon={<Icons.Add />}
-                    iconPosition="end"
+                    iconPlacement="end"
                     disabled={!isAddButtonEnabled || isUploadingFile}
                     loading={isUploadingFile}
                   >

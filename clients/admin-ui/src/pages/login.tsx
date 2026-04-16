@@ -26,6 +26,7 @@ import {
   useLoginMutation,
   useResetPasswordWithTokenMutation,
 } from "~/features/auth";
+import { passwordRules as strongPasswordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
 import { usePrefersReducedMotion } from "~/features/common/hooks";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
@@ -102,30 +103,6 @@ interface LoginFormValues {
   password: string;
 }
 
-const strongPasswordRules = [
-  { required: true, message: "Password is required" },
-  {
-    min: 8,
-    message: "Password must have at least eight characters.",
-  },
-  {
-    pattern: /[0-9]/,
-    message: "Password must have at least one number.",
-  },
-  {
-    pattern: /[A-Z]/,
-    message: "Password must have at least one capital letter.",
-  },
-  {
-    pattern: /[a-z]/,
-    message: "Password must have at least one lowercase letter.",
-  },
-  {
-    pattern: /[\W_]/,
-    message: "Password must have at least one symbol.",
-  },
-];
-
 const useLogin = () => {
   const [form] = Form.useForm<LoginFormValues>();
   const [loginRequest] = useLoginMutation();
@@ -156,7 +133,7 @@ const useLogin = () => {
     [],
   );
 
-  const passwordRules = useMemo(
+  const loginPasswordRules = useMemo(
     () =>
       isFromInvite || isResetPassword
         ? strongPasswordRules
@@ -192,21 +169,25 @@ const useLogin = () => {
     } catch (error) {
       setShowAnimation(false);
       // eslint-disable-next-line no-console
-      console.log(error);
-      let defaultErrorMsg: string;
+      console.error(error);
+      let errorMsg: string;
       if (isFromInvite) {
-        defaultErrorMsg = "Setup failed. Please try the invite link again.";
+        // Invite and reset-password flows may surface backend error detail
+        // (e.g. expired/invalid token) since it is actionable to the user.
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Setup failed. Please try the invite link again.",
+        );
       } else if (isResetPassword) {
-        defaultErrorMsg =
-          "Password reset failed. The link may have expired. Please request a new one.";
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Password reset failed. The link may have expired. Please request a new one.",
+        );
       } else {
-        defaultErrorMsg =
-          "Login failed. Please check your credentials and try again.";
+        // Always show a generic message for standard login failures to avoid
+        // leaking backend details (SSO config, authorization state, etc.)
+        errorMsg = "Login failed. Please check your credentials and try again.";
       }
-      const errorMsg = getErrorMessage(
-        error as RTKErrorResult["error"],
-        defaultErrorMsg,
-      );
       message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
@@ -240,7 +221,7 @@ const useLogin = () => {
     handleSubmit,
     isSubmitting,
     usernameRules,
-    passwordRules,
+    passwordRules: loginPasswordRules,
     username,
   };
 };
@@ -290,8 +271,8 @@ const Login: NextPage = () => {
     initialValues,
     handleSubmit,
     isSubmitting,
+    passwordRules: loginPasswordRules,
     usernameRules,
-    passwordRules,
     username,
   } = useLogin();
   const [canSubmit, setCanSubmit] = useState(false);
@@ -391,7 +372,7 @@ const Login: NextPage = () => {
                               ? "Set new password"
                               : "Password"
                           }
-                          rules={passwordRules}
+                          rules={loginPasswordRules}
                         >
                           <Input.Password
                             size="large"

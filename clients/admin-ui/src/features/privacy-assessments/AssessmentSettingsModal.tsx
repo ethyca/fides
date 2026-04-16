@@ -4,18 +4,18 @@ import {
   Flex,
   Form,
   Input,
-  Modal,
   Select,
   Spin,
   Switch,
   useMessage,
 } from "fidesui";
-import NextLink from "next/link";
 import { useEffect, useMemo } from "react";
 
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
@@ -135,10 +135,11 @@ const AssessmentSettingsModal = ({
     })) ?? [];
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="Assessment settings"
       open={open}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       destroyOnHidden
       footer={
         <Flex justify="flex-end" gap={8}>
@@ -188,13 +189,17 @@ const AssessmentSettingsModal = ({
           {channelOptions.length === 0 && !isLoadingChannels ? (
             <Alert
               type="info"
-              message="Configure Slack to enable channel notifications."
+              title="Configure Slack to enable channel notifications."
               action={
-                <NextLink href={CHAT_PROVIDERS_ROUTE} target="_blank" passHref>
+                <RouterLink
+                  href={CHAT_PROVIDERS_ROUTE}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Button size="small" type="link">
                     Configure Slack
                   </Button>
-                </NextLink>
+                </RouterLink>
               }
               className="mb-4"
             />
@@ -295,7 +300,7 @@ const AssessmentSettingsModal = ({
           )}
         </Form>
       )}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

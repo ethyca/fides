@@ -70,7 +70,7 @@ export type LegacyConfig = {
   server_url_development?: string;
   server_url_production?: string;
   logo_path: string;
-  actions: PrivacyRequestOption[];
+  actions?: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: LegacyConsentConfig | ConsentConfig;
 };
@@ -86,7 +86,7 @@ export type Config = {
   logo_url?: string;
   favicon_path?: string;
   page_title?: string;
-  actions: PrivacyRequestOption[];
+  actions?: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */

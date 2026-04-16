@@ -45,7 +45,7 @@ const EmptyTableNotice = () => {
               size="small"
               data-testid="add-privacy-notice-btn"
               icon={<Icons.Add />}
-              iconPosition="end"
+              iconPlacement="end"
             >
               Add a privacy notice
             </Button>

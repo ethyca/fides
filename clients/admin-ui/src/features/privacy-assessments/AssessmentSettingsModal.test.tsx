@@ -5,6 +5,16 @@ import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
 import AssessmentSettingsModal from "./AssessmentSettingsModal";
 
+jest.mock("next/router", () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    pathname: "/",
+    query: {},
+    asPath: "/",
+    isFallback: false,
+  })),
+}));
+
 // Mock fidesui components - only mock Select to make it testable
 jest.mock(
   "fidesui",
@@ -39,6 +49,11 @@ jest.mock(
             success: jest.fn(),
             error: jest.fn(),
             warning: jest.fn(),
+          });
+        }
+        if (prop === "useModal") {
+          return () => ({
+            confirm: jest.fn(() => ({ destroy: jest.fn() })),
           });
         }
         return target[prop as keyof typeof target];

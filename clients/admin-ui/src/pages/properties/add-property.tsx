@@ -1,4 +1,4 @@
-import { ChakraBox as Box, useMessage } from "fidesui";
+import { useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -7,7 +7,7 @@ import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useCreatePropertyMutation } from "~/features/properties/property.slice";
-import PropertyForm, { FormValues } from "~/features/properties/PropertyForm";
+import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const AddPropertyPage: NextPage = () => {
@@ -42,9 +42,9 @@ const AddPropertyPage: NextPage = () => {
           },
         ]}
       />
-      <Box maxWidth="720px">
+      <div className="max-w-[720px]">
         <PropertyForm handleSubmit={handleSubmit} />
-      </Box>
+      </div>
     </Layout>
   );
 };

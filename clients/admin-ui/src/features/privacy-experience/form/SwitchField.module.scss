@@ -1,0 +1,9 @@
+.switch-field {
+  :global(.ant-form-item-control-input) {
+    display: flex;
+    justify-content: flex-end;
+  }
+  :global(.ant-form-item-control-input-content) {
+    flex: unset;
+  }
+}

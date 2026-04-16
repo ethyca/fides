@@ -1,0 +1,4 @@
+type: Added
+description: Added FIDES__ADMIN_UI__CONSENT_MODULE_ENABLED env var to hide consent UI
+pr: 7890
+labels: []

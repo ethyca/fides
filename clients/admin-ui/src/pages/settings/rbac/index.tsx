@@ -1,15 +1,15 @@
 import Layout from "common/Layout";
 import { Button, Flex, Space, Table, Tag, Typography } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { RBAC_ROLE_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useGetRolesQuery } from "~/features/rbac";
-import type { RBACRole } from "~/types/api";
+import type { RBACRoleResponse as RBACRole } from "~/types/api";
 
 const RBACPage: NextPage = () => {
   const {
@@ -55,8 +55,8 @@ const RBACPage: NextPage = () => {
       title: "Permissions",
       key: "permissions",
       render: (_: unknown, record: RBACRole) => {
-        const directCount = record.permissions.length;
-        const inheritedCount = record.inherited_permissions.length;
+        const directCount = (record.permissions ?? []).length;
+        const inheritedCount = (record.inherited_permissions ?? []).length;
         return (
           <Space>
             <Tag color="corinth">{directCount} Direct</Tag>
@@ -85,9 +85,9 @@ const RBACPage: NextPage = () => {
         isSticky={false}
         className="pb-0"
         rightContent={
-          <NextLink href={RBAC_ROLE_NEW_ROUTE} passHref>
+          <RouterLink href={RBAC_ROLE_NEW_ROUTE}>
             <Button type="primary">Create role</Button>
-          </NextLink>
+          </RouterLink>
         }
       >
         <Typography.Paragraph className="max-w-screen-sm">

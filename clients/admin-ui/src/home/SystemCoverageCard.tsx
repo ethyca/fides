@@ -1,31 +1,69 @@
-import { Card, DonutChart, Flex, Text } from "fidesui";
-import NextLink from "next/link";
+import type { AntColorTokenKey } from "fidesui";
+import {
+  antTheme,
+  Card,
+  Divider,
+  DonutChart,
+  Flex,
+  Icons,
+  Text,
+  Tooltip,
+} from "fidesui";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
 import { useGetSystemCoverageQuery } from "~/features/dashboard/dashboard.slice";
+import type { SystemCoverageResponse } from "~/features/dashboard/types";
 
-const BREAKDOWN_ITEMS = [
-  { key: "fully_classified", label: "Fully classified" },
-  { key: "partially_classified", label: "Partially classified" },
-  { key: "unclassified", label: "Unclassified" },
-  { key: "without_steward", label: "Without steward" },
-] as const;
+const BREAKDOWN_ITEMS: {
+  key: keyof SystemCoverageResponse;
+  label: string;
+  color: AntColorTokenKey;
+}[] = [
+  { key: "fully_classified", label: "Fully classified", color: "colorSuccess" },
+  {
+    key: "partially_classified",
+    label: "Partially classified",
+    color: "colorWarning",
+  },
+  { key: "unclassified", label: "Unclassified", color: "colorError" },
+  {
+    key: "without_steward",
+    label: "Without steward",
+    color: "colorTextQuaternary",
+  },
+];
 
 export const SystemCoverageCard = () => {
+  const { token } = antTheme.useToken();
   const { data: coverage, isLoading } = useGetSystemCoverageQuery();
 
   const percentage = coverage?.coverage_percentage ?? 0;
 
   return (
     <Card
-      title="System Coverage"
+      title={
+        <Tooltip
+          placement="bottom"
+          title="What percentage of your known data systems are under active governance — connected, classified, and assigned a steward."
+        >
+          <Flex
+            style={{ cursor: "pointer", display: "inline-flex" }}
+            align="center"
+            gap={4}
+          >
+            <Text>System Coverage</Text>
+            <Icons.Help size={14} className="opacity-30" />
+          </Flex>
+        </Tooltip>
+      }
       variant="borderless"
       loading={isLoading}
       className="h-full"
       extra={
-        <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref>
+        <RouterLink href={ADD_SYSTEMS_MANUAL_ROUTE}>
           Connect more systems
-        </NextLink>
+        </RouterLink>
       }
     >
       <Flex vertical gap="large" className="h-full">
@@ -33,23 +71,11 @@ export const SystemCoverageCard = () => {
           <div className="size-[100px] shrink-0">
             <DonutChart
               variant="thick"
-              segments={[
-                {
-                  value: coverage?.fully_classified ?? 0,
-                  color: "colorSuccess",
-                  name: "Fully classified",
-                },
-                {
-                  value: coverage?.partially_classified ?? 0,
-                  color: "colorWarning",
-                  name: "Partially classified",
-                },
-                {
-                  value: coverage?.unclassified ?? 0,
-                  color: "colorBorder",
-                  name: "Unclassified",
-                },
-              ]}
+              segments={BREAKDOWN_ITEMS.map(({ key, label, color }) => ({
+                value: coverage?.[key] ?? 0,
+                color,
+                name: label,
+              }))}
               centerLabel={
                 <Text strong className="text-base">
                   {percentage}%
@@ -57,12 +83,28 @@ export const SystemCoverageCard = () => {
               }
             />
           </div>
-          <Flex vertical gap={4}>
-            <Text strong>{coverage?.total_systems ?? 0} systems known</Text>
-            {BREAKDOWN_ITEMS.map(({ key, label }) => (
-              <Text key={key} type="secondary">
-                {coverage?.[key] ?? 0} {label}
-              </Text>
+          <Flex vertical gap={0} className="flex-1">
+            <Text strong className="mb-2 text-sm">
+              {coverage?.total_systems ?? 0} systems known
+            </Text>
+            {BREAKDOWN_ITEMS.map(({ key, label, color }, index) => (
+              <div key={key}>
+                {index > 0 && <Divider className="!my-1" />}
+                <Flex align="center" gap={8}>
+                  <div
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: token[color],
+                    }}
+                  />
+                  <Text strong className="text-sm">
+                    {coverage?.[key] ?? 0}
+                  </Text>
+                  <Text type="secondary" className="text-sm">
+                    {label}
+                  </Text>
+                </Flex>
+              </div>
             ))}
           </Flex>
         </Flex>
