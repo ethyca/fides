@@ -1,4 +1,4 @@
-import { ChakraText as Text, Spin } from "fidesui";
+import { Spin, Typography } from "fidesui";
 import type { NextPage } from "next";
 
 import { useAppSelector } from "~/app/hooks";
@@ -31,14 +31,15 @@ const RegulationsPage: NextPage = () => {
   return (
     <Layout title="Regulations">
       <PageHeader heading="Regulations" />
-      <Text pb={6} fontSize="sm" maxWidth="600px">
+      <Typography.Paragraph className="max-w-xl pb-4">
         Select the regulations that apply to your organizations compliance
         requirements. The selections you make here will automatically update
-        your location selections.{" "}
+        your location selections.
+        <br />
         <RouterLink href={LOCATIONS_ROUTE}>
-          You can view your location settings here.
+          View your location settings
         </RouterLink>
-      </Text>
+      </Typography.Paragraph>
       {isLoading ? (
         <Spin />
       ) : (
