@@ -60,7 +60,7 @@ type TypographyLinkProps = Omit<
 interface BaseRouterLinkProps {
   href: Href;
   children: ReactNode;
-  onClick?: (e: MouseEvent<HTMLElement>) => void;
+  onClick?: NextLinkProps["onClick"];
   replace?: NextLinkProps["replace"];
   scroll?: NextLinkProps["scroll"];
   prefetch?: NextLinkProps["prefetch"];
@@ -162,7 +162,7 @@ export const RouterLink = (props: RouterLinkProps) => {
         target={target}
         rel={rel}
         className={className}
-        onClick={onClick as NextLinkProps["onClick"]}
+        onClick={onClick}
         {...anchorProps}
       >
         {children}
@@ -183,7 +183,7 @@ export const RouterLink = (props: RouterLinkProps) => {
       rel={rel}
       className={className}
       onMouseEnter={prefetch === null ? prefetchHref : undefined}
-      onClick={(e) => {
+      onClick={(e: MouseEvent<HTMLAnchorElement>) => {
         onClick?.(e);
         if (
           e.defaultPrevented ||
