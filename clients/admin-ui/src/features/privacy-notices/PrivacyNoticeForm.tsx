@@ -215,6 +215,12 @@ const PrivacyNoticeForm = ({
       <Form.Item name="translations" hidden noStyle>
         <Input />
       </Form.Item>
+      <Form.Item name="disabled" hidden noStyle>
+        <Input />
+      </Form.Item>
+      <Form.Item name="internal_description" hidden noStyle>
+        <Input />
+      </Form.Item>
       <Flex vertical gap="large">
         <Flex vertical gap="middle">
           <Card title="Privacy notice details">
