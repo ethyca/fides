@@ -357,6 +357,7 @@ def call_log_spy(method_to_decorate: Callable) -> Callable:
     wrapper.call_log = call_log
     return wrapper
 
+
 class TestRateLimiterRedisFailure:
     """Unit tests for RateLimiter.limit() when Redis is unavailable."""
 

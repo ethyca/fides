@@ -145,7 +145,9 @@ class RateLimiter:
         """
         if timeout_seconds is None:
             timeout_seconds = min(
-                max(r.period.factor for r in requests) + 5 if requests else self.MIN_DEFAULT_TIMEOUT_SECONDS,
+                max(r.period.factor for r in requests) + 5
+                if requests
+                else self.MIN_DEFAULT_TIMEOUT_SECONDS,
                 self.MAX_DEFAULT_TIMEOUT_SECONDS,
             )
 
