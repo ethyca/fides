@@ -17,6 +17,7 @@ import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monit
 import {
   ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
+  ConnectionType,
   EditableMonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
@@ -30,6 +31,11 @@ const WEBSITE_MONITOR_NOW_SCANNING_MESSAGE =
   "Your monitor has been created and is now scanning your website. Once the monitor is finished scanning, results can be found in the action center.";
 
 const WEBSITE_MONITOR_NOT_SCHEDULED_MESSAGE = `Your monitor has been created with no schedule.  Select "Scan" in the table below to begin scanning your website.`;
+
+const DATASTORE_CONTENT_TAXONOMY = {
+  project: ["project", "projects"],
+  database: ["database", "databases"],
+} as const;
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -171,6 +177,11 @@ const ConfigureMonitorModal = ({
             onSubmit={handleSubmit}
             onClose={onClose}
             integrationKey={integration.key}
+            contentTaxonomy={
+              integration.connection_type === ConnectionType.BIGQUERY
+                ? DATASTORE_CONTENT_TAXONOMY.project
+                : DATASTORE_CONTENT_TAXONOMY.database
+            }
           />
         ) : (
           <Spin />
