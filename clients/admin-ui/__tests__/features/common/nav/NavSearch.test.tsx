@@ -63,9 +63,9 @@ jest.mock("fidesui", () => {
       const { prefix, suffix, allowClear, autoFocus, ...rest } = props;
       return MockReact.createElement("input", { ...rest, ref });
     }),
-    Modal: ({ open: modalOpen, children, onCancel, destroyOnClose }: any) => {
+    Modal: ({ open: modalOpen, children, onCancel, destroyOnHidden }: any) => {
       if (!modalOpen) {
-        if (destroyOnClose) {
+        if (destroyOnHidden) {
           return null;
         }
         return MockReact.createElement(

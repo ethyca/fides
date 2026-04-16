@@ -38,12 +38,13 @@ const EditDataConsumerPage: NextPage = () => {
       return;
     }
 
-    const { purposeFidesKeys, ...consumerPayload } = values;
+    const { purposeFidesKeys, scope, ...consumerPayload } = values;
 
     try {
       await updateDataConsumer({
         id: consumerId as string,
         ...consumerPayload,
+        scope,
       }).unwrap();
 
       // Check if purposes changed and assign if so

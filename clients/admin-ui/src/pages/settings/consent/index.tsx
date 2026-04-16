@@ -1,6 +1,6 @@
 /* eslint-disable react/no-array-index-key */
 import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Button,
   ChakraBox as Box,

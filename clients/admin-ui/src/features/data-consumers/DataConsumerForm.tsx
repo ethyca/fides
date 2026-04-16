@@ -1,19 +1,22 @@
 import { Button, Flex, Form, Input, Select, Spin } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { DATA_CONSUMERS_ROUTE } from "~/features/common/nav/routes";
 import { useGetAllDataPurposesQuery } from "~/features/data-purposes/data-purpose.slice";
 
-import { CONSUMER_TYPE_OPTIONS } from "./constants";
-import { DataConsumer } from "./data-consumer.slice";
+import { getDisplayNameForScope } from "./constants";
+import {
+  DataConsumer,
+  useGetAvailableScopesQuery,
+} from "./data-consumer.slice";
+import useConsumerTypeOptions from "./useConsumerTypeOptions";
 
 export interface DataConsumerFormValues {
   name: string;
   type: string;
-  contact_email: string;
+  scope: Record<string, string>;
   description: string;
-  tags: string[];
   purposeFidesKeys: string[];
 }
 
@@ -32,6 +35,87 @@ const DataConsumerForm = ({
   const { data: purposesData, isLoading: purposesLoading } =
     useGetAllDataPurposesQuery({ size: 200 });
 
+  const {
+    typeOptions,
+    getConsumerType,
+    isLoading: typesLoading,
+  } = useConsumerTypeOptions();
+
+  const { data: availableScopes, isLoading: scopesLoading } =
+    useGetAvailableScopesQuery();
+
+  const selectedType = Form.useWatch("type", form);
+  const [selectedScopeValue, setSelectedScopeValue] = useState<
+    string | undefined
+  >(
+    consumer?.scope && Object.keys(consumer.scope).length > 0
+      ? JSON.stringify(consumer.scope)
+      : undefined,
+  );
+
+  // Clear scope when type changes (only after user interaction)
+  useEffect(() => {
+    if (form.isFieldTouched("type")) {
+      form.setFieldValue("scope", {});
+      setSelectedScopeValue(undefined);
+    }
+  }, [selectedType, form]);
+
+  // Filter available scopes to selected type
+  const scopeOptionsForType = useMemo(() => {
+    if (!selectedType || !availableScopes) {
+      return [];
+    }
+    return availableScopes
+      .filter((s) => s.type === selectedType)
+      .map((s) => ({
+        value: JSON.stringify(s.scope),
+        label: s.display_name,
+        scope: s.scope,
+      }));
+  }, [selectedType, availableScopes]);
+
+  // On edit, include the current consumer's scope as an option
+  const allScopeOptions = useMemo(() => {
+    if (!consumer?.scope || !Object.keys(consumer.scope).length) {
+      return scopeOptionsForType;
+    }
+    const currentScopeJson = JSON.stringify(consumer.scope);
+    const alreadyIncluded = scopeOptionsForType.some(
+      (o) => o.value === currentScopeJson,
+    );
+    if (alreadyIncluded) {
+      return scopeOptionsForType;
+    }
+    // Add current scope as an option (it's already assigned to this consumer)
+    const currentType = getConsumerType(consumer.type);
+    const displayName = getDisplayNameForScope(
+      consumer.scope,
+      currentType?.display_key,
+    );
+    return [
+      {
+        value: currentScopeJson,
+        label: `${displayName}${currentType ? "" : ` (${consumer.type})`}`,
+        scope: consumer.scope,
+      },
+      ...scopeOptionsForType,
+    ];
+  }, [scopeOptionsForType, consumer, getConsumerType]);
+
+  const handleScopeSelect = useCallback(
+    (value: string) => {
+      try {
+        const scope = JSON.parse(value) as Record<string, string>;
+        form.setFieldsValue({ scope });
+        setSelectedScopeValue(value);
+      } catch {
+        // Malformed scope value — ignore
+      }
+    },
+    [form],
+  );
+
   const purposeOptions = useMemo(
     () =>
       (purposesData?.items ?? []).map((p) => ({
@@ -45,9 +129,8 @@ const DataConsumerForm = ({
     () => ({
       name: consumer?.name ?? "",
       type: consumer?.type ?? "",
-      contact_email: consumer?.contact_email ?? "",
+      scope: consumer?.scope ?? {},
       description: consumer?.description ?? "",
-      tags: consumer?.tags ?? [],
       purposeFidesKeys: consumer?.purpose_fides_keys ?? [],
     }),
     [consumer],
@@ -57,8 +140,12 @@ const DataConsumerForm = ({
     router.push(DATA_CONSUMERS_ROUTE);
   }, [router]);
 
-  if (purposesLoading) {
-    return <Spin />;
+  if (purposesLoading || typesLoading || scopesLoading) {
+    return (
+      <Flex justify="center" align="center" className="py-12">
+        <Spin />
+      </Flex>
+    );
   }
 
   return (
@@ -72,6 +159,82 @@ const DataConsumerForm = ({
       style={{ maxWidth: 720 }}
     >
       <Form.Item
+        name="type"
+        label="Type"
+        rules={[{ required: true, message: "Type is required" }]}
+        tooltip="The identity type used to resolve this consumer in query logs"
+      >
+        <Select
+          placeholder="Select consumer type"
+          options={typeOptions}
+          showSearch
+          filterOption={(input, option) =>
+            String(option?.label ?? "")
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+          aria-label="Type"
+          data-testid="data-consumer-type-select"
+        />
+      </Form.Item>
+
+      {/* Hidden form item to track scope in form values */}
+      <Form.Item
+        name="scope"
+        hidden
+        rules={[
+          {
+            validator: (_, value) =>
+              value && Object.keys(value).length > 0
+                ? Promise.resolve()
+                : Promise.reject(new Error("Scope is required")),
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+
+      {selectedType && (
+        <Form.Item noStyle dependencies={["scope"]}>
+          {() => {
+            const scopeErrors = form.getFieldError("scope");
+            return (
+              <Form.Item
+                label="Scope"
+                validateStatus={scopeErrors.length ? "error" : undefined}
+                help={scopeErrors[0]}
+                tooltip="The specific identity to associate with this consumer"
+              >
+                {allScopeOptions.length > 0 ? (
+                  <Select
+                    placeholder="Select scope"
+                    options={allScopeOptions}
+                    value={selectedScopeValue}
+                    onChange={handleScopeSelect}
+                    showSearch
+                    filterOption={(input, option) =>
+                      String(option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    aria-label="Scope"
+                    data-testid="data-consumer-scope-select"
+                  />
+                ) : (
+                  <Select
+                    placeholder="No scopes available for this type"
+                    disabled
+                    aria-label="Scope"
+                    data-testid="data-consumer-scope-select"
+                  />
+                )}
+              </Form.Item>
+            );
+          }}
+        </Form.Item>
+      )}
+
+      <Form.Item
         name="name"
         label="Name"
         rules={[{ required: true, message: "Name is required" }]}
@@ -79,31 +242,6 @@ const DataConsumerForm = ({
         <Input
           placeholder="Enter consumer name"
           data-testid="data-consumer-name-input"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="type"
-        label="Type"
-        rules={[{ required: true, message: "Type is required" }]}
-        tooltip="The type of data consumer (service, application, group, or user)"
-      >
-        <Select
-          placeholder="Select consumer type"
-          options={CONSUMER_TYPE_OPTIONS}
-          aria-label="Type"
-          data-testid="data-consumer-type-select"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="contact_email"
-        label="Contact email"
-        tooltip="The email address used to identify this consumer in query logs"
-      >
-        <Input
-          placeholder="Enter contact email"
-          data-testid="data-consumer-contact-input"
         />
       </Form.Item>
 
@@ -130,19 +268,6 @@ const DataConsumerForm = ({
           placeholder="Enter a description"
           rows={3}
           data-testid="data-consumer-description-input"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="tags"
-        label="Tags"
-        tooltip="Optional tags for organizing consumers"
-      >
-        <Select
-          mode="tags"
-          placeholder="Add tags"
-          aria-label="Tags"
-          data-testid="data-consumer-tags-select"
         />
       </Form.Item>
 

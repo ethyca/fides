@@ -191,7 +191,7 @@ const ScrollableListAdd = ({
       data-testid={`add-${baseTestId}`}
       block
       icon={<Icons.Add size={16} />}
-      iconPosition="end"
+      iconPlacement="end"
     >
       {label}
     </Button>

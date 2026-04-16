@@ -12,7 +12,7 @@ const ActionButton = ({ title, icon, type, ...props }: ActionButtonProps) => (
     type={type}
     data-testid={`action-${title}`}
     icon={icon}
-    iconPosition="start"
+    iconPlacement="start"
     {...props}
   >
     {title}

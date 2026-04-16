@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated config-wizard forms from Formik/Yup to Ant Design Form
+pr: 7896
+labels: []

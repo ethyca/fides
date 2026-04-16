@@ -228,7 +228,7 @@ export const PrivacyRequestFieldPicker = ({
       />
       {showManualKeyInput && (
         <Input
-          addonBefore="privacy_request.identity."
+          prefix="privacy_request.identity."
           value={manualKeyValue}
           onChange={handleManualKeyChange}
           placeholder="e.g. customer_id"

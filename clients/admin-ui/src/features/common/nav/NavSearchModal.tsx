@@ -171,7 +171,7 @@ const NavSearchModal = ({ groups }: NavSearchModalProps) => {
         width={480}
         style={{ top: "calc(33vh - 24px)" }}
         className={styles.searchModal}
-        destroyOnClose
+        destroyOnHidden
         afterOpenChange={(isOpen) => {
           if (isOpen) {
             modalInputRef.current?.focus();

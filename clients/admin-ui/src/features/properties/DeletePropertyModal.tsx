@@ -10,7 +10,10 @@ import { Property, ScopeRegistryEnum } from "~/types/api";
 
 interface Props {
   property: Property;
-  triggerComponent: React.ReactElement & { isDisabled?: boolean };
+  triggerComponent: React.ReactElement<{
+    onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    disabled?: boolean;
+  }>;
 }
 
 /**

@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Cache Docker images
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/docker-images # Path to store the tarball
         key: docker-${{ runner.os }}-${{ inputs.image-name }}-${{ inputs.tag }}-${{ hashFiles('**/Dockerfile') }} # Key for the cache

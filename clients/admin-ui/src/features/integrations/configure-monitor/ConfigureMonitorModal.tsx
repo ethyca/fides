@@ -118,7 +118,7 @@ const ConfigureMonitorModal = ({
         onClose={onClose}
         getIsDirty={() => form.isFieldsTouched()}
         centered
-        destroyOnClose
+        destroyOnHidden
         footer={null}
         data-testid="add-modal-content"
       >
@@ -145,7 +145,7 @@ const ConfigureMonitorModal = ({
       onClose={onClose}
       getIsDirty={() => form.isFieldsTouched()}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={null}
       data-testid="add-modal-content"
     >

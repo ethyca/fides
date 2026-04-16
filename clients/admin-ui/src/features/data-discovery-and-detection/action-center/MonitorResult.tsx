@@ -26,6 +26,7 @@ import {
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { DatastoreMonitorUpdates } from "~/types/api/models/DatastoreMonitorUpdates";
 
 import { ConfidenceRow } from "./ConfidenceRow";
@@ -33,14 +34,13 @@ import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import styles from "./MonitorResult.module.scss";
 import { MonitorResultDescription } from "./MonitorResultDescription";
 import { MonitorAggregatedResults } from "./types";
-import { MONITOR_TYPES } from "./utils/getMonitorType";
 
 const { Text } = Typography;
 
 const MONITOR_RESULT_COUNT_TYPES = {
-  [MONITOR_TYPES.WEBSITE]: ["asset", "assets"],
-  [MONITOR_TYPES.DATASTORE]: ["field", "fields"],
-  [MONITOR_TYPES.INFRASTRUCTURE]: ["system", "systems"],
+  [APIMonitorType.WEBSITE]: ["asset", "assets"],
+  [APIMonitorType.DATASTORE]: ["field", "fields"],
+  [APIMonitorType.INFRASTRUCTURE]: ["system", "systems"],
 } as const;
 
 interface MonitorResultProps extends ListItemProps {
@@ -69,7 +69,7 @@ export const MonitorResult = ({
   } = monitorSummary;
 
   let confidenceCounts;
-  if (monitorType === MONITOR_TYPES.DATASTORE) {
+  if (monitorType === APIMonitorType.DATASTORE) {
     const datastoreUpdates = updates as DatastoreMonitorUpdates | undefined;
     confidenceCounts = {
       highConfidenceCount: datastoreUpdates?.classified_high_confidence ?? 0,
@@ -87,7 +87,7 @@ export const MonitorResult = ({
       confidenceCounts.lowConfidenceCount > 0);
 
   const showConfidenceRow =
-    monitorType === MONITOR_TYPES.DATASTORE && hasConfidenceCounts && !!key;
+    monitorType === APIMonitorType.DATASTORE && hasConfidenceCounts && !!key;
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -201,7 +201,7 @@ export const MonitorResult = ({
           !!updates && (
             <MonitorResultDescription
               updates={updates}
-              isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
+              isAssetList={monitorType === APIMonitorType.WEBSITE}
             />
           )
         }
@@ -217,7 +217,7 @@ export const MonitorResult = ({
         >
           {stewards.map((steward) => (
             <Tooltip title={formatUser(steward)} key={steward.id}>
-              <Avatar style={{ background: palette.FIDESUI_MINOS }}>
+              <Avatar rootClassName="bg-[--fidesui-bg-default] text-[--fidesui-minos]">
                 {steward.first_name?.charAt(0)}
                 {steward.last_name?.charAt(0)}
               </Avatar>

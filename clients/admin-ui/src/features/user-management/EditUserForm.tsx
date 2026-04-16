@@ -103,7 +103,7 @@ const ReinviteSection = ({ user }: ReinviteSectionProps) => {
       {contextHolder}
       <div className="mb-4">
         <Alert
-          message={user.invite_expired ? "Invite expired" : "Invite pending"}
+          title={user.invite_expired ? "Invite expired" : "Invite pending"}
           description={
             user.invite_expired
               ? "This user's invitation has expired. Use the button to send a new invitation email."

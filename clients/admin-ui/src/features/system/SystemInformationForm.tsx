@@ -11,7 +11,6 @@ import {
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
-import { useFlags } from "~/features/common/features";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
@@ -86,8 +85,7 @@ const SystemInformationForm = ({
   children,
 }: Props) => {
   const { data: systems = [] } = useGetAllSystemsQuery();
-  const { plus: systemGroupsEnabled } = useFeatures();
-  const { flags } = useFlags();
+  const { plus: systemGroupsEnabled, rbac: isRbacEnabled } = useFeatures();
 
   // Check if user has permission to update systems (only when RBAC is enabled)
   // Checks both global SYSTEM_UPDATE and per-system SYSTEM_MANAGER_UPDATE
@@ -96,7 +94,7 @@ const SystemInformationForm = ({
     ScopeRegistryEnum.SYSTEM_UPDATE,
     ScopeRegistryEnum.SYSTEM_MANAGER_UPDATE,
   ]);
-  const isReadOnly = flags.alphaRbac && passedInSystem && !canUpdateSystems;
+  const isReadOnly = isRbacEnabled && passedInSystem && !canUpdateSystems;
 
   const dispatch = useAppDispatch();
 
@@ -439,7 +437,7 @@ const SystemInformationForm = ({
           <FormGuard id="SystemInfoTab" name="System Info" />
           {isReadOnly && (
             <Alert
-              message="Read-only access"
+              title="Read-only access"
               description="You have read-only access to this system. Contact an administrator if you need to make changes."
               type="info"
               showIcon

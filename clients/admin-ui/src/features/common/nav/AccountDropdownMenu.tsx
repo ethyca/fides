@@ -48,7 +48,7 @@ const AccountDropdownMenu = ({
         ],
       }}
       styles={{ root: { width: "200px" } }}
-      trigger={["click", "hover"]}
+      trigger={["click"]}
     >
       <Button
         tabIndex={0}

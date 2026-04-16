@@ -35,7 +35,7 @@ class PrivacyPreferences(Base):
     def __tablename__(self) -> str:
         return "privacy_preferences"
 
-    # Partition-level index (not declarable on the parent table):
+    # Partition-level indexes (not declarable on the parent table):
     #
     #   UNIQUE INDEX idx_privacy_preferences_current_unique_identity
     #   ON privacy_preferences_current ((search_data->'identity'))
@@ -43,6 +43,18 @@ class PrivacyPreferences(Base):
     # Enforces at most one is_latest=true row per identity at the DB level.
     # Lives on the _current partition only — the _historic partition allows
     # multiple rows per identity. See migration a4b7c8d9e0f1.
+    #
+    #   INDEX idx_privacy_preferences_current_created_at_id
+    #   ON privacy_preferences_current (created_at, id)
+    #
+    #   INDEX idx_privacy_preferences_historic_created_at_id
+    #   ON privacy_preferences_historic (created_at, id)
+    #
+    # Composite indexes supporting cursor-based pagination with
+    # ORDER BY created_at, id and created_at range filters. Declared per
+    # partition because CREATE INDEX CONCURRENTLY is not supported on
+    # partitioned parent tables; the query planner uses Merge Append
+    # across the per-partition indexes. See migration c5d6e7f8a9b0.
 
     # Override the default id column from Base (which is a String UUID)
     # with a BigInteger identity column for this table

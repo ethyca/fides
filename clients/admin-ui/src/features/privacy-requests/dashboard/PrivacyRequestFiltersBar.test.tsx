@@ -85,6 +85,15 @@ jest.mock("fidesui", () => {
   });
 });
 
+// Mock the useSubjectRequestActionTypeOptions hook to avoid needing Redux Provider
+jest.mock("../hooks/useSubjectRequestActionTypeOptions", () => {
+  const { SubjectRequestActionTypeOptions } =
+    jest.requireActual("../constants");
+  return {
+    useSubjectRequestActionTypeOptions: () => SubjectRequestActionTypeOptions,
+  };
+});
+
 // Mock the privacy center config query
 const mockUseGetPrivacyCenterConfigQuery = jest.fn();
 jest.mock("../privacy-requests.slice", () => ({

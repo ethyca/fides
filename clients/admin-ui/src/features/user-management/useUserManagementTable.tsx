@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
-import { useFlags } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
@@ -24,8 +24,7 @@ import {
 } from "./user-management.slice";
 
 export const UserPermissionsCell = ({ userId }: { userId: string }) => {
-  const { flags } = useFlags();
-  const isRbacEnabled = flags.alphaRbac;
+  const { rbac: isRbacEnabled } = useFeatures();
 
   // Legacy permissions query
   const { data: userPermissions } = useGetUserPermissionsQuery(userId, {
@@ -116,8 +115,7 @@ export const UserActionsCell = ({ user }: { user: User }) => {
 };
 
 const useUserManagementTable = () => {
-  const { flags } = useFlags();
-  const isRbacEnabled = flags.alphaRbac;
+  const { rbac: isRbacEnabled } = useFeatures();
   const loggedInUser = useAppSelector(selectUser);
   const canUserDelete = useHasPermission([ScopeRegistryEnum.USER_DELETE]);
   const canUserUpdate = useHasPermission([ScopeRegistryEnum.USER_UPDATE]);

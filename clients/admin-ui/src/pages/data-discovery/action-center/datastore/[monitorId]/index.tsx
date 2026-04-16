@@ -2,14 +2,18 @@ import { Icons } from "fidesui";
 import { NextPage } from "next";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 
 import {
   ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
   ACTION_CENTER_DATASTORE_MONITOR_ROUTE,
 } from "~/features/common/nav/routes";
+import { useCalcAggregateStatisticsMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
+import { monitorFieldUtil } from "~/features/data-discovery-and-detection/action-center/fields/monitor-fields.slice";
 import ActionCenterFields from "~/features/data-discovery-and-detection/action-center/fields/page";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 export const MONITOR_ACTION_CENTER_CONFIG = {
   [ActionCenterRoute.ACTIVITY]: ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
@@ -17,11 +21,13 @@ export const MONITOR_ACTION_CENTER_CONFIG = {
 } as const;
 
 const DatastoreMonitorResultSystems: NextPage = () => {
+  const dispatch = useDispatch();
   const params = useParams<{ monitorId: string }>();
   const [pageSettings, setPageSettings] = useState({
     showIgnored: false,
     showApproved: false,
   });
+  const [trigger] = useCalcAggregateStatisticsMutation();
 
   const monitorId = params?.monitorId
     ? decodeURIComponent(params.monitorId)
@@ -31,6 +37,7 @@ const DatastoreMonitorResultSystems: NextPage = () => {
   return (
     <ActionCenterLayout
       monitorId={monitorId}
+      monitorType={APIMonitorType.DATASTORE}
       routeConfig={MONITOR_ACTION_CENTER_CONFIG}
       pageSettings={{
         badgeProps: {
@@ -79,6 +86,13 @@ const DatastoreMonitorResultSystems: NextPage = () => {
             ],
           },
         },
+      }}
+      refresh={async () => {
+        dispatch(monitorFieldUtil.invalidateTags(["Monitor Field Results"]));
+        await trigger({
+          monitor_config_id: monitorId,
+          monitor_type: APIMonitorType.DATASTORE,
+        });
       }}
     >
       {loading ? null : (

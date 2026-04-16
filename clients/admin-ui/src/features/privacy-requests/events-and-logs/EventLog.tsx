@@ -11,6 +11,7 @@ import {
   ChakraTr as Tr,
   CUSTOM_TAG_COLOR,
   Tag,
+  Tooltip,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import {
@@ -22,7 +23,10 @@ import {
 } from "privacy-requests/types";
 import React from "react";
 
+import { useSaaSVersionModal } from "~/features/connector-templates/hooks/useSaaSVersionModal";
 import { ActionType } from "~/types/api";
+
+import styles from "./EventLog.module.scss";
 
 const AUDIT_STATUSES_WITH_DETAILS: ExecutionLogStatus[] = [
   ExecutionLogStatus.DENIED,
@@ -158,12 +162,39 @@ const extractRecordCountOrTotal = (
   return extractRecordCount(detail);
 };
 
+const VersionBadge = ({
+  versionIdentifier,
+  onClick,
+}: {
+  versionIdentifier: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}) =>
+  onClick ? (
+    <Tooltip title="View version config">
+      <button
+        type="button"
+        title="View version config"
+        className={styles.versionButton}
+        onClick={onClick}
+        data-testid="version-badge-wrapper"
+      >
+        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
+      </button>
+    </Tooltip>
+  ) : (
+    <span data-testid="version-badge-wrapper">
+      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
+    </span>
+  );
+
 const EventLog = ({
   eventLogs,
   allEventLogs,
   onDetailPanel,
   privacyRequest,
 }: EventDetailsProps) => {
+  const { openVersionModal, modal: versionModal } = useSaaSVersionModal();
+
   // Check if any logs have collection_name OR if there's a finished entry to determine if we should show Records and Collection columns
   const hasDatasetEntries =
     eventLogs?.some((log) => log.collection_name) ||
@@ -192,6 +223,30 @@ const EventLog = ({
       return actionTypeToLabel(privacyRequestActionType);
     }
     return "-";
+  };
+
+  const renderVersionCell = (log: ExecutionLog) => {
+    const { saas_version: versionIdentifier, connection_key: key } = log;
+    if (!versionIdentifier) {
+      return (
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          -
+        </Text>
+      );
+    }
+    return (
+      <VersionBadge
+        versionIdentifier={versionIdentifier}
+        onClick={
+          key
+            ? (e) => {
+                e.stopPropagation();
+                openVersionModal(key, versionIdentifier);
+              }
+            : undefined
+        }
+      />
+    );
   };
 
   const tableItems = eventLogs?.map((detail) => {
@@ -271,34 +326,21 @@ const EventLog = ({
           </Td>
         )}
         {hasDatasetEntries && !isRequestFinishedView && (
-          <Td>
-            <Text
-              color="gray.600"
-              fontSize="xs"
-              lineHeight="4"
-              fontWeight="medium"
-            >
-              {(detail.status as string) === "finished"
-                ? "Request completed"
-                : detail.collection_name}
-            </Text>
-          </Td>
-        )}
-        {hasDatasetEntries && !isRequestFinishedView && (
-          <Td>
-            {detail.saas_version ? (
-              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
-            ) : (
+          <>
+            <Td>
               <Text
                 color="gray.600"
                 fontSize="xs"
                 lineHeight="4"
                 fontWeight="medium"
               >
-                -
+                {(detail.status as string) === "finished"
+                  ? "Request completed"
+                  : detail.collection_name}
               </Text>
-            )}
-          </Td>
+            </Td>
+            <Td>{renderVersionCell(detail)}</Td>
+          </>
         )}
       </Tr>
     );
@@ -306,6 +348,7 @@ const EventLog = ({
 
   return (
     <Box width="100%" paddingTop="0px" height="100%">
+      {versionModal}
       <TableContainer
         id="tableContainer"
         height="100%"
@@ -365,28 +408,28 @@ const EventLog = ({
                 </Th>
               )}
               {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Collection
-                  </Text>
-                </Th>
-              )}
-              {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Version
-                  </Text>
-                </Th>
+                <>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Collection
+                    </Text>
+                  </Th>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Version
+                    </Text>
+                  </Th>
+                </>
               )}
             </Tr>
           </Thead>

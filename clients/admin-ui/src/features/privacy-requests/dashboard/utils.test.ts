@@ -288,13 +288,11 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department",
-            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
             required: false,
           },
           location: {
             label: "Location",
-            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "select",
             options: ["US", "EU"],
           },
@@ -329,7 +327,6 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department",
-            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },
@@ -343,7 +340,6 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           reason: {
             label: "Reason",
-            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },
@@ -375,7 +371,6 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department (Access)",
-            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },
@@ -389,7 +384,6 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department (Erasure)",
-            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "select",
             options: ["Eng", "Sales"],
           },
@@ -442,7 +436,6 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department",
-            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },

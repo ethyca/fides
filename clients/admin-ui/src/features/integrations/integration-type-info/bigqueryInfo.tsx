@@ -218,6 +218,7 @@ const BIGQUERY_TYPE_INFO = {
   enabledFeatures: [
     IntegrationFeature.DATA_DISCOVERY,
     IntegrationFeature.QUERY_LOGGING,
+    IntegrationFeature.IDENTITY_RESOLUTION,
   ],
 };
 

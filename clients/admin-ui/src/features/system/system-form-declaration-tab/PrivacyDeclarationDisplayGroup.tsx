@@ -161,7 +161,7 @@ export const PrivacyDeclarationDisplayGroup = ({
             onClick={handleAdd}
             size="small"
             icon={<Icons.Add size={16} />}
-            iconPosition="end"
+            iconPlacement="end"
             data-testid="add-btn"
           >
             Add data use

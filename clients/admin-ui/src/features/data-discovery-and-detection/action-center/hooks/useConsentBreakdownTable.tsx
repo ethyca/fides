@@ -77,7 +77,7 @@ export const useConsentBreakdownTable = ({
         scroll: {
           scrollToFirstRowOnChange: true,
         },
-        tableLayout: "fixed",
+        tableLayout: "fixed" as const,
       },
     }),
     [isFetching, items, totalRows],

@@ -1,4 +1,4 @@
-import { FidesGlobal } from "fides-js/src/lib/consent-types";
+import type { Fides } from "fides-js/types";
 import { Flex, Form, Typography, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import Script from "next/script";
@@ -26,7 +26,7 @@ import { COMPONENT_MAP } from "../constants";
 
 declare global {
   interface Window {
-    Fides: FidesGlobal;
+    Fides: Fides;
   }
   interface Navigator {
     globalPrivacyControl?: boolean;

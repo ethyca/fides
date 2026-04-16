@@ -2,12 +2,13 @@ import { saveAs } from "file-saver";
 
 import { baseApi } from "~/features/common/api.slice";
 import type {
-  CreateAssessmentRequest,
+  CreateAssessmentTaskRequest,
   Page_TemplateResponse_,
 } from "~/types/api";
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentStatus,
   AssessmentTaskPage,
   AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
@@ -16,8 +17,7 @@ import {
   CreateQuestionnaireRequest,
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
-  GetPrivacyAssessmentsParams,
-  Page_PrivacyAssessmentResponse_,
+  GroupedAssessmentsResponse,
   PrivacyAssessmentConfigDefaults,
   PrivacyAssessmentConfigResponse,
   PrivacyAssessmentConfigUpdate,
@@ -35,8 +35,8 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
     getPrivacyAssessments: build.query<
-      Page_PrivacyAssessmentResponse_,
-      GetPrivacyAssessmentsParams | void
+      GroupedAssessmentsResponse,
+      { page?: number; size?: number; status?: AssessmentStatus } | void
     >({
       query: (params) => ({
         url: "plus/privacy-assessments",
@@ -66,7 +66,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 
     createPrivacyAssessment: build.mutation<
       CreateAssessmentTaskResponse,
-      CreateAssessmentRequest
+      CreateAssessmentTaskRequest
     >({
       query: (body) => ({
         url: "plus/privacy-assessments",

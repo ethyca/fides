@@ -140,7 +140,7 @@ export const ActivityFeedCard = () => {
 
   return (
     <Card
-      title="Activity"
+      title="Activity Feed"
       variant="borderless"
       tabList={ACTIVITY_FILTER_OPTIONS.map((opt) => ({
         key: opt.value,

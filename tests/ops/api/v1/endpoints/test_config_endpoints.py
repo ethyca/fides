@@ -1454,7 +1454,14 @@ class TestGetConfig:
         assert (
             len(
                 execution_keys.difference(
-                    set(["enabled", "url", "error_notification_mode"])
+                    set(
+                        [
+                            "enabled",
+                            "url",
+                            "error_notification_mode",
+                            "consent_module_enabled",
+                        ]
+                    )
                 )
             )
             == 0

@@ -130,7 +130,7 @@ const AddEditAssetModal = ({
         getIsDirty={() => formik.dirty}
         open={isOpen}
         centered
-        destroyOnClose
+        destroyOnHidden
         footer={null}
         data-testid="add-modal-content"
       >

@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { Button, DatePicker, Form, FormInstance, Input, Select } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { enumToOptions } from "~/features/common/helpers";
@@ -160,8 +160,12 @@ const ConfigureMonitorForm = ({
   const monitorUsesLlmClassifier =
     monitor?.classify_params?.context_classifier === "llm";
 
-  const [submittable, setSubmittable] = useState(false);
   const formValues = Form.useWatch([], form);
+  // `name` is the only required field on this form, so gate the submit button
+  // on its presence directly. `form.validateFields({ validateOnly: true })` was
+  // unreliable on initial mount in edit mode (the initial `useWatch` emit
+  // didn't consistently re-enable the button after `initialValues` populated).
+  const submittable = !!(formValues?.name ?? monitor?.name);
 
   const { data: eligibleUsersData } = useGetAllUsersQuery({
     page: 1,
@@ -180,13 +184,6 @@ const ConfigureMonitorForm = ({
     form.resetFields();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingSystem]);
-
-  useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
-  }, [form, formValues]);
 
   const initialValues = {
     name: monitor?.name,

@@ -36,7 +36,7 @@ const getActions = ({
     <NextLink
       href={{
         pathname: reviewHref,
-        query: { confidenceBucket: item.severity },
+        query: { confidence_bucket: item.severity },
       }}
       passHref
       key={item.label}

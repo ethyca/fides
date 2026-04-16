@@ -19,6 +19,7 @@ import {
 } from "cypress/support/stubs";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
+import { HealthCheck } from "~/types/api";
 
 // Check if we should use real API (local development with backend)
 const USE_REAL_API = Cypress.env("REAL_API") === true;
@@ -66,10 +67,26 @@ const getAdminToken = (): Cypress.Chainable<string> => {
     });
 };
 
+/** Plus health response with RBAC enabled */
+const PLUS_HEALTH_RBAC_ENABLED: HealthCheck = {
+  core_fides_version: "2.2.0",
+  fidesplus_server: "healthy",
+  fidesplus_version: "2.2.0",
+  dictionary: { enabled: true, service_health: null, service_error: null },
+  fides_cloud: { enabled: true },
+  rbac: { enabled: true },
+  tcf: { enabled: true },
+};
+
 /**
- * Visit a URL with auth and feature flag set
+ * Visit a URL with auth set. When enableRbac is true, stubs the Plus health
+ * endpoint to return rbac.enabled = true.
  */
 const visitWithAuth = (url: string, enableRbac = false) => {
+  if (enableRbac) {
+    stubPlus(true, PLUS_HEALTH_RBAC_ENABLED);
+  }
+
   const setupAndVisit = (token: string) => {
     const authState = {
       user: {
@@ -83,18 +100,6 @@ const visitWithAuth = (url: string, enableRbac = false) => {
     const storageData: Record<string, string> = {
       auth: JSON.stringify(authState),
     };
-
-    if (enableRbac) {
-      storageData.features = JSON.stringify({
-        flags: {
-          alphaRbac: {
-            development: true,
-            test: true,
-            production: true,
-          },
-        },
-      });
-    }
 
     cy.visit(url, {
       onBeforeLoad(win) {
@@ -266,10 +271,10 @@ describe("RBAC UI Management", () => {
         req.continue();
       }).as("realApiRequest");
     } else {
-      // Mock mode: set up standard stubs
+      // Mock mode: set up standard stubs with RBAC enabled
       stubHomePage();
       stubSystemCrud();
-      stubPlus(true);
+      stubPlus(true, PLUS_HEALTH_RBAC_ENABLED);
       stubTaxonomyEntities();
       stubUserManagement();
 
@@ -552,14 +557,14 @@ describe("RBAC UI Management", () => {
     });
   });
 
-  describe("Feature Flag Gating", () => {
+  describe("Backend RBAC Gating", () => {
     /**
-     * Tests that RBAC UI is visible/accessible when the alphaRbac flag is enabled.
-     * The inverse test (hidden when disabled) is implicit - if we can navigate to
-     * RBAC settings successfully with the flag enabled, the gating works.
+     * Tests that RBAC UI is visible/accessible when RBAC is enabled via
+     * the Plus health endpoint. The inverse test (hidden when disabled)
+     * verifies that the page is gated when the backend reports rbac.enabled = false.
      */
-    it("shows RBAC settings navigation when alphaRbac flag is enabled", () => {
-      // Navigate to RBAC settings with flag enabled
+    it("shows RBAC settings navigation when backend RBAC is enabled", () => {
+      // Navigate to RBAC settings with RBAC enabled via Plus health
       navigateToRbacSettings();
 
       // Role management page should be visible
@@ -569,12 +574,10 @@ describe("RBAC UI Management", () => {
       cy.contains("button", "Create role").should("be.visible");
     });
 
-    it("RBAC settings page requires alphaRbac flag in URL access", () => {
-      // Try to access RBAC directly without the flag enabled in storage
-      // The page should still load but may redirect or show limited content
-      // based on feature flag checks in the component
+    it("RBAC settings page requires backend RBAC to be enabled", () => {
+      // Try to access RBAC directly with rbac.enabled = false from the backend
       if (!USE_REAL_API) {
-        // In mock mode, stub the necessary APIs
+        // In mock mode, stub Plus health with RBAC disabled
         stubHomePage();
         stubPlus(true);
 
@@ -587,18 +590,8 @@ describe("RBAC UI Management", () => {
           token: "mock-token",
         };
 
-        // Explicitly disable alphaRbac
         const storageData: Record<string, string> = {
           auth: JSON.stringify(authState),
-          features: JSON.stringify({
-            flags: {
-              alphaRbac: {
-                development: false,
-                test: false,
-                production: false,
-              },
-            },
-          }),
         };
 
         cy.visit("/settings/rbac", {
@@ -610,11 +603,11 @@ describe("RBAC UI Management", () => {
           },
         });
 
-        // With flag disabled, page should redirect or show unauthorized
+        // With RBAC disabled on backend, page should redirect or show unauthorized
         // The actual behavior depends on implementation - verify it doesn't crash
         cy.url().should("not.include", "/login"); // User is still authenticated
       } else {
-        cy.log("Skipping flag-disabled test in real API mode");
+        cy.log("Skipping RBAC-disabled test in real API mode");
       }
     });
   });

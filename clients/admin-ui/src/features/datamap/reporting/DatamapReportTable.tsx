@@ -19,6 +19,7 @@ import { ExportFormat } from "~/features/datamap/constants";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import { DatamapReportFilterModal } from "~/features/datamap/reporting/DatamapReportFilterModal";
+import { DatamapReportFilterSelections } from "~/features/datamap/types";
 import {
   CustomReportResponse,
   DATAMAP_GROUPING,
@@ -172,7 +173,11 @@ export const DatamapReportTable = ({
             groupBy: savedGroupBy,
             filters: savedFilters,
             columnOrder: savedColumnOrder,
-          } = savedReport.config.table_state;
+          } = savedReport.config.table_state as {
+            groupBy?: DATAMAP_GROUPING;
+            filters?: DatamapReportFilterSelections;
+            columnOrder?: string[];
+          };
           const savedColumnVisibility: Record<string, boolean> = {};
 
           Object.entries(savedReport.config.column_map ?? {}).forEach(
@@ -289,11 +294,11 @@ export const DatamapReportTable = ({
                     },
                   ],
                 }}
-                overlayClassName="group-by-menu-list"
+                classNames={{ root: "group-by-menu-list" }}
               >
                 <Button
                   icon={<Icons.ChevronDown size={14} />}
-                  iconPosition="end"
+                  iconPlacement="end"
                   loading={groupChangeStarted}
                   data-testid="group-by-menu"
                 >
@@ -330,7 +335,7 @@ export const DatamapReportTable = ({
                   ],
                 }}
                 placement="bottomRight"
-                overlayClassName="more-menu-list"
+                classNames={{ root: "more-menu-list" }}
               >
                 <Button
                   icon={<Icons.OverflowMenuVertical />}

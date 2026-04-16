@@ -260,7 +260,7 @@ const SeedDataPanel = () => {
         multiple times. Not for production use.
       </Paragraph>
 
-      <Space direction="vertical" size="middle" className="mb-6 w-full">
+      <Space orientation="vertical" size="middle" className="mb-6 w-full">
         <Flex vertical gap="small">
           <Text strong>Seed profile</Text>
           {profiles && profiles.length > 0 ? (
@@ -277,7 +277,7 @@ const SeedDataPanel = () => {
           ) : (
             <Alert
               type="info"
-              message="No seed profiles configured. Set FIDESPLUS__SAMPLE_DATA__PROFILES to configure 1Password-backed profiles."
+              title="No seed profiles configured. Set FIDESPLUS__SAMPLE_DATA__PROFILES to configure 1Password-backed profiles."
               showIcon
             />
           )}
@@ -318,7 +318,7 @@ const SeedDataPanel = () => {
                 </Text>
               ),
               children: (
-                <Space direction="vertical" size="small" className="w-full">
+                <Space orientation="vertical" size="small" className="w-full">
                   <Flex justify="space-between" align="center" className="mb-2">
                     <Text type="secondary" style={{ fontSize: 12 }}>
                       Toggle scenarios on or off. Checked items match the
@@ -388,7 +388,7 @@ const SeedDataPanel = () => {
       {isTriggerError ? (
         <Alert
           type="error"
-          message="Failed to start seed. Please try again."
+          title="Failed to start seed. Please try again."
           className="mt-4"
           showIcon
         />
@@ -400,7 +400,7 @@ const SeedDataPanel = () => {
             percent={computeProgress(statusData.steps)}
             status={statusData.status === "error" ? "exception" : undefined}
           />
-          <Space direction="vertical" size="small" className="mt-2 w-full">
+          <Space orientation="vertical" size="small" className="mt-2 w-full">
             {Object.entries(statusData.steps).map(([stepName, stepStatus]) => (
               <Flex key={stepName} justify="space-between" align="center">
                 <Text>{stepName.replace(/_/g, " ")}</Text>
@@ -411,7 +411,7 @@ const SeedDataPanel = () => {
           {statusData.error ? (
             <Alert
               type="error"
-              message={statusData.error}
+              title={statusData.error}
               className="mt-2"
               showIcon
             />
@@ -419,7 +419,7 @@ const SeedDataPanel = () => {
           {statusData.status === "complete" ? (
             <Alert
               type="success"
-              message="Seed completed successfully"
+              title="Seed completed successfully"
               className="mt-2"
               showIcon
             />

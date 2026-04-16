@@ -8,7 +8,7 @@ import {
   ACTION_CENTER_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
-import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 describe("Action center", () => {
   beforeEach(() => {
@@ -84,12 +84,12 @@ describe("Action center", () => {
       cy.getByTestId(`review-button-${webMonitorKey}`).should(
         "have.attr",
         "href",
-        `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${webMonitorKey}`,
+        `${ACTION_CENTER_ROUTE}/${APIMonitorType.WEBSITE}/${webMonitorKey}`,
       );
       cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
         "have.attr",
         "href",
-        `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.DATASTORE}/${integrationMonitorKey}`,
+        `${ACTION_CENTER_ROUTE}/${APIMonitorType.DATASTORE}/${integrationMonitorKey}`,
       );
     });
     it.skip("Should paginate results", () => {

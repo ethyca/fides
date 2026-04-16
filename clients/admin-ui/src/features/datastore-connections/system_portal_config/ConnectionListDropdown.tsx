@@ -310,7 +310,7 @@ const ConnectionListDropdown = ({
         aria-label={selectedText ?? label}
         disabled={disabled}
         icon={<Icons.ChevronDown />}
-        iconPosition="end"
+        iconPlacement="end"
         data-testid="select-dropdown-btn"
         className="w-[272px]"
       >

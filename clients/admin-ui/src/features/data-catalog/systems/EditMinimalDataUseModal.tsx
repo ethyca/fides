@@ -82,7 +82,7 @@ const EditMinimalDataUseModal = ({
         onClose={onClose}
         getIsDirty={() => formik.dirty}
         centered
-        destroyOnClose
+        destroyOnHidden
         footer={null}
       >
         <Form>

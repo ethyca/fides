@@ -2,7 +2,7 @@ import { Dayjs } from "dayjs";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
-  Page_ConsentReportingSchema_,
+  ConditionalTotalPage_ConsentReportingSchema_,
   PreferencesSavedExtended,
 } from "~/types/api";
 import { DateRangeParams, PaginationQueryParams } from "~/types/query-params";
@@ -47,7 +47,7 @@ export const consentReportingApi = baseApi.injectEndpoints({
       providesTags: ["Consent Reporting Export"],
     }),
     getAllHistoricalPrivacyPreferences: build.query<
-      Page_ConsentReportingSchema_,
+      ConditionalTotalPage_ConsentReportingSchema_,
       PaginationQueryParams & DateRangeParams & { includeTotal?: boolean }
     >({
       query: ({ page, size, startDate, endDate, includeTotal = true }) => {

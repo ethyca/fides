@@ -77,7 +77,7 @@ const AddTranslationMenu = ({
     <Button
       block
       icon={<Icons.Add />}
-      iconPosition="end"
+      iconPlacement="end"
       onClick={() => setIsSelectingLanguage(true)}
       data-testid="add-language-btn"
       className="mb-1"

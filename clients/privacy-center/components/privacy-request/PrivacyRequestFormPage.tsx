@@ -33,11 +33,11 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
     colonIndex !== -1 ? parseInt(decoded.slice(0, colonIndex), 10) : NaN;
   const policyKey = colonIndex !== -1 ? decoded.slice(colonIndex + 1) : decoded;
 
+  const actions = config.actions ?? [];
   const selectedAction = (
-    !Number.isNaN(actionIndex) &&
-    config.actions[actionIndex]?.policy_key === policyKey
-      ? config.actions[actionIndex]
-      : config.actions.find((action) => action.policy_key === policyKey)
+    !Number.isNaN(actionIndex) && actions[actionIndex]?.policy_key === policyKey
+      ? actions[actionIndex]
+      : actions.find((action) => action.policy_key === policyKey)
   ) as PrivacyRequestOption | undefined;
 
   // Update verification requirement from API

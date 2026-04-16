@@ -4,12 +4,30 @@ export interface DataConsumer {
   id: string;
   name: string;
   type: string;
+  scope?: Record<string, string>;
   contact_email?: string;
   description?: string;
   tags?: string[];
   purpose_fides_keys?: string[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface ConsumerTypeDefinition {
+  key: string;
+  name: string;
+  description: string;
+  platform: string;
+  platform_label: string;
+  supports_members: boolean;
+  scope_keys: Record<string, string>;
+  display_key: string;
+}
+
+export interface AvailableScope {
+  type: string;
+  scope: Record<string, string>;
+  display_name: string;
 }
 
 interface DataConsumerParams {
@@ -100,6 +118,17 @@ export const dataConsumerApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["DataConsumer"],
     }),
+    getConsumerTypes: builder.query<ConsumerTypeDefinition[], void>({
+      query: () => ({
+        url: `plus/pbac/consumer-types`,
+      }),
+    }),
+    getAvailableScopes: builder.query<AvailableScope[], void>({
+      query: () => ({
+        url: `plus/pbac/available-scopes`,
+      }),
+      providesTags: ["DataConsumer"],
+    }),
   }),
 });
 
@@ -110,4 +139,6 @@ export const {
   useUpdateDataConsumerMutation,
   useDeleteDataConsumerMutation,
   useAssignConsumerPurposesMutation,
+  useGetConsumerTypesQuery,
+  useGetAvailableScopesQuery,
 } = dataConsumerApi;

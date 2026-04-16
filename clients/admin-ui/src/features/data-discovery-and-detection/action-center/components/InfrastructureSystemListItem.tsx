@@ -7,6 +7,7 @@ import {
   List,
   Tag,
   Text,
+  Tooltip,
   useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -121,18 +122,20 @@ export const InfrastructureSystemListItem = ({
               onChange={(e) => handleCheckboxChange(e.target.checked)}
               onClick={(e) => e.stopPropagation()}
             />
-            <Avatar
-              src={logoUrl}
-              shape="square"
-              icon={
-                <Icons.TransformInstructions
-                  style={{ color: palette.FIDESUI_MINOS }}
-                  className="m-1 size-full"
-                />
-              }
-              className="bg-transparent"
-              alt={systemName}
-            />
+            <Tooltip title={item.urn}>
+              <Avatar
+                src={logoUrl}
+                shape="square"
+                icon={
+                  <Icons.TransformInstructions
+                    style={{ color: palette.FIDESUI_MINOS }}
+                    className="m-1 size-full"
+                  />
+                }
+                className="bg-transparent"
+                alt={systemName}
+              />
+            </Tooltip>
           </Flex>
         }
         title={

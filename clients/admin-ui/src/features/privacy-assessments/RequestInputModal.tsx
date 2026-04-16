@@ -124,7 +124,7 @@ export const RequestInputModal = ({
         className="w-full"
       >
         <Space
-          direction="vertical"
+          orientation="vertical"
           size="small"
           className={classNames("w-full", styles.questionList)}
         >
@@ -133,7 +133,7 @@ export const RequestInputModal = ({
               <Flex align="flex-start" gap="small">
                 <Checkbox value={question.question_id} className="mt-0.5" />
                 <div className="min-w-0 flex-1">
-                  <Space direction="vertical" size={4} className="w-full">
+                  <Space orientation="vertical" size={4} className="w-full">
                     <Text>
                       {question.id}. {question.question_text}
                     </Text>

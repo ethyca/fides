@@ -211,7 +211,7 @@ const useSystemsTable = () => {
     return (
       allSystemGroups?.map((group) => ({
         key: group.fides_key,
-        label: group.name,
+        label: group.name ?? undefined,
         onClick: () => handleBulkAddToGroup(group.fides_key),
       })) ?? []
     );

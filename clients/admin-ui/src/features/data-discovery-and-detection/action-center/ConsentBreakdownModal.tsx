@@ -65,7 +65,7 @@ export const ConsentBreakdownModal = ({
         {isError ? (
           <Alert
             type="error"
-            message="Error fetching data"
+            title="Error fetching data"
             description="Please try again later."
             showIcon
           />

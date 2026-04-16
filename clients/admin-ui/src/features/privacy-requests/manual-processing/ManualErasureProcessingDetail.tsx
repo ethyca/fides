@@ -1,21 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
-  ChakraBox as Box,
-  ChakraCheckbox as Checkbox,
-  ChakraDivider as Divider,
-  ChakraFormControl as FormControl,
-  ChakraFormLabel as FormLabel,
-  ChakraHStack as HStack,
-  ChakraText as Text,
-  ChakraVStack as VStack,
+  Checkbox,
+  Divider,
   Drawer,
   Flex,
+  Form,
+  Typography,
 } from "fidesui";
-import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useState } from "react";
-import * as Yup from "yup";
 
 import { ManualProcessingDetailProps } from "./types";
 
@@ -26,8 +19,9 @@ const ManualErasureProcessingDetail = ({
   onSaveClick,
 }: ManualProcessingDetailProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [form] = Form.useForm();
 
-  const handleSubmit = async (values: any, _actions: any) => {
+  const handleFinish = async (values: Record<string, boolean>) => {
     const params: PatchUploadManualWebhookDataRequest = {
       connection_key: data.connection_key,
       privacy_request_id: data.privacy_request_id,
@@ -49,86 +43,66 @@ const ManualErasureProcessingDetail = ({
           Begin manual input
         </Button>
       )}
-      <Formik
-        enableReinitialize
-        initialValues={{ ...data.fields }}
-        onSubmit={handleSubmit}
-        validateOnBlur={false}
-        validateOnChange={false}
-        validationSchema={Yup.object().shape({})}
+      <Drawer
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        size="large"
+        title={
+          <>
+            <Typography.Text className="mb-8 text-xl">
+              {connectorName}
+            </Typography.Text>
+            <Divider />
+            <Typography.Text className="mt-4 text-base">
+              Manual erasure
+            </Typography.Text>
+            <div className="mt-2">
+              <Typography.Text
+                type="secondary"
+                size="sm"
+                className="font-normal"
+              >
+                Please delete the following PII fields associated with the
+                selected subject if they are available. Once deleted, check the
+                box to confirm the deletion.
+              </Typography.Text>
+            </div>
+          </>
+        }
+        footer={
+          <Flex gap="small">
+            <Button onClick={() => setIsOpen(false)}>Cancel</Button>
+            <Button
+              form="manual-detail-form"
+              loading={isSubmitting}
+              htmlType="submit"
+            >
+              Save
+            </Button>
+          </Flex>
+        }
       >
-        {(_props) => (
-          <Drawer
-            open={isOpen}
-            onClose={() => setIsOpen(false)}
-            size="large"
-            title={
-              <>
-                <Text fontSize="xl" mb={8}>
-                  {connectorName}
-                </Text>
-                <Divider />
-                <Text fontSize="md" mt="4">
-                  Manual erasure
-                </Text>
-                <Box mt="8px">
-                  <Text color="gray.700" fontSize="sm" fontWeight="normal">
-                    Please delete the following PII fields associated with the
-                    selected subject if they are available. Once deleted, check
-                    the box to confirm the deletion.
-                  </Text>
-                </Box>
-              </>
-            }
-            footer={
-              <Flex gap="small">
-                <Button onClick={() => setIsOpen(false)}>Cancel</Button>
-                <Button
-                  form="manual-detail-form"
-                  loading={isSubmitting}
-                  htmlType="submit"
-                >
-                  Save
-                </Button>
+        <Form
+          form={form}
+          id="manual-detail-form"
+          initialValues={{ ...data.fields }}
+          onFinish={handleFinish}
+          key={JSON.stringify(data.fields)}
+        >
+          <Flex vertical gap="large">
+            {Object.entries(data.fields).map(([key]) => (
+              <Flex key={key} align="baseline">
+                <Typography.Text strong size="sm" className="w-1/2">
+                  {key}
+                </Typography.Text>
+                <Form.Item name={key} valuePropName="checked" className="mb-0">
+                  <Checkbox />
+                </Form.Item>
               </Flex>
-            }
-          >
-            <Form id="manual-detail-form" noValidate>
-              <VStack align="stretch" gap="16px">
-                {Object.entries(data.fields).map(([key]) => (
-                  <HStack key={key}>
-                    <Field id={key} name={key}>
-                      {({ field }: { field: FieldInputProps<string> }) => (
-                        <FormControl
-                          alignItems="baseline"
-                          display="inline-flex"
-                        >
-                          <FormLabel
-                            color="gray.900"
-                            fontSize="14px"
-                            fontWeight="semibold"
-                            htmlFor={key}
-                            w="50%"
-                          >
-                            {key}
-                          </FormLabel>
-                          <Checkbox
-                            {...field}
-                            isChecked={!!field.value}
-                            onChange={field.onChange}
-                            name={key}
-                            id={key}
-                          />
-                        </FormControl>
-                      )}
-                    </Field>
-                  </HStack>
-                ))}
-              </VStack>
-            </Form>
-          </Drawer>
-        )}
-      </Formik>
+            ))}
+          </Flex>
+        </Form>
+      </Drawer>
     </>
   );
 };

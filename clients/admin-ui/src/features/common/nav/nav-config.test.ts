@@ -250,6 +250,58 @@ describe("configureNavGroups", () => {
     });
   });
 
+  describe("consent module", () => {
+    it("hides the Consent nav group when consentModuleEnabled is false", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        hasPlus: true,
+        consentModuleEnabled: false,
+      });
+
+      expect(navGroups.find((g) => g.title === "Consent")).toBeUndefined();
+    });
+
+    it("hides Settings > Consent route when consentModuleEnabled is false", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        hasPlus: true,
+        consentModuleEnabled: false,
+      });
+
+      const settingsChildren = findGroup(navGroups, "Settings").children.map(
+        (c) => c.title,
+      );
+      expect(settingsChildren).not.toContain("Consent");
+    });
+
+    it("shows the Consent nav group when consentModuleEnabled is true", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        hasPlus: true,
+        consentModuleEnabled: true,
+      });
+
+      expect(findGroup(navGroups, "Consent").children.length).toBeGreaterThan(
+        0,
+      );
+    });
+
+    it("shows the Consent nav group by default (consentModuleEnabled not set)", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        hasPlus: true,
+      });
+
+      expect(findGroup(navGroups, "Consent").children.length).toBeGreaterThan(
+        0,
+      );
+    });
+  });
+
   describe("configure by feature flags", () => {
     it("excludes feature flagged routes when disabled", () => {
       const navGroups = configureNavGroups({

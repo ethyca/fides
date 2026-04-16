@@ -1,6 +1,6 @@
 import type {
   AssessmentResponse as GeneratedAssessmentResponse,
-  CreateAssessmentRequest,
+  CreateAssessmentTaskRequest,
   Page_AssessmentResponse_,
   TemplateResponse,
 } from "~/types/api";
@@ -52,7 +52,7 @@ export interface Page_PrivacyAssessmentResponse_
 }
 
 // Re-export request and template types directly
-export type { CreateAssessmentRequest, TemplateResponse };
+export type { CreateAssessmentTaskRequest, TemplateResponse };
 
 export interface PrivacyAssessmentDetailResponse
   extends PrivacyAssessmentResponse {
@@ -242,10 +242,19 @@ export interface QuestionEvidence {
   evidence: EvidenceItem[];
 }
 
-export interface GetPrivacyAssessmentsParams {
-  page?: number;
-  size?: number;
-  status?: AssessmentStatus;
+export interface AssessmentGroupResponse {
+  data_use: string | null;
+  data_use_name: string | null;
+  system_count: number;
+  assessments?: PrivacyAssessmentResponse[];
+}
+
+export interface GroupedAssessmentsResponse {
+  items: AssessmentGroupResponse[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
 }
 
 export interface GetAssessmentEvidenceParams {

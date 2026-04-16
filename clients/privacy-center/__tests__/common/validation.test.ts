@@ -120,9 +120,7 @@ describe("validateConfig", () => {
         draft.actions = [];
       }),
       expected: {
-        isValid: false,
-        message:
-          "Missing required field(s): actions (must be a non-empty array)",
+        isValid: true,
       },
     },
     {
@@ -131,9 +129,17 @@ describe("validateConfig", () => {
         delete draft.actions;
       }),
       expected: {
+        isValid: true,
+      },
+    },
+    {
+      name: "invalid actions type",
+      config: produce(minimalJson, (draft: any) => {
+        draft.actions = "not an array";
+      }),
+      expected: {
         isValid: false,
-        message:
-          "Missing required field(s): actions (must be a non-empty array)",
+        message: "Invalid field: actions (must be an array)",
       },
     },
     {

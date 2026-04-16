@@ -1,0 +1,4 @@
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Refactor progress widgets
+pr: 7846 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

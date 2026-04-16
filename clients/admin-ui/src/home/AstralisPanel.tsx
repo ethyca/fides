@@ -48,7 +48,7 @@ export const AstralisPanel = () => {
             >
               <Statistic
                 value={value}
-                valueStyle={color ? { color } : undefined}
+                styles={color ? { content: { color } } : undefined}
               />
               <Text
                 type={variant ? undefined : "secondary"}

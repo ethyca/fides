@@ -22,10 +22,13 @@ const NewDataConsumerPage: NextPage = () => {
   const [assignConsumerPurposes] = useAssignConsumerPurposesMutation();
 
   const handleSubmit = async (values: DataConsumerFormValues) => {
-    const { purposeFidesKeys, ...consumerPayload } = values;
+    const { purposeFidesKeys, scope, ...consumerPayload } = values;
 
     try {
-      const created = await createDataConsumer(consumerPayload).unwrap();
+      const created = await createDataConsumer({
+        ...consumerPayload,
+        scope,
+      }).unwrap();
 
       if (purposeFidesKeys.length > 0) {
         try {

@@ -29,7 +29,7 @@ const AddSSOProviderModal = ({
         onClose={onClose}
         getIsDirty={() => formik.dirty}
         centered
-        destroyOnClose
+        destroyOnHidden
         title="Add SSO Provider"
         footer={null}
       >

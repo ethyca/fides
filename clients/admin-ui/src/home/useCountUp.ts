@@ -6,8 +6,8 @@ function easeOut(t: number): number {
 
 export const useCountUp = (target: number, duration = 800): number => {
   const [value, setValue] = useState(0);
-  const rafRef = useRef<number>();
-  const startRef = useRef<number>();
+  const rafRef = useRef<number | undefined>(undefined);
+  const startRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (target === 0) {

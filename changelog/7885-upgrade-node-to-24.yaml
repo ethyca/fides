@@ -1,0 +1,4 @@
+type: Changed
+description: Upgraded Node.js from 20 to 24 across Dockerfiles and CI workflows
+pr: 7885
+labels: []

@@ -1,3 +1,25 @@
 .interactive {
   cursor: pointer;
 }
+
+.interactiveContainer {
+  &,
+  & * {
+    cursor: pointer;
+  }
+}
+
+.tickTooltip {
+  animation: tickTooltipIn 150ms ease-out;
+}
+
+@keyframes tickTooltipIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(-8px);
+  }
+}

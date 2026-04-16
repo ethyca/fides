@@ -378,6 +378,9 @@ dataset:
     - name: id
       data_categories:
       - system.operations
+    - name: parent_id
+      data_categories:
+      - system.operations
     - name: updated_at
       data_categories:
       - system.operations
@@ -3262,6 +3265,8 @@ dataset:
     - name: resource_type
       data_categories: [system]
     - name: source_modified
+      data_categories: [system]
+    - name: target_system_steward_ids
       data_categories: [system]
     - name: updated_at
       data_categories: [system]

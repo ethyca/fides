@@ -107,7 +107,7 @@ export const QuestionnaireControls = ({
       {/* Intent Classification specific controls */}
       {promptType === "intent_classification" && (
         <Card title="Conversation State" size="small">
-          <Space direction="vertical" className="w-full">
+          <Space orientation="vertical" className="w-full">
             <div>
               <Text strong className="mb-1 block">
                 Current Question ({currentQuestionIndex + 1} of{" "}
@@ -158,7 +158,7 @@ export const QuestionnaireControls = ({
       {/* Message Generation specific controls */}
       {promptType === "message_generation" && (
         <Card title="Action Context" size="small">
-          <Space direction="vertical" className="w-full">
+          <Space orientation="vertical" className="w-full">
             <div>
               <Text strong className="mb-1 block">
                 Action Type
@@ -208,7 +208,7 @@ export const QuestionnaireControls = ({
       {/* Question Rephrase specific controls */}
       {promptType === "question_rephrase" && (
         <Card title="Rephrase Input" size="small">
-          <Space direction="vertical" className="w-full">
+          <Space orientation="vertical" className="w-full">
             <div>
               <Text strong className="mb-1 block">
                 Question to Rephrase

@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.83.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.83.1..main)
+
+## [2.83.1](https://github.com/ethyca/fides/compare/2.83.0..2.83.1)
+
+### Fixed
+- Allow Privacy Center to start with an empty or missing `actions` array in config, so deployments that only serve fides.js are not blocked by validation. [#7919](https://github.com/ethyca/fides/pull/7919)
 
 ## [2.83.0](https://github.com/ethyca/fides/compare/2.82.1..2.83.0)
 

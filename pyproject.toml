@@ -282,7 +282,7 @@ ignore_missing_imports = true
 ## Ruff ##
 ##########
 [tool.ruff]
-target-version = "py39"
+target-version = "py313"
 line-length = 88
 src = ["src", "tests", "noxfiles", "scripts"]
 

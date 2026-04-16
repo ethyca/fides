@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed unstable selectUser Redux selector causing unnecessary rerenders
+pr: 7927
+labels: []

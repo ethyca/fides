@@ -33,7 +33,7 @@ const EditSSOProviderModal = ({
         onClose={onClose}
         getIsDirty={() => formik.dirty}
         centered
-        destroyOnClose
+        destroyOnHidden
         title="Edit SSO Provider"
         footer={null}
       >

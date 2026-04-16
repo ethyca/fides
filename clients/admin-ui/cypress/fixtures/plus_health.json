@@ -8,5 +8,6 @@
   },
   "fidesplus_version": "2.2.0",
   "fides_cloud": { "enabled": true },
+  "rbac": { "enabled": false },
   "tcf": { "enabled": true }
 }

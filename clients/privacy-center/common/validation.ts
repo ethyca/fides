@@ -57,31 +57,31 @@ export const validateConfig = (
     };
   }
 
-  // Validate actions array is present and non-empty
-  if (!Array.isArray(input.actions) || input.actions.length === 0) {
+  // Validate actions is an array when present
+  if (input.actions !== undefined && !Array.isArray(input.actions)) {
     return {
       isValid: false,
-      message: "Missing required field(s): actions (must be a non-empty array)",
+      message: "Invalid field: actions (must be an array)",
     };
   }
 
-  // Validate required fields within each action
-  const requiredActionFields: (keyof Config["actions"][number])[] = [
-    "title",
-    "description",
-    "icon_path",
-  ];
-  for (let i = 0; i < input.actions.length; i += 1) {
-    const action = input.actions[i];
-    const missingActionFields = requiredActionFields.filter((field) => {
-      const value = (action as Record<string, unknown>)[field];
-      return typeof value !== "string" || value.trim().length === 0;
-    });
-    if (missingActionFields.length > 0) {
-      return {
-        isValid: false,
-        message: `Missing required field(s) in actions[${i}]: ${missingActionFields.join(", ")}`,
-      };
+  // Validate required fields within each action (if provided)
+  if (Array.isArray(input.actions)) {
+    const requiredActionFields: (keyof NonNullable<
+      Config["actions"]
+    >[number])[] = ["title", "description", "icon_path"];
+    for (let i = 0; i < input.actions.length; i += 1) {
+      const action = input.actions[i];
+      const missingActionFields = requiredActionFields.filter((field) => {
+        const value = (action as Record<string, unknown>)[field];
+        return typeof value !== "string" || value.trim().length === 0;
+      });
+      if (missingActionFields.length > 0) {
+        return {
+          isValid: false,
+          message: `Missing required field(s) in actions[${i}]: ${missingActionFields.join(", ")}`,
+        };
+      }
     }
   }
 
@@ -146,7 +146,7 @@ export const validateConfig = (
     }
   }
 
-  const invalidFieldMessages = config.actions.flatMap((action) => {
+  const invalidFieldMessages = (config.actions ?? []).flatMap((action) => {
     /*
       Validate that hidden fields must have a default_value or a query_param_key
       defined, otherwise the field would never get a value assigned.

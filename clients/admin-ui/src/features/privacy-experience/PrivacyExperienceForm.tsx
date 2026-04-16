@@ -709,7 +709,7 @@ export const PrivacyExperienceForm = ({
             ) : (
               <Button
                 icon={<Icons.ArrowRight />}
-                iconPosition="end"
+                iconPlacement="end"
                 onClick={() => {
                   const t = form.getFieldValue("translations");
                   if (t?.[0]) {

@@ -4,7 +4,7 @@ import { utf8ToB64 } from "common/utils";
 import type { RootState } from "~/app/store";
 import { selectUser } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
-import { selectEnvFlags } from "~/features/common/features/features.slice";
+import { selectRbacEnabled } from "~/features/plus/plus.slice";
 import { rbacApi } from "~/features/rbac/rbac.slice";
 import {
   EditableMonitorConfig,
@@ -254,10 +254,10 @@ const emptyScopes: ScopeRegistryEnum[] = [];
  */
 export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
   createSelector(
-    [(RootState) => RootState, selectUser, selectEnvFlags],
-    (RootState, user, flags) => {
+    [(RootState) => RootState, selectUser, selectRbacEnabled],
+    (RootState, user, rbacEnabled) => {
       // When RBAC is enabled, prefer RBAC-derived permissions
-      if (flags.alphaRbac) {
+      if (rbacEnabled) {
         const rbacPermissions =
           rbacApi.endpoints.getMyRBACPermissions.select(undefined)(
             RootState,

@@ -44,7 +44,7 @@ const EmptyTableExperience = ({ canCreate }: { canCreate: boolean }) => {
                   size="small"
                   data-testid="add-privacy-experience-btn"
                   icon={<Icons.Add />}
-                  iconPosition="end"
+                  iconPlacement="end"
                 >
                   Create new experience
                 </Button>

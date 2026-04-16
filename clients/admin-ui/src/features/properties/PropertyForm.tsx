@@ -26,6 +26,7 @@ export interface FormValues {
   id?: string | null;
   name: string;
   type: PropertyType;
+  paths: Array<string>;
   messaging_templates?: Array<MinimalMessagingTemplate> | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
 }
@@ -41,7 +42,10 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
       page: 1,
       size: 100,
     });
-  const experienceConfigs = experienceData?.items ?? [];
+  const experienceConfigs = useMemo(
+    () => experienceData?.items ?? [],
+    [experienceData],
+  );
 
   const experienceOptions = useMemo(
     () => experienceConfigs.map((exp) => ({ value: exp.id, label: exp.name })),
@@ -146,6 +150,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                   data-testid="input-type"
                 />
               </Form.Item>
+              <Form.Item name="paths" hidden />
               <Form.Item
                 name="experiences"
                 label="Experiences"
@@ -174,7 +179,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                   tooltip="Automatically generated unique ID for this property, used for developer configurations"
                   className="!mb-0"
                 >
-                  <Space.Compact>
+                  <Space.Compact className="w-full">
                     <Input readOnly value={property.id ?? ""} />
                     <Space.Addon>
                       <ClipboardButton copyText={property.id ?? ""} />
@@ -203,6 +208,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
               type="primary"
               disabled={isSubmitting || !form.isFieldsTouched() || !submittable}
               loading={isSubmitting}
+              data-testid="save-btn"
             >
               Save
             </Button>

@@ -73,6 +73,7 @@ export const baseApi = createApi({
     "Purpose",
     "DataPurpose",
     "DataConsumer",
+    "IdentityGroupProvider",
     "QueryLogConfig",
     "Shared Monitor Configs",
     "System",
@@ -113,6 +114,8 @@ export const baseApi = createApi({
     "Controls",
     "Access Control",
     "Fides Dashboard",
+    "Monitor Statistics",
+    "Connection Type",
   ],
   endpoints: () => ({}),
 });

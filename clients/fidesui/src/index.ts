@@ -183,6 +183,7 @@ export type {
   FormInstance,
   FormItemProps,
   FormProps,
+  FormRule,
   GetProps,
   InputProps as InputPropsOriginal,
   InputRef,

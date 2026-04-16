@@ -36,7 +36,7 @@ export const AssessmentTaskPopoverContent = ({
             </Flex>
           </Descriptions.Item>
           <Descriptions.Item label="Progress">
-            <Space direction="vertical" size="small" className="w-full">
+            <Space orientation="vertical" size="small" className="w-full">
               <Text size="sm">
                 {activeTask.completed_count} of {activeTask.total_count}{" "}
                 assessments
