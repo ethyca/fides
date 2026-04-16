@@ -4,8 +4,12 @@ import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { ClientResponse } from "~/types/api";
 
-import { useCreateOAuthClientMutation } from "./oauth-clients.slice";
+import {
+  useCreateOAuthClientMutation,
+  useUpdateOAuthClientMutation,
+} from "./oauth-clients.slice";
 
 export interface OAuthClientFormValues {
   name: string;
@@ -19,22 +23,46 @@ const validationSchema = Yup.object().shape({
 });
 
 interface OAuthClientFormProps {
+  client?: ClientResponse;
   onClose: () => void;
   /** Called with the new client_id + plaintext secret after successful creation. */
   onCreated?: (clientId: string, secret: string) => void;
 }
 
-const OAuthClientForm = ({ onClose, onCreated }: OAuthClientFormProps) => {
+const OAuthClientForm = ({
+  client,
+  onClose,
+  onCreated,
+}: OAuthClientFormProps) => {
   const message = useMessage();
   const [createClient] = useCreateOAuthClientMutation();
+  const [updateClient] = useUpdateOAuthClientMutation();
 
   const initialValues: OAuthClientFormValues = {
-    name: "",
-    description: "",
-    scopes: [],
+    name: client?.name ?? "",
+    description: client?.description ?? "",
+    scopes: client?.scopes ?? [],
   };
 
   const handleSubmit = async (values: OAuthClientFormValues) => {
+    if (client) {
+      const result = await updateClient({
+        path: { client_id: client.client_id },
+        body: {
+          name: values.name,
+          description: values.description || undefined,
+          scopes: values.scopes,
+        },
+      });
+      if (isErrorResult(result)) {
+        message.error(getErrorMessage(result.error));
+      } else {
+        message.success("API client updated.");
+        onClose();
+      }
+      return;
+    }
+
     const result = await createClient({
       name: values.name,
       description: values.description || undefined,
@@ -89,7 +117,7 @@ const OAuthClientForm = ({ onClose, onCreated }: OAuthClientFormProps) => {
                 loading={isSubmitting}
                 data-testid="save-btn"
               >
-                Create client
+                {client ? "Save changes" : "Create client"}
               </Button>
             </div>
           </Flex>
