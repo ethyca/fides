@@ -184,7 +184,7 @@ export const InProgressMonitorTaskItem = ({
     <div {...props} className="w-full">
       <Row gutter={12} className="w-full">
         <Col span={14} className="align-middle">
-          <Space direction="vertical" size={4}>
+          <Space orientation="vertical" size={4}>
             <Space align="center" size={8} wrap>
               {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
               <Title level={5} className="m-0">

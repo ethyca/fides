@@ -27,7 +27,7 @@ export const useAuthorizeIntegrationStep = ({
 
   return {
     title: "Authorize integration",
-    description: <span>{getAuthorizationDescription()}</span>,
+    content: <span>{getAuthorizationDescription()}</span>,
     state: testData?.authorized ? "finish" : "process",
   };
 };

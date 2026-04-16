@@ -26,7 +26,7 @@ const ReportExportModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       data-testid="export-modal"
       footer={
         <Flex gap="small" justify="flex-end">

@@ -222,7 +222,7 @@ const SharedMonitorConfigForm = ({
                     >
                       <Button
                         icon={<Icons.Upload />}
-                        iconPosition="end"
+                        iconPlacement="end"
                         size="small"
                         data-testid="upload-csv-btn"
                       >
