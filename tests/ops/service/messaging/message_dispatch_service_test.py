@@ -33,11 +33,11 @@ from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistory
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
-    EMAIL_TEMPLATE_NAME,
     PROVIDER_MAP,
     dispatch_message,
 )
 from fides.api.service.messaging.messaging_providers.twilio_email_service import (
+    EMAIL_TEMPLATE_NAME,
     TwilioEmailService,
 )
 from fides.api.service.messaging.messaging_providers.twilio_sms_service import (

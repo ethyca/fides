@@ -64,7 +64,6 @@ from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
 EMAIL_JOIN_STRING = ", "
-EMAIL_TEMPLATE_NAME = "fides"
 
 
 def _resolve_provider_map() -> dict[
