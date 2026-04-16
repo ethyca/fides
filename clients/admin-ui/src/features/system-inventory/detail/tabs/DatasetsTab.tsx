@@ -1,14 +1,4 @@
-import "@xyflow/react/dist/style.css";
-
-import {
-  Background,
-  type Edge,
-  Handle,
-  type Node,
-  Position,
-  ReactFlow,
-  ReactFlowProvider,
-} from "@xyflow/react";
+import dynamic from "next/dynamic";
 import {
   Button,
   Checkbox,
@@ -17,16 +7,27 @@ import {
   Icons,
   Input,
   Modal,
+  Popover,
   Segmented,
   Select,
   Tag,
   Text,
+  Tooltip,
   useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo, useState } from "react";
 
+import { MOCK_PURPOSES } from "~/features/data-purposes/mockData";
+
 import type { MockSystem } from "../../types";
+
+const GraphView = dynamic(
+  () => import("./DatasetsGraphView"),
+  { ssr: false },
+);
+
+const CURRENT_USER = "Jack Gale";
 
 interface DatasetsTabProps {
   system: MockSystem;
@@ -42,13 +43,130 @@ interface TableViewProps {
   onSelectionChange: (keys: Set<string>) => void;
 }
 
+const PURPOSE_OPTIONS = MOCK_PURPOSES.map((p) => ({
+  label: p.name,
+  value: p.name,
+}));
+
+const PurposeCell = ({
+  datasetKey,
+  assigned,
+  onAdd,
+  onRemove,
+}: {
+  datasetKey: string;
+  assigned: string[];
+  onAdd: (purpose: string) => void;
+  onRemove: (purpose: string) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const isEmpty = assigned.length === 0;
+  const available = PURPOSE_OPTIONS.filter(
+    (o) => !assigned.includes(o.value),
+  );
+
+  const popoverContent = (
+    <Flex vertical gap={4} style={{ width: 240 }}>
+      {available.map((opt) => (
+        <div
+          key={opt.value}
+          className="cursor-pointer rounded px-2 py-1.5 text-xs hover:bg-[#f5f5f5]"
+          onClick={() => {
+            onAdd(opt.value);
+            if (available.length <= 1) setOpen(false);
+          }}
+        >
+          {opt.label}
+        </div>
+      ))}
+      {available.length === 0 && (
+        <Text type="secondary" className="px-2 py-1 text-xs">
+          All purposes assigned
+        </Text>
+      )}
+    </Flex>
+  );
+
+  return (
+    <Flex
+      align="center"
+      gap={8}
+      className="min-w-0"
+      style={
+        isEmpty
+          ? {
+              backgroundColor: "#fff7e6",
+              border: "1px solid #ffd591",
+              borderRadius: 6,
+              padding: "4px 10px",
+            }
+          : undefined
+      }
+    >
+      <Popover
+        content={popoverContent}
+        trigger="click"
+        open={open}
+        onOpenChange={setOpen}
+        placement="bottomLeft"
+        arrow={false}
+      >
+        <Tooltip title="Assign purpose">
+          <Button
+            type="text"
+            size="small"
+            icon={<Icons.Add size={14} />}
+            className={
+              isEmpty
+                ? "!text-[#fa8c16] hover:!bg-[#fff7e6]"
+                : "!text-gray-400 hover:!text-gray-600"
+            }
+            style={{ width: 22, height: 22, padding: 0, flexShrink: 0 }}
+          />
+        </Tooltip>
+      </Popover>
+      {isEmpty ? (
+        <Text className="whitespace-nowrap text-[11px]" style={{ color: "#d46b08" }}>
+          Purpose required
+        </Text>
+      ) : (
+        <Flex gap={4} align="center" className="min-w-0 overflow-hidden">
+          {assigned.map((p) => (
+            <Tag
+              key={p}
+              bordered={false}
+              closable
+              onClose={(e) => {
+                e.preventDefault();
+                onRemove(p);
+              }}
+              className="!m-0 !shrink-0 !text-[10px]"
+            >
+              {p}
+            </Tag>
+          ))}
+        </Flex>
+      )}
+    </Flex>
+  );
+};
+
 const TableView = ({
   system,
   selectedKeys,
   onSelectionChange,
 }: TableViewProps) => {
   const [search, setSearch] = useState("");
-  const [stewardFilter, setStewardFilter] = useState<string | null>(null);
+  const [stewardFilter, setStewardFilter] = useState<string | null>(
+    CURRENT_USER,
+  );
+  const [purposeAssignments, setPurposeAssignments] = useState<
+    Record<string, string[]>
+  >(
+    Object.fromEntries(
+      system.datasets.map((ds) => [ds.key, ds.purposes ?? []]),
+    ),
+  );
 
   const stewardOptions = useMemo(() => {
     const names = new Set<string>();
@@ -118,22 +236,22 @@ const TableView = ({
             size="small"
             style={{ width: 240 }}
           />
-          <Select
-            aria-label="Filter by steward"
-            placeholder="All stewards"
-            options={stewardOptions}
-            value={stewardFilter}
-            onChange={setStewardFilter}
-            allowClear
-            size="small"
-            style={{ width: 180 }}
-          />
+          <Text type="secondary" className="text-xs whitespace-nowrap">
+            {selectedKeys.size > 0
+              ? `${selectedKeys.size} selected`
+              : `${filtered.length} datasets`}
+          </Text>
         </Flex>
-        <Text type="secondary" className="text-xs">
-          {selectedKeys.size > 0
-            ? `${selectedKeys.size} selected`
-            : `${filtered.length} datasets`}
-        </Text>
+        <Select
+          aria-label="Filter by steward"
+          placeholder="All stewards"
+          options={stewardOptions}
+          value={stewardFilter}
+          onChange={setStewardFilter}
+          allowClear
+          size="small"
+          style={{ width: 180 }}
+        />
       </Flex>
 
       <Flex vertical gap={0}>
@@ -153,27 +271,27 @@ const TableView = ({
               aria-label="Select all datasets"
             />
           </div>
-          <Text strong className="w-[15%] text-[10px] uppercase tracking-wider">
+          <Text strong className="w-[15%] text-xs">
             Dataset
           </Text>
-          <Text strong className="w-[10%] text-[10px] uppercase tracking-wider">
+          <Text strong className="w-[10%] text-xs">
             Steward
           </Text>
-          <Text strong className="w-1/5 text-[10px] uppercase tracking-wider">
+          <Text strong className="w-[20%] text-xs">
             Data categories
           </Text>
-          <Text strong className="w-[12%] text-[10px] uppercase tracking-wider">
-            DSR scope
+          <Text strong className="w-[22%] text-xs">
+            Purpose
           </Text>
-          <Text strong className="w-[8%] text-[10px] uppercase tracking-wider">
+          <Text strong className="w-[7%] text-xs">
             Fields
           </Text>
-          <Text strong className="w-[8%] text-[10px] uppercase tracking-wider">
+          <Text strong className="w-[10%] text-xs">
             Collections
           </Text>
           <Text
             strong
-            className="w-[24%] text-right text-[10px] uppercase tracking-wider"
+            className="w-[13%] text-right text-xs"
           >
             Actions
           </Text>
@@ -203,62 +321,82 @@ const TableView = ({
               <Text type="secondary" className="w-[10%] text-xs">
                 {ds.steward ?? "—"}
               </Text>
-              <div className="w-1/5">
+              <div className="w-[20%] pr-2">
                 {ds.dataCategories && ds.dataCategories.length > 0 ? (
-                  <Flex gap={3} wrap>
+                  <Flex gap={4} align="center" className="overflow-hidden">
                     {ds.dataCategories.slice(0, 2).map((c) => (
                       <Tag
                         key={c}
-                        color="corinth"
                         bordered={false}
-                        className="!text-[9px]"
+                        className="!m-0 !shrink-0 !text-[10px]"
                       >
                         {c}
                       </Tag>
                     ))}
                     {ds.dataCategories.length > 2 && (
                       <Tag
-                        color="corinth"
                         bordered={false}
-                        className="!text-[9px]"
+                        className="!m-0 !shrink-0 !text-[10px]"
                       >
                         +{ds.dataCategories.length - 2}
                       </Tag>
                     )}
                   </Flex>
                 ) : (
-                  <Text type="secondary" className="text-[10px]">
+                  <Text type="secondary" className="text-xs">
                     —
                   </Text>
                 )}
               </div>
-              <div className="w-[12%]">
-                {ds.dsrScope && ds.dsrScope.length > 0 ? (
-                  <Flex gap={3} wrap>
-                    {ds.dsrScope.map((s) => (
-                      <Tag
-                        key={s}
-                        bordered={false}
-                        color="olive"
-                        className="!text-[9px]"
-                      >
-                        {s}
-                      </Tag>
-                    ))}
-                  </Flex>
+              <div className="w-[22%] pr-2">
+                {ds.steward === CURRENT_USER ? (
+                  <PurposeCell
+                    datasetKey={ds.key}
+                    assigned={purposeAssignments[ds.key] ?? []}
+                    onAdd={(purpose) =>
+                      setPurposeAssignments((prev) => ({
+                        ...prev,
+                        [ds.key]: [...(prev[ds.key] ?? []), purpose],
+                      }))
+                    }
+                    onRemove={(purpose) =>
+                      setPurposeAssignments((prev) => ({
+                        ...prev,
+                        [ds.key]: (prev[ds.key] ?? []).filter(
+                          (p) => p !== purpose,
+                        ),
+                      }))
+                    }
+                  />
                 ) : (
-                  <Text type="secondary" className="text-[10px]">
-                    —
-                  </Text>
+                  <div className="overflow-hidden">
+                    {(purposeAssignments[ds.key] ?? []).length > 0 ? (
+                      <Flex gap={4} align="center" className="overflow-hidden">
+                        {(purposeAssignments[ds.key] ?? []).map((p) => (
+                          <Tag
+                            key={p}
+                            bordered={false}
+                            className="!m-0 !shrink-0 !text-[10px]"
+                          >
+                            {p}
+                          </Tag>
+                        ))}
+                      </Flex>
+                    ) : (
+                      <Text type="secondary" className="text-xs">
+                        —
+                      </Text>
+                    )}
+                  </div>
                 )}
               </div>
-              <Text type="secondary" className="w-[8%] text-xs">
+              <Text type="secondary" className="w-[7%] text-xs">
                 {ds.fieldCount.toLocaleString()}
               </Text>
-              <Text type="secondary" className="w-[8%] text-xs">
+              <Text type="secondary" className="w-[10%] text-xs">
                 {ds.collectionCount}
               </Text>
-              <Flex className="w-[24%]" justify="flex-end" gap={6}>
+              <Flex className="w-[13%]" justify="flex-end" gap={6}>
                 <Button size="small" type="default" className="!text-[10px]">
                   View
                 </Button>
@@ -278,141 +416,6 @@ const TableView = ({
         )}
       </Flex>
     </Flex>
-  );
-};
-
-// --- Graph View (React Flow) ---
-
-const DatasetNode = ({
-  data,
-}: {
-  data: { label: string; type: string; count?: number };
-}) => (
-  <div className="rounded-lg border border-solid border-[#e6e6e8] bg-white px-3 py-2 text-center shadow-sm">
-    <Text
-      className="block text-[10px] uppercase tracking-wider"
-      type="secondary"
-    >
-      {data.type}
-    </Text>
-    <Text strong className="block text-xs">
-      {data.label}
-    </Text>
-    {data.count !== undefined && (
-      <Text type="secondary" className="block text-[10px]">
-        {data.count} items
-      </Text>
-    )}
-    <Handle
-      type="source"
-      position={Position.Right}
-      className="!size-2 !border-[#999b83] !bg-[#999b83]"
-    />
-    <Handle
-      type="target"
-      position={Position.Left}
-      className="!size-2 !border-[#b9704b] !bg-[#b9704b]"
-    />
-  </div>
-);
-
-const nodeTypes = { dataset: DatasetNode };
-
-function buildGraph(system: MockSystem): { nodes: Node[]; edges: Edge[] } {
-  const nodes: Node[] = [];
-  const edges: Edge[] = [];
-  let y = 0;
-
-  system.datasets.forEach((ds, dsIdx) => {
-    const dsId = `ds-${dsIdx}`;
-    nodes.push({
-      id: dsId,
-      type: "dataset",
-      position: { x: 0, y },
-      data: { label: ds.name, type: "Dataset", count: ds.collectionCount },
-    });
-
-    // Collections
-    const collectionsPerDs = Math.min(ds.collectionCount, 3);
-    for (let c = 0; c < collectionsPerDs; c += 1) {
-      const colId = `col-${dsIdx}-${c}`;
-      nodes.push({
-        id: colId,
-        type: "dataset",
-        position: { x: 280, y: y + c * 60 },
-        data: {
-          label: `collection_${c + 1}`,
-          type: "Collection",
-          count: Math.round(ds.fieldCount / ds.collectionCount),
-        },
-      });
-      edges.push({
-        id: `e-${dsId}-${colId}`,
-        source: dsId,
-        target: colId,
-        animated: true,
-        style: { stroke: "#cecac2" },
-      });
-
-      // Fields (show 2 per collection)
-      for (let f = 0; f < 2; f += 1) {
-        const fieldId = `field-${dsIdx}-${c}-${f}`;
-        const catIdx = f % (ds.dataCategories?.length ?? 1);
-        const cat = ds.dataCategories?.[catIdx] ?? "uncategorized";
-        nodes.push({
-          id: fieldId,
-          type: "dataset",
-          position: { x: 560, y: y + c * 60 + f * 50 },
-          data: { label: cat.split(".").pop() ?? cat, type: "Field" },
-        });
-        edges.push({
-          id: `e-${colId}-${fieldId}`,
-          source: colId,
-          target: fieldId,
-          style: { stroke: "#e6e6e8" },
-        });
-
-        // Category
-        const catNodeId = `cat-${dsIdx}-${c}-${f}`;
-        nodes.push({
-          id: catNodeId,
-          type: "dataset",
-          position: { x: 820, y: y + c * 60 + f * 50 },
-          data: { label: cat, type: "Category" },
-        });
-        edges.push({
-          id: `e-${fieldId}-${catNodeId}`,
-          source: fieldId,
-          target: catNodeId,
-          style: { stroke: "#f0f0f0" },
-        });
-      }
-    }
-
-    y += Math.max(collectionsPerDs * 100, 120);
-  });
-
-  return { nodes, edges };
-}
-
-const GraphView = ({ system }: { system: MockSystem }) => {
-  const { nodes, edges } = useMemo(() => buildGraph(system), [system]);
-
-  return (
-    <div className="h-[600px] w-full rounded-lg border border-solid border-[#f0f0f0]">
-      <ReactFlowProvider>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          fitView
-          proOptions={{ hideAttribution: true }}
-          defaultEdgeOptions={{ type: "smoothstep" }}
-        >
-          <Background color="#f5f5f5" gap={20} />
-        </ReactFlow>
-      </ReactFlowProvider>
-    </div>
   );
 };
 
@@ -565,12 +568,10 @@ const DatasetPickerModal = ({
 };
 
 const ACTION_ITEMS = [
-  { key: "enable-dsr", label: "Enable DSRs" },
-  { key: "disable-dsr", label: "Disable DSRs" },
-  { key: "enable-access", label: "Enable access" },
-  { key: "enable-erasure", label: "Enable erasure" },
-  { key: "remove-access", label: "Remove access" },
-  { key: "remove-erasure", label: "Remove erasure" },
+  { key: "add-purpose", label: "Add purpose" },
+  { key: "add-category", label: "Add data category" },
+  { type: "divider" as const },
+  { key: "delete", label: "Delete dataset", danger: true },
 ];
 
 const DatasetsTab = ({ system }: DatasetsTabProps) => {

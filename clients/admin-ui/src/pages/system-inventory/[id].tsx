@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
@@ -13,6 +14,7 @@ const SystemDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const system = useSystemDetail(id as string | undefined);
+  const [activeTab, setActiveTab] = useState("overview");
 
   if (!system) {
     return null;
@@ -27,9 +29,13 @@ const SystemDetailPage: NextPage = () => {
         ]}
       />
       <SystemDetailHeader system={system} />
-      <SystemBriefingBanner system={system} />
+      <SystemBriefingBanner system={system} onNavigate={setActiveTab} />
       <SystemDetailDashboardV2 system={system} />
-      <SystemDetailContent system={system} />
+      <SystemDetailContent
+        system={system}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
     </FixedLayout>
   );
 };

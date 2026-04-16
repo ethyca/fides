@@ -129,6 +129,7 @@ export interface MockDataset {
   dataCategories?: string[];
   status?: "approved" | "pending" | "draft";
   steward?: string;
+  purposes?: string[];
 }
 
 export interface MockPrivacyRequests {

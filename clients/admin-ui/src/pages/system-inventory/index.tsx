@@ -6,12 +6,13 @@ import {
   Flex,
   Icons,
   Row,
+  Segmented,
   Text,
-  Tooltip,
   Typography,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -21,7 +22,11 @@ import {
   ADD_SYSTEMS_MULTIPLE_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import GovernanceHealthDashboard from "~/features/system-inventory/components/GovernanceHealthDashboard";
+
+const GovernanceHealthDashboard = dynamic(
+  () => import("~/features/system-inventory/components/GovernanceHealthDashboard"),
+  { ssr: false },
+);
 import NeedsAttentionFrame from "~/features/system-inventory/components/NeedsAttentionFrame";
 import SystemCard from "~/features/system-inventory/components/SystemCard";
 import SystemInventoryFilters from "~/features/system-inventory/components/SystemInventoryFilters";
@@ -31,22 +36,21 @@ const { Title } = Typography;
 
 const SystemInventoryPage: NextPage = () => {
   const {
+    systems,
     needsAttention,
     healthy,
     governanceHealth,
     search,
     setSearch,
-    healthFilter,
-    setHealthFilter,
-    typeFilter,
-    setTypeFilter,
+    statusFilter,
+    setStatusFilter,
+    stewardFilter,
+    setStewardFilter,
     groupFilter,
     setGroupFilter,
-    severityFilter,
-    setSeverityFilter,
-    freshnessFilter,
-    setFreshnessFilter,
-    typeOptions,
+    dateRange,
+    setDateRange,
+    stewardOptions,
     groupOptions,
   } = useSystemInventory();
 
@@ -72,27 +76,15 @@ const SystemInventoryPage: NextPage = () => {
   } with open risks`;
 
   const expandToggle = (
-    <Tooltip
-      title={cardsExpanded ? "Collapse risk details" : "Expand risk details"}
-    >
-      <Button
-        type={cardsExpanded ? "primary" : "default"}
-        size="middle"
-        aria-label={
-          cardsExpanded ? "Collapse risk details" : "Expand risk details"
-        }
-        icon={<Icons.WarningAlt size={16} />}
-        style={
-          cardsExpanded
-            ? {
-                backgroundColor: palette.FIDESUI_MINOS,
-                borderColor: palette.FIDESUI_MINOS,
-              }
-            : undefined
-        }
-        onClick={() => setCardsExpanded((prev) => !prev)}
-      />
-    </Tooltip>
+    <Segmented
+      size="small"
+      value={cardsExpanded ? "details" : "summary"}
+      onChange={(val) => setCardsExpanded(val === "details")}
+      options={[
+        { label: "Compact", value: "summary" },
+        { label: "Expanded", value: "details" },
+      ]}
+    />
   );
 
   return (
@@ -107,38 +99,40 @@ const SystemInventoryPage: NextPage = () => {
           </Dropdown>
         }
       />
-      <GovernanceHealthDashboard data={governanceHealth} />
       <SystemInventoryFilters
         search={search}
         onSearchChange={setSearch}
-        healthFilter={healthFilter}
-        onHealthFilterChange={setHealthFilter}
-        typeFilter={typeFilter}
-        onTypeFilterChange={setTypeFilter}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        stewardFilter={stewardFilter}
+        onStewardFilterChange={setStewardFilter}
         groupFilter={groupFilter}
         onGroupFilterChange={setGroupFilter}
-        severityFilter={severityFilter}
-        onSeverityFilterChange={setSeverityFilter}
-        freshnessFilter={freshnessFilter}
-        onFreshnessFilterChange={setFreshnessFilter}
-        typeOptions={typeOptions}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        stewardOptions={stewardOptions}
         groupOptions={groupOptions}
-        expandToggle={expandToggle}
       />
+      <GovernanceHealthDashboard data={governanceHealth} systems={systems} />
       {needsAttention.length > 0 && (
-        <NeedsAttentionFrame description={needsAttentionDescription}>
-          <Row gutter={[16, 16]}>
-            {needsAttention.map((system) => (
-              <Col key={system.fides_key} span={8}>
-                <SystemCard
-                  system={system}
-                  accentBorder
-                  expanded={cardsExpanded}
-                />
-              </Col>
-            ))}
-          </Row>
-        </NeedsAttentionFrame>
+        <div className="pt-6">
+          <NeedsAttentionFrame
+            description={needsAttentionDescription}
+            rightAction={expandToggle}
+          >
+            <Row gutter={[16, 16]}>
+              {needsAttention.map((system) => (
+                <Col key={system.fides_key} span={8}>
+                  <SystemCard
+                    system={system}
+                    accentBorder
+                    expanded={cardsExpanded}
+                  />
+                </Col>
+              ))}
+            </Row>
+          </NeedsAttentionFrame>
+        </div>
       )}
       {healthy.length > 0 && (
         <div className={needsAttention.length > 0 ? "mt-8" : undefined}>

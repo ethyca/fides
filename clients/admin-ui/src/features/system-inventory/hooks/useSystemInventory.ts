@@ -1,27 +1,24 @@
+import type { Dayjs } from "dayjs";
 import { useMemo, useState } from "react";
 
 import { MOCK_SYSTEMS } from "../mock-data";
 import {
   type GovernanceHealthData,
   HealthStatus,
-  RiskFreshness,
   RiskSeverity,
   type SystemInventoryStats,
 } from "../types";
-import {
-  computeGovernanceHealth,
-  getRiskFreshness,
-  latestRiskTimestamp,
-} from "../utils";
+import { computeGovernanceHealth, latestRiskTimestamp } from "../utils";
 
 export const useSystemInventory = () => {
   const [search, setSearch] = useState("");
-  const [healthFilter, setHealthFilter] = useState<HealthStatus | null>(null);
-  const [severityFilter, setSeverityFilter] = useState<RiskSeverity[]>([]);
-  const [freshnessFilter, setFreshnessFilter] = useState<RiskFreshness | null>(
-    null,
+  const [statusFilter, setStatusFilter] = useState<
+    (RiskSeverity | HealthStatus)[]
+  >([]);
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
+  const [stewardFilter, setStewardFilter] = useState<string | null>(
+    "Jack Gale",
   );
-  const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [groupFilter, setGroupFilter] = useState<string | null>(null);
 
   const systems = MOCK_SYSTEMS;
@@ -38,24 +35,41 @@ export const useSystemInventory = () => {
       );
     }
 
-    if (healthFilter) {
-      result = result.filter((s) => s.health === healthFilter);
+    if (statusFilter.length > 0) {
+      const healthValues = statusFilter.filter(
+        (v): v is HealthStatus =>
+          v === HealthStatus.HEALTHY || v === HealthStatus.ISSUES,
+      );
+      const severityValues = statusFilter.filter(
+        (v): v is RiskSeverity => !healthValues.includes(v as HealthStatus),
+      );
+
+      result = result.filter((s) => {
+        const matchesHealth =
+          healthValues.length === 0 || healthValues.includes(s.health);
+        const matchesSeverity =
+          severityValues.length === 0 ||
+          s.risks.some((r) => severityValues.includes(r.severity));
+        return matchesHealth && matchesSeverity;
+      });
     }
 
-    if (severityFilter.length > 0) {
+    if (dateRange) {
+      const [start, end] = dateRange;
+      const startMs = start.startOf("day").valueOf();
+      const endMs = end.endOf("day").valueOf();
       result = result.filter((s) =>
-        s.risks.some((r) => severityFilter.includes(r.severity)),
+        s.risks.some((r) => {
+          const ts = new Date(r.detectedAt).getTime();
+          return ts >= startMs && ts <= endMs;
+        }),
       );
     }
 
-    if (freshnessFilter) {
+    if (stewardFilter) {
       result = result.filter((s) =>
-        s.risks.some((r) => getRiskFreshness(r.detectedAt) === freshnessFilter),
+        s.stewards.some((st) => st.name === stewardFilter),
       );
-    }
-
-    if (typeFilter) {
-      result = result.filter((s) => s.system_type === typeFilter);
     }
 
     if (groupFilter) {
@@ -67,26 +81,25 @@ export const useSystemInventory = () => {
   }, [
     systems,
     search,
-    healthFilter,
-    severityFilter,
-    freshnessFilter,
-    typeFilter,
+    statusFilter,
+    dateRange,
+    stewardFilter,
     groupFilter,
   ]);
 
   const stats: SystemInventoryStats = useMemo(
     () => ({
-      total: systems.length,
+      total: filtered.length,
       violations: 0,
-      risks: systems.filter((s) => s.risk_count > 0).length,
-      healthy: systems.filter((s) => s.health === HealthStatus.HEALTHY).length,
+      risks: filtered.filter((s) => s.risk_count > 0).length,
+      healthy: filtered.filter((s) => s.health === HealthStatus.HEALTHY).length,
     }),
-    [systems],
+    [filtered],
   );
 
   const governanceHealth: GovernanceHealthData = useMemo(
-    () => computeGovernanceHealth(systems),
-    [systems],
+    () => computeGovernanceHealth(filtered),
+    [filtered],
   );
 
   const needsAttention = useMemo(
@@ -114,9 +127,10 @@ export const useSystemInventory = () => {
     [filtered],
   );
 
-  const typeOptions = useMemo(() => {
-    const types = [...new Set(systems.map((s) => s.system_type))].sort();
-    return types.map((t) => ({ label: t, value: t }));
+  const stewardOptions = useMemo(() => {
+    const names = new Set<string>();
+    systems.forEach((s) => s.stewards.forEach((st) => names.add(st.name)));
+    return [...names].sort().map((n) => ({ label: n, value: n }));
   }, [systems]);
 
   const groupOptions = useMemo(() => {
@@ -134,17 +148,15 @@ export const useSystemInventory = () => {
     stats,
     search,
     setSearch,
-    healthFilter,
-    setHealthFilter,
-    severityFilter,
-    setSeverityFilter,
-    freshnessFilter,
-    setFreshnessFilter,
-    typeFilter,
-    setTypeFilter,
+    statusFilter,
+    setStatusFilter,
+    dateRange,
+    setDateRange,
+    stewardFilter,
+    setStewardFilter,
     groupFilter,
     setGroupFilter,
-    typeOptions,
+    stewardOptions,
     groupOptions,
   };
 };

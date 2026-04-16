@@ -1,47 +1,44 @@
-import { Flex, Input, Select } from "fidesui";
-import { ReactNode } from "react";
+import type { Dayjs } from "dayjs";
+import { DatePicker, Flex, Input, Select } from "fidesui";
 
-import {
-  FRESHNESS_FILTER_OPTIONS,
-  HEALTH_FILTER_OPTIONS,
-  SEVERITY_FILTER_OPTIONS,
-} from "../constants";
-import { HealthStatus, RiskFreshness, RiskSeverity } from "../types";
+import { HEALTH_FILTER_OPTIONS, SEVERITY_FILTER_OPTIONS } from "../constants";
+import { HealthStatus, RiskSeverity } from "../types";
+
+type StatusFilterValue = RiskSeverity | HealthStatus;
+
+const STATUS_FILTER_OPTIONS: { label: string; value: StatusFilterValue }[] = [
+  ...HEALTH_FILTER_OPTIONS,
+  ...SEVERITY_FILTER_OPTIONS,
+];
 
 interface SystemInventoryFiltersProps {
   search: string;
   onSearchChange: (value: string) => void;
-  healthFilter: HealthStatus | null;
-  onHealthFilterChange: (value: HealthStatus | null) => void;
-  typeFilter: string | null;
-  onTypeFilterChange: (value: string | null) => void;
+  statusFilter: StatusFilterValue[];
+  onStatusFilterChange: (value: StatusFilterValue[]) => void;
+  dateRange: [Dayjs, Dayjs] | null;
+  onDateRangeChange: (range: [Dayjs, Dayjs] | null) => void;
+  stewardFilter: string | null;
+  onStewardFilterChange: (value: string | null) => void;
   groupFilter: string | null;
   onGroupFilterChange: (value: string | null) => void;
-  severityFilter: RiskSeverity[];
-  onSeverityFilterChange: (value: RiskSeverity[]) => void;
-  freshnessFilter: RiskFreshness | null;
-  onFreshnessFilterChange: (value: RiskFreshness | null) => void;
-  typeOptions: { label: string; value: string }[];
+  stewardOptions: { label: string; value: string }[];
   groupOptions: { label: string; value: string }[];
-  expandToggle?: ReactNode;
 }
 
 const SystemInventoryFilters = ({
   search,
   onSearchChange,
-  healthFilter,
-  onHealthFilterChange,
-  typeFilter,
-  onTypeFilterChange,
+  statusFilter,
+  onStatusFilterChange,
+  dateRange,
+  onDateRangeChange,
   groupFilter,
   onGroupFilterChange,
-  severityFilter,
-  onSeverityFilterChange,
-  freshnessFilter,
-  onFreshnessFilterChange,
-  typeOptions,
+  stewardFilter,
+  onStewardFilterChange,
+  stewardOptions,
   groupOptions,
-  expandToggle,
 }: SystemInventoryFiltersProps) => (
   <Flex gap="small" align="center" wrap className="mb-4">
     <Input
@@ -53,44 +50,31 @@ const SystemInventoryFilters = ({
       allowClear
       style={{ width: 260 }}
     />
+    <DatePicker.RangePicker
+      format="YYYY-MM-DD"
+      value={dateRange}
+      onChange={(dates) => {
+        if (dates && dates[0] && dates[1]) {
+          onDateRangeChange([dates[0], dates[1]]);
+        } else {
+          onDateRangeChange(null);
+        }
+      }}
+      placeholder={["From", "To"]}
+      allowClear
+      style={{ width: 260 }}
+    />
     <div className="ml-auto" />
     <Select
-      aria-label="Filter by health status"
-      placeholder="All health"
-      options={HEALTH_FILTER_OPTIONS}
-      value={healthFilter}
-      onChange={onHealthFilterChange}
-      allowClear
-      style={{ width: 160 }}
-    />
-    <Select
-      aria-label="Filter by risk severity"
-      placeholder="Any severity"
+      aria-label="Filter by status"
+      placeholder="Status"
       mode="multiple"
-      options={SEVERITY_FILTER_OPTIONS}
-      value={severityFilter}
-      onChange={onSeverityFilterChange}
+      options={STATUS_FILTER_OPTIONS}
+      value={statusFilter}
+      onChange={onStatusFilterChange}
       allowClear
       maxTagCount="responsive"
-      style={{ width: 200 }}
-    />
-    <Select
-      aria-label="Filter by risk freshness"
-      placeholder="Any freshness"
-      options={FRESHNESS_FILTER_OPTIONS}
-      value={freshnessFilter}
-      onChange={onFreshnessFilterChange}
-      allowClear
-      style={{ width: 200 }}
-    />
-    <Select
-      aria-label="Filter by system type"
-      placeholder="All types"
-      options={typeOptions}
-      value={typeFilter}
-      onChange={onTypeFilterChange}
-      allowClear
-      style={{ width: 180 }}
+      style={{ width: 220 }}
     />
     <Select
       aria-label="Filter by group"
@@ -101,7 +85,15 @@ const SystemInventoryFilters = ({
       allowClear
       style={{ width: 180 }}
     />
-    {expandToggle}
+    <Select
+      aria-label="Filter by steward"
+      placeholder="All stewards"
+      options={stewardOptions}
+      value={stewardFilter}
+      onChange={onStewardFilterChange}
+      allowClear
+      style={{ width: 180 }}
+    />
   </Flex>
 );
 

@@ -3,10 +3,11 @@ import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useState } from "react";
 
 import { SEVERITY_COLORS } from "../constants";
-import { type MockSystem, RiskSeverity } from "../types";
+import type { MockSystem, SystemRisk } from "../types";
 
 interface SystemBriefingBannerProps {
   system: MockSystem;
+  onNavigate?: (tab: string) => void;
 }
 
 function buildRichBriefing(system: MockSystem): string {
@@ -50,37 +51,24 @@ function buildRichBriefing(system: MockSystem): string {
   return parts.join(" ");
 }
 
-interface BannerRisk {
-  id: string;
-  label: string;
-  severity: RiskSeverity;
+const HREF_TO_TAB: Record<string, string> = {
+  "#datasets": "datasets",
+  "#integrations": "overview",
+  "#assets": "assets",
+  "#information": "overview",
+  "#config": "overview",
+};
+
+function getTabForRisk(risk: SystemRisk): string {
+  return HREF_TO_TAB[risk.resolveHref] ?? "overview";
 }
 
-function getBannerRisks(system: MockSystem): BannerRisk[] {
-  const risks: BannerRisk[] = [];
-
-  const needsReview =
-    system.classification.unreviewed + system.classification.pending;
-  if (needsReview > 0) {
-    risks.push({
-      id: "classification",
-      label: `${needsReview.toLocaleString()} fields need review`,
-      severity: RiskSeverity.MEDIUM,
-    });
-  }
-
-  risks.push({
-    id: "steward",
-    label: "No steward assigned",
-    severity: RiskSeverity.LOW,
-  });
-
-  return risks;
-}
-
-const SystemBriefingBanner = ({ system }: SystemBriefingBannerProps) => {
+const SystemBriefingBanner = ({
+  system,
+  onNavigate,
+}: SystemBriefingBannerProps) => {
   const briefing = system.agentBriefing ?? buildRichBriefing(system);
-  const allRisks = getBannerRisks(system);
+  const allRisks = system.risks;
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   const dismiss = useCallback((id: string) => {
@@ -125,10 +113,19 @@ const SystemBriefingBanner = ({ system }: SystemBriefingBannerProps) => {
                       backgroundColor: SEVERITY_COLORS[risk.severity],
                     }}
                   />
-                  <Text className="min-w-0 flex-1 text-xs">{risk.label}</Text>
+                  <Text className="min-w-0 flex-1 text-xs">{risk.title}</Text>
+                  <Button
+                    type="text"
+                    size="small"
+                    className="!px-0 !text-xs"
+                    style={{ color: palette.FIDESUI_MINOS }}
+                    onClick={() => onNavigate?.(getTabForRisk(risk))}
+                  >
+                    View
+                  </Button>
                   <span
                     role="button"
-                    aria-label={`Dismiss ${risk.label}`}
+                    aria-label={`Dismiss ${risk.title}`}
                     tabIndex={0}
                     className="shrink-0 cursor-pointer"
                     onClick={() => dismiss(risk.id)}

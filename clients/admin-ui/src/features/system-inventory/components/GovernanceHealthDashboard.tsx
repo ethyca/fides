@@ -1,5 +1,6 @@
 import { Avatar, Divider, Flex, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import { useMemo } from "react";
 import {
   Area,
   AreaChart,
@@ -10,12 +11,15 @@ import {
   YAxis,
 } from "recharts";
 
+import { getBrandIconUrl } from "~/features/common/utils";
+
 import { PILLAR_CONFIG } from "../constants";
-import { type GovernanceHealthData, PillarKey } from "../types";
+import { type GovernanceHealthData, type MockSystem, PillarKey } from "../types";
 import GovernanceScoreCard from "./GovernanceScoreCard";
 
 interface GovernanceHealthDashboardProps {
   data: GovernanceHealthData;
+  systems: MockSystem[];
 }
 
 // Each pillar contributes score/3 so they stack to the overall score.
@@ -72,45 +76,72 @@ interface ActivityItem {
   time: string;
   color: string;
   steward: { initials: string };
+  system: {
+    name: string;
+    logoDomain: string | null;
+    logoUrl?: string;
+  };
 }
 
-const ACTIVITY: ActivityItem[] = [
-  {
-    message: "System 'Stripe' annotations completed",
-    time: "2h ago",
-    color: palette.FIDESUI_SUCCESS,
-    steward: { initials: "MB" },
-  },
-  {
-    message: "3 new risks flagged in 'Salesforce'",
-    time: "5h ago",
-    color: palette.FIDESUI_WARNING,
-    steward: { initials: "LT" },
-  },
-  {
-    message: "Data use purposes updated for marketing",
-    time: "1d ago",
-    color: palette.FIDESUI_SUCCESS,
-    steward: { initials: "RS" },
-  },
-  {
-    message: "Steward assigned to 'Segment'",
-    time: "1d ago",
-    color: palette.FIDESUI_INFO,
-    steward: { initials: "RS" },
-  },
-  {
-    message: "Monthly governance review completed",
-    time: "3d ago",
-    color: palette.FIDESUI_INFO,
-    steward: { initials: "AK" },
-  },
-];
+const CATEGORY_COLORS: Record<string, string> = {
+  classification: palette.FIDESUI_SUCCESS,
+  integration: palette.FIDESUI_INFO,
+  system: palette.FIDESUI_INFO,
+  steward: palette.FIDESUI_INFO,
+  purpose: palette.FIDESUI_SUCCESS,
+};
+
+function formatRelativeTime(timestamp: string): string {
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours < 1) return "just now";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks}w ago`;
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function buildActivity(systems: MockSystem[]): ActivityItem[] {
+  const entries = systems.flatMap((sys) =>
+    sys.history.map((h) => ({
+      ...h,
+      systemName: sys.name,
+      logoDomain: sys.logoDomain,
+      logoUrl: sys.logoUrl,
+    })),
+  );
+  entries.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
+  return entries.slice(0, 5).map((entry) => ({
+    message: `${entry.action}: ${entry.detail}`,
+    time: formatRelativeTime(entry.timestamp),
+    color: CATEGORY_COLORS[entry.category] ?? palette.FIDESUI_NEUTRAL_500,
+    steward: { initials: entry.user === "System" ? "SY" : getInitials(entry.user) },
+    system: {
+      name: entry.systemName,
+      logoDomain: entry.logoDomain,
+      logoUrl: entry.logoUrl,
+    },
+  }));
+}
 
 const GovernanceHealthDashboard = ({
   data,
+  systems,
 }: GovernanceHealthDashboardProps) => {
   const trendData = buildTrendData(data);
+  const activity = useMemo(() => buildActivity(systems), [systems]);
 
   return (
     <div className="mb-2">
@@ -229,30 +260,44 @@ const GovernanceHealthDashboard = ({
             Recent activity
           </Text>
           <Flex vertical gap={0}>
-            {ACTIVITY.map((item) => (
+            {activity.map((item, idx) => (
               <Flex
-                key={item.message}
+                key={`${item.time}-${idx}`}
                 justify="space-between"
                 align="center"
                 className="border-b border-solid py-1.5 last:border-b-0"
                 style={{ borderColor: palette.FIDESUI_NEUTRAL_75 }}
               >
-                <Text className="min-w-0 flex-1 truncate text-[11px]">
-                  {item.message}
-                </Text>
-                <Flex align="center" className="shrink-0 pl-8">
-                  <div className="w-[32px]">
-                    <Avatar
-                      size={20}
-                      style={{
-                        backgroundColor: palette.FIDESUI_NEUTRAL_100,
-                        color: palette.FIDESUI_NEUTRAL_800,
-                        fontSize: 9,
-                      }}
-                    >
-                      {item.steward.initials}
-                    </Avatar>
-                  </div>
+                <Flex align="center" gap={8} className="min-w-0 flex-1">
+                  <Avatar
+                    size={20}
+                    shape="square"
+                    src={
+                      item.system.logoUrl ??
+                      (item.system.logoDomain
+                        ? getBrandIconUrl(item.system.logoDomain, 40)
+                        : undefined)
+                    }
+                    style={
+                      !item.system.logoDomain && !item.system.logoUrl
+                        ? {
+                            backgroundColor: palette.FIDESUI_NEUTRAL_100,
+                            color: palette.FIDESUI_NEUTRAL_800,
+                            fontSize: 9,
+                          }
+                        : undefined
+                    }
+                    className="shrink-0"
+                  >
+                    {!item.system.logoDomain && !item.system.logoUrl
+                      ? item.system.name.slice(0, 2).toUpperCase()
+                      : null}
+                  </Avatar>
+                  <Text className="min-w-0 flex-1 truncate text-[11px]">
+                    {item.message}
+                  </Text>
+                </Flex>
+                <Flex align="center" className="shrink-0 pl-4">
                   <Text
                     type="secondary"
                     className="w-[48px] text-right text-xs"

@@ -227,8 +227,7 @@ export function computeGovernanceHealth(
     dimensions.find((d) => d.key === PillarKey.COVERAGE)?.score ?? 0;
   const classificationAvg =
     dimensions.find((d) => d.key === PillarKey.CLASSIFICATION)?.score ?? 0;
-  const riskDim = dimensions.find((d) => d.key === PillarKey.RISK);
-  const totalRiskScore = riskDim?.numerator ?? 0;
+  const totalRiskScore = systems.reduce((sum, s) => sum + s.risks.length, 0);
 
   return {
     score,

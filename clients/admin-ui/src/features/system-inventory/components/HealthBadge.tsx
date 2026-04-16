@@ -36,7 +36,7 @@ const HealthBadge = ({ health, count }: HealthBadgeProps) => {
       />
       <Text className="text-xs">
         {count !== undefined && count > 0 ? `${count} ` : ""}
-        {displayLabel.toLowerCase()}
+        {displayLabel}
       </Text>
     </Flex>
   );

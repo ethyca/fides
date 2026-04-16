@@ -79,8 +79,8 @@ export const SEVERITY_FILTER_OPTIONS = [
 ];
 
 export const FRESHNESS_FILTER_OPTIONS = [
-  { label: "Detected this week", value: RiskFreshness.WEEK },
-  { label: "Detected this month", value: RiskFreshness.MONTH },
+  { label: "This week", value: RiskFreshness.WEEK },
+  { label: "This month", value: RiskFreshness.MONTH },
   { label: "Older than a month", value: RiskFreshness.OLDER },
 ];
 

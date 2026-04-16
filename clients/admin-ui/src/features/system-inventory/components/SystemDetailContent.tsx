@@ -34,6 +34,8 @@ import type { MockSystem } from "../types";
 
 interface SystemDetailContentProps {
   system: MockSystem;
+  activeTab?: string;
+  onTabChange?: (key: string) => void;
 }
 
 const SectionHeader = ({ title }: { title: string }) => (
@@ -1700,7 +1702,11 @@ const AdvancedContent = () => (
 
 // --- Main ---
 
-const SystemDetailContent = ({ system }: SystemDetailContentProps) => {
+const SystemDetailContent = ({
+  system,
+  activeTab,
+  onTabChange,
+}: SystemDetailContentProps) => {
   const overviewContent = (
     <Flex vertical gap={64}>
       <AboutSection system={system} />
@@ -1763,7 +1769,8 @@ const SystemDetailContent = ({ system }: SystemDetailContentProps) => {
           children: <AdvancedContent />,
         },
       ]}
-      defaultActiveKey="overview"
+      activeKey={activeTab ?? "overview"}
+      onChange={onTabChange}
     />
   );
 };
