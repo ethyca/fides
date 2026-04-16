@@ -20,7 +20,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
@@ -39,6 +39,7 @@ import {
   PrivacyNoticeResponseWithRegions,
 } from "~/types/api";
 import type { MinimalPrivacyNotice } from "~/types/api/models/MinimalPrivacyNotice";
+import type { RTKErrorResult } from "~/types/errors/api";
 
 import {
   CONSENT_MECHANISM_OPTIONS,
@@ -147,26 +148,24 @@ const PrivacyNoticeForm = ({
   const isEditing = !!passedInPrivacyNotice;
 
   const handleSubmit = async (values: PrivacyNoticeCreation) => {
-    let result;
-    if (isEditing) {
-      const valuesToSubmit = {
-        ...values,
-        id: passedInPrivacyNotice!.id,
-        translations: values.translations ?? [],
-        children: values.children ?? [],
-      };
-      result = await patchNoticesMutationTrigger(valuesToSubmit);
-    } else {
-      result = await postNoticesMutationTrigger(values);
-    }
-
-    if (isErrorResult(result)) {
-      message.error(getErrorMessage(result.error));
-    } else {
+    try {
+      if (isEditing) {
+        const valuesToSubmit = {
+          ...values,
+          id: passedInPrivacyNotice!.id,
+          translations: values.translations ?? [],
+          children: values.children ?? [],
+        };
+        await patchNoticesMutationTrigger(valuesToSubmit).unwrap();
+      } else {
+        await postNoticesMutationTrigger(values).unwrap();
+      }
       message.success(`Privacy notice ${isEditing ? "updated" : "created"}`);
       if (!isEditing) {
         router.push(PRIVACY_NOTICES_ROUTE);
       }
+    } catch (error: unknown) {
+      message.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
   };
 
@@ -175,15 +174,19 @@ const PrivacyNoticeForm = ({
   const allValues = Form.useWatch([], form);
   const [submittable, setSubmittable] = useState(false);
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
+    const check = async () => {
+      try {
+        await form.validateFields({ validateOnly: true });
+        setSubmittable(true);
+      } catch {
+        setSubmittable(false);
+      }
+    };
+    check();
   }, [form, allValues]);
 
   const isDirty = useMemo(
-    () =>
-      !allValues ? false : !isEqual(form.getFieldsValue(true), initialValues),
+    () => (!allValues ? false : !isEqual(allValues, initialValues)),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- allValues triggers re-eval
     [allValues, initialValues],
   );

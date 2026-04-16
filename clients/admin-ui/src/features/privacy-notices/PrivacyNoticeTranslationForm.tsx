@@ -60,7 +60,7 @@ const AddTranslationMenu = ({
   const [isSelectingLanguage, setIsSelectingLanguage] = useState(false);
 
   const handleSelect = (language: SupportedLanguage) => {
-    handleCreateLanguage(language as SupportedLanguage);
+    handleCreateLanguage(language);
     setIsSelectingLanguage(false);
   };
 
@@ -128,7 +128,6 @@ const PrivacyNoticeTranslationForm = ({
       | NoticeTranslationCreate[]
       | undefined) ?? [];
 
-  const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
   const [activeLanguage, setActiveLanguage] = useState<string>(
     initialTranslations[0]?.language ?? "",
   );
@@ -152,23 +151,25 @@ const PrivacyNoticeTranslationForm = ({
     )
     .map((lang) => ({ label: lang.name, value: lang.id as SupportedLanguage }));
 
+  const isActiveTabOOB = !!availableTranslations?.some(
+    (t) => t.language === activeLanguage,
+  );
+
   const handleTabSelected = (language: string) => {
     setActiveLanguage(language);
-    setTranslationIsOOB(false);
   };
 
   const handleCreateLanguage = (language: SupportedLanguage) => {
     const availableTranslation = availableTranslations?.find(
       (translation) => translation.language === language,
     );
-    setTranslationIsOOB(!!availableTranslation);
     const newTranslation: NoticeTranslationCreate = availableTranslation
       ? {
           ...availableTranslation,
           title: availableTranslation.title ?? "",
         }
       : {
-          language: language as SupportedLanguage,
+          language,
           title: "",
           description: "",
         };
@@ -226,7 +227,7 @@ const PrivacyNoticeTranslationForm = ({
                 (t) => t.language === translation.language,
               )}
               name={getLanguageDisplayName(translation.language)}
-              isOOB={translationIsOOB}
+              isOOB={isActiveTabOOB}
             />
           ),
           closable: translations.length > 1,

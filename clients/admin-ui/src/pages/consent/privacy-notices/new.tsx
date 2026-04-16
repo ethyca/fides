@@ -16,7 +16,7 @@ const NewPrivacyNoticePage = () => (
         { title: "New privacy notice" },
       ]}
     />
-    <div className="w-full lg:w-[70%]">
+    <div className="w-[70%]">
       <Paragraph className="mb-8">
         Configure your privacy notice including consent mechanism, associated
         data uses and the locations in which this should be displayed to users.

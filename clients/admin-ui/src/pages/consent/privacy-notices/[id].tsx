@@ -51,10 +51,7 @@ const PrivacyNoticeDetailPage = () => {
           { title: data.name },
         ]}
       />
-      <div
-        className="w-full lg:w-[70%]"
-        data-testid="privacy-notice-detail-page"
-      >
+      <div className="w-[70%]" data-testid="privacy-notice-detail-page">
         <Paragraph className="mb-8">
           Configure your privacy notice including consent mechanism, associated
           data uses and the locations in which this should be displayed to
