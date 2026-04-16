@@ -20,6 +20,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
+from fides.api.common_exceptions import RedisConnectionError
 from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiter,
     RateLimiterPeriod,
@@ -355,6 +356,24 @@ def call_log_spy(method_to_decorate: Callable) -> Callable:
 
     wrapper.call_log = call_log
     return wrapper
+
+class TestRateLimiterRedisFailure:
+    """Unit tests for RateLimiter.limit() when Redis is unavailable."""
+
+    def test_redis_connection_error_is_silently_skipped(self) -> None:
+        with mock.patch(
+            "fides.api.service.connectors.limiter.rate_limiter.get_cache",
+            side_effect=RedisConnectionError("Redis unavailable"),
+        ):
+            # Should not raise — limiter is a no-op when Redis is down.
+            RateLimiter().limit(
+                requests=[
+                    RateLimiterRequest(
+                        key="k", rate_limit=1, period=RateLimiterPeriod.SECOND
+                    )
+                ]
+            )
+
 
 class TestSecondsUntilNextBucket:
     """Unit tests for RateLimiter.seconds_until_next_bucket."""
