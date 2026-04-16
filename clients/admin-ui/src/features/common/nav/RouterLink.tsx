@@ -2,6 +2,7 @@ import { Button, Typography } from "fidesui";
 import NextLink, { LinkProps as NextLinkProps } from "next/link";
 import { useRouter } from "next/router";
 import {
+  AnchorHTMLAttributes,
   Children,
   ComponentProps,
   isValidElement,
@@ -11,6 +12,11 @@ import {
   useEffect,
 } from "react";
 import type { UrlObject } from "url";
+
+type AnchorProps = Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  "href" | "onClick"
+>;
 
 const { Link: TypographyLink } = Typography;
 
@@ -51,14 +57,19 @@ type TypographyLinkProps = Omit<
   "href" | "onClick"
 >;
 
-export interface RouterLinkProps extends TypographyLinkProps {
+interface BaseRouterLinkProps {
   href: Href;
   children: ReactNode;
   onClick?: (e: MouseEvent<HTMLElement>) => void;
   replace?: NextLinkProps["replace"];
   scroll?: NextLinkProps["scroll"];
   prefetch?: NextLinkProps["prefetch"];
+  className?: string;
 }
+
+export type RouterLinkProps =
+  | (BaseRouterLinkProps & { unstyled: true } & AnchorProps)
+  | (BaseRouterLinkProps & { unstyled?: false } & TypographyLinkProps);
 
 const isAntButtonChild = (children: ReactNode): boolean => {
   const arr = Children.toArray(children);
@@ -72,33 +83,49 @@ const isAntButtonChild = (children: ReactNode): boolean => {
 /**
  * Shared internal-navigation link for admin-ui.
  *
- * - When the single child is an antd `Button`, wraps it in `next/link` so
- *   Next renders its own `<a>` around the button. Preserves client-side
- *   routing, prefetch, and modifier-click handling.
- * - Otherwise renders a `Typography.Link`-styled anchor that intercepts
- *   plain left-clicks and uses `router.push` for client-side navigation.
- *   Modifier, middle, and right clicks fall through to the browser so
- *   new-tab / copy-link behaviour continues to work.
+ * Three rendering modes:
  *
- * Detection is structural (only a single antd `Button` element is detected).
- * If you need to wrap a custom button-like component, extract its render
- * and wrap the real antd `Button`, or add a `button` escape-hatch prop.
+ * 1. **Button child** - When the single child is an antd `Button`, wraps it
+ *    in `next/link` so Next renders its own `<a>` around the button.
+ *    Preserves client-side routing, prefetch, and modifier-click handling.
+ *
+ * 2. **Unstyled** (`unstyled` prop) - Delegates to `next/link` directly,
+ *    rendering a plain `<a>` with no Typography.Link styling. Use this
+ *    when wrapping cards, list items, or other non-text content that
+ *    shouldn't inherit link colors/underlines. All standard anchor
+ *    attributes (className, id, role, aria-*, data-*) are forwarded.
+ *
+ * 3. **Text mode** (default) - Renders a `Typography.Link`-styled anchor
+ *    that intercepts plain left-clicks and uses `router.push` for
+ *    client-side navigation. Modifier, middle, and right clicks fall
+ *    through to the browser so new-tab / copy-link behaviour continues
+ *    to work.
+ *
+ * Button detection is structural (only a single antd `Button` element is
+ * detected). If you need to wrap a custom button-like component, use
+ * `unstyled` instead.
  */
-export const RouterLink = ({
-  href,
-  children,
-  onClick,
-  replace,
-  scroll,
-  prefetch,
-  target,
-  rel,
-  ...typographyProps
-}: RouterLinkProps) => {
+export const RouterLink = (props: RouterLinkProps) => {
+  const {
+    href,
+    children,
+    onClick,
+    replace,
+    scroll,
+    prefetch,
+    unstyled,
+    className,
+    ...rest
+  } = props;
+
   const router = useRouter();
   const isButtonChild = isAntButtonChild(children);
+  const useNextLink = isButtonChild || unstyled;
   const hrefString = typeof href === "string" ? href : formatHref(href);
+  const { target } = rest;
+  const { rel } = rest;
 
+  // Text-mode prefetch (hooks must be called unconditionally)
   const prefetchHref = useCallback(() => {
     router.prefetch(hrefString).catch(() => {
       // prefetch is best-effort; ignore failures
@@ -107,7 +134,7 @@ export const RouterLink = ({
 
   useEffect(() => {
     if (
-      isButtonChild ||
+      useNextLink ||
       process.env.NODE_ENV !== "production" ||
       prefetch === false ||
       prefetch === null ||
@@ -116,9 +143,16 @@ export const RouterLink = ({
       return;
     }
     prefetchHref();
-  }, [isButtonChild, prefetch, prefetchHref, target]);
+  }, [useNextLink, prefetch, prefetchHref, target]);
 
-  if (isButtonChild) {
+  // Modes 1 & 2: delegate to NextLink (button child or unstyled)
+  if (useNextLink) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure to exclude from spread
+    const {
+      target: anchorTarget,
+      rel: anchorRel,
+      ...anchorProps
+    } = rest as AnchorProps;
     return (
       <NextLink
         href={href}
@@ -127,17 +161,27 @@ export const RouterLink = ({
         prefetch={prefetch}
         target={target}
         rel={rel}
+        className={className}
+        onClick={onClick as NextLinkProps["onClick"]}
+        {...anchorProps}
       >
         {children}
       </NextLink>
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructure to exclude from spread
+  const {
+    target: typTarget,
+    rel: typRel,
+    ...typographyProps
+  } = rest as TypographyLinkProps;
   return (
     <TypographyLink
       href={hrefString}
       target={target}
       rel={rel}
+      className={className}
       onMouseEnter={prefetch === null ? prefetchHref : undefined}
       onClick={(e) => {
         onClick?.(e);

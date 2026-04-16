@@ -87,6 +87,12 @@ jest.mock("fidesui", () => {
     Icons: {
       Search: () => MockReact.createElement("span", null, "search-icon"),
     },
+    Typography: {
+      Link: MockReact.forwardRef((props: any, ref: any) =>
+        MockReact.createElement("a", { ...props, ref }),
+      ),
+    },
+    Button: "button",
   };
 });
 

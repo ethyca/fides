@@ -12,7 +12,6 @@ import {
 } from "fidesui";
 import { motion } from "motion/react";
 import type { NextPage } from "next";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import { useEffect, useMemo, useState } from "react";
@@ -29,6 +28,7 @@ import {
 import { passwordRules as strongPasswordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
 import { usePrefersReducedMotion } from "~/features/common/hooks";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 import { RTKErrorResult } from "~/types/errors/api";
 
@@ -408,14 +408,14 @@ const Login: NextPage = () => {
                         </Flex>
                         {!isFromInvite && !isResetPassword && (
                           <Flex justify="center" className="mt-4">
-                            <Link href="/forgot-password">
+                            <RouterLink href="/forgot-password">
                               <Button
                                 type="link"
                                 data-testid="forgot-password-btn"
                               >
                                 Forgot password?
                               </Button>
-                            </Link>
+                            </RouterLink>
                           </Flex>
                         )}
                       </>
