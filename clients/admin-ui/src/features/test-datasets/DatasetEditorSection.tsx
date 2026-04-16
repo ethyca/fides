@@ -248,7 +248,7 @@ const EditorSection = ({
       flex="1"
       gap="small"
       vertical
-      style={{ height: "100%", minHeight: 0 }}
+      className="h-full min-h-0"
     >
       <Flex align="center" justify="space-between">
         <Space>
@@ -265,7 +265,7 @@ const EditorSection = ({
         </Space>
         <Space>
           {isDirty && (
-            <Typography.Text type="warning" style={{ fontSize: 12 }}>
+            <Typography.Text type="warning" className="text-xs">
               Unsaved changes
             </Typography.Text>
           )}
@@ -286,15 +286,7 @@ const EditorSection = ({
         </Space>
       </Flex>
       {isSaas ? (
-        <div
-          style={{
-            flex: "1 1 auto",
-            minHeight: 0,
-            borderRadius: 8,
-            overflow: "hidden",
-            border: "1px solid var(--fidesui-neutral-200)",
-          }}
-        >
+        <div className="min-h-0 flex-auto overflow-hidden rounded-lg border border-neutral-2">
           {localDataset && (
             <DatasetNodeEditor
               dataset={localDataset}

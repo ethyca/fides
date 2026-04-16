@@ -88,7 +88,8 @@ const DatasetTextInputNode = ({
 
   return (
     <div
-      style={{ width: INPUT_WIDTH, position: "relative" }}
+      className="relative"
+      style={{ width: INPUT_WIDTH }}
       data-testid="dataset-text-input-node"
     >
       <DatasetNodeHandle type="target" />
@@ -109,17 +110,7 @@ const DatasetTextInputNode = ({
         size="small"
       />
       {error && (
-        <div
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            marginTop: 4,
-            fontSize: 11,
-            color: "var(--fidesui-error)",
-            whiteSpace: "nowrap",
-          }}
-        >
+        <div className="absolute left-0 top-full mt-1 whitespace-nowrap text-xs text-[var(--fidesui-error)]">
           {error}
         </div>
       )}

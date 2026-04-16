@@ -254,7 +254,6 @@ const DatasetNodeDetailPanel = forwardRef<
                             mode="tags"
                             placeholder="Collections to run after..."
                             aria-label="After"
-                            style={{ width: "100%" }}
                           />
                         </Form.Item>
                         <Form.Item label="Erase After" name="erase_after">
@@ -262,7 +261,6 @@ const DatasetNodeDetailPanel = forwardRef<
                             mode="tags"
                             placeholder="Collections to erase after..."
                             aria-label="Erase After"
-                            style={{ width: "100%" }}
                           />
                         </Form.Item>
                         <Form.Item
@@ -293,10 +291,7 @@ const DatasetNodeDetailPanel = forwardRef<
             )}
 
             {isProtected && (
-              <Typography.Text
-                type="secondary"
-                style={{ fontSize: 12, display: "block", marginTop: 16 }}
-              >
+              <Typography.Text type="secondary" className="mt-4 block text-xs">
                 This field is protected and cannot be deleted, but you can edit
                 its metadata.
               </Typography.Text>

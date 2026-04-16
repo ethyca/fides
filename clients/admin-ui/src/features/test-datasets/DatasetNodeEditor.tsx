@@ -565,12 +565,7 @@ const DatasetNodeEditorInner = ({
         <Flex
           align="center"
           justify="space-between"
-          style={{
-            padding: "6px 12px",
-            borderBottom: "1px solid var(--fidesui-neutral-200)",
-            backgroundColor: "white",
-            flexShrink: 0,
-          }}
+          className="shrink-0 border-b border-neutral-2 bg-white px-3 py-1.5"
         >
           {focusedCollection ? (
             <Flex align="center" gap="small">
@@ -589,7 +584,7 @@ const DatasetNodeEditorInner = ({
                         type="link"
                         size="small"
                         onClick={handleBack}
-                        style={{ padding: 0, height: "auto" }}
+                        className="!h-auto !p-0"
                       >
                         {datasetLabel}
                       </Button>
@@ -602,7 +597,7 @@ const DatasetNodeEditorInner = ({
           ) : (
             <div />
           )}
-          <Flex align="center" gap="small" style={{ flexShrink: 0 }}>
+          <Flex align="center" gap="small" className="shrink-0">
             {availableCategories.length > 0 && (
               <Select
                 mode="multiple"
@@ -612,14 +607,14 @@ const DatasetNodeEditorInner = ({
                 options={categoryOptions}
                 value={categoryFilter}
                 onChange={(value) => setCategoryFilter(value ?? [])}
-                style={{ minWidth: 200, maxWidth: 400 }}
+                className="min-w-[200px] max-w-[400px]"
                 size="small"
                 showSearch
               />
             )}
-            <Flex align="center" gap={6} style={{ flexShrink: 0 }}>
+            <Flex align="center" gap={6} className="shrink-0">
               <Icons.Code size={14} />
-              <Typography.Text style={{ fontSize: 12, userSelect: "none" }}>
+              <Typography.Text className="select-none text-xs">
                 YAML
               </Typography.Text>
               <Switch
@@ -632,16 +627,11 @@ const DatasetNodeEditorInner = ({
           </Flex>
         </Flex>
         <Splitter
-          style={{ flex: "1 1 auto", minHeight: 0 }}
+          className="min-h-0 flex-auto"
           onResize={(sizes) => setYamlPanelSize(sizes[1])}
         >
           <Splitter.Panel>
-            <div
-              style={{
-                height: "100%",
-                backgroundColor: palette.FIDESUI_BG_CORINTH,
-              }}
-            >
+            <div className="h-full bg-neutral-1">
               <DatasetTreeHoverProvider edges={layoutedEdges}>
                 <ReactFlow
                   nodes={nodes}
@@ -678,30 +668,19 @@ const DatasetNodeEditorInner = ({
             {yamlPanelOpen && (
               <Flex
                 vertical
-                style={{
-                  height: "100%",
-                  borderLeft: "1px solid var(--fidesui-neutral-200)",
-                  backgroundColor: "white",
-                }}
+                className="h-full border-l border-neutral-2 bg-white"
               >
                 <Flex
                   align="center"
                   justify="space-between"
-                  style={{
-                    padding: "4px 12px",
-                    borderBottom: "1px solid var(--fidesui-neutral-200)",
-                    flexShrink: 0,
-                  }}
+                  className="shrink-0 border-b border-neutral-2 px-3 py-1"
                 >
                   <Flex align="center" gap="small">
-                    <Typography.Text
-                      strong
-                      style={{ fontSize: 12, userSelect: "none" }}
-                    >
+                    <Typography.Text strong className="select-none text-xs">
                       YAML Editor
                     </Typography.Text>
                     {yamlError && (
-                      <Typography.Text type="danger" style={{ fontSize: 11 }}>
+                      <Typography.Text type="danger" className="text-xs">
                         {yamlError}
                       </Typography.Text>
                     )}
@@ -717,7 +696,7 @@ const DatasetNodeEditorInner = ({
                     aria-label="Close YAML editor"
                   />
                 </Flex>
-                <div style={{ flex: "1 1 auto", minHeight: 0 }}>
+                <div className="min-h-0 flex-auto">
                   <Editor
                     defaultLanguage="yaml"
                     value={yamlContent}
