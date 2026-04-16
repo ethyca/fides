@@ -134,7 +134,7 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
                   selectedInGroup.length > 0 && !allGroupSelected;
 
                 return (
-                  <div key={resource} className="flex flex-col gap-1">
+                  <Flex key={resource} vertical gap="small">
                     <Checkbox
                       checked={allGroupSelected}
                       indeterminate={someGroupSelected}
@@ -146,7 +146,7 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
                     >
                       {formatResourceLabel(resource)}
                     </Checkbox>
-                    <div className="flex flex-row flex-wrap gap-1 pl-6">
+                    <Flex wrap gap="small" className="pl-6">
                       {scopesInGroup.map((scope) => {
                         const action = scope.split(":")[1];
                         return (
@@ -162,8 +162,8 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
                           </Checkbox>
                         );
                       })}
-                    </div>
-                  </div>
+                    </Flex>
+                  </Flex>
                 );
               },
             )}

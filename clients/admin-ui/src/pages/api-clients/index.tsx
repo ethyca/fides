@@ -1,10 +1,10 @@
-import { Button, Flex, Tooltip } from "fidesui";
+import { Button, Tooltip } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import Restrict, { useHasPermission } from "~/features/common/Restrict";
+import { useHasPermission } from "~/features/common/Restrict";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
 import CreateOAuthClientModal from "~/features/oauth/CreateOAuthClientModal";
 import OAuthClientsList from "~/features/oauth/OAuthClientsList";
