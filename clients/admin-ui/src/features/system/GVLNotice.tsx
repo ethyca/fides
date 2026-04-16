@@ -17,7 +17,7 @@ const GVLNotice = () => (
             isExternal
             color="complimentary.500"
           >
-            For more information on the Global Vendor List, click here.
+            More information on the Global Vendor List.
           </Link>
         </>
       }

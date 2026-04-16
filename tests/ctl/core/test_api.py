@@ -5,7 +5,8 @@ import json
 import typing
 from datetime import datetime, timedelta, timezone
 from json import loads
-from typing import Dict, List, Tuple
+from types import SimpleNamespace
+from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import pytest
@@ -3418,31 +3419,205 @@ def test_404_on_api_routes(test_config: FidesConfig) -> None:
 # Integration Tests
 @pytest.mark.integration
 class TestHealthchecks:
-    @pytest.mark.parametrize(
-        "database_health, expected_status_code",
-        [("healthy", 200), ("unhealthy", 503), ("needs migration", 503)],
-    )
-    def test_database_healthcheck(
+    def test_database_healthcheck_primary_pools_and_migration_metadata(
         self,
         test_config: FidesConfig,
-        database_health: str,
-        expected_status_code: int,
+        test_client: TestClient,
+    ) -> None:
+        """Primary sync/async pools and migration revision fields are healthy."""
+        response = test_client.get(test_config.cli.server_url + "/health/database")
+        assert response.status_code == 200, f"Request failed: {response.text}"
+        payload = response.json()
+        assert payload["database"] == "healthy"
+        assert isinstance(payload["database_revision"], str)
+        assert payload["pools"]["api_sync_primary"]["health"] == "healthy"
+        assert payload["pools"]["api_sync_primary"]["prewarming"] is None
+        assert payload["pools"]["api_async_primary"]["health"] == "healthy"
+        assert payload["pools"]["api_async_primary"]["prewarming"] is None
+
+    def test_database_healthcheck_optional_readonly_pools_match_configuration(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Optional readonly pools report healthy or skipped depending on config."""
+        response = test_client.get(test_config.cli.server_url + "/health/database")
+        assert response.status_code == 200, f"Request failed: {response.text}"
+        payload = response.json()
+
+        if test_config.database.sqlalchemy_readonly_database_uri:
+            assert payload["pools"]["api_sync_readonly"]["health"] == "healthy"
+        else:
+            assert payload["pools"]["api_sync_readonly"]["health"] == "skipped"
+        assert payload["pools"]["api_sync_readonly"]["prewarming"] is None
+
+        if test_config.database.async_readonly_database_uri:
+            assert payload["pools"]["api_async_readonly"]["health"] == "healthy"
+            prewarming = payload["pools"]["api_async_readonly"]["prewarming"]
+            if test_config.database.async_readonly_database_prewarm:
+                assert prewarming is not None
+                assert (
+                    prewarming["target"]
+                    == test_config.database.async_readonly_database_pool_size
+                )
+                assert isinstance(prewarming["checked_in"], int)
+                assert isinstance(prewarming["checked_out"], int)
+                if prewarming["capacity_percentage"] is not None:
+                    assert prewarming["capacity_percentage"] >= 0
+            else:
+                assert prewarming is None
+            assert isinstance(payload["async_readonly_pool_prewarmed"], bool)
+        else:
+            assert payload["pools"]["api_async_readonly"]["health"] == "skipped"
+            assert payload["pools"]["api_async_readonly"]["prewarming"] is None
+            assert payload["async_readonly_pool_prewarmed"] is None
+
+    def test_database_healthcheck_unhealthy_pool_returns_503(
+        self,
+        test_config: FidesConfig,
         monkeypatch: MonkeyPatch,
         test_client: TestClient,
     ) -> None:
-        """Test the database health checks."""
+        """Unhealthy database pool should return a 503."""
 
-        def mock_get_db_health(url: str, db) -> Tuple[str, str]:
-            return (
-                database_health,
-                "9e83545ed9b6",
-            )  # just an arbitrary revision # for testing
+        def mock_check_sync_session(*args, **kwargs) -> str:
+            return "unhealthy"
+
+        monkeypatch.setattr(health, "_check_sync_session", mock_check_sync_session)
+        response = test_client.get(test_config.cli.server_url + "/health/database")
+        assert response.status_code == 503, f"Request failed: {response.text}"
+        payload = response.json()["detail"]
+        assert payload["database"] == "unhealthy"
+        assert payload["pools"]["api_sync_primary"]["health"] == "unhealthy"
+
+    def test_database_healthcheck_needs_migration_returns_503(
+        self,
+        test_config: FidesConfig,
+        monkeypatch: MonkeyPatch,
+        test_client: TestClient,
+    ) -> None:
+        """When Alembic head does not match the DB revision, return 503."""
+
+        def mock_get_db_health(*args, **kwargs) -> Tuple[str, Optional[str]]:
+            return ("needs migration", "9e83545ed9b6")
 
         monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
         response = test_client.get(test_config.cli.server_url + "/health/database")
-        assert response.status_code == expected_status_code, (
-            f"Request failed: {response.text}"
+        assert response.status_code == 503, f"Request failed: {response.text}"
+        detail = response.json()["detail"]
+        assert detail["database"] == "needs migration"
+        assert detail["database_revision"] == "9e83545ed9b6"
+
+    def test_database_healthcheck_readonly_pool_session_failure_returns_503(
+        self,
+        test_config: FidesConfig,
+        monkeypatch: MonkeyPatch,
+        test_client: TestClient,
+    ) -> None:
+        """Failure to open the sync readonly pool session should surface as unhealthy (503)."""
+
+        def mock_get_db_health(*args, **kwargs) -> Tuple[str, Optional[str]]:
+            return ("healthy", "headrev")
+
+        def fail_readonly_session() -> Session:
+            raise RuntimeError("readonly pool unavailable")
+
+        monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
+        monkeypatch.setattr(
+            health,
+            "CONFIG",
+            SimpleNamespace(
+                database=SimpleNamespace(
+                    sqlalchemy_readonly_database_uri="postgresql://readonly.example/db",
+                    sync_database_uri=test_config.database.sync_database_uri,
+                    async_readonly_database_uri=getattr(
+                        test_config.database, "async_readonly_database_uri", None
+                    ),
+                    async_readonly_database_prewarm=getattr(
+                        test_config.database, "async_readonly_database_prewarm", False
+                    ),
+                    async_readonly_database_pool_size=getattr(
+                        test_config.database, "async_readonly_database_pool_size", 10
+                    ),
+                )
+            ),
         )
+        monkeypatch.setattr(health, "get_readonly_api_session", fail_readonly_session)
+
+        response = test_client.get(test_config.cli.server_url + "/health/database")
+        assert response.status_code == 503, f"Request failed: {response.text}"
+        detail = response.json()["detail"]
+        assert detail["database"] == "unhealthy"
+        assert detail["pools"]["api_sync_readonly"]["health"] == "unhealthy"
+
+    def test_database_healthcheck_reports_prewarmed_pool_details(
+        self,
+        test_config: FidesConfig,
+        monkeypatch: MonkeyPatch,
+        test_client: TestClient,
+    ) -> None:
+        """Prewarmed readonly async pool details are included in health response."""
+
+        class FakeDbConfig:
+            sqlalchemy_readonly_database_uri = None
+            sync_database_uri = test_config.database.sync_database_uri
+            async_readonly_database_uri = "postgresql+asyncpg://readonly.example"
+            async_readonly_database_prewarm = True
+            async_readonly_database_pool_size = 10
+
+        class FakeConfig:
+            database = FakeDbConfig()
+
+        async def mock_ensure_prewarmed() -> bool:
+            return True
+
+        def mock_is_prewarmed() -> bool:
+            return True
+
+        async def mock_check_async_session(*args, **kwargs) -> str:
+            return "healthy"
+
+        def mock_check_sync_session(*args, **kwargs) -> str:
+            return "healthy"
+
+        def mock_prewarming_details() -> health.PoolPrewarming:
+            return health.PoolPrewarming(
+                target=10,
+                checked_in=6,
+                checked_out=4,
+                capacity_percentage=1.0,
+            )
+
+        def mock_get_db_health(*args, **kwargs) -> Tuple[str, Optional[str]]:
+            return ("healthy", "test-revision")
+
+        monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
+        monkeypatch.setattr(health, "CONFIG", FakeConfig())
+        monkeypatch.setattr(
+            health, "ensure_async_readonly_pool_prewarmed", mock_ensure_prewarmed
+        )
+        monkeypatch.setattr(
+            health, "is_async_readonly_pool_prewarmed", mock_is_prewarmed
+        )
+        monkeypatch.setattr(health, "_check_async_session", mock_check_async_session)
+        monkeypatch.setattr(health, "_check_sync_session", mock_check_sync_session)
+        monkeypatch.setattr(
+            health, "_get_async_readonly_prewarming_details", mock_prewarming_details
+        )
+
+        response = test_client.get(test_config.cli.server_url + "/health/database")
+        assert response.status_code == 200, f"Request failed: {response.text}"
+        payload = response.json()
+
+        assert payload["database"] == "healthy"
+        assert payload["async_readonly_pool_prewarmed"] is True
+        assert payload["pools"]["api_async_readonly"]["health"] == "healthy"
+        assert payload["pools"]["api_async_readonly"]["prewarming"] == {
+            "target": 10,
+            "checked_in": 6,
+            "checked_out": 4,
+            "capacity_percentage": 1.0,
+        }
 
     def test_server_healthcheck(
         self,
