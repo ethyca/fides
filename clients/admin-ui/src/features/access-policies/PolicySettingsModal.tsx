@@ -97,7 +97,7 @@ const PolicySettingsModal = ({ open, onClose }: PolicySettingsModalProps) => {
 
   return (
     <Modal
-      title="Policy config"
+      title="Policy settings"
       open={open}
       onCancel={onClose}
       onOk={handleSubmit}

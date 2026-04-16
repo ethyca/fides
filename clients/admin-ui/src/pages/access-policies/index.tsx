@@ -1,4 +1,4 @@
-import { Button, Flex, Text } from "fidesui";
+import { Button, Flex, Icons, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
@@ -8,7 +8,10 @@ import PoliciesContainer from "~/features/access-policies/PoliciesContainer";
 import PolicySettingsModal from "~/features/access-policies/PolicySettingsModal";
 import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { ACCESS_POLICIES_NEW_ROUTE } from "~/features/common/nav/routes";
+import {
+  ACCESS_POLICIES_NEW_ROUTE,
+  CONTROLS_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const AccessPoliciesPage: NextPage = () => {
@@ -24,10 +27,15 @@ const AccessPoliciesPage: NextPage = () => {
         rightContent={
           hasPolicies ? (
             <Flex gap={8}>
+              <NextLink href={CONTROLS_ROUTE} passHref>
+                <Button>Manage controls</Button>
+              </NextLink>
               {flags.alphaPrivacyDocUpload && (
-                <Button onClick={() => setSettingsOpen(true)}>
-                  Policy settings
-                </Button>
+                <Button
+                  aria-label="Policy settings"
+                  icon={<Icons.Settings />}
+                  onClick={() => setSettingsOpen(true)}
+                />
               )}
               <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
                 <Button type="primary">New policy</Button>
