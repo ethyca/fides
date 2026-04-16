@@ -1,7 +1,8 @@
-import { Checkbox } from "fidesui";
+import { Checkbox, Flex } from "fidesui";
 import { memo, useCallback, useMemo, useState } from "react";
 
 import SearchInput from "~/features/common/SearchInput";
+import { pluralize } from "~/features/common/utils";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import {
@@ -93,8 +94,8 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
   );
 
   return (
-    <div className="flex flex-col gap-3" data-testid="scope-picker">
-      <div className="flex items-center justify-between gap-3">
+    <Flex gap="middle" vertical data-testid="scope-picker">
+      <Flex align="center" justify="space-between">
         <SearchInput
           value={search}
           onChange={setSearch}
@@ -110,7 +111,7 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
         >
           Select all
         </Checkbox>
-      </div>
+      </Flex>
       <div
         className="max-h-[400px] overflow-y-auto rounded-md border p-3"
         data-testid="scope-picker-list"
@@ -120,7 +121,7 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
             No scopes match &ldquo;{search}&rdquo;.
           </span>
         ) : (
-          <div className="flex flex-col gap-3">
+          <Flex gap="middle" vertical>
             {Array.from(visibleByResource.entries()).map(
               ([resource, scopesInGroup]) => {
                 const allGroupScopes = GROUPED[resource];
@@ -166,16 +167,17 @@ const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
                 );
               },
             )}
-          </div>
+          </Flex>
         )}
       </div>
       <span
         className="text-sm text-gray-500"
         data-testid="scope-selected-count"
       >
-        {selected.length} scope{selected.length !== 1 ? "s" : ""} selected
+        {selected.length} {pluralize(selected.length, "scope", "scopes")}
+        &nbsp;selected
       </span>
-    </div>
+    </Flex>
   );
 });
 
