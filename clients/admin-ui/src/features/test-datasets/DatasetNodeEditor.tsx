@@ -19,6 +19,7 @@ import {
   Icons,
   Select,
   Splitter,
+  Switch,
   Typography,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -616,15 +617,23 @@ const DatasetNodeEditorInner = ({
                 showSearch
               />
             )}
-            <Button
-              type="text"
-              size="small"
-              icon={<Icons.Code />}
-              onClick={handleToggleYamlPanel}
-              aria-label="Toggle YAML editor"
-            >
-              YAML
-            </Button>
+            <Flex align="center" gap={6}>
+              <div>
+                <Icons.Code size={14} />
+              </div>
+              <Typography.Text
+                className="shrink-0"
+                style={{ fontSize: 12, userSelect: "none" }}
+              >
+                YAML
+              </Typography.Text>
+              <Switch
+                size="small"
+                checked={yamlPanelOpen}
+                onChange={handleToggleYamlPanel}
+                aria-label="Toggle YAML editor"
+              />
+            </Flex>
           </Flex>
         </Flex>
         <Splitter
