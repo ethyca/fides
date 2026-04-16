@@ -82,14 +82,14 @@ describe("Action center", () => {
       // cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
       // Review button
       cy.getByTestId(`review-button-${webMonitorKey}`)
-        .parent("a")
+        .closest("a")
         .should(
           "have.attr",
           "href",
           `${ACTION_CENTER_ROUTE}/${APIMonitorType.WEBSITE}/${webMonitorKey}`,
         );
       cy.getByTestId(`review-button-${integrationMonitorKey}`)
-        .parent("a")
+        .closest("a")
         .should(
           "have.attr",
           "href",

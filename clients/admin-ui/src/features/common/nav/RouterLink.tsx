@@ -1,5 +1,4 @@
 import { Button, Typography } from "fidesui";
-import { formatUrl } from "next/dist/shared/lib/router/utils/format-url";
 import NextLink, { LinkProps as NextLinkProps } from "next/link";
 import { useRouter } from "next/router";
 import {
@@ -8,12 +7,44 @@ import {
   isValidElement,
   MouseEvent,
   ReactNode,
+  useCallback,
+  useEffect,
 } from "react";
 import type { UrlObject } from "url";
 
 const { Link: TypographyLink } = Typography;
 
 type Href = string | UrlObject;
+
+export const formatHref = (url: UrlObject): string => {
+  const pathname = url.pathname ?? "";
+  let search = "";
+  if (url.search) {
+    search = url.search.startsWith("?") ? url.search : `?${url.search}`;
+  } else if (url.query) {
+    const params =
+      typeof url.query === "string"
+        ? url.query
+        : new URLSearchParams(
+            Object.entries(url.query).flatMap(([k, v]) => {
+              if (v === null || v === undefined) {
+                return [];
+              }
+              return Array.isArray(v)
+                ? v.map((item) => [k, String(item)] as [string, string])
+                : [[k, String(v)] as [string, string]];
+            }),
+          ).toString();
+    if (params) {
+      search = `?${params}`;
+    }
+  }
+  let hash = "";
+  if (url.hash) {
+    hash = url.hash.startsWith("#") ? url.hash : `#${url.hash}`;
+  }
+  return `${pathname}${search}${hash}`;
+};
 
 type TypographyLinkProps = Omit<
   ComponentProps<typeof TypographyLink>,
@@ -24,11 +55,8 @@ export interface RouterLinkProps extends TypographyLinkProps {
   href: Href;
   children: ReactNode;
   onClick?: (e: MouseEvent<HTMLElement>) => void;
-  /** Forwarded to next/link when the child is a Button. */
   replace?: NextLinkProps["replace"];
-  /** Forwarded to next/link when the child is a Button. */
   scroll?: NextLinkProps["scroll"];
-  /** Forwarded to next/link when the child is a Button. */
   prefetch?: NextLinkProps["prefetch"];
 }
 
@@ -68,8 +96,29 @@ export const RouterLink = ({
   ...typographyProps
 }: RouterLinkProps) => {
   const router = useRouter();
+  const isButtonChild = isAntButtonChild(children);
+  const hrefString = typeof href === "string" ? href : formatHref(href);
 
-  if (isAntButtonChild(children)) {
+  const prefetchHref = useCallback(() => {
+    router.prefetch(hrefString).catch(() => {
+      // prefetch is best-effort; ignore failures
+    });
+  }, [router, hrefString]);
+
+  useEffect(() => {
+    if (
+      isButtonChild ||
+      process.env.NODE_ENV !== "production" ||
+      prefetch === false ||
+      prefetch === null ||
+      target === "_blank"
+    ) {
+      return;
+    }
+    prefetchHref();
+  }, [isButtonChild, prefetch, prefetchHref, target]);
+
+  if (isButtonChild) {
     return (
       <NextLink
         href={href}
@@ -84,13 +133,12 @@ export const RouterLink = ({
     );
   }
 
-  const hrefString = typeof href === "string" ? href : formatUrl(href);
-
   return (
     <TypographyLink
       href={hrefString}
       target={target}
       rel={rel}
+      onMouseEnter={prefetch === null ? prefetchHref : undefined}
       onClick={(e) => {
         onClick?.(e);
         if (
@@ -106,7 +154,12 @@ export const RouterLink = ({
           return;
         }
         e.preventDefault();
-        router.push(href);
+        const navigation = replace
+          ? router.replace(href, undefined, { scroll })
+          : router.push(href, undefined, { scroll });
+        navigation.catch(() => {
+          // navigation errors are surfaced by Next's own error handling
+        });
       }}
       {...typographyProps}
     >
