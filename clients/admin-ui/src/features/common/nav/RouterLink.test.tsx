@@ -138,6 +138,17 @@ describe("RouterLink", () => {
       expect(anchor).toHaveAttribute("rel", "noopener noreferrer");
     });
 
+    it("forwards className to the next/link anchor", () => {
+      render(
+        <RouterLink href="/dashboard" className="mb-4">
+          <Button>Go</Button>
+        </RouterLink>,
+      );
+
+      const anchor = screen.getByRole("link", { name: "Go" });
+      expect(anchor).toHaveClass("mb-4");
+    });
+
     it("does not call router.push on click (next/link handles it)", () => {
       render(
         <RouterLink href="/dashboard">
@@ -293,6 +304,96 @@ describe("RouterLink", () => {
       // jest runs with NODE_ENV=test, so default prefetch behaviour is a no-op
       render(<RouterLink href="/details">Details</RouterLink>);
       expect(mockPrefetch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("with unstyled mode", () => {
+    it("renders a plain <a> via NextLink with the correct href", () => {
+      render(
+        <RouterLink unstyled href="/dashboard">
+          <div>Card content</div>
+        </RouterLink>,
+      );
+
+      const anchor = screen.getByRole("link");
+      expect(anchor).toHaveAttribute("href", "/dashboard");
+      expect(anchor.tagName).toBe("A");
+      // Should NOT have Typography.Link's ant-typography class
+      expect(anchor).not.toHaveClass("ant-typography");
+    });
+
+    it("forwards className, id, role, data-testid, and aria-selected", () => {
+      render(
+        <RouterLink
+          unstyled
+          href="/item"
+          className="pt-4"
+          id="result-0"
+          role="option"
+          aria-selected
+          data-testid="search-result"
+        >
+          Result
+        </RouterLink>,
+      );
+
+      const anchor = screen.getByRole("option");
+      expect(anchor).toHaveClass("pt-4");
+      expect(anchor).toHaveAttribute("id", "result-0");
+      expect(anchor).toHaveAttribute("aria-selected", "true");
+      expect(anchor).toHaveAttribute("data-testid", "search-result");
+    });
+
+    it("does not call router.push on click (NextLink handles it)", () => {
+      render(
+        <RouterLink unstyled href="/dashboard">
+          <div>Card</div>
+        </RouterLink>,
+      );
+
+      fireEvent.click(screen.getByRole("link"), { button: 0 });
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it("forwards onClick to NextLink", () => {
+      const onClick = jest.fn();
+      render(
+        <RouterLink unstyled href="/dashboard" onClick={onClick}>
+          <div>Card</div>
+        </RouterLink>,
+      );
+
+      fireEvent.click(screen.getByRole("link"));
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("forwards onMouseEnter", () => {
+      const onMouseEnter = jest.fn();
+      render(
+        <RouterLink unstyled href="/dashboard" onMouseEnter={onMouseEnter}>
+          <div>Card</div>
+        </RouterLink>,
+      );
+
+      fireEvent.mouseEnter(screen.getByRole("link"));
+      expect(onMouseEnter).toHaveBeenCalledTimes(1);
+    });
+
+    it("forwards target and rel", () => {
+      render(
+        <RouterLink
+          unstyled
+          href="/external"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          External
+        </RouterLink>,
+      );
+
+      const anchor = screen.getByRole("link", { name: "External" });
+      expect(anchor).toHaveAttribute("target", "_blank");
+      expect(anchor).toHaveAttribute("rel", "noopener noreferrer");
     });
   });
 });

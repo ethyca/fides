@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed integration Manage modal reporting dirty state on open without edits
+pr: 7934
+labels: []
