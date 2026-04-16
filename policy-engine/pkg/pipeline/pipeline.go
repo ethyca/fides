@@ -244,6 +244,17 @@ func filterViolationsThroughPolicies(
 	out := make([]pbac.PurposeViolation, 0, len(violations))
 	for _, v := range violations {
 		dataUses := dataUsesForDatasetPurposes(v.DatasetPurposes, purposeIndex)
+
+		// Enrich the violation with data_use (first resolved use from
+		// the dataset's purposes) and control type, matching the Python
+		// service layer's _resolve_data_uses step.
+		if len(dataUses) > 0 {
+			du := dataUses[0]
+			v.DataUse = &du
+		}
+		control := "purpose_restriction"
+		v.Control = &control
+
 		req := &pbac.AccessEvaluationRequest{
 			Identity:         identity,
 			ConsumerID:       v.ConsumerID,
