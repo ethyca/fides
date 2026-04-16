@@ -356,10 +356,6 @@ def call_log_spy(method_to_decorate: Callable) -> Callable:
     wrapper.call_log = call_log
     return wrapper
 
-
-# ── Unit tests (no Redis required) ────────────────────────────────────────────
-
-
 class TestSecondsUntilNextBucket:
     """Unit tests for RateLimiter.seconds_until_next_bucket."""
 
@@ -375,12 +371,23 @@ class TestSecondsUntilNextBucket:
             == 1
         )
 
-    def test_second_mid_bucket(self) -> None:
-        # 0.5s into a second → 0.5s remains (integer math gives 0 here)
-        result = RateLimiter().seconds_until_next_bucket(
-            1000, self._req(RateLimiterPeriod.SECOND)
+    def test_day_at_start(self) -> None:
+        # At the exact start of a day (t=86400), 86400s remain.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                86400, self._req(RateLimiterPeriod.DAY)
+            )
+            == 86400
         )
-        assert 0 < result <= 1
+
+    def test_day_mid(self) -> None:
+        # 12 hours into a day → 12 hours remain.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                86400 + 43200, self._req(RateLimiterPeriod.DAY)
+            )
+            == 43200
+        )
 
     def test_minute_at_start(self) -> None:
         # At the exact start of a minute (e.g. t=600), 60s remain.
