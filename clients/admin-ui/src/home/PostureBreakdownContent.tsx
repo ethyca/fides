@@ -8,8 +8,8 @@ import {
   Tag,
   Text,
 } from "fidesui";
-import NextLink from "next/link";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   BAND_CONFIG,
   DIMENSION_DESCRIPTIONS,
@@ -67,7 +67,7 @@ export const PostureBreakdownContent = () => {
           type="info"
           showIcon
           icon={<SparkleIcon size={14} />}
-          message={posture.agent_annotation}
+          title={posture.agent_annotation}
         />
       )}
 
@@ -116,13 +116,14 @@ export const PostureBreakdownContent = () => {
 
         if (route) {
           return (
-            <NextLink
+            <RouterLink
+              unstyled
               key={dim.dimension}
               href={route.route}
               className={styles.dimensionLink}
             >
               {card}
-            </NextLink>
+            </RouterLink>
           );
         }
         return card;

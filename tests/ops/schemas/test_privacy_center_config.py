@@ -377,6 +377,22 @@ class TestPrivacyCenterConfig:
         assert config.server_url_development is None
         assert config.logo_url is None
 
+    def test_empty_actions(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"] = []
+        config = PrivacyCenterConfig(**config_data)
+        assert config.actions == []
+
+    def test_missing_actions_defaults_to_empty(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        del config_data["actions"]
+        config = PrivacyCenterConfig(**config_data)
+        assert config.actions == []
+
     def test_invalid_executable_consent(
         self, privacy_center_config: PrivacyCenterConfig
     ):

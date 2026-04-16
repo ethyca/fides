@@ -729,6 +729,7 @@ export type * from "./models/RBACRoleCreate";
 export type * from "./models/RBACRolePermissionsUpdate";
 export type * from "./models/RBACRoleResponse";
 export type * from "./models/RBACRoleUpdate";
+export type * from "./models/RBACStatus";
 export type * from "./models/RBACUserRoleCreate";
 export type * from "./models/RBACUserRoleResponse";
 export type * from "./models/RDSMySQLDocsSchema";

@@ -1,6 +1,7 @@
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, Any
 
+from loguru import logger
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, func, orm
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.ext.declarative import declared_attr
@@ -168,9 +169,17 @@ class Comment(Base):
         # are added, prevent deletion of comments with those types to preserve
         # correspondence threads.
 
+        # Re-fetch from the DB to guarantee a session-bound instance.
+        # Callers (e.g. test fixture teardown) may hold a detached reference,
+        # which would raise DetachedInstanceError on any lazy relationship access.
+        comment = db.query(Comment).filter(Comment.id == self.id).first()
+        if comment is None:
+            logger.debug("Comment {} already deleted, skipping", self.id)
+            return
+
         # Collect all descendants iteratively (breadth-first)
         to_delete = []
-        stack = list(self.replies)
+        stack = list(comment.replies)
         while stack:
             node = stack.pop()
             stack.extend(node.replies)
@@ -187,11 +196,11 @@ class Comment(Base):
 
         # Delete self
         AttachmentService(db).delete_for_reference(
-            self.id, AttachmentReferenceType.comment
+            comment.id, AttachmentReferenceType.comment
         )
-        for reference in self.references:
+        for reference in comment.references:
             reference.delete(db)
-        db.delete(self)
+        db.delete(comment)
 
     @staticmethod
     def delete_comments_for_reference_and_type(

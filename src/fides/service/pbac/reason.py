@@ -5,10 +5,10 @@ This module has ZERO external dependencies.
 
 from __future__ import annotations
 
-from fides.service.pbac.types import Violation
+from fides.service.pbac.types import PurposeViolation
 
 
-def generate_violation_reason(violation: Violation) -> str:
+def generate_violation_reason(violation: PurposeViolation) -> str:
     """Produce a detailed, human-readable explanation of a violation."""
     parts: list[str] = []
 

@@ -1,0 +1,4 @@
+type: Changed
+description: Restructure assessment list page grouping by processing activity instead of regulatory template
+pr: 7887
+labels: []

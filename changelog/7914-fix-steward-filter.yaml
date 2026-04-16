@@ -1,0 +1,4 @@
+type: Fixed  # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Fixes steward filter states when assigned to a monitor
+pr: 7914 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

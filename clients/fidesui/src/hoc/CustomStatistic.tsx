@@ -47,19 +47,25 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
   const WrappedStatistic = React.forwardRef<
     React.ComponentRef<typeof Statistic>,
     CustomStatisticProps
-  >(({ trend = "neutral", size, valueStyle, ...props }, ref) => {
+  >(({ trend = "neutral", size, styles, ...props }, ref) => {
     const { token } = theme.useToken();
     const trendColor = token[TREND_TOKEN_MAP[trend]];
     const fontSize = size ? token[SIZE_TOKEN_MAP[size]] : undefined;
+    // antd v6 allows `styles` to be a function; we only merge when it's a
+    // plain object so per-instance overrides win over our defaults.
+    const userStyles = typeof styles === "object" ? styles : undefined;
     return (
       <WrappedComponent
         ref={ref}
-        valueStyle={{
-          fontWeight: 600, // semibold
-          color: trendColor,
-          fontFamily: token.fontFamilyCode,
-          ...(fontSize != null && { fontSize }),
-          ...valueStyle, // allow per-instance overrides
+        styles={{
+          ...userStyles,
+          content: {
+            fontWeight: 600, // semibold
+            color: trendColor,
+            fontFamily: token.fontFamilyCode,
+            ...(fontSize != null && { fontSize }),
+            ...userStyles?.content, // allow per-instance overrides
+          },
         }}
         {...props}
       />
@@ -88,7 +94,7 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
  *   trend="up"
  *   value="112,893"
  *   prefix={<ArrowUpOutlined />}
- *   valueStyle={{ fontSize: token.fontSize }}
+ *   styles={{ content: { fontSize: token.fontSize } }}
  * />
  */
 export const CustomStatistic = withCustomProps(Statistic);

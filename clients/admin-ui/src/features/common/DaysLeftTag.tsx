@@ -39,7 +39,9 @@ const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
       break;
   }
 
-  const text = includeText ? `${daysLeft} days left` : daysLeft;
+  const text = includeText
+    ? `${Math.abs(daysLeft)} days ${daysLeft < 0 ? "overdue" : "left"}`
+    : daysLeft;
 
   return <Tag color={color}>{text}</Tag>;
 };
