@@ -99,7 +99,7 @@ export const TCFOverrideToggle = ({
 
   return (
     <>
-      <Space direction="vertical" size="small">
+      <Space orientation="vertical" size="small">
         <Text>Configure overrides for TCF related purposes.</Text>
         <Space size="small">
           <Switch

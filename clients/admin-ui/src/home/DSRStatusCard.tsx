@@ -112,9 +112,11 @@ export const DSRStatusCard = () => {
                     <Statistic
                       value={data?.statuses?.[key] ?? 0}
                       title={title}
-                      valueStyle={{
-                        fontSize: token.fontSize,
-                        fontWeight: 600,
+                      styles={{
+                        content: {
+                          fontSize: token.fontSize,
+                          fontWeight: 600,
+                        },
                       }}
                     />
                   </Flex>

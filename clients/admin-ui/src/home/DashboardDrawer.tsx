@@ -22,7 +22,7 @@ export const DashboardDrawer = () => {
       placement="right"
       width={480}
       title={config?.title}
-      destroyOnClose
+      destroyOnHidden
       styles={{
         header: { background: token.colorBgContainer, borderBottom: "none" },
         body: { background: token.colorBgContainer },

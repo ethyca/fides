@@ -73,7 +73,7 @@ const Profile = () => {
       {!isLoadingUser && !existingUser && (
         <Flex justify="center">
           <Alert
-            message="Could not find user with this profile ID."
+            title="Could not find user with this profile ID."
             type="warning"
             showIcon
           />
