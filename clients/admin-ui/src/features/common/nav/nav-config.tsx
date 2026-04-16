@@ -12,6 +12,8 @@ import * as routes from "./routes";
 export interface NavConfigTab {
   title: string;
   path: string;
+  /** Optional hand-curated aliases/synonyms used by nav search. */
+  keywords?: string[];
 }
 
 export type NavModule = "consent";
@@ -40,6 +42,8 @@ export interface NavConfigRoute {
   tabs?: NavConfigTab[];
   /** Stable module identifier used to toggle visibility via env vars */
   module?: NavModule;
+  /** Optional hand-curated aliases/synonyms used by nav search. */
+  keywords?: string[];
 }
 
 export interface NavConfigGroup {
@@ -104,6 +108,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "System inventory",
         path: routes.SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
+        keywords: ["data map", "data inventory", "assets"],
       },
       {
         title: "Add systems",
@@ -146,6 +151,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
         tabs: PRIVACY_REQUEST_TAB_ITEMS,
+        keywords: ["DSR", "data subject"],
       },
       {
         title: "DSR policies",
@@ -326,6 +332,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+        keywords: ["redaction", "deduplication", "duplicate detection"],
         tabs: [
           {
             title: "Redaction patterns",
@@ -334,6 +341,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           {
             title: "Duplicate detection",
             path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+            keywords: ["deduplication"],
           },
         ],
       },
@@ -466,6 +474,7 @@ export interface NavGroupChild {
   hidden?: boolean;
   children: Array<NavGroupChild>;
   tabs?: NavConfigTab[];
+  keywords?: string[];
 }
 
 export interface NavGroup {
@@ -634,6 +643,7 @@ const configureNavRoute = ({
     hidden: route.hidden,
     children,
     tabs: route.tabs,
+    keywords: route.keywords,
   };
 
   return groupChild;

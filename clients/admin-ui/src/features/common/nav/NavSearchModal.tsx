@@ -8,7 +8,10 @@ import { pluralize } from "~/features/common/utils";
 
 import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
-import useNavSearchItems, { FlatNavItem } from "./useNavSearchItems";
+import useNavSearchItems, {
+  filterAndRankNavItems,
+  FlatNavItem,
+} from "./useNavSearchItems";
 
 const SEARCH_ICON_STYLE = {
   color: palette.FIDESUI_NEUTRAL_400,
@@ -98,10 +101,8 @@ const NavSearchModal = ({ groups }: NavSearchModalProps) => {
   const [activeIndex, setActiveIndex] = useState(-1);
 
   const visibleItems = useMemo(() => {
-    const query = searchValue.trim().toLowerCase();
-    return query
-      ? flatItems.filter((item) => item.title.toLowerCase().includes(query))
-      : [];
+    const query = searchValue.trim();
+    return query ? filterAndRankNavItems(flatItems, query) : [];
   }, [flatItems, searchValue]);
 
   useEffect(() => {
