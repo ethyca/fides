@@ -53,7 +53,7 @@ interface DropdownContentProps {
 }
 
 const LoadingContent = () => (
-  <Space direction="vertical" size="small">
+  <Space orientation="vertical" size="small">
     <Skeleton width="100%" className="h-4" />
     <Skeleton width="100%" className="h-4" />
     <Skeleton width="100%" className="h-4" />
@@ -323,7 +323,7 @@ export const TCFConfigurationDropdown = ({
       >
         <Button
           icon={<Icons.ChevronDown />}
-          iconPosition="end"
+          iconPlacement="end"
           data-testid="tcf-config-dropdown-trigger"
         >
           {buttonLabel}

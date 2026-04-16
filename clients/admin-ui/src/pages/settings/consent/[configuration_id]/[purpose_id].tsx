@@ -66,8 +66,8 @@ const ConsentConfigurationPage: NextPage = () => {
           },
         ]}
       />
-      <Space direction="vertical" size="medium">
-        <Space direction="vertical" size="medium">
+      <Space orientation="vertical" size="medium">
+        <Space orientation="vertical" size="medium">
           <SettingsBox
             title={`TCF purpose ${purposeId}${
               purpose?.name ? `: ${purpose?.name}` : ""
@@ -84,7 +84,7 @@ const ConsentConfigurationPage: NextPage = () => {
             )}
           </SettingsBox>
           <SettingsBox title={configuration?.name || "Configuration"}>
-            <Space direction="vertical" className="gap-3">
+            <Space orientation="vertical" className="gap-3">
               <Text fontSize="sm">
                 Add restrictions to control how vendors process data for
                 specific purposes. For each restriction, choose a restriction

@@ -62,7 +62,7 @@ export const AgentBriefingBanner = () => {
         showIcon
         icon={<SparkleIcon size={14} />}
         closable
-        message={
+        title={
           <>
             {text}
             {alphaDashboardAgentBriefingActions && (

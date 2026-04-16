@@ -121,7 +121,7 @@ const MonitorConfigTab = ({
           <Button
             onClick={modal.onOpen}
             icon={<MonitorIcon />}
-            iconPosition="end"
+            iconPlacement="end"
             data-testid="add-monitor-btn"
             disabled={isAddMonitorButtonDisabled}
           >

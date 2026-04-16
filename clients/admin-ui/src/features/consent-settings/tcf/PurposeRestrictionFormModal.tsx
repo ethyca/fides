@@ -237,7 +237,7 @@ export const PurposeRestrictionFormModal = ({
         }}
         getIsDirty={() => formik.dirty}
         centered
-        destroyOnClose
+        destroyOnHidden
         title="Edit restriction"
         footer={null}
       >

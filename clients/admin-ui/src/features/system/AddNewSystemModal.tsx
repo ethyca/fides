@@ -190,7 +190,7 @@ export const AddNewSystemModal = ({
         getIsDirty={() => formik.dirty}
         centered
         data-testid="add-modal-content"
-        destroyOnClose
+        destroyOnHidden
         footer={null}
       >
         <Form>
