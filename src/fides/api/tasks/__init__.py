@@ -22,6 +22,7 @@ from fides.api.tasks.broker import (
     _resolve_result_backend,
     get_broker_transport_options,
     get_broker_url,
+    get_task_queues,
 )
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
@@ -38,6 +39,7 @@ DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME = "fidesplus.discovery_monitors_promotio
 
 
 NEW_SESSION_RETRIES = 5
+
 
 autodiscover_task_locations: List[str] = [
     "fides.api.tasks",
@@ -129,30 +131,43 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     broker_url = get_broker_url(config)
     result_backend = _resolve_result_backend(config)
     transport_options = get_broker_transport_options(config)
+    task_queues = get_task_queues(config)
 
     celery_config: Dict[str, Any] = {
         "broker_url": broker_url,
         "result_backend": result_backend,
         "event_queue_prefix": "fides_worker",
         "task_always_eager": True,
-        # Ops requires this to route emails to separate queues
-        "task_create_missing_queues": True,
+        # Ops requires this to route emails to separate queues.
+        # When using SQS/ElasticMQ with predefined_queues, Celery must not
+        # attempt to auto-create queues on the broker.
+        "task_create_missing_queues": not config.queue.use_sqs_queue,
         "task_default_queue": "fides",
         "worker_prefetch_multiplier": 1,
         "healthcheck_port": config.celery.healthcheck_port,
         "healthcheck_ping_timeout": config.celery.healthcheck_ping_timeout,
     }
 
+    if config.queue.use_sqs_queue:
+        # Celery's remote control ("pidbox") creates dynamic reply queues with
+        # UUID names that cannot be pre-declared in predefined_queues.
+        # Event sending also creates dynamic event queues.
+        celery_config["worker_enable_remote_control"] = False
+        celery_config["worker_send_task_events"] = False
+
     if transport_options:
         celery_config["broker_transport_options"] = transport_options
+    if task_queues:
+        celery_config["task_queues"] = task_queues
 
     celery_config.update(config.celery)
-    # Preserve broker/backend/transport_options in case config.celery overwrote them
+    # Preserve broker/backend/transport_options/task_queues in case config.celery overwrote them
     celery_config["broker_url"] = broker_url
     celery_config["result_backend"] = result_backend
     if transport_options:
         celery_config["broker_transport_options"] = transport_options
-
+    if task_queues:
+        celery_config["task_queues"] = task_queues
     app.conf.update(celery_config)
 
     app.autodiscover_tasks(autodiscover_task_locations)
@@ -214,9 +229,10 @@ def get_worker_ids() -> List[Optional[str]]:
     Returns a list of the connected healthy worker UUIDs.
     """
     try:
-        connected_workers = [
-            key for key, _ in celery_app.control.inspect().ping().items()
-        ]
+        ping_result = celery_app.control.inspect().ping()
+        if ping_result is None:
+            return []
+        connected_workers = [key for key, _ in ping_result.items()]
     except Exception as exception:
         logger.critical(exception)
         connected_workers = []

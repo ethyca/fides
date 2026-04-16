@@ -351,7 +351,7 @@ class TestMigrationBatchSizingProperty:
 
         _send_in_batches(
             sqs_client,
-            sqs_url="http://elasticmq:9324/queue/fides-fides.dsr",
+            sqs_url="http://elasticmq:9324/queue/fides-fides-dsr",
             raw_messages=raw_messages,
             batch_size=MIGRATION_BATCH_SIZE,
         )
@@ -534,7 +534,7 @@ class TestStartupQueueMigratorUnit:
 
         # Every call targets the correct SQS queue URL.
         expected_url = (
-            "http://elasticmq:9324/queue/fides-fides.dsr"
+            "http://elasticmq:9324/queue/fides-fides-dsr"
         )
         for call in calls:
             assert call.kwargs["QueueUrl"] == expected_url

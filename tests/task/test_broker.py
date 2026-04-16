@@ -16,12 +16,14 @@ from hypothesis import given, settings, strategies as st
 from fides.api.tasks.broker import (
     CELERY_QUEUE_NAMES,
     DEFAULT_QUEUE_NAME,
+    _canonical_sqs_queue_name,
     _get_sqs_queue_url,
     _resolve_result_backend,
     get_all_celery_queue_names,
     get_broker_transport_options,
     get_broker_url,
     get_sqs_broker_url,
+    get_task_queues,
 )
 
 
@@ -147,10 +149,11 @@ class TestTransportOptionsCompletenessProperty:
 
         all_queue_names = get_all_celery_queue_names()
         for queue_name in all_queue_names:
-            assert queue_name in predefined, (
-                f"Missing queue {queue_name!r} in predefined_queues"
+            sqs_key = _canonical_sqs_queue_name(queue_name)
+            assert sqs_key in predefined, (
+                f"Missing queue {sqs_key!r} (from {queue_name!r}) in predefined_queues"
             )
-            assert "url" in predefined[queue_name]
+            assert "url" in predefined[sqs_key]
 
 
 # ===========================================================================
@@ -182,9 +185,11 @@ class TestSQSQueueNameMappingProperty:
         )
 
         url = _get_sqs_queue_url(config, queue_name)
-        expected_sqs_name = f"{prefix}{queue_name}"
+        # Dots are replaced with dashes in the actual SQS queue name because
+        # SQS does not allow dots in queue names.
+        expected_sqs_name = f"{prefix}{_canonical_sqs_queue_name(queue_name)}"
 
-        # The URL should end with /queue/<prefix><queue_name>
+        # The URL should end with /queue/<prefix><canonical_queue_name>
         assert url.endswith(f"/queue/{expected_sqs_name}"), (
             f"Expected URL ending with /queue/{expected_sqs_name}, got {url}"
         )
@@ -247,7 +252,8 @@ class TestGetBrokerUrl:
 class TestGetSqsBrokerUrl:
     """Unit tests for `get_sqs_broker_url`."""
 
-    def test_with_credentials(self) -> None:
+    def test_with_credentials_no_sqs_url(self) -> None:
+        """AWS SQS: credentials only, no host in URL."""
         config = _make_config(
             use_sqs_queue=True,
             aws_access_key_id="MY_KEY",
@@ -255,6 +261,17 @@ class TestGetSqsBrokerUrl:
         )
         url = get_sqs_broker_url(config)
         assert url == "sqs://MY_KEY:MY_SECRET@"
+
+    def test_with_sqs_url_includes_host_and_port(self) -> None:
+        """ElasticMQ: hostname and port are extracted into the broker URL."""
+        config = _make_config(
+            use_sqs_queue=True,
+            sqs_url="http://elasticmq:9324",
+            aws_access_key_id="MY_KEY",
+            aws_secret_access_key="MY_SECRET",
+        )
+        url = get_sqs_broker_url(config)
+        assert url == "sqs://MY_KEY:MY_SECRET@elasticmq:9324/"
 
     def test_without_credentials(self) -> None:
         """When credentials are None, empty strings are used (boto3 chain)."""
@@ -287,23 +304,32 @@ class TestGetBrokerTransportOptions:
         options = get_broker_transport_options(config)
         assert options == {}
 
-    def test_includes_endpoint_url_when_sqs_url_set(self) -> None:
-        """Test includes `endpoint_url` when `sqs_url` is set."""
+    def test_includes_is_secure_false_when_http_sqs_url_set(self) -> None:
+        """Test includes `is_secure=False` when `sqs_url` uses http."""
         config = _make_config(
             use_sqs_queue=True,
             sqs_url="http://elasticmq:9324",
         )
         options = get_broker_transport_options(config)
-        assert options["endpoint_url"] == "http://elasticmq:9324"
+        assert options.get("is_secure") is False
 
-    def test_no_endpoint_url_when_sqs_url_not_set(self) -> None:
-        """When sqs_url is None, endpoint_url is not in the dict."""
+    def test_no_is_secure_override_when_https_sqs_url_set(self) -> None:
+        """When `sqs_url` uses https, do not override kombu's default."""
+        config = _make_config(
+            use_sqs_queue=True,
+            sqs_url="https://elasticmq:9324",
+        )
+        options = get_broker_transport_options(config)
+        assert "is_secure" not in options
+
+    def test_no_is_secure_when_sqs_url_not_set(self) -> None:
+        """When sqs_url is None, is_secure is not in the dict."""
         config = _make_config(
             use_sqs_queue=True,
             sqs_url=None,
         )
         options = get_broker_transport_options(config)
-        assert "endpoint_url" not in options
+        assert "is_secure" not in options
 
     def test_includes_region(self) -> None:
         config = _make_config(
@@ -327,9 +353,11 @@ class TestGetBrokerTransportOptions:
         assert len(predefined) == len(all_queues)
 
         for queue_name in all_queues:
-            assert queue_name in predefined
-            expected_url = f"http://elasticmq:9324/queue/test-{queue_name}"
-            assert predefined[queue_name]["url"] == expected_url
+            sqs_key = _canonical_sqs_queue_name(queue_name)
+            assert sqs_key in predefined
+            expected_sqs_name = f"test-{_canonical_sqs_queue_name(queue_name)}"
+            expected_url = f"http://elasticmq:9324/queue/{expected_sqs_name}"
+            assert predefined[sqs_key]["url"] == expected_url
 
     def test_predefined_queues_uses_default_aws_url_when_no_sqs_url(self) -> None:
         """When sqs_url is None, queue URLs use the default AWS SQS endpoint."""
@@ -343,9 +371,27 @@ class TestGetBrokerTransportOptions:
         predefined = options["predefined_queues"]
 
         # Check one queue as representative
-        assert predefined["fides.dsr"]["url"] == (
-            "https://sqs.us-west-2.amazonaws.com/queue/fides-fides.dsr"
+        assert predefined[_canonical_sqs_queue_name("fides.dsr")]["url"] == (
+            "https://sqs.us-west-2.amazonaws.com/queue/fides-fides-dsr"
         )
+
+
+class TestGetTaskQueues:
+    """Unit tests for `get_task_queues`."""
+
+    def test_returns_none_when_sqs_disabled(self) -> None:
+        """When `use_sqs_queue=False`, return None so Redis auto-creation works."""
+        config = _make_config(use_sqs_queue=False)
+        assert get_task_queues(config) is None
+
+    def test_returns_queue_instances_for_all_known_queues(self) -> None:
+        """When `use_sqs_queue=True`, return a Queue for every known queue."""
+        config = _make_config(use_sqs_queue=True)
+        queues = get_task_queues(config)
+        assert queues is not None
+        queue_names = {q.name for q in queues}
+        expected_names = set(get_all_celery_queue_names())
+        assert queue_names == expected_names
 
 
 class TestGetAllCeleryQueueNames:

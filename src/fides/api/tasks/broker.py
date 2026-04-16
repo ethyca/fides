@@ -12,8 +12,11 @@ no database connections) so that it can be imported and tested without
 requiring infrastructure services.
 """
 
-from typing import Any, Dict, List
-from urllib.parse import quote
+import string
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import quote, urlparse
+
+from kombu import Queue
 
 # ---------------------------------------------------------------------------
 # Queue name constants
@@ -50,6 +53,37 @@ CELERY_QUEUE_NAMES: List[str] = [
 
 # Default Celery queue — always included in mappings.
 DEFAULT_QUEUE_NAME = "fides"
+
+# kombu's SQS transport canonicalizes queue names via entity_name before
+# looking them up in predefined_queues.  Dots become dashes, etc.
+# See: kombu/transport/SQS.py
+_KOMBU_CHARS_REPLACE_TABLE = {
+    ord(c): 0x5F for c in string.punctuation if c not in "-_."
+}
+_KOMBU_CHARS_REPLACE_TABLE[0x2E] = 0x2D  # "." -> "-"
+
+
+def _canonical_sqs_queue_name(celery_queue_name: str) -> str:
+    """Mirror kombu's SQS transport entity_name canonicalization."""
+    if celery_queue_name.endswith(".fifo"):
+        partial = celery_queue_name[: -len(".fifo")]
+        partial = str(partial).translate(_KOMBU_CHARS_REPLACE_TABLE)
+        return partial + ".fifo"
+    return str(celery_queue_name).translate(_KOMBU_CHARS_REPLACE_TABLE)
+
+
+def get_task_queues(config: Any) -> Optional[Tuple[Queue, ...]]:
+    """Return explicit ``task_queues`` for Celery when using SQS.
+
+    Celery's AMQP router needs to know about every queue that tasks are
+    routed to.  When ``use_sqs_queue`` is enabled we return a ``Queue``
+    instance for each known queue (including the default).  For Redis the
+    existing ``task_create_missing_queues`` behaviour is sufficient, so we
+    return ``None`` and leave ``task_queues`` unset.
+    """
+    if not config.queue.use_sqs_queue:
+        return None
+    return tuple(Queue(name) for name in get_all_celery_queue_names())
 
 
 def get_all_celery_queue_names() -> List[str]:
@@ -112,10 +146,15 @@ def get_broker_url(config: Any) -> str:
 def get_sqs_broker_url(config: Any) -> str:
     """Build the ``sqs://`` URL for kombu's SQS transport.
 
-    Format: ``sqs://ACCESS_KEY:SECRET_KEY@``
+    Format:
+    - With a custom ``sqs_url`` (ElasticMQ):
+      ``sqs://ACCESS_KEY:SECRET_KEY@HOST:PORT/``
+    - Without (AWS):
+      ``sqs://ACCESS_KEY:SECRET_KEY@``
 
-    Connection parameters (region, endpoint_url) are passed via
-    ``CELERY_BROKER_TRANSPORT_OPTIONS`` — see :func:`get_broker_transport_options`.
+    kombu's SQS transport derives the actual ``endpoint_url`` from the
+    hostname/port in the broker URL combined with the ``is_secure`` transport
+    option.  It ignores ``endpoint_url`` inside ``broker_transport_options``.
     """
     access_key = config.queue.aws_access_key_id or ""
     secret_key = config.queue.aws_secret_access_key or ""
@@ -123,6 +162,17 @@ def get_sqs_broker_url(config: Any) -> str:
     # URL-encode credentials to handle special characters safely.
     encoded_key = quote(access_key, safe="")
     encoded_secret = quote(secret_key, safe="")
+
+    netloc = ""
+    if config.queue.sqs_url:
+        parsed = urlparse(config.queue.sqs_url)
+        host = parsed.hostname or ""
+        port = parsed.port
+        if host:
+            netloc = f"{encoded_key}:{encoded_secret}@{host}"
+            if port is not None:
+                netloc = f"{netloc}:{port}"
+            return f"sqs://{netloc}/"
 
     return f"sqs://{encoded_key}:{encoded_secret}@"
 
@@ -143,15 +193,22 @@ def _get_sqs_queue_url(config: Any, celery_queue_name: str) -> str:
     """Return the full SQS queue URL for a given Celery queue name."""
     base = _get_sqs_base_url(config)
     prefix = config.queue.sqs_queue_name_prefix
-    sqs_queue_name = f"{prefix}{celery_queue_name}"
+    # SQS queue names cannot contain dots; use the same canonicalization
+    # that kombu applies when resolving queue URLs.
+    sqs_queue_name = f"{prefix}{_canonical_sqs_queue_name(celery_queue_name)}"
     return f"{base}/queue/{sqs_queue_name}"
 
 
 def get_broker_transport_options(config: Any) -> Dict[str, Any]:
     """Return ``BROKER_TRANSPORT_OPTIONS`` for Celery.
 
-    For SQS: includes ``region``, optional ``endpoint_url`` (for ElasticMQ),
+    For SQS: includes ``region``, optional ``is_secure`` (for ElasticMQ),
     and ``predefined_queues`` mapping Celery queue names to SQS queue URLs.
+
+    .. note::
+       kombu's SQS transport ignores ``endpoint_url`` in
+       ``broker_transport_options``; it derives the endpoint from the
+       hostname/port in the broker URL plus ``is_secure``.
 
     For Redis: returns an empty dict (no transport options needed).
     """
@@ -164,7 +221,11 @@ def get_broker_transport_options(config: Any) -> Dict[str, Any]:
     }
 
     if config.queue.sqs_url:
-        options["endpoint_url"] = config.queue.sqs_url
+        parsed = urlparse(config.queue.sqs_url)
+        # kombu defaults to https when a hostname is present in the URL.
+        # Force http when the configured sqs_url explicitly uses it.
+        if parsed.scheme == "http":
+            options["is_secure"] = False
 
     return options
 
@@ -172,12 +233,14 @@ def get_broker_transport_options(config: Any) -> Dict[str, Any]:
 def _build_predefined_queues(config: Any) -> Dict[str, Dict[str, str]]:
     """Build the ``predefined_queues`` mapping for kombu's SQS transport.
 
-    Each entry maps a Celery queue name to a dict with its full SQS ``url``.
-    This avoids the need for ``sqs:ListQueues`` permission.
+    Each entry maps a *canonical* SQS queue name (as kombu looks it up) to a
+    dict with its full SQS ``url``.  This avoids the need for
+    ``sqs:ListQueues`` permission.
     """
     predefined: Dict[str, Dict[str, str]] = {}
     for queue_name in get_all_celery_queue_names():
-        predefined[queue_name] = {
+        sqs_key = _canonical_sqs_queue_name(queue_name)
+        predefined[sqs_key] = {
             "url": _get_sqs_queue_url(config, queue_name),
         }
     return predefined
