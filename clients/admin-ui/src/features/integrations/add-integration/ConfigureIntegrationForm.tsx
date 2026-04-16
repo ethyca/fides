@@ -8,7 +8,7 @@ import {
   Text,
   useMessage,
 } from "fidesui";
-import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
+import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -419,6 +419,7 @@ export const ConfigureIntegrationForm = ({
   // Form state tracking for parent component
   const allValues = Form.useWatch([], form);
   const [submittable, setSubmittable] = useState(false);
+  const isDirty = form.isFieldsTouched();
 
   useEffect(() => {
     form
@@ -426,11 +427,6 @@ export const ConfigureIntegrationForm = ({
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
   }, [form, allValues]);
-
-  const isDirty = useMemo(
-    () => allValues !== undefined && !isEqual(allValues, initialValues),
-    [allValues, initialValues],
-  );
 
   useEffect(() => {
     if (onFormStateChange) {

@@ -14,9 +14,9 @@ import {
   Text,
   Typography,
 } from "fidesui";
-import NextLink from "next/link";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { formatDate } from "~/features/common/utils";
 
@@ -75,9 +75,12 @@ export const AssessmentCard = ({
       <Flex vertical gap="small" justify="space-between" className="flex-1">
         <div>
           <Title level={3} className={`!mb-1 ${styles.titleLink}`}>
-            <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
+            <RouterLink
+              unstyled
+              href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
+            >
               {assessment.template_name ?? assessment.name}
-            </NextLink>
+            </RouterLink>
           </Title>
           {assessment.system_name && (
             <Text type="secondary" size="sm" className="block">
