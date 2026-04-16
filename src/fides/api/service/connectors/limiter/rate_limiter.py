@@ -135,12 +135,16 @@ class RateLimiter:
 
         Expiration is set on any keys which are stored in the cluster.
 
-        timeout_seconds defaults to the longest period factor + 5s, giving the limiter at
-        least one full bucket rollover window before giving up.
+        timeout_seconds defaults to the longest period factor + 5s (capped at 120s),
+        giving the limiter at least one full bucket rollover window before giving up.
+        The cap prevents HOUR/DAY limits from blocking a worker for unreasonable
+        durations; connectors like SurveyMonkey configure both minute and day limits,
+        and a breached day limit should fail fast rather than sleep for 24 hours.
         """
         if timeout_seconds is None:
-            timeout_seconds = (
-                max(r.period.factor for r in requests) + 5 if requests else 30
+            timeout_seconds = min(
+                max(r.period.factor for r in requests) + 5 if requests else 30,
+                120,
             )
 
         try:
