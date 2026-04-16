@@ -1,10 +1,10 @@
-import { Button, Tooltip } from "fidesui";
+import { Button, Flex, Tooltip } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import { useHasPermission } from "~/features/common/Restrict";
+import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
 import CreateOAuthClientModal from "~/features/oauth/CreateOAuthClientModal";
 import OAuthClientsList from "~/features/oauth/OAuthClientsList";
@@ -53,17 +53,6 @@ const ApiClientsPage: NextPage = () => {
           </Tooltip>
         }
       />
-      <Flex justify="flex-end" className="mb-4">
-        <Restrict scopes={[ScopeRegistryEnum.CLIENT_CREATE]}>
-          <Button
-            type="primary"
-            onClick={() => setCreateModalOpen(true)}
-            data-testid="create-api-client-btn"
-          >
-            Create API client
-          </Button>
-        </Restrict>
-      </Flex>
       <OAuthClientsList />
       <CreateOAuthClientModal
         isOpen={createModalOpen}
