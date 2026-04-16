@@ -1,21 +1,18 @@
 import { ConnectionType } from "~/types/api";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export enum MONITOR_TYPES {
-  WEBSITE = "website",
-  DATASTORE = "datastore",
-  INFRASTRUCTURE = "infrastructure",
-}
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 export const getMonitorType = (connectionType: ConnectionType) => {
   if (
     connectionType === ConnectionType.WEBSITE ||
     connectionType === ConnectionType.TEST_WEBSITE
   ) {
-    return MONITOR_TYPES.WEBSITE;
+    return APIMonitorType.WEBSITE;
   }
-  if (connectionType === ConnectionType.OKTA) {
-    return MONITOR_TYPES.INFRASTRUCTURE;
+  if (
+    connectionType === ConnectionType.OKTA ||
+    connectionType === ConnectionType.ENTRA
+  ) {
+    return APIMonitorType.INFRASTRUCTURE;
   }
-  return MONITOR_TYPES.DATASTORE;
+  return APIMonitorType.DATASTORE;
 };

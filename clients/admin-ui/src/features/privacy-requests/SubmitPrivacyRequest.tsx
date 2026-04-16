@@ -1,17 +1,17 @@
 import {
-  ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraStack as Stack,
+  Button,
   Dropdown,
-  LinkIcon,
+  Flex,
+  Icons,
   Modal,
-  useChakraToast as useToast,
+  Space,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import InfoBox from "~/features/common/InfoBox";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { usePostPrivacyRequestMutation } from "~/features/privacy-requests/privacy-requests.slice";
 import SubmitPrivacyRequestForm, {
@@ -33,14 +33,14 @@ const SubmitPrivacyRequestModal = ({
 }) => {
   const [postPrivacyRequestMutationTrigger] = usePostPrivacyRequestMutation();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleSubmit = async (values: PrivacyRequestSubmitFormValues) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { is_verified, ...rest } = values;
     const customFields = rest.custom_privacy_request_fields
       ? Object.entries(rest.custom_privacy_request_fields)
-          .map(([fieldName, fieldInfo]) =>
+          .map(([fieldName, fieldInfo]: [string, any]) =>
             fieldInfo.value ? { [fieldName]: fieldInfo } : {},
           )
           .reduce((acc, next) => ({ ...acc, ...next }), {})
@@ -51,16 +51,14 @@ const SubmitPrivacyRequestModal = ({
     };
     const result = await postPrivacyRequestMutationTrigger([payload]);
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          getErrorMessage(
-            result.error,
-            "An error occurred while creating this privacy request. Please try again",
-          ),
+      message.error(
+        getErrorMessage(
+          result.error,
+          "An error occurred while creating this privacy request. Please try again",
         ),
       );
     } else {
-      toast(successToastParams("Privacy request created"));
+      message.success("Privacy request created");
     }
     onClose();
   };
@@ -76,13 +74,13 @@ const SubmitPrivacyRequestModal = ({
       title="Create privacy request"
       footer={null}
     >
-      <Stack spacing={4}>
+      <Flex vertical gap="large">
         <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
         <SubmitPrivacyRequestForm
           onSubmit={handleSubmit}
           onCancel={() => onClose()}
         />
-      </Stack>
+      </Flex>
     </Modal>
   );
 };
@@ -105,7 +103,6 @@ const PrivacyRequestLinkModal = ({
       title="Create a Privacy Request Link"
       footer={null}
     >
-      <Stack spacing={4} />
       <CopyPrivacyRequestLinkForm
         privacyCenterUrl={privacyCenterUrl}
         onSubmit={onClose}
@@ -132,36 +129,41 @@ const SubmitPrivacyRequest = () => {
 
   return (
     <>
-      {hasPrivacyCenterUrl ? (
+      {hasPrivacyCenterUrl && (
         <PrivacyRequestLinkModal
           isOpen={createLinkOpen}
           onClose={handleClose}
           privacyCenterUrl={privacyCenterUrl}
         />
-      ) : null}
+      )}
       <SubmitPrivacyRequestModal
         isOpen={submitRequestOpen}
         onClose={handleClose}
       />
-      <Dropdown.Button
-        type="primary"
-        onClick={handleSubmitRequestOpen}
-        data-testid="submit-request-btn"
-        menu={{
-          items: [
-            {
-              label: "Create request link",
-              key: "create-request-link",
-              icon: <LinkIcon />,
-              onClick: handleCreateLinkOpen,
-              disabled: !hasPrivacyCenterUrl,
-            },
-          ],
-        }}
-        icon={<ChevronDownIcon />}
-      >
-        Create request
-      </Dropdown.Button>
+      <Space.Compact data-testid="submit-request-btn">
+        <Button type="primary" onClick={handleSubmitRequestOpen}>
+          Create request
+        </Button>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                label: "Create request link",
+                key: "create-request-link",
+                icon: <Icons.Link />,
+                onClick: handleCreateLinkOpen,
+                disabled: !hasPrivacyCenterUrl,
+              },
+            ],
+          }}
+        >
+          <Button
+            type="primary"
+            icon={<Icons.ChevronDown />}
+            aria-label="More privacy request options"
+          />
+        </Dropdown>
+      </Space.Compact>
     </>
   );
 };

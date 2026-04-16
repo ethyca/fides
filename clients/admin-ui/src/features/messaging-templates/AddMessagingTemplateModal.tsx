@@ -46,7 +46,7 @@ const AddMessagingTemplateModal = ({
       data-testid="add-messaging-template-modal"
       title="Select message template"
       footer={
-        <Flex className="w-full" gap="middle">
+        <Flex className="w-full" gap="medium">
           <Button onClick={onClose} data-testid="cancel-btn" className="grow">
             Cancel
           </Button>

@@ -1,4 +1,4 @@
-import { Flex, PageSpinner, Tabs, useMessage } from "fidesui";
+import { Flex, Spin, Tabs, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
@@ -116,7 +116,7 @@ const PolicyDetailPage: NextPage = () => {
         ]}
       />
 
-      {isLoading && <PageSpinner />}
+      {isLoading && <Spin />}
 
       {policy && (
         <Flex vertical gap="large">

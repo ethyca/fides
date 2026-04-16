@@ -1,27 +1,24 @@
-/* eslint-disable react/no-array-index-key */
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
-  ChakraBox as Box,
-  ChakraDeleteIcon as DeleteIcon,
-  ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
-  ChakraText as Text,
-  useChakraToast as useToast,
+  Flex,
+  Form,
+  Icons,
+  Input,
+  Spin,
+  Typography,
+  useMessage,
 } from "fidesui";
-import { FieldArray, Form, Formik, FormikHelpers } from "formik";
+import { isEqual } from "lodash";
 import type { NextPage } from "next";
-import * as Yup from "yup";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
 import FormSection from "~/features/common/form/FormSection";
-import { CustomTextInput, TextInput } from "~/features/common/form/inputs";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { corsOriginRules } from "~/features/common/form/validation";
+import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   CORSOrigins,
   selectApplicationConfig,
@@ -30,6 +27,7 @@ import {
   usePutConfigurationSettingsMutation,
 } from "~/features/config-settings/config-settings.slice";
 import { PlusApplicationConfig } from "~/types/api";
+import { RTKErrorResult } from "~/types/errors/api";
 
 type FormValues = CORSOrigins;
 
@@ -51,101 +49,35 @@ const CORSConfigurationPage: NextPage = () => {
   const [putConfigSettingsTrigger, { isLoading: isLoadingPutMutation }] =
     usePutConfigurationSettingsMutation();
 
-  const toast = useToast();
+  const message = useMessage();
+  const [form] = Form.useForm<FormValues>();
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+  const [baseline, setBaseline] = useState(apiSettings);
 
-  const isValidURL = (value: string | undefined) => {
-    if (
-      !value ||
-      !(value.startsWith("https://") || value.startsWith("http://"))
-    ) {
-      return false;
-    }
-    try {
-      /* eslint-disable-next-line no-new */
-      new URL(value);
-    } catch (e) {
-      return false;
-    }
-    return true;
-  };
+  useEffect(() => {
+    setBaseline(apiSettings);
+  }, [apiSettings]);
 
-  const containsNoWildcard = (value: string | undefined) => {
-    if (!value) {
-      return false;
-    }
-    return !value.includes("*");
-  };
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
 
-  const containsNoPath = (value: string | undefined) => {
-    if (!value) {
-      return false;
-    }
-    try {
-      const url = new URL(value);
-      return url.pathname === "/" && !value.endsWith("/");
-    } catch (e) {
-      return false;
-    }
-  };
+  const isDirty = useMemo(
+    () => !isEqual(form.getFieldsValue(true), baseline),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allValues, baseline],
+  );
 
-  const ValidationSchema = Yup.object().shape({
-    cors_origins: Yup.array()
-      .nullable()
-      .of(
-        Yup.string()
-          .required()
-          .trim()
-          .test(
-            "is-valid-url",
-            ({ label }) =>
-              `${label} must be a valid URL (e.g. https://example.com)`,
-            (value) => isValidURL(value),
-          )
-          .test(
-            "has-no-wildcard",
-            ({ label }) =>
-              `${label} cannot contain a wildcard (e.g. https://*.example.com)`,
-            (value) => containsNoWildcard(value),
-          )
-          .test(
-            "has-no-path",
-            ({ label }) =>
-              `${label} cannot contain a path (e.g. https://example.com/path)`,
-            (value) => containsNoPath(value),
-          )
-          .label("Domain"),
-      ),
-  });
-
-  const handleSubmit = async (
-    values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>,
-  ) => {
-    const handleResult = (
-      result:
-        | { data: object }
-        | { error: FetchBaseQueryError | SerializedError },
-    ) => {
-      toast.closeAll();
-      if (isErrorResult(result)) {
-        const errorMsg = getErrorMessage(
-          result.error,
-          `An unexpected error occurred while saving domains. Please try again.`,
-        );
-        toast(errorToastParams(errorMsg));
-      } else {
-        toast(successToastParams("Domains saved successfully"));
-        // Reset state such that isDirty will be checked again before next save
-        formikHelpers.resetForm({ values });
-      }
-    };
-
+  const handleSubmit = async (values: FormValues) => {
     const payloadOrigins =
       values.cors_origins && values.cors_origins.length > 0
         ? values.cors_origins
         : undefined;
 
-    // Ensure that we include the existing applicationConfig (for other API-set configs)
     const payload: PlusApplicationConfig = {
       ...applicationConfig,
       security: {
@@ -153,17 +85,26 @@ const CORSConfigurationPage: NextPage = () => {
       },
     };
 
-    const result = await putConfigSettingsTrigger(payload);
-
-    handleResult(result);
+    try {
+      await putConfigSettingsTrigger(payload).unwrap();
+      message.success("Domains saved successfully");
+      setBaseline({ cors_origins: values.cors_origins ?? undefined });
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "An unexpected error occurred while saving domains. Please try again.",
+        ),
+      );
+    }
   };
 
   return (
     <Layout title="Domains">
-      <Box data-testid="management-domains">
+      <div data-testid="management-domains">
         <PageHeader heading="Domains" />
-        <Box maxW="600px">
-          <Text fontSize="sm" pb={6}>
+        <div className="max-w-[600px]">
+          <Typography.Paragraph className="pb-6 text-sm">
             For Fides to work on your website(s), each of your domains must be
             listed below. You can add and remove domains at any time up to the
             quantity included in your license. For more information on managing
@@ -172,125 +113,117 @@ const CORSConfigurationPage: NextPage = () => {
               read here
             </DocsLink>
             .
-          </Text>
+          </Typography.Paragraph>
           <FormSection
             data-testid="api-set-domains-form"
             title="Organization domains"
             tooltip="Fides uses these domains to enforce cross-origin resource sharing (CORS), a browser-based security standard. Each domain must be a valid URL (e.g. https://example.com) without any wildcards '*' or paths '/blog'"
           >
             {isLoadingGetQuery || isLoadingPutMutation ? (
-              <Flex justifyContent="center">
-                <Spinner />
-              </Flex>
+              <Spin rootClassName="my-24" />
             ) : (
-              <Formik<FormValues>
+              <Form
+                form={form}
                 initialValues={apiSettings}
-                enableReinitialize
-                onSubmit={handleSubmit}
-                validationSchema={ValidationSchema}
-                validateOnChange
+                onFinish={handleSubmit}
+                key={JSON.stringify(apiSettings)}
               >
-                {({ dirty, values, isValid }) => (
-                  <Form>
-                    <FieldArray
-                      name="cors_origins"
-                      render={(arrayHelpers) => (
-                        <Flex flexDir="column">
-                          {values.cors_origins!.map(
-                            (_: string, index: number) => (
-                              <Flex flexDir="row" key={index} my={3}>
-                                <CustomTextInput
-                                  variant="stacked"
-                                  name={`cors_origins[${index}]`}
-                                  placeholder="https://subdomain.example.com:9090"
-                                />
+                <Form.List name="cors_origins">
+                  {(fields, { add, remove }) => (
+                    <Flex vertical>
+                      {fields.map((field) => (
+                        <Flex className="my-3" key={field.key}>
+                          <Form.Item
+                            name={field.name}
+                            className="mb-0 grow"
+                            rules={corsOriginRules}
+                          >
+                            <Input
+                              placeholder="https://subdomain.example.com:9090"
+                              data-testid={`input-cors_origins[${field.name}]`}
+                            />
+                          </Form.Item>
 
-                                <Button
-                                  aria-label="delete-domain"
-                                  className="z-[2] ml-4"
-                                  icon={<DeleteIcon />}
-                                  onClick={() => {
-                                    arrayHelpers.remove(index);
-                                  }}
-                                />
-                              </Flex>
-                            ),
-                          )}
-
-                          <Flex justifyContent="center" mt={3}>
-                            <Button
-                              aria-label="add-domain"
-                              className="w-full"
-                              onClick={() => {
-                                arrayHelpers.push("");
-                              }}
-                            >
-                              Add domain
-                            </Button>
-                          </Flex>
+                          <Button
+                            aria-label="delete-domain"
+                            className="z-[2] ml-4"
+                            icon={<Icons.TrashCan />}
+                            onClick={() => {
+                              remove(field.name);
+                            }}
+                          />
                         </Flex>
-                      )}
-                    />
+                      ))}
 
-                    <Box mt={6}>
-                      <Button
-                        htmlType="submit"
-                        type="primary"
-                        disabled={isLoadingPutMutation || !dirty || !isValid}
-                        loading={isLoadingPutMutation}
-                        data-testid="save-btn"
-                      >
-                        Save
-                      </Button>
-                    </Box>
-                  </Form>
-                )}
-              </Formik>
+                      <Flex justify="center" className="mt-3">
+                        <Button
+                          aria-label="add-domain"
+                          className="w-full"
+                          onClick={() => {
+                            add("");
+                          }}
+                        >
+                          Add domain
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  )}
+                </Form.List>
+
+                <div className="mt-6">
+                  <Button
+                    htmlType="submit"
+                    type="primary"
+                    disabled={isLoadingPutMutation || !isDirty || !submittable}
+                    loading={isLoadingPutMutation}
+                    data-testid="save-btn"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </Form>
             )}
           </FormSection>
-        </Box>
-        <Box maxW="600px" marginY={3}>
+        </div>
+        <div className="my-3 max-w-[600px]">
           <FormSection
             data-testid="config-set-domains-form"
             title="Advanced settings"
             tooltip="These domains are configured by an administrator with access to Fides security settings and can support more advanced options such as wildcards and regex."
           >
             {isLoadingConfigSetQuery ? (
-              <Flex justifyContent="center">
-                <Spinner />
-              </Flex>
+              <Spin rootClassName="my-24" />
             ) : (
-              <Flex flexDir="column">
+              <Flex vertical>
                 {configSettings.cors_origins!.map((origin, index) => (
-                  <TextInput
+                  <Input
                     data-testid={`input-config_cors_origins[${index}]`}
+                    // eslint-disable-next-line react/no-array-index-key
                     key={index}
-                    marginY={3}
+                    className="my-3"
                     value={origin}
-                    isDisabled
-                    isPassword={false}
+                    disabled
                   />
                 ))}
                 {configSettings.cors_origin_regex ? (
-                  <TextInput
+                  <Input
                     data-testid="input-config_cors_origin_regex"
                     key="cors_origin_regex"
-                    marginY={3}
+                    className="my-3"
                     value={configSettings.cors_origin_regex}
-                    isDisabled
-                    isPassword={false}
+                    disabled
                   />
                 ) : undefined}
                 {!hasConfigSettings ? (
-                  <Text fontSize="xs" color="gray.500">
+                  <Typography.Text type="secondary" className="text-xs">
                     No advanced domain settings configured.
-                  </Text>
+                  </Typography.Text>
                 ) : undefined}
               </Flex>
             )}
           </FormSection>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Layout>
   );
 };

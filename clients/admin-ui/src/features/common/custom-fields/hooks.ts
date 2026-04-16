@@ -1,7 +1,7 @@
+import { useMessage } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
-import { useAlert } from "~/features/common/hooks";
 import {
   useBulkUpdateCustomFieldsMutation,
   useGetAllAllowListQuery,
@@ -26,13 +26,8 @@ export const useCustomFields = ({
   resourceFidesKey,
   resourceType,
 }: UseCustomFieldsOptions) => {
-  const { errorAlert } = useAlert();
+  const message = useMessage();
   const { plus: isEnabled } = useFeatures();
-
-  // This keeps track of the fides key that was initially passed in. If that key started out blank,
-  // then we know the API call will just 404.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const queryFidesKey = useMemo(() => resourceFidesKey ?? "", []);
 
   const allAllowListQuery = useGetAllAllowListQuery(true, {
     skip: !isEnabled,
@@ -46,8 +41,8 @@ export const useCustomFields = ({
     isLoading: isCustomFieldIsLoading,
     error,
     isError,
-  } = useGetCustomFieldsForResourceQuery(resourceFidesKey ?? "", {
-    skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
+  } = useGetCustomFieldsForResourceQuery(resourceFidesKey!, {
+    skip: !resourceFidesKey || !isEnabled,
   });
 
   const [bulkUpdateCustomFieldsMutationTrigger] =
@@ -192,7 +187,7 @@ export const useCustomFields = ({
           delete: deleteList,
         });
       } catch (e) {
-        errorAlert(
+        message.error(
           `One or more custom fields have failed to save, please try again.`,
         );
         // eslint-disable-next-line no-console
@@ -202,7 +197,7 @@ export const useCustomFields = ({
     [
       isEnabled,
       definitionIdToCustomField,
-      errorAlert,
+      message,
       resourceFidesKey,
       sortedCustomFieldDefinitionIds,
       bulkUpdateCustomFieldsMutationTrigger,

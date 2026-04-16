@@ -1,25 +1,19 @@
 import {
+  Alert,
   Button,
-  ChakraAlert as Alert,
-  ChakraAlertDescription as AlertDescription,
-  ChakraAlertIcon as AlertIcon,
-  ChakraStack as Stack,
-  ChakraText as Text,
-  ChakraUseDisclosureReturn as UseDisclosureReturn,
   Flex,
+  Form,
+  Input,
   Modal,
-  useChakraToast as useToast,
+  Typography,
+  useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import React from "react";
-import * as Yup from "yup";
+import React, { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
 import {
@@ -27,14 +21,14 @@ import {
   useDeleteUserMutation,
 } from "./user-management.slice";
 
-const initialValues = { username: "", usernameConfirmation: "" };
+const { Text } = Typography;
 
 const useDeleteUserModal = ({
   id,
   username,
   onClose,
 }: Pick<User, "id" | "username"> & { onClose: () => void }) => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [deleteUser] = useDeleteUserMutation();
@@ -42,38 +36,46 @@ const useDeleteUserModal = ({
   const handleDeleteUser = async () => {
     const result = await deleteUser(id);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(successToastParams("Successfully deleted user"));
+      message.success("Successfully deleted user");
       onClose();
     }
     dispatch(setActiveUserId(undefined));
     router.push(USER_MANAGEMENT_ROUTE);
   };
 
-  const validationSchema = Yup.object().shape({
-    usernameConfirmation: Yup.string()
-      .required()
-      .oneOf([username], "Confirmation input must match the username")
-      .label("Username confirmation"),
-  });
-
   return {
     handleDeleteUser,
-    validationSchema,
+    username,
   };
 };
 
-const DeleteUserModal = ({
-  user,
-  ...modal
-}: { user: User } & UseDisclosureReturn) => {
-  const { isOpen, onClose } = modal;
-  const { handleDeleteUser, validationSchema } = useDeleteUserModal({
+interface DeleteUserModalProps {
+  user: User;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const DeleteUserModal = ({ user, isOpen, onClose }: DeleteUserModalProps) => {
+  const { handleDeleteUser, username } = useDeleteUserModal({
     id: user.id,
     username: user.username,
     onClose,
   });
+  const [form] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const usernameConfirmation = Form.useWatch("usernameConfirmation", form);
+
+  const handleFinish = async () => {
+    setIsSubmitting(true);
+    try {
+      await handleDeleteUser();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Modal
@@ -85,60 +87,67 @@ const DeleteUserModal = ({
       destroyOnHidden
       footer={null}
     >
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleDeleteUser}
-      >
-        {({ isSubmitting, dirty, isValid }) => (
-          <Form>
-            <Alert
-              status="warning"
-              overflow="visible"
-              colorScheme="warn"
-              marginBottom={4}
-            >
-              <AlertIcon />
-              <AlertDescription>
-                <Text as="span" mb={2}>
-                  You are about to delete the user&nbsp;
-                </Text>
-                <Text as="span" mb={2} fontStyle="italic" fontWeight="semibold">
-                  {user.username}.
-                </Text>
-                <Text mb={2}>
-                  This action cannot be undone. To confirm, please enter the
-                  user&rsquo;s username below.
-                </Text>
-              </AlertDescription>
-            </Alert>
+      <Form form={form} layout="vertical" onFinish={handleFinish}>
+        <Alert
+          type="warning"
+          showIcon
+          className="mb-4"
+          description={
+            <>
+              <Text>You are about to delete the user&nbsp;</Text>
+              <Text italic strong>
+                {username}.
+              </Text>
+              <Text className="mt-2 block">
+                This action cannot be undone. To confirm, please enter the
+                user&rsquo;s username below.
+              </Text>
+            </>
+          }
+        />
 
-            <Stack direction="column" spacing={4}>
-              <CustomTextInput
-                name="usernameConfirmation"
-                label="Confirm username"
-                placeholder="Type the username to delete"
-              />
-            </Stack>
+        <Form.Item
+          name="usernameConfirmation"
+          label="Confirm username"
+          rules={[
+            { required: true, message: "Username confirmation is required" },
+            {
+              validator(_, value) {
+                if (!value || value === username) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(
+                  new Error("Confirmation input must match the username"),
+                );
+              },
+            },
+          ]}
+        >
+          <Input
+            placeholder="Type the username to delete"
+            data-testid="input-usernameConfirmation"
+          />
+        </Form.Item>
 
-            <Flex className="mt-4 w-full" gap="small">
-              <Button onClick={onClose} className="w-1/2">
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                disabled={!dirty || !isValid}
-                loading={isSubmitting}
-                htmlType="submit"
-                className="w-1/2"
-                data-testid="submit-btn"
-              >
-                Delete User
-              </Button>
-            </Flex>
-          </Form>
-        )}
-      </Formik>
+        <Flex className="mt-4 w-full" gap="small">
+          <Button onClick={onClose} className="w-1/2">
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            disabled={
+              !usernameConfirmation ||
+              form.getFieldsError().some(({ errors }) => errors.length > 0)
+            }
+            loading={isSubmitting}
+            htmlType="submit"
+            className="w-1/2"
+            data-testid="submit-btn"
+          >
+            Delete User
+          </Button>
+        </Flex>
+      </Form>
     </Modal>
   );
 };

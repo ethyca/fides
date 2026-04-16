@@ -1,17 +1,17 @@
 import {
   Button,
-  ChakraBox as Box,
-  ChakraDivider as Divider,
-  ChakraHeading as Heading,
-  ChakraStack as Stack,
+  Divider,
+  Flex,
+  Form,
+  Input,
+  Select,
+  Typography,
+  useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
 import { useState } from "react";
 
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { useAPIHelper } from "~/features/common/hooks";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
@@ -44,7 +44,10 @@ const GoogleCloudStorageConfiguration = ({
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
 
   const { handleError } = useAPIHelper();
-  const { successAlert } = useAlert();
+  const message = useMessage();
+
+  const [configForm] = Form.useForm();
+  const [secretsForm] = Form.useForm();
 
   const initialValues = {
     type: storageTypes.gcs,
@@ -83,7 +86,7 @@ const GoogleCloudStorageConfiguration = ({
       handleError(result.error);
     } else {
       setAuthMethod(newValues.auth_method);
-      successAlert(`Google Cloud Storage credentials successfully updated.`);
+      message.success(`Google Cloud Storage credentials successfully updated.`);
     }
   };
 
@@ -114,132 +117,145 @@ const GoogleCloudStorageConfiguration = ({
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      successAlert(`Google Cloud Storage secrets successfully updated.`);
+      message.success(`Google Cloud Storage secrets successfully updated.`);
     }
   };
 
   return (
     <>
-      <Heading fontSize="md" fontWeight="semibold" mt={10}>
+      <Typography.Title level={5} className="mt-10">
         Google Cloud Storage configuration
-      </Heading>
-      <Stack>
-        <Formik
-          initialValues={initialValues}
-          onSubmit={handleSubmitStorageConfiguration}
-          enableReinitialize
-        >
-          {({ isSubmitting, handleReset }) => (
-            <Form>
-              <Stack mt={5} spacing={5}>
-                <ControlledSelect
-                  name="format"
-                  label="Format"
-                  options={[
-                    { label: "json", value: "json" },
-                    { label: "csv", value: "csv" },
-                  ]}
-                  data-testid="format"
-                  isRequired
-                />
-                <ControlledSelect
-                  name="auth_method"
-                  label="Auth method"
-                  options={[
-                    {
-                      label: "Service Account Keys",
-                      value: "service_account_keys",
-                    },
-                    { label: "Application Default Credentials", value: "adc" },
-                  ]}
-                  data-testid="auth_method"
-                  isRequired
-                />
-                <CustomTextInput
-                  data-testid="bucket"
-                  name="bucket"
-                  label="Bucket"
-                  isRequired
-                />
-              </Stack>
+      </Typography.Title>
+      <Form
+        form={configForm}
+        initialValues={initialValues}
+        onFinish={handleSubmitStorageConfiguration}
+        key={JSON.stringify(initialValues)}
+        layout="vertical"
+      >
+        <Flex vertical className="mt-5">
+          <Form.Item
+            name="format"
+            label="Format"
+            rules={[{ required: true, message: "Format is required" }]}
+          >
+            <Select
+              aria-label="Format"
+              options={[
+                { label: "json", value: "json" },
+                { label: "csv", value: "csv" },
+              ]}
+              data-testid="format"
+            />
+          </Form.Item>
+          <Form.Item
+            name="auth_method"
+            label="Auth method"
+            rules={[{ required: true, message: "Auth method is required" }]}
+          >
+            <Select
+              aria-label="Auth method"
+              options={[
+                {
+                  label: "Service Account Keys",
+                  value: "service_account_keys",
+                },
+                { label: "Application Default Credentials", value: "adc" },
+              ]}
+              data-testid="auth_method"
+            />
+          </Form.Item>
+          <Form.Item
+            name="bucket"
+            label="Bucket"
+            rules={[{ required: true, message: "Bucket is required" }]}
+          >
+            <Input data-testid="bucket" />
+          </Form.Item>
+        </Flex>
 
-              <Button onClick={() => handleReset()} className="mr-2 mt-5">
+        <Button onClick={() => configForm.resetFields()} className="mr-2 mt-5">
+          Cancel
+        </Button>
+        <Button
+          htmlType="submit"
+          className="mt-5"
+          type="primary"
+          data-testid="save-btn"
+        >
+          Save
+        </Button>
+      </Form>
+      {authMethod === "service_account_keys" && (
+        <>
+          <Divider className="mt-5" />
+          <Typography.Title level={5} className="mt-5">
+            Storage destination
+          </Typography.Title>
+          <Form
+            form={secretsForm}
+            initialValues={initialSecretValues}
+            onFinish={handleSubmitStorageSecrets}
+            layout="vertical"
+          >
+            <Flex vertical className="mt-5">
+              <Form.Item name="type" label="Type">
+                <Input />
+              </Form.Item>
+              <Form.Item name="project_id" label="Project ID">
+                <Input />
+              </Form.Item>
+              <Form.Item name="private_key_id" label="Private key ID">
+                <Input.Password />
+              </Form.Item>
+              <Form.Item name="private_key" label="Private key">
+                <Input.Password />
+              </Form.Item>
+              <Form.Item name="client_email" label="Client email">
+                <Input />
+              </Form.Item>
+              <Form.Item name="client_id" label="Client ID">
+                <Input />
+              </Form.Item>
+              <Form.Item name="auth_uri" label="Auth URI">
+                <Input />
+              </Form.Item>
+              <Form.Item name="token_uri" label="Token URI">
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="auth_provider_x509_cert_url"
+                label="Auth provider x509 cert URL"
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="client_x509_cert_url"
+                label="Client x509 cert URL"
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item name="universe_domain" label="Universe domain">
+                <Input />
+              </Form.Item>
+            </Flex>
+            <div className="mt-10">
+              <Button
+                onClick={() => secretsForm.resetFields()}
+                className="mr-2 mt-5"
+              >
                 Cancel
               </Button>
               <Button
                 htmlType="submit"
-                className="mt-5"
-                disabled={isSubmitting}
                 type="primary"
+                className="mt-5"
                 data-testid="save-btn"
               >
                 Save
               </Button>
-            </Form>
-          )}
-        </Formik>
-      </Stack>
-      {authMethod === "service_account_keys" && (
-        <>
-          <Divider mt={5} />
-          <Heading fontSize="md" fontWeight="semibold" mt={5}>
-            Storage destination
-          </Heading>
-          <Stack>
-            <Formik
-              initialValues={initialSecretValues}
-              onSubmit={handleSubmitStorageSecrets}
-            >
-              {({ isSubmitting, handleReset }) => (
-                <Form>
-                  <Stack mt={5} spacing={5}>
-                    <CustomTextInput name="type" label="Type" />
-                    <CustomTextInput name="project_id" label="Project ID" />
-                    <CustomTextInput
-                      name="private_key_id"
-                      label="Private key ID"
-                      type="password"
-                    />
-                    <CustomTextInput
-                      name="private_key"
-                      label="Private key"
-                      type="password"
-                    />
-                    <CustomTextInput name="client_email" label="Client email" />
-                    <CustomTextInput name="client_id" label="Client ID" />
-                    <CustomTextInput name="auth_uri" label="Auth URI" />
-                    <CustomTextInput name="token_uri" label="Token URI" />
-                    <CustomTextInput
-                      name="auth_provider_x509_cert_url"
-                      label="Auth provider x509 cert URL"
-                    />
-                    <CustomTextInput
-                      name="client_x509_cert_url"
-                      label="Client x509 cert URL"
-                    />
-                    <CustomTextInput
-                      name="universe_domain"
-                      label="Universe domain"
-                    />
-                  </Stack>
-                  <Box mt={10}>
-                    <Button onClick={() => handleReset()} className="mr-2 mt-5">
-                      Cancel
-                    </Button>
-                    <Button
-                      disabled={isSubmitting}
-                      htmlType="submit"
-                      type="primary"
-                      className="mt-5"
-                      data-testid="save-btn"
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Form>
-              )}
-            </Formik>
-          </Stack>
+            </div>
+          </Form>
         </>
       )}
     </>

@@ -2,7 +2,7 @@ import { Flex, formatIsoLocation, isoStringToEntry, List } from "fidesui";
 import { isArray, toString } from "lodash";
 import React from "react";
 
-import { PrivacyRequestResponse } from "~/types/api";
+import { PrivacyRequestResponseExtended } from "~/types/api";
 
 import { RequestTableActions } from "../../RequestTableActions";
 import {
@@ -13,7 +13,7 @@ import {
 import { DaysLeft, Header, LabeledText, ReceivedOn } from "./components";
 
 interface ListItemProps {
-  item: PrivacyRequestResponse;
+  item: PrivacyRequestResponseExtended;
   checkbox?: React.ReactNode;
 }
 
@@ -62,9 +62,9 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
                 <LabeledText
                   key={identity.key}
                   label={identity.label}
-                  copyValue={identity.value}
+                  copyValue={String(identity.value ?? "")}
                 >
-                  {identity.value}
+                  {String(identity.value ?? "")}
                 </LabeledText>
               ))}
               {customFields.map((field) => {

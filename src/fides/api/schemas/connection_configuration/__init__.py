@@ -13,6 +13,12 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.connection_secrets_attentive import (
     AttentiveSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_aws import (
+    AWSDocsSchema as AWSDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_aws import (
+    AWSSchema as AWSSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQueryDocsSchema as BigQueryDocsSchema,
 )
@@ -46,6 +52,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     ExtendedEmailSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_entra import (
+    EntraDocsSchema as EntraDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_entra import (
+    EntraSchema as EntraSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
     FidesDocsSchema,
@@ -61,6 +73,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
 )
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
     GoogleCloudSQLPostgresSchema as GoogleCloudSQLPostgresSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_google_workspace import (
+    GoogleWorkspaceDocsSchema as GoogleWorkspaceDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_google_workspace import (
+    GoogleWorkspaceSchema as GoogleWorkspaceSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_jira_ticket import (
     JiraTicketDocsSchema as JiraTicketDocsSchema,
@@ -170,15 +188,18 @@ from fides.api.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 
 secrets_schemas: Dict[str, Any] = {
     ConnectionType.attentive_email.value: AttentiveSchema,
+    ConnectionType.aws.value: AWSSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
     ConnectionType.datahub.value: DatahubSchema,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailSchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
+    ConnectionType.entra.value: EntraSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
     ConnectionType.generic_consent_email.value: ExtendedEmailSchema,
     ConnectionType.generic_erasure_email.value: EmailSchema,
     ConnectionType.google_cloud_sql_mysql.value: GoogleCloudSQLMySQLSchema,
     ConnectionType.google_cloud_sql_postgres.value: GoogleCloudSQLPostgresSchema,
+    ConnectionType.google_workspace.value: GoogleWorkspaceSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.jira_ticket.value: JiraTicketSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
@@ -233,14 +254,17 @@ def get_connection_secrets_schema(
 # Creating the actual connection secrets schemas happens later once we know
 # what type of schema we should validate against.
 connection_secrets_schemas = Union[
+    AWSDocsSchema,
     BigQueryDocsSchema,
     DatahubDocsSchema,
+    EntraDocsSchema,
     DynamicErasureEmailDocsSchema,
     DynamoDBDocsSchema,
     EmailDocsSchema,
     FidesDocsSchema,
     GoogleCloudSQLMySQLDocsSchema,
     GoogleCloudSQLPostgresDocsSchema,
+    GoogleWorkspaceDocsSchema,
     JiraTicketDocsSchema,
     ManualWebhookDocsSchema,
     MariaDBDocsSchema,

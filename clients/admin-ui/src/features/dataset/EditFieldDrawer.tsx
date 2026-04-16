@@ -1,8 +1,4 @@
-import {
-  ChakraText as Text,
-  ConfirmationModal,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
+import { Text, useMessage, useModal } from "fidesui";
 import { cloneDeep, set, update } from "lodash";
 
 import EditDrawer, {
@@ -12,7 +8,8 @@ import EditDrawer, {
 import { Dataset, DatasetField } from "~/types/api";
 
 import { useUpdateDatasetMutation } from "./dataset.slice";
-import EditCollectionOrFieldForm, {
+import {
+  EditCollectionOrFieldForm,
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
 import { getDatasetPath } from "./helpers";
@@ -30,7 +27,7 @@ interface Props {
 const DESCRIPTION =
   "Fields are an array of objects that describe the collection's fields. Provide additional context to this field by filling out the fields below.";
 
-const EditFieldDrawer = ({
+export const EditFieldDrawer = ({
   field,
   isOpen,
   onClose,
@@ -39,13 +36,10 @@ const EditFieldDrawer = ({
   subfields,
 }: Props) => {
   const [updateDataset] = useUpdateDatasetMutation();
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
+  const message = useMessage();
+  const confirmModal = useModal();
 
-  const handleSubmit = (
+  const handleSubmit = async (
     values: Pick<DatasetField, "description" | "data_categories">,
   ) => {
     const pathToField = getDatasetPath({
@@ -60,11 +54,16 @@ const EditFieldDrawer = ({
     const updatedDataset = cloneDeep(dataset!);
     set(updatedDataset, pathToField, updatedField);
 
-    updateDataset(updatedDataset);
+    try {
+      await updateDataset(updatedDataset);
+      message.success("Successfully modified field");
+    } catch (error) {
+      message.error(error as string);
+    }
     onClose();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     const pathToParentField = getDatasetPath({
       dataset: dataset!,
       collectionName,
@@ -79,49 +78,45 @@ const EditFieldDrawer = ({
       ),
     }));
 
-    updateDataset(updatedDataset);
+    try {
+      await updateDataset(updatedDataset);
+      message.success("Successfully deleted field");
+    } catch (error) {
+      message.error(error as string);
+    }
     onClose();
-    onDeleteClose();
+  };
+
+  const confirmDelete = () => {
+    confirmModal.confirm({
+      title: "Delete Field",
+      content: (
+        <>
+          You are about to permanently delete the field named{" "}
+          <Text strong>{field?.name}</Text> from this dataset. Are you sure you
+          would like to continue?
+        </>
+      ),
+      okButtonProps: { danger: true },
+      onOk: handleDelete,
+    });
   };
 
   return (
-    <>
-      <EditDrawer
-        isOpen={isOpen}
-        onClose={onClose}
-        description={DESCRIPTION}
-        header={<EditDrawerHeader title={`Field Name: ${field?.name}`} />}
-        footer={
-          <EditDrawerFooter
-            onClose={onClose}
-            onDelete={onDeleteOpen}
-            formId={FORM_ID}
-          />
-        }
-      >
+    <EditDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      description={DESCRIPTION}
+      header={<EditDrawerHeader title={`Field Name: ${field?.name}`} />}
+      footer={<EditDrawerFooter onDelete={confirmDelete} formId={FORM_ID} />}
+    >
+      {field && (
         <EditCollectionOrFieldForm
-          values={field!}
+          values={field}
           onSubmit={handleSubmit}
           dataType="field"
         />
-      </EditDrawer>
-      <ConfirmationModal
-        isOpen={deleteIsOpen}
-        onClose={onDeleteClose}
-        onConfirm={handleDelete}
-        title="Delete Field"
-        message={
-          <Text>
-            You are about to permanently delete the field named{" "}
-            <Text color="complimentary.500" as="span" fontWeight="bold">
-              {field?.name}
-            </Text>{" "}
-            from this dataset. Are you sure you would like to continue?
-          </Text>
-        }
-      />
-    </>
+      )}
+    </EditDrawer>
   );
 };
-
-export default EditFieldDrawer;

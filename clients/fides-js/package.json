@@ -12,22 +12,25 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/fides.d.ts",
       "module": "./dist/fides.mjs",
       "import": "./dist/fides.mjs",
-      "require": "./dist/fides.js",
-      "types": "./dist/fides.d.ts"
+      "require": "./dist/fides.js"
     },
     "./headless": {
+      "types": "./dist/fides-headless.d.ts",
       "module": "./dist/fides-headless.mjs",
       "import": "./dist/fides-headless.mjs",
-      "require": "./dist/fides-headless.js",
-      "types": "./dist/fides-headless.d.ts"
+      "require": "./dist/fides-headless.js"
     },
     "./tcf": {
+      "types": "./dist/fides-tcf.d.ts",
       "module": "./dist/fides-tcf.mjs",
       "import": "./dist/fides-tcf.mjs",
-      "require": "./dist/fides-tcf.js",
-      "types": "./dist/fides-tcf.d.ts"
+      "require": "./dist/fides-tcf.js"
+    },
+    "./types": {
+      "types": "./dist/fides-types.d.ts"
     }
   },
   "scripts": {
@@ -37,10 +40,12 @@
     "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
     "docs:generate": "typedoc --tsconfig ./tsconfig.json --out docs src/docs/ ",
-    "format": "prettier --write .",
+    "format": "prettier --write --log-level warn .",
     "format:ci": "prettier --check .",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "check": "npm run lint && npm run format && npm run typecheck",
+    "check:ci": "npm run lint:ci && npm run format:ci && npm run typecheck",
+    "lint": "eslint --fix .",
+    "lint:ci": "eslint .",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "typecheck": "tsc --noEmit"

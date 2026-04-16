@@ -2,9 +2,19 @@ import { Icons } from "fidesui";
 import { ReactNode } from "react";
 
 import { FlagNames } from "~/features/common/features";
+import { NOTIFICATION_TAB_ITEMS } from "~/features/common/NotificationTabs";
+import { ACTION_CENTER_TAB_ITEMS } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { PRIVACY_REQUEST_TAB_ITEMS } from "~/features/privacy-requests/hooks/usePrivacyRequestTabs";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import * as routes from "./routes";
+
+export interface NavConfigTab {
+  title: string;
+  path: string;
+}
+
+export type NavModule = "consent";
 
 export interface NavConfigRoute {
   title?: string;
@@ -18,18 +28,26 @@ export interface NavConfigRoute {
   /** Hide route if this flag is enabled */
   hidesIfFlag?: FlagNames;
   requiresFidesCloud?: boolean;
+  /** Requires the backend RBAC feature to be enabled (from Plus health endpoint) */
+  requiresRbac?: boolean;
   /** Hide this route from the navigation UI but still allow access */
   hidden?: boolean;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
   routes?: NavConfigRoute[];
+  /** Tabs within this page that should appear in search */
+  tabs?: NavConfigTab[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export interface NavConfigGroup {
   title: string;
   icon: ReactNode;
   routes: NavConfigRoute[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export const NAV_CONFIG: NavConfigGroup[] = [
@@ -54,6 +72,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
+        tabs: ACTION_CENTER_TAB_ITEMS,
       },
       {
         title: "Data catalog",
@@ -126,12 +145,21 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
           ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
+        tabs: PRIVACY_REQUEST_TAB_ITEMS,
       },
       {
-        title: "Policies",
+        title: "DSR policies",
         path: routes.POLICIES_ROUTE,
         requiresFlag: "policies",
         scopes: [ScopeRegistryEnum.POLICY_READ],
+      },
+      {
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.WEBHOOK_READ,
+          ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
+        ],
       },
     ],
   },
@@ -150,6 +178,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Consent",
     icon: <Icons.SettingsAdjust />,
+    module: "consent",
     routes: [
       {
         title: "Vendors",
@@ -211,6 +240,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.DIGEST_CONFIG_READ,
           ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
         ],
+        tabs: NOTIFICATION_TAB_ITEMS,
       },
       {
         title: "Custom fields",
@@ -240,6 +270,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.CONFIG_READ,
           ScopeRegistryEnum.CONFIG_UPDATE,
         ],
+      },
+      {
+        title: "Data purposes",
+        path: routes.DATA_PURPOSES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
+      },
+      {
+        title: "Data consumers",
+        path: routes.DATA_CONSUMERS_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
       },
       {
         title: "Access policies",
@@ -282,6 +326,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+        tabs: [
+          {
+            title: "Redaction patterns",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
+          {
+            title: "Duplicate detection",
+            path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+          },
+        ],
       },
       {
         title: "Users",
@@ -300,6 +354,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [], // Any authenticated user can access their own profile
       },
       {
+        title: "Role Management",
+        path: routes.RBAC_ROUTE,
+        requiresPlus: true,
+        requiresRbac: true,
+        scopes: [
+          // Only Owners can access Role Management - they have assign_owners scope
+          ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+        ],
+      },
+      {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
         scopes: [
@@ -316,6 +380,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Consent",
         path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        module: "consent",
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [
@@ -354,23 +419,29 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     icon: <Icons.Code />,
     routes: [
       {
-        title: "Prompt Explorer",
+        title: "Prompt explorer",
         path: routes.PROMPT_EXPLORER_ROUTE,
         scopes: [ScopeRegistryEnum.DEVELOPER_READ],
         requiresPlus: true,
       },
       {
-        title: "Test Monitors",
+        title: "Seed data",
+        path: routes.SEED_DATA_ROUTE,
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "Test monitors",
         path: routes.TEST_MONITORS_ROUTE,
         scopes: [ScopeRegistryEnum.DEVELOPER_READ],
       },
       {
-        title: "Ant Design POC",
+        title: "Ant design POC",
         path: routes.ANT_POC_ROUTE,
         scopes: [],
       },
       {
-        title: "Fides JS Docs",
+        title: "Fides JS docs",
         path: routes.FIDES_JS_DOCS,
         scopes: [],
       },
@@ -380,12 +451,7 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         scopes: [],
       },
       {
-        title: "Table Migration POC",
-        path: routes.TABLE_MIGRATION_POC_ROUTE,
-        scopes: [],
-      },
-      {
-        title: "Error Test",
+        title: "Error test",
         path: routes.ERRORS_POC_ROUTE,
         scopes: [],
       },
@@ -399,6 +465,7 @@ export interface NavGroupChild {
   exact?: boolean;
   hidden?: boolean;
   children: Array<NavGroupChild>;
+  tabs?: NavConfigTab[];
 }
 
 export interface NavGroup {
@@ -471,7 +538,9 @@ interface ConfigureNavProps {
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
   hasFidesCloud?: boolean;
+  hasRbac?: boolean;
   flags?: Record<string, boolean>;
+  consentModuleEnabled?: boolean;
 }
 
 const configureNavRoute = ({
@@ -480,6 +549,7 @@ const configureNavRoute = ({
   flags,
   userScopes,
   hasFidesCloud,
+  hasRbac,
   navGroupTitle,
 }: Omit<ConfigureNavProps, "config"> & {
   route: NavConfigRoute;
@@ -500,6 +570,12 @@ const configureNavRoute = ({
   // If the target route would require fides cloud in a non-fides-cloud environment,
   // exclude it from the group.
   if (route.requiresFidesCloud && !hasFidesCloud) {
+    return undefined;
+  }
+
+  // If the target route requires RBAC to be enabled on the backend,
+  // exclude it when RBAC is not active.
+  if (route.requiresRbac && !hasRbac) {
     return undefined;
   }
 
@@ -542,6 +618,7 @@ const configureNavRoute = ({
         hasPlus,
         flags,
         hasFidesCloud,
+        hasRbac,
         navGroupTitle,
       });
       if (configuredChildRoute) {
@@ -556,6 +633,7 @@ const configureNavRoute = ({
     exact: route.exact,
     hidden: route.hidden,
     children,
+    tabs: route.tabs,
   };
 
   return groupChild;
@@ -566,10 +644,17 @@ export const configureNavGroups = ({
   userScopes,
   hasPlus = false,
   hasFidesCloud = false,
+  hasRbac = false,
   flags,
+  consentModuleEnabled = true,
 }: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
   config.forEach((group) => {
+    // If consent module is disabled, skip groups tagged with module: "consent"
+    if (!consentModuleEnabled && group.module === "consent") {
+      return;
+    }
+
     // if no nav routes are scoped for the user or all require plus
     if (
       !navGroupInScope(group, userScopes) ||
@@ -585,12 +670,18 @@ export const configureNavGroups = ({
     };
 
     group.routes.forEach((route) => {
+      // If consent module is disabled, skip routes tagged with module: "consent"
+      if (!consentModuleEnabled && route.module === "consent") {
+        return;
+      }
+
       const routeConfig = configureNavRoute({
         route,
         hasPlus,
         flags,
         userScopes,
         hasFidesCloud,
+        hasRbac,
         navGroupTitle: group.title,
       });
       if (routeConfig) {

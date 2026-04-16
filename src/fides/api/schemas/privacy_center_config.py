@@ -227,7 +227,7 @@ class PrivacyCenterConfig(FidesSchema):
     logo_url: Optional[str] = None
     favicon_path: Optional[str] = None
     page_title: Optional[str] = None
-    actions: List[PrivacyRequestOption]
+    actions: List[PrivacyRequestOption] = []
     include_consent: Optional[bool] = Field(alias="includeConsent", default=None)
     consent: ConsentConfig
     # Deprecated: prefer `links`. Kept for backwards compatibility.
@@ -236,6 +236,18 @@ class PrivacyCenterConfig(FidesSchema):
     privacy_policy_url_text: Optional[str] = None
     links: List[PrivacyCenterLink] = []
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
+
+    @field_validator(
+        "server_url_development",
+        "server_url_production",
+        "logo_url",
+        "privacy_policy_url",
+    )
+    @classmethod
+    def validate_url_fields(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not v.startswith(("http://", "https://")):
+            raise ValueError("URL must use the http or https scheme")
+        return v
 
 
 class PartialPrivacyRequestOption(FidesSchema):
@@ -250,7 +262,7 @@ class PartialPrivacyRequestOption(FidesSchema):
 class PartialPrivacyCenterConfig(FidesSchema):
     """Partial schema for the Admin UI privacy request submission."""
 
-    actions: List[PartialPrivacyRequestOption]
+    actions: List[PartialPrivacyRequestOption] = []
 
 
 def reorder_custom_privacy_request_fields(config: dict[str, Any]) -> dict[str, Any]:

@@ -1164,22 +1164,41 @@ def needs_batch_email_send(
     # Only check erasure email connectors if the policy has erasure rules
     if has_erasure_rules:
         for connection_config in get_erasure_email_connection_configs(db):
-            if get_connector(connection_config).needs_email(  # type: ignore
-                user_identities, privacy_request
-            ):
+            try:
+                if get_connector(connection_config).needs_email(  # type: ignore
+                    user_identities, privacy_request
+                ):
+                    needs_email_send = True
+                else:
+                    can_skip_erasure_email.append(connection_config)
+            except Exception as exc:
+                # Treat misconfigured connectors as needing email so the
+                # request enters the email-send path where the error is
+                # surfaced visibly rather than silently skipped.
+                logger.error(
+                    "Error checking erasure email connector '{}': {}",
+                    connection_config.key,
+                    exc,
+                )
                 needs_email_send = True
-            else:
-                can_skip_erasure_email.append(connection_config)
 
     # Only check consent email connectors if the policy has consent rules
     if has_consent_rules:
         for connection_config in get_consent_email_connection_configs(db):
-            if get_connector(connection_config).needs_email(  # type: ignore
-                user_identities, privacy_request
-            ):
+            try:
+                if get_connector(connection_config).needs_email(  # type: ignore
+                    user_identities, privacy_request
+                ):
+                    needs_email_send = True
+                else:
+                    can_skip_consent_email.append(connection_config)
+            except Exception as exc:
+                logger.error(
+                    "Error checking consent email connector '{}': {}",
+                    connection_config.key,
+                    exc,
+                )
                 needs_email_send = True
-            else:
-                can_skip_consent_email.append(connection_config)
 
     if not needs_email_send:
         _create_execution_logs_for_skipped_email_send(

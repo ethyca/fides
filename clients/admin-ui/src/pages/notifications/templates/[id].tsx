@@ -1,11 +1,11 @@
 import { getErrorMessage } from "common/helpers";
 import {
   ChakraBox as Box,
-  ChakraSpinner as Spinner,
   ChakraText as Text,
   ConfirmationModal,
+  Spin,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -14,7 +14,6 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { NOTIFICATIONS_TEMPLATES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   MessagingTemplateCreateOrUpdate,
@@ -28,7 +27,7 @@ import PropertySpecificMessagingTemplateForm, {
 import { isErrorResult } from "~/types/errors";
 
 const EditNotificationTemplatePage: NextPage = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const templateId = router.query.id;
 
@@ -60,11 +59,11 @@ const EditNotificationTemplatePage: NextPage = () => {
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
 
-    toast(successToastParams(`Messaging template updated successfully`));
+    message.success(`Messaging template updated successfully`);
   };
 
   const {
@@ -77,11 +76,11 @@ const EditNotificationTemplatePage: NextPage = () => {
     const result = await deleteMessagingTemplate(templateId as string);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
 
-    toast(successToastParams(`Messaging template deleted successfully`));
+    message.success(`Messaging template deleted successfully`);
 
     router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
   };
@@ -91,7 +90,7 @@ const EditNotificationTemplatePage: NextPage = () => {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
   if (error) {

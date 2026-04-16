@@ -8,9 +8,13 @@ import { USER_DETAIL_ROUTE } from "./routes";
 
 interface AccountDropdownMenuProps {
   onLogout: () => void;
+  className?: string;
 }
 
-const AccountDropdownMenu = ({ onLogout }: AccountDropdownMenuProps) => {
+const AccountDropdownMenu = ({
+  onLogout,
+  className,
+}: AccountDropdownMenuProps) => {
   const user = useAppSelector(selectUser);
   const userId = user?.id;
   const username = user?.username;
@@ -43,13 +47,13 @@ const AccountDropdownMenu = ({ onLogout }: AccountDropdownMenuProps) => {
           },
         ],
       }}
-      overlayStyle={{ width: "200px" }}
-      trigger={["click", "hover"]}
+      styles={{ root: { width: "200px" } }}
+      trigger={["click"]}
     >
       <Button
         tabIndex={0}
         type="primary"
-        className="border-none bg-transparent hover:!bg-gray-700 focus:!bg-gray-700"
+        className={className}
         icon={<Icons.User />}
         aria-label="User menu"
         data-testid="header-menu-button"

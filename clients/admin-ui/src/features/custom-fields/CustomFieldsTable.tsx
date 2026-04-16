@@ -8,10 +8,10 @@ const CustomFieldsTable = () => {
     useCustomFieldsTable();
 
   return (
-    <Flex vertical gap="middle" data-testid="custom-fields-management">
+    <Flex vertical gap="medium" data-testid="custom-fields-management">
       <Flex
         justify="space-between"
-        className="sticky -top-6 z-10 bg-white py-4"
+        className="sticky -top-6 z-20 bg-white py-4"
       >
         <DebouncedSearchInput
           value={searchQuery}

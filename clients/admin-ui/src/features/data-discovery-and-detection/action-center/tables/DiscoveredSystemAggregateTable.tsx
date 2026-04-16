@@ -71,7 +71,7 @@ export const DiscoveredSystemAggregateTable = ({
       <Flex
         justify="space-between"
         align="center"
-        className="sticky -top-6 z-10 bg-white py-4"
+        className="sticky -top-6 z-20 bg-white py-4"
       >
         <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
         <Space size="large">
@@ -113,7 +113,7 @@ export const DiscoveredSystemAggregateTable = ({
             <Button
               type="primary"
               icon={<Icons.ChevronDown />}
-              iconPosition="end"
+              iconPlacement="end"
               loading={anyBulkActionIsLoading}
               disabled={!hasSelectedRows}
               data-testid="bulk-actions-menu"

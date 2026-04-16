@@ -86,7 +86,6 @@ export enum TrendPeriod {
 }
 
 export interface TrendMetric {
-  name: string;
   value: number;
   history: number[];
   metadata: Record<string, unknown>;
@@ -107,9 +106,13 @@ export interface AstralisResponse {
 }
 
 export interface ActivityFeedItem {
-  actor_type: "user" | "agent";
+  id: string;
+  actor_type: "user" | "system";
   message: string;
   timestamp: string;
+  event_source?: "helios" | "janus" | "lethe" | "astralis";
+  event_type?: ActionType;
+  action_data?: Record<string, unknown>;
 }
 
 interface ActivityFeedResponse {
@@ -125,33 +128,32 @@ interface ActivityFeedParams {
   size?: number;
   start_date?: string;
   end_date?: string;
+  actor_type?: "user" | "system";
 }
 
 export type { ActivityFeedParams, ActivityFeedResponse };
 
-interface PrivacyRequestRegion {
-  name: string;
-  level: "global" | "country" | "state";
-  access_count: number;
-  erasure_count: number;
-}
-
 interface PrivacyRequestsResponse {
-  diff_month_over_month: number;
-  regions: PrivacyRequestRegion[];
+  active_count: number;
+  statuses: {
+    in_progress: number;
+    pending_action: number;
+    awaiting_approval: number;
+  };
+  overdue_count: number;
+  sla_health: Record<
+    string,
+    { on_track: number; approaching: number; overdue: number }
+  >;
 }
 
-interface PrivacyRequestsParams {
-  country?: string;
-}
+export type { PrivacyRequestsResponse };
 
-export type { PrivacyRequestsParams, PrivacyRequestsResponse };
-
-interface QuickAction {
-  id: string;
-  title: string;
-  action: string;
-  action_url: string;
+export interface QuickAction {
+  label: string;
+  action_type: ActionType;
+  action_data: Record<string, unknown>;
+  severity: ActionSeverity;
 }
 
 interface AgentBriefingResponse {

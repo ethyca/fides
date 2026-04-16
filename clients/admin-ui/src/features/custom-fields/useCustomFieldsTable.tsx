@@ -41,7 +41,7 @@ const useCustomFieldsTable = () => {
     totalRows: data?.length || 0,
     isLoading,
     customTableProps: {
-      layout: "fixed",
+      tableLayout: "fixed",
       sticky: {
         offsetHeader: 40,
       },
@@ -119,7 +119,7 @@ const useCustomFieldsTable = () => {
         title: "Actions",
         key: "actions",
         render: (_: any, record: CustomFieldDefinitionWithId) => (
-          <Flex gap="middle">
+          <Flex gap="medium">
             <Button
               size="small"
               onClick={() => router.push(`${CUSTOM_FIELDS_ROUTE}/${record.id}`)}

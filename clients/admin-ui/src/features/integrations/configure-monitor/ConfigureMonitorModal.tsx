@@ -1,13 +1,12 @@
 import {
   ChakraUseDisclosureReturn as UseDisclosureReturn,
-  Modal,
-  PageSpinner,
-  useChakraToast as useToast,
+  Form,
+  Spin,
+  useMessage,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import {
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
@@ -54,6 +53,13 @@ const ConfigureMonitorModal = ({
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
 
+  // isWebsiteMonitor is stable for the lifetime of the modal, so one form
+  // instance covers both branches. Note: the dirty guard only covers step 0
+  // (ConfigureMonitorForm); step 1 (ConfigureMonitorDatabasesForm) manages
+  // its selections via useState rather than an AntD Form, so it cannot be
+  // covered by isFieldsTouched().
+  const [form] = Form.useForm();
+
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
     size: 25,
@@ -62,19 +68,13 @@ const ConfigureMonitorModal = ({
 
   const databasesAvailable = !!databases && !!databases.total;
 
-  const toast = useToast();
-
-  const { successAlert, errorAlert } = useAlert();
+  const message = useMessage();
 
   const handleSubmit = async (values: EditableMonitorConfig) => {
     let result: RTKResult | undefined;
     const timeout = setTimeout(() => {
       if (!result) {
-        toast({
-          ...DEFAULT_TOAST_PARAMS,
-          status: "info",
-          description: TIMEOUT_COPY,
-        });
+        message.info(TIMEOUT_COPY);
         onClose();
       }
     }, TIMEOUT_DELAY);
@@ -84,16 +84,16 @@ const ConfigureMonitorModal = ({
     if (result) {
       clearTimeout(timeout);
       if (isErrorResult(result)) {
-        errorAlert(getErrorMessage(result.error), "Error creating monitor");
+        message.error(getErrorMessage(result.error));
         return;
       }
       if (isEditing) {
-        successAlert("Monitor updated successfully");
+        message.success("Monitor updated successfully");
         onClose();
         return;
       }
       if (isWebsiteMonitor) {
-        successAlert(
+        message.success(
           values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
             ? WEBSITE_MONITOR_NOT_SCHEDULED_MESSAGE
             : WEBSITE_MONITOR_NOW_SCANNING_MESSAGE,
@@ -101,23 +101,24 @@ const ConfigureMonitorModal = ({
         onClose();
         return;
       }
-      successAlert("Monitor created successfully");
+      message.success("Monitor created successfully");
       onClose();
     }
   };
 
   if (isWebsiteMonitor) {
     return (
-      <Modal
+      <ConfirmCloseModal
         title={
           monitor?.name
             ? `Configure ${monitor.name}`
             : "Configure website monitor"
         }
         open={isOpen}
-        onCancel={onClose}
+        onClose={onClose}
+        getIsDirty={() => form.isFieldsTouched()}
         centered
-        destroyOnClose
+        destroyOnHidden
         footer={null}
         data-testid="add-modal-content"
       >
@@ -127,22 +128,24 @@ const ConfigureMonitorModal = ({
           integrationSystem={integration?.system_key}
           onClose={onClose}
           onSubmit={handleSubmit}
+          form={form}
         />
-      </Modal>
+      </ConfirmCloseModal>
     );
   }
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title={
         monitor?.name
           ? `Configure ${monitor.name}`
           : "Configure discovery monitor"
       }
       open={isOpen}
-      onCancel={onClose}
+      onClose={onClose}
+      getIsDirty={() => form.isFieldsTouched()}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={null}
       data-testid="add-modal-content"
     >
@@ -156,6 +159,7 @@ const ConfigureMonitorModal = ({
           databasesAvailable={databasesAvailable}
           integrationSystem={integration?.system_key}
           integrationOption={integrationOption}
+          form={form}
         />
       )}
       {formStep === 1 &&
@@ -169,9 +173,9 @@ const ConfigureMonitorModal = ({
             integrationKey={integration.key}
           />
         ) : (
-          <PageSpinner />
+          <Spin />
         ))}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

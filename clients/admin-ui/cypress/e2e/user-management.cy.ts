@@ -257,7 +257,7 @@ describe("User management", () => {
       });
 
       // Verify success toast
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it("can create a user with password login enabled", () => {
@@ -327,7 +327,7 @@ describe("User management", () => {
       });
 
       // Verify success toast
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it("prevents submission with invalid email format", () => {
@@ -414,7 +414,7 @@ describe("User management", () => {
 
       // Verify error toast
       cy.wait("@createUserError");
-      cy.getByTestId("toast-error-msg").contains("Username already exists");
+      cy.shouldShowMessage("error", "Username already exists");
     });
 
     it("cancels user creation and returns to user management page", () => {
@@ -622,7 +622,8 @@ describe("User management", () => {
       // trigger blur event
       cy.getByTestId("input-usernameConfirmation").blur();
       cy.getByTestId("submit-btn").should("be.disabled");
-      cy.getByTestId("error-usernameConfirmation").contains(
+      cy.getAntFormError("usernameConfirmation").should(
+        "contain",
         "Confirmation input must match the username",
       );
 
@@ -635,7 +636,7 @@ describe("User management", () => {
         const { url } = interception.request;
         expect(url).to.contain(USER_1_ID);
       });
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it("can delete a user via the user's profile", () => {
@@ -652,7 +653,7 @@ describe("User management", () => {
         cy.getByTestId("submit-btn").click();
       });
       cy.wait("@deleteUser");
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
       cy.url().should("match", /user-management$/);
     });
   });

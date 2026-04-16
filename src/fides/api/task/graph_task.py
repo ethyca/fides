@@ -260,6 +260,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.key: CollectionAddress = self.execution_node.address
 
+        saas_config_dict = self.connector.configuration.saas_config
+        # Snapshot version at construction so all log entries reflect the version
+        # that was active when the task started, not a potentially later value.
+        self._saas_version: Optional[str] = (
+            saas_config_dict.get("version") if saas_config_dict else None
+        )
+
         self.execution_log_id = None
         # a local copy of the execution log record written to. If we write multiple status
         # updates, we will use this id to ensure that we're updating rather than creating
@@ -425,6 +432,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     "status": status,
                     "privacy_request_id": self.resources.request.id,
                     "message": msg,
+                    "saas_version": self._saas_version,
                 },
             )
 
@@ -441,7 +449,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info("Starting node {}", self.key)
+        if self._saas_version:
+            logger.info(
+                "Starting node {} (integration version {})",
+                self.key,
+                self._saas_version,
+            )
+        else:
+            logger.info("Starting node {}", self.key)
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -449,7 +464,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info("Retrying node {}", self.key)
+        if self._saas_version:
+            logger.info(
+                "Retrying node {} (integration version {})",
+                self.key,
+                self._saas_version,
+            )
+        else:
+            logger.info("Retrying node {}", self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 

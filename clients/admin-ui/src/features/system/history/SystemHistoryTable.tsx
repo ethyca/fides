@@ -8,13 +8,12 @@ import {
   ChakraText as Text,
   ChakraThead as Thead,
   ChakraTr as Tr,
+  Icons,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import NextArrow from "~/features/common/Icon/NextArrow";
-import PrevArrow from "~/features/common/Icon/PrevArrow";
 import {
   selectAllDictEntries,
   useGetSystemHistoryQuery,
@@ -151,14 +150,14 @@ const SystemHistoryTable = ({ system }: Props) => {
             className="mr-2"
             onClick={handlePrevPage}
             disabled={currentPage === 1}
-            icon={<PrevArrow />}
+            icon={<Icons.ChevronLeft />}
             aria-label="Previous page"
           />
           <Button
             size="small"
             onClick={handleNextPage}
             disabled={currentPage === totalPages || totalPages === 0}
-            icon={<NextArrow />}
+            icon={<Icons.ChevronRight />}
             aria-label="Next page"
           />
         </Flex>

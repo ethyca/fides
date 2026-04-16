@@ -3,7 +3,16 @@ import { rest } from "msw";
 
 import { ActionType } from "~/features/dashboard/types";
 
-import { mockPosture, mockPriorityActions, mockSystemCoverage } from "./data";
+import {
+  mockActivityFeed,
+  mockAgentBriefing,
+  mockAstralis,
+  mockPosture,
+  mockPriorityActions,
+  mockPrivacyRequests,
+  mockSystemCoverage,
+  mockTrends,
+} from "./data";
 
 const DIMENSION_ACTION_TYPES: Record<string, ActionType[]> = {
   coverage: [ActionType.SYSTEM_REVIEW, ActionType.STEWARD_ASSIGNMENT],
@@ -54,6 +63,48 @@ export const dashboardHandlers = () => {
 
     rest.get(`${apiBase}/plus/dashboard/system-coverage`, (_req, res, ctx) =>
       res(ctx.status(200), ctx.json(mockSystemCoverage)),
+    ),
+
+    rest.get(`${apiBase}/plus/dashboard/privacy-requests`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockPrivacyRequests)),
+    ),
+
+    rest.get(`${apiBase}/plus/dashboard/agent-briefing`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockAgentBriefing)),
+    ),
+
+    rest.get(`${apiBase}/plus/dashboard/trends`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockTrends)),
+    ),
+
+    rest.get(`${apiBase}/plus/dashboard/activity-feed`, (req, res, ctx) => {
+      const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
+      const size = parseInt(req.url.searchParams.get("size") ?? "15", 10);
+      const actorType = req.url.searchParams.get("actor_type");
+
+      let items = mockActivityFeed;
+      if (actorType) {
+        items = items.filter((item) => item.actor_type === actorType);
+      }
+
+      const start = (page - 1) * size;
+      const end = start + size;
+      const paginatedItems = items.slice(start, end);
+
+      return res(
+        ctx.status(200),
+        ctx.json({
+          items: paginatedItems,
+          total: items.length,
+          page,
+          size,
+          pages: Math.ceil(items.length / size),
+        }),
+      );
+    }),
+
+    rest.get(`${apiBase}/plus/dashboard/astralis`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockAstralis)),
     ),
 
     rest.patch(

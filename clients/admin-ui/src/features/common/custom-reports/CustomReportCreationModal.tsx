@@ -1,16 +1,15 @@
 import {
   Button,
   Flex,
+  Form,
+  Input,
   Modal,
   Paragraph,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
-import { Form, Formik } from "formik";
-import { useMemo } from "react";
-import * as Yup from "yup";
+import { useEffect, useMemo, useState } from "react";
 
 import { CustomReportColumn } from "~/features/common/custom-reports/types";
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CustomReportResponse, ReportType } from "~/types/api";
 
@@ -18,6 +17,10 @@ import { usePostCustomReportMutation } from "../../datamap/reporting/custom-repo
 import { CustomReportTableState } from "../../datamap/types";
 
 const CUSTOM_REPORT_LABEL = "Report name";
+
+interface FormValues {
+  reportName: string;
+}
 
 interface CustomReportCreationModalProps {
   isOpen: boolean;
@@ -36,30 +39,44 @@ export const CustomReportCreationModal = ({
   unavailableNames,
   onCreateCustomReport,
 }: CustomReportCreationModalProps) => {
-  const toast = useToast();
+  const message = useMessage();
+  const [form] = Form.useForm<FormValues>();
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
 
-  const [postCustomReportMutationTrigger] = usePostCustomReportMutation();
+  const [postCustomReportMutationTrigger, { isLoading: isCreating }] =
+    usePostCustomReportMutation();
 
-  const ValidationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        reportName: Yup.string()
-          .label(CUSTOM_REPORT_LABEL)
-          .required("Please provide a name for this report")
-          .test("is-unique", "", async (value, context) => {
-            if (unavailableNames?.includes(value)) {
-              return context.createError({
-                message: `This name already exists`,
-              });
-            }
-            return true;
-          })
-          .max(80, "Report name is too long (max 80 characters)"),
-      }),
+  const reportNameRules = useMemo(
+    () => [
+      {
+        required: true,
+        message: "Please provide a name for this report",
+      },
+      {
+        max: 80,
+        message: "Report name is too long (max 80 characters)",
+      },
+      {
+        validator: (_: unknown, value: string) => {
+          if (value && unavailableNames?.includes(value)) {
+            return Promise.reject(new Error("This name already exists"));
+          }
+          return Promise.resolve();
+        },
+      },
+    ],
     [unavailableNames],
   );
 
-  const handleCreateReport = async (reportName: string) => {
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  const handleFinish = async (values: FormValues) => {
     const newColumnMap: Record<string, CustomReportColumn> = {};
     Object.entries(columnMapToSave).forEach(([key, value]) => {
       newColumnMap[key] = {
@@ -77,7 +94,7 @@ export const CustomReportCreationModal = ({
     );
     try {
       const newReportTemplate = {
-        name: reportName.trim(),
+        name: values.reportName.trim(),
         type: ReportType.DATAMAP,
         config: {
           column_map: newColumnMap,
@@ -95,7 +112,7 @@ export const CustomReportCreationModal = ({
         error,
         "A problem occurred while creating the report.",
       );
-      toast({ status: "error", description: errorMsg });
+      message.error(errorMsg);
     }
   };
 
@@ -107,46 +124,49 @@ export const CustomReportCreationModal = ({
       footer={null}
       centered
       destroyOnHidden
+      afterOpenChange={(open) => {
+        if (!open) {
+          form.resetFields();
+        }
+      }}
     >
-      <Formik
-        initialValues={{
-          reportName: "",
-        }}
-        onSubmit={(values) => handleCreateReport(values.reportName)}
-        onReset={handleClose}
-        validateOnBlur={false}
-        validationSchema={ValidationSchema}
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ reportName: "" }}
+        onFinish={handleFinish}
+        data-testid="custom-report-form"
       >
-        {({ dirty, isValid }) => (
-          <Form data-testid="custom-report-form">
-            <Paragraph type="secondary">
-              Customize and save your current filter settings for easy access in
-              the future. This saved report will include the column layout and
-              currently applied filter settings.
-            </Paragraph>
-            <CustomTextInput
-              id="reportName"
-              name="reportName"
-              isRequired
-              label={CUSTOM_REPORT_LABEL}
-              placeholder="Enter a name for the report..."
-              variant="stacked"
-              maxLength={80}
-            />
-            <Flex justify="flex-end" gap="small" className="mt-4">
-              <Button htmlType="reset">Cancel</Button>
-              <Button
-                disabled={!dirty || !isValid}
-                type="primary"
-                data-testid="custom-report-form-submit"
-                htmlType="submit"
-              >
-                Save
-              </Button>
-            </Flex>
-          </Form>
-        )}
-      </Formik>
+        <Paragraph type="secondary">
+          Customize and save your current filter settings for easy access in the
+          future. This saved report will include the column layout and currently
+          applied filter settings.
+        </Paragraph>
+        <Form.Item
+          name="reportName"
+          label={CUSTOM_REPORT_LABEL}
+          rules={reportNameRules}
+          required
+        >
+          <Input
+            placeholder="Enter a name for the report..."
+            maxLength={80}
+            data-testid="input-reportName"
+          />
+        </Form.Item>
+        <Flex justify="flex-end" gap="small" className="mt-4">
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button
+            disabled={!submittable}
+            loading={isCreating}
+            type="primary"
+            data-testid="custom-report-form-submit"
+            htmlType="submit"
+          >
+            Save
+          </Button>
+        </Flex>
+      </Form>
     </Modal>
   );
 };

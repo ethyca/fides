@@ -4,7 +4,7 @@ import { useMessage } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { decodePolicyKey, encodePolicyKey } from "~/common/policy-key";
+import { decodePolicyKey } from "~/common/policy-key";
 import { useConfig } from "~/features/common/config.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { PrivacyRequestOption } from "~/types/config";
@@ -27,11 +27,18 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
 
   const messageApi = useMessage();
 
-  const policyKey = decodePolicyKey(actionKey);
+  const decoded = decodePolicyKey(actionKey);
+  const colonIndex = decoded.indexOf(":");
+  const actionIndex =
+    colonIndex !== -1 ? parseInt(decoded.slice(0, colonIndex), 10) : NaN;
+  const policyKey = colonIndex !== -1 ? decoded.slice(colonIndex + 1) : decoded;
 
-  const action = config.actions.find((a) => a.policy_key === policyKey) as
-    | PrivacyRequestOption
-    | undefined;
+  const actions = config.actions ?? [];
+  const selectedAction = (
+    !Number.isNaN(actionIndex) && actions[actionIndex]?.policy_key === policyKey
+      ? actions[actionIndex]
+      : actions.find((action) => action.policy_key === policyKey)
+  ) as PrivacyRequestOption | undefined;
 
   // Update verification requirement from API
   useEffect(() => {
@@ -43,11 +50,11 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   }, [getIdVerificationConfigQuery]);
 
   useEffect(() => {
-    if (!action) {
+    if (!selectedAction) {
       messageApi.error(`Invalid action key "${policyKey}" for privacy request`);
       router.push(basePath || "/");
     }
-  }, [action, policyKey, messageApi, router, basePath]);
+  }, [selectedAction, policyKey, messageApi, router, basePath]);
 
   const handleExit = () => {
     router.push(basePath || "/");
@@ -55,9 +62,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
 
   const handleSetCurrentView = (view: string) => {
     if (view === "identityVerification") {
-      router.push(
-        `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/verify`,
-      );
+      router.push(`${basePath}/privacy-request/${actionKey}/verify`);
     }
   };
 
@@ -68,15 +73,13 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   };
 
   const handleSuccessWithoutVerification = () => {
-    router.push(
-      `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/success`,
-    );
+    router.push(`${basePath}/privacy-request/${actionKey}/success`);
   };
 
   return (
     <PrivacyRequestForm
       onExit={handleExit}
-      openAction={action}
+      openAction={selectedAction}
       setCurrentView={handleSetCurrentView}
       setPrivacyRequestId={handleSetPrivacyRequestId}
       isVerificationRequired={isVerificationRequired}

@@ -35,7 +35,7 @@ describe("Experience translations", () => {
     cy.getByTestId("edit-language-row-en").click({ force: true });
     cy.getByTestId("input-translations.0.title").clear();
     cy.getByTestId("input-translations.0.title").type("Other");
-    cy.getByTestId("cancel-btn").click();
+    cy.getByTestId("translation-cancel-btn").click();
     cy.getAntModalConfirmButtons().contains("Discard").click();
     cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
       "Manage your consent preferences",
@@ -46,7 +46,7 @@ describe("Experience translations", () => {
     cy.getByTestId("language-row-fr").realHover();
     cy.getByTestId("edit-language-row-fr").click({ force: true });
     cy.getByTestId("input-translations.1.is_default").click();
-    cy.getByTestId("save-btn").click();
+    cy.getByTestId("translation-save-btn").click();
     cy.getAntModalConfirmButtons().contains("Continue").click();
     cy.getByTestId("language-row-fr").contains("(Default)");
     cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
@@ -84,8 +84,8 @@ describe("Experience translations", () => {
           language === "en-GB" ? "English (UK)" : "French (Canada)",
         );
 
-        // Fill out all required fields with 'Test'
-        cy.getByTestId("privacy-experience-detail-page")
+        // Fill out all required fields with 'Test' (drawer renders via portal)
+        cy.getAntDrawer()
           .find("input[required], textarea[required]")
           .each(($input) => {
             cy.wrap($input).type(`Test ${language}`);
@@ -105,10 +105,10 @@ describe("Experience translations", () => {
         }
 
         // Verify save button is enabled
-        cy.getByTestId("save-btn").should("not.be.disabled");
+        cy.getByTestId("translation-save-btn").should("not.be.disabled");
 
         // Save the translation
-        cy.getByTestId("save-btn").click();
+        cy.getByTestId("translation-save-btn").click();
 
         // Verify the translation was added
         cy.getByTestId(`language-row-${language}`).should("exist");
@@ -117,7 +117,7 @@ describe("Experience translations", () => {
       // Save the experience
       cy.getByTestId("save-btn").click();
       cy.url().should("match", /privacy-experience$/);
-      cy.getByTestId("toast-success-msg").should("exist");
+      cy.shouldShowMessage("success");
     });
   });
 
@@ -137,18 +137,18 @@ describe("Experience translations", () => {
     cy.getByTestId("add-language").click();
     cy.getByTestId("select-language").antSelect("French (Canada)");
 
-    // Fill out all required fields with 'Test'
-    cy.getByTestId("privacy-experience-detail-page")
+    // Fill out all required fields with 'Test' (drawer renders via portal)
+    cy.getAntDrawer()
       .find("input[required], textarea[required]")
       .each(($input) => {
         cy.wrap($input).type("Test");
       });
 
     // Verify save button is enabled
-    cy.getByTestId("save-btn").should("not.be.disabled");
+    cy.getByTestId("translation-save-btn").should("not.be.disabled");
 
     // Save the translation
-    cy.getByTestId("save-btn").click();
+    cy.getByTestId("translation-save-btn").click();
 
     // Verify the translation was added
     cy.getByTestId("language-row-fr-CA").should("exist");

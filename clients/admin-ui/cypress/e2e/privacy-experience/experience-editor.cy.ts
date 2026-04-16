@@ -72,7 +72,7 @@ describe("Experience editor", () => {
         });
       });
       cy.url().should("match", /privacy-experience$/);
-      cy.getByTestId("toast-success-msg").should("exist");
+      cy.shouldShowMessage("success");
     });
 
     it("doesn't show a preview for a privacy center", () => {
@@ -131,7 +131,7 @@ describe("Experience editor", () => {
       cy.getByTestId("edit-experience-btn").click();
       cy.getByTestId("input-translations.0.title").clear();
       cy.getByTestId("input-translations.0.title").type("Edit");
-      cy.getByTestId("save-btn").click();
+      cy.getByTestId("translation-save-btn").click();
       cy.get(`#${PREVIEW_CONTAINER_ID}`).find("#fides-banner").contains("Edit");
     });
 
@@ -206,7 +206,6 @@ describe("Experience editor", () => {
             component: "tcf_overlay",
           }).as("getTCFExperience");
         });
-        cy.wait("@getTCFExperience");
         cy.getByTestId("input-dismissable").should("be.visible");
         cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Manage your consent preferences",
@@ -233,7 +232,6 @@ describe("Experience editor", () => {
           }).as("getTCFExperience");
         });
 
-        cy.wait("@getTCFExperience");
         cy.wait("@getVendorReportEmpty");
 
         // Check that the notification appears
@@ -265,14 +263,14 @@ describe("Experience editor", () => {
           fixture: "privacy-experiences/experienceConfig.json",
         }).as("patchExperience");
 
-        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
-        cy.wait("@getTCFExperience");
         cy.wait("@getTcfConfigs"); // Make sure configs are loaded
 
         // Verify the select is visible and has the initial value
         cy.getByTestId("controlled-select-tcf_configuration_id")
-          .should("be.visible")
-          .contains("Default TCF Config");
+          .find("input")
+          .should("be.enabled")
+          .click();
+        cy.getAntSelectOption("Default TCF Config").should("be.visible");
 
         // Change the TCF config
         cy.getByTestId("controlled-select-tcf_configuration_id").antSelect(
@@ -283,23 +281,21 @@ describe("Experience editor", () => {
           const { body } = interception.request;
           expect(body.tcf_configuration_id).to.eql("tcf_config_2");
         });
-        cy.getByTestId("toast-success-msg").should("exist");
+        cy.shouldShowMessage("success");
 
         // Clear the TCF config
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`); // Re-visit to reset state
-        cy.wait("@getTCFExperience");
         cy.wait("@getTcfConfigs");
-        cy.getByTestId("controlled-select-tcf_configuration_id")
-          .should("be.visible")
-          .find(".ant-select-clear")
-          .click();
+        cy.getByTestId(
+          "controlled-select-tcf_configuration_id",
+        ).antClearSelect();
         cy.getByTestId("save-btn").click();
         cy.wait("@patchExperience").then((interception) => {
           const { body } = interception.request;
           // Depending on backend behavior, this might be null or undefined
           expect(body.tcf_configuration_id).to.be.oneOf([null, undefined]);
         });
-        cy.getByTestId("toast-success-msg").should("exist");
+        cy.shouldShowMessage("success");
       });
 
       it("disables the TCF Publisher Override configuration when the consent override is disabled", () => {
@@ -323,8 +319,6 @@ describe("Experience editor", () => {
           fixture: "privacy-experiences/experienceConfig.json",
         }).as("patchExperience");
 
-        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
-        cy.wait("@getTCFExperience");
         cy.wait("@getTcfConfigs"); // Make sure configs are loaded
         cy.getByTestId("controlled-select-tcf_configuration_id")
           .should("be.visible")
@@ -351,8 +345,6 @@ describe("Experience editor", () => {
           items: [],
         }).as("getTcfConfigs");
 
-        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
-        cy.wait("@getTCFExperience");
         cy.wait("@getTcfConfigs"); // Make sure configs are loaded
         cy.getByTestId("controlled-select-tcf_configuration_id")
           .should("be.visible")
@@ -366,7 +358,6 @@ describe("Experience editor", () => {
             component: "tcf_overlay",
           }).as("getTCFExperience");
         });
-        cy.wait("@getTCFExperience");
         cy.getByTestId("add-privacy-notice").click();
         cy.getByTestId("select-privacy-notice").click();
         cy.get(".ant-select-dropdown")

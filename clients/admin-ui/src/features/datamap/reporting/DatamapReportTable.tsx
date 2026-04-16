@@ -1,259 +1,90 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  getCoreRowModel,
-  getExpandedRowModel,
-  getGroupedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
-  ColumnSettingsModal,
-  FidesTableV2,
-  GlobalFilterV2,
-  PaginationBar,
-  TableActionBar,
-  TableSkeletonLoader,
-  useServerSidePagination,
-} from "common/table/v2";
-import {
   Button,
-  ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraFlex as Flex,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuItemOption as MenuItemOption,
-  ChakraMenuList as MenuList,
-  MoreIcon,
+  CheckOutlined,
+  Dropdown,
+  Flex,
+  Form,
+  Icons,
+  Table,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
-import { Form, Formik, FormikState } from "formik";
-import { debounce } from "lodash";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect } from "react";
 
-import { useAppSelector } from "~/app/hooks";
-import { CustomReportColumn } from "~/features/common/custom-reports/types";
-import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { DownloadLightIcon } from "~/features/common/Icon";
-import { useHasPermission } from "~/features/common/Restrict";
-import { getQueryParamsFromArray } from "~/features/common/utils";
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { ColumnSettingsModal } from "~/features/common/table/column-settings/ColumnSettingsModal";
 import { ExportFormat } from "~/features/datamap/constants";
-import {
-  useExportMinimalDatamapReportMutation,
-  useGetMinimalDatamapReportQuery,
-} from "~/features/datamap/datamap.slice";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
 import { DatamapReportFilterModal } from "~/features/datamap/reporting/DatamapReportFilterModal";
-import {
-  selectAllCustomFieldDefinitions,
-  useGetAllCustomFieldDefinitionsQuery,
-  useGetHealthQuery,
-} from "~/features/plus/plus.slice";
-import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
+import { DatamapReportFilterSelections } from "~/features/datamap/types";
 import {
   CustomReportResponse,
   DATAMAP_GROUPING,
-  Page_DatamapReport_,
   ReportType,
-  ScopeRegistryEnum,
 } from "~/types/api";
 
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
-import {
-  COLUMN_IDS,
-  DATAMAP_LOCAL_STORAGE_KEYS,
-  DEFAULT_COLUMN_NAMES,
-} from "./constants";
-import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
+import { COLUMN_IDS } from "./constants";
 import {
   DEFAULT_COLUMN_FILTERS,
   DEFAULT_COLUMN_VISIBILITY,
-  useDatamapReport,
 } from "./datamap-report-context";
-import {
-  getDatamapReportColumns,
-  getDefaultColumn,
-} from "./DatamapReportTableColumns";
+import { useDatamapReportTable } from "./hooks/useDatamapReportTable";
 import { RenameColumnsButtons } from "./RenameColumnsButtons";
-import { getColumnOrder, getGrouping, getPrefixColumns } from "./utils";
+import { getPrefixColumns } from "./utils";
 
-const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
-  items: [],
-  total: 0,
-  page: 1,
-  size: 25,
-  pages: 1,
-};
+const checkIcon = (isSelected: boolean) => (
+  <CheckOutlined style={{ visibility: isSelected ? "visible" : "hidden" }} />
+);
 
 export const DatamapReportTable = ({
   onError,
 }: {
   onError: (error: FetchBaseQueryError | SerializedError) => void;
 }) => {
-  const userCanSeeReports = useHasPermission([
-    ScopeRegistryEnum.CUSTOM_REPORT_READ,
-  ]);
-  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
-
-  // Fetch system groups to get taxonomy name for dynamic display
-  const { data: systemGroups } = useGetAllSystemGroupsQuery();
   const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-    resetPageIndexToDefault,
-  } = useServerSidePagination();
-  const toast = useToast({ id: "datamap-report-toast" });
-
-  const {
-    isOpen: isFilterModalOpen,
-    onClose: onFilterModalClose,
-    onOpen: onFilterModalOpen,
-  } = useDisclosure();
-
-  const {
-    getDataUseDisplayName,
-    getDataCategoryDisplayName,
-    getDataSubjectDisplayName,
-    isLoading: isLoadingFidesLang,
-  } = useTaxonomies();
-
-  const [selectedSystemId, setSelectedSystemId] = useState<string>(); // for opening the drawer
-
-  const {
-    savedCustomReportId,
-    setSavedCustomReportId,
+    form,
+    tableProps,
+    columns,
+    reportError,
+    searchQuery,
+    updateSearch,
     groupBy,
-    setGroupBy,
+    onGroupChange,
+    groupChangeStarted,
     selectedFilters,
     setSelectedFilters,
     columnOrder,
     setColumnOrder,
     columnVisibility,
     setColumnVisibility,
-    columnSizing,
-    setColumnSizing,
+    columnNameMap,
     columnNameMapOverrides,
     setColumnNameMapOverrides,
-  } = useDatamapReport();
+    columnDescriptors,
+    isRenamingColumns,
+    setIsRenamingColumns,
+    handleColumnRenaming,
+    onExport,
+    isExportingReport,
+    selectedSystemId,
+    setSelectedSystemId,
+    savedCustomReportId,
+    setSavedCustomReportId,
+    userCanSeeReports,
+    setGroupBy,
+  } = useDatamapReportTable();
 
-  const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
-  const onGroupChange = (group: DATAMAP_GROUPING) => {
-    setSavedCustomReportId("");
-    setGroupBy(group);
-    setGroupChangeStarted(true);
-    resetPageIndexToDefault();
-  };
-
-  const [globalFilter, setGlobalFilter] = useState<string>("");
-  const updateGlobalFilter = useCallback(
-    (searchTerm: string) => {
-      resetPageIndexToDefault();
-      setGlobalFilter(searchTerm);
-    },
-    [resetPageIndexToDefault, setGlobalFilter],
-  );
-
-  const reportQuery = {
-    pageIndex,
-    pageSize,
-    groupBy,
-    search: globalFilter,
-    dataUses: getQueryParamsFromArray(selectedFilters.dataUses, "data_uses"),
-    dataSubjects: getQueryParamsFromArray(
-      selectedFilters.dataSubjects,
-      "data_subjects",
-    ),
-    dataCategories: getQueryParamsFromArray(
-      selectedFilters.dataCategories,
-      "data_categories",
-    ),
-  };
+  const message = useMessage();
 
   const {
-    data: datamapReport,
-    isLoading: isReportLoading,
-    isFetching: isReportFetching,
-    error: reportError,
-  } = useGetMinimalDatamapReportQuery(reportQuery);
-
-  useEffect(() => {
-    if (reportError) {
-      onError(reportError);
-    }
-  }, [reportError, onError]);
-
-  const [
-    exportMinimalDatamapReport,
-    { isLoading: isExportingReport, isError: isExportReportError },
-  ] = useExportMinimalDatamapReportMutation();
-
-  const { data, totalRows } = useMemo(() => {
-    const report = datamapReport || emptyMinimalDatamapReportResponse;
-    // Type workaround since extending BaseDatamapReport with custom fields causes some trouble
-    const items = report.items as DatamapReport[];
-    if (groupChangeStarted) {
-      setGroupChangeStarted(false);
-    }
-
-    setTotalPages(report.pages);
-
-    return {
-      totalRows: report.total,
-      data: items,
-    };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datamapReport]);
-
-  // Get custom fields
-  useGetAllCustomFieldDefinitionsQuery();
-  const customFields = useAppSelector(selectAllCustomFieldDefinitions);
-
-  // Column renaming
-  const [isRenamingColumns, setIsRenamingColumns] = useState(false);
-  const handleColumnRenaming = (values: Record<string, string>) => {
-    setSavedCustomReportId("");
-    setColumnNameMapOverrides(values);
-    setIsRenamingColumns(false);
-  };
-
-  const columns = useMemo(
-    () =>
-      datamapReport
-        ? getDatamapReportColumns({
-            onSelectRow: (row) => setSelectedSystemId(row.fides_key),
-            getDataUseDisplayName,
-            getDataCategoryDisplayName,
-            getDataSubjectDisplayName,
-            datamapReport,
-            customFields,
-            systemGroups,
-            isRenaming: isRenamingColumns,
-            groupBy,
-          })
-        : [],
-    [
-      getDataUseDisplayName,
-      getDataSubjectDisplayName,
-      getDataCategoryDisplayName,
-      datamapReport,
-      customFields,
-      systemGroups,
-      isRenamingColumns,
-      groupBy,
-    ],
-  );
+    isOpen: isFilterModalOpen,
+    onClose: onFilterModalClose,
+    onOpen: onFilterModalOpen,
+  } = useDisclosure();
 
   const {
     isOpen: isColumnSettingsOpen,
@@ -267,289 +98,153 @@ export const DatamapReportTable = ({
     onClose: onExportReportClose,
   } = useDisclosure();
 
-  const onExport = (downloadType: ExportFormat) => {
-    const columnMap: Record<string, CustomReportColumn> = {};
-    Object.entries(columnVisibility).forEach(([key, isVisible]) => {
-      columnMap[key] = {
-        enabled: isVisible,
-      };
-    });
+  // Report error handling
+  useEffect(() => {
+    if (reportError) {
+      onError(reportError);
+    }
+  }, [reportError, onError]);
 
-    Object.entries(columnNameMapOverrides).forEach(([key, label]) => {
-      if (columnMap[key]) {
-        columnMap[key].label = label;
-      } else {
-        columnMap[key] = {
-          label,
-          enabled: columnVisibility[key] ?? true,
-        };
-      }
-    });
-    exportMinimalDatamapReport({
-      ...reportQuery,
-      format: downloadType,
-      report_id: savedCustomReportId,
-      report: {
-        name: "",
-        type: "datamap",
-        config: {
-          column_map: columnMap,
-          table_state: {
-            groupBy,
-            filters: selectedFilters,
-            columnOrder,
-          },
-        },
-      },
-    }).then(() => {
-      if (!isExportReportError) {
-        onExportReportClose();
-      }
-    });
-  };
+  // Sync Ant Form with external columnNameMapOverrides changes
+  useEffect(() => {
+    form.setFieldsValue(columnNameMapOverrides);
+  }, [form, columnNameMapOverrides]);
 
-  const tableInstance = useReactTable<DatamapReport>({
-    getCoreRowModel: getCoreRowModel(),
-    getGroupedRowModel: getGroupedRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    manualPagination: true,
-    enableColumnResizing: true,
-    columnResizeMode: "onChange",
-    columns,
-    defaultColumn: getDefaultColumn(
-      { ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides },
-      isRenamingColumns,
-    ),
-    data,
-    initialState: {
-      expanded: true,
-      columnSizing,
-      columnOrder,
-      columnVisibility,
-      grouping: getGrouping(groupBy),
+  const handleExport = useCallback(
+    (downloadType: ExportFormat) => {
+      onExport(downloadType).then((result) => {
+        if (!("error" in result)) {
+          onExportReportClose();
+        }
+      });
     },
-  });
-
-  useEffect(() => {
-    if (groupBy && !!tableInstance && !!datamapReport) {
-      if (tableInstance.getState().columnOrder.length === 0) {
-        const tableColumnIds = tableInstance.getAllColumns().map((c) => c.id);
-        setColumnOrder(getColumnOrder(groupBy, tableColumnIds));
-      } else {
-        setColumnOrder(
-          getColumnOrder(groupBy, tableInstance.getState().columnOrder),
-        );
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupBy, tableInstance, datamapReport]);
-
-  useEffect(() => {
-    // changing the groupBy should wait until the data is loaded to update the grouping
-    const newGrouping = getGrouping(groupBy);
-    if (datamapReport) {
-      tableInstance.setGrouping(newGrouping);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datamapReport]);
-
-  const debouncedSetColumnSizing = useMemo(
-    () => debounce(setColumnSizing, 300),
-    [setColumnSizing],
+    [onExport, onExportReportClose],
   );
 
-  useEffect(() => {
-    // update stored column sizing when it changes
-    const colSizing = tableInstance.getState().columnSizing;
-    if (colSizing) {
-      debouncedSetColumnSizing(colSizing);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tableInstance.getState().columnSizing]);
-
-  // Get the proper name for dropdown options (no lower-casing)
-  const getSystemGroupOptionName = () => {
-    // Priority: Custom column name from user overrides
+  // System group option name for dropdown
+  const getSystemGroupOptionName = useCallback(() => {
     const customSystemGroupName =
       columnNameMapOverrides[COLUMN_IDS.SYSTEM_GROUP];
     if (customSystemGroupName) {
       return customSystemGroupName;
     }
-
-    // Fallback: Generic "System group"
     return "System group";
-  };
+  }, [columnNameMapOverrides]);
 
-  const getMenuDisplayValue = () => {
+  const getMenuDisplayValue = useCallback(() => {
     switch (groupBy) {
-      case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
+      case DATAMAP_GROUPING.SYSTEM_DATA_USE:
         return "system";
-      }
-      case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
+      case DATAMAP_GROUPING.DATA_USE_SYSTEM:
         return "data use";
-      }
       case DATAMAP_GROUPING.SYSTEM_GROUP: {
-        // Lower case the first letter for "Group by X" text
         const systemGroupName = getSystemGroupOptionName();
         return (
           systemGroupName.charAt(0).toLowerCase() + systemGroupName.slice(1)
         );
       }
-      default: {
+      default:
         return "system";
-      }
     }
-  };
+  }, [groupBy, getSystemGroupOptionName]);
 
-  const handleSavedReport = (
-    savedReport: CustomReportResponse | null,
-    resetColumnNameForm: (
-      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
-    ) => void,
-  ) => {
-    if (!savedReport && !savedCustomReportId) {
-      return;
-    }
-    if (!savedReport) {
+  const handleSavedReport = useCallback(
+    (savedReport: CustomReportResponse | null) => {
+      if (!savedReport && !savedCustomReportId) {
+        return;
+      }
+      if (!savedReport) {
+        try {
+          setSavedCustomReportId("");
+          setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+          setColumnOrder([]);
+          setGroupBy(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+          setSelectedFilters(DEFAULT_COLUMN_FILTERS);
+          setColumnNameMapOverrides({});
+          form.resetFields();
+        } catch (error: unknown) {
+          message.error("There was a problem resetting the report.");
+        }
+        return;
+      }
       try {
-        setSavedCustomReportId("");
+        if (savedReport.config?.table_state) {
+          const {
+            groupBy: savedGroupBy,
+            filters: savedFilters,
+            columnOrder: savedColumnOrder,
+          } = savedReport.config.table_state as {
+            groupBy?: DATAMAP_GROUPING;
+            filters?: DatamapReportFilterSelections;
+            columnOrder?: string[];
+          };
+          const savedColumnVisibility: Record<string, boolean> = {};
 
-        /* NOTE: we can't just use tableInstance.reset() here because it will reset the table to the initial state, which is likely to include report settings that were saved in the user's local storage. Instead, we need to reset each individual setting to its default value. */
+          Object.entries(savedReport.config.column_map ?? {}).forEach(
+            ([key, value]) => {
+              savedColumnVisibility[key] = value.enabled || false;
+            },
+          );
 
-        // reset column visibility (must happen before updating order)
-        setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
-        tableInstance.toggleAllColumnsVisible(true);
-        tableInstance.setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
-
-        // reset column order (must happen prior to updating groupBy)
-        setColumnOrder([]);
-        tableInstance.setColumnOrder([]);
-
-        // reset groupBy and filters (will automatically update the tableinstance)
-        setGroupBy(DATAMAP_GROUPING.SYSTEM_DATA_USE);
-        setSelectedFilters(DEFAULT_COLUMN_FILTERS);
-
-        // reset column names
-        setColumnNameMapOverrides({});
-        resetColumnNameForm({ values: {} });
-      } catch (error: any) {
-        toast({
-          status: "error",
-          description: "There was a problem resetting the report.",
-        });
+          if (savedGroupBy) {
+            setGroupBy(savedGroupBy);
+          }
+          if (savedFilters) {
+            setSelectedFilters(savedFilters);
+          }
+          if (savedColumnOrder) {
+            setColumnOrder(savedColumnOrder);
+          }
+          if (Object.keys(savedColumnVisibility).length > 0) {
+            setColumnVisibility(savedColumnVisibility);
+          }
+        }
+        if (savedReport.config?.column_map) {
+          const columnNameOverrides: Record<string, string> = {};
+          Object.entries(savedReport.config.column_map ?? {}).forEach(
+            ([key, value]) => {
+              if (value.label) {
+                columnNameOverrides[key] = value.label;
+              }
+            },
+          );
+          setColumnNameMapOverrides(columnNameOverrides);
+          form.setFieldsValue(columnNameOverrides);
+        }
+        setSavedCustomReportId(savedReport.id);
+        message.success("Report applied successfully.");
+      } catch (error: unknown) {
+        message.error("There was a problem applying report.");
       }
-      return;
-    }
-    try {
-      if (savedReport.config?.table_state) {
-        const {
-          groupBy: savedGroupBy,
-          filters: savedFilters,
-          columnOrder: savedColumnOrder,
-        } = savedReport.config.table_state;
-        const savedColumnVisibility: Record<string, boolean> = {};
-
-        Object.entries(savedReport.config.column_map ?? {}).forEach(
-          ([key, value]) => {
-            savedColumnVisibility[key] = value.enabled || false;
-          },
-        );
-
-        if (savedGroupBy) {
-          // No need to manually update the tableInstance here; setting the groupBy will trigger the useEffect to update the grouping.
-          setGroupBy(savedGroupBy);
-        }
-        if (savedFilters) {
-          setSelectedFilters(savedFilters);
-        }
-        if (savedColumnOrder) {
-          setColumnOrder(savedColumnOrder);
-          tableInstance.setColumnOrder(savedColumnOrder);
-        }
-        if (savedColumnVisibility) {
-          setColumnVisibility(savedColumnVisibility);
-          tableInstance.setColumnVisibility(savedColumnVisibility);
-        }
-      }
-      if (savedReport.config?.column_map) {
-        const columnNameMap: Record<string, string> = {};
-        Object.entries(savedReport.config.column_map ?? {}).forEach(
-          ([key, value]) => {
-            if (value.label) {
-              columnNameMap[key] = value.label;
-            }
-          },
-        );
-        setColumnNameMapOverrides(columnNameMap);
-        resetColumnNameForm({ values: columnNameMap });
-      }
-      setSavedCustomReportId(savedReport.id);
-      toast({
-        status: "success",
-        description: "Report applied successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        status: "error",
-        description: "There was a problem applying report.",
-      });
-    }
-  };
-
-  if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
-    return <TableSkeletonLoader rowHeight={36} numRows={15} />;
-  }
+    },
+    [
+      savedCustomReportId,
+      setSavedCustomReportId,
+      setColumnVisibility,
+      setColumnOrder,
+      setGroupBy,
+      setSelectedFilters,
+      setColumnNameMapOverrides,
+      form,
+      message,
+    ],
+  );
 
   return (
-    <Flex flex={1} direction="column" overflow="auto">
-      <DatamapReportFilterModal
-        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
-        selectedFilters={selectedFilters}
-        isOpen={isFilterModalOpen}
-        onClose={onFilterModalClose}
-        onFilterChange={(newFilters) => {
-          setSavedCustomReportId("");
-          setSelectedFilters(newFilters);
-        }}
-      />
-      <ColumnSettingsModal<DatamapReport>
-        isOpen={isColumnSettingsOpen}
-        onClose={onColumnSettingsClose}
-        headerText="Columns"
-        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
-        prefixColumns={getPrefixColumns(groupBy)}
-        tableInstance={tableInstance}
-        savedCustomReportId={savedCustomReportId}
-        onColumnOrderChange={(newColumnOrder) => {
-          setSavedCustomReportId("");
-          tableInstance.setColumnOrder(newColumnOrder);
-          setColumnOrder(newColumnOrder);
-        }}
-        onColumnVisibilityChange={(newColumnVisibility) => {
-          setSavedCustomReportId("");
-          tableInstance.setColumnVisibility(newColumnVisibility);
-          setColumnVisibility(newColumnVisibility);
-        }}
-      />
-      <ReportExportModal
-        isOpen={isExportReportOpen}
-        onClose={onExportReportClose}
-        onConfirm={onExport}
-        isLoading={isExportingReport}
-      />
-
-      <Formik
+    <>
+      <Form
+        form={form}
         initialValues={columnNameMapOverrides}
-        onSubmit={handleColumnRenaming}
+        onFinish={handleColumnRenaming}
       >
-        <>
-          <TableActionBar>
-            <GlobalFilterV2
-              globalFilter={globalFilter}
-              setGlobalFilter={updateGlobalFilter}
+        <Flex className="sticky -top-6 z-[100] bg-white py-4">
+          <Flex className="flex-1 items-center justify-between py-2">
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={updateSearch}
               placeholder="System name, Fides key, or ID"
             />
-            <Flex alignItems="center" gap={2}>
+            <Flex className="items-center gap-2">
               {userCanSeeReports && (
                 <CustomReportTemplates
                   reportType={ReportType.DATAMAP}
@@ -561,57 +256,55 @@ export const DatamapReportTable = ({
                     columnVisibility,
                   }}
                   currentColumnMap={columnNameMapOverrides}
-                  onCustomReportSaved={(customReport, resetForm) =>
-                    handleSavedReport(customReport, resetForm)
-                  }
+                  onCustomReportSaved={handleSavedReport}
                   onSavedReportDeleted={() => {
                     setSavedCustomReportId("");
                   }}
                 />
               )}
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  icon={<ChevronDownIcon />}
-                  iconPosition="end"
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: DATAMAP_GROUPING.SYSTEM_DATA_USE,
+                      label: "System",
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE),
+                    },
+                    {
+                      key: DATAMAP_GROUPING.DATA_USE_SYSTEM,
+                      label: "Data use",
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM),
+                    },
+                    {
+                      key: DATAMAP_GROUPING.SYSTEM_GROUP,
+                      label: getSystemGroupOptionName(),
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_GROUP === groupBy,
+                      ),
+                      onClick: () =>
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP),
+                    },
+                  ],
+                }}
+                classNames={{ root: "group-by-menu-list" }}
+              >
+                <Button
+                  icon={<Icons.ChevronDown size={14} />}
+                  iconPlacement="end"
                   loading={groupChangeStarted}
                   data-testid="group-by-menu"
                 >
                   Group by {getMenuDisplayValue()}
-                </MenuButton>
-                <MenuList zIndex={11} data-testid="group-by-menu-list">
-                  <MenuItemOption
-                    onClick={() => {
-                      onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
-                    }}
-                    isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
-                    value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
-                    data-testid="group-by-system-data-use"
-                  >
-                    System
-                  </MenuItemOption>
-                  <MenuItemOption
-                    onClick={() => {
-                      onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
-                    }}
-                    isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
-                    value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
-                    data-testid="group-by-data-use-system"
-                  >
-                    Data use
-                  </MenuItemOption>
-                  <MenuItemOption
-                    onClick={() => {
-                      onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP);
-                    }}
-                    isChecked={DATAMAP_GROUPING.SYSTEM_GROUP === groupBy}
-                    value={DATAMAP_GROUPING.SYSTEM_GROUP}
-                    data-testid="group-by-system-group"
-                  >
-                    {getSystemGroupOptionName()}
-                  </MenuItemOption>
-                </MenuList>
-              </Menu>
+                </Button>
+              </Dropdown>
               <Button
                 data-testid="filter-multiple-systems-btn"
                 onClick={onFilterModalOpen}
@@ -622,31 +315,35 @@ export const DatamapReportTable = ({
                 aria-label="Export report"
                 data-testid="export-btn"
                 onClick={onExportReportOpen}
-                icon={<DownloadLightIcon ml="1.5px" />}
+                icon={<Icons.Download />}
               />
-              <Menu placement="bottom-end">
-                <MenuButton
-                  as={Button}
-                  icon={<MoreIcon className="rotate-90" />}
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: "edit-columns",
+                      label: (
+                        <span data-testid="edit-columns-btn">Edit columns</span>
+                      ),
+                      onClick: onColumnSettingsOpen,
+                    },
+                    {
+                      key: "rename-columns",
+                      label: "Rename columns",
+                      onClick: () => setIsRenamingColumns(true),
+                    },
+                  ],
+                }}
+                placement="bottomRight"
+                classNames={{ root: "more-menu-list" }}
+              >
+                <Button
+                  icon={<Icons.OverflowMenuVertical />}
                   data-testid="more-menu"
                   aria-label="More options"
                   className="w-6 gap-0"
                 />
-                <MenuList data-testid="more-menu-list">
-                  <MenuItem
-                    onClick={onColumnSettingsOpen}
-                    data-testid="edit-columns-btn"
-                  >
-                    Edit columns
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => setIsRenamingColumns(true)}
-                    data-testid="rename-columns-btn"
-                  >
-                    Rename columns
-                  </MenuItem>
-                </MenuList>
-              </Menu>
+              </Dropdown>
               {isRenamingColumns && (
                 <RenameColumnsButtons
                   columnNameMapOverrides={columnNameMapOverrides}
@@ -656,35 +353,54 @@ export const DatamapReportTable = ({
                 />
               )}
             </Flex>
-          </TableActionBar>
-          <Form>
-            <FidesTableV2<DatamapReport>
-              tableInstance={tableInstance}
-              columnExpandStorageKey={
-                DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
-              }
-              columnWrapStorageKey={DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS}
-            />
-          </Form>
-        </>
-      </Formik>
+          </Flex>
+        </Flex>
 
-      <PaginationBar
-        totalRows={totalRows || 0}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isReportFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isReportFetching}
-        startRange={startRange}
-        endRange={endRange}
+        <Table
+          key={groupBy}
+          {...tableProps}
+          columns={columns}
+          data-testid="fidesTable"
+        />
+      </Form>
+
+      <DatamapReportFilterModal
+        columnNameMap={columnNameMap}
+        selectedFilters={selectedFilters}
+        isOpen={isFilterModalOpen}
+        onClose={onFilterModalClose}
+        onFilterChange={(newFilters) => {
+          setSavedCustomReportId("");
+          setSelectedFilters(newFilters);
+        }}
       />
-
+      <ColumnSettingsModal
+        isOpen={isColumnSettingsOpen}
+        onClose={onColumnSettingsClose}
+        headerText="Columns"
+        columnNameMap={columnNameMap}
+        prefixColumns={getPrefixColumns(groupBy)}
+        columns={columnDescriptors}
+        savedCustomReportId={savedCustomReportId}
+        onColumnOrderChange={(newColumnOrder) => {
+          setSavedCustomReportId("");
+          setColumnOrder(newColumnOrder);
+        }}
+        onColumnVisibilityChange={(newColumnVisibility) => {
+          setSavedCustomReportId("");
+          setColumnVisibility(newColumnVisibility);
+        }}
+      />
+      <ReportExportModal
+        isOpen={isExportReportOpen}
+        onClose={onExportReportClose}
+        onConfirm={handleExport}
+        isLoading={isExportingReport}
+      />
       <DatamapDrawer
         selectedSystemId={selectedSystemId}
         resetSelectedSystemId={() => setSelectedSystemId(undefined)}
       />
-    </Flex>
+    </>
   );
 };

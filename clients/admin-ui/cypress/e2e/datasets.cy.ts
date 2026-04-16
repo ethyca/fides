@@ -62,11 +62,11 @@ describe("Dataset", () => {
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("row-0-col-actions").find("button").click();
       cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("OK").click();
       cy.wait("@deleteDataset").then((interception) => {
         expect(interception.request.url).to.contain("demo_users_dataset");
       });
-      cy.getByTestId("toast-success-msg");
+      cy.shouldShowMessage("success");
     });
 
     it("Can use the search bar to filter datasets", () => {

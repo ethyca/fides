@@ -1,14 +1,8 @@
-import {
-  ChakraBox as Box,
-  ChakraHeading as Heading,
-  ChakraText as Text,
-  Flex,
-  Radio,
-} from "fidesui";
+import { Flex, Radio, Typography, useMessage } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
   PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
@@ -28,7 +22,7 @@ import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
 
@@ -55,7 +49,7 @@ const StorageConfiguration = () => {
       if (isErrorResult(storageDetailsResult)) {
         handleError(storageDetailsResult.error);
       } else {
-        successAlert(`Configured storage details successfully.`);
+        message.success(`Configured storage details successfully.`);
       }
     }
 
@@ -92,37 +86,30 @@ const StorageConfiguration = () => {
           { title: "Storage" },
         ]}
       />
-      <Heading mb={5} fontSize="md" fontWeight="semibold">
+      <Typography.Title level={5} className="mb-5">
         Configure storage
-      </Heading>
-
-      <Box display="flex" flexDirection="column" width="50%">
-        <Box mb={5}>
+      </Typography.Title>
+      <Flex vertical className="w-[640px]">
+        <div className="mb-5">
           Fides requires a storage destination to store and share the results of
           privacy requests. For a production setup, it is highly recommended to
           have S3 as a storage destination. Ensure you have completed the setup
           for the storage destination and have the details handy prior to the
           following steps.
-        </Box>
-        <Box>
+        </div>
+        <div>
           To configure a Storage destination, first choose a method to store
           your results. Fides currently supports{" "}
-          <Text as="span" color="complimentary.500">
-            Local
-          </Text>
+          <Typography.Text strong>Local</Typography.Text>
           {", "}
-          <Text as="span" color="complimentary.500">
-            S3
-          </Text>{" "}
-          and{" "}
-          <Text as="span" color="complimentary.500">
-            GCS
-          </Text>{" "}
-          storage methods.
-        </Box>
-        <Heading fontSize="md" fontWeight="semibold" mt={10}>
+          <Typography.Text strong>S3</Typography.Text> and{" "}
+          <Typography.Text strong>GCS</Typography.Text> storage methods.
+        </div>
+      </Flex>
+      <Flex vertical className="w-96">
+        <Typography.Title level={5} className="mt-10">
           Choose storage type to configure
-        </Heading>
+        </Typography.Title>
         <Radio.Group
           disabled={isLoading}
           onChange={(e) => handleChange(e.target.value)}
@@ -146,7 +133,7 @@ const StorageConfiguration = () => {
         {StorageConfigComponent && storageDetails && (
           <StorageConfigComponent storageDetails={storageDetails} />
         )}
-      </Box>
+      </Flex>
     </Layout>
   );
 };

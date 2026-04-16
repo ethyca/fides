@@ -1,11 +1,6 @@
 {
   "core_fides_version": "2.2.0",
   "fidesplus_server": "healthy",
-  "system_scanner": {
-    "enabled": true,
-    "cluster_health": "healthy",
-    "cluster_error": null
-  },
   "dictionary": {
     "enabled": true,
     "service_health": null,
@@ -13,5 +8,6 @@
   },
   "fidesplus_version": "2.2.0",
   "fides_cloud": { "enabled": true },
+  "rbac": { "enabled": false },
   "tcf": { "enabled": true }
 }

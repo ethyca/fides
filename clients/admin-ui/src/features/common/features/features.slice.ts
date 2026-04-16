@@ -135,9 +135,9 @@ export type Features = {
   plusVersion: string | undefined;
   systemsCount: number;
   connectionsCount: number;
-  dataFlowScanning: boolean;
   dictionaryService: boolean;
   fidesCloud: boolean;
+  rbac: boolean;
   tcf: boolean;
 
   flags: FlagsFor<FlagConfig>;
@@ -153,14 +153,12 @@ export const useFeatures = (): Features => {
 
   const plus = plusHealth !== undefined;
   const plusVersion = plusHealth?.fidesplus_version;
-  const dataFlowScanning = plusHealth
-    ? !!plusHealth.system_scanner.enabled
-    : false;
   const dictionaryService = plusHealth
     ? !!plusHealth.dictionary.enabled
     : false;
   const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
+  const rbac = plusHealth ? !!plusHealth?.rbac?.enabled : false;
   const tcf = plusHealth ? !!plusHealth.tcf.enabled : false;
 
   const connectionsCount = initialConnections?.total ?? 0;
@@ -173,9 +171,9 @@ export const useFeatures = (): Features => {
     plusVersion,
     systemsCount,
     connectionsCount,
-    dataFlowScanning,
     dictionaryService,
     fidesCloud,
+    rbac,
     tcf,
     flags,
   };

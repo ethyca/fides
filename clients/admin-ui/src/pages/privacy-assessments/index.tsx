@@ -1,4 +1,4 @@
-import { Button, Flex, Icons, Result, Space, Spin } from "fidesui";
+import { Button, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
@@ -10,7 +10,6 @@ import {
   AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
-  useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
@@ -23,38 +22,16 @@ const PrivacyAssessmentsPage: NextPage = () => {
     isLoading,
     isError,
     refetch: refetchAssessments,
-  } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
+  } = useGetPrivacyAssessmentsQuery();
 
-  const assessments = assessmentsData?.items ?? [];
-
-  const { data: templatesData } = useGetAssessmentTemplatesQuery({
-    page: 1,
-    size: 100,
-  });
-
-  const templates = templatesData?.items ?? [];
-
-  const hasAssessments = assessments.length > 0;
-
-  const groupedAssessments = templates
-    .map((template) => ({
-      templateId: template.id,
-      key: template.key,
-      title: template.name,
-      description: template.description,
-      assessments: assessments.filter(
-        (a) => a.template_id === template.id || a.template_id === template.key,
-      ),
-    }))
-    .filter((group) => group.assessments.length > 0);
+  const groups = assessmentsData?.items ?? [];
+  const hasAssessments = groups.length > 0;
 
   if (isLoading) {
     return (
       <Layout title="Privacy assessments">
         <PageHeader heading="Privacy assessments" isSticky />
-        <Flex align="center" justify="center" className="px-10 py-20">
-          <Spin size="large" />
-        </Flex>
+        <Spin size="large" />
       </Layout>
     );
   }
@@ -107,13 +84,13 @@ const PrivacyAssessmentsPage: NextPage = () => {
         <EmptyState onRunAssessment={() => setGenerateModalOpen(true)} />
       ) : (
         <div className="py-6">
-          <Space direction="vertical" size="large" className="w-full">
-            {groupedAssessments.map((template) => (
+          <Space orientation="vertical" size="large" className="w-full">
+            {groups.map((group, i) => (
               <AssessmentGroup
-                key={template.key}
-                templateId={template.templateId}
-                title={template.title}
-                assessments={template.assessments}
+                key={group.data_use ?? `uncategorized-${i}`}
+                dataUseName={group.data_use_name}
+                systemCount={group.system_count}
+                assessments={group.assessments}
               />
             ))}
           </Space>

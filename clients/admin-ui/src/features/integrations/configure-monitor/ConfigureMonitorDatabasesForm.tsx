@@ -2,14 +2,13 @@ import {
   Button,
   ChakraFlex as Flex,
   ChakraText as Text,
-  PageSpinner,
+  Spin,
   Tooltip,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
 import { EditableMonitorConfig } from "~/types/api";
@@ -34,15 +33,11 @@ const ConfigureMonitorDatabasesForm = ({
   onSubmit: (monitor: EditableMonitorConfig) => void;
   onClose: () => void;
 }) => {
-  const toast = useToast();
+  const message = useMessage();
 
   const handleTimeout = () => {
     onSubmit({ ...monitor, databases: [] });
-    toast({
-      ...DEFAULT_TOAST_PARAMS,
-      status: "info",
-      description: TIMEOUT_COPY,
-    });
+    message.info(TIMEOUT_COPY);
     onClose();
   };
 
@@ -83,7 +78,7 @@ const ConfigureMonitorDatabasesForm = ({
   const saveIsDisabled = !allSelected && selected.length === 0;
 
   if (initialIsLoading) {
-    return <PageSpinner className="my-12" />;
+    return <Spin rootClassName="my-12" />;
   }
 
   return (

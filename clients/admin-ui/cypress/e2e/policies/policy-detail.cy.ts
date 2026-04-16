@@ -293,7 +293,7 @@ describe("Policy condition builder", () => {
     cy.getAntModal().should("be.visible");
 
     cy.getByTestId("cancel-btn").click();
-    cy.get(".ant-modal-content").should("not.exist");
+    cy.get(".ant-modal-container").should("not.exist");
   });
 
   it("shows the delete confirmation modal", () => {
@@ -328,7 +328,9 @@ describe("Policy condition builder", () => {
 
     cy.getAntTab("Conditions").click();
     cy.getByTestId("delete-condition-0-btn").click();
-    cy.contains("Delete condition").should("be.visible");
+    cy.contains(".ant-modal-confirm-title", "Delete condition").should(
+      "be.visible",
+    );
     cy.contains("Are you sure you want to delete").should("be.visible");
   });
 

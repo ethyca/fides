@@ -2,9 +2,9 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { Button, DatePicker, Form, Input, Select } from "fidesui";
+import { Button, DatePicker, Form, FormInstance, Input, Select } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { enumToOptions } from "~/features/common/helpers";
@@ -20,7 +20,7 @@ import {
 } from "~/types/api";
 
 import { START_TIME_TOOLTIP_COPY } from "./ConfigureWebsiteMonitorForm";
-import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
+import { SharedConfigSelect } from "./SharedConfigSelect";
 
 dayjs.extend(utc);
 
@@ -84,6 +84,7 @@ const ConfigureMonitorForm = ({
   onClose,
   onAdvance,
   onSubmit,
+  form: formProp,
 }: {
   monitor?: EditableMonitorConfig;
   integrationOption: ConnectionSystemTypeMap;
@@ -93,10 +94,12 @@ const ConfigureMonitorForm = ({
   onClose: () => void;
   onAdvance: (monitor: EditableMonitorConfig) => void;
   onSubmit: (monitor: EditableMonitorConfig) => void;
+  form?: FormInstance<MonitorConfigFormValues>;
 }) => {
   const isEditing = !!monitor;
 
-  const [form] = Form.useForm<MonitorConfigFormValues>();
+  const [internalForm] = Form.useForm<MonitorConfigFormValues>();
+  const form = formProp ?? internalForm;
   const { data: systemData, isLoading: isLoadingSystem } =
     useGetSystemByFidesKeyQuery(integrationSystem || skipToken);
 
@@ -157,8 +160,12 @@ const ConfigureMonitorForm = ({
   const monitorUsesLlmClassifier =
     monitor?.classify_params?.context_classifier === "llm";
 
-  const [submittable, setSubmittable] = useState(false);
   const formValues = Form.useWatch([], form);
+  // `name` is the only required field on this form, so gate the submit button
+  // on its presence directly. `form.validateFields({ validateOnly: true })` was
+  // unreliable on initial mount in edit mode (the initial `useWatch` emit
+  // didn't consistently re-enable the button after `initialValues` populated).
+  const submittable = !!(formValues?.name ?? monitor?.name);
 
   const { data: eligibleUsersData } = useGetAllUsersQuery({
     page: 1,
@@ -177,13 +184,6 @@ const ConfigureMonitorForm = ({
     form.resetFields();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingSystem]);
-
-  useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
-  }, [form, formValues]);
 
   const initialValues = {
     name: monitor?.name,
@@ -242,10 +242,9 @@ const ConfigureMonitorForm = ({
           options={enumToOptions(MonitorFrequency)}
         />
       </Form.Item>
-      <FormikSharedConfigSelect
-        name="shared_config_id"
-        onChange={(value) => form.setFieldValue("shared_config_id", value)}
-        value={form.getFieldValue("shared_config_id")}
+      <SharedConfigSelect
+        itemProps={{ name: "shared_config_id" }}
+        selectProps={{}}
       />
       <Form.Item
         label="Automatic execution start time"

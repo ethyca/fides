@@ -11,7 +11,9 @@ export const useAddManualTaskStep = ({
   const { data: manualFields } = useGetManualFieldsQuery(
     { connectionKey: connection ? connection.key : "" },
     {
-      skip: !connection,
+      skip:
+        !connection ||
+        connectionOption?.identifier !== ConnectionType.MANUAL_TASK,
     },
   );
 
@@ -24,7 +26,7 @@ export const useAddManualTaskStep = ({
 
   return {
     title: "Add a manual task",
-    description: isComplete
+    content: isComplete
       ? "Manual tasks have been configured"
       : "Configure a manual task for this integration. ",
     state: isComplete ? "finish" : "process",

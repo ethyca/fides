@@ -1,4 +1,0 @@
-type: Added
-description: Added DeletedStatus enum and failed-instance error handling for manual tasks
-pr: 7638
-labels: []

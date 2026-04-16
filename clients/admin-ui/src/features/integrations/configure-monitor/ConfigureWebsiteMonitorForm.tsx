@@ -7,6 +7,7 @@ import {
   DatePicker,
   Flex,
   Form,
+  FormInstance,
   Input,
   isoCodesToOptions,
   LocationSelect,
@@ -31,7 +32,7 @@ import {
   WebsiteMonitorParams,
 } from "~/types/api";
 
-import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
+import { SharedConfigSelect } from "./SharedConfigSelect";
 
 dayjs.extend(utc);
 
@@ -64,14 +65,17 @@ const ConfigureWebsiteMonitorForm = ({
   integrationSystem,
   onClose,
   onSubmit,
+  form: formProp,
 }: {
   monitor?: EditableMonitorConfig;
   url: string;
   integrationSystem?: string | null;
   onClose: () => void;
   onSubmit: (values: EditableMonitorConfig) => Promise<void>;
+  form?: FormInstance<WebsiteMonitorConfigFormValues>;
 }) => {
-  const [form] = Form.useForm<WebsiteMonitorConfigFormValues>();
+  const [internalForm] = Form.useForm<WebsiteMonitorConfigFormValues>();
+  const form = formProp ?? internalForm;
   const [submittable, setSubmittable] = useState(false);
   const formValues = Form.useWatch([], form);
 
@@ -256,10 +260,9 @@ const ConfigureWebsiteMonitorForm = ({
             )}
           />
         </Form.Item>
-        <FormikSharedConfigSelect
-          name="shared_config_id"
-          onChange={(value) => form.setFieldValue("shared_config_id", value)}
-          value={form.getFieldValue("shared_config_id")}
+        <SharedConfigSelect
+          itemProps={{ name: "shared_config_id" }}
+          selectProps={{}}
         />
         <LlmModelSelector
           skip={!llmClassifierFeatureEnabled}

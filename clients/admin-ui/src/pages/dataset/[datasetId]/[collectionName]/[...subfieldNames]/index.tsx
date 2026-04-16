@@ -10,10 +10,10 @@ import {
 import {
   Button,
   ChakraBox as Box,
-  ChakraEditIcon as EditIcon,
   ChakraHStack as HStack,
   ChakraText as Text,
   ChakraVStack as VStack,
+  Icons,
 } from "fidesui";
 import { cloneDeep, set } from "lodash";
 import type { NextPage } from "next";
@@ -45,7 +45,7 @@ import {
   useUpdateDatasetMutation,
 } from "~/features/dataset";
 import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
-import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
+import { EditFieldDrawer } from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
 
@@ -232,7 +232,7 @@ const FieldsDetailPage: NextPage = () => {
             <HStack spacing={0} data-testid={`field-${field.name}`}>
               <Button
                 size="small"
-                icon={<EditIcon />}
+                icon={<Icons.Edit />}
                 onClick={() => {
                   setSelectedFieldForEditing(field);
                   setIsEditingField(true);

@@ -24,10 +24,10 @@ jobs:
       has_fidesui_changes: ${{ steps.filter.outputs.fidesui }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Check for fidesUI file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           list-files: shell
@@ -48,10 +48,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
+          # 👇 Tells the checkout which commit hash to reference
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v5
         with:
@@ -68,3 +69,8 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           zip: true
           onlyChanged: true # 👈 Required option to enable TurboSnap
+        env:
+          CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          CHROMATIC_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
+          CHROMATIC_SLUG: ${{ github.repository }}
+

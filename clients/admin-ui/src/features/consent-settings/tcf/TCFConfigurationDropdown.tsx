@@ -1,24 +1,22 @@
 import {
   Button,
   Card,
-  ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraCloseIcon as CloseIcon,
   ChakraInputGroup as InputGroup,
   ChakraSkeleton as Skeleton,
   ChakraText as Text,
   ConfirmationModal,
   Dropdown,
   Flex,
+  Icons,
   Input,
   Radio,
   Space,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -55,7 +53,7 @@ interface DropdownContentProps {
 }
 
 const LoadingContent = () => (
-  <Space direction="vertical" size="small">
+  <Space orientation="vertical" size="small">
     <Skeleton width="100%" className="h-4" />
     <Skeleton width="100%" className="h-4" />
     <Skeleton width="100%" className="h-4" />
@@ -102,7 +100,7 @@ const ConfigurationList = ({
             type="text"
             size="small"
             aria-label="Delete"
-            icon={<TrashCanOutlineIcon fontSize={16} />}
+            icon={<Icons.TrashCan />}
             onClick={(e) => {
               e.stopPropagation();
               setConfigToDelete(config);
@@ -169,7 +167,7 @@ const DropdownContent = ({
           type="text"
           size="small"
           aria-label="Close"
-          icon={<CloseIcon />}
+          icon={<Icons.Close />}
           onClick={() => setDropdownOpen(false)}
           data-testid="close-config-dropdown"
         />
@@ -237,7 +235,7 @@ export const TCFConfigurationDropdown = ({
     ScopeRegistryEnum.PRIVACY_EXPERIENCE_CREATE,
   ]);
 
-  const toast = useToast({ id: "tcf-config-toast" });
+  const message = useMessage();
   const [deleteTCFConfiguration] = useDeleteTCFConfigurationMutation();
 
   const {
@@ -282,16 +280,15 @@ export const TCFConfigurationDropdown = ({
       onConfigurationDelete?.(id);
       setConfigToDelete(undefined);
       onDeleteClose();
-      toast({
-        status: "success",
-        description: `Configuration "${configToDelete?.name}" was successfully deleted.`,
-      });
+      message.success(
+        `Configuration "${configToDelete?.name}" was successfully deleted.`,
+      );
     } catch (error: any) {
       const errorMsg = getErrorMessage(
         error,
         "A problem occurred while deleting the configuration.",
       );
-      toast({ status: "error", description: errorMsg });
+      message.error(errorMsg);
     }
   };
 
@@ -301,10 +298,12 @@ export const TCFConfigurationDropdown = ({
         open={dropdownOpen}
         onOpenChange={setDropdownOpen}
         trigger={["click"]}
-        overlayStyle={{
-          zIndex: 999, // putting this behind Chakra's modal. Can possibly remove this after Modal is migrated to Ant Design.
+        styles={{
+          root: {
+            zIndex: 999, // putting this behind Chakra's modal. Can possibly remove this after Modal is migrated to Ant Design.
+          },
         }}
-        dropdownRender={() =>
+        popupRender={() =>
           renderDropdownContent({
             searchTerm,
             setSearchTerm,
@@ -323,8 +322,8 @@ export const TCFConfigurationDropdown = ({
         }
       >
         <Button
-          icon={<ChevronDownIcon />}
-          iconPosition="end"
+          icon={<Icons.ChevronDown />}
+          iconPlacement="end"
           data-testid="tcf-config-dropdown-trigger"
         >
           {buttonLabel}

@@ -5,7 +5,7 @@ import {
   ChakraVStack as VStack,
   Modal,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useRef } from "react";
@@ -40,7 +40,6 @@ import {
   isErrorResult,
   VendorSources,
 } from "../common/helpers";
-import { errorToastParams, successToastParams } from "../common/toast";
 import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
@@ -59,7 +58,7 @@ const AddVendor = ({
   onButtonClick?: () => void;
   buttonProps?: ButtonProps;
 }) => {
-  const toast = useToast();
+  const message = useMessage();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const dispatch = useAppDispatch();
@@ -150,10 +149,10 @@ const AddVendor = ({
     const result = await createSystemMutationTrigger(payload);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
-    toast(successToastParams("Vendor successfully created!"));
+    message.success("Vendor successfully created!");
     helpers.resetForm();
     handleCloseModal();
   };
@@ -204,7 +203,7 @@ const AddVendor = ({
             open={isOpen}
             onCancel={handleCloseModal}
             centered
-            destroyOnClose
+            destroyOnHidden
             title="Add a vendor"
             footer={null}
           >
@@ -227,7 +226,7 @@ const AddVendor = ({
                       name="name"
                       isRequired
                       label="Vendor name"
-                      tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                      tooltip='Give the system a unique, and relevant name for reporting purposes. e.g. "Email Data Warehouse"'
                       variant="stacked"
                     />
                   )}

@@ -156,8 +156,8 @@ export const PrivacyRequestsDashboard = () => {
           />
         </div>
       ) : (
-        <Flex vertical gap="middle">
-          <Spin spinning={isFetching}>
+        <Flex vertical gap="medium">
+          <Spin spinning={isFetching} className="w-full">
             <List<PrivacyRequestResponse>
               dataSource={requests}
               rowSelection={{

@@ -11,7 +11,7 @@ import {
 import { useCallback, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
-import { MonitorTaskInProgressResponse } from "~/types/api";
+import { MonitorTaskResponse } from "~/types/api";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
@@ -139,7 +139,7 @@ export const InProgressMonitorTasksList = ({
           open={filterPopoverOpen}
           onOpenChange={setFilterPopoverOpen}
         >
-          <Button icon={<Icons.ChevronDown />} iconPosition="end">
+          <Button icon={<Icons.ChevronDown />} iconPlacement="end">
             Filter
           </Button>
         </Popover>
@@ -148,7 +148,7 @@ export const InProgressMonitorTasksList = ({
       <List
         {...listProps}
         className="h-full overflow-y-auto overflow-x-clip" // overflow-x-clip to prevent horizontal scroll. see https://stackoverflow.com/a/69767073/441894
-        renderItem={(task: MonitorTaskInProgressResponse) => (
+        renderItem={(task: MonitorTaskResponse) => (
           <List.Item>
             <InProgressMonitorTaskItem task={task} />
           </List.Item>

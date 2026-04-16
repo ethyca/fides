@@ -3,20 +3,22 @@ import { uniqBy } from "lodash";
 import { useRouter } from "next/router";
 import React from "react";
 
+import { useFlags } from "~/features/common/features";
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
-import { PrivacyRequestResponse } from "~/types/api";
+import { PrivacyRequestResponseExtended } from "~/types/api";
 
 import { IdentityValueWithKey } from "../../utils";
 
 interface HeaderProps {
-  privacyRequest: PrivacyRequestResponse;
+  privacyRequest: PrivacyRequestResponseExtended;
   primaryIdentity: IdentityValueWithKey | null;
 }
 
 export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
   const router = useRouter();
+  const { flags } = useFlags();
 
   const uniqueRules = uniqBy(privacyRequest.policy.rules ?? [], "action_type");
 
@@ -47,6 +49,21 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
               {SubjectRequestActionTypeMap.get(rule.action_type)}
             </Tag>
           ))}
+        </Flex>
+      )}
+      {/* Only the first ticket is shown — at most one Jira ticket per request is supported today */}
+      {flags.jiraIntegration && privacyRequest.jira_tickets?.[0] && (
+        <Flex gap={4} align="center">
+          <Typography.Link
+            href={privacyRequest.jira_tickets[0].ticket_url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {privacyRequest.jira_tickets[0].ticket_key}
+          </Typography.Link>
+          {privacyRequest.jira_tickets[0].status && (
+            <Tag>{privacyRequest.jira_tickets[0].status}</Tag>
+          )}
         </Flex>
       )}
       <CopyTooltip contentToCopy={privacyRequest.id}>

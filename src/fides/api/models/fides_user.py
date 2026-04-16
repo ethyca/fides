@@ -45,6 +45,7 @@ class FidesUser(Base):
     disabled_reason = Column(EnumColumn(DisabledReason), nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
+    email_verified_at = Column(DateTime(timezone=True), nullable=True)
     password_login_enabled = Column(Boolean, nullable=True)
     totp_secret = Column(
         encrypted_type(type_in=String()),

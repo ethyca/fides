@@ -8,6 +8,7 @@ describe("Digests", () => {
     stubPlus(true);
 
     cy.intercept("/api/v1/config?api_set=false", {});
+    cy.assumeRole(RoleRegistryEnum.OWNER);
   });
 
   describe("List page", () => {
@@ -17,7 +18,6 @@ describe("Digests", () => {
       }).as("getDigestConfigs");
 
       cy.visit("/notifications/digests");
-      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.wait("@getDigestConfigs");
 
       // Verify page loads with correct elements
@@ -68,7 +68,6 @@ describe("Digests", () => {
       }).as("updateDigestConfig");
 
       cy.visit("/notifications/digests");
-      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.wait("@getDigestConfigs");
 
       // Toggle the first digest (currently enabled -> disabled)
@@ -108,7 +107,6 @@ describe("Digests", () => {
       }).as("createDigestConfig");
 
       cy.visit("/notifications/digests/new");
-      cy.assumeRole(RoleRegistryEnum.OWNER);
 
       // Fill in the form
       cy.getByTestId("input-name").type("New Test Digest");
@@ -136,7 +134,6 @@ describe("Digests", () => {
 
     it("should validate required fields", () => {
       cy.visit("/notifications/digests/new");
-      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.getByTestId("submit-btn").click();
       cy.contains("Please enter a name").should("be.visible");
     });
@@ -156,7 +153,6 @@ describe("Digests", () => {
       cy.visit(
         "/notifications/digests/dig_26937d32-fb6e-4b60-ad7e-85180e4c9d38",
       );
-      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.wait("@getDigestDetail");
 
       // Verify form is populated
@@ -199,11 +195,13 @@ describe("Digests", () => {
       cy.visit(
         "/notifications/digests/dig_26937d32-fb6e-4b60-ad7e-85180e4c9d38",
       );
-      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.wait("@getDigestDetail");
 
       cy.getByTestId("delete-btn").click();
-      cy.contains("Delete digest configuration").should("be.visible");
+      cy.contains(
+        ".ant-modal-confirm-title",
+        "Delete digest configuration",
+      ).should("be.visible");
       cy.getAntModalConfirmButtons().contains("Delete").click();
 
       cy.wait("@deleteDigestConfig").then((interception) => {
@@ -235,7 +233,6 @@ describe("Digests", () => {
       cy.visit(
         "/notifications/digests/dig_26937d32-fb6e-4b60-ad7e-85180e4c9d38",
       );
-      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.wait("@getDigestDetail");
 
       cy.getByTestId("test-email-btn").click();
@@ -264,11 +261,10 @@ describe("Digests", () => {
 
       // Test weekly (default)
       cy.visit("/notifications/digests/new");
-      cy.assumeRole(RoleRegistryEnum.OWNER);
 
       cy.getByTestId("input-name").type("Weekly Test");
       cy.getByTestId("select-frequency")
-        .find(".ant-select-selection-item")
+        .find(".ant-select-content")
         .should("contain", "Weekly");
       cy.getByTestId("submit-btn").click();
       cy.wait("@createDigestConfig").then((interception) => {
@@ -277,7 +273,6 @@ describe("Digests", () => {
 
       // Test monthly with custom day
       cy.visit("/notifications/digests/new");
-      cy.assumeRole(RoleRegistryEnum.OWNER);
 
       cy.getByTestId("input-name").type("Monthly Test");
       cy.getByTestId("select-frequency").antSelect("Monthly");

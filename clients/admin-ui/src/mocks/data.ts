@@ -304,13 +304,13 @@ export const mockConsentableItems: ConsentableItem[] = [
   },
 ];
 
-// Mock data for Okta applications
-export const MOCK_OKTA_APPS = [
+// Mock data for IDP applications
+export const MOCK_IDP_APPS = [
   {
     urn: "urn:okta:app:12345678-1234-1234-1234-123456789012",
     name: "Salesforce",
     description: "Customer relationship management platform",
-    resource_type: "Okta App",
+    resource_type: "IDP App",
     diff_status: "addition",
     updated_at: "2024-01-15T10:30:00Z",
     monitor_config_id: "okta_monitor_001",

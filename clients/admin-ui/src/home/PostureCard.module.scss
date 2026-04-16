@@ -1,18 +1,13 @@
-.spinWrapper {
-  height: 100%;
-
-  :global(.ant-spin-container) {
-    height: 100%;
-  }
-}
-
 .cardContainer {
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: visible;
 
   :global(.ant-card-head) {
     flex-shrink: 0;
+    min-height: unset !important;
+    padding: var(--ant-padding-lg, 24px) var(--ant-padding-lg, 24px) 0 !important;
   }
 
   :global(.ant-card-body) {
@@ -20,26 +15,30 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: visible;
   }
 }
 
 .radarChartWrapper {
   margin-left: -12px;
   margin-right: -12px;
+  margin-top: 24px;
   flex: 1;
-  min-height: 0;
+  min-height: 220px;
   position: relative;
+  overflow: visible;
+  aspect-ratio: 1;
 }
 
 .radarChartInner {
   position: absolute;
   inset: 0;
+  overflow: visible;
 
-  *,
-  *:focus,
-  *:active,
-  *:focus-visible {
-    outline: none !important;
+  :global(.recharts-wrapper),
+  :global(.recharts-surface) {
+    overflow: visible !important;
   }
 
   :global(.recharts-radar-polygon) {
@@ -52,13 +51,47 @@
   }
 }
 
-.clickableScore {
+.clickableAlert {
   cursor: pointer;
   transition: opacity 0.15s ease;
 
   &:hover {
-    opacity: 0.7;
+    opacity: 0.85;
   }
+}
+
+.scoreValue {
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1;
+  font-family: var(--ant-font-family-code);
+}
+
+.scoreDenominator {
+  font-size: 20px;
+  font-weight: 400;
+  opacity: 0.4;
+  margin-left: 2px;
+}
+
+.summaryAlert {
+  flex-shrink: 0;
+}
+
+.summaryText {
+  font-size: var(--ant-font-size);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+
+.viewDetailsCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--ant-color-text);
+  white-space: nowrap;
+  font-weight: 500;
 }
 
 .alertSm {
@@ -82,9 +115,5 @@
 }
 
 .radarTooltip {
-  border-radius: var(--ant-border-radius);
-  padding: var(--ant-padding-xs) var(--ant-padding-sm);
-  font-size: var(--ant-font-size-sm);
-  background-color: var(--ant-color-bg-elevated);
-  box-shadow: var(--ant-box-shadow);
+  font-size: var(--ant-font-size-sm, 12px);
 }

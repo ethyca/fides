@@ -1,23 +1,23 @@
 import { useHasPermission } from "common/Restrict";
 import {
   Button,
-  ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
-  ChakraStack as Stack,
-  ChakraText as Text,
+  Flex,
+  Form,
+  Input,
+  Spin,
   Tooltip,
-  useChakraToast as useToast,
+  Typography,
+  useMessage,
   useModal,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { isEqual } from "lodash";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -31,16 +31,29 @@ import {
   useUpdateUserPermissionsMutation,
 } from "./user-management.slice";
 
-const defaultInitialValues = {
+export interface FormValues {
+  roles: RoleRegistryEnum[];
+}
+
+const defaultInitialValues: FormValues = {
   roles: [] as RoleRegistryEnum[],
 };
 
-export type FormValues = typeof defaultInitialValues;
+const { Text } = Typography;
 
+/**
+ * Legacy permissions form for non-RBAC mode.
+ *
+ * When RBAC is enabled (via Plus health endpoint), UserManagementTabs renders RolesForm
+ * instead of this component. This component only handles legacy permissions.
+ */
 const PermissionsForm = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const modal = useModal();
+  const [form] = Form.useForm<FormValues>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
@@ -56,6 +69,7 @@ const PermissionsForm = () => {
     setAssignedSystems(initialManagedSystems);
   }, [initialManagedSystems]);
 
+  // Legacy permission hooks
   const { data: userPermissions, isLoading } = useGetUserPermissionsQuery(
     activeUserId ?? "",
     {
@@ -67,9 +81,27 @@ const PermissionsForm = () => {
     useUpdateUserPermissionsMutation();
 
   // Check if the current user is an external respondent
-  const isExternalRespondent = Boolean(
-    userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
-  );
+  const isExternalRespondent = useMemo(() => {
+    return Boolean(
+      userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
+    );
+  }, [userPermissions?.roles]);
+
+  const initialValues = useMemo(() => {
+    return userPermissions?.roles
+      ? { roles: userPermissions.roles }
+      : defaultInitialValues;
+  }, [userPermissions?.roles]);
+
+  // Sync form when initial values change (replaces Formik enableReinitialize)
+  useEffect(() => {
+    form.setFieldsValue(initialValues);
+  }, [form, initialValues]);
+
+  // Check if target user is an owner
+  const targetUserIsOwner = useMemo(() => {
+    return userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
+  }, [userPermissions?.roles]);
 
   const updatePermissions = async (values: FormValues) => {
     if (!activeUserId) {
@@ -89,7 +121,7 @@ const PermissionsForm = () => {
     });
 
     if (isErrorResult(userPermissionsResult)) {
-      toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
+      message.error(getErrorMessage(userPermissionsResult.error));
       return;
     }
     if (!skipAssigningSystems) {
@@ -99,11 +131,11 @@ const PermissionsForm = () => {
         fidesKeys,
       });
       if (isErrorResult(userSystemsResult)) {
-        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        message.error(getErrorMessage(userSystemsResult.error));
         return;
       }
     }
-    toast(successToastParams("Permissions updated"));
+    message.success("Permissions updated");
   };
 
   const handleSubmit = async (values: FormValues) => {
@@ -126,11 +158,23 @@ const PermissionsForm = () => {
         okText: "Yes",
         centered: true,
         icon: null,
-        onOk: () => updatePermissions(values),
+        onOk: async () => {
+          setIsSubmitting(true);
+          try {
+            await updatePermissions(values);
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
         className: "downgrade-to-approver-confirmation-modal",
       });
     } else {
-      await updatePermissions(values);
+      setIsSubmitting(true);
+      try {
+        await updatePermissions(values);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -139,18 +183,18 @@ const PermissionsForm = () => {
     ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
   ]);
 
+  // Watch roles field for dirty state (useWatch requires a registered Form.Item)
+  const currentRoles = Form.useWatch("roles", form) ?? initialValues.roles;
+
   if (!activeUserId) {
     return null;
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
-  if (
-    !canAssignOwner &&
-    userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
-  ) {
+  if (!canAssignOwner && targetUserIsOwner) {
     return (
       <Text data-testid="insufficient-access">
         You do not have sufficient access to change this user&apos;s
@@ -158,10 +202,6 @@ const PermissionsForm = () => {
       </Text>
     );
   }
-
-  const initialValues = userPermissions?.roles
-    ? { roles: userPermissions.roles }
-    : defaultInitialValues;
 
   // Filter roles based on whether the user is external respondent
   const availableRoles = ROLES.filter((role) => {
@@ -181,75 +221,69 @@ const PermissionsForm = () => {
     : undefined;
 
   return (
-    <Formik
-      onSubmit={handleSubmit}
-      initialValues={initialValues}
-      enableReinitialize
-    >
-      {({ values, isSubmitting, dirty }) => (
-        <Form>
-          <Stack spacing={7}>
-            <Stack spacing={3} data-testid="role-options">
-              <Flex alignItems="center">
-                <Text fontSize="sm" fontWeight="semibold" mr={1}>
-                  User role
-                </Text>
-                <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
-              </Flex>
-              {availableRoles.map((role) => {
-                const isSelected = values.roles.indexOf(role.roleKey) >= 0;
-                const isOwnerRole = role.roleKey === RoleRegistryEnum.OWNER;
-                const isRoleDisabled = isOwnerRole
-                  ? !canAssignOwner
-                  : isExternalRespondent;
+    <Form form={form} initialValues={initialValues} onFinish={handleSubmit}>
+      <Form.Item name="roles" hidden>
+        <Input />
+      </Form.Item>
+      <Flex vertical gap={28}>
+        <Flex vertical gap={12} data-testid="role-options">
+          <Flex align="center">
+            <Text className="mr-1 text-sm font-semibold">User role</Text>
+            <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
+          </Flex>
+          {availableRoles.map((role) => {
+            const formRoles: RoleRegistryEnum[] =
+              form.getFieldValue("roles") ?? [];
+            const isSelected = formRoles.indexOf(role.roleKey) >= 0;
+            const isOwnerRole = role.roleKey === RoleRegistryEnum.OWNER;
+            const isRoleDisabled = isOwnerRole
+              ? !canAssignOwner
+              : isExternalRespondent;
 
-                return (
-                  <RoleOption
-                    key={role.roleKey}
-                    isSelected={isSelected}
-                    isDisabled={isRoleDisabled}
-                    assignedSystems={assignedSystems}
-                    onAssignedSystemChange={setAssignedSystems}
-                    {...role}
-                  />
-                );
-              })}
-              {/* Show disabled external respondent option for regular users */}
-              {!isExternalRespondent && (
-                <Tooltip title={externalRespondentTooltip}>
-                  <Button
-                    disabled
-                    data-testid="role-option-External respondent"
-                  >
-                    External respondent
-                  </Button>
-                </Tooltip>
-              )}
-            </Stack>
-            <div>
-              <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
-                Cancel
+            return (
+              <RoleOption
+                key={role.roleKey}
+                isSelected={isSelected}
+                isDisabled={isRoleDisabled}
+                assignedSystems={assignedSystems}
+                onAssignedSystemChange={setAssignedSystems}
+                form={form}
+                {...role}
+              />
+            );
+          })}
+          {/* Show disabled external respondent option for regular users */}
+          {!isExternalRespondent && (
+            <Tooltip title={externalRespondentTooltip}>
+              <Button disabled data-testid="role-option-External respondent">
+                External respondent
               </Button>
-              <Tooltip title={saveButtonTooltip}>
-                <Button
-                  className="ml-2"
-                  type="primary"
-                  htmlType="submit"
-                  loading={isSubmitting}
-                  disabled={
-                    (!dirty && assignedSystems === initialManagedSystems) ||
-                    isExternalRespondent
-                  }
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </Tooltip>
-            </div>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+            </Tooltip>
+          )}
+        </Flex>
+        <div>
+          <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
+            Cancel
+          </Button>
+          <Tooltip title={saveButtonTooltip}>
+            <Button
+              className="ml-2"
+              type="primary"
+              htmlType="submit"
+              loading={isSubmitting}
+              disabled={
+                (isEqual(currentRoles, initialValues.roles) &&
+                  assignedSystems === initialManagedSystems) ||
+                isExternalRespondent
+              }
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
+          </Tooltip>
+        </div>
+      </Flex>
+    </Form>
   );
 };
 

@@ -11,7 +11,9 @@ export const useAssignTasksToUsersStep = ({
   const { data: manualTaskConfig } = useGetManualTaskConfigQuery(
     { connectionKey: connection ? connection.key : "" },
     {
-      skip: !connection,
+      skip:
+        !connection ||
+        connectionOption?.identifier !== ConnectionType.MANUAL_TASK,
     },
   );
 
@@ -28,7 +30,7 @@ export const useAssignTasksToUsersStep = ({
 
   return {
     title: "Assign the tasks to users",
-    description: isComplete
+    content: isComplete
       ? "Tasks have been assigned to users"
       : "Assign the configured manual tasks to one or more users.",
     state: isComplete ? "finish" : "process",

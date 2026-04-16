@@ -4,6 +4,8 @@ import { utf8ToB64 } from "common/utils";
 import type { RootState } from "~/app/store";
 import { selectUser } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
+import { selectRbacEnabled } from "~/features/plus/plus.slice";
+import { rbacApi } from "~/features/rbac/rbac.slice";
 import {
   EditableMonitorConfig,
   RoleRegistryEnum,
@@ -164,6 +166,13 @@ const userApi = baseApi.injectEndpoints({
       // Invalidates all queries that subscribe to this User `id` only
       invalidatesTags: ["User"],
     }),
+    reinviteUser: build.mutation<void, string>({
+      query: (id) => ({
+        url: `user/${id}/reinvite`,
+        method: "POST",
+      }),
+      invalidatesTags: ["User"],
+    }),
 
     // Data steward endpoints
     getUserManagedSystems: build.query<System[], string>({
@@ -231,17 +240,51 @@ export const selectActiveUser = createSelector(
 );
 
 const emptyScopes: ScopeRegistryEnum[] = [];
-export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
-  createSelector([(RootState) => RootState, selectUser], (RootState, user) => {
-    if (!user) {
-      return emptyScopes;
-    }
-    const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
-      RootState,
-    ).data;
 
-    return permissions ? permissions.total_scopes : emptyScopes;
-  });
+/**
+ * Selects the current user's scopes/permissions.
+ *
+ * When RBAC management is enabled, this selector prefers permissions from the
+ * RBAC system (via /rbac/me/permissions endpoint). This ensures users get the
+ * correct permissions based on their RBAC role assignments.
+ *
+ * Falls back to legacy permissions (from /user/{id}/permission endpoint) when:
+ * - RBAC is disabled
+ * - RBAC permissions haven't loaded yet
+ */
+export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
+  createSelector(
+    [(RootState) => RootState, selectUser, selectRbacEnabled],
+    (RootState, user, rbacEnabled) => {
+      // When RBAC is enabled, prefer RBAC-derived permissions
+      if (rbacEnabled) {
+        const rbacPermissions =
+          rbacApi.endpoints.getMyRBACPermissions.select(undefined)(
+            RootState,
+          )?.data;
+
+        if (rbacPermissions && rbacPermissions.length > 0) {
+          return rbacPermissions as ScopeRegistryEnum[];
+        }
+        // NOTE: We intentionally fall back to legacy permissions when rbacPermissions
+        // is empty ([]). This handles the root OAuth client (fidesadmin) which is not
+        // a FidesUser and has no RBAC role assignments. The backend enforces root client
+        // access via special case handling in the permission checker, and the frontend
+        // uses legacy permissions to determine UI visibility. This fallback is also
+        // needed during gradual RBAC rollout for users without RBAC roles assigned yet.
+      }
+
+      // Fall back to legacy permissions
+      if (!user) {
+        return emptyScopes;
+      }
+      const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
+        RootState,
+      ).data;
+
+      return permissions ? permissions.total_scopes : emptyScopes;
+    },
+  );
 
 const emptyRoles: RoleRegistryEnum[] = [];
 /**
@@ -285,6 +328,7 @@ export const {
   useCreateUserMutation,
   useEditUserMutation,
   useDeleteUserMutation,
+  useReinviteUserMutation,
   useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
   useGetUserPermissionsQuery,

@@ -13,19 +13,23 @@ import {
   Tooltip,
 } from "fidesui";
 import _ from "lodash";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import {
+  getErrorMessage,
+  isFetchBaseQueryError,
+} from "~/features/common/helpers";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import {
   useGetDatastoreFiltersQuery,
   useGetMonitorConfigQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
@@ -60,6 +64,7 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -90,6 +95,7 @@ const ActionCenterFields = ({
       query: {
         staged_resource_urn?: string[];
         search?: string;
+        search_regex?: boolean;
         diff_status?: DiffStatus[];
         confidence_bucket?: ConfidenceBucket[];
         data_category?: string[];
@@ -112,6 +118,7 @@ const ActionCenterFields = ({
           ),
         ],
         search: query.search ?? undefined,
+        search_regex: query.search_regex ?? undefined,
         staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
       },
     }),
@@ -252,7 +259,18 @@ const ActionCenterFields = ({
     () => listQueryMeta.refetch(),
   );
 
-  if (listQueryMeta.error) {
+  const isRegexValidationError =
+    listQueryMeta.error &&
+    isFetchBaseQueryError(listQueryMeta.error) &&
+    listQueryMeta.error.status === 422 &&
+    !!requestData.query?.search_regex;
+
+  const regexErrorMessage =
+    isRegexValidationError && listQueryMeta.error
+      ? getErrorMessage(listQueryMeta.error, "Invalid regex pattern")
+      : null;
+
+  if (listQueryMeta.error && !isRegexValidationError) {
     return (
       <ErrorPage
         error={listQueryMeta.error}
@@ -315,7 +333,7 @@ const ActionCenterFields = ({
         <Splitter.Panel
           style={{ paddingLeft: "var(--ant-padding-md)", overflow: "hidden" }}
         >
-          <Flex vertical gap="middle" className="h-full">
+          <Flex vertical gap="medium" className="h-full">
             <Flex justify="space-between">
               <Title level={2} ellipsis>
                 Monitor results
@@ -331,7 +349,7 @@ const ActionCenterFields = ({
                 )}
               </Flex>
             </Flex>
-            <Flex justify="space-between" wrap="wrap" gap="small">
+            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto] 2xl:grid-rows-1">
               <MonitorFieldsSearchForm
                 form={form}
                 {...formProps}
@@ -343,68 +361,58 @@ const ActionCenterFields = ({
                 availableFilters={{
                   data_category: availableFilters?.data_category ?? undefined,
                 }}
+                regexError={regexErrorMessage}
                 shortcutCallback={() => setHotkeysHelperModalOpen(true)}
               />
-              <Flex gap="small">
-                <Dropdown
-                  onOpenChange={onActionDropdownOpenChange}
-                  menu={{
-                    items: [
-                      ...DROPDOWN_ACTIONS.map((actionType) => ({
-                        key: actionType,
-                        label:
-                          isFetchingAllowedActions ||
-                          !availableActions?.includes(actionType) ? (
-                            <Tooltip
-                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
-                            >
-                              {FIELD_ACTION_LABEL[actionType]}
-                            </Tooltip>
-                          ) : (
-                            FIELD_ACTION_LABEL[actionType]
-                          ),
-                        disabled:
-                          isFetchingAllowedActions ||
-                          !availableActions?.includes(actionType),
-                        onClick: async () => {
-                          if (listSelectMode === "exclusive") {
-                            await bulkActions[actionType](
-                              baseMonitorFilters,
-                              excludedKeys.map((key) => key.toString()),
-                              selectedListItemCount,
-                            );
-                          } else {
-                            await fieldActions[actionType](
-                              selectedKeys.map((key) => key.toString()),
-                            );
-                          }
+              <Dropdown
+                onOpenChange={onActionDropdownOpenChange}
+                menu={{
+                  items: [
+                    ...DROPDOWN_ACTIONS.map((actionType) => ({
+                      key: actionType,
+                      label:
+                        isFetchingAllowedActions ||
+                        !availableActions?.includes(actionType) ? (
+                          <Tooltip title={ACTIONS_DISABLED_MESSAGE[actionType]}>
+                            {FIELD_ACTION_LABEL[actionType]}
+                          </Tooltip>
+                        ) : (
+                          FIELD_ACTION_LABEL[actionType]
+                        ),
+                      disabled:
+                        isFetchingAllowedActions ||
+                        !availableActions?.includes(actionType),
+                      onClick: async () => {
+                        if (listSelectMode === "exclusive") {
+                          await bulkActions[actionType](
+                            baseMonitorFilters,
+                            excludedKeys.map((key) => key.toString()),
+                            selectedListItemCount,
+                          );
+                        } else {
+                          await fieldActions[actionType](
+                            selectedKeys.map((key) => key.toString()),
+                          );
+                        }
 
-                          resetListSelect();
-                        },
-                      })),
-                    ],
-                  }}
-                  disabled={selectedKeys.length <= 0}
+                        resetListSelect();
+                      },
+                    })),
+                  ],
+                }}
+                disabled={selectedKeys.length <= 0}
+              >
+                <Button
+                  type="primary"
+                  icon={<Icons.ChevronDown />}
+                  iconPlacement="end"
+                  loading={isFetchingAllowedActions}
                 >
-                  <Button
-                    type="primary"
-                    icon={<Icons.ChevronDown />}
-                    iconPosition="end"
-                    loading={isFetchingAllowedActions}
-                  >
-                    Actions
-                  </Button>
-                </Dropdown>
-                <Tooltip title="Refresh">
-                  <Button
-                    icon={<Icons.Renew />}
-                    onClick={() => listQueryMeta.refetch()}
-                    aria-label="Refresh"
-                  />
-                </Tooltip>
-              </Flex>
-            </Flex>
-            <Flex gap="middle" align="center">
+                  Actions
+                </Button>
+              </Dropdown>
+            </div>
+            <Flex gap="medium" align="center">
               <Checkbox id="select-all" {...checkboxProps} />
               <label htmlFor="select-all">Select all</label>
               {!!selectedListItemCount && (
@@ -447,14 +455,10 @@ const ActionCenterFields = ({
                             </>
                           }
                         >
-                          <Flex gap="middle" justify="center">
-                            <NextLink
-                              href={DATASET_ROUTE}
-                              passHref
-                              legacyBehavior
-                            >
+                          <Flex gap="medium" justify="center">
+                            <RouterLink href={DATASET_ROUTE}>
                               <Button>Manage datasets view</Button>
-                            </NextLink>
+                            </RouterLink>
                             <Button
                               type="primary"
                               aria-label="Refresh page"

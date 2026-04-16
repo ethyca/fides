@@ -9,10 +9,17 @@ import {
   Tooltip,
   Typography,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -77,9 +84,28 @@ const IntegrationListView: NextPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
+  const message = useMessage();
+  const oauthHandled = useRef(false);
+
   const {
-    flags: { newIntegrationManagement },
+    flags: { newIntegrationManagement, jiraIntegration },
   } = useFlags();
+
+  useEffect(() => {
+    if (oauthHandled.current) {
+      return;
+    }
+    const jiraAuthStatus = router.query.jira_auth as string | undefined;
+    if (jiraAuthStatus === "error") {
+      oauthHandled.current = true;
+      message.error(
+        "Jira authorization failed. Check server logs for details.",
+      );
+      router.replace(INTEGRATION_MANAGEMENT_ROUTE, undefined, {
+        shallow: true,
+      });
+    }
+  }, [router.query.jira_auth, message, router]);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -105,17 +131,19 @@ const IntegrationListView: NextPage = () => {
     [connectionTypesData],
   );
 
-  // Filter connection types based on the new integration management flag
+  // Filter connection types based on feature flags
   const connectionTypesToQuery = useMemo(() => {
-    if (newIntegrationManagement) {
-      // Show all integrations (including SaaS) when the flag is enabled
-      return SUPPORTED_INTEGRATIONS;
+    let types = SUPPORTED_INTEGRATIONS;
+
+    if (!newIntegrationManagement) {
+      types = types.filter((type) => type !== ConnectionType.SAAS);
     }
-    // Hide SaaS integrations when the flag is disabled
-    return SUPPORTED_INTEGRATIONS.filter(
-      (type) => type !== ConnectionType.SAAS,
-    );
-  }, [newIntegrationManagement]);
+    if (!jiraIntegration) {
+      types = types.filter((type) => type !== ConnectionType.JIRA_TICKET);
+    }
+
+    return types;
+  }, [newIntegrationManagement, jiraIntegration]);
 
   const { data, isLoading, error } = useGetAllDatastoreConnectionsQuery({
     connection_type: connectionTypesToQuery,
@@ -196,7 +224,15 @@ const IntegrationListView: NextPage = () => {
       key: "connection_status",
       width: 150,
       render: (_, record) => {
+        const isJiraTicket =
+          record.connection_type === ConnectionType.JIRA_TICKET;
         const getConnectionStatus = () => {
+          if (isJiraTicket && !record.authorized) {
+            return {
+              status: "Unauthorized",
+              color: CUSTOM_TAG_COLOR.ERROR,
+            };
+          }
           if (
             record.last_test_timestamp === null ||
             record.last_test_timestamp === undefined
@@ -213,9 +249,12 @@ const IntegrationListView: NextPage = () => {
         };
 
         const { status, color } = getConnectionStatus();
-        const tooltipText = record.last_test_timestamp
-          ? `Last connection: ${formatDate(record.last_test_timestamp)}`
-          : "The connection has not been tested";
+        let tooltipText = "The connection has not been tested";
+        if (record.last_test_timestamp) {
+          tooltipText = `Last connection: ${formatDate(record.last_test_timestamp)}`;
+        } else if (isJiraTicket && !record.authorized) {
+          tooltipText = "Jira connection has not been authorized";
+        }
 
         return (
           <Tooltip title={tooltipText}>
@@ -289,7 +328,9 @@ const IntegrationListView: NextPage = () => {
     ),
   };
 
-  if (error) {
+  const isAbortedRequest =
+    error && "status" in error && error.status === "FETCH_ERROR";
+  if (error && !isAbortedRequest) {
     return (
       <ErrorPage
         error={error}

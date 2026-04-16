@@ -4,40 +4,48 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/*", "!.next/cache/*", "dist/*"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "build:windows": {
       "dependsOn": ["^build:windows"],
-      "outputs": [".next/*", "!.next/cache/*", "dist/*"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "clean": {
       "dependsOn": [],
       "cache": false
     },
     "dev": {
-      "outputs": [".next/*", "!.next/cache/*"],
+      "outputs": [".next/**", "!.next/cache/**"],
       "cache": false,
       "persistent": true
     },
     "dev:windows": {
       "dependsOn": ["^build:windows"],
-      "outputs": [".next/*", "!.next/cache/*"],
+      "outputs": [".next/**", "!.next/cache/**"],
       "cache": false,
       "persistent": true
     },
     "start": {
       "dependsOn": ["build"],
-      "outputs": [".next/*", "!.next/cache/*"]
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "check": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "check:ci": {
+      "dependsOn": ["^build"]
     },
     "lint": {
-      "dependsOn": []
-    },
-    "lint:fix": {
       "dependsOn": [],
       "cache": false
     },
-    "format": {
+    "lint:ci": {
       "dependsOn": []
+    },
+    "format": {
+      "dependsOn": [],
+      "cache": false
     },
     "format:ci": {
       "dependsOn": []
@@ -47,6 +55,11 @@
     },
     "test": {
       "dependsOn": ["^typecheck"],
+      "cache": false,
+      "persistent": true
+    },
+    "test:ci": {
+      "dependsOn": [],
       "cache": false,
       "persistent": true
     },

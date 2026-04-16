@@ -8,10 +8,10 @@ import {
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
   ChakraSpacer as Spacer,
-  ChakraSpinner as Spinner,
   Flex,
   Modal,
   Space,
+  Spin,
   Tag,
   Typography,
   useChakraDisclosure as useDisclosure,
@@ -75,9 +75,7 @@ export const ConsentManagementModal = ({
       }
     >
       {isLoading ? (
-        <Flex className="h-80 w-full" align="center" justify="center">
-          <Spinner />
-        </Flex>
+        <Spin />
       ) : (
         !!systemPurposeSummary && (
           <Typography>
@@ -102,14 +100,14 @@ export const ConsentManagementModal = ({
                               {listRender(
                                 "Data uses",
                                 systemPurposeSummary.purposes[purposeName]
-                                  .data_uses,
+                                  .data_uses as string[],
                               )}
                             </Flex>
                             <Flex className="my-4" vertical>
                               {listRender(
                                 "Legal basis",
                                 systemPurposeSummary.purposes[purposeName]
-                                  .legal_bases,
+                                  .legal_bases as string[],
                               )}
                             </Flex>
                           </AccordionPanel>

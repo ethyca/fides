@@ -1,19 +1,24 @@
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, Generator, List, Optional, Set
+from typing import Any, DefaultDict, Dict, Generator, List, Optional, Set, Union
 
+import sqlalchemy
 from httpx import AsyncClient
 from loguru import logger
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy import cast, null, text
+from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
+from fides.api.models.audit_log import AuditLog
 from fides.api.models.privacy_request import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
+    ExecutionLog,
     PrivacyRequest,
     RequestTask,
 )
@@ -28,8 +33,8 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
-    get_async_task_tracking_cache_key,
     get_cache,
+    get_dsr_cache_store,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
     reset_privacy_request_retry_count,
@@ -143,6 +148,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                         PrivacyRequestStatus.in_processing,
                         PrivacyRequestStatus.approved,
                         PrivacyRequestStatus.requires_input,
+                        PrivacyRequestStatus.pending_external,
                     ]
                 )
             )
@@ -331,9 +337,11 @@ def get_cached_task_id(entity_id: str) -> Optional[str]:
 
     Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
     """
-    cache: FidesopsRedis = get_cache()
     try:
-        task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
+        store = get_dsr_cache_store(entity_id)
+        task_id = store.get_async_execution()
+        if isinstance(task_id, bytes):
+            return task_id.decode(CONFIG.security.encoding)
         return task_id
     except Exception as exc:
         logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")
@@ -568,6 +576,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             PrivacyRequestStatus.in_processing,
                             PrivacyRequestStatus.approved,
                             PrivacyRequestStatus.requires_input,
+                            PrivacyRequestStatus.pending_external,
                         ]
                     )
                 )
@@ -662,25 +671,24 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         # This means the subtask is stuck - but we need to handle this differently
                         # based on the privacy request status
                         if not subtask_id:
-                            if (
-                                privacy_request.status
-                                == PrivacyRequestStatus.requires_input
+                            if privacy_request.status in (
+                                PrivacyRequestStatus.requires_input,
+                                PrivacyRequestStatus.pending_external,
                             ):
-                                # For requires_input status, don't automatically error the request
-                                # as it's intentionally waiting for user input
+                                # For requires_input / pending_external status, don't
+                                # automatically error the request as it's intentionally
+                                # waiting for user input or an external system (e.g. Jira)
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) in requires_input status - "
-                                    f"keeping request in current status as it may be waiting for manual input"
+                                    f"(privacy request {privacy_request.id}) in {privacy_request.status.value} status - "
+                                    f"keeping request in current status as it may be waiting for input or an external system"
                                 )
                                 should_requeue = False
                                 break
 
-                            # A pending task that hasn't been dispatched to Celery yet will
-                            # never have a cache key — this is not a stuck state. Only pending
-                            # tasks can legitimately lack a cache key; in_processing tasks
-                            # without one are genuinely stuck and should be canceled below.
-                            # Checked before the async query to avoid an unnecessary DB hit.
+                            # A pending task awaiting upstream is not stuck — it was
+                            # never dispatched because its prerequisites aren't done.
+                            # Skip it and continue checking other tasks. (ENG-2756)
                             if (
                                 task_status == ExecutionLogStatus.pending
                                 and awaiting_upstream
@@ -692,10 +700,24 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 continue
 
-                            # Check if the request has async tasks awaiting external completion
-                            if _has_async_tasks_awaiting_external_completion(
-                                db, privacy_request.id
-                            ):
+                            # If the privacy request has async tasks awaiting an external
+                            # event (webhook callback, polling), don't requeue or cancel —
+                            # the request is intentionally waiting for that event.
+                            try:
+                                has_async = (
+                                    _has_async_tasks_awaiting_external_completion(
+                                        db, privacy_request.id
+                                    )
+                                )
+                            except Exception as async_exc:
+                                # DB error checking async tasks — fail safe: skip this PR.
+                                logger.warning(
+                                    f"Error checking async tasks for privacy request "
+                                    f"{privacy_request.id}, skipping watchdog pass for this request: {async_exc}"
+                                )
+                                should_requeue = False
+                                break
+                            if has_async:
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) contains async tasks awaiting "
@@ -704,14 +726,31 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # For other statuses, cancel the entire privacy request
-                            _cancel_interrupted_tasks_and_error_privacy_request(
-                                db,
-                                privacy_request,
-                                f"No task ID found for request task {request_task_id} "
-                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
-                            )
-                            should_requeue = False
+                            # All remaining no-subtask_id cases route through the retry
+                            # mechanism. Covers three scenarios:
+                            #   - pending + no upstream (root task): never dispatched
+                            #   - pending + upstream_complete: parent died before dispatch
+                            #   - in_processing + no_cache: cache evicted / worker crashed
+                            # _handle_privacy_request_requeue applies the retry limit;
+                            # cancellation only happens when the limit is exhausted.
+                            if task_status == ExecutionLogStatus.pending:
+                                # awaiting_upstream=True cases were already skipped via
+                                # `continue` above, so all pending tasks reaching here have
+                                # upstream complete (or no upstream). Both cases mean the
+                                # parent task died before dispatching this task.
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending with no "
+                                    f"subtask_id (upstream complete or no upstream) — "
+                                    f"parent task died before dispatch, requeueing"
+                                )
+                            else:
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is in_processing with no "
+                                    f"cache key - possible cache eviction or worker crash, requeueing"
+                                )
+                            should_requeue = True
                             break
 
                         if (
@@ -763,3 +802,149 @@ def requeue_polling_tasks(self: DatabaseTask) -> None:
                         f"Requeuing polling task {async_task.id} for processing"
                     )
                     queue_request_task(async_task, privacy_request_proceed=True)
+
+
+EMBEDDED_EXECUTION_LOG_LIMIT = 1000
+
+
+def batch_execution_and_audit_logs_by_dataset(
+    db: Session,
+    privacy_request_ids: List[str],
+) -> Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]]:
+    """
+    Returns a mapping of privacy_request_id → {dataset_name → [logs]} for all
+    given privacy requests in a single query.
+
+    Audit Logs are for the entire privacy request as a whole, while execution logs
+    are created for specific collections. Logs are grouped by dataset, but if it is
+    an audit log, it is given a fake dataset name, "Request + status".
+    ExecutionLogs for each dataset are truncated at EMBEDDED_EXECUTION_LOG_LIMIT.
+    """
+    if not privacy_request_ids:
+        return {}
+
+    execution_log_query: Query = db.query(
+        ExecutionLog.id,
+        ExecutionLog.created_at,
+        ExecutionLog.updated_at,
+        ExecutionLog.message,
+        cast(ExecutionLog.status, sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
+        ExecutionLog.privacy_request_id,
+        ExecutionLog.dataset_name,
+        ExecutionLog.collection_name,
+        ExecutionLog.connection_key,
+        ExecutionLog.fields_affected,
+        ExecutionLog.action_type,
+        null().label("user_id"),
+        ExecutionLog.saas_version,
+    ).filter(ExecutionLog.privacy_request_id.in_(privacy_request_ids))
+
+    audit_log_query: Query = db.query(
+        AuditLog.id,
+        AuditLog.created_at,
+        AuditLog.updated_at,
+        AuditLog.message,
+        cast(AuditLog.action.label("status"), sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
+        AuditLog.privacy_request_id,
+        null().label("dataset_name"),
+        null().label("collection_name"),
+        null().label("connection_key"),
+        null().label("fields_affected"),
+        null().label("action_type"),
+        AuditLog.user_id,
+        null().label("saas_version"),
+    ).filter(AuditLog.privacy_request_id.in_(privacy_request_ids))
+
+    combined: Query = execution_log_query.union_all(audit_log_query)
+
+    result: Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]] = {}
+
+    audit_log_display_names = {
+        "approved": "Request approved",
+        "denied": "Request denied",
+        "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
+        "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
+        "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
+    }
+
+    for log in combined.order_by(ExecutionLog.updated_at.asc()):
+        pr_id = log.privacy_request_id
+        if pr_id not in result:
+            result[pr_id] = defaultdict(list)
+
+        dataset_name: str = log.dataset_name or audit_log_display_names.get(
+            log.status, f"Request {log.status}"
+        )
+
+        if len(result[pr_id][dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
+            continue
+        result[pr_id][dataset_name].append(log)
+
+    return result
+
+
+# Priority order for "worst" status per dataset — lower number = higher priority.
+_STATUS_PRIORITY: Dict[ExecutionLogStatus, int] = {
+    ExecutionLogStatus.error: 0,
+    ExecutionLogStatus.awaiting_processing: 1,
+    ExecutionLogStatus.polling: 2,
+    ExecutionLogStatus.retrying: 3,
+    ExecutionLogStatus.skipped: 4,
+}
+
+
+def batch_task_status_by_dataset(
+    db: Session,
+    privacy_request_ids: List[str],
+) -> Dict[str, Dict[str, str]]:
+    """
+    Returns a mapping of privacy_request_id → {dataset_name → "worst" status}
+    for all given privacy requests in a single query.
+
+    Only datasets that have a noteworthy status (error, awaiting_processing, polling,
+    retrying, skipped) are included. Datasets where all tasks are complete, pending,
+    or in_processing are omitted.
+    """
+    if not privacy_request_ids:
+        return {}
+
+    tasks = (
+        db.query(
+            RequestTask.privacy_request_id,
+            RequestTask.dataset_name,
+            RequestTask.status,
+        )
+        .filter(
+            RequestTask.privacy_request_id.in_(privacy_request_ids),
+            RequestTask.collection_address.notin_(
+                [
+                    ROOT_COLLECTION_ADDRESS.value,
+                    TERMINATOR_ADDRESS.value,
+                ]
+            ),
+        )
+        .all()
+    )
+
+    result: Dict[str, Dict[str, str]] = {}
+    worst_priority: Dict[str, Dict[str, int]] = {}
+
+    for pr_id, dataset_name, status in tasks:
+        priority = _STATUS_PRIORITY.get(status)
+        if priority is None:
+            continue
+
+        if pr_id not in result:
+            result[pr_id] = {}
+            worst_priority[pr_id] = {}
+
+        current_priority = worst_priority[pr_id].get(dataset_name)
+        if current_priority is None or priority < current_priority:
+            worst_priority[pr_id][dataset_name] = priority
+            result[pr_id][dataset_name] = status.name
+
+    return result

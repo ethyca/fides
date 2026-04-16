@@ -13,7 +13,14 @@ import type {
   ArgsProps as MessageArgsProps,
   TypeOpen as MessageTypeOpen,
 } from "antd/lib/message/interface";
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { defaultAntTheme } from "./ant-theme";
 import { theme as defaultTheme } from "./FidesUITheme";
@@ -23,6 +30,10 @@ import {
   getDefaultModalIcon,
   getDefaultNotificationIcon,
 } from "./lib/carbon-icon-defaults";
+import {
+  getGlobalMessageApi,
+  setGlobalMessageApi,
+} from "./lib/globalMessageApi";
 
 const isMessageArgsProps = (content: unknown): content is MessageArgsProps =>
   typeof content === "object" && content !== null && "content" in content;
@@ -83,6 +94,33 @@ export const FidesUIProvider = ({
   antTheme = defaultAntTheme, // Use default theme if none provided
   wave,
 }: FidesUIProviderProps) => {
+  // Ant Design ignores the CSS prefers-reduced-motion media query, so we read
+  // it ourselves and set the theme token `motion: false`. The lazy initializer
+  // ensures animations are disabled from the very first render.
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) =>
+      setPrefersReducedMotion(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  const resolvedAntTheme = useMemo(
+    () =>
+      prefersReducedMotion
+        ? { ...antTheme, token: { ...antTheme?.token, motion: false } }
+        : antTheme,
+    [antTheme, prefersReducedMotion],
+  );
+
   const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
   const [notificationApi, notificationContextHolder] =
@@ -144,6 +182,17 @@ export const FidesUIProvider = ({
     [notificationApi],
   );
 
+  useEffect(() => {
+    setGlobalMessageApi(wrappedMessageApi);
+    return () => {
+      // Only clear the global ref if we were the last provider to set it,
+      // to avoid clobbering a ref set by a different FidesUIProvider instance.
+      if (getGlobalMessageApi() === wrappedMessageApi) {
+        setGlobalMessageApi(null);
+      }
+    };
+  }, [wrappedMessageApi]);
+
   const value = useMemo(
     () => ({
       messageApi: wrappedMessageApi,
@@ -154,7 +203,7 @@ export const FidesUIProvider = ({
   );
 
   return (
-    <BaseAntDesignProvider theme={antTheme} wave={wave}>
+    <BaseAntDesignProvider theme={resolvedAntTheme} wave={wave}>
       <BaseChakraProvider theme={theme}>
         <AntComponentAPIsContext.Provider value={value}>
           {messageContextHolder}

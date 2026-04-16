@@ -1,0 +1,69 @@
+"""add dashboard_snapshot table
+
+Revision ID: 29113e44faec
+Revises: c7e3a9b1d4f2
+Create Date: 2026-03-24 17:00:00.000000
+
+"""
+
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers, used by Alembic.
+revision = "29113e44faec"
+down_revision = "c7e3a9b1d4f2"
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    op.create_table(
+        "dashboard_snapshot",
+        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.Column("snapshot_date", sa.Date(), nullable=False),
+        sa.Column("metric_key", sa.String(), nullable=False),
+        sa.Column("value", sa.Float(), nullable=False),
+        sa.Column(
+            "metadata",
+            postgresql.JSONB(astext_type=sa.Text()),
+            server_default="{}",
+            nullable=True,
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "snapshot_date",
+            "metric_key",
+            name="uq_dashboard_snapshot_date_metric",
+        ),
+    )
+    op.create_index("ix_dashboard_snapshot_id", "dashboard_snapshot", ["id"])
+    op.create_index(
+        "ix_dashboard_snapshot_snapshot_date",
+        "dashboard_snapshot",
+        ["snapshot_date"],
+    )
+    op.create_index(
+        "ix_dashboard_snapshot_metric_key",
+        "dashboard_snapshot",
+        ["metric_key"],
+    )
+
+
+def downgrade():
+    op.drop_index("ix_dashboard_snapshot_metric_key", table_name="dashboard_snapshot")
+    op.drop_index("ix_dashboard_snapshot_snapshot_date", table_name="dashboard_snapshot")
+    op.drop_index("ix_dashboard_snapshot_id", table_name="dashboard_snapshot")
+    op.drop_table("dashboard_snapshot")

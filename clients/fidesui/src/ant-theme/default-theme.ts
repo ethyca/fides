@@ -13,10 +13,9 @@ import palette from "../palette/palette.module.scss";
  */
 
 export const defaultAntTheme: ThemeConfig = {
-  cssVar: true,
   token: {
-    fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
-    fontFamilyCode: `"Basier Square Mono", 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`,
+    fontFamily: `"Basier Square", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    fontFamilyCode: `"Basier Square Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace`,
     colorText: palette.FIDESUI_MINOS,
     colorTextBase: palette.FIDESUI_MINOS,
     colorTextHeading: palette.FIDESUI_MINOS,
@@ -68,12 +67,12 @@ export const defaultAntTheme: ThemeConfig = {
     },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
+      colorBorderDisabled: palette.FIDESUI_NEUTRAL_100,
+      colorTextDisabled: palette.FIDESUI_NEUTRAL_700,
+      colorBgContainerDisabled: palette.FIDESUI_NEUTRAL_50,
     },
     Layout: {
       bodyBg: palette.FIDESUI_NEUTRAL_50,
-    },
-    Select: {
-      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
     Dropdown: {
       controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
@@ -87,6 +86,12 @@ export const defaultAntTheme: ThemeConfig = {
       darkItemColor: palette.FIDESUI_CORINTH,
       darkSubMenuItemBg: palette.FIDESUI_MINOS,
       darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
+    },
+    Popover: {
+      colorText: "inherit", // Ant v6 Popover gets its text color from the Tooltip component, which we have set to a dark background and light text. Popovers typically use light backgrounds, so we need to override the text color to ensure readability. For some reason, using `palette.FIDESUI_MINOS` here will not work??
+    },
+    Select: {
+      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
     Table: {
       cellPaddingBlockSM: 8,
@@ -107,10 +112,10 @@ export const defaultAntTheme: ThemeConfig = {
       fontSizeHeading1: 24,
       fontSizeHeading2: 20,
       fontSizeHeading3: 16,
+      titleMarginBottom: 0,
       fontSizeXL: 24,
       fontSizeLG: 18,
       fontSizeSM: 12,
-      titleMarginBottom: 0,
     },
     Tag: {
       colorText: palette.FIDESUI_NEUTRAL_900,

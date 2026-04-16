@@ -37,7 +37,6 @@ export const EvidenceDrawer = ({
           </Text>
         </div>
       }
-      placement="right"
       onClose={onClose}
       open={open}
       width={600}
@@ -53,7 +52,7 @@ export const EvidenceDrawer = ({
         />
       </div>
       <div className={styles.body}>
-        <Space direction="vertical" size="large" className={styles.content}>
+        <Space orientation="vertical" size="large" className={styles.content}>
           {focusedGroupId && (
             <EvidenceSection
               groupId={focusedGroupId}

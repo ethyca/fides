@@ -1,10 +1,8 @@
-import { useAlert, useAPIHelper } from "common/hooks";
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
   Button,
   ChakraBox as Box,
   ChakraCenter as Center,
-  ChakraSpinner as Spinner,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -15,6 +13,8 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   ChakraVStack as VStack,
+  Spin,
+  useMessage,
 } from "fidesui";
 import {
   privacyRequestApi,
@@ -29,6 +29,7 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
+import { useAPIHelper } from "~/features/common/hooks";
 import { getActionTypes } from "~/features/common/RequestType";
 import { ActionType } from "~/types/api";
 
@@ -82,7 +83,7 @@ const ManualProcessingList = ({
   onComplete,
 }: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const [dataList, setDataList] = useState([] as unknown as ManualInputData[]);
   const [isCompleteDSRLoading, setIsCompleteDSRLoading] = useState(false);
@@ -114,7 +115,9 @@ const ManualProcessingList = ({
     try {
       setIsCompleteDSRLoading(true);
       await resumePrivacyRequestFromRequiresInput(subjectRequest.id).unwrap();
-      successAlert(`Manual request has been received. Request now processing.`);
+      message.success(
+        `Manual request has been received. Request now processing.`,
+      );
       onComplete();
     } catch (error) {
       handleError(error);
@@ -142,7 +145,7 @@ const ManualProcessingList = ({
         return item;
       });
       setDataList(newState);
-      successAlert(`Manual input successfully saved!`);
+      message.success(`Manual input successfully saved!`);
     } catch (error) {
       handleError(error);
     } finally {
@@ -186,7 +189,7 @@ const ManualProcessingList = ({
             });
             list.push(item);
           } else {
-            errorAlert(
+            message.error(
               `An error occurred while loading manual input data for ${
                 data![index].connection_config.name
               }`,
@@ -206,7 +209,7 @@ const ManualProcessingList = ({
     data,
     dataList.length,
     dispatch,
-    errorAlert,
+    message,
     isSuccess,
     subjectRequest.id,
     getUploadedWebhookDataEndpoint,
@@ -228,11 +231,7 @@ const ManualProcessingList = ({
         </Text>
       </Box>
       <Box>
-        {(isFetching || isLoading) && (
-          <Center>
-            <Spinner />
-          </Center>
-        )}
+        {(isFetching || isLoading) && <Spin />}
         {isSuccess && data ? (
           <TableContainer>
             <Table size="sm" variant="unstyled">

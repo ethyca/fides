@@ -1,85 +1,138 @@
+import dayjs from "dayjs";
 import {
-  Avatar,
-  Button,
   Card,
   CheckOutlined,
+  CUSTOM_TAG_COLOR,
   Flex,
   Icons,
   List,
+  Select,
   Tag,
   Text,
 } from "fidesui";
 import NextLink from "next/link";
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
+import { capitalize } from "~/features/common/utils";
 import {
   ACTION_CTA,
   DIMENSION_LABELS,
   getUrgencyGroup,
-  URGENCY_TABS,
 } from "~/features/dashboard/constants";
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 import type { PriorityAction } from "~/features/dashboard/types";
-import { ActionType } from "~/features/dashboard/types";
+import { ActionSeverity } from "~/features/dashboard/types";
 
 import styles from "./PriorityActionsCard.module.scss";
 import { clearDimensionFilter, useDimensionFilter } from "./useDimensionFilter";
 
-const ACTION_TYPE_ICON: Record<ActionType, ReactNode> = {
-  [ActionType.CLASSIFICATION_REVIEW]: <Icons.Tag size={16} />,
-  [ActionType.DSR_ACTION]: <Icons.Time size={16} />,
-  [ActionType.SYSTEM_REVIEW]: <Icons.DataBase size={16} />,
-  [ActionType.STEWARD_ASSIGNMENT]: <Icons.UserAvatar size={16} />,
-  [ActionType.CONSENT_ANOMALY]: <Icons.WarningAlt size={16} />,
-  [ActionType.POLICY_VIOLATION]: <Icons.Policy size={16} />,
-  [ActionType.PIA_UPDATE]: <Icons.Document size={16} />,
+const SEVERITY_TAG_COLOR: Record<string, CUSTOM_TAG_COLOR> = {
+  [ActionSeverity.CRITICAL]: CUSTOM_TAG_COLOR.ERROR,
+  [ActionSeverity.HIGH]: CUSTOM_TAG_COLOR.WARNING,
+  [ActionSeverity.MEDIUM]: CUSTOM_TAG_COLOR.DEFAULT,
+  [ActionSeverity.LOW]: CUSTOM_TAG_COLOR.DEFAULT,
 };
+
+function getDaysRemaining(dueDate: string | null): {
+  label: string;
+  color: CUSTOM_TAG_COLOR;
+} | null {
+  if (!dueDate) {
+    return null;
+  }
+  const days = dayjs(dueDate).diff(dayjs(), "day");
+  if (days < 0) {
+    return {
+      label: `${Math.abs(days)}d overdue`,
+      color: CUSTOM_TAG_COLOR.ERROR,
+    };
+  }
+  if (days <= 3) {
+    return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.WARNING };
+  }
+  return { label: `${days}d left`, color: CUSTOM_TAG_COLOR.DEFAULT };
+}
+
+const STATUS_FILTER_OPTIONS = [
+  { value: "all", label: "Any" },
+  { value: "overdue", label: "Overdue" },
+  { value: "urgent", label: "Requires Attention" },
+  { value: "pending", label: "Pending" },
+];
+
+const SEVERITY_FILTER_OPTIONS = [
+  { value: "all", label: "Any" },
+  { value: ActionSeverity.CRITICAL, label: "Critical" },
+  { value: ActionSeverity.HIGH, label: "High" },
+  { value: ActionSeverity.MEDIUM, label: "Medium" },
+  { value: ActionSeverity.LOW, label: "Low" },
+];
 
 export const PriorityActionsCard = () => {
   const dimensionFilter = useDimensionFilter();
   const { data, isLoading } = useGetPriorityActionsQuery(
     dimensionFilter ? { dimension: dimensionFilter } : undefined,
   );
-  const [activeTab, setActiveTab] = useState("act_now");
-
-  const countsByGroup = useMemo(() => {
-    const counts: Record<string, number> = {
-      act_now: 0,
-      scheduled: 0,
-      when_ready: 0,
-    };
-    data?.items?.forEach((action) => {
-      const group = getUrgencyGroup(action.severity, action.due_date);
-      counts[group] = (counts[group] ?? 0) + 1;
-    });
-    return counts;
-  }, [data]);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
 
   const filteredActions = useMemo(() => {
     if (!data?.items) {
       return [];
     }
-    return data.items.filter(
-      (action) =>
-        getUrgencyGroup(action.severity, action.due_date) === activeTab,
-    );
-  }, [data, activeTab]);
+    return data.items.filter((action) => {
+      if (severityFilter !== "all" && action.severity !== severityFilter) {
+        return false;
+      }
+      if (statusFilter !== "all") {
+        const group = getUrgencyGroup(action.severity, action.due_date);
+        if (group !== statusFilter) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [data, severityFilter, statusFilter]);
 
   return (
     <Card
       title="Priority actions"
       variant="borderless"
       className={styles.cardContainer}
-      tabList={URGENCY_TABS.map((tab) => ({
-        key: tab.key,
-        label: (
-          <span>
-            {tab.label} <Tag color="default">{countsByGroup[tab.key]}</Tag>
-          </span>
-        ),
-      }))}
-      activeTabKey={activeTab}
-      onTabChange={setActiveTab}
+      extra={
+        <Flex gap={12} align="center">
+          <Flex align="center" gap={4}>
+            <Text type="secondary" className="text-xs">
+              Status
+            </Text>
+            <Select
+              size="small"
+              showSearch={false}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={STATUS_FILTER_OPTIONS}
+              style={{ width: 130, cursor: "pointer" }}
+              className={styles.filterSelect}
+              aria-label="Status"
+            />
+          </Flex>
+          <Flex align="center" gap={4}>
+            <Text type="secondary" className="text-xs">
+              Severity
+            </Text>
+            <Select
+              size="small"
+              showSearch={false}
+              value={severityFilter}
+              onChange={setSeverityFilter}
+              options={SEVERITY_FILTER_OPTIONS}
+              style={{ width: 110, cursor: "pointer" }}
+              className={styles.filterSelect}
+              aria-label="Severity"
+            />
+          </Flex>
+        </Flex>
+      }
     >
       {dimensionFilter && (
         <Flex className="mb-2">
@@ -110,33 +163,32 @@ export const PriorityActionsCard = () => {
         size="small"
         renderItem={(action: PriorityAction) => {
           const cta = ACTION_CTA[action.type];
+          const href = cta.route(action.action_data);
+          const daysInfo = getDaysRemaining(action.due_date);
           return (
-            <List.Item
-              key={action.id}
-              actions={[
-                <NextLink
-                  key="cta"
-                  href={cta.route(action.action_data)}
-                  passHref
-                >
-                  <Button size="small" className="mt-1">
-                    {cta.label}
-                  </Button>
-                </NextLink>,
-              ]}
-            >
-              <List.Item.Meta
-                avatar={
-                  <Avatar
-                    size={32}
-                    icon={ACTION_TYPE_ICON[action.type]}
-                    className={styles.actionIcon}
-                  />
-                }
-                title={action.title}
-                description={action.message}
-              />
-            </List.Item>
+            <NextLink key={action.id} href={href} className={styles.actionRow}>
+              <List.Item>
+                <List.Item.Meta
+                  title={
+                    <Flex gap={6} align="center" wrap={false}>
+                      <Text ellipsis={{ tooltip: true }}>{action.title}</Text>
+                      <Tag color={SEVERITY_TAG_COLOR[action.severity]}>
+                        {capitalize(action.severity)}
+                      </Tag>
+                      {daysInfo && (
+                        <Tag color={daysInfo.color}>{daysInfo.label}</Tag>
+                      )}
+                    </Flex>
+                  }
+                  description={
+                    <Text type="secondary" ellipsis={{ tooltip: true }}>
+                      {action.message}
+                    </Text>
+                  }
+                />
+                <Icons.Launch size={14} className={styles.launchIcon} />
+              </List.Item>
+            </NextLink>
           );
         }}
       />

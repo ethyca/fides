@@ -26,6 +26,7 @@ const monitorFieldApi = baseApi.injectEndpoints({
           page = 1,
           size = 20,
           search,
+          search_regex,
           diff_status,
           confidence_bucket,
           ...arrayQueryParams
@@ -39,7 +40,11 @@ const monitorFieldApi = baseApi.injectEndpoints({
         });
         return {
           url: `/plus/discovery-monitor/${monitor_config_id}/fields?${queryParams?.toString()}`,
-          params: { page, size },
+          params: {
+            page,
+            size,
+            ...(search_regex ? { search_regex: true } : {}),
+          },
         };
       },
       providesTags: ["Monitor Field Results"],
@@ -57,7 +62,13 @@ const monitorFieldApi = baseApi.injectEndpoints({
     >({
       query: ({
         path: { monitor_config_id, action_type },
-        query: { search, diff_status, confidence_bucket, ...arrayQueryParams },
+        query: {
+          search,
+          search_regex,
+          diff_status,
+          confidence_bucket,
+          ...arrayQueryParams
+        },
         body,
       }) => {
         const queryParams = buildArrayQueryParams({
@@ -70,6 +81,9 @@ const monitorFieldApi = baseApi.injectEndpoints({
           url: `/plus/discovery-monitor/${monitor_config_id}/fields/${action_type}?${queryParams.toString()}`,
           method: "POST",
           body,
+          params: {
+            ...(search_regex ? { search_regex: true } : {}),
+          },
         };
       },
       invalidatesTags: [
@@ -86,7 +100,13 @@ const monitorFieldApi = baseApi.injectEndpoints({
     >({
       query: ({
         path: { monitor_config_id },
-        query: { search, diff_status, confidence_bucket, ...arrayQueryParams },
+        query: {
+          search,
+          search_regex,
+          diff_status,
+          confidence_bucket,
+          ...arrayQueryParams
+        },
         body,
       }) => {
         const queryParams = buildArrayQueryParams({
@@ -100,6 +120,9 @@ const monitorFieldApi = baseApi.injectEndpoints({
           url: `/plus/discovery-monitor/${monitor_config_id}/fields/allowed-actions?${queryParams.toString()}`,
           method: "POST",
           body,
+          params: {
+            ...(search_regex ? { search_regex: true } : {}),
+          },
         };
       },
       providesTags: ["Allowed Monitor Field Actions"],
@@ -111,4 +134,5 @@ export const {
   useFieldActionsMutation,
   useGetMonitorFieldsQuery,
   useLazyGetAllowedActionsQuery,
+  util: monitorFieldUtil,
 } = monitorFieldApi;

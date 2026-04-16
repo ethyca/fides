@@ -129,10 +129,10 @@ const DigestSchedulePicker = ({
   };
 
   return (
-    <Space direction="vertical" size="middle" className="w-full">
+    <Space orientation="vertical" size="medium" className="w-full">
       {showCustomCronWarning && (
         <Alert
-          message="Custom Cron Expression"
+          title="Custom Cron Expression"
           description="This digest uses a custom cron expression that cannot be edited with the picker. Changing the schedule will replace the custom expression."
           type="warning"
           closable

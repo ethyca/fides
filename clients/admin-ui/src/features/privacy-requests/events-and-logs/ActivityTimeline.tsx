@@ -41,7 +41,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const { commentItems, isLoading: isCommentsLoading } =
     usePrivacyRequestComments(privacyRequestId);
   const { eventItems, isLoading: isResultsLoading } =
-    usePrivacyRequestEventLogs(results);
+    usePrivacyRequestEventLogs(results, subjectRequest.task_status_by_dataset);
   const {
     manualTaskItems,
     taskCommentIds,
@@ -51,6 +51,10 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const isLoading =
     isCommentsLoading || isResultsLoading || isManualTasksLoading;
 
+  // Keep currentLogs up to date if `results` is re-fetched while the drawer
+  // is open (e.g., after a retry). Without this, the drawer would show stale
+  // logs. currentKey is the sole reason this effect exists after the
+  // connectionKey prop was removed from LogDrawer/EventLog.
   useEffect(() => {
     if (currentKey && results && results[currentKey]) {
       setCurrentLogs(results[currentKey]);
@@ -162,7 +166,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     <Box width="100%">
       <List
         className="!border-none"
-        bordered={false}
         split={false}
         data-testid="activity-timeline-list"
       >

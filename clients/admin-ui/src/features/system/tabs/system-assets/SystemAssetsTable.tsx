@@ -11,7 +11,7 @@ import {
   Empty,
   Icons,
   useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useEffect, useState } from "react";
 
@@ -25,7 +25,6 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   useDeleteSystemAssetsMutation,
@@ -65,7 +64,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   const [deleteAssets] = useDeleteSystemAssetsMutation();
   const lockedForGVL = useAppSelector(selectLockedForGVL);
 
-  const toast = useToast();
+  const message = useMessage();
 
   const { data, isLoading, isFetching } = useGetSystemAssetsQuery({
     fides_key: system.fides_key,
@@ -132,17 +131,15 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
       asset_ids: selectedAssetIds,
     });
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          getErrorMessage(
-            result.error,
-            "A problem occurred removing these assets. Please try again.",
-          ),
+      message.error(
+        getErrorMessage(
+          result.error,
+          "A problem occurred removing these assets. Please try again.",
         ),
       );
     } else {
       tableInstance.resetRowSelection();
-      toast(successToastParams("Assets removed successfully"));
+      message.success("Assets removed successfully");
     }
     onCloseDeleteModal();
   };
@@ -167,7 +164,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
             <Spacer />
             <Button
               icon={<Icons.Add />}
-              iconPosition="end"
+              iconPlacement="end"
               onClick={onOpenAddEditModal}
               data-testid="add-asset-btn"
             >
@@ -181,7 +178,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
             />
             <Button
               icon={<Icons.TrashCan />}
-              iconPosition="end"
+              iconPlacement="end"
               onClick={onOpenDeleteModal}
               disabled={!selectedAssetIds.length}
               data-testid="bulk-delete-btn"

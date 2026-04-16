@@ -1,4 +1,4 @@
-import { Empty, useChakraToast as useToast } from "fidesui";
+import { Empty, useMessage, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -13,13 +13,14 @@ import {
   useAntTable,
   useTableState,
 } from "~/features/common/table/hooks";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import ToastLink from "~/features/common/ToastLink";
 import {
   AlertLevel,
   ConsentAlertInfo,
   DiffStatus,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import {
   useAddMonitorResultSystemsMutation,
@@ -27,8 +28,6 @@ import {
   useIgnoreMonitorResultSystemsMutation,
 } from "../action-center.slice";
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
-import { SuccessToastContent } from "../SuccessToastContent";
-import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
@@ -42,7 +41,8 @@ export const useDiscoveredSystemAggregateTable = ({
   monitorId,
 }: UseDiscoveredSystemAggregateTableConfig) => {
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
+  const notification = useNotification();
 
   const [firstPageConsentStatus, setFirstPageConsentStatus] = useState<
     ConsentAlertInfo | undefined
@@ -87,7 +87,7 @@ export const useDiscoveredSystemAggregateTable = ({
     (record: SystemStagedResourcesAggregateRecord) => {
       const recordId = record.id ?? UNCATEGORIZED_SEGMENT;
       const activeTabHash = activeTab ? `#${activeTab}` : "";
-      return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${recordId}${activeTabHash}`;
+      return `${ACTION_CENTER_ROUTE}/${APIMonitorType.WEBSITE}/${monitorId}/${recordId}${activeTabHash}`;
     },
     [monitorId, activeTab],
   );
@@ -174,23 +174,23 @@ export const useDiscoveredSystemAggregateTable = ({
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          SuccessToastContent(
-            `${totalUpdates} assets have been added to the system inventory.`,
-            () => router.push(SYSTEM_ROUTE),
-          ),
+      notification.success({
+        message: "Added to inventory",
+        description: `${totalUpdates} assets have been added to the system inventory.`,
+        actions: (
+          <ToastLink onClick={() => router.push(SYSTEM_ROUTE)}>View</ToastLink>
         ),
-      );
+      });
       resetSelections();
     }
   }, [
     selectedRows,
     addMonitorResultSystemsMutation,
     monitorId,
-    toast,
+    message,
+    notification,
     router,
     resetSelections,
   ]);
@@ -209,25 +209,29 @@ export const useDiscoveredSystemAggregateTable = ({
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          SuccessToastContent(
-            `${totalUpdates} assets have been ignored and will not appear in future scans.`,
-            async () => {
+      notification.success({
+        message: "Assets ignored",
+        description: `${totalUpdates} assets have been ignored and will not appear in future scans.`,
+        actions: (
+          <ToastLink
+            onClick={async () => {
               await onTabChange(ActionCenterTabHash.IGNORED);
-            },
-          ),
+            }}
+          >
+            View
+          </ToastLink>
         ),
-      );
+      });
       resetSelections();
     }
   }, [
     selectedRows,
     ignoreMonitorResultSystemsMutation,
     monitorId,
-    toast,
+    message,
+    notification,
     onTabChange,
     resetSelections,
   ]);

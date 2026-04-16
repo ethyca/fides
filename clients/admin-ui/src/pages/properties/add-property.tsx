@@ -1,4 +1,4 @@
-import { ChakraBox as Box, useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -6,13 +6,12 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useCreatePropertyMutation } from "~/features/properties/property.slice";
-import PropertyForm, { FormValues } from "~/features/properties/PropertyForm";
+import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const AddPropertyPage: NextPage = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const [createProperty] = useCreatePropertyMutation();
 
@@ -20,12 +19,12 @@ const AddPropertyPage: NextPage = () => {
     const result = await createProperty(values);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
       return;
     }
 
     const prop = result.data;
-    toast(successToastParams(`Property ${values.name} created successfully`));
+    message.success(`Property ${values.name} created successfully`);
     router.push(`${PROPERTIES_ROUTE}/${prop.id}`);
   };
 
@@ -43,9 +42,9 @@ const AddPropertyPage: NextPage = () => {
           },
         ]}
       />
-      <Box maxWidth="720px">
+      <div className="max-w-[720px]">
         <PropertyForm handleSubmit={handleSubmit} />
-      </Box>
+      </div>
     </Layout>
   );
 };

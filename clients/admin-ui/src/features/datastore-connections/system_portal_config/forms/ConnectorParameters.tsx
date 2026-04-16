@@ -1,5 +1,3 @@
-import { useAPIHelper } from "common/hooks";
-import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
@@ -15,19 +13,17 @@ import {
   ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraSpacer as Spacer,
-  ChakraUseToastOptions as UseToastOptions,
-  useChakraToast as useToast,
+  Icons,
+  useMessage,
 } from "fidesui";
 import router from "next/router";
 import { useMemo, useState } from "react";
 
 import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
-import RightArrow from "~/features/common/Icon/RightArrow";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import { useAPIHelper } from "~/features/common/hooks";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
-import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
 import { TestData } from "~/features/datastore-connections/TestData";
 import {
   useCreatePlusSaasConnectionConfigMutation,
@@ -193,7 +189,7 @@ export const useConnectorForm = ({
 > & {
   secretsSchema?: ConnectionTypeSecretSchemaResponse;
 }) => {
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -221,7 +217,7 @@ export const useConnectorForm = ({
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
-    () => connectionConfig?.secrets ?? {},
+    () => (connectionConfig?.secrets as Record<string, string>) ?? {},
     [connectionConfig],
   );
 
@@ -229,7 +225,7 @@ export const useConnectorForm = ({
     try {
       await deleteDatastoreConnection(systemFidesKey);
       setSelectedConnectionOption(undefined);
-      successAlert(`Integration successfully deleted!`);
+      message.success(`Integration successfully deleted!`);
     } catch (e) {
       handleError(e);
     }
@@ -298,7 +294,7 @@ export const useConnectorForm = ({
         });
       }
 
-      successAlert(
+      message.success(
         `Integration successfully ${
           isCreatingConnectionConfig ? "added" : "updated"
         }!`,
@@ -370,23 +366,15 @@ export const ConnectorParameters = ({
 }: ConnectorParametersProps) => {
   const [response, setResponse] = useState<TestConnectionResponse>();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const handleTestConnectionClick = (value: TestConnectionResponse) => {
     setResponse(value);
-    const status: UseToastOptions["status"] =
-      value.data?.test_status === "succeeded" ? "success" : "error";
-    const toastParams = {
-      ...DEFAULT_TOAST_PARAMS,
-      status,
-      description: (
-        <TestConnectionMessage
-          status={status}
-          failure_reason={value.data?.failure_reason}
-        />
-      ),
-    };
-    toast(toastParams);
+    if (value.data?.test_status === "succeeded") {
+      message.success("Connection test succeeded");
+    } else {
+      message.error(value.data?.failure_reason || "Connection test failed");
+    }
   };
 
   const skip = connectionOption.type === SystemType.MANUAL;
@@ -448,7 +436,7 @@ export const ConnectorParameters = ({
         {connectionOption.user_guide && (
           <div style={{ marginTop: "12px" }}>
             <DocsLink href={connectionOption.user_guide}>
-              View docs for help with this integration <RightArrow />
+              View docs for help with this integration <Icons.ArrowRight />
             </DocsLink>
           </div>
         )}

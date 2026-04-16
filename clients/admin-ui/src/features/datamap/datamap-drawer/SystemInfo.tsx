@@ -1,131 +1,35 @@
-import {
-  ChakraBox as Box,
-  ChakraExternalLinkIcon as ExternalLinkIcon,
-  ChakraFlex as Flex,
-  ChakraSpacer as Spacer,
-  ChakraText as Text,
-  SecondaryLink,
-  useChakraToast as useToast,
-} from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
-import React from "react";
-import * as Yup from "yup";
+import { Divider, Flex, Form, Input, Title } from "fidesui";
 
-import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
-import { getErrorMessage } from "~/features/common/helpers";
-import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { SystemInfoFormValues } from "~/features/datamap/datamap-drawer/types";
-import { useUpsertSystemsMutation } from "~/features/system/system.slice";
 import { System } from "~/types/api";
-import { isErrorResult } from "~/types/errors/api";
 
 type SystemInfoProps = {
   system: System;
 };
 
-const useSystemInfo = (system: System) => {
-  const [upsertSystem] = useUpsertSystemsMutation();
-  const toast = useToast();
-  const handleUpsertSystem = async (
-    values: SystemInfoFormValues,
-    helpers: FormikHelpers<SystemInfoFormValues>,
-  ) => {
-    const requestBody: System[] = [
-      {
-        ...system,
-        name: values.name,
-        description: values.description,
-      },
-    ];
-
-    const result = await upsertSystem(requestBody);
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-    } else {
-      toast(successToastParams("Successfully saved system info"));
-      // this is required so the initial state doesn't flash
-      helpers.resetForm({ values });
-    }
-  };
-
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().required().label("Name"),
-    description: Yup.string().required().label("Description"),
-  });
-
-  return {
-    handleUpsertSystem,
-    validationSchema,
-  };
-};
-
-const defaultInitialValues: SystemInfoFormValues = {
-  name: "",
-  description: "",
-};
-
-const SystemInfo = ({ system }: SystemInfoProps) => {
+export const SystemInfo = ({ system }: SystemInfoProps) => {
   const systemHref = `/systems/configure/${system.fides_key}`;
-
-  const { handleUpsertSystem, validationSchema } = useSystemInfo(system);
   return (
-    <Box>
-      <Flex alignItems="center">
-        <Text
-          color="gray.600"
-          size="md"
-          lineHeight={6}
-          fontWeight="semibold"
-          marginBottom={2}
-        >
-          System details
-        </Text>
-        <Spacer />
-        <SecondaryLink color="complimentary.500" href={systemHref}>
-          View more
-          <ExternalLinkIcon ml={2} />
-        </SecondaryLink>
+    <div>
+      <Flex align="center">
+        <Title level={5}>System details</Title>
+        <div className="grow" />
+        <RouterLink href={systemHref}>View more</RouterLink>
       </Flex>
-      <Box
-        width="100%"
-        padding={4}
-        borderTop="1px solid"
-        borderColor="gray.200"
+      <Divider size="small" className="pb-4" />
+      <Form
+        layout="vertical"
+        initialValues={system as SystemInfoFormValues}
+        key={system.fides_key}
       >
-        <Formik
-          enableReinitialize
-          initialValues={
-            (system as SystemInfoFormValues) ?? defaultInitialValues
-          }
-          validationSchema={validationSchema}
-          onSubmit={handleUpsertSystem}
-        >
-          {() => (
-            <Form>
-              <FormGuard id="SystemInfoDrawer" name="System Info" />
-              <Box marginTop={3}>
-                <CustomTextInput
-                  label="System name"
-                  name="name"
-                  variant="stacked"
-                  disabled
-                />
-              </Box>
-              <Box marginTop={3}>
-                <CustomTextArea
-                  label="System description"
-                  name="description"
-                  variant="stacked"
-                  disabled
-                />
-              </Box>
-            </Form>
-          )}
-        </Formik>
-      </Box>
-    </Box>
+        <Form.Item name="name" label="System name">
+          <Input disabled data-testid="input-name" />
+        </Form.Item>
+        <Form.Item name="description" label="System description">
+          <Input.TextArea disabled data-testid="input-description" />
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
-
-export default SystemInfo;

@@ -1,11 +1,5 @@
 import { skipToken } from "@reduxjs/toolkit/query";
-import {
-  Flex,
-  Icons,
-  List,
-  Pagination,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Flex, Icons, List, Pagination, useMessage } from "fidesui";
 import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -17,8 +11,8 @@ import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-an
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
-import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetUserMonitorsQuery } from "~/features/user-management";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
 import MonitorListSearchForm from "./forms/MonitorListSearchForm";
 import {
@@ -26,9 +20,10 @@ import {
   MonitorSearchFormQuerySchema,
   SearchFormQueryState,
 } from "./MonitorList.const";
+import MonitorStats from "./MonitorStats";
 
 const MonitorList = () => {
-  const toast = useToast();
+  const message = useMessage();
   const {
     flags: { webMonitor: webMonitorEnabled },
   } = useFeatures();
@@ -36,9 +31,9 @@ const MonitorList = () => {
     useAntPagination();
 
   const availableMonitorTypes = [
-    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    MONITOR_TYPES.DATASTORE,
-    MONITOR_TYPES.INFRASTRUCTURE,
+    ...(webMonitorEnabled ? [APIMonitorType.WEBSITE] : []),
+    APIMonitorType.DATASTORE,
+    APIMonitorType.INFRASTRUCTURE,
   ] as const;
 
   const currentUser = useAppSelector(selectUser);
@@ -54,12 +49,12 @@ const MonitorList = () => {
   const defaultStewardFilter =
     (userMonitors ?? []).length > 0 ? currentUser?.id : undefined;
 
-  const { requestData, ...formProps } = useSearchForm<any, MonitorSearchForm>({
+  const { requestData, setSearchForm, ...formProps } = useSearchForm<
+    Partial<Parameters<typeof useGetAggregateMonitorResultsQuery>[0]>,
+    MonitorSearchForm
+  >({
     schema: MonitorSearchFormQuerySchema([...availableMonitorTypes]),
-    queryState: SearchFormQueryState(
-      [...availableMonitorTypes],
-      defaultStewardFilter,
-    ),
+    queryState: SearchFormQueryState([...availableMonitorTypes]),
     initialValues: {
       search: null,
       monitor_type: null,
@@ -70,7 +65,9 @@ const MonitorList = () => {
         search: search || undefined,
         monitor_type: monitor_type
           ? [monitor_type]
-          : availableMonitorTypes /** this should be handled via ant binding ideally. * */,
+          : [
+              ...availableMonitorTypes,
+            ] /** this should be handled via ant binding ideally. * */,
         steward_user_id:
           typeof steward_key === "undefined" || !steward_key
             ? []
@@ -86,14 +83,16 @@ const MonitorList = () => {
   });
 
   useEffect(() => {
-    if (isError) {
-      toast({
-        title: "Error fetching data",
-        description: "Please try again later",
-        status: "error",
-      });
+    if (defaultStewardFilter) {
+      setSearchForm({ steward_key: defaultStewardFilter });
     }
-  }, [isError, toast]);
+  }, [setSearchForm, defaultStewardFilter]);
+
+  useEffect(() => {
+    if (isError) {
+      message.error("Error fetching data. Please try again later");
+    }
+  }, [isError, message]);
 
   const results =
     data?.items?.flatMap((monitor) =>
@@ -101,7 +100,7 @@ const MonitorList = () => {
     ) || [];
 
   return (
-    <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
+    <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="medium" vertical>
       <MonitorListSearchForm
         {...formProps}
         onFinish={(values) => {
@@ -110,6 +109,7 @@ const MonitorList = () => {
         }}
         availableMonitorTypes={availableMonitorTypes}
       />
+      <MonitorStats />
       <List
         loading={isLoading}
         dataSource={results}

@@ -23,10 +23,10 @@ jobs:
       has_admin_ui_changes: ${{ steps.filter.outputs.admin_ui }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for Admin UI file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           list-files: shell
@@ -48,78 +48,79 @@ jobs:
       spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set matrix
         id: set-matrix
         shell: bash
         run: |
           cd clients/admin-ui/cypress/e2e
-          # Group test files into balanced groups based on number of tests in each file
+          # Group test files into balanced groups based on file size (better proxy for execution time than test count)
           echo "spec_groups=$(find . -name "*.cy.ts" | python3 -c '
-          import sys, os, json, math, re
+          import sys, os, json
 
           # Number of groups to create (adjust based on your needs)
-          NUM_GROUPS = 5
+          NUM_GROUPS = 7
 
-          # Get all test files with their test counts
+          # Get all test files with their sizes (file size correlates better with
+          # test complexity than test count, since heavier tests have more intercepts,
+          # fixtures, assertions, and setup code)
           files = []
           for line in sys.stdin:
               filepath = line.strip()
               if os.path.exists(filepath):
-                  # Count the number of test occurrences (it, describe, context)
-                  test_count = 0
-                  with open(filepath, "r") as f:
-                      content = f.read()
-                      # Count occurrences of test definitions like "it(", "test(", "specify("
-                      test_count += len(re.findall(r"\bit\s*\(", content))
-                      test_count += len(re.findall(r"\btest\s*\(", content))
-                      test_count += len(re.findall(r"\bspecify\s*\(", content))
-                      # If no tests found, set minimum of 1 to ensure file is included
-                      if test_count == 0:
-                          test_count = 1
-                  files.append((filepath.replace("./", ""), test_count))
+                  size = os.path.getsize(filepath)
+                  files.append((filepath.replace("./", ""), size))
 
-          # Sort files by test count in descending order
+          # Sort files by size in descending order
           files.sort(key=lambda x: x[1], reverse=True)
 
           # Initialize groups
           groups = [[] for _ in range(NUM_GROUPS)]
-          group_counts = [0] * NUM_GROUPS
+          group_sizes = [0] * NUM_GROUPS
 
-          # Distribute files using greedy algorithm (most tests first)
-          for file, count in files:
-              # Find the group with the smallest total test count
-              min_group_idx = group_counts.index(min(group_counts))
+          # Distribute files using greedy bin-packing (largest first)
+          for file, size in files:
+              # Find the group with the smallest total size
+              min_group_idx = group_sizes.index(min(group_sizes))
               groups[min_group_idx].append(f"cypress/e2e/{file}")
-              group_counts[min_group_idx] += count
+              group_sizes[min_group_idx] += size
 
           # Format for GitHub Actions
           print(json.dumps([",".join(group) for group in groups]))
           ')" >> $GITHUB_OUTPUT
 
-  Admin-UI-Cypress:
-    needs: [Check-Admin-UI-Changes, prepare-matrix]
-    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true'
-    strategy:
-      fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
-      matrix:
-        spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
+  build:
+    needs: Check-Admin-UI-Changes
+    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: clients
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@v5
         with:
-          node-version: 20.x
-          cache: "npm"
+          node-version: 24.x
+
+      - name: Cache node_modules and Cypress binary
+        id: deps-cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            clients/node_modules
+            clients/admin-ui/node_modules
+            clients/fides-js/node_modules
+            clients/fidesui/node_modules
+            clients/privacy-center/node_modules
+            ~/.cache/Cypress
+          key: cypress-deps-${{ runner.os }}-${{ hashFiles('clients/package-lock.json') }}
 
       - name: Install dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Build FidesJS
@@ -130,8 +131,60 @@ jobs:
         working-directory: clients/admin-ui
         run: npm run build:test
 
+      - name: Compress build output
+        run: tar -czf /tmp/cypress-build.tar.gz admin-ui/.next admin-ui/public/lib fides-js/dist
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v7
+        with:
+          name: cypress-build
+          path: /tmp/cypress-build.tar.gz
+          retention-days: 1
+
+  Admin-UI-Cypress:
+    needs: [Check-Admin-UI-Changes, build, prepare-matrix]
+    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true' && github.event_name != 'merge_group'
+    strategy:
+      fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
+      matrix:
+        spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+
+      - name: Restore node_modules and Cypress binary
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            clients/node_modules
+            clients/admin-ui/node_modules
+            clients/fides-js/node_modules
+            clients/fidesui/node_modules
+            clients/privacy-center/node_modules
+            ~/.cache/Cypress
+          key: cypress-deps-${{ runner.os }}-${{ hashFiles('clients/package-lock.json') }}
+          fail-on-cache-miss: true
+
+      - name: Download build output
+        uses: actions/download-artifact@v8
+        with:
+          name: cypress-build
+          path: /tmp
+
+      - name: Extract build output
+        run: tar -xzf /tmp/cypress-build.tar.gz
+
       - name: Cypress Admin UI E2E Tests
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: clients/admin-ui
           install: false
@@ -140,33 +193,39 @@ jobs:
           wait-on-timeout: 180
           spec: ${{ matrix.spec_group }}
 
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos-admin-ui-${{ strategy.job-index }}
-          path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
+      # Video recording is disabled (cypress.config.ts: video: false).
+      # Uncomment this step if you re-enable video for debugging.
+      # - uses: actions/upload-artifact@v7
+      #   if: failure()
+      #   with:
+      #     name: cypress-videos-admin-ui-${{ strategy.job-index }}
+      #     path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
 
   Admin-UI-Cypress-Summary:
     runs-on: ubuntu-latest
     if: always()
     needs:
+      - build
       - prepare-matrix
       - Admin-UI-Cypress
     steps:
       - name: Check job results
         run: |
+          echo "build: ${{ needs.build.result }}"
           echo "prepare-matrix: ${{ needs.prepare-matrix.result }}"
           echo "Admin-UI-Cypress: ${{ needs.Admin-UI-Cypress.result }}"
 
           # Fail only if jobs failed (not if skipped)
-          if [ "${{ needs.prepare-matrix.result }}" == "failure" ] || \
+          if [ "${{ needs.build.result }}" == "failure" ] || \
+             [ "${{ needs.prepare-matrix.result }}" == "failure" ] || \
              [ "${{ needs.Admin-UI-Cypress.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
             exit 1
           fi
 
           # Check for cancelled jobs (treat as failure)
-          if [ "${{ needs.prepare-matrix.result }}" == "cancelled" ] || \
+          if [ "${{ needs.build.result }}" == "cancelled" ] || \
+             [ "${{ needs.prepare-matrix.result }}" == "cancelled" ] || \
              [ "${{ needs.Admin-UI-Cypress.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"
             exit 1

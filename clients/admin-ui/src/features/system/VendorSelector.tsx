@@ -1,16 +1,14 @@
 import {
+  Button,
   ChakraBox as Box,
   ChakraCloseButton as CloseButton,
   ChakraFormControl as FormControl,
   ChakraHStack as HStack,
-  ChakraIconButton as IconButton,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuList as MenuList,
   ChakraSpacer as Spacer,
-  ChakraText,
   ChakraVStack as VStack,
+  CompassIcon,
+  Dropdown,
+  MenuProps,
   Select,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
@@ -22,7 +20,6 @@ import {
   ErrorMessage,
   Label,
 } from "~/features/common/form/inputs";
-import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
@@ -41,33 +38,29 @@ const CompassButton = ({
   disabled: boolean;
   onRefreshSuggestions: () => void;
 }) => {
-  const bgColor = { bg: active ? "complimentary.500" : "gray.100" };
+  const items: MenuProps["items"] = useMemo(
+    () => [
+      {
+        key: "reset",
+        label: "Reset to Compass defaults",
+        onClick: onRefreshSuggestions,
+      },
+    ],
+    [onRefreshSuggestions],
+  );
+
   return (
     <VStack>
       <Spacer minHeight="18px" />
-      <Menu>
-        <MenuButton
-          as={IconButton}
-          size="sm"
-          isDisabled={disabled}
-          icon={
-            <CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />
-          }
+      <Dropdown menu={{ items }} disabled={disabled}>
+        <Button
+          icon={<CompassIcon />}
           aria-label="Update information from Compass"
           data-testid="refresh-suggestions-btn"
-          _hover={{
-            _disabled: bgColor,
-          }}
-          {...bgColor}
+          disabled={disabled}
+          type={active ? "primary" : undefined}
         />
-        <MenuList>
-          <MenuItem onClick={onRefreshSuggestions}>
-            <ChakraText fontSize="xs" lineHeight={4}>
-              Reset to Compass defaults
-            </ChakraText>
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      </Dropdown>
     </VStack>
   );
 };

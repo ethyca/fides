@@ -13,7 +13,7 @@ import PageHeader from "~/features/common/PageHeader";
 import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { useDiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredAssetsTable";
 import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
-import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 const MonitorResultAssets: NextPage = () => {
@@ -65,7 +65,7 @@ const MonitorResultAssets: NextPage = () => {
           { title: "All activity", href: ACTION_CENTER_ROUTE },
           {
             title: monitorId,
-            href: `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}`,
+            href: `${ACTION_CENTER_ROUTE}/${APIMonitorType.WEBSITE}/${monitorId}`,
           },
           {
             title:

@@ -8,6 +8,7 @@ from typing import Any, Dict
 
 from fides.api.models.connectionconfig import ConnectionConfig as ConnectionConfig
 from fides.api.models.connectionconfig import ConnectionType as ConnectionType
+from fides.api.service.connectors.aws_connector import AWSConnector as AWSConnector
 from fides.api.service.connectors.base_connector import BaseConnector as BaseConnector
 from fides.api.service.connectors.bigquery_connector import (
     BigQueryConnector as BigQueryConnector,
@@ -26,6 +27,9 @@ from fides.api.service.connectors.dynamodb_connector import (
 )
 from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
 from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
+from fides.api.service.connectors.entra_connector import (
+    EntraConnector as EntraConnector,
+)
 from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
 )
@@ -37,6 +41,9 @@ from fides.api.service.connectors.google_cloud_mysql_connector import (
 )
 from fides.api.service.connectors.google_cloud_postgres_connector import (
     GoogleCloudSQLPostgresConnector as GoogleCloudSQLPostgresConnector,
+)
+from fides.api.service.connectors.google_workspace_connector import (
+    GoogleWorkspaceConnector as GoogleWorkspaceConnector,
 )
 from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
 from fides.api.service.connectors.manual_task_connector import (
@@ -85,15 +92,18 @@ from fides.api.service.connectors.website_connector import WebsiteConnector
 
 supported_connectors: Dict[str, Any] = {
     ConnectionType.attentive_email.value: AttentiveConnector,
+    ConnectionType.aws.value: AWSConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
     ConnectionType.datahub.value: DatahubConnector,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailConnector,
     ConnectionType.dynamodb.value: DynamoDBConnector,
+    ConnectionType.entra.value: EntraConnector,
     ConnectionType.fides.value: FidesConnector,
     ConnectionType.generic_consent_email.value: GenericConsentEmailConnector,
     ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,
     ConnectionType.google_cloud_sql_mysql.value: GoogleCloudSQLMySQLConnector,
     ConnectionType.google_cloud_sql_postgres.value: GoogleCloudSQLPostgresConnector,
+    ConnectionType.google_workspace.value: GoogleWorkspaceConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.manual_task.value: ManualTaskConnector,

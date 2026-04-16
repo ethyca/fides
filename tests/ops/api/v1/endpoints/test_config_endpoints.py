@@ -1358,7 +1358,6 @@ class TestGetConfig:
             )
 
         assert "security" in config
-        assert "user" in config
         assert "logging" in config
         assert "notifications" in config
 
@@ -1373,20 +1372,6 @@ class TestGetConfig:
                             "oauth_access_token_expire_minutes",
                             "subject_request_download_link_ttl_seconds",
                             "cors_origin_regex",
-                        ]
-                    )
-                )
-            )
-            == 0
-        ), "Unexpected config API change, please review with Ethyca security team"
-
-        user_keys = set(config["user"].keys())
-        assert (
-            len(
-                user_keys.difference(
-                    set(
-                        [
-                            "analytics_opt_out",
                         ]
                     )
                 )
@@ -1469,7 +1454,14 @@ class TestGetConfig:
         assert (
             len(
                 execution_keys.difference(
-                    set(["enabled", "url", "error_notification_mode"])
+                    set(
+                        [
+                            "enabled",
+                            "url",
+                            "error_notification_mode",
+                            "consent_module_enabled",
+                        ]
+                    )
                 )
             )
             == 0

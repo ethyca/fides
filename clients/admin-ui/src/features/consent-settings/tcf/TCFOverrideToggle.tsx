@@ -6,12 +6,11 @@ import {
   Space,
   Switch,
   SwitchProps,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
 import { InfoTooltip } from "../../common/InfoTooltip";
@@ -29,7 +28,7 @@ export const TCFOverrideToggle = ({
 }: Omit<SwitchProps, "onChange" | "checked"> & {
   onChange?: (checked: boolean) => void;
 }) => {
-  const toast = useToast();
+  const message = useMessage();
 
   const [isChecked, setIsChecked] = useState(defaultChecked);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,7 +52,6 @@ export const TCFOverrideToggle = ({
         | { data: object }
         | { error: FetchBaseQueryError | SerializedError },
     ) => {
-      toast.closeAll();
       onChange?.(checked);
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
@@ -61,7 +59,7 @@ export const TCFOverrideToggle = ({
           `An unexpected error occurred while saving vendor override settings. Please try again.`,
         );
         onChange?.(false);
-        toast(errorToastParams(errorMsg));
+        message.error(errorMsg);
       }
     };
 
@@ -101,7 +99,7 @@ export const TCFOverrideToggle = ({
 
   return (
     <>
-      <Space direction="vertical" size="small">
+      <Space orientation="vertical" size="small">
         <Text>Configure overrides for TCF related purposes.</Text>
         <Space size="small">
           <Switch

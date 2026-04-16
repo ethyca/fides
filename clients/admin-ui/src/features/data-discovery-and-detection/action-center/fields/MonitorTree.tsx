@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Tree,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -22,7 +23,6 @@ import {
 } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { Node } from "~/features/common/hooks/useNodeMap";
 import { CursorPaginationState } from "~/features/common/pagination";
 import { pluralize } from "~/features/common/utils";
@@ -31,7 +31,7 @@ import {
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
-import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
+import { ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_";
 
 import { DatastorePageSettings } from "../types";
 import {
@@ -69,7 +69,7 @@ const getIconComponent = (
 };
 
 const mapResponseToTreeData = (
-  data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+  data: ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
 ): CustomTreeDataNode[] => {
   const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => {
@@ -271,7 +271,7 @@ const MonitorTree = forwardRef<
     ref,
   ) => {
     const router = useRouter();
-    const { errorAlert } = useAlert();
+    const message = useMessage();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
     const [trigger] = useLazyGetMonitorTreeQuery({});
     const [triggerAncestorsStatuses] =
@@ -304,12 +304,13 @@ const MonitorTree = forwardRef<
           size: number;
           cursor?: string;
           diff_status?: DiffStatus[];
+          include_total?: boolean;
         };
         fastUpdateFn: (
-          data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+          data: ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
         ) => void;
         detailedUpdateFn?: (
-          data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+          data: ConditionalTotalCursorPage_DatastoreStagedResourceTreeAPIResponse_,
         ) => void;
       }) => {
         // Increment sequence for this node to track this request
@@ -377,6 +378,7 @@ const MonitorTree = forwardRef<
                 ...(showApproved ? intoDiffStatus("Approved") : []),
               ],
               size: TREE_PAGE_SIZE,
+              include_total: false,
             },
             fastUpdateFn: (data) => {
               setTreeData((origin) =>
@@ -432,6 +434,7 @@ const MonitorTree = forwardRef<
                 ...(showApproved ? intoDiffStatus("Approved") : []),
               ],
               size: TREE_PAGE_SIZE,
+              include_total: false,
               cursor: currentNodePagination.cursor_end,
             },
             fastUpdateFn: (data) => {
@@ -532,10 +535,7 @@ const MonitorTree = forwardRef<
             });
 
             if (result.error) {
-              errorAlert(
-                getErrorMessage(result.error),
-                "Failed to get schema explorer ancestors statuses",
-              );
+              message.error(getErrorMessage(result.error));
               return;
             }
 
@@ -567,7 +567,7 @@ const MonitorTree = forwardRef<
               ),
             );
           } catch (error) {
-            errorAlert(
+            message.error(
               "An unexpected error occurred while refreshing the schema explorer",
             );
           }
@@ -585,7 +585,7 @@ const MonitorTree = forwardRef<
         triggerAncestorsStatuses,
         monitorId,
         collapseNodeAndRemoveChildren,
-        errorAlert,
+        message,
       ],
     );
 
@@ -640,6 +640,7 @@ const MonitorTree = forwardRef<
               ...(showApproved ? intoDiffStatus("Approved") : []),
             ],
             size: TREE_PAGE_SIZE,
+            include_total: false,
           },
           fastUpdateFn: (data) => {
             setTreeData(mapResponseToTreeData(data));
@@ -658,7 +659,7 @@ const MonitorTree = forwardRef<
     ]);
 
     return (
-      <Flex gap="middle" vertical className="h-full">
+      <Flex gap="medium" vertical className="h-full">
         <Title level={3} className="sticky top-0" ellipsis>
           Schema explorer
         </Title>

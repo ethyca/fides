@@ -1,19 +1,17 @@
-import {
-  Button,
-  ColumnsType,
-  Flex,
-  Icons,
-  Tag,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
-import { useMemo } from "react";
+import { Button, ColumnsType, Flex, Icons, Tag } from "fidesui";
+import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
+import { useFeatures } from "~/features/common/features";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
+import {
+  useGetRolesQuery,
+  useGetUserRolesQuery,
+} from "~/features/rbac/rbac.slice";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { ROLES } from "./constants";
@@ -26,20 +24,50 @@ import {
 } from "./user-management.slice";
 
 export const UserPermissionsCell = ({ userId }: { userId: string }) => {
+  const { rbac: isRbacEnabled } = useFeatures();
+
+  // Legacy permissions query
   const { data: userPermissions } = useGetUserPermissionsQuery(userId, {
-    skip: !userId,
+    skip: !userId || isRbacEnabled,
   });
-  const permissionsLabels: string[] = [];
-  if (userPermissions && userPermissions.roles) {
-    userPermissions.roles.forEach((permissionRole) => {
-      const matchingRole = ROLES.find(
-        (role) => role.roleKey === permissionRole,
-      );
-      if (matchingRole) {
-        permissionsLabels.push(matchingRole.permissions_label);
+
+  // RBAC queries - only fetch when RBAC is enabled
+  const { data: rbacRoles } = useGetRolesQuery({}, { skip: !isRbacEnabled });
+  const { data: userRbacRoles } = useGetUserRolesQuery(
+    { userId },
+    { skip: !userId || !isRbacEnabled },
+  );
+
+  const permissionsLabels: string[] = useMemo(() => {
+    if (isRbacEnabled) {
+      // Use RBAC roles
+      if (!userRbacRoles || !rbacRoles) {
+        return [];
       }
-    });
-  }
+      return userRbacRoles
+        .map((ur) => {
+          const role = rbacRoles.find((r) => r.id === ur.role_id);
+          // Find matching ROLES constant for display label
+          const matchingRole = ROLES.find((r) => r.roleKey === role?.key);
+          return matchingRole?.permissions_label || role?.name;
+        })
+        .filter((label): label is string => !!label);
+    }
+    // Legacy permissions
+    const labels: string[] = [];
+    if (userPermissions && userPermissions.roles) {
+      userPermissions.roles.forEach((permissionRole) => {
+        const matchingRole = ROLES.find(
+          (role) => role.roleKey === permissionRole,
+        );
+        if (matchingRole) {
+          labels.push(matchingRole.permissions_label);
+        }
+      });
+    }
+    return labels;
+  }, [isRbacEnabled, userRbacRoles, rbacRoles, userPermissions]);
+
   return (
     <>
       {permissionsLabels.map((permission) => (
@@ -63,7 +91,12 @@ export const UserSystemsCell = ({ userId }: { userId: string }) => {
 };
 
 export const UserActionsCell = ({ user }: { user: User }) => {
-  const deleteModal = useDisclosure();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const deleteModal = {
+    isOpen: isDeleteModalOpen,
+    onOpen: () => setIsDeleteModalOpen(true),
+    onClose: () => setIsDeleteModalOpen(false),
+  };
   return (
     <>
       <Button
@@ -72,7 +105,7 @@ export const UserActionsCell = ({ user }: { user: User }) => {
         icon={<Icons.TrashCan />}
         onClick={(e) => {
           e.stopPropagation();
-          deleteModal.onOpen();
+          setIsDeleteModalOpen(true);
         }}
         data-testid="delete-user-btn"
       />
@@ -82,6 +115,7 @@ export const UserActionsCell = ({ user }: { user: User }) => {
 };
 
 const useUserManagementTable = () => {
+  const { rbac: isRbacEnabled } = useFeatures();
   const loggedInUser = useAppSelector(selectUser);
   const canUserDelete = useHasPermission([ScopeRegistryEnum.USER_DELETE]);
   const canUserUpdate = useHasPermission([ScopeRegistryEnum.USER_UPDATE]);
@@ -171,7 +205,7 @@ const useUserManagementTable = () => {
         key: "last_name",
       },
       {
-        title: "Permissions",
+        title: isRbacEnabled ? "Roles" : "Permissions",
         key: "permissions",
         render: (_: unknown, user: User) => (
           <UserPermissionsCell userId={user.id ?? ""} />
@@ -204,7 +238,7 @@ const useUserManagementTable = () => {
           ]
         : []),
     ],
-    [canUserDelete, canUserUpdate, loggedInUser],
+    [canUserDelete, canUserUpdate, isRbacEnabled, loggedInUser],
   );
 
   return {

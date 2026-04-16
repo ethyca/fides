@@ -4,6 +4,7 @@ import {
   ChakraLink as Link,
   ChakraStack as Stack,
   ChakraText as Text,
+  Icons,
   Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -11,7 +12,6 @@ import { useMemo } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { useFeatures } from "~/features/common/features";
-import { CopyIcon } from "~/features/common/Icon";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 
 const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
@@ -44,8 +44,8 @@ const JavaScriptTag = () => {
     <>
       <Button
         onClick={modal.onOpen}
-        icon={<CopyIcon />}
-        iconPosition="end"
+        icon={<Icons.Copy />}
+        iconPlacement="end"
         data-testid="js-tag-btn"
       >
         Get JavaScript tag

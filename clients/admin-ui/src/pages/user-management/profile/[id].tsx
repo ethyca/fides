@@ -1,4 +1,4 @@
-import { Alert, ChakraSpinner as Spinner, Flex } from "fidesui";
+import { Alert, Flex, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";
@@ -69,15 +69,11 @@ const Profile = () => {
 
   return (
     <Layout title="Users - Edit a user">
-      {isLoadingUser && (
-        <Flex justify="center" align="center" className="h-full">
-          <Spinner color="primary.900" />
-        </Flex>
-      )}
+      {isLoadingUser && <Spin />}
       {!isLoadingUser && !existingUser && (
         <Flex justify="center">
           <Alert
-            message="Could not find user with this profile ID."
+            title="Could not find user with this profile ID."
             type="warning"
             showIcon
           />

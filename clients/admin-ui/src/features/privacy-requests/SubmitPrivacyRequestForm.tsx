@@ -1,31 +1,28 @@
 import {
   Button,
-  ChakraStack as Stack,
   Checkbox,
+  Flex,
   Form,
-  LinkIcon,
+  type FormRule,
+  Icons,
+  Input,
   LocationSelect,
-  useChakraClipboard as useClipboard,
-  useChakraToast as useToast,
+  Select,
+  useMessage,
 } from "fidesui";
-import { Form as FormikForm, Formik, useField } from "formik";
-import { lazy } from "yup";
-import * as Yup from "yup";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   findActionFromPolicyKey,
-  generateValidationSchemaFromAction,
+  generateFormRulesFromAction,
 } from "~/features/privacy-requests/form/helpers";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
-  PrivacyRequestCreate,
+  PrivacyRequestCreateExtended as PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
-
-import { ControlledSelect } from "../common/form/ControlledSelect";
 
 /**
  * Mirror location type from backend
@@ -52,8 +49,10 @@ const defaultInitialValues: PrivacyRequestSubmitFormValues = {
 
 const IdentityFields = ({
   identityInputs,
+  rules,
 }: {
   identityInputs?: IdentityInputs | null;
+  rules: Record<string, FormRule[]>;
 }) => {
   if (!identityInputs) {
     return null;
@@ -61,67 +60,60 @@ const IdentityFields = ({
   return (
     <>
       {identityInputs.email ? (
-        <CustomTextInput
-          name="identity.email"
+        <Form.Item
+          name={["identity", "email"]}
           label="User email address"
-          isRequired={identityInputs.email === "required"}
-          variant="stacked"
-        />
+          rules={rules["identity.email"]}
+          layout="vertical"
+        >
+          <Input data-testid="input-identity.email" />
+        </Form.Item>
       ) : null}
       {identityInputs.phone ? (
-        <CustomTextInput
-          name="identity.phone_number"
+        <Form.Item
+          name={["identity", "phone_number"]}
           label="User phone number"
-          isRequired={identityInputs.phone === "required"}
-          variant="stacked"
-        />
+          rules={rules["identity.phone_number"]}
+          layout="vertical"
+        >
+          <Input data-testid="input-identity.phone_number" />
+        </Form.Item>
       ) : null}
     </>
   );
 };
 
-const LocationSelectInput = (props: {
+const LocationSelectField = ({
+  label,
+  name,
+  required,
+}: {
   label: string;
   name: string;
   required: boolean;
 }) => {
-  const { label, required, name } = props;
-  const [initialField, meta, helpers] = useField(props);
-  const isInvalid = !!(meta.touched && meta.error);
-  const { setValue } = helpers;
-  const { value } = {
-    ...initialField,
-    value: initialField.value ?? "",
-  };
-
   return (
     <Form.Item
       label={label}
       name={name}
       required={required ?? undefined}
       layout="vertical"
-      validateStatus={isInvalid ? "error" : undefined}
     >
-      <LocationSelect
-        key={name}
-        value={value}
-        onChange={(newValue) => {
-          if (newValue) {
-            setValue(newValue);
-          }
-        }}
-      />
+      <LocationSelect />
     </Form.Item>
   );
 };
+
 const CustomFields = ({
   customFieldInputs,
+  rules,
 }: {
   customFieldInputs?: Record<
     string,
     | fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
     | LocationCustomPrivacyRequestField
   > | null;
+  rules: Record<string, FormRule[]>;
 }) => {
   if (!customFieldInputs) {
     return null;
@@ -130,44 +122,29 @@ const CustomFields = ({
   return (
     <>
       {allInputs.map(([fieldName, fieldInfo]) => {
-        /* checking for object key should not be necessarry when backend types are updated */
         return "field_type" in fieldInfo &&
           fieldInfo.field_type === "location" ? (
-          <LocationSelectInput
+          <LocationSelectField
             name={fieldName}
             key={fieldName}
             label={fieldInfo.label}
             required={Boolean(fieldInfo.required)}
           />
         ) : (
-          <CustomTextInput
-            name={`custom_privacy_request_fields.${fieldName}.value`}
+          <Form.Item
+            name={["custom_privacy_request_fields", fieldName, "value"]}
             key={fieldName}
             label={fieldInfo.label}
-            isRequired={Boolean(fieldInfo.required)}
-            variant="stacked"
-          />
+            rules={rules[`custom_privacy_request_fields.${fieldName}.value`]}
+            layout="vertical"
+          >
+            <Input
+              data-testid={`input-custom_privacy_request_fields.${fieldName}.value`}
+            />
+          </Form.Item>
         );
       })}
     </>
-  );
-};
-
-const CheckboxField = ({ name, label }: { name: string; label: string }) => {
-  const [field] = useField({ name, type: "checkbox" });
-
-  return (
-    <Form.Item>
-      <Checkbox
-        name={field.name}
-        checked={field.checked}
-        onChange={field.onChange}
-        onBlur={field.onBlur}
-        data-testid={`input-${field.name}`}
-      >
-        {label}
-      </Checkbox>
-    </Form.Item>
   );
 };
 
@@ -178,88 +155,132 @@ const SubmitPrivacyRequestForm = ({
   onSubmit: (values: PrivacyRequestSubmitFormValues) => void;
   onCancel: () => void;
 }) => {
+  const [form] = Form.useForm<PrivacyRequestSubmitFormValues>();
   const { data: config } = useGetPrivacyCenterConfigQuery();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const policyKey = Form.useWatch("policy_key", form);
+  const isVerified = Form.useWatch("is_verified", form);
+
+  const currentAction = useMemo(
+    () => findActionFromPolicyKey(policyKey ?? "", config?.actions),
+    [policyKey, config?.actions],
+  );
+
+  const rules = useMemo(
+    () => generateFormRulesFromAction(currentAction),
+    [currentAction],
+  );
+
+  const handleResetCustomFields = useCallback(
+    (value: string) => {
+      const newAction = findActionFromPolicyKey(value, config?.actions);
+      if (!newAction?.custom_privacy_request_fields) {
+        form.setFieldValue("custom_privacy_request_fields", undefined);
+        return;
+      }
+      const newCustomFields = Object.entries(
+        newAction.custom_privacy_request_fields,
+      )
+        .map(([fieldName, fieldInfo]) => ({
+          [fieldName]: {
+            label: fieldInfo.label,
+            value: fieldInfo.default_value,
+          },
+        }))
+        .reduce((acc, next) => ({ ...acc, ...next }), {});
+      form.setFieldValue("custom_privacy_request_fields", newCustomFields);
+    },
+    [config?.actions, form],
+  );
+
+  // Track dirty state
+  const allValues = Form.useWatch([], form);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    const touched = form.isFieldsTouched();
+    setIsDirty(touched);
+  }, [allValues, form]);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setIsFormValid(true))
+      .catch(() => setIsFormValid(false));
+  }, [allValues, form]);
+
+  const handleFinish = async (values: PrivacyRequestSubmitFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await onSubmit(values);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <Formik
+    <Form
+      form={form}
       initialValues={defaultInitialValues}
-      onSubmit={onSubmit}
-      validationSchema={() =>
-        lazy((values) =>
-          generateValidationSchemaFromAction(
-            findActionFromPolicyKey(values.policy_key, config?.actions),
-          ),
-        )
-      }
+      onFinish={handleFinish}
+      layout="vertical"
     >
-      {({ values, dirty, isValid, isSubmitting, setFieldValue }) => {
-        const currentAction = findActionFromPolicyKey(
-          values.policy_key,
-          config?.actions,
-        );
-
-        const handleResetCustomFields = (value: string) => {
-          // when selecting a new request type, populate the Formik state with
-          // labels and default values for the corresponding custom fields
-          const newAction = findActionFromPolicyKey(value, config?.actions);
-          if (!newAction?.custom_privacy_request_fields) {
-            setFieldValue(`custom_privacy_request_fields`, undefined);
-            return;
-          }
-          const newCustomFields = Object.entries(
-            newAction.custom_privacy_request_fields,
-          )
-            .map(([fieldName, fieldInfo]) => ({
-              [fieldName]: {
-                label: fieldInfo.label,
-                value: fieldInfo.default_value,
-              },
-            }))
-            .reduce((acc, next) => ({ ...acc, ...next }), {});
-          setFieldValue(`custom_privacy_request_fields`, newCustomFields);
-        };
-
-        return (
-          <FormikForm>
-            <Stack spacing={6} mb={2}>
-              <ControlledSelect
-                name="policy_key"
-                label="Request type"
-                options={
-                  config?.actions.map((action: PrivacyRequestOption) => ({
-                    label: action.title,
-                    value: action.policy_key,
-                  })) ?? []
-                }
-                onChange={handleResetCustomFields}
-                layout="stacked"
-                isRequired
-              />
-              <IdentityFields identityInputs={currentAction?.identity_inputs} />
-              <CustomFields
-                customFieldInputs={currentAction?.custom_privacy_request_fields}
-              />
-              <CheckboxField
-                name="is_verified"
-                label="I confirm that I have verified this user information"
-              />
-              <div className="flex gap-4 self-end">
-                <Button onClick={onCancel}>Cancel</Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={!values.is_verified || !dirty || !isValid}
-                  loading={isSubmitting}
-                  data-testid="submit-btn"
-                >
-                  Create
-                </Button>
-              </div>
-            </Stack>
-          </FormikForm>
-        );
-      }}
-    </Formik>
+      <Flex vertical className="mb-2">
+        <Form.Item
+          name="policy_key"
+          label="Request type"
+          rules={rules.policy_key}
+          layout="vertical"
+          required
+        >
+          <Select
+            aria-label="Request type"
+            options={
+              config?.actions.map((action: PrivacyRequestOption) => ({
+                label: action.title,
+                value: action.policy_key,
+              })) ?? []
+            }
+            onChange={handleResetCustomFields}
+            data-testid="controlled-select-policy_key"
+          />
+        </Form.Item>
+        <IdentityFields
+          identityInputs={currentAction?.identity_inputs}
+          rules={rules}
+        />
+        <CustomFields
+          customFieldInputs={currentAction?.custom_privacy_request_fields}
+          rules={rules}
+        />
+        <Form.Item name="is_verified" valuePropName="checked">
+          <Checkbox data-testid="input-is_verified">
+            I confirm that I have verified this user information
+          </Checkbox>
+        </Form.Item>
+        <div className="flex gap-4 self-end">
+          <Button
+            onClick={() => {
+              form.resetFields();
+              onCancel();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            htmlType="submit"
+            type="primary"
+            disabled={!isVerified || !isDirty || !isFormValid}
+            loading={isSubmitting}
+            data-testid="submit-btn"
+          >
+            Create
+          </Button>
+        </div>
+      </Flex>
+    </Form>
   );
 };
 
@@ -272,48 +293,76 @@ export const CopyPrivacyRequestLinkForm = ({
   onCancel: () => void;
   privacyCenterUrl: string;
 }) => {
-  const { onCopy } = useClipboard("");
-  const toast = useToast();
+  const [form] = Form.useForm<{ identity: { email: string } }>();
+  const message = useMessage();
+
+  const allValues = Form.useWatch([], form);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    const touched = form.isFieldsTouched();
+    setIsDirty(touched);
+  }, [allValues, form]);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setIsFormValid(true))
+      .catch(() => setIsFormValid(false));
+  }, [allValues, form]);
+
+  const handleFinish = async (values: { identity: { email: string } }) => {
+    const url = `${privacyCenterUrl}?email=${encodeURIComponent(values.identity.email)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      message.success("DSR Link Copied!");
+    } catch {
+      message.error("Failed to copy link to clipboard");
+    }
+    onSubmit(values);
+  };
+
   return (
-    <Formik
+    <Form
+      form={form}
       initialValues={{ identity: { email: "" } }}
-      onSubmit={(values) => {
-        onCopy(
-          `${privacyCenterUrl}?email=${encodeURIComponent(values.identity.email)}`,
-        );
-        onSubmit(values);
-        toast({ status: "success", description: "DSR Link Copied!" });
-      }}
-      validationSchema={() => {
-        return Yup.object().shape({
-          identity: Yup.object().shape({
-            email: Yup.string().email().required().label("Email Address"),
-          }),
-        });
-      }}
+      onFinish={handleFinish}
+      layout="vertical"
     >
-      {({ dirty, isValid }) => {
-        return (
-          <FormikForm>
-            <Stack spacing={6} mb={2}>
-              <IdentityFields identityInputs={{ email: "required" }} />
-              <div className="flex gap-4 self-end">
-                <Button onClick={onCancel}>Cancel</Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={!dirty || !isValid}
-                  data-testid="submit-btn"
-                  icon={<LinkIcon />}
-                >
-                  Copy
-                </Button>
-              </div>
-            </Stack>
-          </FormikForm>
-        );
-      }}
-    </Formik>
+      <Flex vertical className="mt-4">
+        <Form.Item
+          name={["identity", "email"]}
+          label="User email address"
+          rules={[
+            { required: true, message: "Email Address is required" },
+            { type: "email", message: "Email Address must be a valid email" },
+          ]}
+          layout="vertical"
+        >
+          <Input />
+        </Form.Item>
+        <div className="flex gap-4 self-end">
+          <Button
+            onClick={() => {
+              form.resetFields();
+              onCancel();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            htmlType="submit"
+            type="primary"
+            disabled={!isDirty || !isFormValid}
+            data-testid="submit-btn"
+            icon={<Icons.Link />}
+          >
+            Copy
+          </Button>
+        </div>
+      </Flex>
+    </Form>
   );
 };
 

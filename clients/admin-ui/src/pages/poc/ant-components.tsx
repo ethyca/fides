@@ -52,11 +52,11 @@ const AntPOC: NextPage = () => {
   return (
     <Layout>
       <Content className="overflow-auto px-10 py-6">
-        <PageHeader heading="Ant Design Proof of Concept" />
+        <PageHeader heading="Ant design POC" />
         <Row gutter={16} className="mt-6">
           <Col span={8}>
             <Card title="Button" variant="borderless" className="h-full">
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Button type="primary">Primary Button</Button>
                 <Button>Default Button</Button>
                 <Button type="dashed">Dashed Button</Button>
@@ -73,7 +73,7 @@ const AntPOC: NextPage = () => {
           </Col>
           <Col span={8}>
             <Card title="Switch" variant="borderless" className="h-full">
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Switch defaultChecked />
                 <Switch size="small" defaultChecked />
                 <Switch loading defaultChecked />
@@ -82,7 +82,7 @@ const AntPOC: NextPage = () => {
           </Col>
           <Col span={8}>
             <Card title="Select" variant="borderless" className="h-full">
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Select
                   defaultValue="lucy"
                   className="w-32"
@@ -141,7 +141,7 @@ const AntPOC: NextPage = () => {
         <Row gutter={16}>
           <Col span={8}>
             <Card title="Checkbox" variant="borderless" className="h-full">
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Checkbox>Checkbox</Checkbox>
                 <Checkbox defaultChecked>Checkbox</Checkbox>
                 <Checkbox disabled>Disabled</Checkbox>
@@ -159,7 +159,7 @@ const AntPOC: NextPage = () => {
           </Col>
           <Col span={8}>
             <Card title="Radio" variant="borderless" className="h-full">
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Radio>Radio</Radio>
                 <Radio defaultChecked>Radio</Radio>
                 <Radio disabled>Disabled</Radio>
@@ -195,7 +195,7 @@ const AntPOC: NextPage = () => {
           </Col>
           <Col span={8}>
             <Card title="Input" variant="borderless" className="h-full">
-              <Space direction="vertical" size="middle">
+              <Space orientation="vertical" size="medium">
                 <Space.Compact>
                   <Input defaultValue="26888888" aria-label="Input" />
                 </Space.Compact>
@@ -213,7 +213,7 @@ const AntPOC: NextPage = () => {
                 </Space.Compact>
                 <Space.Compact>
                   <Input.Search
-                    addonBefore="https://"
+                    prefix="https://"
                     placeholder="input search text"
                     allowClear
                     aria-label="Input"
@@ -245,7 +245,7 @@ const AntPOC: NextPage = () => {
         <Row gutter={16}>
           <Col span={8}>
             <Card title="Tooltip" variant="borderless" className="h-full">
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Tooltip title="I'm a tooltip">
                   Hover or focus this text
                 </Tooltip>
@@ -258,11 +258,11 @@ const AntPOC: NextPage = () => {
           </Col>
           <Col span={8}>
             <Card title="Alert" variant="borderless" className="h-full">
-              <Space direction="vertical">
-                <Alert message="Success Tips" type="success" showIcon />
-                <Alert message="Informational Notes" type="info" showIcon />
-                <Alert message="Warning" type="warning" showIcon closable />
-                <Alert message="Error" type="error" showIcon />
+              <Space orientation="vertical">
+                <Alert title="Success Tips" type="success" showIcon />
+                <Alert title="Informational Notes" type="info" showIcon />
+                <Alert title="Warning" type="warning" showIcon closable />
+                <Alert title="Error" type="error" showIcon />
               </Space>
             </Card>
           </Col>
@@ -315,7 +315,7 @@ const AntPOC: NextPage = () => {
               variant="borderless"
               className="h-full"
             >
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Title level={1}>H1 default</Title>
                 <Title level={1} headingSize={2}>
                   H1 sized as H2
@@ -376,7 +376,7 @@ const AntPOC: NextPage = () => {
               variant="borderless"
               className="h-full"
             >
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <Text>Ant Design (default)</Text>
                 <Text size="sm">Ant Design (small)</Text>
                 <Text size="lg">Ant Design (large)</Text>
@@ -407,7 +407,7 @@ const AntPOC: NextPage = () => {
               variant="borderless"
               className="h-full"
             >
-              <Space direction="vertical" className="w-full">
+              <Space orientation="vertical" className="w-full">
                 <Text>
                   CustomList supports rowSelection similar to Table, with
                   checkboxes in the avatar position. Selected items:{" "}
@@ -457,9 +457,9 @@ const AntPOC: NextPage = () => {
                 />
                 {selectedListKeys.length > 0 && (
                   <Alert
-                    message={`${selectedListKeys.length} item(s) selected`}
+                    title={`${selectedListKeys.length} item(s) selected`}
                     description={
-                      <Space direction="vertical" size="small">
+                      <Space orientation="vertical" size="small">
                         <Text>
                           You can perform bulk actions on selected items.
                         </Text>

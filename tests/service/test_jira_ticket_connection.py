@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 
 import pytest
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
@@ -93,6 +94,72 @@ class TestJiraTicketSecretsSchema:
         assert schema.access_token == "token"
         assert schema.project_key == "PLAY"
         assert schema.summary_template == "DSR: {{ request_type }}"
+
+    def test_api_key_secrets_valid(self):
+        """API key auth fields are accepted."""
+        schema = JiraTicketSchema(
+            domain="company.atlassian.net",
+            username="user@company.com",
+            api_key="secret-token-123",
+        )
+        assert schema.domain == "company.atlassian.net"
+        assert schema.username == "user@company.com"
+        assert schema.api_key == "secret-token-123"
+        assert schema.access_token is None
+
+    def test_partial_api_key_valid(self):
+        """Partial API key fields are valid (pre-configuration)."""
+        schema = JiraTicketSchema(domain="company.atlassian.net")
+        assert schema.domain == "company.atlassian.net"
+        assert schema.username is None
+
+    @pytest.mark.parametrize(
+        "fields",
+        [
+            pytest.param(
+                {"access_token": "token", "cloud_id": "c", "domain": "x.atlassian.net"},
+                id="oauth_tokens_with_api_key",
+            ),
+            pytest.param(
+                {"site_url": "https://x.atlassian.net", "api_key": "tok"},
+                id="site_url_with_api_key",
+            ),
+            pytest.param(
+                {"client_id": "cid", "domain": "x.atlassian.net"},
+                id="oauth_app_creds_with_api_key",
+            ),
+        ],
+    )
+    def test_mixed_oauth_and_api_key_rejected(self, fields):
+        """Mixing any OAuth/OAuth-app field with API key fields is rejected."""
+        with pytest.raises(
+            PydanticValidationError, match="Cannot mix OAuth and API key credentials"
+        ):
+            JiraTicketSchema(**fields)
+
+    def test_oauth_app_credentials_valid(self):
+        """OAuth app credentials (client_id, client_secret, redirect_uri) are accepted."""
+        schema = JiraTicketSchema(
+            client_id="my-client-id",
+            client_secret="my-client-secret",
+            redirect_uri="https://app.example.com/callback",
+        )
+        assert schema.client_id == "my-client-id"
+        assert schema.client_secret == "my-client-secret"
+        assert schema.redirect_uri == "https://app.example.com/callback"
+
+    def test_oauth_app_credentials_with_tokens_valid(self):
+        """OAuth app credentials can coexist with OAuth tokens."""
+        schema = JiraTicketSchema(
+            client_id="my-client-id",
+            client_secret="my-client-secret",
+            redirect_uri="https://app.example.com/callback",
+            access_token="token",
+            cloud_id="cloud-123",
+            site_url="https://example.atlassian.net",
+        )
+        assert schema.client_id == "my-client-id"
+        assert schema.access_token == "token"
 
 
 class TestJiraTicketSingletonEnforcement:

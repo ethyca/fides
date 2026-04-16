@@ -1,11 +1,12 @@
-import { Button, Flex, Modal } from "fidesui";
+import { Button, Flex } from "fidesui";
 import { useState } from "react";
 
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
+import { ConfigureIntegrationForm } from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType, {
   useIntegrationFilters,
@@ -139,22 +140,20 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       open={isOpen}
-      onCancel={handleCancel}
+      onClose={handleCancel}
+      getIsDirty={() =>
+        step === IntegrationModalStep.FORM && (formState?.dirty ?? false)
+      }
       title={modalTitle}
       centered
       destroyOnHidden
       width={MODAL_SIZE.xl}
       footer={renderFooter()}
       styles={{
-        content: {
-          height: 700,
-          display: "flex",
-          flexDirection: "column",
-        },
         body: {
-          flex: 1,
+          height: 700,
           padding: 0,
           display: "flex",
           flexDirection: "column",
@@ -194,7 +193,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
           />
         </Flex>
       )}
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

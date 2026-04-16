@@ -142,7 +142,7 @@ export const DiscoveredAssetsTable = ({
       <Flex
         justify="space-between"
         align="center"
-        className="sticky -top-6 z-10 mb-4 bg-white py-4"
+        className="sticky -top-6 z-20 mb-4 bg-white py-4"
       >
         <DebouncedSearchInput
           value={searchQuery}
@@ -156,7 +156,7 @@ export const DiscoveredAssetsTable = ({
               Clear filters
             </Button>
             <Dropdown
-              overlayClassName="bulk-actions-menu-dropdown"
+              classNames={{ root: "bulk-actions-menu-dropdown" }}
               menu={{
                 items: [
                   ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)
@@ -209,7 +209,7 @@ export const DiscoveredAssetsTable = ({
             >
               <Button
                 icon={<Icons.ChevronDown />}
-                iconPosition="end"
+                iconPlacement="end"
                 loading={anyBulkActionIsLoading}
                 data-testid="bulk-actions-menu"
                 disabled={
@@ -234,7 +234,7 @@ export const DiscoveredAssetsTable = ({
                 loading={isAddingAllResults}
                 type="primary"
                 icon={<Icons.Checkmark />}
-                iconPosition="end"
+                iconPlacement="end"
                 data-testid="add-all"
               >
                 Add all

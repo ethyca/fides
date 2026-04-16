@@ -1,7 +1,12 @@
 import type {
+  ActivityFeedItem,
+  AgentBriefingResponse,
+  AstralisResponse,
   PostureResponse,
   PriorityAction,
+  PrivacyRequestsResponse,
   SystemCoverageResponse,
+  TrendsResponse,
 } from "~/features/dashboard/types";
 import {
   ActionSeverity,
@@ -354,3 +359,243 @@ export const mockPriorityActions: PriorityAction[] = [
     status: ActionStatus.PENDING,
   },
 ];
+
+export const mockPrivacyRequests: PrivacyRequestsResponse = {
+  active_count: 47,
+  statuses: { in_progress: 22, pending_action: 14, awaiting_approval: 11 },
+  overdue_count: 5,
+  sla_health: {
+    access: { on_track: 8, approaching: 3, overdue: 1 },
+    erasure: { on_track: 12, approaching: 5, overdue: 3 },
+    consent: { on_track: 6, approaching: 2, overdue: 0 },
+    update: { on_track: 5, approaching: 1, overdue: 1 },
+  },
+};
+
+export const mockAgentBriefing: AgentBriefingResponse = {
+  briefing:
+    "Since you were away: Your GPS improved by 2 points after Casey approved 34 classifications across Snowflake and BigQuery. 3 DSRs completed on time. However, 1 new critical risk was detected — unclassified health data found in BigQuery project analytics-prod. Recommended action: assign a steward and initiate classification.",
+  quick_actions: [
+    {
+      label: "Assign steward for BigQuery",
+      action_type: ActionType.STEWARD_ASSIGNMENT,
+      action_data: { system_id: "sys-bigquery" },
+      severity: ActionSeverity.MEDIUM,
+    },
+    {
+      label: "Review overdue DSR",
+      action_type: ActionType.DSR_ACTION,
+      action_data: { request_id: "pri-4521" },
+      severity: ActionSeverity.CRITICAL,
+    },
+  ],
+};
+
+const now = Date.now();
+const hoursAgo = (h: number) => new Date(now - h * 3600_000).toISOString();
+
+export const mockActivityFeed: ActivityFeedItem[] = [
+  {
+    id: "af-001",
+    actor_type: "system",
+    message: "Helios classified 847 fields across Snowflake and BigQuery.",
+    timestamp: hoursAgo(0.5),
+    event_source: "helios",
+    event_type: ActionType.CLASSIFICATION_REVIEW,
+    action_data: {},
+  },
+  {
+    id: "af-002",
+    actor_type: "user",
+    message: "Casey approved 34 classification reviews.",
+    timestamp: hoursAgo(1),
+    event_source: "helios",
+    event_type: ActionType.CLASSIFICATION_REVIEW,
+    action_data: {},
+  },
+  {
+    id: "af-003",
+    actor_type: "system",
+    message: "DSR-4521 erasure completed across 6 systems.",
+    timestamp: hoursAgo(1.5),
+    event_source: "lethe",
+    event_type: ActionType.DSR_ACTION,
+    action_data: { request_id: "pri-4521" },
+  },
+  {
+    id: "af-004",
+    actor_type: "system",
+    message: "Astralis completed privacy assessment for Stripe integration.",
+    timestamp: hoursAgo(2),
+    event_source: "astralis",
+    event_type: ActionType.PIA_UPDATE,
+    action_data: { assessment_id: "pia-stripe-01" },
+  },
+  {
+    id: "af-005",
+    actor_type: "system",
+    message: "Consent preferences synced for 12,400 EU users.",
+    timestamp: hoursAgo(3),
+    event_source: "janus",
+  },
+  {
+    id: "af-006",
+    actor_type: "user",
+    message: "Jamie Torres assigned as data steward for Workday.",
+    timestamp: hoursAgo(4),
+    event_type: ActionType.STEWARD_ASSIGNMENT,
+    action_data: { system_id: "sys-workday" },
+  },
+  {
+    id: "af-007",
+    actor_type: "system",
+    message: "Helios detected new system: Amplitude receiving user event data.",
+    timestamp: hoursAgo(5),
+    event_source: "helios",
+    event_type: ActionType.SYSTEM_REVIEW,
+    action_data: {},
+  },
+  {
+    id: "af-008",
+    actor_type: "system",
+    message: "Access request DSR-4587 auto-fulfilled via Stripe connector.",
+    timestamp: hoursAgo(6),
+    event_source: "lethe",
+    event_type: ActionType.DSR_ACTION,
+    action_data: { request_id: "pri-4587" },
+  },
+  {
+    id: "af-009",
+    actor_type: "user",
+    message: "Morgan Chen updated consent notice for mobile web property.",
+    timestamp: hoursAgo(8),
+    event_source: "janus",
+    event_type: ActionType.CONSENT_ANOMALY,
+    action_data: {},
+  },
+  {
+    id: "af-010",
+    actor_type: "system",
+    message:
+      "Astralis flagged policy violation: HubSpot retaining data beyond 24-month limit.",
+    timestamp: hoursAgo(10),
+    event_source: "astralis",
+    event_type: ActionType.POLICY_VIOLATION,
+    action_data: { system_id: "sys-hubspot" },
+  },
+  {
+    id: "af-011",
+    actor_type: "system",
+    message: "Nightly classification scan completed — 3 new fields detected.",
+    timestamp: hoursAgo(12),
+    event_source: "helios",
+  },
+  {
+    id: "af-012",
+    actor_type: "user",
+    message: "Alex Rivera registered BambooHR in the system inventory.",
+    timestamp: hoursAgo(14),
+    event_type: ActionType.SYSTEM_REVIEW,
+    action_data: {},
+  },
+  {
+    id: "af-013",
+    actor_type: "system",
+    message: "Lethe processed batch erasure for 48 records across Snowflake.",
+    timestamp: hoursAgo(16),
+    event_source: "lethe",
+    event_type: ActionType.DSR_ACTION,
+    action_data: { request_id: "pri-batch-12" },
+  },
+  {
+    id: "af-014",
+    actor_type: "system",
+    message: "Consent banner deployed to 3 new EU properties.",
+    timestamp: hoursAgo(18),
+    event_source: "janus",
+  },
+  {
+    id: "af-015",
+    actor_type: "user",
+    message: "Sam Patel dismissed low-priority PIA reminder for Segment.",
+    timestamp: hoursAgo(20),
+    event_type: ActionType.PIA_UPDATE,
+    action_data: { assessment_id: "pia-segment-01" },
+  },
+  {
+    id: "af-016",
+    actor_type: "system",
+    message: "Helios discovered Mixpanel receiving event data from iOS app.",
+    timestamp: hoursAgo(24),
+    event_source: "helios",
+    event_type: ActionType.SYSTEM_REVIEW,
+    action_data: {},
+  },
+  {
+    id: "af-017",
+    actor_type: "system",
+    message:
+      "Automated DSR SLA check completed — 5 requests approaching deadline.",
+    timestamp: hoursAgo(28),
+    event_source: "lethe",
+  },
+  {
+    id: "af-018",
+    actor_type: "user",
+    message: "Taylor Kim configured Salesforce encryption policy.",
+    timestamp: hoursAgo(32),
+    event_type: ActionType.POLICY_VIOLATION,
+    action_data: { system_id: "sys-salesforce" },
+  },
+  {
+    id: "af-019",
+    actor_type: "system",
+    message: "Janus detected consent opt-in rate drop on mobile web.",
+    timestamp: hoursAgo(36),
+    event_source: "janus",
+    event_type: ActionType.CONSENT_ANOMALY,
+    action_data: {},
+  },
+  {
+    id: "af-020",
+    actor_type: "system",
+    message: "Weekly governance posture report generated. GPS: 64 (+3.8).",
+    timestamp: hoursAgo(44),
+  },
+];
+
+export const mockAstralis: AstralisResponse = {
+  active_conversations: 7,
+  completed_assessments: 42,
+  awaiting_response: 3,
+  risks_identified: 12,
+};
+
+export const mockTrends: TrendsResponse = {
+  metrics: {
+    gps_score: {
+      value: 64,
+      history: [58, 59, 61, 60, 63, 62, 64],
+      metadata: {},
+      diff: 3.2,
+    },
+    dsr_volume: {
+      value: 47,
+      history: [8, 12, 9, 15, 11, 18, 14],
+      metadata: {},
+      diff: -0.08,
+    },
+    system_coverage: {
+      value: 64.6,
+      history: [55, 57, 58, 61, 60, 63, 64.6],
+      metadata: {},
+      diff: 2.1,
+    },
+    classification_health: {
+      value: 58,
+      history: [52, 51, 54, 55, 53, 56, 58],
+      metadata: {},
+      diff: 1.8,
+    },
+  },
+};

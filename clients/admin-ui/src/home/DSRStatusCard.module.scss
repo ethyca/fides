@@ -1,0 +1,63 @@
+.spinWrapper {
+  height: 100%;
+
+  :global(.ant-spin-container) {
+    height: 100%;
+  }
+}
+
+.cardContainer {
+  height: 100%;
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  :global(.ant-statistic) {
+    text-align: left;
+  }
+}
+
+.subStat {
+  :global(.ant-statistic) {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: baseline;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  :global(.ant-statistic-title) {
+    font-size: var(--ant-font-size-sm);
+    margin-bottom: 0;
+    color: var(--ant-color-text-secondary);
+  }
+}
+
+.viewAllLink {
+  &:focus-visible {
+    outline: auto;
+  }
+}
+
+.overdueBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--ant-color-error) 10%, transparent);
+  border: 1px solid var(--ant-color-error);
+  border-radius: var(--ant-border-radius, 6px);
+  text-decoration: none;
+  margin-top: var(--ant-margin-xs, 4px);
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: auto;
+  }
+}

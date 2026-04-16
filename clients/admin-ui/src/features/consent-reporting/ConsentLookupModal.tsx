@@ -6,7 +6,7 @@ import {
   Space,
   Table,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
@@ -38,7 +38,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
   const [getCurrentPrivacyPreferencesTrigger] =
     useLazyGetCurrentPrivacyPreferencesQuery();
 
-  const toast = useToast();
+  const message = useMessage();
 
   useEffect(() => {
     // reset state when modal is closed
@@ -60,7 +60,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
         `A problem occurred while looking up the preferences.`,
       );
 
-      toast({ status: "error", description: errorMsg });
+      message.error(errorMsg);
     } else {
       setSearchResults(data || null);
     }

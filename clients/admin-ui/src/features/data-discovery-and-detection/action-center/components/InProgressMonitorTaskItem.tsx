@@ -10,7 +10,7 @@ import {
   Spin,
   Tag,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -20,7 +20,7 @@ import ConnectionTypeLogo, {
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionType,
-  MonitorTaskInProgressResponse,
+  MonitorTaskResponse,
   MonitorTaskType,
 } from "~/types/api";
 
@@ -43,14 +43,14 @@ const formatStatusForDisplay = (status: string): string => {
 };
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
-  task: MonitorTaskInProgressResponse;
+  task: MonitorTaskResponse;
 }
 
 export const InProgressMonitorTaskItem = ({
   task,
   ...props
 }: InProgressMonitorTaskItemProps) => {
-  const toast = useToast();
+  const message = useMessage();
   const [retryMonitorTask, { isLoading: isRetrying }] =
     useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] =
@@ -130,7 +130,7 @@ export const InProgressMonitorTaskItem = ({
 
   const monitorName = task.monitor_name || "Unknown monitor";
 
-  const getStatusColor = (status?: string) => {
+  const getStatusColor = (status?: string | null) => {
     switch (status) {
       case "pending":
         return CUSTOM_TAG_COLOR.DEFAULT;
@@ -151,7 +151,7 @@ export const InProgressMonitorTaskItem = ({
     }
   };
 
-  const formatText = (text?: string) => {
+  const formatText = (text?: string | null) => {
     if (!text) {
       return "Unknown";
     }
@@ -161,34 +161,22 @@ export const InProgressMonitorTaskItem = ({
   const handleRetryTask = async () => {
     try {
       await retryMonitorTask({ taskId: task.id }).unwrap();
-      toast({
-        status: "success",
-        description: "Task retry initiated successfully",
-      });
+      message.success("Task retry initiated successfully");
     } catch (error: any) {
       const errorMessage =
         error?.data?.detail || error?.message || "Unknown error occurred";
-      toast({
-        status: "error",
-        description: `Failed to retry task: ${errorMessage}`,
-      });
+      message.error(`Failed to retry task: ${errorMessage}`);
     }
   };
 
   const handleDismissTask = async () => {
     try {
       await dismissMonitorTask({ taskId: task.id }).unwrap();
-      toast({
-        status: "success",
-        description: "Task dismissed successfully",
-      });
+      message.success("Task dismissed successfully");
     } catch (error: any) {
       const errorMessage =
         error?.data?.detail || error?.message || "Unknown error occurred";
-      toast({
-        status: "error",
-        description: `Failed to dismiss task: ${errorMessage}`,
-      });
+      message.error(`Failed to dismiss task: ${errorMessage}`);
     }
   };
 
@@ -196,7 +184,7 @@ export const InProgressMonitorTaskItem = ({
     <div {...props} className="w-full">
       <Row gutter={12} className="w-full">
         <Col span={14} className="align-middle">
-          <Space direction="vertical" size={4}>
+          <Space orientation="vertical" size={4}>
             <Space align="center" size={8} wrap>
               {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
               <Title level={5} className="m-0">

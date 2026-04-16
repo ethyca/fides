@@ -144,7 +144,7 @@ export const PurposeRestrictionsTable = () => {
   };
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="medium">
       <Flex justify="flex-end">
         <Tooltip
           title={

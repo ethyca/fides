@@ -74,6 +74,7 @@ export const DOMAIN_RECORDS_ROUTE = "/settings/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/settings/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
 export const PRIVACY_REQUESTS_SETTINGS_ROUTE = "/settings/privacy-requests";
+export const PRE_APPROVAL_WEBHOOKS_ROUTE = "/pre-approval-webhooks";
 
 // Notifications group (messaging templates and digests)
 export const NOTIFICATIONS_ROUTE = "/notifications";
@@ -105,7 +106,14 @@ export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
 export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
+export const SEED_DATA_ROUTE = "/poc/seed-data";
 export const TEST_MONITORS_ROUTE = "/poc/test-monitors";
+
+// RBAC routes
+export const RBAC_ROUTE = "/settings/rbac";
+export const RBAC_ROLES_ROUTE = "/settings/rbac/roles";
+export const RBAC_ROLE_DETAIL_ROUTE = "/settings/rbac/roles/[id]";
+export const RBAC_ROLE_NEW_ROUTE = "/settings/rbac/roles/new";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
@@ -114,15 +122,24 @@ export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
 export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
 export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
 
+// Data Purposes (Core Configuration)
+export const DATA_PURPOSES_ROUTE = "/data-purposes";
+export const DATA_PURPOSES_NEW_ROUTE = "/data-purposes/new";
+export const DATA_PURPOSES_EDIT_ROUTE = "/data-purposes/[fidesKey]";
+
+// Data Consumers (Core Configuration)
+export const DATA_CONSUMERS_ROUTE = "/data-consumers";
+export const DATA_CONSUMERS_NEW_ROUTE = "/data-consumers/new";
+export const DATA_CONSUMERS_EDIT_ROUTE = "/data-consumers/[id]";
+
 // Access Policies (Core Configuration)
 export const ACCESS_POLICIES_ROUTE = "/access-policies";
 export const ACCESS_POLICIES_ONBOARDING_ROUTE = "/access-policies/onboarding";
 export const ACCESS_POLICIES_NEW_ROUTE = "/access-policies/new";
 export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
+export const CONTROLS_ROUTE = "/access-policies/controls";
+export const CONTROLS_NEW_ROUTE = "/access-policies/controls/new";
+export const CONTROLS_EDIT_ROUTE = "/access-policies/controls/[controlKey]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
-export const ACCESS_CONTROL_SUMMARY_ROUTE =
-  "/data-discovery/access-control/summary";
-export const ACCESS_CONTROL_REQUEST_LOG_ROUTE =
-  "/data-discovery/access-control/request-log";

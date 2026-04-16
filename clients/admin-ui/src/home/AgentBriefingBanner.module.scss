@@ -1,0 +1,43 @@
+.alertSm {
+  :global(.ant-alert-message) {
+    font-size: var(--ant-font-size-sm);
+  }
+}
+
+.quickActionTile {
+  text-decoration: none;
+}
+
+.quickActionButton.quickActionButton {
+  font-weight: 600;
+
+  &.error {
+    color: var(--ant-color-error);
+    border-color: var(--ant-color-error);
+
+    &:hover {
+      color: var(--ant-color-error-hover);
+      border-color: var(--ant-color-error-hover);
+    }
+  }
+
+  &.warning {
+    color: var(--ant-color-warning);
+    border-color: var(--ant-color-warning);
+
+    &:hover {
+      color: var(--ant-color-warning-hover);
+      border-color: var(--ant-color-warning-hover);
+    }
+  }
+
+  &.info {
+    color: var(--ant-color-info);
+    border-color: var(--ant-color-info);
+
+    &:hover {
+      color: var(--ant-color-info-hover);
+      border-color: var(--ant-color-info-hover);
+    }
+  }
+}

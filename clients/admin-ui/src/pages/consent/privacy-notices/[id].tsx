@@ -1,9 +1,4 @@
-import {
-  ChakraBox as Box,
-  ChakraCenter as Center,
-  ChakraSpinner as Spinner,
-  ChakraText as Text,
-} from "fidesui";
+import { ChakraBox as Box, ChakraText as Text, Spin } from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
@@ -32,9 +27,7 @@ const PrivacyNoticeDetailPage = () => {
   if (isLoading) {
     return (
       <Layout title="Privacy notice">
-        <Center>
-          <Spinner />
-        </Center>
+        <Spin />
       </Layout>
     );
   }
@@ -50,7 +43,7 @@ const PrivacyNoticeDetailPage = () => {
   return (
     <Layout title={`Privacy notice ${data.name}`}>
       <PageHeader
-        heading="Privacy Notices"
+        heading="Privacy notices"
         breadcrumbItems={[
           { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
           { title: data.name },

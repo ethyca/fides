@@ -1,6 +1,7 @@
 import {
   Button,
   Flex,
+  MonitorIcon,
   Table,
   Tooltip,
   Typography,
@@ -8,7 +9,6 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import { useMonitorConfigTable } from "~/features/integrations/hooks/useMonitorConfigTable";
 import {
@@ -30,6 +30,7 @@ const OKTA_MONITOR_COPY = `Configure your identity provider monitor to detect an
 const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
   [ConnectionType.WEBSITE]: WEBSITE_MONITOR_COPY,
   [ConnectionType.OKTA]: OKTA_MONITOR_COPY,
+  [ConnectionType.ENTRA]: OKTA_MONITOR_COPY,
 } as const;
 
 const MonitorConfigTab = ({
@@ -120,7 +121,7 @@ const MonitorConfigTab = ({
           <Button
             onClick={modal.onOpen}
             icon={<MonitorIcon />}
-            iconPosition="end"
+            iconPlacement="end"
             data-testid="add-monitor-btn"
             disabled={isAddMonitorButtonDisabled}
           >
