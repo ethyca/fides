@@ -309,7 +309,6 @@ const EditorSection = ({
             placement="top"
           >
             <Button
-              size="small"
               data-testid="refresh-btn"
               onClick={handleRefresh}
               loading={isDatasetConfigsLoading}
@@ -317,19 +316,15 @@ const EditorSection = ({
               aria-label="Refresh"
             />
           </Tooltip>
-          <Tooltip
-            title="Save your changes to update the dataset in the database."
-            placement="top"
+
+          <Button
+            htmlType="submit"
+            type="primary"
+            disabled={!isDirty}
+            onClick={handleSave}
           >
-            <Button
-              htmlType="submit"
-              size="small"
-              type={isDirty ? "primary" : "default"}
-              onClick={handleSave}
-            >
-              Save
-            </Button>
-          </Tooltip>
+            Save
+          </Button>
         </Space>
       </Flex>
       {isSaas ? (
