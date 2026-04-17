@@ -103,13 +103,6 @@ def get_dataset_service(
     return DatasetService(db)
 
 
-def get_dataset_config_service(
-    db: Session = Depends(get_db),
-    event_audit_service: EventAuditService = Depends(get_event_audit_service),
-) -> DatasetConfigService:
-    return DatasetConfigService(db, event_audit_service)
-
-
 def get_user_service(
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
@@ -123,6 +116,13 @@ def get_event_audit_service(
     db: Session = Depends(get_db),
 ) -> EventAuditService:
     return EventAuditService(db)
+
+
+def get_dataset_config_service(
+    db: Session = Depends(get_db),
+    event_audit_service: EventAuditService = Depends(get_event_audit_service),
+) -> DatasetConfigService:
+    return DatasetConfigService(db, event_audit_service)
 
 
 def get_taxonomy_service(
