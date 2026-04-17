@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from fideslang.models import Dataset, DatasetCollection
 from fideslang.validation import FidesKey
@@ -23,6 +23,7 @@ class DatasetFieldWarning(FidesSchema):
 
     collection: Optional[str] = None
     field: Optional[str] = None
+    action: Literal["restored", "removed", "failed"]
     message: str
 
 

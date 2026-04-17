@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
@@ -6,20 +7,20 @@ from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 
 from fides.api.common_exceptions import SaaSConfigNotFoundException, ValidationError
+from fides.api.graph.utils import find_field_by_name, resolve_field_path
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import to_graph_field
 from fides.api.schemas.dataset import DatasetFieldWarning
-from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.connection.merge_configs_util import (
     get_saas_config_referenced_field_paths,
+)
+from fides.service.dataset.dataset_service import (
+    DatasetNotFoundException,
+    _get_ctl_dataset,
 )
 from fides.service.dataset.dataset_validator import (
     DatasetValidationContext,
     DatasetValidationStep,
-)
-
-from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    Dataset as CtlDataset,
 )
 
 
@@ -50,6 +51,8 @@ def validate_saas_dataset(
                 )
 
 
+# Everything outside this set is treated as immutable on SaaS datasets.
+# If a new FideslangDataset field should be user-editable, add it here.
 MUTABLE_DATASET_FIELDS = {"collections"}
 
 
@@ -72,10 +75,11 @@ def restore_immutable_fields(
         existing_value = getattr(existing_dataset, field_name)
         incoming_value = getattr(dataset, field_name)
         if existing_value != incoming_value:
-            setattr(dataset, field_name, existing_value)
+            setattr(dataset, field_name, deepcopy(existing_value))
             warnings.append(
                 DatasetFieldWarning(
                     field=field_name,
+                    action="restored",
                     message=f"Restored '{field_name}' to its original value "
                     f"(cannot be modified on a SaaS dataset).",
                 )
@@ -86,34 +90,6 @@ def restore_immutable_fields(
                 dataset.fides_key,
             )
     return warnings
-
-
-def find_field_by_name(fields: list[DatasetField], name: str) -> Optional[DatasetField]:
-    """Find a field by name in a list of dataset fields."""
-    for field in fields:
-        if field.name == name:
-            return field
-    return None
-
-
-def resolve_field_path(
-    fields: list[DatasetField], dot_path: str
-) -> Optional[DatasetField]:
-    """
-    Walk nested ``DatasetField.fields`` to find a field by dot-path.
-
-    For example, ``"address.street"`` resolves to the ``street`` sub-field
-    inside the ``address`` field.
-    """
-    parts = dot_path.split(".")
-    current_fields = fields
-    resolved: Optional[DatasetField] = None
-    for part in parts:
-        resolved = find_field_by_name(current_fields, part)
-        if resolved is None:
-            return None
-        current_fields = resolved.fields or []
-    return resolved
 
 
 def restore_nested_field(
@@ -136,7 +112,7 @@ def restore_nested_field(
         # Leaf – restore directly from existing
         existing_field = find_field_by_name(existing_parent_fields, name)
         if existing_field:
-            parent_fields.append(existing_field)
+            parent_fields.append(deepcopy(existing_field))
             return True
         return False
 
@@ -148,7 +124,7 @@ def restore_nested_field(
 
     if container is None:
         # Container itself was removed – re-create it from existing
-        parent_fields.append(existing_container)
+        parent_fields.append(deepcopy(existing_container))
         return True  # whole subtree restored
 
     # Container exists – recurse
@@ -158,6 +134,29 @@ def restore_nested_field(
         container.fields,
         path_parts[1:],
         existing_container.fields or [],
+    )
+
+
+def _emit_failed_collection_warning(
+    warnings: List[DatasetFieldWarning],
+    col_name: str,
+    dataset_fides_key: str,
+    reason: str,
+) -> None:
+    """Emit a structured warning when a collection could not be restored."""
+    warnings.append(
+        DatasetFieldWarning(
+            collection=col_name,
+            action="failed",
+            message=f"Collection '{col_name}' is missing but could not "
+            f"be restored ({reason}).",
+        )
+    )
+    logger.warning(
+        "Collection '{}' missing from SaaS dataset '{}' and could not be restored: {}",
+        col_name,
+        dataset_fides_key,
+        reason,
     )
 
 
@@ -177,7 +176,8 @@ def restore_protected_structure(
     if not connection_config.saas_config:
         return []
 
-    saas_config = SaaSConfig(**connection_config.saas_config)
+    saas_config = connection_config.get_saas_config()
+    assert saas_config is not None  # guaranteed by the guard above
     instance_key = connection_config.saas_config["fides_key"]
     warnings: List[DatasetFieldWarning] = []
 
@@ -195,11 +195,12 @@ def restore_protected_structure(
             warnings.append(
                 DatasetFieldWarning(
                     collection=col_name,
+                    action="removed",
                     message=f"Removed collection '{col_name}' "
                     f"(cannot add collections to a SaaS dataset).",
                 )
             )
-            logger.info(
+            logger.warning(
                 "Removed user-added collection '{}' from SaaS dataset '{}'",
                 col_name,
                 dataset.fides_key,
@@ -211,10 +212,11 @@ def restore_protected_structure(
         existing_by_name = {col.name: col for col in existing_dataset.collections}
         for col_name in sorted(removed):
             if col_name in existing_by_name:
-                dataset.collections.append(existing_by_name[col_name])
+                dataset.collections.append(deepcopy(existing_by_name[col_name]))
                 warnings.append(
                     DatasetFieldWarning(
                         collection=col_name,
+                        action="restored",
                         message=f"Restored collection '{col_name}' "
                         f"(cannot remove collections from a SaaS dataset).",
                     )
@@ -225,33 +227,19 @@ def restore_protected_structure(
                     dataset.fides_key,
                 )
             else:
-                warnings.append(
-                    DatasetFieldWarning(
-                        collection=col_name,
-                        message=f"Collection '{col_name}' is missing but could not "
-                        f"be restored (not found in existing dataset).",
-                    )
-                )
-                logger.warning(
-                    "Collection '{}' missing from SaaS dataset '{}' "
-                    "and not found in existing dataset for restoration",
+                _emit_failed_collection_warning(
+                    warnings,
                     col_name,
                     dataset.fides_key,
+                    "not found in existing dataset",
                 )
     elif removed and not existing_dataset:
         for col_name in sorted(removed):
-            warnings.append(
-                DatasetFieldWarning(
-                    collection=col_name,
-                    message=f"Collection '{col_name}' is missing but could not "
-                    f"be restored (no existing dataset found).",
-                )
-            )
-            logger.warning(
-                "Collection '{}' missing from SaaS dataset '{}' on first creation "
-                "and could not be restored",
+            _emit_failed_collection_warning(
+                warnings,
                 col_name,
                 dataset.fides_key,
+                "no existing dataset found",
             )
 
     # Restore protected fields: cannot delete fields referenced by SaaS config
@@ -286,12 +274,29 @@ def restore_protected_structure(
                         DatasetFieldWarning(
                             collection=collection_name,
                             field=field_path,
+                            action="restored",
                             message=f"Restored field '{field_path}' in collection "
                             f"'{collection_name}' (referenced by SaaS config).",
                         )
                     )
                     logger.info(
                         "Restored deleted protected field '{}.{}' on SaaS dataset '{}'",
+                        collection_name,
+                        field_path,
+                        dataset.fides_key,
+                    )
+                else:
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection_name,
+                            field=field_path,
+                            action="failed",
+                            message=f"Could not restore field '{field_path}' in collection "
+                            f"'{collection_name}' (not found in existing dataset).",
+                        )
+                    )
+                    logger.warning(
+                        "Could not restore protected field '{}.{}' on SaaS dataset '{}'",
                         collection_name,
                         field_path,
                         dataset.fides_key,
@@ -311,11 +316,12 @@ class SaaSValidationStep(DatasetValidationStep):
             validate_saas_dataset(context.connection_config, context.dataset)
 
             # Fetch the existing dataset once and pass to both helpers
-            existing_record = (
-                context.db.query(CtlDataset)
-                .filter(CtlDataset.fides_key == context.dataset.fides_key)
-                .first()
-            )
+            try:
+                existing_record = _get_ctl_dataset(
+                    context.db, context.dataset.fides_key
+                )
+            except DatasetNotFoundException:
+                existing_record = None
             existing_dataset: Optional[FideslangDataset] = None
             if existing_record:
                 try:

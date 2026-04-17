@@ -32,7 +32,6 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.connection.merge_configs_util import (
     get_saas_config_referenced_field_paths,
 )
@@ -108,9 +107,15 @@ class DatasetConfigService:
             warnings = validation_response.warnings
 
             if isinstance(dataset, DatasetConfigCtlDataset):
-                # Mutations can't be persisted through the CtlDataset path,
-                # so clear warnings to avoid misleading the caller.
-                warnings = []
+                if warnings:
+                    # The CtlDataset doesn't meet SaaS requirements, and we can't
+                    # silently fix it (it wasn't submitted for editing).
+                    field_issues = "; ".join(w.message for w in warnings)
+                    raise ValidationError(
+                        f"CtlDataset '{dataset.ctl_dataset_fides_key}' has SaaS "
+                        f"validation issues that must be fixed before linking: "
+                        f"{field_issues}"
+                    )
             elif warnings:
                 # The dataset was mutated by validation (restored fields),
                 # update the data_dict with the corrected dataset.
@@ -281,14 +286,23 @@ class DatasetConfigService:
     def get_protected_fields(
         self,
         connection_config: ConnectionConfig,
+        dataset_key: str,
     ) -> DatasetProtectedFields:
         """
         Return the fields that are protected on a SaaS dataset:
         immutable top-level metadata fields and collection fields
         referenced by the SaaS config.
 
+        Protected fields are a property of the connection's SaaS config,
+        not the individual dataset. The ``dataset_key`` is validated to
+        ensure the dataset exists on this connection.
+
         For non-SaaS connections, returns empty lists.
         """
+        if not self.get_config_from_fides_key(connection_config.id, dataset_key):
+            raise DatasetNotFoundException(
+                f"No dataset config with fides_key '{dataset_key}'"
+            )
         if (
             connection_config.connection_type != ConnectionType.saas
             or not connection_config.saas_config
@@ -298,7 +312,7 @@ class DatasetConfigService:
                 protected_collection_fields=[],
             )
 
-        saas_config = SaaSConfig(**connection_config.saas_config)
+        saas_config = connection_config.get_saas_config()
         instance_key = connection_config.saas_config["fides_key"]
         protected = get_saas_config_referenced_field_paths(saas_config, instance_key)
 

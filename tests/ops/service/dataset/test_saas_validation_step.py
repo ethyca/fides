@@ -1,11 +1,13 @@
 from unittest.mock import MagicMock
 
+import pytest
 from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import DatasetCollection, DatasetField
 
+from fides.api.graph.utils import resolve_field_path
 from fides.api.models.connectionconfig import ConnectionType
+from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.dataset.validation_steps.saas import (
-    resolve_field_path,
     restore_immutable_fields,
     restore_protected_structure,
 )
@@ -61,6 +63,7 @@ def _make_connection_config(saas_config_dict: dict) -> MagicMock:
     mock.saas_config = saas_config_dict
     mock.key = "test_connector"
     mock.connection_type = ConnectionType.saas
+    mock.get_saas_config.return_value = SaaSConfig(**saas_config_dict)
     return mock
 
 
@@ -435,33 +438,32 @@ class TestRestoreImmutableFields:
         warnings = restore_immutable_fields(dataset, existing)
         assert warnings == []
 
-    def test_changed_name_restored_with_warning(self):
+    @pytest.mark.parametrize(
+        "field_name,kwargs,expected_restored",
+        [
+            ("name", {"name": "Changed Name"}, "Test Connector Dataset"),
+            (
+                "description",
+                {"description": "Changed description"},
+                "Original description",
+            ),
+        ],
+    )
+    def test_changed_field_restored_with_warning(
+        self, field_name, kwargs, expected_restored
+    ):
         existing = _make_existing_dataset()
         dataset = _make_dataset(
             "test_connector",
             [{"name": "users", "fields": ["name"]}],
-            name="Changed Name",
-            description="Original description",
+            name=kwargs.get("name", "Test Connector Dataset"),
+            description=kwargs.get("description", "Original description"),
         )
         warnings = restore_immutable_fields(dataset, existing)
         assert len(warnings) == 1
-        assert warnings[0].collection is None
-        assert warnings[0].field == "name"
-        assert "'name'" in warnings[0].message
-        assert dataset.name == "Test Connector Dataset"
-
-    def test_changed_description_restored_with_warning(self):
-        existing = _make_existing_dataset()
-        dataset = _make_dataset(
-            "test_connector",
-            [{"name": "users", "fields": ["name"]}],
-            name="Test Connector Dataset",
-            description="Changed description",
-        )
-        warnings = restore_immutable_fields(dataset, existing)
-        assert len(warnings) == 1
-        assert "'description'" in warnings[0].message
-        assert dataset.description == "Original description"
+        assert warnings[0].field == field_name
+        assert f"'{field_name}'" in warnings[0].message
+        assert getattr(dataset, field_name) == expected_restored
 
     def test_multiple_fields_changed_multiple_warnings(self):
         existing = _make_existing_dataset()

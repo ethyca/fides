@@ -608,16 +608,15 @@ def get_dataset_protected_fields(
     immutable top-level metadata fields and collection fields
     referenced by the SaaS config.
     """
-    dataset_config = dataset_config_service.get_config_from_fides_key(
-        connection_config.id, dataset_key
-    )
-    if not dataset_config:
+    try:
+        return dataset_config_service.get_protected_fields(
+            connection_config, dataset_key
+        )
+    except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset config with fides_key '{dataset_key}'",
+            detail=str(e),
         )
-
-    return dataset_config_service.get_protected_fields(connection_config)
 
 
 @router.post(
