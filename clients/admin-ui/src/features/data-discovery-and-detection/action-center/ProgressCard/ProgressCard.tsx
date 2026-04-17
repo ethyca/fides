@@ -12,7 +12,7 @@ import {
   Title,
   Tooltip,
 } from "fidesui";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, ReactNode } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import { nFormatter } from "~/features/common/utils";
@@ -25,6 +25,18 @@ type NumericStat = {
 type PercentStat = {
   label: string;
   value: number;
+};
+
+/**
+ * A single badge rendered along the bottom of the card.
+ * `status` uses Ant Design's Badge semantic colors:
+ *   success (green), warning (yellow), error (red), processing (blue),
+ *   default (grey).
+ */
+export type ProgressCardBadge = {
+  status: "success" | "warning" | "error" | "processing" | "default";
+  label: string;
+  count: number;
 };
 
 export interface ProgressCardProps {
@@ -48,6 +60,36 @@ export interface ProgressCardProps {
   lastUpdated?: string;
   compact?: boolean;
   disabled?: boolean;
+  /**
+   * Primary statistic rendered above the bar chart. Defaults to the sum of
+   * `classified + unlabeled` progress buckets for backward compatibility with
+   * the Action Center's original "resources needing review" framing. Provide
+   * this when the consumer uses a different framing (e.g. Request Manager
+   * renders the overdue count as the headline stat).
+   */
+  primaryStatValue?: number;
+  /**
+   * Sentence rendered immediately below the primary statistic. Defaults to
+   * "resources need review across {subtitle}" (omits the "across" clause in
+   * compact mode). Provide this to customize the domain noun (e.g. "requests
+   * open — X active") without forking the component.
+   */
+  progressSummary?: ReactNode;
+  /**
+   * Override the row of bottom badges. When omitted, the component renders
+   * the original Action Center triad of Approved / Classified / Unlabeled
+   * pulled from `barChartProps.data.progress`. Provide this when the
+   * underlying data uses a different vocabulary (e.g. SLA health with
+   * on-track / approaching / overdue buckets).
+   */
+  badges?: ProgressCardBadge[];
+  /**
+   * Optional content rendered inside an Ant Tooltip that wraps the card
+   * title. Used by consumers that want to surface the card's data model
+   * (e.g. which underlying statuses flow into an SLA bucket) without
+   * expanding the visible chrome.
+   */
+  titleTooltip?: ReactNode;
 }
 
 export const ProgressCard = ({
@@ -59,10 +101,21 @@ export const ProgressCard = ({
   lastUpdated,
   disabled,
   compact,
+  primaryStatValue,
+  progressSummary,
+  badges,
+  titleTooltip,
 }: PropsWithChildren<ProgressCardProps>) => {
   const relativeTime = useRelativeTime(
     lastUpdated ? new Date(lastUpdated) : new Date(),
   );
+
+  // Default headline stat mirrors the original Action Center framing:
+  // "resources needing review" = classified + unlabeled buckets in the bar chart.
+  const defaultStatValue =
+    (barChartProps?.data?.progress?.classified ?? 0) +
+    (barChartProps?.data?.progress?.unlabeled ?? 0);
+  const resolvedStatValue = primaryStatValue ?? defaultStatValue;
 
   return (
     <Flex
@@ -74,9 +127,26 @@ export const ProgressCard = ({
     >
       {!compact && (
         <Flex justify="space-between" align="baseline">
-          <Title level={5} className="whitespace-nowrap">
-            {title}
-          </Title>
+          {titleTooltip ? (
+            <Tooltip
+              color="white"
+              rootClassName="max-w-[400px]"
+              title={titleTooltip}
+            >
+              {/* Dotted underline + help cursor signal to the user that
+                  hovering the title reveals supplementary info. */}
+              <Title
+                level={5}
+                className="cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
+              >
+                {title}
+              </Title>
+            </Tooltip>
+          ) : (
+            <Title level={5} className="whitespace-nowrap">
+              {title}
+            </Title>
+          )}
           <Paragraph
             type="secondary"
             className="!my-0 w-full self-end text-right text-xs"
@@ -90,10 +160,7 @@ export const ProgressCard = ({
         </Flex>
       )}
       <EnterExitList
-        dataSource={[
-          (barChartProps?.data?.progress?.classified ?? 0) +
-            (barChartProps?.data?.progress?.unlabeled ?? 0),
-        ]}
+        dataSource={[resolvedStatValue]}
         itemKey={(key) => key}
         renderItem={(item) => (
           <Tooltip
@@ -124,7 +191,9 @@ export const ProgressCard = ({
           </Tooltip>
         )}
       />
-      <Text>resources need review{!compact && <> across {subtitle}</>}</Text>
+      {progressSummary ?? (
+        <Text>resources need review{!compact && <> across {subtitle}</>}</Text>
+      )}
       <div>
         {barChartProps && <StackedBarChart {...barChartProps} hideTooltip />}
         <Tooltip
@@ -152,18 +221,31 @@ export const ProgressCard = ({
           }
         >
           <Flex gap="small" rootClassName="w-max overflow-hidden">
-            <Badge
-              status="success"
-              text={`${nFormatter(barChartProps?.data?.progress?.approved ?? 0)} approved`}
-            />
-            <Badge
-              status="warning"
-              text={`${nFormatter(barChartProps?.data?.progress?.classified ?? 0)} classified`}
-            />
-            <Badge
-              status="default"
-              text={`${nFormatter(barChartProps?.data?.progress?.unlabeled)} unlabeled`}
-            />
+            {badges
+              ? badges.map((badge) => (
+                  <Badge
+                    key={`${badge.status}-${badge.label}`}
+                    status={badge.status}
+                    text={`${nFormatter(badge.count)} ${badge.label}`}
+                  />
+                ))
+              : [
+                  <Badge
+                    key="approved"
+                    status="success"
+                    text={`${nFormatter(barChartProps?.data?.progress?.approved ?? 0)} approved`}
+                  />,
+                  <Badge
+                    key="classified"
+                    status="warning"
+                    text={`${nFormatter(barChartProps?.data?.progress?.classified ?? 0)} classified`}
+                  />,
+                  <Badge
+                    key="unlabeled"
+                    status="default"
+                    text={`${nFormatter(barChartProps?.data?.progress?.unlabeled)} unlabeled`}
+                  />,
+                ]}
           </Flex>
         </Tooltip>
       </div>

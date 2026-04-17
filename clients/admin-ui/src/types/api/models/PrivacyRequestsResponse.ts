@@ -22,4 +22,8 @@ export type PrivacyRequestsResponse = {
   sla_health?: {
     [key: string]: SLAHealthBucket;
   };
+  /**
+   * Last Updated
+   */
+  last_updated?: string | null;
 };

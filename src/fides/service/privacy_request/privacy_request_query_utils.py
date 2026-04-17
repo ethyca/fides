@@ -28,6 +28,39 @@ from fides.api.util.text import normalize_location_code
 from fides.config import CONFIG
 
 
+def apply_location_filter(query: Query, location: Optional[str]) -> Query:
+    """Apply an ISO 3166 location filter to a PrivacyRequest query.
+
+    Semantics (identical to list-side filtering, kept in one place to prevent
+    drift between the Request Manager list and dashboard-driven aggregations):
+
+    - `location=None` or empty string: no-op
+    - Subdivision code (contains `-`, e.g. "US-CA"): exact match on PrivacyRequest.location
+    - Country code (e.g. "US"): match the country OR any of its subdivisions ("US-*")
+    - Unknown/invalid code: returns an empty result set (filter(False))
+
+    Input is normalized via `normalize_location_code` (case-insensitive, `_` -> `-`).
+    """
+    if not location:
+        return query
+
+    try:
+        normalized_location = normalize_location_code(location)
+    except ValueError:
+        # Invalid location -> return no results rather than silently omitting the filter
+        return query.filter(False)
+
+    if "-" in normalized_location:
+        return query.filter(PrivacyRequest.location == normalized_location)
+
+    return query.filter(
+        or_(
+            PrivacyRequest.location == normalized_location,
+            PrivacyRequest.location.ilike(f"{normalized_location}-%"),
+        )
+    )
+
+
 def filter_privacy_request_queryset(
     db: Session,
     query: Query,
@@ -161,28 +194,7 @@ def filter_privacy_request_queryset(
             PrivacyRequest.external_id.ilike(f"{filters.external_id}%")
         )
     if filters.location:
-        # Support filtering by exact location match or country prefix
-        # e.g., "US" matches both "US" and "US-CA", "US-NY", etc.
-        # "US-CA" matches only "US-CA"
-        # Also normalize input to handle underscores and case insensitivity
-
-        try:
-            normalized_location = normalize_location_code(filters.location)
-        except ValueError:
-            # If normalization fails, treat as no results to prevent errors
-            query = query.filter(False)
-        else:
-            if "-" in normalized_location:
-                # Exact match for subdivision codes
-                query = query.filter(PrivacyRequest.location == normalized_location)
-            else:
-                # Country code - match country or any subdivision of that country
-                query = query.filter(
-                    or_(
-                        PrivacyRequest.location == normalized_location,
-                        PrivacyRequest.location.ilike(f"{normalized_location}-%"),
-                    )
-                )
+        query = apply_location_filter(query, filters.location)
     if filters.status:
         query = query.filter(PrivacyRequest.status.in_(filters.status))
     if filters.created_lt:

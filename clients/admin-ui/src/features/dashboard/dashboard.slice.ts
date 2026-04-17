@@ -80,9 +80,24 @@ const dashboardApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: "Fides Dashboard", id: "activity-feed" }],
     }),
-    getPrivacyRequests: build.query<PrivacyRequestsResponse, void>({
-      query: () => ({ url: "plus/dashboard/privacy-requests" }),
-      providesTags: [{ type: "Fides Dashboard", id: "privacy-requests" }],
+    getPrivacyRequests: build.query<
+      PrivacyRequestsResponse,
+      { location?: string | null } | void
+    >({
+      query: (params) => ({
+        url: "plus/dashboard/privacy-requests",
+        // Only send the location param when set; omit for the global view so
+        // the cache key for the unfiltered response stays stable.
+        params: params?.location ? { location: params.location } : undefined,
+      }),
+      // Segment cache per location so switching the Request Manager location
+      // filter triggers a fresh fetch rather than stale data.
+      providesTags: (_result, _err, arg) => [
+        {
+          type: "Fides Dashboard",
+          id: `privacy-requests:${arg?.location ?? "ALL"}`,
+        },
+      ],
     }),
     getSystemCoverage: build.query<SystemCoverageResponse, void>({
       query: () => ({ url: "plus/dashboard/system-coverage" }),

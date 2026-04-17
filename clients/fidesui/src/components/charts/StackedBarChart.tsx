@@ -17,7 +17,19 @@ import { ChartText } from "./ChartText";
 
 export interface StackedBarSegment {
   key: string;
-  color: AntColorTokenKey;
+  /**
+   * Either an Ant color token key (resolved through the global theme, e.g.
+   * "colorPrimary", "colorSuccess") or a raw CSS color string
+   * (hex/rgb/named). Token keys are preferred for theme-following palettes;
+   * raw CSS is the escape hatch when the Fides theme doesn't expose a
+   * suitable token for a specific brand shade (e.g. the Fides light blue
+   * `#a5d6f3`, which has no corresponding semantic token).
+   *
+   * Typed as `AntColorTokenKey | (string & {})` so the editor still
+   * autocompletes token names while any other string is accepted.
+   */
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  color: AntColorTokenKey | (string & {});
   label: string;
 }
 
@@ -233,7 +245,14 @@ export const StackedBarChart = ({
   const colorMap = useMemo(
     () =>
       Object.fromEntries(
-        segments.map((segment) => [segment.key, token[segment.color]]),
+        segments.map((segment) => {
+          // Look up in the theme's token dictionary first. If the value
+          // isn't a token key (e.g. a raw hex like "#a5d6f3"), fall back
+          // to using the color string directly — recharts accepts any
+          // valid CSS color as a `fill` value.
+          const tokenValue = (token as Record<string, string>)[segment.color];
+          return [segment.key, tokenValue ?? segment.color];
+        }),
       ) as Record<string, string>,
     [token, segments],
   );

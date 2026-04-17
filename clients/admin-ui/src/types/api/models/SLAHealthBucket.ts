@@ -16,4 +16,8 @@ export type SLAHealthBucket = {
    * Overdue
    */
   overdue?: number;
+  /**
+   * Total
+   */
+  total?: number;
 };

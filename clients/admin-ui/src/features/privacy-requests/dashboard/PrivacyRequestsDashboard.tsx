@@ -14,6 +14,7 @@ import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
+import RequestInsights from "~/features/privacy-requests/insights/RequestInsights";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestResponse } from "~/types/api";
 
@@ -90,7 +91,10 @@ export const PrivacyRequestsDashboard = () => {
 
   return (
     <div>
-      {/* First row: Search and Filters */}
+      {/* First row: Search and Filters.
+          Rendered above the insights widgets because filter state (most
+          importantly `location`) flows downward into both the widgets
+          and the list — reading order matches data flow. */}
       <Flex gap="small" align="center" className="mb-4">
         <PrivacyRequestFiltersBar
           filters={filters}
@@ -99,6 +103,14 @@ export const PrivacyRequestsDashboard = () => {
           setSortState={setSortState}
         />
       </Flex>
+
+      {/* Helios-style insights row (feature-flagged via heliosInsights).
+          Three SLA-bucket cards (On track / Approaching / Overdue), each
+          showing a per-policy action-type breakdown in its stacked bar.
+          Responds to the location filter above. */}
+      <div className="mb-4">
+        <RequestInsights />
+      </div>
 
       {/* Second row: Actions */}
       <Flex gap="small" align="center" justify="space-between" className="mb-2">
