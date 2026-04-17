@@ -6,7 +6,6 @@ import {
   TabsProps,
   useNotification,
 } from "fidesui";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
@@ -14,6 +13,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   EDIT_SYSTEM_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
@@ -180,13 +180,9 @@ const useSystemFormTabs = ({
                 data-testid="save-help-message"
               >
                 Now that you have saved this new system it is{" "}
-                <Link
-                  as={NextLink}
-                  href={systemOrDatamapRoute}
-                  textDecor="underline"
-                >
+                <RouterLink href={systemOrDatamapRoute}>
                   ready to view in your data map
-                </Link>
+                </RouterLink>
                 . You can return to this setup at any time to add privacy
                 declarations to this system.
               </Text>

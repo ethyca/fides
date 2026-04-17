@@ -84,7 +84,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
         <EmptyState onRunAssessment={() => setGenerateModalOpen(true)} />
       ) : (
         <div className="py-6">
-          <Space direction="vertical" size="large" className="w-full">
+          <Space orientation="vertical" size="large" className="w-full">
             {groups.map((group, i) => (
               <AssessmentGroup
                 key={group.data_use ?? `uncategorized-${i}`}

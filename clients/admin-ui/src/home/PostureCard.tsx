@@ -135,7 +135,7 @@ export const PostureCard = () => {
             type="info"
             showIcon={false}
             className={styles.summaryAlert}
-            message={
+            title={
               <Flex align="center" gap="middle">
                 <div>
                   <Flex vertical>

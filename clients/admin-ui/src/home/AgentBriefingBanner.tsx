@@ -7,10 +7,10 @@ import {
   useThemeMode,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import NextLink from "next/link";
 import { useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { ACTION_CTA } from "~/features/dashboard/constants";
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 import { ActionSeverity } from "~/features/dashboard/types";
@@ -62,7 +62,7 @@ export const AgentBriefingBanner = () => {
         showIcon
         icon={<SparkleIcon size={14} />}
         closable
-        message={
+        title={
           <>
             {text}
             {alphaDashboardAgentBriefingActions && (
@@ -75,7 +75,7 @@ export const AgentBriefingBanner = () => {
                   const severityClass =
                     SEVERITY_STYLE[action.severity] ?? styles.info;
                   return (
-                    <NextLink
+                    <RouterLink
                       key={`${action.action_type}-${action.label}`}
                       href={cta.route(action.action_data)}
                       className={styles.quickActionTile}
@@ -86,7 +86,7 @@ export const AgentBriefingBanner = () => {
                       >
                         {action.label}
                       </Button>
-                    </NextLink>
+                    </RouterLink>
                   );
                 })}
               </Flex>

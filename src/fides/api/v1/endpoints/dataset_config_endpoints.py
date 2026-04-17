@@ -26,7 +26,7 @@ from starlette.status import (
 
 from fides.api import deps
 from fides.api.deps import get_dataset_config_service
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.oauth.utils import verify_oauth_client
@@ -34,6 +34,7 @@ from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetConfigSchema,
+    DatasetProtectedFields,
     DatasetReachability,
     ValidateDatasetResponse,
 )
@@ -52,6 +53,7 @@ from fides.common.urn_registry import (
     DATASET_CONFIG_BY_KEY,
     DATASET_CONFIGS,
     DATASET_INPUTS,
+    DATASET_PROTECTED_FIELDS,
     DATASET_REACHABILITY,
     DATASET_VALIDATE,
     DATASETS,
@@ -588,6 +590,27 @@ def dataset_reachability(
         dataset_config, access_policy
     )
     return {"reachable": reachable, "details": details}
+
+
+@router.get(
+    DATASET_PROTECTED_FIELDS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetProtectedFields,
+)
+def get_dataset_protected_fields(
+    *,
+    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> DatasetProtectedFields:
+    """
+    Returns the fields that are protected on a SaaS connection:
+    immutable top-level metadata fields and collection fields
+    referenced by the SaaS config.
+
+    Protected fields are a property of the connection's SaaS config,
+    not any individual dataset.
+    """
+    return dataset_config_service.get_protected_fields(connection_config)
 
 
 @router.post(

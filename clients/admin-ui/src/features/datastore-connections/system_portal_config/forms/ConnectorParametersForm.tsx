@@ -14,6 +14,7 @@ import {
   Modal,
   Select,
   Switch,
+  useMessage,
 } from "fidesui";
 import _ from "lodash";
 import React, { useMemo } from "react";
@@ -26,6 +27,7 @@ import {
   useFormFieldsFromSchema,
 } from "~/features/common/form/useFormFieldsFromSchema";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
+import { useIntegrationPropertySelect } from "~/features/properties/useIntegrationPropertySelect";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -49,7 +51,7 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Save is clicked
    */
-  onSaveClick: (values: ConnectionConfigFormValues) => void;
+  onSaveClick: (values: ConnectionConfigFormValues) => Promise<void>;
   /**
    * Parent callback when Test Connection is clicked
    */
@@ -102,6 +104,19 @@ export const ConnectorParametersForm = ({
     useLazyGetDatastoreConnectionStatusQuery();
   const [patchConnection] = usePatchDatastoreConnectionsMutation();
   const { plus: isPlusEnabled } = useFeatures();
+  const messageApi = useMessage();
+
+  const isEditingConnection = !!connectionConfig;
+
+  const {
+    propertyOptions,
+    initialPropertyIds,
+    savePropertyAssignments,
+    hasDatasets,
+    isLoading: isLoadingProperties,
+  } = useIntegrationPropertySelect(
+    isEditingConnection ? connectionConfig?.key : undefined,
+  );
 
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secretsSchema);
@@ -127,6 +142,7 @@ export const ConnectorParametersForm = ({
         : {};
 
       values.dataset = initialDatasets;
+      values.property_ids = initialPropertyIds;
 
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
@@ -164,12 +180,28 @@ export const ConnectorParametersForm = ({
     defaultValues,
     secretsSchema,
     initialDatasets,
+    initialPropertyIds,
     connectionOption,
   ]);
 
-  const handleFinish = (values: ConnectionConfigFormValues) => {
+  const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
-    onSaveClick(processedValues);
+    await onSaveClick(processedValues);
+
+    // Save property assignments if editing
+    if (
+      isEditingConnection &&
+      values.property_ids !== undefined &&
+      hasDatasets
+    ) {
+      try {
+        await savePropertyAssignments(values.property_ids);
+      } catch {
+        messageApi.error(
+          "Integration saved but failed to update properties. Please try again.",
+        );
+      }
+    }
   };
 
   const handleAuthorizeConnectionClick = async () => {
@@ -339,6 +371,22 @@ export const ConnectorParametersForm = ({
                 />
               </Form.Item>
             )}
+          {isPlusEnabled && isEditingConnection && hasDatasets && (
+            <Form.Item
+              name="property_ids"
+              label="Properties"
+              tooltip="Assign properties to this integration's datasets to scope privacy request processing"
+            >
+              <Select
+                aria-label="Properties"
+                mode="multiple"
+                options={propertyOptions}
+                loading={isLoadingProperties}
+                allowClear
+                placeholder="Select properties..."
+              />
+            </Form.Item>
+          )}
           <Flex justify="space-between">
             <Flex gap="small">
               {!connectionOption.authorization_required || authorized ? (

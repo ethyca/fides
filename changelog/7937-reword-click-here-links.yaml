@@ -1,0 +1,4 @@
+type: Changed
+description: Reworded "click here" link text across the admin UI, docs, and email templates for accessibility
+pr: 7937
+labels: []
