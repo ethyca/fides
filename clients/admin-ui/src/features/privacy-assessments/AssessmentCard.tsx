@@ -14,9 +14,9 @@ import {
   Text,
   Typography,
 } from "fidesui";
-import NextLink from "next/link";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { formatDate } from "~/features/common/utils";
 
@@ -75,12 +75,19 @@ export const AssessmentCard = ({
       <Flex vertical gap="small" justify="space-between" className="flex-1">
         <div>
           <Title level={3} className={`!mb-1 ${styles.titleLink}`}>
-            <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
-              {assessment.name}
-            </NextLink>
+            <RouterLink
+              unstyled
+              href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
+            >
+              {assessment.template_name ?? assessment.name}
+            </RouterLink>
           </Title>
-          <Text type="secondary" size="sm" className={styles.textWithTags}>
-            Processing{" "}
+          {assessment.system_name && (
+            <Text type="secondary" size="sm" className="block">
+              {assessment.system_name}
+            </Text>
+          )}
+          <div className={styles.textWithTags}>
             {(assessment.data_categories ?? []).length > 0 ? (
               <TagList
                 tags={(assessment.data_categories ?? []).map((key) => ({
@@ -92,13 +99,8 @@ export const AssessmentCard = ({
               />
             ) : (
               <Tag>0 data categories</Tag>
-            )}{" "}
-            for{" "}
-            <TagList
-              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-              maxTags={1}
-            />
-          </Text>
+            )}
+          </div>
           {riskLevel && (
             <div>
               <Tag

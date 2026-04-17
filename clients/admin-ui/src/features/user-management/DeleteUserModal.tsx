@@ -66,7 +66,7 @@ const DeleteUserModal = ({ user, isOpen, onClose }: DeleteUserModalProps) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  Form.useWatch([], form);
+  const usernameConfirmation = Form.useWatch("usernameConfirmation", form);
 
   const handleFinish = async () => {
     setIsSubmitting(true);
@@ -136,7 +136,7 @@ const DeleteUserModal = ({ user, isOpen, onClose }: DeleteUserModalProps) => {
           <Button
             type="primary"
             disabled={
-              !form.isFieldsTouched(true) ||
+              !usernameConfirmation ||
               form.getFieldsError().some(({ errors }) => errors.length > 0)
             }
             loading={isSubmitting}

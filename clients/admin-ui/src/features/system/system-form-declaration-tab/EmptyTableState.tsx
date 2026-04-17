@@ -45,7 +45,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
             data-testid="add-btn"
             onClick={handleAdd}
             icon={<Icons.Add size={16} />}
-            iconPosition="end"
+            iconPlacement="end"
           >
             Add data use
           </Button>
