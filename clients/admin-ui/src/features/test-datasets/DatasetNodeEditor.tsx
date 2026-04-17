@@ -741,7 +741,7 @@ const DatasetNodeEditorInner = ({
                 aria-label="Toggle YAML editor"
               />
             </Flex>
-            <div style={{ flex: "1 1 auto", minHeight: 0 }}>
+            <div className="min-h-0 flex-auto">
               <Editor
                 defaultLanguage="yaml"
                 value={yamlContent}
