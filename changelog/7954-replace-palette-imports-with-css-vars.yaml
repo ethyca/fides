@@ -1,0 +1,4 @@
+type: Changed
+description: Replace palette JS imports with CSS variables across admin-ui and privacy-center
+pr: 7954
+labels: []
