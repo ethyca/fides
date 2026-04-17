@@ -5,11 +5,7 @@ from fideslang.models import Dataset as FideslangDataset
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.schemas.dataset import (
-    DatasetFieldWarning,
-    DatasetTraversalDetails,
-    ValidateDatasetResponse,
-)
+from fides.api.schemas.dataset import DatasetTraversalDetails, ValidateDatasetResponse
 
 T = TypeVar("T", bound="DatasetValidationStep")
 
@@ -27,7 +23,6 @@ class DatasetValidationContext:
         self.dataset = dataset
         self.connection_config = connection_config
         self.traversal_details: Optional[DatasetTraversalDetails] = None
-        self.warnings: List[DatasetFieldWarning] = []
 
 
 class DatasetValidationStep(ABC):
@@ -69,5 +64,4 @@ class DatasetValidator:
         return ValidateDatasetResponse(
             dataset=self.context.dataset,
             traversal_details=self.context.traversal_details,
-            warnings=self.context.warnings,
         )
