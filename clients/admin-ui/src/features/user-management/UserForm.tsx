@@ -229,7 +229,11 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
             )}
           </Flex>
         </Flex>
-        <Form.Item name="username" label="Username" rules={isNewUser ? usernameRules : []}>
+        <Form.Item
+          name="username"
+          label="Username"
+          rules={isNewUser ? usernameRules : []}
+        >
           <Input
             placeholder="Enter new username"
             disabled={!isNewUser}
