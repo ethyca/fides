@@ -105,8 +105,9 @@ def get_dataset_service(
 
 def get_dataset_config_service(
     db: Session = Depends(get_db),
+    event_audit_service: EventAuditService = Depends(get_event_audit_service),
 ) -> DatasetConfigService:
-    return DatasetConfigService(db)
+    return DatasetConfigService(db, event_audit_service)
 
 
 def get_user_service(
