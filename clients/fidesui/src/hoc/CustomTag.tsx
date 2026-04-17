@@ -141,9 +141,11 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
                 tabIndex={0}
                 className={styles.closeButton}
                 aria-label={closeButtonLabel}
+                onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
+                    e.stopPropagation();
                     (e.target as HTMLElement).click();
                   }
                 }}

@@ -115,7 +115,7 @@ export const ActivityFeedCard = () => {
           const href = cta ? cta.route(item.action_data ?? {}) : null;
 
           return (
-            <div key={item.id || i}>
+            <div key={item.id ?? i}>
               {href ? (
                 <RouterLink
                   unstyled
