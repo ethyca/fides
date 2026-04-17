@@ -26,7 +26,7 @@ export const useAddManualTaskStep = ({
 
   return {
     title: "Add a manual task",
-    description: isComplete
+    content: isComplete
       ? "Manual tasks have been configured"
       : "Configure a manual task for this integration. ",
     state: isComplete ? "finish" : "process",

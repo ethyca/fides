@@ -133,12 +133,14 @@ const DigestConfigList = () => {
             <List.Item.Meta
               title={config.name}
               description={
-                <Space direction="vertical" size={4}>
+                <Space orientation="vertical" size={4}>
                   <Space size={4}>
                     <Tag>{DIGEST_TYPE_LABELS[config.digest_type]}</Tag>
-                    <Tag>
-                      {MESSAGING_METHOD_LABELS[config.messaging_service_type]}
-                    </Tag>
+                    {config.messaging_service_type && (
+                      <Tag>
+                        {MESSAGING_METHOD_LABELS[config.messaging_service_type]}
+                      </Tag>
+                    )}
                   </Space>
                 </Space>
               }

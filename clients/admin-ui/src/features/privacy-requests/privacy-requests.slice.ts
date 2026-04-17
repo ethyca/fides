@@ -6,10 +6,11 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
+  ColumnSort,
+  fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
   Page_Union_PrivacyRequestVerboseResponseExtended__PrivacyRequestResponseExtended__,
-  PrivacyCenterConfig,
   PrivacyRequestAccessResults,
-  PrivacyRequestCreate,
+  PrivacyRequestCreateExtended as PrivacyRequestCreate,
   PrivacyRequestDiagnosticsExportResponse,
   PrivacyRequestFilter,
   PrivacyRequestNotificationInfo,
@@ -118,8 +119,11 @@ interface DateRangeParams {
 }
 
 export interface SearchFilterParams
-  extends Partial<PrivacyRequestFilter>,
-    Partial<DateRangeParams> {}
+  extends Omit<Partial<PrivacyRequestFilter>, "sort_field" | "sort_direction">,
+    Partial<DateRangeParams> {
+  sort_field?: string | null;
+  sort_direction?: ColumnSort | null;
+}
 
 const processFilterParams = ({ from, to, ...filters }: SearchFilterParams) => ({
   // Include identities and custom privacy request fields by default

@@ -164,7 +164,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
             <Spacer />
             <Button
               icon={<Icons.Add />}
-              iconPosition="end"
+              iconPlacement="end"
               onClick={onOpenAddEditModal}
               data-testid="add-asset-btn"
             >
@@ -178,7 +178,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
             />
             <Button
               icon={<Icons.TrashCan />}
-              iconPosition="end"
+              iconPlacement="end"
               onClick={onOpenDeleteModal}
               disabled={!selectedAssetIds.length}
               data-testid="bulk-delete-btn"

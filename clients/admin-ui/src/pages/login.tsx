@@ -9,10 +9,10 @@ import {
   Input,
   Typography,
   useMessage,
+  usePrefersReducedMotion,
 } from "fidesui";
 import { motion } from "motion/react";
 import type { NextPage } from "next";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import { useEffect, useMemo, useState } from "react";
@@ -28,7 +28,7 @@ import {
 } from "~/features/auth";
 import { passwordRules as strongPasswordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
-import { usePrefersReducedMotion } from "~/features/common/hooks";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 import { RTKErrorResult } from "~/types/errors/api";
 
@@ -169,21 +169,25 @@ const useLogin = () => {
     } catch (error) {
       setShowAnimation(false);
       // eslint-disable-next-line no-console
-      console.log(error);
-      let defaultErrorMsg: string;
+      console.error(error);
+      let errorMsg: string;
       if (isFromInvite) {
-        defaultErrorMsg = "Setup failed. Please try the invite link again.";
+        // Invite and reset-password flows may surface backend error detail
+        // (e.g. expired/invalid token) since it is actionable to the user.
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Setup failed. Please try the invite link again.",
+        );
       } else if (isResetPassword) {
-        defaultErrorMsg =
-          "Password reset failed. The link may have expired. Please request a new one.";
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Password reset failed. The link may have expired. Please request a new one.",
+        );
       } else {
-        defaultErrorMsg =
-          "Login failed. Please check your credentials and try again.";
+        // Always show a generic message for standard login failures to avoid
+        // leaking backend details (SSO config, authorization state, etc.)
+        errorMsg = "Login failed. Please check your credentials and try again.";
       }
-      const errorMsg = getErrorMessage(
-        error as RTKErrorResult["error"],
-        defaultErrorMsg,
-      );
       message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
@@ -404,14 +408,14 @@ const Login: NextPage = () => {
                         </Flex>
                         {!isFromInvite && !isResetPassword && (
                           <Flex justify="center" className="mt-4">
-                            <Link href="/forgot-password">
+                            <RouterLink href="/forgot-password">
                               <Button
                                 type="link"
                                 data-testid="forgot-password-btn"
                               >
                                 Forgot password?
                               </Button>
-                            </Link>
+                            </RouterLink>
                           </Flex>
                         )}
                       </>

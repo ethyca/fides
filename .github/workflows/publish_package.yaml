@@ -9,7 +9,7 @@ jobs:
   upload_to_pypi:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # This is required to properly tag packages
 
@@ -18,10 +18,10 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install node modules
         run: |
@@ -109,7 +109,7 @@ jobs:
       - name: Send Repository Dispatch Event
         # only run on an alpha or beta tag
         if: steps.check-alpha-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           client-payload: '{"tag": "${{ github.ref_name }}"}'
           event-type: new-fides-feature-tag

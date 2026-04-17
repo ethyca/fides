@@ -13,7 +13,6 @@ import {
   Tooltip,
 } from "fidesui";
 import _ from "lodash";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -23,13 +22,14 @@ import {
   getErrorMessage,
   isFetchBaseQueryError,
 } from "~/features/common/helpers";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import {
   useGetDatastoreFiltersQuery,
   useGetMonitorConfigQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
@@ -64,6 +64,7 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -348,7 +349,7 @@ const ActionCenterFields = ({
                 )}
               </Flex>
             </Flex>
-            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto,auto] 2xl:grid-rows-1">
+            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto] 2xl:grid-rows-1">
               <MonitorFieldsSearchForm
                 form={form}
                 {...formProps}
@@ -404,19 +405,12 @@ const ActionCenterFields = ({
                 <Button
                   type="primary"
                   icon={<Icons.ChevronDown />}
-                  iconPosition="end"
+                  iconPlacement="end"
                   loading={isFetchingAllowedActions}
                 >
                   Actions
                 </Button>
               </Dropdown>
-              <Tooltip title="Refresh">
-                <Button
-                  icon={<Icons.Renew />}
-                  onClick={() => listQueryMeta.refetch()}
-                  aria-label="Refresh"
-                />
-              </Tooltip>
             </div>
             <Flex gap="medium" align="center">
               <Checkbox id="select-all" {...checkboxProps} />
@@ -462,13 +456,9 @@ const ActionCenterFields = ({
                           }
                         >
                           <Flex gap="medium" justify="center">
-                            <NextLink
-                              href={DATASET_ROUTE}
-                              passHref
-                              legacyBehavior
-                            >
+                            <RouterLink href={DATASET_ROUTE}>
                               <Button>Manage datasets view</Button>
-                            </NextLink>
+                            </RouterLink>
                             <Button
                               type="primary"
                               aria-label="Refresh page"
