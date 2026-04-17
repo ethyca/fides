@@ -35,7 +35,7 @@ controls naming and array shape. [#7833](https://github.com/ethyca/fides/pull/78
 - Activity feed card on the home dashboard with infinite scroll, actor-type filtering, and real-time polling [#7842](https://github.com/ethyca/fides/pull/7842)
 - Added composite (created_at, id) index to privacy_preferences to improve pagination performance on large tables [#7897](https://github.com/ethyca/fides/pull/7897) https://github.com/ethyca/fides/labels/db-migration
 - Added PBAC platform identity resolution types, consumer scope field, and Google Workspace connection type [#7807](https://github.com/ethyca/fides/pull/7807) https://github.com/ethyca/fides/labels/db-migration
-- Adding verison history views and modals for SaaS integration [#7828](https://github.com/ethyca/fides/pull/7828)
+- Added version history views and modals for SaaS integration [#7828](https://github.com/ethyca/fides/pull/7828)
 - Added Controls management UI with list, create, edit, and delete pages [#7918](https://github.com/ethyca/fides/pull/7918) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
@@ -71,7 +71,7 @@ controls naming and array shape. [#7833](https://github.com/ethyca/fides/pull/78
 - Added fields to JiraTicketSchema so Jira OAuth app credentials can be configured via the API. [#7901](https://github.com/ethyca/fides/pull/7901)
 - Fixes steward filter states when assigned to a monitor [#7914](https://github.com/ethyca/fides/pull/7914)
 - Fixed findings redirecting to correct confidence bucket [#7895](https://github.com/ethyca/fides/pull/7895)
-- datastore integration text changes based on taxonomy of integration [#7943](https://github.com/ethyca/fides/pull/7943)
+- Datastore integration text changes based on taxonomy of integration [#7943](https://github.com/ethyca/fides/pull/7943)
 - Replace static alphaRbac feature flag with backend-driven RBAC config from Plus health endpoint [#7877](https://github.com/ethyca/fides/pull/7877)
 - Fixed integration Manage modal reporting dirty state on open without edits [#7934](https://github.com/ethyca/fides/pull/7934)
 - Fixed heading hierarchy on assessments page for better semantics and accessibility [#7892](https://github.com/ethyca/fides/pull/7892)
