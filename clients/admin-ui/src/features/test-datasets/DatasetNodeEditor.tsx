@@ -15,6 +15,7 @@ import {
 import {
   Breadcrumb,
   Button,
+  Divider,
   Flex,
   Icons,
   Select,
@@ -567,36 +568,49 @@ const DatasetNodeEditorInner = ({
           justify="space-between"
           className="shrink-0 border-b border-neutral-2 bg-white px-3 py-1.5"
         >
-          {focusedCollection ? (
-            <Flex align="center" gap="small">
-              <Button
-                type="text"
+          <Flex align="center" className="shrink-0">
+            <Flex align="center" gap="small" className="shrink-0">
+              <Icons.Code size={14} />
+              <Typography.Text className="select-none text-xs">
+                YAML
+              </Typography.Text>
+              <Switch
                 size="small"
-                icon={<Icons.ChevronLeft />}
-                onClick={handleBack}
-                aria-label="Back to collections"
-              />
-              <Breadcrumb
-                items={[
-                  {
-                    title: (
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={handleBack}
-                        className="!h-auto !p-0"
-                      >
-                        {datasetLabel}
-                      </Button>
-                    ),
-                  },
-                  { title: focusedCollection },
-                ]}
+                checked={yamlPanelOpen}
+                onChange={handleToggleYamlPanel}
+                aria-label="Toggle YAML editor"
               />
             </Flex>
-          ) : (
-            <div />
-          )}
+            <Divider vertical className="ml-3 mr-1" />
+            {focusedCollection && (
+              <Flex align="center" gap="small">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<Icons.ChevronLeft />}
+                  onClick={handleBack}
+                  aria-label="Back to collections"
+                />
+                <Breadcrumb
+                  items={[
+                    {
+                      title: (
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={handleBack}
+                          className="!h-auto !p-0"
+                        >
+                          {datasetLabel}
+                        </Button>
+                      ),
+                    },
+                    { title: focusedCollection },
+                  ]}
+                />
+              </Flex>
+            )}
+          </Flex>
           <Flex align="center" gap="small" className="shrink-0">
             {availableCategories.length > 0 && (
               <Select
@@ -612,53 +626,12 @@ const DatasetNodeEditorInner = ({
                 showSearch
               />
             )}
-            <Flex align="center" gap={6} className="shrink-0">
-              <Icons.Code size={14} />
-              <Typography.Text className="select-none text-xs">
-                YAML
-              </Typography.Text>
-              <Switch
-                size="small"
-                checked={yamlPanelOpen}
-                onChange={handleToggleYamlPanel}
-                aria-label="Toggle YAML editor"
-              />
-            </Flex>
           </Flex>
         </Flex>
         <Splitter
           className="min-h-0 flex-auto"
-          onResize={(sizes) => setYamlPanelSize(sizes[1])}
+          onResize={(sizes) => setYamlPanelSize(sizes[0])}
         >
-          <Splitter.Panel>
-            <div className="h-full bg-neutral-1">
-              <DatasetTreeHoverProvider edges={layoutedEdges}>
-                <ReactFlow
-                  nodes={nodes}
-                  edges={layoutedEdges}
-                  onNodeClick={handleNodeClick}
-                  onPaneClick={handlePaneClick}
-                  nodeTypes={nodeTypes}
-                  edgeTypes={edgeTypes}
-                  edgesFocusable={false}
-                  connectOnClick={false}
-                  nodesConnectable={false}
-                  elementsSelectable
-                  fitView
-                  minZoom={0.2}
-                  maxZoom={2}
-                  proOptions={{ hideAttribution: true }}
-                >
-                  <Background
-                    color={palette.FIDESUI_NEUTRAL_100}
-                    variant={BackgroundVariant.Dots}
-                    size={3}
-                  />
-                  <Controls showInteractive={false} />
-                </ReactFlow>
-              </DatasetTreeHoverProvider>
-            </div>
-          </Splitter.Panel>
           {/* Collapsible YAML editor panel */}
           <Splitter.Panel
             size={yamlPanelSize}
@@ -668,7 +641,7 @@ const DatasetNodeEditorInner = ({
             {yamlPanelOpen && (
               <Flex
                 vertical
-                className="h-full border-l border-neutral-2 bg-white"
+                className="h-full border-r border-neutral-2 bg-white"
               >
                 <Flex
                   align="center"
@@ -717,6 +690,35 @@ const DatasetNodeEditorInner = ({
                 </div>
               </Flex>
             )}
+          </Splitter.Panel>
+          <Splitter.Panel>
+            <div className="h-full bg-neutral-1">
+              <DatasetTreeHoverProvider edges={layoutedEdges}>
+                <ReactFlow
+                  nodes={nodes}
+                  edges={layoutedEdges}
+                  onNodeClick={handleNodeClick}
+                  onPaneClick={handlePaneClick}
+                  nodeTypes={nodeTypes}
+                  edgeTypes={edgeTypes}
+                  edgesFocusable={false}
+                  connectOnClick={false}
+                  nodesConnectable={false}
+                  elementsSelectable
+                  fitView
+                  minZoom={0.2}
+                  maxZoom={2}
+                  proOptions={{ hideAttribution: true }}
+                >
+                  <Background
+                    color={palette.FIDESUI_NEUTRAL_100}
+                    variant={BackgroundVariant.Dots}
+                    size={3}
+                  />
+                  <Controls showInteractive={false} />
+                </ReactFlow>
+              </DatasetTreeHoverProvider>
+            </div>
           </Splitter.Panel>
         </Splitter>
         <DatasetNodeDetailPanel
