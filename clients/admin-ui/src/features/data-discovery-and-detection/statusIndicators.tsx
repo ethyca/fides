@@ -1,11 +1,10 @@
 import { Icons } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 
 export const AdditionIndicator = () => (
   <Icons.ArrowUpRight
-    style={{ color: palette.FIDESUI_SUCCESS }}
+    style={{ color: "var(--fidesui-success)" }}
     className="size-2"
     data-testid="add-icon"
   />
@@ -13,7 +12,7 @@ export const AdditionIndicator = () => (
 
 export const RemovalIndicator = () => (
   <Icons.ArrowDownRight
-    style={{ color: palette.FIDESUI_ERROR }}
+    style={{ color: "var(--fidesui-error)" }}
     className="size-2"
     data-testid="remove-icon"
   />
@@ -21,7 +20,7 @@ export const RemovalIndicator = () => (
 
 export const ClassificationIndicator = () => (
   <Icons.Tag
-    style={{ color: palette.FIDESUI_WARNING }}
+    style={{ color: "var(--fidesui-warning)" }}
     className="size-3"
     data-testid="classify-icon"
   />
@@ -32,23 +31,23 @@ const CircleIndicator = ({ color, ...props }: { color: string }) => (
 );
 
 export const ChangeIndicator = () => (
-  <CircleIndicator color={palette.FIDESUI_INFO} data-testid="change-icon" />
+  <CircleIndicator color={"var(--fidesui-info)"} data-testid="change-icon" />
 );
 
 export const MonitoredIndicator = () => (
   <CircleIndicator
-    color={palette.FIDESUI_SUCCESS}
+    color={"var(--fidesui-success)"}
     data-testid="monitored-icon"
   />
 );
 
 export const MutedIndicator = () => (
-  <CircleIndicator color={palette.FIDESUI_ERROR} data-testid="muted-icon" />
+  <CircleIndicator color={"var(--fidesui-error)"} data-testid="muted-icon" />
 );
 
 export const InProgressIndicator = () => (
   <CircleIndicator
-    color={palette.FIDESUI_WARNING}
+    color={"var(--fidesui-warning)"}
     data-testid="in-progress-icon"
   />
 );
