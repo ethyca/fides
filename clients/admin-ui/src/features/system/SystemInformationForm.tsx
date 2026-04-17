@@ -437,7 +437,7 @@ const SystemInformationForm = ({
           <FormGuard id="SystemInfoTab" name="System Info" />
           {isReadOnly && (
             <Alert
-              message="Read-only access"
+              title="Read-only access"
               description="You have read-only access to this system. Contact an administrator if you need to make changes."
               type="info"
               showIcon

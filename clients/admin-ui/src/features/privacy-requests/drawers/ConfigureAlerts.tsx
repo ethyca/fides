@@ -141,7 +141,7 @@ const ConfigureAlerts = () => {
             Get notified when processing failures occur. Set a threshold to
             receive alerts after a specific number of errors.
           </Typography.Text>
-          <Space direction="vertical" size="medium" className="w-full">
+          <Space orientation="vertical" size="medium" className="w-full">
             <Form.Item className="mb-0">
               <Flex justify="space-between" align="center">
                 <label htmlFor="enable-email-notifications">

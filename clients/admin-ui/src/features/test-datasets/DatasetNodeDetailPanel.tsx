@@ -207,13 +207,27 @@ const DatasetNodeDetailPanel = forwardRef<
           </Flex>
         }
         placement="right"
-        width={400}
+        size={400}
         open={open}
         onClose={handleClose}
         mask={false}
+        footer={
+          nodeData && (
+            <Flex gap={8} justify={isProtected ? "end" : "space-between"}>
+              {!isProtected && (
+                <Button danger onClick={handleDelete}>
+                  Delete {nodeData.nodeType}
+                </Button>
+              )}
+              <Button type="primary" onClick={handleClose}>
+                Save
+              </Button>
+            </Flex>
+          )
+        }
       >
         {nodeData && (
-          <Form form={form} layout="vertical" size="small">
+          <Form form={form} layout="vertical">
             <Form.Item label="Name" name="name">
               <Input disabled={!allowNameEditing} aria-label="Name" />
             </Form.Item>
@@ -240,7 +254,6 @@ const DatasetNodeDetailPanel = forwardRef<
                             mode="tags"
                             placeholder="Collections to run after..."
                             aria-label="After"
-                            style={{ width: "100%" }}
                           />
                         </Form.Item>
                         <Form.Item label="Erase After" name="erase_after">
@@ -248,7 +261,6 @@ const DatasetNodeDetailPanel = forwardRef<
                             mode="tags"
                             placeholder="Collections to erase after..."
                             aria-label="Erase After"
-                            style={{ width: "100%" }}
                           />
                         </Form.Item>
                         <Form.Item
@@ -279,29 +291,11 @@ const DatasetNodeDetailPanel = forwardRef<
             )}
 
             {isProtected && (
-              <Typography.Text
-                type="secondary"
-                style={{ fontSize: 12, display: "block", marginTop: 16 }}
-              >
+              <Typography.Text type="secondary" className="mt-4 block text-xs">
                 This field is protected and cannot be deleted, but you can edit
                 its metadata.
               </Typography.Text>
             )}
-
-            <Flex
-              gap={8}
-              style={{ marginTop: 24 }}
-              justify={isProtected ? "end" : "space-between"}
-            >
-              {!isProtected && (
-                <Button danger size="small" onClick={handleDelete}>
-                  Delete {nodeData.nodeType}
-                </Button>
-              )}
-              <Button type="primary" size="small" onClick={handleClose}>
-                Done
-              </Button>
-            </Flex>
           </Form>
         )}
       </Drawer>

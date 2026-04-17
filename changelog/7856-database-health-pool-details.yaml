@@ -1,0 +1,4 @@
+type: Changed
+description: Expanded database healthcheck to report per-pool health details and readonly async prewarming metrics. Top-level migration state (`database` may be `needs migration`) and `database_revision` continue to come from Alembic; optional pools are reported as `skipped` when not configured.
+pr: 7856
+labels: []

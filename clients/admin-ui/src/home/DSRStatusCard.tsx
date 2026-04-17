@@ -9,10 +9,10 @@ import {
   Text,
   Tooltip,
 } from "fidesui";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import { useGetPrivacyRequestsQuery } from "~/features/dashboard/dashboard.slice";
 
@@ -81,12 +81,16 @@ export const DSRStatusCard = () => {
       }
       loading={isLoading}
       extra={
-        <NextLink href={PRIVACY_REQUESTS_ROUTE} className={styles.viewAllLink}>
+        <RouterLink
+          unstyled
+          href={PRIVACY_REQUESTS_ROUTE}
+          className={styles.viewAllLink}
+        >
           <Flex align="center" gap={4}>
             View all requests
             <Icons.ArrowRight size={14} />
           </Flex>
-        </NextLink>
+        </RouterLink>
       }
       variant="borderless"
       className={styles.cardContainer}
@@ -112,16 +116,19 @@ export const DSRStatusCard = () => {
                     <Statistic
                       value={data?.statuses?.[key] ?? 0}
                       title={title}
-                      valueStyle={{
-                        fontSize: token.fontSize,
-                        fontWeight: 600,
+                      styles={{
+                        content: {
+                          fontSize: token.fontSize,
+                          fontWeight: 600,
+                        },
                       }}
                     />
                   </Flex>
                 ))}
               </Flex>
               {(data?.overdue_count ?? 0) > 0 && (
-                <NextLink
+                <RouterLink
+                  unstyled
                   href={`${PRIVACY_REQUESTS_ROUTE}?is_overdue=true`}
                   className={styles.overdueBadge}
                 >
@@ -134,7 +141,7 @@ export const DSRStatusCard = () => {
                     overdue
                   </Text>
                   <Icons.ArrowRight size={12} color={token.colorError} />
-                </NextLink>
+                </RouterLink>
               )}
             </div>
           </Flex>

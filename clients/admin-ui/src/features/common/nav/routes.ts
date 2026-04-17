@@ -138,6 +138,9 @@ export const ACCESS_POLICIES_ROUTE = "/access-policies";
 export const ACCESS_POLICIES_ONBOARDING_ROUTE = "/access-policies/onboarding";
 export const ACCESS_POLICIES_NEW_ROUTE = "/access-policies/new";
 export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
+export const CONTROLS_ROUTE = "/access-policies/controls";
+export const CONTROLS_NEW_ROUTE = "/access-policies/controls/new";
+export const CONTROLS_EDIT_ROUTE = "/access-policies/controls/[controlKey]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";

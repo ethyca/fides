@@ -205,7 +205,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           />
         ),
         children: (
-          <Space direction="vertical" size="medium" className="w-full">
+          <Space orientation="vertical" size="medium" className="w-full">
             {group.questions.map((q) => (
               <QuestionCard
                 key={q.id}
@@ -225,7 +225,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   );
 
   return (
-    <Space direction="vertical" size="small" className="w-full">
+    <Space orientation="vertical" size="small" className="w-full">
       {notificationHolder}
       <div>
         <Flex align="center" gap="small" className="mb-1">
