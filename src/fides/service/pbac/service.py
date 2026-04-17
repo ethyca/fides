@@ -84,13 +84,18 @@ class InProcessPBACEvaluationService:
         # 1. Resolve consumer
         consumer = self._identity_resolver.resolve(identity=entry.identity)
 
-        # 2. Resolve datasets
+        # 2. Resolve datasets + collect per-dataset collection names
         dataset_keys: list[str] = []
+        collections: dict[str, list[str]] = {}
         unresolved_gaps: list[EvaluationGap] = []
         for table_ref in entry.referenced_tables:
             fides_key = self._dataset_resolver.resolve(table_ref)
             if fides_key:
-                dataset_keys.append(fides_key)
+                if fides_key not in collections:
+                    dataset_keys.append(fides_key)
+                    collections[fides_key] = []
+                if table_ref.table:
+                    collections[fides_key].append(table_ref.table.lower())
             else:
                 unresolved_gaps.append(
                     EvaluationGap(
@@ -113,7 +118,9 @@ class InProcessPBACEvaluationService:
             ds_purposes_map = self._build_dataset_purposes(dataset_keys)
 
         # 4. Purpose evaluation via Go library
-        result = self._call_go_evaluate_purpose(consumer_purposes, ds_purposes_map)
+        result = self._call_go_evaluate_purpose(
+            consumer_purposes, ds_purposes_map, collections
+        )
 
         # 5. Reclassify gaps if consumer was found but has no purposes
         gaps = result.gaps + unresolved_gaps
@@ -232,6 +239,7 @@ class InProcessPBACEvaluationService:
     def _call_go_evaluate_purpose(
         consumer: ConsumerPurposes,
         datasets: dict[str, DatasetPurposes],
+        collections: dict[str, list[str]] | None = None,
     ) -> PurposeEvaluationResult:
         """Call Go EvaluatePurpose via the shared library.
 
@@ -258,7 +266,8 @@ class InProcessPBACEvaluationService:
             }
             for key, ds in datasets.items()
         }
-        raw = _go_evaluate_purpose(consumer_dict, datasets_dict)
+        collections_dict = {k: list(v) for k, v in (collections or {}).items()}
+        raw = _go_evaluate_purpose(consumer_dict, datasets_dict, collections_dict)
         return PurposeEvaluationResult(
             violations=[
                 PurposeViolation(

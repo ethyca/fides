@@ -1,11 +1,10 @@
 # PBAC demo fixtures
 
-Sample data for the `fides-pbac` CLI (Go standalone binary, see
-`policy-engine/README.md`). Each `.txt` file in `entries/` is one
-identity's SQL queries; the CLI is told which identity via
-`--identity`, extracts table references from the SQL with
-`pkg/sqlextract`, and runs them through the full PBAC pipeline
-(purpose evaluation + policy filtering).
+Sample data for `fides pbac evaluate`. Each `.txt` file in `entries/`
+is one identity's SQL queries; the CLI is told which identity via
+`--identity`, extracts table references from the SQL with sqlglot,
+and runs them through the full PBAC pipeline in Go via the shared
+library (purpose evaluation + policy filtering).
 
 All domains use RFC 2606 reserved `.example` suffixes so this is safe
 to commit to the public repo.
@@ -86,10 +85,14 @@ pbac/
 ## Invocation
 
 ```bash
-fides-pbac --config pbac/ --identity alice@demo.example pbac/entries/alice.txt
-fides-pbac --config pbac/ --identity bob@demo.example   pbac/entries/bob.txt
-fides-pbac --config pbac/ --identity carol@demo.example pbac/entries/carol.txt
-fides-pbac --config pbac/ --identity dave@demo.example  pbac/entries/dave.txt
+# Build the Go shared library (once)
+cd policy-engine && go build -buildmode=c-shared -o libpbac.dylib ./cmd/libpbac/ && cd ..
+
+# Run evaluations
+fides pbac evaluate --config pbac/ --identity alice@demo.example pbac/entries/alice.txt
+fides pbac evaluate --config pbac/ --identity bob@demo.example   pbac/entries/bob.txt
+fides pbac evaluate --config pbac/ --identity carol@demo.example pbac/entries/carol.txt
+fides pbac evaluate --config pbac/ --identity dave@demo.example  pbac/entries/dave.txt
 ```
 
 ## Expected outcomes

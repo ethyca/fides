@@ -76,38 +76,61 @@ def _find_library() -> Path:
     )
 
 
-def _get_lib() -> ctypes.CDLL:
-    """Load the shared library (singleton)."""
-    global _lib
-    if _lib is None:
-        path = _find_library()
-        _lib = ctypes.cdll.LoadLibrary(str(path))
+_lib_lock = __import__("threading").Lock()
 
-        # Configure function signatures
+
+def _get_lib() -> ctypes.CDLL:
+    """Load the shared library (singleton, thread-safe)."""
+    global _lib
+    if _lib is not None:
+        return _lib
+
+    with _lib_lock:
+        if _lib is not None:
+            return _lib  # another thread won the race
+
+        path = _find_library()
+        lib = ctypes.cdll.LoadLibrary(str(path))
+
+        # All exported functions take a C string and return a C string.
+        # Use c_void_p (not c_char_p) as restype so ctypes doesn't
+        # auto-convert the pointer to bytes — we need the raw pointer
+        # to pass to FreeString after copying the data.
         for fn_name in (
             "EvaluatePipelineJSON",
             "EvaluatePurposeJSON",
             "EvaluatePoliciesJSON",
             "LoadFixturesJSON",
         ):
-            fn = getattr(_lib, fn_name)
+            fn = getattr(lib, fn_name)
             fn.argtypes = [ctypes.c_char_p]
-            fn.restype = ctypes.c_char_p
+            fn.restype = ctypes.c_void_p
 
-        _lib.FreeString.argtypes = [ctypes.c_char_p]
-        _lib.FreeString.restype = None
+        lib.FreeString.argtypes = [ctypes.c_void_p]
+        lib.FreeString.restype = None
+
+        _lib = lib
 
     return _lib
 
 
 def _call(fn_name: str, payload: dict[str, Any]) -> dict[str, Any]:
-    """Call a Go function: dict -> JSON -> Go -> JSON -> dict."""
+    """Call a Go function: dict -> JSON -> Go -> JSON -> dict.
+
+    The Go side allocates the response via C.CString (malloc). We copy
+    the bytes into Python, then free the C buffer via FreeString to
+    avoid a memory leak.
+    """
     lib = _get_lib()
     fn = getattr(lib, fn_name)
     input_bytes = json.dumps(payload).encode("utf-8")
     result_ptr = fn(input_bytes)
-    result = json.loads(result_ptr)
-    if "error" in result and len(result) == 1:
+    try:
+        result_bytes = ctypes.string_at(result_ptr)
+        result = json.loads(result_bytes)
+    finally:
+        lib.FreeString(result_ptr)
+    if "error" in result:
         raise RuntimeError(f"Go engine error: {result['error']}")
     return result
 
