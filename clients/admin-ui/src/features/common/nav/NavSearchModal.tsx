@@ -1,6 +1,5 @@
 import { Icons, Input, InputRef, Modal } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import NextLink from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -8,6 +7,7 @@ import { pluralize } from "~/features/common/utils";
 
 import { NavGroup } from "./nav-config";
 import styles from "./NavSearch.module.scss";
+import { RouterLink } from "./RouterLink";
 import useNavSearchItems, { FlatNavItem } from "./useNavSearchItems";
 
 const SEARCH_ICON_STYLE = {
@@ -49,7 +49,8 @@ const NavSearchResultItem = ({
   onClose,
   onMouseEnter,
 }: NavSearchResultItemProps) => (
-  <NextLink
+  <RouterLink
+    unstyled
     href={item.path}
     id={`nav-search-result-${item.idx}`}
     role="option"
@@ -63,7 +64,7 @@ const NavSearchResultItem = ({
     {item.parentTitle && (
       <span className={styles.resultItemParent}>{item.parentTitle}</span>
     )}
-  </NextLink>
+  </RouterLink>
 );
 
 interface NavSearchModalProps {
@@ -171,7 +172,7 @@ const NavSearchModal = ({ groups }: NavSearchModalProps) => {
         width={480}
         style={{ top: "calc(33vh - 24px)" }}
         className={styles.searchModal}
-        destroyOnClose
+        destroyOnHidden
         afterOpenChange={(isOpen) => {
           if (isOpen) {
             modalInputRef.current?.focus();

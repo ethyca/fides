@@ -143,7 +143,7 @@ export const DatamapReportFilterModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       data-testid="datamap-report-filter-modal"
       footer={
         <Flex gap={3} sx={{ "& button": { width: "100%" } }}>

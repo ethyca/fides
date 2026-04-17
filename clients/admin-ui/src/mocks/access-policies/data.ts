@@ -7,18 +7,23 @@ export const mockControls: Control[] = [
   {
     key: "eea_uk_gdpr",
     label: "EEA/UK: GDPR Articles 6 & 9",
+    description: "European Economic Area and UK data protection regulations",
   },
   {
     key: "us_glba_ccpa",
     label: "US: GLBA, CCPA / CPRA",
+    description: "United States financial and consumer privacy regulations",
   },
   {
     key: "apac_pdpa_app",
     label: "APAC: PDPA, APP",
+    description:
+      "Asia-Pacific data protection regulations including Singapore PDPA and Australia APP",
   },
   {
     key: "global",
     label: "Global: GDPR + GLBA + PDPA composite",
+    description: "Composite control covering multiple jurisdictions",
   },
 ];
 

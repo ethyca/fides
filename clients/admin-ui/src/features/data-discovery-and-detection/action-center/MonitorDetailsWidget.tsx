@@ -1,8 +1,8 @@
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Descriptions, Flex, Paragraph, Text } from "fidesui";
-import Link from "next/link";
 
 import { useFlags } from "~/features/common/features";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   EDIT_SYSTEM_ROUTE,
   INTEGRATION_DETAIL_ROUTE,
@@ -53,7 +53,7 @@ const MonitorDetailsWidget = ({ monitorId }: MonitorDetailsWidgetProps) => {
                     }}
                   >
                     {connectionData?.linked_systems?.map((linkedSystem) => (
-                      <Link
+                      <RouterLink
                         key={linkedSystem.fides_key}
                         href={EDIT_SYSTEM_ROUTE.replace(
                           "[id]",
@@ -62,7 +62,7 @@ const MonitorDetailsWidget = ({ monitorId }: MonitorDetailsWidgetProps) => {
                       >
                         {" "}
                         {linkedSystem.name}
-                      </Link>
+                      </RouterLink>
                     ))}
                   </Paragraph>
                 ) : (
@@ -79,14 +79,14 @@ const MonitorDetailsWidget = ({ monitorId }: MonitorDetailsWidgetProps) => {
                     tooltip: { title: connectionData?.key },
                   }}
                 >
-                  <Link
+                  <RouterLink
                     href={INTEGRATION_DETAIL_ROUTE.replace(
                       "[id]",
                       connectionData?.key ?? "",
                     )}
                   >
                     {connectionData?.key}
-                  </Link>
+                  </RouterLink>
                 </Paragraph>
               ),
               span: "filled",

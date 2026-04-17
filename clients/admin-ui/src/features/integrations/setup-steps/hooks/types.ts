@@ -9,7 +9,7 @@ export type StepState = "finish" | "process" | "wait" | "error";
 
 export interface Step {
   title: React.ReactNode;
-  description: React.ReactNode;
+  content: React.ReactNode;
   state: StepState;
 }
 

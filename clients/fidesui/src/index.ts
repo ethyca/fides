@@ -451,4 +451,9 @@ export type {
   ThemeModeProviderProps,
   UseFormModalOptions,
 } from "./hooks";
-export { ThemeModeProvider, useFormModal, useThemeMode } from "./hooks";
+export {
+  ThemeModeProvider,
+  useFormModal,
+  usePrefersReducedMotion,
+  useThemeMode,
+} from "./hooks";

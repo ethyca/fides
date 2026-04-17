@@ -5,7 +5,7 @@ const MessageDemoCard = () => {
 
   return (
     <Card title="Toasting" variant="borderless">
-      <Space direction="vertical">
+      <Space orientation="vertical">
         <Button onClick={() => message.success("Success message!")}>
           Success
         </Button>
