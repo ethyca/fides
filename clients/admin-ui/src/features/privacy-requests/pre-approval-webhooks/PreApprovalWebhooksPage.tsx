@@ -234,7 +234,7 @@ const PreApprovalWebhooksPage = () => {
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}

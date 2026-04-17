@@ -46,7 +46,7 @@ const SharedConfigModal = () => {
     <>
       <Button
         icon={<Icons.Settings />}
-        iconPosition="end"
+        iconPlacement="end"
         onClick={() => setModalIsOpen(true)}
         data-testid="configurations-btn"
       >

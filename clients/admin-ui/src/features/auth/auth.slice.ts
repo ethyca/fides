@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
@@ -53,21 +53,20 @@ export const authSlice = createSlice({
 export const selectAuth = (state: RootState) => state.auth;
 
 // Enhanced user selector that includes isRootUser property
-export const selectUser = (state: RootState) => {
-  const { user } = selectAuth(state);
-  if (!user) {
+export const selectUser = createSelector([selectAuth], (auth) => {
+  if (!auth.user) {
     return null;
   }
 
   // Currently, the BE response doesn't include whether the user is a root user,
   // so we need to check if the id matches a db user id.
-  const isRootUser = isRootUserId(user.id);
+  const isRootUser = isRootUserId(auth.user.id);
 
   return {
-    ...user,
+    ...auth.user,
     isRootUser,
   };
-};
+});
 
 export const selectToken = (state: RootState) => selectAuth(state).token;
 

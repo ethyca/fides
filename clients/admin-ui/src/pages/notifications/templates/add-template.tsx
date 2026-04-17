@@ -21,11 +21,12 @@ const AddNotificationTemplatePage: NextPage = () => {
   const message = useMessage();
   const router = useRouter();
   const { templateType } = router.query;
-  const [createMessagingTemplate] = useCreateMessagingTemplateByTypeMutation();
+  const [createMessagingTemplate, { isLoading: isSaving }] =
+    useCreateMessagingTemplateByTypeMutation();
   const { data: messagingTemplate, isLoading } =
     useGetMessagingTemplateDefaultQuery(templateType as string);
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: FormValues): Promise<boolean> => {
     const templateData: MessagingTemplateCreateOrUpdate = {
       is_enabled: values.is_enabled,
       content: {
@@ -44,11 +45,12 @@ const AddNotificationTemplatePage: NextPage = () => {
 
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
-      return;
+      return false;
     }
 
     message.success(`Messaging template created successfully`);
     router.push(NOTIFICATIONS_TEMPLATES_ROUTE);
+    return true;
   };
 
   if (!messagingTemplate) {
@@ -75,6 +77,7 @@ const AddNotificationTemplatePage: NextPage = () => {
             <PropertySpecificMessagingTemplateForm
               template={messagingTemplate}
               handleSubmit={handleSubmit}
+              isSaving={isSaving}
             />
           </Box>
         </Box>
