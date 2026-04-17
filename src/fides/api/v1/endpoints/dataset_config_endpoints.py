@@ -601,22 +601,16 @@ def get_dataset_protected_fields(
     *,
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-    dataset_key: FidesKey,
 ) -> DatasetProtectedFields:
     """
-    Returns the fields that are protected on a SaaS dataset:
+    Returns the fields that are protected on a SaaS connection:
     immutable top-level metadata fields and collection fields
     referenced by the SaaS config.
+
+    Protected fields are a property of the connection's SaaS config,
+    not any individual dataset.
     """
-    try:
-        return dataset_config_service.get_protected_fields(
-            connection_config, dataset_key
-        )
-    except DatasetNotFoundException as e:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=str(e),
-        )
+    return dataset_config_service.get_protected_fields(connection_config)
 
 
 @router.post(

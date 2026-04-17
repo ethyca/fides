@@ -286,23 +286,14 @@ class DatasetConfigService:
     def get_protected_fields(
         self,
         connection_config: ConnectionConfig,
-        dataset_key: str,
     ) -> DatasetProtectedFields:
         """
-        Return the fields that are protected on a SaaS dataset:
+        Return the fields that are protected on a SaaS connection:
         immutable top-level metadata fields and collection fields
         referenced by the SaaS config.
 
-        Protected fields are a property of the connection's SaaS config,
-        not the individual dataset. The ``dataset_key`` is validated to
-        ensure the dataset exists on this connection.
-
         For non-SaaS connections, returns empty lists.
         """
-        if not self.get_config_from_fides_key(connection_config.id, dataset_key):
-            raise DatasetNotFoundException(
-                f"No dataset config with fides_key '{dataset_key}'"
-            )
         if (
             connection_config.connection_type != ConnectionType.saas
             or not connection_config.saas_config
