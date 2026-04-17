@@ -27,6 +27,7 @@ import palette from "fidesui/src/palette/palette.module.scss";
 import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { Editor } from "~/features/common/yaml/helpers";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
@@ -121,8 +122,13 @@ const DatasetNodeEditorInner = ({
 
   // --- YAML editor state ---
   const YAML_PANEL_DEFAULT_WIDTH = 550;
-  const [yamlPanelOpen, setYamlPanelOpen] = useState(false);
-  const [yamlPanelSize, setYamlPanelSize] = useState(0);
+  const [yamlPanelOpen, setYamlPanelOpen] = useLocalStorage<boolean>(
+    "datasetEditor.yamlPanelOpen",
+    false,
+  );
+  const [yamlPanelSize, setYamlPanelSize] = useState(
+    yamlPanelOpen ? YAML_PANEL_DEFAULT_WIDTH : 0,
+  );
   const [yamlContent, setYamlContent] = useState("");
   const [yamlError, setYamlError] = useState<string | null>(null);
   // Tracks who initiated the last change to prevent sync loops between the
@@ -171,18 +177,17 @@ const DatasetNodeEditorInner = ({
 
   // Initialize YAML content when panel opens
   const handleToggleYamlPanel = useCallback(() => {
-    setYamlPanelOpen((prev) => {
-      if (!prev) {
-        const cleaned = removeNulls(dataset);
-        setYamlContent(yaml.dump(cleaned));
-        setYamlError(null);
-        setYamlPanelSize(YAML_PANEL_DEFAULT_WIDTH);
-      } else {
-        setYamlPanelSize(0);
-      }
-      return !prev;
-    });
-  }, [dataset]);
+    if (yamlPanelOpen) {
+      setYamlPanelOpen(false);
+      setYamlPanelSize(0);
+    } else {
+      const cleaned = removeNulls(dataset);
+      setYamlContent(yaml.dump(cleaned));
+      setYamlError(null);
+      setYamlPanelSize(YAML_PANEL_DEFAULT_WIDTH);
+      setYamlPanelOpen(true);
+    }
+  }, [dataset, yamlPanelOpen, setYamlPanelOpen]);
 
   // Handle YAML editor changes with debounce
   const handleYamlChange = useCallback(
