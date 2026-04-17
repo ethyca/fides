@@ -3,13 +3,14 @@ import time
 import unittest.mock as mock
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Generator, List
 
 import pytest
 from freezegun import freeze_time
 from requests import Session
 
+from fides.api.common_exceptions import RedisConnectionError
 from fides.api.db import session
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import (
@@ -20,7 +21,6 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
-from fides.api.common_exceptions import RedisConnectionError
 from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiter,
     RateLimiterPeriod,
@@ -253,7 +253,9 @@ def test_minute_period_breach_waits_for_rollover() -> None:
             limiter.limit(requests=[request])  # fills the single slot
             limiter.limit(requests=[request])  # breach -> sleep to boundary -> succeed
 
-    # If we reach here without RateLimiterTimeoutException, the fix works.
+        # Confirm the limiter actually slept past the bucket boundary (00:01:00),
+        # not just that it didn't raise.
+        assert frozen().timestamp() >= datetime(2024, 1, 1, 0, 1, 0).timestamp()
 
 
 @pytest.mark.integration
@@ -298,7 +300,7 @@ def test_dynamic_timeout_capped_for_day_limits() -> None:
 
     # Total mocked sleep must reflect the 120s cap, not the 86405s
     # uncapped value.
-    assert sleep_total[0] < 130
+    assert 110 <= sleep_total[0] < 130  # should be ~120 s, not 86400 s
 
 
 @pytest.mark.integration_saas
