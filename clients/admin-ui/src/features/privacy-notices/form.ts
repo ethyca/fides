@@ -1,5 +1,3 @@
-import * as Yup from "yup";
-
 import { getOptionsFromMap } from "~/features/common/utils";
 import {
   ENFORCEMENT_LEVEL_MAP,
@@ -68,9 +66,4 @@ export const transformPrivacyNoticeResponseToCreation = (
       })
     : defaultInitialTranslations,
   children: notice.children,
-});
-
-export const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Title"),
-  consent_mechanism: Yup.string().required().label("Consent mechanism"),
 });
