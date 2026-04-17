@@ -81,11 +81,11 @@ type loadFixturesRequest struct {
 }
 
 type loadFixturesResponse struct {
-	Consumers map[string]fixtures.Consumer     `json:"consumers"`
-	Purposes  map[string]fixtures.Purpose      `json:"purposes"`
-	Datasets  fixtures.Datasets                `json:"datasets"`
-	Policies  []pbac.AccessPolicy              `json:"policies"`
-	Error     string                           `json:"error,omitempty"`
+	Consumers map[string]fixtures.Consumer `json:"consumers"`
+	Purposes  map[string]fixtures.Purpose  `json:"purposes"`
+	Datasets  fixtures.Datasets            `json:"datasets"`
+	Policies  []pbac.AccessPolicy          `json:"policies"`
+	Error     string                       `json:"error,omitempty"`
 }
 
 //export LoadFixturesJSON
