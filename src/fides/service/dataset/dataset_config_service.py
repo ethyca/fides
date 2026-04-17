@@ -16,8 +16,9 @@ from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.node_filters import NodeFilter
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.property import Property
@@ -29,12 +30,14 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
+from fides.api.util.event_audit_util import generate_dataset_audit_event_details
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     _get_ctl_dataset,
 )
 from fides.service.dataset.dataset_validator import DatasetValidator
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
+from fides.service.event_audit_service import EventAuditService
 
 
 class DatasetFilter(NodeFilter):
@@ -53,8 +56,42 @@ class DatasetFilter(NodeFilter):
 
 
 class DatasetConfigService:
-    def __init__(self, db: Session):
+    def __init__(
+        self,
+        db: Session,
+        event_audit_service: Optional[EventAuditService] = None,
+    ):
         self.db = db
+        self.event_audit_service = event_audit_service
+
+    def _create_dataset_audit_event(
+        self,
+        event_type: EventAuditType,
+        connection_config: ConnectionConfig,
+        dataset_key: str,
+    ) -> None:
+        """Emit an audit event for a SaaS dataset operation. No-op for non-SaaS connections."""
+        if connection_config.connection_type != ConnectionType.saas:
+            return
+        if not self.event_audit_service:
+            return
+        try:
+            event_details, description = generate_dataset_audit_event_details(
+                event_type, connection_config, dataset_key
+            )
+            self.event_audit_service.create_event_audit(
+                event_type=event_type,
+                status=EventAuditStatus.succeeded,
+                resource_type="dataset_config",
+                resource_identifier=dataset_key,
+                description=description,
+                event_details=event_details,
+            )
+        except Exception as e:
+            logger.error(
+                f"Error creating dataset audit event for dataset '{dataset_key}': "
+                f"{type(e).__name__}"
+            )
 
     def create_or_update_dataset_config(
         self,
@@ -91,8 +128,25 @@ class DatasetConfigService:
                 skip_steps=[TraversalValidationStep],
             ).validate()
 
+            # Determine create vs. update before persisting
+            fides_key = data_dict["fides_key"]
+            existing = DatasetConfig.filter(
+                db=self.db,
+                conditions=(
+                    (DatasetConfig.connection_config_id == connection_config.id)
+                    & (DatasetConfig.fides_key == fides_key)
+                ),
+            ).first()
+            event_type = (
+                EventAuditType.dataset_updated
+                if existing
+                else EventAuditType.dataset_created
+            )
+
             # Create or update using unified method
             dataset_config = DatasetConfig.create_or_update(self.db, data=data_dict)
+
+            self._create_dataset_audit_event(event_type, connection_config, fides_key)
 
             return dataset_config.ctl_dataset, None
 
@@ -155,6 +209,28 @@ class DatasetConfigService:
         return BulkPutDataset(
             succeeded=created_or_updated,
             failed=failed,
+        )
+
+    def delete_dataset_config(
+        self,
+        connection_config: ConnectionConfig,
+        dataset_key: str,
+    ) -> None:
+        """Delete a dataset config and emit a dataset.deleted audit event for SaaS connections."""
+        dataset_config = DatasetConfig.filter(
+            db=self.db,
+            conditions=(
+                (DatasetConfig.connection_config_id == connection_config.id)
+                & (DatasetConfig.fides_key == dataset_key)
+            ),
+        ).first()
+        if not dataset_config:
+            raise DatasetNotFoundException(
+                f"No dataset with fides_key '{dataset_key}' and connection_key '{connection_config.key}'"
+            )
+        dataset_config.delete(self.db)
+        self._create_dataset_audit_event(
+            EventAuditType.dataset_deleted, connection_config, dataset_key
         )
 
     def validate_dataset_config(
