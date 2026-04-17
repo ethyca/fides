@@ -150,6 +150,36 @@ def generate_connection_audit_event_details(
     return event_details, description
 
 
+def generate_dataset_audit_event_details(
+    event_type: EventAuditType,
+    connection_config: ConnectionConfig,
+    dataset_key: str,
+) -> Tuple[Dict[str, Any], str]:
+    """
+    Create standardized event details for dataset audit events.
+
+    Args:
+        event_type: Type of audit event (dataset.created, dataset.updated, dataset.deleted)
+        connection_config: The parent connection configuration
+        dataset_key: The fides_key of the dataset being audited
+
+    Returns:
+        Tuple of (event_details dict, human-readable description string)
+    """
+    operation_type = event_type.value.split(".")[-1]  # "created", "updated", "deleted"
+    connector_type = _get_saas_connector_type(connection_config)
+
+    event_details: Dict[str, Any] = {
+        "operation_type": operation_type,
+        "connection_key": connection_config.key,
+        "saas_connector_type": connector_type,
+    }
+
+    description = f"Dataset {operation_type}: '{dataset_key}' on {connector_type} connection '{connection_config.key}'"
+
+    return event_details, description
+
+
 def generate_connection_secrets_event_details(
     event_type: EventAuditType,
     connection_config: ConnectionConfig,
