@@ -106,12 +106,9 @@ const EditorSection = ({
   }, [reachability, dispatch]);
 
   const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
+    { connectionKey },
     {
-      connectionKey,
-      datasetKey: currentDataset?.fides_key || "",
-    },
-    {
-      skip: !isSaas || !currentDataset?.fides_key,
+      skip: !isSaas || !connectionKey,
     },
   );
   const datasetOptions = useMemo(
@@ -273,10 +270,32 @@ const EditorSection = ({
     }
 
     if (saasWarnings.length > 0) {
-      const details = saasWarnings.map((w) => w.message).join("; ");
-      messageApi.warning(
-        `Dataset saved — ${saasWarnings.length} protected field(s) were restored: ${details}`,
-      );
+      const restored = saasWarnings.filter((w) => w.action === "restored");
+      const removed = saasWarnings.filter((w) => w.action === "removed");
+      const failed = saasWarnings.filter((w) => w.action === "failed");
+
+      const parts: string[] = [];
+      if (restored.length > 0) {
+        parts.push(
+          `${restored.length} protected field(s) restored to original values`,
+        );
+      }
+      if (removed.length > 0) {
+        parts.push(
+          `${removed.length} unauthorized collection(s) removed`,
+        );
+      }
+      if (failed.length > 0) {
+        parts.push(
+          `${failed.length} field(s) could not be restored`,
+        );
+      }
+
+      if (failed.length > 0) {
+        messageApi.error(`Dataset saved with issues — ${parts.join("; ")}`);
+      } else {
+        messageApi.warning(`Dataset saved — ${parts.join("; ")}`);
+      }
     } else {
       messageApi.success("Successfully modified dataset");
     }
