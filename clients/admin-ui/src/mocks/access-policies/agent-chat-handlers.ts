@@ -11,44 +11,45 @@ export const agentChatHandlers = () => {
   const turnCounts = new Map<string, number>();
 
   const TURN_1_YAML = [
-    "name: Marketing Data — EU Restriction",
-    "description: Deny access to marketing data for EU users",
+    "name: Third-Party Advertising — No Customer Data",
+    "description: Deny use of customer contact and identifier data for third-party advertising",
     "enabled: true",
     "priority: 100",
     "decision: DENY",
     "match:",
+    "  data_category:",
+    "    any:",
+    "      - user.contact",
+    "      - user.unique_id",
     "  data_use:",
     "    any:",
-    "      - marketing.advertising.profiling",
-    "      - marketing.communications.email",
     "      - marketing.advertising.third_party.targeted",
+    "      - marketing.advertising.profiling",
     "action:",
-    "  message: Access denied — marketing data restricted for EU users",
+    "  message: Access denied — customer data cannot be shared for third-party advertising",
   ].join("\n");
 
   const TURN_2_YAML = [
-    "name: Marketing Data — EU Restriction",
-    "description: Deny access to marketing data for EU users unless consent is provided",
+    "name: Third-Party Advertising — No Customer Data",
+    "description: Deny use of customer contact and identifier data for third-party advertising unless the user has opted in to personalized advertising",
     "enabled: true",
     "priority: 100",
     "decision: DENY",
     "match:",
+    "  data_category:",
+    "    any:",
+    "      - user.contact",
+    "      - user.unique_id",
     "  data_use:",
     "    any:",
-    "      - marketing.advertising.profiling",
-    "      - marketing.communications.email",
     "      - marketing.advertising.third_party.targeted",
+    "      - marketing.advertising.profiling",
     "unless:",
     "  - type: consent",
-    "    privacy_notice_key: marketing_opt_in",
+    "    privacy_notice_key: advertising_opt_in",
     "    requirement: opt_in",
-    "  - type: geo_location",
-    "    field: data_subject.geo_location",
-    "    operator: not_in",
-    "    values:",
-    "      - eea",
     "action:",
-    "  message: Access denied — marketing consent required for EU data subjects",
+    "  message: Access denied — user has not opted in to personalized advertising",
   ].join("\n");
 
   const SCRIPTED_TURNS: Array<
@@ -56,17 +57,17 @@ export const agentChatHandlers = () => {
   > = [
     {
       message:
-        "I've created a policy that denies access to marketing and advertising data. It targets profiling, email marketing, and third-party targeted advertising data uses. You can now see the policy in the editor.",
+        "I've drafted a policy that denies third-party advertising access to customer contact and identifier data. It matches the `user.contact` and `user.unique_id` data categories against third-party targeted advertising and profiling data uses. Take a look in the editor.",
       new_policy_yaml: TURN_1_YAML,
     },
     {
       message:
-        "Done! I've added two exceptions: the policy now allows access when the user has opted in to the `marketing_opt_in` privacy notice, and it exempts non-EEA data subjects via a geo-location constraint.",
+        "Added a consent exception: access is allowed when the user has opted in to personalized advertising via the `advertising_opt_in` privacy notice. Without that opt-in, the rule stays DENY.",
       new_policy_yaml: TURN_2_YAML,
     },
     {
       message:
-        "The current policy looks solid. It covers the main marketing data uses with consent and geo-location exceptions. Let me know if you'd like to adjust the priority, add more data uses, or modify the action message.",
+        "The policy now reflects the standard GDPR/CCPA pattern — block third-party advertising by default, allow only with explicit opt-in. Let me know if you want to scope it to a geography (e.g. EEA-only), add more data categories, or tighten the consent requirement.",
       new_policy_yaml: null,
     },
   ];
