@@ -214,7 +214,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
       {/* Warning banner for mixed consent + access/erasure configurations */}
       {hasConsentTasks && hasAccessOrErasureTasks && (
         <Alert
-          message="Consent task limitations"
+          title="Consent task limitations"
           description="Dataset field conditions and some privacy request fields (like due date) are not evaluated for consent manual tasks. These conditions will only apply to access and erasure tasks."
           type="warning"
           showIcon

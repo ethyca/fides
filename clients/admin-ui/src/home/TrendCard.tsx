@@ -131,7 +131,10 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
     }
     if (!metric) {
       return (
-        <Statistic value="—" valueStyle={{ color: token.colorTextDisabled }} />
+        <Statistic
+          value="—"
+          styles={{ content: { color: token.colorTextDisabled } }}
+        />
       );
     }
     return (

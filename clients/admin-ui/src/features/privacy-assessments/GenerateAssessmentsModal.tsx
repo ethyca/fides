@@ -123,7 +123,7 @@ export const GenerateAssessmentsModal = ({
       footer={null}
       width={MODAL_SIZE.md}
     >
-      <Space direction="vertical" size="large" className="w-full pt-2">
+      <Space orientation="vertical" size="large" className="w-full pt-2">
         <Form
           form={form}
           layout="vertical"

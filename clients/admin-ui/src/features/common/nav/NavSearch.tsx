@@ -133,7 +133,7 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
         onOpenChange={handleOpenChange}
         defaultActiveFirstOption
         className={styles.expandedAutoComplete}
-        popupClassName={styles.searchDropdown}
+        classNames={{ popup: { root: styles.searchDropdown } }}
         value={searchValue}
         onSearch={setSearchValue}
       >

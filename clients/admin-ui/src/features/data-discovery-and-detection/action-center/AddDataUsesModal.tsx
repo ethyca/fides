@@ -36,7 +36,7 @@ const AddDataUsesModal = ({
       open={isOpen}
       onCancel={handleReset}
       centered
-      destroyOnClose
+      destroyOnHidden
       footer={null}
     >
       <Flex vertical gap={20} className="pb-6 pt-4">

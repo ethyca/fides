@@ -1,10 +1,10 @@
-import { ChakraLink as Link, ChakraText as Text, Spin } from "fidesui";
+import { Spin, Typography } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
@@ -31,14 +31,15 @@ const RegulationsPage: NextPage = () => {
   return (
     <Layout title="Regulations">
       <PageHeader heading="Regulations" />
-      <Text pb={6} fontSize="sm" maxWidth="600px">
+      <Typography.Paragraph className="max-w-xl pb-4">
         Select the regulations that apply to your organizations compliance
         requirements. The selections you make here will automatically update
-        your location selections.{" "}
-        <Link as={NextLink} href={LOCATIONS_ROUTE} color="complimentary.500">
-          You can view your location settings here.
-        </Link>
-      </Text>
+        your location selections.
+        <br />
+        <RouterLink href={LOCATIONS_ROUTE}>
+          View your location settings
+        </RouterLink>
+      </Typography.Paragraph>
       {isLoading ? (
         <Spin />
       ) : (
