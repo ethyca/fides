@@ -104,6 +104,7 @@ const FieldMetadataFormItems = () => (
       name="primary_key"
       valuePropName="checked"
       layout="horizontal"
+      className="hidden"
     >
       <Switch aria-label="Primary Key" />
     </Form.Item>
