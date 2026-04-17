@@ -415,6 +415,121 @@ def restore_primary_key_fields(
     return warnings
 
 
+def _collect_fields_with_identity_or_references(
+    fields: list[DatasetField],
+    prefix: str = "",
+) -> list[tuple[str, DatasetField]]:
+    """Return (dot_path, field) for fields with fides_meta.identity or .references set."""
+    results: list[tuple[str, DatasetField]] = []
+    for field in fields:
+        path = f"{prefix}{field.name}" if prefix else field.name
+        if field.fides_meta and (
+            field.fides_meta.identity or field.fides_meta.references
+        ):
+            results.append((path, field))
+        if field.fields:
+            results.extend(
+                _collect_fields_with_identity_or_references(field.fields, f"{path}.")
+            )
+    return results
+
+
+def restore_identity_and_references(
+    dataset: FideslangDataset,
+    existing_dataset: Optional[FideslangDataset] = None,
+) -> List[DatasetFieldWarning]:
+    """
+    Restore identity and references on fields where they were changed or removed.
+    These are set by the SaaS config and cannot be modified by the user.
+
+    Returns structured warnings for each restoration.
+    """
+    if not existing_dataset:
+        return []
+
+    warnings: List[DatasetFieldWarning] = []
+    existing_by_name = {col.name: col for col in existing_dataset.collections}
+
+    for collection in dataset.collections:
+        existing_collection = existing_by_name.get(collection.name)
+        if not existing_collection:
+            continue
+
+        protected = _collect_fields_with_identity_or_references(
+            existing_collection.fields
+        )
+        for field_path, existing_field in protected:
+            incoming_field = resolve_field_path(collection.fields, field_path)
+            if incoming_field is None:
+                # Field was deleted — handled by restore_protected_structure
+                # or restore_primary_key_fields, not here
+                continue
+
+            existing_meta = existing_field.fides_meta
+            assert existing_meta is not None  # guaranteed by _collect filter
+            incoming_meta = incoming_field.fides_meta
+
+            # Restore identity if changed or removed
+            if existing_meta.identity:
+                if not incoming_meta:
+                    incoming_field.fides_meta = FidesMeta(
+                        identity=existing_meta.identity
+                    )
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection.name,
+                            field=field_path,
+                            action="restored",
+                            message=f"Restored identity on field '{field_path}' "
+                            f"in collection '{collection.name}' "
+                            f"(identity is set by SaaS config).",
+                        )
+                    )
+                elif incoming_meta.identity != existing_meta.identity:
+                    incoming_meta.identity = existing_meta.identity
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection.name,
+                            field=field_path,
+                            action="restored",
+                            message=f"Restored identity on field '{field_path}' "
+                            f"in collection '{collection.name}' "
+                            f"(identity is set by SaaS config).",
+                        )
+                    )
+
+            # Restore references if changed or removed
+            if existing_meta.references:
+                if not incoming_meta:
+                    incoming_field.fides_meta = FidesMeta(
+                        references=deepcopy(existing_meta.references)
+                    )
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection.name,
+                            field=field_path,
+                            action="restored",
+                            message=f"Restored references on field '{field_path}' "
+                            f"in collection '{collection.name}' "
+                            f"(references are set by SaaS config).",
+                        )
+                    )
+                elif incoming_meta.references != existing_meta.references:
+                    incoming_meta.references = deepcopy(existing_meta.references)
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection.name,
+                            field=field_path,
+                            action="restored",
+                            message=f"Restored references on field '{field_path}' "
+                            f"in collection '{collection.name}' "
+                            f"(references are set by SaaS config).",
+                        )
+                    )
+
+    return warnings
+
+
 class SaaSValidationStep(DatasetValidationStep):
     """Validates SaaS-specific requirements"""
 
@@ -443,7 +558,8 @@ class SaaSValidationStep(DatasetValidationStep):
                         context.dataset.fides_key,
                     )
 
-            # Restore immutable fields, protected structure, and primary keys
+            # Restore immutable fields, protected structure, primary keys,
+            # and identity/references
             context.warnings.extend(
                 restore_immutable_fields(context.dataset, existing_dataset)
             )
@@ -454,4 +570,7 @@ class SaaSValidationStep(DatasetValidationStep):
             )
             context.warnings.extend(
                 restore_primary_key_fields(context.dataset, existing_dataset)
+            )
+            context.warnings.extend(
+                restore_identity_and_references(context.dataset, existing_dataset)
             )

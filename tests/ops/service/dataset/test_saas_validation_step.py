@@ -8,6 +8,7 @@ from fides.api.graph.utils import resolve_field_path
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.dataset.validation_steps.saas import (
+    restore_identity_and_references,
     restore_immutable_fields,
     restore_primary_key_fields,
     restore_protected_structure,
@@ -533,7 +534,10 @@ class TestRestorePrimaryKeyFields:
                 {
                     "name": "users",
                     "fields": [
-                        {"name": "id", "fides_meta": {"primary_key": True, "data_type": "string"}},
+                        {
+                            "name": "id",
+                            "fides_meta": {"primary_key": True, "data_type": "string"},
+                        },
                         "name",
                     ],
                 },
@@ -569,7 +573,10 @@ class TestRestorePrimaryKeyFields:
                 {
                     "name": "users",
                     "fields": [
-                        {"name": "id", "fides_meta": {"primary_key": True, "data_type": "string"}},
+                        {
+                            "name": "id",
+                            "fides_meta": {"primary_key": True, "data_type": "string"},
+                        },
                     ],
                 },
             ]
@@ -581,7 +588,13 @@ class TestRestorePrimaryKeyFields:
                     "name": "users",
                     "fields": [
                         # Changed data_type and removed primary_key
-                        {"name": "id", "fides_meta": {"primary_key": False, "data_type": "integer"}},
+                        {
+                            "name": "id",
+                            "fides_meta": {
+                                "primary_key": False,
+                                "data_type": "integer",
+                            },
+                        },
                     ],
                 },
             ],
@@ -619,9 +632,7 @@ class TestRestorePrimaryKeyFields:
         warnings = restore_primary_key_fields(dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].action == "restored"
-        id_field = next(
-            f for f in dataset.collections[0].fields if f.name == "id"
-        )
+        id_field = next(f for f in dataset.collections[0].fields if f.name == "id")
         assert id_field.fides_meta.primary_key is True
 
     def test_non_primary_key_field_not_protected(self):
@@ -687,4 +698,192 @@ class TestRestorePrimaryKeyFields:
             ],
         )
         warnings = restore_primary_key_fields(dataset, existing)
+        assert warnings == []
+
+
+class TestRestoreIdentityAndReferences:
+    def test_identity_removed_restored(self):
+        """Removing identity from a field restores it."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "email", "fides_meta": {"identity": "email"}},
+                        "name",
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "email"},  # identity removed
+                        "name",
+                    ],
+                },
+            ],
+        )
+        warnings = restore_identity_and_references(dataset, existing)
+        assert len(warnings) == 1
+        assert warnings[0].action == "restored"
+        assert "identity" in warnings[0].message
+        email_field = next(
+            f for f in dataset.collections[0].fields if f.name == "email"
+        )
+        assert email_field.fides_meta.identity == "email"
+
+    def test_identity_changed_restored(self):
+        """Changing identity value restores the original."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "email", "fides_meta": {"identity": "email"}},
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "email", "fides_meta": {"identity": "phone_number"}},
+                    ],
+                },
+            ],
+        )
+        warnings = restore_identity_and_references(dataset, existing)
+        assert len(warnings) == 1
+        email_field = next(
+            f for f in dataset.collections[0].fields if f.name == "email"
+        )
+        assert email_field.fides_meta.identity == "email"
+
+    def test_references_removed_restored(self):
+        """Removing references from a field restores them."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "orders",
+                    "fields": [
+                        {
+                            "name": "user_id",
+                            "fides_meta": {
+                                "references": [
+                                    {
+                                        "dataset": "ds",
+                                        "field": "users.id",
+                                        "direction": "from",
+                                    }
+                                ]
+                            },
+                        },
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "orders",
+                    "fields": [
+                        {"name": "user_id"},  # references removed
+                    ],
+                },
+            ],
+        )
+        warnings = restore_identity_and_references(dataset, existing)
+        assert len(warnings) == 1
+        assert "references" in warnings[0].message
+        user_id_field = next(
+            f for f in dataset.collections[0].fields if f.name == "user_id"
+        )
+        assert user_id_field.fides_meta.references is not None
+        assert len(user_id_field.fides_meta.references) == 1
+
+    def test_other_metadata_preserved(self):
+        """Other fides_meta changes persist when identity is restored."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "fides_meta": {
+                                "identity": "email",
+                                "data_type": "string",
+                            },
+                        },
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "fides_meta": {
+                                "identity": "phone_number",
+                                "data_type": "integer",
+                            },
+                        },
+                    ],
+                },
+            ],
+        )
+        warnings = restore_identity_and_references(dataset, existing)
+        assert len(warnings) == 1
+        email_field = next(
+            f for f in dataset.collections[0].fields if f.name == "email"
+        )
+        assert email_field.fides_meta.identity == "email"
+        # User's data_type change is kept
+        assert email_field.fides_meta.data_type == "integer"
+
+    def test_no_identity_or_references_no_warnings(self):
+        """Fields without identity/references are not affected."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "name", "fides_meta": {"data_type": "string"}},
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "name", "fides_meta": {"data_type": "integer"}},
+                    ],
+                },
+            ],
+        )
+        warnings = restore_identity_and_references(dataset, existing)
+        assert warnings == []
+
+    def test_no_existing_dataset_skips(self):
+        """No warnings when there's no existing dataset."""
+        dataset = _make_dataset(
+            "test_connector",
+            [{"name": "users", "fields": ["email"]}],
+        )
+        warnings = restore_identity_and_references(dataset, None)
         assert warnings == []
