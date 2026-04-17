@@ -130,16 +130,16 @@ const DataFlowSection = ({ system }: DataFlowSectionProps) => {
         </Title>
         <Flex gap="small">
           <Button size="small" onClick={() => setPickerRole("producer")}>
-            + Add producer
+            + Add upstream
           </Button>
           <Button size="small" onClick={() => setPickerRole("consumer")}>
-            + Add consumer
+            + Add downstream
           </Button>
         </Flex>
       </Flex>
       <Text type="secondary" className="text-sm">
-        Systems that produce data into {system.name} (upstream) and systems that
-        consume data from it (downstream).
+        Upstream systems that send data into {system.name} and downstream systems
+        that receive data from it.
       </Text>
 
       {/* Legend */}
@@ -149,7 +149,7 @@ const DataFlowSection = ({ system }: DataFlowSectionProps) => {
             className="size-2 rounded-full"
             style={{ backgroundColor: LAYER_COLORS.producer }}
           />
-          <Text className="text-[10px]">Producers ({producerCount})</Text>
+          <Text className="text-[10px]">Upstream ({producerCount})</Text>
         </Flex>
         <Flex align="center" gap={6}>
           <div
@@ -163,7 +163,7 @@ const DataFlowSection = ({ system }: DataFlowSectionProps) => {
             className="size-2 rounded-full"
             style={{ backgroundColor: LAYER_COLORS.consumer }}
           />
-          <Text className="text-[10px]">Consumers ({consumerCount})</Text>
+          <Text className="text-[10px]">Downstream ({consumerCount})</Text>
         </Flex>
       </Flex>
 
@@ -248,7 +248,7 @@ const DataFlowSection = ({ system }: DataFlowSectionProps) => {
               No data flow connections yet
             </Text>
             <Text type="secondary" className="text-xs">
-              Add producers or consumers to visualize how data flows through{" "}
+              Add upstream or downstream systems to visualize how data flows through{" "}
               {system.name}.
             </Text>
           </Flex>

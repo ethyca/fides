@@ -1,18 +1,30 @@
-import { Card, Col, Flex, Row, Table, Tag, Text, Title } from "fidesui";
+import {
+  Button,
+  Card,
+  Col,
+  CUSTOM_TAG_COLOR,
+  Flex,
+  Icons,
+  Row,
+  Segmented,
+  Select,
+  SparkleIcon,
+  Tag,
+  Text,
+} from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import {
   DATA_CONSUMERS_ROUTE,
   DATA_PURPOSES_ROUTE,
 } from "~/features/common/nav/routes";
 
-import type { GapCard, UnresolvedIdentity, ViolationCard } from "./mockData";
-import {
-  MOCK_GAP_CARDS,
-  MOCK_UNRESOLVED_IDENTITIES,
-  MOCK_VIOLATION_CARDS,
-} from "./mockData";
+import type { FindingSeverity, GapCard, ViolationCard } from "./mockData";
+import { MOCK_GAP_CARDS, MOCK_VIOLATION_CARDS } from "./mockData";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const formatTableList = (tables: string[]): string => {
   if (tables.length === 0) return "";
@@ -32,59 +44,344 @@ const formatRelativeTime = (isoStr: string): string => {
   if (diffDays === 1) return "yesterday";
   if (diffDays < 7) return `${diffDays} days ago`;
   const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks < 5) return `${diffWeeks} week${diffWeeks !== 1 ? "s" : ""} ago`;
+  if (diffWeeks < 5)
+    return `${diffWeeks} week${diffWeeks !== 1 ? "s" : ""} ago`;
   return new Date(isoStr).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
 };
 
-// ─── Triage strip ────────────────────────────────────────────────────────────
+const SEVERITY_ORDER: Record<FindingSeverity, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
 
-interface TriageStripProps {
-  identityCount: number;
-  issueCount: number;
+const SEVERITY_COLORS: Record<FindingSeverity, string> = {
+  critical: palette.FIDESUI_ERROR,
+  high: palette.FIDESUI_ERROR,
+  medium: palette.FIDESUI_WARNING,
+  low: palette.FIDESUI_MINOS,
+};
+
+// ─── Briefing banner (matches SystemBriefingBanner styling) ──────────────────
+
+interface BriefingBannerProps {
+  unresolvedCount: number;
+  onReviewIdentities?: () => void;
 }
 
-const TriageStrip = ({ identityCount, issueCount }: TriageStripProps) => (
-  <Flex
-    className="mb-6 rounded border border-gray-100 bg-gray-50 px-5 py-4"
-    gap={0}
-    align="stretch"
+export const UnresolvedBanner = ({
+  unresolvedCount,
+  onReviewIdentities,
+}: BriefingBannerProps) => {
+  const [dismissed, setDismissed] = useState(false);
+
+  if (unresolvedCount === 0 || dismissed) return null;
+
+  return (
+    <div
+      className="mb-4 rounded-lg px-5 py-4"
+      style={{ backgroundColor: palette.FIDESUI_BG_DEFAULT }}
+    >
+      <Flex gap={12} align="flex-start" className="min-w-0">
+        <SparkleIcon size={16} className="mt-1 shrink-0" />
+        <Flex vertical gap={6} className="min-w-0 flex-1">
+          <Text className="text-sm leading-relaxed">
+            We've detected{" "}
+            <strong>
+              {unresolvedCount} unresolved{" "}
+              {unresolvedCount === 1 ? "identity" : "identities"}
+            </strong>{" "}
+            in your query logs — these are service accounts or users accessing
+            data that haven't been registered as consumers yet. Until they're
+            resolved, some findings below may be incomplete.
+          </Text>
+
+          <Flex align="center" gap={6}>
+            <div
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: palette.FIDESUI_WARNING }}
+            />
+            <Text className="min-w-0 flex-1 text-xs">
+              {unresolvedCount} pending{" "}
+              {unresolvedCount === 1
+                ? "identity needs"
+                : "identities need"}{" "}
+              registration
+            </Text>
+            <Button
+              type="text"
+              size="small"
+              className="!px-0 !text-xs"
+              style={{ color: palette.FIDESUI_MINOS }}
+              onClick={() => onReviewIdentities?.()}
+            >
+              Review
+            </Button>
+            <span
+              role="button"
+              aria-label="Dismiss"
+              tabIndex={0}
+              className="shrink-0 cursor-pointer"
+              onClick={() => setDismissed(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") setDismissed(true);
+              }}
+            >
+              <Icons.Close
+                size={12}
+                style={{ color: palette.FIDESUI_NEUTRAL_500 }}
+              />
+            </span>
+          </Flex>
+        </Flex>
+      </Flex>
+    </div>
+  );
+};
+
+// ─── Grouped data types ──────────────────────────────────────────────────────
+
+interface PolicyGroup {
+  kind: "violation";
+  purpose: string;
+  severity: FindingSeverity;
+  consumers: { id: string; name: string; queryCount: number; lastSeen: string }[];
+  totalQueries: number;
+  lastSeen: string;
+}
+
+interface ConsumerGapGroup {
+  kind: "gap";
+  consumerName: string;
+  consumerId: string | null;
+  severity: FindingSeverity;
+  datasets: { name: string; tables: string[]; queryCount: number; lastSeen: string }[];
+  totalQueries: number;
+  lastSeen: string;
+}
+
+type GroupedCard = PolicyGroup | ConsumerGapGroup;
+
+function buildGroupedCards(): GroupedCard[] {
+  // Group violations by policy
+  const policyMap = new Map<string, ViolationCard[]>();
+  for (const v of MOCK_VIOLATION_CARDS) {
+    const existing = policyMap.get(v.purpose) ?? [];
+    existing.push(v);
+    policyMap.set(v.purpose, existing);
+  }
+
+  const policyGroups: PolicyGroup[] = [...policyMap.entries()].map(
+    ([purpose, violations]) => {
+      const consumers = violations.map((v) => ({
+        id: v.consumer_id,
+        name: v.consumer_name,
+        queryCount: v.query_count,
+        lastSeen: v.last_seen,
+      }));
+      const totalQueries = violations.reduce((s, v) => s + v.query_count, 0);
+      const lastSeen = violations.reduce(
+        (latest, v) => (v.last_seen > latest ? v.last_seen : latest),
+        "",
+      );
+      const highestSeverity = violations.reduce(
+        (best, v) =>
+          SEVERITY_ORDER[v.severity] < SEVERITY_ORDER[best]
+            ? v.severity
+            : best,
+        "low" as FindingSeverity,
+      );
+      return {
+        kind: "violation" as const,
+        purpose,
+        severity: highestSeverity,
+        consumers,
+        totalQueries,
+        lastSeen,
+      };
+    },
+  );
+
+  // Group gaps by consumer
+  const consumerMap = new Map<string, GapCard[]>();
+  for (const g of MOCK_GAP_CARDS) {
+    const key = g.consumer_id ?? g.consumer_name;
+    const existing = consumerMap.get(key) ?? [];
+    existing.push(g);
+    consumerMap.set(key, existing);
+  }
+
+  const gapGroups: ConsumerGapGroup[] = [...consumerMap.entries()].map(
+    ([, gaps]) => {
+      const datasets = gaps.map((g) => ({
+        name: g.dataset,
+        tables: g.tables,
+        queryCount: g.query_count,
+        lastSeen: g.last_seen,
+      }));
+      const totalQueries = gaps.reduce((s, g) => s + g.query_count, 0);
+      const lastSeen = gaps.reduce(
+        (latest, g) => (g.last_seen > latest ? g.last_seen : latest),
+        "",
+      );
+      const highestSeverity = gaps.reduce(
+        (best, g) =>
+          SEVERITY_ORDER[g.severity] < SEVERITY_ORDER[best]
+            ? g.severity
+            : best,
+        "low" as FindingSeverity,
+      );
+      return {
+        kind: "gap" as const,
+        consumerName: gaps[0].consumer_name,
+        consumerId: gaps[0].consumer_id,
+        severity: highestSeverity,
+        datasets,
+        totalQueries,
+        lastSeen,
+      };
+    },
+  );
+
+  return [...policyGroups, ...gapGroups].sort(
+    (a, b) =>
+      SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] ||
+      b.lastSeen.localeCompare(a.lastSeen),
+  );
+}
+
+// ─── Violation card (grouped by policy) ──────────────────────────────────────
+
+const PolicyViolationCard = ({ group }: { group: PolicyGroup }) => (
+  <Card
+    size="small"
+    className="h-full transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+    style={{
+      backgroundColor: "#fafafa",
+      borderLeft: `3px solid ${palette.FIDESUI_ERROR}`,
+    }}
   >
-    <Flex vertical gap={2} className="flex-1">
-      <Text className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-        Step 1
+    <Flex vertical gap={8} className="h-full">
+      <Flex justify="space-between" align="center">
+        <Tag color={CUSTOM_TAG_COLOR.ERROR}>Violation</Tag>
+        <Flex align="center" gap={4}>
+          <div
+            className="size-1.5 rounded-full"
+            style={{ backgroundColor: SEVERITY_COLORS[group.severity] }}
+          />
+          <Text type="secondary" className="text-[10px] capitalize">
+            {group.severity}
+          </Text>
+        </Flex>
+      </Flex>
+
+      <Text strong className="text-xs">
+        {group.purpose}
       </Text>
-      <Text strong>Resolve unknown identities</Text>
-      <Text
-        type={identityCount > 0 ? "warning" : "secondary"}
-        className="text-sm"
-      >
-        {identityCount} pending
-      </Text>
+
+      <Flex vertical gap={2}>
+        {group.consumers.map((c) => (
+          <Flex key={c.id} align="center" justify="space-between">
+            <Link href={`${DATA_CONSUMERS_ROUTE}/${c.id}`}>
+              <Text className="text-xs" style={{ color: palette.FIDESUI_MINOS }}>
+                {c.name}
+              </Text>
+            </Link>
+            <Text type="secondary" className="text-[10px]">
+              {c.queryCount.toLocaleString()} queries
+            </Text>
+          </Flex>
+        ))}
+      </Flex>
+
+      <div className="mt-auto">
+        <Text type="secondary" className="text-[10px]">
+          {group.totalQueries.toLocaleString()} total queries · last{" "}
+          {formatRelativeTime(group.lastSeen)}
+        </Text>
+      </div>
     </Flex>
-    <Flex align="center" className="px-6 text-gray-300 text-lg">
-      →
-    </Flex>
-    <Flex vertical gap={2} className="flex-1">
-      <Text className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-        Step 2
-      </Text>
-      <Text strong>Address access issues</Text>
-      <Text
-        type={issueCount > 0 ? "danger" : "secondary"}
-        className="text-sm"
-      >
-        {issueCount} pending
-      </Text>
-    </Flex>
-  </Flex>
+  </Card>
 );
 
-// ─── Unresolved identities table ─────────────────────────────────────────────
+// ─── Gap card (grouped by consumer) ──────────────────────────────────────────
 
-const identityColumns = [
+const ConsumerGapCard = ({ group }: { group: ConsumerGapGroup }) => {
+  const isUnknown = !group.consumerId;
+
+  return (
+    <Card
+      size="small"
+      className="h-full transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+      style={{
+        backgroundColor: "#fafafa",
+        borderLeft: "3px solid #faad14",
+        ...(isUnknown
+          ? { borderStyle: "dashed", borderLeftStyle: "solid" }
+          : {}),
+      }}
+    >
+      <Flex vertical gap={8} className="h-full">
+        <Flex justify="space-between" align="center">
+          <Tag color={CUSTOM_TAG_COLOR.WARNING}>No policy</Tag>
+          <Flex align="center" gap={4}>
+            <div
+              className="size-1.5 rounded-full"
+              style={{ backgroundColor: SEVERITY_COLORS[group.severity] }}
+            />
+            <Text type="secondary" className="text-[10px] capitalize">
+              {group.severity}
+            </Text>
+          </Flex>
+        </Flex>
+
+        <Text strong className="text-xs">
+          {group.consumerName}
+        </Text>
+
+        <Flex vertical gap={2}>
+          {group.datasets.map((ds) => (
+            <Flex key={ds.name} align="center" justify="space-between">
+              <Text type="secondary" className="text-xs">
+                {ds.name}
+              </Text>
+              <Text type="secondary" className="text-[10px]">
+                {ds.queryCount.toLocaleString()} queries
+              </Text>
+            </Flex>
+          ))}
+        </Flex>
+
+        <div className="mt-auto">
+          <Text type="secondary" className="text-[10px]">
+            {group.totalQueries.toLocaleString()} total queries · last{" "}
+            {formatRelativeTime(group.lastSeen)}
+          </Text>
+          <div className="mt-1">
+            <Link href={DATA_PURPOSES_ROUTE}>
+              <Text
+                className="text-xs"
+                style={{ color: palette.FIDESUI_MINOS }}
+              >
+                Create policy →
+              </Text>
+            </Link>
+          </div>
+        </div>
+      </Flex>
+    </Card>
+  );
+};
+
+// ─── Consumers table ─────────────────────────────────────────────────────────
+
+export { formatRelativeTime };
+
+export const consumerColumns = [
   {
     title: "Identity",
     dataIndex: "identifier",
@@ -124,8 +421,8 @@ const identityColumns = [
     render: () => (
       <Link href={DATA_CONSUMERS_ROUTE}>
         <Text
-          type="secondary"
-          className="text-xs whitespace-nowrap hover:text-blue-500"
+          className="text-xs whitespace-nowrap"
+          style={{ color: palette.FIDESUI_MINOS }}
         >
           Register consumer →
         </Text>
@@ -134,134 +431,93 @@ const identityColumns = [
   },
 ];
 
-const UnresolvedIdentitiesTable = ({
-  items,
-}: {
-  items: UnresolvedIdentity[];
-}) => (
-  <Flex vertical gap={0}>
-    <Flex align="center" gap={8} className="mb-1">
-      <Title level={5} className="!mb-0">
-        Unresolved identities
-      </Title>
-      <Tag>{items.length}</Tag>
-    </Flex>
-    <Text type="secondary" className="text-xs mb-4 block">
-      Identifiers in query logs with no matching consumer record. Register
-      them to begin compliance evaluation for their activity.
-    </Text>
-    <Table
-      columns={identityColumns}
-      dataSource={items}
-      rowKey="id"
-      size="small"
-      pagination={false}
-      bordered={false}
-    />
-  </Flex>
-);
+// ─── Root component ──────────────────────────────────────────────────────────
 
-// ─── Access issues (merged violations + gaps) ─────────────────────────────────
-
-type AccessIssue =
-  | (ViolationCard & { kind: "violation" })
-  | (GapCard & { kind: "gap" });
-
-const cardStyle = { backgroundColor: "#fafafa", height: "100%" };
-
-const AccessIssueCard = ({ item }: { item: AccessIssue }) => {
-  const isViolation = item.kind === "violation";
-  const title = isViolation
-    ? `${item.consumer_name} — ${(item as ViolationCard).purpose}`
-    : `${item.consumer_name} — ${(item as GapCard).dataset}`;
-  const tables = isViolation
-    ? (item as ViolationCard).tables
-    : (item as GapCard).tables;
-  const tableList = formatTableList(tables);
-  const narrative = isViolation
-    ? `Accessed ${tableList} outside approved purpose boundary — ${item.query_count.toLocaleString()} queries, last seen ${formatRelativeTime(item.last_seen)}.`
-    : `Querying ${tableList} with no matching approved purpose — ${item.query_count.toLocaleString()} queries, last seen ${formatRelativeTime(item.last_seen)}.`;
-  const ctaHref = isViolation
-    ? `${DATA_CONSUMERS_ROUTE}/${item.consumer_id}`
-    : DATA_PURPOSES_ROUTE;
-  const ctaLabel = isViolation ? "View activity →" : "Create purpose →";
-
-  return (
-    <Card size="small" style={cardStyle}>
-      <Flex vertical gap={8}>
-        <Flex gap={8} align="center">
-          <Tag color={isViolation ? "error" : "caution"}>
-            {isViolation ? "Non-compliant" : "No policy"}
-          </Tag>
-          <Text strong className="text-xs">
-            {title}
-          </Text>
-        </Flex>
-        <Text type="secondary" className="text-xs">
-          {narrative}
-        </Text>
-        <Link href={ctaHref}>
-          <Text type="secondary" className="text-xs hover:text-blue-500">
-            {ctaLabel}
-          </Text>
-        </Link>
-      </Flex>
-    </Card>
-  );
-};
-
-const AccessIssuesSection = ({ items }: { items: AccessIssue[] }) => (
-  <Flex vertical gap={0}>
-    <Flex align="center" gap={8} className="mb-1">
-      <Title level={5} className="!mb-0">
-        Access issues
-      </Title>
-      <Tag>{items.length}</Tag>
-    </Flex>
-    <Text type="secondary" className="text-xs mb-4 block">
-      Data access outside declared purposes, sorted by most recent.
-      Non-compliant entries exceed a purpose boundary; no policy entries have
-      no declared purpose at all.
-    </Text>
-    <Row gutter={[16, 16]}>
-      {items.map((item) => (
-        <Col key={item.id} xs={24} sm={12} lg={6}>
-          <AccessIssueCard item={item} />
-        </Col>
-      ))}
-    </Row>
-  </Flex>
-);
-
-// ─── Root component ───────────────────────────────────────────────────────────
+type FindingFilter = "all" | "violations" | "gaps";
 
 export const SummaryCards = () => {
-  const identities = MOCK_UNRESOLVED_IDENTITIES;
-
-  const accessIssues = useMemo<AccessIssue[]>(
-    () =>
-      [
-        ...MOCK_VIOLATION_CARDS.map((v) => ({ ...v, kind: "violation" as const })),
-        ...MOCK_GAP_CARDS.map((g) => ({ ...g, kind: "gap" as const })),
-      ].sort((a, b) => b.last_seen.localeCompare(a.last_seen)),
-    [],
+  const [findingFilter, setFindingFilter] = useState<FindingFilter>("all");
+  const [severityFilter, setSeverityFilter] = useState<FindingSeverity | null>(
+    null,
   );
 
-  if (identities.length === 0 && accessIssues.length === 0) {
+  const allCards = useMemo(() => buildGroupedCards(), []);
+
+  const filtered = useMemo(() => {
+    let result = allCards;
+    if (findingFilter === "violations") {
+      result = result.filter((c) => c.kind === "violation");
+    } else if (findingFilter === "gaps") {
+      result = result.filter((c) => c.kind === "gap");
+    }
+    if (severityFilter) {
+      result = result.filter((c) => c.severity === severityFilter);
+    }
+    return result;
+  }, [allCards, findingFilter, severityFilter]);
+
+  const severityOptions: { label: string; value: FindingSeverity }[] = [
+    { label: "Critical", value: "critical" },
+    { label: "High", value: "high" },
+    { label: "Medium", value: "medium" },
+    { label: "Low", value: "low" },
+  ];
+
+  if (allCards.length === 0) {
     return <Text type="secondary">No findings detected.</Text>;
   }
 
   return (
-    <Flex vertical gap={32}>
-      <TriageStrip
-        identityCount={identities.length}
-        issueCount={accessIssues.length}
-      />
-      {identities.length > 0 && (
-        <UnresolvedIdentitiesTable items={identities} />
-      )}
-      {accessIssues.length > 0 && (
-        <AccessIssuesSection items={accessIssues} />
+    <Flex vertical gap={16}>
+      {/* Toolbar */}
+      <Flex justify="space-between" align="center">
+        <Segmented
+          size="small"
+          value={findingFilter}
+          onChange={(v) => setFindingFilter(v as FindingFilter)}
+          options={[
+            { label: "All", value: "all" },
+            { label: "Violations", value: "violations" },
+            { label: "Gaps", value: "gaps" },
+          ]}
+        />
+        <Select
+          placeholder="Severity"
+          allowClear
+          size="small"
+          style={{ width: 140 }}
+          options={severityOptions}
+          value={severityFilter}
+          onChange={(v) => setSeverityFilter(v ?? null)}
+        />
+      </Flex>
+
+      {/* Card grid */}
+      {filtered.length > 0 ? (
+        <Row gutter={[16, 16]}>
+          {filtered.map((card) => (
+            <Col
+              key={
+                card.kind === "violation"
+                  ? `v-${card.purpose}`
+                  : `g-${card.consumerName}`
+              }
+              xs={24}
+              sm={12}
+              lg={8}
+            >
+              {card.kind === "violation" ? (
+                <PolicyViolationCard group={card} />
+              ) : (
+                <ConsumerGapCard group={card} />
+              )}
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Flex justify="center" className="py-8">
+          <Text type="secondary">No findings match the current filters.</Text>
+        </Flex>
       )}
     </Flex>
   );

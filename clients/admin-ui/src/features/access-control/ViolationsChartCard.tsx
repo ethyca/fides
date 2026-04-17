@@ -2,7 +2,6 @@ import {
   antTheme,
   AreaChart,
   BarChart,
-  Card,
   Flex,
   Segmented,
   Statistic,
@@ -68,10 +67,9 @@ export const ViolationsChartCard = () => {
   const trend = summaryData?.trend ?? 0;
 
   return (
-    <Card
-      loading={loading}
-      title={<Text strong>Violations over time</Text>}
-      extra={
+    <Flex vertical gap={8}>
+      <Flex justify="space-between" align="center">
+        <Text strong className="text-xs">Violations over time</Text>
         <Segmented
           size="small"
           options={[
@@ -81,33 +79,7 @@ export const ViolationsChartCard = () => {
           value={mode}
           onChange={(val) => setMode(val as ChartMode)}
         />
-      }
-      className="flex h-full flex-col text-clip"
-      cover={
-        <div className="h-[120px] w-full">
-          {mode === "line" ? (
-            <AreaChart
-              data={areaChartData}
-              series={AREA_SERIES}
-              rangeMs={rangeMs}
-              onIntervalChange={onChartIntervalChange}
-            />
-          ) : (
-            <BarChart
-              data={barChartData}
-              size="sm"
-              rangeMs={rangeMs}
-              onIntervalChange={onChartIntervalChange}
-            />
-          )}
-        </div>
-      }
-      classNames={{
-        cover: "px-3 pb-3",
-        body: "!pt-0",
-      }}
-      coverPosition="bottom"
-    >
+      </Flex>
       <Flex align="baseline" gap="small">
         <Statistic value={totalViolations} />
         <Statistic
@@ -121,6 +93,23 @@ export const ViolationsChartCard = () => {
           }}
         />
       </Flex>
-    </Card>
+      <div className="h-[120px] w-full">
+        {mode === "line" ? (
+          <AreaChart
+            data={areaChartData}
+            series={AREA_SERIES}
+            rangeMs={rangeMs}
+            onIntervalChange={onChartIntervalChange}
+          />
+        ) : (
+          <BarChart
+            data={barChartData}
+            size="sm"
+            rangeMs={rangeMs}
+            onIntervalChange={onChartIntervalChange}
+          />
+        )}
+      </div>
+    </Flex>
   );
 };

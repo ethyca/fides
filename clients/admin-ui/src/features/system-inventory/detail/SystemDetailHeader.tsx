@@ -52,7 +52,6 @@ const SystemDetailHeader = ({ system }: SystemDetailHeaderProps) => {
           icon={<Icons.TrashCan size={16} />}
           onClick={() => setDeleteOpen(true)}
         />
-        <Button type="default">Export CSV</Button>
       </Flex>
 
       <Modal

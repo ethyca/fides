@@ -1,4 +1,4 @@
-import { Card, Divider, Flex, Text } from "fidesui";
+import { Divider, Flex, Text } from "fidesui";
 
 import {
   MOCK_GAP_CARDS,
@@ -19,32 +19,31 @@ export const PendingActionsCard = () => {
   ];
 
   return (
-    <Card title={<Text strong>Pending actions</Text>} className="h-full">
-      <Flex vertical gap={10}>
-        {rows.map(({ label, count, danger }) => (
-          <Flex key={label} justify="space-between" align="center">
-            <Text type="secondary" className="text-xs">
-              {label}
-            </Text>
-            <Text
-              strong
-              type={danger && count > 0 ? "danger" : undefined}
-              className="text-sm"
-            >
-              {count}
-            </Text>
-          </Flex>
-        ))}
-        <Divider className="!my-1" />
-        <Flex justify="space-between" align="center">
+    <Flex vertical gap={10}>
+      <Text strong className="text-xs">Pending actions</Text>
+      {rows.map(({ label, count, danger }) => (
+        <Flex key={label} justify="space-between" align="center">
           <Text type="secondary" className="text-xs">
-            Total
+            {label}
           </Text>
-          <Text strong className="text-sm">
-            {total}
+          <Text
+            strong
+            type={danger && count > 0 ? "danger" : undefined}
+            className="text-sm"
+          >
+            {count}
           </Text>
         </Flex>
+      ))}
+      <Divider className="!my-1" />
+      <Flex justify="space-between" align="center">
+        <Text type="secondary" className="text-xs">
+          Total
+        </Text>
+        <Text strong className="text-sm">
+          {total}
+        </Text>
       </Flex>
-    </Card>
+    </Flex>
   );
 };

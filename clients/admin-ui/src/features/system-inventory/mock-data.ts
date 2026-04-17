@@ -219,9 +219,9 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       risk_count: 1,
       risks: [
         {
-          title: "High % unreviewed fields",
+          title: "No purpose assigned",
           severity: RiskSeverity.MEDIUM,
-          resolveHref: "#assets",
+          resolveHref: "#datasets",
         },
       ],
       stewards: [{ initials: "JG", name: "Jack Gale" }],
@@ -230,9 +230,9 @@ export const MOCK_SYSTEMS: MockSystem[] = [
         {
           timestamp: "2026-04-13T14:20:00Z",
           action: "Risk flagged",
-          category: "classification",
+          category: "purpose",
           user: "System",
-          detail: "55% of fields unreviewed — review needed",
+          detail: "Datasets have no purpose assigned",
         },
       ],
     },
@@ -327,17 +327,12 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       ],
       annotation_percent: 30,
       health: HealthStatus.ISSUES,
-      risk_count: 2,
+      risk_count: 1,
       risks: [
         {
-          title: "High % unreviewed fields",
+          title: "No purpose assigned",
           severity: RiskSeverity.MEDIUM,
-          resolveHref: "#assets",
-        },
-        {
-          title: "No data steward assigned",
-          severity: RiskSeverity.MEDIUM,
-          resolveHref: "#information",
+          resolveHref: "#datasets",
         },
       ],
       stewards: [{ initials: "JG", name: "Jack Gale" }],
@@ -387,9 +382,9 @@ export const MOCK_SYSTEMS: MockSystem[] = [
       risk_count: 1,
       risks: [
         {
-          title: "No data steward assigned",
+          title: "No purpose assigned",
           severity: RiskSeverity.MEDIUM,
-          resolveHref: "#information",
+          resolveHref: "#datasets",
         },
       ],
       stewards: [{ initials: "JG", name: "Jack Gale" }],

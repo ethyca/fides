@@ -1,9 +1,13 @@
-import { Col, DatePicker, Flex, Result, Row } from "fidesui";
+import { DatePicker, Flex, Result } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { useQueryState, parseAsStringLiteral } from "nuqs";
 
 import { useGetFiltersQuery } from "~/features/access-control/access-control.slice";
 import { AccessControlTableTabs } from "~/features/access-control/AccessControlTableTabs";
+import { MOCK_UNRESOLVED_IDENTITIES } from "~/features/access-control/mockData";
+import { UnresolvedBanner } from "~/features/access-control/SummaryCards";
 import {
   type FacetDefinition,
   FacetedSearchInput,
@@ -58,6 +62,17 @@ const AccessControlPage: NextPage = () => {
       });
   }, [facetOptions]);
 
+  const [, setTab] = useQueryState(
+    "tab",
+    parseAsStringLiteral(["summary", "log", "consumers"] as const)
+      .withDefault("summary")
+      .withOptions({ history: "push" }),
+  );
+
+  const handleReviewIdentities = useCallback(() => {
+    setTab("consumers");
+  }, [setTab]);
+
   if (!flags.alphaPurposeBasedAccessControl) {
     return (
       <Layout title="Access control">
@@ -71,6 +86,10 @@ const AccessControlPage: NextPage = () => {
       <PageHeader heading="Access control" isSticky />
       <RequestLogFilterContext.Provider value={filterState}>
         <Flex vertical gap={16}>
+          <UnresolvedBanner
+            unresolvedCount={MOCK_UNRESOLVED_IDENTITIES.length}
+            onReviewIdentities={handleReviewIdentities}
+          />
           <Flex gap={12} align="center">
             <Flex flex={1}>
               <FacetedSearchInput
@@ -96,14 +115,18 @@ const AccessControlPage: NextPage = () => {
             />
           </Flex>
 
-          <Row gutter={16}>
-            <Col span={17}>
+          <Flex gap={32} className="px-4 py-6">
+            <div className="min-w-0 flex-1">
               <ViolationsChartCard />
-            </Col>
-            <Col span={7}>
+            </div>
+            <div
+              className="shrink-0 border-l border-solid"
+              style={{ borderColor: palette.FIDESUI_NEUTRAL_100 }}
+            />
+            <div style={{ width: 260, flexShrink: 0 }}>
               <PendingActionsCard />
-            </Col>
-          </Row>
+            </div>
+          </Flex>
 
           <AccessControlTableTabs />
         </Flex>

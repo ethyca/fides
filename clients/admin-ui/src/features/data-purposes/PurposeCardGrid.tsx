@@ -127,20 +127,20 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
             onChange={(v) => setStatusFilter(v ?? null)}
           />
           <Select
-            placeholder="Data category"
-            allowClear
-            style={{ width: 200 }}
-            options={categoryOptions}
-            value={categoryFilter}
-            onChange={(v) => setCategoryFilter(v ?? null)}
-          />
-          <Select
             placeholder="Consumer"
             allowClear
             style={{ width: 200 }}
             options={consumerOptions}
             value={consumerFilter}
             onChange={(v) => setConsumerFilter(v ?? null)}
+          />
+          <Select
+            placeholder="Data category"
+            allowClear
+            style={{ width: 200 }}
+            options={categoryOptions}
+            value={categoryFilter}
+            onChange={(v) => setCategoryFilter(v ?? null)}
           />
           <Select
             placeholder="Data use"

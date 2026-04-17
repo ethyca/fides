@@ -32,7 +32,7 @@ const RiskIndicator = ({
       <Flex align="center" gap={5}>
         <Dot color={palette.FIDESUI_ERROR} />
         <Text className="text-xs" style={{ color: palette.FIDESUI_MINOS }}>
-          {riskCount} {riskCount === 1 ? "risk" : "risks"}
+          {riskCount} {riskCount === 1 ? "Risk" : "Risks"}
         </Text>
       </Flex>
     );

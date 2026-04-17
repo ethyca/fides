@@ -1394,6 +1394,8 @@ const HistoryContent = ({ system }: { system: MockSystem }) => {
             }
             style={{ width: 240 }}
           />
+        </Flex>
+        <Flex gap={8} align="center">
           <Select
             aria-label="Filter by category"
             mode="multiple"
@@ -1421,14 +1423,14 @@ const HistoryContent = ({ system }: { system: MockSystem }) => {
             maxTagCount="responsive"
             options={users.map((u) => ({ label: u, value: u }))}
           />
+          <Button
+            size="small"
+            icon={<Icons.Download size={14} />}
+            onClick={() => exportCsv(filtered, system.name)}
+          >
+            Export CSV
+          </Button>
         </Flex>
-        <Button
-          size="small"
-          icon={<Icons.Download size={14} />}
-          onClick={() => exportCsv(filtered, system.name)}
-        >
-          Export CSV
-        </Button>
       </Flex>
 
       {/* Stats bar */}

@@ -15,21 +15,31 @@ const DataPurposesPage: NextPage = () => {
 
   const handleDownloadRoPA = useCallback(() => {
     const header = [
-      "Name",
-      "Data use",
-      "Data subjects",
-      "Legal basis",
-      "Retention (days)",
-      "Data categories",
-      "Updated",
+      "Reference",
+      "Processing activity",
+      "Description",
+      "Purpose of processing",
+      "Lawful basis (Art. 6)",
+      "Special category basis (Art. 9)",
+      "Categories of data subjects",
+      "Categories of personal data",
+      "Categories of personal data (detected)",
+      "Retention period (days)",
+      "Features",
+      "Last reviewed",
     ];
     const rows = MOCK_PURPOSES.map((p) => [
+      p.key,
       p.name,
+      p.description,
       p.data_use,
-      p.data_subjects.join("; "),
       p.legal_basis,
-      p.retention_period_days ?? "",
+      p.special_category_legal_basis ?? "",
+      p.data_subjects.join("; "),
       p.data_categories.join("; "),
+      p.detected_data_categories.join("; "),
+      p.retention_period_days ?? "",
+      p.features.join("; "),
       p.updated_at,
     ]);
     const csv = [header, ...rows]
