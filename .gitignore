@@ -271,3 +271,6 @@ multilang_migration_backup_*
 
 # Kiro
 .kiro/*
+
+# Qwen
+.qwen/*
