@@ -527,7 +527,7 @@ class TestRestorePrimaryKeyFields:
         assert any(f.name == "id" for f in users_col.fields)
 
     def test_primary_key_flag_removed_restored(self):
-        """Removing the primary_key flag restores fides_meta from existing."""
+        """Removing fides_meta entirely restores only primary_key flag."""
         existing = _make_existing_dataset(
             collections=[
                 {
@@ -559,7 +559,39 @@ class TestRestorePrimaryKeyFields:
         id_field = next(f for f in users_col.fields if f.name == "id")
         assert id_field.fides_meta is not None
         assert id_field.fides_meta.primary_key is True
-        assert id_field.fides_meta.data_type == "string"
+        # data_type is NOT restored — only the primary_key flag
+        assert id_field.fides_meta.data_type is None
+
+    def test_other_metadata_preserved_when_pk_flag_restored(self):
+        """Other fides_meta changes persist even when primary_key is restored."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True, "data_type": "string"}},
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        # Changed data_type and removed primary_key
+                        {"name": "id", "fides_meta": {"primary_key": False, "data_type": "integer"}},
+                    ],
+                },
+            ],
+        )
+        warnings = restore_primary_key_fields(dataset, existing)
+        assert len(warnings) == 1
+        id_field = next(f for f in dataset.collections[0].fields if f.name == "id")
+        assert id_field.fides_meta.primary_key is True
+        # User's data_type change is kept
+        assert id_field.fides_meta.data_type == "integer"
 
     def test_primary_key_flag_set_to_false_restored(self):
         """Setting primary_key to False restores it."""

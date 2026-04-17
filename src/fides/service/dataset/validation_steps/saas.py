@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
-from fideslang.models import DatasetField
+from fideslang.models import DatasetField, FidesMeta
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 
@@ -390,28 +390,27 @@ def restore_primary_key_fields(
                 not incoming_field.fides_meta
                 or not incoming_field.fides_meta.primary_key
             ):
-                # Primary key flag was removed — restore fides_meta from existing
-                existing_field = resolve_field_path(
-                    existing_collection.fields, field_path
+                # Primary key flag was removed — restore just the flag
+                if not incoming_field.fides_meta:
+                    incoming_field.fides_meta = FidesMeta(primary_key=True)
+                else:
+                    incoming_field.fides_meta.primary_key = True
+                warnings.append(
+                    DatasetFieldWarning(
+                        collection=collection.name,
+                        field=field_path,
+                        action="restored",
+                        message=f"Restored primary key flag on field '{field_path}' "
+                        f"in collection '{collection.name}' "
+                        f"(cannot remove primary key designation).",
+                    )
                 )
-                if existing_field and existing_field.fides_meta:
-                    incoming_field.fides_meta = deepcopy(existing_field.fides_meta)
-                    warnings.append(
-                        DatasetFieldWarning(
-                            collection=collection.name,
-                            field=field_path,
-                            action="restored",
-                            message=f"Restored primary key flag on field '{field_path}' "
-                            f"in collection '{collection.name}' "
-                            f"(cannot remove primary key designation).",
-                        )
-                    )
-                    logger.info(
-                        "Restored primary key flag on '{}.{}' in SaaS dataset '{}'",
-                        collection.name,
-                        field_path,
-                        dataset.fides_key,
-                    )
+                logger.info(
+                    "Restored primary key flag on '{}.{}' in SaaS dataset '{}'",
+                    collection.name,
+                    field_path,
+                    dataset.fides_key,
+                )
 
     return warnings
 
