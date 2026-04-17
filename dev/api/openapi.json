@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.83.1b1.dev38+g200aaceb9"
+    "version": "2.83.2a1.dev2+g729f1ad01"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -33401,6 +33401,17 @@
             ],
             "title": "Location"
           },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Id"
+          },
           "deleted_at": {
             "anyOf": [
               {
@@ -33845,6 +33856,17 @@
               }
             ],
             "title": "Location"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Id"
           },
           "deleted_at": {
             "anyOf": [
