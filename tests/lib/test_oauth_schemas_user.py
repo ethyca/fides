@@ -43,7 +43,7 @@ def test_bad_password(password, message):
     ],
 )
 def test_user_create_invalid_username(username):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Usernames must be"):
         UserCreate(
             username=username,
             password=str_to_b64_str("Testtest1!"),

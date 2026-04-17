@@ -44,7 +44,7 @@ class UserCreate(FidesSchema):
         if not re.fullmatch(USERNAME_PATTERN, username):
             raise ValueError(
                 "Usernames must be 1-100 characters and may only contain "
-                "letters, numbers, underscores, and hyphens."
+                "letters, numbers, periods, underscores, and hyphens."
             )
         return username
 
