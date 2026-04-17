@@ -114,12 +114,9 @@ const EditorSection = ({
   }, [reachability, dispatch]);
 
   const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
+    { connectionKey },
     {
-      connectionKey,
-      datasetKey: currentDataset?.fides_key || "",
-    },
-    {
-      skip: !isSaas || !connectionKey || !currentDataset?.fides_key,
+      skip: !isSaas || !connectionKey,
     },
   );
   const datasetOptions = useMemo(
