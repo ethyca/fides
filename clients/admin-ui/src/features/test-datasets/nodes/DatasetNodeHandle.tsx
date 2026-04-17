@@ -1,5 +1,7 @@
 import { Handle, HandleType, Position } from "@xyflow/react";
-import palette from "fidesui/src/palette/palette.module.scss";
+import classNames from "classnames";
+
+import styles from "./DatasetNode.module.scss";
 
 interface DatasetNodeHandleProps {
   type: HandleType;
@@ -13,14 +15,11 @@ const DatasetNodeHandle = ({
   <Handle
     type={type}
     position={type === "source" ? Position.Right : Position.Left}
-    style={{
-      width: 8,
-      height: 8,
-      backgroundColor: inactive
-        ? palette.FIDESUI_NEUTRAL_400
-        : palette.FIDESUI_MINOS,
-    }}
-    className="transition-colors duration-300 ease-in"
+    className={classNames(
+      styles.handle,
+      inactive && styles["handle--inactive"],
+      "transition-colors duration-300 ease-in",
+    )}
   />
 );
 

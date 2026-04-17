@@ -8,14 +8,22 @@ import {
   Controls,
   Edge,
   EdgeTypes,
-  MiniMap,
   Node,
   NodeTypes,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import { Breadcrumb, Button, Flex, Icons, Select, Typography } from "fidesui";
+import {
+  Breadcrumb,
+  Button,
+  Flex,
+  Icons,
+  Select,
+  Splitter,
+  Switch,
+  Typography,
+} from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -121,7 +129,9 @@ const DatasetNodeEditorInner = ({
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   // --- YAML editor state ---
+  const YAML_PANEL_DEFAULT_WIDTH = 550;
   const [yamlPanelOpen, setYamlPanelOpen] = useState(false);
+  const [yamlPanelSize, setYamlPanelSize] = useState(0);
   const [yamlContent, setYamlContent] = useState("");
   const [yamlError, setYamlError] = useState<string | null>(null);
   // Tracks who initiated the last change to prevent sync loops between the
@@ -177,6 +187,9 @@ const DatasetNodeEditorInner = ({
         const cleaned = removeNulls(dataset);
         setYamlContent(yaml.dump(cleaned));
         setYamlError(null);
+        setYamlPanelSize(YAML_PANEL_DEFAULT_WIDTH);
+      } else {
+        setYamlPanelSize(0);
       }
       return !prev;
     });
@@ -669,12 +682,7 @@ const DatasetNodeEditorInner = ({
         <Flex
           align="center"
           justify="space-between"
-          style={{
-            padding: "6px 12px",
-            borderBottom: "1px solid var(--fidesui-neutral-200)",
-            backgroundColor: "white",
-            flexShrink: 0,
-          }}
+          className="shrink-0 border-b border-neutral-2 bg-white px-3 py-1.5"
         >
           {focusedCollection ? (
             <Flex align="center" gap="small">
@@ -693,7 +701,7 @@ const DatasetNodeEditorInner = ({
                         type="link"
                         size="small"
                         onClick={handleBack}
-                        style={{ padding: 0, height: "auto" }}
+                        className="!h-auto !p-0"
                       >
                         {datasetLabel}
                       </Button>
@@ -706,7 +714,7 @@ const DatasetNodeEditorInner = ({
           ) : (
             <div />
           )}
-          <Flex align="center" gap="small">
+          <Flex align="center" gap="small" className="shrink-0">
             {availableCategories.length > 0 && (
               <Select
                 mode="multiple"
@@ -716,95 +724,21 @@ const DatasetNodeEditorInner = ({
                 options={categoryOptions}
                 value={categoryFilter}
                 onChange={(value) => setCategoryFilter(value ?? [])}
-                style={{ minWidth: 200, maxWidth: 400 }}
+                className="min-w-[200px] max-w-[400px]"
                 size="small"
                 showSearch
               />
             )}
-            <Button
-              type="text"
-              size="small"
-              icon={<Icons.Code />}
-              onClick={handleToggleYamlPanel}
-              aria-label="Toggle YAML editor"
-            >
-              YAML
-            </Button>
-          </Flex>
-        </Flex>
-        <div
-          style={{
-            flex: "1 1 auto",
-            minHeight: 0,
-            backgroundColor: palette.FIDESUI_BG_CORINTH,
-          }}
-        >
-          <DatasetTreeHoverProvider edges={layoutedEdges}>
-            <ReactFlow
-              nodes={nodes}
-              edges={layoutedEdges}
-              onNodeClick={handleNodeClick}
-              onPaneClick={handlePaneClick}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              edgesFocusable={false}
-              connectOnClick={false}
-              nodesConnectable={false}
-              elementsSelectable
-              fitView
-              minZoom={0.2}
-              maxZoom={2}
-              proOptions={{ hideAttribution: true }}
-            >
-              <Background
-                color={palette.FIDESUI_NEUTRAL_100}
-                variant={BackgroundVariant.Dots}
-                size={3}
-              />
-              <MiniMap nodeStrokeWidth={3} pannable />
-              <Controls showInteractive={false} />
-            </ReactFlow>
-          </DatasetTreeHoverProvider>
-        </div>
-        {/* Collapsible YAML editor panel */}
-        {yamlPanelOpen && (
-          <Flex
-            vertical
-            style={{
-              flexShrink: 0,
-              height: 300,
-              borderTop: "1px solid var(--fidesui-neutral-200)",
-              backgroundColor: "white",
-            }}
-          >
-            <Flex
-              align="center"
-              justify="space-between"
-              style={{
-                padding: "4px 12px",
-                borderBottom: "1px solid var(--fidesui-neutral-200)",
-                flexShrink: 0,
-              }}
-            >
-              <Flex align="center" gap="small">
-                <Typography.Text
-                  strong
-                  style={{ fontSize: 12, userSelect: "none" }}
-                >
-                  YAML Editor
-                </Typography.Text>
-                {yamlError && (
-                  <Typography.Text type="danger" style={{ fontSize: 11 }}>
-                    {yamlError}
-                  </Typography.Text>
-                )}
-              </Flex>
-              <Button
-                type="text"
+            <Flex align="center" gap={6} className="shrink-0">
+              <Icons.Code size={14} />
+              <Typography.Text className="select-none text-xs">
+                YAML
+              </Typography.Text>
+              <Switch
                 size="small"
-                icon={<Icons.Close />}
-                onClick={() => setYamlPanelOpen(false)}
-                aria-label="Close YAML editor"
+                checked={yamlPanelOpen}
+                onChange={handleToggleYamlPanel}
+                aria-label="Toggle YAML editor"
               />
             </Flex>
             <div style={{ flex: "1 1 auto", minHeight: 0 }}>
@@ -831,7 +765,100 @@ const DatasetNodeEditorInner = ({
               />
             </div>
           </Flex>
-        )}
+        </Flex>
+        <Splitter
+          className="min-h-0 flex-auto"
+          onResize={(sizes) => setYamlPanelSize(sizes[1])}
+        >
+          <Splitter.Panel>
+            <div className="h-full bg-neutral-1">
+              <DatasetTreeHoverProvider edges={layoutedEdges}>
+                <ReactFlow
+                  nodes={nodes}
+                  edges={layoutedEdges}
+                  onNodeClick={handleNodeClick}
+                  onPaneClick={handlePaneClick}
+                  nodeTypes={nodeTypes}
+                  edgeTypes={edgeTypes}
+                  edgesFocusable={false}
+                  connectOnClick={false}
+                  nodesConnectable={false}
+                  elementsSelectable
+                  fitView
+                  minZoom={0.2}
+                  maxZoom={2}
+                  proOptions={{ hideAttribution: true }}
+                >
+                  <Background
+                    color={palette.FIDESUI_NEUTRAL_100}
+                    variant={BackgroundVariant.Dots}
+                    size={3}
+                  />
+                  <Controls showInteractive={false} />
+                </ReactFlow>
+              </DatasetTreeHoverProvider>
+            </div>
+          </Splitter.Panel>
+          {/* Collapsible YAML editor panel */}
+          <Splitter.Panel
+            size={yamlPanelSize}
+            min={yamlPanelOpen ? 200 : 0}
+            max={yamlPanelOpen ? "60%" : 0}
+          >
+            {yamlPanelOpen && (
+              <Flex
+                vertical
+                className="h-full border-l border-neutral-2 bg-white"
+              >
+                <Flex
+                  align="center"
+                  justify="space-between"
+                  className="shrink-0 border-b border-neutral-2 px-3 py-1"
+                >
+                  <Flex align="center" gap="small">
+                    <Typography.Text strong className="select-none text-xs">
+                      YAML Editor
+                    </Typography.Text>
+                    {yamlError && (
+                      <Typography.Text type="danger" className="text-xs">
+                        {yamlError}
+                      </Typography.Text>
+                    )}
+                  </Flex>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<Icons.Close />}
+                    onClick={() => {
+                      setYamlPanelOpen(false);
+                      setYamlPanelSize(0);
+                    }}
+                    aria-label="Close YAML editor"
+                  />
+                </Flex>
+                <div className="min-h-0 flex-auto">
+                  <Editor
+                    defaultLanguage="yaml"
+                    value={yamlContent}
+                    height="100%"
+                    onChange={handleYamlChange}
+                    options={{
+                      fontFamily: "Menlo",
+                      fontSize: 13,
+                      minimap: { enabled: false },
+                      readOnly: false,
+                      hideCursorInOverviewRuler: true,
+                      overviewRulerBorder: false,
+                      scrollBeyondLastLine: false,
+                      lineNumbers: "on",
+                    }}
+                    theme="light"
+                  />
+                </div>
+              </Flex>
+            )}
+          </Splitter.Panel>
+        </Splitter>
         <DatasetNodeDetailPanel
           ref={detailPanelRef}
           open={!!selectedNodeData}
