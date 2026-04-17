@@ -1,12 +1,14 @@
 import type { BubbleItemType } from "@ant-design/x";
 import { Bubble, Sender } from "@ant-design/x";
-import { Flex, Icons, Tag, Typography, useMessage } from "fidesui";
-import { useCallback, useRef, useState } from "react";
+import { Avatar, Flex, Tag, Typography, useMessage } from "fidesui";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import Image from "~/features/common/Image";
 import { RTKErrorResult } from "~/types/errors";
 
 import { useSendAccessPolicyChatMessageMutation } from "./agent-chat.slice";
+import styles from "./AgentChatPanel.module.scss";
 
 interface AgentChatPanelProps {
   currentYaml: string;
@@ -15,12 +17,28 @@ interface AgentChatPanelProps {
 
 interface ChatMessage {
   key: string;
-  role: "user" | "ai";
+  role: "user" | "agent";
   content: string;
   yamlApplied?: boolean;
 }
 
-let messageCounter = 0;
+const AgentLogoMark = ({ size = 20 }: { size?: number }) => (
+  <Image
+    src="/images/logomark-ethyca.svg"
+    alt="Ethyca"
+    width={size}
+    height={size}
+  />
+);
+
+const AgentAvatar = () => (
+  <Avatar
+    shape="square"
+    size="medium"
+    className={styles.agentAvatar}
+    icon={<AgentLogoMark size={15} />}
+  />
+);
 
 const AgentChatPanel = ({
   currentYaml,
@@ -30,9 +48,14 @@ const AgentChatPanel = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatHistoryId, setChatHistoryId] = useState<string>();
   const [inputValue, setInputValue] = useState("");
-  const listRef = useRef<HTMLDivElement>(null);
+  const messageCounterRef = useRef(0);
 
   const [sendMessage, { isLoading }] = useSendAccessPolicyChatMessageMutation();
+
+  const nextKey = useCallback((prefix: string) => {
+    messageCounterRef.current += 1;
+    return `${prefix}-${messageCounterRef.current}`;
+  }, []);
 
   const handleSend = useCallback(
     async (text: string) => {
@@ -41,10 +64,8 @@ const AgentChatPanel = ({
         return;
       }
 
-      messageCounter += 1;
-      const userKey = `user-${messageCounter}`;
       const userMsg: ChatMessage = {
-        key: userKey,
+        key: nextKey("user"),
         role: "user",
         content: trimmed,
       };
@@ -61,27 +82,25 @@ const AgentChatPanel = ({
 
         setChatHistoryId(response.chat_history_id);
 
-        messageCounter += 1;
-        const assistantMsg: ChatMessage = {
-          key: `ai-${messageCounter}`,
-          role: "ai",
+        const agentMsg: ChatMessage = {
+          key: nextKey("agent"),
+          role: "agent",
           content: response.message,
           yamlApplied: !!response.new_policy_yaml,
         };
 
-        setMessages((prev) => [...prev, assistantMsg]);
+        setMessages((prev) => [...prev, agentMsg]);
 
         if (response.new_policy_yaml) {
           onYamlProposed(response.new_policy_yaml);
         }
       } catch (error) {
         messageApi.error(getErrorMessage((error as RTKErrorResult).error));
-        messageCounter += 1;
         setMessages((prev) => [
           ...prev,
           {
-            key: `error-${messageCounter}`,
-            role: "ai",
+            key: nextKey("error"),
+            role: "agent",
             content: "Something went wrong. Please try again.",
           },
         ]);
@@ -89,6 +108,7 @@ const AgentChatPanel = ({
     },
     [
       isLoading,
+      nextKey,
       chatHistoryId,
       currentYaml,
       sendMessage,
@@ -97,86 +117,71 @@ const AgentChatPanel = ({
     ],
   );
 
-  const bubbleItems: BubbleItemType[] = messages.map((msg) => ({
-    key: msg.key,
-    role: msg.role === "user" ? "user" : "ai",
-    content: msg.content,
-    footer: msg.yamlApplied ? (
-      <Tag color="success" icon={<Icons.Checkmark size={12} />}>
-        Policy updated
-      </Tag>
-    ) : undefined,
-  }));
+  const bubbleItems: BubbleItemType[] = useMemo(
+    () =>
+      messages.map((msg) => ({
+        key: msg.key,
+        role: msg.role === "user" ? "user" : "ai",
+        content: msg.content,
+        footer: msg.yamlApplied ? (
+          <Tag color="success">Policy updated</Tag>
+        ) : undefined,
+      })),
+    [messages],
+  );
+
+  const roles = useMemo(
+    () => ({
+      user: {
+        placement: "end" as const,
+        variant: "filled" as const,
+      },
+      ai: {
+        placement: "start" as const,
+        variant: "outlined" as const,
+        avatar: <AgentAvatar />,
+      },
+    }),
+    [],
+  );
 
   return (
-    <Flex vertical style={{ height: "100%", overflow: "hidden" }}>
-      <Flex
-        align="center"
-        gap="small"
-        style={{
-          padding: "8px 12px",
-          borderBottom: "1px solid var(--ant-color-border)",
-          flexShrink: 0,
-        }}
-      >
-        <Icons.Ai size={16} />
-        <Typography.Text strong>Policy assistant</Typography.Text>
+    <Flex vertical className={styles.panel} data-testid="agent-chat-panel">
+      <Flex align="center" gap="small" className={styles.header}>
+        <Typography.Text strong>Policy builder agent</Typography.Text>
       </Flex>
 
-      <div ref={listRef} style={{ flex: 1, overflow: "hidden" }}>
+      <div className={styles.body}>
         {messages.length === 0 ? (
           <Flex
             vertical
             align="center"
             justify="center"
             gap="small"
-            style={{
-              height: "100%",
-              padding: 24,
-              color: "var(--ant-color-text-tertiary)",
-              textAlign: "center",
-            }}
+            className={styles.emptyState}
           >
-            <Icons.Ai size={32} />
             <Typography.Text type="secondary">
-              Describe what your policy should do and the assistant will help
-              you build it.
+              Describe what your policy should do and the agent will help you
+              build it.
             </Typography.Text>
           </Flex>
         ) : (
           <Bubble.List
-            style={{ height: "100%" }}
+            className={styles.list}
             autoScroll
-            role={{
-              user: {
-                placement: "end",
-                variant: "filled",
-              },
-              ai: {
-                placement: "start",
-                variant: "outlined",
-                avatar: <Icons.Ai size={20} />,
-                typing: { effect: "fade-in" },
-              },
-            }}
+            role={roles}
             items={bubbleItems}
           />
         )}
       </div>
 
-      <div
-        style={{
-          padding: "8px 12px",
-          borderTop: "1px solid var(--ant-color-border)",
-          flexShrink: 0,
-        }}
-      >
+      <div className={styles.footer}>
         <Sender
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSend}
           loading={isLoading}
-          placeholder="Describe your policy..."
+          placeholder="Describe your policy…"
         />
       </div>
     </Flex>
