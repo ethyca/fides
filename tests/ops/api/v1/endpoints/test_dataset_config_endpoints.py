@@ -17,7 +17,9 @@ from starlette.testclient import TestClient
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.event_audit import EventAuditType
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.service.event_audit_service import EventAuditService
 from fides.api.v1.endpoints.dataset_config_endpoints import (
     MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM,
 )
@@ -1228,6 +1230,45 @@ class TestPutDatasetConfigs:
             field_masking_override_dataset["message"]
             == "Masking strategy 'hash' with required secrets not allowed as an override."
         )
+
+    @pytest.mark.unit_saas
+    def test_put_saas_implicit_delete_emits_audit_event(
+        self,
+        db: Session,
+        saas_example_connection_config: ConnectionConfig,
+        saas_ctl_dataset,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """PUT with an empty list against a SaaS connection implicitly deletes existing
+        dataset configs and emits a dataset.deleted audit event for each."""
+        saas_fides_key = saas_example_connection_config.saas_config["fides_key"]
+
+        # Seed a dataset config directly so we start with one to remove
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": saas_example_connection_config.id,
+                "fides_key": saas_fides_key,
+                "ctl_dataset_id": saas_ctl_dataset.id,
+            },
+        )
+
+        datasets_url = (V1_URL_PREFIX + DATASET_CONFIGS).format(
+            connection_key=saas_example_connection_config.key
+        )
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        # PUT with empty list — implicitly removes the existing dataset config
+        response = api_client.put(datasets_url, headers=auth_header, json=[])
+        assert response.status_code == 200
+
+        events = EventAuditService(db).get_events_for_resource(
+            "dataset_config", saas_fides_key
+        )
+        assert len(events) == 1
+        assert events[0].event_type == EventAuditType.dataset_deleted.value
+        assert events[0].event_details["operation_type"] == "deleted"
+        assert events[0].event_details["connection_key"] == saas_example_connection_config.key
 
 
 class TestPutDatasets:
@@ -2531,6 +2572,43 @@ class TestDeleteDataset:
             )
             is None
         )
+
+    @pytest.mark.unit_saas
+    def test_delete_saas_dataset_emits_audit_event(
+        self,
+        db: Session,
+        saas_example_connection_config: ConnectionConfig,
+        saas_ctl_dataset,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        """DELETE on a SaaS dataset config emits a dataset.deleted audit event."""
+        saas_fides_key = saas_example_connection_config.saas_config["fides_key"]
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": saas_example_connection_config.id,
+                "fides_key": saas_fides_key,
+                "ctl_dataset_id": saas_ctl_dataset.id,
+            },
+        )
+
+        dataset_url = (V1_URL_PREFIX + DATASET_BY_KEY).format(
+            connection_key=saas_example_connection_config.key,
+            dataset_key=saas_fides_key,
+        )
+        auth_header = generate_auth_header(scopes=[DATASET_DELETE])
+        response = api_client.delete(dataset_url, headers=auth_header)
+        assert response.status_code == 204
+
+        events = EventAuditService(db).get_events_for_resource(
+            "dataset_config", saas_fides_key
+        )
+        assert len(events) == 1
+        assert events[0].event_type == EventAuditType.dataset_deleted.value
+        assert events[0].event_details["operation_type"] == "deleted"
+        assert events[0].event_details["connection_key"] == saas_example_connection_config.key
 
 
 class TestListDataset:
