@@ -3,7 +3,6 @@ import { Icons } from "fidesui";
 import React, { useEffect, useRef } from "react";
 
 import SparkleIcon from "../icons/Sparkle";
-import palette from "../palette/palette.module.scss";
 import styles from "./CustomTag.module.scss";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -89,9 +88,8 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
 
       // If it's a brand color, use our palette
       const brandColor: string | undefined =
-        typeof color === "string" &&
-        `FIDESUI_BG_${color.toUpperCase()}` in palette
-          ? `FIDESUI_BG_${color.toUpperCase()}`
+        typeof color === "string"
+          ? `var(--fidesui-bg-${color.toLowerCase()})`
           : undefined;
       const needsLightText = color && DARK_BACKGROUNDS.includes(color);
       const retainDefaultBorder =
@@ -99,8 +97,8 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
       let customStyle = {};
       if (brandColor) {
         customStyle = {
-          background: palette[brandColor],
-          color: needsLightText ? palette.FIDESUI_NEUTRAL_100 : undefined,
+          background: brandColor,
+          color: needsLightText ? "var(--fidesui-neutral-100)" : undefined,
         };
       }
 

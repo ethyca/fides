@@ -1,6 +1,6 @@
 import { ThemeConfig } from "antd/es";
 
-import palette from "../palette/palette.module.scss";
+import { palette } from "../palette/palette";
 
 /**
  * Order of priority for styling
