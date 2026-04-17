@@ -107,7 +107,7 @@ export const ActivityFeedCard = () => {
     }
     return (
       <>
-        {items.map((item) => {
+        {items.map((item, i) => {
           const cta =
             item.event_type && ACTION_CTA[item.event_type]
               ? ACTION_CTA[item.event_type]
@@ -115,7 +115,7 @@ export const ActivityFeedCard = () => {
           const href = cta ? cta.route(item.action_data ?? {}) : null;
 
           return (
-            <div key={item.id}>
+            <div key={item.id || i}>
               {href ? (
                 <RouterLink
                   unstyled
