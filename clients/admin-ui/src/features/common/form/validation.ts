@@ -1,3 +1,13 @@
+export const usernameRules = [
+  { required: true, message: "Username is required" },
+  { max: 100, message: "Username must be 100 characters or fewer." },
+  {
+    pattern: /^[a-zA-Z0-9._-]+$/,
+    message:
+      "Usernames may only contain letters, numbers, periods, underscores, and hyphens.",
+  },
+];
+
 export const passwordRules = [
   { required: true, message: "Password is required" },
   { min: 8, message: "Password must have at least eight characters." },

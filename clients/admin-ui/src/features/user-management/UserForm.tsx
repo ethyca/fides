@@ -17,9 +17,11 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { passwordRules } from "~/features/common/form/validation";
+import {
+  passwordRules,
+  usernameRules,
+} from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import {
   selectPlusSecuritySettings,
@@ -227,11 +229,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
             )}
           </Flex>
         </Flex>
-        <Form.Item
-          name="username"
-          label="Username"
-          rules={[{ required: true, message: "Username is required" }]}
-        >
+        <Form.Item name="username" label="Username" rules={usernameRules}>
           <Input
             placeholder="Enter new username"
             disabled={!isNewUser}
@@ -268,12 +266,8 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
         {showPasswordLoginToggle && (
           <Form.Item
             name="password_login_enabled"
-            label={
-              <Flex align="center" gap={4}>
-                Allow password login
-                <InfoTooltip label="When enabled, user can log in with username and password. When disabled, user must use SSO." />
-              </Flex>
-            }
+            label="Allow password login"
+            tooltip="When enabled, user can log in with username and password. When disabled, user must use SSO."
             valuePropName="checked"
           >
             <Switch
@@ -285,18 +279,11 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
         {showPasswordField && (
           <Form.Item
             name="password"
-            label={
-              <Flex align="center" gap={4}>
-                Password
-                <InfoTooltip label="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol." />
-              </Flex>
-            }
+            label="Password"
+            tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
             rules={passwordRules}
           >
-            <Input.Password
-              placeholder="********"
-              data-testid="input-password"
-            />
+            <Input.Password data-testid="input-password" />
           </Form.Item>
         )}
       </div>
