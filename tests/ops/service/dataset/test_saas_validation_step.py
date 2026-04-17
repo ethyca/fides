@@ -2,13 +2,14 @@ from unittest.mock import MagicMock
 
 import pytest
 from fideslang.models import Dataset as FideslangDataset
-from fideslang.models import DatasetCollection, DatasetField
+from fideslang.models import DatasetCollection, DatasetField, FidesMeta
 
 from fides.api.graph.utils import resolve_field_path
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.dataset.validation_steps.saas import (
     restore_immutable_fields,
+    restore_primary_key_fields,
     restore_protected_structure,
 )
 
@@ -73,6 +74,7 @@ def _make_fields(field_specs) -> list[DatasetField]:
     *field_specs* can be:
       - a list of plain strings  (flat fields, no children)
       - a list of dicts like ``{"name": "address", "fields": ["street", "city"]}``
+      - a dict may also include ``"fides_meta": {"primary_key": True, ...}``
     """
     result = []
     for spec in field_specs:
@@ -80,7 +82,16 @@ def _make_fields(field_specs) -> list[DatasetField]:
             result.append(DatasetField(name=spec))
         else:
             children = _make_fields(spec.get("fields", []))
-            result.append(DatasetField(name=spec["name"], fields=children or None))
+            fides_meta = None
+            if "fides_meta" in spec:
+                fides_meta = FidesMeta(**spec["fides_meta"])
+            result.append(
+                DatasetField(
+                    name=spec["name"],
+                    fields=children or None,
+                    fides_meta=fides_meta,
+                )
+            )
     return result
 
 
@@ -484,4 +495,164 @@ class TestRestoreImmutableFields:
             [{"name": "users", "fields": ["name"]}],
         )
         warnings = restore_immutable_fields(dataset, None)
+        assert warnings == []
+
+
+class TestRestorePrimaryKeyFields:
+    def test_deleted_primary_key_restored(self):
+        """Deleting a primary key field restores it with a warning."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True}},
+                        "name",
+                        "email",
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [{"name": "users", "fields": ["name", "email"]}],
+        )
+        warnings = restore_primary_key_fields(dataset, existing)
+        assert len(warnings) == 1
+        assert warnings[0].collection == "users"
+        assert warnings[0].field == "id"
+        assert warnings[0].action == "restored"
+        assert "primary key" in warnings[0].message
+        users_col = next(c for c in dataset.collections if c.name == "users")
+        assert any(f.name == "id" for f in users_col.fields)
+
+    def test_primary_key_flag_removed_restored(self):
+        """Removing the primary_key flag restores fides_meta from existing."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True, "data_type": "string"}},
+                        "name",
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id"},  # no fides_meta at all
+                        "name",
+                    ],
+                },
+            ],
+        )
+        warnings = restore_primary_key_fields(dataset, existing)
+        assert len(warnings) == 1
+        assert warnings[0].action == "restored"
+        assert "primary key flag" in warnings[0].message
+        users_col = next(c for c in dataset.collections if c.name == "users")
+        id_field = next(f for f in users_col.fields if f.name == "id")
+        assert id_field.fides_meta is not None
+        assert id_field.fides_meta.primary_key is True
+        assert id_field.fides_meta.data_type == "string"
+
+    def test_primary_key_flag_set_to_false_restored(self):
+        """Setting primary_key to False restores it."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True}},
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": False}},
+                    ],
+                },
+            ],
+        )
+        warnings = restore_primary_key_fields(dataset, existing)
+        assert len(warnings) == 1
+        assert warnings[0].action == "restored"
+        id_field = next(
+            f for f in dataset.collections[0].fields if f.name == "id"
+        )
+        assert id_field.fides_meta.primary_key is True
+
+    def test_non_primary_key_field_not_protected(self):
+        """Fields without primary_key can be freely deleted."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True}},
+                        "name",
+                        "email",
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True}},
+                    ],
+                },
+            ],
+        )
+        warnings = restore_primary_key_fields(dataset, existing)
+        assert warnings == []
+
+    def test_no_existing_dataset_skips(self):
+        """No warnings when there's no existing dataset to compare."""
+        dataset = _make_dataset(
+            "test_connector",
+            [{"name": "users", "fields": ["id", "name"]}],
+        )
+        warnings = restore_primary_key_fields(dataset, None)
+        assert warnings == []
+
+    def test_primary_key_unchanged_no_warnings(self):
+        """No warnings when primary key fields are untouched."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True}},
+                        "name",
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "id", "fides_meta": {"primary_key": True}},
+                        "name",
+                    ],
+                },
+            ],
+        )
+        warnings = restore_primary_key_fields(dataset, existing)
         assert warnings == []

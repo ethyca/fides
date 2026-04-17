@@ -305,6 +305,117 @@ def restore_protected_structure(
     return warnings
 
 
+def _collect_primary_key_paths(
+    fields: list[DatasetField],
+    prefix: str = "",
+) -> list[str]:
+    """Return dot-paths for all fields with fides_meta.primary_key == True."""
+    paths: list[str] = []
+    for field in fields:
+        path = f"{prefix}{field.name}" if prefix else field.name
+        if field.fides_meta and field.fides_meta.primary_key:
+            paths.append(path)
+        if field.fields:
+            paths.extend(_collect_primary_key_paths(field.fields, f"{path}."))
+    return paths
+
+
+def restore_primary_key_fields(
+    dataset: FideslangDataset,
+    existing_dataset: Optional[FideslangDataset] = None,
+) -> List[DatasetFieldWarning]:
+    """
+    Restore primary key fields that were deleted or had their primary_key
+    flag removed. Primary key fields cannot be deleted or demoted on SaaS
+    datasets — they are structurally required.
+
+    Returns structured warnings for each restoration.
+    """
+    if not existing_dataset:
+        return []
+
+    warnings: List[DatasetFieldWarning] = []
+    existing_by_name = {col.name: col for col in existing_dataset.collections}
+
+    for collection in dataset.collections:
+        existing_collection = existing_by_name.get(collection.name)
+        if not existing_collection:
+            continue
+
+        pk_paths = _collect_primary_key_paths(existing_collection.fields)
+        for field_path in pk_paths:
+            incoming_field = resolve_field_path(collection.fields, field_path)
+
+            if incoming_field is None:
+                # Primary key field was deleted — restore it
+                path_parts = field_path.split(".")
+                restored = restore_nested_field(
+                    collection.fields,
+                    path_parts,
+                    existing_collection.fields,
+                )
+                if restored:
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection.name,
+                            field=field_path,
+                            action="restored",
+                            message=f"Restored primary key field '{field_path}' in "
+                            f"collection '{collection.name}' (cannot delete primary keys).",
+                        )
+                    )
+                    logger.info(
+                        "Restored deleted primary key field '{}.{}' on SaaS dataset '{}'",
+                        collection.name,
+                        field_path,
+                        dataset.fides_key,
+                    )
+                else:
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection.name,
+                            field=field_path,
+                            action="failed",
+                            message=f"Could not restore primary key field '{field_path}' "
+                            f"in collection '{collection.name}'.",
+                        )
+                    )
+                    logger.warning(
+                        "Could not restore primary key field '{}.{}' on SaaS dataset '{}'",
+                        collection.name,
+                        field_path,
+                        dataset.fides_key,
+                    )
+            elif (
+                not incoming_field.fides_meta
+                or not incoming_field.fides_meta.primary_key
+            ):
+                # Primary key flag was removed — restore fides_meta from existing
+                existing_field = resolve_field_path(
+                    existing_collection.fields, field_path
+                )
+                if existing_field and existing_field.fides_meta:
+                    incoming_field.fides_meta = deepcopy(existing_field.fides_meta)
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection.name,
+                            field=field_path,
+                            action="restored",
+                            message=f"Restored primary key flag on field '{field_path}' "
+                            f"in collection '{collection.name}' "
+                            f"(cannot remove primary key designation).",
+                        )
+                    )
+                    logger.info(
+                        "Restored primary key flag on '{}.{}' in SaaS dataset '{}'",
+                        collection.name,
+                        field_path,
+                        dataset.fides_key,
+                    )
+
+    return warnings
+
+
 class SaaSValidationStep(DatasetValidationStep):
     """Validates SaaS-specific requirements"""
 
@@ -333,7 +444,7 @@ class SaaSValidationStep(DatasetValidationStep):
                         context.dataset.fides_key,
                     )
 
-            # Restore immutable fields and protected structure instead of rejecting
+            # Restore immutable fields, protected structure, and primary keys
             context.warnings.extend(
                 restore_immutable_fields(context.dataset, existing_dataset)
             )
@@ -341,4 +452,7 @@ class SaaSValidationStep(DatasetValidationStep):
                 restore_protected_structure(
                     context.connection_config, context.dataset, existing_dataset
                 )
+            )
+            context.warnings.extend(
+                restore_primary_key_fields(context.dataset, existing_dataset)
             )

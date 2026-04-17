@@ -40,7 +40,10 @@ from fides.service.dataset.dataset_service import (
     _get_ctl_dataset,
 )
 from fides.service.dataset.dataset_validator import DatasetValidator
-from fides.service.dataset.validation_steps.saas import MUTABLE_DATASET_FIELDS
+from fides.service.dataset.validation_steps.saas import (
+    MUTABLE_DATASET_FIELDS,
+    _collect_primary_key_paths,
+)
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
 
 
@@ -307,6 +310,28 @@ class DatasetConfigService:
         instance_key = connection_config.saas_config["fides_key"]
         protected = get_saas_config_referenced_field_paths(saas_config, instance_key)
 
+        # Also collect primary key fields from all datasets on this connection
+        pk_protected: List[tuple[str, str]] = []
+        for dc in (
+            self.db.query(DatasetConfig)
+            .options(selectinload(DatasetConfig.ctl_dataset))
+            .filter(DatasetConfig.connection_config_id == connection_config.id)
+            .all()
+        ):
+            if not dc.ctl_dataset:
+                continue
+            try:
+                ds = FideslangDataset.model_validate(dc.ctl_dataset)
+            except Exception:
+                continue
+            for col in ds.collections:
+                for pk_path in _collect_primary_key_paths(col.fields):
+                    pk_protected.append((col.name, pk_path))
+
+        # Deduplicate: a field might be both SaaS-config-referenced and a PK
+        all_protected = {(col, path) for col, path in protected}
+        all_protected.update(pk_protected)
+
         return DatasetProtectedFields(
             immutable_fields=[
                 f
@@ -315,7 +340,7 @@ class DatasetConfigService:
             ],
             protected_collection_fields=[
                 ProtectedCollectionField(collection=col, field=field_path)
-                for col, field_path in protected
+                for col, field_path in sorted(all_protected)
             ],
         )
 
