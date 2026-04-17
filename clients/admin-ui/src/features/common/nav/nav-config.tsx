@@ -178,6 +178,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PRIVACY_ASSESSMENTS_ROUTE,
         scopes: [],
         requiresFlag: "privacyAssessments",
+        keywords: ["PIA", "DPIA"],
       },
     ],
   },
@@ -191,18 +192,21 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.CONFIGURE_CONSENT_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        keywords: ["TCF", "GVL"],
       },
       {
         title: "Notices",
         path: routes.PRIVACY_NOTICES_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
+        keywords: ["consent", "opt-in", "opt-out"],
       },
       {
         title: "Experiences",
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
+        keywords: ["banner", "overlay", "CMP"],
       },
       {
         title: "Consent report",
@@ -229,6 +233,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Integrations",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
         requiresPlus: true,
+        keywords: ["connectors", "connections"],
         scopes: [
           ScopeRegistryEnum.CONNECTION_AUTHORIZE,
           ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
@@ -312,6 +317,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
+        keywords: ["GDPR", "CCPA"],
       },
       {
         title: "Regulations",
@@ -321,6 +327,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
+        keywords: ["GDPR", "CCPA"],
       },
     ],
   },
@@ -366,6 +373,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.RBAC_ROUTE,
         requiresPlus: true,
         requiresRbac: true,
+        keywords: ["RBAC", "permissions"],
         scopes: [
           // Only Owners can access Role Management - they have assign_owners scope
           ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
