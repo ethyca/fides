@@ -2,6 +2,7 @@ import { Button, Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures, useFlags } from "~/features/common/features";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import RequestType from "~/features/common/RequestType";
@@ -56,14 +57,14 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <RequestDetailsRow label="Request type">
           <RequestType rules={policy.rules} />
         </RequestDetailsRow>
-        <RequestDetailsRow label="Source">
-          {hasPlus && (
+        {hasPlus && (
+          <RequestDetailsRow label="Source">
             <Typography.Text>{subjectRequest.source || "-"}</Typography.Text>
-          )}
-        </RequestDetailsRow>
+          </RequestDetailsRow>
+        )}
         {hasPlus && subjectRequest.property_id && (
           <RequestDetailsRow label="Property">
-            <Typography.Link
+            <RouterLink
               href={EDIT_PROPERTY_ROUTE.replace(
                 "[id]",
                 subjectRequest.property_id,
@@ -71,7 +72,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
               ellipsis
             >
               {propertyData?.name ?? subjectRequest.property_id}
-            </Typography.Link>
+            </RouterLink>
           </RequestDetailsRow>
         )}
         {subjectRequest.submitted_by && (
