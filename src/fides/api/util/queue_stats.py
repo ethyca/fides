@@ -16,8 +16,10 @@ import logging
 from typing import Any, Dict, Protocol
 
 from fides.api.tasks.broker import (
-    _get_sqs_queue_url,
     get_all_celery_queue_names,
+    get_sqs_base_url,
+    get_sqs_client,
+    get_sqs_queue_url,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,22 +68,7 @@ class SQSQueueStatsProvider:
 
     def __init__(self, config: Any) -> None:
         self._config = config
-        self._sqs_client = self._build_sqs_client(config)
-
-    @staticmethod
-    def _build_sqs_client(config: Any) -> Any:
-        """Build a boto3 SQS client from config credentials."""
-        import boto3
-
-        kwargs: Dict[str, Any] = {
-            "region_name": config.queue.aws_region,
-        }
-        if config.queue.sqs_url:
-            kwargs["endpoint_url"] = config.queue.sqs_url
-        if config.queue.aws_access_key_id is not None:
-            kwargs["aws_access_key_id"] = config.queue.aws_access_key_id
-            kwargs["aws_secret_access_key"] = config.queue.aws_secret_access_key
-        return boto3.client("sqs", **kwargs)
+        self._sqs_client = get_sqs_client(config)
 
     # AWS error codes that indicate a credential / authorisation problem
     # rather than a per-queue issue.  When encountered we bail out of the
@@ -101,7 +88,7 @@ class SQSQueueStatsProvider:
     def get_queue_counts(self) -> Dict[str, int]:
         # Imported locally so Redis-only deployments do not require botocore
         # at import time — mirrors the lazy ``boto3`` import in
-        # :meth:`_build_sqs_client`.
+        # :func:`fides.api.tasks.broker.get_sqs_client`.
         from botocore.exceptions import ClientError, NoCredentialsError
 
         queue_counts: Dict[str, int] = {}
@@ -109,7 +96,11 @@ class SQSQueueStatsProvider:
         try:
             for queue_name in get_all_celery_queue_names():
                 try:
-                    queue_url = _get_sqs_queue_url(self._config, queue_name)
+                    queue_url = get_sqs_queue_url(
+                        queue_name,
+                        get_sqs_base_url(self._config),
+                        self._config.queue.sqs_queue_name_prefix,
+                    )
                     response = self._sqs_client.get_queue_attributes(
                         QueueUrl=queue_url,
                         AttributeNames=["ApproximateNumberOfMessages"],

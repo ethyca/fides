@@ -19,7 +19,6 @@ from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
 from fides.api.tasks.broker import (
-    _resolve_result_backend,
     get_broker_transport_options,
     get_broker_url,
     get_task_queues,
@@ -39,6 +38,22 @@ DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME = "fidesplus.discovery_monitors_promotio
 
 
 NEW_SESSION_RETRIES = 5
+
+
+def _resolve_result_backend(config: FidesConfig) -> str:
+    """Return the Celery result backend URL.
+
+    Resolution order:
+    1. ``config.celery.result_backend`` (explicit override)
+    2. ``config.redis.connection_url`` (existing default, unchanged)
+
+    The result backend is intentionally **not** changed by the
+    ``use_sqs_queue`` flag — Redis (or an explicit override) always serves
+    as the result backend.
+    """
+    if config.celery.result_backend is not None:
+        return config.celery.result_backend
+    return config.redis.connection_url
 
 
 autodiscover_task_locations: List[str] = [

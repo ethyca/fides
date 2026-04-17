@@ -337,7 +337,7 @@ class TestGetQueueStatsProviderFactory:
     def test_returns_sqs_provider_when_flag_enabled(self) -> None:
         config = _make_config(use_sqs_queue=True)
         with patch(
-            "fides.api.util.queue_stats.SQSQueueStatsProvider._build_sqs_client"
+            "fides.api.tasks.broker.get_sqs_client"
         ) as mock_build:
             mock_build.return_value = MagicMock()
             provider = get_queue_stats_provider(config)
@@ -419,7 +419,7 @@ class TestCacheGetQueueCountsDelegation:
         sqs_config = _make_config(use_sqs_queue=True)
 
         with patch.object(cache_module, "CONFIG", sqs_config), patch(
-            "fides.api.util.queue_stats.SQSQueueStatsProvider._build_sqs_client"
+            "fides.api.tasks.broker.get_sqs_client"
         ) as mock_build_sqs, patch(
             "fides.api.util.queue_stats.SQSQueueStatsProvider.get_queue_counts"
         ) as mock_sqs_counts, patch(

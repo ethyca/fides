@@ -20,6 +20,7 @@ import pytest
 from hypothesis import given, settings, strategies as st
 
 from fides.api.tasks.broker import get_all_celery_queue_names
+from fides.api.tasks.broker import get_sqs_client as _get_sqs_client
 from fides.api.tasks.queue_migration import (
     MIGRATION_BATCH_SIZE,
     MIGRATION_LOCK_KEY,
@@ -165,7 +166,7 @@ class TestMigrationIdempotencyProperty:
         for _ in range(run_count):
             redis_conn = FakeRedis(initial_lists={})  # no queues populated
             with patch(
-                "fides.api.tasks.queue_migration._build_sqs_client",
+                "fides.api.tasks.broker.get_sqs_client",
                 return_value=sqs_client,
             ):
                 result = migrate_redis_queues_to_sqs(
@@ -231,7 +232,7 @@ class TestMigrationLockExclusivityProperty:
         results: List[MigrationResult] = []
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             for _ in range(concurrent_callers):
@@ -280,7 +281,7 @@ class TestLockReleaseGuaranteeProperty:
             redis_conn = FakeRedis()
             sqs_client = _make_sqs_mock()
             build_patch = patch(
-                "fides.api.tasks.queue_migration._build_sqs_client",
+                "fides.api.tasks.broker.get_sqs_client",
                 return_value=sqs_client,
             )
             expect_exception = False
@@ -290,7 +291,7 @@ class TestLockReleaseGuaranteeProperty:
             )
             sqs_client = _make_sqs_mock()
             build_patch = patch(
-                "fides.api.tasks.queue_migration._build_sqs_client",
+                "fides.api.tasks.broker.get_sqs_client",
                 return_value=sqs_client,
             )
             expect_exception = False
@@ -303,14 +304,14 @@ class TestLockReleaseGuaranteeProperty:
                 side_effect=RuntimeError("boom")
             )
             build_patch = patch(
-                "fides.api.tasks.queue_migration._build_sqs_client",
+                "fides.api.tasks.broker.get_sqs_client",
                 return_value=sqs_client,
             )
             expect_exception = False  # per-queue errors are swallowed
         else:  # sqs_build_error
             redis_conn = FakeRedis()
             build_patch = patch(
-                "fides.api.tasks.queue_migration._build_sqs_client",
+                "fides.api.tasks.broker.get_sqs_client",
                 side_effect=RuntimeError("cannot build sqs client"),
             )
             expect_exception = True
@@ -377,7 +378,7 @@ class TestMigrationBatchSizingProperty:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             migrate_redis_queues_to_sqs(
@@ -425,7 +426,7 @@ class TestZeroTaskLossProperty:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             result = migrate_redis_queues_to_sqs(
@@ -466,7 +467,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             migrate_redis_queues_to_sqs(
@@ -496,7 +497,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             migrate_redis_queues_to_sqs(
@@ -522,7 +523,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config(sqs_queue_name_prefix="fides-")
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             migrate_redis_queues_to_sqs(
@@ -556,7 +557,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             migrate_redis_queues_to_sqs(
@@ -569,13 +570,13 @@ class TestStartupQueueMigratorUnit:
         assert redis_conn.calls[-1][1] == MIGRATION_LOCK_KEY
 
     def test_lock_released_on_exception_inside_try(self) -> None:
-        """When ``_build_sqs_client`` raises, the lock is still released and
+        """When ``get_sqs_client`` raises, the lock is still released and
         the exception propagates to the caller."""
         redis_conn = FakeRedis()
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             side_effect=RuntimeError("build failed"),
         ):
             with pytest.raises(RuntimeError, match="build failed"):
@@ -594,7 +595,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ) as build_mock:
             result = migrate_redis_queues_to_sqs(
@@ -620,7 +621,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             result = migrate_redis_queues_to_sqs(
@@ -638,7 +639,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             # First run.
@@ -679,7 +680,7 @@ class TestStartupQueueMigratorUnit:
         config = _make_config()
 
         with patch(
-            "fides.api.tasks.queue_migration._build_sqs_client",
+            "fides.api.tasks.broker.get_sqs_client",
             return_value=sqs_client,
         ):
             result = migrate_redis_queues_to_sqs(

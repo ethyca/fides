@@ -13,16 +13,17 @@ from unittest.mock import MagicMock
 import pytest
 from hypothesis import given, settings, strategies as st
 
+from fides.api.tasks import _resolve_result_backend
 from fides.api.tasks.broker import (
     CELERY_QUEUE_NAMES,
     DEFAULT_QUEUE_NAME,
     _canonical_sqs_queue_name,
-    _get_sqs_queue_url,
-    _resolve_result_backend,
     get_all_celery_queue_names,
     get_broker_transport_options,
     get_broker_url,
+    get_sqs_base_url,
     get_sqs_broker_url,
+    get_sqs_queue_url,
     get_task_queues,
 )
 
@@ -184,7 +185,8 @@ class TestSQSQueueNameMappingProperty:
             sqs_queue_name_prefix=prefix,
         )
 
-        url = _get_sqs_queue_url(config, queue_name)
+        base_url = get_sqs_base_url(config)
+        url = get_sqs_queue_url(queue_name, base_url, prefix)
         # Dots are replaced with dashes in the actual SQS queue name because
         # SQS does not allow dots in queue names.
         expected_sqs_name = f"{prefix}{_canonical_sqs_queue_name(queue_name)}"

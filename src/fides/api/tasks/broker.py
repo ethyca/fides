@@ -13,6 +13,7 @@ requiring infrastructure services.
 """
 
 import string
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote, urlparse
 
@@ -70,6 +71,81 @@ def _canonical_sqs_queue_name(celery_queue_name: str) -> str:
         partial = str(partial).translate(_KOMBU_CHARS_REPLACE_TABLE)
         return partial + ".fifo"
     return str(celery_queue_name).translate(_KOMBU_CHARS_REPLACE_TABLE)
+
+
+def get_sqs_client(config: Any) -> Any:
+    """Build a boto3 SQS client from config credentials.
+
+    Uses ``config.queue.aws_access_key_id`` / ``aws_secret_access_key`` when
+    set; otherwise falls back to the standard boto3 credential chain (IAM
+    instance role, environment variables, ``~/.aws/credentials``, etc.).
+
+    Importantly, ``boto3`` is imported lazily so Redis-only deployments do not
+    require the AWS SDK at import time.
+    """
+
+    import boto3  # noqa: PLC0415
+
+    kwargs: Dict[str, Any] = {
+        "region_name": config.queue.aws_region,
+    }
+    if config.queue.sqs_url:
+        kwargs["endpoint_url"] = config.queue.sqs_url
+    if config.queue.aws_access_key_id is not None:
+        kwargs["aws_access_key_id"] = config.queue.aws_access_key_id
+        kwargs["aws_secret_access_key"] = config.queue.aws_secret_access_key
+    return boto3.client("sqs", **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# SqsBrokerConfig — narrow config for SQS-specific code
+# ---------------------------------------------------------------------------
+# This dataclass captures exactly what the SQS path needs, eliminating the
+# ``config: Any`` anti-pattern in SQS-specific functions.  The public API
+# surface of this module does not change — ``get_broker_url`` and friends
+# still accept a full ``FidesConfig``.
+
+
+@dataclass(frozen=True)
+class SqsBrokerConfig:
+    """Narrow configuration for the SQS broker path.
+
+    Populated from a ``FidesConfig`` via :func:`from_fides_config`.
+    """
+
+    access_key: str
+    secret_key: str
+    base_url: str
+    region: str
+    is_secure: bool
+    predefined_queues: Dict[str, Dict[str, str]]
+    prefix: str
+
+
+def from_fides_config(config: Any) -> SqsBrokerConfig:
+    """Build an ``SqsBrokerConfig`` from a full ``FidesConfig``."""
+    access_key = config.queue.aws_access_key_id or ""
+    secret_key = config.queue.aws_secret_access_key or ""
+    base_url = get_sqs_base_url(config)
+    prefix = config.queue.sqs_queue_name_prefix
+
+    # Determine ``is_secure`` the same way kombu does: https when no
+    # explicit sqs_url, http when sqs_url uses the http scheme.
+    is_secure = True
+    if config.queue.sqs_url:
+        parsed = urlparse(config.queue.sqs_url)
+        if parsed.scheme == "http":
+            is_secure = False
+
+    return SqsBrokerConfig(
+        access_key=access_key,
+        secret_key=secret_key,
+        base_url=base_url,
+        region=config.queue.aws_region,
+        is_secure=is_secure,
+        predefined_queues=_build_predefined_queues_from(config),
+        prefix=prefix,
+    )
 
 
 def get_task_queues(config: Any) -> Optional[Tuple[Queue, ...]]:
@@ -177,7 +253,7 @@ def get_sqs_broker_url(config: Any) -> str:
     return f"sqs://{encoded_key}:{encoded_secret}@"
 
 
-def _get_sqs_base_url(config: Any) -> str:
+def get_sqs_base_url(config: Any) -> str:
     """Return the SQS base URL used for queue path construction.
 
     If ``config.queue.sqs_url`` is set (e.g. ``http://elasticmq:9324``), use
@@ -189,14 +265,18 @@ def _get_sqs_base_url(config: Any) -> str:
     return f"https://sqs.{config.queue.aws_region}.amazonaws.com"
 
 
-def _get_sqs_queue_url(config: Any, celery_queue_name: str) -> str:
-    """Return the full SQS queue URL for a given Celery queue name."""
-    base = _get_sqs_base_url(config)
-    prefix = config.queue.sqs_queue_name_prefix
-    # SQS queue names cannot contain dots; use the same canonicalization
-    # that kombu applies when resolving queue URLs.
+# Alias for backwards compatibility and internal use.
+_get_sqs_base_url = get_sqs_base_url
+
+
+def get_sqs_queue_url(celery_queue_name: str, base_url: str, prefix: str) -> str:
+    """Return the full SQS queue URL for a given Celery queue name.
+
+    SQS queue names cannot contain dots; the Celery queue name is canonicalized
+    to match what kombu's SQS transport will look up in ``predefined_queues``.
+    """
     sqs_queue_name = f"{prefix}{_canonical_sqs_queue_name(celery_queue_name)}"
-    return f"{base}/queue/{sqs_queue_name}"
+    return f"{base_url.rstrip('/')}/queue/{sqs_queue_name}"
 
 
 def get_broker_transport_options(config: Any) -> Dict[str, Any]:
@@ -217,7 +297,7 @@ def get_broker_transport_options(config: Any) -> Dict[str, Any]:
 
     options: Dict[str, Any] = {
         "region": config.queue.aws_region,
-        "predefined_queues": _build_predefined_queues(config),
+        "predefined_queues": _build_predefined_queues_from(config),
     }
 
     if config.queue.sqs_url:
@@ -230,17 +310,19 @@ def get_broker_transport_options(config: Any) -> Dict[str, Any]:
     return options
 
 
-def _build_predefined_queues(config: Any) -> Dict[str, Dict[str, str]]:
+def _build_predefined_queues_from(config: Any) -> Dict[str, Dict[str, str]]:
     """Build the ``predefined_queues`` mapping for kombu's SQS transport.
 
     Each entry maps a *canonical* SQS queue name (as kombu looks it up) to a
     dict with its full SQS ``url``.  This avoids the need for
     ``sqs:ListQueues`` permission.
     """
+    base_url = get_sqs_base_url(config)
+    prefix = config.queue.sqs_queue_name_prefix
     predefined: Dict[str, Dict[str, str]] = {}
     for queue_name in get_all_celery_queue_names():
         sqs_key = _canonical_sqs_queue_name(queue_name)
         predefined[sqs_key] = {
-            "url": _get_sqs_queue_url(config, queue_name),
+            "url": get_sqs_queue_url(queue_name, base_url, prefix),
         }
     return predefined

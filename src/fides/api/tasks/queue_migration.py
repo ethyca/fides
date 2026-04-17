@@ -23,8 +23,10 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List
 
 from fides.api.tasks.broker import (
-    _get_sqs_queue_url,
     get_all_celery_queue_names,
+    get_sqs_base_url,
+    get_sqs_client,
+    get_sqs_queue_url,
 )
 
 logger = logging.getLogger(__name__)
@@ -113,7 +115,7 @@ def migrate_redis_queues_to_sqs(
         return result
 
     try:
-        sqs_client = _build_sqs_client(config)
+        sqs_client = get_sqs_client(config)
         queue_names = get_all_celery_queue_names()
 
         # Loop invariant: at the start of each iteration, all queues
@@ -126,7 +128,11 @@ def migrate_redis_queues_to_sqs(
 
                 if count > 0:
                     redis_conn.delete(queue_name)
-                    sqs_url = _get_sqs_queue_url(config, queue_name)
+                    sqs_url = get_sqs_queue_url(
+                        queue_name,
+                        get_sqs_base_url(config),
+                        config.queue.sqs_queue_name_prefix,
+                    )
                     _send_in_batches(sqs_client, sqs_url, raw_messages)
 
                 result.migrated[queue_name] = count
@@ -149,25 +155,6 @@ def migrate_redis_queues_to_sqs(
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
-
-
-def _build_sqs_client(config: Any) -> Any:
-    """Build a boto3 SQS client from config credentials.
-
-    Mirrors :meth:`SQSQueueStatsProvider._build_sqs_client` so both
-    components use the same credential-resolution semantics.
-    ``boto3`` is imported lazily so Redis-only deployments do not pay the
-    import cost.
-    """
-    import boto3
-
-    kwargs: Dict[str, Any] = {"region_name": config.queue.aws_region}
-    if config.queue.sqs_url:
-        kwargs["endpoint_url"] = config.queue.sqs_url
-    if config.queue.aws_access_key_id is not None:
-        kwargs["aws_access_key_id"] = config.queue.aws_access_key_id
-        kwargs["aws_secret_access_key"] = config.queue.aws_secret_access_key
-    return boto3.client("sqs", **kwargs)
 
 
 def _send_in_batches(
