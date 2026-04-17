@@ -138,6 +138,7 @@ jest.mock("next/link", () => {
 
 const mockDynamicItems: FlatNavItem[] = [];
 jest.mock("~/features/common/nav/useNavSearchItems", () => ({
+  ...jest.requireActual("~/features/common/nav/useNavSearchItems"),
   __esModule: true,
   default: (groups: any[]) => {
     const items: any[] = [];
