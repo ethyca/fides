@@ -69,7 +69,7 @@ export const PublisherRestrictionsConfig = ({
 
   return (
     <SettingsBox title="Publisher restrictions" fontSize="sm">
-      <Space direction="vertical" size="small" style={{ width: "100%" }}>
+      <Space orientation="vertical" size="small" style={{ width: "100%" }}>
         <TCFOverrideToggle
           defaultChecked={showTcfOverrideConfig}
           onChange={(checked) => setShowTcfOverrideConfig(checked)}

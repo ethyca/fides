@@ -13,7 +13,6 @@ import {
   Tooltip,
 } from "fidesui";
 import _ from "lodash";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -23,6 +22,7 @@ import {
   getErrorMessage,
   isFetchBaseQueryError,
 } from "~/features/common/helpers";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import {
@@ -405,7 +405,7 @@ const ActionCenterFields = ({
                 <Button
                   type="primary"
                   icon={<Icons.ChevronDown />}
-                  iconPosition="end"
+                  iconPlacement="end"
                   loading={isFetchingAllowedActions}
                 >
                   Actions
@@ -456,13 +456,9 @@ const ActionCenterFields = ({
                           }
                         >
                           <Flex gap="medium" justify="center">
-                            <NextLink
-                              href={DATASET_ROUTE}
-                              passHref
-                              legacyBehavior
-                            >
+                            <RouterLink href={DATASET_ROUTE}>
                               <Button>Manage datasets view</Button>
-                            </NextLink>
+                            </RouterLink>
                             <Button
                               type="primary"
                               aria-label="Refresh page"

@@ -26,7 +26,7 @@ from starlette.status import (
 
 from fides.api import deps
 from fides.api.deps import get_dataset_config_service
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.oauth.utils import verify_oauth_client
@@ -34,7 +34,6 @@ from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetConfigSchema,
-    DatasetProtectedFields,
     DatasetReachability,
     ValidateDatasetResponse,
 )
@@ -53,7 +52,6 @@ from fides.common.urn_registry import (
     DATASET_CONFIG_BY_KEY,
     DATASET_CONFIGS,
     DATASET_INPUTS,
-    DATASET_PROTECTED_FIELDS,
     DATASET_REACHABILITY,
     DATASET_VALIDATE,
     DATASETS,
@@ -590,34 +588,6 @@ def dataset_reachability(
         dataset_config, access_policy
     )
     return {"reachable": reachable, "details": details}
-
-
-@router.get(
-    DATASET_PROTECTED_FIELDS,
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=DatasetProtectedFields,
-)
-def get_dataset_protected_fields(
-    *,
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
-    connection_config: ConnectionConfig = Depends(_get_connection_config),
-    dataset_key: FidesKey,
-) -> DatasetProtectedFields:
-    """
-    Returns the fields that are protected on a SaaS dataset:
-    immutable top-level metadata fields and collection fields
-    referenced by the SaaS config.
-    """
-    dataset_config = dataset_config_service.get_config_from_fides_key(
-        connection_config.id, dataset_key
-    )
-    if not dataset_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset config with fides_key '{dataset_key}'",
-        )
-
-    return dataset_config_service.get_protected_fields(connection_config)
 
 
 @router.post(
