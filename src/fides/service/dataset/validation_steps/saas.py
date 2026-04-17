@@ -305,30 +305,42 @@ def restore_protected_structure(
     return warnings
 
 
-def _collect_primary_key_paths(
+def _collect_protected_meta_fields(
     fields: list[DatasetField],
     prefix: str = "",
-) -> list[str]:
-    """Return dot-paths for all fields with fides_meta.primary_key == True."""
-    paths: list[str] = []
+) -> list[tuple[str, DatasetField]]:
+    """Single-pass collector for fields with protected fides_meta attributes.
+
+    Returns (dot_path, field) for any field that has at least one of:
+    primary_key, identity, or references set in fides_meta.
+    """
+    results: list[tuple[str, DatasetField]] = []
     for field in fields:
         path = f"{prefix}{field.name}" if prefix else field.name
-        if field.fides_meta and field.fides_meta.primary_key:
-            paths.append(path)
+        if field.fides_meta and (
+            field.fides_meta.primary_key
+            or field.fides_meta.identity
+            or field.fides_meta.references
+        ):
+            results.append((path, field))
         if field.fields:
-            paths.extend(_collect_primary_key_paths(field.fields, f"{path}."))
-    return paths
+            results.extend(_collect_protected_meta_fields(field.fields, f"{path}."))
+    return results
 
 
-def restore_primary_key_fields(
+def restore_field_meta_attributes(
     dataset: FideslangDataset,
     existing_dataset: Optional[FideslangDataset] = None,
 ) -> List[DatasetFieldWarning]:
     """
-    Restore primary key fields that were deleted or had their primary_key
-    flag removed. Primary key fields cannot be deleted or demoted on SaaS
-    datasets — they are structurally required.
+    Protect immutable fides_meta attributes on SaaS dataset fields in a
+    single pass over the existing dataset's field tree.
 
+    - **primary_key**: field cannot be deleted; flag cannot be removed
+    - **identity**: value cannot be changed or removed
+    - **references**: value cannot be changed or removed
+
+    Only the specific attribute is restored — other metadata edits persist.
     Returns structured warnings for each restoration.
     """
     if not existing_dataset:
@@ -342,12 +354,15 @@ def restore_primary_key_fields(
         if not existing_collection:
             continue
 
-        pk_paths = _collect_primary_key_paths(existing_collection.fields)
-        for field_path in pk_paths:
+        protected = _collect_protected_meta_fields(existing_collection.fields)
+        for field_path, existing_field in protected:
+            existing_meta = existing_field.fides_meta
+            assert existing_meta is not None  # guaranteed by _collect filter
+
             incoming_field = resolve_field_path(collection.fields, field_path)
 
-            if incoming_field is None:
-                # Primary key field was deleted — restore it
+            # --- Primary key deletion protection ---
+            if existing_meta.primary_key and incoming_field is None:
                 path_parts = field_path.split(".")
                 restored = restore_nested_field(
                     collection.fields,
@@ -386,15 +401,22 @@ def restore_primary_key_fields(
                         field_path,
                         dataset.fides_key,
                     )
-            elif (
-                not incoming_field.fides_meta
-                or not incoming_field.fides_meta.primary_key
+                continue
+
+            if incoming_field is None:
+                # Non-PK field deleted — handled by restore_protected_structure
+                continue
+
+            incoming_meta = incoming_field.fides_meta
+
+            # --- Primary key flag protection ---
+            if existing_meta.primary_key and (
+                not incoming_meta or not incoming_meta.primary_key
             ):
-                # Primary key flag was removed — restore just the flag
-                if not incoming_field.fides_meta:
+                if not incoming_meta:
                     incoming_field.fides_meta = FidesMeta(primary_key=True)
                 else:
-                    incoming_field.fides_meta.primary_key = True
+                    incoming_meta.primary_key = True
                 warnings.append(
                     DatasetFieldWarning(
                         collection=collection.name,
@@ -411,70 +433,16 @@ def restore_primary_key_fields(
                     field_path,
                     dataset.fides_key,
                 )
+                # Re-read incoming_meta after potential FidesMeta creation
+                incoming_meta = incoming_field.fides_meta
 
-    return warnings
-
-
-def _collect_fields_with_identity_or_references(
-    fields: list[DatasetField],
-    prefix: str = "",
-) -> list[tuple[str, DatasetField]]:
-    """Return (dot_path, field) for fields with fides_meta.identity or .references set."""
-    results: list[tuple[str, DatasetField]] = []
-    for field in fields:
-        path = f"{prefix}{field.name}" if prefix else field.name
-        if field.fides_meta and (
-            field.fides_meta.identity or field.fides_meta.references
-        ):
-            results.append((path, field))
-        if field.fields:
-            results.extend(
-                _collect_fields_with_identity_or_references(field.fields, f"{path}.")
-            )
-    return results
-
-
-def restore_identity_and_references(
-    dataset: FideslangDataset,
-    existing_dataset: Optional[FideslangDataset] = None,
-) -> List[DatasetFieldWarning]:
-    """
-    Restore identity and references on fields where they were changed or removed.
-    These are set by the SaaS config and cannot be modified by the user.
-
-    Returns structured warnings for each restoration.
-    """
-    if not existing_dataset:
-        return []
-
-    warnings: List[DatasetFieldWarning] = []
-    existing_by_name = {col.name: col for col in existing_dataset.collections}
-
-    for collection in dataset.collections:
-        existing_collection = existing_by_name.get(collection.name)
-        if not existing_collection:
-            continue
-
-        protected = _collect_fields_with_identity_or_references(
-            existing_collection.fields
-        )
-        for field_path, existing_field in protected:
-            incoming_field = resolve_field_path(collection.fields, field_path)
-            if incoming_field is None:
-                # Field was deleted — handled by restore_protected_structure
-                # or restore_primary_key_fields, not here
-                continue
-
-            existing_meta = existing_field.fides_meta
-            assert existing_meta is not None  # guaranteed by _collect filter
-            incoming_meta = incoming_field.fides_meta
-
-            # Restore identity if changed or removed
+            # --- Identity protection ---
             if existing_meta.identity:
                 if not incoming_meta:
                     incoming_field.fides_meta = FidesMeta(
                         identity=existing_meta.identity
                     )
+                    incoming_meta = incoming_field.fides_meta
                     warnings.append(
                         DatasetFieldWarning(
                             collection=collection.name,
@@ -498,7 +466,7 @@ def restore_identity_and_references(
                         )
                     )
 
-            # Restore references if changed or removed
+            # --- References protection ---
             if existing_meta.references:
                 if not incoming_meta:
                     incoming_field.fides_meta = FidesMeta(
@@ -558,8 +526,8 @@ class SaaSValidationStep(DatasetValidationStep):
                         context.dataset.fides_key,
                     )
 
-            # Restore immutable fields, protected structure, primary keys,
-            # and identity/references
+            # Restore immutable fields, protected structure, and protected
+            # field metadata (primary keys, identity, references)
             context.warnings.extend(
                 restore_immutable_fields(context.dataset, existing_dataset)
             )
@@ -569,8 +537,5 @@ class SaaSValidationStep(DatasetValidationStep):
                 )
             )
             context.warnings.extend(
-                restore_primary_key_fields(context.dataset, existing_dataset)
-            )
-            context.warnings.extend(
-                restore_identity_and_references(context.dataset, existing_dataset)
+                restore_field_meta_attributes(context.dataset, existing_dataset)
             )

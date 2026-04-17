@@ -8,9 +8,8 @@ from fides.api.graph.utils import resolve_field_path
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.dataset.validation_steps.saas import (
-    restore_identity_and_references,
+    restore_field_meta_attributes,
     restore_immutable_fields,
-    restore_primary_key_fields,
     restore_protected_structure,
 )
 
@@ -499,7 +498,7 @@ class TestRestoreImmutableFields:
         assert warnings == []
 
 
-class TestRestorePrimaryKeyFields:
+class TestRestoreFieldMetaAttributes:
     def test_deleted_primary_key_restored(self):
         """Deleting a primary key field restores it with a warning."""
         existing = _make_existing_dataset(
@@ -518,7 +517,7 @@ class TestRestorePrimaryKeyFields:
             "test_connector",
             [{"name": "users", "fields": ["name", "email"]}],
         )
-        warnings = restore_primary_key_fields(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].collection == "users"
         assert warnings[0].field == "id"
@@ -555,7 +554,7 @@ class TestRestorePrimaryKeyFields:
                 },
             ],
         )
-        warnings = restore_primary_key_fields(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].action == "restored"
         assert "primary key flag" in warnings[0].message
@@ -599,7 +598,7 @@ class TestRestorePrimaryKeyFields:
                 },
             ],
         )
-        warnings = restore_primary_key_fields(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         id_field = next(f for f in dataset.collections[0].fields if f.name == "id")
         assert id_field.fides_meta.primary_key is True
@@ -629,7 +628,7 @@ class TestRestorePrimaryKeyFields:
                 },
             ],
         )
-        warnings = restore_primary_key_fields(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].action == "restored"
         id_field = next(f for f in dataset.collections[0].fields if f.name == "id")
@@ -660,7 +659,7 @@ class TestRestorePrimaryKeyFields:
                 },
             ],
         )
-        warnings = restore_primary_key_fields(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert warnings == []
 
     def test_no_existing_dataset_skips(self):
@@ -669,7 +668,7 @@ class TestRestorePrimaryKeyFields:
             "test_connector",
             [{"name": "users", "fields": ["id", "name"]}],
         )
-        warnings = restore_primary_key_fields(dataset, None)
+        warnings = restore_field_meta_attributes(dataset, None)
         assert warnings == []
 
     def test_primary_key_unchanged_no_warnings(self):
@@ -697,11 +696,13 @@ class TestRestorePrimaryKeyFields:
                 },
             ],
         )
-        warnings = restore_primary_key_fields(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert warnings == []
 
 
 class TestRestoreIdentityAndReferences:
+    """Tests for identity/references protection via restore_field_meta_attributes."""
+
     def test_identity_removed_restored(self):
         """Removing identity from a field restores it."""
         existing = _make_existing_dataset(
@@ -727,7 +728,7 @@ class TestRestoreIdentityAndReferences:
                 },
             ],
         )
-        warnings = restore_identity_and_references(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         assert warnings[0].action == "restored"
         assert "identity" in warnings[0].message
@@ -759,7 +760,7 @@ class TestRestoreIdentityAndReferences:
                 },
             ],
         )
-        warnings = restore_identity_and_references(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         email_field = next(
             f for f in dataset.collections[0].fields if f.name == "email"
@@ -800,7 +801,7 @@ class TestRestoreIdentityAndReferences:
                 },
             ],
         )
-        warnings = restore_identity_and_references(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         assert "references" in warnings[0].message
         user_id_field = next(
@@ -844,7 +845,7 @@ class TestRestoreIdentityAndReferences:
                 },
             ],
         )
-        warnings = restore_identity_and_references(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
         email_field = next(
             f for f in dataset.collections[0].fields if f.name == "email"
@@ -876,7 +877,7 @@ class TestRestoreIdentityAndReferences:
                 },
             ],
         )
-        warnings = restore_identity_and_references(dataset, existing)
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert warnings == []
 
     def test_no_existing_dataset_skips(self):
@@ -885,5 +886,5 @@ class TestRestoreIdentityAndReferences:
             "test_connector",
             [{"name": "users", "fields": ["email"]}],
         )
-        warnings = restore_identity_and_references(dataset, None)
+        warnings = restore_field_meta_attributes(dataset, None)
         assert warnings == []
