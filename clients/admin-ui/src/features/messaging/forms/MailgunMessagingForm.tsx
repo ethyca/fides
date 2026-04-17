@@ -368,9 +368,7 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <Icons.CheckmarkFilled
-                          color="var(--fidesui-success)"
-                        />
+                        <Icons.CheckmarkFilled color="var(--fidesui-success)" />
                       ) : undefined
                     }
                   >

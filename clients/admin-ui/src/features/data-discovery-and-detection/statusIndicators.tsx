@@ -31,23 +31,23 @@ const CircleIndicator = ({ color, ...props }: { color: string }) => (
 );
 
 export const ChangeIndicator = () => (
-  <CircleIndicator color={"var(--fidesui-info)"} data-testid="change-icon" />
+  <CircleIndicator color="var(--fidesui-info)" data-testid="change-icon" />
 );
 
 export const MonitoredIndicator = () => (
   <CircleIndicator
-    color={"var(--fidesui-success)"}
+    color="var(--fidesui-success)"
     data-testid="monitored-icon"
   />
 );
 
 export const MutedIndicator = () => (
-  <CircleIndicator color={"var(--fidesui-error)"} data-testid="muted-icon" />
+  <CircleIndicator color="var(--fidesui-error)" data-testid="muted-icon" />
 );
 
 export const InProgressIndicator = () => (
   <CircleIndicator
-    color={"var(--fidesui-warning)"}
+    color="var(--fidesui-warning)"
     data-testid="in-progress-icon"
   />
 );
