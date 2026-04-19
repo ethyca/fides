@@ -712,7 +712,6 @@ class TestRetrievingData:
         assert results == [
             {
                 "address_id": 1,
-                "created": datetime(2020, 4, 1, 11, 47, 42),
                 "email": "customer-1@example.com",
                 "id": 1,
                 "name": "John Customer",

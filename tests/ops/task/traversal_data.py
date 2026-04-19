@@ -35,7 +35,11 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
                         "name": "id",
                         "fides_meta": {"primary_key": True, "data_type": "integer"},
                     },
-                    {"name": "name", "fides_meta": {"data_type": "string"}},
+                    {
+                        "name": "name",
+                        "data_categories": ["user.name"],
+                        "fides_meta": {"data_type": "string"},
+                    },
                     {
                         "name": "email",
                         "fides_meta": {"data_type": "string", "identity": "email"},
@@ -59,10 +63,26 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
                 "after": [f"{db_name}.customer", f"{db_name}.orders"],
                 "fields": [
                     {"name": "id", "fides_meta": {"primary_key": True}},
-                    {"name": "street", "fides_meta": {"data_type": "string"}},
-                    {"name": "city", "fides_meta": {"data_type": "string"}},
-                    {"name": "state", "fides_meta": {"data_type": "string"}},
-                    {"name": "zip", "fides_meta": {"data_type": "string"}},
+                    {
+                        "name": "street",
+                        "data_categories": ["user.contact.address.street"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "city",
+                        "data_categories": ["user.contact.address.city"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "state",
+                        "data_categories": ["user.contact.address.state"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "zip",
+                        "data_categories": ["user.contact.address.postal_code"],
+                        "fides_meta": {"data_type": "string"},
+                    },
                 ],
             },
             {
@@ -115,8 +135,12 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
                         "name": "id",
                         "fides_meta": {"primary_key": True, "data_type": "string"},
                     },
-                    {"name": "name", "fides_meta": {"data_type": "string"}},
-                    {"name": "ccn"},
+                    {
+                        "name": "name",
+                        "data_categories": ["user.financial"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {"name": "ccn", "data_categories": ["user.financial.bank_account"]},
                     {
                         "name": "customer_id",
                         "fides_meta": {
@@ -931,8 +955,8 @@ def sample_traversal() -> Traversal:
     customers = Collection(
         name="Customer",
         fields=[
-            ScalarField(name="customer_id"),
-            ScalarField(name="name"),
+            ScalarField(name="customer_id", primary_key=True),
+            ScalarField(name="name", data_categories=["user.name"]),
             ScalarField(name="email", identity="email"),
             ScalarField(
                 name="contact_address_id",
@@ -950,17 +974,23 @@ def sample_traversal() -> Traversal:
             CollectionAddress("postgres", "Order"),
         },
         fields=[
-            ScalarField(name="id"),
-            ScalarField(name="street"),
-            ScalarField(name="city"),
-            ScalarField(name="state"),
-            ScalarField(name="zip"),
+            ScalarField(name="id", primary_key=True),
+            ScalarField(
+                name="street", data_categories=["user.contact.address.street"]
+            ),
+            ScalarField(name="city", data_categories=["user.contact.address.city"]),
+            ScalarField(
+                name="state", data_categories=["user.contact.address.state"]
+            ),
+            ScalarField(
+                name="zip", data_categories=["user.contact.address.postal_code"]
+            ),
         ],
     )
     orders = Collection(
         name="Order",
         fields=[
-            ScalarField(name="order_id"),
+            ScalarField(name="order_id", primary_key=True),
             ScalarField(
                 name="customer_id",
                 references=[(FieldAddress("mysql", "Customer", "customer_id"), "from")],
@@ -978,9 +1008,9 @@ def sample_traversal() -> Traversal:
     users = Collection(
         name="User",
         fields=[
-            ScalarField(name="id"),
+            ScalarField(name="id", primary_key=True),
             ScalarField(name="user_id", identity="user_id"),
-            ScalarField(name="name"),
+            ScalarField(name="name", data_categories=["user.name"]),
         ],
     )
     mysql = GraphDataset(
