@@ -23,7 +23,7 @@ from fides.api.util.data_category import DataCategory
 from tests.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.dataset_utils import remove_primary_keys
 
-from ...task.traversal_data import integration_db_graph
+from ...task.traversal_data import integration_db_graph, sample_traversal
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 # customers -> address, order
@@ -851,3 +851,36 @@ class TestSQLLikeQueryConfig:
             "NewSQLQueryConfig must define a namespace_meta_schema when namespace_meta is provided."
             in str(exc)
         )
+
+
+class TestNecessaryFieldPaths:
+    def _node(self, dataset: str, collection: str) -> ExecutionNode:
+        traversal_nodes = sample_traversal().traversal_node_dict
+        return traversal_nodes[
+            CollectionAddress(dataset, collection)
+        ].to_mock_execution_node()
+
+    def test_includes_primary_key_identity_references_and_pii_categories(self):
+        # Customer covers: primary_key (customer_id), identity (email),
+        # outgoing references (contact_address_id), non-system data_category (name)
+        config = SQLQueryConfig(self._node("mysql", "Customer"))
+        assert set(config.necessary_field_paths()) == {
+            FieldPath("customer_id"),
+            FieldPath("email"),
+            FieldPath("contact_address_id"),
+            FieldPath("name"),
+        }
+
+    def test_includes_incoming_edge_targets(self):
+        # Order.customer_id is an incoming edge target from Customer.customer_id
+        config = SQLQueryConfig(self._node("postgres", "Order"))
+        paths = set(config.necessary_field_paths())
+        assert FieldPath("customer_id") in paths
+        assert FieldPath("order_id") in paths  # primary_key
+        assert FieldPath("shipping_address_id") in paths  # outgoing reference
+        assert FieldPath("billing_address_id") in paths  # outgoing reference
+
+    def test_returns_sorted_alphabetically(self):
+        config = SQLQueryConfig(self._node("mysql", "Address"))
+        paths = config.necessary_field_paths()
+        assert paths == sorted(paths, key=lambda fp: fp.string_path)

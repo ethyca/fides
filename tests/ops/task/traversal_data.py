@@ -975,13 +975,9 @@ def sample_traversal() -> Traversal:
         },
         fields=[
             ScalarField(name="id", primary_key=True),
-            ScalarField(
-                name="street", data_categories=["user.contact.address.street"]
-            ),
+            ScalarField(name="street", data_categories=["user.contact.address.street"]),
             ScalarField(name="city", data_categories=["user.contact.address.city"]),
-            ScalarField(
-                name="state", data_categories=["user.contact.address.state"]
-            ),
+            ScalarField(name="state", data_categories=["user.contact.address.state"]),
             ScalarField(
                 name="zip", data_categories=["user.contact.address.postal_code"]
             ),
