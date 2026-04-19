@@ -154,7 +154,7 @@ const PrivacyRequestActionsDropdown = ({
         <Button
           icon={<Icons.CaretDown />}
           data-testid="privacy-request-actions-dropdown-btn"
-          iconPosition="end"
+          iconPlacement="end"
           type="primary"
           disabled={!menuItems.length}
           size="large"

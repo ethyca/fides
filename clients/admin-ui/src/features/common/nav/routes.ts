@@ -74,6 +74,7 @@ export const DOMAIN_RECORDS_ROUTE = "/settings/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/settings/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
 export const PRIVACY_REQUESTS_SETTINGS_ROUTE = "/settings/privacy-requests";
+export const PRE_APPROVAL_WEBHOOKS_ROUTE = "/pre-approval-webhooks";
 
 // Notifications group (messaging templates and digests)
 export const NOTIFICATIONS_ROUTE = "/notifications";
@@ -136,6 +137,9 @@ export const ACCESS_POLICIES_ROUTE = "/access-policies";
 export const ACCESS_POLICIES_ONBOARDING_ROUTE = "/access-policies/onboarding";
 export const ACCESS_POLICIES_NEW_ROUTE = "/access-policies/new";
 export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
+export const CONTROLS_ROUTE = "/access-policies/controls";
+export const CONTROLS_NEW_ROUTE = "/access-policies/controls/new";
+export const CONTROLS_EDIT_ROUTE = "/access-policies/controls/[controlKey]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";

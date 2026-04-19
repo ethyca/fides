@@ -1,5 +1,5 @@
 import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Button,
   ChakraBox as Box,
@@ -8,14 +8,7 @@ import {
   Icons,
   useMessage,
 } from "fidesui";
-import {
-  FieldArray,
-  Form,
-  Formik,
-  FormikHelpers,
-  useFormikContext,
-} from "formik";
-import { useMemo } from "react";
+import { FieldArray, Form, FormikHelpers, useFormikContext } from "formik";
 import * as Yup from "yup";
 
 import {
@@ -36,12 +29,6 @@ import {
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
 
-interface SSOProviderFormProps {
-  openIDProvider?: OpenIDProvider;
-  onSuccess?: (openIDProvider: OpenIDProvider) => void;
-  onClose: () => void;
-}
-
 export type SSOProviderFormValues = Omit<
   OpenIDProviderCreate,
   "provider" | "client_id" | "client_secret"
@@ -60,7 +47,7 @@ export const defaultInitialValues: SSOProviderFormValues = {
   verify_email: true,
 };
 
-export const transformOrganizationToFormValues = (
+export const transformOpenIDProviderToFormValues = (
   openIDProvider: OpenIDProvider,
 ): SSOProviderFormValues => ({ ...openIDProvider });
 
@@ -86,6 +73,74 @@ export const getSSOProviderFormValidationSchema = (isEditMode: boolean) =>
       .nullable()
       .label("Userinfo object email field"),
   });
+
+/**
+ * Shared mutation submission logic for both create and edit SSO provider flows.
+ * Intended for use by the modal wrappers (AddSSOProviderModal, EditSSOProviderModal).
+ */
+export const useSSOProviderSubmit = ({
+  openIDProvider,
+  onClose,
+  onSuccess,
+}: {
+  openIDProvider?: OpenIDProvider;
+  onClose: () => void;
+  onSuccess?: (provider: OpenIDProvider) => void;
+}) => {
+  const isEditMode = !!openIDProvider;
+  const message = useMessage();
+  const [createOpenIDProviderMutationTrigger] =
+    useCreateOpenIDProviderMutation();
+  const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
+
+  const handleResult = (
+    result:
+      | { data: OpenIDProvider }
+      | { error: FetchBaseQueryError | SerializedError },
+    formikHelpers: FormikHelpers<SSOProviderFormValues>,
+  ) => {
+    if (isErrorResult(result)) {
+      message.error(
+        getErrorMessage(
+          result.error,
+          "An unexpected error occurred while editing the SSO provider. Please try again.",
+        ),
+      );
+    } else {
+      message.success("SSO provider configuration saved.");
+      onClose();
+      formikHelpers.resetForm({});
+      onSuccess?.(result.data);
+    }
+  };
+
+  const handleSubmit = async (
+    values: SSOProviderFormValues,
+    formikHelpers: FormikHelpers<SSOProviderFormValues>,
+  ) => {
+    if (isEditMode) {
+      // Strip empty credential fields — the backend preserves existing encrypted
+      // values when client_id / client_secret are absent from the payload.
+      const {
+        client_id: clientId,
+        client_secret: clientSecret,
+        ...rest
+      } = values;
+      const payload = {
+        ...rest,
+        ...(clientId ? { client_id: clientId } : {}),
+        ...(clientSecret ? { client_secret: clientSecret } : {}),
+      };
+      const result = await updateOpenIDProviderMutation(payload);
+      handleResult(result, formikHelpers);
+    } else {
+      const result = await createOpenIDProviderMutationTrigger(values);
+      handleResult(result, formikHelpers);
+    }
+  };
+
+  return { handleSubmit };
+};
 
 const CustomProviderExtraFields = () => {
   const {
@@ -184,197 +239,132 @@ const CustomProviderExtraFields = () => {
   );
 };
 
-const SSOProviderForm = ({
-  openIDProvider,
-  onSuccess,
-  onClose,
-}: SSOProviderFormProps) => {
-  const isEditMode = !!openIDProvider;
-  const validationSchema = useMemo(
-    () => getSSOProviderFormValidationSchema(isEditMode),
-    [isEditMode],
-  );
-  const [createOpenIDProviderMutationTrigger] =
-    useCreateOpenIDProviderMutation();
-  const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
+const PROVIDER_OPTIONS = [
+  { label: "Azure", value: ProviderEnum.AZURE },
+  { label: "Google", value: ProviderEnum.GOOGLE },
+  { label: "Okta", value: ProviderEnum.OKTA },
+  { label: "Custom", value: ProviderEnum.CUSTOM },
+];
 
-  const initialValues = useMemo(
-    () =>
-      openIDProvider
-        ? transformOrganizationToFormValues(openIDProvider)
-        : defaultInitialValues,
-    [openIDProvider],
-  );
-
-  const message = useMessage();
-
-  const handleSubmit = async (
-    values: SSOProviderFormValues,
-    formikHelpers: FormikHelpers<SSOProviderFormValues>,
-  ) => {
-    const handleResult = (
-      result:
-        | { data: OpenIDProvider }
-        | { error: FetchBaseQueryError | SerializedError },
-    ) => {
-      if (isErrorResult(result)) {
-        const errorMsg = getErrorMessage(
-          result.error,
-          "An unexpected error occurred while editing the SSO provider. Please try again.",
-        );
-        message.error(errorMsg);
-      } else {
-        message.success("SSO provider configuration saved.");
-        onClose();
-        formikHelpers.resetForm({});
-        if (onSuccess) {
-          onSuccess(result.data);
-        }
-      }
-    };
-    if (isEditMode) {
-      // Strip empty credential fields — the backend preserves existing encrypted
-      // values when client_id / client_secret are absent from the payload.
-      const {
-        client_id: clientId,
-        client_secret: clientSecret,
-        ...rest
-      } = values;
-      const payload = {
-        ...rest,
-        ...(clientId ? { client_id: clientId } : {}),
-        ...(clientSecret ? { client_secret: clientSecret } : {}),
-      };
-      const result = await updateOpenIDProviderMutation(payload);
-      handleResult(result);
-    } else {
-      const result = await createOpenIDProviderMutationTrigger(values);
-      handleResult(result);
-    }
-  };
-
-  const PROVIDER_OPTIONS = [
-    { label: "Azure", value: "azure" },
-    { label: "Google", value: "google" },
-    { label: "Okta", value: "okta" },
-    { label: "Custom", value: "custom" },
-  ];
-
-  const renderAzureProviderExtraFields = () => (
-    <>
-      <CustomTextInput
-        id="authorization_url"
-        name="authorization_url"
-        label="Authorization URL"
-        tooltip="Authorization URL for your provider"
-        variant="stacked"
-        isRequired
-      />
-      <CustomTextInput
-        id="token_url"
-        name="token_url"
-        label="Token URL"
-        tooltip="Token URL for your provider"
-        variant="stacked"
-        isRequired
-      />
-    </>
-  );
-
-  const renderOktaProviderExtraFields = () => (
+const AzureProviderExtraFields = () => (
+  <>
     <CustomTextInput
-      id="domain"
-      name="domain"
-      label="Domain"
-      tooltip="Domain for your Okta provider"
+      id="authorization_url"
+      name="authorization_url"
+      label="Authorization URL"
+      tooltip="Authorization URL for your provider"
       variant="stacked"
       isRequired
     />
-  );
+    <CustomTextInput
+      id="token_url"
+      name="token_url"
+      label="Token URL"
+      tooltip="Token URL for your provider"
+      variant="stacked"
+      isRequired
+    />
+  </>
+);
+
+const OktaProviderExtraFields = () => (
+  <CustomTextInput
+    id="domain"
+    name="domain"
+    label="Domain"
+    tooltip="Domain for your Okta provider"
+    variant="stacked"
+    isRequired
+  />
+);
+
+interface SSOProviderFormProps {
+  onClose: () => void;
+  isEditMode?: boolean;
+}
+
+/**
+ * Pure form fields component. Requires a FormikProvider ancestor —
+ * see AddSSOProviderModal / EditSSOProviderModal which supply it.
+ */
+const SSOProviderForm = ({
+  onClose,
+  isEditMode = false,
+}: SSOProviderFormProps) => {
+  const { dirty, isValid, values } = useFormikContext<SSOProviderFormValues>();
 
   return (
-    <Formik
-      initialValues={initialValues}
-      enableReinitialize
-      onSubmit={handleSubmit}
-      validationSchema={validationSchema}
-    >
-      {({ dirty, isValid, values }) => (
-        <Form data-testid="openIDProvider-form">
-          <Stack spacing={4}>
-            <ControlledSelect
-              name="provider"
-              label="Provider"
-              options={PROVIDER_OPTIONS}
-              layout="stacked"
-              isRequired
-            />
-            <CustomTextInput
-              id="identifier"
-              name="identifier"
-              label="Identifier"
-              tooltip="Unique identifier for your provider"
-              variant="stacked"
-              isRequired
-              disabled={isEditMode}
-            />
-            <CustomTextInput
-              id="name"
-              name="name"
-              label="Name"
-              tooltip="Display name for your provider"
-              variant="stacked"
-              isRequired
-            />
-            <CustomTextInput
-              id="client_id"
-              name="client_id"
-              label="Client ID"
-              type="password"
-              tooltip="Client ID for your provider"
-              variant="stacked"
-              isRequired={!isEditMode}
-              placeholder={
-                isEditMode ? "Leave blank to keep existing" : undefined
-              }
-            />
-            <CustomTextInput
-              id="client_secret"
-              name="client_secret"
-              label="Client secret"
-              type="password"
-              tooltip="Client secret for your provider"
-              variant="stacked"
-              isRequired={!isEditMode}
-              placeholder={
-                isEditMode ? "Leave blank to keep existing" : undefined
-              }
-            />
-            {values.provider === "azure" && renderAzureProviderExtraFields()}
-            {values.provider === "okta" && renderOktaProviderExtraFields()}
-            {values.provider === "custom" && <CustomProviderExtraFields />}
-            <Box textAlign="right">
-              <Button
-                htmlType="button"
-                data-testid="cancel-btn"
-                className="mr-3"
-                onClick={onClose}
-              >
-                Cancel
-              </Button>
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={!dirty || !isValid}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </Box>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+    <Form data-testid="openIDProvider-form">
+      <Stack spacing={4}>
+        <ControlledSelect
+          name="provider"
+          label="Provider"
+          options={PROVIDER_OPTIONS}
+          layout="stacked"
+          isRequired
+        />
+        <CustomTextInput
+          id="identifier"
+          name="identifier"
+          label="Identifier"
+          tooltip="Unique identifier for your provider"
+          variant="stacked"
+          isRequired
+          disabled={isEditMode}
+        />
+        <CustomTextInput
+          id="name"
+          name="name"
+          label="Name"
+          tooltip="Display name for your provider"
+          variant="stacked"
+          isRequired
+        />
+        <CustomTextInput
+          id="client_id"
+          name="client_id"
+          label="Client ID"
+          type="password"
+          tooltip="Client ID for your provider"
+          variant="stacked"
+          isRequired={!isEditMode}
+          placeholder={isEditMode ? "Leave blank to keep existing" : undefined}
+        />
+        <CustomTextInput
+          id="client_secret"
+          name="client_secret"
+          label="Client secret"
+          type="password"
+          tooltip="Client secret for your provider"
+          variant="stacked"
+          isRequired={!isEditMode}
+          placeholder={isEditMode ? "Leave blank to keep existing" : undefined}
+        />
+        {values.provider === ProviderEnum.AZURE && <AzureProviderExtraFields />}
+        {values.provider === ProviderEnum.OKTA && <OktaProviderExtraFields />}
+        {values.provider === ProviderEnum.CUSTOM && (
+          <CustomProviderExtraFields />
+        )}
+        <Box textAlign="right">
+          <Button
+            htmlType="button"
+            data-testid="cancel-btn"
+            className="mr-3"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            htmlType="submit"
+            type="primary"
+            disabled={!dirty || !isValid}
+            data-testid="save-btn"
+          >
+            Save
+          </Button>
+        </Box>
+      </Stack>
+    </Form>
   );
 };
 

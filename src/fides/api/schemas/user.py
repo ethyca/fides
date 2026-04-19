@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.fides_user_invite import FidesUserInvite
 
+USERNAME_PATTERN = r"[a-zA-Z0-9._-]{1,100}"
+
 
 class PrivacyRequestUser(FidesSchema):
     """Data we can expose via PrivacyRequest user relations (reviewer, submitter, etc.)"""
@@ -38,9 +40,12 @@ class UserCreate(FidesSchema):
     @field_validator("username")
     @classmethod
     def validate_username(cls, username: str) -> str:
-        """Ensure username does not have spaces."""
-        if " " in username:
-            raise ValueError("Usernames cannot have spaces.")
+        """Ensure username contains only valid characters and is within length limits."""
+        if not re.fullmatch(USERNAME_PATTERN, username):
+            raise ValueError(
+                "Usernames must be 1-100 characters and may only contain "
+                "letters, numbers, periods, underscores, and hyphens."
+            )
         return username
 
     @field_validator("password")
@@ -105,6 +110,7 @@ class UserResponse(FidesSchema):
     last_name: Optional[str] = None
     disabled: Optional[bool] = False
     disabled_reason: Optional[str] = None
+    email_verified_at: Optional[datetime] = None
     has_invite: Optional[bool] = None
     invite_expired: Optional[bool] = None
 
@@ -163,6 +169,27 @@ class UserUpdate(FidesSchema):
     last_name: Optional[str] = None
 
     model_config = ConfigDict(extra="ignore")
+
+
+class UserForgotPassword(FidesSchema):
+    """Request body for the forgot-password endpoint"""
+
+    email: EmailStr
+
+
+class UserResetPasswordWithToken(FidesSchema):
+    """Request body for resetting a password with a token"""
+
+    username: str
+    token: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, password: str) -> str:
+        """Add some password requirements"""
+        decoded_password = decode_password(password)
+        return UserCreate.validate_password(decoded_password)
 
 
 class DisabledReason(Enum):

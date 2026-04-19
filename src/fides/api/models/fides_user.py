@@ -1,7 +1,7 @@
 # pylint: disable=unused-import
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, List
 
 from citext import CIText
@@ -45,6 +45,7 @@ class FidesUser(Base):
     disabled_reason = Column(EnumColumn(DisabledReason), nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
+    email_verified_at = Column(DateTime(timezone=True), nullable=True)
     password_login_enabled = Column(Boolean, nullable=True)
     totp_secret = Column(
         encrypted_type(type_in=String()),
@@ -188,7 +189,7 @@ class FidesUser(Base):
         hashed_password, salt = FidesUser.hash_password(new_password)
         self.hashed_password = hashed_password  # type: ignore
         self.salt = salt  # type: ignore
-        self.password_reset_at = datetime.utcnow()  # type: ignore
+        self.password_reset_at = datetime.now(timezone.utc)  # type: ignore
         self.save(db)
 
     def update_email_address(self, db: Session, new_email_address: str) -> None:

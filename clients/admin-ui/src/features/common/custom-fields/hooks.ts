@@ -29,11 +29,6 @@ export const useCustomFields = ({
   const message = useMessage();
   const { plus: isEnabled } = useFeatures();
 
-  // This keeps track of the fides key that was initially passed in. If that key started out blank,
-  // then we know the API call will just 404.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const queryFidesKey = useMemo(() => resourceFidesKey ?? "", []);
-
   const allAllowListQuery = useGetAllAllowListQuery(true, {
     skip: !isEnabled,
   });
@@ -46,8 +41,8 @@ export const useCustomFields = ({
     isLoading: isCustomFieldIsLoading,
     error,
     isError,
-  } = useGetCustomFieldsForResourceQuery(resourceFidesKey ?? "", {
-    skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
+  } = useGetCustomFieldsForResourceQuery(resourceFidesKey!, {
+    skip: !resourceFidesKey || !isEnabled,
   });
 
   const [bulkUpdateCustomFieldsMutationTrigger] =

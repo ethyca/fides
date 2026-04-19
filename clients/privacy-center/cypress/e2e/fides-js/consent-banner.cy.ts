@@ -422,7 +422,7 @@ describe("Consent overlay", () => {
               cy.get("a.fides-brand-link").should(
                 "have.attr",
                 "href",
-                "https://ethyca.com/",
+                "https://ethyca.com/?utm_source=fides_consent&utm_medium=referral&utm_campaign=cmp_backlinks&utm_term=home",
               );
             });
           });

@@ -57,7 +57,7 @@ const defaultSecurityHeadersMode = (
 
 export const DEFAULT_ATTRIBUTION_ANCHOR_TEXT = "Consent powered by Ethyca";
 export const DEFAULT_ATTRIBUTION_DESTINATION_URL =
-  "https://www.ethyca.com/janus";
+  "https://www.ethyca.com/janus?utm_source=fides_consent&utm_medium=referral&utm_campaign=cmp_backlinks&utm_term=janus";
 
 const loadEnvironmentVariables = () => {
   // Load environment variables

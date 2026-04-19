@@ -7,13 +7,11 @@ import {
   ThemeModeProvider,
   useThemeMode,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import * as React from "react";
 
 import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 
-import { CommandBar } from "./CommandBar";
 import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
 import { HomeDashboard } from "./HomeDashboard";
@@ -27,14 +25,13 @@ const HomeContainerInner = () => {
   const activeTheme = resolvedMode === "dark" ? darkAntTheme : defaultAntTheme;
   const bgColor =
     resolvedMode === "dark"
-      ? palette.FIDESUI_BG_MINOS
-      : palette.FIDESUI_FULL_WHITE;
+      ? "var(--fidesui-bg-minos)"
+      : "var(--fidesui-full-white)";
 
   if (alphaDashboard) {
     return (
       <ConfigProvider theme={activeTheme}>
         <AntLayout className="h-screen">
-          <CommandBar />
           <AntLayout.Content className="overflow-auto">
             <HomeDashboard />
           </AntLayout.Content>

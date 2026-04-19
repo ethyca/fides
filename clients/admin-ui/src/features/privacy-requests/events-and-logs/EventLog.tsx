@@ -11,8 +11,8 @@ import {
   ChakraTr as Tr,
   CUSTOM_TAG_COLOR,
   Tag,
+  Tooltip,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import {
   ExecutionLog,
   ExecutionLogStatus,
@@ -22,7 +22,20 @@ import {
 } from "privacy-requests/types";
 import React from "react";
 
+import { useSaaSVersionModal } from "~/features/connector-templates/hooks/useSaaSVersionModal";
 import { ActionType } from "~/types/api";
+
+import styles from "./EventLog.module.scss";
+
+const AUDIT_STATUSES_WITH_DETAILS: ExecutionLogStatus[] = [
+  ExecutionLogStatus.DENIED,
+  ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED,
+  ExecutionLogStatus.PRE_APPROVAL_ELIGIBLE,
+  ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE,
+];
+
+const isAuditStatusWithDetails = (status: ExecutionLogStatus): boolean =>
+  AUDIT_STATUSES_WITH_DETAILS.includes(status);
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
@@ -148,12 +161,39 @@ const extractRecordCountOrTotal = (
   return extractRecordCount(detail);
 };
 
+const VersionBadge = ({
+  versionIdentifier,
+  onClick,
+}: {
+  versionIdentifier: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}) =>
+  onClick ? (
+    <Tooltip title="View version config">
+      <button
+        type="button"
+        title="View version config"
+        className={styles.versionButton}
+        onClick={onClick}
+        data-testid="version-badge-wrapper"
+      >
+        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
+      </button>
+    </Tooltip>
+  ) : (
+    <span data-testid="version-badge-wrapper">
+      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{versionIdentifier}</Tag>
+    </span>
+  );
+
 const EventLog = ({
   eventLogs,
   allEventLogs,
   onDetailPanel,
   privacyRequest,
 }: EventDetailsProps) => {
+  const { openVersionModal, modal: versionModal } = useSaaSVersionModal();
+
   // Check if any logs have collection_name OR if there's a finished entry to determine if we should show Records and Collection columns
   const hasDatasetEntries =
     eventLogs?.some((log) => log.collection_name) ||
@@ -184,59 +224,54 @@ const EventLog = ({
     return "-";
   };
 
-  const tableItems = eventLogs?.map((detail) => (
-    <Tr
-      key={detail.updated_at}
-      backgroundColor={
-        detail.status === ExecutionLogStatus.ERROR ||
-        (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-        detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
-        detail.status === ExecutionLogStatus.POLLING
-          ? palette.FIDESUI_NEUTRAL_50
-          : "unset"
-      }
-      onClick={() => {
-        if (
-          detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-          detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
-          detail.status === ExecutionLogStatus.POLLING
-        ) {
-          onDetailPanel(detail.message, detail.status);
+  const renderVersionCell = (log: ExecutionLog) => {
+    const { saas_version: versionIdentifier, connection_key: key } = log;
+    if (!versionIdentifier) {
+      return (
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          -
+        </Text>
+      );
+    }
+    return (
+      <VersionBadge
+        versionIdentifier={versionIdentifier}
+        onClick={
+          key
+            ? (e) => {
+                e.stopPropagation();
+                openVersionModal(key, versionIdentifier);
+              }
+            : undefined
         }
-      }}
-      style={{
-        cursor: detail.message ? "pointer" : "unset",
-      }}
-      _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
-    >
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {formatDate(detail.updated_at)}
-        </Text>
-      </Td>
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {getActionTypeLabel(detail.action_type)}
-        </Text>
-      </Td>
-      <Td>
-        {ExecutionLogStatusLabels[detail.status] ? (
-          <Tag color={ExecutionLogStatusColors[detail.status]}>
-            {ExecutionLogStatusLabels[detail.status]}
-          </Tag>
-        ) : (
-          <Text
-            color="gray.600"
-            fontSize="xs"
-            lineHeight="4"
-            fontWeight="medium"
-          >
-            {detail.status}
-          </Text>
-        )}
-      </Td>
-      {hasDatasetEntries && (
+      />
+    );
+  };
+
+  const tableItems = eventLogs?.map((detail) => {
+    const hasExpandableDetails =
+      detail.status === ExecutionLogStatus.ERROR ||
+      (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+      detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
+      detail.status === ExecutionLogStatus.POLLING ||
+      (isAuditStatusWithDetails(detail.status) && detail.message);
+
+    return (
+      <Tr
+        key={detail.updated_at}
+        backgroundColor={
+          hasExpandableDetails ? "var(--fidesui-neutral-50)" : "unset"
+        }
+        onClick={() => {
+          if (hasExpandableDetails) {
+            onDetailPanel(detail.message, detail.status);
+          }
+        }}
+        style={{
+          cursor: hasExpandableDetails ? "pointer" : "unset",
+        }}
+        _hover={{ backgroundColor: "var(--fidesui-neutral-50)" }}
+      >
         <Td>
           <Text
             color="gray.600"
@@ -244,15 +279,9 @@ const EventLog = ({
             lineHeight="4"
             fontWeight="medium"
           >
-            {extractRecordCountOrTotal(
-              detail,
-              allEventLogs || eventLogs,
-              privacyRequestActionType,
-            )}
+            {formatDate(detail.updated_at)}
           </Text>
         </Td>
-      )}
-      {hasDatasetEntries && !isRequestFinishedView && (
         <Td>
           <Text
             color="gray.600"
@@ -260,16 +289,14 @@ const EventLog = ({
             lineHeight="4"
             fontWeight="medium"
           >
-            {(detail.status as string) === "finished"
-              ? "Request completed"
-              : detail.collection_name}
+            {getActionTypeLabel(detail.action_type)}
           </Text>
         </Td>
-      )}
-      {hasDatasetEntries && !isRequestFinishedView && (
         <Td>
-          {detail.saas_version ? (
-            <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+          {ExecutionLogStatusLabels[detail.status] ? (
+            <Tag color={ExecutionLogStatusColors[detail.status]}>
+              {ExecutionLogStatusLabels[detail.status]}
+            </Tag>
           ) : (
             <Text
               color="gray.600"
@@ -277,16 +304,50 @@ const EventLog = ({
               lineHeight="4"
               fontWeight="medium"
             >
-              -
+              {detail.status}
             </Text>
           )}
         </Td>
-      )}
-    </Tr>
-  ));
+        {hasDatasetEntries && (
+          <Td>
+            <Text
+              color="gray.600"
+              fontSize="xs"
+              lineHeight="4"
+              fontWeight="medium"
+            >
+              {extractRecordCountOrTotal(
+                detail,
+                allEventLogs || eventLogs,
+                privacyRequestActionType,
+              )}
+            </Text>
+          </Td>
+        )}
+        {hasDatasetEntries && !isRequestFinishedView && (
+          <>
+            <Td>
+              <Text
+                color="gray.600"
+                fontSize="xs"
+                lineHeight="4"
+                fontWeight="medium"
+              >
+                {(detail.status as string) === "finished"
+                  ? "Request completed"
+                  : detail.collection_name}
+              </Text>
+            </Td>
+            <Td>{renderVersionCell(detail)}</Td>
+          </>
+        )}
+      </Tr>
+    );
+  });
 
   return (
     <Box width="100%" paddingTop="0px" height="100%">
+      {versionModal}
       <TableContainer
         id="tableContainer"
         height="100%"
@@ -346,28 +407,28 @@ const EventLog = ({
                 </Th>
               )}
               {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Collection
-                  </Text>
-                </Th>
-              )}
-              {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Version
-                  </Text>
-                </Th>
+                <>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Collection
+                    </Text>
+                  </Th>
+                  <Th>
+                    <Text
+                      color="black"
+                      fontSize="xs"
+                      lineHeight="4"
+                      fontWeight="medium"
+                    >
+                      Version
+                    </Text>
+                  </Th>
+                </>
               )}
             </Tr>
           </Thead>

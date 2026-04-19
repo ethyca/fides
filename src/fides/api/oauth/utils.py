@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import update_wrapper
 from types import FunctionType
 from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional, Tuple, cast
@@ -23,6 +23,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_EXPIRES_AT,
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_PASSWORD_RESET_AT,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
@@ -184,7 +185,11 @@ def is_token_expired(
     """Check if a token has expired based on its issued_at timestamp and duration."""
     if issued_at is None:
         return True
-    return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
+    now = datetime.now(timezone.utc)
+    # Handle mixed tz: if issued_at is naive, treat as UTC
+    if issued_at.tzinfo is None:
+        issued_at = issued_at.replace(tzinfo=timezone.utc)
+    return (now - issued_at).total_seconds() / 60.0 > token_duration_minutes
 
 
 def is_token_expired_by_payload(
@@ -241,6 +246,72 @@ def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
             "Unable to evaluate password reset timestamp for client user: {}", exc
         )
         return False
+
+
+def check_token_invalidation(
+    issued_at: datetime,
+    token_data: dict,
+    client: "ClientDetail",
+) -> None:
+    """Raise AuthorizationError if the token was issued before a password reset.
+
+    Runs two checks in sequence:
+    1. Offline (fast, no DB) — uses password-reset-at embedded in the token.
+    2. DB (authoritative) — catches resets that happened after token issuance.
+
+    Both always run on the fides server path. The Go sidecar (no DB)
+    uses only the offline check via its own JWE validator.
+    """
+    password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
+    if is_token_invalidated_offline(issued_at, password_reset_at_str):
+        logger.debug("Auth token issued before password reset (offline check).")
+        raise AuthorizationError(detail="Not Authorized for this action")
+    if is_token_invalidated(issued_at, client):
+        logger.debug("Auth token issued before password reset (DB check).")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+
+def is_token_invalidated_offline(
+    issued_at: datetime,
+    password_reset_at_str: Optional[str],
+) -> bool:
+    """
+    Check token invalidation using payload data only (no DB lookup).
+
+    Designed for the Go policy engine sidecar which cannot reach the
+    database. Compares the token's issued-at against the password_reset_at
+    snapshot embedded at token creation time.
+
+    Limitation: if a user resets their password multiple times, tokens
+    issued between resets carry a stale snapshot. The exposure window
+    is bounded by the token's TTL. The fides server retains the
+    DB-backed check (via check_token_invalidation) for full coverage.
+
+    Handles mixed timezone inputs defensively: if one datetime is
+    timezone-aware and the other is naive, the aware one is stripped
+    to naive for comparison (both are assumed UTC by convention).
+
+    Args:
+        issued_at: When the token was issued
+        password_reset_at_str: ISO format string of password reset timestamp from token payload
+
+    Returns:
+        True if the token should be considered invalid (issued before password reset),
+        False otherwise (including when password_reset_at_str is None or invalid).
+    """
+    if password_reset_at_str is None:
+        return False
+    try:
+        password_reset_at = datetime.fromisoformat(password_reset_at_str)
+        # Normalize timezone: compare both as naive (UTC by convention)
+        # to avoid TypeError when mixing aware and naive datetimes.
+        if issued_at.tzinfo is None and password_reset_at.tzinfo is not None:
+            password_reset_at = password_reset_at.replace(tzinfo=None)
+        elif issued_at.tzinfo is not None and password_reset_at.tzinfo is None:
+            issued_at = issued_at.replace(tzinfo=None)
+        return issued_at < password_reset_at
+    except (TypeError, ValueError):
+        return False  # Treat parse errors as non-invalidating
 
 
 def _get_webhook_jwe_or_error(
@@ -591,10 +662,7 @@ def extract_token_and_load_client(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Invalidate tokens issued prior to the user's most recent password reset.
-    # This ensures any existing sessions are expired immediately after a password change.
-    if is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before latest password reset.")
-        raise AuthorizationError(detail="Not Authorized for this action")
+    check_token_invalidation(issued_at_dt, token_data, client)
 
     # Populate request-scoped context with the authenticated user identifier.
     # Prefer the linked user_id; fall back to the client id when this is the
@@ -673,10 +741,7 @@ async def extract_token_and_load_client_async(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Invalidate tokens issued prior to the user's most recent password reset.
-    # This ensures any existing sessions are expired immediately after a password change.
-    if is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before latest password reset.")
-        raise AuthorizationError(detail="Not Authorized for this action")
+    check_token_invalidation(issued_at_dt, token_data, client)
 
     # Populate request-scoped context with the authenticated user identifier.
     # Prefer the linked user_id; fall back to the client id when this is the

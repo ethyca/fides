@@ -6,7 +6,7 @@ import UserManagementTabs from "user-management/UserManagementTabs";
 import { selectUser } from "~/features/auth";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
-import { ScopeRegistryEnum } from "~/types/api";
+import { ScopeRegistryEnum, UserCreateExtended } from "~/types/api";
 
 import { useAPIHelper } from "../common/hooks";
 import PageHeader from "../common/PageHeader";
@@ -15,7 +15,7 @@ import {
   useEditUserMutation,
   useReinviteUserMutation,
 } from "./user-management.slice";
-import { FormValues } from "./UserForm";
+import { type FormValues } from "./UserForm";
 
 const useUserForm = (profile: User) => {
   const currentUser = useSelector(selectUser);
@@ -30,7 +30,7 @@ const useUserForm = (profile: User) => {
     password_login_enabled: Boolean(profile.password_login_enabled),
   };
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: UserCreateExtended) => {
     const userBody = {
       ...values,
       id: profile.id,
@@ -103,7 +103,7 @@ const ReinviteSection = ({ user }: ReinviteSectionProps) => {
       {contextHolder}
       <div className="mb-4">
         <Alert
-          message={user.invite_expired ? "Invite expired" : "Invite pending"}
+          title={user.invite_expired ? "Invite expired" : "Invite pending"}
           description={
             user.invite_expired
               ? "This user's invitation has expired. Use the button to send a new invitation email."
