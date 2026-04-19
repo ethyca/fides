@@ -117,10 +117,13 @@ class QueryConfig(Generic[T], ABC):
 
         A field is necessary if it satisfies at least one of:
         1. It is a primary key (needed for erasure WHERE clauses)
-        2. It is referenced by an incoming edge (used as query input)
-        3. It is referenced by an outgoing edge (its value feeds downstream nodes)
-        4. It has a data_category that is not system.* (actual PII for access/erasure)
-        5. It is an identity field (seed entry point)
+        2. It is an identity field (seed entry point)
+        3. It is referenced by an incoming edge (used as query input)
+        4. It is referenced by an outgoing edge (its value feeds downstream nodes)
+        5. It has a `references` entry that did not produce a graph edge
+           (e.g. a reference pointing at a collection outside the current graph)
+        6. It has a data_category that is not the `system` taxonomy node or
+           one of its children (actual PII for access/erasure)
 
         Falls back to all fields if filtering produces an empty set.
         """
@@ -143,14 +146,17 @@ class QueryConfig(Generic[T], ABC):
             elif field_path in outgoing_source_field_paths:
                 necessary.add(field_path)
             elif field.references:
+                # Reference that didn't produce a graph edge (e.g. target
+                # collection is outside this traversal's DatasetGraph).
                 necessary.add(field_path)
             elif field.data_categories and any(
-                not cat.startswith("system") for cat in field.data_categories
+                not (cat == "system" or cat.startswith("system."))
+                for cat in field.data_categories
             ):
                 necessary.add(field_path)
 
         if not necessary:
-            return list(all_field_paths.keys())
+            return sorted(all_field_paths.keys(), key=lambda fp: fp.string_path)
 
         # Ensure top-level parent fields are included when any of their nested
         # sub-fields are necessary (needed for connectors like BigQuery that

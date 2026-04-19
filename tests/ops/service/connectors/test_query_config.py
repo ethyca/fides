@@ -5,7 +5,7 @@ import pytest
 from fideslang.models import Dataset
 
 from fides.api.common_exceptions import MissingNamespaceSchemaException
-from fides.api.graph.config import CollectionAddress, FieldPath
+from fides.api.graph.config import Collection, CollectionAddress, FieldPath, ScalarField
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
@@ -884,3 +884,27 @@ class TestNecessaryFieldPaths:
         config = SQLQueryConfig(self._node("mysql", "Address"))
         paths = config.necessary_field_paths()
         assert paths == sorted(paths, key=lambda fp: fp.string_path)
+
+    def test_returns_all_fields_when_nothing_qualifies(self):
+        """Fallback path: when no field is a PK, identity, edge endpoint, or
+        reference, and all data_categories are either the `system` node or its
+        children, every field is returned so the SELECT is never empty."""
+        collection = Collection(
+            name="uncategorized",
+            fields=[
+                ScalarField(name="field_a", data_categories=["system.operations"]),
+                ScalarField(name="field_b", data_categories=["system"]),
+                ScalarField(name="field_c"),
+            ],
+        )
+        node = mock.MagicMock(spec=ExecutionNode)
+        node.collection = collection
+        node.incoming_edges = set()
+        node.outgoing_edges = set()
+
+        config = SQLQueryConfig(node)
+        assert set(config.necessary_field_paths()) == {
+            FieldPath("field_a"),
+            FieldPath("field_b"),
+            FieldPath("field_c"),
+        }
