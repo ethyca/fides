@@ -436,8 +436,8 @@ async def test_postgres_privacy_requests_against_non_default_schema(
         f"{database_name}:customer": 1,
         f"{database_name}:payment_card": 0,
         f"{database_name}:orders": 0,
-        f"{database_name}:address": 0,
-    }, "Only one record on customer table has targeted data category"
+        f"{database_name}:address": 1,
+    }, "Records with targeted data categories are erased"
     customer_records = postgres_integration_db.execute(
         text("select * from backup_schema.customer where id = 1;")
     )
