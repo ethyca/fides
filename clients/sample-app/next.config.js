@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     // Use https://hatscripts.github.io/circle-flags/ as a repository of nicely
     // formatted SVG flags. NOTE: this works well as a sample app, but having a
