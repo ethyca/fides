@@ -30,9 +30,12 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -86,7 +89,7 @@ async def test_erasure_email(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_dispatcher.assert_called_once_with(
+    mock_mailgun_cls.assert_called_once_with(
         ANY,
         EmailForActionType(
             subject="Notification of user erasure requests from Test Org",
@@ -111,9 +114,12 @@ async def test_erasure_email(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_multiple_requests(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -192,7 +198,7 @@ async def test_erasure_email_multiple_requests(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
 
-    mock_mailgun_dispatcher.call_args_list == [
+    mock_mailgun_cls.return_value.send_email.call_args_list == [
         (
             ANY,
             EmailForActionType(
@@ -234,9 +240,12 @@ async def test_erasure_email_multiple_requests(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_multiple_requests_same_email_different_vendor(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -315,7 +324,7 @@ async def test_erasure_email_multiple_requests_same_email_different_vendor(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
 
-    mock_mailgun_dispatcher.call_args_list == [
+    mock_mailgun_cls.return_value.send_email.call_args_list == [
         (
             ANY,
             EmailForActionType(
@@ -357,9 +366,12 @@ async def test_erasure_email_multiple_requests_same_email_different_vendor(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_multiple_requests_same_email(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -437,7 +449,7 @@ async def test_erasure_email_multiple_requests_same_email(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_dispatcher.assert_called_once_with(
+    mock_mailgun_cls.assert_called_once_with(
         ANY,
         EmailForActionType(
             subject="Notification of user erasure requests from Test Org",
@@ -462,14 +474,17 @@ async def test_erasure_email_multiple_requests_same_email(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 @mock.patch(
     "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_invalid_dataset(
     logger_mock,
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -539,7 +554,7 @@ async def test_erasure_email_invalid_dataset(
     )
 
     # verify the email was not sent
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
 
 
 @pytest.mark.integration
@@ -548,14 +563,17 @@ async def test_erasure_email_invalid_dataset(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 @mock.patch(
     "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_invalid_field(
     logger_mock,
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -626,7 +644,7 @@ async def test_erasure_email_invalid_field(
     )
 
     # verify the email was not sent
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
 
 
 @pytest.mark.integration
@@ -635,14 +653,17 @@ async def test_erasure_email_invalid_field(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 @mock.patch(
     "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_mismatched_datasets(
     logger_mock,
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -712,7 +733,7 @@ async def test_erasure_email_mismatched_datasets(
     )
 
     # verify the email was not sent
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
 
 
 @pytest.mark.integration
@@ -721,14 +742,17 @@ async def test_erasure_email_mismatched_datasets(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 @mock.patch(
     "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_mismatched_collections(
     logger_mock,
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -798,7 +822,7 @@ async def test_erasure_email_mismatched_collections(
     )
 
     # verify the email was not sent
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
 
 
 @pytest.mark.integration
@@ -807,9 +831,12 @@ async def test_erasure_email_mismatched_collections(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_no_email_address(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -874,7 +901,7 @@ async def test_erasure_email_no_email_address(
     )
 
     # verify the email was not sent
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
 
 
 @pytest.mark.integration
@@ -883,9 +910,12 @@ async def test_erasure_email_no_email_address(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_multiple_email_addresses(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -950,7 +980,7 @@ async def test_erasure_email_multiple_email_addresses(
     )
 
     # verify the email was not sent
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
 
 
 @pytest.mark.integration
@@ -959,9 +989,12 @@ async def test_erasure_email_multiple_email_addresses(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_property_specific_messaging(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -1017,7 +1050,7 @@ async def test_erasure_email_property_specific_messaging(
     erasure_email_template = get_email_template(
         MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    mock_mailgun_dispatcher.assert_called_once_with(
+    mock_mailgun_cls.assert_called_once_with(
         ANY,
         EmailForActionType(
             subject="Notification of user erasure requests from Test Org",
@@ -1042,9 +1075,12 @@ async def test_erasure_email_property_specific_messaging(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_no_messaging_config(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to populate the postgres integration DB
     postgres_integration_db,
@@ -1093,15 +1129,18 @@ async def test_erasure_email_no_messaging_config(
     # job will fail because there is no messaging config
     assert exit_state == EmailExitState.email_send_failed
 
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
     mock_requeue_privacy_requests.assert_not_called()
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_no_write_permissions(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     # Need to allow custom privacy request fields
     allow_custom_privacy_request_field_collection_enabled,
     allow_custom_privacy_request_fields_in_request_execution_enabled,
@@ -1150,7 +1189,7 @@ async def test_erasure_email_no_write_permissions(
     # no email scheduled
     assert pr.awaiting_email_send_at is None
 
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
 
 
 @pytest.mark.integration
@@ -1192,9 +1231,12 @@ async def test_erasure_email_no_updates_needed(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_disabled_connector(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to allow custom privacy request fields
     allow_custom_privacy_request_field_collection_enabled,
@@ -1244,7 +1286,7 @@ async def test_erasure_email_disabled_connector(
     assert pr.status == PrivacyRequestStatus.complete
     assert pr.awaiting_email_send_at is None
 
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
     mock_requeue_privacy_requests.assert_not_called()
 
 
@@ -1253,9 +1295,12 @@ async def test_erasure_email_disabled_connector(
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.messaging.message_dispatch_service.MailgunService",
+    autospec=True,
+)
 async def test_erasure_email_unsupported_identity(
-    mock_mailgun_dispatcher: Mock,
+    mock_mailgun_cls: Mock,
     mock_requeue_privacy_requests: Mock,
     # Need to allow custom privacy request fields
     allow_custom_privacy_request_field_collection_enabled,
@@ -1299,5 +1344,5 @@ async def test_erasure_email_unsupported_identity(
     assert pr.status == PrivacyRequestStatus.complete
     assert pr.awaiting_email_send_at is None
 
-    mock_mailgun_dispatcher.assert_not_called()
+    mock_mailgun_cls.assert_not_called()
     mock_requeue_privacy_requests.assert_not_called()

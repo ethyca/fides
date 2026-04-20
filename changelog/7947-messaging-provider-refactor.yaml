@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Refactored messaging dispatchers into provider classes behind a two-level ABC hierarchy, replacing function-based dispatcher pattern with MailgunService, TwilioEmailService, AwsSesService, MailchimpTransactionalService, and TwilioSmsService
+pr: 7947
+labels: []

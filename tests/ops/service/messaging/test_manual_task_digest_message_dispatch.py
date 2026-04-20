@@ -20,11 +20,12 @@ class TestManualTaskDigestMessageDispatch:
     """Test manual task digest message dispatch functionality."""
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_manual_task_digest_email_dispatch_mailgun_success(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -45,15 +46,13 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        # Verify mailgun dispatcher was called with correct parameters
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
+        # Verify provider was instantiated with config and send_email was called
+        mock_mailgun_cls.assert_called_once_with(messaging_config)
+        send_args = mock_mailgun_cls.return_value.send_email.call_args
 
-        messaging_config_arg = call_args[0][0]
-        email_for_action_type = call_args[0][1]
-        recipient_email = call_args[0][2]
+        recipient_email = send_args[0][0]
+        email_for_action_type = send_args[0][1]
 
-        assert messaging_config_arg == messaging_config
         assert recipient_email == "vendor@example.com"
 
         # Check email content
@@ -81,11 +80,12 @@ class TestManualTaskDigestMessageDispatch:
         assert template_vars["total_task_count"] == 10
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_manual_task_digest_email_dispatch_with_logo(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -106,8 +106,8 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        mock_mailgun_dispatcher.assert_called_once()
-        email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
+        mock_mailgun_cls.assert_called_once()
+        email_for_action_type = mock_mailgun_cls.return_value.send_email.call_args[0][1]
 
         # Check that the HTML template is used with logo functionality
         assert "Test Organization" in email_for_action_type.body
@@ -132,11 +132,12 @@ class TestManualTaskDigestMessageDispatch:
         assert template_vars["company_logo_url"] == "https://example.com/logo.png"
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_manual_task_digest_email_dispatch_zero_tasks(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -157,8 +158,8 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        mock_mailgun_dispatcher.assert_called_once()
-        email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
+        mock_mailgun_cls.assert_called_once()
+        email_for_action_type = mock_mailgun_cls.return_value.send_email.call_args[0][1]
 
         # Check that zero counts are handled correctly (HTML template format)
         assert (
@@ -211,11 +212,12 @@ class TestManualTaskDigestMessageDispatch:
         assert params_no_logo.company_logo_url is None
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_manual_task_digest_email_dispatch_special_characters(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -236,8 +238,8 @@ class TestManualTaskDigestMessageDispatch:
             ),
         )
 
-        mock_mailgun_dispatcher.assert_called_once()
-        email_for_action_type = mock_mailgun_dispatcher.call_args[0][1]
+        mock_mailgun_cls.assert_called_once()
+        email_for_action_type = mock_mailgun_cls.return_value.send_email.call_args[0][1]
 
         # Check that special characters are handled correctly
         assert "María José García-López" in email_for_action_type.body
@@ -257,11 +259,12 @@ class TestManualTaskDigestMessageDispatch:
         assert template_vars["organization_name"] == "Acme Corp & Associates, LLC"
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_manual_task_digest_email_dispatch_with_custom_template(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -295,8 +298,8 @@ class TestManualTaskDigestMessageDispatch:
         )
 
         # Verify custom template was used
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
+        mock_mailgun_cls.assert_called_once()
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
         email_for_action_type = call_args[0][1]
 
         # Check that custom template content was used within HTML template
@@ -320,11 +323,12 @@ class TestManualTaskDigestMessageDispatch:
         custom_template.delete(db)
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     def test_manual_task_digest_email_dispatch_uses_default_template(
         self,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -356,8 +360,8 @@ class TestManualTaskDigestMessageDispatch:
         )
 
         # Verify default template was used
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
+        mock_mailgun_cls.assert_called_once()
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
         email_for_action_type = call_args[0][1]
 
         # Check that HTML template with default content is used
@@ -383,7 +387,8 @@ class TestManualTaskDigestMessageDispatch:
         assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service.get_basic_messaging_template_by_type_or_default"
@@ -391,7 +396,7 @@ class TestManualTaskDigestMessageDispatch:
     def test_manual_task_digest_email_dispatch_fallback_to_html_template(
         self,
         mock_get_template: Mock,
-        mock_mailgun_dispatcher: Mock,
+        mock_mailgun_cls: Mock,
         db: Session,
         messaging_config,
     ) -> None:
@@ -416,8 +421,8 @@ class TestManualTaskDigestMessageDispatch:
         )
 
         # Verify HTML template was used as fallback
-        mock_mailgun_dispatcher.assert_called_once()
-        call_args = mock_mailgun_dispatcher.call_args
+        mock_mailgun_cls.assert_called_once()
+        call_args = mock_mailgun_cls.return_value.send_email.call_args
         email_for_action_type = call_args[0][1]
 
         # Check that HTML template content was used

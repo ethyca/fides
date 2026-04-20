@@ -853,7 +853,8 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_messaging_config(
@@ -894,7 +895,8 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.MailgunService",
+        autospec=True,
     )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(

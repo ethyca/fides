@@ -68,6 +68,9 @@ from fides.api.service.messaging.messaging_crud_service import (
     get_template_by_id,
     update_messaging_config,
 )
+from fides.api.service.messaging.messaging_providers.aws_ses_service import (
+    AwsSesService,
+)
 from fides.api.util.api_router import APIRouter
 from fides.common.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -412,6 +415,13 @@ def update_config_secrets(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
+    if messaging_config.service_type == MessagingServiceType.aws_ses:
+        try:
+            ses_provider = AwsSesService(messaging_config)
+            ses_provider.validate_email_and_domain_status()
+        except MessageDispatchException:
+            logger.warning("SES identity verification failed during config save")
+
     msg = f"Secrets updated for MessagingConfig with key: {messaging_config.key}."
     # todo- implement test status for messaging service
     return TestMessagingStatusMessage(msg=msg, test_status=None)
