@@ -79,7 +79,7 @@ def _find_library() -> Path:
 _lib_lock = __import__("threading").Lock()
 
 
-def _get_lib() -> ctypes.CDLL:
+def _get_lib() -> ctypes.CDLL:  # pragma: no cover — requires built Go library
     """Load the shared library (singleton, thread-safe)."""
     global _lib
     if _lib is not None:
@@ -114,7 +114,7 @@ def _get_lib() -> ctypes.CDLL:
     return _lib
 
 
-def _call(fn_name: str, payload: dict[str, Any]) -> dict[str, Any]:
+def _call(fn_name: str, payload: dict[str, Any]) -> dict[str, Any]:  # pragma: no cover
     """Call a Go function: dict -> JSON -> Go -> JSON -> dict.
 
     The Go side allocates the response via C.CString (malloc). We copy
@@ -138,7 +138,9 @@ def _call(fn_name: str, payload: dict[str, Any]) -> dict[str, Any]:
 # ── Public API ───────────────────────────────────────────────────────
 
 
-def load_fixtures(config_dir: str | os.PathLike[str]) -> dict[str, Any]:
+def load_fixtures(
+    config_dir: str | os.PathLike[str],
+) -> dict[str, Any]:  # pragma: no cover
     """Load YAML fixtures from a config directory via Go.
 
     Returns a dict with keys: consumers, purposes, datasets, policies.
@@ -148,7 +150,7 @@ def load_fixtures(config_dir: str | os.PathLike[str]) -> dict[str, Any]:
     return _call("LoadFixturesJSON", {"config_dir": str(config_dir)})
 
 
-def evaluate_pipeline(
+def evaluate_pipeline(  # pragma: no cover
     fixtures: dict[str, Any],
     input: dict[str, Any],
 ) -> dict[str, Any]:
@@ -168,7 +170,7 @@ def evaluate_pipeline(
     )
 
 
-def evaluate_purpose(
+def evaluate_purpose(  # pragma: no cover
     consumer: dict[str, Any],
     datasets: dict[str, dict[str, Any]],
     collections: dict[str, list[str]] | None = None,
@@ -188,7 +190,7 @@ def evaluate_purpose(
     )
 
 
-def evaluate_policies(
+def evaluate_policies(  # pragma: no cover
     policies: list[dict[str, Any]],
     request: dict[str, Any],
 ) -> dict[str, Any]:
