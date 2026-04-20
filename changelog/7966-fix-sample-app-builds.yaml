@@ -1,0 +1,4 @@
+type: Fixed
+description: Fix sample app builds after Next.js upgrade
+pr: 7966
+labels: []
