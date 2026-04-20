@@ -12,6 +12,7 @@ export interface CustomAvatarProps extends AvatarProps {
    * @default "filled"
    */
   variant?: "outlined" | "filled";
+  imageFit?: "cover" | "contain";
 }
 
 /**
@@ -29,13 +30,16 @@ export interface CustomAvatarProps extends AvatarProps {
  */
 const withCustomProps = (WrappedComponent: typeof Avatar) => {
   const WrappedAvatar = React.forwardRef<HTMLSpanElement, CustomAvatarProps>(
-    ({ variant = "filled", className, ...props }, ref) => {
+    ({ variant = "filled", imageFit = "cover", className, ...props }, ref) => {
       return (
         <WrappedComponent
           ref={ref}
           {...props}
           className={classNames(
-            { [styles.outlined]: variant === "outlined" },
+            {
+              [styles.outlined]: variant === "outlined",
+              "*:!object-contain": imageFit === "contain",
+            },
             className,
           )}
         />
