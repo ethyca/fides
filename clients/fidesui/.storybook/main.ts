@@ -31,4 +31,5 @@ const config: StorybookConfig = {
     });
   },
 };
+
 export default config;
