@@ -2,7 +2,7 @@ import json
 import uuid
 from typing import Dict, Generator, List, Optional
 from unittest import mock
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pydash
@@ -38,6 +38,7 @@ from fides.common.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
+from fides.service.dataset.dataset_service import DatasetNotFoundException
 from fides.service.event_audit_service import EventAuditService
 from tests.fixtures.application_fixtures import load_dataset
 
@@ -1272,6 +1273,42 @@ class TestPutDatasetConfigs:
             events[0].event_details["connection_key"]
             == saas_example_connection_config.key
         )
+
+    @pytest.mark.unit_saas
+    def test_put_dataset_configs_concurrent_delete_does_not_500(
+        self,
+        db: Session,
+        saas_example_connection_config: ConnectionConfig,
+        saas_ctl_dataset,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """PUT with implicit delete silently ignores keys already deleted by a concurrent
+        request, returning 200 instead of raising HTTP 500."""
+        saas_fides_key = saas_example_connection_config.saas_config["fides_key"]
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": saas_example_connection_config.id,
+                "fides_key": saas_fides_key,
+                "ctl_dataset_id": saas_ctl_dataset.id,
+            },
+        )
+
+        datasets_url = (V1_URL_PREFIX + DATASET_CONFIGS).format(
+            connection_key=saas_example_connection_config.key
+        )
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+
+        # Simulate a concurrent deletion: delete_dataset_config raises for our key
+        with patch(
+            "fides.service.dataset.dataset_config_service.DatasetConfigService.delete_dataset_config",
+            side_effect=DatasetNotFoundException("already gone"),
+        ):
+            response = api_client.put(datasets_url, headers=auth_header, json=[])
+
+        assert response.status_code == 200
 
 
 class TestPutDatasets:
