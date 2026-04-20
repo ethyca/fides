@@ -68,6 +68,7 @@ export const usePrivacyRequestEventLogs = (
           isAwaitingInput: hasAwaitingProcessingStatus,
           isPolling: hasPollingStatus,
           id: `request-${key}`,
+          logCount: logs.length,
         };
       });
 

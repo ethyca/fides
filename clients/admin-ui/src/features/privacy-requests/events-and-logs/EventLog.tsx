@@ -27,6 +27,46 @@ import { ActionType } from "~/types/api";
 
 import styles from "./EventLog.module.scss";
 
+/**
+ * Unwraps a Python bytes literal (e.g. b'{"key":"val"}') produced by
+ * str(response.content), returning the inner string. Returns the original
+ * value unchanged if it doesn't match that format.
+ */
+const unwrapPythonBytesLiteral = (value: string): string => {
+  const match = value.match(/^b'([\s\S]*)'$/);
+  if (match) {
+    return match[1].replace(/\\'/g, "'");
+  }
+  return value;
+};
+
+/**
+ * Returns the user-configured extracted content from a log message, or null
+ * for system-generated messages like "success - retrieved N records".
+ * Unwraps Python bytes literals and pretty-prints JSON objects/arrays.
+ */
+const extractMessageContent = (
+  message: string | null | undefined,
+): string | null => {
+  if (!message) {
+    return null;
+  }
+  const withoutSuffix = message
+    .replace(/\s*-\s*(?:retrieved|masked|processed)\s+\d+\s+records?$/i, "")
+    .trim();
+  if (!withoutSuffix || withoutSuffix.toLowerCase() === "success") return null;
+  const unwrapped = unwrapPythonBytesLiteral(withoutSuffix);
+  try {
+    const parsed = JSON.parse(unwrapped);
+    if (parsed !== null && typeof parsed === "object") {
+      return JSON.stringify(parsed, null, 2);
+    }
+  } catch {
+    // not JSON — return as-is
+  }
+  return unwrapped;
+};
+
 const AUDIT_STATUSES_WITH_DETAILS: ExecutionLogStatus[] = [
   ExecutionLogStatus.DENIED,
   ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED,
@@ -249,12 +289,15 @@ const EventLog = ({
   };
 
   const tableItems = eventLogs?.map((detail) => {
+    const extractedContent = extractMessageContent(detail.message);
+
     const hasExpandableDetails =
       detail.status === ExecutionLogStatus.ERROR ||
       (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
       detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
       detail.status === ExecutionLogStatus.POLLING ||
-      (isAuditStatusWithDetails(detail.status) && detail.message);
+      (isAuditStatusWithDetails(detail.status) && detail.message) ||
+      !!extractedContent;
 
     return (
       <Tr
@@ -264,7 +307,7 @@ const EventLog = ({
         }
         onClick={() => {
           if (hasExpandableDetails) {
-            onDetailPanel(detail.message, detail.status);
+            onDetailPanel(extractedContent ?? detail.message, detail.status);
           }
         }}
         style={{

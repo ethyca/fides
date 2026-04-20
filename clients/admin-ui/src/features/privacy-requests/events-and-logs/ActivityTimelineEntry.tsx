@@ -29,6 +29,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     description,
     attachments,
     showViewLog,
+    logCount,
   } = item;
 
   // Format the date for display
@@ -79,12 +80,20 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         >
           {type}
         </Tag>
+        {logCount !== undefined && (
+          <span
+            className={styles.viewLogs}
+            data-testid="activity-timeline-log-count"
+          >
+            {logCount} {logCount === 1 ? "log" : "logs"}
+          </span>
+        )}
         {showViewLog && (
           <span
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
           >
-            View Log
+            · View Log
           </span>
         )}
       </div>
