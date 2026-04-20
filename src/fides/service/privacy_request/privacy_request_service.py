@@ -656,6 +656,11 @@ class PrivacyRequestService:
                     privacy_request.status == PrivacyRequestStatus.duplicate
                     and privacy_request.identity_verified_at is None
                 ):
+                    logger.error(
+                        "Blocked approval of unverified duplicate privacy request {} by user {}",
+                        privacy_request.id,
+                        reviewed_by,
+                    )
                     failed.append(
                         BulkUpdateFailed(
                             message="Cannot approve unverified duplicate request",
