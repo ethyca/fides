@@ -178,7 +178,7 @@ def get_basic_messaging_template_by_type_or_default(
 
 def create_or_update_basic_templates(
     db: Session, data: Dict[str, Any]
-) -> Optional[MessagingTemplate]:
+) -> MessagingTemplate:
     """
     For "basic", or non property-specific messaging templates, we update if template "type" matches an existing db row,
     otherwise we create a new one.
@@ -202,7 +202,7 @@ def create_or_update_basic_templates(
         # Ensure a label exists for new basic templates
         if "label" not in data:
             default = DEFAULT_MESSAGING_TEMPLATES.get(data["type"])
-            data["label"] = default["label"] if default else "Default"
+            data["label"] = default["label"] if default else "Unnamed"
         template = MessagingTemplate.create(db=db, data=data)
     return template
 
@@ -283,13 +283,13 @@ def _validate_unique_label(
     exclude_id: str | None = None,
 ) -> None:
     """Raise if a template with this (type, label) already exists."""
-    query = db.query(MessagingTemplate).filter(
+    stmt = select(MessagingTemplate).where(  # type: ignore[arg-type]
         MessagingTemplate.type == template_type,
         MessagingTemplate.label == label,
     )
     if exclude_id:
-        query = query.filter(MessagingTemplate.id != exclude_id)
-    if query.first():
+        stmt = stmt.where(MessagingTemplate.id != exclude_id)
+    if db.execute(stmt).scalars().first():
         raise MessagingTemplateValidationException(
             f"A template with type '{template_type}' and label '{label}' already exists."
         )
@@ -467,6 +467,8 @@ def create_property_specific_template_by_type(
         label = _next_available_label(
             db, template_type, DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
         )
+    # Pre-check gives a clean 400 error; the IntegrityError catch below is the
+    # TOCTOU safety net for concurrent requests that both pass validation.
     _validate_unique_label(db, template_type, label)
     _validate_enabled_template_has_properties(
         template_create_body.properties, template_create_body.is_enabled

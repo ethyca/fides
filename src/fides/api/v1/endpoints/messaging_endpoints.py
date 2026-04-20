@@ -662,9 +662,7 @@ def update_basic_messaging_templates(
                 BasicMessagingTemplateResponse(
                     type=template_type,
                     content=content,
-                    label=updated_template.label
-                    if updated_template
-                    else default_template.get("label"),
+                    label=updated_template.label,
                 )
             )
 
