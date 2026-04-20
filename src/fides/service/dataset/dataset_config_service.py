@@ -88,9 +88,10 @@ class DatasetConfigService:
                 event_details=event_details,
             )
         except Exception as e:
-            logger.error(
-                f"Error creating dataset audit event for dataset '{dataset_key}': "
-                f"{type(e).__name__}"
+            logger.exception(
+                "Error creating dataset audit event for dataset '{}': {}",
+                dataset_key,
+                e,
             )
 
     def create_or_update_dataset_config(
