@@ -131,17 +131,24 @@ const CustomFields = ({
             required={Boolean(fieldInfo.required)}
           />
         ) : (
-          <Form.Item
-            name={["custom_privacy_request_fields", fieldName, "value"]}
-            key={fieldName}
-            label={fieldInfo.label}
-            rules={rules[`custom_privacy_request_fields.${fieldName}.value`]}
-            layout="vertical"
-          >
-            <Input
-              data-testid={`input-custom_privacy_request_fields.${fieldName}.value`}
-            />
-          </Form.Item>
+          <div key={fieldName}>
+            <Form.Item
+              name={["custom_privacy_request_fields", fieldName, "label"]}
+              hidden
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name={["custom_privacy_request_fields", fieldName, "value"]}
+              label={fieldInfo.label}
+              rules={rules[`custom_privacy_request_fields.${fieldName}.value`]}
+              layout="vertical"
+            >
+              <Input
+                data-testid={`input-custom_privacy_request_fields.${fieldName}.value`}
+              />
+            </Form.Item>
+          </div>
         );
       })}
     </>

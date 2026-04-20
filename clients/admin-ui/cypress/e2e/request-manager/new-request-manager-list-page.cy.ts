@@ -359,7 +359,27 @@ describe("New Privacy Requests", () => {
         }).as("postPrivacyRequest");
         cy.getByTestId("submit-btn").click();
         cy.shouldShowMessage("success");
-        cy.wait("@postPrivacyRequest");
+        cy.wait("@postPrivacyRequest")
+          .its("request.body")
+          .then((body) => {
+            const fields = body[0].custom_privacy_request_fields;
+            expect(fields.required_field).to.have.property(
+              "label",
+              "Required example field",
+            );
+            expect(fields.required_field).to.have.property(
+              "value",
+              "A value for the required field",
+            );
+            expect(fields.field_with_default_value).to.have.property(
+              "label",
+              "Example field with default value",
+            );
+            expect(fields.field_with_default_value).to.have.property(
+              "value",
+              "The default value",
+            );
+          });
         cy.wait("@getPrivacyRequests");
       });
     });
