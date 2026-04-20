@@ -50,6 +50,7 @@ class TestMessagingTemplates:
             data={
                 "type": template_type,
                 "content": content,
+                "label": "Test verification",
                 "is_enabled": False,
             },
         )
@@ -59,7 +60,7 @@ class TestMessagingTemplates:
         )
         assert template.type == template_type
         assert template.content == content
-        assert template.label == "Unnamed"
+        assert template.label == "Test verification"
 
     def test_get_basic_messaging_template_by_type_default(self, db: Session):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
@@ -747,6 +748,7 @@ class TestMessagingTemplates:
         }
         data = {
             "content": content,
+            "label": "Template to delete",
             "properties": [{"id": property_a.id, "name": property_a.name}],
             "is_enabled": True,
             "type": template_type,
@@ -860,6 +862,7 @@ class TestMessagingTemplates:
         for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
             data = {
                 "content": content,
+                "label": default_template["label"],
                 "properties": [{"id": property_a.id, "name": property_a.name}],
                 "is_enabled": True,
                 "type": template_type,

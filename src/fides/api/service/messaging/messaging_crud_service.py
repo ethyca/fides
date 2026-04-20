@@ -202,7 +202,11 @@ def create_or_update_basic_templates(
         # Ensure a label exists for new basic templates
         if "label" not in data:
             default = DEFAULT_MESSAGING_TEMPLATES.get(data["type"])
-            data["label"] = default["label"] if default else "Unnamed"
+            if not default:
+                raise MessagingTemplateValidationException(
+                    f"Messaging template type '{data['type']}' is not supported."
+                )
+            data["label"] = default["label"]
         template = MessagingTemplate.create(db=db, data=data)
     return template
 

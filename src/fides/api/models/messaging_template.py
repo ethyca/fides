@@ -112,10 +112,7 @@ class MessagingTemplate(Base):
     )
 
     type = Column(String, index=True, nullable=False)
-    # TODO: remove default once all creation paths pass an explicit label.
-    # Kept for backward compatibility — some code paths create templates without
-    # a label, and removing the default would cause NOT NULL violations.
-    label = Column(String, nullable=False, default="Unnamed")
+    label = Column(String, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
     properties: RelationshipProperty[List[Property]] = relationship(
         "Property",

@@ -2488,6 +2488,7 @@ class TestDeleteMessagingTemplateById:
         }
         data = {
             "content": content,
+            "label": "Template to delete",
             "properties": [{"id": property_a.id, "name": property_a.name}],
             "is_enabled": True,
             "type": template_type,
