@@ -33,6 +33,7 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_center_config import (
+    FileUploadCustomPrivacyRequestField,
     LocationCustomPrivacyRequestField,
     reorder_custom_privacy_request_fields,
 )
@@ -68,6 +69,10 @@ from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
+)
+from fides.service.privacy_request.attachment_user_provided_service import (
+    promote_rows_to_attachments,
+    resolve_file_attachments,
 )
 from fides.service.privacy_request.privacy_request_csv_download import (
     privacy_request_csv_download,
@@ -189,30 +194,22 @@ class PrivacyRequestService:
         return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[Any] = None,
     ) -> None:
         """Validate that location is provided for required location fields.
 
         Looks up the actual Privacy Center configuration to check if any location
-        fields are marked as required for the specified policy.
+        fields are marked as required for the specified policy. ``action`` may
+        be passed by the caller to avoid re-loading the config.
         """
         # If location is already provided, no validation needed
         if privacy_request_data.location:
             return
 
-        config_dict = self._resolve_privacy_center_config_dict(
-            privacy_request_data.property_id
-        )
-        if not config_dict:
-            return
-
-        privacy_center_config = self._parse_privacy_center_config(config_dict)
-        if not privacy_center_config:
-            return
-
-        action = self._get_matching_action(
-            privacy_center_config, privacy_request_data.policy_key
-        )
+        if action is None:
+            action = self._resolve_matching_action(privacy_request_data)
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -297,6 +294,33 @@ class PrivacyRequestService:
                 return action
         return None
 
+    def _resolve_matching_action(
+        self, privacy_request_data: PrivacyRequestCreate
+    ) -> Optional[Any]:
+        """Load and parse the Privacy Center config, return the matching action."""
+        config_dict = self._resolve_privacy_center_config_dict(
+            privacy_request_data.property_id
+        )
+        if not config_dict:
+            return None
+        privacy_center_config = self._parse_privacy_center_config(config_dict)
+        if not privacy_center_config:
+            return None
+        return self._get_matching_action(
+            privacy_center_config, privacy_request_data.policy_key
+        )
+
+    @staticmethod
+    def _file_field_names(action: Optional[Any]) -> set[str]:
+        """Return the set of custom-field names declared as file uploads."""
+        if not action or not getattr(action, "custom_privacy_request_fields", None):
+            return set()
+        return {
+            name
+            for name, cfg in action.custom_privacy_request_fields.items()
+            if isinstance(cfg, FileUploadCustomPrivacyRequestField)
+        }
+
     @staticmethod
     def _is_required_location_missing(
         action: Any, privacy_request_data: PrivacyRequestCreate
@@ -356,6 +380,36 @@ class PrivacyRequestService:
                 privacy_request_data.model_dump(mode="json"),
             )
 
+        # Resolve data-subject file uploads.  The Privacy Center config is
+        # the source of truth for which fields are file uploads; each id in
+        # a file field's value list is looked up against the pending
+        # AttachmentUserProvided rows, matched keys are removed from the
+        # dict that will be persisted to custom_privacy_request_field, and
+        # the rows are held for promotion to Attachment records after the
+        # request is created.
+        matching_action = self._resolve_matching_action(privacy_request_data)
+        file_field_names = self._file_field_names(matching_action)
+        try:
+            attachment_rows = resolve_file_attachments(
+                privacy_request_data.custom_privacy_request_fields,
+                file_field_names,
+                self.db,
+            )
+        except ValueError as exc:
+            raise PrivacyRequestError(
+                str(exc),
+                privacy_request_data.model_dump(mode="json"),
+            ) from exc
+        if file_field_names and privacy_request_data.custom_privacy_request_fields:
+            non_file_fields = {
+                name: field
+                for name, field in privacy_request_data.custom_privacy_request_fields.items()
+                if name not in file_field_names
+            }
+            privacy_request_data = privacy_request_data.model_copy(
+                update={"custom_privacy_request_fields": non_file_fields or None}
+            )
+
         if privacy_request_data.property_id:
             valid_property = Property.get_by(
                 self.db, field="id", value=privacy_request_data.property_id
@@ -367,7 +421,9 @@ class PrivacyRequestService:
                 )
 
         # Validate location is provided for required location fields
-        self._validate_required_location_fields(privacy_request_data)
+        self._validate_required_location_fields(
+            privacy_request_data, action=matching_action
+        )
 
         policy = Policy.get_by(
             db=self.db,
@@ -455,6 +511,31 @@ class PrivacyRequestService:
                     "Caching masking secrets for privacy request {}", privacy_request.id
                 )
                 privacy_request.persist_masking_secrets(masking_secrets)
+
+            # Promote data-subject-uploaded files to Attachment records.
+            # Must happen before _handle_notifications_and_processing so that
+            # a failure here deletes the just-created privacy request — files
+            # are required, not supplementary, so a request missing its
+            # attachments must not be processed.
+            if attachment_rows:
+                try:
+                    promote_rows_to_attachments(
+                        privacy_request, self.db, attachment_rows
+                    )
+                except Exception as promotion_exc:
+                    logger.exception(
+                        "Attachment promotion failed for privacy request {} — "
+                        "deleting the request to preserve the 'files required' invariant",
+                        privacy_request.id,
+                    )
+                    try:
+                        privacy_request.delete(self.db)
+                    except Exception:
+                        logger.exception(
+                            "Failed to delete privacy request {} after promotion failure",
+                            privacy_request.id,
+                        )
+                    raise promotion_exc
 
             check_and_dispatch_error_notifications(db=self.db)
 

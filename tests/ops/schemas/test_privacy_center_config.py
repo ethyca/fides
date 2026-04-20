@@ -4,9 +4,11 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
+    DEFAULT_FILE_MAX_SIZE_BYTES,
     BaseCustomPrivacyRequestField,
     ConsentConfigPage,
     CustomPrivacyRequestField,
+    FileUploadCustomPrivacyRequestField,
     IdentityInputs,
     LocationCustomPrivacyRequestField,
     PrivacyCenterConfig,
@@ -334,6 +336,240 @@ class TestPrivacyCenterConfig:
         assert "LocationCustomPrivacyRequestField does not support options" in str(
             exc_info.value
         )
+
+    @pytest.mark.parametrize(
+        "kwargs,expected",
+        [
+            (
+                {"label": "Confirm", "field_type": "checkbox", "required": True},
+                {"field_type": "checkbox", "required": True, "options": None},
+            ),
+            (
+                {"label": "Subscribe", "field_type": "checkbox", "required": False},
+                {"required": False},
+            ),
+            (
+                {"label": "Agree", "field_type": "checkbox", "default_value": "true"},
+                {"default_value": "true"},
+            ),
+            (
+                {
+                    "label": "Flag",
+                    "field_type": "checkbox",
+                    "hidden": True,
+                    "default_value": "false",
+                },
+                {"hidden": True, "default_value": "false"},
+            ),
+            (
+                {
+                    "label": "Pick",
+                    "field_type": "checkbox_group",
+                    "options": ["Profile", "Purchase history", "Email preferences"],
+                },
+                {
+                    "field_type": "checkbox_group",
+                    "options": ["Profile", "Purchase history", "Email preferences"],
+                },
+            ),
+            (
+                {"label": "Describe", "field_type": "textarea"},
+                {"field_type": "textarea", "options": None},
+            ),
+            (
+                {
+                    "label": "Context",
+                    "field_type": "textarea",
+                    "default_value": "N/A",
+                    "required": False,
+                },
+                {"default_value": "N/A", "required": False},
+            ),
+        ],
+    )
+    def test_custom_field_valid(self, kwargs, expected):
+        field = CustomPrivacyRequestField(**kwargs)
+        for attr, val in expected.items():
+            assert getattr(field, attr) == val
+
+    @pytest.mark.parametrize(
+        "kwargs,error_msg",
+        [
+            (
+                {"label": "x", "field_type": "checkbox_group"},
+                "checkbox_group fields require at least one option",
+            ),
+            (
+                {"label": "x", "field_type": "checkbox_group", "options": []},
+                "checkbox_group fields require at least one option",
+            ),
+            (
+                {"label": "x", "field_type": "textarea", "hidden": True},
+                "default_value or query_param_key are required when hidden is True",
+            ),
+        ],
+    )
+    def test_custom_field_invalid(self, kwargs, error_msg):
+        with pytest.raises(ValidationError, match=error_msg):
+            CustomPrivacyRequestField(**kwargs)
+
+    @pytest.mark.parametrize(
+        "kwargs,expected",
+        [
+            (
+                {"label": "Upload doc"},
+                {
+                    "field_type": "file",
+                    "allowed_mime_types": [
+                        "application/pdf",
+                        "image/jpeg",
+                        "image/png",
+                    ],
+                    "max_size_bytes": DEFAULT_FILE_MAX_SIZE_BYTES,
+                    "required": False,
+                },
+            ),
+            (
+                {
+                    "label": "Upload ID",
+                    "allowed_mime_types": [
+                        "image/jpeg",
+                        "image/png",
+                        "application/pdf",
+                    ],
+                    "required": True,
+                },
+                {
+                    "allowed_mime_types": [
+                        "image/jpeg",
+                        "image/png",
+                        "application/pdf",
+                    ],
+                    "required": True,
+                },
+            ),
+            (
+                {"label": "Upload doc", "max_size_bytes": 5 * 1024 * 1024},
+                {"max_size_bytes": 5 * 1024 * 1024},
+            ),
+        ],
+    )
+    def test_file_field_valid(self, kwargs, expected):
+        field = FileUploadCustomPrivacyRequestField(**kwargs)
+        for attr, val in expected.items():
+            assert getattr(field, attr) == val
+
+    @pytest.mark.parametrize(
+        "kwargs,error_msg",
+        [
+            (
+                {"label": "Upload", "options": ["pdf", "jpg"]},
+                "file fields do not support options",
+            ),
+        ],
+    )
+    def test_file_field_invalid(self, kwargs, error_msg):
+        with pytest.raises(ValidationError, match=error_msg):
+            FileUploadCustomPrivacyRequestField(**kwargs)
+
+    def test_file_field_discriminator_routes_correctly(self):
+        assert get_field_type_discriminator({"field_type": "file"}) == "file"
+        assert get_field_type_discriminator({"field_type": "checkbox"}) == "custom"
+        assert get_field_type_discriminator({"field_type": "location"}) == "location"
+
+    def test_file_field_in_privacy_center_config(self):
+        """file field round-trips through PrivacyCenterConfig and serializes without location-specific fields."""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "supporting_doc": {
+                "label": "Upload supporting document",
+                "field_type": "file",
+                "allowed_mime_types": ["application/pdf"],
+                "required": False,
+            }
+        }
+        config = PrivacyCenterConfig(**config_data)
+        field = config.actions[0].custom_privacy_request_fields["supporting_doc"]
+        assert isinstance(field, FileUploadCustomPrivacyRequestField)
+        assert field.field_type == "file"
+        assert field.max_size_bytes == DEFAULT_FILE_MAX_SIZE_BYTES
+
+        serialized = config.model_dump(mode="json")
+        field_data = serialized["actions"][0]["custom_privacy_request_fields"][
+            "supporting_doc"
+        ]
+        assert "ip_geolocation_hint" not in field_data
+        assert field_data["field_type"] == "file"
+        assert field_data["allowed_mime_types"] == ["application/pdf"]
+
+    def test_privacy_center_config_with_new_field_types(self):
+        """All three new field types round-trip through PrivacyCenterConfig."""
+        import json
+
+        from fides.api.util.saas_util import load_as_string
+
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "agree": {
+                "label": "I confirm this is my own data",
+                "field_type": "checkbox",
+                "required": True,
+            },
+            "data_types": {
+                "label": "Which data should we delete?",
+                "field_type": "checkbox_group",
+                "options": ["Profile", "Orders", "Preferences"],
+            },
+            "context": {
+                "label": "Additional context",
+                "field_type": "textarea",
+                "required": False,
+            },
+        }
+        config = PrivacyCenterConfig(**config_data)
+        fields = config.actions[0].custom_privacy_request_fields
+
+        assert isinstance(fields["agree"], CustomPrivacyRequestField)
+        assert fields["agree"].field_type == "checkbox"
+
+        assert isinstance(fields["data_types"], CustomPrivacyRequestField)
+        assert fields["data_types"].field_type == "checkbox_group"
+        assert fields["data_types"].options == ["Profile", "Orders", "Preferences"]
+
+        assert isinstance(fields["context"], CustomPrivacyRequestField)
+        assert fields["context"].field_type == "textarea"
+
+    def test_new_field_types_serialization(self):
+        """New field types serialize correctly (no location-specific fields leak)."""
+        import json
+
+        from fides.api.util.saas_util import load_as_string
+
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "agree": {"label": "I agree", "field_type": "checkbox"},
+            "reasons": {
+                "label": "Reasons",
+                "field_type": "checkbox_group",
+                "options": ["A", "B"],
+            },
+            "notes": {"label": "Notes", "field_type": "textarea"},
+        }
+        config = PrivacyCenterConfig(**config_data)
+        serialized = config.model_dump(mode="json")
+        fields = serialized["actions"][0]["custom_privacy_request_fields"]
+
+        for name, data in fields.items():
+            assert "ip_geolocation_hint" not in data, (
+                f"Field '{name}' should not have ip_geolocation_hint"
+            )
+            assert data["field_type"] in ("checkbox", "checkbox_group", "textarea")
 
     def test_valid_url_fields(self, privacy_center_config: PrivacyCenterConfig):
         config_data = json.loads(

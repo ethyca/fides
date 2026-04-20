@@ -33,6 +33,7 @@ class AttachmentType(str, EnumType):
 
     internal_use_only = "internal_use_only"
     include_with_access_package = "include_with_access_package"
+    user_provided = "user_provided"
 
 
 class AttachmentReferenceType(str, EnumType):
@@ -46,6 +47,21 @@ class AttachmentReferenceType(str, EnumType):
     comment = "comment"
     manual_task_submission = "manual_task_submission"
     request_task = "request_task"
+
+
+class AttachmentUserProvidedStatus(str, EnumType):
+    """Lifecycle states for a data-subject-uploaded attachment.
+
+    - ``pending``: uploaded to storage, awaiting privacy-request submission.
+    - ``promoted``: claimed by a submitted privacy request and converted to
+      an ``Attachment`` row; ``promoted_attachment_id`` is populated.
+    - ``deleted``: temp file removed by the orphan cleanup sweep (row kept
+      for audit).
+    """
+
+    pending = "pending"
+    promoted = "promoted"
+    deleted = "deleted"
 
 
 class AttachmentReference(Base):
@@ -175,3 +191,53 @@ class Attachment(Base):
     ) -> "Attachment":
         """Creates a new attachment record in the database."""
         return cls._create_record(db=db, data=data, check_name=check_name)
+
+
+class AttachmentUserProvided(Base):
+    """Tracks data-subject-uploaded file attachments through their lifecycle.
+
+    Each row owns the state of a single temp-storage object, from upload
+    (``pending``) → claim (``promoted``) → cleanup (``deleted``). Durable
+    across Redis restarts and queryable for audit.
+
+    Independent table — no foreign keys. ``storage_key`` / ``promoted_attachment_id``
+    are plain string references looked up on demand; removals in the
+    referenced tables do not cascade here, so rows are preserved for
+    forensics regardless of storage-config or attachment churn.
+    """
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Match the snake_case table name from the alembic migration."""
+        return "attachment_user_provided"
+
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    object_key = Column(String, nullable=False, unique=True)
+
+    status = Column(
+        EnumColumn(AttachmentUserProvidedStatus, name="attachmentuserprovidedstatus"),
+        nullable=False,
+        server_default=AttachmentUserProvidedStatus.pending.value,
+    )
+
+    storage_key = Column(String, nullable=False)
+    promoted_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        # Speeds up the orphan-cleanup sweep:
+        #   WHERE status = 'pending' AND created_at < :cutoff
+        Index(
+            "ix_attachment_user_provided_status_created_at",
+            "status",
+            "created_at",
+        ),
+    )

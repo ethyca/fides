@@ -1307,6 +1307,80 @@ class TestPrivacyRequestCustomFieldFunctions:
         )
         assert privacy_request.get_persisted_custom_privacy_request_fields() == {}
 
+    def test_persist_new_field_types(
+        self,
+        db,
+        privacy_request,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
+    ):
+        """New field types and previously-silenced falsy values survive the DB round-trip.
+
+        The if item.value: guard was removed so False, "", and 0 are now persisted
+        where they were previously dropped.
+        """
+        privacy_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields={
+                "confirm_identity": CustomPrivacyRequestField(
+                    label="I confirm", value=True
+                ),
+                "opt_out_marketing": CustomPrivacyRequestField(
+                    label="Opt out", value=False
+                ),
+                "data_categories": CustomPrivacyRequestField(
+                    label="Which categories?",
+                    value=["Profile information", "Purchase history"],
+                ),
+                "notes": CustomPrivacyRequestField(label="Additional notes", value=""),
+                "retry_count": CustomPrivacyRequestField(label="Retry count", value=0),
+            },
+        )
+        result = privacy_request.get_persisted_custom_privacy_request_fields()
+        assert result == {
+            "confirm_identity": {"label": "I confirm", "value": True},
+            "opt_out_marketing": {"label": "Opt out", "value": False},
+            "data_categories": {
+                "label": "Which categories?",
+                "value": ["Profile information", "Purchase history"],
+            },
+            "notes": {"label": "Additional notes", "value": ""},
+            "retry_count": {"label": "Retry count", "value": 0},
+        }
+        # Bool values must not be coerced to ints on retrieval
+        assert type(result["confirm_identity"]["value"]) is bool
+        assert type(result["opt_out_marketing"]["value"]) is bool
+
+    def test_cache_new_field_types(
+        self,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
+    ):
+        """New field types survive the Redis cache round-trip."""
+        privacy_request = PrivacyRequest(id=str(uuid4()))
+        privacy_request.cache_custom_privacy_request_fields(
+            custom_privacy_request_fields={
+                "confirm_identity": CustomPrivacyRequestField(
+                    label="I confirm this is my own data", value=True
+                ),
+                "erasure_scope": CustomPrivacyRequestField(
+                    label="What to erase",
+                    value=["Profile information", "Purchase history"],
+                ),
+                "additional_context": CustomPrivacyRequestField(
+                    label="Additional context",
+                    value="Please remove all associated records.",
+                ),
+            }
+        )
+        assert privacy_request.get_cached_custom_privacy_request_fields() == {
+            "confirm_identity": True,
+            "erasure_scope": ["Profile information", "Purchase history"],
+            "additional_context": "Please remove all associated records.",
+        }
+        cached = privacy_request.get_cached_custom_privacy_request_fields()
+        assert cached["confirm_identity"] is True
+
 
 class TestPrivacyRequestCustomIdentities:
     def test_cache_custom_identities(self, privacy_request):

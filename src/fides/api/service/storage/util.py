@@ -8,6 +8,81 @@ from loguru import logger
 
 from fides.api.util.storage_util import format_size
 
+
+class FilesMagicBytes(EnumType):
+    """Catalog of magic byte signatures for common upload-capable file types.
+
+    Used to verify actual file contents on upload — the declared
+    Content-Type header is not trusted on its own. Each member carries
+    ``(magic, mime)``; this is pure catalog data, independent of whether
+    a given type is currently accepted anywhere.
+
+    Some formats share magic bytes (docx/xlsx/zip are all ``PK\\x03\\x04``;
+    doc/xls are both OLE compound files); :meth:`from_bytes` resolves this
+    by returning the MIME of the first matching catalog entry (declaration
+    order). Plain-text formats (txt, csv) have no magic signature; their
+    ``magic`` is ``None`` and they never match via :meth:`from_bytes`.
+    """
+
+    pdf = (b"%PDF", "application/pdf")
+    doc = (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1", "application/msword")
+    docx = (
+        b"PK\x03\x04",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+    txt = (None, "text/plain")
+    jpg = (b"\xff\xd8\xff", "image/jpeg")
+    jpeg = (b"\xff\xd8\xff", "image/jpeg")
+    png = (b"\x89PNG\r\n\x1a\n", "image/png")
+    xls = (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1", "application/vnd.ms-excel")
+    xlsx = (
+        b"PK\x03\x04",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    csv = (None, "text/csv")
+    zip = (b"PK\x03\x04", "application/zip")
+
+    def __init__(self, magic: Optional[bytes], mime: str) -> None:
+        self.magic = magic
+        self.mime = mime
+
+    @classmethod
+    def from_bytes(cls, data: bytes) -> Optional[str]:
+        """Return the single MIME type whose magic prefix matches ``data``.
+
+        Resolves shared-magic ambiguity (e.g. ``PK\\x03\\x04`` → docx/xlsx/zip;
+        OLE → doc/xls) by returning the MIME of the first catalog entry
+        that matches, in enum declaration order. Members with ``magic=None``
+        (plain-text formats) are never matched. Returns ``None`` if no
+        signature matches.
+
+        Callers gate the returned MIME against a policy set (e.g.
+        :meth:`PublicUploadAllowedFileTypes.mime_types`) — this method
+        answers "what is it?", not "is it allowed?".
+        """
+        for member in cls:
+            if member.magic is not None and data[: len(member.magic)] == member.magic:
+                return member.mime
+        return None
+
+
+class PublicUploadAllowedFileTypes(EnumType):
+    """MIME types accepted on public (unauthenticated) upload endpoints.
+
+    Narrower than :class:`FilesMagicBytes` by design — expanding the
+    allow-list is a one-line change here without touching the magic-byte
+    catalog.
+    """
+
+    pdf = "application/pdf"
+    jpg = "image/jpeg"
+    png = "image/png"
+
+    @classmethod
+    def mime_types(cls) -> set[str]:
+        return {member.value for member in cls}
+
+
 # This is the max file size for downloading the content of an attachment.
 # This is an industry standard used by companies like Google and Microsoft.
 LARGE_FILE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2 GB
@@ -29,6 +104,19 @@ class AllowedFileType(EnumType):
     xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     csv = "text/csv"
     zip = "application/zip"
+
+
+MIME_TO_EXTENSION: dict[str, str] = {
+    member.value: member.name for member in AllowedFileType
+}
+
+
+def extension_for_mime(mime: str) -> str:
+    """Return the file extension matching an allowed MIME (without leading dot)."""
+    try:
+        return MIME_TO_EXTENSION[mime]
+    except KeyError as exc:
+        raise ValueError(f"No extension registered for MIME {mime!r}") from exc
 
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"

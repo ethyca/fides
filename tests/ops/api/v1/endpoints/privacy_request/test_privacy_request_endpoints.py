@@ -438,6 +438,73 @@ class TestCreatePrivacyRequest:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
+    def test_create_privacy_request_stores_new_field_types(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        allow_custom_privacy_request_field_collection_enabled,
+    ):
+        """checkbox (bool), checkbox_group (list), and textarea (long string) are
+        persisted correctly and follow the same hashing rules as existing types."""
+        TEST_CUSTOM_FIELDS = {
+            "confirm_identity": {
+                "label": "I confirm this request relates to my own data",
+                "value": True,
+            },
+            "opt_out_marketing": {
+                "label": "Opt out of marketing communications",
+                "value": False,
+            },
+            "erasure_scope": {
+                "label": "Which data categories should we delete?",
+                "value": ["Profile information", "Purchase history"],
+            },
+            "additional_context": {
+                "label": "Please describe your request in detail",
+                "value": "I would like all personal data removed,\nincluding backups.",
+            },
+        }
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+                "custom_privacy_request_fields": TEST_CUSTOM_FIELDS,
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        persisted = pr.get_persisted_custom_privacy_request_fields()
+
+        assert persisted == TEST_CUSTOM_FIELDS
+
+        assert persisted["confirm_identity"]["value"] is True
+        assert persisted["opt_out_marketing"]["value"] is False
+
+        for field in pr.custom_fields:
+            val = field.encrypted_value["value"]
+            if isinstance(val, list):
+                assert field.hashed_value is None, (
+                    f"List field '{field.field_name}' should not be hashed"
+                )
+            else:
+                assert field.hashed_value is not None, (
+                    f"Scalar field '{field.field_name}' should be hashed"
+                )
+
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
     def test_create_privacy_request_links_existing_custom_fields(
         self,
         run_access_request_mock,

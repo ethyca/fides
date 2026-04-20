@@ -78,10 +78,72 @@ class BaseCustomPrivacyRequestField(FidesSchema, ABC):
 
 
 class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
-    """Regular custom privacy request field supporting text, select, and multiselect types"""
+    """Regular custom privacy request field supporting text, select, multiselect,
+    checkbox, checkbox_group, and textarea types"""
 
-    field_type: Optional[Literal["text", "select", "multiselect"]] = None
+    field_type: Optional[
+        Literal[
+            "text", "select", "multiselect", "checkbox", "checkbox_group", "textarea"
+        ]
+    ] = None
     options: Optional[List[str]] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_field_type_constraints(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if values.get("field_type") == "checkbox_group" and not values.get("options"):
+            raise ValueError("checkbox_group fields require at least one option")
+        return values
+
+
+DEFAULT_FILE_MAX_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+def _default_allowed_mime_types() -> List[str]:
+    # Import locally to avoid pulling storage/service modules at schema import time.
+    from fides.api.service.storage.util import PublicUploadAllowedFileTypes
+
+    return sorted(PublicUploadAllowedFileTypes.mime_types())
+
+
+class FileUploadCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
+    """File upload field — supports a list of file attachments.
+
+    ``max_size_bytes`` and ``allowed_mime_types`` are config hints used by
+    the Privacy Center client to pre-filter uploads. The upload endpoint
+    currently enforces the global defaults (``DEFAULT_FILE_MAX_SIZE_BYTES``
+    and :meth:`PublicUploadAllowedFileTypes.mime_types`); per-field
+    tightening at upload time is a follow-up.
+    """
+
+    field_type: Literal["file"] = "file"
+    required: Optional[bool] = False
+    max_size_bytes: int = Field(default=DEFAULT_FILE_MAX_SIZE_BYTES, gt=0)
+    allowed_mime_types: List[str] = Field(default_factory=_default_allowed_mime_types)
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_file_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if values.get("options"):
+            raise ValueError("file fields do not support options")
+        return values
+
+    @field_validator("allowed_mime_types")
+    @classmethod
+    def validate_allowed_mime_types(cls, v: List[str]) -> List[str]:
+        # Import locally to keep the schema module independent of services.
+        from fides.api.service.storage.util import PublicUploadAllowedFileTypes
+
+        supported = PublicUploadAllowedFileTypes.mime_types()
+        if not v:
+            raise ValueError("allowed_mime_types must not be empty")
+        unsupported = [mime for mime in v if mime not in supported]
+        if unsupported:
+            raise ValueError(
+                f"Unsupported MIME types: {sorted(unsupported)}. "
+                f"Supported: {sorted(supported)}"
+            )
+        return v
 
 
 class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):
@@ -117,12 +179,15 @@ def get_field_type_discriminator(v: Any) -> str:
 
     if field_type == "location":
         return "location"
+    if field_type == "file":
+        return "file"
     return "custom"
 
 
 CustomPrivacyRequestFieldUnion = Annotated[
     Union[
         Annotated[LocationCustomPrivacyRequestField, Tag("location")],
+        Annotated[FileUploadCustomPrivacyRequestField, Tag("file")],
         Annotated[CustomPrivacyRequestField, Tag("custom")],
     ],
     Discriminator(get_field_type_discriminator),

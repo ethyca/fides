@@ -6,6 +6,7 @@ from pydantic import (
     ConfigDict,
     EmailStr,
     Field,
+    StrictBool,
     StrictInt,
     StrictStr,
     ValidationError,
@@ -17,7 +18,11 @@ from fides.api.common_exceptions import BadRequest
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
 
-MultiValue = Union[StrictInt, StrictStr, List[Union[StrictInt, StrictStr]]]
+# StrictBool must precede StrictInt: in Python bool is a subclass of int,
+# so it must be matched first to avoid True/False being accepted as 1/0.
+MultiValue = Union[
+    StrictBool, StrictInt, StrictStr, List[Union[StrictBool, StrictInt, StrictStr]]
+]
 
 
 class IdentityBase(FidesSchema):

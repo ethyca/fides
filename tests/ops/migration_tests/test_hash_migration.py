@@ -250,6 +250,24 @@ class TestHashMigration:
         )
         assert model.is_hash_migrated is True
 
+    def test_custom_privacy_request_field_null_value(self, db, privacy_request):
+        """migrate_hashed_fields skips hashing when encrypted value is None."""
+        field = CustomPrivacyRequestField.create(
+            db=db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "field_name": "optional_field",
+                "field_label": "Optional",
+                "encrypted_value": {"value": None},
+                "hashed_value": None,
+                "is_hash_migrated": False,
+            },
+        )
+        field.migrate_hashed_fields()
+        assert field.hashed_value is None
+        assert field.is_hash_migrated is True
+        field.delete(db)
+
     def test_privacy_preference_history(
         self, unmigrated_privacy_preference_history: PrivacyPreferenceHistory
     ):

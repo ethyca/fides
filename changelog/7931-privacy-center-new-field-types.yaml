@@ -1,0 +1,7 @@
+type: Added
+description: >-
+  Added checkbox, checkbox_group, textarea, and file field types to the
+  Privacy Center form config. File fields are backed by a new unauthenticated
+  upload endpoint, an `attachment_user_provided` table + orphan cleanup
+pr: 7931
+labels: []

@@ -621,18 +621,17 @@ class PrivacyRequest(
 
         if CONFIG.execution.allow_custom_privacy_request_field_collection:
             for key, item in custom_privacy_request_fields.items():
-                if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
-                    CustomPrivacyRequestField.create(
-                        db=db,
-                        data={
-                            "privacy_request_id": self.id,
-                            "field_name": key,
-                            "field_label": item.label,
-                            "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
-                        },
-                    )
+                hashed_value = CustomPrivacyRequestField.hash_value(item.value)
+                CustomPrivacyRequestField.create(
+                    db=db,
+                    data={
+                        "privacy_request_id": self.id,
+                        "field_name": key,
+                        "field_label": item.label,
+                        "encrypted_value": {"value": item.value},
+                        "hashed_value": hashed_value,
+                    },
+                )
         else:
             logger.info(
                 "Custom fields provided in privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
@@ -1773,6 +1772,11 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
             )
             return hashed_value
 
+        # Short-circuit None — str(None) → "None" would produce a deterministic
+        # but meaningless hash that collides across any two fields that ever see
+        # None, poisoning the hash index for lookups.
+        if value is None:
+            return None
         if isinstance(value, list):
             # Skip hashing lists: this avoids us hashing and later indexing potentially large values and our index
             # is not useful for array search anyway
@@ -1780,7 +1784,8 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
         return hash_single_value(value)
 
     def migrate_hashed_fields(self) -> None:
-        if value := self.encrypted_value.get("value"):
+        value = self.encrypted_value.get("value")
+        if value is not None:
             self.hashed_value = self.hash_value(value)  # type: ignore
         self.is_hash_migrated = True
 

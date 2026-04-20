@@ -63,6 +63,9 @@ from fides.api.util.rate_limit import safe_rate_limit_key
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 from fides.service.jira.polling_task import initiate_jira_ticket_polling
+from fides.service.privacy_request.attachment_user_provided_service import (
+    initiate_scheduled_attachment_cleanup,
+)
 
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
 
@@ -98,6 +101,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_scheduled_batch_email_send()
     initiate_poll_for_exited_privacy_request_tasks()
     initiate_scheduled_dsr_data_removal()
+    initiate_scheduled_attachment_cleanup()
     initiate_interrupted_task_requeue_poll()
     initiate_polling_task_requeue()
     initiate_jira_ticket_polling()
