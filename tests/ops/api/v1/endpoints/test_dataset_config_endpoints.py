@@ -1310,6 +1310,17 @@ class TestPutDatasetConfigs:
 
         assert response.status_code == 200
 
+        # The mock prevented actual deletion — clean up so fixture teardown doesn't fail
+        leftover = DatasetConfig.filter(
+            db=db,
+            conditions=(
+                (DatasetConfig.connection_config_id == saas_example_connection_config.id)
+                & (DatasetConfig.fides_key == saas_fides_key)
+            ),
+        ).first()
+        if leftover:
+            leftover.delete(db)
+
 
 class TestPutDatasets:
     @pytest.fixture
