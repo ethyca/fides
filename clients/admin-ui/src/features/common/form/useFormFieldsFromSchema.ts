@@ -15,21 +15,16 @@ export const useFormFieldsFromSchema = (
     value: string | undefined,
     type?: string,
   ) => {
-    let error;
-    if (typeof value === "undefined" || value === "" || value === undefined) {
-      error = `${label} is required`;
-    }
     if (type === FIDES_DATASET_REFERENCE) {
       if (!value?.includes(".")) {
-        error = "Dataset reference must be dot delimited";
-      } else {
-        const parts = value.split(".");
-        if (parts.length < 3) {
-          error = "Dataset reference must include at least three parts";
-        }
+        return "Dataset reference must be dot delimited";
+      }
+      const parts = value.split(".");
+      if (parts.length < 3) {
+        return "Dataset reference must include at least three parts";
       }
     }
-    return error;
+    return undefined;
   };
 
   const isRequiredField = (key: string): boolean =>
