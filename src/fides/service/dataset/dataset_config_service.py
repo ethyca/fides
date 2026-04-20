@@ -70,7 +70,10 @@ class DatasetConfigService:
         connection_config: ConnectionConfig,
         dataset_key: str,
     ) -> None:
-        """Emit an audit event for a SaaS dataset operation. No-op for non-SaaS connections."""
+        """Emit an audit event for a SaaS dataset operation.
+
+        No-op if the connection is not SaaS or no EventAuditService is configured.
+        """
         if connection_config.connection_type != ConnectionType.saas:
             return
         if not self.event_audit_service:

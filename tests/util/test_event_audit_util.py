@@ -554,7 +554,9 @@ class TestGenerateDatasetAuditEventDetails:
         assert event_details["operation_type"] == "updated"
         assert event_details["connection_key"] == saas_connection.key
         assert event_details["saas_connector_type"] == "gen_ds_audit_connector"
-        assert "updated" in description
+        assert description == (
+            "Dataset updated: 'my_dataset' on gen_ds_audit_connector connection 'gen_ds_audit_saas_connection'"
+        )
 
     def test_generate_dataset_audit_event_details_saas_deleted(
         self, saas_connection: ConnectionConfig
@@ -569,7 +571,9 @@ class TestGenerateDatasetAuditEventDetails:
         assert event_details["operation_type"] == "deleted"
         assert event_details["connection_key"] == saas_connection.key
         assert event_details["saas_connector_type"] == "gen_ds_audit_connector"
-        assert "deleted" in description
+        assert description == (
+            "Dataset deleted: 'my_dataset' on gen_ds_audit_connector connection 'gen_ds_audit_saas_connection'"
+        )
 
     def test_generate_dataset_audit_event_details_non_saas_has_null_connector_type(
         self, postgres_connection: ConnectionConfig
@@ -585,5 +589,5 @@ class TestGenerateDatasetAuditEventDetails:
         assert event_details["connection_key"] == postgres_connection.key
         assert event_details["saas_connector_type"] is None
         assert description == (
-            f"Dataset created: 'my_pg_dataset' on None connection '{postgres_connection.key}'"
+            f"Dataset created: 'my_pg_dataset' on postgres connection '{postgres_connection.key}'"
         )
