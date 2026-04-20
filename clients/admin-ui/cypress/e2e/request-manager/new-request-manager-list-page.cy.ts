@@ -379,6 +379,14 @@ describe("New Privacy Requests", () => {
               "value",
               "The default value",
             );
+            expect(fields.hidden_field).to.have.property(
+              "label",
+              "Hidden example field",
+            );
+            expect(fields.hidden_field).to.have.property(
+              "value",
+              "A value for the hidden but required field",
+            );
           });
         cy.wait("@getPrivacyRequests");
       });
