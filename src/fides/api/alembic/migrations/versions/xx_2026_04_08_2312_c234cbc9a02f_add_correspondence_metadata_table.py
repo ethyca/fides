@@ -34,7 +34,7 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("reference_id", sa.String(), nullable=False),
+        sa.Column("comment_id", sa.String(), nullable=False),
         sa.Column("message_id", sa.String(), nullable=False),
         sa.Column("in_reply_to", sa.String(), nullable=True),
         sa.Column("reply_to_address", sa.String(), nullable=True),
@@ -48,9 +48,9 @@ def upgrade():
         sa.Column("bounce_reason", sa.String(), nullable=True),
         sa.Column("sender_email", sa.String(), nullable=True),
         sa.Column("recipient_email", sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(["reference_id"], ["comment.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["comment_id"], ["comment.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("reference_id"),
+        sa.UniqueConstraint("comment_id"),
     )
     op.create_index(
         op.f("ix_correspondence_metadata_id"),

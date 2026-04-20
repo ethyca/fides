@@ -35,25 +35,11 @@ class CommentType(str, EnumType):
     reply_from_subject = "reply_from_subject"
 
 
-# Correspondence comments are retained after PR deletion for audit purposes.
+# Correspondence comments are protected from deletion for audit purposes.
 # The TLA+ spec (CorrespondenceConcurrency.tla) relies on this guard.
 CORRESPONDENCE_COMMENT_TYPES = frozenset(
     {CommentType.message_to_subject, CommentType.reply_from_subject}
 )
-
-
-class CorrespondenceDeliveryStatus(str, EnumType):
-    """Delivery status for correspondence messages.
-
-    Used by the delivery_status column on Comment, added in PR 2 of 2
-    (ENG-3299: correspondence metadata).
-    """
-
-    pending = "pending"
-    sent = "sent"
-    delivered = "delivered"
-    bounced = "bounced"
-    failed = "failed"
 
 
 class CommentReferenceType(str, EnumType):
