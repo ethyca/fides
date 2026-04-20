@@ -1,7 +1,8 @@
 import { Flex, FlexProps, Typography } from "fidesui";
 import { Url } from "next/dist/shared/lib/router/router";
-import NextLink from "next/link";
 import { ComponentProps } from "react";
+
+import { RouterLink } from "~/features/common/nav/RouterLink";
 
 const { Link: LinkText, Text } = Typography;
 
@@ -19,19 +20,18 @@ export const LinkCell = ({
     children && (
       <Flex {...containerProps}>
         {href ? (
-          <NextLink href={href} passHref legacyBehavior>
-            <LinkText
-              strong={strong}
-              ellipsis
-              onClick={(e) => e.stopPropagation()}
-              variant="primary"
-              {...props}
-            >
-              <Text unStyled ellipsis={{ tooltip: children }}>
-                {children}
-              </Text>
-            </LinkText>
-          </NextLink>
+          <RouterLink
+            href={href}
+            strong={strong}
+            ellipsis
+            onClick={(e) => e.stopPropagation()}
+            variant="primary"
+            {...props}
+          >
+            <Text unStyled ellipsis={{ tooltip: children }}>
+              {children}
+            </Text>
+          </RouterLink>
         ) : (
           <Text strong={strong} ellipsis {...props}>
             {children}

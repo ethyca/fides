@@ -13,10 +13,9 @@ import {
   Tooltip,
   Typography,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
-import NextLink from "next/link";
 import { useState } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   formatDate,
   formatUser,
@@ -151,7 +150,7 @@ export const MonitorResult = ({
               </Button>,
             ]
           : []),
-        <NextLink key="review" href={href} passHref legacyBehavior>
+        <RouterLink key="review" href={href}>
           <Button
             type="link"
             className="p-0"
@@ -159,7 +158,7 @@ export const MonitorResult = ({
           >
             Review
           </Button>
-        </NextLink>,
+        </RouterLink>,
       ]}
     >
       <List.Item.Meta
@@ -181,13 +180,14 @@ export const MonitorResult = ({
             gap={4}
             className="flex-wrap overflow-hidden whitespace-nowrap font-normal"
           >
-            <NextLink
+            <RouterLink
+              unstyled
               href={href}
               data-testid="monitor-link"
               className="overflow-hidden font-semibold"
             >
               <Text ellipsis>{name}</Text>
-            </NextLink>
+            </RouterLink>
             <Text type="secondary">
               {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
             </Text>
@@ -210,7 +210,7 @@ export const MonitorResult = ({
         <Avatar.Group
           max={{
             count: 5,
-            style: { background: palette.FIDESUI_NEUTRAL_700 },
+            style: { background: "var(--fidesui-neutral-700)" },
           }}
           className="hidden flex-[6.5rem] grow-0 justify-end lg:flex"
           size="small"

@@ -1,14 +1,12 @@
 import {
   ChakraBox as Box,
   ChakraHeading as Heading,
-  ChakraLinkBox as LinkBox,
-  ChakraLinkOverlay as LinkOverlay,
   Typography,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
@@ -32,45 +30,31 @@ const ConfigurePrivacyRequests: NextPage = () => (
       my={5}
       data-testid="privacy-requests-configure"
     >
-      <LinkBox
-        p="5"
-        borderWidth="1px"
-        rounded="md"
-        borderColor="gray.300"
-        _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
-        mr={5}
-        minHeight="100%"
+      <RouterLink
+        unstyled
+        href="/privacy-requests/configure/messaging"
+        className="mr-5 block min-h-full rounded-md border border-gray-300 p-5 hover:cursor-pointer hover:border-[var(--fidesui-complimentary-500)]"
       >
         <Heading mb={2} size="sm">
-          <LinkOverlay
-            as={NextLink}
-            href="/privacy-requests/configure/messaging"
-          >
-            Configure messaging provider
-          </LinkOverlay>
+          Configure messaging provider
         </Heading>
         Fides supports email (Mailgun & Twilio) and SMS (Twilio) server
         configurations for sending processing notices to privacy request
         subjects. Configure your settings here.
-      </LinkBox>
-      <LinkBox
-        p="5"
-        borderWidth="1px"
-        rounded="md"
-        borderColor="gray.300"
-        _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
-        minHeight="100%"
+      </RouterLink>
+      <RouterLink
+        unstyled
+        href="/privacy-requests/configure/storage"
+        className="block min-h-full rounded-md border border-gray-300 p-5 hover:cursor-pointer hover:border-[var(--fidesui-complimentary-500)]"
       >
         <Heading mb={2} size="sm">
-          <LinkOverlay as={NextLink} href="/privacy-requests/configure/storage">
-            Configure storage
-          </LinkOverlay>
+          Configure storage
         </Heading>
         The data produced by an access request will need to be uploaded to a
         storage destination (e.g. an S3 bucket) in order to be returned to the
         user. At least one storage destination must be configured to process
         access requests. Configure your settings here.
-      </LinkBox>
+      </RouterLink>
     </Box>
   </Layout>
 );

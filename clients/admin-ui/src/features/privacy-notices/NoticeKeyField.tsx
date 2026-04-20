@@ -1,27 +1,22 @@
-import { useFormikContext } from "formik";
+import { Form, Input } from "fidesui";
 import snakeCase from "lodash.snakecase";
 import { useEffect } from "react";
 
-import { CustomTextInput } from "~/features/common/form/inputs";
-import { PrivacyNoticeResponse } from "~/types/api";
-
 const NoticeKeyField = ({ isEditing }: { isEditing: boolean }) => {
-  const { values, setFieldValue } = useFormikContext<PrivacyNoticeResponse>();
+  const form = Form.useFormInstance();
+  const name = Form.useWatch("name", form);
 
   useEffect(() => {
-    if (!isEditing) {
-      const noticeKey = snakeCase(values.name);
-      setFieldValue("notice_key", noticeKey);
+    if (!isEditing && name !== undefined && name !== null) {
+      form.setFieldsValue({ notice_key: snakeCase(name) });
     }
-  }, [values.name, isEditing, setFieldValue]);
+  }, [name, isEditing, form]);
 
   return (
-    <CustomTextInput
-      name="notice_key"
-      label="Key used in Fides cookie"
-      variant="stacked"
-    />
+    <Form.Item name="notice_key" label="Key used in Fides cookie">
+      <Input data-testid="input-notice_key" />
+    </Form.Item>
   );
 };
 
-export default NoticeKeyField;
+export { NoticeKeyField };
