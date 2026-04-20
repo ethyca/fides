@@ -218,6 +218,13 @@ class MonitorConfig(Base):
         server_default="t",
     )
 
+    inherit_system_stewards = Column(
+        Boolean,
+        default=True,
+        nullable=False,
+        server_default="t",
+    )
+
     # Many-to-many link to users assigned as stewards for this monitor
     stewards = relationship(
         FidesUser,
