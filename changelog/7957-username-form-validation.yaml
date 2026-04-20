@@ -1,0 +1,4 @@
+type: Fixed
+description: Added frontend username validation to the new user form to match backend character restrictions
+pr: 7957
+labels: []
