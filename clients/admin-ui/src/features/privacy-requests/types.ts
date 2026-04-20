@@ -258,6 +258,7 @@ export interface ActivityTimelineItem {
   date: Date;
   type: ActivityTimelineItemTypeEnum;
   showViewLog: boolean;
+  logCount?: number;
   onClick?: () => void;
   description?: string;
   isError: boolean;
