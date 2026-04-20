@@ -652,6 +652,20 @@ class PrivacyRequestService:
                     )
                     continue
 
+                if (
+                    privacy_request.status == PrivacyRequestStatus.duplicate
+                    and privacy_request.identity_verified_at is None
+                ):
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Cannot approve unverified duplicate request",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
+                    )
+                    continue
+
                 try:
                     now = datetime.utcnow()
                     privacy_request.status = PrivacyRequestStatus.approved
