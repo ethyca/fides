@@ -1,0 +1,4 @@
+type: Added
+description: Added property info to privacy request details panel when a property is configured
+pr: 7930
+labels: []

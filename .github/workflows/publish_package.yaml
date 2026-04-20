@@ -38,15 +38,19 @@ jobs:
         with:
           version: "latest"
 
-      # The git reset is required here because the build modifies
-      # metadata and the wheel becomes a dirty version
+      # SETUPTOOLS_SCM_PRETEND_VERSION forces the version from the tag,
+      # bypassing dirty-tree detection from earlier build steps.
       - name: Build the sdist
         run: |
           uv build --sdist
           git reset --hard
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.ref_name }}
 
       - name: Build the wheel
         run: uv build --wheel
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.ref_name }}
 
       - name: Check Prod Tag
         id: check-prod-tag

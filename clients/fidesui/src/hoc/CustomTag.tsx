@@ -102,6 +102,10 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         };
       }
 
+      const closeIconContent = props.closeIcon ?? (
+        <Icons.CloseLarge size={12} />
+      );
+
       const customProps: TagProps = {
         // If not a brand color, pass through to Ant Tag
         color: brandColor ? undefined : color,
@@ -119,19 +123,42 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         variant: retainDefaultBorder || !brandColor ? "outlined" : "filled",
         ...props,
         closeIcon:
+          // eslint-disable-next-line no-nested-ternary
           (props.closable ?? props.onClose) ? (
             // Ant's own close icon doesn't currently use a button element,
             // so we need to use our own for accessibility.
             //
             // NOTE: Ant Design overrides aria-label with "Close" no matter what,
             // but we fix this post-render using useEffect above.
-            <button
-              type="button"
-              className={styles.closeButton}
-              aria-label={closeButtonLabel}
-            >
-              {props.closeIcon ?? <Icons.CloseLarge size={12} />}
-            </button>
+            //
+            // When onClick is set, the tag is wrapped in an outer <button>,
+            // so we use a <span> to avoid invalid button-in-button nesting.
+            onClick ? (
+              <span
+                role="button"
+                tabIndex={0}
+                className={styles.closeButton}
+                aria-label={closeButtonLabel}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    (e.target as HTMLElement).click();
+                  }
+                }}
+              >
+                {closeIconContent}
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={styles.closeButton}
+                aria-label={closeButtonLabel}
+              >
+                {closeIconContent}
+              </button>
+            )
           ) : undefined,
         children: (
           <>
