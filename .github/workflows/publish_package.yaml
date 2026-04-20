@@ -9,7 +9,7 @@ jobs:
   upload_to_pypi:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0 # This is required to properly tag packages
 

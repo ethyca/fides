@@ -24,7 +24,7 @@ jobs:
       has_fidesui_changes: ${{ steps.filter.outputs.fidesui }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
 
       - name: Check for fidesUI file changes
         uses: dorny/paths-filter@v4
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
           # 👇 Tells the checkout which commit hash to reference

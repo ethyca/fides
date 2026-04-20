@@ -23,7 +23,7 @@ jobs:
       has_fidesjs_changes: ${{ steps.filter.outputs.fidesjs }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
 
       - name: Check for FidesJS file changes
         uses: dorny/paths-filter@v4
@@ -50,7 +50,7 @@ jobs:
         working-directory: clients
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
 
       - name: Use Node.js 24.x
         uses: actions/setup-node@v5
