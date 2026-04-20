@@ -4407,9 +4407,7 @@ class TestApprovePrivacyRequest:
             + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
-        body = {
-            "request_ids": [privacy_requests[0].id, privacy_requests[1].id]
-        }
+        body = {"request_ids": [privacy_requests[0].id, privacy_requests[1].id]}
         response = api_client.patch(url, headers=auth_header, json=body)
 
         assert response.status_code == 200
