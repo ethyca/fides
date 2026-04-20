@@ -49,18 +49,23 @@ export const generateFormRulesFromAction = (
   }
 
   if (action.custom_privacy_request_fields) {
-    Object.entries(action.custom_privacy_request_fields)
-      .filter(
-        ([, fieldInfo]) =>
-          "field_type" in fieldInfo && fieldInfo.field_type !== "location",
-      )
-      .forEach(([fieldName, fieldInfo]) => {
-        if (fieldInfo.required && !fieldInfo.hidden) {
+    Object.entries(action.custom_privacy_request_fields).forEach(
+      ([fieldName, fieldInfo]) => {
+        const isLocation =
+          "field_type" in fieldInfo && fieldInfo.field_type === "location";
+        if (isLocation) {
+          if (fieldInfo.required) {
+            rules[fieldName] = [
+              { required: true, message: `${fieldInfo.label} is required` },
+            ];
+          }
+        } else if (fieldInfo.required && !fieldInfo.hidden) {
           rules[`custom_privacy_request_fields.${fieldName}.value`] = [
             { required: true, message: `${fieldInfo.label} is required` },
           ];
         }
-      });
+      },
+    );
   }
 
   return rules;
