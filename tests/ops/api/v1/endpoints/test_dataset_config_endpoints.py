@@ -1314,7 +1314,10 @@ class TestPutDatasetConfigs:
         leftover = DatasetConfig.filter(
             db=db,
             conditions=(
-                (DatasetConfig.connection_config_id == saas_example_connection_config.id)
+                (
+                    DatasetConfig.connection_config_id
+                    == saas_example_connection_config.id
+                )
                 & (DatasetConfig.fides_key == saas_fides_key)
             ),
         ).first()

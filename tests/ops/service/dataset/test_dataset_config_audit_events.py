@@ -43,6 +43,7 @@ _MINIMAL_DATASET = FideslangDataset.model_validate(
     }
 )
 
+
 class TestDatasetConfigServiceAuditEvents:
     @pytest.fixture(autouse=True)
     def clean_audit_events(self, db: Session) -> None:
