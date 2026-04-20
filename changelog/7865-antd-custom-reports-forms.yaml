@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated custom reports forms from Chakra/Formik to Ant Design
-pr: 7865
-labels: []

@@ -10,6 +10,7 @@ import {
   Tooltip,
   Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import { useState } from "react";
 
@@ -59,6 +60,7 @@ const PreApprovalWebhooksPage = () => {
   const [patchConnection] = usePatchDatastoreConnectionMutation();
   const [patchSecrets] = usePatchDatastoreConnectionSecretsMutation();
   const message = useMessage();
+  const confirmModal = useModal();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWebhook, setEditingWebhook] =
@@ -69,24 +71,17 @@ const PreApprovalWebhooksPage = () => {
 
   const openCreateModal = () => {
     setEditingWebhook(null);
-    form.resetFields();
     setIsModalOpen(true);
   };
 
   const openEditModal = (webhook: PreApprovalWebhookResponse) => {
     setEditingWebhook(webhook);
-    form.setFieldsValue({
-      name: webhook.name,
-      url: "",
-      authorization: "",
-    });
     setIsModalOpen(true);
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
     setEditingWebhook(null);
-    form.resetFields();
   };
 
   const handleSubmit = async (values: WebhookFormValues) => {
@@ -183,7 +178,7 @@ const PreApprovalWebhooksPage = () => {
               icon={<Icons.TrashCan />}
               aria-label="Delete webhook"
               onClick={() => {
-                Modal.confirm({
+                confirmModal.confirm({
                   title: "Delete this webhook?",
                   content: "This action cannot be undone.",
                   okText: "Delete",
@@ -241,6 +236,11 @@ const PreApprovalWebhooksPage = () => {
           layout="vertical"
           onFinish={handleSubmit}
           autoComplete="off"
+          initialValues={
+            editingWebhook
+              ? { name: editingWebhook.name, url: "", authorization: "" }
+              : undefined
+          }
         >
           <Form.Item
             label="Webhook name"
@@ -264,6 +264,12 @@ const PreApprovalWebhooksPage = () => {
           <Form.Item
             label="Authorization header"
             name="authorization"
+            rules={[
+              {
+                required: !editingWebhook,
+                message: "Please enter an authorization header",
+              },
+            ]}
             help={
               editingWebhook
                 ? "Leave blank to keep the existing authorization value"

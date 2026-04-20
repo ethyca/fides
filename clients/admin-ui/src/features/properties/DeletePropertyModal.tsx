@@ -1,4 +1,4 @@
-import { ChakraText as Text, Tooltip, useMessage, useModal } from "fidesui";
+import { Tooltip, Typography, useMessage, useModal } from "fidesui";
 import router from "next/router";
 import React from "react";
 
@@ -43,12 +43,12 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
       modal.confirm({
         title: `Delete ${property.name}`,
         content: (
-          <Text color="gray.500">
+          <Typography.Text>
             You are about to delete property {property.name}. This action is not
             reversible and will result in {property.name} no longer being
             available for your data governance. Are you sure you want to
             proceed?
-          </Text>
+          </Typography.Text>
         ),
         okText: "Ok",
         centered: true,
