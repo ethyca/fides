@@ -1,0 +1,4 @@
+type: Added
+description: Go PBAC policy engine library for high-throughput evaluation, plus `fides pbac` CLI commands for purpose and access policy evaluation
+pr: 7926
+labels: []

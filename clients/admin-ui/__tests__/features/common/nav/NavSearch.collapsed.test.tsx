@@ -58,11 +58,6 @@ jest.mock("fidesui", () => {
   };
 });
 
-jest.mock("fidesui/src/palette/palette.module.scss", () => ({
-  FIDESUI_CORINTH: "#fafafa",
-  FIDESUI_NEUTRAL_400: "#a8aaad",
-}));
-
 // Mock react-hotkeys-hook so fireEvent.keyDown works in tests
 jest.mock("react-hotkeys-hook", () => {
   // eslint-disable-next-line global-require
