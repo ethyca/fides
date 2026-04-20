@@ -1268,7 +1268,10 @@ class TestPutDatasetConfigs:
         assert len(events) == 1
         assert events[0].event_type == EventAuditType.dataset_deleted.value
         assert events[0].event_details["operation_type"] == "deleted"
-        assert events[0].event_details["connection_key"] == saas_example_connection_config.key
+        assert (
+            events[0].event_details["connection_key"]
+            == saas_example_connection_config.key
+        )
 
 
 class TestPutDatasets:
@@ -2608,7 +2611,10 @@ class TestDeleteDataset:
         assert len(events) == 1
         assert events[0].event_type == EventAuditType.dataset_deleted.value
         assert events[0].event_details["operation_type"] == "deleted"
-        assert events[0].event_details["connection_key"] == saas_example_connection_config.key
+        assert (
+            events[0].event_details["connection_key"]
+            == saas_example_connection_config.key
+        )
 
 
 class TestListDataset:

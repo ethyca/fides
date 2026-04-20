@@ -58,7 +58,9 @@ class TestDatasetConfigServiceAuditEvents:
     def clean_audit_events(self, db: Session) -> None:
         db.query(EventAudit).filter(
             EventAudit.resource_type == "dataset_config",
-            EventAudit.resource_identifier.in_([_SAAS_FIDES_KEY, "audit_test_postgres_ds"]),
+            EventAudit.resource_identifier.in_(
+                [_SAAS_FIDES_KEY, "audit_test_postgres_ds"]
+            ),
         ).delete(synchronize_session=False)
         db.commit()
 
@@ -102,7 +104,9 @@ class TestDatasetConfigServiceAuditEvents:
         saas_connection_config: ConnectionConfig,
     ):
         """First upsert of a dataset on a SaaS connection emits dataset.created."""
-        service.create_or_update_dataset_config(saas_connection_config, _MINIMAL_DATASET)
+        service.create_or_update_dataset_config(
+            saas_connection_config, _MINIMAL_DATASET
+        )
 
         events = EventAuditService(db).get_events_for_resource(
             "dataset_config", _SAAS_FIDES_KEY
@@ -121,8 +125,12 @@ class TestDatasetConfigServiceAuditEvents:
         saas_connection_config: ConnectionConfig,
     ):
         """Second upsert of the same dataset key emits dataset.updated."""
-        service.create_or_update_dataset_config(saas_connection_config, _MINIMAL_DATASET)
-        service.create_or_update_dataset_config(saas_connection_config, _MINIMAL_DATASET)
+        service.create_or_update_dataset_config(
+            saas_connection_config, _MINIMAL_DATASET
+        )
+        service.create_or_update_dataset_config(
+            saas_connection_config, _MINIMAL_DATASET
+        )
 
         events = EventAuditService(db).get_events_for_resource(
             "dataset_config", _SAAS_FIDES_KEY
@@ -139,7 +147,9 @@ class TestDatasetConfigServiceAuditEvents:
         saas_connection_config: ConnectionConfig,
     ):
         """Deleting a SaaS dataset config emits dataset.deleted."""
-        service.create_or_update_dataset_config(saas_connection_config, _MINIMAL_DATASET)
+        service.create_or_update_dataset_config(
+            saas_connection_config, _MINIMAL_DATASET
+        )
         service.delete_dataset_config(saas_connection_config, _SAAS_FIDES_KEY)
 
         events = EventAuditService(db).get_events_for_resource(
@@ -219,12 +229,16 @@ class TestDatasetConfigServiceAuditEvents:
         saas_connection_config: ConnectionConfig,
     ):
         """A broken audit service on delete must not surface errors to the caller."""
-        service.create_or_update_dataset_config(saas_connection_config, _MINIMAL_DATASET)
+        service.create_or_update_dataset_config(
+            saas_connection_config, _MINIMAL_DATASET
+        )
 
         broken_audit_service = MagicMock(spec=EventAuditService)
         broken_audit_service.create_event_audit.side_effect = Exception("audit boom")
         broken_service = DatasetConfigService(db, broken_audit_service)
-        broken_service.delete_dataset_config(saas_connection_config, _SAAS_FIDES_KEY)  # must not raise
+        broken_service.delete_dataset_config(
+            saas_connection_config, _SAAS_FIDES_KEY
+        )  # must not raise
 
     def test_delete_no_audit_service_does_not_raise(
         self,
@@ -236,7 +250,9 @@ class TestDatasetConfigServiceAuditEvents:
             saas_connection_config, _MINIMAL_DATASET
         )
         service = DatasetConfigService(db, event_audit_service=None)
-        service.delete_dataset_config(saas_connection_config, _SAAS_FIDES_KEY)  # must not raise
+        service.delete_dataset_config(
+            saas_connection_config, _SAAS_FIDES_KEY
+        )  # must not raise
 
         events = EventAuditService(db).get_events_for_resource(
             "dataset_config", _SAAS_FIDES_KEY
