@@ -6,7 +6,6 @@ import {
   ChakraText as Text,
   Tag,
 } from "fidesui";
-import dynamic from "next/dynamic";
 import {
   ExecutionLogStatus,
   ExecutionLogStatusColors,
@@ -14,10 +13,7 @@ import {
 } from "privacy-requests/types";
 import React from "react";
 
-const MonacoEditor = dynamic(
-  () => import("@monaco-editor/react").then((mod) => mod.default),
-  { ssr: false },
-);
+import { Editor } from "~/features/common/yaml/helpers";
 
 const isJson = (value: string): boolean => {
   try {
@@ -67,7 +63,7 @@ const EventDetail = ({
       <Divider marginTop="4px" marginBottom="6px" />
       <Box id="errorWrapper" overflow="auto" height="100%">
         {showJsonEditor ? (
-          <MonacoEditor
+          <Editor
             language="json"
             value={errorMessage}
             height="100%"
