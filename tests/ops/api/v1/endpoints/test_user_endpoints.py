@@ -2866,6 +2866,7 @@ class TestReinviteUser:
                 "username": "invited_user",
                 "email_address": "invited@example.com",
                 "disabled": True,
+                "disabled_reason": DisabledReason.pending_invite,
             },
         )
         FidesUserPermissions.create(
