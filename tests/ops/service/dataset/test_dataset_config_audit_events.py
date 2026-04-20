@@ -180,3 +180,33 @@ class TestDatasetConfigServiceAuditEvents:
         )
         assert result is not None
         assert error is None
+
+    def test_no_audit_service_does_not_raise(
+        self,
+        db: Session,
+        saas_connection_config: ConnectionConfig,
+    ):
+        """When no EventAuditService is injected, create/update succeeds silently."""
+        service = DatasetConfigService(db, event_audit_service=None)
+        result, error = service.create_or_update_dataset_config(
+            saas_connection_config, _MINIMAL_DATASET
+        )
+        assert result is not None
+        assert error is None
+        # No audit rows should exist since there is no service
+        events = EventAuditService(db).get_events_for_resource(
+            "dataset_config", _SAAS_FIDES_KEY
+        )
+        assert events == []
+
+    def test_delete_nonexistent_dataset_raises(
+        self,
+        db: Session,
+        service: DatasetConfigService,
+        saas_connection_config: ConnectionConfig,
+    ):
+        """Deleting a dataset_key that does not exist raises DatasetNotFoundException."""
+        from fides.service.dataset.dataset_service import DatasetNotFoundException
+
+        with pytest.raises(DatasetNotFoundException, match="no_such_key"):
+            service.delete_dataset_config(saas_connection_config, "no_such_key")

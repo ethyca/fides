@@ -1,5 +1,9 @@
 """Tests for event_audit_util.py functions."""
 
+import pytest
+from fideslang.models import Dataset as FideslangDataset
+from sqlalchemy.orm import Session
+
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -10,6 +14,7 @@ from fides.api.util.event_audit_util import (
     _create_connection_event_details,
     generate_connection_audit_event_details,
     generate_connection_secrets_event_details,
+    generate_dataset_audit_event_details,
 )
 
 
@@ -468,3 +473,117 @@ class TestGenerateConnectionSecretsEventDetails:
 
         expected_description = f"Connection secrets created: postgres connection '{connection_config.key}' - password"
         assert description == expected_description
+
+
+# ---------------------------------------------------------------------------
+# Tests for generate_dataset_audit_event_details
+# ---------------------------------------------------------------------------
+
+_MINIMAL_SAAS_CONFIG = {
+    "fides_key": "gen_ds_audit_test_saas",
+    "name": "Gen Dataset Audit Test Connector",
+    "type": "gen_ds_audit_connector",
+    "description": "Minimal SaaS config for generate_dataset_audit_event_details tests",
+    "version": "0.1.0",
+    "connector_params": [],
+    "client_config": {"protocol": "https", "host": "api.example.com"},
+    "test_request": {"method": "GET", "path": "/test"},
+    "endpoints": [],
+}
+
+
+class TestGenerateDatasetAuditEventDetails:
+    """Tests for generate_dataset_audit_event_details function."""
+
+    @pytest.fixture
+    def saas_connection(self, db: Session) -> ConnectionConfig:
+        config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "gen_ds_audit_saas_connection",
+                "name": "Gen Dataset Audit SaaS Connection",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": _MINIMAL_SAAS_CONFIG,
+            },
+        )
+        yield config
+        config.delete(db)
+
+    @pytest.fixture
+    def postgres_connection(self, db: Session) -> ConnectionConfig:
+        config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "gen_ds_audit_postgres_connection",
+                "name": "Gen Dataset Audit Postgres Connection",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.write,
+            },
+        )
+        yield config
+        config.delete(db)
+
+    def test_generate_dataset_audit_event_details_saas_created(
+        self, saas_connection: ConnectionConfig
+    ):
+        """SaaS created event includes operation_type, connection_key, and saas_connector_type."""
+        event_details, description = generate_dataset_audit_event_details(
+            event_type=EventAuditType.dataset_created,
+            connection_config=saas_connection,
+            dataset_key="my_dataset",
+        )
+
+        assert event_details["operation_type"] == "created"
+        assert event_details["connection_key"] == saas_connection.key
+        assert event_details["saas_connector_type"] == "gen_ds_audit_connector"
+        assert description == (
+            "Dataset created: 'my_dataset' on gen_ds_audit_connector connection 'gen_ds_audit_saas_connection'"
+        )
+
+    def test_generate_dataset_audit_event_details_saas_updated(
+        self, saas_connection: ConnectionConfig
+    ):
+        """SaaS updated event sets operation_type to 'updated'."""
+        event_details, description = generate_dataset_audit_event_details(
+            event_type=EventAuditType.dataset_updated,
+            connection_config=saas_connection,
+            dataset_key="my_dataset",
+        )
+
+        assert event_details["operation_type"] == "updated"
+        assert event_details["connection_key"] == saas_connection.key
+        assert event_details["saas_connector_type"] == "gen_ds_audit_connector"
+        assert "updated" in description
+
+    def test_generate_dataset_audit_event_details_saas_deleted(
+        self, saas_connection: ConnectionConfig
+    ):
+        """SaaS deleted event sets operation_type to 'deleted'."""
+        event_details, description = generate_dataset_audit_event_details(
+            event_type=EventAuditType.dataset_deleted,
+            connection_config=saas_connection,
+            dataset_key="my_dataset",
+        )
+
+        assert event_details["operation_type"] == "deleted"
+        assert event_details["connection_key"] == saas_connection.key
+        assert event_details["saas_connector_type"] == "gen_ds_audit_connector"
+        assert "deleted" in description
+
+    def test_generate_dataset_audit_event_details_non_saas_has_null_connector_type(
+        self, postgres_connection: ConnectionConfig
+    ):
+        """Non-SaaS connections produce None for saas_connector_type."""
+        event_details, description = generate_dataset_audit_event_details(
+            event_type=EventAuditType.dataset_created,
+            connection_config=postgres_connection,
+            dataset_key="my_pg_dataset",
+        )
+
+        assert event_details["operation_type"] == "created"
+        assert event_details["connection_key"] == postgres_connection.key
+        assert event_details["saas_connector_type"] is None
+        assert description == (
+            f"Dataset created: 'my_pg_dataset' on None connection '{postgres_connection.key}'"
+        )
