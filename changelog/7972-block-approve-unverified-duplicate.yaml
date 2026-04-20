@@ -1,0 +1,4 @@
+type: Fixed
+description: Blocked approval of duplicate privacy requests whose identity was never verified
+pr: 7972
+labels: []
