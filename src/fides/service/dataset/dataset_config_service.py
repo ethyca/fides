@@ -132,23 +132,20 @@ class DatasetConfigService:
                 skip_steps=[TraversalValidationStep],
             ).validate()
 
-            # Determine create vs. update before persisting
             fides_key = data_dict["fides_key"]
-            existing = DatasetConfig.filter(
-                db=self.db,
-                conditions=(
-                    (DatasetConfig.connection_config_id == connection_config.id)
-                    & (DatasetConfig.fides_key == fides_key)
-                ),
-            ).first()
-            event_type = (
-                EventAuditType.dataset_updated
-                if existing
-                else EventAuditType.dataset_created
-            )
 
             # Create or update using unified method
             dataset_config = DatasetConfig.create_or_update(self.db, data=data_dict)
+
+            # Detect create vs. update from the returned object's timestamps.
+            # On insert, created_at and updated_at are both set to now() by the DB.
+            # On update, only updated_at is refreshed — so equal timestamps → fresh create.
+            # This avoids a separate pre-flight query and the TOCTOU race it introduced.
+            event_type = (
+                EventAuditType.dataset_created
+                if dataset_config.created_at == dataset_config.updated_at
+                else EventAuditType.dataset_updated
+            )
 
             self._create_dataset_audit_event(event_type, connection_config, fides_key)
 
