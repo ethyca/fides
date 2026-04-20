@@ -1254,8 +1254,6 @@ dataset:
       data_categories: [system.operations]
     - name: recipient_email
       data_categories: [user.contact.email]
-    - name: reference_id
-      data_categories: [system.operations]
     - name: reply_to_address
       data_categories: [user.contact.email]
     - name: sender_email
