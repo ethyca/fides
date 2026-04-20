@@ -498,9 +498,152 @@ class TestRestoreImmutableFields:
         assert warnings == []
 
 
+_REFERENCE_VALUE = [{"dataset": "ds", "field": "users.id", "direction": "from"}]
+_OTHER_REFERENCE_VALUE = [{"dataset": "other", "field": "x.y", "direction": "to"}]
+
+
 class TestRestoreFieldMetaAttributes:
-    def test_deleted_primary_key_restored(self):
-        """Deleting a primary key field restores it with a warning."""
+    """Tests for restore_field_meta_attributes — primary_key, identity, references."""
+
+    # --- Protected attr changed (covers removal, value change, and addition) ---
+
+    @pytest.mark.parametrize(
+        "existing_meta,incoming_meta,attr,expected_label",
+        [
+            # Removed (fides_meta stripped)
+            ({"primary_key": True}, {}, "primary_key", "primary key"),
+            ({"identity": "email"}, {}, "identity", "identity"),
+            ({"references": _REFERENCE_VALUE}, {}, "references", "references"),
+            # Changed to different value
+            (
+                {"primary_key": True},
+                {"primary_key": False},
+                "primary_key",
+                "primary key",
+            ),
+            (
+                {"identity": "email"},
+                {"identity": "phone_number"},
+                "identity",
+                "identity",
+            ),
+            (
+                {"references": _REFERENCE_VALUE},
+                {"references": _OTHER_REFERENCE_VALUE},
+                "references",
+                "references",
+            ),
+            # Added where there was none
+            ({}, {"primary_key": True}, "primary_key", "primary key"),
+            ({}, {"identity": "email"}, "identity", "identity"),
+            ({}, {"references": _REFERENCE_VALUE}, "references", "references"),
+        ],
+        ids=[
+            "pk-removed",
+            "identity-removed",
+            "refs-removed",
+            "pk-changed",
+            "identity-changed",
+            "refs-changed",
+            "pk-added",
+            "identity-added",
+            "refs-added",
+        ],
+    )
+    def test_attr_change_restored(
+        self, existing_meta, incoming_meta, attr, expected_label
+    ):
+        """Any change to a protected attr is restored to the existing value."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "target", "fides_meta": existing_meta}
+                        if existing_meta
+                        else "target",
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [
+                        {"name": "target", "fides_meta": incoming_meta}
+                        if incoming_meta
+                        else "target",
+                    ],
+                },
+            ],
+        )
+        warnings = restore_field_meta_attributes(dataset, existing)
+        assert len(warnings) == 1
+        assert warnings[0].action == "restored"
+        assert expected_label in warnings[0].message
+        field = next(f for f in dataset.collections[0].fields if f.name == "target")
+        existing_val = existing_meta.get(attr)
+        if attr == "references" and existing_val:
+            assert field.fides_meta.references is not None
+            assert field.fides_meta.references[0].dataset == "ds"
+        elif existing_val:
+            assert getattr(field.fides_meta, attr) == existing_val
+        else:
+            assert not getattr(field.fides_meta, attr, None)
+
+    # --- Non-protected metadata preserved ---
+
+    @pytest.mark.parametrize(
+        "existing_meta,incoming_meta,protected_attr,expected_protected_val",
+        [
+            (
+                {"primary_key": True, "data_type": "string"},
+                {"primary_key": False, "data_type": "integer"},
+                "primary_key",
+                True,
+            ),
+            (
+                {"identity": "email", "data_type": "string"},
+                {"identity": "phone_number", "data_type": "integer"},
+                "identity",
+                "email",
+            ),
+        ],
+        ids=["primary-key", "identity"],
+    )
+    def test_other_metadata_preserved(
+        self, existing_meta, incoming_meta, protected_attr, expected_protected_val
+    ):
+        """Non-protected fides_meta changes persist when a protected attr is restored."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [{"name": "target", "fides_meta": existing_meta}],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [
+                {
+                    "name": "users",
+                    "fields": [{"name": "target", "fides_meta": incoming_meta}],
+                }
+            ],
+        )
+        warnings = restore_field_meta_attributes(dataset, existing)
+        assert len(warnings) == 1
+        field = next(f for f in dataset.collections[0].fields if f.name == "target")
+        assert getattr(field.fides_meta, protected_attr) == expected_protected_val
+        assert field.fides_meta.data_type == "integer"
+
+    # --- PK deletion protection ---
+
+    def test_deleted_primary_key_field_restored(self):
+        """Deleting a primary key field entirely restores it."""
         existing = _make_existing_dataset(
             collections=[
                 {
@@ -508,134 +651,22 @@ class TestRestoreFieldMetaAttributes:
                     "fields": [
                         {"name": "id", "fides_meta": {"primary_key": True}},
                         "name",
-                        "email",
                     ],
                 },
             ]
         )
         dataset = _make_dataset(
-            "test_connector",
-            [{"name": "users", "fields": ["name", "email"]}],
+            "test_connector", [{"name": "users", "fields": ["name"]}]
         )
         warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
-        assert warnings[0].collection == "users"
         assert warnings[0].field == "id"
         assert warnings[0].action == "restored"
-        assert "primary key" in warnings[0].message
         users_col = next(c for c in dataset.collections if c.name == "users")
         assert any(f.name == "id" for f in users_col.fields)
 
-    def test_primary_key_flag_removed_restored(self):
-        """Removing fides_meta entirely restores only primary_key flag."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "users",
-                    "fields": [
-                        {
-                            "name": "id",
-                            "fides_meta": {"primary_key": True, "data_type": "string"},
-                        },
-                        "name",
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "id"},  # no fides_meta at all
-                        "name",
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert len(warnings) == 1
-        assert warnings[0].action == "restored"
-        assert "primary key flag" in warnings[0].message
-        users_col = next(c for c in dataset.collections if c.name == "users")
-        id_field = next(f for f in users_col.fields if f.name == "id")
-        assert id_field.fides_meta is not None
-        assert id_field.fides_meta.primary_key is True
-        # data_type is NOT restored — only the primary_key flag
-        assert id_field.fides_meta.data_type is None
-
-    def test_other_metadata_preserved_when_pk_flag_restored(self):
-        """Other fides_meta changes persist even when primary_key is restored."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "users",
-                    "fields": [
-                        {
-                            "name": "id",
-                            "fides_meta": {"primary_key": True, "data_type": "string"},
-                        },
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "users",
-                    "fields": [
-                        # Changed data_type and removed primary_key
-                        {
-                            "name": "id",
-                            "fides_meta": {
-                                "primary_key": False,
-                                "data_type": "integer",
-                            },
-                        },
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert len(warnings) == 1
-        id_field = next(f for f in dataset.collections[0].fields if f.name == "id")
-        assert id_field.fides_meta.primary_key is True
-        # User's data_type change is kept
-        assert id_field.fides_meta.data_type == "integer"
-
-    def test_primary_key_flag_set_to_false_restored(self):
-        """Setting primary_key to False restores it."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "id", "fides_meta": {"primary_key": True}},
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "id", "fides_meta": {"primary_key": False}},
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert len(warnings) == 1
-        assert warnings[0].action == "restored"
-        id_field = next(f for f in dataset.collections[0].fields if f.name == "id")
-        assert id_field.fides_meta.primary_key is True
-
-    def test_non_primary_key_field_not_protected(self):
-        """Fields without primary_key can be freely deleted."""
+    def test_non_pk_field_freely_deleted(self):
+        """Fields without primary_key=True can be freely deleted."""
         existing = _make_existing_dataset(
             collections=[
                 {
@@ -643,7 +674,6 @@ class TestRestoreFieldMetaAttributes:
                     "fields": [
                         {"name": "id", "fides_meta": {"primary_key": True}},
                         "name",
-                        "email",
                     ],
                 },
             ]
@@ -653,177 +683,66 @@ class TestRestoreFieldMetaAttributes:
             [
                 {
                     "name": "users",
-                    "fields": [
-                        {"name": "id", "fides_meta": {"primary_key": True}},
-                    ],
-                },
+                    "fields": [{"name": "id", "fides_meta": {"primary_key": True}}],
+                }
             ],
         )
         warnings = restore_field_meta_attributes(dataset, existing)
         assert warnings == []
 
-    def test_no_existing_dataset_skips(self):
-        """No warnings when there's no existing dataset to compare."""
-        dataset = _make_dataset(
-            "test_connector",
-            [{"name": "users", "fields": ["id", "name"]}],
-        )
-        warnings = restore_field_meta_attributes(dataset, None)
-        assert warnings == []
-
-    def test_primary_key_unchanged_no_warnings(self):
-        """No warnings when primary key fields are untouched."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "id", "fides_meta": {"primary_key": True}},
-                        "name",
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "id", "fides_meta": {"primary_key": True}},
-                        "name",
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert warnings == []
-
-
-class TestRestoreIdentityAndReferences:
-    """Tests for identity/references protection via restore_field_meta_attributes."""
-
-    def test_identity_removed_restored(self):
-        """Removing identity from a field restores it."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "email", "fides_meta": {"identity": "email"}},
-                        "name",
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "email"},  # identity removed
-                        "name",
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert len(warnings) == 1
-        assert warnings[0].action == "restored"
-        assert "identity" in warnings[0].message
-        email_field = next(
-            f for f in dataset.collections[0].fields if f.name == "email"
-        )
-        assert email_field.fides_meta.identity == "email"
-
-    def test_identity_changed_restored(self):
-        """Changing identity value restores the original."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "email", "fides_meta": {"identity": "email"}},
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "email", "fides_meta": {"identity": "phone_number"}},
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert len(warnings) == 1
-        email_field = next(
-            f for f in dataset.collections[0].fields if f.name == "email"
-        )
-        assert email_field.fides_meta.identity == "email"
-
-    def test_references_removed_restored(self):
-        """Removing references from a field restores them."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "orders",
-                    "fields": [
-                        {
-                            "name": "user_id",
-                            "fides_meta": {
-                                "references": [
-                                    {
-                                        "dataset": "ds",
-                                        "field": "users.id",
-                                        "direction": "from",
-                                    }
-                                ]
-                            },
-                        },
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "orders",
-                    "fields": [
-                        {"name": "user_id"},  # references removed
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert len(warnings) == 1
-        assert "references" in warnings[0].message
-        user_id_field = next(
-            f for f in dataset.collections[0].fields if f.name == "user_id"
-        )
-        assert user_id_field.fides_meta.references is not None
-        assert len(user_id_field.fides_meta.references) == 1
-
-    def test_other_metadata_preserved(self):
-        """Other fides_meta changes persist when identity is restored."""
+    def test_nested_pk_deletion_restored(self):
+        """Deleting a nested primary key field restores it."""
         existing = _make_existing_dataset(
             collections=[
                 {
                     "name": "users",
                     "fields": [
                         {
-                            "name": "email",
-                            "fides_meta": {
-                                "identity": "email",
-                                "data_type": "string",
-                            },
-                        },
+                            "name": "address",
+                            "fields": [
+                                {"name": "id", "fides_meta": {"primary_key": True}},
+                                "street",
+                            ],
+                        }
+                    ],
+                },
+            ]
+        )
+        dataset = _make_dataset(
+            "test_connector",
+            [{"name": "users", "fields": [{"name": "address", "fields": ["street"]}]}],
+        )
+        warnings = restore_field_meta_attributes(dataset, existing)
+        assert len(warnings) == 1
+        assert warnings[0].field == "address.id"
+        address = next(f for f in dataset.collections[0].fields if f.name == "address")
+        assert any(f.name == "id" for f in address.fields)
+
+    # --- Nested field attr protection ---
+
+    @pytest.mark.parametrize(
+        "existing_meta,incoming_meta,attr",
+        [
+            ({"primary_key": True}, {"primary_key": False}, "primary_key"),
+            ({"identity": "email"}, {"identity": "phone"}, "identity"),
+            ({"references": _REFERENCE_VALUE}, {}, "references"),
+        ],
+        ids=["primary-key", "identity", "references"],
+    )
+    def test_nested_attr_changed_restored(self, existing_meta, incoming_meta, attr):
+        """Changing a protected attr on a nested field restores it."""
+        existing = _make_existing_dataset(
+            collections=[
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "address",
+                            "fields": [
+                                {"name": "street", "fides_meta": existing_meta},
+                                "city",
+                            ],
+                        }
                     ],
                 },
             ]
@@ -835,56 +754,37 @@ class TestRestoreIdentityAndReferences:
                     "name": "users",
                     "fields": [
                         {
-                            "name": "email",
-                            "fides_meta": {
-                                "identity": "phone_number",
-                                "data_type": "integer",
-                            },
-                        },
+                            "name": "address",
+                            "fields": [
+                                {"name": "street", "fides_meta": incoming_meta},
+                                "city",
+                            ],
+                        }
                     ],
                 },
             ],
         )
         warnings = restore_field_meta_attributes(dataset, existing)
         assert len(warnings) == 1
-        email_field = next(
-            f for f in dataset.collections[0].fields if f.name == "email"
-        )
-        assert email_field.fides_meta.identity == "email"
-        # User's data_type change is kept
-        assert email_field.fides_meta.data_type == "integer"
+        assert warnings[0].field == "address.street"
 
-    def test_no_identity_or_references_no_warnings(self):
-        """Fields without identity/references are not affected."""
-        existing = _make_existing_dataset(
-            collections=[
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "name", "fides_meta": {"data_type": "string"}},
-                    ],
-                },
-            ]
-        )
-        dataset = _make_dataset(
-            "test_connector",
-            [
-                {
-                    "name": "users",
-                    "fields": [
-                        {"name": "name", "fides_meta": {"data_type": "integer"}},
-                    ],
-                },
-            ],
-        )
-        warnings = restore_field_meta_attributes(dataset, existing)
-        assert warnings == []
+    # --- No-op cases ---
 
     def test_no_existing_dataset_skips(self):
         """No warnings when there's no existing dataset."""
-        dataset = _make_dataset(
-            "test_connector",
-            [{"name": "users", "fields": ["email"]}],
-        )
+        dataset = _make_dataset("test_connector", [{"name": "users", "fields": ["id"]}])
         warnings = restore_field_meta_attributes(dataset, None)
+        assert warnings == []
+
+    def test_unchanged_protected_attrs_no_warnings(self):
+        """No warnings when protected attrs are untouched."""
+        fields = [
+            {"name": "id", "fides_meta": {"primary_key": True}},
+            {"name": "email", "fides_meta": {"identity": "email"}},
+        ]
+        existing = _make_existing_dataset(
+            collections=[{"name": "users", "fields": fields}]
+        )
+        dataset = _make_dataset("test_connector", [{"name": "users", "fields": fields}])
+        warnings = restore_field_meta_attributes(dataset, existing)
         assert warnings == []
