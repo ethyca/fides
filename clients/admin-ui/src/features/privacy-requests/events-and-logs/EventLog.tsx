@@ -1,6 +1,7 @@
 import { formatDate } from "common/utils";
 import {
   ChakraBox as Box,
+  ChakraFlex as Flex,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -10,6 +11,7 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   CUSTOM_TAG_COLOR,
+  Icons,
   Tag,
   Tooltip,
 } from "fidesui";
@@ -289,7 +291,10 @@ const EventLog = ({
   };
 
   const tableItems = eventLogs?.map((detail) => {
-    const extractedContent = extractMessageContent(detail.message);
+    const extractedContent =
+      detail.status === ExecutionLogStatus.COMPLETE
+        ? extractMessageContent(detail.message)
+        : null;
 
     const hasExpandableDetails =
       detail.status === ExecutionLogStatus.ERROR ||
@@ -302,9 +307,7 @@ const EventLog = ({
     return (
       <Tr
         key={detail.updated_at}
-        backgroundColor={
-          hasExpandableDetails ? "var(--fidesui-neutral-50)" : "unset"
-        }
+        backgroundColor="unset"
         onClick={() => {
           if (hasExpandableDetails) {
             onDetailPanel(extractedContent ?? detail.message, detail.status);
@@ -336,20 +339,30 @@ const EventLog = ({
           </Text>
         </Td>
         <Td>
-          {ExecutionLogStatusLabels[detail.status] ? (
-            <Tag color={ExecutionLogStatusColors[detail.status]}>
-              {ExecutionLogStatusLabels[detail.status]}
-            </Tag>
-          ) : (
-            <Text
-              color="gray.600"
-              fontSize="xs"
-              lineHeight="4"
-              fontWeight="medium"
-            >
-              {detail.status}
-            </Text>
-          )}
+          <Flex alignItems="center" gap="6px">
+            {ExecutionLogStatusLabels[detail.status] ? (
+              <Tag color={ExecutionLogStatusColors[detail.status]}>
+                {ExecutionLogStatusLabels[detail.status]}
+              </Tag>
+            ) : (
+              <Text
+                color="gray.600"
+                fontSize="xs"
+                lineHeight="4"
+                fontWeight="medium"
+              >
+                {detail.status}
+              </Text>
+            )}
+            {extractedContent && (
+              <Tooltip title="Contains extracted log data">
+                <Icons.InformationFilled
+                  color="var(--fidesui-neutral-400)"
+                  size={14}
+                />
+              </Tooltip>
+            )}
+          </Flex>
         </Td>
         {hasDatasetEntries && (
           <Td>
