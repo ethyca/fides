@@ -1240,6 +1240,8 @@ dataset:
     fields:
     - name: bounce_reason
       data_categories: [system.operations]
+    - name: comment_id
+      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: delivered_at
