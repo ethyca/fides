@@ -1,11 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraText as Text,
-  Flex,
-  Modal,
-  Select,
-} from "fidesui";
+import { Button, Flex, Modal, Select, Typography } from "fidesui";
 import { useState } from "react";
 
 import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
@@ -45,47 +38,35 @@ const AddMessagingTemplateModal = ({
       width={MODAL_SIZE.md}
       data-testid="add-messaging-template-modal"
       title="Select message template"
-      footer={
-        <Flex className="w-full" gap="medium">
-          <Button onClick={onClose} data-testid="cancel-btn" className="grow">
-            Cancel
-          </Button>
-          <Button
-            onClick={() => onAccept(selectedTemplateId!)}
-            type="primary"
-            data-testid="confirm-btn"
-            disabled={!selectedTemplateId}
-            className="grow"
-          >
-            Next
-          </Button>
-        </Flex>
-      }
+      footer={null}
     >
-      <Text
-        color="gray.700"
-        fontWeight="medium"
-        fontSize="sm"
-        marginBottom={3}
-        marginTop={1}
-      >
+      <Typography.Paragraph>
         Add a new email message by selecting a template below and clicking
         accept.
-      </Text>
-      <Text color="gray.700" fontSize="sm" fontWeight="medium" marginBottom={2}>
-        Choose template:
-      </Text>
-
-      <Box data-testid="template-type-selector">
-        <Select<string>
-          options={options}
-          onChange={(value) => {
-            setSelectedTemplateType(value);
-          }}
-          className="w-full"
-          aria-label="Select a template"
-        />
-      </Box>
+      </Typography.Paragraph>
+      <Select<string>
+        data-testid="template-type-selector"
+        options={options}
+        onChange={(value) => {
+          setSelectedTemplateType(value);
+        }}
+        className="w-full"
+        placeholder="Choose template"
+        aria-label="Select a template"
+      />
+      <Flex justify="flex-end" className="mt-4" gap="small">
+        <Button onClick={onClose} data-testid="cancel-btn">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => onAccept(selectedTemplateId!)}
+          type="primary"
+          data-testid="confirm-btn"
+          disabled={!selectedTemplateId}
+        >
+          Next
+        </Button>
+      </Flex>
     </Modal>
   );
 };

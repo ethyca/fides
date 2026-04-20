@@ -88,7 +88,12 @@ const DatastoreMonitorResultSystems: NextPage = () => {
         },
       }}
       refresh={async () => {
-        dispatch(monitorFieldUtil.invalidateTags(["Monitor Field Results"]));
+        dispatch(
+          monitorFieldUtil.invalidateTags([
+            "Monitor Field Results",
+            "Monitor Field Details",
+          ]),
+        );
         await trigger({
           monitor_config_id: monitorId,
           monitor_type: APIMonitorType.DATASTORE,

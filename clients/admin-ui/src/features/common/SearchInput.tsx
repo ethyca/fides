@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import { Icons, Input, InputRef } from "fidesui";
 import { CustomInputProps } from "fidesui/src/hoc";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -50,7 +49,7 @@ const SearchInput = ({
       aria-label="Search"
       prefix={
         withIcon ? (
-          <Icons.Search color={palette.FIDESUI_NEUTRAL_200} />
+          <Icons.Search color="var(--fidesui-neutral-200)" />
         ) : undefined
       }
       allowClear
