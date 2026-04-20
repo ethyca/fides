@@ -242,7 +242,7 @@ const HomePage: NextPage = () => {
 
         {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
           <Box position="relative" width="100%">
-            <Stack flexDirection="column" alignItems="center">
+            <Flex justifyContent="center" gap={6} flexWrap="wrap">
               {policyLinks.map(({ url, label }) => (
                 <Link
                   key={`${url}-${label}`}
@@ -257,7 +257,17 @@ const HomePage: NextPage = () => {
                   {label}
                 </Link>
               ))}
-            </Stack>
+              <Link
+                fontSize={["small", "medium"]}
+                fontWeight="medium"
+                textAlign="center"
+                textDecoration="underline"
+                color="gray.800"
+                href="/privacy-request-metrics"
+              >
+                Request statistics
+              </Link>
+            </Flex>
             <BrandLink isHomePage position="absolute" right={6} bottom={0} />
           </Box>
         )}
