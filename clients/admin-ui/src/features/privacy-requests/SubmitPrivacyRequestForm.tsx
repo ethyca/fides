@@ -136,10 +136,7 @@ const CustomFields = ({
   return (
     <>
       {allInputs.map(([fieldName, fieldInfo]) => {
-        if (
-          "field_type" in fieldInfo &&
-          fieldInfo.field_type === "location"
-        ) {
+        if ("field_type" in fieldInfo && fieldInfo.field_type === "location") {
           return (
             <LocationSelectField
               name={fieldName}
@@ -173,6 +170,7 @@ const CustomFields = ({
             >
               {isSelectField(fieldInfo) ? (
                 <Select
+                  aria-label={fieldInfo.label}
                   options={fieldInfo.options.map((opt) => ({
                     label: opt,
                     value: opt,

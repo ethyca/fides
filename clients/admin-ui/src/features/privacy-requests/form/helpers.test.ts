@@ -1,6 +1,9 @@
 import { PrivacyRequestOption } from "~/types/api";
 
-import { findActionFromPolicyKey, generateFormRulesFromAction } from "./helpers";
+import {
+  findActionFromPolicyKey,
+  generateFormRulesFromAction,
+} from "./helpers";
 
 const baseAction: PrivacyRequestOption = {
   icon_path: "/icon.svg",
@@ -158,7 +161,7 @@ describe("generateFormRulesFromAction", () => {
         },
       };
       const rules = generateFormRulesFromAction(action);
-      expect(rules["user_location"]).toEqual([
+      expect(rules.user_location).toEqual([
         { required: true, message: "Your location is required" },
       ]);
       // Should not also generate a nested value path
@@ -179,7 +182,7 @@ describe("generateFormRulesFromAction", () => {
         },
       };
       const rules = generateFormRulesFromAction(action);
-      expect(rules["user_location"]).toBeUndefined();
+      expect(rules.user_location).toBeUndefined();
     });
 
     it("generates rules for select fields the same as text fields", () => {
@@ -193,9 +196,9 @@ describe("generateFormRulesFromAction", () => {
         },
       };
       const rules = generateFormRulesFromAction(action);
-      expect(
-        rules["custom_privacy_request_fields.department.value"],
-      ).toEqual([{ required: true, message: "Department is required" }]);
+      expect(rules["custom_privacy_request_fields.department.value"]).toEqual([
+        { required: true, message: "Department is required" },
+      ]);
     });
   });
 });
