@@ -1,7 +1,7 @@
 """Add label column to messaging_template
 
 Revision ID: d71c7d274c04
-Revises: a42ef09a3dfe
+Revises: d6e7f8a9b0c1
 Create Date: 2026-04-10 18:00:00.000000
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "d71c7d274c04"
-down_revision = "a42ef09a3dfe"
+down_revision = "d6e7f8a9b0c1"
 branch_labels = None
 depends_on = None
 

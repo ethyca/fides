@@ -59,7 +59,7 @@ class TestMessagingTemplates:
         )
         assert template.type == template_type
         assert template.content == content
-        assert template.label is not None
+        assert template.label == "Unnamed"
 
     def test_get_basic_messaging_template_by_type_default(self, db: Session):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
@@ -128,6 +128,60 @@ class TestMessagingTemplates:
         assert len(templates.all()) == 1
         assert templates[0].content["subject"] == "Test new subject"
         assert templates[0].label == messaging_template_no_property.label
+
+    def test_create_or_update_basic_templates_existing_type_multiple(
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        property_a,
+    ):
+        """When multiple templates of the same type exist, update picks the one with the default property."""
+        # Create a second template of the same type with a different label
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        second_template = MessagingTemplate.create(
+            db=db,
+            data={
+                "type": template_type,
+                "label": "Alternate verification",
+                "content": {"subject": "Alt subject", "body": "Alt body"},
+                "properties": [],
+                "is_enabled": False,
+            },
+        )
+        try:
+            content = {
+                "subject": "Test new subject",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
+            }
+            create_or_update_basic_templates(
+                db,
+                data={
+                    "type": template_type,
+                    "content": content,
+                    "is_enabled": False,
+                },
+            )
+
+            # should update the template with default property if multiple templates are configured
+            default_property = Property.get_by(db=db, field="is_default", value=True)
+
+            template = MessagingTemplate.filter(
+                db=db,
+                conditions=(
+                    (MessagingTemplate.type == template_type)
+                    & (
+                        MessagingTemplate.properties.any(
+                            Property.id == default_property.id
+                        )
+                    )
+                ),
+            ).first()
+            assert template.content["subject"] == "Test new subject"
+            # any existing properties should be preserved even though we do not support adding/changing properties
+            # with basic templates
+            assert len(template.properties) == 1
+        finally:
+            second_template.delete(db)
 
     def test_create_or_update_basic_templates_new_type(
         self, db: Session, messaging_template_privacy_request_receipt
@@ -497,6 +551,52 @@ class TestMessagingTemplates:
         finally:
             second_template.delete(db)
 
+    def test_update_messaging_template_conflicting_template_but_one_disabled(
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        property_a,
+    ):
+        """Updating a disabled template's properties is fine even if another same-type template owns that property."""
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        disabled_template = MessagingTemplate.create(
+            db=db,
+            data={
+                "type": template_type,
+                "label": "Disabled verification",
+                "content": {"subject": "Code __CODE__", "body": "Verify __CODE__"},
+                "properties": [],
+                "is_enabled": False,
+            },
+        )
+        try:
+            update_body = {
+                "content": {
+                    "subject": "Here is your code __CODE__",
+                    "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
+                },
+                # this property is already being used by messaging_template_subject_identity_verification,
+                # but this template is disabled so no conflict
+                "properties": [property_a.id],
+                "is_enabled": False,
+            }
+            update_property_specific_template(
+                db,
+                disabled_template.id,
+                MessagingTemplateWithPropertiesBodyParams(**update_body),
+            )
+            messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+                db, object_id=disabled_template.id
+            )
+            assert len(messaging_template.properties) == 1
+            assert messaging_template.properties[0].id == property_a.id
+
+            # assert relationship to properties
+            property_a_db = Property.get(db, object_id=property_a.id)
+            assert len(property_a_db.messaging_templates) == 2
+        finally:
+            disabled_template.delete(db)
+
     def test_create_messaging_template(self, db: Session, property_a):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
@@ -796,37 +896,33 @@ class TestMessagingTemplateLabels:
 
     # --- Label uniqueness ---
 
-    @pytest.mark.parametrize(
-        "operation",
-        ["create", "update", "patch"],
-        ids=["create_dup", "update_dup", "patch_dup"],
-    )
-    def test_duplicate_label_raises(
+    def test_create_duplicate_label_raises(
         self,
         db: Session,
         messaging_template_subject_identity_verification,
         property_b,
-        operation,
     ):
         existing_label = messaging_template_subject_identity_verification.label
+        with pytest.raises(
+            MessagingTemplateValidationException, match="already exists"
+        ):
+            create_property_specific_template_by_type(
+                db,
+                self._SIV,
+                MessagingTemplateWithPropertiesBodyParams(
+                    label=existing_label,
+                    content=self._CONTENT,
+                    properties=[property_b.id],
+                    is_enabled=False,
+                ),
+            )
 
-        if operation == "create":
-            with pytest.raises(
-                MessagingTemplateValidationException, match="already exists"
-            ):
-                create_property_specific_template_by_type(
-                    db,
-                    self._SIV,
-                    MessagingTemplateWithPropertiesBodyParams(
-                        label=existing_label,
-                        content=self._CONTENT,
-                        properties=[property_b.id],
-                        is_enabled=False,
-                    ),
-                )
-            return
-
-        # update / patch: need a second template to rename
+    def test_update_duplicate_label_raises(
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+    ):
+        existing_label = messaging_template_subject_identity_verification.label
         second = MessagingTemplate.create(
             db=db,
             data={
@@ -841,20 +937,41 @@ class TestMessagingTemplateLabels:
             with pytest.raises(
                 MessagingTemplateValidationException, match="already exists"
             ):
-                if operation == "update":
-                    update_property_specific_template(
-                        db,
-                        second.id,
-                        MessagingTemplateWithPropertiesBodyParams(
-                            label=existing_label,
-                            content=self._CONTENT,
-                            is_enabled=False,
-                        ),
-                    )
-                else:
-                    patch_property_specific_template(
-                        db, second.id, {"label": existing_label}
-                    )
+                update_property_specific_template(
+                    db,
+                    second.id,
+                    MessagingTemplateWithPropertiesBodyParams(
+                        label=existing_label,
+                        content=self._CONTENT,
+                        is_enabled=False,
+                    ),
+                )
+        finally:
+            second.delete(db)
+
+    def test_patch_duplicate_label_raises(
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+    ):
+        existing_label = messaging_template_subject_identity_verification.label
+        second = MessagingTemplate.create(
+            db=db,
+            data={
+                "type": self._SIV,
+                "label": "Second template",
+                "content": self._CONTENT,
+                "properties": [],
+                "is_enabled": False,
+            },
+        )
+        try:
+            with pytest.raises(
+                MessagingTemplateValidationException, match="already exists"
+            ):
+                patch_property_specific_template(
+                    db, second.id, {"label": existing_label}
+                )
         finally:
             second.delete(db)
 

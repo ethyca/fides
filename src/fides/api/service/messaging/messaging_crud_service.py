@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -199,8 +200,9 @@ def create_or_update_basic_templates(
 
     else:
         # Ensure a label exists for new basic templates
-        if "label" not in data and data["type"] in DEFAULT_MESSAGING_TEMPLATES:
-            data["label"] = DEFAULT_MESSAGING_TEMPLATES[data["type"]]["label"]
+        if "label" not in data:
+            default = DEFAULT_MESSAGING_TEMPLATES.get(data["type"])
+            data["label"] = default["label"] if default else "Default"
         template = MessagingTemplate.create(db=db, data=data)
     return template
 
@@ -245,12 +247,12 @@ def get_enabled_messaging_template_by_type_and_property(
 
 def get_templates_by_type(db: Session, template_type: str) -> list[MessagingTemplate]:
     """Return all templates matching the given type, ordered by most recently updated."""
-    return (
-        MessagingTemplate.query(db=db)
-        .filter(MessagingTemplate.type == template_type)
+    stmt = (
+        select(MessagingTemplate)  # type: ignore[arg-type]
+        .where(MessagingTemplate.type == template_type)
         .order_by(MessagingTemplate.updated_at.desc())
-        .all()
     )
+    return list(db.execute(stmt).scalars())
 
 
 def _next_available_label(
@@ -264,10 +266,7 @@ def _next_available_label(
     "Subject identity verification (2)", "Subject identity verification (3)", etc.
     """
     existing_labels: set[str] = {
-        row[0]  # column query returns Row tuples, not model instances
-        for row in db.query(MessagingTemplate.label).filter(
-            MessagingTemplate.type == template_type,
-        )
+        t.label for t in get_templates_by_type(db, template_type)
     }
     if base_label not in existing_labels:
         return base_label
