@@ -1,5 +1,6 @@
 import { Button, Flex, useMessage } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
+import { useCallback } from "react";
 import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
@@ -11,6 +12,7 @@ import {
   useCreateOAuthClientMutation,
   useUpdateOAuthClientMutation,
 } from "./oauth-clients.slice";
+import ScopePicker from "./ScopePicker";
 
 export interface OAuthClientFormValues {
   name: string;
@@ -29,6 +31,20 @@ interface OAuthClientFormProps {
   /** Called with the new client_id + plaintext secret after successful creation. */
   onCreated?: (clientId: string, secret: string) => void;
 }
+
+/**
+ * Thin Formik connector for ScopePicker. Lives outside the main form render
+ * function so useCallback produces a stable reference — preventing ScopePicker
+ * from re-rendering on every keystroke in unrelated fields.
+ */
+const ScopePickerField = () => {
+  const { values, setFieldValue } = useFormikContext<OAuthClientFormValues>();
+  const handleChange = useCallback(
+    (scopes: string[]) => setFieldValue("scopes", scopes),
+    [setFieldValue],
+  );
+  return <ScopePicker value={values.scopes} onChange={handleChange} />;
+};
 
 const OAuthClientForm = ({
   client,
@@ -106,6 +122,11 @@ const OAuthClientForm = ({
               data-testid="client-description-input"
               disabled={!canUpdate}
             />
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium">Scopes</legend>
+              <hr className="mb-3" />
+              <ScopePickerField />
+            </fieldset>
             <div className="flex justify-end gap-3">
               <Button
                 htmlType="button"
