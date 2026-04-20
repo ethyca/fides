@@ -11,9 +11,9 @@ import {
   PrivacyRequestResults,
 } from "~/features/privacy-requests/types";
 
-// Dataset name the backend uses when writing the duplicate detection
-// ExecutionLog entry. Must stay in sync with the `dataset_name` argument in
-// fides.api.service.privacy_request.duplication_detection.mark_as_duplicate.
+// Dataset name the backend writes on every ExecutionLog produced by duplicate
+// detection. Must stay in sync with DUPLICATE_DETECTION_DATASET_NAME defined in
+// src/fides/api/service/privacy_request/duplication_detection.py.
 export const DUPLICATE_DETECTION_DATASET_NAME = "Duplicate Request Detection";
 
 /**

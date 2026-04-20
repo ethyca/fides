@@ -36,6 +36,14 @@ ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.error,
 ]
 
+# Dataset name written on every ExecutionLog entry produced by duplicate
+# detection. The admin-ui uses this same string to identify the corresponding
+# timeline entry and render a "View duplicates" drawer instead of the generic
+# log drawer. If you change this value, update
+# clients/admin-ui/src/features/privacy-requests/events-and-logs/hooks/usePrivacyRequestEventLogs.ts
+# (DUPLICATE_DETECTION_DATASET_NAME) and the associated tests as well.
+DUPLICATE_DETECTION_DATASET_NAME = "Duplicate Request Detection"
+
 
 class DuplicateDetectionService:
     def __init__(self, db: Session):
@@ -224,7 +232,7 @@ class DuplicateDetectionService:
         request.add_skipped_execution_log(
             self.db,
             connection_key=None,
-            dataset_name="Duplicate Request Detection",
+            dataset_name=DUPLICATE_DETECTION_DATASET_NAME,
             collection_name=None,
             message=message,
             action_type=(request.policy.get_action_type() if request.policy else None)
@@ -235,7 +243,7 @@ class DuplicateDetectionService:
         request.add_success_execution_log(
             db=self.db,
             connection_key=None,
-            dataset_name="Duplicate Request Detection",
+            dataset_name=DUPLICATE_DETECTION_DATASET_NAME,
             collection_name=None,
             message=message,
             action_type=(
