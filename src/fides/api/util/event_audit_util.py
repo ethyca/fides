@@ -175,7 +175,8 @@ def generate_dataset_audit_event_details(
         "saas_connector_type": connector_type,
     }
 
-    description = f"Dataset {operation_type}: '{dataset_key}' on {connector_type} connection '{connection_config.key}'"
+    connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
+    description = f"Dataset {operation_type}: '{dataset_key}' on {connector_type if connector_type else connection_type} connection '{connection_config.key}'"
 
     return event_details, description
 
