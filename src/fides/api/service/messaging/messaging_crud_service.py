@@ -283,9 +283,10 @@ def _validate_unique_label(
     exclude_id: str | None = None,
 ) -> None:
     """Raise if a template with this (type, label) already exists."""
-    stmt = select(MessagingTemplate).where(  # type: ignore[arg-type]
-        MessagingTemplate.type == template_type,
-        MessagingTemplate.label == label,
+    stmt = (
+        select(MessagingTemplate)  # type: ignore[arg-type]
+        .where(MessagingTemplate.type == template_type)
+        .where(MessagingTemplate.label == label)
     )
     if exclude_id:
         stmt = stmt.where(MessagingTemplate.id != exclude_id)
