@@ -244,38 +244,11 @@ const ConsentConfigPage: NextPage = () => {
             initialValues={initialValues}
             key={formKey}
           >
-            {/* Hidden fields for child-managed array/object values */}
+            {/* Hidden fields for values managed imperatively by child components */}
             <Form.Item name="purposeOverrides" hidden noStyle>
               <Input />
             </Form.Item>
             <Form.Item name={["gpp", "enabled"]} hidden noStyle>
-              <Input />
-            </Form.Item>
-            <Form.Item name={["gpp", "us_approach"]} hidden noStyle>
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name={["gpp", "mspa_covered_transactions"]}
-              hidden
-              noStyle
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name={["gpp", "mspa_service_provider_mode"]}
-              hidden
-              noStyle
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name={["gpp", "mspa_opt_out_option_mode"]}
-              hidden
-              noStyle
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item name={["gpp", "enable_tcfeu_string"]} hidden noStyle>
               <Input />
             </Form.Item>
             <Form.Item

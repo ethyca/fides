@@ -171,6 +171,14 @@ export const PurposeRestrictionFormModal = ({
     !!vendorRestriction &&
     vendorRestriction !== TCFVendorRestriction.RESTRICT_ALL_VENDORS;
 
+  // Clear vendor_ids when switching to "restrict all vendors" since the field
+  // unmounts and stale values would otherwise persist in the form store.
+  useEffect(() => {
+    if (vendorRestriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS) {
+      form.setFieldValue("vendor_ids", []);
+    }
+  }, [vendorRestriction, form]);
+
   const handleSubmit = async (values: FormValues): Promise<void> => {
     try {
       const request: Omit<TCFPublisherRestrictionRequest, "purpose_id"> = {
