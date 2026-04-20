@@ -320,6 +320,11 @@ describe("New Privacy Requests", () => {
         cy.getByTestId(
           "input-custom_privacy_request_fields.field_with_default_value.value",
         ).should("have.value", "The default value");
+
+        // Department field should render as a select dropdown with configured options
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.department.value",
+        ).antSelect("Engineering");
       });
 
       it("can submit a privacy request", () => {
