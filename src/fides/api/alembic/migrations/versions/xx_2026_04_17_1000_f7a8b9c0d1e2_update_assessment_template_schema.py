@@ -59,8 +59,23 @@ def upgrade() -> None:
         ["assessment_type"],
     )
 
+    # Partial unique index: only one active template per assessment_type
+    op.create_index(
+        "uq_assessment_template_active_type",
+        "assessment_template",
+        ["assessment_type"],
+        unique=True,
+        postgresql_where=sa.text("is_active = true"),
+    )
+
 
 def downgrade() -> None:
+    # Drop partial unique index on active assessment_type
+    op.drop_index(
+        "uq_assessment_template_active_type",
+        table_name="assessment_template",
+    )
+
     # Drop index on assessment_type
     op.drop_index(
         "ix_assessment_template_assessment_type",
@@ -86,15 +101,11 @@ def downgrade() -> None:
     )
 
     op.alter_column("assessment_template", "key", nullable=False)
-    op.create_unique_constraint(
-        "assessment_template_key_key",
-        "assessment_template",
-        ["key"],
-    )
     op.create_index(
         "ix_assessment_template_key",
         "assessment_template",
         ["key"],
+        unique=True,
     )
 
     # Drop foreign key and new columns

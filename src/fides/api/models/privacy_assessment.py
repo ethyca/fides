@@ -22,6 +22,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -150,6 +151,12 @@ class AssessmentTemplate(Base):
             "version",
             "fides_revision",
             name="uq_assessment_template_type_version_revision",
+        ),
+        Index(
+            "uq_assessment_template_active_type",
+            "assessment_type",
+            unique=True,
+            postgresql_where=Column("is_active").is_(True),
         ),
     )
 
