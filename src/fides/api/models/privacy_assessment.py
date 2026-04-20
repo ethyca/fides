@@ -27,6 +27,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
@@ -156,7 +157,7 @@ class AssessmentTemplate(Base):
             "uq_assessment_template_active_type",
             "assessment_type",
             unique=True,
-            postgresql_where=Column("is_active").is_(True),
+            postgresql_where=text("is_active = true"),
         ),
     )
 
