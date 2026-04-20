@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed identity verification failing for privacy requests already marked as duplicate by duplicate detection
+pr: 7971
+labels: []
