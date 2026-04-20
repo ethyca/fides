@@ -16,10 +16,6 @@ from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetNotFoundException
 from fides.service.event_audit_service import EventAuditService
 
-# ---------------------------------------------------------------------------
-# Shared test data
-# ---------------------------------------------------------------------------
-
 _SAAS_FIDES_KEY = "audit_test_saas_ds"
 
 _MINIMAL_SAAS_CONFIG = {
@@ -46,12 +42,6 @@ _MINIMAL_DATASET = FideslangDataset.model_validate(
         ],
     }
 )
-
-
-# ---------------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------------
-
 
 class TestDatasetConfigServiceAuditEvents:
     @pytest.fixture(autouse=True)
