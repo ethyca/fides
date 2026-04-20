@@ -10,9 +10,7 @@ const config: StorybookConfig = {
   addons: ["@storybook/addon-a11y"],
   framework: {
     name: "@storybook/react-vite",
-    options: {
-      legacyRootApi: true,
-    },
+    options: {},
   },
   async viteFinal(config) {
     // Merge custom configuration into the default config
