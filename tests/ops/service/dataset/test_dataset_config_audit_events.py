@@ -6,7 +6,11 @@ import pytest
 from fideslang.models import Dataset as FideslangDataset
 from sqlalchemy.orm import Session
 
-from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.event_audit import EventAudit, EventAuditType
 from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetNotFoundException

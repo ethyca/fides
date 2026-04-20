@@ -19,7 +19,6 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditType
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.service.event_audit_service import EventAuditService
 from fides.api.v1.endpoints.dataset_config_endpoints import (
     MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM,
 )
@@ -39,6 +38,7 @@ from fides.common.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
+from fides.service.event_audit_service import EventAuditService
 from tests.fixtures.application_fixtures import load_dataset
 
 
