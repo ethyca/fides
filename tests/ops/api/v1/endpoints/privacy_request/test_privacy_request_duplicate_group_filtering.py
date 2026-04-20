@@ -104,7 +104,9 @@ class TestPrivacyRequestDuplicateGroupFiltering:
         assert response.status_code == 200
 
         resp = response.json()
-        expected_ids = {pr.id for pr in privacy_requests_with_duplicate_group["group_members"]}
+        expected_ids = {
+            pr.id for pr in privacy_requests_with_duplicate_group["group_members"]
+        }
         returned_ids = {item["id"] for item in resp["items"]}
         assert returned_ids == expected_ids
         for item in resp["items"]:
