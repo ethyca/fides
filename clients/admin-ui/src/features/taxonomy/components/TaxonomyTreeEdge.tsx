@@ -1,5 +1,4 @@
 import { BezierEdge, BezierEdgeProps } from "@xyflow/react";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useContext } from "react";
 
 import {
@@ -22,11 +21,11 @@ const TaxonomyTreeEdge = (props: TaxonomyTreeEdgeProps) => {
     switch (targetNodeHoverStatus) {
       case TreeNodeHoverStatus.ACTIVE_HOVER:
       case TreeNodeHoverStatus.PARENT_OF_HOVER:
-        return palette.FIDESUI_MINOS;
+        return "var(--fidesui-minos)";
       case TreeNodeHoverStatus.INACTIVE:
-        return palette.NEUTRAL_400;
+        return "var(--fidesui-neutral-400)";
       default:
-        return palette.FIDESUI_SANDSTONE;
+        return "var(--fidesui-sandstone)";
     }
   }, [targetNodeHoverStatus]);
 

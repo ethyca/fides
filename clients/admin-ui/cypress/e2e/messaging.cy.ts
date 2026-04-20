@@ -87,9 +87,9 @@ describe("Messaging", () => {
 
     cy.getByTestId("add-message-btn").click();
 
-    cy.getByTestId("template-type-selector")
-      .find(".ant-select")
-      .antSelect("Access request completed");
+    cy.getByTestId("template-type-selector").antSelect(
+      "Access request completed",
+    );
 
     cy.getByTestId("confirm-btn").click();
 

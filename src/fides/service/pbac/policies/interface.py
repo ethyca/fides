@@ -73,7 +73,6 @@ class PolicyEvaluationResult:
     unless_triggered: bool = False
     evaluated_policies: list[EvaluatedPolicyInfo] = field(default_factory=list)
     action: PolicyAction | None = None
-    reason: str | None = None
 
 
 @runtime_checkable

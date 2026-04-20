@@ -1,0 +1,4 @@
+type: Fixed
+description: Added character and length validation to usernames on user creation
+pr: 7953
+labels: []

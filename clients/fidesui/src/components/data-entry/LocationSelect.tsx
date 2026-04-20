@@ -93,13 +93,15 @@ export type LocationSelectProps = (
 
 export const LocationSelect = (props: LocationSelectProps) => {
   const {
-    mode,
     includeCountryOnlyOptions = false,
     options: { countries, regions } = {
       countries: iso31661,
       regions: iso31662,
     },
+    ...selectProps
   } = props;
+
+  const { mode } = selectProps;
 
   const defaultProps = {
     "data-testid": "iso_select",
@@ -154,7 +156,7 @@ export const LocationSelect = (props: LocationSelectProps) => {
     <Select<string, IsoOption>
       placeholder={mode ? "🌐 Select locations" : "🌐 Select location"}
       {...defaultProps}
-      {...props}
+      {...selectProps}
       options={isoSelectOptions}
     />
   );

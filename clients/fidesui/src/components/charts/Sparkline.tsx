@@ -124,7 +124,11 @@ export const Sparkline = ({
   );
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer
+      width="100%"
+      height="100%"
+      initialDimension={{ width: 1, height: 1 }}
+    >
       <AreaChart
         data={chartData}
         margin={{

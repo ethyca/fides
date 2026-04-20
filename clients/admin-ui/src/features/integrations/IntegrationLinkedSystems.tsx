@@ -10,10 +10,10 @@ import {
   useMessage,
   useModal,
 } from "fidesui";
-import NextLink from "next/link";
 import { useCallback, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { EDIT_SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { debounce } from "~/features/common/utils";
 import {
@@ -26,7 +26,7 @@ import { useGetSystemsQuery } from "~/features/system/system.slice";
 import { ConnectionConfigurationResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-const { Paragraph, Text, Link: LinkText } = Typography;
+const { Paragraph, Text } = Typography;
 
 const SYSTEMS_PAGE_SIZE = 25;
 
@@ -292,29 +292,24 @@ const IntegrationLinkedSystems = ({
               title={
                 <Flex gap={8} align="center" className="font-normal">
                   <Flex>
-                    <NextLink
+                    <RouterLink
                       href={EDIT_SYSTEM_ROUTE.replace(
                         "[id]",
                         link.system_fides_key,
                       )}
-                      passHref
-                      legacyBehavior
+                      variant="primary"
+                      ellipsis
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <LinkText
-                        variant="primary"
-                        ellipsis
-                        onClick={(e) => e.stopPropagation()}
+                      <Text
+                        unStyled
+                        ellipsis={{
+                          tooltip: link.system_name || link.system_fides_key,
+                        }}
                       >
-                        <Text
-                          unStyled
-                          ellipsis={{
-                            tooltip: link.system_name || link.system_fides_key,
-                          }}
-                        >
-                          {link.system_name || link.system_fides_key}
-                        </Text>
-                      </LinkText>
-                    </NextLink>
+                        {link.system_name || link.system_fides_key}
+                      </Text>
+                    </RouterLink>
                   </Flex>
                   <Tag>Discovery</Tag>
                 </Flex>

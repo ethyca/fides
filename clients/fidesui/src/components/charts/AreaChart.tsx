@@ -97,7 +97,11 @@ export const AreaChart = ({
   return (
     <div ref={containerRef} className="h-full w-full">
       {containerWidth > 0 && (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 1, height: 1 }}
+        >
           <RechartsAreaChart
             data={chartData}
             margin={{ top: 5, right: 5, bottom: 0, left: -15 }}

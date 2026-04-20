@@ -1,6 +1,4 @@
 import { CUSTOM_TAG_COLOR, Icons } from "fidesui";
-// TODO: fix this export to be better encapsulated in fidesui
-import palette from "fidesui/src/palette/palette.module.scss";
 
 import { DiffStatus, StagedResourceTypeValue, StatusCounts } from "~/types/api";
 
@@ -147,11 +145,11 @@ export const MAP_DIFF_STATUS_TO_STATUS_INFO: Partial<
   >
 > = {
   [DiffStatus.ADDITION]: {
-    color: palette.FIDESUI_SUCCESS,
+    color: "var(--fidesui-success)",
     tooltip: "This resource was added in the latest scan",
   },
   [DiffStatus.REMOVAL]: {
-    color: palette.FIDESUI_ERROR,
+    color: "var(--fidesui-error)",
     tooltip: "This resource was removed in the latest scan",
   },
 } as const;

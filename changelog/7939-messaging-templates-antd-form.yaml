@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated messaging template forms to Ant Design Form
+pr: 7939
+labels: []

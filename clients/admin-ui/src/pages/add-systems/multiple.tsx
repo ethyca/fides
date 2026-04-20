@@ -1,12 +1,8 @@
-import {
-  ChakraBox as Box,
-  ChakraText as Text,
-  Link as LinkText,
-} from "fidesui";
+import { ChakraBox as Box, ChakraText as Text } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_ROUTE,
@@ -33,9 +29,9 @@ const AddMultipleSystemsPage: NextPage = () => (
     <Box w={{ base: "100%", md: "75%" }}>
       <Text fontSize="sm" mb={8}>
         {DESCRIBE_SYSTEM_COPY}
-        <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref legacyBehavior>
-          <LinkText>Add a system</LinkText>
-        </NextLink>{" "}
+        <RouterLink href={ADD_SYSTEMS_MANUAL_ROUTE}>
+          Add a system
+        </RouterLink>{" "}
         page.
       </Text>
     </Box>

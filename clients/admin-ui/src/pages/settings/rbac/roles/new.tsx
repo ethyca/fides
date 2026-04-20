@@ -10,11 +10,11 @@ import {
   useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useCreateRoleMutation, useGetRolesQuery } from "~/features/rbac";
@@ -144,9 +144,9 @@ const NewRolePage: NextPage = () => {
               <Button type="primary" htmlType="submit" loading={isLoading}>
                 Create role
               </Button>
-              <NextLink href={RBAC_ROUTE} passHref>
+              <RouterLink href={RBAC_ROUTE}>
                 <Button>Cancel</Button>
-              </NextLink>
+              </RouterLink>
             </Space>
           </Form.Item>
         </Form>

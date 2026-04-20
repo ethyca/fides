@@ -1,8 +1,8 @@
 import { Button, Flex, Icons, Text, Title } from "fidesui";
-import Link from "next/link";
 import { useQueryStates } from "nuqs";
 
 import { useFlags } from "~/features/common/features";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
 
@@ -76,9 +76,9 @@ const MonitorProgressWidget = ({
               <Text type="secondary">
                 {MONITOR_TYPE_TO_EMPTY_TEXT[monitorType]}
               </Text>
-              <Link href={INTEGRATION_MANAGEMENT_ROUTE}>
+              <RouterLink href={INTEGRATION_MANAGEMENT_ROUTE}>
                 <Button type="primary">Create</Button>
-              </Link>
+              </RouterLink>
             </Flex>
           </div>
         )}

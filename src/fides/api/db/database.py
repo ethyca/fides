@@ -139,10 +139,7 @@ def get_db_health(
         alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)
         context = migration.MigrationContext.configure(db.connection())
         current_revision = context.get_current_revision()
-        if (
-            context.get_current_revision()
-            != alembic_script_directory.get_current_head()
-        ):
+        if current_revision != alembic_script_directory.get_current_head():
             db_health: DatabaseHealth = "needs migration"
         else:
             db_health = "healthy"

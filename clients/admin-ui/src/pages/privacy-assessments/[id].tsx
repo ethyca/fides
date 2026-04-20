@@ -10,12 +10,12 @@ import {
   useModal,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
@@ -129,9 +129,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           subTitle="There was an error loading this privacy assessment. Please try again."
           extra={
             <Space>
-              <NextLink href={PRIVACY_ASSESSMENTS_ROUTE} passHref>
+              <RouterLink href={PRIVACY_ASSESSMENTS_ROUTE}>
                 <Button>Back to list</Button>
-              </NextLink>
+              </RouterLink>
               <Button type="primary" onClick={() => refetch()}>
                 Retry
               </Button>

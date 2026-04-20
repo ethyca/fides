@@ -1,12 +1,11 @@
 import {
   ChakraHeading as Heading,
-  ChakraLink as Link,
   ChakraStack as Stack,
   ChakraText as Text,
   Spin,
 } from "fidesui";
-import NextLink from "next/link";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
 import PrivacyDeclarationFormTab from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormTab";
 import { SystemResponse } from "~/types/api";
@@ -49,10 +48,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         of personal information are collected for this purpose and for which
         categories of data subjects. To update the available categories and
         uses, please visit{" "}
-        <Link as={NextLink} href="/taxonomy" color="link.900">
-          Manage taxonomy
-        </Link>
-        .
+        <RouterLink href="/taxonomy">Manage taxonomy</RouterLink>.
       </Text>
       {isLoading ? (
         <Spin />

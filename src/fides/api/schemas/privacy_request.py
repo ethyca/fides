@@ -388,6 +388,7 @@ class PrivacyRequestResponse(FidesSchema):
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
     source: Optional[PrivacyRequestSource] = None
     location: Optional[str] = None
+    property_id: Optional[str] = None
     deleted_at: Optional[datetime] = None
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None

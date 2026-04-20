@@ -1,3 +1,4 @@
+import { usePrefersReducedMotion } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 function easeOut(t: number): number {
@@ -8,8 +9,13 @@ export const useCountUp = (target: number, duration = 800): number => {
   const [value, setValue] = useState(0);
   const rafRef = useRef<number | undefined>(undefined);
   const startRef = useRef<number | undefined>(undefined);
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
+    if (reduceMotion) {
+      return setValue(target);
+    }
+
     if (target === 0) {
       setValue(0);
       return undefined;
@@ -37,7 +43,7 @@ export const useCountUp = (target: number, duration = 800): number => {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [target, duration]);
+  }, [reduceMotion, target, duration]);
 
   return value;
 };

@@ -8,18 +8,15 @@ import {
   Tag,
   Text,
   Tooltip,
-  Typography,
 } from "fidesui";
-import NextLink from "next/link";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { ACCESS_POLICY_EDIT_ROUTE } from "~/features/common/nav/routes";
 
 import DecisionTag from "./DecisionTag";
 import styles from "./PolicyCard.module.scss";
 import { AccessPolicyListItem } from "./types";
 import { formatRelativeTime } from "./utils";
-
-const { Link: LinkText } = Typography;
 
 interface PolicyCardProps {
   policy: AccessPolicyListItem;
@@ -34,25 +31,18 @@ const PolicyCard = ({ policy, onToggle }: PolicyCardProps) => {
           {/* Header */}
           <Flex justify="space-between" align="flex-start">
             <Flex gap="small" align="center" className="min-w-0">
-              {/* legacyBehavior is required: Typography.Link renders <a>, and
-                  Next.js 13 Link also renders <a> — without it we'd get nested anchors */}
-              <NextLink
+              <RouterLink
                 href={{
                   pathname: ACCESS_POLICY_EDIT_ROUTE,
                   query: { id: policy.id },
                 }}
-                passHref
-                legacyBehavior
+                strong
+                ellipsis
+                variant="primary"
+                className={styles.policyName}
               >
-                <LinkText
-                  strong
-                  ellipsis
-                  variant="primary"
-                  className={styles.policyName}
-                >
-                  {policy.name}
-                </LinkText>
-              </NextLink>
+                {policy.name}
+              </RouterLink>
             </Flex>
             <Flex gap="small" align="center" className="shrink-0">
               {policy.is_recommendation && (

@@ -149,6 +149,7 @@ NULLABLE_FIELDS = {
     "submitter": None,
     "source": None,
     "location": None,
+    "property_id": None,
     "action_required_details": None,
     "resume_endpoint": None,
     "deleted_at": None,

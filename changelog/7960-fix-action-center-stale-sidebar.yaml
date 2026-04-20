@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed stale sidebar data in the Action Center datastore monitor page after clicking the refresh button
+pr: 7960
+labels: []

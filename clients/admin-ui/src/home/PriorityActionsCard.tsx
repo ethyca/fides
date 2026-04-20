@@ -10,9 +10,9 @@ import {
   Tag,
   Text,
 } from "fidesui";
-import NextLink from "next/link";
 import { useMemo, useState } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { capitalize } from "~/features/common/utils";
 import {
   ACTION_CTA,
@@ -166,7 +166,12 @@ export const PriorityActionsCard = () => {
           const href = cta.route(action.action_data);
           const daysInfo = getDaysRemaining(action.due_date);
           return (
-            <NextLink key={action.id} href={href} className={styles.actionRow}>
+            <RouterLink
+              unstyled
+              key={action.id}
+              href={href}
+              className={styles.actionRow}
+            >
               <List.Item>
                 <List.Item.Meta
                   title={
@@ -188,7 +193,7 @@ export const PriorityActionsCard = () => {
                 />
                 <Icons.Launch size={14} className={styles.launchIcon} />
               </List.Item>
-            </NextLink>
+            </RouterLink>
           );
         }}
       />

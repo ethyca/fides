@@ -13,7 +13,6 @@ import {
   Tag,
   Tooltip,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import {
   ExecutionLog,
   ExecutionLogStatus,
@@ -261,7 +260,7 @@ const EventLog = ({
       <Tr
         key={detail.updated_at}
         backgroundColor={
-          hasExpandableDetails ? palette.FIDESUI_NEUTRAL_50 : "unset"
+          hasExpandableDetails ? "var(--fidesui-neutral-50)" : "unset"
         }
         onClick={() => {
           if (hasExpandableDetails) {
@@ -271,7 +270,7 @@ const EventLog = ({
         style={{
           cursor: hasExpandableDetails ? "pointer" : "unset",
         }}
-        _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
+        _hover={{ backgroundColor: "var(--fidesui-neutral-50)" }}
       >
         <Td>
           <Text

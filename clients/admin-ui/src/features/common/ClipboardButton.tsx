@@ -1,10 +1,4 @@
-import {
-  Button,
-  ButtonProps,
-  Icons,
-  Tooltip,
-  useChakraClipboard as useClipboard,
-} from "fidesui";
+import { Button, ButtonProps, Icons, Tooltip } from "fidesui";
 import React, { useState } from "react";
 
 enum TooltipText {
@@ -13,12 +7,13 @@ enum TooltipText {
 }
 
 const useClipboardButton = (copyText: string) => {
-  const { onCopy } = useClipboard(copyText);
   const [tooltipText, setTooltipText] = useState(TooltipText.COPY);
 
   const handleClick = () => {
-    setTooltipText(TooltipText.COPIED);
-    onCopy();
+    navigator.clipboard.writeText(copyText).then(
+      () => setTooltipText(TooltipText.COPIED),
+      () => setTooltipText(TooltipText.COPY),
+    );
   };
 
   return {

@@ -7,7 +7,6 @@ import {
   ManualSetupIcon,
   useModal,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -76,7 +75,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Add a system"
-              color={palette.FIDESUI_SANDSTONE}
+              color="var(--fidesui-sandstone)"
               icon={<ManualSetupIcon size={24} />}
               description="Manually add a system for services not covered by AWS or Okta discovery"
             />
@@ -111,7 +110,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Add multiple systems"
-              color={palette.FIDESUI_OLIVE}
+              color="var(--fidesui-olive)"
               icon={<ManualSetupIcon size={24} />}
               description="Choose vendors and automatically populate system details"
             />
@@ -134,7 +133,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Scan your infrastructure (AWS)"
-              color={palette.FIDESUI_TERRACOTTA}
+              color="var(--fidesui-terracotta)"
               description="Automatically discover new systems in your AWS infrastructure"
               icon={<AWSLogo size={24} />}
             />
@@ -151,7 +150,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Scan your Sign On Provider (Okta)"
-              color={palette.FIDESUI_MINOS}
+              color="var(--fidesui-minos)"
               description="Automatically discover new systems in your Okta infrastructure"
               icon={<OktaLogo size={24} />}
             />

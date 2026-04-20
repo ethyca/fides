@@ -10,7 +10,6 @@ import {
   Tooltip,
   useMessage,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
@@ -128,7 +127,7 @@ export const InfrastructureSystemListItem = ({
                 shape="square"
                 icon={
                   <Icons.TransformInstructions
-                    style={{ color: palette.FIDESUI_MINOS }}
+                    style={{ color: "var(--fidesui-minos)" }}
                     className="m-1 size-full"
                   />
                 }

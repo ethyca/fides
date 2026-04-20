@@ -1,10 +1,10 @@
 import Layout from "common/Layout";
 import { Button, Flex, Space, Table, Tag, Typography } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import React from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { RBAC_ROLE_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
@@ -85,9 +85,9 @@ const RBACPage: NextPage = () => {
         isSticky={false}
         className="pb-0"
         rightContent={
-          <NextLink href={RBAC_ROLE_NEW_ROUTE} passHref>
+          <RouterLink href={RBAC_ROLE_NEW_ROUTE}>
             <Button type="primary">Create role</Button>
-          </NextLink>
+          </RouterLink>
         }
       >
         <Typography.Paragraph className="max-w-screen-sm">

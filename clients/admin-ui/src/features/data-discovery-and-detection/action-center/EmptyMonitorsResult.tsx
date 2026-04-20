@@ -10,10 +10,10 @@ import {
   Text,
   Title,
 } from "fidesui";
-import NextLink from "next/link";
 import { useSelector } from "react-redux";
 
 import { selectUser } from "~/features/auth";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { useGetSystemsQuery } from "~/features/system";
 
@@ -131,9 +131,9 @@ export const EmptyMonitorsResult = () => {
         </>
       }
     >
-      <NextLink href={SYSTEM_ROUTE} passHref legacyBehavior>
+      <RouterLink href={SYSTEM_ROUTE}>
         <Button type="primary">View inventory</Button>
-      </NextLink>
+      </RouterLink>
     </Empty>
   );
 };

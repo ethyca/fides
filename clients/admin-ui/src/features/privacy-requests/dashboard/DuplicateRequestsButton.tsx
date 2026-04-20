@@ -1,7 +1,7 @@
 import { Button } from "fidesui";
-import Link from "next/link";
 import { useRouter } from "next/router";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { pluralize } from "~/features/common/utils";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestStatus } from "~/types/api";
@@ -44,13 +44,11 @@ export const DuplicateRequestsButton = ({
   }
 
   return (
-    <Link
+    <RouterLink
       href={{
         pathname: router.pathname,
         query: { status: PrivacyRequestStatus.DUPLICATE },
       }}
-      passHref
-      legacyBehavior
     >
       <Button
         type="text"
@@ -60,6 +58,6 @@ export const DuplicateRequestsButton = ({
         {duplicateCount} duplicate{" "}
         {pluralize(duplicateCount, "request", "requests")}
       </Button>
-    </Link>
+    </RouterLink>
   );
 };

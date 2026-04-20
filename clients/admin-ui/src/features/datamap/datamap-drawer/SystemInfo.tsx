@@ -1,6 +1,6 @@
-import { Divider, Flex, Form, Input, Title, Typography } from "fidesui";
-import NextLink from "next/link";
+import { Divider, Flex, Form, Input, Title } from "fidesui";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { SystemInfoFormValues } from "~/features/datamap/datamap-drawer/types";
 import { System } from "~/types/api";
 
@@ -15,9 +15,7 @@ export const SystemInfo = ({ system }: SystemInfoProps) => {
       <Flex align="center">
         <Title level={5}>System details</Title>
         <div className="grow" />
-        <NextLink href={systemHref} passHref legacyBehavior>
-          <Typography.Link>View more</Typography.Link>
-        </NextLink>
+        <RouterLink href={systemHref}>View more</RouterLink>
       </Flex>
       <Divider size="small" className="pb-4" />
       <Form

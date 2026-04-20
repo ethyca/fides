@@ -1,7 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
-import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
+import {
+  AccessPolicy,
+  Control,
+} from "~/features/access-policies/access-policies.slice";
 
 import { mockAccessPolicies, mockControls } from "./data";
 import { generatedPoliciesForIndustry } from "./generated-policies";
@@ -16,8 +19,9 @@ import {
  */
 export const accessPoliciesHandlers = () => {
   const apiBase = "/api/v1";
-  // Use a mutable copy so create/update/delete persist within a session
+  // Use mutable copies so create/update/delete persist within a session
   const policies: AccessPolicy[] = [...mockAccessPolicies];
+  const controls: Control[] = [...mockControls];
 
   return [
     // GET /api/v1/plus/access-policy - list all
@@ -97,10 +101,94 @@ export const accessPoliciesHandlers = () => {
       },
     ),
 
+    // GET /api/v1/plus/controls/:key - get single control
+    // Must be registered before the list handler so MSW matches the parameterized route
+    rest.get(`${apiBase}/plus/controls/:key`, (req, res, ctx) => {
+      const { key } = req.params;
+      const control = controls.find((c) => c.key === key);
+      if (!control) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `No control found with key '${key}'` }),
+        );
+      }
+      return res(ctx.status(200), ctx.json(control));
+    }),
+
     // GET /api/v1/plus/controls - list controls
     rest.get(`${apiBase}/plus/controls`, (_req, res, ctx) =>
-      res(ctx.status(200), ctx.json(mockControls)),
+      res(ctx.status(200), ctx.json(controls)),
     ),
+
+    // POST /api/v1/plus/controls - create control
+    rest.post(`${apiBase}/plus/controls`, async (req, res, ctx) => {
+      const body = await req.json();
+      const key =
+        body.key ??
+        body.label
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_|_$/g, "");
+      if (controls.find((c) => c.key === key)) {
+        return res(
+          ctx.status(409),
+          ctx.json({
+            detail: `Control with key '${key}' already exists`,
+          }),
+        );
+      }
+      const newControl: Control = {
+        key,
+        label: body.label,
+        description: body.description,
+      };
+      controls.push(newControl);
+      return res(ctx.status(201), ctx.json(newControl));
+    }),
+
+    // PATCH /api/v1/plus/controls/:key - update control
+    rest.patch(`${apiBase}/plus/controls/:key`, async (req, res, ctx) => {
+      const { key } = req.params;
+      const index = controls.findIndex((c) => c.key === key);
+      if (index === -1) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `No control found with key '${key}'` }),
+        );
+      }
+      const body = await req.json();
+      controls[index] = {
+        ...controls[index],
+        label: body.label,
+        description: body.description,
+      };
+      return res(ctx.status(200), ctx.json(controls[index]));
+    }),
+
+    // DELETE /api/v1/plus/controls/:key - delete control
+    rest.delete(`${apiBase}/plus/controls/:key`, (req, res, ctx) => {
+      const { key } = req.params;
+      const index = controls.findIndex((c) => c.key === key);
+      if (index === -1) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `No control found with key '${key}'` }),
+        );
+      }
+      const assignedCount = policies.filter((p) =>
+        p.controls?.includes(key as string),
+      ).length;
+      if (assignedCount > 0) {
+        return res(
+          ctx.status(409),
+          ctx.json({
+            detail: `Cannot delete control '${key}': it is assigned to ${assignedCount} ${assignedCount === 1 ? "policy" : "policies"}. Reassign or remove those policies first.`,
+          }),
+        );
+      }
+      controls.splice(index, 1);
+      return res(ctx.status(204));
+    }),
 
     // GET /api/v1/plus/access-policy/:id - get single
     rest.get(`${apiBase}/plus/access-policy/:id`, (req, res, ctx) => {
