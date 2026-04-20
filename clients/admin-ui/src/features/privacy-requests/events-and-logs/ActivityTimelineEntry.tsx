@@ -84,7 +84,9 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
           >
-            View Log
+            {item.isDuplicateDetection && item.hasDuplicateGroup
+              ? "View duplicates"
+              : "View Log"}
           </span>
         )}
       </div>
