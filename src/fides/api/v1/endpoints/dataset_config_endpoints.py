@@ -173,7 +173,10 @@ def put_dataset_configs(
     config_keys_to_remove = existing_config_keys - requested_config_keys
 
     for key in config_keys_to_remove:
-        dataset_config_service.delete_dataset_config(connection_config, key)
+        try:
+            dataset_config_service.delete_dataset_config(connection_config, key)
+        except DatasetNotFoundException:
+            pass  # already deleted; desired state reached
 
     # reuse the existing patch logic once we've removed the unused dataset configs
     return patch_dataset_configs(
