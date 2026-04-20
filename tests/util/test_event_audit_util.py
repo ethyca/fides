@@ -1,7 +1,6 @@
 """Tests for event_audit_util.py functions."""
 
 import pytest
-from fideslang.models import Dataset as FideslangDataset
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import (
