@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed custom field labels missing from privacy request submission payload
+pr: 7970
+labels: []
