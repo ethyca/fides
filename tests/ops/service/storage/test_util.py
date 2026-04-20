@@ -6,11 +6,20 @@ from pytest import param
 
 from fides.api.service.storage.util import (
     AllowedFileType,
+    FilesMagicBytes,
+    PublicUploadAllowedFileTypes,
+    extension_for_mime,
     get_allowed_file_type_or_raise,
     get_local_filename,
     get_unique_filename,
     resolve_path_from_context,
 )
+
+PDF_BYTES = b"%PDF-1.4 minimal pdf body"
+JPEG_BYTES = b"\xff\xd8\xff\xe0 jpeg body"
+PNG_BYTES = b"\x89PNG\r\n\x1a\n png body"
+ZIP_BYTES = b"PK\x03\x04 zip or docx body"
+OLE_BYTES = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1 doc/xls body"
 
 
 @pytest.mark.parametrize(
@@ -431,3 +440,73 @@ class TestResolvePathFromContext:
         attachment = {"_context": None}
         result = resolve_path_from_context(attachment, "default")
         assert result == "default"
+
+
+class TestFilesMagicBytes:
+    @pytest.mark.parametrize(
+        "data, expected_mime",
+        [
+            param(PDF_BYTES, "application/pdf", id="pdf"),
+            param(JPEG_BYTES, "image/jpeg", id="jpeg"),
+            param(PNG_BYTES, "image/png", id="png"),
+        ],
+    )
+    def test_from_bytes_allowed(self, data: bytes, expected_mime: str):
+        assert FilesMagicBytes.from_bytes(data) == expected_mime
+
+    def test_from_bytes_zip_magic_resolves_to_first_declared(self):
+        """PK\\x03\\x04 matches docx/xlsx/zip — declaration order puts docx first."""
+        mime = FilesMagicBytes.from_bytes(ZIP_BYTES)
+        assert (
+            mime
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+
+    def test_from_bytes_ole_magic_resolves_to_first_declared(self):
+        """OLE header matches doc/xls — declaration order puts doc first."""
+        assert FilesMagicBytes.from_bytes(OLE_BYTES) == "application/msword"
+
+    def test_from_bytes_unknown_returns_none(self):
+        assert FilesMagicBytes.from_bytes(b"plain text, no magic") is None
+
+    def test_from_bytes_empty_returns_none(self):
+        assert FilesMagicBytes.from_bytes(b"") is None
+
+    def test_from_bytes_shorter_than_magic_returns_none(self):
+        """Payload shorter than every catalog magic matches nothing."""
+        assert FilesMagicBytes.from_bytes(b"%") is None
+
+
+class TestPublicUploadAllowedFileTypes:
+    def test_mime_types_returns_canonical_three(self):
+        assert PublicUploadAllowedFileTypes.mime_types() == {
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+        }
+
+    def test_allowed_mimes_all_have_extension_mapping(self):
+        """Every allowlisted MIME must map to a file extension — guards against
+        allowlist drift without adding a MIME_TO_EXTENSION entry."""
+        for mime in PublicUploadAllowedFileTypes.mime_types():
+            assert extension_for_mime(mime)
+
+
+class TestExtensionForMime:
+    @pytest.mark.parametrize(
+        "mime, expected_ext",
+        [
+            param("application/pdf", "pdf", id="pdf"),
+            param("image/jpeg", "jpg", id="jpeg_to_jpg_canonical"),
+            param("image/png", "png", id="png"),
+            param("text/plain", "txt", id="txt"),
+            param("text/csv", "csv", id="csv"),
+            param("application/zip", "zip", id="zip"),
+        ],
+    )
+    def test_known_mimes(self, mime: str, expected_ext: str):
+        assert extension_for_mime(mime) == expected_ext
+
+    def test_unknown_mime_raises(self):
+        with pytest.raises(ValueError, match="No extension registered"):
+            extension_for_mime("application/x-unknown")

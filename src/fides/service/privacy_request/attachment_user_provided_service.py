@@ -121,9 +121,7 @@ def upload_attachment(
     allowed = PublicUploadAllowedFileTypes.mime_types()
     content_type = FilesMagicBytes.from_bytes(file_data)
     if content_type is None or content_type not in allowed:
-        raise ValueError(
-            f"File type is not allowed. Allowed types: {sorted(allowed)}"
-        )
+        raise ValueError(f"File type is not allowed. Allowed types: {sorted(allowed)}")
 
     provider, bucket, storage_config = _get_provider_and_bucket(db)
     object_key = f"{OBJECT_KEY_PREFIX}{uuid4()}.{extension_for_mime(content_type)}"
@@ -155,14 +153,21 @@ def resolve_file_attachments(
     file_field_names: set[str],
     db: Session,
 ) -> list[AttachmentUserProvided]:
-    """Resolve file-field values to locked ``AttachmentUserProvided`` rows.
+    """Resolve file-field values to ``AttachmentUserProvided`` rows.
 
     ``file_field_names`` is authoritative — derived from the Privacy Center
     config's ``field_type == "file"`` entries. For each listed field, each
-    id in its ``value`` list is looked up against the pending rows under
-    ``FOR UPDATE`` and returned for downstream promotion. The caller is
-    responsible for stripping the file-field keys from the payload before
-    persisting the remaining custom fields.
+    id in its ``value`` list is looked up against the pending rows. The
+    caller is responsible for stripping the file-field keys from the
+    payload before persisting the remaining custom fields.
+
+    Lock semantics: ``lock_pending_by_ids`` issues ``FOR UPDATE``, but any
+    subsequent ``db.commit()`` on the caller's session releases that lock.
+    The authoritative concurrency guard is the ``row.status != pending``
+    check inside :func:`AttachmentUserProvidedRepository.mark_promoted`;
+    a racing promotion on the same row causes that check to raise and the
+    caller to roll back. The lock is a best-effort optimisation to reduce
+    the race window, not a hard guarantee.
 
     Status transitions do NOT happen here; they are deferred to
     :func:`promote_rows_to_attachments` so that if privacy-request
@@ -189,8 +194,7 @@ def resolve_file_attachments(
         value = field.value
         if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
             raise ValueError(
-                f"File attachment for field '{name}' must be a list of "
-                "attachment ids."
+                f"File attachment for field '{name}' must be a list of attachment ids."
             )
         ids: list[str] = [v for v in value if isinstance(v, str)]
         if not ids:
@@ -290,9 +294,11 @@ def promote_rows_to_attachments(
                 )
         raise
 
-    # Phase 3: delete temp objects.  Failures here are logged — the orphan
-    # sweep will catch leftovers via the "privacy_request_attachments/"
-    # prefix and transition the row to `deleted`.
+    # Phase 3: delete temp objects.  Failures here are logged only — the row
+    # is now ``promoted`` so the orphan sweep (which targets ``pending``
+    # only) won't pick it up. Leftover storage objects under this prefix
+    # become dead weight; see the ticket for follow-up on a promoted-row
+    # storage-reconciliation sweep.
     for row in rows:
         try:
             provider.delete(bucket, row.object_key)
@@ -304,61 +310,62 @@ def promote_rows_to_attachments(
             )
 
 
-@celery_app.task(base=DatabaseTask, bind=True, ignore_result=True)
-def cleanup_orphaned_attachments(self: DatabaseTask) -> None:  # type: ignore[misc]
+def _cleanup_orphaned_attachments(db: Session) -> None:
     """Delete temp storage for pending rows older than ``ORPHAN_MIN_AGE_SECONDS``.
 
-    For each orphan:
-    1. Delete the object from storage.
-    2. Transition the row ``pending`` → ``deleted``.
+    Separated from the Celery task wrapper so it can be tested without faking
+    a task context.
+    """
+    try:
+        provider, bucket, _ = _get_provider_and_bucket(db)
+    except RuntimeError:
+        logger.info("No active storage config — skipping orphan cleanup")
+        return
 
-    Rows in other states are ignored.
+    cutoff = datetime.now(timezone.utc) - timedelta(seconds=ORPHAN_MIN_AGE_SECONDS)
+
+    repo = AttachmentUserProvidedRepository(db)
+    orphans = repo.list_pending_older_than(cutoff)
+
+    deleted = 0
+    skipped = 0
+    for row in orphans:
+        try:
+            provider.delete(bucket, row.object_key)
+        except Exception:
+            logger.warning(
+                "Failed to delete orphaned object {}", row.object_key, exc_info=True
+            )
+            skipped += 1
+            continue
+        try:
+            repo.mark_deleted(row)
+        except Exception:
+            # Storage is already gone — log and keep sweeping so one bad
+            # row does not abort the whole batch.
+            logger.warning(
+                "Failed to mark orphan row {} as deleted", row.id, exc_info=True
+            )
+            skipped += 1
+            continue
+        deleted += 1
+
+    db.commit()
+    logger.info(
+        "Attachment orphan cleanup complete: deleted={} skipped={}",
+        deleted,
+        skipped,
+    )
+
+
+@celery_app.task(base=DatabaseTask, bind=True, ignore_result=True)
+def cleanup_orphaned_attachments(self: DatabaseTask) -> None:  # type: ignore[misc]
+    """Celery wrapper that opens a fresh session and delegates to the implementation.
 
     Runs on a schedule — see ``initiate_scheduled_attachment_cleanup()``.
     """
-    with self.get_db() as db:
-        try:
-            provider, bucket, _ = _get_provider_and_bucket(db)
-        except RuntimeError:
-            logger.info("No active storage config — skipping orphan cleanup")
-            return
-
-        cutoff = datetime.now(timezone.utc) - timedelta(
-            seconds=ORPHAN_MIN_AGE_SECONDS
-        )
-
-        repo = AttachmentUserProvidedRepository(db)
-        orphans = repo.list_pending_older_than(cutoff)
-
-        deleted = 0
-        skipped = 0
-        for row in orphans:
-            try:
-                provider.delete(bucket, row.object_key)
-            except Exception:
-                logger.warning(
-                    "Failed to delete orphaned object {}", row.object_key, exc_info=True
-                )
-                skipped += 1
-                continue
-            try:
-                repo.mark_deleted(row)
-            except Exception:
-                # Storage is already gone — log and keep sweeping so one bad
-                # row does not abort the whole batch.
-                logger.warning(
-                    "Failed to mark orphan row {} as deleted", row.id, exc_info=True
-                )
-                skipped += 1
-                continue
-            deleted += 1
-
-        db.commit()
-        logger.info(
-            "Attachment orphan cleanup complete: deleted={} skipped={}",
-            deleted,
-            skipped,
-        )
+    with self.get_new_session() as db:
+        _cleanup_orphaned_attachments(db)
 
 
 def initiate_scheduled_attachment_cleanup() -> None:

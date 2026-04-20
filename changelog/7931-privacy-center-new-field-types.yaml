@@ -2,6 +2,10 @@ type: Added
 description: >-
   Added checkbox, checkbox_group, textarea, and file field types to the
   Privacy Center form config. File fields are backed by a new unauthenticated
-  upload endpoint, an `attachment_user_provided` table + orphan cleanup
+  upload endpoint (returning an attachment id the client echoes back in the
+  field value list), an `attachment_user_provided` table + orphan cleanup
+  Celery task, and stricter persistence of falsy custom-field values
+  (checkbox `False`, numeric `0`, and empty strings are now preserved rather
+  than silently dropped).
 pr: 7931
 labels: []

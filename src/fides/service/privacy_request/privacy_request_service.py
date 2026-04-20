@@ -535,7 +535,12 @@ class PrivacyRequestService:
                             "Failed to delete privacy request {} after promotion failure",
                             privacy_request.id,
                         )
-                    raise promotion_exc
+                    # Surface the attachment-specific reason directly instead
+                    # of letting the outer broad except wrap it in the generic
+                    # "This record could not be added" message.
+                    raise PrivacyRequestError(
+                        f"Attachment processing failed: {promotion_exc}", kwargs
+                    ) from promotion_exc
 
             check_and_dispatch_error_notifications(db=self.db)
 
@@ -562,6 +567,10 @@ class PrivacyRequestService:
             raise PrivacyRequestError(
                 "Verification message could not be sent.", kwargs
             ) from exc
+        except PrivacyRequestError:
+            # Already carries a specific reason (e.g. attachment promotion
+            # failure) — don't rewrap with the generic message below.
+            raise
         except Exception as exc:
             logger.error(f"{exc.__class__.__name__}: {str(exc)}")
             raise PrivacyRequestError("This record could not be added", kwargs) from exc

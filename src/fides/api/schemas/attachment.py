@@ -1,6 +1,6 @@
 """Pydantic schemas for data-subject-uploaded attachments."""
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -12,6 +12,8 @@ class PrivacyRequestAttachment(FidesSchema):
     list when the request is submitted — that id is the sole identifier
     the server uses to resolve the upload.
     """
+
+    model_config = ConfigDict(extra="forbid")
 
     id: str = Field(
         description=(

@@ -72,12 +72,13 @@ class AttachmentUserProvidedRepository:
         """Transition a row to ``deleted`` (in-session, no commit)."""
         row.status = AttachmentUserProvidedStatus.deleted
 
-    def lock_pending_by_ids(
-        self, ids: list[str]
-    ) -> list[AttachmentUserProvided]:
+    def lock_pending_by_ids(self, ids: list[str]) -> list[AttachmentUserProvided]:
         """Return ``pending`` rows matching ``ids`` under ``FOR UPDATE``.
 
-        The lock is released when the caller's transaction ends.
+        The lock is released by any ``COMMIT`` (or ``ROLLBACK``) on the
+        caller's session — including commits issued by downstream
+        ``Base.create`` calls. The authoritative concurrency guard is
+        :meth:`mark_promoted`'s ``row.status != pending`` check.
         """
         return (
             self._db.query(AttachmentUserProvided)
@@ -89,9 +90,7 @@ class AttachmentUserProvidedRepository:
             .all()
         )
 
-    def list_pending_older_than(
-        self, cutoff: datetime
-    ) -> list[AttachmentUserProvided]:
+    def list_pending_older_than(self, cutoff: datetime) -> list[AttachmentUserProvided]:
         """Return every ``pending`` row created before ``cutoff``."""
         return (
             self._db.query(AttachmentUserProvided)

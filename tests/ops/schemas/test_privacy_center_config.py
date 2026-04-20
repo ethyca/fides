@@ -506,10 +506,6 @@ class TestPrivacyCenterConfig:
 
     def test_privacy_center_config_with_new_field_types(self):
         """All three new field types round-trip through PrivacyCenterConfig."""
-        import json
-
-        from fides.api.util.saas_util import load_as_string
-
         config_data = json.loads(
             load_as_string("tests/ops/resources/privacy_center_config.json")
         )
@@ -545,10 +541,6 @@ class TestPrivacyCenterConfig:
 
     def test_new_field_types_serialization(self):
         """New field types serialize correctly (no location-specific fields leak)."""
-        import json
-
-        from fides.api.util.saas_util import load_as_string
-
         config_data = json.loads(
             load_as_string("tests/ops/resources/privacy_center_config.json")
         )
