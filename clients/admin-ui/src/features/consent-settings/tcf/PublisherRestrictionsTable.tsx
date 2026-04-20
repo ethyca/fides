@@ -1,8 +1,8 @@
 import { Button, ColumnsType, Skeleton, Table, Tag, Typography } from "fidesui";
-import NextLink from "next/link";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { selectPurposes } from "~/features/common/purpose.slice";
 import { InfoCell } from "~/features/common/table/cells";
 import { MappedPurpose, TCFConfigurationDetail } from "~/types/api";
@@ -102,18 +102,14 @@ export const PublisherRestrictionsTable = ({
         key: "actions",
         width: 100,
         render: (_, record) => (
-          <NextLink
-            href={`/settings/consent/${config?.id}/${record.id}`}
-            passHref
-            legacyBehavior
-          >
+          <RouterLink href={`/settings/consent/${config?.id}/${record.id}`}>
             <Button
               size="small"
               data-testid={`edit-restriction-btn-${record.id}`}
             >
               Edit
             </Button>
-          </NextLink>
+          </RouterLink>
         ),
       },
     ],

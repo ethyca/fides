@@ -9,8 +9,8 @@ import {
   Text,
   Tooltip,
 } from "fidesui";
-import NextLink from "next/link";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
 import { useGetSystemCoverageQuery } from "~/features/dashboard/dashboard.slice";
 import type { SystemCoverageResponse } from "~/features/dashboard/types";
@@ -61,9 +61,9 @@ export const SystemCoverageCard = () => {
       loading={isLoading}
       className="h-full"
       extra={
-        <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref>
+        <RouterLink href={ADD_SYSTEMS_MANUAL_ROUTE}>
           Connect more systems
-        </NextLink>
+        </RouterLink>
       }
     >
       <Flex vertical gap="large" className="h-full">
