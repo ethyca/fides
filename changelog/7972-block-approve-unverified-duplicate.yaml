@@ -1,0 +1,4 @@
+type: Security
+description: Added identity verification check before administrator approval of duplicate privacy requests [GHSA-qx5f-ghc2-7g5c](https://github.com/ethyca/fides/security/advisories/GHSA-qx5f-ghc2-7g5c)
+pr: 7972
+labels: []
