@@ -180,8 +180,10 @@ export const ConnectorParametersForm = ({
   ]);
 
   useEffect(() => {
-    form.setFieldsValue(initialFormValues);
-  }, [form, initialFormValues]);
+    if (isEditingConnection) {
+      form.setFieldsValue(initialFormValues);
+    }
+  }, [form, initialFormValues, isEditingConnection]);
 
   const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
