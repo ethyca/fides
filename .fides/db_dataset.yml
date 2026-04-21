@@ -223,16 +223,22 @@ dataset:
     - name: id
       data_categories:
       - system.operations
+    - name: fides_revision
+      data_categories:
+      - system.operations
     - name: is_active
       data_categories:
       - system.operations
-    - name: key
+    - name: is_managed
       data_categories:
       - system.operations
     - name: legal_reference
       data_categories:
       - system.operations
     - name: name
+      data_categories:
+      - system.operations
+    - name: parent_template_id
       data_categories:
       - system.operations
     - name: region

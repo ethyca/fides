@@ -11,22 +11,24 @@ import {
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterTabs";
 import { useDiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredAssetsTable";
 import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
-import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 const MonitorResultAssets: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const systemId = decodeURIComponent(router.query.systemId as string);
 
+  const { activeTab, activeParams } = useActionCenterTabs();
+
   const { data: systemResults } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
     page: 1,
     size: 1,
     search: "",
-    diff_status: [DiffStatus.ADDITION],
+    diff_status: activeParams.diff_status,
     resolved_system_id: systemId,
   });
   const system = systemResults?.items[0];
@@ -39,9 +41,10 @@ const MonitorResultAssets: NextPage = () => {
         query: {
           monitorId: encodeURIComponent(monitorId),
         },
+        hash: activeTab,
       });
     }
-  }, [systemResults, router, monitorId]);
+  }, [systemResults, router, monitorId, activeTab]);
 
   const { error } = useDiscoveredAssetsTable({
     monitorId,
