@@ -34,6 +34,7 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
+from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
@@ -286,6 +287,7 @@ def queue_downstream_tasks(
         "privacy_request_task_id": LoggerContextKeys.task_id,
     }
 )
+@sqs_heartbeat
 def run_access_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -354,6 +356,7 @@ def run_access_node(
         "privacy_request_task_id": LoggerContextKeys.task_id,
     }
 )
+@sqs_heartbeat
 def run_erasure_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -428,6 +431,7 @@ def run_erasure_node(
         "privacy_request_task_id": LoggerContextKeys.task_id,
     }
 )
+@sqs_heartbeat
 def run_consent_node(
     self: DatabaseTask,
     privacy_request_id: str,

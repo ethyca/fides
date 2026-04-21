@@ -33,5 +33,15 @@ class QueueSettings(FidesSettings):
         default="ethyca-",
         description="The prefix to apply to SQS queue names.",
     )
+    sqs_visibility_timeout: int = Field(
+        default=300,
+        description=(
+            "Default SQS visibility timeout in seconds used as the heartbeat "
+            "lease.  The heartbeat thread extends the lease to this value every "
+            "~60s while the task runs.  This short timeout bounds the redelivery "
+            "window (at most one heartbeat interval) regardless of how long a "
+            "task runs."
+        ),
+    )
 
     model_config = SettingsConfigDict(env_prefix="FIDES__QUEUE__")

@@ -81,6 +81,7 @@ from fides.api.task.graph_task import (
 )
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import get_all_masking_secret_keys
 from fides.api.util.collection_util import Row
@@ -401,6 +402,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
+@sqs_heartbeat
 def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
