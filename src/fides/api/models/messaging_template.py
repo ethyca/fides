@@ -72,6 +72,13 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
             "body": "This is your weekly summary of open data subject requests tasks from __ORGANIZATION_NAME__ that require your attention. Please review the tasks in our Privacy Center to ensure timely completion.",
         },
     },
+    MessagingActionType.CORRESPONDENCE.value: {
+        "label": "Correspondence message",
+        "content": {
+            "subject": "You have a new message regarding your privacy request",
+            "body": "You have received a message regarding your privacy request. __MESSAGE_BODY__",
+        },
+    },
     MessagingActionType.EXTERNAL_USER_WELCOME.value: {
         "label": "External user welcome",
         "content": {
