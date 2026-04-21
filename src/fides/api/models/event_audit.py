@@ -109,7 +109,7 @@ class EventAudit(Base):
     client_id = Column(
         String, ForeignKey("client.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    client: "ClientDetail" = relationship(
+    client = relationship(
         "ClientDetail",
         lazy="selectin",
         uselist=False,

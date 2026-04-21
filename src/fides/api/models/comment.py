@@ -149,7 +149,7 @@ class Comment(Base):
         lazy="selectin",
         uselist=False,
     )
-    client: "ClientDetail" = relationship(
+    client = relationship(
         "ClientDetail",
         lazy="selectin",
         uselist=False,
