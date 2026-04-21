@@ -862,6 +862,17 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-pbac-evaluate-policies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2357,6 +2368,17 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-pbac-evaluate-policies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2884,6 +2906,20 @@ configuration file if not present.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides pbac[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
+<h4 id="fides-pbac-evaluate">fides pbac evaluate</h4>
+<p>Run the full PBAC pipeline over SQL with YAML fixtures.</p>
+<p>Reads SQL from INPUT_FILE (or stdin), parses each statement with
+sqlglot, extracts table references, and runs the full pipeline
+(identity resolution, dataset resolution, purpose evaluation, gap
+reclassification, policy filtering) via the Go evaluation library.</p>
+<p>Example:
+  fides pbac evaluate \
+    --config pbac/ \
+    --identity alice@demo.example \
+    pbac/entries/alice.txt</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides pbac evaluate[0m [[1;92mOPTIONS[0m] [[1;92mINPUT_FILE[0m]
+</code></pre></div></td></tr></table></div>
 <h4 id="fides-pbac-evaluate-policies">fides pbac evaluate-policies</h4>
 <p>Evaluate access policies against a PBAC violation.</p>
 <p>Reads JSON from INPUT_FILE (or stdin if omitted).</p>
@@ -2896,16 +2932,13 @@ configuration file if not present.</p>
       "enabled": true,
       "decision": "ALLOW",
       "match": {"data_use": {"any": ["marketing"]}},
-      "unless": [{"type": "consent", "privacy_notice_key": "...", "requirement": "opt_out"}],
+      "unless": [...],
       "action": {"message": "..."}
     }
   ],
   "request": {
-    "consumer_id": "...",
-    "consumer_name": "...",
     "data_uses": ["marketing.advertising"],
     "data_categories": ["user.contact.email"],
-    "data_subjects": ["customer"],
     "context": {"consent": {"do_not_sell": "opt_out"}}
   }
 }</p>
