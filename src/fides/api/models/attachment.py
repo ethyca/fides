@@ -20,6 +20,7 @@ from fides.api.db.base_class import Base
 from fides.api.service.storage.util import AllowedFileType
 
 if TYPE_CHECKING:
+    from fides.api.models.client import ClientDetail
     from fides.api.models.comment import Comment
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
