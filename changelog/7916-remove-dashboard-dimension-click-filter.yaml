@@ -1,0 +1,4 @@
+type: Changed
+description: Remove radar chart click-to-filter interaction on homepage dashboard
+pr: 7916
+labels: []
