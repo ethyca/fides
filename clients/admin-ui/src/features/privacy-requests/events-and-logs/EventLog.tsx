@@ -56,7 +56,9 @@ const extractMessageContent = (
   const withoutSuffix = message
     .replace(/\s*-\s*(?:retrieved|masked|processed)\s+\d+\s+records?$/i, "")
     .trim();
-  if (!withoutSuffix || withoutSuffix.toLowerCase() === "success") return null;
+  if (!withoutSuffix || withoutSuffix.toLowerCase() === "success") {
+    return null;
+  }
   const unwrapped = unwrapPythonBytesLiteral(withoutSuffix);
   try {
     const parsed = JSON.parse(unwrapped);
