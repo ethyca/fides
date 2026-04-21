@@ -1,8 +1,10 @@
 export const IDP_SESSION_KEYS = {
-  ACTION_KEY: "idpActionKey",
+  EMAIL: "idpEmail",
+  FIRST_NAME: "idpFirstName",
+  LAST_NAME: "idpLastName",
+  VERIFICATION_TOKEN: "idpVerificationToken",
   PROVIDER: "idpProvider",
   STATE: "idpState",
-  FORM_DATA: "idpFormData",
   BASE_PATH: "idpBasePath",
 } as const;
 

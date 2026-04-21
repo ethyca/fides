@@ -16,23 +16,10 @@ import type { IDPAuthorizeResponse } from "~/features/idp-verification/types";
 
 interface IDPLoginButtonsProps {
   providers: IDPProviderConfig[];
-  actionKey: string;
   basePath: string;
-  formData: {
-    policy_key: string;
-    property_id?: string;
-    custom_privacy_request_fields?: Record<string, unknown>;
-  };
-  onValidate: () => Promise<boolean>;
 }
 
-const IDPLoginButtons = ({
-  providers,
-  actionKey,
-  basePath,
-  formData,
-  onValidate,
-}: IDPLoginButtonsProps) => {
+const IDPLoginButtons = ({ providers, basePath }: IDPLoginButtonsProps) => {
   const settings = useSettings();
   const messageApi = useMessage();
   const [loading, setLoading] = useState<string | null>(null);
@@ -64,20 +51,10 @@ const IDPLoginButtons = ({
   }, [settings.FIDES_API_URL]);
 
   const handleIDPLogin = async (provider: IDPProviderConfig) => {
-    const isValid = await onValidate();
-    if (!isValid) {
-      return;
-    }
-
     setLoading(provider.identifier);
 
     try {
-      sessionStorage.setItem(IDP_SESSION_KEYS.ACTION_KEY, actionKey);
       sessionStorage.setItem(IDP_SESSION_KEYS.PROVIDER, provider.identifier);
-      sessionStorage.setItem(
-        IDP_SESSION_KEYS.FORM_DATA,
-        JSON.stringify(formData),
-      );
       sessionStorage.setItem(IDP_SESSION_KEYS.BASE_PATH, basePath);
 
       const callbackBase = `${window.location.origin}${basePath === "/" ? "" : basePath}`;

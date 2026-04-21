@@ -4,7 +4,6 @@ import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
-import { AuthFormLayout } from "~/components/common/AuthFormLayout";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import { IDPCallbackHandler } from "~/features/idp-verification";
 import { NextSearchParams } from "~/types/next";
@@ -23,9 +22,7 @@ const IDPCallbackPage = async ({
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <AuthFormLayout dataTestId="idp-callback-layout">
-        <IDPCallbackHandler />
-      </AuthFormLayout>
+      <IDPCallbackHandler />
     </LoadServerEnvironmentIntoStores>
   );
 };

@@ -5,6 +5,8 @@ export interface IDPAuthorizeResponse {
 
 export interface IDPCallbackResponse {
   email: string;
+  first_name?: string | null;
+  last_name?: string | null;
   verification_token: string;
 }
 
