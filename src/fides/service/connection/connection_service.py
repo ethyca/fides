@@ -543,11 +543,11 @@ class ConnectionService:
             self.upsert_dataset_config_from_template(
                 connection_config, connector_template, template_values
             )
-        except Exception:
+        except Exception as e:
             connection_config.delete(self.db)
             raise Exception(
                 f"SaaS Connector could not be created from the '{config.saas_connector_type}' template at this time."
-            )
+            ) from e
 
         # Create audit events for connection and secrets creation
         self.create_connection_audit_event(
