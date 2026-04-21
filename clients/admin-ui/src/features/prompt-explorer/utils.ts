@@ -36,12 +36,18 @@ interface QuestionRephraseBatchParams {
   questions: Question[];
 }
 
+interface AccessPolicyChatParams {
+  agentPrompt: string;
+  currentPolicyYaml: string;
+}
+
 export type QuestionnaireVariablesParams = {
   promptType: PromptType | undefined;
 } & Partial<IntentClassificationParams> &
   Partial<MessageGenerationParams> &
   Partial<QuestionRephraseParams> &
-  Partial<QuestionRephraseBatchParams>;
+  Partial<QuestionRephraseBatchParams> &
+  Partial<AccessPolicyChatParams>;
 
 /**
  * Build questionnaire variables based on prompt type.
@@ -60,7 +66,16 @@ export const buildQuestionnaireVariables = ({
   isFinalQuestion = false,
   questionToRephrase = "",
   previousPhrasings = "",
+  agentPrompt = "",
+  currentPolicyYaml = "",
 }: QuestionnaireVariablesParams): Record<string, unknown> => {
+  if (promptType === "access_policy_chat") {
+    return {
+      prompt: agentPrompt,
+      current_policy_yaml: currentPolicyYaml,
+    };
+  }
+
   if (promptType === "intent_classification") {
     const totalQuestions = questions.length || 5;
     const questionNum = currentQuestionIndex + 1;

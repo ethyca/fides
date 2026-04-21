@@ -80,6 +80,12 @@ const PromptExplorer: NextPage = () => {
     "How long do you keep this data?",
   );
 
+  // State for access policy chat prompt inputs
+  const [agentPrompt, setAgentPrompt] = useState<string>(
+    "Create a policy that denies marketing use for EEA users",
+  );
+  const [currentPolicyYaml, setCurrentPolicyYaml] = useState<string>("");
+
   // State for rendered prompt and response
   const [renderedPrompt, setRenderedPrompt] = useState<string>("");
   const [llmResponse, setLlmResponse] = useState<string>("");
@@ -168,7 +174,8 @@ const PromptExplorer: NextPage = () => {
 
     try {
       const questionnaireVariables =
-        selectedPrompt.category === "questionnaire"
+        selectedPrompt.category === "questionnaire" ||
+        selectedPrompt.category === "access_policies"
           ? buildQuestionnaireVariables({
               promptType: selectedPrompt.prompt_type,
               questions,
@@ -182,6 +189,8 @@ const PromptExplorer: NextPage = () => {
               isFinalQuestion,
               questionToRephrase,
               previousPhrasings,
+              agentPrompt,
+              currentPolicyYaml,
             })
           : {};
 
@@ -211,6 +220,8 @@ const PromptExplorer: NextPage = () => {
     isFinalQuestion,
     questionToRephrase,
     previousPhrasings,
+    agentPrompt,
+    currentPolicyYaml,
     dataSections,
     selectedAssessmentId,
     selectedTemplateKey,
@@ -307,6 +318,7 @@ const PromptExplorer: NextPage = () => {
                   value={selectedCategory}
                   onChange={(value) => setSelectedCategory(value)}
                   options={[
+                    { label: "Access Policies", value: "access_policies" },
                     { label: "Assessment", value: "assessment" },
                     { label: "Questionnaire", value: "questionnaire" },
                   ]}
@@ -462,6 +474,10 @@ const PromptExplorer: NextPage = () => {
                 setQuestionToRephrase={setQuestionToRephrase}
                 previousPhrasings={previousPhrasings}
                 setPreviousPhrasings={setPreviousPhrasings}
+                agentPrompt={agentPrompt}
+                setAgentPrompt={setAgentPrompt}
+                currentPolicyYaml={currentPolicyYaml}
+                setCurrentPolicyYaml={setCurrentPolicyYaml}
               />
 
               {/* Actions */}
