@@ -28,12 +28,12 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     isPolling,
     description,
     attachments,
-    showViewLog,
-    logCount,
+    logCount = 0,
   } = item;
 
   // Format the date for display
   const formattedDate = formatDate(date);
+  const showViewLog = logCount > 0;
 
   const isClickable = !!onClick;
 
@@ -86,7 +86,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
           >
-            · View {logCount} {pluralize(logCount ?? 0, "Log", "Logs")}
+            · View {logCount} {pluralize(logCount, "Log", "Logs")}
           </span>
         )}
       </div>
