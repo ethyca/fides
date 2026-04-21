@@ -1,4 +1,4 @@
-import { Button, Skeleton, Space } from "fidesui";
+import { Button, Skeleton, Space, Typography } from "fidesui";
 import { useEffect, useState } from "react";
 
 import {
@@ -80,19 +80,19 @@ export const PublisherRestrictionsConfig = ({
             )}
             {!isTcfConfigurationsLoading && tcfConfigurations?.items?.length ? (
               <>
-                <p>
+                <Typography.Paragraph>
                   The table below allows you to adjust which TCF purposes you
                   allow as part of your user facing notices and business
                   activities.
-                </p>
-                <p>
+                </Typography.Paragraph>
+                <Typography.Paragraph>
                   To configure this section, select a TCF purpose to edit the
                   restriction type and vendors.{" "}
                   <DocsLink href={PUBLISHER_RESTRICTIONS_DOCS_URL}>
                     Learn more about publisher restrictions
                   </DocsLink>{" "}
                   in our docs.
-                </p>
+                </Typography.Paragraph>
                 <TCFConfigurationDropdown
                   selectedConfigId={selectedTCFConfigId || ""}
                   configurations={tcfConfigurations?.items || []}
