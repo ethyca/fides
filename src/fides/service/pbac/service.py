@@ -17,7 +17,7 @@ from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.service.pbac.consumers.entities import DataConsumerEntity
 from fides.service.pbac.consumers.repository import DataConsumerRedisRepository
 from fides.service.pbac.dataset.resolver import DatasetResolver
-from fides.service.pbac.evaluate import evaluate_purpose
+from fides.service.pbac.engine import evaluate_purpose as _go_evaluate_purpose
 from fides.service.pbac.identity.interface import IdentityResolver
 from fides.service.pbac.identity.resolver import RedisIdentityResolver
 from fides.service.pbac.policies import (
@@ -84,13 +84,18 @@ class InProcessPBACEvaluationService:
         # 1. Resolve consumer
         consumer = self._identity_resolver.resolve(identity=entry.identity)
 
-        # 2. Resolve datasets
+        # 2. Resolve datasets + collect per-dataset collection names
         dataset_keys: list[str] = []
+        collections: dict[str, list[str]] = {}
         unresolved_gaps: list[EvaluationGap] = []
         for table_ref in entry.referenced_tables:
             fides_key = self._dataset_resolver.resolve(table_ref)
             if fides_key:
-                dataset_keys.append(fides_key)
+                if fides_key not in collections:
+                    dataset_keys.append(fides_key)
+                    collections[fides_key] = []
+                if table_ref.table:
+                    collections[fides_key].append(table_ref.table.lower())
             else:
                 unresolved_gaps.append(
                     EvaluationGap(
@@ -112,8 +117,10 @@ class InProcessPBACEvaluationService:
         else:
             ds_purposes_map = self._build_dataset_purposes(dataset_keys)
 
-        # 4. Purpose evaluation engine
-        result = evaluate_purpose(consumer_purposes, ds_purposes_map)
+        # 4. Purpose evaluation via Go library
+        result = self._call_go_evaluate_purpose(
+            consumer_purposes, ds_purposes_map, collections
+        )
 
         # 5. Reclassify gaps if consumer was found but has no purposes
         gaps = result.gaps + unresolved_gaps
@@ -227,6 +234,64 @@ class InProcessPBACEvaluationService:
                 )
             )
         return result
+
+    @staticmethod
+    def _call_go_evaluate_purpose(
+        consumer: ConsumerPurposes,
+        datasets: dict[str, DatasetPurposes],
+        collections: dict[str, list[str]] | None = None,
+    ) -> PurposeEvaluationResult:
+        """Call Go EvaluatePurpose via the shared library.
+
+        Serializes the typed Python inputs to JSON dicts, calls Go,
+        then deserializes the JSON response back to typed Python objects.
+        This is the only place where Python <-> Go marshalling happens
+        for purpose evaluation.
+        """
+        consumer_dict = {
+            "consumer_id": consumer.consumer_id,
+            "consumer_name": consumer.consumer_name,
+            "purpose_keys": sorted(consumer.purpose_keys),
+        }
+        datasets_dict = {
+            key: {
+                "dataset_key": ds.dataset_key,
+                "purpose_keys": sorted(ds.purpose_keys),
+                "collection_purposes": {
+                    col: sorted(purposes)
+                    for col, purposes in ds.collection_purposes.items()
+                }
+                if ds.collection_purposes
+                else {},
+            }
+            for key, ds in datasets.items()
+        }
+        collections_dict = {k: list(v) for k, v in (collections or {}).items()}
+        raw = _go_evaluate_purpose(consumer_dict, datasets_dict, collections_dict)
+        return PurposeEvaluationResult(
+            violations=[
+                PurposeViolation(
+                    consumer_id=v["consumer_id"],
+                    consumer_name=v["consumer_name"],
+                    dataset_key=v["dataset_key"],
+                    collection=v.get("collection"),
+                    consumer_purposes=frozenset(v.get("consumer_purposes", [])),
+                    dataset_purposes=frozenset(v.get("dataset_purposes", [])),
+                    reason=v["reason"],
+                )
+                for v in raw.get("violations", [])
+            ],
+            gaps=[
+                EvaluationGap(
+                    gap_type=GapType(g["gap_type"]),
+                    identifier=g["identifier"],
+                    dataset_key=g.get("dataset_key"),
+                    reason=g["reason"],
+                )
+                for g in raw.get("gaps", [])
+            ],
+            total_accesses=raw.get("total_accesses", 0),
+        )
 
     def _filter_violations_through_policies(
         self,
