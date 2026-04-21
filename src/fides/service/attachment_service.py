@@ -10,12 +10,12 @@ from typing import IO, Any, Optional, Tuple
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.request_context import get_client_id
 from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
     AttachmentReferenceType,
 )
+from fides.api.request_context import get_client_id
 from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.service.storage.providers import StorageProviderFactory
 from fides.api.service.storage.providers.base import StorageProvider
