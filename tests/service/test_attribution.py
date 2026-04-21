@@ -39,16 +39,18 @@ class TestGetActorDisplayName:
     def test_returns_username_for_known_user(self, service):
         mock_user = MagicMock()
         mock_user.username = "alice"
-        with patch("fides.service.attribution.CONFIG") as mock_config, patch(
-            "fides.service.attribution.FidesUser.get_by", return_value=mock_user
+        with (
+            patch("fides.service.attribution.CONFIG") as mock_config,
+            patch("fides.service.attribution.FidesUser.get_by", return_value=mock_user),
         ):
             mock_config.security.oauth_root_client_id = "root_client_id"
             result = service.get_actor_display_name(user_id="usr_123", client_id=None)
         assert result == "alice"
 
     def test_returns_fallback_when_user_not_found(self, service):
-        with patch("fides.service.attribution.CONFIG") as mock_config, patch(
-            "fides.service.attribution.FidesUser.get_by", return_value=None
+        with (
+            patch("fides.service.attribution.CONFIG") as mock_config,
+            patch("fides.service.attribution.FidesUser.get_by", return_value=None),
         ):
             mock_config.security.oauth_root_client_id = "root_client_id"
             result = service.get_actor_display_name(
@@ -87,8 +89,9 @@ class TestGetActorDisplayName:
         """user_id should be used if both are somehow set (should not happen in practice)."""
         mock_user = MagicMock()
         mock_user.username = "alice"
-        with patch("fides.service.attribution.CONFIG") as mock_config, patch(
-            "fides.service.attribution.FidesUser.get_by", return_value=mock_user
+        with (
+            patch("fides.service.attribution.CONFIG") as mock_config,
+            patch("fides.service.attribution.FidesUser.get_by", return_value=mock_user),
         ):
             mock_config.security.oauth_root_client_id = "root_client_id"
             result = service.get_actor_display_name(

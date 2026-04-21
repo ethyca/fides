@@ -4,6 +4,7 @@ These tests verify that extract_token_and_load_client (and its async
 counterpart) correctly set either user_id or client_id in the request
 context depending on the type of authenticated actor.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
