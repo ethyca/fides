@@ -117,7 +117,7 @@ const DataPurposeForm = ({ purpose, handleSubmit }: DataPurposeFormProps) => {
         rules={[{ required: true, message: "Name is required" }]}
       >
         <Input
-          placeholder="Enter a name for this data purpose"
+          placeholder="Enter a name for this purpose"
           onChange={handleNameChange}
           data-testid="data-purpose-name-input"
         />
@@ -134,7 +134,7 @@ const DataPurposeForm = ({ purpose, handleSubmit }: DataPurposeFormProps) => {
               "Key must contain only lowercase letters, numbers, underscores, and dots",
           },
         ]}
-        tooltip="Unique identifier for this data purpose. Auto-generated from name."
+        tooltip="Unique identifier for this purpose. Auto-generated from name."
       >
         <Input
           placeholder="Auto-generated from name"
@@ -191,7 +191,7 @@ const DataPurposeForm = ({ purpose, handleSubmit }: DataPurposeFormProps) => {
       <Form.Item
         name="description"
         label="Description"
-        tooltip="An optional description of this data purpose"
+        tooltip="An optional description of this purpose"
       >
         <Input.TextArea
           placeholder="Enter a description"

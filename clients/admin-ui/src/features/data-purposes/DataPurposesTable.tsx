@@ -18,7 +18,7 @@ const DataPurposesTable = () => {
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}
-          placeholder="Search data purposes..."
+          placeholder="Search purposes..."
         />
         <Restrict scopes={[ScopeRegistryEnum.DATA_PURPOSE_CREATE]}>
           <Button
@@ -26,7 +26,7 @@ const DataPurposesTable = () => {
             onClick={() => router.push(DATA_PURPOSES_NEW_ROUTE)}
             data-testid="add-data-purpose-button"
           >
-            Add data purpose
+            Add purpose
           </Button>
         </Restrict>
       </Flex>
