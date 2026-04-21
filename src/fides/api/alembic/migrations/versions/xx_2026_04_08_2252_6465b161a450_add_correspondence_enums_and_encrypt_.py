@@ -133,3 +133,14 @@ def downgrade():
         offset += batch_size
     if total_decrypted:
         logger.info("Decrypted {} comment_text rows back to plaintext", total_decrypted)
+    else:
+        non_null = bind.execute(
+            text("SELECT count(*) FROM comment WHERE comment_text IS NOT NULL")
+        ).scalar()
+        if non_null:
+            logger.warning(
+                "Downgrade decrypted 0 of {} non-null comment_text rows. "
+                "Verify FIDES__SECURITY__APP_ENCRYPTION_KEY matches the key "
+                "used during the upgrade.",
+                non_null,
+            )
