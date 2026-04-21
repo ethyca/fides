@@ -526,7 +526,7 @@ class TestGenerateDatasetAuditEventDetails:
     def test_generate_dataset_audit_event_details_saas_created(
         self, saas_connection: ConnectionConfig
     ):
-        """SaaS created event includes operation_type, connection_key, and saas_connector_type."""
+        """SaaS created event without dataset_definition omits the dataset key."""
         event_details, description = generate_dataset_audit_event_details(
             event_type=EventAuditType.dataset_created,
             connection_config=saas_connection,
@@ -536,9 +536,47 @@ class TestGenerateDatasetAuditEventDetails:
         assert event_details["operation_type"] == "created"
         assert event_details["connection_key"] == saas_connection.key
         assert event_details["saas_connector_type"] == "gen_ds_audit_connector"
+        assert "dataset" not in event_details
         assert description == (
             "Dataset created: 'my_dataset' on gen_ds_audit_connector connection 'gen_ds_audit_saas_connection'"
         )
+
+    def test_generate_dataset_audit_event_details_with_dataset_definition(
+        self, saas_connection: ConnectionConfig
+    ):
+        """When dataset_definition is provided, it is included in event_details for created/updated."""
+        definition = {
+            "fides_key": "my_dataset",
+            "name": "My Dataset",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [{"name": "id", "data_categories": ["system.operations"]}],
+                }
+            ],
+        }
+
+        for event_type in (EventAuditType.dataset_created, EventAuditType.dataset_updated):
+            event_details, _ = generate_dataset_audit_event_details(
+                event_type=event_type,
+                connection_config=saas_connection,
+                dataset_key="my_dataset",
+                dataset_definition=definition,
+            )
+            assert event_details["dataset"] == definition
+
+    def test_generate_dataset_audit_event_details_deleted_omits_dataset_definition(
+        self, saas_connection: ConnectionConfig
+    ):
+        """Deleted events never include dataset definition even when one is passed."""
+        definition = {"fides_key": "my_dataset", "name": "My Dataset", "collections": []}
+        event_details, _ = generate_dataset_audit_event_details(
+            event_type=EventAuditType.dataset_deleted,
+            connection_config=saas_connection,
+            dataset_key="my_dataset",
+            dataset_definition=definition,
+        )
+        assert "dataset" not in event_details
 
     def test_generate_dataset_audit_event_details_saas_updated(
         self, saas_connection: ConnectionConfig
@@ -570,6 +608,7 @@ class TestGenerateDatasetAuditEventDetails:
         assert event_details["operation_type"] == "deleted"
         assert event_details["connection_key"] == saas_connection.key
         assert event_details["saas_connector_type"] == "gen_ds_audit_connector"
+        assert "dataset" not in event_details
         assert description == (
             "Dataset deleted: 'my_dataset' on gen_ds_audit_connector connection 'gen_ds_audit_saas_connection'"
         )

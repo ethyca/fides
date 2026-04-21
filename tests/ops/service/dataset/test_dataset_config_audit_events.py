@@ -94,7 +94,7 @@ class TestDatasetConfigServiceAuditEvents:
         service: DatasetConfigService,
         saas_connection_config: ConnectionConfig,
     ):
-        """First upsert of a dataset on a SaaS connection emits dataset.created."""
+        """First upsert of a dataset on a SaaS connection emits dataset.created with full definition."""
         service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
@@ -105,9 +105,14 @@ class TestDatasetConfigServiceAuditEvents:
         assert len(events) == 1
         assert events[0].event_type == EventAuditType.dataset_created.value
         assert events[0].resource_identifier == _SAAS_FIDES_KEY
-        assert events[0].event_details["operation_type"] == "created"
-        assert events[0].event_details["connection_key"] == saas_connection_config.key
-        assert events[0].event_details["saas_connector_type"] == "audit_test_connector"
+        details = events[0].event_details
+        assert details["operation_type"] == "created"
+        assert details["connection_key"] == saas_connection_config.key
+        assert details["saas_connector_type"] == "audit_test_connector"
+        # Full dataset definition is included so reviewers can see exactly what was created
+        assert "dataset" in details
+        assert details["dataset"]["fides_key"] == _SAAS_FIDES_KEY
+        assert details["dataset"]["collections"][0]["name"] == "items"
 
     def test_update_saas_dataset_emits_updated_event(
         self,
@@ -115,7 +120,7 @@ class TestDatasetConfigServiceAuditEvents:
         service: DatasetConfigService,
         saas_connection_config: ConnectionConfig,
     ):
-        """Second upsert of the same dataset key emits dataset.updated."""
+        """Second upsert of the same dataset key emits dataset.updated with full definition."""
         service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
@@ -130,6 +135,9 @@ class TestDatasetConfigServiceAuditEvents:
         # get_events_for_resource returns newest-first
         assert events[0].event_type == EventAuditType.dataset_updated.value
         assert events[1].event_type == EventAuditType.dataset_created.value
+        # Updated event also includes the full dataset definition
+        assert "dataset" in events[0].event_details
+        assert events[0].event_details["dataset"]["fides_key"] == _SAAS_FIDES_KEY
 
     def test_delete_saas_dataset_emits_deleted_event(
         self,
@@ -137,7 +145,7 @@ class TestDatasetConfigServiceAuditEvents:
         service: DatasetConfigService,
         saas_connection_config: ConnectionConfig,
     ):
-        """Deleting a SaaS dataset config emits dataset.deleted."""
+        """Deleting a SaaS dataset config emits dataset.deleted without a dataset definition."""
         service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
@@ -150,6 +158,8 @@ class TestDatasetConfigServiceAuditEvents:
         # get_events_for_resource returns newest-first
         assert events[0].event_type == EventAuditType.dataset_deleted.value
         assert events[0].event_details["operation_type"] == "deleted"
+        # Deleted events do not include the dataset definition
+        assert "dataset" not in events[0].event_details
 
     def test_non_saas_dataset_no_audit_event(
         self,
