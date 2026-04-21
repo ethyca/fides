@@ -113,7 +113,7 @@ describe("Privacy Requests", () => {
           .within(() => {
             cy.getByTestId("activity-timeline-view-logs").should(
               "contain",
-              "View 1 Log",
+              "View 4 Logs",
             );
           });
       });
