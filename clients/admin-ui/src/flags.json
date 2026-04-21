@@ -89,7 +89,7 @@
     "description": "Dynamic role-based access control system for roles, permissions, and user assignments",
     "development": true,
     "test": false,
-    "production": true
+    "production": false
   },
   "alphaDashboard": {
     "label": "Alpha new dashboard",
