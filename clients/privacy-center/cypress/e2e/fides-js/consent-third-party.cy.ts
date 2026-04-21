@@ -518,4 +518,95 @@ describe("Consent third party extensions", () => {
       });
     });
   });
+
+  describe("Matomo integration", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+        },
+      });
+      cy.get("@FidesInitializing").should("have.been.calledOnce");
+    });
+
+    it("pushes requireConsent and consent commands to _paq", () => {
+      cy.window().then((win) => {
+        expect(win).to.have.property("_paq").that.exist;
+      });
+    });
+
+    it("pushes requireConsent on FidesReady when analytics key is present", () => {
+      cy.waitUntilFidesInitialized().then(() => {
+        // The fixture has analytics_opt_out (not analytics), so Matomo should
+        // NOT have pushed requireConsent since neither "analytics" nor
+        // "performance" keys are present.
+        cy.get("@paqPush").should("not.have.been.called");
+      });
+    });
+
+    it("pushes consent commands when the analytics notice key is present", () => {
+      // Override the stub to use a config with an "analytics" notice key
+      stubConfig(
+        {
+          experience: {
+            privacy_notices: [
+              {
+                id: "pri_analytics",
+                origin: "pri_xxx",
+                created_at: "2024-01-01T12:00:00.000000+00:00",
+                updated_at: "2024-01-01T12:00:00.000000+00:00",
+                name: "Analytics",
+                notice_key: "analytics",
+                consent_mechanism: "opt_in" as any,
+                data_uses: ["analytics"],
+                enforcement_level: "frontend" as any,
+                disabled: false,
+                has_gpc_flag: false,
+                framework: null,
+                default_preference: "opt_out" as any,
+                cookies: [],
+                systems_applicable: true,
+                translations: [
+                  {
+                    language: "en",
+                    title: "Analytics",
+                    description: "We use analytics to improve our site.",
+                    privacy_notice_history_id: "pri_analytics_history",
+                  },
+                ],
+              },
+            ],
+          },
+          options: {
+            isOverlayEnabled: true,
+          },
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").then(() => {
+          // On FidesReady, analytics defaults to opt_out (false), so Matomo
+          // should have pushed requireConsent + forgetConsentGiven
+          cy.get("@paqPush").should("have.been.calledWith", ["requireConsent"]);
+          cy.get("@paqPush").should("have.been.calledWith", [
+            "forgetConsentGiven",
+          ]);
+
+          // Now opt in via the banner
+          cy.get("div#fides-banner").within(() => {
+            cy.contains("button", "Opt in to all").should("be.visible").click();
+          });
+
+          // After opting in, Matomo should receive rememberConsentGiven
+          cy.get("@paqPush").should("have.been.calledWith", [
+            "rememberConsentGiven",
+          ]);
+        });
+      });
+    });
+  });
 });
