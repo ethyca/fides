@@ -204,6 +204,10 @@ export const ConfigureIntegrationForm = ({
 
   const [form] = Form.useForm<FormValues>();
 
+  useEffect(() => {
+    form.setFieldsValue(initialValues);
+  }, [form, initialValues]);
+
   const messageApi = useMessage();
 
   const isSaas = connectionOption.type === SystemType.SAAS;

@@ -17,7 +17,7 @@ import {
   useMessage,
 } from "fidesui";
 import _ from "lodash";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
@@ -179,9 +179,25 @@ export const ConnectorParametersForm = ({
     connectionOption,
   ]);
 
+  useEffect(() => {
+    form.setFieldsValue(initialFormValues);
+  }, [form, initialFormValues]);
+
   const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
     await onSaveClick(processedValues);
+
+    // After a successful create, mask secrets immediately so the user sees
+    // stars instead of blank fields while waiting for the refetch.
+    if (!isEditingConnection && secretsSchema) {
+      const maskedSecrets: Record<string, string> = {};
+      Object.keys(secretsSchema.properties).forEach((key) => {
+        if (processedValues.secrets[key]) {
+          maskedSecrets[key] = "**********";
+        }
+      });
+      form.setFieldsValue({ secrets: maskedSecrets });
+    }
 
     // Save property assignments if editing
     if (
