@@ -265,7 +265,7 @@ const HomePage: NextPage = () => {
                 color="gray.800"
                 href="/privacy-request-metrics"
               >
-                Request statistics
+                Privacy request disclosures
               </Link>
             </Flex>
             <BrandLink isHomePage position="absolute" right={6} bottom={0} />

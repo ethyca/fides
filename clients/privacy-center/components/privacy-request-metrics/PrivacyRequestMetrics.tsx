@@ -38,7 +38,7 @@ export const PrivacyRequestMetrics = () => {
     <Stack align="center" py={["6", "16"]} px={5} spacing={10}>
       <Stack align="center" spacing={3} w="100%" maxWidth={960}>
         <Heading as="h1" fontSize={["2xl", "3xl"]} fontWeight="semibold">
-          Privacy request metrics
+          Privacy request disclosures
         </Heading>
         <Text color="gray.600" fontSize="sm">
           Reporting period: {data.reporting_period}
