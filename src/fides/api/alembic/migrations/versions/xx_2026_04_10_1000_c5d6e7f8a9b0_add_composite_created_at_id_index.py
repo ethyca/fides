@@ -45,6 +45,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # Raw SQL because op.drop_index(..., if_exists=True) requires alembic>=1.12
+    # and we pin 1.8.1. The indexes may not exist yet if the background task
+    # hasn't run, so IF EXISTS is necessary.
     op.execute(sa.text(f"DROP INDEX IF EXISTS {CURRENT_INDEX_NAME}"))
     op.execute(sa.text(f"DROP INDEX IF EXISTS {HISTORIC_INDEX_NAME}"))
     op.execute(
