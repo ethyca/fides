@@ -101,6 +101,8 @@ export const CHAT_PROVIDERS_CONFIGURE_ROUTE =
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
 
 export const ANT_POC_ROUTE = "/poc/ant-components";
+export const ENTRY_POINT_POC_ROUTE = "/poc/entry-point";
+export const GRID_MOTION_POC_ROUTE = "/poc/grid-motion";
 export const FORMS_POC_ROUTE = "/poc/forms";
 export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";

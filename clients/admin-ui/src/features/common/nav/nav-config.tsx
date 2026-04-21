@@ -441,6 +441,16 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         scopes: [],
       },
       {
+        title: "Entry Point POC",
+        path: routes.ENTRY_POINT_POC_ROUTE,
+        scopes: [],
+      },
+      {
+        title: "Grid Motion POC",
+        path: routes.GRID_MOTION_POC_ROUTE,
+        scopes: [],
+      },
+      {
         title: "Fides JS docs",
         path: routes.FIDES_JS_DOCS,
         scopes: [],
