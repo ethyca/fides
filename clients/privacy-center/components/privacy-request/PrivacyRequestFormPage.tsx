@@ -1,12 +1,14 @@
 "use client";
 
-import { useMessage } from "fidesui";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { Button, Flex, Text, useMessage } from "fidesui";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { decodePolicyKey } from "~/common/policy-key";
 import { useConfig } from "~/features/common/config.slice";
+import { useProperty } from "~/features/common/property.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import { IDPLoginButtons } from "~/features/idp-verification";
 import { PrivacyRequestOption } from "~/types/config";
 
 import PrivacyRequestForm from "../modals/privacy-request-modal/PrivacyRequestForm";
@@ -19,11 +21,21 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   const config = useConfig();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+  const property = useProperty();
   const propertyPath = params?.propertyPath as string | undefined;
   const basePath = propertyPath ? `/${propertyPath}` : "";
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
-  const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
+
+  const isIDPVerification =
+    config.identity_verification?.method === "idp";
+  const idpProviders = config.identity_verification?.idp_providers ?? [];
+
+  const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery(
+    undefined,
+    { skip: isIDPVerification },
+  );
 
   const messageApi = useMessage();
 
@@ -40,7 +52,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
       : actions.find((action) => action.policy_key === policyKey)
   ) as PrivacyRequestOption | undefined;
 
-  // Update verification requirement from API
+  // Update verification requirement from API (OTP path only)
   useEffect(() => {
     if (getIdVerificationConfigQuery.isSuccess) {
       setIsVerificationRequired(
@@ -55,6 +67,13 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
       router.push(basePath || "/");
     }
   }, [selectedAction, policyKey, messageApi, router, basePath]);
+
+  // Show error toast when redirected back from failed IDP callback
+  useEffect(() => {
+    if (searchParams?.get("error") === "idp_failed") {
+      messageApi.error("Identity verification failed. Please try again.");
+    }
+  }, [searchParams, messageApi]);
 
   const handleExit = () => {
     router.push(basePath || "/");
@@ -75,6 +94,37 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   const handleSuccessWithoutVerification = () => {
     router.push(`${basePath}/privacy-request/${actionKey}/success`);
   };
+
+  const handleValidateForIDP = useCallback(async (): Promise<boolean> => {
+    // TODO: validate custom fields before IDP redirect
+    return true;
+  }, []);
+
+  if (isIDPVerification && idpProviders.length > 0 && selectedAction) {
+    return (
+      <Flex vertical gap="middle">
+        <Text type="secondary">{selectedAction.description}</Text>
+        {selectedAction.description_subtext?.map((paragraph) => (
+          <Text key={paragraph} size="sm">
+            {paragraph}
+          </Text>
+        ))}
+        <IDPLoginButtons
+          providers={idpProviders}
+          actionKey={actionKey}
+          basePath={basePath || "/"}
+          formData={{
+            policy_key: selectedAction.policy_key ?? policyKey,
+            property_id: property?.id ?? undefined,
+          }}
+          onValidate={handleValidateForIDP}
+        />
+        <Button type="default" variant="outlined" onClick={handleExit} block>
+          {selectedAction.cancelButtonText || "Cancel"}
+        </Button>
+      </Flex>
+    );
+  }
 
   return (
     <PrivacyRequestForm

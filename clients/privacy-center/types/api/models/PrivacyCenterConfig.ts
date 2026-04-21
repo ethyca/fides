@@ -31,4 +31,8 @@ export type PrivacyCenterConfig = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string | null;
   links?: Array<PrivacyCenterLink>;
+  identity_verification?: {
+    method: "otp" | "idp";
+    idp_providers?: Array<{ identifier: string; label: string }>;
+  } | null;
 };

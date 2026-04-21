@@ -209,6 +209,27 @@ class PolicyUnavailableMessages(FidesSchema):
     action_link: str
 
 
+class IDPProviderConfig(FidesSchema):
+    """IDP provider reference for Privacy Center identity verification."""
+
+    identifier: str
+    label: str
+    provider: Optional[Literal["google", "okta", "azure", "custom"]] = None
+
+
+class IdentityVerificationConfig(FidesSchema):
+    """Configuration for identity verification method in Privacy Center."""
+
+    method: Literal["otp", "idp"]
+    idp_providers: Optional[List[IDPProviderConfig]] = None
+
+    @model_validator(mode="after")
+    def validate_providers(self) -> "IdentityVerificationConfig":
+        if self.method == "idp" and not self.idp_providers:
+            raise ValueError("idp_providers required when method is 'idp'")
+        return self
+
+
 class PrivacyCenterConfig(FidesSchema):
     """
     NOTE: Add to this schema with care. Any fields added to
@@ -236,6 +257,7 @@ class PrivacyCenterConfig(FidesSchema):
     privacy_policy_url_text: Optional[str] = None
     links: List[PrivacyCenterLink] = []
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
+    identity_verification: Optional[IdentityVerificationConfig] = None
 
     @field_validator(
         "server_url_development",
