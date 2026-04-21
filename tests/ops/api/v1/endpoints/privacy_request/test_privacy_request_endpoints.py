@@ -4264,6 +4264,9 @@ class TestApprovePrivacyRequest:
         privacy_request_status,
     ):
         privacy_request.status = privacy_request_status
+        if privacy_request_status == PrivacyRequestStatus.duplicate:
+            # Set verified so test passes with or without verification fixture
+            privacy_request.identity_verified_at = datetime.utcnow()
         privacy_request.save(db=db)
 
         payload = {
@@ -4319,13 +4322,13 @@ class TestApprovePrivacyRequest:
         user,
         privacy_requests,
     ):
-        # Set first request to pending/duplicate, second to duplicate/pending, third to complete (should fail)
-        privacy_requests[0].update(
-            db=db, data={"status": PrivacyRequestStatus.duplicate}
-        )
-        privacy_requests[1].update(
-            db=db, data={"status": PrivacyRequestStatus.duplicate}
-        )
+        # Set first two to verified duplicates (approvable), third to complete (should fail)
+        privacy_requests[0].status = PrivacyRequestStatus.duplicate
+        privacy_requests[0].identity_verified_at = datetime.utcnow()
+        privacy_requests[0].save(db=db)
+        privacy_requests[1].status = PrivacyRequestStatus.duplicate
+        privacy_requests[1].identity_verified_at = datetime.utcnow()
+        privacy_requests[1].save(db=db)
         privacy_requests[2].update(
             db=db, data={"status": PrivacyRequestStatus.complete}
         )
@@ -4368,6 +4371,120 @@ class TestApprovePrivacyRequest:
 
         assert submit_mock.call_count == 2  # Called for each successful approval
         assert not mock_dispatch_message.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @pytest.mark.usefixtures("subject_identity_verification_required")
+    def test_bulk_approve_mixed_verified_unverified_duplicates(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_requests,
+    ):
+        """Bulk approve with a mix of verified and unverified duplicates should
+        approve only the verified ones and report failures for the unverified."""
+        # Verified duplicate — should succeed
+        privacy_requests[0].status = PrivacyRequestStatus.duplicate
+        privacy_requests[0].identity_verified_at = datetime.utcnow()
+        privacy_requests[0].save(db=db)
+        # Unverified duplicate — should fail
+        privacy_requests[1].status = PrivacyRequestStatus.duplicate
+        privacy_requests[1].identity_verified_at = None
+        privacy_requests[1].save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        body = {"request_ids": [privacy_requests[0].id, privacy_requests[1].id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 1
+        assert response_body["succeeded"][0]["id"] == privacy_requests[0].id
+        assert response_body["succeeded"][0]["status"] == "approved"
+        assert response_body["failed"][0]["data"]["id"] == privacy_requests[1].id
+        assert (
+            response_body["failed"][0]["message"]
+            == "Cannot approve unverified duplicate request"
+        )
+        assert submit_mock.call_count == 1
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @pytest.mark.usefixtures("subject_identity_verification_required")
+    def test_approve_unverified_duplicate_rejected(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        privacy_request,
+    ):
+        """A duplicate request whose identity was never verified should not be
+        approvable — processing it would bypass identity verification."""
+        privacy_request.status = PrivacyRequestStatus.duplicate
+        privacy_request.identity_verified_at = None
+        privacy_request.save(db=db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "Cannot approve unverified duplicate request"
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @pytest.mark.usefixtures("subject_identity_verification_not_required")
+    def test_approve_unverified_duplicate_allowed_when_verification_disabled(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        privacy_request,
+    ):
+        """When identity verification is not required, unverified duplicates
+        should be approvable — there is no verification gate to bypass."""
+        privacy_request.status = PrivacyRequestStatus.duplicate
+        privacy_request.identity_verified_at = None
+        privacy_request.save(db=db)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "approved"
+        assert submit_mock.called
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"

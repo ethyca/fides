@@ -13,7 +13,11 @@ import Restrict from "~/features/common/Restrict";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetActiveMessagingProviderQuery } from "~/features/messaging/messaging.slice";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
-import { PrivacyRequestResponse, ScopeRegistryEnum } from "~/types/api";
+import {
+  PrivacyRequestResponse,
+  PrivacyRequestStatus,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
 import { getButtonVisibility } from "./helpers";
@@ -48,8 +52,17 @@ export const RequestTableActions = ({
     useGetActiveMessagingProviderQuery();
   const sendRequestCompletionNotification =
     config?.notifications?.send_request_completion_notification;
+  const identityVerificationRequired =
+    config?.execution?.subject_identity_verification_required ?? false;
 
-  const buttonVisibility = getButtonVisibility(subjectRequest.status);
+  const isUnverifiedDuplicate =
+    subjectRequest.status === PrivacyRequestStatus.DUPLICATE &&
+    !subjectRequest.identity_verified_at &&
+    identityVerificationRequired;
+  const buttonVisibility = {
+    ...getButtonVisibility(subjectRequest.status),
+    ...(isUnverifiedDuplicate && { approve: false }),
+  };
 
   const renderApproveButton = () => {
     if (!buttonVisibility.approve) {
