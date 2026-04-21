@@ -1,0 +1,4 @@
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: datastore integration text changes based on taxonomy of integration
+pr: 7943 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
