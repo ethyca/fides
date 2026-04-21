@@ -44,9 +44,11 @@ def upgrade():
             nullable=True,
         ),
     )
+    op.create_index(op.f('ix_event_audit_client_id'), 'event_audit', ['client_id'], unique=False)
 
 
 def downgrade():
     op.drop_column("event_audit", "client_id")
     op.drop_column("attachment", "client_id")
     op.drop_column("comment", "client_id")
+    op.drop_index(op.f('ix_event_audit_client_id'), table_name='event_audit')
