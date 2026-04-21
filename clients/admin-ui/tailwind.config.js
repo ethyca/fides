@@ -9,18 +9,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // TODO: unify with existing Tailwind "gray" color
         neutral: {
-          1: "#fafafa",
-          2: "#e6e6e8",
-          3: "#d1d2d4",
-          4: "#bcbec1",
-          5: "#a8aaad",
-          6: "#93969a",
-          7: "#7e8185",
-          8: "#696c71",
-          9: "#53575c",
-          10: "#2b2e35",
+          1: "var(--fidesui-neutral-50)",
+          2: "var(--fidesui-neutral-100)",
+          3: "var(--fidesui-neutral-200)",
+          4: "var(--fidesui-neutral-300)",
+          5: "var(--fidesui-neutral-400)",
+          6: "var(--fidesui-neutral-500)",
+          7: "var(--fidesui-neutral-600)",
+          8: "var(--fidesui-neutral-700)",
+          9: "var(--fidesui-neutral-800)",
+          10: "var(--fidesui-neutral-900)",
         },
       },
     },
