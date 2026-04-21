@@ -205,7 +205,6 @@ export const InProgressMonitorTaskItem = ({
                     rows: 1,
                     expandable: true,
                     symbol: "more",
-                    tooltip: true,
                   }}
                 >
                   {task.message || "Unknown error"}
