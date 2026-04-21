@@ -13,7 +13,6 @@ import {
   Tooltip,
   Typography,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useState } from "react";
 
 import { RouterLink } from "~/features/common/nav/RouterLink";
@@ -211,7 +210,7 @@ export const MonitorResult = ({
         <Avatar.Group
           max={{
             count: 5,
-            style: { background: palette.FIDESUI_NEUTRAL_700 },
+            style: { background: "var(--fidesui-neutral-700)" },
           }}
           className="hidden flex-[6.5rem] grow-0 justify-end lg:flex"
           size="small"

@@ -6,7 +6,6 @@ import {
   SparkleIcon,
   useThemeMode,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -37,12 +36,12 @@ export const AgentBriefingBanner = () => {
         Alert: {
           colorInfoBg:
             resolvedMode === "dark"
-              ? palette.FIDESUI_MINOS
-              : palette.FIDESUI_LIMESTONE,
+              ? "var(--fidesui-minos)"
+              : "var(--fidesui-limestone)",
           colorInfoBorder:
             resolvedMode === "dark"
-              ? palette.FIDESUI_MINOS
-              : palette.FIDESUI_LIMESTONE,
+              ? "var(--fidesui-minos)"
+              : "var(--fidesui-limestone)",
         },
       },
     }),
