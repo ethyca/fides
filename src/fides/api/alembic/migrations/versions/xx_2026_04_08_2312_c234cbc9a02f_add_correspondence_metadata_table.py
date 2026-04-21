@@ -40,7 +40,15 @@ def upgrade():
         sa.Column("reply_to_address", sa.String(), nullable=True),
         sa.Column(
             "delivery_status",
-            sa.String(),
+            sa.Enum(
+                "pending",
+                "sent",
+                "delivered",
+                "bounced",
+                "failed",
+                name="correspondencedeliverystatus",
+                native_enum=False,
+            ),
             server_default="pending",
             nullable=False,
         ),

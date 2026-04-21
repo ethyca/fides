@@ -3,12 +3,13 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
+from fides.api.db.util import EnumColumn
 
 if TYPE_CHECKING:
-    from fides.api.models.comment import Comment
+    from fides.api.models.comment import Comment  # noqa: F401
 
 
 class CorrespondenceDeliveryStatus(str, EnumType):
@@ -38,7 +39,7 @@ class CorrespondenceMetadata(Base):
     in_reply_to = Column(String, nullable=True)
     reply_to_address = Column(String, index=True, nullable=True)
     delivery_status = Column(
-        String,
+        EnumColumn(CorrespondenceDeliveryStatus, native_enum=False),
         nullable=False,
         server_default=CorrespondenceDeliveryStatus.pending,
     )
@@ -52,8 +53,3 @@ class CorrespondenceMetadata(Base):
         back_populates="correspondence_metadata",
         uselist=False,
     )
-
-    @validates("delivery_status")
-    def _validate_delivery_status(self, key: str, value: str) -> str:
-        CorrespondenceDeliveryStatus(value)  # raises ValueError if invalid
-        return value
