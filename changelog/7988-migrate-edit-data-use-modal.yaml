@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated EditMinimalDataUseModal from Formik/Chakra to antd Form components.
+pr: 7988
+labels: []
