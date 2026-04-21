@@ -154,6 +154,7 @@ def generate_dataset_audit_event_details(
     event_type: EventAuditType,
     connection_config: ConnectionConfig,
     dataset_key: str,
+    dataset_definition: Optional[Dict[str, Any]] = None,
 ) -> Tuple[Dict[str, Any], str]:
     """
     Create standardized event details for dataset audit events.
@@ -162,6 +163,8 @@ def generate_dataset_audit_event_details(
         event_type: Type of audit event (dataset.created, dataset.updated, dataset.deleted)
         connection_config: The parent connection configuration
         dataset_key: The fides_key of the dataset being audited
+        dataset_definition: The full dataset definition dict to include for create/update events.
+            Dataset definitions are schema metadata only (no secret values), so no masking is applied.
 
     Returns:
         Tuple of (event_details dict, human-readable description string)
@@ -174,6 +177,9 @@ def generate_dataset_audit_event_details(
         "connection_key": connection_config.key,
         "saas_connector_type": connector_type,
     }
+
+    if operation_type != "deleted" and dataset_definition is not None:
+        event_details["dataset"] = dataset_definition
 
     connection_type = connection_config.connection_type.value  # type: ignore[attr-defined]
     description = f"Dataset {operation_type}: '{dataset_key}' on {connector_type if connector_type else connection_type} connection '{connection_config.key}'"
