@@ -6278,6 +6278,86 @@ class TestVerifyIdentity:
         )
 
     @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_verify_identity_duplicate_request(
+        self,
+        mock_dispatch_message,
+        mock_run_privacy_request,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_notification_enabled,
+    ):
+        """A request marked as duplicate before identity verification should
+        still allow the user to verify their identity. The request transitions
+        to pending so that handle_approval can re-evaluate duplicate detection
+        with the fresh identity_verified_at timestamp."""
+        privacy_request.status = PrivacyRequestStatus.duplicate
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(self.code)
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 200
+
+        resp_body = resp.json()
+        assert resp_body["identity_verified_at"] is not None
+
+        db.refresh(privacy_request)
+        assert privacy_request.identity_verified_at is not None
+        assert mock_dispatch_message.called  # receipt email sent
+        assert mock_run_privacy_request.called  # request queued after re-eval
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service.check_for_duplicates"
+    )
+    def test_verify_identity_duplicate_request_stays_duplicate(
+        self,
+        mock_check_for_duplicates,
+        mock_dispatch_message,
+        mock_run_privacy_request,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_notification_enabled,
+    ):
+        """When a duplicate request verifies identity but another request already
+        verified first, check_for_duplicates re-marks it as duplicate. The request
+        should not be queued for processing."""
+
+        def remark_as_duplicate(db, privacy_request):
+            privacy_request.status = PrivacyRequestStatus.duplicate
+            privacy_request.save(db)
+
+        mock_check_for_duplicates.side_effect = remark_as_duplicate
+
+        privacy_request.status = PrivacyRequestStatus.duplicate
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(self.code)
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 200
+
+        db.refresh(privacy_request)
+        assert privacy_request.identity_verified_at is not None
+        assert privacy_request.status == PrivacyRequestStatus.duplicate
+        assert mock_dispatch_message.called  # receipt sent before re-eval
+        assert not mock_run_privacy_request.called  # not queued
+
+    @mock.patch(
         "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_verification_code_expired(
