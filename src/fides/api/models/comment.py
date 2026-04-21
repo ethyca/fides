@@ -40,18 +40,6 @@ class CommentType(str, EnumType):
 CORRESPONDENCE_COMMENT_TYPES = frozenset(
     {CommentType.message_to_subject, CommentType.reply_from_subject}
 )
-class CorrespondenceDeliveryStatus(str, EnumType):
-    """Delivery status for correspondence messages.
-
-    Used by the delivery_status column on Comment, added in PR 2 of 2
-    (ENG-3299: correspondence metadata).
-    """
-
-    pending = "pending"
-    sent = "sent"
-    delivered = "delivered"
-    bounced = "bounced"
-    failed = "failed"
 
 
 class CommentReferenceType(str, EnumType):
