@@ -281,10 +281,13 @@ def check_object_exists(db: Session, object_name: str) -> bool:
             SELECT 1
             FROM pg_indexes
             WHERE indexname = :object_name
+              AND schemaname = current_schema()
         ) OR EXISTS (
             SELECT 1
-            FROM pg_constraint
-            WHERE conname = :object_name
+            FROM pg_constraint c
+            JOIN pg_namespace n ON c.connamespace = n.oid
+            WHERE c.conname = :object_name
+              AND n.nspname = current_schema()
         )
         """
     )
