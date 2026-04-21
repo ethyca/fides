@@ -1,12 +1,4 @@
-import {
-  Button,
-  Flex,
-  Form,
-  Select,
-  Tooltip,
-  Typography,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Form, Select, Typography, useMessage } from "fidesui";
 import isEqual from "lodash/isEqual";
 import { useEffect, useMemo, useState } from "react";
 
@@ -53,6 +45,12 @@ const defaultInitialValues: FormValues = {
   vendor_restriction: "",
   vendor_ids: [],
 };
+
+const FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP =
+  "Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List.";
+
+const NON_FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP =
+  "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings.";
 
 export const PurposeRestrictionFormModal = ({
   isOpen,
@@ -246,40 +244,32 @@ export const PurposeRestrictionFormModal = ({
         key={restrictionId ?? "create"}
       >
         <Flex vertical>
-          <Typography.Text>
+          <Typography.Text className="mb-4">
             Define how specific vendors are restricted from processing data for
             this purpose. Select a restriction type, set whether the listed
             vendors are restricted or allowed, and specify which vendor IDs the
             restriction applies to.
           </Typography.Text>
-          <Tooltip
-            title={
-              !isPurposeFlexible
-                ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
-                : undefined
+          <Form.Item
+            name="restriction_type"
+            label="Restriction type"
+            tooltip={
+              isPurposeFlexible
+                ? FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP
+                : NON_FLEXIBLE_PURPOSE_RESTRICTION_TOOLTIP
             }
+            rules={[
+              { required: true, message: "Restriction type is required" },
+            ]}
           >
-            <Form.Item
-              name="restriction_type"
-              label="Restriction type"
-              tooltip={
-                isPurposeFlexible
-                  ? "Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
-                  : undefined
-              }
-              rules={[
-                { required: true, message: "Restriction type is required" },
-              ]}
-            >
-              <Select
-                aria-label="Restriction type"
-                options={restrictionTypeOptions}
-                disabled={!isPurposeFlexible}
-                data-testid="controlled-select-restriction_type"
-                className="w-full"
-              />
-            </Form.Item>
-          </Tooltip>
+            <Select
+              aria-label="Restriction type"
+              options={restrictionTypeOptions}
+              disabled={!isPurposeFlexible}
+              data-testid="controlled-select-restriction_type"
+              className="w-full"
+            />
+          </Form.Item>
           <Form.Item
             name="vendor_restriction"
             label="Vendor restriction"

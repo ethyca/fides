@@ -101,14 +101,14 @@ export const PublisherRestrictionsConfig = ({
               </>
             ) : (
               <>
-                <p>
+                <Typography.Paragraph>
                   To define custom publisher restrictions select &quot;create
                   configuration&quot; below.{" "}
                   <DocsLink href={PUBLISHER_RESTRICTIONS_DOCS_URL}>
                     Learn more about publisher restrictions
                   </DocsLink>{" "}
                   in our docs.
-                </p>
+                </Typography.Paragraph>
                 <Button
                   onClick={() => setIsCreateModalOpen(true)}
                   data-testid="create-config-button"
