@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { Icons, Tag, Tooltip, Typography } from "fidesui";
 import React from "react";
 
-import { formatDate } from "~/features/common/utils";
+import { formatDate, pluralize } from "~/features/common/utils";
 
 import {
   ActivityTimelineItem,
@@ -80,20 +80,13 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         >
           {type}
         </Tag>
-        {logCount !== undefined && (
-          <span
-            className={styles.viewLogs}
-            data-testid="activity-timeline-log-count"
-          >
-            {logCount} {logCount === 1 ? "log" : "logs"}
-          </span>
-        )}
+
         {showViewLog && (
           <span
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
           >
-            · View Log
+            · View {logCount} {pluralize(logCount, "Log", "Logs")}
           </span>
         )}
       </div>
