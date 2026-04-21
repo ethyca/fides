@@ -88,6 +88,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "alphaPurposeBasedAccessControl",
         requiresPlus: true,
       },
+      {
+        title: "Access control v2",
+        path: routes.ACCESS_CONTROL_V2_ROUTE,
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        requiresPlus: true,
+      },
     ],
   },
   {

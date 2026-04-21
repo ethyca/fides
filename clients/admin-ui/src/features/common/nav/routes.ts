@@ -143,3 +143,4 @@ export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
+export const ACCESS_CONTROL_V2_ROUTE = "/data-discovery/access-control-v2";
