@@ -86,7 +86,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
           >
-            · View {logCount} {pluralize(logCount, "Log", "Logs")}
+            · View {logCount} {pluralize(logCount ?? 0, "Log", "Logs")}
           </span>
         )}
       </div>
