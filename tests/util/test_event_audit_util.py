@@ -551,12 +551,17 @@ class TestGenerateDatasetAuditEventDetails:
             "collections": [
                 {
                     "name": "users",
-                    "fields": [{"name": "id", "data_categories": ["system.operations"]}],
+                    "fields": [
+                        {"name": "id", "data_categories": ["system.operations"]}
+                    ],
                 }
             ],
         }
 
-        for event_type in (EventAuditType.dataset_created, EventAuditType.dataset_updated):
+        for event_type in (
+            EventAuditType.dataset_created,
+            EventAuditType.dataset_updated,
+        ):
             event_details, _ = generate_dataset_audit_event_details(
                 event_type=event_type,
                 connection_config=saas_connection,
@@ -569,7 +574,11 @@ class TestGenerateDatasetAuditEventDetails:
         self, saas_connection: ConnectionConfig
     ):
         """Deleted events never include dataset definition even when one is passed."""
-        definition = {"fides_key": "my_dataset", "name": "My Dataset", "collections": []}
+        definition = {
+            "fides_key": "my_dataset",
+            "name": "My Dataset",
+            "collections": [],
+        }
         event_details, _ = generate_dataset_audit_event_details(
             event_type=EventAuditType.dataset_deleted,
             connection_config=saas_connection,
