@@ -69,7 +69,8 @@ class DatasetConfigService:
         event_type: EventAuditType,
         connection_config: ConnectionConfig,
         dataset_key: str,
-        dataset_definition: Optional[Dict[str, Any]] = None,
+        new_dataset_definition: Optional[Dict[str, Any]] = None,
+        old_dataset_definition: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Emit an audit event for a SaaS dataset operation.
 
@@ -81,7 +82,11 @@ class DatasetConfigService:
             return
         try:
             event_details, description = generate_dataset_audit_event_details(
-                event_type, connection_config, dataset_key, dataset_definition
+                event_type,
+                connection_config,
+                dataset_key,
+                new_dataset_definition,
+                old_dataset_definition,
             )
             self.event_audit_service.create_event_audit(
                 event_type=event_type,
@@ -135,6 +140,20 @@ class DatasetConfigService:
 
             fides_key = data_dict["fides_key"]
 
+            # Capture the existing dataset definition before the upsert so that
+            # update events can log a before/after diff.
+            old_dataset_definition: Optional[Dict[str, Any]] = None
+            existing_config = DatasetConfig.get_by(
+                self.db, field="fides_key", value=fides_key
+            )
+            if existing_config is not None:
+                try:
+                    old_dataset_definition = FideslangDataset.model_validate(
+                        existing_config.ctl_dataset
+                    ).model_dump(mode="json")
+                except Exception:
+                    pass
+
             # Create or update using unified method
             dataset_config = DatasetConfig.create_or_update(self.db, data=data_dict)
 
@@ -148,18 +167,22 @@ class DatasetConfigService:
                 else EventAuditType.dataset_updated
             )
 
-            # Extract the dataset definition from the upserted ctl_dataset for audit logging.
+            # Extract the new dataset definition for audit logging.
             # Dataset definitions are schema metadata only (no secret values).
-            dataset_definition: Optional[Dict[str, Any]] = None
+            new_dataset_definition: Optional[Dict[str, Any]] = None
             try:
-                dataset_definition = FideslangDataset.model_validate(
+                new_dataset_definition = FideslangDataset.model_validate(
                     dataset_config.ctl_dataset
                 ).model_dump(mode="json")
             except Exception:
                 pass
 
             self._create_dataset_audit_event(
-                event_type, connection_config, fides_key, dataset_definition
+                event_type,
+                connection_config,
+                fides_key,
+                new_dataset_definition,
+                old_dataset_definition,
             )
 
             return dataset_config.ctl_dataset, None

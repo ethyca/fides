@@ -113,20 +113,35 @@ class TestDatasetConfigServiceAuditEvents:
         assert "dataset" in details
         assert details["dataset"]["fides_key"] == _SAAS_FIDES_KEY
         assert details["dataset"]["collections"][0]["name"] == "items"
+        assert "dataset_changes" not in details
 
-    def test_update_saas_dataset_emits_updated_event(
+    def test_update_saas_dataset_emits_updated_event_with_before_after(
         self,
         db: Session,
         service: DatasetConfigService,
         saas_connection_config: ConnectionConfig,
     ):
-        """Second upsert of the same dataset key emits dataset.updated with full definition."""
+        """Second upsert logs a before/after diff so reviewers see exactly what changed."""
         service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
-        service.create_or_update_dataset_config(
-            saas_connection_config, _MINIMAL_DATASET
+
+        updated_dataset = FideslangDataset.model_validate(
+            {
+                "fides_key": _SAAS_FIDES_KEY,
+                "name": "Audit Test Dataset (Updated)",
+                "collections": [
+                    {
+                        "name": "items",
+                        "fields": [
+                            {"name": "id", "data_categories": ["system.operations"]},
+                            {"name": "name", "data_categories": ["user.name"]},
+                        ],
+                    }
+                ],
+            }
         )
+        service.create_or_update_dataset_config(saas_connection_config, updated_dataset)
 
         events = EventAuditService(db).get_events_for_resource(
             "dataset_config", _SAAS_FIDES_KEY
@@ -135,9 +150,14 @@ class TestDatasetConfigServiceAuditEvents:
         # get_events_for_resource returns newest-first
         assert events[0].event_type == EventAuditType.dataset_updated.value
         assert events[1].event_type == EventAuditType.dataset_created.value
-        # Updated event also includes the full dataset definition
-        assert "dataset" in events[0].event_details
-        assert events[0].event_details["dataset"]["fides_key"] == _SAAS_FIDES_KEY
+
+        update_details = events[0].event_details
+        assert "dataset_changes" in update_details
+        assert "dataset" not in update_details
+        # Only the fields that actually changed are logged (new values only)
+        assert update_details["dataset_changes"]["name"] == "Audit Test Dataset (Updated)"
+        assert "collections" in update_details["dataset_changes"]  # fields were added
+        assert "fides_key" not in update_details["dataset_changes"]  # unchanged
 
     def test_delete_saas_dataset_emits_deleted_event(
         self,
@@ -160,6 +180,7 @@ class TestDatasetConfigServiceAuditEvents:
         assert events[0].event_details["operation_type"] == "deleted"
         # Deleted events do not include the dataset definition
         assert "dataset" not in events[0].event_details
+        assert "dataset_changes" not in events[0].event_details
 
     def test_non_saas_dataset_no_audit_event(
         self,
