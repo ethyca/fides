@@ -52,9 +52,7 @@ class AttributionService:
             from fides.api.models.client import ClientDetail  # noqa: PLC0415
 
             client: Optional[ClientDetail] = (
-                self.db.query(ClientDetail)
-                .filter(ClientDetail.id == client_id)
-                .first()
+                self.db.query(ClientDetail).filter(ClientDetail.id == client_id).first()
             )
             if client:
                 return client.name or client_id
