@@ -109,7 +109,7 @@ export interface PrivacyRequestEntity {
   identity: {
     [key: string]: { label: string; value: string | null };
   };
-  identity_verified_at?: string;
+  identity_verified_at?: string | null;
   custom_privacy_request_fields?: {
     [key: string]: { label: string; value: any };
   };
