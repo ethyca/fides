@@ -57,7 +57,6 @@ export const usePrivacyRequestEventLogs = (
           title: key,
           date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
-          showViewLog: logs.length > 0,
           onClick: () => {}, // This will be overridden in the component
           isError: hasUnresolvedErrorStatus,
           isSkipped: hasSkippedEntryStatus,
