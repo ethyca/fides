@@ -252,20 +252,24 @@ export const PurposeRestrictionFormModal = ({
             vendors are restricted or allowed, and specify which vendor IDs the
             restriction applies to.
           </Typography.Text>
-          <Form.Item
-            name="restriction_type"
-            label="Restriction type"
-            tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
-            rules={[
-              { required: true, message: "Restriction type is required" },
-            ]}
+          <Tooltip
+            title={
+              !isPurposeFlexible
+                ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
+                : undefined
+            }
           >
-            <Tooltip
-              title={
-                !isPurposeFlexible
-                  ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
+            <Form.Item
+              name="restriction_type"
+              label="Restriction type"
+              tooltip={
+                isPurposeFlexible
+                  ? "Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
                   : undefined
               }
+              rules={[
+                { required: true, message: "Restriction type is required" },
+              ]}
             >
               <Select
                 aria-label="Restriction type"
@@ -274,8 +278,8 @@ export const PurposeRestrictionFormModal = ({
                 data-testid="controlled-select-restriction_type"
                 className="w-full"
               />
-            </Tooltip>
-          </Form.Item>
+            </Form.Item>
+          </Tooltip>
           <Form.Item
             name="vendor_restriction"
             label="Vendor restriction"
@@ -348,7 +352,10 @@ export const PurposeRestrictionFormModal = ({
             </Form.Item>
           )}
           <Flex justify="flex-end" className="gap-3 pt-4">
-            <Button onClick={handleClose} data-testid="cancel-restriction-button">
+            <Button
+              onClick={handleClose}
+              data-testid="cancel-restriction-button"
+            >
               Cancel
             </Button>
             <Button
