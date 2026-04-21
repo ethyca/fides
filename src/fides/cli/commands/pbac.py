@@ -29,6 +29,11 @@ from fides.service.pbac.engine import (
 )
 
 
+def _qualified_name(catalog: str, schema: str, table: str) -> str:
+    """Join a (catalog, schema, table) triple, skipping empties."""
+    return ".".join(part for part in (catalog, schema, table) if part)
+
+
 @click.group(name="pbac")
 @click.pass_context
 def pbac(ctx: click.Context) -> None:
@@ -104,7 +109,7 @@ def evaluate_cmd(config_dir: Path, identity: str, input_file: TextIO) -> None:
         ]
         record = evaluate_pipeline(
             fixtures,
-            {
+            query={
                 "query_id": f"q{idx + 1}",
                 "identity": identity,
                 "query_text": stmt_text,
@@ -199,8 +204,3 @@ def evaluate_policies_cmd(input_file: TextIO) -> None:
     )
 
     click.echo(json.dumps(result, indent=2))
-
-
-def _qualified_name(catalog: str, schema: str, table: str) -> str:
-    """Join a (catalog, schema, table) triple, skipping empties."""
-    return ".".join(part for part in (catalog, schema, table) if part)

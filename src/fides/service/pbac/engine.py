@@ -25,6 +25,7 @@ import json
 import os
 import platform
 import sys
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -76,7 +77,7 @@ def _find_library() -> Path:
     )
 
 
-_lib_lock = __import__("threading").Lock()
+_lib_lock = threading.Lock()
 
 
 def _get_lib() -> ctypes.CDLL:  # pragma: no cover — requires built Go library
@@ -125,6 +126,8 @@ def _call(fn_name: str, payload: dict[str, Any]) -> dict[str, Any]:  # pragma: n
     fn = getattr(lib, fn_name)
     input_bytes = json.dumps(payload).encode("utf-8")
     result_ptr = fn(input_bytes)
+    if result_ptr is None:
+        raise RuntimeError(f"Go function '{fn_name}' returned a null pointer")
     try:
         result_bytes = ctypes.string_at(result_ptr)
         result = json.loads(result_bytes)
@@ -152,12 +155,12 @@ def load_fixtures(
 
 def evaluate_pipeline(  # pragma: no cover
     fixtures: dict[str, Any],
-    input: dict[str, Any],
+    query: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the full PBAC pipeline via Go.
 
     fixtures: the output of load_fixtures() or an equivalent dict.
-    input: {"identity": str, "tables": [...], "query_id": str, ...}
+    query: {"identity": str, "tables": [...], "query_id": str, ...}
 
     Returns an EvaluationRecord dict.
     """
@@ -165,7 +168,7 @@ def evaluate_pipeline(  # pragma: no cover
         "EvaluatePipelineJSON",
         {
             "fixtures": fixtures,
-            "input": input,
+            "input": query,
         },
     )
 

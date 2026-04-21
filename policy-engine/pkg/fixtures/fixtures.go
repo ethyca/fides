@@ -3,10 +3,10 @@
 //
 // The directory layout matches pbac/ at the repo root:
 //
-//	<config>/consumers/*.yml   top-level key: consumer:
-//	<config>/purposes/*.yml    top-level key: purpose:
-//	<config>/datasets/*.yml    fideslang Dataset YAML, top-level key: dataset:
-//	<config>/policies/*.yml    top-level key: policy:
+//	<config>/consumers/*.yml|*.yaml   top-level key: consumer:
+//	<config>/purposes/*.yml|*.yaml    top-level key: purpose:
+//	<config>/datasets/*.yml|*.yaml    fideslang Dataset YAML, top-level key: dataset:
+//	<config>/policies/*.yml|*.yaml    top-level key: policy:
 package fixtures
 
 import (
@@ -97,7 +97,7 @@ func LoadConsumers(dir string) (map[string]Consumer, error) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return out, nil
 	}
-	matches, err := filepath.Glob(filepath.Join(dir, "*.yml"))
+	matches, err := globYAML(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func LoadPurposes(dir string) (map[string]Purpose, error) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return out, nil
 	}
-	matches, err := filepath.Glob(filepath.Join(dir, "*.yml"))
+	matches, err := globYAML(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func LoadDatasets(dir string) (Datasets, error) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return result, nil
 	}
-	matches, err := filepath.Glob(filepath.Join(dir, "*.yml"))
+	matches, err := globYAML(dir)
 	if err != nil {
 		return result, err
 	}
@@ -244,7 +244,7 @@ func LoadPolicies(dir string) ([]pbac.AccessPolicy, error) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return out, nil
 	}
-	matches, err := filepath.Glob(filepath.Join(dir, "*.yml"))
+	matches, err := globYAML(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -261,6 +261,21 @@ func LoadPolicies(dir string) ([]pbac.AccessPolicy, error) {
 		}
 	}
 	return out, nil
+}
+
+// globYAML returns all *.yml and *.yaml files in dir, sorted by path.
+func globYAML(dir string) ([]string, error) {
+	yml, err := filepath.Glob(filepath.Join(dir, "*.yml"))
+	if err != nil {
+		return nil, err
+	}
+	yamlExt, err := filepath.Glob(filepath.Join(dir, "*.yaml"))
+	if err != nil {
+		return nil, err
+	}
+	matches := append(yml, yamlExt...)
+	sort.Strings(matches)
+	return matches, nil
 }
 
 func readYAML(path string, into interface{}) error {
