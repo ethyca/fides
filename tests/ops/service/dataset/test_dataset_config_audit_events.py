@@ -155,7 +155,9 @@ class TestDatasetConfigServiceAuditEvents:
         assert "dataset_changes" in update_details
         assert "dataset" not in update_details
         # Only the fields that actually changed are logged (new values only)
-        assert update_details["dataset_changes"]["name"] == "Audit Test Dataset (Updated)"
+        assert (
+            update_details["dataset_changes"]["name"] == "Audit Test Dataset (Updated)"
+        )
         assert "collections" in update_details["dataset_changes"]  # fields were added
         assert "fides_key" not in update_details["dataset_changes"]  # unchanged
 
