@@ -1,7 +1,7 @@
 """encrypt_comment_text
 
 Revision ID: 6465b161a450
-Revises: d6e7f8a9b0c1
+Revises: 4738e3e3e850
 Create Date: 2026-04-08 22:52:01.736340
 
 Batch-encrypts existing comment_text rows using AES-GCM via StringEncryptedType.
@@ -19,7 +19,7 @@ from fides.api.db.encryption_utils import encrypted_type, get_encryption_key
 
 # revision identifiers, used by Alembic.
 revision = "6465b161a450"
-down_revision = "d6e7f8a9b0c1"
+down_revision = "4738e3e3e850"
 branch_labels = None
 depends_on = None
 
