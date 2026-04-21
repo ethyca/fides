@@ -312,6 +312,9 @@ const copyStub = {
       format: "es",
     },
   ],
+  onLog(level, log) {
+    if (log.code === "EMPTY_BUNDLE") return;
+  },
 };
 
 rollupOptions.push(copyStub);

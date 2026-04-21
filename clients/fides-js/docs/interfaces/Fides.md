@@ -511,7 +511,8 @@ with Matomo's tracking consent and/or cookie consent APIs via `_paq.push()`.
 The integration automatically detects whether consent is applicable based on
 the presence of consent keys in the Fides consent object. When consent is not
 applicable (e.g. user is in a non-consent jurisdiction), Matomo is left in its
-default state and tracks freely.
+default state and tracks freely. Note: the integration looks for `analytics`
+or `performance` consent keys specifically.
 
 #### Parameters
 

@@ -195,6 +195,24 @@ describe("matomo", () => {
       );
     });
 
+    test("pushes setConsentGiven and setCookieConsentGiven when granted with rememberConsent: false", () => {
+      setupFidesWithConsent({ analytics: true });
+      matomo({ consentMode: "both", rememberConsent: false });
+
+      expect(getPaq()).toEqual(
+        expect.arrayContaining([
+          ["setConsentGiven"],
+          ["setCookieConsentGiven"],
+        ]),
+      );
+      expect(getPaq()).not.toEqual(
+        expect.arrayContaining([["rememberConsentGiven"]]),
+      );
+      expect(getPaq()).not.toEqual(
+        expect.arrayContaining([["rememberCookieConsentGiven"]]),
+      );
+    });
+
     test("pushes both revoke commands when consent is revoked", () => {
       setupFidesWithConsent({ analytics: false });
       matomo({ consentMode: "both" });

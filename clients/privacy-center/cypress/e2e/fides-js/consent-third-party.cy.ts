@@ -530,12 +530,6 @@ describe("Consent third party extensions", () => {
       cy.get("@FidesInitializing").should("have.been.calledOnce");
     });
 
-    it("pushes requireConsent and consent commands to _paq", () => {
-      cy.window().then((win) => {
-        expect(win).to.have.property("_paq").that.exist;
-      });
-    });
-
     it("pushes requireConsent on FidesReady when analytics key is present", () => {
       cy.waitUntilFidesInitialized().then(() => {
         // The fixture has analytics_opt_out (not analytics), so Matomo should

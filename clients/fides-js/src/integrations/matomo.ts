@@ -119,6 +119,7 @@ export const matomo = (options?: Partial<MatomoOptions>): void => {
 
   // Ensure _paq exists (Matomo's standard pre-load queue pattern)
   window._paq = window._paq ?? [];
+  const paq = window._paq;
 
   let requireConsentPushed = false;
 
@@ -136,16 +137,11 @@ export const matomo = (options?: Partial<MatomoOptions>): void => {
     // consent-required mode. The grant/revoke that follows immediately after
     // ensures there is no tracking gap.
     if (!requireConsentPushed) {
-      pushRequireConsent(window._paq!, opts.consentMode);
+      pushRequireConsent(paq, opts.consentMode);
       requireConsentPushed = true;
     }
 
     const granted = processExternalConsentValue(consent[key]);
-    pushConsentUpdate(
-      window._paq!,
-      opts.consentMode,
-      opts.rememberConsent,
-      granted,
-    );
+    pushConsentUpdate(paq, opts.consentMode, opts.rememberConsent, granted);
   });
 };
