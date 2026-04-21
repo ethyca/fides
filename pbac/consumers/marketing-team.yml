@@ -1,0 +1,8 @@
+consumer:
+- name: Marketing Team
+  description: Marketing team managing advertising campaigns.
+  members:
+  - bob@demo.example
+  - maria@demo.example
+  purposes:
+  - marketing
