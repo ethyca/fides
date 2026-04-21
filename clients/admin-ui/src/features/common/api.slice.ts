@@ -117,6 +117,7 @@ export const baseApi = createApi({
     "Fides Dashboard",
     "Monitor Statistics",
     "Connection Type",
+    "Queue Monitor",
   ],
   endpoints: () => ({}),
 });

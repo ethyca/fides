@@ -145,3 +145,6 @@ export const CONTROLS_EDIT_ROUTE = "/access-policies/controls/[controlKey]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
+
+// Monitor group
+export const QUEUE_MONITOR_ROUTE = "/monitor/queues";

@@ -85,6 +85,57 @@ class SQSQueueStatsProvider:
         }
     )
 
+    def _is_auth_error(self, exc: Exception) -> bool:
+        """Return ``True`` if *exc* represents an auth / credential failure."""
+        from botocore.exceptions import ClientError
+
+        if isinstance(exc, ClientError):
+            error_code = (
+                exc.response.get("Error", {}).get("Code")
+                if hasattr(exc, "response")
+                else None
+            )
+            return error_code in self._AUTH_ERROR_CODES
+        return False
+
+    def get_queue_attributes(self, queue_name: str) -> Dict[str, int]:
+        """Fetch all queue attributes for a single queue.
+
+        Returns a dict with ``available``, ``delayed``, and ``in_flight`` keys.
+        Auth errors are re-raised so the endpoint can return 503.
+        Non-auth errors return zeros and log a warning.
+        """
+        from botocore.exceptions import ClientError, NoCredentialsError
+
+        try:
+            queue_url = get_sqs_queue_url(
+                queue_name,
+                get_sqs_base_url(self._config),
+                self._config.queue.sqs_queue_name_prefix,
+            )
+            response = self._sqs_client.get_queue_attributes(
+                QueueUrl=queue_url,
+                AttributeNames=[
+                    "ApproximateNumberOfMessages",
+                    "ApproximateNumberOfMessagesDelayed",
+                    "ApproximateNumberOfMessagesNotVisible",
+                ],
+            )
+            attrs = response["Attributes"]
+            return {
+                "available": int(attrs.get("ApproximateNumberOfMessages", 0)),
+                "delayed": int(attrs.get("ApproximateNumberOfMessagesDelayed", 0)),
+                "in_flight": int(attrs.get("ApproximateNumberOfMessagesNotVisible", 0)),
+            }
+        except (NoCredentialsError, ClientError) as exc:
+            if self._is_auth_error(exc) or isinstance(exc, NoCredentialsError):
+                raise
+            logger.warning("Could not get SQS attributes for %s: %s", queue_name, exc)
+            return {"available": 0, "delayed": 0, "in_flight": 0}
+        except Exception as exc:
+            logger.warning("Could not get SQS attributes for %s: %s", queue_name, exc)
+            return {"available": 0, "delayed": 0, "in_flight": 0}
+
     def get_queue_counts(self) -> Dict[str, int]:
         # Imported locally so Redis-only deployments do not require botocore
         # at import time — mirrors the lazy ``boto3`` import in

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import fc from "fast-check";
 
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -398,6 +399,79 @@ describe("findActiveNav", () => {
 
       expect(activeNav?.title).toEqual(expected.title);
       expect(activeNav?.path).toEqual(expected.path);
+    });
+  });
+});
+
+describe("Monitor nav group", () => {
+  describe("unit tests (7.4)", () => {
+    it("shows Monitor group when sqsEnabled=true for any authenticated user", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [ScopeRegistryEnum.SYSTEM_READ],
+        sqsEnabled: true,
+      });
+      const monitorGroup = navGroups.find((g) => g.title === "Monitor");
+      expect(monitorGroup).toBeDefined();
+      expect(monitorGroup!.children).toMatchObject([
+        { title: "SQS Queues", path: routes.QUEUE_MONITOR_ROUTE },
+      ]);
+    });
+
+    it("hides Monitor group when sqsEnabled=false", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        sqsEnabled: false,
+      });
+      expect(navGroups.find((g) => g.title === "Monitor")).toBeUndefined();
+    });
+
+    it("hides Monitor group when sqsEnabled is not set (default)", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+      });
+      expect(navGroups.find((g) => g.title === "Monitor")).toBeUndefined();
+    });
+
+    it("Monitor group is positioned after Settings group", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: ALL_SCOPES,
+        sqsEnabled: true,
+      });
+      const settingsIndex = navGroups.findIndex((g) => g.title === "Settings");
+      const monitorIndex = navGroups.findIndex((g) => g.title === "Monitor");
+      expect(settingsIndex).toBeGreaterThanOrEqual(0);
+      expect(monitorIndex).toBeGreaterThan(settingsIndex);
+    });
+  });
+
+  describe("Property 4: Navigation SQS-Based Visibility (7.3)", () => {
+    /**
+     * Feature: queue-monitor, Property 4: Navigation Visibility
+     * The "Monitor" group is visible if and only if sqsEnabled is true,
+     * regardless of user scopes (no scope required).
+     * Validates: Requirements 3.1, 3.2
+     */
+    it("Monitor group is visible iff sqsEnabled=true, regardless of user scopes", () => {
+      fc.assert(
+        fc.property(
+          fc.array(fc.constantFrom(...Object.values(ScopeRegistryEnum))),
+          fc.boolean(),
+          (userScopes, sqsEnabled) => {
+            const navGroups = configureNavGroups({
+              config: NAV_CONFIG,
+              userScopes,
+              sqsEnabled,
+            });
+            const monitorGroup = navGroups.find((g) => g.title === "Monitor");
+            expect(monitorGroup !== undefined).toBe(sqsEnabled);
+          },
+        ),
+        { numRuns: 100 },
+      );
     });
   });
 });
