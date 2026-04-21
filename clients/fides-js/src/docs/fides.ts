@@ -421,6 +421,60 @@ export interface Fides {
   }) => { consent: () => Record<string, "granted" | "denied"> | null };
 
   /**
+   * Enable the Matomo integration. This should be called immediately after
+   * FidesJS is included. Once enabled, FidesJS will automatically sync consent
+   * with Matomo's tracking consent and/or cookie consent APIs via `_paq.push()`.
+   *
+   * The integration automatically detects whether consent is applicable based on
+   * the presence of consent keys in the Fides consent object. When consent is not
+   * applicable (e.g. user is in a non-consent jurisdiction), Matomo is left in its
+   * default state and tracks freely.
+   *
+   * @param options - Optional configuration for the Matomo integration
+   * @param options.consentMode - Which Matomo consent mechanism to manage: "tracking" (default), "cookie", or "both"
+   * @param options.rememberConsent - Whether to persist consent via Matomo's mtm_consent cookie (default: true). When false, uses session-only consent that must be re-established on each page load.
+   *
+   * @example
+   * Basic usage in your site's `<head>`:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>Fides.matomo()</script>
+   * </head>
+   * ```
+   *
+   * @example
+   * Managing both tracking and cookie consent:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     Fides.matomo({
+   *       consentMode: "both"
+   *     });
+   *   </script>
+   * </head>
+   * ```
+   *
+   * @example
+   * Using session-only consent (no Matomo cookie persistence):
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     Fides.matomo({
+   *       rememberConsent: false
+   *     });
+   *   </script>
+   * </head>
+   * ```
+   */
+  matomo: (options?: {
+    consentMode?: "tracking" | "cookie" | "both";
+    rememberConsent?: boolean;
+  }) => void;
+
+  /**
    * Enable the Shopify integration. This should be called immediately after
    * FidesJS is included. Once enabled, FidesJS will automatically push all
    * consent updates to Shopify's Customer Privacy API, which can then be used
