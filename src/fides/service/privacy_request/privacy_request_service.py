@@ -655,6 +655,7 @@ class PrivacyRequestService:
                 if (
                     privacy_request.status == PrivacyRequestStatus.duplicate
                     and privacy_request.identity_verified_at is None
+                    and self.config_proxy.execution.subject_identity_verification_required
                 ):
                     logger.error(
                         "Blocked approval of unverified duplicate privacy request {} by user {}",
