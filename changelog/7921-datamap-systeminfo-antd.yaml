@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated datamap SystemInfo form from Chakra/Formik to Ant Design
+pr: 7921
+labels: []
