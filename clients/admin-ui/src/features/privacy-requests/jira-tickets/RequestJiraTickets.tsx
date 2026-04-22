@@ -120,14 +120,16 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
     connection_type: [ConnectionType.JIRA_TICKET],
     size: 1,
   });
+  const hasJiraConnection = !!jiraConnections?.total;
 
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isForceCloseModalOpen, setIsForceCloseModalOpen] = useState(false);
   const message = useMessage();
 
-  const { data: tickets, isLoading } = useGetJiraTicketsQuery({
-    privacy_request_id: subjectRequest.id,
-  });
+  const { data: tickets, isLoading } = useGetJiraTicketsQuery(
+    { privacy_request_id: subjectRequest.id },
+    { skip: !hasJiraConnection },
+  );
 
   const [retryJiraTicket, { isLoading: isRetrying, originalArgs: retryArgs }] =
     useRetryJiraTicketMutation();
@@ -136,7 +138,7 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
     { isLoading: isRefreshing, originalArgs: refreshArgs },
   ] = useRefreshJiraTicketMutation();
 
-  if (!jiraConnections?.total) {
+  if (!hasJiraConnection) {
     return null;
   }
 
