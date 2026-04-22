@@ -1,0 +1,24 @@
+[
+  {
+    "name": "My Custom Field",
+    "description": "User-authored field",
+    "field_type": "string",
+    "allow_list_id": null,
+    "resource_type": "system",
+    "field_definition": null,
+    "active": true,
+    "system_managed": false,
+    "id": "plu_user_authored_00000000000000000001"
+  },
+  {
+    "name": "Controller's Representative",
+    "description": "Identity and contact details of the controller's representative.",
+    "field_type": "string",
+    "allow_list_id": null,
+    "resource_type": "system",
+    "field_definition": null,
+    "active": true,
+    "system_managed": true,
+    "id": "plu_system_managed_00000000000000000001"
+  }
+]

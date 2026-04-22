@@ -1,4 +1,4 @@
-import { Button, ColumnsType, Flex } from "fidesui";
+import { Button, ColumnsType, Flex, Icons, Tooltip } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
@@ -14,6 +14,9 @@ import { getCustomFieldTypeLabel } from "~/features/custom-fields/utils";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
+
+const MANAGED_FIELD_TOOLTIP =
+  "This field is built into Fides to support a reporting template. You can disable it to hide it from system and privacy declaration forms, but it can't be edited or deleted.";
 
 const LOCATION_LABEL_MAP = {
   [LegacyResourceTypes.SYSTEM]: "System",
@@ -63,8 +66,20 @@ const useCustomFieldsTable = () => {
         filteredValue: tableState.searchQuery ? [tableState.searchQuery] : null,
         onFilter: (value, record) =>
           record.name.toLowerCase().includes(value.toString().toLowerCase()),
-        render: (_, { id, name }) => (
-          <LinkCell href={`${CUSTOM_FIELDS_ROUTE}/${id}`}>{name}</LinkCell>
+        render: (_, { id, name, system_managed }) => (
+          <Flex gap="small" align="center">
+            <LinkCell href={`${CUSTOM_FIELDS_ROUTE}/${id}`}>{name}</LinkCell>
+            {system_managed && (
+              <Tooltip title={MANAGED_FIELD_TOOLTIP}>
+                <Icons.Locked
+                  size={14}
+                  className="text-gray-500"
+                  aria-label="Managed by Fides"
+                  data-testid="managed-field-lock"
+                />
+              </Tooltip>
+            )}
+          </Flex>
         ),
       },
       {
@@ -118,17 +133,20 @@ const useCustomFieldsTable = () => {
       {
         title: "Actions",
         key: "actions",
-        render: (_: any, record: CustomFieldDefinitionWithId) => (
-          <Flex gap="medium">
-            <Button
-              size="small"
-              onClick={() => router.push(`${CUSTOM_FIELDS_ROUTE}/${record.id}`)}
-              data-testid="edit-btn"
-            >
-              Edit
-            </Button>
-          </Flex>
-        ),
+        render: (_: any, record: CustomFieldDefinitionWithId) =>
+          record.system_managed ? null : (
+            <Flex gap="medium">
+              <Button
+                size="small"
+                onClick={() =>
+                  router.push(`${CUSTOM_FIELDS_ROUTE}/${record.id}`)
+                }
+                data-testid="edit-btn"
+              >
+                Edit
+              </Button>
+            </Flex>
+          ),
         hidden: !showActions,
         width: 96,
       },

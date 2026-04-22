@@ -9,8 +9,10 @@ import {
   Radio,
   Skeleton,
   Space,
+  Tag,
   Text,
   Title,
+  Tooltip,
   useMessage,
   useModal,
 } from "fidesui";
@@ -86,6 +88,14 @@ export const CustomReportTemplates = ({
   }, [customReportsList?.items, savedReportId]);
 
   const isEmpty = !isCustomReportsLoading && !customReportsList?.items?.length;
+
+  const { systemReports, userReports } = useMemo(() => {
+    const items = searchResults ?? [];
+    return {
+      systemReports: items.filter((report) => !!report.system_template_key),
+      userReports: items.filter((report) => !report.system_template_key),
+    };
+  }, [searchResults]);
 
   const handleSearch = (searchTerm: string) => {
     const results = customReportsList?.items.filter((customReport) =>
@@ -278,33 +288,84 @@ export const CustomReportTemplates = ({
                 style={{ width: "100%" }}
               >
                 <Space orientation="vertical" className="w-full" size="small">
-                  {searchResults?.map((customReport) => (
-                    <Flex
-                      key={customReport.id}
-                      justify={
-                        userCanDeleteReports ? "space-between" : "flex-start"
-                      }
-                      align="center"
-                    >
-                      <Radio
-                        value={customReport.id}
-                        name="custom-report-id"
-                        data-testid="custom-report-item"
+                  {systemReports.length > 0 && (
+                    <>
+                      <Text
+                        type="secondary"
+                        className="text-xs uppercase tracking-wide"
+                        data-testid="custom-reports-section-system"
                       >
-                        {customReport.name}
-                      </Radio>
-                      {userCanDeleteReports && (
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<Icons.TrashCan />}
-                          onClick={() => onDelete(customReport)}
-                          data-testid="delete-report-button"
-                          aria-label="Delete"
-                        />
+                        Standard templates
+                      </Text>
+                      {systemReports.map((customReport) => (
+                        <Flex
+                          key={customReport.id}
+                          justify="flex-start"
+                          align="center"
+                          gap="small"
+                        >
+                          <Radio
+                            value={customReport.id}
+                            name="custom-report-id"
+                            data-testid="custom-report-item"
+                          >
+                            {customReport.name}
+                          </Radio>
+                          <Tooltip title="Out-of-the-box reporting template. Standard templates cannot be deleted.">
+                            <Tag
+                              color="info"
+                              className="m-0"
+                              data-testid="system-template-tag"
+                            >
+                              Standard
+                            </Tag>
+                          </Tooltip>
+                        </Flex>
+                      ))}
+                    </>
+                  )}
+                  {userReports.length > 0 && (
+                    <>
+                      {systemReports.length > 0 && (
+                        <Text
+                          type="secondary"
+                          className="mt-2 text-xs uppercase tracking-wide"
+                          data-testid="custom-reports-section-user"
+                        >
+                          Your reports
+                        </Text>
                       )}
-                    </Flex>
-                  ))}
+                      {userReports.map((customReport) => (
+                        <Flex
+                          key={customReport.id}
+                          justify={
+                            userCanDeleteReports
+                              ? "space-between"
+                              : "flex-start"
+                          }
+                          align="center"
+                        >
+                          <Radio
+                            value={customReport.id}
+                            name="custom-report-id"
+                            data-testid="custom-report-item"
+                          >
+                            {customReport.name}
+                          </Radio>
+                          {userCanDeleteReports && (
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<Icons.TrashCan />}
+                              onClick={() => onDelete(customReport)}
+                              data-testid="delete-report-button"
+                              aria-label="Delete"
+                            />
+                          )}
+                        </Flex>
+                      ))}
+                    </>
+                  )}
                 </Space>
               </Radio.Group>
             ))}

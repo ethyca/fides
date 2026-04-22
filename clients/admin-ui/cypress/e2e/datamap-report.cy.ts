@@ -602,6 +602,37 @@ describe("Data map report table", () => {
         .its("request.url")
         .should("include", "1234");
     });
+    describe("with a system-owned template", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
+          fixture: "custom-reports/minimal-with-system-template.json",
+        }).as("getCustomReportsMinimalWithSystemTemplate");
+      });
+      it("groups system templates above user reports with a 'Standard' tag", () => {
+        cy.getByTestId("custom-reports-trigger").click();
+        cy.wait("@getCustomReportsMinimalWithSystemTemplate");
+        cy.getByTestId("custom-reports-popover").within(() => {
+          cy.getByTestId("custom-reports-section-system").should("be.visible");
+          cy.getByTestId("custom-reports-section-user").should("be.visible");
+          cy.getByTestId("system-template-tag").should("have.length", 1);
+          // System template is listed above user reports. The antd Radio
+          // label (.ant-radio-wrapper) carries the visible text; the
+          // data-testid is on the inner input element, which has no text.
+          cy.get(".ant-radio-wrapper")
+            .first()
+            .should("contain", "ICO Record of Processing (UK)");
+        });
+      });
+      it("suppresses the delete affordance on system templates", () => {
+        cy.getByTestId("custom-reports-trigger").click();
+        cy.wait("@getCustomReportsMinimalWithSystemTemplate");
+        // Only the user report row exposes a delete button; the system
+        // template row does not render one.
+        cy.getByTestId("custom-reports-popover").within(() => {
+          cy.getByTestId("delete-report-button").should("have.length", 1);
+        });
+      });
+    });
   });
 
   describe("Exporting", () => {
