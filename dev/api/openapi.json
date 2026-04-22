@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.83.2a1.dev33+g3a525393c"
+    "version": "2.83.2a1.dev34+ga533969c4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -30050,6 +30050,10 @@
             "type": "string",
             "title": "Type"
           },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
           "is_enabled": {
             "type": "boolean",
             "title": "Is Enabled"
@@ -30069,6 +30073,7 @@
         "type": "object",
         "required": [
           "type",
+          "label",
           "is_enabled",
           "content"
         ],
@@ -30083,6 +30088,10 @@
           "type": {
             "type": "string",
             "title": "Type"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
           },
           "is_enabled": {
             "type": "boolean",
@@ -30118,6 +30127,7 @@
         "required": [
           "id",
           "type",
+          "label",
           "is_enabled",
           "content"
         ],
