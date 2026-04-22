@@ -78,10 +78,14 @@ const mapIsoObjects = (
   return mapped.flat();
 };
 
-interface ILocationSelectProps
-  extends Omit<ICustomSelectProps<string>, "options"> {}
-interface ILocationMultiSelectProps
-  extends Omit<ICustomMultiSelectProps<string>, "options"> {}
+interface ILocationSelectProps extends Omit<
+  ICustomSelectProps<string>,
+  "options"
+> {}
+interface ILocationMultiSelectProps extends Omit<
+  ICustomMultiSelectProps<string>,
+  "options"
+> {}
 
 export type LocationSelectProps = (
   | ILocationSelectProps

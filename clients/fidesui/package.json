@@ -60,7 +60,7 @@
     "eslint-plugin-storybook": "^9.1.15",
     "msw": "^2.12.10",
     "postcss": "^8.4.38",
-    "prettier": "^3.3.3",
+    "prettier": "^3.8.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "storybook": "^10.2.10",

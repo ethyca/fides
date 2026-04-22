@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed property creation 422 error caused by missing paths field in form submission payload
+pr: 7908
+labels: []

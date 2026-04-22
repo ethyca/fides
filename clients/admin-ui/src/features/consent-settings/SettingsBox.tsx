@@ -1,34 +1,14 @@
-import {
-  ChakraBox as Box,
-  ChakraBoxProps as BoxProps,
-  ChakraText as Text,
-} from "fidesui";
+import { Card, CardProps } from "fidesui";
 import { ReactNode } from "react";
 
 const SettingsBox = ({
   title,
   children,
   ...props
-}: { title: string; children: ReactNode } & BoxProps) => (
-  <Box
-    backgroundColor="var(--fidesui-bg-corinth)"
-    borderRadius="4px"
-    padding="3"
-    data-testid={`setting-${title}`}
-    {...props}
-  >
-    <Text
-      as="h3"
-      fontSize="md"
-      fontWeight="bold"
-      lineHeight={5}
-      color="gray.700"
-      mb={3}
-    >
-      {title}
-    </Text>
+}: { title: string; children: ReactNode } & CardProps) => (
+  <Card title={title} data-testid={`setting-${title}`} {...props}>
     {children}
-  </Box>
+  </Card>
 );
 
 export default SettingsBox;
