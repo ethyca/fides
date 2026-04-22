@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger as log
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -55,22 +56,27 @@ async def validate_data_labels(
     """
     Given a model and a list of FidesKeys, check that for each Fides Key
     there is a model instance with that key and the active attribute set to True.
-    If any of the keys don't exist or exist but are not active, raise a 400 error
+    If any of the keys don't exist or exist but are not active, raise a 400 error.
+
+    Uses a single batch query instead of per-label queries to avoid N+1 performance issues.
     """
-    for label in labels:
-        try:
-            resource = await get_resource(
-                sql_model=sql_model,
-                fides_key=label,
-                async_session=db,
-            )
-        except NotFoundError:
+    if not labels:
+        return
+
+    unique_labels = set(labels)
+    query = select(sql_model.fides_key, sql_model.active).where(
+        sql_model.fides_key.in_(unique_labels)
+    )
+    result = await db.execute(query)
+    found: Dict[str, bool] = {row.fides_key: row.active for row in result}
+
+    for label in unique_labels:
+        if label not in found:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Invalid privacy declaration referencing unknown {sql_model.__name__} {label}",
             )
-
-        if not resource.active:
+        if not found[label]:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Invalid privacy declaration referencing inactive {sql_model.__name__} {label}",
@@ -87,13 +93,17 @@ async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) 
 
     If not, a `400` is raised
     """
-    logical_ids = set()
+    # Collect all labels across declarations for batch validation (3 queries total
+    # instead of N per declaration)
+    all_data_uses: List[FidesKey] = []
+    all_data_categories: List[FidesKey] = []
+    all_data_subjects: List[FidesKey] = []
+    logical_ids: set = set()
+
     for privacy_declaration in system.privacy_declarations:
-        await validate_data_labels(db, DataUse, [privacy_declaration.data_use])
-        await validate_data_labels(
-            db, DataCategory, privacy_declaration.data_categories
-        )
-        await validate_data_labels(db, DataSubject, privacy_declaration.data_subjects)
+        all_data_uses.append(privacy_declaration.data_use)
+        all_data_categories.extend(privacy_declaration.data_categories)
+        all_data_subjects.extend(privacy_declaration.data_subjects)
 
         logical_id = privacy_declaration_logical_id(privacy_declaration)
         if logical_id in logical_ids:
@@ -101,8 +111,11 @@ async def validate_privacy_declarations(db: AsyncSession, system: SystemSchema) 
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Duplicate privacy declarations specified with data use {privacy_declaration.data_use}",
             )
-
         logical_ids.add(logical_id)
+
+    await validate_data_labels(db, DataUse, all_data_uses)
+    await validate_data_labels(db, DataCategory, all_data_categories)
+    await validate_data_labels(db, DataSubject, all_data_subjects)
 
 
 async def upsert_system(
@@ -125,7 +138,10 @@ async def upsert_system(
                 f"Upsert System with fides_key {resource.fides_key} not found, will create"
             )
             await create_system(
-                resource=resource, db=db, current_user_id=current_user_id
+                resource=resource,
+                db=db,
+                current_user_id=current_user_id,
+                skip_validation=True,
             )
             inserted += 1
             continue
@@ -282,13 +298,17 @@ def _audit_system_changes(
 
 
 async def create_system(
-    resource: SystemSchema, db: AsyncSession, current_user_id: Optional[str] = None
+    resource: SystemSchema,
+    db: AsyncSession,
+    current_user_id: Optional[str] = None,
+    skip_validation: bool = False,
 ) -> Dict:
     """
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    await validate_privacy_declarations(db, resource)
+    if not skip_validation:
+        await validate_privacy_declarations(db, resource)
     # copy out the declarations to be stored separately
     # as they will be processed AFTER the system is added
     privacy_declarations = resource.privacy_declarations
