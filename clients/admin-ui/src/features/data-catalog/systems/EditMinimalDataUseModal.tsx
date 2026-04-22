@@ -93,7 +93,7 @@ const EditMinimalDataUseModal = ({
       title="Edit data use"
       open={isOpen}
       onClose={onClose}
-      getIsDirty={() => isDirty}
+      getIsDirty={() => form.isFieldsTouched()}
       centered
       destroyOnHidden
       footer={null}
@@ -105,7 +105,7 @@ const EditMinimalDataUseModal = ({
         layout="vertical"
         key={declaration?.id ?? "edit"}
       >
-        <Flex vertical className="gap-6 py-4">
+        <Flex vertical className="py-4">
           <Form.Item
             name="data_use"
             label="Data use"
