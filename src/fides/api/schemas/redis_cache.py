@@ -25,6 +25,20 @@ MultiValue = Union[
 ]
 
 
+def is_empty_multivalue(value: Optional[MultiValue]) -> bool:
+    """Whether a MultiValue should be treated as "no value supplied".
+
+    Returns True for None, empty string, 0, and empty list — callers use this
+    to drop those before hashing/persisting. Boolean values (``True`` and
+    ``False``) are always treated as real values: a user's explicit ``False``
+    on a checkbox is a legitimate submission.
+
+    Centralises the ``not value and not isinstance(value, bool)`` check so
+    the falsy-except-bool rule has a single definition.
+    """
+    return not value and not isinstance(value, bool)
+
+
 class IdentityBase(FidesSchema):
     """The minimum fields required to represent an identity."""
 

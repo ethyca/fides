@@ -31,7 +31,7 @@ from fides.api.models.privacy_notice import (
 from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.redis_cache import MultiValue
+from fides.api.schemas.redis_cache import MultiValue, is_empty_multivalue
 
 
 class RequestOrigin(Enum):
@@ -131,10 +131,7 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         Temporary function used to hash values to the previously used bcrypt hashes.
         This can be removed once the bcrypt to SHA-256 migration is complete.
         """
-        # Exclude bools from the falsy filter: MultiValue includes StrictBool,
-        # and Python's `not False` is True, so a plain `if not value` would
-        # drop legitimate `False` checkbox values alongside None/""/0/[].
-        if not value and not isinstance(value, bool):
+        if is_empty_multivalue(value):
             return None
 
         return ProvidedIdentity.bcrypt_hash_value(value, encoding)
@@ -148,7 +145,7 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         """Utility function to hash the value with a generated salt
         This returns None if there's no value, unlike ProvidedIdentity.hash_value
         """
-        if not value and not isinstance(value, bool):
+        if is_empty_multivalue(value):
             return None
 
         return ProvidedIdentity.hash_value(value, encoding)

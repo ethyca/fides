@@ -16,6 +16,10 @@ from fides.api.schemas.base_class import FidesSchema
 
 RequiredType = Literal["optional", "required"]
 
+CustomFieldType = Literal[
+    "text", "select", "multiselect", "checkbox", "checkbox_group", "textarea"
+]
+
 
 class PrivacyCenterLink(FidesSchema):
     label: str
@@ -81,11 +85,7 @@ class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     """Regular custom privacy request field supporting text, select, multiselect,
     checkbox, checkbox_group, and textarea types"""
 
-    field_type: Optional[
-        Literal[
-            "text", "select", "multiselect", "checkbox", "checkbox_group", "textarea"
-        ]
-    ] = None
+    field_type: Optional[CustomFieldType] = None
     options: Optional[List[str]] = None
 
     @model_validator(mode="before")
