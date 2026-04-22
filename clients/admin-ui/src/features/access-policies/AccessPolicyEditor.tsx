@@ -1004,7 +1004,9 @@ const AccessPolicyEditor = ({
         <div className="relative min-h-0 grow">
           {agentChatEnabled ? (
             <Splitter className="h-full">
-              <Splitter.Panel>{tabsNode}</Splitter.Panel>
+              <Splitter.Panel>
+                <div className="h-full pr-3">{tabsNode}</div>
+              </Splitter.Panel>
               <Splitter.Panel defaultSize={300} min={260} max="50%" collapsible>
                 <AgentChatPanel
                   currentYaml={yamlValue}
