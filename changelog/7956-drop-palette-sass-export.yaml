@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Build using Turbopack instead of Webpack, replace Sass :export with TS palette module
-pr: 7956
-labels: ["high-risk"]

@@ -1,8 +1,0 @@
-type: Added
-description: |
-  Add Go shared library (libpbac) for PBAC evaluation and fides pbac CLI.
-  All evaluation logic (purpose overlap, access policies, full pipeline)
-  runs in Go via ctypes — no Python reimplementation. Includes fixture
-  loading, pipeline orchestration, and YAML config directory support.
-pr: 7944
-labels: []
