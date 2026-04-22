@@ -796,7 +796,8 @@ const AccessPolicyEditor = ({
   const { data: appConfig } = useGetConfigurationSettingsQuery({
     api_set: false,
   });
-  const agentChatEnabled = !!appConfig?.access_policies?.agent_enabled;
+  const agentChatEnabled =
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const { data: controlGroups = [] } = useGetControlsQuery();
 

@@ -73,18 +73,6 @@ export const agentChatHandlers = () => {
   ];
 
   return [
-    // Return config with the agent chat feature flag enabled
-    rest.get("*/api/v1/config", (_req, res, ctx) =>
-      res(
-        ctx.status(200),
-        ctx.json({
-          access_policies: {
-            agent_enabled: true,
-          },
-        }),
-      ),
-    ),
-
     rest.post("*/api/v1/plus/llm/access-policy-chat", async (req, res, ctx) => {
       const body = await req.json();
       const chatHistoryId =
