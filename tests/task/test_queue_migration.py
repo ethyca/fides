@@ -17,7 +17,8 @@ from typing import Any, Dict, Iterable, List, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from fides.api.tasks.broker import get_all_celery_queue_names
 from fides.api.tasks.broker import get_sqs_client as _get_sqs_client
@@ -29,7 +30,6 @@ from fides.api.tasks.queue_migration import (
     _send_in_batches,
     migrate_redis_queues_to_sqs,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -64,9 +64,7 @@ class FakeRedis:
     deterministically without a live Redis connection.
     """
 
-    def __init__(
-        self, initial_lists: Optional[Dict[str, List[bytes]]] = None
-    ) -> None:
+    def __init__(self, initial_lists: Optional[Dict[str, List[bytes]]] = None) -> None:
         self._lists: Dict[str, List[bytes]] = {
             key: list(values) for key, values in (initial_lists or {}).items()
         }
@@ -132,9 +130,7 @@ class FakeRedis:
 def _make_sqs_mock() -> MagicMock:
     """Build a MagicMock SQS client with a recordable ``send_message_batch``."""
     client = MagicMock()
-    client.send_message_batch = MagicMock(
-        return_value={"Successful": [], "Failed": []}
-    )
+    client.send_message_batch = MagicMock(return_value={"Successful": [], "Failed": []})
     return client
 
 
@@ -307,13 +303,9 @@ class TestLockReleaseGuaranteeProperty:
             )
             expect_exception = False
         elif scenario == "per_queue_error":
-            redis_conn = FakeRedis(
-                initial_lists={q: [b"msg"] for q in all_queues}
-            )
+            redis_conn = FakeRedis(initial_lists={q: [b"msg"] for q in all_queues})
             sqs_client = _make_sqs_mock()
-            sqs_client.send_message_batch = MagicMock(
-                side_effect=RuntimeError("boom")
-            )
+            sqs_client.send_message_batch = MagicMock(side_effect=RuntimeError("boom"))
             build_patch = patch(
                 "fides.api.tasks.broker.get_sqs_client",
                 return_value=sqs_client,
@@ -501,9 +493,7 @@ class TestStartupQueueMigratorUnit:
 
     def test_lrange_and_ltrim_called_per_queue(self) -> None:
         all_queues = get_all_celery_queue_names()
-        redis_conn = FakeRedis(
-            initial_lists={q: [b"msg"] for q in all_queues}
-        )
+        redis_conn = FakeRedis(initial_lists={q: [b"msg"] for q in all_queues})
         sqs_client = _make_sqs_mock()
         config = _make_config()
 
@@ -516,11 +506,7 @@ class TestStartupQueueMigratorUnit:
             )
 
         lrange_keys = [c[1] for c in redis_conn.calls if c[0] == "lrange"]
-        ltrim_keys = [
-            c[1]
-            for c in redis_conn.calls
-            if c[0] == "ltrim"
-        ]
+        ltrim_keys = [c[1] for c in redis_conn.calls if c[0] == "ltrim"]
 
         assert set(lrange_keys) == set(all_queues)
         assert set(ltrim_keys) == set(all_queues)
@@ -545,9 +531,7 @@ class TestStartupQueueMigratorUnit:
         assert len(calls) == 3
 
         # Every call targets the correct SQS queue URL.
-        expected_url = (
-            "http://elasticmq:9324/queue/fides-fides-dsr"
-        )
+        expected_url = "http://elasticmq:9324/queue/fides-fides-dsr"
         for call in calls:
             assert call.kwargs["QueueUrl"] == expected_url
 
@@ -679,9 +663,7 @@ class TestStartupQueueMigratorUnit:
         all_queues = get_all_celery_queue_names()
         failing_queue = all_queues[0]
 
-        redis_conn = FakeRedis(
-            initial_lists={q: [b"m1"] for q in all_queues}
-        )
+        redis_conn = FakeRedis(initial_lists={q: [b"m1"] for q in all_queues})
         sqs_client = _make_sqs_mock()
 
         def fail_on_target(QueueUrl: str, Entries: list) -> Any:  # noqa: N803
@@ -787,11 +769,10 @@ class TestStartupQueueMigratorUnit:
             )
 
         # Find the indices of send_message_batch calls and the delete call.
-        send_indices = [
-            i for i, c in enumerate(redis_conn.calls) if c[0] == "lrange"
-        ]
+        send_indices = [i for i, c in enumerate(redis_conn.calls) if c[0] == "lrange"]
         delete_indices = [
-            i for i, c in enumerate(redis_conn.calls)
+            i
+            for i, c in enumerate(redis_conn.calls)
             if c[0] == "delete" and c[1] != MIGRATION_LOCK_KEY
         ]
         # lrange must come before delete for the target queue.

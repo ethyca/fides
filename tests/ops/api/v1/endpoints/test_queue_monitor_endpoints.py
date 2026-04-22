@@ -13,7 +13,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from botocore.exceptions import ClientError, NoCredentialsError
 from fastapi import Response
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from fides.api.schemas.queue_monitor import QueueMonitorResponse
 from fides.api.tasks.broker import get_all_celery_queue_names
@@ -39,9 +40,7 @@ def _make_config(use_sqs_queue: bool = True) -> SimpleNamespace:
     )
 
 
-def _mock_sqs_client(
-    responses: dict[str, dict[str, int] | Exception]
-) -> MagicMock:
+def _mock_sqs_client(responses: dict[str, dict[str, int] | Exception]) -> MagicMock:
     """Build a mock SQS client that returns configured attributes per queue URL."""
     client = MagicMock()
 
@@ -84,9 +83,10 @@ class TestSqsModeIndicatorAccuracy:
     def test_sqs_mode_indicator_accuracy(self, sqs_enabled: bool) -> None:
         config = _make_config(use_sqs_queue=sqs_enabled)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client") as mock_build:
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client") as mock_build,
+        ):
             mock_build.return_value = MagicMock()
             response = get_queue_monitor()
 
@@ -133,11 +133,13 @@ class TestQueueStatsCompletenessAndMapping:
         }
         mock_client = _mock_sqs_client(responses)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client), patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
-            return_value=queue_names,
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
+                return_value=queue_names,
+            ),
         ):
             response = get_queue_monitor()
 
@@ -200,11 +202,13 @@ class TestPerQueueErrorIsolation:
 
         mock_client = _mock_sqs_client(responses)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client), patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
-            return_value=queue_names,
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
+                return_value=queue_names,
+            ),
         ):
             response = get_queue_monitor()
 
@@ -236,9 +240,7 @@ class TestQueueMonitorEndpoint:
         """SQS disabled → sqs_enabled=False and empty queues list."""
         config = _make_config(use_sqs_queue=False)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ):
+        with patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config):
             response = get_queue_monitor()
 
         assert response.sqs_enabled is False
@@ -254,11 +256,13 @@ class TestQueueMonitorEndpoint:
         }
         mock_client = _mock_sqs_client(responses)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client), patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
-            return_value=queue_names,
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
+                return_value=queue_names,
+            ),
         ):
             response = get_queue_monitor()
 
@@ -277,15 +281,15 @@ class TestQueueMonitorEndpoint:
         """SQS auth error → HTTP 503 with empty body."""
         config = _make_config(use_sqs_queue=True)
         mock_client = MagicMock()
-        mock_client.get_queue_attributes = MagicMock(
-            side_effect=NoCredentialsError()
-        )
+        mock_client.get_queue_attributes = MagicMock(side_effect=NoCredentialsError())
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client), patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
-            return_value=["fides"],
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
+                return_value=["fides"],
+            ),
         ):
             response = get_queue_monitor()
 
@@ -305,11 +309,13 @@ class TestQueueMonitorEndpoint:
         }
         mock_client = _mock_sqs_client(responses)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client), patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
-            return_value=queue_names,
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
+                return_value=queue_names,
+            ),
         ):
             response = get_queue_monitor()
 
@@ -327,16 +333,17 @@ class TestQueueMonitorEndpoint:
         queue_names = ["fides", "fidesops.messaging"]
         config = _make_config(use_sqs_queue=True)
         responses = {
-            name: {"available": 0, "delayed": 0, "in_flight": 0}
-            for name in queue_names
+            name: {"available": 0, "delayed": 0, "in_flight": 0} for name in queue_names
         }
         mock_client = _mock_sqs_client(responses)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client), patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
-            return_value=queue_names,
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
+                return_value=queue_names,
+            ),
         ):
             response = get_queue_monitor()
 
@@ -352,16 +359,17 @@ class TestQueueMonitorEndpoint:
         queue_names = ["fides", "fidesops.messaging"]
         config = _make_config(use_sqs_queue=True)
         responses = {
-            name: {"available": 1, "delayed": 0, "in_flight": 0}
-            for name in queue_names
+            name: {"available": 1, "delayed": 0, "in_flight": 0} for name in queue_names
         }
         mock_client = _mock_sqs_client(responses)
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ), patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client), patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
-            return_value=queue_names,
+        with (
+            patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
+            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
+                return_value=queue_names,
+            ),
         ):
             response = get_queue_monitor()
 
@@ -393,9 +401,7 @@ class TestQueueMonitorEndpointHTTP:
         config = _make_config(use_sqs_queue=False)
         auth_header = generate_auth_header(scopes=[])
 
-        with patch(
-            "fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config
-        ):
+        with patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config):
             response = api_client.get(url, headers=auth_header)
 
         assert response.status_code == 200

@@ -1028,11 +1028,14 @@ class TestInitiateInterruptedTaskRequeuePoll:
         config.test_mode = False
         config.queue.use_sqs_queue = True
 
-        with mock.patch(
-            "fides.api.service.privacy_request.request_service.CONFIG", config
-        ), mock.patch(
-            "fides.api.service.privacy_request.request_service.scheduler"
-        ) as mock_scheduler:
+        with (
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.CONFIG", config
+            ),
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.scheduler"
+            ) as mock_scheduler,
+        ):
             mock_scheduler.running = True
             initiate_interrupted_task_requeue_poll()
 
@@ -1052,11 +1055,14 @@ class TestInitiateInterruptedTaskRequeuePoll:
         config.test_mode = False
         config.queue.use_sqs_queue = False
 
-        with mock.patch(
-            "fides.api.service.privacy_request.request_service.CONFIG", config
-        ), mock.patch(
-            "fides.api.service.privacy_request.request_service.scheduler"
-        ) as mock_scheduler:
+        with (
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.CONFIG", config
+            ),
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.scheduler"
+            ) as mock_scheduler,
+        ):
             mock_scheduler.running = True
             initiate_interrupted_task_requeue_poll()
 
@@ -1075,10 +1081,11 @@ class TestInitiateInterruptedTaskRequeuePoll:
         config = mock.MagicMock()
         config.test_mode = True
 
-        with mock.patch(
-            "fides.api.service.privacy_request.request_service.CONFIG", config
-        ), mock.patch(
-            "fides.api.service.privacy_request.request_service.scheduler"
+        with (
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.CONFIG", config
+            ),
+            mock.patch("fides.api.service.privacy_request.request_service.scheduler"),
         ):
             initiate_interrupted_task_requeue_poll()
 

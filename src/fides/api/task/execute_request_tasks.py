@@ -26,6 +26,7 @@ from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, Reque
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
@@ -34,7 +35,6 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
-from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context

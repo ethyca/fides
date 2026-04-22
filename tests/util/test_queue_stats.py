@@ -10,7 +10,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from fides.api.tasks.broker import get_all_celery_queue_names
 from fides.api.util.queue_stats import (
@@ -18,7 +19,6 @@ from fides.api.util.queue_stats import (
     SQSQueueStatsProvider,
     get_queue_stats_provider,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers — lightweight config stubs
@@ -254,9 +254,7 @@ class TestSQSQueueStatsProvider:
 
         assert mock_client.get_queue_attributes.call_count == len(all_queues)
         for call in mock_client.get_queue_attributes.call_args_list:
-            assert call.kwargs["AttributeNames"] == [
-                "ApproximateNumberOfMessages"
-            ]
+            assert call.kwargs["AttributeNames"] == ["ApproximateNumberOfMessages"]
 
     def test_per_queue_error_returns_zero_and_logs_warning(self) -> None:
         """When a single queue fails, its count is 0 and a warning is logged.
@@ -266,9 +264,7 @@ class TestSQSQueueStatsProvider:
         all_queues = get_all_celery_queue_names()
         failing_queue = all_queues[0]
 
-        responses: dict[str, int | Exception] = {
-            name: 10 for name in all_queues
-        }
+        responses: dict[str, int | Exception] = {name: 10 for name in all_queues}
         responses[failing_queue] = Exception("queue does not exist")
 
         config = _make_config()
@@ -300,9 +296,7 @@ class TestSQSQueueStatsProvider:
 
         config = _make_config()
         mock_client = MagicMock()
-        mock_client.get_queue_attributes = MagicMock(
-            side_effect=NoCredentialsError()
-        )
+        mock_client.get_queue_attributes = MagicMock(side_effect=NoCredentialsError())
 
         provider = SQSQueueStatsProvider.__new__(SQSQueueStatsProvider)
         provider._config = config
@@ -336,9 +330,7 @@ class TestGetQueueStatsProviderFactory:
 
     def test_returns_sqs_provider_when_flag_enabled(self) -> None:
         config = _make_config(use_sqs_queue=True)
-        with patch(
-            "fides.api.tasks.broker.get_sqs_client"
-        ) as mock_build:
+        with patch("fides.api.tasks.broker.get_sqs_client") as mock_build:
             mock_build.return_value = MagicMock()
             provider = get_queue_stats_provider(config)
         assert isinstance(provider, SQSQueueStatsProvider)
@@ -378,10 +370,13 @@ class TestCacheGetQueueCountsDelegation:
 
         sqs_config = _make_config(use_sqs_queue=True)
 
-        with patch.object(cache_module, "CONFIG", sqs_config), patch(
-            "fides.api.util.queue_stats.get_queue_stats_provider",
-            return_value=sqs_provider,
-        ) as mock_factory:
+        with (
+            patch.object(cache_module, "CONFIG", sqs_config),
+            patch(
+                "fides.api.util.queue_stats.get_queue_stats_provider",
+                return_value=sqs_provider,
+            ) as mock_factory,
+        ):
             result = cache_module.get_queue_counts()
 
         mock_factory.assert_called_once_with(sqs_config)
@@ -400,10 +395,13 @@ class TestCacheGetQueueCountsDelegation:
 
         redis_config = _make_config(use_sqs_queue=False)
 
-        with patch.object(cache_module, "CONFIG", redis_config), patch(
-            "fides.api.util.queue_stats.get_queue_stats_provider",
-            return_value=redis_provider,
-        ) as mock_factory:
+        with (
+            patch.object(cache_module, "CONFIG", redis_config),
+            patch(
+                "fides.api.util.queue_stats.get_queue_stats_provider",
+                return_value=redis_provider,
+            ) as mock_factory,
+        ):
             result = cache_module.get_queue_counts()
 
         mock_factory.assert_called_once_with(redis_config)
@@ -418,13 +416,16 @@ class TestCacheGetQueueCountsDelegation:
 
         sqs_config = _make_config(use_sqs_queue=True)
 
-        with patch.object(cache_module, "CONFIG", sqs_config), patch(
-            "fides.api.tasks.broker.get_sqs_client"
-        ) as mock_build_sqs, patch(
-            "fides.api.util.queue_stats.SQSQueueStatsProvider.get_queue_counts"
-        ) as mock_sqs_counts, patch(
-            "fides.api.util.queue_stats.RedisQueueStatsProvider.get_queue_counts"
-        ) as mock_redis_counts:
+        with (
+            patch.object(cache_module, "CONFIG", sqs_config),
+            patch("fides.api.tasks.broker.get_sqs_client") as mock_build_sqs,
+            patch(
+                "fides.api.util.queue_stats.SQSQueueStatsProvider.get_queue_counts"
+            ) as mock_sqs_counts,
+            patch(
+                "fides.api.util.queue_stats.RedisQueueStatsProvider.get_queue_counts"
+            ) as mock_redis_counts,
+        ):
             mock_build_sqs.return_value = MagicMock()
             mock_sqs_counts.return_value = {"fides.dsr": 1}
             mock_redis_counts.return_value = {"fides.dsr": 999}
@@ -446,13 +447,16 @@ class TestCacheGetQueueCountsDelegation:
         # ``queue_stats.get_queue_stats_provider`` does a local import of
         # ``get_cache`` from ``fides.api.util.cache``; patch it at the source
         # module so the local import resolves to the mock.
-        with patch.object(cache_module, "CONFIG", redis_config), patch(
-            "fides.api.util.cache.get_cache"
-        ) as mock_get_cache, patch(
-            "fides.api.util.queue_stats.RedisQueueStatsProvider.get_queue_counts"
-        ) as mock_redis_counts, patch(
-            "fides.api.util.queue_stats.SQSQueueStatsProvider.get_queue_counts"
-        ) as mock_sqs_counts:
+        with (
+            patch.object(cache_module, "CONFIG", redis_config),
+            patch("fides.api.util.cache.get_cache") as mock_get_cache,
+            patch(
+                "fides.api.util.queue_stats.RedisQueueStatsProvider.get_queue_counts"
+            ) as mock_redis_counts,
+            patch(
+                "fides.api.util.queue_stats.SQSQueueStatsProvider.get_queue_counts"
+            ) as mock_sqs_counts,
+        ):
             mock_get_cache.return_value = MagicMock()
             mock_redis_counts.return_value = {"fides.dsr": 4}
             mock_sqs_counts.return_value = {"fides.dsr": 999}
@@ -472,10 +476,14 @@ class TestCacheGetQueueCountsDelegation:
         """
         from fides.api.util import cache as cache_module
 
-        with patch.object(cache_module, "CONFIG", _make_config()), patch(
-            "fides.api.util.queue_stats.get_queue_stats_provider",
-            side_effect=RuntimeError("provider blew up"),
-        ), patch.object(cache_module, "logger") as mock_logger:
+        with (
+            patch.object(cache_module, "CONFIG", _make_config()),
+            patch(
+                "fides.api.util.queue_stats.get_queue_stats_provider",
+                side_effect=RuntimeError("provider blew up"),
+            ),
+            patch.object(cache_module, "logger") as mock_logger,
+        ):
             result = cache_module.get_queue_counts()
 
         assert result == {}

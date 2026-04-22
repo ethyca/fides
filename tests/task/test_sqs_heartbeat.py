@@ -23,7 +23,6 @@ from fides.api.service.privacy_request.sqs_heartbeat import (
     sqs_heartbeat,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -71,7 +70,9 @@ class TestGetSqsQueueName:
     def test_returns_prefixed_name_with_delivery_info(self) -> None:
         """Normal path: delivery_info with routing_key → prefixed name."""
         task = _make_task(delivery_info={"routing_key": "fides.dsr"})
-        with patch("fides.api.service.privacy_request.sqs_heartbeat.CONFIG") as mock_config:
+        with patch(
+            "fides.api.service.privacy_request.sqs_heartbeat.CONFIG"
+        ) as mock_config:
             mock_config.queue.sqs_queue_name_prefix = "test-"
             result = _get_sqs_queue_name(task)
         assert result == "test-fides.dsr"
@@ -119,7 +120,9 @@ class TestSqsHeartbeatThread:
 
         # Wait for at least one successful call.
         deadline = time.time() + 10
-        while not sqs_client.change_message_visibility.called and time.time() < deadline:
+        while (
+            not sqs_client.change_message_visibility.called and time.time() < deadline
+        ):
             time.sleep(0.1)
 
         call_count = sqs_client.change_message_visibility.call_count
@@ -153,7 +156,9 @@ class TestSqsHeartbeatThread:
 
         # Wait for first call, then stop.
         deadline = time.time() + 5
-        while not sqs_client.change_message_visibility.called and time.time() < deadline:
+        while (
+            not sqs_client.change_message_visibility.called and time.time() < deadline
+        ):
             time.sleep(0.1)
 
         stop_event.set()
@@ -187,7 +192,9 @@ class TestSqsHeartbeatThread:
 
         # Wait for the first call to be made.
         deadline = time.time() + 5
-        while not sqs_client.change_message_visibility.called and time.time() < deadline:
+        while (
+            not sqs_client.change_message_visibility.called and time.time() < deadline
+        ):
             time.sleep(0.1)
 
         # Thread should exit quickly after the InvalidParameterValue.
@@ -263,7 +270,9 @@ class TestSqsHeartbeatDecorator:
             delivery_info={"routing_key": "fides.dsr"},
             sqs_message=None,
         )
-        with patch("fides.api.service.privacy_request.sqs_heartbeat.CONFIG") as mock_config:
+        with patch(
+            "fides.api.service.privacy_request.sqs_heartbeat.CONFIG"
+        ) as mock_config:
             mock_config.queue = _make_config().queue
             my_task(task)
 
@@ -283,9 +292,14 @@ class TestSqsHeartbeatDecorator:
             sqs_message={"ReceiptHandle": "test-handle"},
         )
 
-        with patch("fides.api.service.privacy_request.sqs_heartbeat.CONFIG") as mock_config, patch(
-            "fides.api.service.privacy_request.sqs_heartbeat.get_sqs_client"
-        ) as mock_get_sqs:
+        with (
+            patch(
+                "fides.api.service.privacy_request.sqs_heartbeat.CONFIG"
+            ) as mock_config,
+            patch(
+                "fides.api.service.privacy_request.sqs_heartbeat.get_sqs_client"
+            ) as mock_get_sqs,
+        ):
             mock_config.queue = _make_config().queue
             mock_get_sqs.return_value = MagicMock()
             my_task(task)
@@ -311,11 +325,17 @@ class TestSqsHeartbeatDecorator:
         def capture_stop_event(*args: Any, **kwargs: Any) -> None:
             stop_events.append(args[3])
 
-        with patch("fides.api.service.privacy_request.sqs_heartbeat.CONFIG") as mock_config, patch(
-            "fides.api.service.privacy_request.sqs_heartbeat.get_sqs_client"
-        ) as mock_get_sqs, patch(
-            "fides.api.service.privacy_request.sqs_heartbeat._sqs_heartbeat_thread",
-            side_effect=capture_stop_event,
+        with (
+            patch(
+                "fides.api.service.privacy_request.sqs_heartbeat.CONFIG"
+            ) as mock_config,
+            patch(
+                "fides.api.service.privacy_request.sqs_heartbeat.get_sqs_client"
+            ) as mock_get_sqs,
+            patch(
+                "fides.api.service.privacy_request.sqs_heartbeat._sqs_heartbeat_thread",
+                side_effect=capture_stop_event,
+            ),
         ):
             mock_config.queue = _make_config().queue
             mock_get_sqs.return_value = MagicMock()
@@ -342,9 +362,14 @@ class TestSqsHeartbeatDecorator:
         def _no_queue_name(task: Any) -> None:  # noqa: ARG001
             return None
 
-        with patch("fides.api.service.privacy_request.sqs_heartbeat.CONFIG") as mock_config, patch(
-            "fides.api.service.privacy_request.sqs_heartbeat._get_sqs_queue_name",
-            side_effect=_no_queue_name,
+        with (
+            patch(
+                "fides.api.service.privacy_request.sqs_heartbeat.CONFIG"
+            ) as mock_config,
+            patch(
+                "fides.api.service.privacy_request.sqs_heartbeat._get_sqs_queue_name",
+                side_effect=_no_queue_name,
+            ),
         ):
             mock_config.queue = _make_config().queue
             my_task(task)

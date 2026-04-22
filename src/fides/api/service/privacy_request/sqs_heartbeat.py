@@ -31,10 +31,10 @@ from loguru import logger
 from fides.api.tasks.broker import get_sqs_client
 from fides.config import CONFIG
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _get_sqs_queue_name(task: Any) -> Optional[str]:
     """Return the SQS queue name for the current task.
@@ -57,6 +57,7 @@ def _get_sqs_queue_name(task: Any) -> Optional[str]:
 # ---------------------------------------------------------------------------
 # Heartbeat thread
 # ---------------------------------------------------------------------------
+
 
 def _sqs_heartbeat_thread(
     sqs_client: Any,
@@ -132,6 +133,7 @@ def _sqs_heartbeat_thread(
 # ---------------------------------------------------------------------------
 # Decorator
 # ---------------------------------------------------------------------------
+
 
 def sqs_heartbeat(func: Any) -> Any:
     """Decorator that heartbeats the SQS lease for the duration of a Celery task.

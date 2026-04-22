@@ -156,9 +156,7 @@ class SQSQueueStatsProvider:
                         QueueUrl=queue_url,
                         AttributeNames=["ApproximateNumberOfMessages"],
                     )
-                    count = int(
-                        response["Attributes"]["ApproximateNumberOfMessages"]
-                    )
+                    count = int(response["Attributes"]["ApproximateNumberOfMessages"])
                     queue_counts[queue_name] = count
                 except NoCredentialsError:
                     # Re-raise to the outer handler: no credentials is a

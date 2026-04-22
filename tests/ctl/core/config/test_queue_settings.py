@@ -1,8 +1,12 @@
 import os
+
 import pytest
-from hypothesis import given, strategies as st, provisional as pst
+from hypothesis import given
+from hypothesis import provisional as pst
+from hypothesis import strategies as st
 
 from fides.config.queue_settings import QueueSettings
+
 
 class TestQueueSettings:
     def test_default_values(self) -> None:
@@ -26,21 +30,30 @@ class TestQueueSettings:
             ("FIDES__QUEUE__SQS_QUEUE_NAME_PREFIX", "test-prefix-", "test-prefix-"),
         ],
     )
-    def test_env_var_overrides(self, env_var: str, value: str, expected: any, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_env_var_overrides(
+        self, env_var: str, value: str, expected: any, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         monkeypatch.setenv(env_var, value)
         settings = QueueSettings()
-        
+
         attr_name = env_var.replace("FIDES__QUEUE__", "").lower()
         actual = getattr(settings, attr_name)
         assert actual == expected
+
 
 @given(
     use_sqs_queue=st.booleans(),
     sqs_url=st.one_of(st.none(), pst.urls()),
     aws_region=st.text(min_size=1, max_size=20).filter(lambda s: "\x00" not in s),
-    aws_access_key_id=st.one_of(st.none(), st.text(min_size=1, max_size=20).filter(lambda s: "\x00" not in s)),
-    aws_secret_access_key=st.one_of(st.none(), st.text(min_size=1, max_size=40).filter(lambda s: "\x00" not in s)),
-    sqs_queue_name_prefix=st.text(min_size=1, max_size=10).filter(lambda s: "\x00" not in s),
+    aws_access_key_id=st.one_of(
+        st.none(), st.text(min_size=1, max_size=20).filter(lambda s: "\x00" not in s)
+    ),
+    aws_secret_access_key=st.one_of(
+        st.none(), st.text(min_size=1, max_size=40).filter(lambda s: "\x00" not in s)
+    ),
+    sqs_queue_name_prefix=st.text(min_size=1, max_size=10).filter(
+        lambda s: "\x00" not in s
+    ),
 )
 def test_queue_settings_env_var_round_trip(
     use_sqs_queue,

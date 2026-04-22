@@ -11,7 +11,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from fides.api.tasks import _resolve_result_backend
 from fides.api.tasks.broker import (
@@ -27,10 +28,10 @@ from fides.api.tasks.broker import (
     get_task_queues,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers — lightweight config stubs
 # ---------------------------------------------------------------------------
+
 
 def _make_config(
     use_sqs_queue: bool = False,
@@ -50,7 +51,9 @@ def _make_config(
         connection_url=connection_url,
     )
     if cluster_enabled:
-        redis.get_cluster_connection_url = lambda: "redis+cluster://:testpassword@redis:6379/0"
+        redis.get_cluster_connection_url = lambda: (
+            "redis+cluster://:testpassword@redis:6379/0"
+        )
 
     return SimpleNamespace(
         queue=SimpleNamespace(
@@ -73,6 +76,7 @@ def _make_config(
 # Task 2.1 — Property 1: Broker URL Exclusivity
 # ===========================================================================
 
+
 class TestBrokerURLExclusivityProperty:
     """Property 1: For any FidesConfig, `get_broker_url()` starts with 'sqs://'
     iff `use_sqs_queue=True`, and starts with 'redis://' / 'rediss://' /
@@ -85,7 +89,9 @@ class TestBrokerURLExclusivityProperty:
         use_sqs_queue=st.booleans(),
         aws_region=st.sampled_from(["us-east-1", "eu-west-1", "ap-southeast-1"]),
         sqs_queue_name_prefix=st.text(
-            alphabet=st.characters(whitelist_categories=("L", "N"), whitelist_characters="-_"),
+            alphabet=st.characters(
+                whitelist_categories=("L", "N"), whitelist_characters="-_"
+            ),
             min_size=1,
             max_size=10,
         ),
@@ -117,6 +123,7 @@ class TestBrokerURLExclusivityProperty:
 # Task 2.2 — Property 9: Transport Options Completeness
 # ===========================================================================
 
+
 class TestTransportOptionsCompletenessProperty:
     """Property 9: For any FidesConfig where `use_sqs_queue=True`,
     `get_broker_transport_options()` returns a dict with a `predefined_queues`
@@ -128,7 +135,9 @@ class TestTransportOptionsCompletenessProperty:
     @given(
         aws_region=st.sampled_from(["us-east-1", "eu-west-1", "ap-southeast-1"]),
         sqs_queue_name_prefix=st.text(
-            alphabet=st.characters(whitelist_categories=("L", "N"), whitelist_characters="-_"),
+            alphabet=st.characters(
+                whitelist_categories=("L", "N"), whitelist_characters="-_"
+            ),
             min_size=1,
             max_size=10,
         ),
@@ -161,6 +170,7 @@ class TestTransportOptionsCompletenessProperty:
 # Task 2.3 — Property 8: SQS Queue Name Mapping
 # ===========================================================================
 
+
 class TestSQSQueueNameMappingProperty:
     """Property 8: For any Celery queue name and any non-empty
     `sqs_queue_name_prefix`, the SQS queue name equals the concatenation
@@ -172,7 +182,9 @@ class TestSQSQueueNameMappingProperty:
     @given(
         queue_name=st.sampled_from(get_all_celery_queue_names()),
         prefix=st.text(
-            alphabet=st.characters(whitelist_categories=("L", "N"), whitelist_characters="-_"),
+            alphabet=st.characters(
+                whitelist_categories=("L", "N"), whitelist_characters="-_"
+            ),
             min_size=1,
             max_size=10,
         ),
@@ -200,6 +212,7 @@ class TestSQSQueueNameMappingProperty:
 # ===========================================================================
 # Task 2.4 — Unit tests for BrokerURLFactory
 # ===========================================================================
+
 
 class TestGetBrokerUrl:
     """Unit tests for `get_broker_url`."""
@@ -417,6 +430,7 @@ class TestGetAllCeleryQueueNames:
 # Task 4.1 — Property 6: Result Backend Independence
 # ===========================================================================
 
+
 class TestResultBackendIndependenceProperty:
     """Property 6: For any FidesConfig, `_resolve_result_backend` returns the
     same URL regardless of the value of `use_sqs_queue`.
@@ -428,10 +442,12 @@ class TestResultBackendIndependenceProperty:
         use_sqs_queue=st.booleans(),
         result_backend=st.one_of(
             st.none(),
-            st.sampled_from([
-                "redis://:pass@redis:6379/1",
-                "db+postgresql://user:pass@db:5432/fides",
-            ]),
+            st.sampled_from(
+                [
+                    "redis://:pass@redis:6379/1",
+                    "db+postgresql://user:pass@db:5432/fides",
+                ]
+            ),
         ),
     )
     @settings(max_examples=50)
@@ -458,6 +474,7 @@ class TestResultBackendIndependenceProperty:
 # Task 4.2 — Unit tests for _resolve_result_backend
 # ===========================================================================
 
+
 class TestResolveResultBackend:
     """Unit tests for `_resolve_result_backend`."""
 
@@ -478,6 +495,10 @@ class TestResolveResultBackend:
     def test_unchanged_when_sqs_toggled(self) -> None:
         """Result backend is the same whether SQS is on or off."""
         for result_backend in [None, "redis://:pass@redis:6379/1"]:
-            config_off = _make_config(use_sqs_queue=False, result_backend=result_backend)
+            config_off = _make_config(
+                use_sqs_queue=False, result_backend=result_backend
+            )
             config_on = _make_config(use_sqs_queue=True, result_backend=result_backend)
-            assert _resolve_result_backend(config_off) == _resolve_result_backend(config_on)
+            assert _resolve_result_backend(config_off) == _resolve_result_backend(
+                config_on
+            )

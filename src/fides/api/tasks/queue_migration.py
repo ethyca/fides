@@ -153,7 +153,9 @@ def migrate_redis_queues_to_sqs(
                 # reading the next batch.
                 total_count = 0
                 while True:
-                    raw_messages = redis_conn.lrange(queue_name, 0, MIGRATION_BATCH_SIZE - 1) or []
+                    raw_messages = (
+                        redis_conn.lrange(queue_name, 0, MIGRATION_BATCH_SIZE - 1) or []
+                    )
                     batch_count = len(raw_messages)
                     if batch_count == 0:
                         break

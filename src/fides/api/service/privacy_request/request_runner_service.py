@@ -72,6 +72,7 @@ from fides.api.service.privacy_request.attachment_handling import (
     process_attachments_for_upload,
 )
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
+from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
@@ -81,7 +82,6 @@ from fides.api.task.graph_task import (
 )
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.tasks import DatabaseTask, celery_app
-from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import get_all_masking_secret_keys
 from fides.api.util.collection_util import Row

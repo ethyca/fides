@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+import importlib.util
 import os
 from pathlib import Path as LocalPath
 from typing import Dict, Generator, List
@@ -7,7 +8,6 @@ from uuid import uuid4
 
 import pytest
 import sqlalchemy
-import importlib.util
 
 try:
     import pymssql
