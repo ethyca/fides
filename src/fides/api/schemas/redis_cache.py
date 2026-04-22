@@ -200,5 +200,7 @@ class CustomPrivacyRequestField(FidesSchema):
     """Schema for custom privacy request fields."""
 
     label: str
-    # use StrictInt and StrictStr to avoid type coercion and maintain the original types
-    value: MultiValue
+    # StrictBool/StrictInt/StrictStr keep types honest (no bool→int coercion).
+    # value is Optional so "no value supplied" can be expressed explicitly;
+    # persist_custom_privacy_request_fields filters None/empty before writing.
+    value: Optional[MultiValue] = None
