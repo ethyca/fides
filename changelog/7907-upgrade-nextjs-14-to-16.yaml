@@ -1,4 +1,4 @@
 type: Changed
 description: Upgraded Admin UI from Next.js 14 to 16 (React 18 to 19)
 pr: 7907
-labels: []
+labels: ["high-risk"]
