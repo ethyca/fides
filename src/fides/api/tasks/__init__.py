@@ -45,7 +45,8 @@ def _resolve_result_backend(config: FidesConfig) -> str:
 
     Resolution order:
     1. ``config.celery.result_backend`` (explicit override)
-    2. ``config.redis.connection_url`` (existing default, unchanged)
+    2. ``config.redis.get_cluster_connection_url()`` if cluster mode enabled
+    3. ``config.redis.connection_url`` as the final fallback
 
     The result backend is intentionally **not** changed by the
     ``use_sqs_queue`` flag — Redis (or an explicit override) always serves
@@ -53,6 +54,8 @@ def _resolve_result_backend(config: FidesConfig) -> str:
     """
     if config.celery.result_backend is not None:
         return config.celery.result_backend
+    if config.redis.cluster_enabled:
+        return config.redis.get_cluster_connection_url()
     connection_url = config.redis.connection_url
     if connection_url is not None:
         return connection_url
