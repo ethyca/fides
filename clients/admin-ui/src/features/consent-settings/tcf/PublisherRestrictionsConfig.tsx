@@ -1,9 +1,4 @@
-import {
-  Button,
-  ChakraSkeleton as Skeleton,
-  ChakraText as Text,
-  Space,
-} from "fidesui";
+import { Button, Skeleton, Space, Typography } from "fidesui";
 import { useEffect, useState } from "react";
 
 import {
@@ -68,7 +63,7 @@ export const PublisherRestrictionsConfig = ({
   ]);
 
   return (
-    <SettingsBox title="Publisher restrictions" fontSize="sm">
+    <SettingsBox title="Publisher restrictions">
       <Space orientation="vertical" size="small" style={{ width: "100%" }}>
         <TCFOverrideToggle
           defaultChecked={showTcfOverrideConfig}
@@ -78,26 +73,26 @@ export const PublisherRestrictionsConfig = ({
           <>
             {isTcfConfigurationsLoading && (
               <>
-                <Skeleton height="20px" />
-                <Skeleton height="20px" />
-                <Skeleton height="32px" width="200px" />
+                <Skeleton.Input active block />
+                <Skeleton.Input active block />
+                <Skeleton.Input active style={{ width: 200 }} />
               </>
             )}
             {!isTcfConfigurationsLoading && tcfConfigurations?.items?.length ? (
               <>
-                <Text>
+                <Typography.Paragraph>
                   The table below allows you to adjust which TCF purposes you
                   allow as part of your user facing notices and business
                   activities.
-                </Text>
-                <Text>
+                </Typography.Paragraph>
+                <Typography.Paragraph>
                   To configure this section, select a TCF purpose to edit the
                   restriction type and vendors.{" "}
                   <DocsLink href={PUBLISHER_RESTRICTIONS_DOCS_URL}>
                     Learn more about publisher restrictions
                   </DocsLink>{" "}
                   in our docs.
-                </Text>
+                </Typography.Paragraph>
                 <TCFConfigurationDropdown
                   selectedConfigId={selectedTCFConfigId || ""}
                   configurations={tcfConfigurations?.items || []}
@@ -106,14 +101,14 @@ export const PublisherRestrictionsConfig = ({
               </>
             ) : (
               <>
-                <Text>
+                <Typography.Paragraph>
                   To define custom publisher restrictions select &quot;create
                   configuration&quot; below.{" "}
                   <DocsLink href={PUBLISHER_RESTRICTIONS_DOCS_URL}>
                     Learn more about publisher restrictions
                   </DocsLink>{" "}
                   in our docs.
-                </Text>
+                </Typography.Paragraph>
                 <Button
                   onClick={() => setIsCreateModalOpen(true)}
                   data-testid="create-config-button"

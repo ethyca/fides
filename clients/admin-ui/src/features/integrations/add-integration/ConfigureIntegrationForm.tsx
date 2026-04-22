@@ -247,12 +247,17 @@ export const ConfigureIntegrationForm = ({
       : {
           name: values.name,
           key: formatKey(values.name),
-          connection_type: connectionOption.identifier as ConnectionType,
+          connection_type: (isSaas
+            ? ConnectionType.SAAS
+            : connectionOption.identifier) as ConnectionType,
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
           secrets: processedValues.secrets,
           dataset: values.dataset,
+          ...(isSaas
+            ? { saas_connector_type: connectionOption.identifier }
+            : {}),
         };
 
     // if system is attached, use patch request that attaches to system

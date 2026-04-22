@@ -1,0 +1,25 @@
+{
+  "policies": [
+    {
+      "key": "allow-unless-optout",
+      "priority": 100,
+      "enabled": true,
+      "decision": "ALLOW",
+      "match": { "data_use": { "any": ["marketing"] } },
+      "unless": [
+        {
+          "type": "consent",
+          "privacy_notice_key": "do_not_sell",
+          "requirement": "opt_out"
+        }
+      ],
+      "action": { "message": "User opted out of marketing" }
+    }
+  ],
+  "request": {
+    "data_uses": ["marketing.advertising"],
+    "context": {
+      "consent": { "do_not_sell": "opt_out" }
+    }
+  }
+}
