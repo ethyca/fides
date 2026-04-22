@@ -1,25 +1,13 @@
-import { Alert, AlertProps, ConfigProvider, theme as antTheme } from "antd/lib";
+import { Alert, AlertProps } from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
 import React from "react";
 
 import SparkleIcon from "../icons/Sparkle";
 import { getDefaultAlertIcon } from "../lib/carbon-icon-defaults";
 
-/**
- * Detects whether the nearest Ant `ConfigProvider` is configured with the
- * dark algorithm. Used by the `agent` variant to pick its surface color.
- * Works for any consumer that applies `darkAntTheme` via `FidesUIProvider`
- * (or directly via `ConfigProvider`) — no additional provider required.
- */
-const useIsDarkAntTheme = (): boolean => {
-  const config = React.useContext(ConfigProvider.ConfigContext);
-  const algorithms = config.theme?.algorithm;
-  if (!algorithms) {
-    return false;
-  }
-  return Array.isArray(algorithms)
-    ? algorithms.includes(antTheme.darkAlgorithm)
-    : algorithms === antTheme.darkAlgorithm;
+const AGENT_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--fidesui-limestone)",
+  borderColor: "var(--fidesui-limestone)",
 };
 
 export type CustomAlertType = NonNullable<AlertProps["type"]> | "agent";
@@ -49,8 +37,6 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
       },
       ref,
     ) => {
-      const isDark = useIsDarkAntTheme();
-
       const isAgent = type === "agent";
       // Ant's Alert doesn't know about "agent"; render as the info base and
       // layer on our own surface + icon.
@@ -85,21 +71,6 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
           resolvedTitle
         );
 
-      // Agent variant: warm limestone surface in light mode, dark minos
-      // surface in dark mode. Keyed off the nearest `ConfigProvider`'s
-      // algorithm so it follows the same dark-mode switch every other Ant
-      // component honors.
-      const agentStyle: React.CSSProperties | undefined = isAgent
-        ? {
-            backgroundColor: isDark
-              ? "var(--fidesui-minos)"
-              : "var(--fidesui-limestone)",
-            borderColor: isDark
-              ? "var(--fidesui-minos)"
-              : "var(--fidesui-limestone)",
-          }
-        : undefined;
-
       return (
         <WrappedComponent
           ref={ref}
@@ -109,7 +80,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
           banner={banner}
           description={description}
           title={effectiveTitle}
-          style={agentStyle ? { ...agentStyle, ...style } : style}
+          style={isAgent ? { ...AGENT_STYLE, ...style } : style}
           {...props}
         />
       );
