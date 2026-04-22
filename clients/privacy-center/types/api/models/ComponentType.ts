@@ -14,4 +14,5 @@ export enum ComponentType {
   MODAL = "modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
+  HEADLESS = "headless",
 }
