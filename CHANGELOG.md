@@ -30,6 +30,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Expanded database healthcheck to report per-pool health details and readonly async prewarming metrics. Top-level migration state (`database` may be `needs migration`) and `database_revision` continue to come from Alembic; optional pools are reported as `skipped` when not configured. [#7856](https://github.com/ethyca/fides/pull/7856)
 
+### Fixed
+- Scope `check_object_exists` in post-upgrade background index creation to the current PostgreSQL schema, preventing false positives on shared-database staging environments [#7990](https://github.com/ethyca/fides/pull/7990)
+
 ### Security
 - Bumped aiohttp to 3.13.4 to fix 10 CVEs including CVE-2026-34516, CVE-2026-22815, CVE-2026-34520 [#7891](https://github.com/ethyca/fides/pull/7891)
 
