@@ -19,7 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.83.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.83.2..main)
+
+## [2.83.2](https://github.com/ethyca/fides/compare/2.83.1..2.83.2)
+
+### Security
+- Restored identity verification path for privacy requests classified as duplicates to prevent denial of service [GHSA-qx5f-ghc2-7g5c](https://github.com/ethyca/fides/security/advisories/GHSA-qx5f-ghc2-7g5c) [#7971](https://github.com/ethyca/fides/pull/7971)
+- Added identity verification check before administrator approval of duplicate privacy requests [GHSA-qx5f-ghc2-7g5c](https://github.com/ethyca/fides/security/advisories/GHSA-qx5f-ghc2-7g5c) [#7972](https://github.com/ethyca/fides/pull/7972)
 
 ## [2.83.1](https://github.com/ethyca/fides/compare/2.83.0..2.83.1)
 

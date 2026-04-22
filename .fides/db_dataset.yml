@@ -1242,6 +1242,32 @@ dataset:
       data_categories: [system.operations]
     - name: source
       data_categories: [system.operations]
+  - name: correspondence_metadata
+    fields:
+    - name: bounce_reason
+      data_categories: [system.operations]
+    - name: comment_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: delivered_at
+      data_categories: [system.operations]
+    - name: delivery_status
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: in_reply_to
+      data_categories: [system.operations]
+    - name: message_id
+      data_categories: [system.operations]
+    - name: recipient_email
+      data_categories: [user.contact.email]
+    - name: reply_to_address
+      data_categories: [user.contact.email]
+    - name: sender_email
+      data_categories: [user.contact.email]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: custom_connector_template
     description: 'A table used to hold custom connector templates which include a SaaS config, dataset, and an optional icon and functions'
     data_categories: []

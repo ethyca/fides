@@ -838,7 +838,7 @@ class TestMessagingTemplates:
     ):
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 9
+        assert len(all_templates) == 10
         for template in all_templates:
             assert template.label == DEFAULT_MESSAGING_TEMPLATES[template.type]["label"]
 
@@ -850,7 +850,7 @@ class TestMessagingTemplates:
     ):
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 9
+        assert len(all_templates) == 10
 
     def test_save_defaults_for_all_messaging_template_types_all_db_templates(
         self, db: Session, property_a
@@ -873,7 +873,7 @@ class TestMessagingTemplates:
             )
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 9
+        assert len(all_templates) == 10
 
 
 class TestMessagingTemplateLabels:
