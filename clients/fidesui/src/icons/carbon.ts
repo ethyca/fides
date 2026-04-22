@@ -2,7 +2,6 @@ export type { CarbonIconType } from "@carbon/icons-react";
 export {
   Activity,
   Add,
-  Ai,
   AddLarge,
   ArrowDown,
   ArrowDownRight,
