@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.83.2"
+    "version": "2.83.3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19816,7 +19816,7 @@
           "Health"
         ],
         "summary": "Database Health",
-        "description": "Confirm that the API is running and healthy.",
+        "description": "Confirm that configured API database pools are reachable.",
         "operationId": "database_health_health_database_get",
         "responses": {
           "200": {
@@ -26129,7 +26129,30 @@
         "properties": {
           "database": {
             "type": "string",
+            "enum": [
+              "healthy",
+              "unhealthy",
+              "needs migration"
+            ],
             "title": "Database"
+          },
+          "pools": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PoolStatus"
+            },
+            "type": "object",
+            "title": "Pools"
+          },
+          "async_readonly_pool_prewarmed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Async Readonly Pool Prewarmed"
           },
           "database_revision": {
             "anyOf": [
@@ -26145,7 +26168,8 @@
         },
         "type": "object",
         "required": [
-          "database"
+          "database",
+          "pools"
         ],
         "title": "DatabaseHealthCheck",
         "description": "Database Healthcheck Schema"
@@ -31473,6 +31497,71 @@
         ],
         "title": "PolicyWebhookUpdateResponse",
         "description": "Response schema after a PATCH to a single webhook - because updating the order of this webhook can update the\norder of other webhooks, new_order will include the new order if order was adjusted at all"
+      },
+      "PoolPrewarming": {
+        "properties": {
+          "target": {
+            "type": "integer",
+            "title": "Target"
+          },
+          "checked_in": {
+            "type": "integer",
+            "title": "Checked In"
+          },
+          "checked_out": {
+            "type": "integer",
+            "title": "Checked Out"
+          },
+          "capacity_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target",
+          "checked_in",
+          "checked_out",
+          "capacity_percentage"
+        ],
+        "title": "PoolPrewarming",
+        "description": "Optional pool prewarming details."
+      },
+      "PoolStatus": {
+        "properties": {
+          "health": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "unhealthy",
+              "skipped"
+            ],
+            "title": "Health"
+          },
+          "prewarming": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PoolPrewarming"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "health"
+        ],
+        "title": "PoolStatus",
+        "description": "Per-pool health details."
       },
       "PostgreSQLDocsSchema": {
         "properties": {
