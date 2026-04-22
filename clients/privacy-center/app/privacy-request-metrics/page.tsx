@@ -17,19 +17,15 @@ const PrivacyRequestMetricsPage = async ({
 }: {
   searchParams: NextSearchParams;
 }) => {
-  const [serverEnvironment, locationsData] = await Promise.all([
+  const [serverEnvironment, locationOptions] = await Promise.all([
     getPrivacyCenterEnvironmentCached({ searchParams }),
     fetchLocationsFromApi(),
   ]);
 
-  const locationGroups = (locationsData?.location_groups ?? [])
-    .filter((g) => g.selected)
-    .sort((a, b) => a.name.localeCompare(b.name));
-
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <PageLayout>
-        <PrivacyRequestMetrics locationGroups={locationGroups} />
+        <PrivacyRequestMetrics locationOptions={locationOptions} />
       </PageLayout>
     </LoadServerEnvironmentIntoStores>
   );

@@ -17,7 +17,7 @@ import {
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
 import { selectConsentState } from "~/features/consent/consent.slice";
-import type { LocationGroup } from "~/types/api";
+import type { LocationOption } from "~/app/server-utils/fetchLocationsFromApi";
 
 const ALL_LOCATIONS_VALUE = "";
 
@@ -51,22 +51,22 @@ function formatValue(value: number | null, key: string): string {
 }
 
 interface PrivacyRequestMetricsProps {
-  locationGroups: LocationGroup[];
+  locationOptions: LocationOption[];
 }
 
 export const PrivacyRequestMetrics = ({
-  locationGroups,
+  locationOptions,
 }: PrivacyRequestMetricsProps) => {
   const { location: currentGeo } = useSelector(selectConsentState);
 
-  // Determine the default: current geo if it exists in the location groups list
+  // Determine the default: current geo if it exists in the location options list
   const currentGeoLocationId = currentGeo
     ? isoToLocationId(currentGeo)
     : undefined;
-  const geoMatchesGroup = currentGeoLocationId
-    ? locationGroups.some((g) => g.id === currentGeoLocationId)
+  const geoMatchesOption = currentGeoLocationId
+    ? locationOptions.some((o) => o.id === currentGeoLocationId)
     : false;
-  const defaultLocation = geoMatchesGroup
+  const defaultLocation = geoMatchesOption
     ? currentGeoLocationId!
     : ALL_LOCATIONS_VALUE;
 
@@ -95,7 +95,7 @@ export const PrivacyRequestMetrics = ({
         </Text>
       </Stack>
 
-      {locationGroups.length > 0 && (
+      {locationOptions.length > 0 && (
         <Flex w="100%" maxWidth={960} justifyContent="flex-end">
           <Box
             as="select"
@@ -115,9 +115,9 @@ export const PrivacyRequestMetrics = ({
             _hover={{ borderColor: "gray.300" }}
           >
             <option value={ALL_LOCATIONS_VALUE}>All locations</option>
-            {locationGroups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
+            {locationOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.name}
               </option>
             ))}
           </Box>
