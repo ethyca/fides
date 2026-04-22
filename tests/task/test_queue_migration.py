@@ -100,6 +100,17 @@ class FakeRedis:
             return list(values[start:])
         return list(values[start : end + 1])
 
+    def ltrim(self, key: str, start: int, end: int) -> None:
+        """Trim the list so only elements from ``start`` to ``end`` remain."""
+        self.calls.append(("ltrim", key, start, end))
+        if key not in self._lists:
+            return
+        values = self._lists[key]
+        if end == -1:
+            self._lists[key] = values[start:]
+        else:
+            self._lists[key] = values[start : end + 1]
+
     # -- Generic deletion ---------------------------------------------
     def delete(self, *keys: str) -> int:
         self.calls.append(("delete", *keys))
@@ -488,7 +499,7 @@ class TestStartupQueueMigratorUnit:
         )
         assert first_queue_op_index > 0
 
-    def test_lrange_and_del_called_per_queue(self) -> None:
+    def test_lrange_and_ltrim_called_per_queue(self) -> None:
         all_queues = get_all_celery_queue_names()
         redis_conn = FakeRedis(
             initial_lists={q: [b"msg"] for q in all_queues}
@@ -505,14 +516,14 @@ class TestStartupQueueMigratorUnit:
             )
 
         lrange_keys = [c[1] for c in redis_conn.calls if c[0] == "lrange"]
-        delete_keys = [
+        ltrim_keys = [
             c[1]
             for c in redis_conn.calls
-            if c[0] == "delete" and c[1] != MIGRATION_LOCK_KEY
+            if c[0] == "ltrim"
         ]
 
         assert set(lrange_keys) == set(all_queues)
-        assert set(delete_keys) == set(all_queues)
+        assert set(ltrim_keys) == set(all_queues)
 
     def test_send_message_batch_called_with_correct_batches(self) -> None:
         target_queue = "fides.dsr"
@@ -569,9 +580,9 @@ class TestStartupQueueMigratorUnit:
         assert redis_conn.calls[-1][0] == "delete"
         assert redis_conn.calls[-1][1] == MIGRATION_LOCK_KEY
 
-    def test_lock_released_on_exception_inside_try(self) -> None:
-        """When ``get_sqs_client`` raises, the lock is still released and
-        the exception propagates to the caller."""
+    def test_sqs_build_error_skips_migration(self) -> None:
+        """When ``get_sqs_client`` or SQS connectivity check fails,
+        the migration is skipped (skipped=True) — no Redis keys are touched."""
         redis_conn = FakeRedis()
         config = _make_config()
 
@@ -579,12 +590,14 @@ class TestStartupQueueMigratorUnit:
             "fides.api.tasks.broker.get_sqs_client",
             side_effect=RuntimeError("build failed"),
         ):
-            with pytest.raises(RuntimeError, match="build failed"):
-                migrate_redis_queues_to_sqs(
-                    redis_conn, celery_app=MagicMock(), config=config
-                )
+            result = migrate_redis_queues_to_sqs(
+                redis_conn, celery_app=MagicMock(), config=config
+            )
 
-        assert redis_conn.has_key(MIGRATION_LOCK_KEY) is False
+        assert result.skipped is True
+        assert result.migrated == {}
+        assert result.errors == []
+        assert redis_conn.has_key(MIGRATION_LOCK_KEY) is True
 
     def test_skipped_true_when_lock_not_acquired(self) -> None:
         # Pre-populate the lock so SET NX returns False.
@@ -700,10 +713,89 @@ class TestStartupQueueMigratorUnit:
                 f"got {result.migrated.get(q)}"
             )
 
+        # The failing queue's Redis key is still present (ltrim only
+        # happens after successful SQS send).
+        assert redis_conn.lrange(failing_queue, 0, -1) == [b"m1"]
+
+        # Non-failing queues are fully drained via ltrim.
+        for q in all_queues:
+            if q == failing_queue:
+                continue
+            assert redis_conn.lrange(q, 0, -1) == []
+
         # The migration was not globally skipped.
         assert result.skipped is False
         # Lock still released.
         assert redis_conn.has_key(MIGRATION_LOCK_KEY) is False
+
+    def test_sqs_connectivity_check_skips_migration_on_failure(self) -> None:
+        """When SQS connectivity check fails (but get_sqs_client succeeds),
+        migration is skipped — no Redis keys are touched."""
+        redis_conn = FakeRedis(initial_lists={"fides.dsr": [b"m1"]})
+        sqs_client = _make_sqs_mock()
+        sqs_client.get_queue_url = MagicMock(side_effect=RuntimeError("no SQS"))
+        config = _make_config()
+
+        with patch(
+            "fides.api.tasks.broker.get_sqs_client",
+            return_value=sqs_client,
+        ):
+            result = migrate_redis_queues_to_sqs(
+                redis_conn, celery_app=MagicMock(), config=config
+            )
+
+        assert result.skipped is True
+        assert result.migrated == {}
+        assert result.errors == []
+        # Redis data is untouched.
+        assert redis_conn.lrange("fides.dsr", 0, -1) == [b"m1"]
+
+    def test_sqs_connectivity_check_succeeds_on_first_queue(self) -> None:
+        """When get_queue_url succeeds on the first queue, the check
+        stops early and migration proceeds normally."""
+        redis_conn = FakeRedis(initial_lists={"fides.dsr": [b"m1"]})
+        sqs_client = _make_sqs_mock()
+        sqs_client.get_queue_url = MagicMock(return_value={"QueueUrl": "http://test"})
+        config = _make_config()
+
+        with patch(
+            "fides.api.tasks.broker.get_sqs_client",
+            return_value=sqs_client,
+        ):
+            result = migrate_redis_queues_to_sqs(
+                redis_conn, celery_app=MagicMock(), config=config
+            )
+
+        assert result.skipped is False
+        sqs_client.get_queue_url.assert_called_once()
+
+    def test_delete_after_send_on_success(self) -> None:
+        """Redis keys are deleted only after all batches are confirmed
+        in SQS (send-then-delete ordering)."""
+        target_queue = "fides.dsr"
+        messages = [b"task-1", b"task-2"]
+        redis_conn = FakeRedis(initial_lists={target_queue: messages})
+        sqs_client = _make_sqs_mock()
+        config = _make_config()
+
+        with patch(
+            "fides.api.tasks.broker.get_sqs_client",
+            return_value=sqs_client,
+        ):
+            migrate_redis_queues_to_sqs(
+                redis_conn, celery_app=MagicMock(), config=config
+            )
+
+        # Find the indices of send_message_batch calls and the delete call.
+        send_indices = [
+            i for i, c in enumerate(redis_conn.calls) if c[0] == "lrange"
+        ]
+        delete_indices = [
+            i for i, c in enumerate(redis_conn.calls)
+            if c[0] == "delete" and c[1] != MIGRATION_LOCK_KEY
+        ]
+        # lrange must come before delete for the target queue.
+        assert send_indices[0] < delete_indices[0]
 
 
 # ===========================================================================

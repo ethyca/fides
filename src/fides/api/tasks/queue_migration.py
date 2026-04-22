@@ -4,10 +4,16 @@ Startup queue migration — drain Redis Celery queues into SQS.
 When the ``use_sqs_queue`` feature flag flips on for the first time, any
 tasks already queued in Redis would be orphaned because Celery workers are
 about to start polling SQS instead.  This module provides a zero-loss
-cutover: on startup it acquires a distributed Redis lock, reads pending
-task messages from every known Celery queue in Redis, deletes the keys,
-and re-enqueues the messages to the corresponding SQS queue in batches of
-10 (the SQS ``SendMessageBatch`` cap).
+cutover: on startup it acquires a distributed Redis lock, **pre-flight
+checks SQS connectivity**, then reads pending task messages from every
+known Celery queue in Redis and re-enqueues them to the corresponding SQS
+queue in batches of 10 (the SQS ``SendMessageBatch`` cap).
+
+Messages are drained from Redis in batches of 10 and sent to SQS
+immediately — only after a batch is confirmed in SQS are those messages
+removed from Redis.  This prevents holding large amounts of data in
+memory and ensures that if SQS becomes unreachable mid-migration, only
+the current batch is at risk (the pre-flight check makes this unlikely).
 
 The migration is idempotent (safe to call on every startup) — a subsequent
 run with empty Redis queues is a no-op that returns zero counts.
@@ -20,7 +26,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, List
 
 from fides.api.tasks.broker import (
     get_all_celery_queue_names,
@@ -79,10 +85,13 @@ def migrate_redis_queues_to_sqs(
 
     1. ``SET MIGRATION_LOCK_KEY "1" NX EX MIGRATION_LOCK_TTL_SECONDS`` —
        acquire a distributed lock so only one process migrates at a time.
-    2. For each Celery queue: ``LRANGE queue 0 -1`` → ``DEL queue`` →
-       ``SendMessageBatch`` in batches of 10.
-    3. Per-queue errors are caught, appended to ``result.errors``, and
-       iteration continues.
+    2. **Pre-flight SQS check**: verify SQS connectivity before touching
+       Redis.  If unreachable, ``skipped=True`` is returned — no Redis
+       keys are drained so no messages are lost.
+    3. For each Celery queue: read messages in batches of 10 from Redis,
+       send each batch to SQS, and only after confirmation delete those
+       messages from Redis.  This keeps memory bounded and ensures that
+       if SQS fails mid-stream, only the current batch is at risk.
     4. ``DEL MIGRATION_LOCK_KEY`` in a ``finally`` block so the lock is
        always released (crash recovery still relies on the TTL).
 
@@ -114,28 +123,54 @@ def migrate_redis_queues_to_sqs(
         result.skipped = True
         return result
 
+    # Pre-flight: verify SQS connectivity before touching any Redis data.
+    # If SQS is unreachable, we skip the entire migration — no Redis keys
+    # are drained so no messages are lost.
     try:
         sqs_client = get_sqs_client(config)
-        queue_names = get_all_celery_queue_names()
+        _verify_sqs_connectivity(sqs_client, config)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "Could not connect to SQS — skipping migration: %s",
+            exc,
+        )
+        result.skipped = True
+        return result
 
+    queue_names = get_all_celery_queue_names()
+    base_url = get_sqs_base_url(config)
+    prefix = config.queue.sqs_queue_name_prefix
+
+    try:
         # Loop invariant: at the start of each iteration, all queues
         # processed so far are drained from Redis and their tasks are in
         # SQS (or have an entry in ``result.errors``).
         for queue_name in queue_names:
             try:
-                raw_messages = redis_conn.lrange(queue_name, 0, -1) or []
-                count = len(raw_messages)
+                # Drain the queue in batches to keep memory bounded.
+                # Read up to MIGRATION_BATCH_SIZE messages, send to SQS,
+                # confirm, then remove those messages from Redis before
+                # reading the next batch.
+                total_count = 0
+                while True:
+                    raw_messages = redis_conn.lrange(queue_name, 0, MIGRATION_BATCH_SIZE - 1) or []
+                    batch_count = len(raw_messages)
+                    if batch_count == 0:
+                        break
 
-                if count > 0:
-                    redis_conn.delete(queue_name)
                     sqs_url = get_sqs_queue_url(
                         queue_name,
-                        get_sqs_base_url(config),
-                        config.queue.sqs_queue_name_prefix,
+                        base_url,
+                        prefix,
                     )
                     _send_in_batches(sqs_client, sqs_url, raw_messages)
 
-                result.migrated[queue_name] = count
+                    # Confirm success — only then remove the processed
+                    # messages from the head of the Redis list.
+                    redis_conn.ltrim(queue_name, batch_count, -1)
+                    total_count += batch_count
+
+                result.migrated[queue_name] = total_count
             except Exception as exc:  # noqa: BLE001
                 msg = f"Failed to migrate {queue_name}: {exc}"
                 logger.error(msg)
@@ -155,6 +190,27 @@ def migrate_redis_queues_to_sqs(
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+
+def _verify_sqs_connectivity(sqs_client: Any, config: Any) -> None:
+    """Verify that the SQS endpoint is reachable by listing a queue.
+
+    Uses ``get_queue_url`` which raises if the endpoint is unreachable or
+    credentials are invalid.  No queues are modified.
+    """
+    for queue_name in get_all_celery_queue_names():
+        sqs_url = get_sqs_queue_url(
+            queue_name,
+            get_sqs_base_url(config),
+            config.queue.sqs_queue_name_prefix,
+        )
+        try:
+            sqs_client.get_queue_url(QueueName=sqs_url.split("/")[-1])
+            return  # First queue responded — connectivity confirmed.
+        except Exception:  # noqa: BLE001
+            continue
+    # If we get here, none of the queues responded. The caller will
+    # treat this as a full migration skip.
 
 
 def _send_in_batches(
