@@ -28,6 +28,10 @@ module.exports = {
     "^subject-request/(.*)$": "<rootDir>/src/features/subject-request/$1",
     "^user-management/(.*)$": "<rootDir>/src/features/user-management/$1",
     "^~/(.*)$": "<rootDir>/src/$1",
+
+    // @ant-design/x bundles ESM-only deps (refractor) that Jest can't handle.
+    // These components are not exercised in unit tests; mock them out entirely.
+    "@ant-design/x(.*)": "<rootDir>/src/__mocks__/antDesignX.js",
   },
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],
