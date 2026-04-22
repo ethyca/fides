@@ -16,6 +16,7 @@ from fastapi import Response
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from fides.api.tasks.broker import _canonical_sqs_queue_name
 from fides.api.v1.endpoints.queue_monitor_endpoints import get_queue_monitor
 from fides.common.urn_registry import V1_URL_PREFIX
 
@@ -44,7 +45,8 @@ def _mock_sqs_client(responses: dict[str, dict[str, int] | Exception]) -> MagicM
 
     def _get_queue_attributes(QueueUrl: str, **kwargs):  # noqa: N803
         for queue_name, value in responses.items():
-            if queue_name in QueueUrl:
+            # The SQS URL contains the canonicalized queue name (e.g. "{" → "_").
+            if _canonical_sqs_queue_name(queue_name) in QueueUrl:
                 if isinstance(value, Exception):
                     raise value
                 return {
