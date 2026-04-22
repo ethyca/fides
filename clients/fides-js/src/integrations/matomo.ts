@@ -47,10 +47,8 @@ const DEFAULT_CONSENT_KEYS = ["analytics", "performance"];
 const paqsWithRequireConsent = new WeakSet<unknown[][]>();
 
 const consentModeChecks = (consentMode: MatomoConsentMode) => ({
-  isTracking: () =>
-    consentMode === "tracking" || consentMode === "both",
-  isCookie: () =>
-    consentMode === "cookie" || consentMode === "both",
+  isTracking: () => consentMode === "tracking" || consentMode === "both",
+  isCookie: () => consentMode === "cookie" || consentMode === "both",
 });
 
 /**
