@@ -887,78 +887,70 @@ const AccessPolicyEditor = ({
     />
   );
 
-  const tabItems = useMemo(
-    () => [
-      {
-        key: EditorMode.Builder,
-        label: "Builder",
-        children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
-      },
-      ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
-        ? [
-            {
-              key: EditorMode.Split,
-              label: "Split (dev only)",
-              children: (
-                <Flex gap="middle" className="h-full">
-                  <div style={{ flex: "0 0 60%" }}>
-                    <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
-                  </div>
-                  <div style={{ flex: "0 0 calc(40% - 8px)" }}>
-                    <Editor
-                      defaultLanguage="yaml"
-                      value={yamlValue}
-                      height="100%"
-                      options={{
-                        fontFamily: "Menlo",
-                        fontSize: 13,
-                        minimap: { enabled: false },
-                        readOnly: true,
-                        domReadOnly: true,
-                      }}
-                      theme="light"
-                    />
-                  </div>
-                </Flex>
-              ),
-            },
-          ]
-        : []),
-      {
-        key: EditorMode.Code,
-        label: "Code",
-        children: (
-          <Editor
-            defaultLanguage="yaml"
-            value={yamlValue}
-            height="calc(100vh - 220px)"
-            onChange={(val) => setYamlValue(val ?? "")}
-            options={{
-              fontFamily: "Menlo",
-              fontSize: 13,
-              minimap: { enabled: false },
-            }}
-            theme="light"
-          />
-        ),
-      },
-    ],
-    // canvasPanel is a JSX expression that changes on every render, but the
-    // underlying props it depends on are already captured. We intentionally
-    // keep the dep array minimal to avoid stale-closure issues with
-    // ReactFlowProvider children.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [yamlValue, mode],
-  );
+  const tabItems = [
+    {
+      key: EditorMode.Builder,
+      label: "Builder",
+      children: canvasPanel,
+    },
+    ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
+      ? [
+          {
+            key: EditorMode.Split,
+            label: "Split (dev only)",
+            children: (
+              <Flex gap="middle" className="h-full">
+                <div style={{ flex: "0 0 60%" }}>{canvasPanel}</div>
+                <div style={{ flex: "0 0 calc(40% - 8px)" }}>
+                  <Editor
+                    defaultLanguage="yaml"
+                    value={yamlValue}
+                    height="100%"
+                    options={{
+                      fontFamily: "Menlo",
+                      fontSize: 13,
+                      minimap: { enabled: false },
+                      readOnly: true,
+                      domReadOnly: true,
+                    }}
+                    theme="light"
+                  />
+                </div>
+              </Flex>
+            ),
+          },
+        ]
+      : []),
+    {
+      key: EditorMode.Code,
+      label: "Code",
+      children: (
+        <Editor
+          defaultLanguage="yaml"
+          value={yamlValue}
+          height="100%"
+          onChange={(val) => setYamlValue(val ?? "")}
+          options={{
+            fontFamily: "Menlo",
+            fontSize: 13,
+            minimap: { enabled: false },
+          }}
+          theme="light"
+        />
+      ),
+    },
+  ];
 
   const tabsNode = (
-    <Tabs
-      activeKey={mode}
-      onChange={(key) => handleModeChange(key as EditorMode)}
-      data-testid="mode-toggle"
-      items={tabItems}
-      className={styles.tabs}
-    />
+    <ReactFlowProvider>
+      <Tabs
+        activeKey={mode}
+        onChange={(key) => handleModeChange(key as EditorMode)}
+        data-testid="mode-toggle"
+        items={tabItems}
+        className={styles.tabs}
+      />
+    </ReactFlowProvider>
   );
 
   return (
