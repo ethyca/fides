@@ -9,8 +9,9 @@ import type { SortingConfig, SortOrder } from "../../sorting";
  * Base interface for table state that can be synchronized with URL
  * TSortKey should be constrained to specific column key enums for type safety
  */
-export interface TableState<TSortKey extends string = string>
-  extends PaginationState {
+export interface TableState<
+  TSortKey extends string = string,
+> extends PaginationState {
   sortKey?: TSortKey;
   sortOrder?: SortOrder;
   columnFilters?: Record<string, FilterValue | null>;
@@ -18,8 +19,9 @@ export interface TableState<TSortKey extends string = string>
   paginationConfig?: PaginationConfig;
 }
 
-export interface TableStateWithHelpers<TSortKey extends string = string>
-  extends TableState<TSortKey> {
+export interface TableStateWithHelpers<
+  TSortKey extends string = string,
+> extends TableState<TSortKey> {
   state: TableState<TSortKey>;
   updatePageIndex: (pageIndex: number) => void;
   updatePageSize: (pageSize: number) => void;
