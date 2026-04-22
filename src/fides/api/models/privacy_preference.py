@@ -131,7 +131,10 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         Temporary function used to hash values to the previously used bcrypt hashes.
         This can be removed once the bcrypt to SHA-256 migration is complete.
         """
-        if not value:
+        # Exclude bools from the falsy filter: MultiValue includes StrictBool,
+        # and Python's `not False` is True, so a plain `if not value` would
+        # drop legitimate `False` checkbox values alongside None/""/0/[].
+        if not value and not isinstance(value, bool):
             return None
 
         return ProvidedIdentity.bcrypt_hash_value(value, encoding)
@@ -145,7 +148,7 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         """Utility function to hash the value with a generated salt
         This returns None if there's no value, unlike ProvidedIdentity.hash_value
         """
-        if not value:
+        if not value and not isinstance(value, bool):
             return None
 
         return ProvidedIdentity.hash_value(value, encoding)

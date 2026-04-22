@@ -1,0 +1,8 @@
+type: Added
+description: >-
+  Added checkbox, checkbox_group, and textarea field types to the Privacy
+  Center custom field config. Extended MultiValue to accept StrictBool so
+  checkbox values round-trip through identity caching without being coerced
+  to int.
+pr: 7977
+labels: []

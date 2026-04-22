@@ -119,7 +119,7 @@ class ConsentRequest(IdentityVerificationMixin, Base):
 
         if CONFIG.execution.allow_custom_privacy_request_field_collection:
             for key, item in custom_privacy_request_fields.items():
-                if item.value:
+                if item.value or isinstance(item.value, bool):
                     hashed_value = CustomPrivacyRequestField.hash_value(item.value)
                     CustomPrivacyRequestField.create(
                         db=db,
