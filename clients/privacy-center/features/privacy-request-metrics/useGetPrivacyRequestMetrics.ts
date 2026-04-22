@@ -7,8 +7,11 @@ interface UseGetPrivacyRequestMetricsResult {
   isError: boolean;
 }
 
-export const useGetPrivacyRequestMetrics =
-  (): UseGetPrivacyRequestMetricsResult => {
-    const { data, isLoading, isError } = useGetPrivacyRequestMetricsQuery();
-    return { data, isLoading, isError };
-  };
+export const useGetPrivacyRequestMetrics = (
+  location?: string,
+): UseGetPrivacyRequestMetricsResult => {
+  const { data, isLoading, isError } = useGetPrivacyRequestMetricsQuery(
+    location ? { location } : undefined,
+  );
+  return { data, isLoading, isError };
+};

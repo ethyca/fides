@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   ChakraBox as Box,
   ChakraFlex as Flex,
@@ -7,6 +8,7 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
+import { useSelector } from "react-redux";
 
 import {
   METRIC_COLUMNS,
@@ -14,6 +16,29 @@ import {
 } from "~/features/privacy-request-metrics/constants";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
+import { useGetLocationsQuery } from "~/features/common/locations.slice";
+import { selectConsentState } from "~/features/consent/consent.slice";
+
+const ALL_LOCATIONS_VALUE = "";
+
+/**
+ * Convert a location ID from the locations API format (e.g. "us_ca")
+ * to the ISO format used by the metrics API (e.g. "US-CA").
+ */
+function locationIdToIso(id: string): string {
+  const parts = id.split("_");
+  if (parts.length === 1) {
+    return parts[0].toUpperCase();
+  }
+  return `${parts[0].toUpperCase()}-${parts.slice(1).join("_").toUpperCase()}`;
+}
+
+/**
+ * Convert an ISO location (e.g. "US-CA") to the locations API format (e.g. "us_ca").
+ */
+function isoToLocationId(iso: string): string {
+  return iso.toLowerCase().replace(/-/g, "_");
+}
 
 function formatValue(value: number | null, key: string): string {
   if (value === null) {
@@ -26,7 +51,29 @@ function formatValue(value: number | null, key: string): string {
 }
 
 export const PrivacyRequestMetrics = () => {
-  const { data, isLoading } = useGetPrivacyRequestMetrics();
+  const { location: currentGeo } = useSelector(selectConsentState);
+  const { data: locationsData } = useGetLocationsQuery();
+
+  // Build the list of configured location groups
+  const locationGroups = (locationsData?.location_groups ?? [])
+    .filter((g) => g.selected)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Determine the default: current geo if it exists in the location groups list
+  const currentGeoLocationId = currentGeo
+    ? isoToLocationId(currentGeo)
+    : undefined;
+  const geoMatchesGroup = currentGeoLocationId
+    ? locationGroups.some((g) => g.id === currentGeoLocationId)
+    : false;
+  const defaultLocation = geoMatchesGroup ? currentGeoLocationId! : ALL_LOCATIONS_VALUE;
+
+  const [selectedLocation, setSelectedLocation] = useState<string>(defaultLocation);
+
+  const locationParam = selectedLocation
+    ? locationIdToIso(selectedLocation)
+    : undefined;
+  const { data, isLoading } = useGetPrivacyRequestMetrics(locationParam);
 
   if (isLoading || !data) {
     return null;
@@ -44,6 +91,33 @@ export const PrivacyRequestMetrics = () => {
           Reporting period: {data.reporting_period}
         </Text>
       </Stack>
+
+      <Flex w="100%" maxWidth={960} justifyContent="flex-end">
+        <Box
+          as="select"
+          value={selectedLocation}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setSelectedLocation(e.target.value)
+          }
+          px={3}
+          py={2}
+          borderWidth="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+          fontSize="sm"
+          color="gray.700"
+          bg="white"
+          cursor="pointer"
+          _hover={{ borderColor: "gray.300" }}
+        >
+          <option value={ALL_LOCATIONS_VALUE}>All locations</option>
+          {locationGroups.map((group) => (
+            <option key={group.id} value={group.id}>
+              {group.name}
+            </option>
+          ))}
+        </Box>
+      </Flex>
 
       <Box w="100%" maxWidth={960} overflowX="auto">
         <Box
