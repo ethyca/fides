@@ -58,12 +58,13 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
 
       const resolvedTitle = title ?? message;
 
-      // When both a title and a description are present, emphasize the title
-      // so the alert reads as "headline + detail".
+      // When both a title and a non-empty description are present, emphasize
+      // the title so the alert reads as "headline + detail". A string
+      // description of "" or whitespace is treated as empty.
       const hasDescription =
-        description !== undefined &&
-        description !== null &&
-        description !== false;
+        typeof description === "string"
+          ? description.trim().length > 0
+          : Boolean(description);
       const effectiveTitle =
         hasDescription && resolvedTitle !== undefined && resolvedTitle !== null
           ? <strong>{resolvedTitle}</strong>
