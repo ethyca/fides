@@ -46,6 +46,13 @@ const DEFAULT_CONSENT_KEYS = ["analytics", "performance"];
 
 const paqsWithRequireConsent = new WeakSet<unknown[][]>();
 
+const consentModeChecks = (consentMode: MatomoConsentMode) => ({
+  isTracking: () =>
+    consentMode === "tracking" || consentMode === "both",
+  isCookie: () =>
+    consentMode === "cookie" || consentMode === "both",
+});
+
 /**
  * Find the first consent key present in the Fides consent object.
  * Uses the `in` operator (like GCM) to distinguish "key absent" (non-applicable, OMIT mode)
@@ -61,11 +68,12 @@ const pushRequireConsent = (
   paq: unknown[][],
   consentMode: MatomoConsentMode,
 ): void => {
-  if (consentMode === "tracking" || consentMode === "both") {
+  const mode = consentModeChecks(consentMode);
+  if (mode.isTracking()) {
     paq.push(["requireConsent"]);
     fidesDebugger("[Fides Matomo] Pushed requireConsent");
   }
-  if (consentMode === "cookie" || consentMode === "both") {
+  if (mode.isCookie()) {
     paq.push(["requireCookieConsent"]);
     fidesDebugger("[Fides Matomo] Pushed requireCookieConsent");
   }
@@ -80,30 +88,31 @@ const pushConsentUpdate = (
   rememberConsent: boolean,
   granted: boolean,
 ): void => {
-  if (consentMode === "tracking" || consentMode === "both") {
-    if (granted) {
+  if (granted) {
+    const mode = consentModeChecks(consentMode);
+    if (mode.isTracking()) {
       const command = rememberConsent
         ? "rememberConsentGiven"
         : "setConsentGiven";
       paq.push([command]);
       fidesDebugger(`[Fides Matomo] Pushed ${command}`);
-    } else {
-      paq.push(["forgetConsentGiven"]);
-      fidesDebugger("[Fides Matomo] Pushed forgetConsentGiven");
     }
-  }
-
-  if (consentMode === "cookie" || consentMode === "both") {
-    if (granted) {
+    if (mode.isCookie()) {
       const command = rememberConsent
         ? "rememberCookieConsentGiven"
         : "setCookieConsentGiven";
       paq.push([command]);
       fidesDebugger(`[Fides Matomo] Pushed ${command}`);
-    } else {
-      paq.push(["forgetCookieConsentGiven"]);
-      fidesDebugger("[Fides Matomo] Pushed forgetCookieConsentGiven");
     }
+  } else {
+    // Always revoke both consent types regardless of consentMode to clean up
+    // stale consent cookies (e.g. if a site switches from "both" to "cookie",
+    // tracking consent must still be revoked). These are safe no-ops in Matomo
+    // when consent was never granted.
+    paq.push(["forgetConsentGiven"]);
+    fidesDebugger("[Fides Matomo] Pushed forgetConsentGiven");
+    paq.push(["forgetCookieConsentGiven"]);
+    fidesDebugger("[Fides Matomo] Pushed forgetCookieConsentGiven");
   }
 };
 
