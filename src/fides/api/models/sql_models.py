@@ -929,6 +929,10 @@ class CustomFieldDefinition(Base):
         back_populates="custom_field_definition",
     )
     active = Column(BOOLEAN, nullable=False, default=True)
+    # True when the row was created by a platform-managed flow (e.g. the
+    # regulatory reporting templates reconciler). System-managed fields
+    # have their lifecycle controlled by that flow rather than by users.
+    system_managed = Column(BOOLEAN, nullable=False, default=False, server_default="f")
 
     @classmethod
     def create(

@@ -142,3 +142,34 @@ def test_custom_field_definition_duplicate_name_rejected_update(db):
     # assert update did not go through
     db.refresh(definition2)
     assert definition2.name == "Test 1"
+
+
+def test_custom_field_definition_system_managed_defaults_false(db):
+    """system_managed defaults to False for user-created definitions."""
+    definition = CustomFieldDefinition.create(
+        db=db,
+        data={
+            "name": "user_created",
+            "description": "test",
+            "field_type": "string",
+            "resource_type": "system",
+            "field_definition": "string",
+        },
+    )
+    assert definition.system_managed is False
+
+
+def test_custom_field_definition_system_managed_settable(db):
+    """system_managed can be set True when a platform flow seeds a definition."""
+    definition = CustomFieldDefinition.create(
+        db=db,
+        data={
+            "name": "platform_seeded",
+            "description": "test",
+            "field_type": "string",
+            "resource_type": "system",
+            "field_definition": "string",
+            "system_managed": True,
+        },
+    )
+    assert definition.system_managed is True

@@ -1,0 +1,4 @@
+type: Added
+description: Added schema for regulatory reporting templates - `system_managed` flag on `CustomFieldDefinition`, `system_template_key` / `location_code` on `CustomReport`, and a `plus_reporting_template_custom_field` association table
+pr: 7999
+labels: []
