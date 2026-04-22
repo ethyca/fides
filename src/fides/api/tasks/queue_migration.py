@@ -123,25 +123,25 @@ def migrate_redis_queues_to_sqs(
         result.skipped = True
         return result
 
-    # Pre-flight: verify SQS connectivity before touching any Redis data.
-    # If SQS is unreachable, we skip the entire migration — no Redis keys
-    # are drained so no messages are lost.
-    try:
-        sqs_client = get_sqs_client(config)
-        _verify_sqs_connectivity(sqs_client, config)
-    except Exception as exc:  # noqa: BLE001
-        logger.error(
-            "Could not connect to SQS — skipping migration: %s",
-            exc,
-        )
-        result.skipped = True
-        return result
-
     queue_names = get_all_celery_queue_names()
     base_url = get_sqs_base_url(config)
     prefix = config.queue.sqs_queue_name_prefix
 
     try:
+        # Pre-flight: verify SQS connectivity before touching any Redis data.
+        # If SQS is unreachable, we skip the entire migration — no Redis keys
+        # are drained so no messages are lost.
+        try:
+            sqs_client = get_sqs_client(config)
+            _verify_sqs_connectivity(sqs_client, config)
+        except Exception as exc:  # noqa: BLE001
+            logger.error(
+                "Could not connect to SQS — skipping migration: %s",
+                exc,
+            )
+            result.skipped = True
+            return result
+
         # Loop invariant: at the start of each iteration, all queues
         # processed so far are drained from Redis and their tasks are in
         # SQS (or have an entry in ``result.errors``).

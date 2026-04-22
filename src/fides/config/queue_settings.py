@@ -30,7 +30,7 @@ class QueueSettings(FidesSettings):
         description="The AWS secret access key for SQS. Overrides default boto3 chain.",
     )
     sqs_queue_name_prefix: str = Field(
-        default="ethyca-",
+        default="fides-",
         description="The prefix to apply to SQS queue names.",
     )
     sqs_visibility_timeout: int = Field(

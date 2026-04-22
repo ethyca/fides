@@ -21,7 +21,6 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from fides.api.tasks.broker import get_all_celery_queue_names
-
 from fides.api.tasks.queue_migration import (
     MIGRATION_BATCH_SIZE,
     MIGRATION_LOCK_KEY,
@@ -317,18 +316,12 @@ class TestLockReleaseGuaranteeProperty:
                 "fides.api.tasks.queue_migration.get_sqs_client",
                 side_effect=RuntimeError("cannot build sqs client"),
             )
-            expect_exception = True
+            expect_exception = False  # SQS build errors are swallowed
 
         with build_patch:
-            if expect_exception:
-                with pytest.raises(RuntimeError):
-                    migrate_redis_queues_to_sqs(
-                        redis_conn, celery_app=MagicMock(), config=config
-                    )
-            else:
-                migrate_redis_queues_to_sqs(
-                    redis_conn, celery_app=MagicMock(), config=config
-                )
+            migrate_redis_queues_to_sqs(
+                redis_conn, celery_app=MagicMock(), config=config
+            )
 
         assert redis_conn.has_key(MIGRATION_LOCK_KEY) is False, (
             f"Migration lock leaked (scenario={scenario})"
@@ -581,7 +574,7 @@ class TestStartupQueueMigratorUnit:
         assert result.skipped is True
         assert result.migrated == {}
         assert result.errors == []
-        assert redis_conn.has_key(MIGRATION_LOCK_KEY) is True
+        assert redis_conn.has_key(MIGRATION_LOCK_KEY) is False
 
     def test_skipped_true_when_lock_not_acquired(self) -> None:
         # Pre-populate the lock so SET NX returns False.

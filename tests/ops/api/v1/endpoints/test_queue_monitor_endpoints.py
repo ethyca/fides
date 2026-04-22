@@ -83,7 +83,7 @@ class TestSqsModeIndicatorAccuracy:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client") as mock_build,
+            patch("fides.api.util.queue_stats.get_sqs_client") as mock_build,
         ):
             mock_build.return_value = MagicMock()
             response = get_queue_monitor()
@@ -133,7 +133,9 @@ class TestQueueStatsCompletenessAndMapping:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.util.queue_stats.get_sqs_client", return_value=mock_client
+            ),
             patch(
                 "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
                 return_value=queue_names,
@@ -202,7 +204,9 @@ class TestPerQueueErrorIsolation:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.util.queue_stats.get_sqs_client", return_value=mock_client
+            ),
             patch(
                 "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
                 return_value=queue_names,
@@ -256,7 +260,9 @@ class TestQueueMonitorEndpoint:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.util.queue_stats.get_sqs_client", return_value=mock_client
+            ),
             patch(
                 "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
                 return_value=queue_names,
@@ -283,7 +289,9 @@ class TestQueueMonitorEndpoint:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.util.queue_stats.get_sqs_client", return_value=mock_client
+            ),
             patch(
                 "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
                 return_value=["fides"],
@@ -309,7 +317,9 @@ class TestQueueMonitorEndpoint:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.util.queue_stats.get_sqs_client", return_value=mock_client
+            ),
             patch(
                 "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
                 return_value=queue_names,
@@ -337,7 +347,9 @@ class TestQueueMonitorEndpoint:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.util.queue_stats.get_sqs_client", return_value=mock_client
+            ),
             patch(
                 "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
                 return_value=queue_names,
@@ -363,7 +375,9 @@ class TestQueueMonitorEndpoint:
 
         with (
             patch("fides.api.v1.endpoints.queue_monitor_endpoints.CONFIG", config),
-            patch("fides.api.tasks.broker.get_sqs_client", return_value=mock_client),
+            patch(
+                "fides.api.util.queue_stats.get_sqs_client", return_value=mock_client
+            ),
             patch(
                 "fides.api.v1.endpoints.queue_monitor_endpoints.get_all_celery_queue_names",
                 return_value=queue_names,
