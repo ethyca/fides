@@ -51,4 +51,3 @@ def downgrade():
     op.drop_column("event_audit", "client_id")
     op.drop_column("attachment", "client_id")
     op.drop_column("comment", "client_id")
-    op.drop_index(op.f('ix_event_audit_client_id'), table_name='event_audit')
