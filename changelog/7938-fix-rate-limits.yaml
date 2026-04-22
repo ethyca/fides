@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed problems with larger timeout checks on rate_limit for integrations
-pr: 7938
-labels: []

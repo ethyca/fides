@@ -1,4 +1,0 @@
-type: Fixed
-description: Hide Jira tickets section in request details when no Jira integration is configured
-pr: 8003
-labels: []
