@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
+  Alert,
   Button,
   Flex,
   Form,
@@ -122,8 +123,11 @@ const CustomFieldForm = ({
 
   const { valueTypeOptions } = useCustomFieldValueTypeOptions();
 
+  const isSystemManaged = !!initialField?.system_managed;
   const showDeleteButton =
-    useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
+    useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) &&
+    !!initialField &&
+    !isSystemManaged;
 
   const handleDelete = async () => {
     if (!initialField) {
@@ -221,7 +225,19 @@ const CustomFieldForm = ({
       initialValues={initialValues || {}}
       validateTrigger={["onBlur", "onChange"]}
       onFinish={onSubmit}
+      disabled={isSystemManaged}
     >
+      {isSystemManaged && (
+        <Alert
+          type="info"
+          showIcon
+          className="mb-4"
+          message="Managed by Fides"
+          description="This field is built into Fides to support a reporting template. It can't be edited or renamed here. You can hide it from system and privacy declaration forms by toggling it off from the custom fields list."
+          data-testid="managed-field-alert"
+        />
+      )}
+
       <Form.Item
         label="Name"
         name="name"
@@ -426,9 +442,11 @@ const CustomFieldForm = ({
             Delete
           </Button>
         )}
-        <Button type="primary" htmlType="submit" data-testid="save-btn">
-          Save
-        </Button>
+        {!isSystemManaged && (
+          <Button type="primary" htmlType="submit" data-testid="save-btn">
+            Save
+          </Button>
+        )}
       </Flex>
     </Form>
   );

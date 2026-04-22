@@ -35,4 +35,13 @@ export type CustomFieldDefinition = {
    * Active
    */
   active?: boolean;
+  /**
+   * System Managed
+   *
+   * True when the field is built into Fides to support a reporting
+   * template (e.g. ICO, DPC, CNIL). Its lifecycle is driven by your
+   * Fides location settings — the admin UI hides edit, rename, and
+   * disable actions for these rows.
+   */
+  system_managed?: boolean;
 };

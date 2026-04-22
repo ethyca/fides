@@ -258,4 +258,65 @@ describe("Custom Fields V2", () => {
       cy.url().should("not.include", "/edit");
     });
   });
+
+  describe("System-managed custom fields", () => {
+    beforeEach(() => {
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/custom-metadata/custom-field-definition",
+        { fixture: "custom-fields/list-with-system-field.json" },
+      ).as("getCustomFieldDefinitionsWithSystem");
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/custom-metadata/custom-field-definition/plu_system_managed_*",
+        { fixture: "custom-fields/detail-system-managed.json" },
+      ).as("getSystemManagedCustomField");
+    });
+
+    it("shows a lock indicator in the table for Fides-managed rows", () => {
+      cy.visit("/settings/custom-fields");
+      cy.wait("@getCustomFieldDefinitionsWithSystem");
+
+      cy.getByTestId("managed-field-lock").should("have.length", 1);
+      cy.getByTestId("managed-field-lock")
+        .parent()
+        .parent()
+        .contains("Controller's Representative");
+    });
+
+    it("hides the Edit button for system-managed rows but not for user rows", () => {
+      cy.visit("/settings/custom-fields");
+      cy.wait("@getCustomFieldDefinitionsWithSystem");
+
+      // Only the user-authored row should expose an Edit button.
+      cy.getByTestId("edit-btn").should("have.length", 1);
+    });
+
+    it("leaves the Enabled toggle interactive for Fides-managed rows", () => {
+      cy.visit("/settings/custom-fields");
+      cy.wait("@getCustomFieldDefinitionsWithSystem");
+
+      // Users can disable a Fides-managed field to hide it from system /
+      // privacy declaration forms; the toggle is not disabled.
+      cy.get(".ant-table-tbody tr")
+        .contains("Controller's Representative")
+        .parents("tr")
+        .find('[role="switch"]')
+        .should("not.be.disabled");
+    });
+
+    it("shows an info banner and hides Save/Delete on the edit form", () => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+      cy.visit(
+        "/settings/custom-fields/plu_system_managed_00000000000000000001",
+      );
+      cy.wait("@getSystemManagedCustomField");
+
+      cy.getByTestId("managed-field-alert").should("be.visible");
+      cy.getByTestId("save-btn").should("not.exist");
+      cy.getByTestId("delete-btn").should("not.exist");
+      // Form fields disabled at the Form level.
+      cy.getByTestId("input-name").should("be.disabled");
+    });
+  });
 });
