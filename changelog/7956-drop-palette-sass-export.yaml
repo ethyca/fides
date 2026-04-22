@@ -1,4 +1,4 @@
 type: Developer Experience
-description: Replace Sass :export with TS palette module, remove --webpack flags, enable Turbopack builds
+description: Build using Turbopack instead of Webpack, replace Sass :export with TS palette module
 pr: 7956
-labels: []
+labels: ["high-risk"]
