@@ -19,7 +19,23 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.83.2..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.83.3..main)
+
+## [2.83.3](https://github.com/ethyca/fides/compare/2.83.2..2.83.3)
+
+### Added
+- Add Control model and join table for associating regulatory frameworks with access policies. Seed initial controls. Update FE to use consistent controls naming and array shape. [#7833](https://github.com/ethyca/fides/pull/7833) https://github.com/ethyca/fides/labels/db-migration
+- Added composite (created_at, id) index to privacy_preferences to improve pagination performance on large tables [#7897](https://github.com/ethyca/fides/pull/7897) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Expanded database healthcheck to report per-pool health details and readonly async prewarming metrics. Top-level migration state (`database` may be `needs migration`) and `database_revision` continue to come from Alembic; optional pools are reported as `skipped` when not configured. [#7856](https://github.com/ethyca/fides/pull/7856)
+
+### Fixed
+- Scope `check_object_exists` in post-upgrade background index creation to the current PostgreSQL schema, preventing false positives on shared-database staging environments [#7990](https://github.com/ethyca/fides/pull/7990)
+- Fixed Ticket setup tab appearing on non-Jira integrations [#7987](https://github.com/ethyca/fides/pull/7987)
+
+### Security
+- Bumped aiohttp to 3.13.4 to fix 10 CVEs including CVE-2026-34516, CVE-2026-22815, CVE-2026-34520 [#7891](https://github.com/ethyca/fides/pull/7891)
 
 ## [2.83.2](https://github.com/ethyca/fides/compare/2.83.1..2.83.2)
 

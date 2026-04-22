@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed Ticket setup tab appearing on non-Jira integrations
-pr: 7987
-labels: []
