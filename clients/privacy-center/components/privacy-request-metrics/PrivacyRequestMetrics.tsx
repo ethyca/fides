@@ -28,7 +28,7 @@ function formatValue(value: number | null, key: string): string {
 export const PrivacyRequestMetrics = () => {
   const { data, isLoading } = useGetPrivacyRequestMetrics();
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return null;
   }
 
