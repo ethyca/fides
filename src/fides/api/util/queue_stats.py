@@ -33,7 +33,9 @@ logger = logging.getLogger(__name__)
 class QueueStatsProvider(Protocol):
     """Interface for retrieving per-queue message counts."""
 
-    def get_queue_counts(self) -> Dict[str, int]: ...
+    def get_queue_counts(self) -> Dict[str, int]:
+        """Retrieve per-queue message counts."""
+        ...  # pyright: ignore[reportGeneralTypeIssues]
 
 
 # ---------------------------------------------------------------------------

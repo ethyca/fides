@@ -1,5 +1,4 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-import importlib.util
 import os
 from pathlib import Path as LocalPath
 from typing import Dict, Generator, List

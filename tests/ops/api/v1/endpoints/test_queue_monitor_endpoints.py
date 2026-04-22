@@ -16,8 +16,6 @@ from fastapi import Response
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from fides.api.schemas.queue_monitor import QueueMonitorResponse
-from fides.api.tasks.broker import get_all_celery_queue_names
 from fides.api.v1.endpoints.queue_monitor_endpoints import get_queue_monitor
 from fides.common.urn_registry import V1_URL_PREFIX
 

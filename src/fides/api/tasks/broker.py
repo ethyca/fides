@@ -271,10 +271,6 @@ def get_sqs_base_url(config: Any) -> str:
     return f"https://sqs.{config.queue.aws_region}.amazonaws.com"
 
 
-# Alias for backwards compatibility and internal use.
-_get_sqs_base_url = get_sqs_base_url
-
-
 def get_sqs_queue_url(celery_queue_name: str, base_url: str, prefix: str) -> str:
     """Return the full SQS queue URL for a given Celery queue name.
 

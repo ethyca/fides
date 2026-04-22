@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import math
 from types import SimpleNamespace
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,7 +21,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from fides.api.tasks.broker import get_all_celery_queue_names
-from fides.api.tasks.broker import get_sqs_client as _get_sqs_client
+
 from fides.api.tasks.queue_migration import (
     MIGRATION_BATCH_SIZE,
     MIGRATION_LOCK_KEY,
