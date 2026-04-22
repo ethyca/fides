@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChakraBox as Box,
   ChakraFlex as Flex,
@@ -57,21 +57,24 @@ interface PrivacyRequestMetricsProps {
 export const PrivacyRequestMetrics = ({
   locationOptions,
 }: PrivacyRequestMetricsProps) => {
+  // currentGeo is already in underscore format from the server (e.g., "us_ca")
   const { location: currentGeo } = useSelector(selectConsentState);
 
-  // Determine the default: current geo if it exists in the location options list
-  const currentGeoLocationId = currentGeo
-    ? isoToLocationId(currentGeo)
-    : undefined;
-  const geoMatchesOption = currentGeoLocationId
-    ? locationOptions.some((o) => o.id === currentGeoLocationId)
-    : false;
-  const defaultLocation = geoMatchesOption
-    ? currentGeoLocationId!
-    : ALL_LOCATIONS_VALUE;
-
   const [selectedLocation, setSelectedLocation] =
-    useState<string>(defaultLocation);
+    useState<string>(ALL_LOCATIONS_VALUE);
+  const [hasAutoSelected, setHasAutoSelected] = useState(false);
+
+  // Auto-select the user's geo when it becomes available (after hydration)
+  useEffect(() => {
+    if (hasAutoSelected || !currentGeo) {
+      return;
+    }
+    const matchesOption = locationOptions.some((o) => o.id === currentGeo);
+    if (matchesOption) {
+      setSelectedLocation(currentGeo);
+    }
+    setHasAutoSelected(true);
+  }, [currentGeo, locationOptions, hasAutoSelected]);
 
   const locationParam = selectedLocation
     ? locationIdToIso(selectedLocation)
