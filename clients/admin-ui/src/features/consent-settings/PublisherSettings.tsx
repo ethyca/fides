@@ -1,5 +1,4 @@
 import { Form, isoCodesToOptions, LocationSelect, Typography } from "fidesui";
-import { useFormikContext } from "formik";
 
 import { useFeatures } from "~/features/common/features";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
@@ -13,9 +12,10 @@ export type TCFPublisherSettings = {
 
 const PublisherSettings = () => {
   const { tcf: isTcfEnabled } = useFeatures();
-  const { values, setFieldValue } = useFormikContext<{
+  const form = Form.useFormInstance<{
     tcfPublisherSettings: TCFPublisherSettings;
   }>();
+  const publisherSettings = Form.useWatch("tcfPublisherSettings", form);
   const { data: locationRegulationResponse, isLoading: locationsLoading } =
     useGetOnlyCountryLocationsQuery();
 
@@ -41,12 +41,12 @@ const PublisherSettings = () => {
             allSelectedCountries?.map((location) => location.id),
           )}
           placeholder="Select a country"
-          value={values.tcfPublisherSettings.publisher_country_code
+          value={publisherSettings?.publisher_country_code
             ?.replace("_", "-")
             .toUpperCase()}
           onChange={(value) =>
-            setFieldValue(
-              "tcfPublisherSettings.publisher_country_code",
+            form.setFieldValue(
+              ["tcfPublisherSettings", "publisher_country_code"],
               value?.toLowerCase(),
             )
           }

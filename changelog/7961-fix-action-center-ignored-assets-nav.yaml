@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed browser navigation for Action Center ignored assets
+pr: 7961
+labels: []

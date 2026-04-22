@@ -101,12 +101,11 @@ export const { reducer } = connectionTypeSlice;
 
 export const selectConnectionTypeState = (state: RootState) =>
   state.connectionType;
-export const selectConnectionTypeFilters = (
-  state: RootState,
-): ConnectionTypeParams => ({
-  search: state.connectionType.search,
-  system_type: state.connectionType.system_type,
-});
+export const selectConnectionTypeFilters = createSelector(
+  (state: RootState) => state.connectionType.search,
+  (state: RootState) => state.connectionType.system_type,
+  (search, system_type): ConnectionTypeParams => ({ search, system_type }),
+);
 
 export const connectionTypeApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
