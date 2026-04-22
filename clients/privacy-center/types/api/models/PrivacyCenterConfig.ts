@@ -31,4 +31,5 @@ export type PrivacyCenterConfig = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string | null;
   links?: Array<PrivacyCenterLink>;
+  error_message?: string | null;
 };
