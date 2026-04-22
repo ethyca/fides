@@ -20,7 +20,7 @@ const agentChatApi = baseApi.injectEndpoints({
     >({
       query: (body) => ({
         method: "POST",
-        url: "plus/llm/access-policy-chat",
+        url: "plus/access-policy/agent",
         body,
       }),
     }),
