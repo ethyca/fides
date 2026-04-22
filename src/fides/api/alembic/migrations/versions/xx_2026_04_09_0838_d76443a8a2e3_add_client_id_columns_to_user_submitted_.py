@@ -1,7 +1,7 @@
 """add client id columns to user submitted data
 
 Revision ID: d76443a8a2e3
-Revises: 4738e3e3e850
+Revises: d71c7d274c04
 Create Date: 2026-04-09 08:38:43.724458
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'd76443a8a2e3'
-down_revision = '4738e3e3e850'
+down_revision = 'd71c7d274c04'
 branch_labels = None
 depends_on = None
 
