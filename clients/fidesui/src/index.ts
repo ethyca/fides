@@ -456,6 +456,7 @@ export type {
 export {
   ThemeModeProvider,
   useFormModal,
+  useOptionalThemeMode,
   usePrefersReducedMotion,
   useThemeMode,
 } from "./hooks";

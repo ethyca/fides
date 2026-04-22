@@ -2,6 +2,7 @@ import { Alert, AlertProps } from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
 import React from "react";
 
+import { useOptionalThemeMode } from "../hooks/useThemeMode";
 import SparkleIcon from "../icons/Sparkle";
 import { getDefaultAlertIcon } from "../lib/carbon-icon-defaults";
 
@@ -15,11 +16,6 @@ export interface CustomAlertProps extends Omit<AlertProps, "type"> {
    */
   type?: CustomAlertType;
 }
-
-const AGENT_STYLE: React.CSSProperties = {
-  backgroundColor: "var(--fidesui-limestone)",
-  borderColor: "var(--fidesui-limestone)",
-};
 
 const withCustomProps = (WrappedComponent: typeof Alert) => {
   const WrappedAlert = React.forwardRef<AlertRef, CustomAlertProps>(
@@ -40,6 +36,9 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
       },
       ref,
     ) => {
+      const themeMode = useOptionalThemeMode();
+      const isDark = themeMode?.resolvedMode === "dark";
+
       const isAgent = type === "agent";
       // Ant's Alert doesn't know about "agent"; render as the info base and
       // layer on our own surface + icon.
@@ -70,6 +69,19 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
           ? <strong>{resolvedTitle}</strong>
           : resolvedTitle;
 
+      // Agent variant: warm limestone surface in light mode, dark minos
+      // surface in dark mode. Mirrors AgentBriefingBanner's treatment.
+      const agentStyle: React.CSSProperties | undefined = isAgent
+        ? {
+            backgroundColor: isDark
+              ? "var(--fidesui-minos)"
+              : "var(--fidesui-limestone)",
+            borderColor: isDark
+              ? "var(--fidesui-minos)"
+              : "var(--fidesui-limestone)",
+          }
+        : undefined;
+
       return (
         <WrappedComponent
           ref={ref}
@@ -79,7 +91,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
           banner={banner}
           description={description}
           title={effectiveTitle}
-          style={isAgent ? { ...AGENT_STYLE, ...style } : style}
+          style={agentStyle ? { ...agentStyle, ...style } : style}
           {...props}
         />
       );

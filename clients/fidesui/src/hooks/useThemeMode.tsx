@@ -115,3 +115,11 @@ export const useThemeMode = (): ThemeModeContextValue => {
   }
   return context;
 };
+
+/**
+ * Non-throwing variant of `useThemeMode` for components that may render
+ * outside a `ThemeModeProvider`. Returns `undefined` when no provider is
+ * present — callers should default to their light-mode styling.
+ */
+export const useOptionalThemeMode = (): ThemeModeContextValue | undefined =>
+  useContext(ThemeModeContext);
