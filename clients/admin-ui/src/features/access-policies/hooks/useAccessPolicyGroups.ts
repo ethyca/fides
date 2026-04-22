@@ -20,13 +20,11 @@ export const useAccessPolicyGroups = (
     const groups: PolicyGroup[] = controlGroups.map((controlGroup) => ({
       controlGroup,
       policies: policies.filter((policy) =>
-        policy.controls?.includes(controlGroup.key),
+        policy.control === controlGroup.key,
       ),
     }));
 
-    const ungrouped = policies.filter(
-      (p) => !p.controls || p.controls.length === 0,
-    );
+    const ungrouped = policies.filter((p) => !p.control);
     if (ungrouped.length > 0) {
       groups.push({
         controlGroup: { key: "_ungrouped", label: "Ungrouped" },

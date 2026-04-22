@@ -313,15 +313,21 @@ const PoliciesTable = ({
       },
       {
         title: "Controls",
-        dataIndex: "controls",
-        key: "controls",
+        dataIndex: "control",
+        key: "control",
         width: 240,
         render: (_: unknown, record: AccessPolicyListItem) => (
           <TagExpandableCell
-            values={record.controls?.map((key) => ({
-              key,
-              label: controlGroupMap.get(key) ?? key,
-            }))}
+            values={
+              record.control
+                ? [
+                    {
+                      key: record.control,
+                      label: controlGroupMap.get(record.control) ?? record.control,
+                    },
+                  ]
+                : undefined
+            }
           />
         ),
       },

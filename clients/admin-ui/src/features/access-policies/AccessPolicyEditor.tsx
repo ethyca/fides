@@ -809,7 +809,7 @@ const AccessPolicyEditor = ({
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
   const [controls, setControls] = useState<string[]>(
-    initialValues?.controls ?? [],
+    initialValues?.control ? [initialValues.control] : [],
   );
   const [syncKey, setSyncKey] = useState(0);
 

@@ -28,7 +28,13 @@ const EditAccessPolicyPage: NextPage = () => {
 
   const handleSave = async (values: SidebarFormValues, yaml: string) => {
     try {
-      await updateAccessPolicy({ id: policyId, ...values, yaml }).unwrap();
+      const { controls, ...rest } = values;
+      await updateAccessPolicy({
+        id: policyId,
+        ...rest,
+        control: controls?.[0],
+        yaml,
+      }).unwrap();
       messageApi.success("Policy saved.");
     } catch (error) {
       messageApi.error(getErrorMessage((error as RTKErrorResult).error));
