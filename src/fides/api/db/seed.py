@@ -554,9 +554,7 @@ async def load_samples(async_session: AsyncSession) -> None:
             )
             messaging_config.set_secrets(
                 db=db,
-                messaging_secrets=MessagingSecretsMailgunDocs(
-                    mailgun_api_key=os.getenv("MAILGUN_API_KEY")
-                ),
+                messaging_secrets={"mailgun_api_key": os.getenv("MAILGUN_API_KEY")},
             )
             CONFIG.notifications.notification_service_type = "mailgun"
             ApplicationConfig.update_config_set(db, CONFIG)
