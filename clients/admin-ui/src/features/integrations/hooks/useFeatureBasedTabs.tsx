@@ -199,7 +199,10 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    if (enabledFeatures?.includes(IntegrationFeature.DSR_AUTOMATION)) {
+    if (
+      enabledFeatures?.includes(IntegrationFeature.DSR_AUTOMATION) &&
+      connection?.connection_type === ConnectionType.JIRA_TICKET
+    ) {
       tabItems.push({
         label: "Ticket setup",
         key: "configuration",
