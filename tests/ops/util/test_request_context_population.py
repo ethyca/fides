@@ -5,15 +5,11 @@ counterpart) correctly set either user_id or client_id in the request
 context depending on the type of authenticated actor.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from fides.api.request_context import (
-    get_client_id,
-    get_user_id,
-    reset_request_context,
-)
+from fides.api.request_context import get_client_id, get_user_id, reset_request_context
 
 
 @pytest.fixture(autouse=True)
