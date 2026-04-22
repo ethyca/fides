@@ -44,6 +44,8 @@ const DEFAULT_OPTIONS: MatomoOptions = {
 
 const DEFAULT_CONSENT_KEYS = ["analytics", "performance"];
 
+const paqsWithRequireConsent = new WeakSet<unknown[][]>();
+
 /**
  * Find the first consent key present in the Fides consent object.
  * Uses the `in` operator (like GCM) to distinguish "key absent" (non-applicable, OMIT mode)
@@ -121,8 +123,6 @@ export const matomo = (options?: Partial<MatomoOptions>): void => {
   window._paq = window._paq ?? [];
   const paq = window._paq;
 
-  let requireConsentPushed = false;
-
   subscribeToConsent((consent) => {
     const key = findConsentKey(consent);
 
@@ -136,9 +136,9 @@ export const matomo = (options?: Partial<MatomoOptions>): void => {
     // On the first event where the consent key is present, put Matomo into
     // consent-required mode. The grant/revoke that follows immediately after
     // ensures there is no tracking gap.
-    if (!requireConsentPushed) {
+    if (!paqsWithRequireConsent.has(paq)) {
       pushRequireConsent(paq, opts.consentMode);
-      requireConsentPushed = true;
+      paqsWithRequireConsent.add(paq);
     }
 
     const granted = processExternalConsentValue(consent[key]);

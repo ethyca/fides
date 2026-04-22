@@ -52,8 +52,6 @@ describe("matomo", () => {
     window.Fides = undefined as any;
   });
 
-  // NOTE: This test must run before other matomo() calls to avoid leaked event
-  // listeners from prior tests (subscribeToConsent listeners cannot be removed).
   describe("requireConsent idempotency", () => {
     test("does not push requireConsent again on subsequent events", () => {
       setupFidesWithConsent({ analytics: true });

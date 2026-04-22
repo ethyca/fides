@@ -313,6 +313,7 @@ const copyStub = {
     },
   ],
   onLog(level, log) {
+    // fides-stub.js is intentionally empty; suppress Rollup's EMPTY_BUNDLE warning
     if (log.code === "EMPTY_BUNDLE") return;
   },
 };
