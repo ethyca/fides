@@ -183,7 +183,13 @@ def _resolve_result_backend(config: Any) -> str:
     """
     if config.celery.result_backend is not None:
         return config.celery.result_backend
-    return config.redis.connection_url
+    connection_url = config.redis.connection_url
+    if connection_url is not None:
+        return connection_url
+    raise ValueError(
+        "No result backend could be resolved.  Set one of: "
+        "FIDES__CELERY__RESULT_BACKEND or ensure Redis connection_url is configured."
+    )
 
 
 def get_broker_url(config: Any) -> str:

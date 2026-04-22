@@ -170,7 +170,7 @@ def sqs_heartbeat(func: Any) -> Any:
 
         if receipt_handle:
             queue_name = _get_sqs_queue_name(self)
-            if queue_name:
+            if queue_name and CONFIG.queue.sqs_url:
                 try:
                     sqs_client = get_sqs_client(CONFIG)
                     queue_url = f"{CONFIG.queue.sqs_url.rstrip('/')}/queue/{queue_name}"
