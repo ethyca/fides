@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Fix nightly build blank page by invalidating stale Next.js Docker build cache when dependencies change
-pr: 8000
-labels: []

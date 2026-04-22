@@ -1,9 +1,14 @@
-import { Alert, AlertProps } from "antd/lib";
+import { Alert, AlertProps, Typography } from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
 import React from "react";
 
-import SparkleIcon from "../icons/Sparkle";
+import { SparkleIcon } from "../icons";
 import { getDefaultAlertIcon } from "../lib/carbon-icon-defaults";
+
+const AGENT_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--fidesui-limestone)",
+  borderColor: "var(--fidesui-limestone)",
+};
 
 export type CustomAlertType = NonNullable<AlertProps["type"]> | "agent";
 
@@ -16,11 +21,6 @@ export interface CustomAlertProps extends Omit<AlertProps, "type"> {
   type?: CustomAlertType;
 }
 
-const AGENT_STYLE: React.CSSProperties = {
-  backgroundColor: "var(--fidesui-limestone)",
-  borderColor: "var(--fidesui-limestone)",
-};
-
 const withCustomProps = (WrappedComponent: typeof Alert) => {
   const WrappedAlert = React.forwardRef<AlertRef, CustomAlertProps>(
     (
@@ -31,9 +31,6 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
         banner,
         description,
         title,
-        // `message` is deprecated in antd v6 in favor of `title`; accepted
-        // here for back-compat and normalized to `title` below.
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         message,
         style,
         ...props
@@ -66,9 +63,13 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
           ? description.trim().length > 0
           : Boolean(description);
       const effectiveTitle =
-        hasDescription && resolvedTitle !== undefined && resolvedTitle !== null
-          ? <strong>{resolvedTitle}</strong>
-          : resolvedTitle;
+        hasDescription &&
+        resolvedTitle !== undefined &&
+        resolvedTitle !== null ? (
+          <Typography.Text strong>{resolvedTitle}</Typography.Text>
+        ) : (
+          resolvedTitle
+        );
 
       return (
         <WrappedComponent
