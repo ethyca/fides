@@ -102,7 +102,7 @@ const AgentChatPanel = ({
           onYamlProposed(response.new_policy_yaml);
         }
       } catch (error) {
-        messageApi.error(getErrorMessage((error as RTKErrorResult).error));
+        messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
         setMessages((prev) => [
           ...prev,
           {
