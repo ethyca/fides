@@ -1,8 +1,8 @@
-import { Alert, AlertProps } from "antd/lib";
+import { Alert, AlertProps, Typography } from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
 import React from "react";
 
-import SparkleIcon from "../icons/Sparkle";
+import { SparkleIcon } from "../icons";
 import { getDefaultAlertIcon } from "../lib/carbon-icon-defaults";
 
 const AGENT_STYLE: React.CSSProperties = {
@@ -66,7 +66,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
         hasDescription &&
         resolvedTitle !== undefined &&
         resolvedTitle !== null ? (
-          <strong>{resolvedTitle}</strong>
+          <Typography.Text strong>{resolvedTitle}</Typography.Text>
         ) : (
           resolvedTitle
         );
