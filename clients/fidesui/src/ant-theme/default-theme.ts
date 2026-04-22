@@ -50,6 +50,7 @@ export const defaultAntTheme: ThemeConfig = {
       colorInfo: palette.FIDESUI_MINOS,
       colorInfoBg: palette.FIDESUI_NEUTRAL_50,
       colorInfoBorder: palette.FIDESUI_NEUTRAL_100,
+      fontSize: 14,
     },
     Button: {
       primaryShadow: undefined,

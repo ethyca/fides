@@ -6,7 +6,6 @@ import {
   Controls,
   type Edge,
   Handle,
-
   type Node,
   type NodeProps,
   type NodeTypes,
@@ -17,18 +16,14 @@ import {
 } from "@xyflow/react";
 import { Flex, Icons } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
-import {
-  MOCK_DATASET_ASSIGNMENTS,
-  MOCK_SYSTEM_ASSIGNMENTS,
-} from "./mockData";
+import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
 import { computeCategoryDrift } from "./purposeUtils";
-import type { DataPurpose, PurposeSummary } from "./types";
 
 // ─── Dimensions ───────────────────────────────────────────────────────────────
 const PURPOSE_W = 220;
@@ -40,7 +35,11 @@ const CATEGORY_H = 28;
 
 const EDGE_COLOR = palette.FIDESUI_SANDSTONE; // matches taxonomy edge default
 
-const RISK_ORDER: Record<string, number> = { drift: 0, compliant: 1, unknown: 2 };
+const RISK_ORDER: Record<string, number> = {
+  drift: 0,
+  compliant: 1,
+  unknown: 2,
+};
 
 // ─── Purpose node ─────────────────────────────────────────────────────────────
 
@@ -51,14 +50,15 @@ type PurposeNodeData = {
   expanded: boolean;
 };
 
+const RISK_ACCENT_COLOR: Record<PurposeNodeData["riskStatus"], string> = {
+  drift: palette.FIDESUI_ERROR,
+  compliant: palette.FIDESUI_SUCCESS,
+  unknown: palette.FIDESUI_NEUTRAL_200,
+};
+
 const PurposeNode = ({ data }: NodeProps) => {
   const d = data as PurposeNodeData;
-  const accent =
-    d.riskStatus === "drift"
-      ? palette.FIDESUI_ERROR
-      : d.riskStatus === "compliant"
-        ? palette.FIDESUI_SUCCESS
-        : palette.FIDESUI_NEUTRAL_200;
+  const accent = RISK_ACCENT_COLOR[d.riskStatus];
 
   return (
     <div
@@ -188,7 +188,13 @@ const SystemNode = ({ data }: NodeProps) => {
       {/* Source dot only shown when expanded (categories are connected) */}
       {d.expanded && <TaxonomyDot isSource />}
 
-      <span style={{ color: palette.FIDESUI_NEUTRAL_400, lineHeight: 0, flexShrink: 0 }}>
+      <span
+        style={{
+          color: palette.FIDESUI_NEUTRAL_400,
+          lineHeight: 0,
+          flexShrink: 0,
+        }}
+      >
         <Icons.Layers size={13} />
       </span>
       <div
@@ -205,7 +211,9 @@ const SystemNode = ({ data }: NodeProps) => {
         {d.label}
       </div>
       {d.hasRisk && (
-        <span style={{ color: palette.FIDESUI_ERROR, lineHeight: 0, flexShrink: 0 }}>
+        <span
+          style={{ color: palette.FIDESUI_ERROR, lineHeight: 0, flexShrink: 0 }}
+        >
           <Icons.WarningAltFilled size={11} />
         </span>
       )}
@@ -239,7 +247,13 @@ const CategoryNode = ({ data }: NodeProps) => {
     >
       <TaxonomyDot />
 
-      <span style={{ color: palette.FIDESUI_NEUTRAL_400, lineHeight: 0, flexShrink: 0 }}>
+      <span
+        style={{
+          color: palette.FIDESUI_NEUTRAL_400,
+          lineHeight: 0,
+          flexShrink: 0,
+        }}
+      >
         <Icons.Tag size={11} />
       </span>
       <div
@@ -255,7 +269,9 @@ const CategoryNode = ({ data }: NodeProps) => {
         {d.label}
       </div>
       {d.isUndeclared && (
-        <span style={{ color: palette.FIDESUI_ERROR, lineHeight: 0, flexShrink: 0 }}>
+        <span
+          style={{ color: palette.FIDESUI_ERROR, lineHeight: 0, flexShrink: 0 }}
+        >
           <Icons.WarningAltFilled size={11} />
         </span>
       )}
@@ -273,10 +289,13 @@ const nodeTypes: NodeTypes = {
 
 interface NetworkGraphProps {
   purposes: DataPurpose[];
+  summariesByKey: Map<string, PurposeSummary>;
 }
 
-const NetworkGraph = ({ purposes }: NetworkGraphProps) => {
-  const [expandedPurposeId, setExpandedPurposeId] = useState<string | null>(null);
+const NetworkGraph = ({ purposes, summariesByKey }: NetworkGraphProps) => {
+  const [expandedPurposeId, setExpandedPurposeId] = useState<string | null>(
+    null,
+  );
   const [expandedSystemId, setExpandedSystemId] = useState<string | null>(null);
   const router = useRouter();
   const { fitView } = useReactFlow();
@@ -285,11 +304,21 @@ const NetworkGraph = ({ purposes }: NetworkGraphProps) => {
   const sortedPurposes = useMemo(
     () =>
       [...purposes].sort((a, b) => {
-        const aS = computeCategoryDrift(a.data_categories, a.detected_data_categories).status;
-        const bS = computeCategoryDrift(b.data_categories, b.detected_data_categories).status;
+        const aDetected =
+          summariesByKey.get(a.fides_key)?.detected_data_categories ?? [];
+        const bDetected =
+          summariesByKey.get(b.fides_key)?.detected_data_categories ?? [];
+        const aS = computeCategoryDrift(
+          a.data_categories ?? [],
+          aDetected,
+        ).status;
+        const bS = computeCategoryDrift(
+          b.data_categories ?? [],
+          bDetected,
+        ).status;
         return (RISK_ORDER[aS] ?? 2) - (RISK_ORDER[bS] ?? 2);
       }),
-    [purposes],
+    [purposes, summariesByKey],
   );
 
   const { rawNodes, rawEdges, nodeSizes } = useMemo(() => {
@@ -299,33 +328,38 @@ const NetworkGraph = ({ purposes }: NetworkGraphProps) => {
 
     // ── Purpose nodes ─────────────────────────────────────────────────────────
     sortedPurposes.forEach((p) => {
-      const drift = computeCategoryDrift(p.data_categories, p.detected_data_categories);
+      const detected =
+        summariesByKey.get(p.fides_key)?.detected_data_categories ?? [];
+      const drift = computeCategoryDrift(p.data_categories ?? [], detected);
       nodes.push({
-        id: p.id,
+        id: p.fides_key,
         type: "purposeNode",
         position: { x: 0, y: 0 },
         data: {
           label: p.name,
           dataUse: p.data_use,
           riskStatus: drift.status,
-          expanded: expandedPurposeId === p.id,
+          expanded: expandedPurposeId === p.fides_key,
         },
       });
-      sizes[p.id] = { width: PURPOSE_W, height: PURPOSE_H };
+      sizes[p.fides_key] = { width: PURPOSE_W, height: PURPOSE_H };
     });
 
     // ── System nodes for the expanded purpose ─────────────────────────────────
     if (expandedPurposeId) {
-      const purpose = sortedPurposes.find((p) => p.id === expandedPurposeId);
-      if (purpose) {
-        const assignments = (MOCK_SYSTEM_ASSIGNMENTS[expandedPurposeId] ?? []).filter(
-          (a) => a.assigned,
-        );
-        const definedSet = new Set(purpose.data_categories);
-        const datasets = MOCK_DATASET_ASSIGNMENTS[expandedPurposeId] ?? [];
+      const purpose = sortedPurposes.find(
+        (p) => p.fides_key === expandedPurposeId,
+      );
+      const summary = summariesByKey.get(expandedPurposeId);
+      if (purpose && summary) {
+        const assignments = summary.systems.filter((a) => a.assigned);
+        const definedSet = new Set(purpose.data_categories ?? []);
+        const { datasets } = summary;
 
         assignments.forEach((a) => {
-          const systemDatasets = datasets.filter((d) => d.system_name === a.system_name);
+          const systemDatasets = datasets.filter(
+            (d) => d.system_name === a.system_name,
+          );
           const hasRisk = systemDatasets.some((d) =>
             d.data_categories.some((c) => !definedSet.has(c)),
           );
@@ -382,7 +416,7 @@ const NetworkGraph = ({ purposes }: NetworkGraphProps) => {
     }
 
     return { rawNodes: nodes, rawEdges: edges, nodeSizes: sizes };
-  }, [sortedPurposes, expandedPurposeId, expandedSystemId]);
+  }, [sortedPurposes, summariesByKey, expandedPurposeId, expandedSystemId]);
 
   const { nodes, edges } = useMemo(
     () =>
@@ -454,21 +488,31 @@ interface PurposeNetworkViewProps {
   summaries: PurposeSummary[];
 }
 
-const PurposeNetworkView = ({ purposes }: PurposeNetworkViewProps) => (
-  <ReactFlowProvider>
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        backgroundColor: palette.FIDESUI_BG_CORINTH,
-        border: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
-        borderRadius: 8,
-        overflow: "hidden",
-      }}
-    >
-      <NetworkGraph purposes={purposes} />
-    </div>
-  </ReactFlowProvider>
-);
+const PurposeNetworkView = ({
+  purposes,
+  summaries,
+}: PurposeNetworkViewProps) => {
+  const summariesByKey = useMemo(
+    () => new Map(summaries.map((s) => [s.fides_key, s])),
+    [summaries],
+  );
+
+  return (
+    <ReactFlowProvider>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: palette.FIDESUI_BG_CORINTH,
+          border: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
+          borderRadius: 8,
+          overflow: "hidden",
+        }}
+      >
+        <NetworkGraph purposes={purposes} summariesByKey={summariesByKey} />
+      </div>
+    </ReactFlowProvider>
+  );
+};
 
 export default PurposeNetworkView;

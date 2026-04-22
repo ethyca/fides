@@ -40,9 +40,7 @@ const DeleteDataPurposeModal = ({ purpose, triggerComponent }: Props) => {
             fidesKey: purpose.fides_key,
             force: true,
           }).unwrap();
-          message.success(
-            `Purpose "${purpose.name}" deleted successfully`,
-          );
+          message.success(`Purpose "${purpose.name}" deleted successfully`);
         } catch (error) {
           message.error(getErrorMessage(error as RTKErrorResult["error"]));
         }

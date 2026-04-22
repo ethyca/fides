@@ -3,44 +3,51 @@ import {
   Card,
   CloseOutlined,
   Col,
+  Empty,
   Flex,
   Icons,
   Input,
   Row,
   Select,
+  Spin,
   Text,
   Title,
   Tooltip,
+  useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo, useState } from "react";
 
+import { isErrorResult } from "~/features/common/helpers";
+
 import AssignSystemsPickerModal from "./AssignSystemsPickerModal";
-import { MOCK_AVAILABLE_SYSTEMS } from "./mockData";
-import type {
-  PurposeDatasetAssignment,
-  PurposeSystemAssignment,
-} from "./types";
+import {
+  useGetDataPurposeByKeyQuery,
+  useGetPurposeDatasetsQuery,
+  useGetPurposeSystemsQuery,
+  useRemoveSystemsFromPurposeMutation,
+} from "./data-purpose.slice";
 
 interface AssignedSystemsSectionProps {
-  systems: PurposeSystemAssignment[];
-  datasets: PurposeDatasetAssignment[];
-  definedCategories: string[];
-  onSystemsChange: (next: PurposeSystemAssignment[]) => void;
+  fidesKey: string;
 }
 
 const VISIBLE_COUNT = 8;
 
-const AssignedSystemsSection = ({
-  systems,
-  datasets,
-  definedCategories,
-  onSystemsChange,
-}: AssignedSystemsSectionProps) => {
+const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const message = useMessage();
+
+  const { data: purpose } = useGetDataPurposeByKeyQuery(fidesKey);
+  const { data: systems = [], isLoading: isLoadingSystems } =
+    useGetPurposeSystemsQuery(fidesKey);
+  const { data: datasets = [] } = useGetPurposeDatasetsQuery(fidesKey);
+  const [removeSystems] = useRemoveSystemsFromPurposeMutation();
+
+  const definedCategories = purpose?.data_categories ?? [];
 
   const typeOptions = useMemo(() => {
     const types = [...new Set(systems.map((s) => s.system_type))];
@@ -64,7 +71,9 @@ const AssignedSystemsSection = ({
     const map = new Map<string, string[]>();
     datasets.forEach((d) => {
       const undeclared = d.data_categories.filter((c) => !definedSet.has(c));
-      if (undeclared.length === 0) return;
+      if (undeclared.length === 0) {
+        return;
+      }
       const prior = map.get(d.system_name) ?? [];
       const merged = Array.from(new Set([...prior, ...undeclared]));
       map.set(d.system_name, merged);
@@ -87,29 +96,11 @@ const AssignedSystemsSection = ({
   const visible = expanded ? filtered : filtered.slice(0, VISIBLE_COUNT);
   const hiddenCount = filtered.length - VISIBLE_COUNT;
 
-  const handleConfirm = (systemIds: string[]) => {
-    const updatedSystems = systemIds
-      .map((id) => {
-        const existing = systems.find((s) => s.system_id === id);
-        if (existing) return existing;
-        const available = MOCK_AVAILABLE_SYSTEMS.find(
-          (s) => s.system_id === id,
-        );
-        if (!available) return null;
-        return {
-          system_id: available.system_id,
-          system_name: available.system_name,
-          system_type: available.system_type,
-          assigned: true,
-        };
-      })
-      .filter(Boolean) as PurposeSystemAssignment[];
-    onSystemsChange(updatedSystems);
-    setModalOpen(false);
-  };
-
-  const handleRemoveSystem = (systemId: string) => {
-    onSystemsChange(systems.filter((s) => s.system_id !== systemId));
+  const handleRemoveSystem = async (systemId: string) => {
+    const result = await removeSystems({ fidesKey, systemIds: [systemId] });
+    if (isErrorResult(result)) {
+      message.error("Could not remove system");
+    }
   };
 
   return (
@@ -139,6 +130,7 @@ const AssignedSystemsSection = ({
           style={{ width: 240 }}
         />
         <Select
+          aria-label="Filter by type"
           placeholder="All types"
           options={typeOptions}
           value={typeFilter}
@@ -148,112 +140,138 @@ const AssignedSystemsSection = ({
           style={{ width: 180 }}
         />
       </Flex>
-      <Row gutter={[12, 12]}>
-        {visible.map((system) => {
-          const datasetCount = datasetCountBySystem.get(system.system_name) ?? 0;
-          const riskCategories = riskBySystem.get(system.system_name) ?? [];
-          // Only surface the red indicator for BigQuery so the page tells a
-          // focused story rather than flagging every at-risk consumer.
-          const isAtRisk =
-            system.system_name === "BigQuery" && riskCategories.length > 0;
-          // Only show the dataset count on cards that actually have datasets
-          // assigned via the purpose (BigQuery and Snowflake in the mock).
-          const showDatasetCount =
-            system.system_name === "BigQuery" ||
-            system.system_name === "Snowflake";
-          return (
-            <Col key={system.system_id} span={6}>
-              <Card
-                size="small"
-                style={{
-                  backgroundColor: isAtRisk ? "#fff1f0" : "#fafafa",
-                  cursor: "pointer",
-                  position: "relative",
-                  border: isAtRisk
-                    ? `1px solid ${palette.FIDESUI_ERROR}`
-                    : undefined,
-                }}
-                className="group transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
-                onClick={() =>
-                  window.open(
-                    `/systems/configure/${system.system_id}`,
-                    "_self",
-                  )
-                }
-              >
-                {showDatasetCount && (
-                  <Text
-                    type="secondary"
-                    className="!absolute right-2 top-2 text-xs group-hover:hidden"
-                  >
-                    {datasetCount} {datasetCount === 1 ? "dataset" : "datasets"}
-                  </Text>
-                )}
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<CloseOutlined style={{ fontSize: 10 }} />}
-                  className="!absolute right-1 top-1 hidden !h-5 !w-5 !min-w-0 group-hover:inline-flex"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveSystem(system.system_id);
-                  }}
-                />
-                <Flex align="center" gap={6}>
-                  {isAtRisk && (
-                    <Tooltip
-                      title={`At risk: introduces undeclared ${riskCategories.length === 1 ? "category" : "categories"} (${riskCategories.join(", ")})`}
-                    >
-                      <span
-                        style={{
-                          color: palette.FIDESUI_ERROR,
-                          lineHeight: 0,
-                        }}
-                      >
-                        <Icons.WarningFilled size={14} />
-                      </span>
-                    </Tooltip>
-                  )}
-                  <Text strong className="text-sm">
-                    {system.system_name}
-                  </Text>
-                </Flex>
-                <div>
-                  <Text type="secondary" className="text-xs">
-                    {system.consumer_category === "group"
-                      ? "Google group"
-                      : system.system_type}
-                  </Text>
-                </div>
-              </Card>
-            </Col>
-          );
-        })}
-      </Row>
-      {!expanded && hiddenCount > 0 && (
-        <Button
-          type="link"
-          size="middle"
-          onClick={() => setExpanded(true)}
-          className="mt-2 p-0"
-        >
-          See {hiddenCount} more
-        </Button>
+      {isLoadingSystems && (
+        <Flex justify="center" className="py-6">
+          <Spin />
+        </Flex>
       )}
-      {expanded && filtered.length > VISIBLE_COUNT && (
-        <Button
-          type="link"
-          size="middle"
-          onClick={() => setExpanded(false)}
-          className="mt-2 p-0"
+      {!isLoadingSystems && systems.length === 0 && (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="No systems assigned yet"
         >
-          Show less
-        </Button>
+          <Button type="primary" onClick={() => setModalOpen(true)}>
+            Assign systems
+          </Button>
+        </Empty>
+      )}
+      {!isLoadingSystems && systems.length > 0 && filtered.length === 0 && (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="No systems match your filters"
+        />
+      )}
+      {!isLoadingSystems && filtered.length > 0 && (
+        <>
+          <Row gutter={[12, 12]}>
+            {visible.map((system) => {
+              const datasetCount =
+                datasetCountBySystem.get(system.system_name) ?? 0;
+              const riskCategories = riskBySystem.get(system.system_name) ?? [];
+              // Only surface the red indicator for BigQuery so the page tells a
+              // focused story rather than flagging every at-risk consumer.
+              const isAtRisk =
+                system.system_name === "BigQuery" && riskCategories.length > 0;
+              const showDatasetCount =
+                system.system_name === "BigQuery" ||
+                system.system_name === "Snowflake";
+              return (
+                <Col key={system.system_id} span={6}>
+                  <Card
+                    size="small"
+                    style={{
+                      backgroundColor: isAtRisk ? "#fee2e2" : "#fafafa",
+                      cursor: "pointer",
+                      position: "relative",
+                      border: isAtRisk
+                        ? `1px solid ${palette.FIDESUI_ERROR}`
+                        : undefined,
+                    }}
+                    className="group transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+                    onClick={() =>
+                      window.open(
+                        `/systems/configure/${system.system_id}`,
+                        "_self",
+                      )
+                    }
+                  >
+                    {showDatasetCount && (
+                      <Text
+                        type="secondary"
+                        className="!absolute right-2 top-2 text-xs group-hover:hidden"
+                      >
+                        {datasetCount}{" "}
+                        {datasetCount === 1 ? "dataset" : "datasets"}
+                      </Text>
+                    )}
+                    <Button
+                      aria-label={`Remove ${system.system_name}`}
+                      type="text"
+                      size="small"
+                      icon={<CloseOutlined style={{ fontSize: 10 }} />}
+                      className="!absolute right-1 top-1 hidden !h-5 !w-5 !min-w-0 group-hover:inline-flex"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveSystem(system.system_id);
+                      }}
+                    />
+                    <Flex align="center" gap={6}>
+                      {isAtRisk && (
+                        <Tooltip
+                          title={`At risk: introduces undeclared ${riskCategories.length === 1 ? "category" : "categories"} (${riskCategories.join(", ")})`}
+                        >
+                          <span
+                            style={{
+                              color: palette.FIDESUI_ERROR,
+                              lineHeight: 0,
+                            }}
+                          >
+                            <Icons.WarningAltFilled size={14} />
+                          </span>
+                        </Tooltip>
+                      )}
+                      <Text strong className="text-sm">
+                        {system.system_name}
+                      </Text>
+                    </Flex>
+                    <div>
+                      <Text type="secondary" className="text-xs">
+                        {system.consumer_category === "group"
+                          ? "Google group"
+                          : system.system_type}
+                      </Text>
+                    </div>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+          {!expanded && hiddenCount > 0 && (
+            <Button
+              type="link"
+              size="middle"
+              onClick={() => setExpanded(true)}
+              className="mt-2 p-0"
+            >
+              See {hiddenCount} more
+            </Button>
+          )}
+          {expanded && filtered.length > VISIBLE_COUNT && (
+            <Button
+              type="link"
+              size="middle"
+              onClick={() => setExpanded(false)}
+              className="mt-2 p-0"
+            >
+              Show less
+            </Button>
+          )}
+        </>
       )}
       <AssignSystemsPickerModal
+        fidesKey={fidesKey}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onConfirm={handleConfirm}
         assignedIds={systems.map((s) => s.system_id)}
       />
     </div>

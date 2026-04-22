@@ -1,39 +1,50 @@
-import { Button, Flex, Input, Modal, Select, Table, Tag } from "fidesui";
+import {
+  Button,
+  Flex,
+  Input,
+  Modal,
+  Select,
+  Table,
+  Tag,
+  useMessage,
+} from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
-import { MOCK_AVAILABLE_DATASETS } from "./mockData";
-import type { AvailableDataset } from "./types";
+import { isErrorResult } from "~/features/common/helpers";
+
+import {
+  type AvailableDataset,
+  useAddDatasetsToPurposeMutation,
+  useGetPurposeAvailableDatasetsQuery,
+} from "./data-purpose.slice";
 
 interface AddDatasetsModalProps {
+  fidesKey: string;
   open: boolean;
   onClose: () => void;
-  onConfirm: (keys: string[]) => void;
   assignedKeys: string[];
 }
 
 const columns = [
-  {
-    title: "Dataset",
-    dataIndex: "dataset_name",
-    key: "dataset_name",
-  },
-  {
-    title: "System",
-    dataIndex: "system_name",
-    key: "system_name",
-    width: 180,
-  },
+  { title: "Dataset", dataIndex: "dataset_name", key: "dataset_name" },
+  { title: "System", dataIndex: "system_name", key: "system_name", width: 180 },
 ];
 
 const AddDatasetsModal = ({
+  fidesKey,
   open,
   onClose,
-  onConfirm,
   assignedKeys,
 }: AddDatasetsModalProps) => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>(assignedKeys);
   const [search, setSearch] = useState("");
   const [systemFilter, setSystemFilter] = useState<string | null>(null);
+  const message = useMessage();
+
+  const { data: availableDatasets = [], isFetching } =
+    useGetPurposeAvailableDatasetsQuery(fidesKey, { skip: !open });
+  const [addDatasets, { isLoading: isAdding }] =
+    useAddDatasetsToPurposeMutation();
 
   useEffect(() => {
     if (open) {
@@ -42,34 +53,21 @@ const AddDatasetsModal = ({
   }, [open, assignedKeys]);
 
   const systemOptions = useMemo(() => {
-    const systems = [...new Set(MOCK_AVAILABLE_DATASETS.map((d) => d.system_name))];
+    const systems = [...new Set(availableDatasets.map((d) => d.system_name))];
     return systems.map((s) => ({ label: s, value: s }));
-  }, []);
+  }, [availableDatasets]);
 
   const filtered = useMemo(
     () =>
-      MOCK_AVAILABLE_DATASETS.filter((d) => {
+      availableDatasets.filter((d) => {
         const matchesSearch = d.dataset_name
           .toLowerCase()
           .includes(search.toLowerCase());
-        const matchesSystem =
-          !systemFilter || d.system_name === systemFilter;
+        const matchesSystem = !systemFilter || d.system_name === systemFilter;
         return matchesSearch && matchesSystem;
       }),
-    [search, systemFilter],
+    [availableDatasets, search, systemFilter],
   );
-
-  const handleConfirm = () => {
-    onConfirm(selectedKeys);
-    setSearch("");
-    setSystemFilter(null);
-  };
-
-  const handleCancel = () => {
-    setSearch("");
-    setSystemFilter(null);
-    onClose();
-  };
 
   const filteredKeys = useMemo(
     () => filtered.map((d) => d.dataset_fides_key),
@@ -88,18 +86,45 @@ const AddDatasetsModal = ({
     }
   };
 
+  const handleConfirm = async () => {
+    const assignedSet = new Set(assignedKeys);
+    const toAdd = selectedKeys.filter((k) => !assignedSet.has(k));
+    if (toAdd.length > 0) {
+      const result = await addDatasets({
+        fidesKey,
+        datasetFidesKeys: toAdd,
+      });
+      if (isErrorResult(result)) {
+        message.error("Could not add datasets");
+        return;
+      }
+    }
+    setSearch("");
+    setSystemFilter(null);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    setSearch("");
+    setSystemFilter(null);
+    onClose();
+  };
+
   return (
     <Modal
       title={
         <Flex align="center" justify="space-between" className="pr-6">
           <span>Add datasets</span>
-          <Tag color="default" bordered={false}>{selectedKeys.length} selected</Tag>
+          <Tag color="default" bordered={false}>
+            {selectedKeys.length} selected
+          </Tag>
         </Flex>
       }
       open={open}
       onCancel={handleCancel}
       onOk={handleConfirm}
       okText="Confirm"
+      confirmLoading={isAdding}
       width={640}
       destroyOnClose
     >
@@ -114,6 +139,7 @@ const AddDatasetsModal = ({
           style={{ flex: 1 }}
         />
         <Select
+          aria-label="Filter by system"
           placeholder="All systems"
           options={systemOptions}
           value={systemFilter}
@@ -134,6 +160,7 @@ const AddDatasetsModal = ({
         columns={columns}
         rowKey="dataset_fides_key"
         size="small"
+        loading={isFetching}
         pagination={false}
         scroll={{ y: 400 }}
         rowSelection={{

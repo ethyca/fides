@@ -1,8 +1,8 @@
 import { antTheme, Divider, Flex, Text } from "fidesui";
 import { useMemo } from "react";
 
-import { getCompleteness, formatDataUse } from "./purposeUtils";
-import type { DataPurpose, PurposeSummary } from "./types";
+import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
+import { formatDataUse, getCompleteness } from "./purposeUtils";
 
 // fidesui palette — info blue, matching SchemaExplorerDashboard
 const PALETTE_INFO = "#4a90e2";
@@ -72,7 +72,7 @@ const PurposeSummaryRow = ({ purposes, summaries }: PurposeSummaryRowProps) => {
           >
             {purposes.length}
           </Text>
-          <Text type="secondary" className="text-xs mt-0.5">
+          <Text type="secondary" className="mt-0.5 text-xs">
             purposes
           </Text>
         </Flex>
@@ -81,15 +81,24 @@ const PurposeSummaryRow = ({ purposes, summaries }: PurposeSummaryRowProps) => {
         <div className="flex h-2 w-full overflow-hidden rounded-sm bg-gray-100">
           <div
             className="transition-all duration-1000 ease-in-out"
-            style={{ width: `${completePct}%`, backgroundColor: token.colorSuccess }}
+            style={{
+              width: `${completePct}%`,
+              backgroundColor: token.colorSuccess,
+            }}
           />
           <div
             className="transition-all duration-1000 ease-in-out"
-            style={{ width: `${inProgressPct}%`, backgroundColor: PALETTE_INFO }}
+            style={{
+              width: `${inProgressPct}%`,
+              backgroundColor: PALETTE_INFO,
+            }}
           />
           <div
             className="transition-all duration-1000 ease-in-out"
-            style={{ width: `${emptyPct}%`, backgroundColor: token.colorTextQuaternary }}
+            style={{
+              width: `${emptyPct}%`,
+              backgroundColor: token.colorTextQuaternary,
+            }}
           />
         </div>
 
@@ -97,21 +106,21 @@ const PurposeSummaryRow = ({ purposes, summaries }: PurposeSummaryRowProps) => {
         <Flex gap="middle">
           <Flex align="center" gap={6}>
             <div
-              className="h-2 w-2 flex-none rounded-full"
+              className="size-2 flex-none rounded-full"
               style={{ backgroundColor: token.colorSuccess }}
             />
             <Text className="text-xs">{completeCount} complete</Text>
           </Flex>
           <Flex align="center" gap={6}>
             <div
-              className="h-2 w-2 flex-none rounded-full"
+              className="size-2 flex-none rounded-full"
               style={{ backgroundColor: PALETTE_INFO }}
             />
             <Text className="text-xs">{inProgressCount} in progress</Text>
           </Flex>
           <Flex align="center" gap={6}>
             <div
-              className="h-2 w-2 flex-none rounded-full"
+              className="size-2 flex-none rounded-full"
               style={{ backgroundColor: token.colorTextQuaternary }}
             />
             <Text className="text-xs">{emptyCount} not started</Text>

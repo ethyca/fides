@@ -1,15 +1,15 @@
-import { Form, Input, Modal, Select } from "fidesui";
+import { Form, Input, Modal, Select, useMessage } from "fidesui";
 import { useMemo } from "react";
 
+import { isErrorResult } from "~/features/common/helpers";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 
-import type { DataPurpose } from "./types";
+import { useCreateDataPurposeMutation } from "./data-purpose.slice";
 
 interface NewPurposeModalProps {
   open: boolean;
   onClose: () => void;
-  onCreated: (id: string) => void;
-  createPurpose: (values: Omit<DataPurpose, "id">) => void;
+  onCreated: (fidesKey: string) => void;
 }
 
 const slugify = (text: string): string =>
@@ -18,9 +18,15 @@ const slugify = (text: string): string =>
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_|_$/g, "");
 
-const NewPurposeModal = ({ open, onClose, onCreated, createPurpose }: NewPurposeModalProps) => {
+const NewPurposeModal = ({
+  open,
+  onClose,
+  onCreated,
+}: NewPurposeModalProps) => {
   const [form] = Form.useForm();
+  const message = useMessage();
   const { data: dataUses } = useGetAllDataUsesQuery();
+  const [createDataPurpose, { isLoading }] = useCreateDataPurposeMutation();
 
   const dataUseOptions = useMemo(
     () =>
@@ -31,30 +37,24 @@ const NewPurposeModal = ({ open, onClose, onCreated, createPurpose }: NewPurpose
     [dataUses],
   );
 
-  const handleFinish = (values: {
+  const handleFinish = async (values: {
     name: string;
     data_use: string;
-    description: string;
+    description?: string;
   }) => {
-    const key = slugify(values.name);
-    createPurpose({
+    const fidesKey = slugify(values.name);
+    const result = await createDataPurpose({
+      fides_key: fidesKey,
       name: values.name,
-      key,
       data_use: values.data_use,
-      description: values.description || "",
-      data_categories: [],
-      detected_data_categories: [],
-      data_subjects: [],
-      legal_basis: "",
-      legal_basis_is_flexible: false,
-      retention_period_days: null,
-      special_category_legal_basis: null,
-      features: [],
-      sub_types: [],
-      updated_at: new Date().toISOString(),
+      description: values.description || null,
     });
+    if (isErrorResult(result)) {
+      message.error("Could not create purpose");
+      return;
+    }
     form.resetFields();
-    onCreated(key);
+    onCreated(fidesKey);
   };
 
   const handleCancel = () => {
@@ -69,6 +69,7 @@ const NewPurposeModal = ({ open, onClose, onCreated, createPurpose }: NewPurpose
       onCancel={handleCancel}
       onOk={() => form.submit()}
       okText="Create"
+      confirmLoading={isLoading}
       destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
@@ -85,6 +86,7 @@ const NewPurposeModal = ({ open, onClose, onCreated, createPurpose }: NewPurpose
           rules={[{ required: true, message: "Data use is required" }]}
         >
           <Select
+            aria-label="Data use"
             options={dataUseOptions}
             placeholder="Select data use"
             showSearch

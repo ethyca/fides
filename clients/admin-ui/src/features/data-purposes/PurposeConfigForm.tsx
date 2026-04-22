@@ -4,27 +4,31 @@ import {
   Flex,
   Form,
   Input,
-  InputNumber,
   Select,
   Switch,
   Text,
   Title,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
+import { isErrorResult } from "~/features/common/helpers";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
-import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/data-category.slice";
 import { useGetAllDataSubjectsQuery } from "~/features/data-subjects/data-subject.slice";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
+import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/data-category.slice";
 
 import {
   FEATURE_OPTIONS,
   LEGAL_BASIS_OPTIONS,
   SPECIAL_CATEGORY_LEGAL_BASIS_OPTIONS,
 } from "./constants";
-import type { DataPurpose } from "./types";
-import { usePurposes } from "./usePurposes";
+import {
+  type DataPurpose,
+  useCreateDataPurposeMutation,
+  useUpdateDataPurposeMutation,
+} from "./data-purpose.slice";
 
 interface PurposeConfigFormProps {
   purpose?: DataPurpose | null;
@@ -45,10 +49,7 @@ interface SectionProps {
 }
 
 const Section = ({ title, description, children }: SectionProps) => (
-  <Card
-    size="small"
-    style={{ borderColor: "#e8e8e8" }}
-  >
+  <Card size="small" style={{ borderColor: "#e8e8e8" }}>
     <Flex vertical gap="middle">
       <div>
         <Title level={5} className="!mb-0">
@@ -72,7 +73,11 @@ const PurposeConfigForm = ({
 }: PurposeConfigFormProps) => {
   const router = useRouter();
   const [form] = Form.useForm();
-  const { createPurpose, updatePurpose } = usePurposes();
+  const message = useMessage();
+  const [createDataPurpose, { isLoading: isCreating }] =
+    useCreateDataPurposeMutation();
+  const [updateDataPurpose, { isLoading: isUpdating }] =
+    useUpdateDataPurposeMutation();
 
   const { data: dataUses } = useGetAllDataUsesQuery();
   const { data: dataCategories } = useGetAllDataCategoriesQuery();
@@ -113,19 +118,29 @@ const PurposeConfigForm = ({
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isNew) {
-      form.setFieldValue("key", slugify(e.target.value));
+      form.setFieldValue("fides_key", slugify(e.target.value));
     }
   };
 
-  const handleFinish = (values: Record<string, unknown>) => {
+  const handleFinish = async (values: Partial<DataPurpose>) => {
     if (isNew) {
-      createPurpose(values as Omit<DataPurpose, "id">);
+      const result = await createDataPurpose(values);
+      if (isErrorResult(result)) {
+        message.error("Could not create purpose");
+        return;
+      }
     } else if (purpose) {
-      updatePurpose(purpose.id, values as Partial<DataPurpose>);
+      const result = await updateDataPurpose({
+        fidesKey: purpose.fides_key,
+        ...values,
+      });
+      if (isErrorResult(result)) {
+        message.error("Could not update purpose");
+        return;
+      }
     }
-    if (onSave) {
-      onSave();
-    }
+    message.success("Purpose saved");
+    onSave?.();
   };
 
   const handleCancel = () => {
@@ -139,11 +154,9 @@ const PurposeConfigForm = ({
       onFinish={handleFinish}
       initialValues={
         purpose ?? {
-          legal_basis_is_flexible: false,
+          flexible_legal_basis_for_processing: false,
           data_categories: [],
-          data_subjects: [],
           features: [],
-          sub_types: [],
         }
       }
       className="max-w-3xl"
@@ -164,7 +177,7 @@ const PurposeConfigForm = ({
             </Form.Item>
             <Form.Item
               label={<Text strong>Key</Text>}
-              name="key"
+              name="fides_key"
               rules={[{ required: true, message: "Key is required" }]}
               tooltip="Auto-generated from the name."
               className="!mb-0 flex-1"
@@ -196,6 +209,7 @@ const PurposeConfigForm = ({
               className="!mb-0 flex-1"
             >
               <Select
+                aria-label="Data use"
                 options={dataUseOptions}
                 placeholder="Select data use"
                 showSearch
@@ -203,14 +217,16 @@ const PurposeConfigForm = ({
             </Form.Item>
             <Form.Item
               label={<Text strong>Data subject</Text>}
-              name="data_subjects"
+              name="data_subject"
               tooltip="Whose data is being processed?"
               className="!mb-0 flex-1"
             >
               <Select
+                aria-label="Data subject"
                 options={dataSubjectOptions}
                 placeholder="Select data subject"
                 showSearch
+                allowClear
               />
             </Form.Item>
           </Flex>
@@ -221,6 +237,7 @@ const PurposeConfigForm = ({
             className="!mb-0"
           >
             <Select
+              aria-label="Data categories"
               mode="multiple"
               options={dataCategoryOptions}
               placeholder="Select data categories"
@@ -236,18 +253,20 @@ const PurposeConfigForm = ({
           <Flex gap="middle">
             <Form.Item
               label={<Text strong>Legal basis</Text>}
-              name="legal_basis"
+              name="legal_basis_for_processing"
               tooltip="The legal justification for processing data under this purpose."
               className="!mb-0 flex-1"
             >
               <Select
+                aria-label="Legal basis"
                 options={LEGAL_BASIS_OPTIONS}
                 placeholder="Select legal basis"
+                allowClear
               />
             </Form.Item>
             <Form.Item
               label={<Text strong>Flexible basis</Text>}
-              name="legal_basis_is_flexible"
+              name="flexible_legal_basis_for_processing"
               valuePropName="checked"
               tooltip="Whether this legal basis can be overridden per-system."
               className="!mb-0"
@@ -257,15 +276,11 @@ const PurposeConfigForm = ({
           </Flex>
           <Flex gap="middle">
             <Form.Item
-              label={<Text strong>Retention period (days)</Text>}
-              name="retention_period_days"
+              label={<Text strong>Retention period</Text>}
+              name="retention_period"
               className="!mb-0 flex-1"
             >
-              <InputNumber
-                placeholder="Enter retention period"
-                className="w-full"
-                min={0}
-              />
+              <Input placeholder="e.g. 365 days" />
             </Form.Item>
             <Form.Item
               label={<Text strong>Special category basis</Text>}
@@ -274,6 +289,7 @@ const PurposeConfigForm = ({
               className="!mb-0 flex-1"
             >
               <Select
+                aria-label="Special category basis"
                 options={SPECIAL_CATEGORY_LEGAL_BASIS_OPTIONS}
                 placeholder="Select basis"
                 allowClear
@@ -293,6 +309,7 @@ const PurposeConfigForm = ({
             className="!mb-0"
           >
             <Select
+              aria-label="Features"
               mode="multiple"
               options={FEATURE_OPTIONS}
               placeholder="Select features"
@@ -304,7 +321,11 @@ const PurposeConfigForm = ({
           <Button type="default" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isCreating || isUpdating}
+          >
             Save
           </Button>
         </Flex>

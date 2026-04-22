@@ -1,7 +1,7 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import type { CategoryDrift, DataPurpose } from "./types";
+import type { DataPurpose } from "./data-purpose.slice";
 
 export const DATA_USE_LABELS: Record<string, string> = {
   analytics: "Analytics",
@@ -47,21 +47,35 @@ export const getCompleteness = (p: DataPurpose): number => {
   const checks = [
     !!p.description,
     !!p.data_use,
-    p.data_categories.length > 0,
-    p.data_subjects.length > 0,
-    !!p.legal_basis,
-    p.retention_period_days !== null,
-    p.special_category_legal_basis !== null,
-    p.features.length > 0,
+    (p.data_categories ?? []).length > 0,
+    !!p.data_subject,
+    !!p.legal_basis_for_processing,
+    p.retention_period !== null && p.retention_period !== undefined,
+    !!p.special_category_legal_basis,
+    (p.features ?? []).length > 0,
   ];
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 };
 
 export const getStrokeColor = (percent: number): string => {
-  if (percent >= 80) return palette.FIDESUI_SUCCESS;
-  if (percent >= 50) return palette.FIDESUI_WARNING;
+  if (percent >= 80) {
+    return palette.FIDESUI_SUCCESS;
+  }
+  if (percent >= 50) {
+    return palette.FIDESUI_WARNING;
+  }
   return palette.FIDESUI_ERROR;
 };
+
+export type ComplianceStatus = "compliant" | "drift" | "unknown";
+
+export interface CategoryDrift {
+  status: ComplianceStatus;
+  /** Detected categories not in the defined set (scope drift). */
+  undeclared: string[];
+  /** Defined categories not in the detected set (unused declarations). */
+  unused: string[];
+}
 
 /**
  * Compare the purpose's human-authored `defined` categories against the

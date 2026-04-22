@@ -1,18 +1,41 @@
-import { Col, Divider, Flex, Icons, Input, Row, Segmented, Select, Text, Title } from "fidesui";
+import {
+  Button,
+  Col,
+  Divider,
+  Flex,
+  Icons,
+  Input,
+  Result,
+  Row,
+  Segmented,
+  Select,
+  Text,
+  Title,
+} from "fidesui";
 import { useMemo, useState } from "react";
 
-import { MOCK_SYSTEM_ASSIGNMENTS } from "./mockData";
+import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
 import PurposeCard from "./PurposeCard";
 import PurposeNetworkView from "./PurposeNetworkView";
 import { computeCategoryDrift, formatDataUse } from "./purposeUtils";
-import type { DataPurpose, PurposeSummary } from "./types";
 
 interface PurposeCardGridProps {
   purposes: DataPurpose[];
   summaries: PurposeSummary[];
+  onCreatePurpose: () => void;
 }
 
-const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
+const STATUS_OPTIONS = [
+  { value: "drift", label: "Has risks" },
+  { value: "compliant", label: "Compliant" },
+  { value: "unknown", label: "Not scanned" },
+];
+
+const PurposeCardGrid = ({
+  purposes,
+  summaries,
+  onCreatePurpose,
+}: PurposeCardGridProps) => {
   const [viewMode, setViewMode] = useState<"grid" | "network">("grid");
   const [search, setSearch] = useState("");
   const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
@@ -20,11 +43,16 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
+  const summariesByKey = useMemo(
+    () => new Map(summaries.map((s) => [s.fides_key, s])),
+    [summaries],
+  );
+
   const consumerOptions = useMemo(() => {
     const seen = new Set<string>();
     const options: { value: string; label: string }[] = [];
-    Object.values(MOCK_SYSTEM_ASSIGNMENTS).forEach((assignments) => {
-      assignments
+    summaries.forEach((summary) => {
+      summary.systems
         .filter((a) => a.assigned)
         .forEach((a) => {
           if (!seen.has(a.system_id)) {
@@ -34,7 +62,7 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
         });
     });
     return options.sort((a, b) => a.label.localeCompare(b.label));
-  }, []);
+  }, [summaries]);
 
   const dataUseOptions = useMemo(
     () =>
@@ -45,51 +73,74 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
     [purposes],
   );
 
-  const statusOptions = [
-    { value: "drift", label: "Has risks" },
-    { value: "compliant", label: "Compliant" },
-    { value: "unknown", label: "Not scanned" },
-  ];
-
   const categoryOptions = useMemo(() => {
     const all = new Set<string>();
-    purposes.forEach((p) => p.data_categories.forEach((c) => all.add(c)));
+    purposes.forEach((p) =>
+      (p.data_categories ?? []).forEach((c) => all.add(c)),
+    );
     return Array.from(all)
       .sort()
       .map((c) => ({ value: c, label: c }));
   }, [purposes]);
 
+  const clearFilters = () => {
+    setSearch("");
+    setConsumerFilter(null);
+    setDataUseFilter(null);
+    setStatusFilter(null);
+    setCategoryFilter(null);
+  };
+
   const filtered = useMemo(
     () =>
       purposes.filter((p) => {
-        if (search && !p.name.toLowerCase().includes(search.toLowerCase()))
+        if (search && !p.name.toLowerCase().includes(search.toLowerCase())) {
           return false;
-        if (dataUseFilter && p.data_use !== dataUseFilter) return false;
+        }
+        if (dataUseFilter && p.data_use !== dataUseFilter) {
+          return false;
+        }
         if (consumerFilter) {
-          const assignments = MOCK_SYSTEM_ASSIGNMENTS[p.id] ?? [];
+          const summary = summariesByKey.get(p.fides_key);
           if (
-            !assignments.some(
+            !summary?.systems.some(
               (a) => a.assigned && a.system_id === consumerFilter,
             )
-          )
+          ) {
             return false;
+          }
         }
         if (statusFilter) {
+          const summary = summariesByKey.get(p.fides_key);
           const drift = computeCategoryDrift(
-            p.data_categories,
-            p.detected_data_categories,
+            p.data_categories ?? [],
+            summary?.detected_data_categories ?? [],
           );
-          if (drift.status !== statusFilter) return false;
+          if (drift.status !== statusFilter) {
+            return false;
+          }
         }
-        if (categoryFilter && !p.data_categories.includes(categoryFilter))
+        if (
+          categoryFilter &&
+          !(p.data_categories ?? []).includes(categoryFilter)
+        ) {
           return false;
+        }
         return true;
       }),
-    [purposes, search, dataUseFilter, consumerFilter, statusFilter, categoryFilter],
+    [
+      purposes,
+      summariesByKey,
+      search,
+      dataUseFilter,
+      consumerFilter,
+      statusFilter,
+      categoryFilter,
+    ],
   );
 
   const groups = useMemo(() => {
-    const map: Record<string, typeof filtered> = {};
+    const map: Record<string, DataPurpose[]> = {};
     filtered.forEach((p) => {
       if (!map[p.data_use]) {
         map[p.data_use] = [];
@@ -98,6 +149,27 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
     });
     return Object.entries(map);
   }, [filtered]);
+
+  const emptyState =
+    purposes.length === 0 ? (
+      <Result
+        status="info"
+        title="No purposes yet"
+        subTitle="Define your first purpose to start governing how data flows through your systems."
+        extra={
+          <Button type="primary" onClick={onCreatePurpose}>
+            + New purpose
+          </Button>
+        }
+      />
+    ) : (
+      <Result
+        status="info"
+        title="No purposes match your filters"
+        subTitle="Try adjusting your search or clearing filters to see more results."
+        extra={<Button onClick={clearFilters}>Clear filters</Button>}
+      />
+    );
 
   return (
     <div
@@ -119,14 +191,16 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
         />
         <Flex gap={8} align="center">
           <Select
+            aria-label="Filter by status"
             placeholder="Status"
             allowClear
             style={{ width: 160 }}
-            options={statusOptions}
+            options={STATUS_OPTIONS}
             value={statusFilter}
             onChange={(v) => setStatusFilter(v ?? null)}
           />
           <Select
+            aria-label="Filter by consumer"
             placeholder="Consumer"
             allowClear
             style={{ width: 200 }}
@@ -135,6 +209,7 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
             onChange={(v) => setConsumerFilter(v ?? null)}
           />
           <Select
+            aria-label="Filter by data category"
             placeholder="Data category"
             allowClear
             style={{ width: 200 }}
@@ -143,6 +218,7 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
             onChange={(v) => setCategoryFilter(v ?? null)}
           />
           <Select
+            aria-label="Filter by data use"
             placeholder="Data use"
             allowClear
             style={{ width: 200 }}
@@ -160,48 +236,50 @@ const PurposeCardGrid = ({ purposes, summaries }: PurposeCardGridProps) => {
           />
         </Flex>
       </Flex>
-      {viewMode === "network" ? (
+      {filtered.length === 0 && emptyState}
+      {filtered.length > 0 && viewMode === "network" && (
         <div style={{ flex: 1, minHeight: 0 }}>
           <PurposeNetworkView purposes={filtered} summaries={summaries} />
         </div>
-      ) : null}
-      {viewMode === "grid" && groups.map(([dataUse, items]) => {
-        const groupSystemCount = items.reduce((sum, p) => {
-          const s = summaries.find((su) => su.id === p.id);
-          return sum + (s?.system_count ?? 0);
-        }, 0);
-        const groupDatasetCount = items.reduce((sum, p) => {
-          const s = summaries.find((su) => su.id === p.id);
-          return sum + (s?.dataset_count ?? 0);
-        }, 0);
+      )}
+      {filtered.length > 0 &&
+        viewMode === "grid" &&
+        groups.map(([dataUse, items]) => {
+          const groupSystemCount = items.reduce((sum, p) => {
+            const s = summariesByKey.get(p.fides_key);
+            return sum + (s?.system_count ?? 0);
+          }, 0);
+          const groupDatasetCount = items.reduce((sum, p) => {
+            const s = summariesByKey.get(p.fides_key);
+            return sum + (s?.dataset_count ?? 0);
+          }, 0);
 
-        return (
-          <div key={dataUse} className="mb-8">
-            <Flex gap="middle" align="center" className="mb-2">
-              <Title level={4} className="!mb-0">
-                {formatDataUse(dataUse)}
-              </Title>
-              <Text type="secondary" className="text-sm">
-                {items.length}{" "}
-                {items.length === 1 ? "purpose" : "purposes"} &middot;{" "}
-                {groupSystemCount} systems &middot; {groupDatasetCount}{" "}
-                datasets
-              </Text>
-            </Flex>
-            <Divider className="!mt-0 mb-4" />
-            <Row gutter={[16, 16]}>
-              {items.map((p) => (
-                <Col key={p.id} span={6}>
-                  <PurposeCard
-                    purpose={p}
-                    summary={summaries.find((s) => s.id === p.id)}
-                  />
-                </Col>
-              ))}
-            </Row>
-          </div>
-        );
-      })}
+          return (
+            <div key={dataUse} className="mb-8">
+              <Flex gap="middle" align="center" className="mb-2">
+                <Title level={4} className="!mb-0">
+                  {formatDataUse(dataUse)}
+                </Title>
+                <Text type="secondary" className="text-sm">
+                  {items.length} {items.length === 1 ? "purpose" : "purposes"}{" "}
+                  &middot; {groupSystemCount} systems &middot;{" "}
+                  {groupDatasetCount} datasets
+                </Text>
+              </Flex>
+              <Divider className="!mt-0 mb-4" />
+              <Row gutter={[16, 16]}>
+                {items.map((p) => (
+                  <Col key={p.fides_key} span={6}>
+                    <PurposeCard
+                      purpose={p}
+                      summary={summariesByKey.get(p.fides_key)}
+                    />
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          );
+        })}
     </div>
   );
 };

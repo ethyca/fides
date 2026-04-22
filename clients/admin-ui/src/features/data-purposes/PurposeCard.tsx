@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 
+import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
 import { computeCategoryDrift } from "./purposeUtils";
-import type { DataPurpose, PurposeSummary } from "./types";
 
 const Dot = ({ color }: { color: string }) => (
   <span
@@ -24,7 +24,7 @@ const RiskIndicator = ({
   status,
   riskCount,
 }: {
-  status: string;
+  status: "drift" | "compliant" | "unknown";
   riskCount: number;
 }) => {
   if (status === "drift") {
@@ -62,24 +62,35 @@ interface PurposeCardProps {
   summary: PurposeSummary | undefined;
 }
 
-const getRelativeTime = (dateStr: string): string => {
+const getRelativeTime = (dateStr: string | undefined): string => {
+  if (!dateStr) {
+    return "";
+  }
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return "Updated today";
-  if (diffDays === 1) return "Updated yesterday";
-  if (diffDays < 7) return `Updated ${diffDays} days ago`;
-  if (diffDays < 30) return `Updated ${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays === 0) {
+    return "Updated today";
+  }
+  if (diffDays === 1) {
+    return "Updated yesterday";
+  }
+  if (diffDays < 7) {
+    return `Updated ${diffDays} days ago`;
+  }
+  if (diffDays < 30) {
+    return `Updated ${Math.floor(diffDays / 7)} weeks ago`;
+  }
   return `Updated ${Math.floor(diffDays / 30)} months ago`;
 };
 
 const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
   const router = useRouter();
   const drift = computeCategoryDrift(
-    purpose.data_categories,
-    purpose.detected_data_categories,
+    purpose.data_categories ?? [],
+    summary?.detected_data_categories ?? [],
   );
 
   return (
@@ -91,18 +102,21 @@ const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
         height: "100%",
       }}
       className="transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
-      onClick={() => router.push(`${DATA_PURPOSES_ROUTE}/${purpose.id}`)}
+      onClick={() => router.push(`${DATA_PURPOSES_ROUTE}/${purpose.fides_key}`)}
     >
       <Flex vertical gap={8} className="h-full">
         <Text strong>{purpose.name}</Text>
         <Text type="secondary" className="line-clamp-2 text-xs">
           {purpose.description}
         </Text>
-        <RiskIndicator status={drift.status} riskCount={drift.undeclared.length} />
+        <RiskIndicator
+          status={drift.status}
+          riskCount={drift.undeclared.length}
+        />
         <div className="mt-auto">
           <Text type="secondary" className="text-xs">
             {summary?.system_count ?? 0} data consumers &middot;{" "}
-            {purpose.data_categories.length} categories
+            {(purpose.data_categories ?? []).length} categories
           </Text>
           <br />
           <Text type="secondary" className="text-xs">

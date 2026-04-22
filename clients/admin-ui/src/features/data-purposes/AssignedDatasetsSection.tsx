@@ -1,6 +1,7 @@
 import {
   Button,
   Dropdown,
+  Empty,
   Flex,
   Icons,
   Input,
@@ -12,24 +13,25 @@ import {
   Text,
   Title,
   Tooltip,
+  useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo, useState } from "react";
 
+import { isErrorResult } from "~/features/common/helpers";
+
 import AddDatasetsModal from "./AddDatasetsModal";
-import { MOCK_AVAILABLE_DATASETS } from "./mockData";
-import type { PurposeDatasetAssignment } from "./types";
+import {
+  type PurposeDatasetAssignment,
+  useAcceptPurposeCategoriesMutation,
+  useGetDataPurposeByKeyQuery,
+  useGetPurposeDatasetsQuery,
+  useMarkPurposeCategoriesMisclassifiedMutation,
+  useRemoveDatasetsFromPurposeMutation,
+} from "./data-purpose.slice";
 
 interface AssignedDatasetsSectionProps {
-  datasets: PurposeDatasetAssignment[];
-  definedCategories: string[];
-  onDatasetsChange: (next: PurposeDatasetAssignment[]) => void;
-  onAcceptCategories: (categories: string[]) => void;
-  onMarkMisclassified: (
-    datasetKeys: string[],
-    categories: string[],
-  ) => void;
-  onRemoveDatasets: (datasetKeys: string[]) => void;
+  fidesKey: string;
 }
 
 const MAX_VISIBLE_CATEGORIES = 2;
@@ -74,18 +76,23 @@ const renderDataCategories = (
 };
 
 const AssignedDatasetsSection = ({
-  datasets,
-  definedCategories,
-  onDatasetsChange,
-  onAcceptCategories,
-  onMarkMisclassified,
-  onRemoveDatasets,
+  fidesKey,
 }: AssignedDatasetsSectionProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [systemFilter, setSystemFilter] = useState<string | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [issuesOnly, setIssuesOnly] = useState(false);
+  const message = useMessage();
+
+  const { data: purpose } = useGetDataPurposeByKeyQuery(fidesKey);
+  const { data: datasets = [], isLoading: isLoadingDatasets } =
+    useGetPurposeDatasetsQuery(fidesKey);
+  const [acceptCategories] = useAcceptPurposeCategoriesMutation();
+  const [markMisclassified] = useMarkPurposeCategoriesMisclassifiedMutation();
+  const [removeDatasets] = useRemoveDatasetsFromPurposeMutation();
+
+  const definedCategories = purpose?.data_categories ?? [];
 
   const definedSet = useMemo(
     () => new Set(definedCategories),
@@ -107,8 +114,7 @@ const AssignedDatasetsSection = ({
           .toLowerCase()
           .includes(search.toLowerCase());
         const matchesSystem = !systemFilter || d.system_name === systemFilter;
-        const matchesIssues =
-          !issuesOnly || undeclaredFor(d).length > 0;
+        const matchesIssues = !issuesOnly || undeclaredFor(d).length > 0;
         return matchesSearch && matchesSystem && matchesIssues;
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,28 +138,71 @@ const AssignedDatasetsSection = ({
   const hasSelection = selectedKeys.length > 0;
   const hasFlaggedSelection = selectedUndeclared.length > 0;
 
-  const handleRowAccept = (record: PurposeDatasetAssignment) => {
-    const undeclared = undeclaredFor(record);
-    onAcceptCategories(undeclared);
+  const handleAccept = async (categories: string[]) => {
+    if (categories.length === 0) {
+      return;
+    }
+    const result = await acceptCategories({ fidesKey, categories });
+    if (isErrorResult(result)) {
+      message.error("Could not accept categories");
+      return;
+    }
+    message.success(
+      categories.length === 1
+        ? `Added "${categories[0]}" to defined categories`
+        : `Added ${categories.length} categories to defined list`,
+    );
   };
 
-  const handleRowRemoveCategory = (record: PurposeDatasetAssignment) => {
-    const undeclared = undeclaredFor(record);
-    onMarkMisclassified([record.dataset_fides_key], undeclared);
+  const handleMarkMisclassified = async (
+    datasetFidesKeys: string[],
+    categories: string[],
+  ) => {
+    if (categories.length === 0) {
+      return;
+    }
+    const result = await markMisclassified({
+      fidesKey,
+      categories,
+      datasetFidesKeys,
+    });
+    if (isErrorResult(result)) {
+      message.error("Could not mark categories as misclassified");
+      return;
+    }
+    message.success(
+      categories.length === 1
+        ? `Marked "${categories[0]}" as misclassified`
+        : `Marked ${categories.length} categories as misclassified`,
+    );
   };
 
-  const handleBulkApprove = () => {
-    onAcceptCategories(selectedUndeclared);
-  };
-
-  const handleBulkRemoveCategory = () => {
-    onMarkMisclassified(selectedKeys, selectedUndeclared);
-  };
-
-  const handleBulkRemoveDataset = () => {
-    onRemoveDatasets(selectedKeys);
+  const handleBulkRemoveDataset = async () => {
+    const result = await removeDatasets({
+      fidesKey,
+      datasetFidesKeys: selectedKeys,
+    });
+    if (isErrorResult(result)) {
+      message.error("Could not remove datasets");
+      return;
+    }
+    message.success(
+      selectedKeys.length === 1
+        ? "Dataset removed from purpose"
+        : `${selectedKeys.length} datasets removed from purpose`,
+    );
     setSelectedKeys([]);
   };
+
+  const handleRowAccept = (record: PurposeDatasetAssignment) =>
+    handleAccept(undeclaredFor(record));
+
+  const handleRowRemoveCategory = (record: PurposeDatasetAssignment) =>
+    handleMarkMisclassified([record.dataset_fides_key], undeclaredFor(record));
+
+  const handleBulkApprove = () => handleAccept(selectedUndeclared);
+  const handleBulkRemoveCategory = () =>
+    handleMarkMisclassified(selectedKeys, selectedUndeclared);
 
   const columns = useMemo(
     () => [
@@ -163,10 +212,8 @@ const AssignedDatasetsSection = ({
         key: "dataset_name",
         width: "20%",
         ellipsis: true,
-        sorter: (
-          a: PurposeDatasetAssignment,
-          b: PurposeDatasetAssignment,
-        ) => a.dataset_name.localeCompare(b.dataset_name),
+        sorter: (a: PurposeDatasetAssignment, b: PurposeDatasetAssignment) =>
+          a.dataset_name.localeCompare(b.dataset_name),
         render: (_: unknown, record: PurposeDatasetAssignment) => {
           const undeclared = undeclaredFor(record);
           const highlighted =
@@ -177,13 +224,8 @@ const AssignedDatasetsSection = ({
                 <Tooltip
                   title={`Flagged: ${undeclared.length === 1 ? "new use" : "new uses"} detected (${undeclared.join(", ")})`}
                 >
-                  <span
-                    style={{
-                      color: palette.FIDESUI_ERROR,
-                      lineHeight: 0,
-                    }}
-                  >
-                    <Icons.WarningFilled size={14} />
+                  <span style={{ color: palette.FIDESUI_ERROR, lineHeight: 0 }}>
+                    <Icons.WarningAltFilled size={14} />
                   </span>
                 </Tooltip>
               )}
@@ -198,10 +240,8 @@ const AssignedDatasetsSection = ({
         key: "system_name",
         width: "18%",
         ellipsis: true,
-        sorter: (
-          a: PurposeDatasetAssignment,
-          b: PurposeDatasetAssignment,
-        ) => a.system_name.localeCompare(b.system_name),
+        sorter: (a: PurposeDatasetAssignment, b: PurposeDatasetAssignment) =>
+          a.system_name.localeCompare(b.system_name),
       },
       {
         title: "Data categories",
@@ -235,16 +275,15 @@ const AssignedDatasetsSection = ({
         dataIndex: "updated_at",
         key: "updated_at",
         width: "12%",
-        sorter: (
-          a: PurposeDatasetAssignment,
-          b: PurposeDatasetAssignment,
-        ) => {
+        sorter: (a: PurposeDatasetAssignment, b: PurposeDatasetAssignment) => {
           const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0;
           const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0;
           return aTime - bTime;
         },
         render: (value: string | undefined) => {
-          if (!value) return <Text type="secondary">—</Text>;
+          if (!value) {
+            return <Text type="secondary">—</Text>;
+          }
           const date = new Date(value);
           if (Number.isNaN(date.getTime())) {
             return <Text type="secondary">—</Text>;
@@ -269,11 +308,14 @@ const AssignedDatasetsSection = ({
         render: (_: unknown, record: PurposeDatasetAssignment) => {
           const undeclared = undeclaredFor(record);
           const flagged = undeclared.length > 0;
-          if (!flagged) return null;
+          if (!flagged) {
+            return null;
+          }
           return (
             <Flex gap={2} justify="flex-end">
               <Tooltip title="Approve category">
                 <Button
+                  aria-label="Approve category"
                   type="text"
                   size="small"
                   icon={<Icons.Checkmark size={14} />}
@@ -285,6 +327,7 @@ const AssignedDatasetsSection = ({
               </Tooltip>
               <Tooltip title="Remove category">
                 <Button
+                  aria-label="Remove category"
                   type="text"
                   size="small"
                   icon={<Icons.Close size={14} />}
@@ -302,30 +345,6 @@ const AssignedDatasetsSection = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [definedSet],
   );
-
-  const handleConfirm = (keys: string[]) => {
-    const updated = keys
-      .map((key) => {
-        const existing = datasets.find(
-          (d) => d.dataset_fides_key === key,
-        );
-        if (existing) return existing;
-        const available = MOCK_AVAILABLE_DATASETS.find(
-          (d) => d.dataset_fides_key === key,
-        );
-        if (!available) return null;
-        return {
-          dataset_fides_key: available.dataset_fides_key,
-          dataset_name: available.dataset_name,
-          system_name: available.system_name,
-          collection_count: 0,
-          data_categories: [],
-        };
-      })
-      .filter(Boolean) as PurposeDatasetAssignment[];
-    onDatasetsChange(updated);
-    setModalOpen(false);
-  };
 
   const primaryActionsMenu = {
     items: [
@@ -368,19 +387,15 @@ const AssignedDatasetsSection = ({
             Datasets assigned
           </Title>
           <Text type="secondary" className="text-xs">
-            Datasets processed under this purpose. Detected categories are compared against the defined policy to surface risks.
+            Datasets processed under this purpose. Detected categories are
+            compared against the defined policy to surface risks.
           </Text>
         </div>
         <Button size="small" type="default" onClick={() => setModalOpen(true)}>
           + Add datasets
         </Button>
       </Flex>
-      <Flex
-        gap="small"
-        className="mb-3"
-        align="center"
-        wrap="wrap"
-      >
+      <Flex gap="small" className="mb-3" align="center" wrap="wrap">
         <Input
           placeholder="Search datasets..."
           value={search}
@@ -398,14 +413,11 @@ const AssignedDatasetsSection = ({
         )}
         <div style={{ flex: 1 }} />
         <Flex align="center" gap={6}>
-          <Switch
-            size="small"
-            checked={issuesOnly}
-            onChange={setIssuesOnly}
-          />
+          <Switch size="small" checked={issuesOnly} onChange={setIssuesOnly} />
           <Text className="text-sm">Risks only</Text>
         </Flex>
         <Select
+          aria-label="Filter by system"
           placeholder="All systems"
           options={systemOptions}
           value={systemFilter}
@@ -415,13 +427,8 @@ const AssignedDatasetsSection = ({
           style={{ width: 180 }}
         />
         <Dropdown trigger={["click"]} menu={primaryActionsMenu}>
-          <Button
-            size="middle"
-            type="primary"
-            disabled={!hasSelection}
-          >
-            Actions{" "}
-            <Icons.ChevronDown size={12} style={{ marginLeft: 2 }} />
+          <Button size="middle" type="primary" disabled={!hasSelection}>
+            Actions <Icons.ChevronDown size={12} style={{ marginLeft: 2 }} />
           </Button>
         </Dropdown>
       </Flex>
@@ -429,6 +436,7 @@ const AssignedDatasetsSection = ({
         dataSource={filtered}
         columns={columns}
         size="small"
+        loading={isLoadingDatasets}
         pagination={false}
         rowKey="dataset_fides_key"
         scroll={{ y: 320 }}
@@ -437,11 +445,23 @@ const AssignedDatasetsSection = ({
           selectedRowKeys: selectedKeys,
           onChange: (keys) => setSelectedKeys(keys as string[]),
         }}
+        locale={{
+          emptyText: (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="No datasets assigned yet"
+            >
+              <Button size="small" onClick={() => setModalOpen(true)}>
+                Add datasets
+              </Button>
+            </Empty>
+          ),
+        }}
       />
       <AddDatasetsModal
+        fidesKey={fidesKey}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onConfirm={handleConfirm}
         assignedKeys={datasets.map((d) => d.dataset_fides_key)}
       />
     </div>
