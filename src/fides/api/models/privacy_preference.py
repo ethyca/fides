@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, cast
 
 from sqlalchemy import (
     Boolean,
@@ -148,7 +148,8 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         if is_empty_multivalue(value):
             return None
 
-        return ProvidedIdentity.hash_value(value, encoding)
+        # Narrow: is_empty_multivalue guarantees value is not None here.
+        return ProvidedIdentity.hash_value(cast(MultiValue, value), encoding)
 
     def migrate_hashed_fields(self) -> None:
         if unencrypted_email := self.email:

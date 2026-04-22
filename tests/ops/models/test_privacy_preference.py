@@ -131,6 +131,15 @@ class TestConsentIdentitiesHashMixin:
         assert ConsentIdentitiesMixin.hash_value(False) is not None
         assert ConsentIdentitiesMixin.hash_value(True) is not None
 
+    def test_bcrypt_hash_value_null(self):
+        assert ConsentIdentitiesMixin.bcrypt_hash_value("") is None
+
+    def test_bcrypt_hash_value_not_null(self):
+        assert (
+            ConsentIdentitiesMixin.bcrypt_hash_value("customer_one@example.com")
+            is not None
+        )
+
 
 class TestServedNoticeHistory:
     def test_get_by_served_id(self, served_notice_history, db):

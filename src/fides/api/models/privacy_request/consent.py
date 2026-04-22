@@ -15,6 +15,9 @@ from fides.api.db.util import EnumColumn
 from fides.api.models.privacy_request.custom_field_persistence import (
     CustomPrivacyRequestFieldPersistenceMixin,
 )
+from fides.api.models.privacy_request.privacy_request import (  # noqa: F401 (referenced via SQLAlchemy string lookup)
+    CustomPrivacyRequestField,
+)
 from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
 from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.schemas.redis_cache import IdentityBase

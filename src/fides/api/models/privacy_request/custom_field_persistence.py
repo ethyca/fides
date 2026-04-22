@@ -8,7 +8,7 @@ column that differs between the two (``privacy_request_id`` vs
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, Dict, Optional
+from typing import ClassVar, Dict, Optional, cast
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -16,11 +16,8 @@ from sqlalchemy.orm import Session
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
-from fides.api.schemas.redis_cache import is_empty_multivalue
+from fides.api.schemas.redis_cache import MultiValue, is_empty_multivalue
 from fides.config import CONFIG
-
-if TYPE_CHECKING:
-    pass
 
 
 class CustomPrivacyRequestFieldPersistenceMixin:
@@ -28,8 +25,8 @@ class CustomPrivacyRequestFieldPersistenceMixin:
 
     Subclasses must set ``_custom_field_fk_column`` — the FK column on
     ``CustomPrivacyRequestField`` pointing at this row (e.g.
-    ``"privacy_request_id"`` / ``"consent_request_id"``) — and expose
-    ``self.id``.
+    ``"privacy_request_id"`` / ``"consent_request_id"``) — and are
+    expected to expose ``self.id`` (provided by the SQLAlchemy Base).
     """
 
     _custom_field_fk_column: ClassVar[str] = ""
@@ -48,7 +45,7 @@ class CustomPrivacyRequestFieldPersistenceMixin:
             logger.info(
                 "Custom fields provided in {} {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
                 type(self).__name__,
-                self.id,
+                self.id,  # type: ignore[attr-defined]
             )
             return
 
@@ -59,13 +56,15 @@ class CustomPrivacyRequestFieldPersistenceMixin:
         for key, item in custom_privacy_request_fields.items():
             if is_empty_multivalue(item.value):
                 continue
+            # Narrow: is_empty_multivalue guarantees value is not None here.
+            value = cast(MultiValue, item.value)
             CustomPrivacyRequestField.create(
                 db=db,
                 data={
-                    self._custom_field_fk_column: self.id,
+                    self._custom_field_fk_column: self.id,  # type: ignore[attr-defined]
                     "field_name": key,
                     "field_label": item.label,
-                    "encrypted_value": {"value": item.value},
-                    "hashed_value": CustomPrivacyRequestField.hash_value(item.value),
+                    "encrypted_value": {"value": value},
+                    "hashed_value": CustomPrivacyRequestField.hash_value(value),
                 },
             )
