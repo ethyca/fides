@@ -67,8 +67,9 @@ async def validate_data_labels(
     query = select(sql_model.fides_key, sql_model.active).where(
         sql_model.fides_key.in_(unique_labels)
     )
-    result = await db.execute(query)
-    found: Dict[str, bool] = {row.fides_key: row.active for row in result}
+    async with db.begin():
+        result = await db.execute(query)
+        found: Dict[str, bool] = {row.fides_key: row.active for row in result}
 
     for label in unique_labels:
         if label not in found:
