@@ -1,4 +1,0 @@
-type: Fixed
-description: Removed redundant and flickering tooltip from error messages in the Action Center Activity tab.
-pr: 7962
-labels: []

@@ -1,4 +1,0 @@
-type: Added
-description: Added Controls management UI with list, create, edit, and delete pages
-pr: 7918
-labels: ["db-migration"]
