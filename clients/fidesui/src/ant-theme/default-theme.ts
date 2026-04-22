@@ -1,4 +1,4 @@
-import { ThemeConfig } from "antd/es";
+import { theme as antTheme, ThemeConfig } from "antd/es";
 
 import { palette } from "../palette/palette";
 
@@ -50,7 +50,9 @@ export const defaultAntTheme: ThemeConfig = {
       colorInfo: palette.FIDESUI_MINOS,
       colorInfoBg: palette.FIDESUI_NEUTRAL_50,
       colorInfoBorder: palette.FIDESUI_NEUTRAL_100,
-      fontSize: 14,
+      // Pin Alert body text to Ant's seed fontSize so alerts stay at body
+      // size regardless of any future global token overrides.
+      fontSize: antTheme.defaultSeed.fontSize,
     },
     Button: {
       primaryShadow: undefined,
