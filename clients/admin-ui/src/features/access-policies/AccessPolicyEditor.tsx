@@ -891,7 +891,7 @@ const AccessPolicyEditor = ({
     {
       key: EditorMode.Builder,
       label: "Builder",
-      children: canvasPanel,
+      children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
     },
     ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
       ? [
@@ -900,7 +900,9 @@ const AccessPolicyEditor = ({
             label: "Split (dev only)",
             children: (
               <Flex gap="middle" className="h-full">
-                <div style={{ flex: "0 0 60%" }}>{canvasPanel}</div>
+                <div style={{ flex: "0 0 60%" }}>
+                  <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
+                </div>
                 <div style={{ flex: "0 0 calc(40% - 8px)" }}>
                   <Editor
                     defaultLanguage="yaml"
@@ -942,15 +944,13 @@ const AccessPolicyEditor = ({
   ];
 
   const tabsNode = (
-    <ReactFlowProvider>
-      <Tabs
-        activeKey={mode}
-        onChange={(key) => handleModeChange(key as EditorMode)}
-        data-testid="mode-toggle"
-        items={tabItems}
-        className={styles.tabs}
-      />
-    </ReactFlowProvider>
+    <Tabs
+      activeKey={mode}
+      onChange={(key) => handleModeChange(key as EditorMode)}
+      data-testid="mode-toggle"
+      items={tabItems}
+      className={styles.tabs}
+    />
   );
 
   return (
