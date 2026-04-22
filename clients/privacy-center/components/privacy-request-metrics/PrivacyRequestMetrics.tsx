@@ -16,8 +16,8 @@ import {
 } from "~/features/privacy-request-metrics/constants";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
-import { useGetLocationsQuery } from "~/features/common/locations.slice";
 import { selectConsentState } from "~/features/consent/consent.slice";
+import type { LocationGroup } from "~/types/api";
 
 const ALL_LOCATIONS_VALUE = "";
 
@@ -50,14 +50,14 @@ function formatValue(value: number | null, key: string): string {
   return value.toLocaleString();
 }
 
-export const PrivacyRequestMetrics = () => {
-  const { location: currentGeo } = useSelector(selectConsentState);
-  const { data: locationsData } = useGetLocationsQuery();
+interface PrivacyRequestMetricsProps {
+  locationGroups: LocationGroup[];
+}
 
-  // Build the list of configured location groups
-  const locationGroups = (locationsData?.location_groups ?? [])
-    .filter((g) => g.selected)
-    .sort((a, b) => a.name.localeCompare(b.name));
+export const PrivacyRequestMetrics = ({
+  locationGroups,
+}: PrivacyRequestMetricsProps) => {
+  const { location: currentGeo } = useSelector(selectConsentState);
 
   // Determine the default: current geo if it exists in the location groups list
   const currentGeoLocationId = currentGeo
@@ -66,9 +66,12 @@ export const PrivacyRequestMetrics = () => {
   const geoMatchesGroup = currentGeoLocationId
     ? locationGroups.some((g) => g.id === currentGeoLocationId)
     : false;
-  const defaultLocation = geoMatchesGroup ? currentGeoLocationId! : ALL_LOCATIONS_VALUE;
+  const defaultLocation = geoMatchesGroup
+    ? currentGeoLocationId!
+    : ALL_LOCATIONS_VALUE;
 
-  const [selectedLocation, setSelectedLocation] = useState<string>(defaultLocation);
+  const [selectedLocation, setSelectedLocation] =
+    useState<string>(defaultLocation);
 
   const locationParam = selectedLocation
     ? locationIdToIso(selectedLocation)
@@ -92,32 +95,34 @@ export const PrivacyRequestMetrics = () => {
         </Text>
       </Stack>
 
-      <Flex w="100%" maxWidth={960} justifyContent="flex-end">
-        <Box
-          as="select"
-          value={selectedLocation}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setSelectedLocation(e.target.value)
-          }
-          px={3}
-          py={2}
-          borderWidth="1px"
-          borderColor="gray.200"
-          borderRadius="md"
-          fontSize="sm"
-          color="gray.700"
-          bg="white"
-          cursor="pointer"
-          _hover={{ borderColor: "gray.300" }}
-        >
-          <option value={ALL_LOCATIONS_VALUE}>All locations</option>
-          {locationGroups.map((group) => (
-            <option key={group.id} value={group.id}>
-              {group.name}
-            </option>
-          ))}
-        </Box>
-      </Flex>
+      {locationGroups.length > 0 && (
+        <Flex w="100%" maxWidth={960} justifyContent="flex-end">
+          <Box
+            as="select"
+            value={selectedLocation}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setSelectedLocation(e.target.value)
+            }
+            px={3}
+            py={2}
+            borderWidth="1px"
+            borderColor="gray.200"
+            borderRadius="md"
+            fontSize="sm"
+            color="gray.700"
+            bg="white"
+            cursor="pointer"
+            _hover={{ borderColor: "gray.300" }}
+          >
+            <option value={ALL_LOCATIONS_VALUE}>All locations</option>
+            {locationGroups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </Box>
+        </Flex>
+      )}
 
       <Box w="100%" maxWidth={960} overflowX="auto">
         <Box
@@ -162,7 +167,13 @@ export const PrivacyRequestMetrics = () => {
                 borderColor="gray.100"
                 _hover={{ bg: "gray.50" }}
               >
-                <Box as="td" py={3} px={3} fontWeight="medium" color="gray.800">
+                <Box
+                  as="td"
+                  py={3}
+                  px={3}
+                  fontWeight="medium"
+                  color="gray.800"
+                >
                   {REQUEST_TYPE_LABELS[typeKey] ?? typeKey}
                 </Box>
                 {METRIC_COLUMNS.map((col) => (
