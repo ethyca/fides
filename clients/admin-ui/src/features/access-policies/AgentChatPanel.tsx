@@ -1,9 +1,9 @@
-import type { BubbleItemType } from "@ant-design/x";
-import { Bubble, Sender, XProvider } from "@ant-design/x";
+import type { BubbleItemType } from "fidesui";
 import {
   Avatar,
-  defaultAntTheme,
+  Bubble,
   Flex,
+  Sender,
   Tag,
   Typography,
   useMessage,
@@ -153,47 +153,45 @@ const AgentChatPanel = ({
   );
 
   return (
-    <XProvider theme={defaultAntTheme}>
-      <Flex vertical className={styles.panel} data-testid="agent-chat-panel">
-        <Flex align="center" gap="small" className={styles.header}>
-          <Typography.Text strong>Policy builder agent</Typography.Text>
-        </Flex>
-
-        <div className={styles.body}>
-          {messages.length === 0 ? (
-            <Flex
-              vertical
-              align="center"
-              justify="center"
-              gap="small"
-              className={styles.emptyState}
-            >
-              <Typography.Text type="secondary">
-                Describe what your policy should do and the agent will help you
-                build it.
-              </Typography.Text>
-            </Flex>
-          ) : (
-            <Bubble.List
-              className={styles.list}
-              autoScroll
-              role={roles}
-              items={bubbleItems}
-            />
-          )}
-        </div>
-
-        <div className={styles.footer}>
-          <Sender
-            value={inputValue}
-            onChange={setInputValue}
-            onSubmit={handleSend}
-            loading={isLoading}
-            placeholder="Describe your policy…"
-          />
-        </div>
+    <Flex vertical className={styles.panel} data-testid="agent-chat-panel">
+      <Flex align="center" gap="small" className={styles.header}>
+        <Typography.Text strong>Policy builder agent</Typography.Text>
       </Flex>
-    </XProvider>
+
+      <div className={styles.body}>
+        {messages.length === 0 ? (
+          <Flex
+            vertical
+            align="center"
+            justify="center"
+            gap="small"
+            className={styles.emptyState}
+          >
+            <Typography.Text type="secondary">
+              Describe what your policy should do and the agent will help you
+              build it.
+            </Typography.Text>
+          </Flex>
+        ) : (
+          <Bubble.List
+            className={styles.list}
+            autoScroll
+            role={roles}
+            items={bubbleItems}
+          />
+        )}
+      </div>
+
+      <div className={styles.footer}>
+        <Sender
+          value={inputValue}
+          onChange={setInputValue}
+          onSubmit={handleSend}
+          loading={isLoading}
+          placeholder="Describe your policy…"
+        />
+      </div>
+    </Flex>
   );
 };
 

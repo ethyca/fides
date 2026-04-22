@@ -436,6 +436,15 @@ export {
 export { theme as antTheme } from "antd/lib";
 
 /**
+ * Ant Design X components (@ant-design/x)
+ *
+ * Use @ant-design/x/lib (CJS) for the same reason as antd/lib above — keeps the
+ * cssinjs StyleContext identity consistent across antd and ant-design/x.
+ */
+export type { BubbleItemType } from "@ant-design/x/lib";
+export { Bubble, Sender } from "@ant-design/x/lib";
+
+/**
  * Custom ChakraUI Components (deprecated)
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
