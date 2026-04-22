@@ -2522,6 +2522,16 @@ dataset:
       data_categories: [system.operations]
     - name: active
       data_categories: [system.operations]
+    - name: system_managed
+      data_categories: [system.operations]
+  - name: plus_reporting_template_custom_field
+    description: 'Association between system-managed CustomReports (regulatory reporting templates) and the CustomFieldDefinitions they reference'
+    data_categories: null
+    fields:
+    - name: custom_report_id
+      data_categories: [system.operations]
+    - name: custom_field_definition_id
+      data_categories: [system.operations]
   - name: plus_system_scans
     description: 'A table used to store results of a infrastructure system scan'
     data_categories: null
@@ -3546,6 +3556,10 @@ dataset:
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at
+        data_categories: [system.operations]
+      - name: system_template_key
+        data_categories: [system.operations]
+      - name: location_code
         data_categories: [system.operations]
   - name: dbcache
     fields:
