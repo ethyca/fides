@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed background index creation skipping indexes on shared-database staging environments
-pr: 7990
-labels: []
