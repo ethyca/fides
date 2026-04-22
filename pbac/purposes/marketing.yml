@@ -1,0 +1,8 @@
+purpose:
+- fides_key: marketing
+  name: Marketing Advertising
+  data_use: marketing.advertising
+  data_subject: customer
+  data_categories:
+  - user.contact
+  description: Promotional campaigns and advertising.

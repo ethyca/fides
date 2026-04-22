@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed TypeError when closing Data Catalog drawer for systems without privacy declarations
+pr: 7925
+labels: []

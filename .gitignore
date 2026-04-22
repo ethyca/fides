@@ -275,3 +275,6 @@ multilang_migration_backup_*
 
 # Qwen
 .qwen/*
+# Go shared library build artifacts
+policy-engine/libpbac.*
+policy-engine/*.h

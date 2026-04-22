@@ -1,8 +1,15 @@
-import { Button, ChakraText as Text, Modal, Space, useMessage } from "fidesui";
-import { Form, Formik } from "formik";
-import * as Yup from "yup";
+import {
+  Button,
+  Form,
+  Input,
+  Modal,
+  Space,
+  Typography,
+  useMessage,
+} from "fidesui";
+import isEqual from "lodash/isEqual";
+import { useEffect, useMemo, useState } from "react";
 
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { useCreateTCFConfigurationMutation } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { isErrorResult } from "~/types/errors";
 
@@ -14,9 +21,7 @@ interface CreateTCFConfigModalProps {
   onSuccess?: (configId: string) => void;
 }
 
-const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Name"),
-});
+const defaultInitialValues = { name: "" };
 
 export const CreateTCFConfigModal = ({
   isOpen,
@@ -25,6 +30,22 @@ export const CreateTCFConfigModal = ({
 }: CreateTCFConfigModalProps) => {
   const message = useMessage();
   const [createTCFConfiguration] = useCreateTCFConfigurationMutation();
+  const [form] = Form.useForm<{ name: string }>();
+
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
+
+  const isDirty = useMemo(
+    () => !isEqual(allValues, defaultInitialValues),
+    [allValues],
+  );
 
   const handleSubmit = async (values: { name: string }) => {
     const result = await createTCFConfiguration({ name: values.name });
@@ -46,41 +67,38 @@ export const CreateTCFConfigModal = ({
       destroyOnHidden
       footer={null}
     >
-      <Formik
-        initialValues={{ name: "" }}
-        onSubmit={handleSubmit}
-        validationSchema={ValidationSchema}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={defaultInitialValues}
       >
-        {({ isValid, dirty }) => (
-          <Form>
-            <Space orientation="vertical" size="small" className="w-full">
-              <Text>
-                TCF configurations allow you to define unique sets of publisher
-                restrictions. These configurations can be added to privacy
-                experiences.
-              </Text>
-              <CustomTextInput
-                id="name"
-                name="name"
-                label="Name"
-                isRequired
-                variant="stacked"
-              />
-              <Space className="w-full justify-end pt-6">
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  disabled={!isValid || !dirty}
-                  data-testid="save-config-button"
-                >
-                  Save
-                </Button>
-              </Space>
-            </Space>
-          </Form>
-        )}
-      </Formik>
+        <Space orientation="vertical" size="small" className="w-full">
+          <Typography.Text>
+            TCF configurations allow you to define unique sets of publisher
+            restrictions. These configurations can be added to privacy
+            experiences.
+          </Typography.Text>
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Name is required" }]}
+          >
+            <Input data-testid="input-name" />
+          </Form.Item>
+          <Space className="w-full justify-end pt-6">
+            <Button onClick={onClose}>Cancel</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={!submittable || !isDirty}
+              data-testid="save-config-button"
+            >
+              Save
+            </Button>
+          </Space>
+        </Space>
+      </Form>
     </Modal>
   );
 };
