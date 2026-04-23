@@ -66,10 +66,6 @@ export const SystemDescriptionForm = ({
                   onEnd: handleEnd,
                 }
           }
-          ellipsis={{
-            rows: 3,
-            expandable: "collapsible",
-          }}
         >
           {description}
         </Paragraph>
