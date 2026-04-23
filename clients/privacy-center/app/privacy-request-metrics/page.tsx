@@ -25,7 +25,10 @@ const PrivacyRequestMetricsPage = async ({
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <PageLayout>
-        <PrivacyRequestMetrics locationOptions={locationOptions} />
+        <PrivacyRequestMetrics
+          locationOptions={locationOptions}
+          currentGeo={serverEnvironment.location?.location}
+        />
       </PageLayout>
     </LoadServerEnvironmentIntoStores>
   );

@@ -8,10 +8,8 @@ import {
   ChakraText as Text,
 } from "fidesui";
 import { useState } from "react";
-import { useSelector } from "react-redux";
 
 import type { LocationOption } from "~/app/server-utils/fetchLocationsFromApi";
-import { selectConsentState } from "~/features/consent/consent.slice";
 import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
@@ -35,20 +33,20 @@ function formatValue(value: number | null, key: string): string {
 
 interface PrivacyRequestMetricsProps {
   locationOptions: LocationOption[];
+  currentGeo?: string;
 }
 
 export const PrivacyRequestMetrics = ({
   locationOptions,
+  currentGeo,
 }: PrivacyRequestMetricsProps) => {
-  // currentGeo from the store is already in underscore format (e.g., "us_ca"),
-  // matching location option IDs. The BE's normalize_location_code() accepts
-  // either format, so no FE conversion is needed.
-  const { location: currentGeo } = useSelector(selectConsentState);
-
-  const geoMatchesOption = currentGeo
-    ? locationOptions.some((o) => o.id === currentGeo)
-    : false;
-  const defaultLocation = geoMatchesOption ? currentGeo! : ALL_LOCATIONS_VALUE;
+  // currentGeo is passed as a server-side prop in underscore format (e.g., "US_CA").
+  // Location option IDs are lowercase (e.g., "us_ca"), so normalize to lowercase.
+  const normalizedGeo = currentGeo?.toLowerCase();
+  const matchedOption = normalizedGeo
+    ? locationOptions.find((o) => o.id === normalizedGeo)
+    : undefined;
+  const defaultLocation = matchedOption ? matchedOption.id : ALL_LOCATIONS_VALUE;
 
   const [selectedLocation, setSelectedLocation] =
     useState<string>(defaultLocation);
