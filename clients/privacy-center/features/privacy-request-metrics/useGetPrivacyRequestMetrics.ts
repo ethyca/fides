@@ -18,13 +18,17 @@ interface UseGetPrivacyRequestMetricsResult {
   isError: boolean;
 }
 
-export const useGetPrivacyRequestMetrics = (
-  location?: string,
-): UseGetPrivacyRequestMetricsResult => {
-  const dateRange = getPreviousCalendarYear();
-  const { data, isLoading, isError } = useGetPrivacyRequestMetricsQuery({
-    ...dateRange,
-    ...(location ? { location } : {}),
-  });
-  return { data, isLoading, isError };
-};
+/**
+ * Fetches CCPA/CPRA disclosure metrics for California.
+ * The location is hardcoded to "us_ca" since the disclosure requirement
+ * is California-specific
+ */
+export const useGetPrivacyRequestMetrics =
+  (): UseGetPrivacyRequestMetricsResult => {
+    const dateRange = getPreviousCalendarYear();
+    const { data, isLoading, isError } = useGetPrivacyRequestMetricsQuery({
+      ...dateRange,
+      location: "us_ca",
+    });
+    return { data, isLoading, isError };
+  };

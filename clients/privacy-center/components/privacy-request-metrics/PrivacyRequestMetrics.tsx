@@ -2,14 +2,11 @@
 
 import {
   ChakraBox as Box,
-  ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
-import { useState } from "react";
 
-import type { LocationOption } from "~/app/server-utils/fetchLocationsFromApi";
 import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
@@ -18,8 +15,6 @@ import {
 } from "~/features/privacy-request-metrics/constants";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
-
-const ALL_LOCATIONS_VALUE = "";
 
 function formatValue(value: number | null, key: string): string {
   if (value === null) {
@@ -31,31 +26,8 @@ function formatValue(value: number | null, key: string): string {
   return value.toLocaleString();
 }
 
-interface PrivacyRequestMetricsProps {
-  locationOptions: LocationOption[];
-  currentGeo?: string;
-}
-
-export const PrivacyRequestMetrics = ({
-  locationOptions,
-  currentGeo,
-}: PrivacyRequestMetricsProps) => {
-  // currentGeo is passed as a server-side prop in underscore format (e.g., "US_CA").
-  // Location option IDs are lowercase (e.g., "us_ca"), so normalize to lowercase.
-  const normalizedGeo = currentGeo?.toLowerCase();
-  const matchedOption = normalizedGeo
-    ? locationOptions.find((o) => o.id === normalizedGeo)
-    : undefined;
-  const defaultLocation = matchedOption
-    ? matchedOption.id
-    : ALL_LOCATIONS_VALUE;
-
-  const [selectedLocation, setSelectedLocation] =
-    useState<string>(defaultLocation);
-
-  const { data, isLoading } = useGetPrivacyRequestMetrics(
-    selectedLocation || undefined,
-  );
+export const PrivacyRequestMetrics = () => {
+  const { data, isLoading } = useGetPrivacyRequestMetrics();
 
   if (isLoading || !data) {
     return null;
@@ -84,35 +56,6 @@ export const PrivacyRequestMetrics = ({
           Reporting period: {data.reporting_period}
         </Text>
       </Stack>
-
-      {locationOptions.length > 0 && (
-        <Flex w="100%" maxWidth={960} justifyContent="flex-end">
-          <Box
-            as="select"
-            value={selectedLocation}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setSelectedLocation(e.target.value)
-            }
-            px={3}
-            py={2}
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            fontSize="sm"
-            color="gray.700"
-            bg="white"
-            cursor="pointer"
-            _hover={{ borderColor: "gray.300" }}
-          >
-            <option value={ALL_LOCATIONS_VALUE}>All locations</option>
-            {locationOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-          </Box>
-        </Flex>
-      )}
 
       <Box w="100%" maxWidth={960} overflowX="auto">
         <Box
@@ -181,13 +124,18 @@ export const PrivacyRequestMetrics = ({
         </Box>
       </Box>
 
-      <Flex w="100%" maxWidth={960} justifyContent="center">
-        <Text color="gray.500" fontSize="xs" textAlign="center">
-          Disclosed pursuant to the California Consumer Privacy Act (CCPA) and
-          California Privacy Rights Act (CPRA), Cal. Code Regs. tit. 11, &sect;
-          7102.
+      <Box w="100%" maxWidth={960} borderRadius="md" p={5}>
+        <Text color="gray.500" fontSize="xs">
+          Disclosure published pursuant to California Civil Code &sect;
+          1798.130(a)(5) and 11 CCR &sect; 7102, and comparable state privacy
+          laws. Figures reflect requests received from California Consumer
+          Privacy Act (CCPA / CPRA) residents between {data.reporting_period}. A
+          request is counted as &ldquo;denied&rdquo; when it was rejected in
+          whole or in part because the identity of the requester could not be
+          verified, the requester was not a consumer, the information requested
+          was exempt from disclosure, or the request was otherwise invalid.
         </Text>
-      </Flex>
+      </Box>
     </Stack>
   );
 };

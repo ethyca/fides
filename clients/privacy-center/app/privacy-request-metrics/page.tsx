@@ -1,10 +1,11 @@
 "use server";
 
+import { buildAttributionOptions } from "~/app/server-environment";
 import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
-import fetchLocationsFromApi from "~/app/server-utils/fetchLocationsFromApi";
+import { AttributionLink } from "~/components/AttributionLink";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
 import { PrivacyRequestMetrics } from "~/components/privacy-request-metrics/PrivacyRequestMetrics";
@@ -17,20 +18,20 @@ const PrivacyRequestMetricsPage = async ({
 }: {
   searchParams: NextSearchParams;
 }) => {
-  const [serverEnvironment, locationOptions] = await Promise.all([
-    getPrivacyCenterEnvironmentCached({ searchParams }),
-    fetchLocationsFromApi(),
-  ]);
+  const serverEnvironment = await getPrivacyCenterEnvironmentCached({
+    searchParams,
+  });
+  const attribution = buildAttributionOptions(serverEnvironment.settings);
 
   return (
-    <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PageLayout>
-        <PrivacyRequestMetrics
-          locationOptions={locationOptions}
-          currentGeo={serverEnvironment.location?.location}
-        />
-      </PageLayout>
-    </LoadServerEnvironmentIntoStores>
+    <>
+      <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
+        <PageLayout>
+          <PrivacyRequestMetrics />
+        </PageLayout>
+      </LoadServerEnvironmentIntoStores>
+      {attribution && <AttributionLink attribution={attribution} />}
+    </>
   );
 };
 
