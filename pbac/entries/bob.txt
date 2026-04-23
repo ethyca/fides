@@ -1,0 +1,6 @@
+-- bob@demo.example is registered as the Marketing Team (purpose: marketing).
+--
+-- Gap (UNCONFIGURED_DATASET): cold_storage is not a declared collection
+-- in any dataset under pbac/datasets/, so table resolution falls through
+-- to the qualified name and the engine records a dataset gap.
+SELECT archive_key FROM cold_storage LIMIT 10;

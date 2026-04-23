@@ -1,8 +1,9 @@
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
-from fideslang.models import DatasetField
+from fideslang.models import DatasetField, FidesMeta
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 
@@ -53,7 +54,7 @@ def validate_saas_dataset(
 
 # Everything outside this set is treated as immutable on SaaS datasets.
 # If a new FideslangDataset field should be user-editable, add it here.
-MUTABLE_DATASET_FIELDS = {"collections"}
+MUTABLE_DATASET_FIELDS = frozenset({"collections"})
 
 
 def restore_immutable_fields(
@@ -305,6 +306,198 @@ def restore_protected_structure(
     return warnings
 
 
+def restore_field_meta_attributes(
+    dataset: FideslangDataset,
+    existing_dataset: Optional[FideslangDataset] = None,
+) -> List[DatasetFieldWarning]:
+    """
+    Protect immutable fides_meta attributes on SaaS dataset fields.
+
+    - **primary_key**: field cannot be deleted; value cannot be changed
+    - **identity**: value cannot be changed
+    - **references**: value cannot be changed
+
+    Only the specific attribute is restored — other metadata edits persist.
+    Returns structured warnings for each restoration.
+    """
+    if not existing_dataset:
+        return []
+
+    warnings: List[DatasetFieldWarning] = []
+    existing_by_name = {col.name: col for col in existing_dataset.collections}
+
+    for collection in dataset.collections:
+        existing_collection = existing_by_name.get(collection.name)
+        if not existing_collection:
+            continue
+
+        _restore_protected_meta(
+            collection.fields,
+            existing_collection.fields,
+            collection.name,
+            dataset.fides_key,
+            warnings,
+        )
+
+    return warnings
+
+
+@dataclass(frozen=True)
+class _ProtectedAttr:
+    """Configuration for a single protected fides_meta attribute."""
+
+    attr: str
+    label: str
+    compare_as_bool: bool = False
+    prevents_deletion: bool = False
+
+
+# To protect a new fides_meta attribute, add an entry here.
+PROTECTED_META_ATTRS: list[_ProtectedAttr] = [
+    _ProtectedAttr(
+        attr="primary_key",
+        label="primary key",
+        compare_as_bool=True,
+        prevents_deletion=True,
+    ),
+    _ProtectedAttr(attr="identity", label="identity"),
+    _ProtectedAttr(attr="references", label="references"),
+]
+
+
+def _restore_protected_meta(
+    incoming_fields: list[DatasetField],
+    existing_fields: list[DatasetField],
+    collection_name: str,
+    dataset_fides_key: str,
+    warnings: List[DatasetFieldWarning],
+    prefix: str = "",
+) -> None:
+    """Restore protected fides_meta attributes to their existing values.
+
+    Walks both trees in parallel. Attributes marked with
+    ``prevents_deletion=True`` also prevent the field itself from being deleted.
+    """
+    # Deletion protection for fields with prevents_deletion attrs set to truthy
+    deletion_attrs = [p for p in PROTECTED_META_ATTRS if p.prevents_deletion]
+    for existing_field in existing_fields:
+        if find_field_by_name(incoming_fields, existing_field.name) is not None:
+            continue
+        if not existing_field.fides_meta:
+            continue
+
+        protecting_attr = next(
+            (
+                p
+                for p in deletion_attrs
+                if getattr(existing_field.fides_meta, p.attr, None)
+            ),
+            None,
+        )
+        if not protecting_attr:
+            continue
+
+        path = f"{prefix}{existing_field.name}" if prefix else existing_field.name
+        restored = restore_nested_field(
+            incoming_fields,
+            [existing_field.name],
+            existing_fields,
+        )
+        action = "restored" if restored else "failed"
+        message = (
+            f"Restored {protecting_attr.label} field '{path}' in "
+            f"collection '{collection_name}' "
+            f"(cannot delete {protecting_attr.label} fields)."
+            if restored
+            else f"Could not restore {protecting_attr.label} field '{path}' "
+            f"in collection '{collection_name}'."
+        )
+        warnings.append(
+            DatasetFieldWarning(
+                collection=collection_name,
+                field=path,
+                action=action,
+                message=message,
+            )
+        )
+        (logger.info if restored else logger.warning)(
+            "{} {} field '{}.{}' on SaaS dataset '{}'",
+            "Restored deleted" if restored else "Could not restore",
+            protecting_attr.label,
+            collection_name,
+            path,
+            dataset_fides_key,
+        )
+
+    # Attribute protection: compare each protected attr on fields in both trees
+    for field in incoming_fields:
+        path = f"{prefix}{field.name}" if prefix else field.name
+        matching_existing = find_field_by_name(existing_fields, field.name)
+        if matching_existing is None:
+            if field.fields:
+                _restore_protected_meta(
+                    field.fields,
+                    [],
+                    collection_name,
+                    dataset_fides_key,
+                    warnings,
+                    f"{path}.",
+                )
+            continue
+
+        existing_meta = matching_existing.fides_meta
+        incoming_meta = field.fides_meta
+
+        for protected in PROTECTED_META_ATTRS:
+            existing_val = (
+                getattr(existing_meta, protected.attr, None) if existing_meta else None
+            )
+            incoming_val = (
+                getattr(incoming_meta, protected.attr, None) if incoming_meta else None
+            )
+
+            if protected.compare_as_bool:
+                changed = bool(existing_val) != bool(incoming_val)
+            else:
+                changed = existing_val != incoming_val
+
+            if changed:
+                restored_val = deepcopy(existing_val)
+                if not incoming_meta:
+                    field.fides_meta = FidesMeta(**{protected.attr: restored_val})
+                    incoming_meta = field.fides_meta
+                else:
+                    setattr(incoming_meta, protected.attr, restored_val)
+                warnings.append(
+                    DatasetFieldWarning(
+                        collection=collection_name,
+                        field=path,
+                        action="restored",
+                        message=f"Restored {protected.label} on field '{path}' "
+                        f"in collection '{collection_name}' "
+                        f"({protected.label} cannot be changed).",
+                    )
+                )
+                logger.info(
+                    "Restored {} on '{}.{}' in SaaS dataset '{}'",
+                    protected.label,
+                    collection_name,
+                    path,
+                    dataset_fides_key,
+                )
+
+        # Recurse into nested fields
+        if field.fields:
+            _restore_protected_meta(
+                field.fields,
+                matching_existing.fields or [],
+                collection_name,
+                dataset_fides_key,
+                warnings,
+                f"{path}.",
+            )
+
+
 class SaaSValidationStep(DatasetValidationStep):
     """Validates SaaS-specific requirements"""
 
@@ -333,7 +526,8 @@ class SaaSValidationStep(DatasetValidationStep):
                         context.dataset.fides_key,
                     )
 
-            # Restore immutable fields and protected structure instead of rejecting
+            # Restore immutable fields, protected structure, and protected
+            # field metadata (primary keys, identity, references)
             context.warnings.extend(
                 restore_immutable_fields(context.dataset, existing_dataset)
             )
@@ -341,4 +535,7 @@ class SaaSValidationStep(DatasetValidationStep):
                 restore_protected_structure(
                     context.connection_config, context.dataset, existing_dataset
                 )
+            )
+            context.warnings.extend(
+                restore_field_meta_attributes(context.dataset, existing_dataset)
             )

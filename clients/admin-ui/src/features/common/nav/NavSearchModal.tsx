@@ -1,5 +1,4 @@
 import { Icons, Input, InputRef, Modal } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -11,12 +10,12 @@ import { RouterLink } from "./RouterLink";
 import useNavSearchItems, { FlatNavItem } from "./useNavSearchItems";
 
 const SEARCH_ICON_STYLE = {
-  color: palette.FIDESUI_NEUTRAL_400,
+  color: "var(--fidesui-neutral-400)",
   fontSize: 16,
 };
 const COLLAPSED_ICON_STYLE = {
   fontSize: 16,
-  color: palette.FIDESUI_CORINTH,
+  color: "var(--fidesui-corinth)",
 };
 const isMac =
   typeof navigator !== "undefined" &&

@@ -8,11 +8,13 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.attachment import AttachmentReferenceType
 from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment, AttachmentReference
+    from fides.api.models.correspondence_metadata import CorrespondenceMetadata
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
 
@@ -21,12 +23,23 @@ class CommentType(str, EnumType):
     """
     Enum for comment types. Indicates comment usage.
 
-    - notes are internal comments.
-    - reply is reserved for future use and is not currently supported
+    - note: internal comments
+    - reply: reserved for future use
+    - message_to_subject: outbound correspondence to data subject
+    - reply_from_subject: inbound reply from data subject
     """
 
     note = "note"
     reply = "reply"
+    message_to_subject = "message_to_subject"
+    reply_from_subject = "reply_from_subject"
+
+
+# Correspondence comments are protected from deletion for audit purposes.
+# The TLA+ spec (CorrespondenceConcurrency.tla) relies on this guard.
+CORRESPONDENCE_COMMENT_TYPES = frozenset(
+    {CommentType.message_to_subject, CommentType.reply_from_subject}
+)
 
 
 class CommentReferenceType(str, EnumType):
@@ -105,7 +118,7 @@ class Comment(Base):
     # Not all users in the system have a username, and users can be deleted.
     # Store a non-normalized copy of username for these cases.
     username = Column(String, nullable=True)
-    comment_text = Column(String, nullable=False)
+    comment_text = Column(encrypted_type(type_in=String()), nullable=False)
     comment_type = Column(EnumColumn(CommentType), nullable=False)
 
     __table_args__ = (Index("ix_comment_parent_id", "parent_id"),)
@@ -133,6 +146,13 @@ class Comment(Base):
         uselist=False,
     )
 
+    correspondence_metadata = relationship(
+        "CorrespondenceMetadata",
+        back_populates="comment",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
     references = relationship(
         "CommentReference",
         back_populates="comment",
@@ -156,6 +176,10 @@ class Comment(Base):
     def delete(self, db: Session) -> None:
         """Delete the comment, its replies, and all associated references.
 
+        Correspondence comments (message_to_subject, reply_from_subject) are
+        protected from deletion to preserve the audit trail. Attempting to
+        delete one raises ValueError.
+
         Replies are deleted explicitly rather than via ON DELETE CASCADE to ensure
         each reply's attachments and references are cleaned up properly. The FK
         uses SET NULL as a safety net: if a comment is deleted outside this method,
@@ -165,9 +189,11 @@ class Comment(Base):
         Uses iterative traversal to avoid unbounded recursion and session state
         hazards from lazy loading mid-delete.
         """
-        # TODO (ENG-3299): When message_to_subject / reply_from_subject CommentTypes
-        # are added, prevent deletion of comments with those types to preserve
-        # correspondence threads.
+        if self.comment_type in CORRESPONDENCE_COMMENT_TYPES:
+            raise ValueError(
+                f"Cannot delete correspondence comment (type={self.comment_type}). "
+                "Correspondence comments are retained for audit purposes."
+            )
 
         # Re-fetch from the DB to guarantee a session-bound instance.
         # Callers (e.g. test fixture teardown) may hold a detached reference,
@@ -221,13 +247,15 @@ class Comment(Base):
                 db, privacy_request.id, CommentReferenceType.privacy_request
             )``
         """
-        # Query comments explicitly to avoid lazy loading
+        # Query comments explicitly to avoid lazy loading.
+        # Correspondence comments are excluded — they are retained for audit.
         comments = (
             db.query(Comment)
             .join(CommentReference)
             .filter(
                 CommentReference.reference_id == reference_id,
                 CommentReference.reference_type == reference_type,
+                Comment.comment_type.notin_(CORRESPONDENCE_COMMENT_TYPES),
             )
             .all()
         )

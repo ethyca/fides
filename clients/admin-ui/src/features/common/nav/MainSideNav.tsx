@@ -4,7 +4,6 @@ import {
   ChakraVStack as VStack,
   Icons,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -24,7 +23,7 @@ import styles from "./NavMenu.module.scss";
 import NavSearch from "./NavSearch";
 import { RouterLink } from "./RouterLink";
 
-const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
+const NAV_BACKGROUND_COLOR = "var(--fidesui-minos)";
 const NAV_WIDTH = "240px";
 const COLLAPSED_WIDTH = "80px";
 const OPENED_TOGGLES_LOCAL_STORAGE_KEY = "mainSideNavOpenKeys";
