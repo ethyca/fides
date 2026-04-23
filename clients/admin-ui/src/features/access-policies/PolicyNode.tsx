@@ -102,7 +102,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
               data-testid="policy-description-input"
             />
           </Form.Item>
-          <Form.Item label="Controls" className="mb-2">
+          <Form.Item label="Control" className="mb-2">
             <Select
               placeholder="Select control"
               value={control}
