@@ -46,7 +46,9 @@ export const PrivacyRequestMetrics = ({
   const matchedOption = normalizedGeo
     ? locationOptions.find((o) => o.id === normalizedGeo)
     : undefined;
-  const defaultLocation = matchedOption ? matchedOption.id : ALL_LOCATIONS_VALUE;
+  const defaultLocation = matchedOption
+    ? matchedOption.id
+    : ALL_LOCATIONS_VALUE;
 
   const [selectedLocation, setSelectedLocation] =
     useState<string>(defaultLocation);
