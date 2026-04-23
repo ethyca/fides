@@ -1,4 +1,5 @@
 import pytest
+import fides.api.graph.graph as graph_mod
 
 from fides.api.graph.config import *
 from fides.api.graph.graph import (
@@ -153,7 +154,6 @@ class TestPropertyFilteringCheck:
     @pytest.fixture(autouse=True)
     def _clear_check(self):
         """Reset the property filtering check before and after each test."""
-        import fides.api.graph.graph as graph_mod
 
         graph_mod._property_filtering_active_fn = None
         yield
