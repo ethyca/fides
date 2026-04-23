@@ -1,0 +1,4 @@
+type: Fixed
+description: Widen the turbopack chunk filename allowlist so static assets with dotted suffixes (e.g. `0~9kfdw7..yey.js`, `0te-shorr2._..js`) are served as JS rather than being routed through the admin UI index fallback.
+pr: 8018
+labels: []
