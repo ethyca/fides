@@ -1,10 +1,10 @@
-import { Typography } from "fidesui";
 import type { NextPage } from "next";
+import { Typography } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import QueueMonitorTable from "~/features/queue-monitor/QueueMonitorTable";
 import { useGetQueueMonitorQuery } from "~/features/queue-monitor/queue-monitor.slice";
+import QueueMonitorTable from "~/features/queue-monitor/QueueMonitorTable";
 
 const { Text } = Typography;
 

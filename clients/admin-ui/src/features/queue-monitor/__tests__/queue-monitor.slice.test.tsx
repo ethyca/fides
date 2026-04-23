@@ -1,8 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { renderHook, waitFor } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { setupServer } from "msw/node";
 import { rest } from "msw";
+import { setupServer } from "msw/node";
+import { Provider } from "react-redux";
 
 import { baseApi } from "~/features/common/api.slice";
 import { reducer as authReducer } from "~/features/auth/auth.slice";
@@ -41,7 +41,7 @@ const createTestStore = () =>
 type TestStore = ReturnType<typeof createTestStore>;
 
 const createWrapper = (store: TestStore) => {
-  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <Provider store={store}>{children}</Provider>
   );
   return Wrapper;

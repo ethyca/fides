@@ -660,7 +660,7 @@ class TestStartupQueueMigratorUnit:
         sqs_client = _make_sqs_mock()
 
         def fail_on_target(QueueUrl: str, Entries: list) -> Any:  # noqa: N803
-            if failing_queue in QueueUrl:
+            if failing_queue.replace(".", "-") in QueueUrl:
                 raise RuntimeError("simulated SQS error")
             return {"Successful": [], "Failed": []}
 

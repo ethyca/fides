@@ -44,9 +44,14 @@ def _mock_sqs_client(responses: dict[str, dict[str, int] | Exception]) -> MagicM
     client = MagicMock()
 
     def _get_queue_attributes(QueueUrl: str, **kwargs):  # noqa: N803
+        # Extract only the last path segment (the SQS queue name) to avoid
+        # false substring matches against the host, port, or other URL parts.
+        url_last_segment = QueueUrl.rstrip("/").split("/")[-1]
         for queue_name, value in responses.items():
-            # The SQS URL contains the canonicalized queue name (e.g. "{" → "_").
-            if _canonical_sqs_queue_name(queue_name) in QueueUrl:
+            # The URL segment is "{prefix}{canonical_name}" — prefix is "fides-"
+            # per _make_config.  Compare the full segment for an exact match.
+            expected_segment = f"fides-{_canonical_sqs_queue_name(queue_name)}"
+            if url_last_segment == expected_segment:
                 if isinstance(value, Exception):
                     raise value
                 return {

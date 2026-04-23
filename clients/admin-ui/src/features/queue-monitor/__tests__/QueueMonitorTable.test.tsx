@@ -49,7 +49,9 @@ describe("QueueMonitorTable", () => {
 
     it("renders column headers", () => {
       render(<QueueMonitorTable queues={[makeQueue("q", 0, 0, 0)]} />);
-      expect(screen.getAllByText("Queue Name").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Queue Name").length).toBeGreaterThanOrEqual(
+        1,
+      );
       expect(screen.getAllByText("Available").length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText("Delayed").length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText("In Flight").length).toBeGreaterThanOrEqual(1);
@@ -124,7 +126,9 @@ describe("QueueMonitorTable", () => {
             const unique = [
               ...new Map(queues.map((q) => [q.queue_name, q])).values(),
             ];
-            if (unique.length < 2) return;
+            if (unique.length < 2) {
+              return;
+            }
 
             const { getAllByRole, unmount } = render(
               <QueueMonitorTable queues={unique} />,
