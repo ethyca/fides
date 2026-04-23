@@ -43,8 +43,8 @@ export const STATIC_ZERO_REQUEST_TYPES: Record<string, RequestTypeMetrics> = {
  */
 export const METRIC_COLUMNS = [
   { key: "received", label: "Received" },
-  { key: "complied_with", label: "Complied with (whole or in part)" },
+  { key: "complied_with", label: "Complied (whole or in part)" },
   { key: "denied", label: "Denied" },
-  { key: "median_days_to_respond", label: "Median days to respond" },
-  { key: "mean_days_to_respond", label: "Mean days to respond" },
+  { key: "median_days_to_respond", label: "Median response (days)" },
+  { key: "mean_days_to_respond", label: "Mean response (days)" },
 ] as const;
