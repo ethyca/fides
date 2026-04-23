@@ -61,7 +61,7 @@ export const SystemDataUsesForm = ({
 
   return (
     <Form
-      initialValues={{ initialValues }}
+      initialValues={initialValues}
       layout="vertical"
       form={form}
       onFieldsChange={() => form.submit()}

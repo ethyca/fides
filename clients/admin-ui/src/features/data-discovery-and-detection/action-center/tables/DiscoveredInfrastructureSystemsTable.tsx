@@ -47,7 +47,6 @@ export const DiscoveredInfrastructureSystemsTable = ({
     paginationProps,
     activeTab,
     diffStatusFilters,
-    // rowClickUrl,
     getRecordKey,
     refetch,
   } = useDiscoveredInfrastructureSystemsTable({

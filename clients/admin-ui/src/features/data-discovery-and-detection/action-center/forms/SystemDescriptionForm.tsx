@@ -1,4 +1,7 @@
-import { Form, Paragraph } from "fidesui";
+import { Form, Paragraph, useMessage } from "fidesui";
+
+import { getErrorMessage } from "~/features/common/helpers";
+import { isErrorResult } from "~/types/errors";
 
 import { useUpdateInfrastructureSystemDescriptionMutation } from "../../discovery-detection.slice";
 
@@ -15,6 +18,7 @@ export const SystemDescriptionForm = ({
   monitorId: string;
   stagedResourceUrn: string;
 }) => {
+  const messageApi = useMessage();
   const [form] = Form.useForm<DescriptionForm>();
   const description = Form.useWatch("description", form);
 
@@ -27,12 +31,19 @@ export const SystemDescriptionForm = ({
         monitorId,
         urn: stagedResourceUrn,
         description: values.description,
+      }).then((result) => {
+        if (isErrorResult(result)) {
+          messageApi.error(getErrorMessage(result.error));
+        }
       });
     }
   };
 
   const handleChange = (value: string) => {
     form.setFieldValue("description", value);
+  };
+
+  const handleEnd = () => {
     form.submit();
   };
 
@@ -52,6 +63,7 @@ export const SystemDescriptionForm = ({
               ? false
               : {
                   onChange: handleChange,
+                  onEnd: handleEnd,
                 }
           }
           ellipsis={{

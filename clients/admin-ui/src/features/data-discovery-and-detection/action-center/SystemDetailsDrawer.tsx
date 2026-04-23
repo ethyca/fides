@@ -1,5 +1,5 @@
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Descriptions, Flex, Paragraph, SparkleIcon, Tooltip } from "fidesui";
+import { Descriptions, Flex, Paragraph, SparkleIcon } from "fidesui";
 import { upperFirst } from "lodash";
 import { useQueryState } from "nuqs";
 
@@ -67,14 +67,12 @@ export const SystemDetailsDrawer = ({
               key: "description",
               span: "filled",
               label: (
-                <Tooltip>
-                  <Flex gap="small" align="center">
-                    <span>Description</span>
-                    {!resourceDetails?.user_assigned_description ? (
-                      <SparkleIcon />
-                    ) : null}
-                  </Flex>
-                </Tooltip>
+                <Flex gap="small" align="center">
+                  <span>Description</span>
+                  {!resourceDetails?.user_assigned_description ? (
+                    <SparkleIcon />
+                  ) : null}
+                </Flex>
               ),
               children:
                 resourceDetails &&
