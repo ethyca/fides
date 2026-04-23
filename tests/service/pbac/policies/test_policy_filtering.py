@@ -52,7 +52,6 @@ class AlwaysDenyEvaluator:
             decision=PolicyDecision.DENY,
             decisive_policy_key="test_deny_policy",
             decisive_policy_priority=200,
-            reason="Policy explicitly denies this access.",
         )
 
 

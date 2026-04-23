@@ -148,6 +148,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+test_report.xml
 *.cover
 .hypothesis/
 .pytest_cache/
@@ -268,3 +269,7 @@ multilang_migration_backup_*
 # Cline
 .cline/*
 .clinerules/*
+
+# Go shared library build artifacts
+policy-engine/libpbac.*
+policy-engine/*.h

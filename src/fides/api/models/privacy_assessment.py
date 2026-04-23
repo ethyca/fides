@@ -22,9 +22,12 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
+    UniqueConstraint,
+    text,
 )
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
@@ -137,26 +140,46 @@ class AssessmentTemplate(Base):
     """
     Versioned assessment template definitions.
 
-    Each template represents a specific version of a DPIA/PIA assessment type
-    (e.g., GDPR DPIA v1.0, CPRA Risk Assessment 2024-03-29).
-
-    Template versions are identified by a standardized format:
-    ORGANIZATION-ASSESSMENT-YYYY-MM-DD (e.g., CPPA-CPRA-RA-2024-03-29)
+    Templates are identified by three axes:
+    - assessment_type: template family (e.g., "us_ca_cpra_risk_assessment")
+    - version: regulatory version (e.g., "US-CA-CPPA-RA-2025-09-23")
+    - fides_revision: Ethyca's iteration of that regulatory version (1, 2, ...)
     """
+
+    __table_args__ = (
+        UniqueConstraint(
+            "assessment_type",
+            "version",
+            "fides_revision",
+            name="uq_assessment_template_type_version_revision",
+        ),
+        Index(
+            "uq_assessment_template_active_type",
+            "assessment_type",
+            unique=True,
+            postgresql_where=text("is_active = true"),
+        ),
+    )
 
     @declared_attr
     def __tablename__(self) -> str:
         return "assessment_template"
 
-    key = Column(String, unique=True, nullable=False, index=True)
     version = Column(String, nullable=False)
     name = Column(String, nullable=False)
-    assessment_type = Column(String, nullable=False, default="dpia")  # dpia, cpra, etc.
+    assessment_type = Column(String, nullable=False, index=True)
     region = Column(String, nullable=False)
     authority = Column(String, nullable=True)
     legal_reference = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    fides_revision = Column(Integer, default=1, nullable=False)
+    is_managed = Column(Boolean, default=True, nullable=False)
+    parent_template_id = Column(
+        String,
+        ForeignKey("assessment_template.id"),
+        nullable=True,
+    )
 
     # Relationships
     questions = relationship(
@@ -169,6 +192,11 @@ class AssessmentTemplate(Base):
     assessments = relationship(
         "PrivacyAssessment",
         back_populates="template",
+    )
+    parent_template = relationship(
+        "AssessmentTemplate",
+        remote_side="AssessmentTemplate.id",
+        foreign_keys=[parent_template_id],
     )
 
 
