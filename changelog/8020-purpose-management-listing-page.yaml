@@ -1,4 +1,4 @@
 type: Added
 description: Added a card-grid listing page for Data Purposes at /data-purposes (behind the alphaPurposeBasedAccessControl flag) with search, data-use filter, risk filter, RoPA CSV export, and a quick-create modal. Part 1 of the Purpose Management UI rollout; per-purpose summary counts are served by MSW pending a real /plus/data-purpose/summaries endpoint.
-pr: 0
+pr: 8020
 labels: []
