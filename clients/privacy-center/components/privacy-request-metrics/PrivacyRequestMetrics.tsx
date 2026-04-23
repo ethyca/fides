@@ -15,6 +15,7 @@ import { selectConsentState } from "~/features/consent/consent.slice";
 import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
+  REQUEST_TYPE_ORDER,
 } from "~/features/privacy-request-metrics/constants";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
@@ -82,7 +83,15 @@ export const PrivacyRequestMetrics = ({
     return null;
   }
 
-  const requestTypes = Object.entries(data.request_types);
+  // Order request types according to REQUEST_TYPE_ORDER, appending any extras
+  const allKeys = Object.keys(data.request_types);
+  const orderedKeys = [
+    ...REQUEST_TYPE_ORDER.filter((k) => allKeys.includes(k)),
+    ...allKeys.filter((k) => !REQUEST_TYPE_ORDER.includes(k)),
+  ];
+  const requestTypes = orderedKeys.map(
+    (k) => [k, data.request_types[k]] as [string, RequestTypeMetrics],
+  );
 
   return (
     <Stack align="center" py={["6", "16"]} px={5} spacing={10}>
