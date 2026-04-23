@@ -10,6 +10,13 @@ export const MOCK_METRICS: PrivacyRequestMetricsResponse = {
       mean_days_to_respond: 8.3,
       median_days_to_respond: 6,
     },
+    update: {
+      received: 312,
+      complied_with: 289,
+      denied: 14,
+      mean_days_to_respond: 5.7,
+      median_days_to_respond: 4,
+    },
     access: {
       received: 876,
       complied_with: 831,

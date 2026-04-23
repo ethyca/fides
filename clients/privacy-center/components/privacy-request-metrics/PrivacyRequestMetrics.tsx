@@ -16,6 +16,7 @@ import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
   REQUEST_TYPE_ORDER,
+  STATIC_ZERO_REQUEST_TYPES,
 } from "~/features/privacy-request-metrics/constants";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
@@ -83,14 +84,17 @@ export const PrivacyRequestMetrics = ({
     return null;
   }
 
+  // Merge API response with static zero rows (e.g., "limit" has no BE equivalent)
+  const mergedTypes = { ...STATIC_ZERO_REQUEST_TYPES, ...data.request_types };
+
   // Order request types according to REQUEST_TYPE_ORDER, appending any extras
-  const allKeys = Object.keys(data.request_types);
+  const allKeys = Object.keys(mergedTypes);
   const orderedKeys = [
     ...REQUEST_TYPE_ORDER.filter((k) => allKeys.includes(k)),
     ...allKeys.filter((k) => !REQUEST_TYPE_ORDER.includes(k)),
   ];
   const requestTypes = orderedKeys.map(
-    (k) => [k, data.request_types[k]] as [string, RequestTypeMetrics],
+    (k) => [k, mergedTypes[k]] as [string, RequestTypeMetrics],
   );
 
   return (
