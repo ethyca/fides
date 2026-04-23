@@ -1,5 +1,5 @@
-import type { NextPage } from "next";
 import { Typography } from "fidesui";
+import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";

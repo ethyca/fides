@@ -4,8 +4,8 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { Provider } from "react-redux";
 
-import { baseApi } from "~/features/common/api.slice";
 import { reducer as authReducer } from "~/features/auth/auth.slice";
+import { baseApi } from "~/features/common/api.slice";
 
 import { useGetQueueMonitorQuery } from "../queue-monitor.slice";
 import { QueueMonitorResponse } from "../types";
