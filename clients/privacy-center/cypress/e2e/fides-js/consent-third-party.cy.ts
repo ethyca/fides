@@ -530,12 +530,23 @@ describe("Consent third party extensions", () => {
       cy.get("@FidesInitializing").should("have.been.calledOnce");
     });
 
-    it("does not push requireConsent on FidesReady when analytics key is absent", () => {
+    it("pushes requireConsent synchronously and grants on FidesReady when analytics key is absent (OMIT mode)", () => {
       cy.waitUntilFidesInitialized().then(() => {
-        // The fixture has analytics_opt_out (not analytics), so Matomo should
-        // NOT have pushed requireConsent since neither "analytics" nor
-        // "performance" keys are present.
-        cy.get("@paqPush").should("not.have.been.called");
+        // Fides.matomo() pushes `requireConsent` synchronously at call time
+        // (before FidesReady fires) so Matomo enters consent-required mode
+        // before the site's Matomo tracker snippet queues trackPageView.
+        cy.get("@paqPush").should("have.been.calledWith", ["requireConsent"]);
+
+        // The fixture uses `analytics_opt_out`, not `analytics`/`performance`.
+        // In this OMIT mode the integration grants consent so Matomo isn't
+        // left stuck in consent-required mode with no grant.
+        cy.get("@paqPush").should("have.been.calledWith", [
+          "rememberConsentGiven",
+        ]);
+        // No revoke commands in OMIT mode
+        cy.get("@paqPush").should("not.have.been.calledWith", [
+          "forgetConsentGiven",
+        ]);
       });
     });
 
@@ -583,8 +594,10 @@ describe("Consent third party extensions", () => {
       );
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").then(() => {
-          // On FidesReady, analytics defaults to opt_out (false), so Matomo
-          // should have pushed requireConsent + forgetConsentGiven
+          // `requireConsent` is pushed synchronously at Fides.matomo() call
+          // time, regardless of consent state. Then on FidesReady, because
+          // analytics defaults to opt_out (false), the integration pushes
+          // forgetConsentGiven.
           cy.get("@paqPush").should("have.been.calledWith", ["requireConsent"]);
           cy.get("@paqPush").should("have.been.calledWith", [
             "forgetConsentGiven",

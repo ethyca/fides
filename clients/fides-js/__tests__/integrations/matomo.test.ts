@@ -53,23 +53,50 @@ describe("matomo", () => {
   });
 
   describe("requireConsent idempotency", () => {
-    test("does not push requireConsent again on subsequent events", () => {
+    test("pushes requireConsent exactly once at init, not on subsequent events", () => {
       setupFidesWithConsent({ analytics: true });
       matomo();
 
-      // Synthetic event fired synchronously; record state
-      const lengthAfterInit = getPaq().length;
-
-      // Dispatch another event
-      triggerConsentEvent("FidesUpdated", { analytics: false });
-
-      // Only this matomo() instance's handler should have fired.
-      // Commands after init should NOT include another requireConsent.
-      const newCommands = getPaq().slice(lengthAfterInit);
-      const requireCalls = newCommands.filter(
+      // requireConsent is pushed synchronously at call time, before any event
+      // fires. Synthetic event then pushes the grant. Count should be 1.
+      const requireCallsAfterInit = getPaq().filter(
         (cmd) => cmd[0] === "requireConsent",
       );
-      expect(requireCalls).toHaveLength(0);
+      expect(requireCallsAfterInit).toHaveLength(1);
+
+      triggerConsentEvent("FidesUpdated", { analytics: false });
+
+      const requireCallsAfterEvent = getPaq().filter(
+        (cmd) => cmd[0] === "requireConsent",
+      );
+      expect(requireCallsAfterEvent).toHaveLength(1);
+    });
+
+    test("subsequent events push grants/revokes to current window._paq (orphan guard)", () => {
+      // Mirrors what matomo.js does at runtime: after processing the queued
+      // Array, it swaps window._paq with a wrapper object whose `push`
+      // forwards to the live Tracker. Subsequent events must push to the NEW
+      // _paq, not to an orphaned pre-swap reference.
+      setupFidesWithConsent({ analytics: true });
+      matomo();
+
+      const wrapperCalls: unknown[][] = [];
+      const wrapper = {
+        push: (cmd: unknown[]) => {
+          wrapperCalls.push(cmd);
+          return 0;
+        },
+      };
+      setPaq(wrapper as unknown as unknown[][]);
+
+      triggerConsentEvent("FidesUpdated", { analytics: false });
+
+      expect(wrapperCalls).toEqual(
+        expect.arrayContaining([
+          ["forgetConsentGiven"],
+          ["forgetCookieConsentGiven"],
+        ]),
+      );
     });
   });
 
@@ -88,21 +115,24 @@ describe("matomo", () => {
     });
   });
 
-  describe("Conditional requireConsent", () => {
-    test("pushes requireConsent on first event when consent key is present", () => {
-      setupFidesWithConsent({ analytics: true });
+  describe("requireConsent timing", () => {
+    test("pushes requireConsent synchronously at call time, before any event fires", () => {
+      // Fides is not initialized yet; no synthetic event should fire.
+      window.Fides = undefined as any;
       matomo();
 
-      expect(getPaq()).toEqual(expect.arrayContaining([["requireConsent"]]));
+      // requireConsent must already be in the queue by the time matomo()
+      // returns, so it lands ahead of the site's Matomo tracker snippet.
+      expect(getPaq()).toEqual([["requireConsent"]]);
     });
 
-    test("does NOT push requireConsent when consent key is absent (OMIT mode)", () => {
+    test("pushes requireConsent regardless of whether consent key is present (OMIT mode)", () => {
+      // Even in OMIT mode we push requireConsent up front; the event handler
+      // then grants consent to unblock tracking.
       setupFidesWithConsent({ essential: true });
       matomo();
 
-      expect(getPaq()).not.toEqual(
-        expect.arrayContaining([["requireConsent"]]),
-      );
+      expect(getPaq()).toEqual(expect.arrayContaining([["requireConsent"]]));
     });
   });
 
@@ -247,11 +277,18 @@ describe("matomo", () => {
       );
     });
 
-    test("takes no action when neither key is present", () => {
+    test("grants consent when neither analytics nor performance key is present (OMIT)", () => {
       setupFidesWithConsent({ marketing: true });
       matomo();
 
-      expect(getPaq()).toEqual([]);
+      // requireConsent pushed at init, then a grant to unblock tracking.
+      expect(getPaq()).toEqual(
+        expect.arrayContaining([["requireConsent"], ["rememberConsentGiven"]]),
+      );
+      // No revoke commands
+      expect(getPaq()).not.toEqual(
+        expect.arrayContaining([["forgetConsentGiven"]]),
+      );
     });
   });
 
@@ -285,13 +322,16 @@ describe("matomo", () => {
   });
 
   describe("Non-applicable flag modes", () => {
-    test("OMIT mode: no consent key, Matomo tracks freely", () => {
-      // Simulates OMIT mode where the analytics key is absent
+    test("OMIT mode: no consent key, Matomo is granted consent to unblock tracking", () => {
+      // Simulates OMIT mode where the analytics key is absent. We push
+      // requireConsent up front to be safe, then grant on the event so
+      // tracking actually flows in jurisdictions where consent isn't required.
       setupFidesWithConsent({});
       matomo();
 
-      // No requireConsent, no grant, no revoke
-      expect(getPaq()).toEqual([]);
+      expect(getPaq()).toEqual(
+        expect.arrayContaining([["requireConsent"], ["rememberConsentGiven"]]),
+      );
     });
 
     test("INCLUDE mode with boolean: key present as true, consent granted", () => {
@@ -325,11 +365,13 @@ describe("matomo", () => {
     });
 
     test("responds to FidesUpdated events", () => {
-      window.Fides = { consent: {}, initialized: false } as any as FidesGlobal;
+      // No Fides.consent on window → synthetic event does not fire.
+      window.Fides = { initialized: false } as any as FidesGlobal;
       matomo();
 
-      // Initially no commands (no consent key)
-      expect(getPaq()).toEqual([]);
+      // requireConsent pushed synchronously at init; no grant/revoke yet
+      // because no synthetic event fired and no real event has been dispatched.
+      expect(getPaq()).toEqual([["requireConsent"]]);
 
       // Now consent arrives via event
       triggerConsentEvent("FidesUpdated", { analytics: false });

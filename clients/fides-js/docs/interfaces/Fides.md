@@ -504,23 +504,30 @@ With custom consent mapping:
 
 > **matomo**: (`options`?) => `void`
 
-Enable the Matomo integration. This should be called immediately after
-FidesJS is included. Once enabled, FidesJS will automatically sync consent
-with Matomo's tracking consent and/or cookie consent APIs via `_paq.push()`.
+Enable the Matomo integration. FidesJS will automatically sync consent
+with Matomo's tracking and/or cookie consent APIs via `_paq.push()`.
 
-The integration automatically detects whether consent is applicable based on
-the presence of consent keys in the Fides consent object. When consent is not
-applicable (e.g. user is in a non-consent jurisdiction), Matomo is left in its
-default state and tracks freely. Note: the integration looks for `analytics`
-or `performance` consent keys specifically.
+The integration looks for `analytics` or `performance` keys in the Fides
+consent object. When neither key is present (e.g. a non-consent
+jurisdiction), consent is granted to Matomo so tracking proceeds
+normally.
+
+### Call before your Matomo tracker snippet
+
+`Fides.matomo()` synchronously pushes `requireConsent` into `_paq` so
+Matomo enters consent-required mode before the first `trackPageView`.
+For this to work, **`Fides.matomo()` must run before the standard Matomo
+tracker snippet on the page**. If the order is reversed, `trackPageView`
+is queued ahead of `requireConsent` and the first page view fires
+without consent.
 
 #### Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `options`? | \{ `consentMode`: `"tracking"` \| `"cookie"` \| `"both"`; `rememberConsent`: `boolean`; \} | Optional configuration for the Matomo integration |
-| `options.consentMode`? | `"tracking"` \| `"cookie"` \| `"both"` | Which Matomo consent mechanism to manage: "tracking" (default), "cookie", or "both" |
-| `options.rememberConsent`? | `boolean` | Whether to persist consent via Matomo's mtm_consent cookie (default: true). When false, uses session-only consent that must be re-established on each page load. |
+| `options.consentMode`? | `"tracking"` \| `"cookie"` \| `"both"` | Which Matomo consent mechanism to manage: `"tracking"` (default), `"cookie"`, or `"both"` |
+| `options.rememberConsent`? | `boolean` | Persist consent via Matomo's `mtm_consent` cookie. Default `true`. Set `false` for session-only consent. |
 
 #### Returns
 
@@ -528,36 +535,29 @@ or `performance` consent keys specifically.
 
 #### Examples
 
-Basic usage in your site's `<head>`:
+Recommended page setup. `Fides.matomo()` runs before the Matomo tracker
+snippet so `requireConsent` is queued ahead of `trackPageView`:
 ```html
 <head>
   <script src="path/to/fides.js"></script>
-  <script>Fides.matomo()</script>
-</head>
-```
+  <script>Fides.matomo();</script>
 
-Managing both tracking and cookie consent:
-```html
-<head>
-  <script src="path/to/fides.js"></script>
+  <!-- Your standard Matomo tracker snippet goes here, unchanged -->
   <script>
-    Fides.matomo({
-      consentMode: "both"
-    });
+    var _paq = window._paq = window._paq || [];
+    // ... _paq.push(['trackPageView']), setTrackerUrl, setSiteId, etc.
   </script>
 </head>
 ```
 
-Using session-only consent (no Matomo cookie persistence):
+Manage both tracking and cookie consent:
 ```html
-<head>
-  <script src="path/to/fides.js"></script>
-  <script>
-    Fides.matomo({
-      rememberConsent: false
-    });
-  </script>
-</head>
+<script>Fides.matomo({ consentMode: "both" });</script>
+```
+
+Session-only consent (no `mtm_consent` cookie written by Matomo):
+```html
+<script>Fides.matomo({ rememberConsent: false });</script>
 ```
 
 ***

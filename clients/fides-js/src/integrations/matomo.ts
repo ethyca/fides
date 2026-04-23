@@ -31,9 +31,17 @@ export interface MatomoOptions {
   rememberConsent: boolean;
 }
 
+/**
+ * Matomo's _paq is an Array until matomo.js loads, after which it is replaced
+ * with a tracker wrapper object whose `push` method forwards commands to the
+ * live Tracker. Both shapes accept `.push([...])`, so we type the minimum
+ * contract we need: an object with a push method.
+ */
+type MatomoPaq = { push: (cmd: unknown[]) => unknown };
+
 declare global {
   interface Window {
-    _paq?: unknown[][];
+    _paq?: MatomoPaq;
   }
 }
 
@@ -43,8 +51,6 @@ const DEFAULT_OPTIONS: MatomoOptions = {
 };
 
 const DEFAULT_CONSENT_KEYS = ["analytics", "performance"];
-
-const paqsWithRequireConsent = new WeakSet<unknown[][]>();
 
 const consentModeChecks = (consentMode: MatomoConsentMode) => ({
   isTracking: () => consentMode === "tracking" || consentMode === "both",
@@ -63,7 +69,7 @@ const findConsentKey = (consent: NoticeConsent): string | null =>
  * Push requireConsent / requireCookieConsent to _paq based on consentMode.
  */
 const pushRequireConsent = (
-  paq: unknown[][],
+  paq: MatomoPaq,
   consentMode: MatomoConsentMode,
 ): void => {
   const mode = consentModeChecks(consentMode);
@@ -81,7 +87,7 @@ const pushRequireConsent = (
  * Push the appropriate grant or revoke command to _paq.
  */
 const pushConsentUpdate = (
-  paq: unknown[][],
+  paq: MatomoPaq,
   consentMode: MatomoConsentMode,
   rememberConsent: boolean,
   granted: boolean,
@@ -126,26 +132,34 @@ const pushConsentUpdate = (
 export const matomo = (options?: Partial<MatomoOptions>): void => {
   const opts: MatomoOptions = { ...DEFAULT_OPTIONS, ...options };
 
-  // Ensure _paq exists (Matomo's standard pre-load queue pattern)
-  window._paq = window._paq ?? [];
-  const paq = window._paq;
+  // Ensure _paq exists (Matomo's standard pre-load queue pattern).
+  window._paq = window._paq ?? ([] as unknown as MatomoPaq);
+
+  // Push requireConsent synchronously at call time so Matomo enters
+  // consent-required mode before the site's Matomo tracker snippet runs.
+  // This prevents the first trackPageView from firing before Fides has had a
+  // chance to resolve consent. Relies on Fides.matomo() being called before
+  // the Matomo tracker snippet on the page.
+  pushRequireConsent(window._paq, opts.consentMode);
 
   subscribeToConsent((consent) => {
+    // Read `window._paq` freshly at push time: matomo.js replaces it with a
+    // tracker wrapper once loaded, and a reference captured at setup would be
+    // orphaned (pushes would vanish into the discarded Array).
+    const paq = window._paq ?? ([] as unknown as MatomoPaq);
+    window._paq = paq;
+
     const key = findConsentKey(consent);
 
     if (key === null) {
+      // OMIT mode: consent isn't applicable in this jurisdiction. We already
+      // put Matomo into consent-required mode synchronously, so unblock
+      // tracking by granting consent here.
       fidesDebugger(
-        "[Fides Matomo] No consent key found in Fides consent, skipping",
+        "[Fides Matomo] No consent key found in Fides consent, granting",
       );
+      pushConsentUpdate(paq, opts.consentMode, opts.rememberConsent, true);
       return;
-    }
-
-    // On the first event where the consent key is present, put Matomo into
-    // consent-required mode. The grant/revoke that follows immediately after
-    // ensures there is no tracking gap.
-    if (!paqsWithRequireConsent.has(paq)) {
-      pushRequireConsent(paq, opts.consentMode);
-      paqsWithRequireConsent.add(paq);
     }
 
     const granted = processExternalConsentValue(consent[key]);
