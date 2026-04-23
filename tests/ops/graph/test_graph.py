@@ -1,5 +1,4 @@
 import pytest
-import fides.api.graph.graph as graph_mod
 
 from fides.api.graph.config import *
 from fides.api.graph.graph import (
