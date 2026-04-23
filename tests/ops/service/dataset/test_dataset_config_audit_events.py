@@ -27,7 +27,14 @@ _MINIMAL_SAAS_CONFIG = {
     "connector_params": [],
     "client_config": {"protocol": "https", "host": "api.example.com"},
     "test_request": {"method": "GET", "path": "/test"},
-    "endpoints": [],
+    "endpoints": [
+        {
+            "name": "items",
+            "requests": {
+                "read": {"method": "GET", "path": "/items"},
+            },
+        }
+    ],
 }
 
 _MINIMAL_DATASET = FideslangDataset.model_validate(
@@ -129,7 +136,7 @@ class TestDatasetConfigServiceAuditEvents:
         updated_dataset = FideslangDataset.model_validate(
             {
                 "fides_key": _SAAS_FIDES_KEY,
-                "name": "Audit Test Dataset (Updated)",
+                "name": "Audit Test Dataset",
                 "collections": [
                     {
                         "name": "items",
@@ -155,11 +162,9 @@ class TestDatasetConfigServiceAuditEvents:
         assert "dataset_changes" in update_details
         assert "dataset" not in update_details
         # Only the fields that actually changed are logged (new values only)
-        assert (
-            update_details["dataset_changes"]["name"] == "Audit Test Dataset (Updated)"
-        )
         assert "collections" in update_details["dataset_changes"]  # fields were added
         assert "fides_key" not in update_details["dataset_changes"]  # unchanged
+        assert "name" not in update_details["dataset_changes"]  # unchanged
 
     def test_delete_saas_dataset_emits_deleted_event(
         self,
@@ -222,7 +227,7 @@ class TestDatasetConfigServiceAuditEvents:
         broken_audit_service.create_event_audit.side_effect = Exception("audit boom")
 
         service = DatasetConfigService(db, broken_audit_service)
-        result, error = service.create_or_update_dataset_config(
+        result, error, _warnings = service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
         assert result is not None
@@ -235,7 +240,7 @@ class TestDatasetConfigServiceAuditEvents:
     ):
         """When no EventAuditService is injected, create/update succeeds silently."""
         service = DatasetConfigService(db, event_audit_service=None)
-        result, error = service.create_or_update_dataset_config(
+        result, error, _warnings = service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
         assert result is not None
