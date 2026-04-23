@@ -15,12 +15,13 @@ import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
 const DataPurposesPage: NextPage = () => {
   const { flags } = useFeatures();
   const [modalOpen, setModalOpen] = useState(false);
+  const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
   const {
     data: page,
     isLoading,
     isError,
   } = useGetAllDataPurposesQuery(
-    {},
+    { data_use: dataUseFilter ?? undefined },
     { skip: !flags.alphaPurposeBasedAccessControl },
   );
   const { data: summaries = [] } = useGetPurposeSummariesQuery(undefined, {
@@ -107,6 +108,8 @@ const DataPurposesPage: NextPage = () => {
       <PurposeCardGrid
         purposes={purposes}
         summaries={summaries}
+        dataUseFilter={dataUseFilter}
+        onDataUseFilterChange={setDataUseFilter}
         onCreatePurpose={() => setModalOpen(true)}
       />
     );

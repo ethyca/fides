@@ -20,6 +20,31 @@ const Dot = ({ color }: { color: string }) => (
   />
 );
 
+const RISK_VARIANTS: Record<
+  "drift" | "compliant" | "unknown",
+  (riskCount: number) => {
+    dotColor: string;
+    label: string;
+    textProps: React.ComponentProps<typeof Text>;
+  }
+> = {
+  drift: (riskCount) => ({
+    dotColor: palette.FIDESUI_ERROR,
+    label: `${riskCount} ${riskCount === 1 ? "Risk" : "Risks"}`,
+    textProps: { style: { color: palette.FIDESUI_MINOS } },
+  }),
+  compliant: () => ({
+    dotColor: palette.FIDESUI_SUCCESS,
+    label: "Compliant",
+    textProps: { style: { color: palette.FIDESUI_MINOS } },
+  }),
+  unknown: () => ({
+    dotColor: "#d9d9d9",
+    label: "Not scanned",
+    textProps: { type: "secondary" },
+  }),
+};
+
 const RiskIndicator = ({
   status,
   riskCount,
@@ -27,31 +52,12 @@ const RiskIndicator = ({
   status: "drift" | "compliant" | "unknown";
   riskCount: number;
 }) => {
-  if (status === "drift") {
-    return (
-      <Flex align="center" gap={5}>
-        <Dot color={palette.FIDESUI_ERROR} />
-        <Text className="text-xs" style={{ color: palette.FIDESUI_MINOS }}>
-          {riskCount} {riskCount === 1 ? "Risk" : "Risks"}
-        </Text>
-      </Flex>
-    );
-  }
-  if (status === "compliant") {
-    return (
-      <Flex align="center" gap={5}>
-        <Dot color={palette.FIDESUI_SUCCESS} />
-        <Text className="text-xs" style={{ color: palette.FIDESUI_MINOS }}>
-          Compliant
-        </Text>
-      </Flex>
-    );
-  }
+  const { dotColor, label, textProps } = RISK_VARIANTS[status](riskCount);
   return (
     <Flex align="center" gap={5}>
-      <Dot color="#d9d9d9" />
-      <Text type="secondary" className="text-xs">
-        Not scanned
+      <Dot color={dotColor} />
+      <Text {...textProps} className="text-xs">
+        {label}
       </Text>
     </Flex>
   );
@@ -96,12 +102,8 @@ const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
   return (
     <Card
       size="small"
-      style={{
-        backgroundColor: "#fafafa",
-        cursor: "pointer",
-        height: "100%",
-      }}
-      className="transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+      hoverable
+      className="h-full cursor-pointer bg-gray-50 transition-shadow"
       onClick={() => router.push(`${DATA_PURPOSES_ROUTE}/${purpose.fides_key}`)}
     >
       <Flex vertical gap={8} className="h-full">

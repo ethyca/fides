@@ -19,6 +19,8 @@ import { computeCategoryDrift, formatDataUse } from "./purposeUtils";
 interface PurposeCardGridProps {
   purposes: DataPurpose[];
   summaries: PurposeSummary[];
+  dataUseFilter: string | null;
+  onDataUseFilterChange: (value: string | null) => void;
   onCreatePurpose: () => void;
 }
 
@@ -31,11 +33,17 @@ const STATUS_OPTIONS = [
 const PurposeCardGrid = ({
   purposes,
   summaries,
+  dataUseFilter,
+  onDataUseFilterChange,
   onCreatePurpose,
 }: PurposeCardGridProps) => {
+  // `data_use` is filtered server-side via the list endpoint. The remaining
+  // filters below run client-side because (a) `search` / `data_category` need
+  // new params on `/data-purpose`, and (b) `consumer` / `status` depend on the
+  // summaries endpoint, which is still mock-only. Move these server-side once
+  // the real summaries endpoint lands and the list endpoint gains the params.
   const [search, setSearch] = useState("");
   const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
-  const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
@@ -82,69 +90,74 @@ const PurposeCardGrid = ({
   const clearFilters = () => {
     setSearch("");
     setConsumerFilter(null);
-    setDataUseFilter(null);
+    onDataUseFilterChange(null);
     setStatusFilter(null);
     setCategoryFilter(null);
   };
 
-  const filtered = useMemo(
-    () =>
-      purposes.filter((p) => {
-        if (search && !p.name.toLowerCase().includes(search.toLowerCase())) {
-          return false;
-        }
-        if (dataUseFilter && p.data_use !== dataUseFilter) {
-          return false;
-        }
-        if (consumerFilter) {
-          const summary = summariesByKey.get(p.fides_key);
-          if (
-            !summary?.systems.some(
-              (a) => a.assigned && a.system_id === consumerFilter,
-            )
-          ) {
-            return false;
-          }
-        }
-        if (statusFilter) {
-          const summary = summariesByKey.get(p.fides_key);
-          const drift = computeCategoryDrift(
-            p.data_categories ?? [],
-            summary?.detected_data_categories ?? [],
-          );
-          if (drift.status !== statusFilter) {
-            return false;
-          }
-        }
-        if (
-          categoryFilter &&
-          !(p.data_categories ?? []).includes(categoryFilter)
-        ) {
-          return false;
-        }
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return purposes.filter((p) => {
+      if (query && !p.name.toLowerCase().includes(query)) {
+        return false;
+      }
+      if (
+        categoryFilter &&
+        !(p.data_categories ?? []).includes(categoryFilter)
+      ) {
+        return false;
+      }
+      if (!consumerFilter && !statusFilter) {
         return true;
-      }),
-    [
-      purposes,
-      summariesByKey,
-      search,
-      dataUseFilter,
-      consumerFilter,
-      statusFilter,
-      categoryFilter,
-    ],
-  );
+      }
+      const summary = summariesByKey.get(p.fides_key);
+      if (
+        consumerFilter &&
+        !summary?.systems.some(
+          (a) => a.assigned && a.system_id === consumerFilter,
+        )
+      ) {
+        return false;
+      }
+      if (statusFilter) {
+        const { status } = computeCategoryDrift(
+          p.data_categories ?? [],
+          summary?.detected_data_categories ?? [],
+        );
+        if (status !== statusFilter) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [
+    purposes,
+    summariesByKey,
+    search,
+    consumerFilter,
+    statusFilter,
+    categoryFilter,
+  ]);
 
   const groups = useMemo(() => {
-    const map: Record<string, DataPurpose[]> = {};
+    const byDataUse = new Map<
+      string,
+      { items: DataPurpose[]; systemCount: number; datasetCount: number }
+    >();
     filtered.forEach((p) => {
-      if (!map[p.data_use]) {
-        map[p.data_use] = [];
-      }
-      map[p.data_use].push(p);
+      const summary = summariesByKey.get(p.fides_key);
+      const group = byDataUse.get(p.data_use) ?? {
+        items: [],
+        systemCount: 0,
+        datasetCount: 0,
+      };
+      group.items.push(p);
+      group.systemCount += summary?.system_count ?? 0;
+      group.datasetCount += summary?.dataset_count ?? 0;
+      byDataUse.set(p.data_use, group);
     });
-    return Object.entries(map);
-  }, [filtered]);
+    return Array.from(byDataUse, ([dataUse, group]) => ({ dataUse, ...group }));
+  }, [filtered, summariesByKey]);
 
   const emptyState =
     purposes.length === 0 ? (
@@ -214,48 +227,36 @@ const PurposeCardGrid = ({
             style={{ width: 200 }}
             options={dataUseOptions}
             value={dataUseFilter}
-            onChange={(v) => setDataUseFilter(v ?? null)}
+            onChange={(v) => onDataUseFilterChange(v ?? null)}
           />
         </Flex>
       </Flex>
       {filtered.length === 0 && emptyState}
       {filtered.length > 0 &&
-        groups.map(([dataUse, items]) => {
-          const groupSystemCount = items.reduce((sum, p) => {
-            const s = summariesByKey.get(p.fides_key);
-            return sum + (s?.system_count ?? 0);
-          }, 0);
-          const groupDatasetCount = items.reduce((sum, p) => {
-            const s = summariesByKey.get(p.fides_key);
-            return sum + (s?.dataset_count ?? 0);
-          }, 0);
-
-          return (
-            <div key={dataUse} className="mb-8">
-              <Flex gap="middle" align="center" className="mb-2">
-                <Title level={4} className="!mb-0">
-                  {formatDataUse(dataUse)}
-                </Title>
-                <Text type="secondary" className="text-sm">
-                  {items.length} {items.length === 1 ? "purpose" : "purposes"}{" "}
-                  &middot; {groupSystemCount} systems &middot;{" "}
-                  {groupDatasetCount} datasets
-                </Text>
-              </Flex>
-              <Divider className="!mt-0 mb-4" />
-              <Row gutter={[16, 16]}>
-                {items.map((p) => (
-                  <Col key={p.id ?? p.fides_key} span={6}>
-                    <PurposeCard
-                      purpose={p}
-                      summary={summariesByKey.get(p.fides_key)}
-                    />
-                  </Col>
-                ))}
-              </Row>
-            </div>
-          );
-        })}
+        groups.map(({ dataUse, items, systemCount, datasetCount }) => (
+          <div key={dataUse} className="mb-8">
+            <Flex gap="middle" align="center" className="mb-2">
+              <Title level={4} className="!mb-0">
+                {formatDataUse(dataUse)}
+              </Title>
+              <Text type="secondary" className="text-sm">
+                {items.length} {items.length === 1 ? "purpose" : "purposes"}{" "}
+                &middot; {systemCount} systems &middot; {datasetCount} datasets
+              </Text>
+            </Flex>
+            <Divider className="!mt-0 mb-4" />
+            <Row gutter={[16, 16]}>
+              {items.map((p) => (
+                <Col key={p.id ?? p.fides_key} span={6}>
+                  <PurposeCard
+                    purpose={p}
+                    summary={summariesByKey.get(p.fides_key)}
+                  />
+                </Col>
+              ))}
+            </Row>
+          </div>
+        ))}
     </div>
   );
 };
