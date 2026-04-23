@@ -11,8 +11,8 @@ from loguru import logger
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
-from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
-    DSRReportBuilder,
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
+    get_dsr_report_builder,
 )
 from fides.api.service.storage.gcs import get_gcs_blob
 from fides.api.service.storage.s3 import (
@@ -47,7 +47,7 @@ def write_to_in_memory_buffer(
     logger.debug("Writing data to in-memory buffer")
     try:
         if resp_format == ResponseFormat.html.value:
-            return DSRReportBuilder(
+            return get_dsr_report_builder()(
                 privacy_request=privacy_request,
                 dsr_data=data,
             ).generate()

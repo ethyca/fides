@@ -139,19 +139,21 @@ class TestWriteToInMemoryBuffer:
         with pytest.raises(NotImplementedError):
             write_to_in_memory_buffer("invalid_format", data, privacy_request)
 
-    @patch("fides.api.tasks.storage.DSRReportBuilder")
-    def test_write_to_in_memory_buffer_html(self, mock_dsr_builder):
-        """Test HTML format generation using DSRReportBuilder."""
+    @patch("fides.api.tasks.storage.get_dsr_report_builder")
+    def test_write_to_in_memory_buffer_html(self, mock_get_builder):
+        """Test HTML format generation using DSR report builder registry."""
         data = {"key": "value"}
         privacy_request = MagicMock(id="test-request-id")
         mock_report = BytesIO(b"<html>Test Report</html>")
-        mock_dsr_builder.return_value.generate.return_value = mock_report
+        mock_builder_cls = MagicMock()
+        mock_builder_cls.return_value.generate.return_value = mock_report
+        mock_get_builder.return_value = mock_builder_cls
 
         result = write_to_in_memory_buffer(
             ResponseFormat.html.value, data, privacy_request
         )
 
-        mock_dsr_builder.assert_called_once_with(
+        mock_builder_cls.assert_called_once_with(
             privacy_request=privacy_request,
             dsr_data=data,
         )
