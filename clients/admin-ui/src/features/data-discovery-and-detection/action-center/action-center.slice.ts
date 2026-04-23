@@ -559,7 +559,12 @@ const actionCenterApi = baseApi.injectEndpoints({
           params,
         };
       },
-      invalidatesTags: ["Monitor Statistics"],
+      invalidatesTags: [
+        "Monitor Statistics",
+        "Discovery Monitor Results",
+        "Identity Provider Monitor Results",
+        "Monitor Field Results",
+      ],
     }),
 
     retryMonitorTask: build.mutation<
