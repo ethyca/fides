@@ -11,15 +11,15 @@ export interface DataPurpose {
   id?: string;
   fides_key: string;
   name: string;
-  description?: string;
+  description?: string | null;
   data_use: string;
-  data_subject?: string;
+  data_subject?: string | null;
   data_categories?: string[];
-  legal_basis_for_processing?: string;
+  legal_basis_for_processing?: string | null;
   flexible_legal_basis_for_processing?: boolean;
-  special_category_legal_basis?: string;
-  impact_assessment_location?: string;
-  retention_period?: string;
+  special_category_legal_basis?: string | null;
+  impact_assessment_location?: string | null;
+  retention_period?: string | null;
   features?: string[];
   created_at?: string;
   updated_at?: string;
@@ -31,6 +31,40 @@ export interface DataPurposePage {
   page: number;
   size: number;
   pages: number;
+}
+
+/**
+ * Per-purpose enrichment used by the list grid. Served in a single batched
+ * call to avoid N+1 requests across cards. The per-purpose system/dataset
+ * read and mutation endpoints referenced here land with the detail-page PR;
+ * for now only `system_count`, `dataset_count`, and `detected_data_categories`
+ * are consumed by the grid.
+ */
+export interface PurposeSystemAssignment {
+  system_id: string;
+  system_name: string;
+  system_type: string;
+  assigned: boolean;
+  consumer_category?: "system" | "group";
+}
+
+export interface PurposeDatasetAssignment {
+  dataset_fides_key: string;
+  dataset_name: string;
+  system_name: string;
+  collection_count: number;
+  data_categories: string[];
+  updated_at: string;
+  steward: string;
+}
+
+export interface PurposeSummary {
+  fides_key: string;
+  system_count: number;
+  dataset_count: number;
+  detected_data_categories: string[];
+  systems: PurposeSystemAssignment[];
+  datasets: PurposeDatasetAssignment[];
 }
 
 export const dataPurposesApi = baseApi.injectEndpoints({
@@ -78,6 +112,15 @@ export const dataPurposesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["DataPurpose", "DataConsumer"],
     }),
+
+    // Plus-only, MSW-mocked for now.
+    // TODO: replace with real endpoint once fidesplus ships it.
+    getPurposeSummaries: builder.query<PurposeSummary[], void>({
+      query: () => ({
+        url: `plus/data-purpose/summaries`,
+      }),
+      providesTags: ["DataPurpose"],
+    }),
   }),
 });
 
@@ -87,4 +130,5 @@ export const {
   useCreateDataPurposeMutation,
   useUpdateDataPurposeMutation,
   useDeleteDataPurposeMutation,
+  useGetPurposeSummariesQuery,
 } = dataPurposesApi;
