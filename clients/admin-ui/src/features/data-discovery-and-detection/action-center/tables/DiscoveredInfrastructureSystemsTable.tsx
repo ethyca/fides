@@ -145,7 +145,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
   );
 
   return (
-    <Flex vertical gap="medium" className="h-full overflow-hidden">
+    <Flex vertical gap="middle" className="h-full overflow-hidden">
       <Alert
         showIcon
         title="Fides detected the following systems"

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { Icons } from "../index";
+import { Icons, Tag } from "../index";
+import { OPTION_NAMES } from "../stories/utils/content";
 import type { CustomSelectProps } from "./CustomSelect";
 import { CustomSelect } from "./CustomSelect";
 
@@ -16,7 +17,7 @@ const SELECT_VARIANT: Record<
 
 type SelectSize = NonNullable<CustomSelectProps<unknown>["size"]>;
 
-const SELECT_SIZE: SelectSize[] = ["small", "medium", "large"];
+const SELECT_SIZE: SelectSize[] = ["small", "middle", "large"];
 
 const SELECT_MODE: Record<
   NonNullable<CustomSelectProps<unknown>["mode"]>,
@@ -98,3 +99,22 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {};
+
+export const SelectedMultiple: Story = {
+  args: {
+    options: OPTION_NAMES.map((value) => ({ label: value, value })),
+    value: OPTION_NAMES,
+    mode: "multiple",
+  },
+  parameters: { controls: { includes: [] } },
+};
+
+export const CustomTags: Story = {
+  args: {
+    options: OPTION_NAMES.map((value) => ({ label: value, value })),
+    value: OPTION_NAMES,
+    mode: "tags",
+    tagRender: (props) => <Tag closable>{props.value}</Tag>,
+  },
+  parameters: { controls: { includes: [] } },
+};

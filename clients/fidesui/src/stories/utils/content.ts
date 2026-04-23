@@ -10,4 +10,6 @@ export const PARAGRAPH_LOREM =
 
 export const MENU_NAMES = ["About", "Info", "Contact", "Settings"];
 
+export const OPTION_NAMES = ["Fides", "Helios", "Janus", "Lethe", "Astralis"];
+
 export const DAYJS_LOREM = dayjs().date(18).month(8).year(2018);

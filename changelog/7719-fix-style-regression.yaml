@@ -1,0 +1,4 @@
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Styles on infra and datastore monitor screens
+pr: 7719 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
