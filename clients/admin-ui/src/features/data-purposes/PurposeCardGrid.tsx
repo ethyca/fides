@@ -10,17 +10,19 @@ import {
   Text,
   Title,
 } from "fidesui";
-import { useMemo, useState } from "react";
 
 import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
 import PurposeCard from "./PurposeCard";
-import { computeCategoryDrift, formatDataUse } from "./purposeUtils";
+import { formatDataUse } from "./purposeUtils";
+import usePurposeCardFilters from "./usePurposeCardFilters";
 
 interface PurposeCardGridProps {
   purposes: DataPurpose[];
   summaries: PurposeSummary[];
   dataUseFilter: string | null;
   onDataUseFilterChange: (value: string | null) => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
   onCreatePurpose: () => void;
 }
 
@@ -35,159 +37,46 @@ const PurposeCardGrid = ({
   summaries,
   dataUseFilter,
   onDataUseFilterChange,
+  searchQuery,
+  onSearchChange,
   onCreatePurpose,
 }: PurposeCardGridProps) => {
-  // `data_use` is filtered server-side via the list endpoint. The remaining
-  // filters below run client-side because (a) `search` / `data_category` need
-  // new params on `/data-purpose`, and (b) `consumer` / `status` depend on the
-  // summaries endpoint, which is still mock-only. Move these server-side once
-  // the real summaries endpoint lands and the list endpoint gains the params.
-  const [search, setSearch] = useState("");
-  const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const {
+    consumerFilter,
+    setConsumerFilter,
+    statusFilter,
+    setStatusFilter,
+    categoryFilter,
+    setCategoryFilter,
+    consumerOptions,
+    dataUseOptions,
+    categoryOptions,
+    groups,
+    summariesByKey,
+    hasActiveFilters,
+    clearFilters,
+  } = usePurposeCardFilters(purposes, summaries);
 
-  const summariesByKey = useMemo(
-    () => new Map(summaries.map((s) => [s.fides_key, s])),
-    [summaries],
-  );
-
-  const consumerOptions = useMemo(() => {
-    const seen = new Set<string>();
-    const options: { value: string; label: string }[] = [];
-    summaries.forEach((summary) => {
-      summary.systems
-        .filter((a) => a.assigned)
-        .forEach((a) => {
-          if (!seen.has(a.system_id)) {
-            seen.add(a.system_id);
-            options.push({ value: a.system_id, label: a.system_name });
-          }
-        });
-    });
-    return options.sort((a, b) => a.label.localeCompare(b.label));
-  }, [summaries]);
-
-  const dataUseOptions = useMemo(
-    () =>
-      [...new Set(purposes.map((p) => p.data_use))].map((du) => ({
-        value: du,
-        label: formatDataUse(du),
-      })),
-    [purposes],
-  );
-
-  const categoryOptions = useMemo(() => {
-    const all = new Set<string>();
-    purposes.forEach((p) =>
-      (p.data_categories ?? []).forEach((c) => all.add(c)),
-    );
-    return Array.from(all)
-      .sort()
-      .map((c) => ({ value: c, label: c }));
-  }, [purposes]);
-
-  const clearFilters = () => {
-    setSearch("");
-    setConsumerFilter(null);
+  const handleClearAll = () => {
+    clearFilters();
     onDataUseFilterChange(null);
-    setStatusFilter(null);
-    setCategoryFilter(null);
+    onSearchChange("");
   };
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return purposes.filter((p) => {
-      if (query && !p.name.toLowerCase().includes(query)) {
-        return false;
-      }
-      if (
-        categoryFilter &&
-        !(p.data_categories ?? []).includes(categoryFilter)
-      ) {
-        return false;
-      }
-      if (!consumerFilter && !statusFilter) {
-        return true;
-      }
-      const summary = summariesByKey.get(p.fides_key);
-      if (
-        consumerFilter &&
-        !summary?.systems.some(
-          (a) => a.assigned && a.system_id === consumerFilter,
-        )
-      ) {
-        return false;
-      }
-      if (statusFilter) {
-        const { status } = computeCategoryDrift(
-          p.data_categories ?? [],
-          summary?.detected_data_categories ?? [],
-        );
-        if (status !== statusFilter) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [
-    purposes,
-    summariesByKey,
-    search,
-    consumerFilter,
-    statusFilter,
-    categoryFilter,
-  ]);
+  const hasAnyFilter =
+    hasActiveFilters || Boolean(dataUseFilter) || Boolean(searchQuery);
 
-  const groups = useMemo(() => {
-    const byDataUse = new Map<
-      string,
-      { items: DataPurpose[]; systemCount: number; datasetCount: number }
-    >();
-    filtered.forEach((p) => {
-      const summary = summariesByKey.get(p.fides_key);
-      const group = byDataUse.get(p.data_use) ?? {
-        items: [],
-        systemCount: 0,
-        datasetCount: 0,
-      };
-      group.items.push(p);
-      group.systemCount += summary?.system_count ?? 0;
-      group.datasetCount += summary?.dataset_count ?? 0;
-      byDataUse.set(p.data_use, group);
-    });
-    return Array.from(byDataUse, ([dataUse, group]) => ({ dataUse, ...group }));
-  }, [filtered, summariesByKey]);
-
-  const emptyState =
-    purposes.length === 0 ? (
-      <Result
-        status="info"
-        title="No purposes yet"
-        subTitle="Define your first purpose to start governing how data flows through your systems."
-        extra={
-          <Button type="primary" onClick={onCreatePurpose}>
-            + New purpose
-          </Button>
-        }
-      />
-    ) : (
-      <Result
-        status="info"
-        title="No purposes match your filters"
-        subTitle="Try adjusting your search or clearing filters to see more results."
-        extra={<Button onClick={clearFilters}>Clear filters</Button>}
-      />
-    );
+  const isEmpty = groups.length === 0;
+  const hasNoPurposes = purposes.length === 0 && !hasAnyFilter;
 
   return (
     <div>
       <Flex justify="space-between" align="center" className="mb-4">
         <Input
           placeholder="Search purposes..."
-          value={search}
+          value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSearch(e.target.value)
+            onSearchChange(e.target.value)
           }
           allowClear
           style={{ width: 280 }}
@@ -231,8 +120,27 @@ const PurposeCardGrid = ({
           />
         </Flex>
       </Flex>
-      {filtered.length === 0 && emptyState}
-      {filtered.length > 0 &&
+      {isEmpty && hasNoPurposes && (
+        <Result
+          status="info"
+          title="No purposes yet"
+          subTitle="Define your first purpose to start governing how data flows through your systems."
+          extra={
+            <Button type="primary" onClick={onCreatePurpose}>
+              + New purpose
+            </Button>
+          }
+        />
+      )}
+      {isEmpty && !hasNoPurposes && (
+        <Result
+          status="info"
+          title="No purposes match your filters"
+          subTitle="Try adjusting your search or clearing filters to see more results."
+          extra={<Button onClick={handleClearAll}>Clear filters</Button>}
+        />
+      )}
+      {!isEmpty &&
         groups.map(({ dataUse, items, systemCount, datasetCount }) => (
           <div key={dataUse} className="mb-8">
             <Flex gap="middle" align="center" className="mb-2">

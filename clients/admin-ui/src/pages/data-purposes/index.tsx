@@ -5,29 +5,29 @@ import { useCallback, useState } from "react";
 import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import {
-  useGetAllDataPurposesQuery,
-  useGetPurposeSummariesQuery,
-} from "~/features/data-purposes/data-purpose.slice";
+import { useGetPurposeSummariesQuery } from "~/features/data-purposes/data-purpose.slice";
 import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
 import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
+import usePurposesList from "~/features/data-purposes/usePurposesList";
 
 const DataPurposesPage: NextPage = () => {
   const { flags } = useFeatures();
   const [modalOpen, setModalOpen] = useState(false);
   const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
   const {
-    data: page,
+    items: purposes,
+    searchQuery,
+    updateSearch,
     isLoading,
-    isError,
-  } = useGetAllDataPurposesQuery(
-    { data_use: dataUseFilter ?? undefined },
-    { skip: !flags.alphaPurposeBasedAccessControl },
-  );
+    error,
+  } = usePurposesList({
+    enabled: flags.alphaPurposeBasedAccessControl,
+    dataUseFilter,
+  });
+  const isError = Boolean(error);
   const { data: summaries = [] } = useGetPurposeSummariesQuery(undefined, {
     skip: !flags.alphaPurposeBasedAccessControl,
   });
-  const purposes = page?.items ?? [];
 
   const handleDownloadRoPA = useCallback(() => {
     const summariesByKey = new Map(summaries.map((s) => [s.fides_key, s]));
@@ -110,6 +110,8 @@ const DataPurposesPage: NextPage = () => {
         summaries={summaries}
         dataUseFilter={dataUseFilter}
         onDataUseFilterChange={setDataUseFilter}
+        searchQuery={searchQuery}
+        onSearchChange={updateSearch}
         onCreatePurpose={() => setModalOpen(true)}
       />
     );
