@@ -1,0 +1,120 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: AWS API Gateway
+  type: aws_api_gateway
+  description: >
+    Example connector for an AWS API Gateway endpoint using IAM Role (SigV4) authentication.
+    Replace <invoke_host> with your API Gateway invoke URL host and adjust the stage/paths
+    to match your actual API routes.
+  version: 0.0.1
+
+  connector_params:
+    # The host portion of your API Gateway invoke URL.
+    # e.g.  abc123def.execute-api.us-east-1.amazonaws.com
+    - name: invoke_host
+      label: API Gateway Host
+      description: >
+        Hostname of your API Gateway invoke URL (no protocol, no trailing slash).
+        Example: abc123def.execute-api.us-east-1.amazonaws.com
+      type: endpoint
+      allowed_values: []   # empty list = self-hosted / arbitrary host allowed
+
+    # API Gateway stage name, e.g. prod, dev, v1
+    - name: stage
+      label: Stage
+      description: The API Gateway stage name (e.g. prod, dev, v1)
+      default_value: prod
+
+    # --- Auth: choose one of 'automatic' or 'secret_keys' ---
+    - name: auth_method
+      label: Authentication Method
+      description: >
+        'automatic' uses the ambient IAM role (ECS task role, EC2 instance profile,
+        or AWS_* env vars). 'secret_keys' uses explicit access/secret key credentials.
+      default_value: automatic
+
+    # Required when auth_method = secret_keys
+    - name: aws_access_key_id
+      label: AWS Access Key ID
+      description: Required when auth_method is 'secret_keys'
+
+    - name: aws_secret_access_key
+      label: AWS Secret Access Key
+      description: Required when auth_method is 'secret_keys'
+      sensitive: true
+
+    # Optional: assume a cross-account or least-privilege role before signing
+    - name: aws_assume_role_arn
+      label: Assume Role ARN
+      description: >
+        Optional. ARN of the IAM role to assume before making requests.
+        Example: arn:aws:iam::123456789012:role/FidesApiGatewayRole
+
+  client_config:
+    protocol: https
+    host: <invoke_host>
+    authentication:
+      strategy: aws_iam_role
+      configuration:
+        # Must match the 'service' component of your API Gateway ARN.
+        # For API Gateway (REST and HTTP APIs) this is always 'execute-api'.
+        aws_service: execute-api
+        # Must match the region in your invoke URL.
+        region_name: us-east-1
+
+  # Fides uses this to verify credentials when the connection is saved.
+  # Replace with any lightweight, IAM-accessible GET endpoint in your API.
+  test_request:
+    method: GET
+    path: /<stage>/health
+
+  endpoints:
+    # ------------------------------------------------------------------
+    # user — look up a user record by email address (read + erasure)
+    # Adjust the path and response shape to match your actual API routes.
+    # ------------------------------------------------------------------
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /<stage>/users
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+          # If the API wraps results in a key, set data_path accordingly.
+          # e.g. data_path: items   if the response is {"items": [...]}
+          # Remove data_path entirely if the response is a bare array or object.
+          data_path: items
+
+        # Optional erasure endpoint — remove if your API does not support deletion.
+        delete:
+          method: DELETE
+          path: /<stage>/users/<user_id>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+
+    # ------------------------------------------------------------------
+    # order — look up orders belonging to the user (read-only example)
+    # ------------------------------------------------------------------
+    - name: order
+      requests:
+        read:
+          method: GET
+          path: /<stage>/orders
+          query_params:
+            - name: user_id
+              value: <user_id>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+          data_path: items

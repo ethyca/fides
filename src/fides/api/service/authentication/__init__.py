@@ -1,5 +1,6 @@
 from fides.api.service.authentication import (
     authentication_strategy_api_key,
+    authentication_strategy_aws_iam_role,
     authentication_strategy_basic,
     authentication_strategy_bearer,
     authentication_strategy_google_cloud_service_account,
