@@ -3,11 +3,9 @@ import {
   Col,
   Divider,
   Flex,
-  Icons,
   Input,
   Result,
   Row,
-  Segmented,
   Select,
   Text,
   Title,
@@ -16,7 +14,6 @@ import { useMemo, useState } from "react";
 
 import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
 import PurposeCard from "./PurposeCard";
-import PurposeNetworkView from "./PurposeNetworkView";
 import { computeCategoryDrift, formatDataUse } from "./purposeUtils";
 
 interface PurposeCardGridProps {
@@ -36,7 +33,6 @@ const PurposeCardGrid = ({
   summaries,
   onCreatePurpose,
 }: PurposeCardGridProps) => {
-  const [viewMode, setViewMode] = useState<"grid" | "network">("grid");
   const [search, setSearch] = useState("");
   const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
   const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
@@ -172,13 +168,7 @@ const PurposeCardGrid = ({
     );
 
   return (
-    <div
-      style={
-        viewMode === "network"
-          ? { flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }
-          : undefined
-      }
-    >
+    <div>
       <Flex justify="space-between" align="center" className="mb-4">
         <Input
           placeholder="Search purposes..."
@@ -226,24 +216,10 @@ const PurposeCardGrid = ({
             value={dataUseFilter}
             onChange={(v) => setDataUseFilter(v ?? null)}
           />
-          <Segmented
-            value={viewMode}
-            onChange={(v) => setViewMode(v as "grid" | "network")}
-            options={[
-              { label: <Icons.ShowDataCards size={16} />, value: "grid" },
-              { label: <Icons.Fork size={16} />, value: "network" },
-            ]}
-          />
         </Flex>
       </Flex>
       {filtered.length === 0 && emptyState}
-      {filtered.length > 0 && viewMode === "network" && (
-        <div style={{ flex: 1, minHeight: 0 }}>
-          <PurposeNetworkView purposes={filtered} summaries={summaries} />
-        </div>
-      )}
       {filtered.length > 0 &&
-        viewMode === "grid" &&
         groups.map(([dataUse, items]) => {
           const groupSystemCount = items.reduce((sum, p) => {
             const s = summariesByKey.get(p.fides_key);

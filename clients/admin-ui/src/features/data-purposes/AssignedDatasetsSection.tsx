@@ -20,11 +20,14 @@ import { useCallback, useMemo, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 
-import AddDatasetsModal from "./AddDatasetsModal";
+import AssignPickerModal from "./AssignPickerModal";
 import {
+  type AvailableDataset,
   type PurposeDatasetAssignment,
   useAcceptPurposeCategoriesMutation,
+  useAddDatasetsToPurposeMutation,
   useGetDataPurposeByKeyQuery,
+  useGetPurposeAvailableDatasetsQuery,
   useGetPurposeDatasetsQuery,
   useMarkPurposeCategoriesMisclassifiedMutation,
   useRemoveDatasetsFromPurposeMutation,
@@ -88,6 +91,19 @@ const AssignedDatasetsSection = ({
   const [acceptCategories] = useAcceptPurposeCategoriesMutation();
   const [markMisclassified] = useMarkPurposeCategoriesMisclassifiedMutation();
   const [removeDatasets] = useRemoveDatasetsFromPurposeMutation();
+  const { data: availableDatasets = [], isFetching: isFetchingAvailable } =
+    useGetPurposeAvailableDatasetsQuery(fidesKey, { skip: !modalOpen });
+  const [addDatasets, { isLoading: isAdding }] =
+    useAddDatasetsToPurposeMutation();
+
+  const handleAddSubmit = async (datasetFidesKeys: string[]) => {
+    const result = await addDatasets({ fidesKey, datasetFidesKeys });
+    if (isErrorResult(result)) {
+      message.error("Could not add datasets");
+      return false;
+    }
+    return true;
+  };
 
   const definedCategories = purpose?.data_categories ?? [];
 
@@ -447,10 +463,29 @@ const AssignedDatasetsSection = ({
           ),
         }}
       />
-      <AddDatasetsModal
-        fidesKey={fidesKey}
+      <AssignPickerModal<AvailableDataset>
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        title="Add datasets"
+        searchPlaceholder="Search datasets..."
+        filterPlaceholder="All systems"
+        data={availableDatasets}
+        isFetching={isFetchingAvailable}
+        isSubmitting={isAdding}
+        columns={[
+          { title: "Dataset", dataIndex: "dataset_name", key: "dataset_name" },
+          {
+            title: "System",
+            dataIndex: "system_name",
+            key: "system_name",
+            width: 180,
+          },
+        ]}
+        getRowKey={(d) => d.dataset_fides_key}
+        getSearchValue={(d) => d.dataset_name}
+        getFilterValue={(d) => d.system_name}
+        enableSelectAll
+        onSubmit={handleAddSubmit}
       />
     </div>
   );

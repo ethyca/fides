@@ -1,48 +1,51 @@
 import {
   Button,
+  ColumnsType,
   Flex,
   Input,
   Modal,
   Select,
   Table,
   Tag,
-  useMessage,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
-import { isErrorResult } from "~/features/common/helpers";
-
-import {
-  type AvailableDataset,
-  useAddDatasetsToPurposeMutation,
-  useGetPurposeAvailableDatasetsQuery,
-} from "./data-purpose.slice";
-
-interface AddDatasetsModalProps {
-  fidesKey: string;
+interface AssignPickerModalProps<T> {
   open: boolean;
   onClose: () => void;
+  title: string;
+  searchPlaceholder: string;
+  filterPlaceholder: string;
+  data: T[];
+  isFetching: boolean;
+  isSubmitting: boolean;
+  columns: ColumnsType<T>;
+  getRowKey: (item: T) => string;
+  getSearchValue: (item: T) => string;
+  getFilterValue: (item: T) => string;
+  enableSelectAll?: boolean;
+  onSubmit: (keys: string[]) => Promise<boolean>;
 }
 
-const columns = [
-  { title: "Dataset", dataIndex: "dataset_name", key: "dataset_name" },
-  { title: "System", dataIndex: "system_name", key: "system_name", width: 180 },
-];
-
-const AddDatasetsModal = ({
-  fidesKey,
+const AssignPickerModal = <T,>({
   open,
   onClose,
-}: AddDatasetsModalProps) => {
+  title,
+  searchPlaceholder,
+  filterPlaceholder,
+  data,
+  isFetching,
+  isSubmitting,
+  columns,
+  getRowKey,
+  getSearchValue,
+  getFilterValue,
+  enableSelectAll = false,
+  onSubmit,
+}: AssignPickerModalProps<T>) => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [search, setSearch] = useState("");
-  const [systemFilter, setSystemFilter] = useState<string | null>(null);
-  const message = useMessage();
-
-  const { data: availableDatasets = [], isFetching } =
-    useGetPurposeAvailableDatasetsQuery(fidesKey, { skip: !open });
-  const [addDatasets, { isLoading: isAdding }] =
-    useAddDatasetsToPurposeMutation();
+  const [filter, setFilter] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -50,26 +53,26 @@ const AddDatasetsModal = ({
     }
   }, [open]);
 
-  const systemOptions = useMemo(() => {
-    const systems = [...new Set(availableDatasets.map((d) => d.system_name))];
-    return systems.map((s) => ({ label: s, value: s }));
-  }, [availableDatasets]);
+  const filterOptions = useMemo(() => {
+    const values = [...new Set(data.map(getFilterValue))];
+    return values.map((v) => ({ label: v, value: v }));
+  }, [data, getFilterValue]);
 
   const filtered = useMemo(
     () =>
-      availableDatasets.filter((d) => {
-        const matchesSearch = d.dataset_name
+      data.filter((item) => {
+        const matchesSearch = getSearchValue(item)
           .toLowerCase()
           .includes(search.toLowerCase());
-        const matchesSystem = !systemFilter || d.system_name === systemFilter;
-        return matchesSearch && matchesSystem;
+        const matchesFilter = !filter || getFilterValue(item) === filter;
+        return matchesSearch && matchesFilter;
       }),
-    [availableDatasets, search, systemFilter],
+    [data, search, filter, getSearchValue, getFilterValue],
   );
 
   const filteredKeys = useMemo(
-    () => filtered.map((d) => d.dataset_fides_key),
-    [filtered],
+    () => filtered.map(getRowKey),
+    [filtered, getRowKey],
   );
   const allFilteredSelected =
     filteredKeys.length > 0 &&
@@ -86,7 +89,7 @@ const AddDatasetsModal = ({
 
   const resetLocalState = () => {
     setSearch("");
-    setSystemFilter(null);
+    setFilter(null);
     setSelectedKeys([]);
   };
 
@@ -96,12 +99,8 @@ const AddDatasetsModal = ({
       onClose();
       return;
     }
-    const result = await addDatasets({
-      fidesKey,
-      datasetFidesKeys: selectedKeys,
-    });
-    if (isErrorResult(result)) {
-      message.error("Could not add datasets");
+    const ok = await onSubmit(selectedKeys);
+    if (!ok) {
       return;
     }
     resetLocalState();
@@ -117,7 +116,7 @@ const AddDatasetsModal = ({
     <Modal
       title={
         <Flex align="center" justify="space-between" className="pr-6">
-          <span>Add datasets</span>
+          <span>{title}</span>
           <Tag color="default" bordered={false}>
             {selectedKeys.length} selected
           </Tag>
@@ -127,13 +126,13 @@ const AddDatasetsModal = ({
       onCancel={handleCancel}
       onOk={handleConfirm}
       okText={selectedKeys.length > 0 ? "Add" : "Done"}
-      confirmLoading={isAdding}
+      confirmLoading={isSubmitting}
       width={640}
       destroyOnClose
     >
       <Flex gap="small" className="mb-3">
         <Input
-          placeholder="Search datasets..."
+          placeholder={searchPlaceholder}
           value={search}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setSearch(e.target.value)
@@ -142,26 +141,28 @@ const AddDatasetsModal = ({
           style={{ flex: 1 }}
         />
         <Select
-          aria-label="Filter by system"
-          placeholder="All systems"
-          options={systemOptions}
-          value={systemFilter}
-          onChange={setSystemFilter}
+          aria-label={filterPlaceholder}
+          placeholder={filterPlaceholder}
+          options={filterOptions}
+          value={filter}
+          onChange={setFilter}
           allowClear
           style={{ width: 180 }}
         />
-        <Button
-          size="middle"
-          onClick={toggleSelectAllFiltered}
-          disabled={filteredKeys.length === 0}
-        >
-          {allFilteredSelected ? "Clear all" : "Select all"}
-        </Button>
+        {enableSelectAll && (
+          <Button
+            size="middle"
+            onClick={toggleSelectAllFiltered}
+            disabled={filteredKeys.length === 0}
+          >
+            {allFilteredSelected ? "Clear all" : "Select all"}
+          </Button>
+        )}
       </Flex>
-      <Table<AvailableDataset>
+      <Table<T>
         dataSource={filtered}
         columns={columns}
-        rowKey="dataset_fides_key"
+        rowKey={getRowKey}
         size="small"
         loading={isFetching}
         pagination={false}
@@ -175,4 +176,4 @@ const AddDatasetsModal = ({
   );
 };
 
-export default AddDatasetsModal;
+export default AssignPickerModal;

@@ -21,9 +21,12 @@ import { useMemo, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 
-import AssignSystemsPickerModal from "./AssignSystemsPickerModal";
+import AssignPickerModal from "./AssignPickerModal";
 import {
+  type AvailableSystem,
+  useAssignSystemsToPurposeMutation,
   useGetDataPurposeByKeyQuery,
+  useGetPurposeAvailableSystemsQuery,
   useGetPurposeDatasetsQuery,
   useGetPurposeSystemsQuery,
   useRemoveSystemsFromPurposeMutation,
@@ -48,6 +51,19 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
     useGetPurposeSystemsQuery(fidesKey);
   const { data: datasets = [] } = useGetPurposeDatasetsQuery(fidesKey);
   const [removeSystems] = useRemoveSystemsFromPurposeMutation();
+  const { data: availableSystems = [], isFetching: isFetchingAvailable } =
+    useGetPurposeAvailableSystemsQuery(fidesKey, { skip: !modalOpen });
+  const [assignSystems, { isLoading: isAssigning }] =
+    useAssignSystemsToPurposeMutation();
+
+  const handleAssignSubmit = async (systemIds: string[]) => {
+    const result = await assignSystems({ fidesKey, systemIds });
+    if (isErrorResult(result)) {
+      message.error("Could not assign systems");
+      return false;
+    }
+    return true;
+  };
 
   const definedCategories = purpose?.data_categories ?? [];
 
@@ -262,10 +278,23 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
           )}
         </>
       )}
-      <AssignSystemsPickerModal
-        fidesKey={fidesKey}
+      <AssignPickerModal<AvailableSystem>
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        title="Add data consumers"
+        searchPlaceholder="Search data consumers..."
+        filterPlaceholder="All types"
+        data={availableSystems}
+        isFetching={isFetchingAvailable}
+        isSubmitting={isAssigning}
+        columns={[
+          { title: "System", dataIndex: "system_name", key: "system_name" },
+          { title: "Type", dataIndex: "system_type", key: "system_type" },
+        ]}
+        getRowKey={(s) => s.system_id}
+        getSearchValue={(s) => s.system_name}
+        getFilterValue={(s) => s.system_type}
+        onSubmit={handleAssignSubmit}
       />
     </div>
   );
