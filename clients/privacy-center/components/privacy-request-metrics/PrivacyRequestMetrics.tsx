@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   ChakraBox as Box,
   ChakraFlex as Flex,
@@ -8,16 +7,17 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 
+import type { LocationOption } from "~/app/server-utils/fetchLocationsFromApi";
+import { selectConsentState } from "~/features/consent/consent.slice";
 import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
 } from "~/features/privacy-request-metrics/constants";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
-import { selectConsentState } from "~/features/consent/consent.slice";
-import type { LocationOption } from "~/app/server-utils/fetchLocationsFromApi";
 
 const ALL_LOCATIONS_VALUE = "";
 
@@ -167,13 +167,7 @@ export const PrivacyRequestMetrics = ({
                 borderColor="gray.100"
                 _hover={{ bg: "gray.50" }}
               >
-                <Box
-                  as="td"
-                  py={3}
-                  px={3}
-                  fontWeight="medium"
-                  color="gray.800"
-                >
+                <Box as="td" py={3} px={3} fontWeight="medium" color="gray.800">
                   {REQUEST_TYPE_LABELS[typeKey] ?? typeKey}
                 </Box>
                 {METRIC_COLUMNS.map((col) => (
