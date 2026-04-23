@@ -1,5 +1,4 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 export const DATA_USE_LABELS: Record<string, string> = {
   analytics: "Analytics",
@@ -13,11 +12,11 @@ export const formatDataUse = (key: string): string =>
   DATA_USE_LABELS[key] ?? key;
 
 export const DATA_USE_COLORS: Record<string, string> = {
-  analytics: palette.FIDESUI_OLIVE,
-  "marketing.advertising": palette.FIDESUI_TERRACOTTA,
-  "essential.service.security": palette.FIDESUI_MINOS,
-  "essential.service.operations": palette.FIDESUI_SANDSTONE,
-  improve: palette.FIDESUI_INFO,
+  analytics: "var(--fidesui-olive)",
+  "marketing.advertising": "var(--fidesui-terracotta)",
+  "essential.service.security": "var(--fidesui-minos)",
+  "essential.service.operations": "var(--fidesui-sandstone)",
+  improve: "var(--fidesui-info)",
 };
 
 export const LEGAL_BASIS_LABELS: Record<string, string> = {

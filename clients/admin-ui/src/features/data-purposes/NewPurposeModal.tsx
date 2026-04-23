@@ -1,9 +1,11 @@
-import { Form, Input, Modal, Select, useMessage } from "fidesui";
+import { Form, Input, Select, useMessage } from "fidesui";
 import { useMemo } from "react";
 
-import { isErrorResult } from "~/features/common/helpers";
+import { getErrorMessage } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
+import { RTKErrorResult } from "~/types/errors/api";
 
 import { useCreateDataPurposeMutation } from "./data-purpose.slice";
 
@@ -37,30 +39,31 @@ const NewPurposeModal = ({
     data_use: string;
     description?: string;
   }) => {
-    const result = await createDataPurpose({
-      fides_key: formatKey(values.name),
-      name: values.name,
-      data_use: values.data_use,
-      description: values.description || null,
-    });
-    if (isErrorResult(result)) {
-      message.error("Could not create purpose");
-      return;
+    try {
+      const created = await createDataPurpose({
+        fides_key: formatKey(values.name),
+        name: values.name,
+        data_use: values.data_use,
+        description: values.description || null,
+      }).unwrap();
+      form.resetFields();
+      onCreated(created.fides_key);
+    } catch (error) {
+      message.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
-    form.resetFields();
-    onCreated(result.data.fides_key);
   };
 
-  const handleCancel = () => {
+  const handleClose = () => {
     form.resetFields();
     onClose();
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="New purpose"
       open={open}
-      onCancel={handleCancel}
+      onClose={handleClose}
+      getIsDirty={() => form.isFieldsTouched()}
       onOk={() => form.submit()}
       okText="Create"
       confirmLoading={isLoading}
@@ -90,7 +93,7 @@ const NewPurposeModal = ({
           <Input.TextArea rows={3} placeholder="Describe this purpose" />
         </Form.Item>
       </Form>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

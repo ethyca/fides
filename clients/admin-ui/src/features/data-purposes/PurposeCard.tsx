@@ -1,7 +1,8 @@
+import classNames from "classnames";
 import { Card, Flex, Text } from "fidesui";
-import { useRouter } from "next/router";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 
 import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
@@ -9,7 +10,10 @@ import { computeCategoryDrift } from "./purposeUtils";
 
 const Dot = ({ className }: { className: string }) => (
   <span
-    className={`inline-block size-[7px] shrink-0 rounded-full ${className}`}
+    className={classNames(
+      "inline-block size-[7px] shrink-0 rounded-full",
+      className,
+    )}
   />
 );
 
@@ -32,7 +36,7 @@ const RISK_VARIANTS: Record<
     textProps: { className: "!text-[var(--fidesui-minos)]" },
   }),
   unknown: () => ({
-    dotClass: "bg-neutral-3",
+    dotClass: "bg-[var(--fidesui-neutral-300)]",
     label: "Not scanned",
     textProps: { type: "secondary" },
   }),
@@ -49,7 +53,10 @@ const RiskIndicator = ({
   return (
     <Flex align="center" gap={5}>
       <Dot className={dotClass} />
-      <Text {...textProps} className={`text-xs ${textProps.className ?? ""}`}>
+      <Text
+        {...textProps}
+        className={classNames("text-xs", textProps.className)}
+      >
         {label}
       </Text>
     </Flex>
@@ -62,7 +69,6 @@ interface PurposeCardProps {
 }
 
 const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
-  const router = useRouter();
   const drift = computeCategoryDrift(
     purpose.data_categories ?? [],
     summary?.detected_data_categories ?? [],
@@ -71,32 +77,33 @@ const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
   const updatedAgo = useRelativeTime(updatedAt);
 
   return (
-    <Card
-      size="small"
-      hoverable
-      onClick={() => router.push(`${DATA_PURPOSES_ROUTE}/${purpose.fides_key}`)}
+    <RouterLink
+      href={`${DATA_PURPOSES_ROUTE}/${purpose.fides_key}`}
+      unstyled
+      className="block h-full"
     >
-      <Flex vertical gap={8} className="h-full">
-        <Text strong>{purpose.name}</Text>
-        <Text type="secondary" className="line-clamp-2 text-xs">
-          {purpose.description}
-        </Text>
-        <RiskIndicator
-          status={drift.status}
-          riskCount={drift.undeclared.length}
-        />
-        <div className="mt-auto">
-          <Text type="secondary" className="text-xs">
-            {summary?.system_count ?? 0} data consumers &middot;{" "}
-            {(purpose.data_categories ?? []).length} categories
+      <Card size="small" hoverable className="h-full">
+        <Flex vertical gap={8} className="h-full">
+          <Text strong>{purpose.name}</Text>
+          <Text type="secondary" className="line-clamp-2 text-xs">
+            {purpose.description}
           </Text>
-          <br />
-          <Text type="secondary" className="text-xs">
-            {updatedAgo && `Updated ${updatedAgo}`}
-          </Text>
-        </div>
-      </Flex>
-    </Card>
+          <RiskIndicator
+            status={drift.status}
+            riskCount={drift.undeclared.length}
+          />
+          <Flex vertical gap={4} className="mt-auto">
+            <Text type="secondary" className="text-xs">
+              {summary?.system_count ?? 0} data consumers &middot;{" "}
+              {(purpose.data_categories ?? []).length} categories
+            </Text>
+            <Text type="secondary" className="text-xs">
+              {updatedAgo && `Updated ${updatedAgo}`}
+            </Text>
+          </Flex>
+        </Flex>
+      </Card>
+    </RouterLink>
   );
 };
 
