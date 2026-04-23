@@ -2,6 +2,7 @@ import { Card, Input, Select, Space, Switch, Typography } from "fidesui";
 
 import { ACTION_TYPES } from "./constants";
 import type { PromptInfo, TemplateSummary } from "./types";
+import { PromptCategory, PromptType } from "./types";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -75,7 +76,9 @@ export const QuestionnaireControls = ({
 }: QuestionnaireControlsProps) => {
   if (
     !selectedPrompt ||
-    !["questionnaire", "access_policies"].includes(selectedPrompt.category)
+    ![PromptCategory.QUESTIONNAIRE, PromptCategory.ACCESS_POLICIES].includes(
+      selectedPrompt.category as PromptCategory,
+    )
   ) {
     return null;
   }
@@ -264,7 +267,7 @@ export const QuestionnaireControls = ({
       )}
 
       {/* Access Policy Chat specific controls */}
-      {promptType === "access_policy_chat" && (
+      {promptType === PromptType.ACCESS_POLICY_CHAT && (
         <Card title="Policy Chat Input" size="small">
           <Space orientation="vertical" className="w-full">
             <div>

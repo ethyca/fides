@@ -1,4 +1,4 @@
-import type { PromptType } from "./types";
+import { PromptType } from "./types";
 
 interface Question {
   id: string;
@@ -69,7 +69,7 @@ export const buildQuestionnaireVariables = ({
   agentPrompt = "",
   currentPolicyYaml = "",
 }: QuestionnaireVariablesParams): Record<string, unknown> => {
-  if (promptType === "access_policy_chat") {
+  if (promptType === PromptType.ACCESS_POLICY_CHAT) {
     return {
       prompt: agentPrompt,
       current_policy_yaml: currentPolicyYaml,

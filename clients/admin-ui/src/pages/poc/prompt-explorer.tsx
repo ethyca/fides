@@ -81,9 +81,7 @@ const PromptExplorer: NextPage = () => {
   );
 
   // State for access policy chat prompt inputs
-  const [agentPrompt, setAgentPrompt] = useState<string>(
-    "Create a policy that denies marketing use for EEA users",
-  );
+  const [agentPrompt, setAgentPrompt] = useState<string>("");
   const [currentPolicyYaml, setCurrentPolicyYaml] = useState<string>("");
 
   // State for rendered prompt and response
@@ -174,8 +172,8 @@ const PromptExplorer: NextPage = () => {
 
     try {
       const questionnaireVariables =
-        selectedPrompt.category === "questionnaire" ||
-        selectedPrompt.category === "access_policies"
+        selectedPrompt.category === PromptCategory.QUESTIONNAIRE ||
+        selectedPrompt.category === PromptCategory.ACCESS_POLICIES
           ? buildQuestionnaireVariables({
               promptType: selectedPrompt.prompt_type,
               questions,
@@ -318,9 +316,18 @@ const PromptExplorer: NextPage = () => {
                   value={selectedCategory}
                   onChange={(value) => setSelectedCategory(value)}
                   options={[
-                    { label: "Access Policies", value: "access_policies" },
-                    { label: "Assessment", value: "assessment" },
-                    { label: "Questionnaire", value: "questionnaire" },
+                    {
+                      label: "Access Policies",
+                      value: PromptCategory.ACCESS_POLICIES,
+                    },
+                    {
+                      label: "Assessment",
+                      value: PromptCategory.ASSESSMENT,
+                    },
+                    {
+                      label: "Questionnaire",
+                      value: PromptCategory.QUESTIONNAIRE,
+                    },
                   ]}
                 />
               }
