@@ -84,14 +84,20 @@ def validate_value_against_allowed_list(
 
     if mode == DomainValidationMode.monitor:
         logger.warning(
-            "Domain validation violation (monitor mode): {}",
+            "Domain validation violation (enforcement mode - monitor): {}",
             violation_msg,
         )
         return
 
-    raise DomainValidationError(
-        f"{violation_msg} "
-        f"You may change the validation behavior by setting "
-        f"the environment variable FIDES__SECURITY__DOMAIN_VALIDATION_MODE "
-        f"to 'monitor' (log warnings only) or 'disabled' (skip validation)."
+    logger.error(
+        "Domain validation violation (enforcement mode - enabled): {}",
+        violation_msg,
     )
+    logger.info(
+        "To change domain validation behavior, set {} to 'monitor' or 'disabled'.",
+        _DOMAIN_MODE_ENV_VAR,
+    )
+    logger.info(
+        "To add support for this domain, contact Ethyca support."
+    )
+    raise DomainValidationError(violation_msg)
