@@ -1,4 +1,0 @@
-type: Added
-description: Add template versioning schema (fides_revision, is_managed, parent_template_id) and new privacy assessment templates (CPRA v2025, FRIA v2026, UK ICO ROPA, IE DPC ROPA, FR CNIL ROPA)
-pr: 7969
-labels: ["db-migration"]

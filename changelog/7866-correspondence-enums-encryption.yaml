@@ -1,4 +1,0 @@
-type: Added
-description: Add correspondence data model enums, scopes, and encrypt comment_text column
-pr: 7866
-labels: ["db-migration"]
