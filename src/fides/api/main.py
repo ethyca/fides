@@ -65,9 +65,13 @@ from fides.config import CONFIG, check_required_webserver_config_values
 from fides.service.jira.polling_task import initiate_jira_ticket_polling
 
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
-# Turbopack (Next.js 16+) chunk filenames can embed ".." before the extension,
-# e.g. "0y3j4e~tvxaz..js". These are benign static assets, not traversal.
-TURBOPACK_CHUNK_RE = re.compile(r"^[\w~-]+\.\.[a-z]+$")
+# Turbopack (Next.js 16+) chunk filenames can embed ".." surrounded by dots on
+# either side, e.g. "0y3j4e~tvxaz..js", "0~9kfdw7..yey.js", or
+# "0te-shorr2._..js". Allow word chars, tildes, dots, and hyphens on both
+# sides of the "..", but require a non-dot first character. That keeps "..",
+# "...", "....", "..foo", "foo..", and overlong-UTF-8 variants rejected while
+# admitting the turbopack filename shape.
+TURBOPACK_CHUNK_RE = re.compile(r"^[\w~-][\w~.-]*\.\.[\w~.-]+$")
 
 VERSION = fides.__version__
 
