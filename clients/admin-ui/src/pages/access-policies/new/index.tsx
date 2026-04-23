@@ -17,10 +17,8 @@ const NewAccessPolicyPage: NextPage = () => {
 
   const handleSave = async (values: SidebarFormValues, yaml: string) => {
     try {
-      const { controls, ...rest } = values;
       await createAccessPolicy({
-        ...rest,
-        control: controls?.[0],
+        ...values,
         yaml,
       }).unwrap();
       messageApi.success("Policy created.");
