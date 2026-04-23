@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -10,6 +11,7 @@ import { useGetDataPurposeByKeyQuery } from "~/features/data-purposes/data-purpo
 import PurposeDetail from "~/features/data-purposes/PurposeDetail";
 
 const PurposeDetailPage: NextPage = () => {
+  const { flags } = useFeatures();
   const router = useRouter();
   const rawKey = router.query.fidesKey;
   const fidesKey = typeof rawKey === "string" ? rawKey : undefined;
@@ -19,7 +21,21 @@ const PurposeDetailPage: NextPage = () => {
     isLoading,
     isError,
     error,
-  } = useGetDataPurposeByKeyQuery(fidesKey ?? "", { skip: !fidesKey });
+  } = useGetDataPurposeByKeyQuery(fidesKey ?? "", {
+    skip: !fidesKey || !flags.alphaPurposeBasedAccessControl,
+  });
+
+  if (!flags.alphaPurposeBasedAccessControl) {
+    return (
+      <FixedLayout title="Purposes" fullHeight>
+        <Result
+          status="error"
+          title="Purpose management is not enabled"
+          subTitle="Turn on the alpha purpose-based access control flag to preview this feature."
+        />
+      </FixedLayout>
+    );
+  }
 
   const is404 =
     isError &&

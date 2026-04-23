@@ -2,6 +2,7 @@ import { Button, Flex, Icons, Result, Spin } from "fidesui";
 import { NextPage } from "next";
 import { useCallback, useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import {
@@ -11,16 +12,19 @@ import {
 import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
 import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
 
-// The batched-summary endpoint is UI-only today (served by MSW). Skip it
-// unless mocks are enabled so we don't fire a guaranteed-404 request in prod.
-// TODO: remove skip gate once fidesplus ships a real `plus/data-purpose/summaries` endpoint.
-const isMockApiEnabled = process.env.NEXT_PUBLIC_MOCK_API === "true";
-
 const DataPurposesPage: NextPage = () => {
+  const { flags } = useFeatures();
   const [modalOpen, setModalOpen] = useState(false);
-  const { data: page, isLoading, isError } = useGetAllDataPurposesQuery({});
+  const {
+    data: page,
+    isLoading,
+    isError,
+  } = useGetAllDataPurposesQuery(
+    {},
+    { skip: !flags.alphaPurposeBasedAccessControl },
+  );
   const { data: summaries = [] } = useGetPurposeSummariesQuery(undefined, {
-    skip: !isMockApiEnabled,
+    skip: !flags.alphaPurposeBasedAccessControl,
   });
   const purposes = page?.items ?? [];
 
@@ -70,6 +74,18 @@ const DataPurposesPage: NextPage = () => {
     a.click();
     URL.revokeObjectURL(url);
   }, [purposes, summaries]);
+
+  if (!flags.alphaPurposeBasedAccessControl) {
+    return (
+      <FixedLayout title="Purposes" fullHeight>
+        <Result
+          status="error"
+          title="Purpose management is not enabled"
+          subTitle="Turn on the alpha purpose-based access control flag to preview this feature."
+        />
+      </FixedLayout>
+    );
+  }
 
   let body: React.ReactNode;
   if (isLoading) {
