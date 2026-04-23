@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useGetAllDataUsesQuery } from "~/features/data-use/data-use.slice";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 
 import { useCreateDataPurposeMutation } from "./data-purpose.slice";
 
@@ -11,12 +12,6 @@ interface NewPurposeModalProps {
   onClose: () => void;
   onCreated: (fidesKey: string) => void;
 }
-
-const slugify = (text: string): string =>
-  text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "");
 
 const NewPurposeModal = ({
   open,
@@ -30,9 +25,9 @@ const NewPurposeModal = ({
 
   const dataUseOptions = useMemo(
     () =>
-      (dataUses ?? []).map((du) => ({
-        value: du.fides_key,
-        label: du.fides_key,
+      (dataUses ?? []).map((dataUse) => ({
+        value: dataUse.fides_key,
+        label: dataUse.fides_key,
       })),
     [dataUses],
   );
@@ -42,7 +37,7 @@ const NewPurposeModal = ({
     data_use: string;
     description?: string;
   }) => {
-    const fidesKey = slugify(values.name);
+    const fidesKey = formatKey(values.name);
     const result = await createDataPurpose({
       fides_key: fidesKey,
       name: values.name,

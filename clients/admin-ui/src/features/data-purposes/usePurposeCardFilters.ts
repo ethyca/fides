@@ -21,68 +21,76 @@ const usePurposeCardFilters = (
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const summariesByKey = useMemo(
-    () => new Map(summaries.map((s) => [s.fides_key, s])),
+    () => new Map(summaries.map((summary) => [summary.fides_key, summary])),
     [summaries],
   );
 
   const consumerOptions = useMemo(() => {
-    const seen = new Set<string>();
+    const seenSystemIds = new Set<string>();
     const options: { value: string; label: string }[] = [];
     summaries.forEach((summary) => {
       summary.systems
-        .filter((a) => a.assigned)
-        .forEach((a) => {
-          if (!seen.has(a.system_id)) {
-            seen.add(a.system_id);
-            options.push({ value: a.system_id, label: a.system_name });
+        .filter((assignment) => assignment.assigned)
+        .forEach((assignment) => {
+          if (!seenSystemIds.has(assignment.system_id)) {
+            seenSystemIds.add(assignment.system_id);
+            options.push({
+              value: assignment.system_id,
+              label: assignment.system_name,
+            });
           }
         });
     });
-    return options.sort((a, b) => a.label.localeCompare(b.label));
+    return options.sort((left, right) => left.label.localeCompare(right.label));
   }, [summaries]);
 
   const dataUseOptions = useMemo(
     () =>
-      [...new Set(purposes.map((p) => p.data_use))].map((du) => ({
-        value: du,
-        label: formatDataUse(du),
-      })),
+      [...new Set(purposes.map((purpose) => purpose.data_use))].map(
+        (dataUse) => ({
+          value: dataUse,
+          label: formatDataUse(dataUse),
+        }),
+      ),
     [purposes],
   );
 
   const categoryOptions = useMemo(() => {
-    const all = new Set<string>();
-    purposes.forEach((p) =>
-      (p.data_categories ?? []).forEach((c) => all.add(c)),
+    const allCategories = new Set<string>();
+    purposes.forEach((purpose) =>
+      (purpose.data_categories ?? []).forEach((category) =>
+        allCategories.add(category),
+      ),
     );
-    return Array.from(all)
+    return Array.from(allCategories)
       .sort()
-      .map((c) => ({ value: c, label: c }));
+      .map((category) => ({ value: category, label: category }));
   }, [purposes]);
 
   const filtered = useMemo(() => {
-    return purposes.filter((p) => {
+    return purposes.filter((purpose) => {
       if (
         categoryFilter &&
-        !(p.data_categories ?? []).includes(categoryFilter)
+        !(purpose.data_categories ?? []).includes(categoryFilter)
       ) {
         return false;
       }
       if (!consumerFilter && !statusFilter) {
         return true;
       }
-      const summary = summariesByKey.get(p.fides_key);
+      const summary = summariesByKey.get(purpose.fides_key);
       if (
         consumerFilter &&
         !summary?.systems.some(
-          (a) => a.assigned && a.system_id === consumerFilter,
+          (assignment) =>
+            assignment.assigned && assignment.system_id === consumerFilter,
         )
       ) {
         return false;
       }
       if (statusFilter) {
         const { status } = computeCategoryDrift(
-          p.data_categories ?? [],
+          purpose.data_categories ?? [],
           summary?.detected_data_categories ?? [],
         );
         if (status !== statusFilter) {
@@ -98,17 +106,17 @@ const usePurposeCardFilters = (
       string,
       { items: DataPurpose[]; systemCount: number; datasetCount: number }
     >();
-    filtered.forEach((p) => {
-      const summary = summariesByKey.get(p.fides_key);
-      const group = byDataUse.get(p.data_use) ?? {
+    filtered.forEach((purpose) => {
+      const summary = summariesByKey.get(purpose.fides_key);
+      const group = byDataUse.get(purpose.data_use) ?? {
         items: [],
         systemCount: 0,
         datasetCount: 0,
       };
-      group.items.push(p);
+      group.items.push(purpose);
       group.systemCount += summary?.system_count ?? 0;
       group.datasetCount += summary?.dataset_count ?? 0;
-      byDataUse.set(p.data_use, group);
+      byDataUse.set(purpose.data_use, group);
     });
     return Array.from(byDataUse, ([dataUse, group]) => ({ dataUse, ...group }));
   }, [filtered, summariesByKey]);

@@ -87,27 +87,27 @@ const PurposeConfigForm = ({
 
   const dataUseOptions = useMemo(
     () =>
-      getDataUses().map((du) => ({
-        value: du.fides_key,
-        label: du.fides_key,
+      getDataUses().map((dataUse) => ({
+        value: dataUse.fides_key,
+        label: dataUse.fides_key,
       })),
     [getDataUses],
   );
 
   const dataCategoryOptions = useMemo(
     () =>
-      getDataCategories().map((dc) => ({
-        value: dc.fides_key,
-        label: dc.fides_key,
+      getDataCategories().map((category) => ({
+        value: category.fides_key,
+        label: category.fides_key,
       })),
     [getDataCategories],
   );
 
   const dataSubjectOptions = useMemo(
     () =>
-      getDataSubjects().map((ds) => ({
-        value: ds.fides_key,
-        label: ds.fides_key,
+      getDataSubjects().map((subject) => ({
+        value: subject.fides_key,
+        label: subject.fides_key,
       })),
     [getDataSubjects],
   );

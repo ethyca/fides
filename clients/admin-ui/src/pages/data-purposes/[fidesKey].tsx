@@ -8,7 +8,7 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDataPurposeByKeyQuery } from "~/features/data-purposes/data-purpose.slice";
-import PurposeDetail from "~/features/data-purposes/PurposeDetail";
+import PurposeDashboard from "~/features/data-purposes/PurposeDashboard";
 
 const PurposeDetailPage: NextPage = () => {
   const { flags } = useFeatures();
@@ -73,7 +73,7 @@ const PurposeDetailPage: NextPage = () => {
       />
     );
   } else if (purpose) {
-    body = <PurposeDetail purpose={purpose} />;
+    body = <PurposeDashboard purpose={purpose} />;
   }
 
   return (

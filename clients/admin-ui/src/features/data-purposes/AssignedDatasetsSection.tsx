@@ -4,7 +4,6 @@ import {
   Empty,
   Flex,
   Icons,
-  Input,
   Popconfirm,
   Select,
   Switch,
@@ -15,10 +14,11 @@ import {
   Tooltip,
   useMessage,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { isErrorResult } from "~/features/common/helpers";
+import styles from "~/features/data-purposes/AssignedDatasetsSection.module.scss";
 
 import AssignPickerModal from "./AssignPickerModal";
 import {
@@ -55,13 +55,13 @@ const renderDataCategories = (
   const hidden = remaining > 0 ? categories.slice(MAX_VISIBLE_CATEGORIES) : [];
   return (
     <Flex gap={4} wrap="wrap">
-      {visible.map((c) => (
+      {visible.map((category) => (
         <Tag
-          key={c}
-          color={!definedSet.has(c) ? "error" : undefined}
+          key={category}
+          color={!definedSet.has(category) ? "error" : undefined}
           bordered={false}
         >
-          {c}
+          {category}
         </Tag>
       ))}
       {remaining > 0 && (
@@ -105,48 +105,55 @@ const AssignedDatasetsSection = ({
     return true;
   };
 
-  const definedCategories = purpose?.data_categories ?? [];
-
   const definedSet = useMemo(
-    () => new Set(definedCategories),
-    [definedCategories],
+    () => new Set(purpose?.data_categories ?? []),
+    [purpose?.data_categories],
   );
 
   const systemOptions = useMemo(() => {
-    const systems = [...new Set(datasets.map((d) => d.system_name))];
-    return systems.map((s) => ({ label: s, value: s }));
+    const systemNames = [
+      ...new Set(datasets.map((dataset) => dataset.system_name)),
+    ];
+    return systemNames.map((systemName) => ({
+      label: systemName,
+      value: systemName,
+    }));
   }, [datasets]);
 
   const undeclaredFor = useCallback(
     (dataset: PurposeDatasetAssignment) =>
-      dataset.data_categories.filter((c) => !definedSet.has(c)),
+      dataset.data_categories.filter((category) => !definedSet.has(category)),
     [definedSet],
   );
 
   const filtered = useMemo(
     () =>
-      datasets.filter((d) => {
-        const matchesSearch = d.dataset_name
+      datasets.filter((dataset) => {
+        const matchesSearch = dataset.dataset_name
           .toLowerCase()
           .includes(search.toLowerCase());
-        const matchesSystem = !systemFilter || d.system_name === systemFilter;
-        const matchesIssues = !issuesOnly || undeclaredFor(d).length > 0;
+        const matchesSystem =
+          !systemFilter || dataset.system_name === systemFilter;
+        const matchesIssues = !issuesOnly || undeclaredFor(dataset).length > 0;
         return matchesSearch && matchesSystem && matchesIssues;
       }),
     [datasets, search, systemFilter, issuesOnly, undeclaredFor],
   );
 
   const selectedDatasets = useMemo(
-    () => datasets.filter((d) => selectedKeys.includes(d.dataset_fides_key)),
+    () =>
+      datasets.filter((dataset) =>
+        selectedKeys.includes(dataset.dataset_fides_key),
+      ),
     [datasets, selectedKeys],
   );
 
   const selectedUndeclared = useMemo(() => {
-    const set = new Set<string>();
-    selectedDatasets.forEach((d) =>
-      undeclaredFor(d).forEach((c) => set.add(c)),
+    const categories = new Set<string>();
+    selectedDatasets.forEach((dataset) =>
+      undeclaredFor(dataset).forEach((category) => categories.add(category)),
     );
-    return Array.from(set);
+    return Array.from(categories);
   }, [selectedDatasets, undeclaredFor]);
 
   const hasSelection = selectedKeys.length > 0;
@@ -225,8 +232,10 @@ const AssignedDatasetsSection = ({
       key: "dataset_name",
       width: "20%",
       ellipsis: true,
-      sorter: (a: PurposeDatasetAssignment, b: PurposeDatasetAssignment) =>
-        a.dataset_name.localeCompare(b.dataset_name),
+      sorter: (
+        left: PurposeDatasetAssignment,
+        right: PurposeDatasetAssignment,
+      ) => left.dataset_name.localeCompare(right.dataset_name),
       render: (_: unknown, record: PurposeDatasetAssignment) => {
         const undeclared = undeclaredFor(record);
         const flagged = undeclared.length > 0;
@@ -236,7 +245,7 @@ const AssignedDatasetsSection = ({
               <Tooltip
                 title={`Flagged: ${undeclared.length === 1 ? "new use" : "new uses"} detected (${undeclared.join(", ")})`}
               >
-                <span style={{ color: palette.FIDESUI_ERROR, lineHeight: 0 }}>
+                <span className={styles.warningIcon}>
                   <Icons.WarningAltFilled size={14} />
                 </span>
               </Tooltip>
@@ -252,8 +261,10 @@ const AssignedDatasetsSection = ({
       key: "system_name",
       width: "18%",
       ellipsis: true,
-      sorter: (a: PurposeDatasetAssignment, b: PurposeDatasetAssignment) =>
-        a.system_name.localeCompare(b.system_name),
+      sorter: (
+        left: PurposeDatasetAssignment,
+        right: PurposeDatasetAssignment,
+      ) => left.system_name.localeCompare(right.system_name),
     },
     {
       title: "Data categories",
@@ -283,10 +294,17 @@ const AssignedDatasetsSection = ({
       dataIndex: "updated_at",
       key: "updated_at",
       width: "12%",
-      sorter: (a: PurposeDatasetAssignment, b: PurposeDatasetAssignment) => {
-        const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0;
-        const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0;
-        return aTime - bTime;
+      sorter: (
+        left: PurposeDatasetAssignment,
+        right: PurposeDatasetAssignment,
+      ) => {
+        const leftTime = left.updated_at
+          ? new Date(left.updated_at).getTime()
+          : 0;
+        const rightTime = right.updated_at
+          ? new Date(right.updated_at).getTime()
+          : 0;
+        return leftTime - rightTime;
       },
       render: (value: string | undefined) => {
         if (!value) {
@@ -327,8 +345,8 @@ const AssignedDatasetsSection = ({
                 type="text"
                 size="small"
                 icon={<Icons.Checkmark size={14} />}
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(event) => {
+                  event.stopPropagation();
                   handleRowAccept(record);
                 }}
               />
@@ -339,8 +357,8 @@ const AssignedDatasetsSection = ({
                 type="text"
                 size="small"
                 icon={<Icons.Close size={14} />}
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(event) => {
+                  event.stopPropagation();
                   handleRowRemoveCategory(record);
                 }}
               />
@@ -401,22 +419,18 @@ const AssignedDatasetsSection = ({
         </Button>
       </Flex>
       <Flex gap="small" className="mb-3" align="center" wrap="wrap">
-        <Input
+        <DebouncedSearchInput
           placeholder="Search datasets..."
           value={search}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSearch(e.target.value)
-          }
-          allowClear
-          size="middle"
-          style={{ width: 240 }}
+          onChange={setSearch}
+          className="w-60"
         />
         {hasSelection && (
           <Text type="secondary" className="text-xs">
             {selectedKeys.length} selected
           </Text>
         )}
-        <div style={{ flex: 1 }} />
+        <div className="flex-1" />
         <Flex align="center" gap={6}>
           <Switch size="small" checked={issuesOnly} onChange={setIssuesOnly} />
           <Text className="text-sm">Risks only</Text>
@@ -429,11 +443,12 @@ const AssignedDatasetsSection = ({
           onChange={setSystemFilter}
           allowClear
           size="middle"
-          style={{ width: 180 }}
+          className="w-48"
         />
         <Dropdown trigger={["click"]} menu={primaryActionsMenu}>
           <Button size="middle" type="primary" disabled={!hasSelection}>
-            Actions <Icons.ChevronDown size={12} style={{ marginLeft: 2 }} />
+            Actions{" "}
+            <Icons.ChevronDown size={12} className={styles.chevronDown} />
           </Button>
         </Dropdown>
       </Flex>
@@ -481,9 +496,9 @@ const AssignedDatasetsSection = ({
             width: 180,
           },
         ]}
-        getRowKey={(d) => d.dataset_fides_key}
-        getSearchValue={(d) => d.dataset_name}
-        getFilterValue={(d) => d.system_name}
+        getRowKey={(dataset) => dataset.dataset_fides_key}
+        getSearchValue={(dataset) => dataset.dataset_name}
+        getFilterValue={(dataset) => dataset.system_name}
         enableSelectAll
         onSubmit={handleAddSubmit}
       />

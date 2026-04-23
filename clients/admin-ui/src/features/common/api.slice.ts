@@ -72,7 +72,6 @@ export const baseApi = createApi({
     "Property-Specific Messaging Templates",
     "Purpose",
     "DataPurpose",
-    "PurposeCoverage",
     "PurposeSystems",
     "PurposeDatasets",
     "DataConsumer",

@@ -154,11 +154,11 @@ const PurposeCardGrid = ({
             </Flex>
             <Divider className="!mt-0 mb-4" />
             <Row gutter={[16, 16]}>
-              {items.map((p) => (
-                <Col key={p.id ?? p.fides_key} span={6}>
+              {items.map((purpose) => (
+                <Col key={purpose.id ?? purpose.fides_key} span={6}>
                   <PurposeCard
-                    purpose={p}
-                    summary={summariesByKey.get(p.fides_key)}
+                    purpose={purpose}
+                    summary={summariesByKey.get(purpose.fides_key)}
                   />
                 </Col>
               ))}

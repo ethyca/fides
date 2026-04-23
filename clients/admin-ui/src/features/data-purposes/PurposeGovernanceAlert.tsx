@@ -37,15 +37,15 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
   const { undeclared, contributingSystems } = useMemo(() => {
     const seenCategories = new Set<string>();
     const seenSystems = new Set<string>();
-    datasets.forEach((d) => {
-      const datasetUndeclared = d.data_categories.filter(
-        (c) => !definedSet.has(c),
+    datasets.forEach((dataset) => {
+      const datasetUndeclared = dataset.data_categories.filter(
+        (category) => !definedSet.has(category),
       );
       if (datasetUndeclared.length === 0) {
         return;
       }
-      datasetUndeclared.forEach((c) => seenCategories.add(c));
-      seenSystems.add(d.system_name);
+      datasetUndeclared.forEach((category) => seenCategories.add(category));
+      seenSystems.add(dataset.system_name);
     });
     return {
       undeclared: Array.from(seenCategories),
@@ -87,10 +87,10 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
             detected in{" "}
             {contributingSystems.length > 0 ? (
               <>
-                {contributingSystems.map((s, i) => (
-                  <span key={s}>
-                    {i > 0 && ", "}
-                    {s}
+                {contributingSystems.map((systemName, index) => (
+                  <span key={systemName}>
+                    {index > 0 && ", "}
+                    {systemName}
                   </span>
                 ))}{" "}
               </>
@@ -104,7 +104,7 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
             icon={<Icons.Checkmark size={14} />}
             onClick={handleApprove}
             loading={isAccepting}
-            style={{ whiteSpace: "nowrap" }}
+            className="whitespace-nowrap"
           >
             Approve {undeclared.length === 1 ? "category" : "categories"}
           </Button>

@@ -38,15 +38,6 @@ export interface DataPurposePage {
  * backend. MSW serves them in dev (see src/mocks/data-purposes/). Once
  * fidesplus ships real endpoints, these move into generated types/api.
  */
-export interface PurposeCoverage {
-  fides_key: string;
-  systems: { assigned: number; total: number };
-  datasets: { assigned: number; total: number };
-  tables: { assigned: number; total: number };
-  fields: { assigned: number; total: number };
-  detected_data_categories: string[];
-}
-
 export interface PurposeSystemAssignment {
   system_id: string;
   system_name: string;
@@ -146,22 +137,12 @@ export const dataPurposesApi = baseApi.injectEndpoints({
       // per-purpose mutations (e.g. `{type: "PurposeSystems", id}`) flow
       // through to the list grid's batched summary.
       providesTags: (result) => [
-        { type: "PurposeCoverage" as const, id: "LIST" },
         { type: "PurposeSystems" as const, id: "LIST" },
         { type: "PurposeDatasets" as const, id: "LIST" },
-        ...(result ?? []).flatMap((s) => [
-          { type: "PurposeCoverage" as const, id: s.fides_key },
-          { type: "PurposeSystems" as const, id: s.fides_key },
-          { type: "PurposeDatasets" as const, id: s.fides_key },
+        ...(result ?? []).flatMap((summary) => [
+          { type: "PurposeSystems" as const, id: summary.fides_key },
+          { type: "PurposeDatasets" as const, id: summary.fides_key },
         ]),
-      ],
-    }),
-    getPurposeCoverage: builder.query<PurposeCoverage, string>({
-      query: (fidesKey) => ({
-        url: `plus/data-purpose/${fidesKey}/coverage`,
-      }),
-      providesTags: (_result, _error, fidesKey) => [
-        { type: "PurposeCoverage", id: fidesKey },
       ],
     }),
     getPurposeSystems: builder.query<PurposeSystemAssignment[], string>({
@@ -199,9 +180,8 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "PUT",
         body: { system_ids: systemIds },
       }),
-      invalidatesTags: (_r, _e, { fidesKey }) => [
+      invalidatesTags: (_result, _error, { fidesKey }) => [
         { type: "PurposeSystems", id: fidesKey },
-        { type: "PurposeCoverage", id: fidesKey },
       ],
     }),
     removeSystemsFromPurpose: builder.mutation<
@@ -213,9 +193,8 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "DELETE",
         body: { system_ids: systemIds },
       }),
-      invalidatesTags: (_r, _e, { fidesKey }) => [
+      invalidatesTags: (_result, _error, { fidesKey }) => [
         { type: "PurposeSystems", id: fidesKey },
-        { type: "PurposeCoverage", id: fidesKey },
       ],
     }),
     addDatasetsToPurpose: builder.mutation<
@@ -227,9 +206,8 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "PUT",
         body: { dataset_fides_keys: datasetFidesKeys },
       }),
-      invalidatesTags: (_r, _e, { fidesKey }) => [
+      invalidatesTags: (_result, _error, { fidesKey }) => [
         { type: "PurposeDatasets", id: fidesKey },
-        { type: "PurposeCoverage", id: fidesKey },
       ],
     }),
     removeDatasetsFromPurpose: builder.mutation<
@@ -241,9 +219,8 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "DELETE",
         body: { dataset_fides_keys: datasetFidesKeys },
       }),
-      invalidatesTags: (_r, _e, { fidesKey }) => [
+      invalidatesTags: (_result, _error, { fidesKey }) => [
         { type: "PurposeDatasets", id: fidesKey },
-        { type: "PurposeCoverage", id: fidesKey },
       ],
     }),
     acceptPurposeCategories: builder.mutation<
@@ -255,13 +232,13 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "POST",
         body: { categories },
       }),
-      invalidatesTags: (_r, _e, { fidesKey }) => [
+      invalidatesTags: (_result, _error, { fidesKey }) => [
         "DataPurpose",
-        { type: "PurposeCoverage", id: fidesKey },
+        { type: "PurposeDatasets", id: fidesKey },
       ],
     }),
     markPurposeCategoriesMisclassified: builder.mutation<
-      { coverage: PurposeCoverage; datasets: PurposeDatasetAssignment[] },
+      PurposeDatasetAssignment[],
       { fidesKey: string; categories: string[]; datasetFidesKeys?: string[] }
     >({
       query: ({ fidesKey, categories, datasetFidesKeys }) => ({
@@ -272,8 +249,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
           dataset_fides_keys: datasetFidesKeys,
         },
       }),
-      invalidatesTags: (_r, _e, { fidesKey }) => [
-        { type: "PurposeCoverage", id: fidesKey },
+      invalidatesTags: (_result, _error, { fidesKey }) => [
         { type: "PurposeDatasets", id: fidesKey },
       ],
     }),
@@ -287,7 +263,6 @@ export const {
   useUpdateDataPurposeMutation,
   useDeleteDataPurposeMutation,
   useGetPurposeSummariesQuery,
-  useGetPurposeCoverageQuery,
   useGetPurposeSystemsQuery,
   useGetPurposeDatasetsQuery,
   useGetPurposeAvailableSystemsQuery,

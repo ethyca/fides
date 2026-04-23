@@ -2,6 +2,7 @@ import { Card, Flex, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 
+import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 
 import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
@@ -68,36 +69,14 @@ interface PurposeCardProps {
   summary: PurposeSummary | undefined;
 }
 
-const getRelativeTime = (dateStr: string | undefined): string => {
-  if (!dateStr) {
-    return "";
-  }
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    return "Updated today";
-  }
-  if (diffDays === 1) {
-    return "Updated yesterday";
-  }
-  if (diffDays < 7) {
-    return `Updated ${diffDays} days ago`;
-  }
-  if (diffDays < 30) {
-    return `Updated ${Math.floor(diffDays / 7)} weeks ago`;
-  }
-  return `Updated ${Math.floor(diffDays / 30)} months ago`;
-};
-
 const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
   const router = useRouter();
   const drift = computeCategoryDrift(
     purpose.data_categories ?? [],
     summary?.detected_data_categories ?? [],
   );
+  const updatedAt = purpose.updated_at ? new Date(purpose.updated_at) : null;
+  const updatedAgo = useRelativeTime(updatedAt);
 
   return (
     <Card
@@ -122,7 +101,7 @@ const PurposeCard = ({ purpose, summary }: PurposeCardProps) => {
           </Text>
           <br />
           <Text type="secondary" className="text-xs">
-            {getRelativeTime(purpose.updated_at)}
+            {updatedAgo && `Updated ${updatedAgo}`}
           </Text>
         </div>
       </Flex>

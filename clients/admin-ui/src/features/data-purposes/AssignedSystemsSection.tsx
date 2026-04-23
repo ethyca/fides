@@ -6,7 +6,6 @@ import {
   Empty,
   Flex,
   Icons,
-  Input,
   Row,
   Select,
   Spin,
@@ -15,11 +14,12 @@ import {
   Tooltip,
   useMessage,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { isErrorResult } from "~/features/common/helpers";
+import styles from "~/features/data-purposes/AssignedSystemsSection.module.scss";
 
 import AssignPickerModal from "./AssignPickerModal";
 import {
@@ -65,47 +65,53 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
     return true;
   };
 
-  const definedCategories = purpose?.data_categories ?? [];
+  const definedSet = useMemo(
+    () => new Set(purpose?.data_categories ?? []),
+    [purpose?.data_categories],
+  );
 
   const typeOptions = useMemo(() => {
-    const types = [...new Set(systems.map((s) => s.system_type))];
-    return types.map((t) => ({ label: t, value: t }));
+    const types = [...new Set(systems.map((system) => system.system_type))];
+    return types.map((systemType) => ({
+      label: systemType,
+      value: systemType,
+    }));
   }, [systems]);
 
   const datasetCountBySystem = useMemo(() => {
     const counts = new Map<string, number>();
-    datasets.forEach((d) => {
-      counts.set(d.system_name, (counts.get(d.system_name) ?? 0) + 1);
+    datasets.forEach((dataset) => {
+      counts.set(
+        dataset.system_name,
+        (counts.get(dataset.system_name) ?? 0) + 1,
+      );
     });
     return counts;
   }, [datasets]);
 
-  const definedSet = useMemo(
-    () => new Set(definedCategories),
-    [definedCategories],
-  );
-
   const riskBySystem = useMemo(() => {
     const map = new Map<string, string[]>();
-    datasets.forEach((d) => {
-      const undeclared = d.data_categories.filter((c) => !definedSet.has(c));
+    datasets.forEach((dataset) => {
+      const undeclared = dataset.data_categories.filter(
+        (category) => !definedSet.has(category),
+      );
       if (undeclared.length === 0) {
         return;
       }
-      const prior = map.get(d.system_name) ?? [];
+      const prior = map.get(dataset.system_name) ?? [];
       const merged = Array.from(new Set([...prior, ...undeclared]));
-      map.set(d.system_name, merged);
+      map.set(dataset.system_name, merged);
     });
     return map;
   }, [datasets, definedSet]);
 
   const filtered = useMemo(
     () =>
-      systems.filter((s) => {
-        const matchesSearch = s.system_name
+      systems.filter((system) => {
+        const matchesSearch = system.system_name
           .toLowerCase()
           .includes(search.toLowerCase());
-        const matchesType = !typeFilter || s.system_type === typeFilter;
+        const matchesType = !typeFilter || system.system_type === typeFilter;
         return matchesSearch && matchesType;
       }),
     [systems, search, typeFilter],
@@ -137,15 +143,11 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
         </Button>
       </Flex>
       <Flex gap="small" className="mb-3" justify="space-between">
-        <Input
+        <DebouncedSearchInput
           placeholder="Search data consumers..."
           value={search}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSearch(e.target.value)
-          }
-          allowClear
-          size="middle"
-          style={{ width: 240 }}
+          onChange={setSearch}
+          className="w-60"
         />
         <Select
           aria-label="Filter by type"
@@ -155,7 +157,7 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
           onChange={setTypeFilter}
           allowClear
           size="middle"
-          style={{ width: 180 }}
+          className="w-48"
         />
       </Flex>
       {isLoadingSystems && (
@@ -192,15 +194,8 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
                 <Col key={system.system_id} span={6}>
                   <Card
                     size="small"
-                    style={{
-                      backgroundColor: isAtRisk ? "#fee2e2" : "#fafafa",
-                      cursor: "pointer",
-                      position: "relative",
-                      border: isAtRisk
-                        ? `1px solid ${palette.FIDESUI_ERROR}`
-                        : undefined,
-                    }}
-                    className="group transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+                    hoverable
+                    className={`${styles.consumerCard} ${isAtRisk ? styles.atRisk : ""}`}
                     onClick={() =>
                       router.push(`/systems/configure/${system.system_id}`)
                     }
@@ -208,7 +203,7 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
                     {showDatasetCount && (
                       <Text
                         type="secondary"
-                        className="!absolute right-2 top-2 text-xs group-hover:hidden"
+                        className={`${styles.datasetCount} text-xs`}
                       >
                         {datasetCount}{" "}
                         {datasetCount === 1 ? "dataset" : "datasets"}
@@ -218,10 +213,10 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
                       aria-label={`Remove ${system.system_name}`}
                       type="text"
                       size="small"
-                      icon={<CloseOutlined style={{ fontSize: 10 }} />}
-                      className="!absolute right-1 top-1 hidden !h-5 !w-5 !min-w-0 group-hover:inline-flex"
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      icon={<CloseOutlined className={styles.removeIcon} />}
+                      className={styles.removeButton}
+                      onClick={(event) => {
+                        event.stopPropagation();
                         handleRemoveSystem(system.system_id);
                       }}
                     />
@@ -230,12 +225,7 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
                         <Tooltip
                           title={`At risk: introduces undeclared ${riskCategories.length === 1 ? "category" : "categories"} (${riskCategories.join(", ")})`}
                         >
-                          <span
-                            style={{
-                              color: palette.FIDESUI_ERROR,
-                              lineHeight: 0,
-                            }}
-                          >
+                          <span className={styles.warningIcon}>
                             <Icons.WarningAltFilled size={14} />
                           </span>
                         </Tooltip>
@@ -291,9 +281,9 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
           { title: "System", dataIndex: "system_name", key: "system_name" },
           { title: "Type", dataIndex: "system_type", key: "system_type" },
         ]}
-        getRowKey={(s) => s.system_id}
-        getSearchValue={(s) => s.system_name}
-        getFilterValue={(s) => s.system_type}
+        getRowKey={(system) => system.system_id}
+        getSearchValue={(system) => system.system_name}
+        getFilterValue={(system) => system.system_type}
         onSubmit={handleAssignSubmit}
       />
     </div>
