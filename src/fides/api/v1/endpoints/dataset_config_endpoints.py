@@ -26,7 +26,7 @@ from starlette.status import (
 
 from fides.api import deps
 from fides.api.deps import get_dataset_config_service
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.oauth.utils import verify_oauth_client

@@ -54,7 +54,7 @@ def validate_saas_dataset(
 
 # Everything outside this set is treated as immutable on SaaS datasets.
 # If a new FideslangDataset field should be user-editable, add it here.
-MUTABLE_DATASET_FIELDS = {"collections"}
+MUTABLE_DATASET_FIELDS = frozenset({"collections"})
 
 
 def restore_immutable_fields(
