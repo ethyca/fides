@@ -566,7 +566,9 @@ def run_privacy_request(
                 # When property_id is set and property filtering is active,
                 # skip expensive get_graph() parsing for datasets that
                 # won't survive property filtering.
-                if property_id and is_property_filtering_active():
+                if (
+                    property_id and is_property_filtering_active()
+                ):  # pragma: no cover - integration tested in fidesplus
                     matching, excluded_configs = _partition_configs_by_property(
                         active_configs, property_id
                     )
