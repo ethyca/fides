@@ -126,7 +126,7 @@
     "lint-staged": "^13.2.0",
     "msw": "^1.2.1",
     "postcss": "^8.4.41",
-    "prettier": "^3.3.3",
+    "prettier": "^3.8.3",
     "sass": "^1.80.6",
     "tailwindcss": "^3.4.10",
     "typescript": "^5.7.2",

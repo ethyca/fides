@@ -1,4 +1,0 @@
-type: Added
-description: Add label column to MessagingTemplate enabling multiple named templates per type, with migration backfill and unique constraint on (type, label).
-pr: 7900
-labels: ["db-migration"]

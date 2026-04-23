@@ -19,7 +19,95 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.83.3..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.84.0..main)
+
+## [2.84.0](https://github.com/ethyca/fides/compare/2.83.3..2.84.0)
+
+### Added
+- Added property info to privacy request details panel when a property is configured [#7930](https://github.com/ethyca/fides/pull/7930)
+- Add CorrespondenceMetadata table for delivery tracking and threading [#7867](https://github.com/ethyca/fides/pull/7867) https://github.com/ethyca/fides/labels/db-migration
+- Add correspondence data model enums, scopes, and encrypt comment_text column [#7866](https://github.com/ethyca/fides/pull/7866) https://github.com/ethyca/fides/labels/db-migration
+- Added parent_id column to Comment model for threading support [#7864](https://github.com/ethyca/fides/pull/7864) https://github.com/ethyca/fides/labels/db-migration
+- Added target_system_steward_ids column to StagedResource for per-resource steward assignment [#7912](https://github.com/ethyca/fides/pull/7912) https://github.com/ethyca/fides/labels/db-migration
+- Added property picker to integration forms for assigning properties to dataset configs [#7909](https://github.com/ethyca/fides/pull/7909)
+- Added FIDES__ADMIN_UI__CONSENT_MODULE_ENABLED env var to hide consent UI [#7890](https://github.com/ethyca/fides/pull/7890)
+- Added OAuth API clients list page with paginated table and nav entry [#7747](https://github.com/ethyca/fides/pull/7747)
+- Added regex search toggle to datastore monitor fields UI [#7855](https://github.com/ethyca/fides/pull/7855)
+- Add template versioning schema (fides_revision, is_managed, parent_template_id) and new privacy assessment templates (CPRA v2025, FRIA v2026, UK ICO ROPA, IE DPC ROPA, FR CNIL ROPA) [#7969](https://github.com/ethyca/fides/pull/7969) https://github.com/ethyca/fides/labels/db-migration
+- Add Go shared library (libpbac) for PBAC evaluation and fides pbac CLI.
+All evaluation logic (purpose overlap, access policies, full pipeline)
+runs in Go via ctypes — no Python reimplementation. Includes fixture
+loading, pipeline orchestration, and YAML config directory support. [#7944](https://github.com/ethyca/fides/pull/7944)
+- Go PBAC policy engine library for high-throughput evaluation, plus `fides pbac` CLI commands for purpose and access policy evaluation [#7926](https://github.com/ethyca/fides/pull/7926)
+- Adds Dataset Auditing to Saas integrations [#7964](https://github.com/ethyca/fides/pull/7964)
+- Activity feed card on the home dashboard with infinite scroll, actor-type filtering, and real-time polling [#7842](https://github.com/ethyca/fides/pull/7842)
+- Added PBAC platform identity resolution types, consumer scope field, and Google Workspace connection type [#7807](https://github.com/ethyca/fides/pull/7807) https://github.com/ethyca/fides/labels/db-migration
+- Add label column to MessagingTemplate enabling multiple named templates per type, with migration backfill and unique constraint on (type, label). [#7900](https://github.com/ethyca/fides/pull/7900) https://github.com/ethyca/fides/labels/db-migration
+- Adding verison history views and modals for SaaS integration [#7828](https://github.com/ethyca/fides/pull/7828)
+- Added Controls management UI with list, create, edit, and delete pages [#7918](https://github.com/ethyca/fides/pull/7918) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Dashboard animated counts and chart animations now respect the "Reduce Motion" user preference. [#7924](https://github.com/ethyca/fides/pull/7924)
+- Reworded "click here" link text across the admin UI, docs, and email templates for accessibility [#7937](https://github.com/ethyca/fides/pull/7937)
+- Migrated datamap SystemInfo form from Chakra/Formik to Ant Design [#7921](https://github.com/ethyca/fides/pull/7921)
+- Refactor progress widgets [#7846](https://github.com/ethyca/fides/pull/7846)
+- Migrated messaging template forms to Ant Design Form [#7939](https://github.com/ethyca/fides/pull/7939)
+- Migrated connection manager and integration forms from Formik/Chakra to Ant Design Form [#7898](https://github.com/ethyca/fides/pull/7898)
+- Migrated domains/CORS config form from Chakra/Formik to Ant Design [#7853](https://github.com/ethyca/fides/pull/7853)
+- Migrated organization settings form from Chakra UI/Formik to Ant Design [#7872](https://github.com/ethyca/fides/pull/7872)
+- Migrated privacy notice forms from Formik/Chakra to Ant Design [#7950](https://github.com/ethyca/fides/pull/7950)
+- Migrated consent settings forms from Formik/Chakra to Ant Design [#7967](https://github.com/ethyca/fides/pull/7967)
+- Upgraded Node.js from 20 to 24 across Dockerfiles and CI workflows [#7885](https://github.com/ethyca/fides/pull/7885)
+- Changed account dropdown menu to open on click only, not hover [#7923](https://github.com/ethyca/fides/pull/7923)
+- Migrated config-wizard forms from Formik/Yup to Ant Design Form [#7896](https://github.com/ethyca/fides/pull/7896)
+- Upgraded Admin UI from Next.js 14 to 16 (React 18 to 19) [#7907](https://github.com/ethyca/fides/pull/7907) https://github.com/ethyca/fides/labels/high-risk
+- Migrated privacy request forms from Chakra/Formik to Ant Design [#7903](https://github.com/ethyca/fides/pull/7903)
+- Fixes widget issues and changes some behaviors [#7894](https://github.com/ethyca/fides/pull/7894)
+- Replace palette JS imports with CSS variables across admin-ui and privacy-center [#7954](https://github.com/ethyca/fides/pull/7954)
+- Home dashboard UI polish [#7904](https://github.com/ethyca/fides/pull/7904)
+- Migrated custom reports forms from Chakra/Formik to Ant Design [#7865](https://github.com/ethyca/fides/pull/7865)
+- Added unstyled mode to RouterLink and migrated all remaining NextLink usages [#7946](https://github.com/ethyca/fides/pull/7946)
+- Restructure assessment list page grouping by processing activity instead of regulatory template [#7887](https://github.com/ethyca/fides/pull/7887)
+- Migrated properties form from Chakra/Formik to Ant Design [#7880](https://github.com/ethyca/fides/pull/7880)
+
+### Developer Experience
+- Replaced deprecated `next/link` `legacyBehavior`/`passHref` usage in the Admin UI with a shared `RouterLink` component for internal navigation. [#7942](https://github.com/ethyca/fides/pull/7942)
+- Upgrade Prettier from 3.3.3 to 3.8.3 across all client packages [#8002](https://github.com/ethyca/fides/pull/8002)
+- Migrated admin-ui API type generation to @hey-api/openapi-ts v0.88.2 [#7757](https://github.com/ethyca/fides/pull/7757)
+- Fix nightly build blank page by invalidating stale Next.js Docker build cache when dependencies change [#8000](https://github.com/ethyca/fides/pull/8000)
+- Build using Turbopack instead of Webpack, replace Sass :export with TS palette module [#7956](https://github.com/ethyca/fides/pull/7956) https://github.com/ethyca/fides/labels/high-risk
+
+### Fixed
+- Fixed TypeError when closing Data Catalog drawer for systems without privacy declarations [#7925](https://github.com/ethyca/fides/pull/7925)
+- Fixed test assertion for user invite email template after HTML escaping update in PR 7957 [#7973](https://github.com/ethyca/fides/pull/7973)
+- Cleaned up Ant Design v6 deprecated prop warnings in the browser console across the Admin UI [#7936](https://github.com/ethyca/fides/pull/7936)
+- Fix sample app builds after Next.js upgrade [#7966](https://github.com/ethyca/fides/pull/7966)
+- Fixed bulk promote failing with 500 for assets with long URNs [#7881](https://github.com/ethyca/fides/pull/7881)
+- Added character and length validation to usernames on user creation [#7953](https://github.com/ethyca/fides/pull/7953)
+- Fixed login page showing SSO configuration error instead of generic login failure message when entering incorrect credentials [#7882](https://github.com/ethyca/fides/pull/7882)
+- Fixed duplicated authentication description on Okta integration page [#7899](https://github.com/ethyca/fides/pull/7899)
+- Hid redundant "across 1 monitor" text on single-monitor Action Center view [#7911](https://github.com/ethyca/fides/pull/7911)
+- Added frontend username validation to the new user form to match backend character restrictions [#7957](https://github.com/ethyca/fides/pull/7957)
+- Added fields to JiraTicketSchema so Jira OAuth app credentials can be configured via the API. [#7901](https://github.com/ethyca/fides/pull/7901)
+- Removed redundant and flickering tooltip from error messages in the Action Center Activity tab. [#7962](https://github.com/ethyca/fides/pull/7962)
+- Fixed custom field labels missing from privacy request submission payload [#7970](https://github.com/ethyca/fides/pull/7970)
+- Fixes steward filter states when assigned to a monitor [#7914](https://github.com/ethyca/fides/pull/7914)
+- Fixed findings redirecting to correct confidence bucket [#7895](https://github.com/ethyca/fides/pull/7895)
+- datastore integration text changes based on taxonomy of integration [#7943](https://github.com/ethyca/fides/pull/7943)
+- Replace static alphaRbac feature flag with backend-driven RBAC config from Plus health endpoint [#7877](https://github.com/ethyca/fides/pull/7877)
+- Fixed integration Manage modal reporting dirty state on open without edits [#7934](https://github.com/ethyca/fides/pull/7934)
+- Fixed heading hierarchy on assessments page for better semantics and accessibility [#7892](https://github.com/ethyca/fides/pull/7892)
+- Fixed problems with larger timeout checks on rate_limit for integrations [#7938](https://github.com/ethyca/fides/pull/7938)
+- Admin UI no longer served a blank screen when the backend receives requests for Next.js 16 turbopack chunk filenames containing `..`. [#8005](https://github.com/ethyca/fides/pull/8005)
+- Hide Jira tickets section in request details when no Jira integration is configured [#8003](https://github.com/ethyca/fides/pull/8003)
+- Fix various console warnings and errors in Admin UI [#7959](https://github.com/ethyca/fides/pull/7959)
+- Fixed integration form fields blank after creation until page reload [#7986](https://github.com/ethyca/fides/pull/7986)
+- Fixed unstable selectUser Redux selector causing unnecessary rerenders [#7927](https://github.com/ethyca/fides/pull/7927)
+- Fixed column reorder in the Datamap report's "Edit columns" modal so dropping registers anywhere on a row instead of only on the drag handle icon. [#7905](https://github.com/ethyca/fides/pull/7905)
+- Fixed stale sidebar data in the Action Center datastore monitor page after clicking the refresh button [#7960](https://github.com/ethyca/fides/pull/7960)
+- Fixed browser navigation for Action Center ignored assets [#7961](https://github.com/ethyca/fides/pull/7961)
+- Fixed property-based DAG filtering for SaaS connector datasets. [#7868](https://github.com/ethyca/fides/pull/7868)
+- Fixed property creation 422 error caused by missing paths field in form submission payload [#7908](https://github.com/ethyca/fides/pull/7908)
 
 ## [2.83.3](https://github.com/ethyca/fides/compare/2.83.2..2.83.3)
 
@@ -32,6 +120,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Scope `check_object_exists` in post-upgrade background index creation to the current PostgreSQL schema, preventing false positives on shared-database staging environments [#7990](https://github.com/ethyca/fides/pull/7990)
+- Fixed Ticket setup tab appearing on non-Jira integrations [#7987](https://github.com/ethyca/fides/pull/7987)
 
 ### Security
 - Bumped aiohttp to 3.13.4 to fix 10 CVEs including CVE-2026-34516, CVE-2026-22815, CVE-2026-34520 [#7891](https://github.com/ethyca/fides/pull/7891)
