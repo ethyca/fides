@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed test assertion for user invite email template after HTML escaping update in PR 7957
-pr: 7973
-labels: []

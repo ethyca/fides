@@ -1,7 +1,7 @@
 import { generate } from "@ant-design/colors";
 import { theme, ThemeConfig } from "antd";
 
-import palette from "../palette/palette.module.scss";
+import { palette } from "../palette/palette";
 import { defaultAntTheme } from "./default-theme";
 
 /**

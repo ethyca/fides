@@ -1,0 +1,7 @@
+purpose:
+- fides_key: analytics
+  name: Product Analytics
+  data_use: analytics.reporting
+  data_categories:
+  - user.behavior
+  description: Measuring product usage and engagement.

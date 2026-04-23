@@ -1,0 +1,48 @@
+dataset:
+- fides_key: sales
+  organization_fides_key: default_organization
+  name: Sales
+  description: Order and invoice records.
+  data_categories:
+  - user.financial
+  data_purposes:
+  - billing
+  collections:
+  - name: orders
+    description: Customer order records.
+    data_categories:
+    - user.financial
+    fields:
+    - name: order_id
+      data_categories:
+      - system.operations
+    - name: customer_id
+      data_categories:
+      - user.unique_id
+    - name: total
+      data_categories:
+      - user.financial
+    - name: order_date
+      data_categories:
+      - system.operations
+  - name: invoices
+    description: Invoice records tied to orders. Also used by the
+      Analytics Team for revenue reconciliation, so the collection
+      declares analytics as an additional purpose beyond the dataset's
+      billing default.
+    data_categories:
+    - user.financial
+    data_purposes:
+    - analytics
+    fields:
+    - name: invoice_id
+      data_categories:
+      - system.operations
+    - name: order_id
+      data_categories:
+      - system.operations
+    - name: amount
+      data_categories:
+      - user.financial
+      data_purposes:
+      - analytics

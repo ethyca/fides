@@ -269,3 +269,7 @@ multilang_migration_backup_*
 # Cline
 .cline/*
 .clinerules/*
+
+# Go shared library build artifacts
+policy-engine/libpbac.*
+policy-engine/*.h

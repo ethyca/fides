@@ -223,16 +223,22 @@ dataset:
     - name: id
       data_categories:
       - system.operations
+    - name: fides_revision
+      data_categories:
+      - system.operations
     - name: is_active
       data_categories:
       - system.operations
-    - name: key
+    - name: is_managed
       data_categories:
       - system.operations
     - name: legal_reference
       data_categories:
       - system.operations
     - name: name
+      data_categories:
+      - system.operations
+    - name: parent_template_id
       data_categories:
       - system.operations
     - name: region
@@ -1235,6 +1241,32 @@ dataset:
     - name: property_id
       data_categories: [system.operations]
     - name: source
+      data_categories: [system.operations]
+  - name: correspondence_metadata
+    fields:
+    - name: bounce_reason
+      data_categories: [system.operations]
+    - name: comment_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: delivered_at
+      data_categories: [system.operations]
+    - name: delivery_status
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: in_reply_to
+      data_categories: [system.operations]
+    - name: message_id
+      data_categories: [system.operations]
+    - name: recipient_email
+      data_categories: [user.contact.email]
+    - name: reply_to_address
+      data_categories: [user.contact.email]
+    - name: sender_email
+      data_categories: [user.contact.email]
+    - name: updated_at
       data_categories: [system.operations]
   - name: custom_connector_template
     description: 'A table used to hold custom connector templates which include a SaaS config, dataset, and an optional icon and functions'
@@ -2562,6 +2594,8 @@ dataset:
     - name: type
       data_categories: [system.operations]
     - name: content
+      data_categories: [system.operations]
+    - name: label
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]

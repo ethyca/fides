@@ -21,6 +21,7 @@ const ALERT_TYPE: Record<
   info: "info",
   success: "success",
   warning: "warning",
+  agent: "agent",
 };
 
 export const Primary: Story = {

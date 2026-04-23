@@ -3,8 +3,10 @@ import { Form, Switch } from "fidesui";
 
 import styles from "./SwitchField.module.scss";
 
-interface SwitchFieldProps
-  extends Omit<React.ComponentProps<typeof Form.Item>, "tooltip"> {
+interface SwitchFieldProps extends Omit<
+  React.ComponentProps<typeof Form.Item>,
+  "tooltip"
+> {
   tooltip?: string;
   switchProps?: React.ComponentProps<typeof Switch> & {
     "data-testid"?: string;

@@ -111,6 +111,10 @@ class PurposeViolation:
 
     Produced by the evaluation engine. The service layer enriches
     ``data_use`` and ``control`` before returning to callers.
+    ``suppressed_by_policy`` / ``suppressed_by_action`` are set by the
+    pipeline's policy-filter step when an ALLOW policy matches — the
+    violation is kept in the record for audit but callers treating
+    suppressed violations as compliant should check these fields.
     """
 
     consumer_id: str
@@ -122,6 +126,8 @@ class PurposeViolation:
     reason: str
     data_use: str | None = None  # resolved by service, not engine
     control: str | None = None  # set by service, not engine
+    suppressed_by_policy: str | None = None  # set by pipeline filter
+    suppressed_by_action: str | None = None  # action.message on ALLOW
 
 
 @dataclass(frozen=True)

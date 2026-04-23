@@ -661,10 +661,18 @@ class PrivacyRequest(
         }
 
     def verify_identity(self, db: Session, provided_code: str) -> "PrivacyRequest":
-        """Verify the identification code supplied by the user
-        If verified, change the status of the request to "pending", and set the datetime the identity was verified.
+        """Verify the identification code supplied by the user.
+
+        If verified, change the status to "pending" and set identity_verified_at.
+        Duplicate requests are allowed to verify — they transition to "pending"
+        so that handle_approval can re-evaluate duplicate detection with the
+        fresh identity_verified_at timestamp (the first-verified request in a
+        duplicate group becomes canonical).
         """
-        if self.status != PrivacyRequestStatus.identity_unverified:
+        if self.status not in (
+            PrivacyRequestStatus.identity_unverified,
+            PrivacyRequestStatus.duplicate,
+        ):
             raise IdentityVerificationException(
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )

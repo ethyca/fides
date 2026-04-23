@@ -121,6 +121,10 @@ class TestApiRouter:
                 "[datasetName]/[collectionName]/[[...subFields]]-js/../../../../etc/passwd",
                 True,
             ),
+            # Turbopack (Next.js 16+) chunk filenames can embed ".." before the
+            # extension. These must not be flagged as traversal attempts.
+            ("/_next/static/chunks/0y3j4e~tvxaz..js", False),
+            ("/_next/static/chunks/foo_bar~baz..js", False),
             ("../../../../../../../../../etc/passwd", True),
             ("..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd", True),
             (

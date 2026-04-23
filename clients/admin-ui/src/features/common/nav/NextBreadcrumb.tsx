@@ -14,8 +14,10 @@ import { RouterLink } from "./RouterLink";
 const { Text } = Typography;
 
 // Too difficult to make `path` work with Next.js links so we'll just remove it from the type
-interface NextBreadcrumbItemType
-  extends Omit<BreadcrumbItemType, "path" | "href"> {
+interface NextBreadcrumbItemType extends Omit<
+  BreadcrumbItemType,
+  "path" | "href"
+> {
   /**
    * becomes NextJS link href
    */

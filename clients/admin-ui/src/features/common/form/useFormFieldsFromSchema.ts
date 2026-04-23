@@ -15,21 +15,21 @@ export const useFormFieldsFromSchema = (
     value: string | undefined,
     type?: string,
   ) => {
-    let error;
-    if (typeof value === "undefined" || value === "" || value === undefined) {
-      error = `${label} is required`;
+    // Required validation is handled by the Form.Item `required` rule in
+    // FormFieldFromSchema. This function only does format validation.
+    if (!value) {
+      return undefined;
     }
     if (type === FIDES_DATASET_REFERENCE) {
-      if (!value?.includes(".")) {
-        error = "Dataset reference must be dot delimited";
-      } else {
-        const parts = value.split(".");
-        if (parts.length < 3) {
-          error = "Dataset reference must include at least three parts";
-        }
+      if (!value.includes(".")) {
+        return "Dataset reference must be dot delimited";
+      }
+      const parts = value.split(".");
+      if (parts.length < 3) {
+        return "Dataset reference must include at least three parts";
       }
     }
-    return error;
+    return undefined;
   };
 
   const isRequiredField = (key: string): boolean =>
@@ -39,9 +39,10 @@ export const useFormFieldsFromSchema = (
     key: string,
     fieldSchema: ConnectionTypeSecretSchemaProperty,
   ) => {
-    if (isRequiredField(key)) {
+    const refType = fieldSchema.allOf?.[0].$ref;
+    if (refType) {
       return (value: string | undefined) =>
-        validateField(fieldSchema.title, value, fieldSchema.allOf?.[0].$ref);
+        validateField(fieldSchema.title, value, refType);
     }
     return undefined;
   };

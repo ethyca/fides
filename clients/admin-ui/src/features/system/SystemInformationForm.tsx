@@ -200,7 +200,7 @@ const SystemInformationForm = ({
     () =>
       Boolean(
         passedInSystem &&
-          systems?.some((s) => s.fides_key === passedInSystem?.fides_key),
+        systems?.some((s) => s.fides_key === passedInSystem?.fides_key),
       ),
     [passedInSystem, systems],
   );

@@ -4,8 +4,10 @@ import type { CustomFieldDefinition as GeneratedCustomFieldDefinition } from "~/
 
 // Extend the auto-generated type to include the actual field_type values from privacy center config
 // and the options property which are not yet in the generated types
-export interface CustomFieldDefinition
-  extends Omit<GeneratedCustomFieldDefinition, "field_type"> {
+export interface CustomFieldDefinition extends Omit<
+  GeneratedCustomFieldDefinition,
+  "field_type"
+> {
   label: string;
   field_type?: "text" | "select" | "multiselect" | "location" | null;
   options?: string[] | null;
