@@ -244,7 +244,9 @@ const HomePage: NextPage = () => {
           </TextOrHtml>
         ))}
 
-        {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
+        {(SHOW_BRAND_LINK ||
+          policyLinks.length > 0 ||
+          PRIVACY_REQUEST_DISCLOSURE_ENABLED) && (
           <Box position="relative" width="100%">
             <Flex justifyContent="center" gap={6} flexWrap="wrap">
               {policyLinks.map(({ url, label }) => (
@@ -268,7 +270,7 @@ const HomePage: NextPage = () => {
                   textAlign="center"
                   textDecoration="underline"
                   color="gray.800"
-                  href="/privacy-request-metrics"
+                  href={`${basePath}/privacy-request-metrics`}
                 >
                   Privacy request disclosures
                 </Link>

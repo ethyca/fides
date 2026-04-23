@@ -16,7 +16,7 @@ import { NextSearchParams } from "~/types/next";
 
 export const generateMetadata = getPageMetadata;
 
-const PrivacyRequestMetricsPage = async ({
+const PropertyPathPrivacyRequestMetricsPage = async ({
   searchParams,
 }: {
   searchParams: NextSearchParams;
@@ -43,4 +43,4 @@ const PrivacyRequestMetricsPage = async ({
   );
 };
 
-export default PrivacyRequestMetricsPage;
+export default PropertyPathPrivacyRequestMetricsPage;

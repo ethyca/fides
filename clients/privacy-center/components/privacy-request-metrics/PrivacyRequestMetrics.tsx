@@ -6,6 +6,7 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
+import { useMemo } from "react";
 
 import {
   METRIC_COLUMNS,
@@ -13,8 +14,8 @@ import {
   REQUEST_TYPE_ORDER,
   STATIC_ZERO_REQUEST_TYPES,
 } from "~/features/privacy-request-metrics/constants";
+import { useGetPrivacyRequestMetricsQuery } from "~/features/privacy-request-metrics/privacy-request-metrics.slice";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
-import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
 
 function formatValue(value: number | null, key: string): string {
   if (value === null) {
@@ -27,7 +28,30 @@ function formatValue(value: number | null, key: string): string {
 }
 
 export const PrivacyRequestMetrics = () => {
-  const { data, isLoading } = useGetPrivacyRequestMetrics();
+  const queryParams = useMemo(() => {
+    const year = new Date().getFullYear() - 1;
+    return {
+      start_date: `${year}-01-01`,
+      end_date: `${year}-12-31`,
+      location: "us_ca",
+    };
+  }, []);
+
+  const { data, isLoading, isError } =
+    useGetPrivacyRequestMetricsQuery(queryParams);
+
+  if (isError) {
+    return (
+      <Stack align="center" py={["6", "16"]} px={5} spacing={4}>
+        <Heading as="h1" fontSize={["2xl", "3xl"]} fontWeight="semibold">
+          Privacy request disclosures
+        </Heading>
+        <Text color="gray.500" fontSize="sm">
+          Unable to load disclosure metrics. Please try again later.
+        </Text>
+      </Stack>
+    );
+  }
 
   if (isLoading || !data) {
     return null;
