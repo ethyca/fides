@@ -44,8 +44,6 @@ export const dataPurposesHandlers = () => {
 
   return [
     // --- Real-endpoint handlers (mirroring fidesplus routes) ---
-
-    // GET /api/v1/data-purpose — paginated list
     rest.get(`${apiBase}/data-purpose`, (req, res, ctx) => {
       const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
       const size = parseInt(req.url.searchParams.get("size") ?? "50", 10);
@@ -79,7 +77,6 @@ export const dataPurposesHandlers = () => {
       );
     }),
 
-    // GET /api/v1/data-purpose/:fidesKey
     rest.get(`${apiBase}/data-purpose/:fidesKey`, (req, res, ctx) => {
       const { fidesKey } = req.params;
       const purpose = purposesStore.find(
@@ -91,7 +88,6 @@ export const dataPurposesHandlers = () => {
       return res(ctx.status(200), ctx.json(purpose));
     }),
 
-    // POST /api/v1/data-purpose
     rest.post(`${apiBase}/data-purpose`, async (req, res, ctx) => {
       const body = (await req.json()) as Partial<DataPurposeResponse>;
       if (!body.fides_key || !body.name || !body.data_use) {
@@ -131,7 +127,6 @@ export const dataPurposesHandlers = () => {
       return res(ctx.status(201), ctx.json(created));
     }),
 
-    // PUT /api/v1/data-purpose/:fidesKey
     rest.put(`${apiBase}/data-purpose/:fidesKey`, async (req, res, ctx) => {
       const { fidesKey } = req.params;
       const body = (await req.json()) as Partial<DataPurposeResponse>;
@@ -152,7 +147,6 @@ export const dataPurposesHandlers = () => {
       return res(ctx.status(200), ctx.json(updated));
     }),
 
-    // DELETE /api/v1/data-purpose/:fidesKey
     rest.delete(`${apiBase}/data-purpose/:fidesKey`, (req, res, ctx) => {
       const { fidesKey } = req.params;
       const index = purposesStore.findIndex(
@@ -169,8 +163,6 @@ export const dataPurposesHandlers = () => {
 
     // --- MSW-only handlers (no real backend endpoint yet) ---
     // TODO: replace with real endpoint once fidesplus ships it.
-
-    // GET /api/v1/plus/data-purpose/summaries — batched per-purpose enrichment
     rest.get(`${plusBase}/data-purpose/summaries`, (_req, res, ctx) => {
       const summaries = purposesStore.map((purpose) => {
         const systems = systemsStore[purpose.fides_key] ?? [];

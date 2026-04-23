@@ -33,13 +33,6 @@ export interface DataPurposePage {
   pages: number;
 }
 
-/**
- * Per-purpose enrichment used by the list grid. Served in a single batched
- * call to avoid N+1 requests across cards. The per-purpose system/dataset
- * read and mutation endpoints referenced here land with the detail-page PR;
- * for now only `system_count`, `dataset_count`, and `detected_data_categories`
- * are consumed by the grid.
- */
 export interface PurposeSystemAssignment {
   system_id: string;
   system_name: string;

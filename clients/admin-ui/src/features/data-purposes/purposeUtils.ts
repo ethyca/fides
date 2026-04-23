@@ -35,23 +35,10 @@ export type ComplianceStatus = "compliant" | "drift" | "unknown";
 
 export interface CategoryDrift {
   status: ComplianceStatus;
-  /** Detected categories not in the defined set (scope drift). */
   undeclared: string[];
-  /** Defined categories not in the detected set (unused declarations). */
   unused: string[];
 }
 
-/**
- * Compare the purpose's human-authored `defined` categories against the
- * classifier's `detected` categories and classify the result.
- *
- * - `unknown` when nothing has been detected yet (no signal).
- * - `drift` when detected includes categories not in the defined set.
- * - `compliant` when detected is a subset of defined.
- *
- * `unused` surfaces defined categories with no detection — a data minimization
- * signal, not a compliance failure.
- */
 export const computeCategoryDrift = (
   defined: string[],
   detected: string[],
