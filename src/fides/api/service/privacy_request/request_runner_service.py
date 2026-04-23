@@ -26,7 +26,11 @@ from fides.api.common_exceptions import (
 )
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import GraphDataset
-from fides.api.graph.graph import DatasetGraph, apply_dataset_graph_filters
+from fides.api.graph.graph import (
+    DatasetGraph,
+    apply_dataset_graph_filters,
+    is_property_filtering_active,
+)
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
@@ -559,9 +563,10 @@ def run_privacy_request(
                 ]
                 property_id = privacy_request.property_id
 
-                # When property_id is set, skip expensive get_graph() parsing
-                # for datasets that won't survive property filtering.
-                if property_id:
+                # When property_id is set and property filtering is active,
+                # skip expensive get_graph() parsing for datasets that
+                # won't survive property filtering.
+                if property_id and is_property_filtering_active():
                     matching, excluded_configs = _partition_configs_by_property(
                         active_configs, property_id
                     )
