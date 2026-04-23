@@ -31,8 +31,8 @@ import {
   useGetTemplatesQuery,
   useRenderPromptMutation,
 } from "~/features/prompt-explorer/prompt-explorer.slice";
-import { PromptCategory } from "~/features/prompt-explorer/types";
 import { QuestionnaireControls } from "~/features/prompt-explorer/QuestionnaireControls";
+import { PromptCategory } from "~/features/prompt-explorer/types";
 import { buildQuestionnaireVariables } from "~/features/prompt-explorer/utils";
 
 const { Content } = Layout;
