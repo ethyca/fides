@@ -13,7 +13,6 @@ interface AssignSystemsPickerModalProps {
   fidesKey: string;
   open: boolean;
   onClose: () => void;
-  assignedIds: string[];
 }
 
 const columns = [
@@ -25,9 +24,8 @@ const AssignSystemsPickerModal = ({
   fidesKey,
   open,
   onClose,
-  assignedIds,
 }: AssignSystemsPickerModalProps) => {
-  const [selectedKeys, setSelectedKeys] = useState<string[]>(assignedIds);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const message = useMessage();
@@ -39,9 +37,9 @@ const AssignSystemsPickerModal = ({
 
   useEffect(() => {
     if (open) {
-      setSelectedKeys(assignedIds);
+      setSelectedKeys([]);
     }
-  }, [open, assignedIds]);
+  }, [open]);
 
   const typeOptions = useMemo(() => {
     const types = [...new Set(availableSystems.map((s) => s.system_type))];
@@ -60,24 +58,32 @@ const AssignSystemsPickerModal = ({
     [availableSystems, search, typeFilter],
   );
 
-  const handleConfirm = async () => {
-    const assignedSet = new Set(assignedIds);
-    const toAdd = selectedKeys.filter((id) => !assignedSet.has(id));
-    if (toAdd.length > 0) {
-      const result = await assignSystems({ fidesKey, systemIds: toAdd });
-      if (isErrorResult(result)) {
-        message.error("Could not assign systems");
-        return;
-      }
-    }
+  const resetLocalState = () => {
     setSearch("");
     setTypeFilter(null);
+    setSelectedKeys([]);
+  };
+
+  const handleConfirm = async () => {
+    if (selectedKeys.length === 0) {
+      resetLocalState();
+      onClose();
+      return;
+    }
+    const result = await assignSystems({
+      fidesKey,
+      systemIds: selectedKeys,
+    });
+    if (isErrorResult(result)) {
+      message.error("Could not assign systems");
+      return;
+    }
+    resetLocalState();
     onClose();
   };
 
   const handleCancel = () => {
-    setSearch("");
-    setTypeFilter(null);
+    resetLocalState();
     onClose();
   };
 
@@ -94,7 +100,7 @@ const AssignSystemsPickerModal = ({
       open={open}
       onCancel={handleCancel}
       onOk={handleConfirm}
-      okText="Confirm"
+      okText={selectedKeys.length > 0 ? "Add" : "Done"}
       confirmLoading={isAssigning}
       width={640}
       destroyOnClose

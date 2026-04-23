@@ -11,10 +11,17 @@ import {
 import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
 import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
 
+// The batched-summary endpoint is UI-only today (served by MSW). Skip it
+// unless mocks are enabled so we don't fire a guaranteed-404 request in prod.
+// TODO: remove skip gate once fidesplus ships a real `plus/data-purpose/summaries` endpoint.
+const isMockApiEnabled = process.env.NEXT_PUBLIC_MOCK_API === "true";
+
 const DataPurposesPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const { data: page, isLoading, isError } = useGetAllDataPurposesQuery({});
-  const { data: summaries = [] } = useGetPurposeSummariesQuery();
+  const { data: summaries = [] } = useGetPurposeSummariesQuery(undefined, {
+    skip: !isMockApiEnabled,
+  });
   const purposes = page?.items ?? [];
 
   const handleDownloadRoPA = useCallback(() => {
@@ -49,10 +56,13 @@ const DataPurposesPage: NextPage = () => {
       (p.features ?? []).join("; "),
       p.updated_at ?? "",
     ]);
-    const csv = [header, ...rows]
+    // Prefix BOM and use CRLF so Excel on Windows reads UTF-8 and line breaks
+    // correctly; RFC 4180 requires CRLF.
+    const csvBody = [header, ...rows]
       .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+      .join("\r\n");
+    const csv = `\ufeff${csvBody}`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

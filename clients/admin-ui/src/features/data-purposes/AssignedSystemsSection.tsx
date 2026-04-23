@@ -16,6 +16,7 @@ import {
   useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
@@ -40,6 +41,7 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const message = useMessage();
+  const router = useRouter();
 
   const { data: purpose } = useGetDataPurposeByKeyQuery(fidesKey);
   const { data: systems = [], isLoading: isLoadingSystems } =
@@ -168,13 +170,8 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
               const datasetCount =
                 datasetCountBySystem.get(system.system_name) ?? 0;
               const riskCategories = riskBySystem.get(system.system_name) ?? [];
-              // Only surface the red indicator for BigQuery so the page tells a
-              // focused story rather than flagging every at-risk consumer.
-              const isAtRisk =
-                system.system_name === "BigQuery" && riskCategories.length > 0;
-              const showDatasetCount =
-                system.system_name === "BigQuery" ||
-                system.system_name === "Snowflake";
+              const isAtRisk = riskCategories.length > 0;
+              const showDatasetCount = datasetCount > 0;
               return (
                 <Col key={system.system_id} span={6}>
                   <Card
@@ -189,10 +186,7 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
                     }}
                     className="group transition-shadow hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
                     onClick={() =>
-                      window.open(
-                        `/systems/configure/${system.system_id}`,
-                        "_self",
-                      )
+                      router.push(`/systems/configure/${system.system_id}`)
                     }
                   >
                     {showDatasetCount && (
@@ -272,7 +266,6 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
         fidesKey={fidesKey}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        assignedIds={systems.map((s) => s.system_id)}
       />
     </div>
   );

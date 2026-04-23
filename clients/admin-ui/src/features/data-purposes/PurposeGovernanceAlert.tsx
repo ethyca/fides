@@ -6,7 +6,6 @@ import { isErrorResult } from "~/features/common/helpers";
 import {
   useAcceptPurposeCategoriesMutation,
   useGetDataPurposeByKeyQuery,
-  useGetPurposeCoverageQuery,
   useGetPurposeDatasetsQuery,
 } from "./data-purpose.slice";
 
@@ -18,11 +17,14 @@ interface PurposeGovernanceAlertProps {
  * Governance insight describing drift between defined and detected categories
  * on the purpose. Uses the `agent` alert variant so the surfaced finding
  * reads as an AI/automation callout rather than a system notification.
+ *
+ * The authoritative source of undeclared categories is the assigned datasets,
+ * not coverage.detected_data_categories — coverage is a rolled-up summary that
+ * can drift from dataset truth. Deriving here keeps a single source.
  */
 const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
   const message = useMessage();
   const { data: purpose } = useGetDataPurposeByKeyQuery(fidesKey);
-  const { data: coverage } = useGetPurposeCoverageQuery(fidesKey);
   const { data: datasets = [] } = useGetPurposeDatasetsQuery(fidesKey);
   const [acceptCategories, { isLoading: isAccepting }] =
     useAcceptPurposeCategoriesMutation();
@@ -32,55 +34,42 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
     [purpose?.data_categories],
   );
 
-  const undeclared = useMemo(() => {
-    const seen = new Set<string>();
+  const { undeclared, contributingSystems } = useMemo(() => {
+    const seenCategories = new Set<string>();
+    const seenSystems = new Set<string>();
     datasets.forEach((d) => {
-      d.data_categories.forEach((c) => {
-        if (!definedSet.has(c)) {
-          seen.add(c);
-        }
-      });
-    });
-    return Array.from(seen);
-  }, [datasets, definedSet]);
-
-  const contributingSystems = useMemo(() => {
-    const names = new Set<string>();
-    datasets.forEach((d) => {
-      if (d.data_categories.some((c) => !definedSet.has(c))) {
-        names.add(d.system_name);
+      const datasetUndeclared = d.data_categories.filter(
+        (c) => !definedSet.has(c),
+      );
+      if (datasetUndeclared.length === 0) {
+        return;
       }
+      datasetUndeclared.forEach((c) => seenCategories.add(c));
+      seenSystems.add(d.system_name);
     });
-    return Array.from(names);
+    return {
+      undeclared: Array.from(seenCategories),
+      contributingSystems: Array.from(seenSystems),
+    };
   }, [datasets, definedSet]);
-
-  const additionalUndeclared = useMemo(
-    () =>
-      (coverage?.detected_data_categories ?? []).filter(
-        (c) => !definedSet.has(c) && !undeclared.includes(c),
-      ),
-    [coverage?.detected_data_categories, definedSet, undeclared],
-  );
-
-  const allUndeclared = [...undeclared, ...additionalUndeclared];
 
   const handleApprove = async () => {
     const result = await acceptCategories({
       fidesKey,
-      categories: allUndeclared,
+      categories: undeclared,
     });
     if (isErrorResult(result)) {
       message.error("Could not approve categories");
       return;
     }
     message.success(
-      allUndeclared.length === 1
-        ? `Added "${allUndeclared[0]}" to defined categories`
-        : `Added ${allUndeclared.length} categories to defined list`,
+      undeclared.length === 1
+        ? `Added "${undeclared[0]}" to defined categories`
+        : `Added ${undeclared.length} categories to defined list`,
     );
   };
 
-  if (allUndeclared.length === 0) {
+  if (undeclared.length === 0) {
     return null;
   }
 
@@ -93,8 +82,8 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
       description={
         <Flex align="center" gap={8}>
           <span>
-            {allUndeclared.length}{" "}
-            {allUndeclared.length === 1 ? "category was" : "categories were"}{" "}
+            {undeclared.length}{" "}
+            {undeclared.length === 1 ? "category was" : "categories were"}{" "}
             detected in{" "}
             {contributingSystems.length > 0 ? (
               <>
@@ -106,7 +95,7 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
                 ))}{" "}
               </>
             ) : null}
-            that {allUndeclared.length === 1 ? "is not" : "are not"} defined on
+            that {undeclared.length === 1 ? "is not" : "are not"} defined on
             this purpose.
           </span>
           <Button
@@ -117,7 +106,7 @@ const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
             loading={isAccepting}
             style={{ whiteSpace: "nowrap" }}
           >
-            Approve {allUndeclared.length === 1 ? "category" : "categories"}
+            Approve {undeclared.length === 1 ? "category" : "categories"}
           </Button>
         </Flex>
       }

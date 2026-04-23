@@ -224,15 +224,37 @@ export const dataPurposesHandlers = () => {
     }),
 
     // GET /api/v1/plus/data-purpose/:fidesKey/available-systems
+    // "Available" = not yet assigned to this purpose.
     rest.get(
       `${plusBase}/data-purpose/:fidesKey/available-systems`,
-      (_req, res, ctx) => res(ctx.status(200), ctx.json(mockAvailableSystems)),
+      (req, res, ctx) => {
+        const { fidesKey } = req.params;
+        const assignedIds = new Set(
+          (systemsStore[fidesKey as string] ?? []).map((s) => s.system_id),
+        );
+        const available = mockAvailableSystems.filter(
+          (s) => !assignedIds.has(s.system_id),
+        );
+        return res(ctx.status(200), ctx.json(available));
+      },
     ),
 
     // GET /api/v1/plus/data-purpose/:fidesKey/available-datasets
+    // "Available" = not yet assigned to this purpose.
     rest.get(
       `${plusBase}/data-purpose/:fidesKey/available-datasets`,
-      (_req, res, ctx) => res(ctx.status(200), ctx.json(mockAvailableDatasets)),
+      (req, res, ctx) => {
+        const { fidesKey } = req.params;
+        const assignedKeys = new Set(
+          (datasetsStore[fidesKey as string] ?? []).map(
+            (d) => d.dataset_fides_key,
+          ),
+        );
+        const available = mockAvailableDatasets.filter(
+          (d) => !assignedKeys.has(d.dataset_fides_key),
+        );
+        return res(ctx.status(200), ctx.json(available));
+      },
     ),
 
     // PUT /api/v1/plus/data-purpose/:fidesKey/systems — assign systems (bulk)

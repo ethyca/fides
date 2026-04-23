@@ -22,7 +22,6 @@ interface AddDatasetsModalProps {
   fidesKey: string;
   open: boolean;
   onClose: () => void;
-  assignedKeys: string[];
 }
 
 const columns = [
@@ -34,9 +33,8 @@ const AddDatasetsModal = ({
   fidesKey,
   open,
   onClose,
-  assignedKeys,
 }: AddDatasetsModalProps) => {
-  const [selectedKeys, setSelectedKeys] = useState<string[]>(assignedKeys);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [systemFilter, setSystemFilter] = useState<string | null>(null);
   const message = useMessage();
@@ -48,9 +46,9 @@ const AddDatasetsModal = ({
 
   useEffect(() => {
     if (open) {
-      setSelectedKeys(assignedKeys);
+      setSelectedKeys([]);
     }
-  }, [open, assignedKeys]);
+  }, [open]);
 
   const systemOptions = useMemo(() => {
     const systems = [...new Set(availableDatasets.map((d) => d.system_name))];
@@ -86,27 +84,32 @@ const AddDatasetsModal = ({
     }
   };
 
-  const handleConfirm = async () => {
-    const assignedSet = new Set(assignedKeys);
-    const toAdd = selectedKeys.filter((k) => !assignedSet.has(k));
-    if (toAdd.length > 0) {
-      const result = await addDatasets({
-        fidesKey,
-        datasetFidesKeys: toAdd,
-      });
-      if (isErrorResult(result)) {
-        message.error("Could not add datasets");
-        return;
-      }
-    }
+  const resetLocalState = () => {
     setSearch("");
     setSystemFilter(null);
+    setSelectedKeys([]);
+  };
+
+  const handleConfirm = async () => {
+    if (selectedKeys.length === 0) {
+      resetLocalState();
+      onClose();
+      return;
+    }
+    const result = await addDatasets({
+      fidesKey,
+      datasetFidesKeys: selectedKeys,
+    });
+    if (isErrorResult(result)) {
+      message.error("Could not add datasets");
+      return;
+    }
+    resetLocalState();
     onClose();
   };
 
   const handleCancel = () => {
-    setSearch("");
-    setSystemFilter(null);
+    resetLocalState();
     onClose();
   };
 
@@ -123,7 +126,7 @@ const AddDatasetsModal = ({
       open={open}
       onCancel={handleCancel}
       onOk={handleConfirm}
-      okText="Confirm"
+      okText={selectedKeys.length > 0 ? "Add" : "Done"}
       confirmLoading={isAdding}
       width={640}
       destroyOnClose

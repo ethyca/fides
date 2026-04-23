@@ -16,7 +16,7 @@ import {
   useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 
@@ -39,7 +39,6 @@ const MAX_VISIBLE_CATEGORIES = 2;
 const renderDataCategories = (
   categories: string[] | undefined,
   definedSet: Set<string>,
-  highlightUndeclared: boolean,
 ) => {
   if (!categories || categories.length === 0) {
     return (
@@ -56,9 +55,7 @@ const renderDataCategories = (
       {visible.map((c) => (
         <Tag
           key={c}
-          color={
-            highlightUndeclared && !definedSet.has(c) ? "error" : undefined
-          }
+          color={!definedSet.has(c) ? "error" : undefined}
           bordered={false}
         >
           {c}
@@ -104,8 +101,11 @@ const AssignedDatasetsSection = ({
     return systems.map((s) => ({ label: s, value: s }));
   }, [datasets]);
 
-  const undeclaredFor = (dataset: PurposeDatasetAssignment) =>
-    dataset.data_categories.filter((c) => !definedSet.has(c));
+  const undeclaredFor = useCallback(
+    (dataset: PurposeDatasetAssignment) =>
+      dataset.data_categories.filter((c) => !definedSet.has(c)),
+    [definedSet],
+  );
 
   const filtered = useMemo(
     () =>
@@ -117,8 +117,7 @@ const AssignedDatasetsSection = ({
         const matchesIssues = !issuesOnly || undeclaredFor(d).length > 0;
         return matchesSearch && matchesSystem && matchesIssues;
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [datasets, search, systemFilter, issuesOnly, definedSet],
+    [datasets, search, systemFilter, issuesOnly, undeclaredFor],
   );
 
   const selectedDatasets = useMemo(
@@ -132,8 +131,7 @@ const AssignedDatasetsSection = ({
       undeclaredFor(d).forEach((c) => set.add(c)),
     );
     return Array.from(set);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDatasets, definedSet]);
+  }, [selectedDatasets, undeclaredFor]);
 
   const hasSelection = selectedKeys.length > 0;
   const hasFlaggedSelection = selectedUndeclared.length > 0;
@@ -204,8 +202,7 @@ const AssignedDatasetsSection = ({
   const handleBulkRemoveCategory = () =>
     handleMarkMisclassified(selectedKeys, selectedUndeclared);
 
-  const columns = useMemo(
-    () => [
+  const columns = [
       {
         title: "Dataset",
         dataIndex: "dataset_name",
@@ -216,11 +213,10 @@ const AssignedDatasetsSection = ({
           a.dataset_name.localeCompare(b.dataset_name),
         render: (_: unknown, record: PurposeDatasetAssignment) => {
           const undeclared = undeclaredFor(record);
-          const highlighted =
-            record.system_name === "BigQuery" && undeclared.length > 0;
+          const flagged = undeclared.length > 0;
           return (
             <Flex align="center" gap={6}>
-              {highlighted && (
+              {flagged && (
                 <Tooltip
                   title={`Flagged: ${undeclared.length === 1 ? "new use" : "new uses"} detected (${undeclared.join(", ")})`}
                 >
@@ -248,12 +244,8 @@ const AssignedDatasetsSection = ({
         dataIndex: "data_categories",
         key: "data_categories",
         width: "28%",
-        render: (categories: string[], record: PurposeDatasetAssignment) =>
-          renderDataCategories(
-            categories,
-            definedSet,
-            record.system_name === "BigQuery",
-          ),
+        render: (categories: string[]) =>
+          renderDataCategories(categories, definedSet),
       },
       {
         title: "Steward",
@@ -341,10 +333,7 @@ const AssignedDatasetsSection = ({
           );
         },
       },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [definedSet],
-  );
+    ];
 
   const primaryActionsMenu = {
     items: [
@@ -462,7 +451,6 @@ const AssignedDatasetsSection = ({
         fidesKey={fidesKey}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        assignedKeys={datasets.map((d) => d.dataset_fides_key)}
       />
     </div>
   );

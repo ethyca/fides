@@ -142,7 +142,19 @@ export const dataPurposesApi = baseApi.injectEndpoints({
       query: () => ({
         url: `plus/data-purpose/summaries`,
       }),
-      providesTags: ["PurposeCoverage", "PurposeSystems", "PurposeDatasets"],
+      // Provide both list-level and per-id tags so scoped invalidations from
+      // per-purpose mutations (e.g. `{type: "PurposeSystems", id}`) flow
+      // through to the list grid's batched summary.
+      providesTags: (result) => [
+        { type: "PurposeCoverage" as const, id: "LIST" },
+        { type: "PurposeSystems" as const, id: "LIST" },
+        { type: "PurposeDatasets" as const, id: "LIST" },
+        ...(result ?? []).flatMap((s) => [
+          { type: "PurposeCoverage" as const, id: s.fides_key },
+          { type: "PurposeSystems" as const, id: s.fides_key },
+          { type: "PurposeDatasets" as const, id: s.fides_key },
+        ]),
+      ],
     }),
     getPurposeCoverage: builder.query<PurposeCoverage, string>({
       query: (fidesKey) => ({
