@@ -4,8 +4,11 @@ from fides.api.graph.config import *
 from fides.api.graph.graph import (
     Node,
     _dataset_graph_filters,
+    _property_filtering_active_fn,
     apply_dataset_graph_filters,
+    is_property_filtering_active,
     register_dataset_graph_filter,
+    register_property_filtering_check,
 )
 from fides.api.graph.traversal import *
 from fides.api.models.policy import ActionType
@@ -144,6 +147,37 @@ class TestDatasetGraphFilterRegistry:
 
         apply_dataset_graph_filters(datasets, None)
         assert captured["property_id"] is None
+
+
+class TestPropertyFilteringCheck:
+    @pytest.fixture(autouse=True)
+    def _clear_check(self):
+        """Reset the property filtering check before and after each test."""
+        import fides.api.graph.graph as graph_mod
+
+        graph_mod._property_filtering_active_fn = None
+        yield
+        graph_mod._property_filtering_active_fn = None
+
+    def test_inactive_when_no_callback_registered(self):
+        assert is_property_filtering_active() is False
+
+    def test_active_when_callback_returns_true(self):
+        register_property_filtering_check(lambda: True)
+        assert is_property_filtering_active() is True
+
+    def test_inactive_when_callback_returns_false(self):
+        register_property_filtering_check(lambda: False)
+        assert is_property_filtering_active() is False
+
+    def test_reflects_runtime_changes(self):
+        """Callback is evaluated at call time, not registration time."""
+        enabled = [True]
+        register_property_filtering_check(lambda: enabled[0])
+
+        assert is_property_filtering_active() is True
+        enabled[0] = False
+        assert is_property_filtering_active() is False
 
 
 def test_retry_decorator(privacy_request, policy, db):
