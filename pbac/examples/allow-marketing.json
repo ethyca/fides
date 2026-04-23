@@ -1,0 +1,22 @@
+{
+  "policies": [
+    {
+      "key": "deny-financial",
+      "priority": 200,
+      "enabled": true,
+      "decision": "DENY",
+      "match": { "data_category": { "any": ["user.financial"] } }
+    },
+    {
+      "key": "allow-marketing",
+      "priority": 100,
+      "enabled": true,
+      "decision": "ALLOW",
+      "match": { "data_use": { "any": ["marketing"] } }
+    }
+  ],
+  "request": {
+    "data_uses": ["marketing.advertising"],
+    "data_categories": ["user.contact.email"]
+  }
+}

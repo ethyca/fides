@@ -45,16 +45,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index(
-        CURRENT_INDEX_NAME,
-        table_name="privacy_preferences_current",
-        if_exists=True,
-    )
-    op.drop_index(
-        HISTORIC_INDEX_NAME,
-        table_name="privacy_preferences_historic",
-        if_exists=True,
-    )
+    # Raw SQL because op.drop_index(..., if_exists=True) requires alembic>=1.12
+    # and we pin 1.8.1. The indexes may not exist yet if the background task
+    # hasn't run, so IF EXISTS is necessary.
+    op.execute(sa.text(f"DROP INDEX IF EXISTS {CURRENT_INDEX_NAME}"))
+    op.execute(sa.text(f"DROP INDEX IF EXISTS {HISTORIC_INDEX_NAME}"))
     op.execute(
         sa.text(
             "DELETE FROM post_upgrade_background_migration_tasks "

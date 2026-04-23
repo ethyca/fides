@@ -174,12 +174,11 @@ def put_dataset_configs(
     requested_config_keys = {pair.fides_key for pair in dataset_pairs}
     config_keys_to_remove = existing_config_keys - requested_config_keys
 
-    if config_keys_to_remove:
-        db.query(DatasetConfig).filter(
-            DatasetConfig.connection_config_id == connection_config.id,
-            DatasetConfig.fides_key.in_(config_keys_to_remove),
-        ).delete(synchronize_session=False)
-        db.commit()
+    for key in config_keys_to_remove:
+        try:
+            dataset_config_service.delete_dataset_config(connection_config, key)
+        except DatasetNotFoundException:
+            pass  # already deleted; desired state reached
 
     # reuse the existing patch logic once we've removed the unused dataset configs
     return patch_dataset_configs(
@@ -441,31 +440,21 @@ def get_dataset_config(
 def delete_dataset(
     dataset_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
+    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
 ) -> None:
     """Removes the DatasetConfig based on the given key."""
 
     logger.info(
-        "Finding dataset '{}' for connection '{}'", dataset_key, connection_config.key
+        "Deleting dataset '{}' for connection '{}'", dataset_key, connection_config.key
     )
-    dataset_config = DatasetConfig.filter(
-        db=db,
-        conditions=(
-            (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == dataset_key)
-        ),
-    ).first()
-    if not dataset_config:
+    try:
+        dataset_config_service.delete_dataset_config(connection_config, dataset_key)
+    except DatasetNotFoundException:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No dataset with fides_key '{dataset_key}' and connection_key '{connection_config.key}'",
         )
-
-    logger.info(
-        "Deleting dataset '{}' for connection '{}'", dataset_key, connection_config.key
-    )
-    dataset_config.delete(db)
 
 
 @router.get(

@@ -1,5 +1,4 @@
 import { Button, Flex, Input, Select, Typography } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
 
@@ -90,7 +89,7 @@ const FetchPreferencesSection = ({
                 }`
               : null
           }
-          headerColor={palette.FIDESUI_SUCCESS}
+          headerColor="var(--fidesui-success)"
           body={getCurrentResponse}
           emptyMessage="GET response will appear here after fetching preferences"
         />
