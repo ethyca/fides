@@ -23,25 +23,6 @@ import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/
 
 const ALL_LOCATIONS_VALUE = "";
 
-/**
- * Convert a location ID from the locations API format (e.g. "us_ca")
- * to the ISO format used by the metrics API (e.g. "US-CA").
- */
-function locationIdToIso(id: string): string {
-  const parts = id.split("_");
-  if (parts.length === 1) {
-    return parts[0].toUpperCase();
-  }
-  return `${parts[0].toUpperCase()}-${parts.slice(1).join("_").toUpperCase()}`;
-}
-
-/**
- * Convert an ISO location (e.g. "US-CA") to the locations API format (e.g. "us_ca").
- */
-function isoToLocationId(iso: string): string {
-  return iso.toLowerCase().replace(/-/g, "_");
-}
-
 function formatValue(value: number | null, key: string): string {
   if (value === null) {
     return "N/A";
@@ -59,26 +40,22 @@ interface PrivacyRequestMetricsProps {
 export const PrivacyRequestMetrics = ({
   locationOptions,
 }: PrivacyRequestMetricsProps) => {
+  // currentGeo from the store is already in underscore format (e.g., "us_ca"),
+  // matching location option IDs. The BE's normalize_location_code() accepts
+  // either format, so no FE conversion is needed.
   const { location: currentGeo } = useSelector(selectConsentState);
 
-  // Determine the default: current geo if it exists in the location options list
-  const currentGeoLocationId = currentGeo
-    ? isoToLocationId(currentGeo)
-    : undefined;
-  const geoMatchesOption = currentGeoLocationId
-    ? locationOptions.some((o) => o.id === currentGeoLocationId)
+  const geoMatchesOption = currentGeo
+    ? locationOptions.some((o) => o.id === currentGeo)
     : false;
-  const defaultLocation = geoMatchesOption
-    ? currentGeoLocationId!
-    : ALL_LOCATIONS_VALUE;
+  const defaultLocation = geoMatchesOption ? currentGeo! : ALL_LOCATIONS_VALUE;
 
   const [selectedLocation, setSelectedLocation] =
     useState<string>(defaultLocation);
 
-  const locationParam = selectedLocation
-    ? locationIdToIso(selectedLocation)
-    : undefined;
-  const { data, isLoading } = useGetPrivacyRequestMetrics(locationParam);
+  const { data, isLoading } = useGetPrivacyRequestMetrics(
+    selectedLocation || undefined,
+  );
 
   if (isLoading || !data) {
     return null;
