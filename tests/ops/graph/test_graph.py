@@ -234,8 +234,7 @@ class TestRefsCrossBoundary:
                 ScalarField(
                     name="fk",
                     references=[
-                        (FieldAddress(ds, col, field), "to")
-                        for ds, col, field in refs
+                        (FieldAddress(ds, col, field), "to") for ds, col, field in refs
                     ],
                 )
             )
