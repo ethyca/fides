@@ -12,18 +12,12 @@ interface UsePurposesListOptions {
   dataUseFilter?: string | null;
 }
 
-/**
- * Fetches the paginated list of data purposes with server-side search.
- *
- * `searchQuery` and pagination live in `useTableState` (URL-synced). The
- * `data_use` filter is controlled by the caller so it can be lifted into a
- * parent component for cross-component coordination.
- */
 const usePurposesList = ({
   enabled = true,
   dataUseFilter = null,
 }: UsePurposesListOptions = {}) => {
   const tableState = useTableState({
+    disableUrlState: true,
     pagination: {
       // Large page size keeps all purposes client-side so `usePurposeCardFilters`
       // can apply the `consumer` / `status` / `category` filters without a

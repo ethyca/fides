@@ -1,6 +1,6 @@
 import { Button, Flex, Icons, Result, Spin } from "fidesui";
 import { NextPage } from "next";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
@@ -8,6 +8,7 @@ import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposeSummariesQuery } from "~/features/data-purposes/data-purpose.slice";
 import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
 import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
+import { downloadRoPA } from "~/features/data-purposes/ropaExport";
 import usePurposesList from "~/features/data-purposes/usePurposesList";
 
 const DataPurposesPage: NextPage = () => {
@@ -28,58 +29,6 @@ const DataPurposesPage: NextPage = () => {
   const { data: summaries = [] } = useGetPurposeSummariesQuery(undefined, {
     skip: !flags.alphaPurposeBasedAccessControl,
   });
-
-  const handleDownloadRoPA = useCallback(() => {
-    const summariesByKey = new Map(summaries.map((s) => [s.fides_key, s]));
-    const header = [
-      "Reference",
-      "Processing activity",
-      "Description",
-      "Purpose of processing",
-      "Lawful basis (Art. 6)",
-      "Special category basis (Art. 9)",
-      "Categories of data subjects",
-      "Categories of personal data",
-      "Categories of personal data (detected)",
-      "Retention period (days)",
-      "Features",
-      "Last reviewed",
-    ];
-    const rows = purposes.map((p) => [
-      p.fides_key,
-      p.name,
-      p.description ?? "",
-      p.data_use,
-      p.legal_basis_for_processing ?? "",
-      p.special_category_legal_basis ?? "",
-      p.data_subject ?? "",
-      (p.data_categories ?? []).join("; "),
-      (summariesByKey.get(p.fides_key)?.detected_data_categories ?? []).join(
-        "; ",
-      ),
-      p.retention_period ?? "",
-      (p.features ?? []).join("; "),
-      p.updated_at ?? "",
-    ]);
-    // Prefix BOM and use CRLF so Excel on Windows reads UTF-8 and line breaks
-    // correctly; RFC 4180 requires CRLF.
-    const csvBody = [header, ...rows]
-      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
-      .join("\r\n");
-    const csv = `\ufeff${csvBody}`;
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "ropa.csv";
-    // Anchor must be in the DOM for `.click()` to trigger a download in some
-    // browsers (Firefox). Defer `revokeObjectURL` so the browser has time to
-    // start fetching the blob before the URL is released.
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    setTimeout(() => URL.revokeObjectURL(url), 100);
-  }, [purposes, summaries]);
 
   if (!flags.alphaPurposeBasedAccessControl) {
     return (
@@ -130,7 +79,7 @@ const DataPurposesPage: NextPage = () => {
           <Flex gap="small">
             <Button
               icon={<Icons.Download />}
-              onClick={handleDownloadRoPA}
+              onClick={() => downloadRoPA(purposes, summaries)}
               disabled={purposes.length === 0}
             >
               Download RoPA

@@ -33,11 +33,6 @@ export interface DataPurposePage {
   pages: number;
 }
 
-/**
- * UI-extension response types for endpoints that don't yet exist on the
- * backend. MSW serves them in dev (see src/mocks/data-purposes/). Once
- * fidesplus ships real endpoints, these move into generated types/api.
- */
 export interface PurposeSystemAssignment {
   system_id: string;
   system_name: string;

@@ -79,14 +79,14 @@ const PurposeCardGrid = ({
             onSearchChange(e.target.value)
           }
           allowClear
-          style={{ width: 280 }}
+          className="w-[280px]"
         />
         <Flex gap={8} align="center">
           <Select
             aria-label="Filter by status"
             placeholder="Status"
             allowClear
-            style={{ width: 160 }}
+            className="w-40"
             options={STATUS_OPTIONS}
             value={statusFilter}
             onChange={(v) => setStatusFilter(v ?? null)}
@@ -95,7 +95,7 @@ const PurposeCardGrid = ({
             aria-label="Filter by consumer"
             placeholder="Consumer"
             allowClear
-            style={{ width: 200 }}
+            className="w-[200px]"
             options={consumerOptions}
             value={consumerFilter}
             onChange={(v) => setConsumerFilter(v ?? null)}
@@ -104,7 +104,7 @@ const PurposeCardGrid = ({
             aria-label="Filter by data category"
             placeholder="Data category"
             allowClear
-            style={{ width: 200 }}
+            className="w-[200px]"
             options={categoryOptions}
             value={categoryFilter}
             onChange={(v) => setCategoryFilter(v ?? null)}
@@ -113,7 +113,7 @@ const PurposeCardGrid = ({
             aria-label="Filter by data use"
             placeholder="Data use"
             allowClear
-            style={{ width: 200 }}
+            className="w-[200px]"
             options={dataUseOptions}
             value={dataUseFilter}
             onChange={(v) => onDataUseFilterChange(v ?? null)}

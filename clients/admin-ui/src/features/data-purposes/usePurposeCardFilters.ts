@@ -3,15 +3,6 @@ import { useMemo, useState } from "react";
 import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
 import { computeCategoryDrift, formatDataUse } from "./purposeUtils";
 
-/**
- * Filter + grouping logic for the purpose card grid.
- *
- * `search` and `data_use` are applied server-side by `usePurposesList`, so
- * they aren't owned here. The remaining filters (`consumer`, `status`,
- * `data_category`) depend on summaries data that is still mock-served; move
- * them server-side once the real `summaries` endpoint lands and the list
- * endpoint accepts the corresponding params.
- */
 const usePurposeCardFilters = (
   purposes: DataPurpose[],
   summaries: PurposeSummary[],
