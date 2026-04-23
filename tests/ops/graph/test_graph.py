@@ -2,10 +2,6 @@ import pytest
 
 import fides.api.graph.graph as graph_mod
 from fides.api.graph.config import *
-from fides.api.service.privacy_request.request_runner_service import (
-    _partition_configs_by_property,
-    _refs_cross_boundary,
-)
 from fides.api.graph.graph import (
     Node,
     _dataset_graph_filters,
@@ -16,6 +12,10 @@ from fides.api.graph.graph import (
 )
 from fides.api.graph.traversal import *
 from fides.api.models.policy import ActionType
+from fides.api.service.privacy_request.request_runner_service import (
+    _partition_configs_by_property,
+    _refs_cross_boundary,
+)
 from fides.api.task.graph_task import retry
 from fides.api.task.task_resources import TaskResources
 from fides.config import CONFIG
