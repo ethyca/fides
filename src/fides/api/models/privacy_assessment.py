@@ -47,6 +47,7 @@ class AssessmentStatus(str, EnumType):
     in_progress = "in_progress"
     completed = "completed"
     outdated = "outdated"
+    generating = "generating"
 
 
 class RiskLevel(str, EnumType):
