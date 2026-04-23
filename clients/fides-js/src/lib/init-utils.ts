@@ -2,6 +2,7 @@ import { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import { gcm } from "../integrations/gcm";
 import { gtm } from "../integrations/gtm";
+import { matomo } from "../integrations/matomo";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
@@ -135,6 +136,7 @@ export const getCoreFides = ({
     blueconic,
     gcm,
     gtm,
+    matomo,
     meta,
     shopify,
     showModal: defaultShowModal,
