@@ -12,11 +12,7 @@ export const REQUEST_TYPE_LABELS: Record<string, string> = {
  * Display order for request types in the metrics table.
  * Types not in this list are appended at the end.
  */
-export const REQUEST_TYPE_ORDER = [
-  "erasure",
-  "access",
-  "consent_opt_out",
-];
+export const REQUEST_TYPE_ORDER = ["erasure", "access", "consent_opt_out"];
 
 /**
  * Column headers for the metrics table, matching the legal disclosure format.
