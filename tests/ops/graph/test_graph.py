@@ -1,10 +1,10 @@
 import pytest
 
+import fides.api.graph.graph as graph_mod
 from fides.api.graph.config import *
 from fides.api.graph.graph import (
     Node,
     _dataset_graph_filters,
-    _property_filtering_active_fn,
     apply_dataset_graph_filters,
     is_property_filtering_active,
     register_dataset_graph_filter,
