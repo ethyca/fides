@@ -50,6 +50,8 @@ const AssignPickerModal = <T,>({
   useEffect(() => {
     if (open) {
       setSelectedKeys([]);
+      setSearch("");
+      setFilter(null);
     }
   }, [open]);
 

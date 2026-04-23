@@ -16,22 +16,18 @@ import { useEffect, useMemo } from "react";
 import { isErrorResult } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
-import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
 import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
 import { LegalBasisForProcessingEnum } from "~/types/api";
 
 import {
   type DataPurpose,
-  useCreateDataPurposeMutation,
   useUpdateDataPurposeMutation,
 } from "./data-purpose.slice";
 import { FEATURE_LABELS } from "./purposeUtils";
 
 interface PurposeConfigFormProps {
-  purpose?: DataPurpose | null;
-  isNew?: boolean;
-  onSave?: () => void;
+  purpose: DataPurpose;
 }
 
 interface SectionProps {
@@ -65,16 +61,10 @@ const FEATURE_OPTIONS = Object.entries(FEATURE_LABELS).map(
   }),
 );
 
-const PurposeConfigForm = ({
-  purpose,
-  isNew = false,
-  onSave,
-}: PurposeConfigFormProps) => {
+const PurposeConfigForm = ({ purpose }: PurposeConfigFormProps) => {
   const router = useRouter();
   const [form] = Form.useForm<Partial<DataPurpose>>();
   const message = useMessage();
-  const [createDataPurpose, { isLoading: isCreating }] =
-    useCreateDataPurposeMutation();
   const [updateDataPurpose, { isLoading: isUpdating }] =
     useUpdateDataPurposeMutation();
 
@@ -113,36 +103,19 @@ const PurposeConfigForm = ({
   );
 
   useEffect(() => {
-    if (purpose) {
-      form.setFieldsValue(purpose);
-    }
+    form.setFieldsValue(purpose);
   }, [purpose, form]);
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isNew) {
-      form.setFieldValue("fides_key", formatKey(e.target.value));
-    }
-  };
-
   const handleFinish = async (values: Partial<DataPurpose>) => {
-    if (isNew) {
-      const result = await createDataPurpose(values);
-      if (isErrorResult(result)) {
-        message.error("Could not create purpose");
-        return;
-      }
-    } else if (purpose) {
-      const result = await updateDataPurpose({
-        fidesKey: purpose.fides_key,
-        ...values,
-      });
-      if (isErrorResult(result)) {
-        message.error("Could not update purpose");
-        return;
-      }
+    const result = await updateDataPurpose({
+      fidesKey: purpose.fides_key,
+      ...values,
+    });
+    if (isErrorResult(result)) {
+      message.error("Could not update purpose");
+      return;
     }
     message.success("Purpose saved");
-    onSave?.();
   };
 
   const handleCancel = () => {
@@ -178,7 +151,6 @@ const PurposeConfigForm = ({
             >
               <Input
                 placeholder="Purpose name"
-                onChange={handleNameChange}
                 data-testid="data-purpose-name-input"
               />
             </Form.Item>
@@ -186,12 +158,11 @@ const PurposeConfigForm = ({
               label={<Text strong>Key</Text>}
               name="fides_key"
               rules={[{ required: true, message: "Key is required" }]}
-              tooltip="Auto-generated from the name."
               className="!mb-0 flex-1"
             >
               <Input
                 placeholder="purpose_key"
-                disabled={!isNew}
+                disabled
                 data-testid="data-purpose-key-input"
               />
             </Form.Item>
@@ -362,7 +333,7 @@ const PurposeConfigForm = ({
           <Button
             type="primary"
             htmlType="submit"
-            loading={isCreating || isUpdating}
+            loading={isUpdating}
             data-testid="save-data-purpose-button"
           >
             Save

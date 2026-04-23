@@ -159,44 +159,47 @@ const AssignedDatasetsSection = ({
   const hasSelection = selectedKeys.length > 0;
   const hasFlaggedSelection = selectedUndeclared.length > 0;
 
-  const handleAccept = async (categories: string[]) => {
-    if (categories.length === 0) {
-      return;
-    }
-    const result = await acceptCategories({ fidesKey, categories });
-    if (isErrorResult(result)) {
-      message.error("Could not accept categories");
-      return;
-    }
-    message.success(
-      categories.length === 1
-        ? `Added "${categories[0]}" to defined categories`
-        : `Added ${categories.length} categories to defined list`,
-    );
-  };
+  const handleAccept = useCallback(
+    async (categories: string[]) => {
+      if (categories.length === 0) {
+        return;
+      }
+      const result = await acceptCategories({ fidesKey, categories });
+      if (isErrorResult(result)) {
+        message.error("Could not accept categories");
+        return;
+      }
+      message.success(
+        categories.length === 1
+          ? `Added "${categories[0]}" to defined categories`
+          : `Added ${categories.length} categories to defined list`,
+      );
+    },
+    [acceptCategories, fidesKey, message],
+  );
 
-  const handleMarkMisclassified = async (
-    datasetFidesKeys: string[],
-    categories: string[],
-  ) => {
-    if (categories.length === 0) {
-      return;
-    }
-    const result = await markMisclassified({
-      fidesKey,
-      categories,
-      datasetFidesKeys,
-    });
-    if (isErrorResult(result)) {
-      message.error("Could not mark categories as misclassified");
-      return;
-    }
-    message.success(
-      categories.length === 1
-        ? `Marked "${categories[0]}" as misclassified`
-        : `Marked ${categories.length} categories as misclassified`,
-    );
-  };
+  const handleMarkMisclassified = useCallback(
+    async (datasetFidesKeys: string[], categories: string[]) => {
+      if (categories.length === 0) {
+        return;
+      }
+      const result = await markMisclassified({
+        fidesKey,
+        categories,
+        datasetFidesKeys,
+      });
+      if (isErrorResult(result)) {
+        message.error("Could not mark categories as misclassified");
+        return;
+      }
+      message.success(
+        categories.length === 1
+          ? `Marked "${categories[0]}" as misclassified`
+          : `Marked ${categories.length} categories as misclassified`,
+      );
+    },
+    [markMisclassified, fidesKey, message],
+  );
 
   const handleBulkRemoveDataset = async () => {
     const result = await removeDatasets({
@@ -215,159 +218,170 @@ const AssignedDatasetsSection = ({
     setSelectedKeys([]);
   };
 
-  const handleRowAccept = (record: PurposeDatasetAssignment) =>
-    handleAccept(undeclaredFor(record));
+  const handleRowAccept = useCallback(
+    (record: PurposeDatasetAssignment) => handleAccept(undeclaredFor(record)),
+    [handleAccept, undeclaredFor],
+  );
 
-  const handleRowRemoveCategory = (record: PurposeDatasetAssignment) =>
-    handleMarkMisclassified([record.dataset_fides_key], undeclaredFor(record));
+  const handleRowRemoveCategory = useCallback(
+    (record: PurposeDatasetAssignment) =>
+      handleMarkMisclassified(
+        [record.dataset_fides_key],
+        undeclaredFor(record),
+      ),
+    [handleMarkMisclassified, undeclaredFor],
+  );
 
   const handleBulkApprove = () => handleAccept(selectedUndeclared);
   const handleBulkRemoveCategory = () =>
     handleMarkMisclassified(selectedKeys, selectedUndeclared);
 
-  const columns = [
-    {
-      title: "Dataset",
-      dataIndex: "dataset_name",
-      key: "dataset_name",
-      width: "20%",
-      ellipsis: true,
-      sorter: (
-        left: PurposeDatasetAssignment,
-        right: PurposeDatasetAssignment,
-      ) => left.dataset_name.localeCompare(right.dataset_name),
-      render: (_: unknown, record: PurposeDatasetAssignment) => {
-        const undeclared = undeclaredFor(record);
-        const flagged = undeclared.length > 0;
-        return (
-          <Flex align="center" gap={6}>
-            {flagged && (
-              <Tooltip
-                title={`Flagged: ${undeclared.length === 1 ? "new use" : "new uses"} detected (${undeclared.join(", ")})`}
-              >
-                <span className={styles.warningIcon}>
-                  <Icons.WarningAltFilled size={14} />
-                </span>
-              </Tooltip>
-            )}
-            <span>{record.dataset_name}</span>
-          </Flex>
-        );
+  const columns = useMemo(
+    () => [
+      {
+        title: "Dataset",
+        dataIndex: "dataset_name",
+        key: "dataset_name",
+        width: "20%",
+        ellipsis: true,
+        sorter: (
+          left: PurposeDatasetAssignment,
+          right: PurposeDatasetAssignment,
+        ) => left.dataset_name.localeCompare(right.dataset_name),
+        render: (_: unknown, record: PurposeDatasetAssignment) => {
+          const undeclared = undeclaredFor(record);
+          const flagged = undeclared.length > 0;
+          return (
+            <Flex align="center" gap={6}>
+              {flagged && (
+                <Tooltip
+                  title={`Flagged: ${undeclared.length === 1 ? "new use" : "new uses"} detected (${undeclared.join(", ")})`}
+                >
+                  <span className={styles.warningIcon}>
+                    <Icons.WarningAltFilled size={14} />
+                  </span>
+                </Tooltip>
+              )}
+              <span>{record.dataset_name}</span>
+            </Flex>
+          );
+        },
       },
-    },
-    {
-      title: "System",
-      dataIndex: "system_name",
-      key: "system_name",
-      width: "18%",
-      ellipsis: true,
-      sorter: (
-        left: PurposeDatasetAssignment,
-        right: PurposeDatasetAssignment,
-      ) => left.system_name.localeCompare(right.system_name),
-    },
-    {
-      title: "Data categories",
-      dataIndex: "data_categories",
-      key: "data_categories",
-      width: "28%",
-      render: (categories: string[]) =>
-        renderDataCategories(categories, definedSet),
-    },
-    {
-      title: "Steward",
-      dataIndex: "steward",
-      key: "steward",
-      width: "12%",
-      ellipsis: true,
-      render: (value: string | undefined) =>
-        value ? (
-          <Text type="secondary" className="text-xs">
-            {value}
-          </Text>
-        ) : (
-          <Text type="secondary">—</Text>
-        ),
-    },
-    {
-      title: "Updated",
-      dataIndex: "updated_at",
-      key: "updated_at",
-      width: "12%",
-      sorter: (
-        left: PurposeDatasetAssignment,
-        right: PurposeDatasetAssignment,
-      ) => {
-        const leftTime = left.updated_at
-          ? new Date(left.updated_at).getTime()
-          : 0;
-        const rightTime = right.updated_at
-          ? new Date(right.updated_at).getTime()
-          : 0;
-        return leftTime - rightTime;
+      {
+        title: "System",
+        dataIndex: "system_name",
+        key: "system_name",
+        width: "18%",
+        ellipsis: true,
+        sorter: (
+          left: PurposeDatasetAssignment,
+          right: PurposeDatasetAssignment,
+        ) => left.system_name.localeCompare(right.system_name),
       },
-      render: (value: string | undefined) => {
-        if (!value) {
-          return <Text type="secondary">—</Text>;
-        }
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) {
-          return <Text type="secondary">—</Text>;
-        }
-        return (
-          <Tooltip title={date.toLocaleString()}>
+      {
+        title: "Data categories",
+        dataIndex: "data_categories",
+        key: "data_categories",
+        width: "28%",
+        render: (categories: string[]) =>
+          renderDataCategories(categories, definedSet),
+      },
+      {
+        title: "Steward",
+        dataIndex: "steward",
+        key: "steward",
+        width: "12%",
+        ellipsis: true,
+        render: (value: string | undefined) =>
+          value ? (
             <Text type="secondary" className="text-xs">
-              {date.toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {value}
             </Text>
-          </Tooltip>
-        );
+          ) : (
+            <Text type="secondary">—</Text>
+          ),
       },
-    },
-    {
-      title: "",
-      key: "actions",
-      width: "10%",
-      render: (_: unknown, record: PurposeDatasetAssignment) => {
-        const undeclared = undeclaredFor(record);
-        const flagged = undeclared.length > 0;
-        if (!flagged) {
-          return null;
-        }
-        return (
-          <Flex gap={2} justify="flex-end">
-            <Tooltip title="Approve category">
-              <Button
-                aria-label="Approve category"
-                type="text"
-                size="small"
-                icon={<Icons.Checkmark size={14} />}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleRowAccept(record);
-                }}
-              />
+      {
+        title: "Updated",
+        dataIndex: "updated_at",
+        key: "updated_at",
+        width: "12%",
+        sorter: (
+          left: PurposeDatasetAssignment,
+          right: PurposeDatasetAssignment,
+        ) => {
+          const leftTime = left.updated_at
+            ? new Date(left.updated_at).getTime()
+            : 0;
+          const rightTime = right.updated_at
+            ? new Date(right.updated_at).getTime()
+            : 0;
+          return leftTime - rightTime;
+        },
+        render: (value: string | undefined) => {
+          if (!value) {
+            return <Text type="secondary">—</Text>;
+          }
+          const date = new Date(value);
+          if (Number.isNaN(date.getTime())) {
+            return <Text type="secondary">—</Text>;
+          }
+          return (
+            <Tooltip title={date.toLocaleString()}>
+              <Text type="secondary" className="text-xs">
+                {date.toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </Text>
             </Tooltip>
-            <Tooltip title="Remove category">
-              <Button
-                aria-label="Remove category"
-                type="text"
-                size="small"
-                icon={<Icons.Close size={14} />}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleRowRemoveCategory(record);
-                }}
-              />
-            </Tooltip>
-          </Flex>
-        );
+          );
+        },
       },
-    },
-  ];
+      {
+        title: "",
+        key: "actions",
+        width: "10%",
+        render: (_: unknown, record: PurposeDatasetAssignment) => {
+          const undeclared = undeclaredFor(record);
+          const flagged = undeclared.length > 0;
+          if (!flagged) {
+            return null;
+          }
+          return (
+            <Flex gap={2} justify="flex-end">
+              <Tooltip title="Approve category">
+                <Button
+                  aria-label="Approve category"
+                  type="text"
+                  size="small"
+                  icon={<Icons.Checkmark size={14} />}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleRowAccept(record);
+                  }}
+                />
+              </Tooltip>
+              <Tooltip title="Remove category">
+                <Button
+                  aria-label="Remove category"
+                  type="text"
+                  size="small"
+                  icon={<Icons.Close size={14} />}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleRowRemoveCategory(record);
+                  }}
+                />
+              </Tooltip>
+            </Flex>
+          );
+        },
+      },
+    ],
+    [definedSet, undeclaredFor, handleRowAccept, handleRowRemoveCategory],
+  );
 
   const primaryActionsMenu = {
     items: [

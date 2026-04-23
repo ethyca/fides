@@ -83,13 +83,21 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         url: `data-purpose`,
         params,
       }),
-      providesTags: ["DataPurpose"],
+      providesTags: (result) => [
+        { type: "DataPurpose" as const, id: "LIST" },
+        ...(result?.items ?? []).map((purpose) => ({
+          type: "DataPurpose" as const,
+          id: purpose.fides_key,
+        })),
+      ],
     }),
     getDataPurposeByKey: builder.query<DataPurpose, string>({
       query: (fidesKey) => ({
         url: `data-purpose/${fidesKey}`,
       }),
-      providesTags: ["DataPurpose"],
+      providesTags: (_result, _error, fidesKey) => [
+        { type: "DataPurpose", id: fidesKey },
+      ],
     }),
     createDataPurpose: builder.mutation<DataPurpose, Partial<DataPurpose>>({
       query: (body) => ({
@@ -97,7 +105,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["DataPurpose"],
+      invalidatesTags: [{ type: "DataPurpose", id: "LIST" }],
     }),
     updateDataPurpose: builder.mutation<
       DataPurpose,
@@ -108,7 +116,10 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "PUT",
         body,
       }),
-      invalidatesTags: ["DataPurpose"],
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "DataPurpose", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
+      ],
     }),
     deleteDataPurpose: builder.mutation<
       void,
@@ -119,7 +130,11 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         method: "DELETE",
         params: force ? { force: true } : undefined,
       }),
-      invalidatesTags: ["DataPurpose", "DataConsumer"],
+      invalidatesTags: (_result, _error, { fidesKey }) => [
+        { type: "DataPurpose", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
+        "DataConsumer",
+      ],
     }),
 
     // Plus-only, MSW-mocked for now.
@@ -160,11 +175,17 @@ export const dataPurposesApi = baseApi.injectEndpoints({
       query: (fidesKey) => ({
         url: `plus/data-purpose/${fidesKey}/available-systems`,
       }),
+      providesTags: (_result, _error, fidesKey) => [
+        { type: "PurposeSystems", id: fidesKey },
+      ],
     }),
     getPurposeAvailableDatasets: builder.query<AvailableDataset[], string>({
       query: (fidesKey) => ({
         url: `plus/data-purpose/${fidesKey}/available-datasets`,
       }),
+      providesTags: (_result, _error, fidesKey) => [
+        { type: "PurposeDatasets", id: fidesKey },
+      ],
     }),
     assignSystemsToPurpose: builder.mutation<
       PurposeSystemAssignment[],
@@ -228,7 +249,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         body: { categories },
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        "DataPurpose",
+        { type: "DataPurpose", id: fidesKey },
         { type: "PurposeDatasets", id: fidesKey },
       ],
     }),

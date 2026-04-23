@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
+import { isFetchBaseQueryError } from "~/features/common/helpers";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDataPurposeByKeyQuery } from "~/features/data-purposes/data-purpose.slice";
@@ -37,12 +38,7 @@ const PurposeDetailPage: NextPage = () => {
     );
   }
 
-  const is404 =
-    isError &&
-    typeof error === "object" &&
-    error !== null &&
-    "status" in error &&
-    (error as { status?: number }).status === 404;
+  const is404 = isError && isFetchBaseQueryError(error) && error.status === 404;
 
   let body: React.ReactNode;
   if (!fidesKey || isLoading) {

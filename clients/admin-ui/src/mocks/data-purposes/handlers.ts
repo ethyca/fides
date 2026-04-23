@@ -369,6 +369,12 @@ export const dataPurposesHandlers = () => {
         const { fidesKey } = req.params;
         const body = (await req.json()) as CategoryActionBody;
         const key = fidesKey as string;
+        if (!purposesStore.some((purpose) => purpose.fides_key === key)) {
+          return res(
+            ctx.status(404),
+            ctx.json({ detail: "Purpose not found" }),
+          );
+        }
         const categorySet = new Set(body.categories);
         const datasetKeys = new Set(body.dataset_fides_keys ?? []);
         if (datasetKeys.size > 0) {
