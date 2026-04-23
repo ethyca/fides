@@ -25,6 +25,7 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.db.session import get_db_session
+from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph, apply_dataset_graph_filters
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
@@ -398,6 +399,43 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     return download_urls
 
 
+def _partition_configs_by_property(
+    configs: list[DatasetConfig], property_id: str
+) -> tuple[list[DatasetConfig], list[DatasetConfig]]:
+    """Split dataset configs into matching and excluded based on property_id.
+
+    A config matches if its property_ids is empty (universal) or contains
+    the given property_id. This mirrors the is_in_scope() logic in
+    fidesplus property_filtering.py — if those definitions diverge,
+    DatasetGraph construction will fail loudly on missing FK targets.
+    """
+    matching: list[DatasetConfig] = []
+    excluded: list[DatasetConfig] = []
+    for dc in configs:
+        if not dc.property_ids or property_id in dc.property_ids:
+            matching.append(dc)
+        else:
+            excluded.append(dc)
+    return matching, excluded
+
+
+def _refs_cross_boundary(
+    dataset_graphs: list[GraphDataset], excluded_keys: set[str]
+) -> bool:
+    """Check if any dataset graph has FK references to excluded datasets.
+
+    When True, the excluded datasets must be loaded for bridge detection
+    during property-based DAG filtering.
+    """
+    for dg in dataset_graphs:
+        for col in dg.collections:
+            for _, ref_list in col.references().items():
+                for dest_addr, _ in ref_list:
+                    if dest_addr.dataset in excluded_keys:
+                        return True
+    return False
+
+
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
@@ -516,11 +554,33 @@ def run_privacy_request(
                     )
                     .all()
                 )
-                dataset_graphs = [
-                    dataset_config.get_graph()
-                    for dataset_config in datasets
-                    if not dataset_config.connection_config.disabled
+                active_configs = [
+                    dc for dc in datasets if not dc.connection_config.disabled
                 ]
+                property_id = privacy_request.property_id
+
+                # When property_id is set, skip expensive get_graph() parsing
+                # for datasets that won't survive property filtering.
+                if property_id:
+                    matching, excluded_configs = _partition_configs_by_property(
+                        active_configs, property_id
+                    )
+                    dataset_graphs = [dc.get_graph() for dc in matching]
+
+                    # If matching graphs reference excluded datasets via FK,
+                    # load those too so bridge detection can work.
+                    excluded_keys = {dc.fides_key for dc in excluded_configs}
+                    if excluded_keys and _refs_cross_boundary(
+                        dataset_graphs, excluded_keys
+                    ):
+                        logger.info(
+                            "Property filtering: cross-boundary FK refs detected, "
+                            "loading {} additional datasets for bridge detection",
+                            len(excluded_configs),
+                        )
+                        dataset_graphs.extend(dc.get_graph() for dc in excluded_configs)
+                else:
+                    dataset_graphs = [dc.get_graph() for dc in active_configs]
 
                 # Add manual task artificial graphs to dataset graphs
                 # Only include manual tasks with access or erasure configs
