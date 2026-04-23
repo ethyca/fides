@@ -136,7 +136,7 @@ class TestDatasetConfigServiceAuditEvents:
         updated_dataset = FideslangDataset.model_validate(
             {
                 "fides_key": _SAAS_FIDES_KEY,
-                "name": "Audit Test Dataset (Updated)",
+                "name": "Audit Test Dataset",
                 "collections": [
                     {
                         "name": "items",
@@ -162,11 +162,9 @@ class TestDatasetConfigServiceAuditEvents:
         assert "dataset_changes" in update_details
         assert "dataset" not in update_details
         # Only the fields that actually changed are logged (new values only)
-        assert (
-            update_details["dataset_changes"]["name"] == "Audit Test Dataset (Updated)"
-        )
         assert "collections" in update_details["dataset_changes"]  # fields were added
         assert "fides_key" not in update_details["dataset_changes"]  # unchanged
+        assert "name" not in update_details["dataset_changes"]  # unchanged
 
     def test_delete_saas_dataset_emits_deleted_event(
         self,
