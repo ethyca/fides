@@ -1,38 +1,17 @@
+import type {
+  AvailableDataset,
+  AvailableSystem,
+  PurposeDatasetAssignment,
+  PurposeSystemAssignment,
+} from "~/features/data-purposes/data-purpose.slice";
 import type { DataPurposeResponse } from "~/types/api";
 
-// Local UI-only types for data that has no backend endpoint yet.
-// These will move to the slice in step 2 and eventually to ~/types/api
-// once the backend endpoints land.
-
-export interface PurposeSystemAssignment {
-  system_id: string;
-  system_name: string;
-  system_type: string;
-  assigned: boolean;
-  consumer_category?: "system" | "group";
-}
-
-export interface PurposeDatasetAssignment {
-  dataset_fides_key: string;
-  dataset_name: string;
-  system_name: string;
-  collection_count: number;
-  data_categories: string[];
-  updated_at: string;
-  steward: string;
-}
-
-export interface AvailableSystem {
-  system_id: string;
-  system_name: string;
-  system_type: string;
-}
-
-export interface AvailableDataset {
-  dataset_fides_key: string;
-  dataset_name: string;
-  system_name: string;
-}
+export type {
+  AvailableDataset,
+  AvailableSystem,
+  PurposeDatasetAssignment,
+  PurposeSystemAssignment,
+};
 
 export const mockDataPurposes: DataPurposeResponse[] = [
   {

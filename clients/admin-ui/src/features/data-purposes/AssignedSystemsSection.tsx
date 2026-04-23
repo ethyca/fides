@@ -6,6 +6,7 @@ import {
   Empty,
   Flex,
   Icons,
+  Popconfirm,
   Row,
   Select,
   Spin,
@@ -78,6 +79,9 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
     }));
   }, [systems]);
 
+  // Correlation by `system_name` assumes unique system display names.
+  // `PurposeDatasetAssignment` doesn't currently expose `system_id`; once the
+  // backend adds it, key these Maps by `system_id` instead.
   const datasetCountBySystem = useMemo(() => {
     const counts = new Map<string, number>();
     datasets.forEach((dataset) => {
@@ -124,7 +128,9 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
     const result = await removeSystems({ fidesKey, systemIds: [systemId] });
     if (isErrorResult(result)) {
       message.error("Could not remove system");
+      return;
     }
+    message.success("System removed from purpose");
   };
 
   return (
@@ -209,17 +215,23 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
                         {datasetCount === 1 ? "dataset" : "datasets"}
                       </Text>
                     )}
-                    <Button
-                      aria-label={`Remove ${system.system_name}`}
-                      type="text"
-                      size="small"
-                      icon={<CloseOutlined className={styles.removeIcon} />}
-                      className={styles.removeButton}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleRemoveSystem(system.system_id);
-                      }}
-                    />
+                    <Popconfirm
+                      title={`Remove ${system.system_name} from this purpose?`}
+                      okText="Remove"
+                      cancelText="Cancel"
+                      okButtonProps={{ danger: true }}
+                      onConfirm={() => handleRemoveSystem(system.system_id)}
+                      onPopupClick={(event) => event.stopPropagation()}
+                    >
+                      <Button
+                        aria-label={`Remove ${system.system_name}`}
+                        type="text"
+                        size="small"
+                        icon={<CloseOutlined className={styles.removeIcon} />}
+                        className={styles.removeButton}
+                        onClick={(event) => event.stopPropagation()}
+                      />
+                    </Popconfirm>
                     <Flex align="center" gap={6}>
                       {isAtRisk && (
                         <Tooltip

@@ -25,6 +25,10 @@ const usePurposesList = ({
 }: UsePurposesListOptions = {}) => {
   const tableState = useTableState({
     pagination: {
+      // Large page size keeps all purposes client-side so `usePurposeCardFilters`
+      // can apply the `consumer` / `status` / `category` filters without a
+      // round-trip. Drop this once the list endpoint accepts those params —
+      // see the note in `usePurposeCardFilters.ts`.
       defaultPageSize: 200,
       pageSizeOptions: [50, 100, 200],
     },

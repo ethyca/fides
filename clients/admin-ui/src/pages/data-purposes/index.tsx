@@ -69,11 +69,16 @@ const DataPurposesPage: NextPage = () => {
     const csv = `\ufeff${csvBody}`;
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ropa.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "ropa.csv";
+    // Anchor must be in the DOM for `.click()` to trigger a download in some
+    // browsers (Firefox). Defer `revokeObjectURL` so the browser has time to
+    // start fetching the blob before the URL is released.
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   }, [purposes, summaries]);
 
   if (!flags.alphaPurposeBasedAccessControl) {

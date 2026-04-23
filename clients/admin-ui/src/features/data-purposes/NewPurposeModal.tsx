@@ -37,9 +37,8 @@ const NewPurposeModal = ({
     data_use: string;
     description?: string;
   }) => {
-    const fidesKey = formatKey(values.name);
     const result = await createDataPurpose({
-      fides_key: fidesKey,
+      fides_key: formatKey(values.name),
       name: values.name,
       data_use: values.data_use,
       description: values.description || null,
@@ -49,7 +48,7 @@ const NewPurposeModal = ({
       return;
     }
     form.resetFields();
-    onCreated(fidesKey);
+    onCreated(result.data.fides_key);
   };
 
   const handleCancel = () => {
