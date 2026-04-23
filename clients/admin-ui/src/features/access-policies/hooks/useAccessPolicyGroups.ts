@@ -19,8 +19,8 @@ export const useAccessPolicyGroups = (
 
     const groups: PolicyGroup[] = controlGroups.map((controlGroup) => ({
       controlGroup,
-      policies: policies.filter((policy) =>
-        policy.control === controlGroup.key,
+      policies: policies.filter(
+        (policy) => policy.control === controlGroup.key,
       ),
     }));
 

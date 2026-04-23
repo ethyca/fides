@@ -21,7 +21,6 @@ import PageHeader from "~/features/common/PageHeader";
 import { DEFAULT_DATA_SECTIONS } from "~/features/prompt-explorer/constants";
 import {
   DataSectionConfig,
-  PromptCategory,
   PromptInfo,
   TemplateSummary,
   useExecutePromptMutation,
@@ -32,6 +31,7 @@ import {
   useGetTemplatesQuery,
   useRenderPromptMutation,
 } from "~/features/prompt-explorer/prompt-explorer.slice";
+import { PromptCategory } from "~/features/prompt-explorer/types";
 import { QuestionnaireControls } from "~/features/prompt-explorer/QuestionnaireControls";
 import { buildQuestionnaireVariables } from "~/features/prompt-explorer/utils";
 

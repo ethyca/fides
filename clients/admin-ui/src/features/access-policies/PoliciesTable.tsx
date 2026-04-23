@@ -323,7 +323,8 @@ const PoliciesTable = ({
                 ? [
                     {
                       key: record.control,
-                      label: controlGroupMap.get(record.control) ?? record.control,
+                      label:
+                        controlGroupMap.get(record.control) ?? record.control,
                     },
                   ]
                 : undefined

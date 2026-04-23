@@ -1,0 +1,4 @@
+type: Changed
+description: Add TypeScript types for access policy agent configuration, wire agent chat endpoint URL, and extend prompt explorer with Access Policy Chat prompt type
+pr: 7992
+labels: []
