@@ -24,7 +24,7 @@ const NewAccessPolicyPage: NextPage = () => {
       messageApi.success("Policy created.");
       router.push(ACCESS_POLICIES_ROUTE);
     } catch (error) {
-      messageApi.error(getErrorMessage((error as RTKErrorResult).error));
+      messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
   };
 

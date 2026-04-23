@@ -35,7 +35,7 @@ const EditAccessPolicyPage: NextPage = () => {
       }).unwrap();
       messageApi.success("Policy saved.");
     } catch (error) {
-      messageApi.error(getErrorMessage((error as RTKErrorResult).error));
+      messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
   };
 
@@ -44,7 +44,7 @@ const EditAccessPolicyPage: NextPage = () => {
       await deleteAccessPolicy(policyId).unwrap();
       router.push(ACCESS_POLICIES_ROUTE);
     } catch (error) {
-      messageApi.error(getErrorMessage((error as RTKErrorResult).error));
+      messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
   };
 
