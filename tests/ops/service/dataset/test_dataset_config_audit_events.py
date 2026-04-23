@@ -27,7 +27,14 @@ _MINIMAL_SAAS_CONFIG = {
     "connector_params": [],
     "client_config": {"protocol": "https", "host": "api.example.com"},
     "test_request": {"method": "GET", "path": "/test"},
-    "endpoints": [],
+    "endpoints": [
+        {
+            "name": "items",
+            "requests": {
+                "read": {"method": "GET", "path": "/items"},
+            },
+        }
+    ],
 }
 
 _MINIMAL_DATASET = FideslangDataset.model_validate(
@@ -222,7 +229,7 @@ class TestDatasetConfigServiceAuditEvents:
         broken_audit_service.create_event_audit.side_effect = Exception("audit boom")
 
         service = DatasetConfigService(db, broken_audit_service)
-        result, error = service.create_or_update_dataset_config(
+        result, error, _warnings = service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
         assert result is not None
@@ -235,7 +242,7 @@ class TestDatasetConfigServiceAuditEvents:
     ):
         """When no EventAuditService is injected, create/update succeeds silently."""
         service = DatasetConfigService(db, event_audit_service=None)
-        result, error = service.create_or_update_dataset_config(
+        result, error, _warnings = service.create_or_update_dataset_config(
             saas_connection_config, _MINIMAL_DATASET
         )
         assert result is not None
