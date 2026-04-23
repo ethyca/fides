@@ -4,6 +4,7 @@ import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
+import fetchLocationsFromApi from "~/app/server-utils/fetchLocationsFromApi";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
 import { PrivacyRequestMetrics } from "~/components/privacy-request-metrics/PrivacyRequestMetrics";
@@ -16,14 +17,18 @@ const PrivacyRequestMetricsPage = async ({
 }: {
   searchParams: NextSearchParams;
 }) => {
-  const serverEnvironment = await getPrivacyCenterEnvironmentCached({
-    searchParams,
-  });
+  const [serverEnvironment, locationOptions] = await Promise.all([
+    getPrivacyCenterEnvironmentCached({ searchParams }),
+    fetchLocationsFromApi(),
+  ]);
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <PageLayout>
-        <PrivacyRequestMetrics />
+        <PrivacyRequestMetrics
+          locationOptions={locationOptions}
+          currentGeo={serverEnvironment.location?.location}
+        />
       </PageLayout>
     </LoadServerEnvironmentIntoStores>
   );

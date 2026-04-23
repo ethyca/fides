@@ -7,13 +7,19 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
+import { useState } from "react";
 
+import type { LocationOption } from "~/app/server-utils/fetchLocationsFromApi";
 import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
+  REQUEST_TYPE_ORDER,
+  STATIC_ZERO_REQUEST_TYPES,
 } from "~/features/privacy-request-metrics/constants";
 import type { RequestTypeMetrics } from "~/features/privacy-request-metrics/types";
 import { useGetPrivacyRequestMetrics } from "~/features/privacy-request-metrics/useGetPrivacyRequestMetrics";
+
+const ALL_LOCATIONS_VALUE = "";
 
 function formatValue(value: number | null, key: string): string {
   if (value === null) {
@@ -25,14 +31,48 @@ function formatValue(value: number | null, key: string): string {
   return value.toLocaleString();
 }
 
-export const PrivacyRequestMetrics = () => {
-  const { data, isLoading } = useGetPrivacyRequestMetrics();
+interface PrivacyRequestMetricsProps {
+  locationOptions: LocationOption[];
+  currentGeo?: string;
+}
 
-  if (isLoading) {
+export const PrivacyRequestMetrics = ({
+  locationOptions,
+  currentGeo,
+}: PrivacyRequestMetricsProps) => {
+  // currentGeo is passed as a server-side prop in underscore format (e.g., "US_CA").
+  // Location option IDs are lowercase (e.g., "us_ca"), so normalize to lowercase.
+  const normalizedGeo = currentGeo?.toLowerCase();
+  const matchedOption = normalizedGeo
+    ? locationOptions.find((o) => o.id === normalizedGeo)
+    : undefined;
+  const defaultLocation = matchedOption
+    ? matchedOption.id
+    : ALL_LOCATIONS_VALUE;
+
+  const [selectedLocation, setSelectedLocation] =
+    useState<string>(defaultLocation);
+
+  const { data, isLoading } = useGetPrivacyRequestMetrics(
+    selectedLocation || undefined,
+  );
+
+  if (isLoading || !data) {
     return null;
   }
 
-  const requestTypes = Object.entries(data.request_types);
+  // Merge API response with static zero rows (e.g., "limit" has no BE equivalent)
+  const mergedTypes = { ...STATIC_ZERO_REQUEST_TYPES, ...data.request_types };
+
+  // Order request types according to REQUEST_TYPE_ORDER, appending any extras
+  const allKeys = Object.keys(mergedTypes);
+  const orderedKeys = [
+    ...REQUEST_TYPE_ORDER.filter((k) => allKeys.includes(k)),
+    ...allKeys.filter((k) => !REQUEST_TYPE_ORDER.includes(k)),
+  ];
+  const requestTypes = orderedKeys.map(
+    (k) => [k, mergedTypes[k]] as [string, RequestTypeMetrics],
+  );
 
   return (
     <Stack align="center" py={["6", "16"]} px={5} spacing={10}>
@@ -44,6 +84,35 @@ export const PrivacyRequestMetrics = () => {
           Reporting period: {data.reporting_period}
         </Text>
       </Stack>
+
+      {locationOptions.length > 0 && (
+        <Flex w="100%" maxWidth={960} justifyContent="flex-end">
+          <Box
+            as="select"
+            value={selectedLocation}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setSelectedLocation(e.target.value)
+            }
+            px={3}
+            py={2}
+            borderWidth="1px"
+            borderColor="gray.200"
+            borderRadius="md"
+            fontSize="sm"
+            color="gray.700"
+            bg="white"
+            cursor="pointer"
+            _hover={{ borderColor: "gray.300" }}
+          >
+            <option value={ALL_LOCATIONS_VALUE}>All locations</option>
+            {locationOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.name}
+              </option>
+            ))}
+          </Box>
+        </Flex>
+      )}
 
       <Box w="100%" maxWidth={960} overflowX="auto">
         <Box
