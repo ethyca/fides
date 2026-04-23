@@ -1,10 +1,17 @@
 import type {
+  AvailableDataset,
+  AvailableSystem,
   PurposeDatasetAssignment,
   PurposeSystemAssignment,
 } from "~/features/data-purposes/data-purpose.slice";
 import type { DataPurposeResponse } from "~/types/api";
 
-export type { PurposeDatasetAssignment, PurposeSystemAssignment };
+export type {
+  AvailableDataset,
+  AvailableSystem,
+  PurposeDatasetAssignment,
+  PurposeSystemAssignment,
+};
 
 export const mockDataPurposes: DataPurposeResponse[] = [
   {
@@ -530,3 +537,119 @@ export const mockPurposeDatasets: Record<string, PurposeDatasetAssignment[]> = {
     },
   ],
 };
+
+export const mockAvailableSystems: AvailableSystem[] = [
+  {
+    system_id: "bigquery",
+    system_name: "BigQuery",
+    system_type: "Data warehouse",
+  },
+  {
+    system_id: "snowflake",
+    system_name: "Snowflake",
+    system_type: "Data warehouse",
+  },
+  {
+    system_id: "amplitude",
+    system_name: "Amplitude",
+    system_type: "Analytics",
+  },
+  { system_id: "mixpanel", system_name: "Mixpanel", system_type: "Analytics" },
+  { system_id: "segment", system_name: "Segment", system_type: "CDP" },
+  { system_id: "looker", system_name: "Looker", system_type: "BI" },
+  { system_id: "hubspot", system_name: "HubSpot", system_type: "CRM" },
+  { system_id: "salesforce", system_name: "Salesforce", system_type: "CRM" },
+  {
+    system_id: "mailchimp",
+    system_name: "Mailchimp",
+    system_type: "Email marketing",
+  },
+  {
+    system_id: "google_ads",
+    system_name: "Google Ads",
+    system_type: "Advertising",
+  },
+  {
+    system_id: "stripe",
+    system_name: "Stripe",
+    system_type: "Payment processor",
+  },
+  { system_id: "sift", system_name: "Sift", system_type: "Fraud detection" },
+  { system_id: "workday", system_name: "Workday", system_type: "HRIS" },
+  { system_id: "adp", system_name: "ADP", system_type: "Payroll" },
+  { system_id: "sentry", system_name: "Sentry", system_type: "Error tracking" },
+  {
+    system_id: "zendesk",
+    system_name: "Zendesk",
+    system_type: "Support platform",
+  },
+  { system_id: "intercom", system_name: "Intercom", system_type: "Messaging" },
+];
+
+export const mockAvailableDatasets: AvailableDataset[] = [
+  {
+    dataset_fides_key: "bigquery_events",
+    dataset_name: "BigQuery Events",
+    system_name: "BigQuery",
+  },
+  {
+    dataset_fides_key: "bigquery_users",
+    dataset_name: "BigQuery Users",
+    system_name: "BigQuery",
+  },
+  {
+    dataset_fides_key: "snowflake_analytics",
+    dataset_name: "Snowflake Analytics",
+    system_name: "Snowflake",
+  },
+  {
+    dataset_fides_key: "amplitude_events",
+    dataset_name: "Amplitude Events",
+    system_name: "Amplitude",
+  },
+  {
+    dataset_fides_key: "hubspot_contacts",
+    dataset_name: "HubSpot Contacts",
+    system_name: "HubSpot",
+  },
+  {
+    dataset_fides_key: "mailchimp_lists",
+    dataset_name: "Mailchimp Lists",
+    system_name: "Mailchimp",
+  },
+  {
+    dataset_fides_key: "stripe_transactions",
+    dataset_name: "Stripe Transactions",
+    system_name: "Stripe",
+  },
+  {
+    dataset_fides_key: "sift_events",
+    dataset_name: "Sift Events",
+    system_name: "Sift",
+  },
+  {
+    dataset_fides_key: "workday_employees",
+    dataset_name: "Workday Employees",
+    system_name: "Workday",
+  },
+  {
+    dataset_fides_key: "adp_payroll",
+    dataset_name: "ADP Payroll",
+    system_name: "ADP",
+  },
+  {
+    dataset_fides_key: "sentry_errors",
+    dataset_name: "Sentry Errors",
+    system_name: "Sentry",
+  },
+  {
+    dataset_fides_key: "zendesk_tickets",
+    dataset_name: "Zendesk Tickets",
+    system_name: "Zendesk",
+  },
+  {
+    dataset_fides_key: "salesforce_accounts",
+    dataset_name: "Salesforce Accounts",
+    system_name: "Salesforce",
+  },
+];

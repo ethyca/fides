@@ -1,0 +1,4 @@
+type: Added
+description: Added the per-purpose detail dashboard at /data-purposes/[fidesKey] (behind the alphaPurposeBasedAccessControl flag) with an overview tab (governance alert, assigned systems, assigned datasets, add/remove pickers) and a configuration tab replacing the legacy DataPurposeForm. Part 2 of the Purpose Management UI rollout; per-purpose system/dataset and category-classification endpoints are served by MSW pending real fidesplus endpoints. Removes the legacy DataPurposesTable, DataPurposeForm, new.tsx page, and DATA_PURPOSES_NEW_ROUTE.
+pr: 0
+labels: []
