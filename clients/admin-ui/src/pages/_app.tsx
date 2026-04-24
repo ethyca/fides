@@ -25,6 +25,7 @@ import theme from "../theme";
 import ForgotPassword from "./forgot-password";
 import Login from "./login";
 import LoginWithOIDC from "./login/[provider]";
+import PocEntryPoint from "./poc/entry-point";
 
 dayjs.extend(utc);
 
@@ -38,6 +39,42 @@ const SafeHydrate = ({ children }: { children: ReactNode }) => (
     {typeof window === "undefined" ? null : children}
   </div>
 );
+
+const renderPage = (
+  Component: AppProps["Component"],
+  pageProps: AppProps["pageProps"],
+) => {
+  if (
+    Component === Login ||
+    Component === LoginWithOIDC ||
+    Component === ForgotPassword
+  ) {
+    // Only the login page is accessible while logged out. If there is
+    // a use case for more unprotected routes, Next has a guide for
+    // per-page layouts:
+    // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
+    return <Component {...pageProps} />;
+  }
+  if (Component === PocEntryPoint) {
+    return (
+      <ProtectedRoute>
+        <CommonSubscriptions />
+        <Component {...pageProps} />
+      </ProtectedRoute>
+    );
+  }
+  return (
+    <ProtectedRoute>
+      <CommonSubscriptions />
+      <Flex width="100%" height="100%" flex={1}>
+        <MainSideNav />
+        <Flex direction="column" flex={1} minWidth={0} overflow="hidden">
+          <Component {...pageProps} />
+        </Flex>
+      </Flex>
+    </ProtectedRoute>
+  );
+};
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   // Expose Redux store to window for Cypress testing
@@ -54,32 +91,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         <PersistGate loading={null} persistor={persistor}>
           <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
             <DndProvider backend={HTML5Backend}>
-              <NuqsAdapter>
-                {Component === Login ||
-                Component === LoginWithOIDC ||
-                Component === ForgotPassword ? (
-                  // Only the login page is accessible while logged out. If there is
-                  // a use case for more unprotected routes, Next has a guide for
-                  // per-page layouts:
-                  // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
-                  <Component {...pageProps} />
-                ) : (
-                  <ProtectedRoute>
-                    <CommonSubscriptions />
-                    <Flex width="100%" height="100%" flex={1}>
-                      <MainSideNav />
-                      <Flex
-                        direction="column"
-                        flex={1}
-                        minWidth={0}
-                        overflow="hidden"
-                      >
-                        <Component {...pageProps} />
-                      </Flex>
-                    </Flex>
-                  </ProtectedRoute>
-                )}
-              </NuqsAdapter>
+              <NuqsAdapter>{renderPage(Component, pageProps)}</NuqsAdapter>
             </DndProvider>
           </FidesUIProvider>
         </PersistGate>
