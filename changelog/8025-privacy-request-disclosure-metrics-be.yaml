@@ -1,4 +1,4 @@
 type: Added
-description: Connect privacy request disclosure metrics page to the BE endpoint for CCPA/CPRA annual reporting
+description: Update FE to match BE disclosure metrics API contract for CCPA/CPRA annual reporting
 pr: 8025
 labels: []
