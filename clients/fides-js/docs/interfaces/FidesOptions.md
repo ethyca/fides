@@ -384,6 +384,21 @@ Defaults to `undefined`.
 
 ***
 
+### fides\_att\_denied
+
+> **fides\_att\_denied**: `boolean`
+
+When set to `true`, privacy notices where `att_exempt` is `false` (or unset) are automatically
+disabled (toggle locked to off / opt_out). Notices with `att_exempt: true` are unaffected.
+
+Intended for use by mobile SDKs immediately after the user denies Apple's App Tracking
+Transparency (ATT) prompt on iOS. The mobile SDK sets this flag before loading the embedded
+consent experience so that ATT-controlled notices are locked accordingly.
+
+Defaults to `false`.
+
+***
+
 ### fides\_disabled\_systems?
 
 > `optional` **fides\_disabled\_systems**: `string`
