@@ -109,7 +109,7 @@ const FieldMetadataFormItems = ({ isSaas = false }: { isSaas?: boolean }) => (
       name="primary_key"
       valuePropName="checked"
       layout="horizontal"
-      className="hidden"
+      className={isSaas ? "hidden" : undefined}
     >
       <Switch aria-label="Primary Key" />
     </Form.Item>
