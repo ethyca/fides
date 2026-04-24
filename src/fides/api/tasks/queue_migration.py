@@ -243,8 +243,26 @@ def _send_in_batches(
             }
         )
         if len(batch) >= batch_size:
-            sqs_client.send_message_batch(QueueUrl=sqs_url, Entries=batch)
+            try:
+                sqs_client.send_message_batch(QueueUrl=sqs_url, Entries=batch)
+            except Exception:  # noqa: BLE001
+                logger.error(
+                    "Failed to send batch of %d messages to SQS queue %s: %s",
+                    len(batch),
+                    sqs_url,
+                    exc_info=True,
+                )
+                raise
             batch = []
 
     if batch:
-        sqs_client.send_message_batch(QueueUrl=sqs_url, Entries=batch)
+        try:
+            sqs_client.send_message_batch(QueueUrl=sqs_url, Entries=batch)
+        except Exception:  # noqa: BLE001
+            logger.error(
+                "Failed to send final batch of %d messages to SQS queue %s: %s",
+                len(batch),
+                sqs_url,
+                exc_info=True,
+            )
+            raise
