@@ -1,0 +1,4 @@
+type: Added
+description: Connect privacy request disclosure metrics page to the BE endpoint for CCPA/CPRA annual reporting
+pr: 8025
+labels: []
