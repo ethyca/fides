@@ -477,6 +477,22 @@ export enum ScopeRegistryEnum {
    */
   IDENTITY_DEFINITION_READ = "identity_definition:read",
   /**
+   * IDENTITY_GROUP_PROVIDER_CREATE
+   */
+  IDENTITY_GROUP_PROVIDER_CREATE = "identity_group_provider:create",
+  /**
+   * IDENTITY_GROUP_PROVIDER_DELETE
+   */
+  IDENTITY_GROUP_PROVIDER_DELETE = "identity_group_provider:delete",
+  /**
+   * IDENTITY_GROUP_PROVIDER_READ
+   */
+  IDENTITY_GROUP_PROVIDER_READ = "identity_group_provider:read",
+  /**
+   * IDENTITY_GROUP_PROVIDER_UPDATE
+   */
+  IDENTITY_GROUP_PROVIDER_UPDATE = "identity_group_provider:update",
+  /**
    * LANGUAGE_READ
    */
   LANGUAGE_READ = "language:read",

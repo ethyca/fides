@@ -23,6 +23,10 @@ export type AccessPolicyResponse = {
    */
   enabled?: boolean;
   /**
+   * Control
+   */
+  control?: string | null;
+  /**
    * Yaml
    */
   yaml?: string | null;
