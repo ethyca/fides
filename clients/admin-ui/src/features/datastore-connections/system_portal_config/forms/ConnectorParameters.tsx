@@ -423,12 +423,6 @@ export const ConnectorParameters = ({
     router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
   };
 
-  const defaultValues: ConnectionConfigFormValues = {
-    description: "",
-    instance_key: "",
-    name: "",
-    dataset: [],
-  };
   if (!secretsSchema && connectionOption.type !== SystemType.MANUAL) {
     return null;
   }
