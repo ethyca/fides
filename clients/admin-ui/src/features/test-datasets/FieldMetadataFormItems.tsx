@@ -83,7 +83,7 @@ export const DataCategoryTagSelect = ({
  * Shared Form.Item components for field-level fides_meta editing.
  * Expects to be rendered inside an Ant Design <Form>.
  */
-const FieldMetadataFormItems = () => (
+const FieldMetadataFormItems = ({ isSaas = false }: { isSaas?: boolean }) => (
   <>
     <Form.Item label="Data Type" name="data_type" layout="horizontal">
       <Select
@@ -96,7 +96,12 @@ const FieldMetadataFormItems = () => (
     <Form.Item label="Redact" name="redact" layout="horizontal">
       <Select aria-label="Redact" options={REDACT_OPTIONS} />
     </Form.Item>
-    <Form.Item label="Identity" name="identity" layout="horizontal">
+    <Form.Item
+      label="Identity"
+      name="identity"
+      layout="horizontal"
+      className={isSaas ? "hidden" : undefined}
+    >
       <Input placeholder="e.g. email, phone_number" />
     </Form.Item>
     <Form.Item

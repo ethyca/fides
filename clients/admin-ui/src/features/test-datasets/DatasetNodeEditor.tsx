@@ -81,6 +81,7 @@ interface DatasetNodeEditorProps {
   onDatasetChange: (dataset: Dataset) => void;
   allowAddCollection?: boolean;
   allowNameEditing?: boolean;
+  isSaas?: boolean;
 }
 
 const nodeTypes: NodeTypes = {
@@ -110,6 +111,7 @@ const DatasetNodeEditorInner = ({
   onDatasetChange,
   allowAddCollection = false,
   allowNameEditing = false,
+  isSaas = false,
 }: DatasetNodeEditorProps) => {
   const reactFlowInstance = useReactFlow();
   const reactFlowRef = useRef<HTMLDivElement>(null);
@@ -855,6 +857,7 @@ const DatasetNodeEditorInner = ({
           onUpdateCollection={handleUpdateCollection}
           onUpdateField={handleUpdateField}
           allowNameEditing={allowNameEditing}
+          isSaas={isSaas}
         />
       </Flex>
     </DatasetEditorActionsContext.Provider>

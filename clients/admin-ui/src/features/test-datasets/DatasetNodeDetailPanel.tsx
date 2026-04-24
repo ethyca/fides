@@ -44,6 +44,7 @@ interface DatasetNodeDetailPanelProps {
     updates: Partial<DatasetField>,
   ) => void;
   allowNameEditing?: boolean;
+  isSaas?: boolean;
 }
 
 export interface DatasetNodeDetailPanelHandle {
@@ -62,6 +63,7 @@ const DatasetNodeDetailPanel = forwardRef<
       onUpdateCollection,
       onUpdateField,
       allowNameEditing = false,
+      isSaas = false,
     },
     ref,
   ) => {
@@ -284,7 +286,7 @@ const DatasetNodeDetailPanel = forwardRef<
                   {
                     key: "field-meta",
                     label: "Field Metadata (fides_meta)",
-                    children: <FieldMetadataFormItems />,
+                    children: <FieldMetadataFormItems isSaas={isSaas} />,
                   },
                 ]}
               />

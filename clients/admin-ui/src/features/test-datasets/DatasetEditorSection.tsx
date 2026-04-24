@@ -352,6 +352,7 @@ const EditorSection = ({
               dataset={localDataset}
               protectedFields={protectedFields}
               onDatasetChange={handleLocalDatasetChange}
+              isSaas
             />
           )}
         </div>
