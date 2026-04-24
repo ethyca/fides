@@ -9,6 +9,7 @@ import {
   Icons,
   Paragraph,
   Progress,
+  Spin,
   Tag,
   TagList,
   Text,
@@ -60,11 +61,85 @@ export const AssessmentCard = ({
 
   const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : "N/A";
   const statusLabel = status ? ASSESSMENT_STATUS_LABELS[status] : "N/A";
-  const isComplete = completeness === 100;
+  const isGenerating = status === AssessmentStatus.GENERATING;
+  const isComplete = !isGenerating && completeness === 100;
   const completionDate =
     isComplete && assessment.updated_at
       ? `Completed on ${formatDate(assessment.updated_at, { showTime: false })}`
       : statusLabel;
+
+  const titleText = assessment.template_name ?? assessment.name;
+
+  const renderStatusSection = () => {
+    if (isGenerating) {
+      return (
+        <>
+          <Progress
+            percent={60}
+            status="active"
+            showInfo={false}
+            size="small"
+          />
+          <Flex align="center" gap="small" className="mt-1">
+            <Spin size="small" />
+            <Text type="secondary" size="sm">
+              Generating...
+            </Text>
+          </Flex>
+        </>
+      );
+    }
+    if (isComplete) {
+      return (
+        <Flex
+          justify="space-between"
+          align="center"
+          className={styles.completeContainer}
+        >
+          <Flex align="center" gap="medium">
+            <Avatar
+              shape="circle"
+              size={28}
+              icon={<Icons.Checkmark size={14} />}
+              style={{ backgroundColor: "var(--fidesui-success)" }}
+            />
+            <div>
+              <Text strong type="success" size="sm">
+                Assessment complete
+              </Text>
+              <Paragraph type="secondary" size="sm">
+                {completionDate}
+              </Paragraph>
+            </div>
+          </Flex>
+          <Button type="link" className="p-0" onClick={onClick}>
+            View
+          </Button>
+        </Flex>
+      );
+    }
+    return (
+      <>
+        <Flex justify="space-between">
+          <Text type="secondary" size="sm">
+            Completeness
+          </Text>
+          <Text strong size="sm">
+            {completeness}%
+          </Text>
+        </Flex>
+        <Progress percent={completeness} showInfo={false} size="small" />
+        <Flex justify="space-between" align="center" className="mt-1">
+          <Text type={getStatusTextType(status)} size="sm">
+            {statusLabel}
+          </Text>
+          <Button type="link" className="p-0" onClick={onClick}>
+            Resume
+          </Button>
+        </Flex>
+      </>
+    );
+  };
 
   return (
     <Card
@@ -75,12 +150,16 @@ export const AssessmentCard = ({
       <Flex vertical gap="small" justify="space-between" className="flex-1">
         <div>
           <Title level={3} className={`!mb-1 ${styles.titleLink}`}>
-            <RouterLink
-              unstyled
-              href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
-            >
-              {assessment.template_name ?? assessment.name}
-            </RouterLink>
+            {isGenerating ? (
+              titleText
+            ) : (
+              <RouterLink
+                unstyled
+                href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
+              >
+                {titleText}
+              </RouterLink>
+            )}
           </Title>
           {assessment.system_name && (
             <Text type="secondary" size="sm" className="block">
@@ -113,59 +192,7 @@ export const AssessmentCard = ({
         </div>
         <div>
           <Divider className="my-3" />
-          <div>
-            {isComplete ? (
-              <Flex
-                justify="space-between"
-                align="center"
-                className={styles.completeContainer}
-              >
-                <Flex align="center" gap="medium">
-                  <Avatar
-                    shape="circle"
-                    size={28}
-                    icon={<Icons.Checkmark size={14} />}
-                    style={{ backgroundColor: "var(--fidesui-success)" }}
-                  />
-                  <div>
-                    <Text strong type="success" size="sm">
-                      Assessment complete
-                    </Text>
-                    <Paragraph type="secondary" size="sm">
-                      {completionDate}
-                    </Paragraph>
-                  </div>
-                </Flex>
-                <Button type="link" className="p-0" onClick={onClick}>
-                  View
-                </Button>
-              </Flex>
-            ) : (
-              <>
-                <Flex justify="space-between">
-                  <Text type="secondary" size="sm">
-                    Completeness
-                  </Text>
-                  <Text strong size="sm">
-                    {completeness}%
-                  </Text>
-                </Flex>
-                <Progress
-                  percent={completeness}
-                  showInfo={false}
-                  size="small"
-                />
-                <Flex justify="space-between" align="center" className="mt-1">
-                  <Text type={getStatusTextType(status)} size="sm">
-                    {statusLabel}
-                  </Text>
-                  <Button type="link" className="p-0" onClick={onClick}>
-                    Resume
-                  </Button>
-                </Flex>
-              </>
-            )}
-          </div>
+          <div>{renderStatusSection()}</div>
         </div>
       </Flex>
     </Card>

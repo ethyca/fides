@@ -1,13 +1,5 @@
 import classNames from "classnames";
-import {
-  Button,
-  Flex,
-  Icons,
-  Popover,
-  Spin,
-  Text,
-  useNotification,
-} from "fidesui";
+import { Flex, Icons, Popover, Spin, Text, useNotification } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -92,6 +84,8 @@ export const AssessmentTaskStatusIndicator = ({
 
   const completedCount = activeTask?.completed_count ?? 0;
 
+  // A row just flipped from `generating` → `in_progress`; pull fresh list
+  // data so the card updates in place without requiring user interaction.
   const prevCompletedCountRef = useRef<number | null>(null);
   useEffect(() => {
     if (!activeTask) {
@@ -102,26 +96,25 @@ export const AssessmentTaskStatusIndicator = ({
       prevCompletedCountRef.current !== null &&
       completedCount > prevCompletedCountRef.current
     ) {
-      notificationApi.success({
-        message: "New assessment results are available",
-        actions: onTaskFinish ? (
-          <Button
-            size="small"
-            onClick={() => {
-              onTaskFinish();
-              notificationApi.destroy();
-            }}
-          >
-            Reload results
-          </Button>
-        ) : undefined,
-        duration: 0,
-      });
+      onTaskFinish?.();
     }
     prevCompletedCountRef.current = completedCount;
-  }, [activeTask, completedCount, notificationApi, onTaskFinish]);
+  }, [activeTask, completedCount, onTaskFinish]);
 
-  // Detect active → idle transition for the final completion or error
+  // Active task just appeared: Celery has picked up the task and materialized
+  // the `generating` rows. The mutation's tag invalidation fired before
+  // materialization, so refetch once here to surface those rows.
+  const prevActiveTaskIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const currentId = activeTask?.id ?? null;
+    if (currentId && currentId !== prevActiveTaskIdRef.current) {
+      onTaskFinish?.();
+    }
+    prevActiveTaskIdRef.current = currentId;
+  }, [activeTask, onTaskFinish]);
+
+  // Detect active → idle transition for the final completion or error.
+  // No "Reload results" action — rows are already live-refreshed above.
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
@@ -135,24 +128,12 @@ export const AssessmentTaskStatusIndicator = ({
         });
       } else {
         notificationApi.success({
-          message: "New assessment results are available",
-          actions: onTaskFinish ? (
-            <Button
-              size="small"
-              onClick={() => {
-                onTaskFinish();
-                notificationApi.destroy();
-              }}
-            >
-              Reload results
-            </Button>
-          ) : undefined,
-          duration: 0,
+          message: "Assessment evaluation complete",
         });
       }
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
+  }, [activeTask, lastCompletedTask, notificationApi]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;
