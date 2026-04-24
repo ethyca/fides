@@ -346,6 +346,18 @@ export interface FidesOptions {
   fides_disabled_notices: string;
 
   /**
+   * When set to `true`, privacy notices where `att_exempt` is `false` (or unset) are automatically
+   * disabled (toggle locked to off / opt_out). Notices with `att_exempt: true` are unaffected.
+   *
+   * Intended for use by mobile SDKs immediately after the user denies Apple's App Tracking
+   * Transparency (ATT) prompt on iOS. The mobile SDK sets this flag before loading the embedded
+   * consent experience so that ATT-controlled notices are locked accordingly.
+   *
+   * Defaults to `false`.
+   */
+  fides_att_denied: boolean;
+
+  /**
    * A comma-separated list of systems whose related notice assets (e.g., cookies) should be excluded
    * from responses. This is used to filter out assets by system name when rendering disclosures.
    *

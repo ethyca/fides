@@ -117,6 +117,7 @@ export const getCoreFides = ({
       otFidesMapping: null,
       transcendFidesMapping: null,
       fidesDisabledNotices: null,
+      fidesAttDenied: false,
       fidesDisabledSystems: null,
       fidesConsentNonApplicableFlagMode: null,
       fidesConsentFlagType: null,

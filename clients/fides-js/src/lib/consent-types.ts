@@ -165,6 +165,10 @@ export interface FidesInitOptions {
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
 
+  // When true, notices where att_exempt is false are disabled (locked to opt_out).
+  // Intended for use by mobile SDKs after the user denies Apple's App Tracking Transparency prompt.
+  fidesAttDenied: boolean;
+
   // List of system names to exclude from notice asset disclosure (e.g., cookies) in responses
   fidesDisabledSystems?: string[] | null;
 
@@ -761,6 +765,7 @@ export type PrivacyNotice = {
   data_uses?: Array<string>;
   enforcement_level?: EnforcementLevel;
   disabled?: boolean;
+  att_exempt?: boolean;
   has_gpc_flag?: boolean;
   framework?: PrivacyNoticeFramework;
   default_preference?: UserConsentPreference;
@@ -922,6 +927,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "otFidesMapping"
   | "transcendFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesAttDenied"
   | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
