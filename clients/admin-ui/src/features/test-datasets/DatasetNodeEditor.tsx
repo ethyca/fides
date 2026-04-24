@@ -818,7 +818,10 @@ const DatasetNodeEditorInner = ({
             )}
           </Splitter.Panel>
           <Splitter.Panel>
-            <div className="h-full" style={{ backgroundColor: "var(--fidesui-bg-corinth)" }}>
+            <div
+              className="h-full"
+              style={{ backgroundColor: "var(--fidesui-bg-corinth)" }}
+            >
               <DatasetTreeHoverProvider edges={layoutedEdges}>
                 <ReactFlow
                   nodes={nodes}

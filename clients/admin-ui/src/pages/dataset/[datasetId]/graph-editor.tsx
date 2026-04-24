@@ -2,8 +2,8 @@ import {
   Button,
   Flex,
   Icons,
-  Spin,
   Space,
+  Spin,
   Tooltip,
   Typography,
   useMessage,
@@ -11,13 +11,7 @@ import {
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -102,8 +96,8 @@ const DatasetGraphEditorPage: NextPage = () => {
         setEditorKey((k) => k + 1);
         messageApi.success("Successfully refreshed dataset");
       }
-    } catch (error) {
-      messageApi.error(getErrorMessage(error));
+    } catch (err) {
+      messageApi.error(getErrorMessage(err));
     }
   }, [refetch, messageApi]);
 
