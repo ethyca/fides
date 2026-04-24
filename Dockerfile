@@ -137,37 +137,12 @@ ENV IS_TEST=$IS_TEST
 COPY --from=backend /fides/version.json ./version.json
 
 # Builds and exports admin-ui
-# Build caches are kept across builds for speed, but are invalidated
-# automatically when package-lock.json changes (e.g. bundler upgrade).
 RUN --mount=type=cache,target=/fides/clients/node_modules/.cache \
     --mount=type=cache,target=/fides/clients/admin-ui/.next/cache \
-    LOCK_HASH=$(sha256sum package-lock.json | cut -c1-16) && \
-    if [ -f node_modules/.cache/.lock_hash ] && [ "$(cat node_modules/.cache/.lock_hash)" = "$LOCK_HASH" ]; then \
-      echo "node_modules cache valid (lock hash: $LOCK_HASH)"; \
-    else \
-      echo "Invalidating node_modules cache (lock hash changed to: $LOCK_HASH)" && \
-      rm -rf node_modules/.cache && mkdir -p node_modules/.cache && \
-      echo "$LOCK_HASH" > node_modules/.cache/.lock_hash; \
-    fi && \
-    if [ -f admin-ui/.next/cache/.lock_hash ] && [ "$(cat admin-ui/.next/cache/.lock_hash)" = "$LOCK_HASH" ]; then \
-      echo "Next.js cache valid (lock hash: $LOCK_HASH)"; \
-    else \
-      echo "Invalidating Next.js cache (lock hash changed to: $LOCK_HASH)" && \
-      rm -rf admin-ui/.next/cache && mkdir -p admin-ui/.next/cache && \
-      echo "$LOCK_HASH" > admin-ui/.next/cache/.lock_hash; \
-    fi && \
     npm run export-admin-ui
 # Builds privacy-center
 RUN --mount=type=cache,target=/fides/clients/node_modules/.cache \
     --mount=type=cache,target=/fides/clients/privacy-center/.next/cache \
-    LOCK_HASH=$(sha256sum package-lock.json | cut -c1-16) && \
-    if [ -f privacy-center/.next/cache/.lock_hash ] && [ "$(cat privacy-center/.next/cache/.lock_hash)" = "$LOCK_HASH" ]; then \
-      echo "Next.js cache valid (lock hash: $LOCK_HASH)"; \
-    else \
-      echo "Invalidating Next.js cache (lock hash changed to: $LOCK_HASH)" && \
-      rm -rf privacy-center/.next/cache && mkdir -p privacy-center/.next/cache && \
-      echo "$LOCK_HASH" > privacy-center/.next/cache/.lock_hash; \
-    fi && \
     npm run build-privacy-center
 
 ###############################

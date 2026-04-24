@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed integration form fields blank after creation until page reload
-pr: 7986
-labels: []

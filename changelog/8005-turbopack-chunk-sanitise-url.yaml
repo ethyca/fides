@@ -1,4 +1,0 @@
-type: Fixed
-description: Admin UI no longer served a blank screen when the backend receives requests for Next.js 16 turbopack chunk filenames containing `..`.
-pr: 8005
-labels: []

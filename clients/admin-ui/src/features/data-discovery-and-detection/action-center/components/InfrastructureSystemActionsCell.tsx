@@ -1,16 +1,11 @@
-import { Button, Icons, Space, Tooltip, useMessage } from "fidesui";
+import { Button, Icons, Space, Tooltip } from "fidesui";
 import React from "react";
 
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DiffStatus } from "~/types/api";
 
-import {
-  useMuteIdentityProviderMonitorResultMutation,
-  usePromoteIdentityProviderMonitorResultMutation,
-  useUnmuteIdentityProviderMonitorResultMutation,
-} from "../../discovery-detection.slice";
 import { InfrastructureSystemBulkActionType } from "../constants";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
+import { useInfrastructureActions } from "../hooks/useInfrastructureActions";
 
 interface InfrastructureSystemActionsCellProps {
   monitorId: string;
@@ -37,87 +32,15 @@ export const InfrastructureSystemActionsCell = ({
   ignoreIcon = <Icons.ViewOff />,
   onPromoteSuccess,
 }: InfrastructureSystemActionsCellProps) => {
-  const [
-    promoteIdentityProviderMonitorResultMutation,
-    { isLoading: isPromoting },
-  ] = usePromoteIdentityProviderMonitorResultMutation();
-
-  const [muteIdentityProviderMonitorResultMutation, { isLoading: isMuting }] =
-    useMuteIdentityProviderMonitorResultMutation();
-
-  const [
-    unmuteIdentityProviderMonitorResultMutation,
-    { isLoading: isUnmuting },
-  ] = useUnmuteIdentityProviderMonitorResultMutation();
-
-  const messageApi = useMessage();
-
-  const handleApprove = async () => {
-    if (!system.urn) {
-      messageApi.error("Cannot promote: system URN is missing");
-      return;
-    }
-
-    const result = await promoteIdentityProviderMonitorResultMutation({
-      monitor_config_key: monitorId,
-      urn: system.urn,
-    });
-
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-    } else {
-      messageApi.success(
-        `${system.name || "System"} has been promoted to the system inventory.`,
-      );
-      if (onPromoteSuccess) {
-        onPromoteSuccess();
-      }
-    }
-  };
-
-  const handleIgnore = async () => {
-    if (!system.urn) {
-      messageApi.error("Cannot ignore: system URN is missing");
-      return;
-    }
-
-    const result = await muteIdentityProviderMonitorResultMutation({
-      monitor_config_key: monitorId,
-      urn: system.urn,
-    });
-
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-    } else {
-      messageApi.success(`${system.name || "System"} has been ignored.`);
-      if (onPromoteSuccess) {
-        onPromoteSuccess();
-      }
-    }
-  };
-
-  const handleRestore = async () => {
-    if (!system.urn) {
-      messageApi.error("Cannot restore: system URN is missing");
-      return;
-    }
-
-    const result = await unmuteIdentityProviderMonitorResultMutation({
-      monitor_config_key: monitorId,
-      urn: system.urn,
-    });
-
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-    } else {
-      messageApi.success(`${system.name || "System"} has been restored.`);
-      if (onPromoteSuccess) {
-        onPromoteSuccess();
-      }
-    }
-  };
-
-  const isActionInProgress = isPromoting || isMuting || isUnmuting;
+  const actions = useInfrastructureActions({
+    urn: system.urn,
+    onSuccess: onPromoteSuccess,
+    monitorId,
+    diffStatus: system.diff_status ?? undefined,
+  });
+  const isActionInProgress = Object.values(actions).some(
+    (action) => action.loading,
+  );
   const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
   const isIgnored = system.diff_status
     ? system.diff_status === DiffStatus.MUTED
@@ -148,9 +71,9 @@ export const InfrastructureSystemActionsCell = ({
           <Button
             data-testid="ignore-btn"
             size="small"
-            onClick={handleIgnore}
+            onClick={actions.ignore.callback}
             disabled={!system.urn || isActionInProgress}
-            loading={isMuting}
+            loading={actions.ignore.loading}
             icon={ignoreIcon}
             aria-label="Ignore"
           >
@@ -165,9 +88,9 @@ export const InfrastructureSystemActionsCell = ({
           <Button
             data-testid="restore-btn"
             size="small"
-            onClick={handleRestore}
+            onClick={actions.restore.callback}
             disabled={!system.urn || !isIgnored || isActionInProgress}
-            loading={isUnmuting}
+            loading={actions.restore.loading}
             icon={<Icons.View />}
             aria-label="Restore"
           />
@@ -180,9 +103,9 @@ export const InfrastructureSystemActionsCell = ({
         <Button
           data-testid="approve-btn"
           size="small"
-          onClick={handleApprove}
+          onClick={actions.approve.callback}
           disabled={!system.urn || isIgnored || isActionInProgress}
-          loading={isPromoting}
+          loading={actions.approve.loading}
           icon={approveIcon}
           aria-label="Approve"
         >

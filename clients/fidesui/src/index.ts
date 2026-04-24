@@ -436,6 +436,21 @@ export {
 export { theme as antTheme } from "antd/lib";
 
 /**
+ * Ant Design X components (@ant-design/x)
+ *
+ * Imported from the specific sub-paths rather than the package index for two
+ * reasons:
+ *   1. The index eagerly loads code-highlighter, which pulls in mermaid and
+ *      react-syntax-highlighter (and refractor, which ships ESM that Jest
+ *      can't parse without transform config).
+ *   2. Using `/lib` (CJS) keeps the module identity consistent with antd's
+ *      CJS re-exports above.
+ */
+export type { BubbleItemType } from "@ant-design/x/lib/bubble";
+export { default as Bubble } from "@ant-design/x/lib/bubble";
+export { default as Sender } from "@ant-design/x/lib/sender";
+
+/**
  * Custom ChakraUI Components (deprecated)
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */

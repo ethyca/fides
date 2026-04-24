@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Upgrade Prettier from 3.3.3 to 3.8.3 across all client packages
-pr: 8002
-labels: []
