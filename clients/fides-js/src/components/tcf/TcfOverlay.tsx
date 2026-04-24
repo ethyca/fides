@@ -766,6 +766,7 @@ export const TcfOverlay = () => {
           activeTabIndex={activeTabIndex}
           onTabChange={handleTabChange}
           fullExperienceState={fullExperienceState}
+          attDenied={options.fidesAttDenied}
         />
       )}
       renderModalFooter={({ onClose }) => {
