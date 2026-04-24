@@ -128,7 +128,8 @@ const NoticeOverlay = () => {
           notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
             false) ||
-          notice.disabled;
+          notice.disabled ||
+          (options.fidesAttDenied && !notice.att_exempt);
         const bestTranslation = selectBestNoticeTranslation(
           currentLocale,
           i18n.getDefaultLocale(),
