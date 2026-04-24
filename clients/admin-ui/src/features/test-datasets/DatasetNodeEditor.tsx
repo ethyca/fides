@@ -23,7 +23,6 @@ import {
   Switch,
   Typography,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -697,7 +696,7 @@ const DatasetNodeEditorInner = ({
             )}
           </Splitter.Panel>
           <Splitter.Panel>
-            <div className="h-full bg-neutral-1">
+            <div className="h-full" style={{ backgroundColor: "var(--fidesui-bg-corinth)" }}>
               <DatasetTreeHoverProvider edges={layoutedEdges}>
                 <ReactFlow
                   nodes={nodes}
@@ -716,7 +715,7 @@ const DatasetNodeEditorInner = ({
                   proOptions={{ hideAttribution: true }}
                 >
                   <Background
-                    color={palette.FIDESUI_NEUTRAL_100}
+                    color="var(--fidesui-neutral-100)"
                     variant={BackgroundVariant.Dots}
                     size={3}
                   />
