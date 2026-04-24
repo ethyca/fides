@@ -4,10 +4,7 @@ import type { PrivacyRequestMetricsResponse } from "./types";
 
 export const privacyRequestMetricsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getPrivacyRequestMetrics: build.query<
-      PrivacyRequestMetricsResponse,
-      void
-    >({
+    getPrivacyRequestMetrics: build.query<PrivacyRequestMetricsResponse, void>({
       query: () => ({
         url: `plus/privacy-request-metrics`,
       }),

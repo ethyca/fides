@@ -6,6 +6,7 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
+
 import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
