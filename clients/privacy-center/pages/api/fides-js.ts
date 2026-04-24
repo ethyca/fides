@@ -400,6 +400,7 @@ export default async function handler(
       fidesDisabledNotices: environment.settings.FIDES_DISABLED_NOTICES
         ? parseCommaSeparatedString(environment.settings.FIDES_DISABLED_NOTICES)
         : null,
+      fidesAttDenied: false,
       fidesDisabledSystems: environment.settings.FIDES_DISABLED_SYSTEMS
         ? parseCommaSeparatedString(environment.settings.FIDES_DISABLED_SYSTEMS)
         : null,

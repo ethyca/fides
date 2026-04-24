@@ -106,6 +106,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       transform: parseCommaSeparatedString,
     },
     {
+      overrideName: "fidesAttDenied",
+      overrideType: "boolean",
+      overrideKey: "fides_att_denied",
+      validationRegex: /^(true|false)$/,
+    },
+    {
       overrideName: "fidesDisabledSystems",
       overrideType: "array",
       overrideKey: "fides_disabled_systems",
