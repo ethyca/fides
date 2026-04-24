@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added `att_exempt` boolean field to `PrivacyNotice`, `PrivacyNoticeHistory`, and `PrivacyNoticeTemplate` models. When `false` (default), the notice is controlled by Apple's App Tracking Transparency prompt; when `true`, the notice is exempt and remains user-toggleable regardless of the ATT decision. [#8029](https://github.com/ethyca/fides/pull/8029) https://github.com/ethyca/fides/labels/db-migration
+- Added `fides_att_denied` FidesJS option. When `true`, notices where `att_exempt` is `false` are automatically disabled in both standard and TCF overlay flows, enabling mobile SDKs to lock ATT-controlled notices after the user denies Apple's ATT prompt. [#8030](https://github.com/ethyca/fides/pull/8030)
 
 ## [2.84.0](https://github.com/ethyca/fides/compare/2.83.3..2.84.0)
 
