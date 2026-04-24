@@ -1,0 +1,4 @@
+type: Added
+description: Added save-time validation of display_condition rules on custom Privacy Center fields
+pr: 0
+labels: []
