@@ -52,6 +52,13 @@ import {
 } from "./ConnectorParametersForm";
 import { generateIntegrationKey } from "./helpers";
 
+const DEFAULT_VALUES: ConnectionConfigFormValues = {
+  description: "",
+  instance_key: "",
+  name: "",
+  dataset: [],
+};
+
 /**
  * Only handles creating saas connectors. The BE handler automatically
  * configures the connector using the saas config and creates the
@@ -406,13 +413,6 @@ export const ConnectorParameters = ({
     setSelectedConnectionOption,
   });
 
-  const defaultValues: ConnectionConfigFormValues = {
-    description: "",
-    instance_key: "",
-    name: "",
-    dataset: [],
-  };
-
   if (!secretsSchema && connectionOption.type !== SystemType.MANUAL) {
     return null;
   }
@@ -443,7 +443,7 @@ export const ConnectorParameters = ({
       </Box>
       <ConnectorParametersForm
         secretsSchema={secretsSchema}
-        defaultValues={defaultValues}
+        defaultValues={DEFAULT_VALUES}
         isSubmitting={isSubmitting}
         isAuthorizing={isAuthorizing}
         onSaveClick={handleSubmit}

@@ -1,4 +1,0 @@
-type: Security
-description: Restored identity verification path for privacy requests classified as duplicates to prevent denial of service [GHSA-qx5f-ghc2-7g5c](https://github.com/ethyca/fides/security/advisories/GHSA-qx5f-ghc2-7g5c)
-pr: 7971
-labels: []
