@@ -8,6 +8,7 @@ import type { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import type { gcm } from "../integrations/gcm";
 import type { gtm } from "../integrations/gtm";
+import type { matomo } from "../integrations/matomo";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
 import type { FidesEventDetail } from "./events";
@@ -256,6 +257,7 @@ export interface FidesGlobal extends Omit<
   blueconic: typeof blueconic;
   gcm: typeof gcm;
   gtm: typeof gtm;
+  matomo: typeof matomo;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
   onFidesEvent: (
