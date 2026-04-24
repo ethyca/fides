@@ -13,6 +13,10 @@ from pydantic import (
 
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.custom_field_display_validator import (
+    DisplayConditionValidator,
+)
+from fides.api.task.conditional_dependencies.schemas import Condition
 
 RequiredType = Literal["optional", "required"]
 
@@ -66,6 +70,7 @@ class BaseCustomPrivacyRequestField(FidesSchema, ABC):
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
     query_param_key: Optional[str] = None
+    display_condition: Optional[Condition] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -149,7 +154,20 @@ CustomPrivacyRequestFieldUnion = Annotated[
 ]
 
 
-class PrivacyRequestOption(FidesSchema):
+class _HasDisplayConditions:
+    """Mixin giving any schema that carries ``custom_privacy_request_fields``
+    a save-time validator over attached ``display_condition`` rules.
+    """
+
+    @model_validator(mode="after")
+    def validate_display_conditions(self) -> "_HasDisplayConditions":
+        fields = getattr(self, "custom_privacy_request_fields", None)
+        if fields:
+            DisplayConditionValidator(fields).validate()
+        return self
+
+
+class PrivacyRequestOption(_HasDisplayConditions, FidesSchema):
     locations: Optional[Union[List[PrivacyNoticeRegion], Literal["fallback"]]] = None
     policy_key: Optional[str] = None
     icon_path: str
@@ -164,7 +182,7 @@ class PrivacyRequestOption(FidesSchema):
     ] = None
 
 
-class ConsentConfigButton(FidesSchema):
+class ConsentConfigButton(_HasDisplayConditions, FidesSchema):
     description: str
     description_subtext: Optional[List[str]] = None
     confirm_button_text: Optional[str] = Field(alias="confirmButtonText", default=None)
@@ -270,7 +288,7 @@ class PrivacyCenterConfig(FidesSchema):
         return v
 
 
-class PartialPrivacyRequestOption(FidesSchema):
+class PartialPrivacyRequestOption(_HasDisplayConditions, FidesSchema):
     policy_key: str
     title: str
     identity_inputs: Optional[IdentityInputs] = None
