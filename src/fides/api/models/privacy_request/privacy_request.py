@@ -323,6 +323,10 @@ class PrivacyRequest(
     # Redaction instructions for access package review (list of redaction dicts)
     access_package_redactions = Column(JSONB, nullable=True)
 
+    # Access package review gate — set when an admin approves the package
+    access_review_approved_at = Column(DateTime(timezone=True), nullable=True)
+    access_review_approved_by = Column(String, nullable=True)
+
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[Dict[str, List[Any]]] = None

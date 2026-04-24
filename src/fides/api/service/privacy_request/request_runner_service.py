@@ -71,6 +71,9 @@ from fides.api.service.privacy_request.attachment_handling import (
     get_attachments_content,
     process_attachments_for_upload,
 )
+from fides.api.service.privacy_request.dsr_package.dsr_report_builder_registry import (
+    is_access_review_required,
+)
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
@@ -314,6 +317,40 @@ def save_access_results(
             "DSR will continue processing. Unexpected Error: {}",
             str(exc),
         )
+
+
+def _save_filtered_results_for_review(
+    session: Session,
+    policy: Policy,
+    access_result: dict[str, list[Row]],
+    dataset_graph: DatasetGraph,
+    privacy_request: PrivacyRequest,
+    manual_data_access_results: ManualWebhookResults,
+    fides_connector_datasets: set[str],
+) -> None:
+    """Save filtered access results for admin review without uploading.
+
+    Runs the same filter logic as upload_and_save_access_results but only
+    persists to filtered_final_upload — no upload, no URL generation.
+    This allows the admin to preview and redact data via the API before
+    approving the package for delivery.
+    """
+    rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
+    for rule in policy.get_rules_for_action(action_type=ActionType.access):
+        target_categories: set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
+        filtered_results: dict[str, list[dict[str, Optional[Any]]]] = (
+            filter_data_categories(
+                access_result,
+                target_categories,
+                dataset_graph,
+                rule.key,
+                fides_connector_datasets,
+            )
+        )
+        filtered_results.update(manual_data_access_results.manual_data_for_storage)
+        rule_filtered_results[rule.key] = filtered_results
+
+    save_access_results(session, privacy_request, [], rule_filtered_results)
 
 
 @log_context(
@@ -627,6 +664,31 @@ def run_privacy_request(
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
                     )
+
+                    # Access review gate: save results for preview, then pause
+                    if (
+                        is_access_review_required()
+                        and not privacy_request.access_review_approved_at
+                    ):
+                        _save_filtered_results_for_review(
+                            session,
+                            policy,
+                            filtered_access_results,
+                            dataset_graph,
+                            privacy_request,
+                            manual_webhook_access_results,
+                            fides_connector_datasets,
+                        )
+                        privacy_request.status = (
+                            PrivacyRequestStatus.awaiting_access_review
+                        )
+                        privacy_request.save(db=session)
+                        logger.info(
+                            "Privacy request '{}' paused for access package review.",
+                            privacy_request.id,
+                        )
+                        return
+
                     access_result_urls = upload_and_save_access_results(
                         session,
                         policy,
