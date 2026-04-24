@@ -8,6 +8,7 @@ from typing import Annotated, Optional
 from nh3 import clean
 from pydantic import AfterValidator, AnyHttpUrl, AnyUrl, BeforeValidator
 
+from fides.api.util.text import is_valid_location_code
 from fides.api.util.unsafe_file_util import verify_css
 
 
@@ -188,23 +189,20 @@ AnyHttpUrlStringRemovesSlash = Annotated[
     AnyHttpUrl, AfterValidator(validate_path_of_http_url_no_slash)
 ]
 
-# "eea" is a synthetic region code used internally (not ISO 3166-1)
-_USER_GEOGRAPHY_RE = regex(r"^([a-z]{2}(_[a-z0-9]{1,3})?|eea)$")
-
 
 def validate_user_geography(v: Optional[str]) -> Optional[str]:
     """
-    Validates that a user_geography value is a well-formed locale code.
-
-    Accepts bare country codes (e.g. "fr") and country+region codes
-    (e.g. "us_ca", "fr_idg"). Rejects anything else to prevent malicious
+    Validates that a user_geography value is a well-formed ISO 3166-2 locale
+    code (or the synthetic ``EEA`` code). Accepts either separator
+    (``_``/``-``) and any case; rejects anything else to prevent malicious
     data from being persisted (ENG-2488).
     """
     if v is None:
         return None
-    if not _USER_GEOGRAPHY_RE.match(v):
+    if not is_valid_location_code(v):
         raise ValueError(
-            "user_geography must be a locale code matching '([a-z]{2}(_[a-z0-9]{1,3})?|eea)'"
+            "user_geography must be an ISO 3166-2 locale code "
+            "(e.g. 'us', 'us_ca', 'US-CA', 'eea')"
         )
     return v
 

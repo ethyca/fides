@@ -251,19 +251,20 @@ VALID_USER_GEOGRAPHIES = [
     "us_123",
     "de_by",
     "ie_eea",
+    "US",
+    "us-ca",
+    "us_CA",
+    "EEA",
 ]
 
 INVALID_USER_GEOGRAPHIES = [
-    "US",
     "USA",
     "us_",
     "_ca",
     "us_california",
-    "us-ca",
     "123",
     "",
     "eea2",
-    "us_CA",
     "fr_idfg",
     "a",
     "us__ca",
