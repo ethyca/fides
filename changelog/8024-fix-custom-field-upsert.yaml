@@ -1,0 +1,4 @@
+type: Fixed
+description: Fix custom field updates on privacy declarations failing with duplicate key or null ID constraint violations
+pr: 8024
+labels: []
