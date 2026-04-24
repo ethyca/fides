@@ -281,14 +281,10 @@ const EditorSection = ({
         );
       }
       if (removed.length > 0) {
-        parts.push(
-          `${removed.length} unauthorized collection(s) removed`,
-        );
+        parts.push(`${removed.length} unauthorized collection(s) removed`);
       }
       if (failed.length > 0) {
-        parts.push(
-          `${failed.length} field(s) could not be restored`,
-        );
+        parts.push(`${failed.length} field(s) could not be restored`);
       }
 
       if (failed.length > 0) {
