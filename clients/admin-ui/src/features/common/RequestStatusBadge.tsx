@@ -72,6 +72,10 @@ export const statusPropMap: {
     color: CUSTOM_TAG_COLOR.WARNING,
     label: "Manual Review Required",
   },
+  awaiting_access_review: {
+    color: CUSTOM_TAG_COLOR.MINOS,
+    label: "Awaiting Access Review",
+  },
 };
 
 interface RequestBadgeProps {

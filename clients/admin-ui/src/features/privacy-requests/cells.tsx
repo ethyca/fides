@@ -76,6 +76,10 @@ export const statusPropMap: {
     colorScheme: CUSTOM_TAG_COLOR.WARNING,
     label: "Manual Review Required",
   },
+  awaiting_access_review: {
+    colorScheme: CUSTOM_TAG_COLOR.MINOS,
+    label: "Awaiting Access Review",
+  },
 };
 
 export const RequestStatusBadgeCell = ({
