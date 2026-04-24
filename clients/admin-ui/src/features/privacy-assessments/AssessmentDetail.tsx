@@ -19,6 +19,7 @@ import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RTKErrorResult } from "~/types/errors/api";
 
+import { useGetChatConfigsQuery } from "../chat-provider/chatProvider.slice";
 import { SlackLogo } from "../common/logos/SlackLogo";
 import styles from "./AssessmentDetail.module.scss";
 import { EvidenceDrawer } from "./EvidenceDrawer";
@@ -90,14 +91,19 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   }, []);
 
   const { data: config } = useGetAssessmentConfigQuery();
+  const { data: chatConfigs } = useGetChatConfigsQuery();
   const [createQuestionnaire, { isLoading: isSending }] =
     useCreateQuestionnaireMutation();
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
 
-  const slackChannelName = config?.slack_channel_name
+  const enabledChatConfig = chatConfigs?.items.find((c) => c.enabled);
+  const isTerminalProvider = enabledChatConfig?.provider_type === "terminal";
+
+  const channelName = config?.slack_channel_name
     ? `#${config.slack_channel_name}`
     : null;
+  const hasChannel = isTerminalProvider || !!channelName;
 
   const allQuestions = useMemo(
     () => (assessment.question_groups ?? []).flatMap((g) => g.questions),
@@ -135,11 +141,13 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
     if (hasNewAnswers) {
       notificationApi.success({
-        message: "New answer from Slack",
+        message: isTerminalProvider
+          ? "New answer received"
+          : "New answer from Slack",
       });
     }
     teamInputIdsRef.current = currentIds;
-  }, [allQuestions, notificationApi]);
+  }, [allQuestions, notificationApi, isTerminalProvider]);
 
   const questionnaireSentAt = useMemo(
     () =>
@@ -152,10 +160,11 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const timeSinceSent = useRelativeTime(questionnaireSentAt);
 
   const handleRequestInput = async () => {
-    if (!slackChannelName) {
+    if (!hasChannel) {
       return;
     }
 
+    const channel = isTerminalProvider ? "terminal" : channelName!;
     const needsInputIds = allQuestions
       .filter((q) => q.answer_status === AnswerStatus.NEEDS_INPUT)
       .map((q) => q.question_id);
@@ -164,11 +173,17 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
       await createQuestionnaire({
         id: assessment.id,
         body: {
-          channel: slackChannelName,
+          channel,
           include_question_ids: needsInputIds,
         },
       }).unwrap();
-      message.success(`Questions sent to ${slackChannelName} on Slack.`);
+      if (isTerminalProvider) {
+        message.success(
+          `Questionnaire ready. Run: python scripts/cli_chat.py --assessment-id ${assessment.id}`,
+        );
+      } else {
+        message.success(`Questions sent to ${channelName} on Slack.`);
+      }
     } catch (error) {
       message.error(
         getErrorMessage(
@@ -182,7 +197,11 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const handleSendReminder = async () => {
     try {
       await createReminder({ id: assessment.id }).unwrap();
-      message.success(`Reminder sent to ${slackChannelName}.`);
+      message.success(
+        isTerminalProvider
+          ? "Reminder queued for terminal."
+          : `Reminder sent to ${channelName}.`,
+      );
     } catch (error) {
       message.error(
         getErrorMessage(
@@ -265,19 +284,21 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         {!isComplete && (
           <Tooltip
             title={
-              !slackChannelName
-                ? "Configure a Slack channel in assessment settings to enable this feature"
+              !hasChannel
+                ? "Configure a chat provider in assessment settings to enable this feature"
                 : undefined
             }
           >
             <Button
-              icon={<SlackLogo size={14} />}
+              icon={isTerminalProvider ? undefined : <SlackLogo size={14} />}
               size="small"
               onClick={handleRequestInput}
-              disabled={!slackChannelName}
+              disabled={!hasChannel}
               loading={isSending}
             >
-              Request input from team
+              {isTerminalProvider
+                ? "Start terminal questionnaire"
+                : "Request input from team"}
             </Button>
           </Tooltip>
         )}
@@ -285,7 +306,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
       {!isComplete && questionnaireSentAt && (
         <QuestionnaireStatusBar
-          channel={slackChannelName ?? ""}
+          channel={isTerminalProvider ? "Terminal" : (channelName ?? "")}
           timeSinceSent={timeSinceSent}
           answeredCount={assessment.questionnaire!.answered_questions}
           totalCount={assessment.questionnaire!.total_questions}

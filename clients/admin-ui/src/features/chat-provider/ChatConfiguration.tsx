@@ -6,6 +6,7 @@ import { useGetChatConfigQuery } from "./chatProvider.slice";
 import ConfigurationCard from "./components/ConfigurationCard";
 import { CHAT_PROVIDER_LABELS, CHAT_PROVIDER_TYPES } from "./constants";
 import SlackChatForm from "./forms/SlackChatForm";
+import TerminalChatForm from "./forms/TerminalChatForm";
 
 const ChatConfiguration = () => {
   const router = useRouter();
@@ -39,6 +40,10 @@ const ChatConfiguration = () => {
         value: CHAT_PROVIDER_TYPES.SLACK,
         label: CHAT_PROVIDER_LABELS[CHAT_PROVIDER_TYPES.SLACK],
       },
+      {
+        value: CHAT_PROVIDER_TYPES.TERMINAL,
+        label: CHAT_PROVIDER_LABELS[CHAT_PROVIDER_TYPES.TERMINAL],
+      },
     ];
   }, []);
 
@@ -55,6 +60,8 @@ const ChatConfiguration = () => {
     switch (selectedProviderType) {
       case CHAT_PROVIDER_TYPES.SLACK:
         return <SlackChatForm configId={configId} />;
+      case CHAT_PROVIDER_TYPES.TERMINAL:
+        return <TerminalChatForm configId={configId} />;
       default:
         return null;
     }
