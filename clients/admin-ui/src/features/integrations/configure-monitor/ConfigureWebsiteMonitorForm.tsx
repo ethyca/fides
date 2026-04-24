@@ -12,6 +12,7 @@ import {
   isoCodesToOptions,
   LocationSelect,
   Select,
+  Switch,
   Text,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -51,6 +52,7 @@ interface WebsiteMonitorConfigFormValues {
   datasource_params?: WebsiteMonitorParams;
   execution_start_date: Dayjs;
   shared_config_id?: string;
+  inherit_system_stewards?: boolean;
   stewards?: string[];
   use_llm_classifier: boolean;
   llm_model_override?: string;
@@ -135,8 +137,10 @@ const ConfigureWebsiteMonitorForm = ({
       locations: [],
       exclude_domains: [],
     },
-    stewards:
-      monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
+    stewards: monitor?.stewards,
+    inherit_system_stewards: monitor
+      ? Boolean(monitor.inherit_system_stewards)
+      : true,
     use_llm_classifier: monitorUsesLlmClassifier,
     llm_model_override: monitor?.classify_params?.llm_model_override ?? "",
   };
@@ -214,13 +218,24 @@ const ConfigureWebsiteMonitorForm = ({
         >
           <Input data-testid="input-name" />
         </Form.Item>
+
+        <Form.Item
+          label="Inherit system stewards"
+          name="inherit_system_stewards"
+          tooltip={`When enabled, stewards assigned to the ${systemData?.name} system will automatically be assigned as a steward of this monitor`}
+        >
+          <Switch data-testid="input-inherit_system_stewards" />
+        </Form.Item>
         <Form.Item label="Stewards" name="stewards">
           <Select
             mode="multiple"
             aria-label="Select stewards"
             data-testid="controlled-select-stewards"
             options={dataStewardOptions}
-            optionFilterProp="label"
+            showSearch={{
+              optionFilterProp: "label",
+            }}
+            allowClear
           />
         </Form.Item>
         <Form.Item
