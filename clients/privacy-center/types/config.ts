@@ -62,6 +62,17 @@ export type CustomIdentityField =
 
 export type CustomPrivacyRequestFields = Record<string, CustomConfigField>;
 
+export interface IDPProviderConfig {
+  identifier: string;
+  label: string;
+  provider?: "google" | "okta" | "azure" | "custom";
+}
+
+export interface IdentityVerificationConfig {
+  method: "otp" | "idp";
+  idp_providers?: IDPProviderConfig[];
+}
+
 export type LegacyConfig = {
   title: string;
   description: string;
@@ -94,6 +105,7 @@ export type Config = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string;
   links?: PrivacyCenterLink[];
+  identity_verification?: IdentityVerificationConfig;
 };
 
 export type PrivacyCenterLink = {

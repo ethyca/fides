@@ -17,6 +17,7 @@ type PrivacyRequestFormProps = {
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
   onSuccessWithoutVerification?: () => void;
+  idpVerificationToken?: string | null;
 };
 
 const PrivacyRequestForm = ({
@@ -26,6 +27,7 @@ const PrivacyRequestForm = ({
   setPrivacyRequestId,
   isVerificationRequired,
   onSuccessWithoutVerification,
+  idpVerificationToken,
 }: PrivacyRequestFormProps) => {
   const action = openAction;
 
@@ -52,6 +54,7 @@ const PrivacyRequestForm = ({
     setPrivacyRequestId,
     isVerificationRequired,
     onSuccessWithoutVerification,
+    idpVerificationToken,
   });
 
   if (!action) {
@@ -71,7 +74,7 @@ const PrivacyRequestForm = ({
             <Text size="sm">{paragraph}</Text>
           </Form.Item>
         ))}
-        {!!nameInput && (
+        {!!nameInput && !idpVerificationToken && (
           <Form.Item
             validateStatus={
               touched.name && Boolean(errors.name) ? "error" : undefined
@@ -91,7 +94,7 @@ const PrivacyRequestForm = ({
             />
           </Form.Item>
         )}
-        {!!emailInput && (
+        {!!emailInput && !idpVerificationToken && (
           <Form.Item
             validateStatus={
               touched.email && Boolean(errors.email) ? "error" : undefined
@@ -112,7 +115,7 @@ const PrivacyRequestForm = ({
             />
           </Form.Item>
         )}
-        {!!phoneInput && (
+        {!!phoneInput && !idpVerificationToken && (
           <Form.Item
             validateStatus={
               touched.phone && Boolean(errors.phone) ? "error" : undefined

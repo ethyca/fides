@@ -36,6 +36,10 @@ import {
 import { selectPrivacyExperience } from "~/features/consent/consent.slice";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import {
+  IDPLoginButtons,
+  IDP_SESSION_KEYS,
+} from "~/features/idp-verification";
 
 const TextOrHtml = ({
   allowHTMLDescription,
@@ -70,6 +74,20 @@ const HomePage: NextPage = () => {
   const [isConsentVerificationDisabled, setIsConsentVerificationDisabled] =
     useState<boolean>(false);
   const toast = useToast();
+
+  const isIDPVerification =
+    config.identity_verification?.method === "idp";
+  const idpProviders = config.identity_verification?.idp_providers ?? [];
+  const [hasIDPSession, setHasIDPSession] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isIDPVerification && typeof window !== "undefined") {
+      const token = sessionStorage.getItem(
+        IDP_SESSION_KEYS.VERIFICATION_TOKEN,
+      );
+      setHasIDPSession(!!token);
+    }
+  }, [isIDPVerification]);
 
   const {
     isOpen: isConsentModalOpenConst,
@@ -181,6 +199,41 @@ const HomePage: NextPage = () => {
       // the query param `showConsentModal`
       isConsentModalOpen = true;
     }
+  }
+
+  if (isIDPVerification && idpProviders.length > 0 && !hasIDPSession) {
+    return (
+      <main data-testid="home">
+        <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
+          <Stack align="center" spacing={3}>
+            <Heading
+              fontSize={["3xl", "4xl"]}
+              color="gray.800"
+              fontWeight="semibold"
+              textAlign="center"
+              data-testid="heading"
+            >
+              {config.title}
+            </Heading>
+            <Text
+              fontSize={["small", "medium"]}
+              fontWeight="medium"
+              maxWidth={624}
+              textAlign="center"
+              color="gray.800"
+            >
+              Please verify your identity to continue.
+            </Text>
+          </Stack>
+          <Box width="100%" maxWidth={400}>
+            <IDPLoginButtons
+              providers={idpProviders}
+              basePath={basePath || "/"}
+            />
+          </Box>
+        </Stack>
+      </main>
+    );
   }
 
   return (

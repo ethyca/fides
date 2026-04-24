@@ -1,12 +1,13 @@
 "use client";
 
 import { useMessage } from "fidesui";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import { decodePolicyKey } from "~/common/policy-key";
 import { useConfig } from "~/features/common/config.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import { IDP_SESSION_KEYS } from "~/features/idp-verification/constants";
 import { PrivacyRequestOption } from "~/types/config";
 
 import PrivacyRequestForm from "../modals/privacy-request-modal/PrivacyRequestForm";
@@ -19,11 +20,31 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   const config = useConfig();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const propertyPath = params?.propertyPath as string | undefined;
   const basePath = propertyPath ? `/${propertyPath}` : "";
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
-  const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
+
+  const isIDPVerification = config.identity_verification?.method === "idp";
+
+  const [idpVerificationToken, setIdpVerificationToken] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    if (isIDPVerification && typeof window !== "undefined") {
+      const token = sessionStorage.getItem(
+        IDP_SESSION_KEYS.VERIFICATION_TOKEN,
+      );
+      setIdpVerificationToken(token);
+    }
+  }, [isIDPVerification]);
+
+  const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery(
+    undefined,
+    { skip: isIDPVerification },
+  );
 
   const messageApi = useMessage();
 
@@ -40,7 +61,6 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
       : actions.find((action) => action.policy_key === policyKey)
   ) as PrivacyRequestOption | undefined;
 
-  // Update verification requirement from API
   useEffect(() => {
     if (getIdVerificationConfigQuery.isSuccess) {
       setIsVerificationRequired(
@@ -55,6 +75,12 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
       router.push(basePath || "/");
     }
   }, [selectedAction, policyKey, messageApi, router, basePath]);
+
+  useEffect(() => {
+    if (searchParams?.get("error") === "idp_failed") {
+      messageApi.error("Identity verification failed. Please try again.");
+    }
+  }, [searchParams, messageApi]);
 
   const handleExit = () => {
     router.push(basePath || "/");
@@ -84,6 +110,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
       setPrivacyRequestId={handleSetPrivacyRequestId}
       isVerificationRequired={isVerificationRequired}
       onSuccessWithoutVerification={handleSuccessWithoutVerification}
+      idpVerificationToken={idpVerificationToken}
     />
   );
 };

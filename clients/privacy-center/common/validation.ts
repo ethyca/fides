@@ -4,7 +4,11 @@ import {
   isV1ConsentConfig,
   translateV1ConfigToV2,
 } from "~/features/consent/helpers";
-import { Config, LegacyConfig, PrivacyCenterLink } from "~/types/config";
+import {
+  Config,
+  LegacyConfig,
+  PrivacyCenterLink,
+} from "~/types/config";
 
 /**
  * Check whether a string is a valid URL (http or https).
@@ -143,6 +147,36 @@ export const validateConfig = (
         isValid: false,
         message: "Cannot have more than one consent option be executable",
       };
+    }
+  }
+
+  // Validate identity_verification config when present
+  const iv = (input as Record<string, unknown>).identity_verification as
+    | { method: string; idp_providers?: Array<{ identifier: string; label: string }> }
+    | undefined;
+  if (iv) {
+    if (!["otp", "idp"].includes(iv.method)) {
+      return {
+        isValid: false,
+        message: "identity_verification.method must be 'otp' or 'idp'",
+      };
+    }
+    if (iv.method === "idp") {
+      if (!Array.isArray(iv.idp_providers) || iv.idp_providers.length === 0) {
+        return {
+          isValid: false,
+          message:
+            "identity_verification.idp_providers required when method is 'idp'",
+        };
+      }
+      for (const provider of iv.idp_providers) {
+        if (!provider.identifier || !provider.label) {
+          return {
+            isValid: false,
+            message: "Each idp_provider must have 'identifier' and 'label'",
+          };
+        }
+      }
     }
   }
 

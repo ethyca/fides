@@ -8,6 +8,7 @@ import * as Yup from "yup";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { ModalViews } from "~/components/modals/types";
+import { IDP_SESSION_KEYS } from "~/features/idp-verification/constants";
 import {
   emailValidation,
   nameValidation,
@@ -38,6 +39,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId,
   isVerificationRequired,
   onSuccessWithoutVerification,
+  idpVerificationToken,
 }: {
   onExit: () => void;
   action?: ConfigPrivacyRequestOption;
@@ -45,6 +47,7 @@ const usePrivacyRequestForm = ({
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
   onSuccessWithoutVerification?: () => void;
+  idpVerificationToken?: string | null;
 }) => {
   const settings = useSettings();
   const {
@@ -84,6 +87,21 @@ const usePrivacyRequestForm = ({
     searchParams,
   });
 
+  const idpInitialValues: Record<string, string> = {};
+  if (typeof window !== "undefined") {
+    const token = sessionStorage.getItem(IDP_SESSION_KEYS.VERIFICATION_TOKEN);
+    if (token) {
+      const firstName = sessionStorage.getItem(IDP_SESSION_KEYS.FIRST_NAME);
+      const lastName = sessionStorage.getItem(IDP_SESSION_KEYS.LAST_NAME);
+      if (firstName) {
+        idpInitialValues.first_name = firstName;
+      }
+      if (lastName) {
+        idpInitialValues.last_name = lastName;
+      }
+    }
+  }
+
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
@@ -102,6 +120,7 @@ const usePrivacyRequestForm = ({
           return [key, value];
         }),
       ),
+      ...idpInitialValues,
     },
 
     onSubmit: async (values) => {
@@ -199,6 +218,47 @@ const usePrivacyRequestForm = ({
       };
 
       try {
+        if (idpVerificationToken) {
+          const idpBody = {
+            verification_token: idpVerificationToken,
+            policy_key: action.policy_key,
+            property_id: property?.id || null,
+            custom_privacy_request_fields:
+              Object.keys(customPrivacyRequestFieldValues).length > 0
+                ? customPrivacyRequestFieldValues
+                : undefined,
+          };
+          const headers: Headers = new Headers();
+          addCommonHeaders(headers, null);
+          const response = await fetch(
+            `${settings.FIDES_API_URL}/plus/privacy-request/idp-verified`,
+            {
+              method: "POST",
+              headers: headers as unknown as HeadersInit,
+              body: JSON.stringify(idpBody),
+            },
+          );
+          const data = await response.json();
+          if (!response.ok) {
+            handleError({
+              title: "An error occurred while creating your privacy request",
+              error: data?.detail,
+            });
+            return;
+          }
+          toast({
+            title:
+              "Your request was successful, please await further instructions.",
+            ...SuccessToastOptions,
+          });
+          if (onSuccessWithoutVerification) {
+            onSuccessWithoutVerification();
+          } else {
+            onExit();
+          }
+          return;
+        }
+
         const headers: Headers = new Headers();
         addCommonHeaders(headers, null);
 
@@ -254,34 +314,43 @@ const usePrivacyRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      name: nameValidation(nameInput),
-      email: emailValidation(emailInput).test(
-        "one of email or phone entered",
-        "You must enter either email or phone",
-        (_value, context) => {
-          if (emailInput === "optional" && phoneInput === "optional") {
-            return Boolean(context.parent.phone || context.parent.email);
-          }
-          return true;
-        },
-      ),
-      phone: phoneValidation(phoneInput).test(
-        "one of email or phone entered",
-        "You must enter either email or phone",
-        (_value, context) => {
-          if (emailInput === "optional" && phoneInput === "optional") {
-            return Boolean(context.parent.phone || context.parent.email);
-          }
-          return true;
-        },
-      ),
-      ...Object.fromEntries(
-        Object.entries(customIdentityFields).flatMap(([key, value]) => {
-          return value
-            ? [[key, Yup.string().required(`${value.label} is required`)]]
-            : [];
-        }),
-      ),
+      ...(idpVerificationToken
+        ? {}
+        : {
+            name: nameValidation(nameInput),
+            email: emailValidation(emailInput).test(
+              "one of email or phone entered",
+              "You must enter either email or phone",
+              (_value, context) => {
+                if (emailInput === "optional" && phoneInput === "optional") {
+                  return Boolean(context.parent.phone || context.parent.email);
+                }
+                return true;
+              },
+            ),
+            phone: phoneValidation(phoneInput).test(
+              "one of email or phone entered",
+              "You must enter either email or phone",
+              (_value, context) => {
+                if (emailInput === "optional" && phoneInput === "optional") {
+                  return Boolean(context.parent.phone || context.parent.email);
+                }
+                return true;
+              },
+            ),
+            ...Object.fromEntries(
+              Object.entries(customIdentityFields).flatMap(([key, value]) => {
+                return value
+                  ? [
+                      [
+                        key,
+                        Yup.string().required(`${value.label} is required`),
+                      ],
+                    ]
+                  : [];
+              }),
+            ),
+          }),
       ...getValidationSchema().fields,
     }),
   });
