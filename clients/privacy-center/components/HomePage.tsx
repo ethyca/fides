@@ -84,7 +84,11 @@ const HomePage: NextPage = () => {
   let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
-  const { SHOW_BRAND_LINK, ALLOW_HTML_DESCRIPTION } = useSettings();
+  const {
+    SHOW_BRAND_LINK,
+    ALLOW_HTML_DESCRIPTION,
+    PRIVACY_REQUEST_DISCLOSURE_ENABLED,
+  } = useSettings();
 
   const policyLinks = getEffectivePrivacyCenterLinks(config);
 
@@ -239,9 +243,11 @@ const HomePage: NextPage = () => {
           </TextOrHtml>
         ))}
 
-        {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
+        {(SHOW_BRAND_LINK ||
+          policyLinks.length > 0 ||
+          PRIVACY_REQUEST_DISCLOSURE_ENABLED) && (
           <Box position="relative" width="100%">
-            <Stack flexDirection="column" alignItems="center">
+            <Flex justifyContent="center" gap={6} flexWrap="wrap">
               {policyLinks.map(({ url, label }) => (
                 <Link
                   key={`${url}-${label}`}
@@ -256,7 +262,19 @@ const HomePage: NextPage = () => {
                   {label}
                 </Link>
               ))}
-            </Stack>
+              {PRIVACY_REQUEST_DISCLOSURE_ENABLED && (
+                <Link
+                  fontSize={["small", "medium"]}
+                  fontWeight="medium"
+                  textAlign="center"
+                  textDecoration="underline"
+                  color="gray.800"
+                  href={`${basePath}/privacy-request-metrics`}
+                >
+                  Privacy request disclosures
+                </Link>
+              )}
+            </Flex>
             <BrandLink isHomePage position="absolute" right={6} bottom={0} />
           </Box>
         )}
