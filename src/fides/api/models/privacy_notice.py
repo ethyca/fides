@@ -95,6 +95,12 @@ class PrivacyNoticeBase:
     enforcement_level = Column(EnumColumn(EnforcementLevel), nullable=False)
     framework = Column(String)
     gpp_field_mapping = Column(MutableList.as_mutable(JSONB), index=False, unique=False)
+    att_exempt = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        doc="If True, this notice is not controlled by ATT — it remains user-toggleable even when the user denies the iOS App Tracking Transparency prompt.",
+    )
     has_gpc_flag = Column(Boolean, nullable=False, default=False)
     internal_description = Column(String)  # Visible to internal users only
     name = Column(String, nullable=False)

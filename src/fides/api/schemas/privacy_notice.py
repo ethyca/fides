@@ -21,6 +21,7 @@ class PrivacyNoticeHistorySchema(FidesSchema):
     data_uses: Optional[List[str]] = []
     consent_mechanism: ConsentMechanism
     enforcement_level: Optional[EnforcementLevel]
+    att_exempt: bool = False
     version: float
     translation_id: Optional[str]
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)
