@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Replaced deprecated `next/link` `legacyBehavior`/`passHref` usage in the Admin UI with a shared `RouterLink` component for internal navigation.
-pr: 7942
-labels: []

@@ -59,6 +59,8 @@ export const PROPERTIES_ROUTE = "/properties";
 export const ADD_PROPERTY_ROUTE = "/properties/add-property";
 export const EDIT_PROPERTY_ROUTE = "/properties/[id]";
 
+export const API_CLIENTS_ROUTE = "/api-clients";
+export const API_CLIENT_DETAIL_ROUTE = "/api-clients/[id]";
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const USER_PROFILE_ROUTE = "/user-management/profile/[id]";
 export const USER_DETAIL_ROUTE = "/user-management/profile/[id]";

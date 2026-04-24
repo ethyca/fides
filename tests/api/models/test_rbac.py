@@ -528,17 +528,18 @@ class TestRBACScopeRegistrySync:
     """
 
     def test_all_scopes_in_registry_have_rbac_migration(self):
-        """Every scope in SCOPE_REGISTRY must exist in the RBAC seed migration.
+        """Every scope in SCOPE_REGISTRY must exist in an RBAC migration.
 
-        This test parses the migration file to extract hardcoded SCOPE_DOCS keys
-        and verifies all SCOPE_REGISTRY scopes are present.
+        This test parses migration files to extract hardcoded scope dicts
+        and verifies all SCOPE_REGISTRY scopes are present. Scopes can be
+        seeded in the main seed migration or in later migrations that add
+        new scope groups.
         """
         import ast
         from pathlib import Path
 
         from fides.common.scope_registry import SCOPE_REGISTRY
 
-        # Find the seed migration file
         migrations_dir = (
             Path(__file__).parent.parent.parent.parent
             / "src"
@@ -548,37 +549,32 @@ class TestRBACScopeRegistrySync:
             / "migrations"
             / "versions"
         )
-        seed_migration = None
-        for f in migrations_dir.glob("*seed_rbac_defaults*.py"):
-            seed_migration = f
-            break
 
-        assert seed_migration is not None, "Could not find RBAC seed migration file"
+        # Collect scope keys from all dicts whose name ends with _SCOPES
+        # or is SCOPE_DOCS across all migration files
+        migration_scopes: set[str] = set()
 
-        # Parse the migration file to extract SCOPE_DOCS keys
-        migration_content = seed_migration.read_text()
+        for migration_file in migrations_dir.glob("*.py"):
+            tree = ast.parse(migration_file.read_text())
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, ast.Name) and (
+                            target.id.endswith("_SCOPES") or target.id == "SCOPE_DOCS"
+                        ):
+                            if isinstance(node.value, ast.Dict):
+                                for key in node.value.keys:
+                                    if isinstance(key, ast.Constant):
+                                        migration_scopes.add(key.value)
 
-        # Find the SCOPE_DOCS dictionary in the migration
-        tree = ast.parse(migration_content)
-        migration_scopes = set()
-
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Assign):
-                for target in node.targets:
-                    if isinstance(target, ast.Name) and target.id == "SCOPE_DOCS":
-                        if isinstance(node.value, ast.Dict):
-                            for key in node.value.keys:
-                                if isinstance(key, ast.Constant):
-                                    migration_scopes.add(key.value)
-
-        assert len(migration_scopes) > 0, "Could not parse SCOPE_DOCS from migration"
+        assert len(migration_scopes) > 0, "Could not parse scopes from any migration"
 
         registry_scopes = set(SCOPE_REGISTRY)
 
-        # Check for scopes in registry but not in migration
+        # Check for scopes in registry but not in any migration
         missing_from_migration = registry_scopes - migration_scopes
         assert not missing_from_migration, (
-            f"The following scopes exist in SCOPE_REGISTRY but are missing from the "
-            f"RBAC seed migration (seed_rbac_defaults.py). Add them to SCOPE_DOCS in "
-            f"the migration:\n{sorted(missing_from_migration)}"
+            f"The following scopes exist in SCOPE_REGISTRY but are missing from "
+            f"RBAC migrations. Add them to SCOPE_DOCS in the seed migration or "
+            f"to a scope dict in a new migration:\n{sorted(missing_from_migration)}"
         )

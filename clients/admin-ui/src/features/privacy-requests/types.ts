@@ -70,11 +70,10 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE]: CUSTOM_TAG_COLOR.WARNING,
 };
 
-export interface ExecutionLog
-  extends Pick<
-    ExecutionAndAuditLogResponse,
-    "connection_key" | "saas_version"
-  > {
+export interface ExecutionLog extends Pick<
+  ExecutionAndAuditLogResponse,
+  "connection_key" | "saas_version"
+> {
   collection_name: string | null;
   fields_affected: FieldsAffected[];
   message: string;
@@ -109,7 +108,7 @@ export interface PrivacyRequestEntity {
   identity: {
     [key: string]: { label: string; value: string | null };
   };
-  identity_verified_at?: string;
+  identity_verified_at?: string | null;
   custom_privacy_request_fields?: {
     [key: string]: { label: string; value: any };
   };
@@ -133,6 +132,7 @@ export interface PrivacyRequestEntity {
   days_left?: number;
   source?: string;
   location?: string;
+  property_id?: string | null;
 }
 
 export interface PrivacyRequestResponse {

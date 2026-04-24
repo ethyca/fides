@@ -1,4 +1,0 @@
-type: Added
-description: Added parent_id column to Comment model for threading support
-pr: 7864
-labels: ["db-migration"]

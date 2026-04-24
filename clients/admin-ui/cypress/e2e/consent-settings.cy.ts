@@ -51,7 +51,7 @@ describe("Consent settings", () => {
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
       cy.getByTestId("consent-configuration");
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
-        cy.get("p").contains("GPP status Enabled");
+        cy.contains("GPP status Enabled").should("exist");
         cy.getByTestId("option-national").should("not.have.attr", "checked");
         cy.getByTestId("option-state").should("have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
@@ -78,7 +78,7 @@ describe("Consent settings", () => {
       cy.intercept("/api/v1/config?api_set=true", { body: API_CONFIG });
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
-        cy.get("p").contains("GPP status Enabled");
+        cy.contains("GPP status Enabled").should("exist");
         cy.getByTestId("option-national").should("have.attr", "checked");
         cy.getByTestId("option-state").should("not.have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
@@ -376,7 +376,7 @@ describe("Consent settings", () => {
           "Restrict all vendors",
           { force: true },
         );
-        cy.getByTestId("controlled-select-vendor_ids").should("not.be.visible");
+        cy.getByTestId("controlled-select-vendor_ids").should("not.exist");
         cy.getByTestId("save-restriction-button").click();
         cy.wait("@createRestriction");
         cy.contains("Restriction created successfully").should("be.visible");
@@ -412,7 +412,9 @@ describe("Consent settings", () => {
         // a more comprehensive test of the validation exists in the unit tests, this is just a check of the UI for the error message
         cy.get("input[id='vendor_ids']").type("invalid format{enter}");
         cy.get("input[id='vendor_ids']").blur();
-        cy.getByTestId("error-vendor_ids").should("be.visible");
+        cy.contains("Vendor IDs must be numbers or ranges").should(
+          "be.visible",
+        );
       });
 
       it("displays purpose restrictions table correctly", () => {

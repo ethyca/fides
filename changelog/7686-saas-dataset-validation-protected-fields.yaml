@@ -1,0 +1,7 @@
+type: Added
+description: >
+  Added backend validation and protected field restoration for SaaS dataset editing.
+  Users will now see warnings instead of hard errors when attempting to modify
+  protected fields on a SaaS dataset.
+pr: 7686
+labels: []

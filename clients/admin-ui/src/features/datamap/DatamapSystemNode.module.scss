@@ -1,5 +1,3 @@
-@import "fidesui/src/palette/palette.module.scss";
-
 .container {
   position: relative;
   display: flex;
@@ -17,39 +15,39 @@
     box-shadow 300ms ease 0s;
 
   // Default state
-  color: map-get($colors, "neutral-800");
-  background-color: map-get($colors, "neutral-100");
-  border: 1px solid map-get($colors, "neutral-200");
+  color: var(--fidesui-neutral-800);
+  background-color: var(--fidesui-neutral-100);
+  border: 1px solid var(--fidesui-neutral-200);
   box-shadow: none;
 
   // Hover state
   &:hover {
     color: white !important;
-    background-color: map-get($colors, "neutral-700") !important;
-    border: 1px solid map-get($colors, "neutral-600") !important;
+    background-color: var(--fidesui-neutral-700) !important;
+    border: 1px solid var(--fidesui-neutral-600) !important;
   }
 
   // Focus state for accessibility
   &:focus,
   &:focus-visible {
     color: white !important;
-    background-color: map-get($colors, "minos") !important;
-    border: 1px solid map-get($colors, "minos") !important;
+    background-color: var(--fidesui-minos) !important;
+    border: 1px solid var(--fidesui-minos) !important;
   }
 
   // Active/selected state
   &--selected {
     color: white !important;
-    background-color: map-get($colors, "minos") !important;
-    border: 1px solid map-get($colors, "minos") !important;
+    background-color: var(--fidesui-minos) !important;
+    border: 1px solid var(--fidesui-minos) !important;
   }
 }
 
 .handle {
   width: 10px;
   height: 10px;
-  background: map-get($colors, "neutral-200");
-  border: 1px solid map-get($colors, "neutral-300");
+  background: var(--fidesui-neutral-200);
+  border: 1px solid var(--fidesui-neutral-300);
   opacity: 0;
   pointer-events: none;
 }
