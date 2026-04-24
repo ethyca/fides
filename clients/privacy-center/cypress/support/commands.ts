@@ -170,6 +170,10 @@ Cypress.Commands.add(
         // Add GTM stub
         win.dataLayer = [];
         cy.stub(win.dataLayer, "push").as("dataLayerPush");
+
+        // Add Matomo stub
+        win._paq = [];
+        cy.stub(win._paq, "push").as("paqPush");
       },
     };
     if (!queryParams || !queryParams.disable_animations) {

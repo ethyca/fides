@@ -447,6 +447,20 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
+    updateInfrastructureSystemDescription: build.mutation<
+      Schema,
+      { monitorId: string; urn: string; description: string }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/identity-provider-monitors/${params.monitorId}/results/${params.urn}`,
+        body: {
+          urn: params.urn,
+          user_assigned_description: params.description,
+        },
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
     bulkPromoteIdentityProviderMonitorResults: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
@@ -472,6 +486,18 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     bulkUnmuteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    updateIdentityProviderMonitorDescription: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
     >({
@@ -515,6 +541,7 @@ export const {
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
+  useUpdateInfrastructureSystemDescriptionMutation,
   util: discoveryDetectionUtil,
 } = discoveryDetectionApi;
 
