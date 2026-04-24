@@ -108,9 +108,10 @@ const EditorSection = ({
   const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
     {
       connectionKey,
+      datasetKey: currentDataset?.fides_key || "",
     },
     {
-      skip: !isSaas,
+      skip: !isSaas || !currentDataset?.fides_key,
     },
   );
   const datasetOptions = useMemo(

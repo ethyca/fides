@@ -412,10 +412,10 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
         immutable_fields: string[];
         protected_collection_fields: { collection: string; field: string }[];
       },
-      { connectionKey: string }
+      { connectionKey: string; datasetKey: string }
     >({
-      query: ({ connectionKey }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/protected-fields`,
+      query: ({ connectionKey, datasetKey }) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/protected-fields`,
         method: "GET",
       }),
       providesTags: () => ["Datastore Connection"],
