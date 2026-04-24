@@ -19,6 +19,7 @@ from .commands.annotate import annotate
 from .commands.db import database
 from .commands.deploy import deploy
 from .commands.generate import generate
+from .commands.pbac import pbac
 from .commands.pull import pull
 from .commands.scan import scan
 from .commands.ungrouped import (
@@ -38,7 +39,7 @@ from .commands.view import view
 from .exceptions import LocalModeException
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
-LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
+LOCAL_COMMANDS = [deploy, evaluate, generate, init, pbac, scan, parse, view, webserver]
 LOCAL_COMMAND_NAMES = {command.name for command in LOCAL_COMMANDS}
 API_COMMANDS = [
     annotate,

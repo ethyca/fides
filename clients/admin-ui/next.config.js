@@ -15,6 +15,25 @@ const nextConfig = {
     // Data flow scanning sometimes takes longer than the default of 30 seconds
     proxyTimeout: 120000,
   },
+  // Force all imports of "antd" to resolve to the CJS build. fidesui uses
+  // "antd/lib" (CJS), but third-party packages like @ant-design/x import plain
+  // "antd", which the bundler resolves to ESM — producing two separate antd
+  // modules with their own ConfigProvider contexts. useToken() then reads
+  // unthemed defaults inside those components. The alias keeps everything on
+  // one antd instance.
+  turbopack: {
+    resolveAlias: {
+      antd: "antd/lib",
+    },
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // "$" = exact match only, so "antd/lib/…" and "antd/es/…" stay as-is.
+      antd$: "antd/lib",
+    };
+    return config;
+  },
   images: {
     loader: "custom",
   },

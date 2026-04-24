@@ -40,6 +40,11 @@ class EventAuditType(str, EnumType):
     connection_secrets_created = "connection.secrets.created"
     connection_secrets_updated = "connection.secrets.updated"
 
+    # Dataset operations
+    dataset_created = "dataset.created"
+    dataset_updated = "dataset.updated"
+    dataset_deleted = "dataset.deleted"
+
     # Digest
     digest_execution_started = "digest.execution.started"
     digest_execution_completed = "digest.execution.completed"
@@ -61,6 +66,12 @@ class EventAuditType(str, EnumType):
     password_reset_requested = "password_reset.requested"
     password_reset_completed = "password_reset.completed"
     password_reset_token_expired = "password_reset.token_expired"
+
+    # Correspondence
+    correspondence_sent = "correspondence.sent"
+    correspondence_delivered = "correspondence.delivered"
+    correspondence_bounced = "correspondence.bounced"
+    correspondence_reply_received = "correspondence.reply_received"
 
     # Privacy Assessment
     privacy_assessment_created = "privacy_assessment.created"

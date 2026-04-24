@@ -3,7 +3,11 @@
 /**
  * AccessPolicyUpdate
  *
- * Request body for updating an access policy.
+ * Request body for updating an access policy (PATCH semantics).
+ *
+ * Only fields present in the request body are applied:
+ * - Omitted fields are left unchanged
+ * - Fields set to null clear the value (for nullable fields)
  */
 export type AccessPolicyUpdate = {
   /**
@@ -14,6 +18,12 @@ export type AccessPolicyUpdate = {
    * Description
    */
   description?: string | null;
+  /**
+   * Control
+   *
+   * Control key. Send null to clear, omit to preserve.
+   */
+  control?: string | null;
   /**
    * Yaml
    *

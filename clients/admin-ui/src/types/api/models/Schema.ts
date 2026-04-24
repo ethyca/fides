@@ -36,6 +36,10 @@ export type Schema = {
    */
   description?: string | null;
   /**
+   * User Assigned Description
+   */
+  user_assigned_description?: string | null;
+  /**
    * Monitor Config Id
    */
   monitor_config_id?: string | null;
@@ -92,6 +96,8 @@ export type Schema = {
     | Array<string>
     | null
     | Array<string>
+    | null
+    | string
     | null
     | string
     | null
