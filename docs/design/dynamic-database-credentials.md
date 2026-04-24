@@ -91,7 +91,7 @@ All engines use the **`creator` pattern**: instead of passing a connection URI t
 
 **Sync engines (psycopg2):**
 
-The `creator` callable calls `psycopg2.connect()` with credentials from `provider.get_credentials()`. This is a fully supported public API in SQLAlchemy 1.4. The creator is wired in through `get_db_engine()` in `session.py`, which already serves as the factory for all sync engines.
+The `creator` callable calls `psycopg2.connect()` with credentials from `provider.get_secret()`. This is a fully supported public API in SQLAlchemy 1.4. The creator is wired in through `get_db_engine()` in `session.py`, which already serves as the factory for all sync engines.
 
 **Async engines (asyncpg):**
 
