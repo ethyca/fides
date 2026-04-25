@@ -25,9 +25,9 @@ jest.mock("fidesui", () => {
       const { prefix, suffix, allowClear, autoFocus, ...rest } = props;
       return MockReact.createElement("input", { ...rest, ref });
     }),
-    Modal: ({ open: modalOpen, children, onCancel, destroyOnClose }: any) => {
+    Modal: ({ open: modalOpen, children, onCancel, destroyOnHidden }: any) => {
       if (!modalOpen) {
-        if (destroyOnClose) {
+        if (destroyOnHidden) {
           return null;
         }
         return MockReact.createElement(
@@ -49,13 +49,14 @@ jest.mock("fidesui", () => {
     Icons: {
       Search: () => MockReact.createElement("span", null, "search-icon"),
     },
+    Typography: {
+      Link: MockReact.forwardRef((props: any, ref: any) =>
+        MockReact.createElement("a", { ...props, ref }),
+      ),
+    },
+    Button: "button",
   };
 });
-
-jest.mock("fidesui/src/palette/palette.module.scss", () => ({
-  FIDESUI_CORINTH: "#fafafa",
-  FIDESUI_NEUTRAL_400: "#a8aaad",
-}));
 
 // Mock react-hotkeys-hook so fireEvent.keyDown works in tests
 jest.mock("react-hotkeys-hook", () => {

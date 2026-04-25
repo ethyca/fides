@@ -2,9 +2,9 @@ import classNames from "classnames";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Avatar, Card, Flex, Icons, Spin, Text } from "fidesui";
-import NextLink from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import {
   ACTION_CTA,
   ACTIVITY_FILTER_OPTIONS,
@@ -107,7 +107,7 @@ export const ActivityFeedCard = () => {
     }
     return (
       <>
-        {items.map((item) => {
+        {items.map((item, i) => {
           const cta =
             item.event_type && ACTION_CTA[item.event_type]
               ? ACTION_CTA[item.event_type]
@@ -115,14 +115,15 @@ export const ActivityFeedCard = () => {
           const href = cta ? cta.route(item.action_data ?? {}) : null;
 
           return (
-            <div key={item.id}>
+            <div key={item.id ?? i}>
               {href ? (
-                <NextLink
+                <RouterLink
+                  unstyled
                   href={href}
                   className={classNames(styles.feedItem, styles.clickable)}
                 >
                   <FeedItemContent item={item} />
-                </NextLink>
+                </RouterLink>
               ) : (
                 <div
                   className={classNames(styles.feedItem, styles.nonClickable)}

@@ -15,8 +15,9 @@ interface CustomTypographyTextProps {
   unStyled?: boolean;
 }
 
-interface CustomTypographyTitleProps
-  extends React.ComponentProps<typeof Typography.Title> {
+interface CustomTypographyTitleProps extends React.ComponentProps<
+  typeof Typography.Title
+> {
   headingSize?: HeadingSize;
 }
 

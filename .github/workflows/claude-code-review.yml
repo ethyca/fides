@@ -8,8 +8,6 @@
 # (callers, impact analysis, architecture checks, test coverage).
 #
 # Triggers:
-#   - PR opened (non-draft) or moved out of draft
-#   - PR reopened
 #   - Comment containing "/code-review" on a PR (trusted users only)
 #
 # Required secrets:
@@ -21,8 +19,6 @@
 name: Claude Code Review
 
 on:
-  pull_request:
-    types: [opened, ready_for_review, reopened]
   issue_comment:
     types: [created]
 
@@ -37,17 +33,10 @@ jobs:
       group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
       cancel-in-progress: true
     if: >
-      (
-        github.event_name == 'pull_request'
-        && !github.event.pull_request.draft
-        && github.actor != 'dependabot[bot]'
-      )
-      || (
-        github.event_name == 'issue_comment'
-        && github.event.issue.pull_request
-        && contains(github.event.comment.body, '/code-review')
-        && contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
-      )
+      github.event_name == 'issue_comment'
+      && github.event.issue.pull_request
+      && contains(github.event.comment.body, '/code-review')
+      && contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
 
     permissions:
       contents: read

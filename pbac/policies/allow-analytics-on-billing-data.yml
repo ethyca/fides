@@ -1,0 +1,16 @@
+policy:
+- key: allow-analytics-on-billing-data
+  priority: 100
+  enabled: true
+  decision: ALLOW
+  match:
+    data_use:
+      any:
+      - essential.service.payment_processing
+  unless: []
+  action:
+    message: >
+      Analytics team is permitted to query payment data for reconciliation and
+      finance reporting. Overrides the purpose mismatch that PBAC would otherwise
+      raise when analytics (analytics.reporting) touches billing data
+      (essential.service.payment_processing).

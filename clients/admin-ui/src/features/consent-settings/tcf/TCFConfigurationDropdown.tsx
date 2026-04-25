@@ -1,20 +1,17 @@
 import {
   Button,
   Card,
-  ChakraInputGroup as InputGroup,
-  ChakraSkeleton as Skeleton,
-  ChakraText as Text,
   ConfirmationModal,
   Dropdown,
   Flex,
   Icons,
   Input,
   Radio,
+  Skeleton,
   Space,
-  useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -53,10 +50,10 @@ interface DropdownContentProps {
 }
 
 const LoadingContent = () => (
-  <Space direction="vertical" size="small">
-    <Skeleton width="100%" className="h-4" />
-    <Skeleton width="100%" className="h-4" />
-    <Skeleton width="100%" className="h-4" />
+  <Space orientation="vertical" size="small">
+    <Skeleton.Input active block size="small" />
+    <Skeleton.Input active block size="small" />
+    <Skeleton.Input active block size="small" />
   </Space>
 );
 
@@ -93,7 +90,7 @@ const ConfigurationList = ({
           name="tcf-config-id"
           data-testid="tcf-config-item"
         >
-          <Text className="text-sm">{config.name}</Text>
+          <span className="text-sm">{config.name}</span>
         </Radio>
         {userCanDeleteConfigs && (
           <Button
@@ -144,7 +141,7 @@ const DropdownContent = ({
   if (isLoading) {
     content = <LoadingContent />;
   } else if (searchResults.length === 0) {
-    content = <Text className="text-center">No configurations found.</Text>;
+    content = <p className="text-center">No configurations found.</p>;
   } else {
     content = (
       <ConfigurationList
@@ -177,14 +174,13 @@ const DropdownContent = ({
       }}
     >
       {configurations.length > 10 && (
-        <InputGroup size="sm">
-          <Input
-            className="mb-4"
-            placeholder="Search..."
-            onChange={(e) => setSearchTerm(e.target.value)}
-            value={searchTerm}
-          />
-        </InputGroup>
+        <Input
+          size="small"
+          className="mb-4"
+          placeholder="Search..."
+          onChange={(e) => setSearchTerm(e.target.value)}
+          value={searchTerm}
+        />
       )}
 
       {content}
@@ -238,16 +234,13 @@ export const TCFConfigurationDropdown = ({
   const message = useMessage();
   const [deleteTCFConfiguration] = useDeleteTCFConfigurationMutation();
 
-  const {
-    isOpen: modalIsOpen,
-    onOpen: modalOnOpen,
-    onClose: modalOnClose,
-  } = useDisclosure();
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const modalOnOpen = useCallback(() => setModalIsOpen(true), []);
+  const modalOnClose = useCallback(() => setModalIsOpen(false), []);
+
+  const [deleteIsOpen, setDeleteIsOpen] = useState(false);
+  const onDeleteOpen = useCallback(() => setDeleteIsOpen(true), []);
+  const onDeleteClose = useCallback(() => setDeleteIsOpen(false), []);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [configToDelete, setConfigToDelete] = useState<TCFConfiguration>();
@@ -300,7 +293,7 @@ export const TCFConfigurationDropdown = ({
         trigger={["click"]}
         styles={{
           root: {
-            zIndex: 999, // putting this behind Chakra's modal. Can possibly remove this after Modal is migrated to Ant Design.
+            zIndex: 999,
           },
         }}
         popupRender={() =>
@@ -323,7 +316,7 @@ export const TCFConfigurationDropdown = ({
       >
         <Button
           icon={<Icons.ChevronDown />}
-          iconPosition="end"
+          iconPlacement="end"
           data-testid="tcf-config-dropdown-trigger"
         >
           {buttonLabel}

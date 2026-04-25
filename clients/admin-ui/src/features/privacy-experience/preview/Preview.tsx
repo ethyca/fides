@@ -1,4 +1,4 @@
-import { FidesGlobal } from "fides-js/src/lib/consent-types";
+import type { Fides } from "fides-js/types";
 import { Flex, Form, Typography, useNotification } from "fidesui";
 import { useRouter } from "next/router";
 import Script from "next/script";
@@ -26,7 +26,7 @@ import { COMPONENT_MAP } from "../constants";
 
 declare global {
   interface Window {
-    Fides: FidesGlobal;
+    Fides: Fides;
   }
   interface Navigator {
     globalPrivacyControl?: boolean;
@@ -452,8 +452,7 @@ const Preview = ({
         id={PREVIEW_CONTAINER_ID}
         key={values.component}
         data-a11y-dialog-ignore-focus-trap="" // tells a11y-dialog to ignore focus trap
-        // @ts-expect-error - React 18 doesn't support inert attribute
-        inert=""
+        inert
       />
     </Flex>
   );

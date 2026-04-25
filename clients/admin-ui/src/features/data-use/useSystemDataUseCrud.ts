@@ -31,16 +31,15 @@ const buildCustomFieldsPayload = (
 ): BulkCustomFieldRequest => {
   const payloadUpsert: CustomFieldWithId[] = [];
   const payloadDelete: string[] = [];
-  Object.entries(customFieldValues).forEach(([id, value]) => {
+  Object.entries(customFieldValues).forEach(([definitionId, value]) => {
     if (value) {
       payloadUpsert.push({
-        id,
         value,
         resource_id: resourceId,
-        custom_field_definition_id: id,
+        custom_field_definition_id: definitionId,
       });
     } else {
-      payloadDelete.push(id);
+      payloadDelete.push(definitionId);
     }
   });
   return {
@@ -60,7 +59,9 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
   const declarationAlreadyExists = (values: PrivacyDeclaration) => {
     if (
       system.privacy_declarations.find(
-        (d) => d.data_use === values.data_use && d.name === values.name,
+        (d) =>
+          d.data_use === values.data_use &&
+          (d.name ?? "") === (values.name ?? ""),
       )
     ) {
       message.error(
@@ -102,6 +103,7 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     isDelete?: boolean,
     customFieldValues?: Record<string, any>,
     updatedDeclarationDataUse?: string,
+    updatedDeclarationName?: string,
   ) => {
     // The API can return a null name, but cannot receive a null name,
     // so do an additional transform here (fides#3862)
@@ -122,7 +124,9 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     // its custom fields if provided
     if (customFieldValues && updatedDeclarationDataUse) {
       const newDeclaration = systemResult?.data?.privacy_declarations?.find(
-        (d) => d.data_use === updatedDeclarationDataUse,
+        (d) =>
+          d.data_use === updatedDeclarationDataUse &&
+          (d.name ?? "") === (updatedDeclarationName ?? ""),
       );
       if (newDeclaration) {
         const customFieldsPayload = buildCustomFieldsPayload(
@@ -159,6 +163,7 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
       false,
       customFieldValues,
       newDeclaration.data_use,
+      newDeclaration.name ?? "",
     );
   };
 
@@ -183,6 +188,7 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
       false,
       customFieldValues,
       updatedDeclaration.data_use,
+      updatedDeclaration.name ?? "",
     );
   };
 

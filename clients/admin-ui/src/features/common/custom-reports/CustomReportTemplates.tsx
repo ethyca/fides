@@ -424,7 +424,7 @@ export const CustomReportTemplates = ({
         <Button
           className="max-w-40"
           icon={<Icons.ChevronDown size={14} />}
-          iconPosition="end"
+          iconPlacement="end"
           data-testid="custom-reports-trigger"
         >
           <Text ellipsis>{buttonLabel}</Text>

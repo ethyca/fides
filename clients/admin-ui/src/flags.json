@@ -84,13 +84,6 @@
     "test": false,
     "production": true
   },
-  "alphaRbac": {
-    "label": "Alpha RBAC",
-    "description": "Dynamic role-based access control system for roles, permissions, and user assignments",
-    "development": true,
-    "test": false,
-    "production": false
-  },
   "alphaDashboard": {
     "label": "Alpha new dashboard",
     "description": "Enable the new Ant Design-only home dashboard",
