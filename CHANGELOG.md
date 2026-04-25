@@ -108,6 +108,7 @@ loading, pipeline orchestration, and YAML config directory support. [#7944](http
 - Fixed browser navigation for Action Center ignored assets [#7961](https://github.com/ethyca/fides/pull/7961)
 - Fixed property-based DAG filtering for SaaS connector datasets. [#7868](https://github.com/ethyca/fides/pull/7868)
 - Fixed property creation 422 error caused by missing paths field in form submission payload [#7908](https://github.com/ethyca/fides/pull/7908)
+- Fix custom field updates on privacy declarations failing with duplicate key or null ID constraint violations. [#8024](https://github.com/ethyca/fides/pull/8024)
 
 ## [2.83.3](https://github.com/ethyca/fides/compare/2.83.2..2.83.3)
 
