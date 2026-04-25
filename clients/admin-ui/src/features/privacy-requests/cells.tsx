@@ -6,12 +6,13 @@ import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 import { Rule } from "./types";
 
-export const statusPropMap: {
-  [key in PrivacyRequestStatus]: {
+export const statusPropMap: Record<
+  PrivacyRequestStatus,
+  {
     label: string;
     colorScheme: CUSTOM_TAG_COLOR;
-  };
-} = {
+  }
+> = {
   approved: {
     colorScheme: CUSTOM_TAG_COLOR.SUCCESS,
     label: "Approved",

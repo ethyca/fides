@@ -1,9 +1,10 @@
 import { Tabs, TabsProps } from "fidesui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
+import PrivacyRequestDetailsAccessPackageTab from "./access-package/PrivacyRequestDetailsAccessPackageTab";
 import ActivityTab from "./events-and-logs/ActivityTab";
 import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
 import RequestDetails from "./RequestDetails";
@@ -41,8 +42,16 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const isRequiringInputStatus =
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
   const showManualTasks = isRequiringInputStatus;
+  const isAwaitingAccessReview =
+    subjectRequest.status === PrivacyRequestStatus.AWAITING_ACCESS_REVIEW;
 
   const [activeTabKey, setActiveTabKey] = useState("activity");
+
+  useEffect(() => {
+    if (isAwaitingAccessReview) {
+      setActiveTabKey("access-package");
+    }
+  }, [isAwaitingAccessReview]);
 
   const items: TabsProps["items"] = useMemo(
     () => [
@@ -62,8 +71,18 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         ),
         disabled: !showManualTasks,
       },
+      {
+        key: "access-package",
+        label: "Access package",
+        children: (
+          <PrivacyRequestDetailsAccessPackageTab
+            subjectRequest={subjectRequest}
+          />
+        ),
+        disabled: !isAwaitingAccessReview,
+      },
     ],
-    [showManualTasks, subjectRequest],
+    [showManualTasks, isAwaitingAccessReview, subjectRequest],
   );
 
   return (

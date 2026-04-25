@@ -685,6 +685,7 @@ export type * from "./models/PrivacyRequestRedactionPatternsResponse";
 export type * from "./models/PrivacyRequestResponse";
 export type * from "./models/PrivacyRequestResponseExtended";
 export type * from "./models/PrivacyRequestResumeFormat";
+export * from "./models/AccessPackage";
 export * from "./models/PrivacyRequestSource";
 export * from "./models/PrivacyRequestStatus";
 export type * from "./models/PrivacyRequestStatuses";
