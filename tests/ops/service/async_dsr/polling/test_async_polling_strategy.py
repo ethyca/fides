@@ -843,3 +843,69 @@ class TestAsyncPollingStrategy:
         assert result == 0
         assert len(request_task.sub_requests) == 0
         mock_client.send.assert_called_once()
+
+    def test_extract_correlation_id_from_response_body(self, async_polling_strategy):
+        """Correlation ID is extracted from the JSON response body when present."""
+        mock_response = Mock(spec=Response)
+        mock_response.json.return_value = {"request_id": "resp-123"}
+
+        result = AsyncPollingStrategy._extract_correlation_id(
+            mock_response, "request_id", {"privacy_request_id": "pr-456"}
+        )
+        assert result == "resp-123"
+
+    def test_extract_correlation_id_falls_back_to_param_values(
+        self, async_polling_strategy
+    ):
+        """When the response body is empty, falls back to param_value_map."""
+        mock_response = Mock(spec=Response)
+        mock_response.json.return_value = {}
+
+        result = AsyncPollingStrategy._extract_correlation_id(
+            mock_response,
+            "privacy_request_id",
+            {"privacy_request_id": "pr-456"},
+        )
+        assert result == "pr-456"
+
+    def test_extract_correlation_id_falls_back_on_non_json_response(
+        self, async_polling_strategy
+    ):
+        """When the response is not JSON (empty body), falls back to param_value_map."""
+        mock_response = Mock(spec=Response)
+        mock_response.json.side_effect = ValueError("No JSON")
+
+        result = AsyncPollingStrategy._extract_correlation_id(
+            mock_response,
+            "privacy_request_id",
+            {"privacy_request_id": "pr-789"},
+        )
+        assert result == "pr-789"
+
+    def test_extract_correlation_id_prefers_response_over_param_values(
+        self, async_polling_strategy
+    ):
+        """Response body takes precedence over param_value_map when both have the key."""
+        mock_response = Mock(spec=Response)
+        mock_response.json.return_value = {
+            "privacy_request_id": "from-response"
+        }
+
+        result = AsyncPollingStrategy._extract_correlation_id(
+            mock_response,
+            "privacy_request_id",
+            {"privacy_request_id": "from-params"},
+        )
+        assert result == "from-response"
+
+    def test_extract_correlation_id_raises_when_not_found_anywhere(
+        self, async_polling_strategy
+    ):
+        """Raises FidesopsException when correlation ID is not in response or param values."""
+        mock_response = Mock(spec=Response)
+        mock_response.json.return_value = {}
+
+        with pytest.raises(FidesopsException, match="Could not extract correlation ID"):
+            AsyncPollingStrategy._extract_correlation_id(
+                mock_response, "missing_key", {"other_key": "value"}
+            )
