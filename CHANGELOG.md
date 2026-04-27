@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.84.0..main)
 
+### Added
+- Added `att_exempt` boolean field to `PrivacyNotice`, `PrivacyNoticeHistory`, and `PrivacyNoticeTemplate` models. When `false` (default), the notice is controlled by Apple's App Tracking Transparency prompt; when `true`, the notice is exempt and remains user-toggleable regardless of the ATT decision. [#8029](https://github.com/ethyca/fides/pull/8029) https://github.com/ethyca/fides/labels/db-migration
+
 ## [2.84.0](https://github.com/ethyca/fides/compare/2.83.3..2.84.0)
 
 ### Added
