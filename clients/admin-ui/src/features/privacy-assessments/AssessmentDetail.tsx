@@ -312,8 +312,10 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         )}
       </Flex>
 
-      {!isComplete && questionnaireSentAt && (
+      {questionnaireSentAt && (
         <QuestionnaireStatusBar
+          status={assessment.questionnaire!.status}
+          stopReason={assessment.questionnaire!.stop_reason}
           channel={isTerminalProvider ? "Terminal" : (channelName ?? "")}
           timeSinceSent={timeSinceSent}
           answeredCount={assessment.questionnaire!.answered_questions}

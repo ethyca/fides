@@ -127,7 +127,16 @@ export interface EvidenceItem {
   data?: SlackEvidenceData;
 }
 
+export enum QuestionnaireSessionStatus {
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  STOPPED = "stopped",
+  ABANDONED = "abandoned",
+}
+
 export interface QuestionnaireStatus {
+  status: QuestionnaireSessionStatus;
+  stop_reason: string | null;
   sent_at: string;
   channel: string;
   total_questions: number;
