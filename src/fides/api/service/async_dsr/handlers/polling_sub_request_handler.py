@@ -52,19 +52,27 @@ class PollingSubRequestHandler:
         """
         Check if all sub-requests for a polling task are complete.
 
+        A sub-request is considered terminal when its status is complete, skipped, or error.
+        Errored sub-requests do not block completion — partial results from successful
+        sub-requests will be returned and a warning will be logged.
+
         Args:
             polling_task: The polling task to check
 
         Returns:
-            bool: True if all sub-requests are complete, False if still in progress
+            bool: True if all sub-requests are in a terminal state, False if still in progress
         """
-        # Get all sub-requests and categorize by status
+        terminal_statuses = {
+            ExecutionLogStatus.complete.value,
+            ExecutionLogStatus.skipped.value,
+            ExecutionLogStatus.error.value,
+        }
+
         all_sub_requests = polling_task.sub_requests
-        completed_sub_requests = [
+        terminal_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.status
-            in [ExecutionLogStatus.complete.value, ExecutionLogStatus.skipped.value]
+            if sub_request.status in terminal_statuses
         ]
         failed_sub_requests = [
             sub_request
@@ -73,18 +81,24 @@ class PollingSubRequestHandler:
         ]
 
         if (
-            len(completed_sub_requests) == len(all_sub_requests)
+            len(terminal_sub_requests) == len(all_sub_requests)
             and len(all_sub_requests) > 0
         ):
-            # All sub-requests completed successfully (or skipped) - aggregate results
-            logger.info(
-                f"All sub-requests completed successfully for task {polling_task.id}"
-            )
+            if failed_sub_requests:
+                logger.warning(
+                    f"Polling task {polling_task.id} finished with {len(failed_sub_requests)} "
+                    f"failed sub-request(s): {[sr.id for sr in failed_sub_requests]}"
+                )
+            else:
+                logger.info(
+                    f"All sub-requests completed successfully for task {polling_task.id}"
+                )
             return True
 
         # Still polling - some sub-requests are pending
         logger.info(
-            f"Polling task {polling_task.id}: {len(completed_sub_requests)}/{len(all_sub_requests)} sub-requests complete, {len(failed_sub_requests)} failed"
+            f"Polling task {polling_task.id}: {len(terminal_sub_requests)}/{len(all_sub_requests)} "
+            f"sub-requests terminal, {len(failed_sub_requests)} failed"
         )
         return False
 
@@ -109,6 +123,7 @@ class PollingSubRequestHandler:
             if sub_request.status not in [
                 ExecutionLogStatus.complete.value,
                 ExecutionLogStatus.skipped.value,
+                ExecutionLogStatus.error.value,
             ]:
                 # Check if this sub-request has timed out
                 if sub_request.created_at:
