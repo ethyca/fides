@@ -67,6 +67,9 @@ New top-level config section (not nested under `database`, since the provider is
 - `secrets.aws_secrets_manager.region`: AWS region
 - `secrets.aws_secrets_manager.cache_ttl_seconds`: TTL for cached values (default: 300)
 - `secrets.aws_secrets_manager.cache_stale_ttl_seconds`: grace period for serving last-known-good credentials when Secrets Manager is unreachable (default: 1800)
+- `secrets.aws_secrets_manager.endpoint_url`: optional custom endpoint (e.g., LocalStack for local dev/CI)
+
+**AWS authentication:** The provider uses the standard boto3 credential chain — IAM role on the pod (recommended for EKS/EC2), environment variables (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`), or any other mechanism boto3 supports. The IAM principal must have `secretsmanager:GetSecretValue` (and `secretsmanager:DescribeSecret` if version-stage filtering is needed) on the target secret ARN(s). The provider always fetches the `AWSCURRENT` staging label.
 
 Database-specific settings on `DatabaseSettings` reference which secret to use:
 
@@ -114,8 +117,9 @@ When credentials are rotated, existing pooled connections may still be valid (if
 2. Attempt to open a connection.
 3. If the connection fails with an authentication error:
    a. Call `provider.invalidate()` to bust the cache.
-   b. Fetch credentials again (forces a Secrets Manager call).
-   c. Retry the connection once with the new credentials.
+   b. Wait briefly (1–2 seconds) to allow for propagation — during rotation, there is a short window where the `AWSPENDING` → `AWSCURRENT` swap may not have completed yet.
+   c. Fetch credentials again (forces a Secrets Manager call).
+   d. Retry the connection once with the new credentials.
 4. If the retry also fails, raise the error normally (the credentials are genuinely wrong, not a rotation issue).
 
 This means the first connection attempt after rotation absorbs a single failure and Secrets Manager round-trip. All subsequent connections from other threads use the already-refreshed cache (see thundering-herd protection above).
@@ -125,7 +129,7 @@ This means the first connection attempt after rotation absorbs a single failure 
 **Error detection:**
 
 - psycopg2: `OperationalError` with `exc.pgcode == "28P01"` (SQLSTATE `invalid_password`). This is locale-independent and version-stable, unlike string matching on the error message.
-- asyncpg: `InvalidPasswordError` (already maps to SQLSTATE `28P01` internally).
+- asyncpg: `InvalidPasswordError` (already maps to SQLSTATE `28P01` internally). Note: Aurora/RDS can sometimes emit SQLSTATE `28000` (`InvalidAuthorizationSpecificationError`) instead of `28P01` during rotation — the implementation should catch both to be safe.
 
 The retry happens at the connection level, invisible to application code. Combined with the existing `pool_pre_ping=True` setting (which evicts dead connections before use), this provides self-healing behavior across the full rotation window.
 
@@ -135,7 +139,7 @@ The retry happens at the connection level, invisible to application code. Combin
 
 - `DatabaseSettings` continues to hold all the same fields (server, port, db, params, pool sizes, keepalives, SSL, etc.). The only addition is `credential_secret_id`. A new top-level `secrets` config section is added for provider configuration.
 - The `StaticSecretProvider` returns values from config directly, so existing deployments with env vars or TOML are completely unaffected.
-- Engine pool configuration, SSL handling, keepalives, JSON serialization, and all other engine options remain unchanged — only the connection-opening step is different.
+- Engine pool configuration, pool sizes, and other `create_engine` keyword options remain unchanged. However, the `creator` callable is responsible for explicitly forwarding all connection-level parameters that currently live in `connect_args` (keepalive settings, `sslmode`, `sslcert`, `sslkey`, `sslrootcert`, JSON type registration, etc.) into the `psycopg2.connect()` / `asyncpg.connect()` call — these are **not** automatically passed through when using the `creator` pattern. The implementation must merge these from `DatabaseSettings` to avoid silent regressions (e.g., SSL enforcement being dropped).
 - Alembic migrations are short-lived and create their own engine. They can simply fetch current credentials from the provider at migration start.
 
 ## Future Work
