@@ -23,6 +23,8 @@ from fides.config import CONFIG
 FORGOT_PASSWORD_URL = V1_URL_PREFIX + "/user/forgot-password"
 RESET_PASSWORD_WITH_TOKEN_URL = V1_URL_PREFIX + "/user/reset-password-with-token"
 ACCEPT_INVITE_URL = V1_URL_PREFIX + "/user/accept-invite"
+VALIDATE_INVITE_URL = V1_URL_PREFIX + "/user/validate-invite"
+VALIDATE_RESET_TOKEN_URL = V1_URL_PREFIX + "/user/validate-reset-token"
 
 
 class TestForgotPassword:
@@ -288,6 +290,211 @@ class TestResetPasswordWithToken:
             },
         )
         assert response.status_code == 422
+
+
+class TestValidateInvite:
+    @pytest.fixture(scope="function")
+    def invited_user(self, db) -> Generator:
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "invite_validate_user",
+                "email_address": "invite_validate@example.com",
+                "disabled": True,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        FidesUserInvite.create(
+            db=db,
+            data={
+                "username": "invite_validate_user",
+                "invite_code": "valid_invite",
+            },
+        )
+        yield user
+        try:
+            user.delete(db)
+        except Exception:
+            pass
+
+    def test_validate_invite_valid(self, api_client: TestClient, invited_user):
+        response = api_client.get(
+            VALIDATE_INVITE_URL,
+            params={
+                "username": "invite_validate_user",
+                "invite_code": "valid_invite",
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": True, "reason": None}
+
+    def test_validate_invite_invalid_code(
+        self, api_client: TestClient, invited_user
+    ):
+        response = api_client.get(
+            VALIDATE_INVITE_URL,
+            params={
+                "username": "invite_validate_user",
+                "invite_code": "wrong_code",
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": False, "reason": "invalid"}
+
+    def test_validate_invite_unknown_user(self, api_client: TestClient):
+        response = api_client.get(
+            VALIDATE_INVITE_URL,
+            params={
+                "username": "nonexistent_user",
+                "invite_code": "whatever",
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": False, "reason": "invalid"}
+
+    @mock.patch("fides.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
+    def test_validate_invite_expired(
+        self, mock_get_by, api_client: TestClient
+    ):
+        mock_instance = mock.Mock(
+            spec=FidesUserInvite,
+            invite_code_valid=mock.Mock(return_value=True),
+            is_expired=mock.Mock(return_value=True),
+        )
+        mock_get_by.return_value = mock_instance
+
+        response = api_client.get(
+            VALIDATE_INVITE_URL,
+            params={
+                "username": "invite_validate_user",
+                "invite_code": "valid_invite",
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": False, "reason": "expired"}
+
+    def test_validate_invite_does_not_consume_token(
+        self, db, api_client: TestClient, invited_user
+    ):
+        """Validation should not delete the invite — the accept-invite POST is what consumes it."""
+        api_client.get(
+            VALIDATE_INVITE_URL,
+            params={
+                "username": "invite_validate_user",
+                "invite_code": "valid_invite",
+            },
+        )
+        remaining = FidesUserInvite.get_by(
+            db, field="username", value="invite_validate_user"
+        )
+        assert remaining is not None
+
+
+class TestValidateResetToken:
+    @pytest.fixture(scope="function")
+    def user_with_reset_token(self, db) -> Generator:
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "validate_reset_user",
+                "email_address": "validate_reset@example.com",
+                "password": "OldPassword1!",
+                "disabled": False,
+            },
+        )
+        user.email_verified_at = datetime.now(timezone.utc)
+        user.save(db)
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        token = str(uuid4())
+        FidesUserPasswordReset.create_or_replace(
+            db, user_id=user.id, token=token
+        )
+        yield user, token
+        try:
+            user.delete(db)
+        except Exception:
+            pass
+
+    def test_validate_reset_token_valid(
+        self, api_client: TestClient, user_with_reset_token
+    ):
+        _, token = user_with_reset_token
+        response = api_client.get(
+            VALIDATE_RESET_TOKEN_URL,
+            params={"username": "validate_reset_user", "token": token},
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": True, "reason": None}
+
+    def test_validate_reset_token_invalid_token(
+        self, api_client: TestClient, user_with_reset_token
+    ):
+        response = api_client.get(
+            VALIDATE_RESET_TOKEN_URL,
+            params={
+                "username": "validate_reset_user",
+                "token": "not-the-real-token",
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": False, "reason": "invalid"}
+
+    def test_validate_reset_token_unknown_user(self, api_client: TestClient):
+        response = api_client.get(
+            VALIDATE_RESET_TOKEN_URL,
+            params={"username": "nonexistent", "token": "whatever"},
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": False, "reason": "invalid"}
+
+    def test_validate_reset_token_user_without_token(
+        self, db, api_client: TestClient, user_with_reset_token
+    ):
+        user, _ = user_with_reset_token
+        reset = FidesUserPasswordReset.get_by(db, field="user_id", value=user.id)
+        reset.delete(db)
+
+        response = api_client.get(
+            VALIDATE_RESET_TOKEN_URL,
+            params={"username": "validate_reset_user", "token": "whatever"},
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": False, "reason": "invalid"}
+
+    def test_validate_reset_token_expired(
+        self, db, api_client: TestClient, user_with_reset_token
+    ):
+        user, token = user_with_reset_token
+        reset = FidesUserPasswordReset.get_by(db, field="user_id", value=user.id)
+        reset.created_at = datetime.now(timezone.utc) - timedelta(hours=24)
+        reset.save(db)
+
+        response = api_client.get(
+            VALIDATE_RESET_TOKEN_URL,
+            params={"username": "validate_reset_user", "token": token},
+        )
+        assert response.status_code == HTTP_200_OK
+        assert response.json() == {"valid": False, "reason": "expired"}
+
+    def test_validate_reset_token_does_not_consume(
+        self, db, api_client: TestClient, user_with_reset_token
+    ):
+        """Validation should not delete the reset token — only the POST does."""
+        user, token = user_with_reset_token
+        api_client.get(
+            VALIDATE_RESET_TOKEN_URL,
+            params={"username": "validate_reset_user", "token": token},
+        )
+        remaining = FidesUserPasswordReset.get_by(
+            db, field="user_id", value=user.id
+        )
+        assert remaining is not None
 
 
 class TestAcceptInviteSetsEmailVerified:

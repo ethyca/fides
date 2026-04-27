@@ -7,6 +7,7 @@ import {
   Flex,
   Form,
   Input,
+  Spin,
   Typography,
   useMessage,
   usePrefersReducedMotion,
@@ -25,6 +26,8 @@ import {
   useGetAuthenticationMethodsQuery,
   useLoginMutation,
   useResetPasswordWithTokenMutation,
+  useValidateInviteQuery,
+  useValidateResetTokenQuery,
 } from "~/features/auth";
 import { passwordRules as strongPasswordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -128,6 +131,52 @@ const useLogin = () => {
   const isFromInvite = inviteCode !== undefined;
   const isResetPassword = resetToken !== undefined;
 
+  const {
+    data: inviteValidation,
+    isLoading: isValidatingInvite,
+    isError: inviteValidationErrored,
+  } = useValidateInviteQuery(
+    { username: username ?? "", inviteCode: inviteCode ?? "" },
+    { skip: !isFromInvite || !username },
+  );
+  const {
+    data: resetTokenValidation,
+    isLoading: isValidatingResetToken,
+    isError: resetTokenValidationErrored,
+  } = useValidateResetTokenQuery(
+    { username: username ?? "", token: resetToken ?? "" },
+    { skip: !isResetPassword || !username },
+  );
+
+  // An invite link with no username in the query string is inherently invalid;
+  // same for a reset link. Treat missing-username as an invalid token.
+  const missingUsername = (isFromInvite || isResetPassword) && !username;
+
+  let tokenValidation;
+  let validationErrored = false;
+  if (isFromInvite) {
+    tokenValidation = inviteValidation;
+    validationErrored = inviteValidationErrored;
+  } else if (isResetPassword) {
+    tokenValidation = resetTokenValidation;
+    validationErrored = resetTokenValidationErrored;
+  }
+
+  const isValidatingToken =
+    (isFromInvite && isValidatingInvite) ||
+    (isResetPassword && isValidatingResetToken);
+
+  // Treat a network/server error from the validation endpoint as an invalid
+  // token. Failing closed avoids showing the password form for a token whose
+  // status we couldn't confirm.
+  const tokenIsInvalid =
+    missingUsername ||
+    validationErrored ||
+    (tokenValidation !== undefined && !tokenValidation.valid);
+  const tokenInvalidReason = missingUsername
+    ? "invalid"
+    : (tokenValidation?.reason ?? null);
+
   const usernameRules = useMemo(
     () => [{ required: true, message: "Username is required" }],
     [],
@@ -223,7 +272,64 @@ const useLogin = () => {
     usernameRules,
     passwordRules: loginPasswordRules,
     username,
+    isValidatingToken,
+    tokenIsInvalid,
+    tokenInvalidReason,
   };
+};
+
+type InvalidTokenMessageProps = {
+  isFromInvite: boolean;
+  reason: "expired" | "invalid" | null;
+};
+
+const InvalidTokenMessage = ({
+  isFromInvite,
+  reason,
+}: InvalidTokenMessageProps) => {
+  const isExpired = reason === "expired";
+  const title = isExpired
+    ? "This link has expired"
+    : "This link is no longer valid";
+
+  let body: string;
+  if (isFromInvite) {
+    body = isExpired
+      ? "Please ask your administrator to send you a new invite."
+      : "This invite link is invalid or has already been used. Please ask your administrator to send you a new invite.";
+  } else {
+    body = isExpired
+      ? "Password reset links expire for your security. Please request a new one."
+      : "This password reset link is invalid or has already been used. Please request a new one.";
+  }
+
+  return (
+    <Flex
+      vertical
+      align="center"
+      gap="middle"
+      data-testid="invalid-token-message"
+    >
+      <Typography.Title level={4} className="text-center">
+        {title}
+      </Typography.Title>
+      <Typography.Text className="text-center">{body}</Typography.Text>
+      {!isFromInvite && (
+        <RouterLink href="/forgot-password">
+          <Button type="primary" data-testid="request-new-link-btn">
+            Request a new link
+          </Button>
+        </RouterLink>
+      )}
+      {isFromInvite && (
+        <RouterLink href="/login">
+          <Button type="primary" data-testid="return-to-login-btn">
+            Return to sign in
+          </Button>
+        </RouterLink>
+      )}
+    </Flex>
+  );
 };
 
 type OAuthLoginButtonsProps = {
@@ -274,6 +380,9 @@ const Login: NextPage = () => {
     passwordRules: loginPasswordRules,
     usernameRules,
     username,
+    isValidatingToken,
+    tokenIsInvalid,
+    tokenInvalidReason,
   } = useLogin();
   const [canSubmit, setCanSubmit] = useState(false);
   const {
@@ -307,6 +416,21 @@ const Login: NextPage = () => {
     return null;
   }
 
+  // For invite/reset flows, validate the token before rendering the form so the
+  // user doesn't fill out a password for an expired or already-used link.
+  const isTokenFlow = isFromInvite || isResetPassword;
+  const showTokenLoading = isTokenFlow && isValidatingToken;
+  const showInvalidToken = isTokenFlow && !isValidatingToken && tokenIsInvalid;
+
+  let pageTitle: string;
+  if (showInvalidToken) {
+    pageTitle = isFromInvite ? "Invite link" : "Password reset";
+  } else if (isResetPassword) {
+    pageTitle = "Set a new password";
+  } else {
+    pageTitle = "Sign in to your account";
+  }
+
   return (
     <Flex className="w-full" justify="center">
       <Head />
@@ -321,115 +445,133 @@ const Login: NextPage = () => {
         >
           <Image src="/logo.svg" alt="Fides logo" width={205} height={46} />
           <Flex vertical align="center" gap="large">
-            <Typography.Title level={1}>
-              {isResetPassword
-                ? "Set a new password"
-                : "Sign in to your account"}
-            </Typography.Title>
+            <Typography.Title level={1}>{pageTitle}</Typography.Title>
             <Card className="static w-[640px] px-32 py-12">
-              <Flex align="center" justify="center">
-                <Form
-                  form={form}
-                  layout="vertical"
-                  key={username ?? "login"}
-                  initialValues={initialValues}
-                  onFinish={handleSubmit}
-                  onValuesChange={(
-                    _: Partial<LoginFormValues>,
-                    allValues: LoginFormValues,
-                  ) => {
-                    if (isResetPassword) {
-                      setCanSubmit(!!allValues.password);
-                    } else {
-                      setCanSubmit(
-                        !!allValues.username && !!allValues.password,
-                      );
-                    }
-                  }}
-                  className="w-full"
+              {showTokenLoading && (
+                <Flex
+                  align="center"
+                  justify="center"
+                  className="w-full py-8"
+                  data-testid="token-validating"
                 >
-                  <Flex vertical>
-                    {showUsernamePasswordInputs && (
-                      <>
-                        {!isResetPassword && (
+                  <Spin size="large" />
+                </Flex>
+              )}
+              {showInvalidToken && (
+                <InvalidTokenMessage
+                  isFromInvite={isFromInvite}
+                  reason={tokenInvalidReason}
+                />
+              )}
+              {!showTokenLoading && !showInvalidToken && (
+                <Flex align="center" justify="center">
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    key={username ?? "login"}
+                    initialValues={initialValues}
+                    onFinish={handleSubmit}
+                    onValuesChange={(
+                      _: Partial<LoginFormValues>,
+                      allValues: LoginFormValues,
+                    ) => {
+                      if (isResetPassword) {
+                        setCanSubmit(!!allValues.password);
+                      } else {
+                        setCanSubmit(
+                          !!allValues.username && !!allValues.password,
+                        );
+                      }
+                    }}
+                    className="w-full"
+                  >
+                    <Flex vertical>
+                      {showUsernamePasswordInputs && (
+                        <>
+                          {!isResetPassword && (
+                            <Form.Item
+                              name="username"
+                              label="Username"
+                              rules={usernameRules}
+                            >
+                              <Input
+                                size="large"
+                                disabled={isFromInvite}
+                                data-testid="input-username"
+                                autoComplete="username"
+                              />
+                            </Form.Item>
+                          )}
                           <Form.Item
-                            name="username"
-                            label="Username"
-                            rules={usernameRules}
+                            name="password"
+                            label={
+                              isFromInvite || isResetPassword
+                                ? "Set new password"
+                                : "Password"
+                            }
+                            rules={loginPasswordRules}
                           >
-                            <Input
+                            <Input.Password
                               size="large"
-                              disabled={isFromInvite}
-                              data-testid="input-username"
-                              autoComplete="username"
+                              autoComplete={
+                                isFromInvite || isResetPassword
+                                  ? "new-password"
+                                  : "current-password"
+                              }
+                              data-testid="input-password"
                             />
                           </Form.Item>
-                        )}
-                        <Form.Item
-                          name="password"
-                          label={
-                            isFromInvite || isResetPassword
-                              ? "Set new password"
-                              : "Password"
-                          }
-                          rules={loginPasswordRules}
-                        >
-                          <Input.Password
-                            size="large"
-                            autoComplete={
-                              isFromInvite || isResetPassword
-                                ? "new-password"
-                                : "current-password"
-                            }
-                            data-testid="input-password"
-                          />
-                        </Form.Item>
-                        <Flex justify="center" align="center">
-                          <motion.div
-                            className="h-8 w-full"
-                            animate={
-                              showAnimation
-                                ? { width: ["100%", "32px"] }
-                                : { width: ["32px", "100%"] }
-                            }
-                          >
-                            <Button
-                              htmlType="submit"
-                              type="primary"
-                              disabled={!canSubmit}
-                              data-testid="sign-in-btn"
-                              loading={isSubmitting}
-                              className="w-full"
+                          <Flex justify="center" align="center">
+                            <motion.div
+                              className="h-8 w-full"
+                              animate={
+                                showAnimation
+                                  ? { width: ["100%", "32px"] }
+                                  : { width: ["32px", "100%"] }
+                              }
                             >
-                              {showAnimation ? "" : submitButtonText}
-                            </Button>
-                          </motion.div>
-                          {showAnimation ? <Animation /> : null}
-                        </Flex>
-                        {!isFromInvite && !isResetPassword && (
-                          <Flex justify="center" className="mt-4">
-                            <RouterLink href="/forgot-password">
                               <Button
-                                type="link"
-                                data-testid="forgot-password-btn"
+                                htmlType="submit"
+                                type="primary"
+                                disabled={!canSubmit}
+                                data-testid="sign-in-btn"
+                                loading={isSubmitting}
+                                className="w-full"
                               >
-                                Forgot password?
+                                {showAnimation ? "" : submitButtonText}
                               </Button>
-                            </RouterLink>
+                            </motion.div>
+                            {showAnimation ? <Animation /> : null}
                           </Flex>
+                          {!isFromInvite && !isResetPassword && (
+                            <Flex justify="center" className="mt-4">
+                              <RouterLink href="/forgot-password">
+                                <Button
+                                  type="link"
+                                  data-testid="forgot-password-btn"
+                                >
+                                  Forgot password?
+                                </Button>
+                              </RouterLink>
+                            </Flex>
+                          )}
+                        </>
+                      )}
+                      {showUsernamePasswordInputs &&
+                        showSSOButtons &&
+                        openidProviders &&
+                        !isResetPassword && <Divider>or</Divider>}
+                      {showSSOButtons &&
+                        openidProviders &&
+                        !isResetPassword && (
+                          <OAuthLoginButtons
+                            openidProviders={openidProviders}
+                          />
                         )}
-                      </>
-                    )}
-                    {showUsernamePasswordInputs &&
-                      showSSOButtons &&
-                      openidProviders &&
-                      !isResetPassword && <Divider>or</Divider>}
-                    {showSSOButtons && openidProviders && !isResetPassword && (
-                      <OAuthLoginButtons openidProviders={openidProviders} />
-                    )}
-                  </Flex>
-                </Form>
-              </Flex>
+                    </Flex>
+                  </Form>
+                </Flex>
+              )}
             </Card>
           </Flex>
         </Flex>

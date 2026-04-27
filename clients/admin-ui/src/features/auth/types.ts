@@ -25,3 +25,10 @@ export interface AuthenticationMethods {
   username_password: boolean;
   sso: boolean;
 }
+
+export type TokenValidationReason = "invalid" | "expired";
+
+export interface TokenValidationResponse {
+  valid: boolean;
+  reason?: TokenValidationReason | null;
+}
