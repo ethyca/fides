@@ -9,6 +9,8 @@ import {
   Switch,
   useMessage,
 } from "fidesui";
+
+
 import { useEffect, useMemo } from "react";
 
 import {
@@ -199,7 +201,7 @@ const AssessmentSettingsModal = ({
             <Alert
               type="success"
               title="Terminal provider active"
-              description="Use `python scripts/cli_chat.py` to run questionnaire conversations. Progress will appear here automatically."
+              description="Start questionnaire conversations from the terminal. Launch one from any assessment detail page, and progress will appear here automatically."
               showIcon
               className="mb-4"
             />

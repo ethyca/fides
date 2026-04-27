@@ -14,6 +14,7 @@ import {
 } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -178,8 +179,15 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         },
       }).unwrap();
       if (isTerminalProvider) {
+        const command = `python scripts/cli_chat.py --assessment-id ${assessment.id}`;
         message.success(
-          `Questionnaire ready. Run: python scripts/cli_chat.py --assessment-id ${assessment.id}`,
+          <Flex align="center" gap={8}>
+            <span>
+              Questionnaire ready. Run: <code>{command}</code>
+            </span>
+            <ClipboardButton copyText={command} size="small" />
+          </Flex>,
+          10,
         );
       } else {
         message.success(`Questions sent to ${channelName} on Slack.`);

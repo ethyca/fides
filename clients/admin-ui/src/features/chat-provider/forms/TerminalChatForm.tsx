@@ -75,10 +75,11 @@ const TerminalChatForm = ({ configId }: TerminalChatFormProps) => {
           showIcon
           description={
             <Text>
-              <code>python scripts/cli_chat.py</code>
+              Start a questionnaire conversation from the terminal. You can
+              launch one from any assessment detail page.
             </Text>
           }
-          message="Run this command to start a conversation"
+          message="How to start a conversation"
         />
 
         {isEditMode && isAuthorized && (
