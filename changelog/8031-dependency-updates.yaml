@@ -1,7 +1,4 @@
----
-name: "8031"
 description: "Fixed security vulnerabilities in cryptography, jwcrypto, and Werkzeug dependencies"
 type: Fixed
 pr: 8031
 labels: []
----
