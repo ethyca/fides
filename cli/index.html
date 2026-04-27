@@ -102,7 +102,7 @@
               
 You're not viewing the latest version.
 <a href="../..">
-    <strong>Click here to go to the latest stable version.</strong>
+    <strong>Go to latest stable version</strong>
 </a>
 
             </div>
@@ -846,6 +846,56 @@ You're not viewing the latest version.
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pbac
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pbac">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate-policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate-purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2306,6 +2356,56 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fides-pbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pbac
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pbac">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate-policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pbac-evaluate-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate-purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-pull" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2800,6 +2900,72 @@ configuration file if not present.</p>
 <p>Parse all Fides objects located in the supplied directory.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides parse[0m [[1;92mOPTIONS[0m] [[1;92mMANIFESTS_DIR[0m]
+</code></pre></div></td></tr></table></div>
+<h3 id="fides-pbac">fides pbac</h3>
+<p>Policy-Based Access Control evaluation commands.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides pbac[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pbac-evaluate">fides pbac evaluate</h4>
+<p>Run the full PBAC pipeline over SQL with YAML fixtures.</p>
+<p>Reads SQL from INPUT_FILE (or stdin), parses each statement with
+sqlglot, extracts table references, and runs the full pipeline
+(identity resolution, dataset resolution, purpose evaluation, gap
+reclassification, policy filtering) via the Go evaluation library.</p>
+<p>Example:
+  fides pbac evaluate \
+    --config pbac/ \
+    --identity alice@demo.example \
+    pbac/entries/alice.txt</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides pbac evaluate[0m [[1;92mOPTIONS[0m] [[1;92mINPUT_FILE[0m]
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pbac-evaluate-policies">fides pbac evaluate-policies</h4>
+<p>Evaluate access policies against a PBAC violation.</p>
+<p>Reads JSON from INPUT_FILE (or stdin if omitted).</p>
+<p>Expected JSON schema:
+{
+  "policies": [
+    {
+      "key": "allow-marketing",
+      "priority": 100,
+      "enabled": true,
+      "decision": "ALLOW",
+      "match": {"data_use": {"any": ["marketing"]}},
+      "unless": [...],
+      "action": {"message": "..."}
+    }
+  ],
+  "request": {
+    "data_uses": ["marketing.advertising"],
+    "data_categories": ["user.contact.email"],
+    "context": {"consent": {"do_not_sell": "opt_out"}}
+  }
+}</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides pbac evaluate-policies[0m [[1;92mOPTIONS[0m] [[1;92mINPUT_FILE[0m]
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pbac-evaluate-purpose">fides pbac evaluate-purpose</h4>
+<p>Evaluate purpose overlap between a consumer and datasets.</p>
+<p>Reads JSON from INPUT_FILE (or stdin if omitted).</p>
+<p>Expected JSON schema:
+{
+  "consumer": {
+    "consumer_id": "...",
+    "consumer_name": "...",
+    "purpose_keys": ["billing", "analytics"]
+  },
+  "datasets": {
+    "dataset_key": {
+      "dataset_key": "...",
+      "purpose_keys": ["billing"],
+      "collection_purposes": {"collection_name": ["purpose1"]}
+    }
+  },
+  "collections": {"dataset_key": ["collection1", "collection2"]}
+}</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides pbac evaluate-purpose[0m [[1;92mOPTIONS[0m] [[1;92mINPUT_FILE[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-pull">fides pull</h3>
 <p>Update local resource files based on the state of the objects on the server.</p>

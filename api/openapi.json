@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.83.3"
+    "version": "2.84.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2876,6 +2876,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "keyfile_creds": {
+                        "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                        "title": "Keyfile creds",
+                        "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                        "sensitive": true
+                      },
+                      "delegation_subject": {
+                        "type": "string",
+                        "title": "Delegation subject",
+                        "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                      },
+                      "domain": {
+                        "type": "string",
+                        "title": "Domain",
+                        "description": "The Google Workspace domain (e.g., example.com)."
+                      }
+                    },
+                    "required": [
+                      "keyfile_creds",
+                      "delegation_subject",
+                      "domain"
+                    ],
+                    "title": "GoogleWorkspaceDocsSchema",
+                    "description": "Google Workspace Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "access_token": {
                         "anyOf": [
                           {
@@ -2885,6 +2913,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Access Token"
                       },
                       "refresh_token": {
@@ -2896,6 +2925,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Refresh Token"
                       },
                       "token_expiry": {
@@ -2932,6 +2962,40 @@
                         ],
                         "title": "Site Url"
                       },
+                      "client_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Client Id"
+                      },
+                      "client_secret": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "sensitive": true,
+                        "title": "Client Secret"
+                      },
+                      "redirect_uri": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Redirect Uri"
+                      },
                       "domain": {
                         "anyOf": [
                           {
@@ -2963,6 +3027,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Api Key"
                       }
                     },
@@ -5799,6 +5864,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "keyfile_creds": {
+                        "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                        "title": "Keyfile creds",
+                        "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                        "sensitive": true
+                      },
+                      "delegation_subject": {
+                        "type": "string",
+                        "title": "Delegation subject",
+                        "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                      },
+                      "domain": {
+                        "type": "string",
+                        "title": "Domain",
+                        "description": "The Google Workspace domain (e.g., example.com)."
+                      }
+                    },
+                    "required": [
+                      "keyfile_creds",
+                      "delegation_subject",
+                      "domain"
+                    ],
+                    "title": "GoogleWorkspaceDocsSchema",
+                    "description": "Google Workspace Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "access_token": {
                         "anyOf": [
                           {
@@ -5808,6 +5901,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Access Token"
                       },
                       "refresh_token": {
@@ -5819,6 +5913,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Refresh Token"
                       },
                       "token_expiry": {
@@ -5855,6 +5950,40 @@
                         ],
                         "title": "Site Url"
                       },
+                      "client_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Client Id"
+                      },
+                      "client_secret": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "sensitive": true,
+                        "title": "Client Secret"
+                      },
+                      "redirect_uri": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Redirect Uri"
+                      },
                       "domain": {
                         "anyOf": [
                           {
@@ -5886,6 +6015,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Api Key"
                       }
                     },
@@ -7327,6 +7457,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "keyfile_creds": {
+                        "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                        "title": "Keyfile creds",
+                        "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                        "sensitive": true
+                      },
+                      "delegation_subject": {
+                        "type": "string",
+                        "title": "Delegation subject",
+                        "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                      },
+                      "domain": {
+                        "type": "string",
+                        "title": "Domain",
+                        "description": "The Google Workspace domain (e.g., example.com)."
+                      }
+                    },
+                    "required": [
+                      "keyfile_creds",
+                      "delegation_subject",
+                      "domain"
+                    ],
+                    "title": "GoogleWorkspaceDocsSchema",
+                    "description": "Google Workspace Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "access_token": {
                         "anyOf": [
                           {
@@ -7336,6 +7494,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Access Token"
                       },
                       "refresh_token": {
@@ -7347,6 +7506,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Refresh Token"
                       },
                       "token_expiry": {
@@ -7383,6 +7543,40 @@
                         ],
                         "title": "Site Url"
                       },
+                      "client_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Client Id"
+                      },
+                      "client_secret": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "sensitive": true,
+                        "title": "Client Secret"
+                      },
+                      "redirect_uri": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Redirect Uri"
+                      },
                       "domain": {
                         "anyOf": [
                           {
@@ -7414,6 +7608,7 @@
                             "type": "null"
                           }
                         ],
+                        "sensitive": true,
                         "title": "Api Key"
                       }
                     },
@@ -20837,6 +21032,17 @@
               }
             ],
             "default": "console_only"
+          },
+          "consent_module_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Module Enabled"
           }
         },
         "additionalProperties": false,
@@ -23038,6 +23244,7 @@
           "entra",
           "google_cloud_sql_mysql",
           "google_cloud_sql_postgres",
+          "google_workspace",
           "https",
           "manual",
           "manual_webhook",
@@ -24123,6 +24330,34 @@
               },
               {
                 "properties": {
+                  "keyfile_creds": {
+                    "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                    "title": "Keyfile creds",
+                    "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                    "sensitive": true
+                  },
+                  "delegation_subject": {
+                    "type": "string",
+                    "title": "Delegation subject",
+                    "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                  },
+                  "domain": {
+                    "type": "string",
+                    "title": "Domain",
+                    "description": "The Google Workspace domain (e.g., example.com)."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "keyfile_creds",
+                  "delegation_subject",
+                  "domain"
+                ],
+                "title": "GoogleWorkspaceDocsSchema",
+                "description": "Google Workspace Secrets Schema for API Docs"
+              },
+              {
+                "properties": {
                   "access_token": {
                     "anyOf": [
                       {
@@ -24132,7 +24367,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Access Token"
+                    "title": "Access Token",
+                    "sensitive": true
                   },
                   "refresh_token": {
                     "anyOf": [
@@ -24143,7 +24379,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Refresh Token"
+                    "title": "Refresh Token",
+                    "sensitive": true
                   },
                   "token_expiry": {
                     "anyOf": [
@@ -24179,6 +24416,40 @@
                     ],
                     "title": "Site Url"
                   },
+                  "client_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Id"
+                  },
+                  "client_secret": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Secret",
+                    "sensitive": true
+                  },
+                  "redirect_uri": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Redirect Uri"
+                  },
                   "domain": {
                     "anyOf": [
                       {
@@ -24210,7 +24481,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Api Key"
+                    "title": "Api Key",
+                    "sensitive": true
                   }
                 },
                 "additionalProperties": true,
@@ -28242,6 +28514,34 @@
         "title": "GoogleCloudSQLPostgresDocsSchema",
         "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
       },
+      "GoogleWorkspaceDocsSchema": {
+        "properties": {
+          "keyfile_creds": {
+            "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+            "title": "Keyfile creds",
+            "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+            "sensitive": true
+          },
+          "delegation_subject": {
+            "type": "string",
+            "title": "Delegation subject",
+            "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain",
+            "description": "The Google Workspace domain (e.g., example.com)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "keyfile_creds",
+          "delegation_subject",
+          "domain"
+        ],
+        "title": "GoogleWorkspaceDocsSchema",
+        "description": "Google Workspace Secrets Schema for API Docs"
+      },
       "GroupOperator": {
         "type": "string",
         "enum": [
@@ -28503,7 +28803,9 @@
           "TASKS",
           "WITHOUT_CONNECTION",
           "DSR_AUTOMATION",
-          "CONDITIONS"
+          "CONDITIONS",
+          "QUERY_LOGGING",
+          "IDENTITY_RESOLUTION"
         ],
         "title": "IntegrationFeature",
         "description": "Features that can be enabled for different integration types.\nThese control which tabs and functionality are available in the integration detail view."
@@ -28519,7 +28821,8 @@
                 "type": "null"
               }
             ],
-            "title": "Access Token"
+            "title": "Access Token",
+            "sensitive": true
           },
           "refresh_token": {
             "anyOf": [
@@ -28530,7 +28833,8 @@
                 "type": "null"
               }
             ],
-            "title": "Refresh Token"
+            "title": "Refresh Token",
+            "sensitive": true
           },
           "token_expiry": {
             "anyOf": [
@@ -28566,6 +28870,40 @@
             ],
             "title": "Site Url"
           },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Secret",
+            "sensitive": true
+          },
+          "redirect_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redirect Uri"
+          },
           "domain": {
             "anyOf": [
               {
@@ -28597,7 +28935,8 @@
                 "type": "null"
               }
             ],
-            "title": "Api Key"
+            "title": "Api Key",
+            "sensitive": true
           }
         },
         "additionalProperties": true,
@@ -29081,7 +29420,8 @@
           "password_reset",
           "external_user_welcome",
           "manual_task_digest",
-          "test_message"
+          "test_message",
+          "correspondence"
         ],
         "title": "MessagingActionType",
         "description": "Enum for messaging action type"
@@ -29710,6 +30050,10 @@
             "type": "string",
             "title": "Type"
           },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
           "is_enabled": {
             "type": "boolean",
             "title": "Is Enabled"
@@ -29729,6 +30073,7 @@
         "type": "object",
         "required": [
           "type",
+          "label",
           "is_enabled",
           "content"
         ],
@@ -29743,6 +30088,10 @@
           "type": {
             "type": "string",
             "title": "Type"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
           },
           "is_enabled": {
             "type": "boolean",
@@ -29778,6 +30127,7 @@
         "required": [
           "id",
           "type",
+          "label",
           "is_enabled",
           "content"
         ],
@@ -33062,6 +33412,17 @@
             ],
             "title": "Location"
           },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Id"
+          },
           "deleted_at": {
             "anyOf": [
               {
@@ -33506,6 +33867,17 @@
               }
             ],
             "title": "Location"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Id"
           },
           "deleted_at": {
             "anyOf": [
@@ -35564,6 +35936,34 @@
               },
               {
                 "properties": {
+                  "keyfile_creds": {
+                    "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds",
+                    "title": "Keyfile creds",
+                    "description": "The contents of the key file for a GCP service account with domain-wide delegation configured.",
+                    "sensitive": true
+                  },
+                  "delegation_subject": {
+                    "type": "string",
+                    "title": "Delegation subject",
+                    "description": "Email of a Google Workspace admin to impersonate via domain-wide delegation."
+                  },
+                  "domain": {
+                    "type": "string",
+                    "title": "Domain",
+                    "description": "The Google Workspace domain (e.g., example.com)."
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "keyfile_creds",
+                  "delegation_subject",
+                  "domain"
+                ],
+                "title": "GoogleWorkspaceDocsSchema",
+                "description": "Google Workspace Secrets Schema for API Docs"
+              },
+              {
+                "properties": {
                   "access_token": {
                     "anyOf": [
                       {
@@ -35573,7 +35973,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Access Token"
+                    "title": "Access Token",
+                    "sensitive": true
                   },
                   "refresh_token": {
                     "anyOf": [
@@ -35584,7 +35985,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Refresh Token"
+                    "title": "Refresh Token",
+                    "sensitive": true
                   },
                   "token_expiry": {
                     "anyOf": [
@@ -35620,6 +36022,40 @@
                     ],
                     "title": "Site Url"
                   },
+                  "client_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Id"
+                  },
+                  "client_secret": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Client Secret",
+                    "sensitive": true
+                  },
+                  "redirect_uri": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Redirect Uri"
+                  },
                   "domain": {
                     "anyOf": [
                       {
@@ -35651,7 +36087,8 @@
                         "type": "null"
                       }
                     ],
-                    "title": "Api Key"
+                    "title": "Api Key",
+                    "sensitive": true
                   }
                 },
                 "additionalProperties": true,
@@ -36598,6 +37035,8 @@
           "client:delete",
           "client:read",
           "client:update",
+          "correspondence:send",
+          "correspondence:read",
           "connection:create_or_update",
           "connection:delete",
           "connection:read",
@@ -36651,6 +37090,7 @@
           "messaging:create_or_update",
           "messaging:delete",
           "messaging:read",
+          "notification:read",
           "organization:create",
           "organization:read",
           "organization:delete",
