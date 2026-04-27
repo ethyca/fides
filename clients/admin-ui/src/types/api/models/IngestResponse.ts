@@ -21,6 +21,10 @@ export type IngestResponse = {
    */
   violations_found: number;
   /**
+   * Gaps Found
+   */
+  gaps_found: number;
+  /**
    * Results
    */
   results: Array<IngestResultEntry>;
