@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Collapse,
+  Divider,
   Empty,
   Flex,
   List,
@@ -74,8 +75,9 @@ const CategoryTable = ({
   ) => void;
   disabled: boolean;
 }) => {
+  // Checked = included (not redacted). Unchecked = redacted.
   const selectedRowKeys = useMemo(
-    () => category.entries.filter((e) => e.redacted).map(rowKeyFor),
+    () => category.entries.filter((e) => !e.redacted).map(rowKeyFor),
     [category.entries],
   );
 
@@ -111,7 +113,7 @@ const CategoryTable = ({
             return (
               <Typography.Text
                 ellipsis={{ tooltip: text }}
-                style={{ maxWidth: 400 }}
+                className="max-w-[400px]"
               >
                 {text}
               </Typography.Text>
@@ -165,7 +167,10 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
   );
 
   const handleCategorySelectionChange = useCallback(
-    async (category: AccessPackageCategory, selectedKeys: Set<string>) => {
+    async (
+      category: AccessPackageCategory,
+      includedKeys: Set<string>, // checked rows = included = NOT redacted
+    ) => {
       if (!data) {
         return;
       }
@@ -176,9 +181,10 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
         const k = `${r.source}::${r.record_index}::${r.field_path}`;
         return !categoryKeys.has(k) || r.type !== RedactionType.REDACT;
       });
-      // Add redact entries for the now-selected rows in this category.
+      // Add redact entries for the rows in this category that are NOT
+      // in the included set (i.e. unchecked = redacted).
       const added = category.entries
-        .filter((e) => selectedKeys.has(rowKeyFor(e)))
+        .filter((e) => !includedKeys.has(rowKeyFor(e)))
         .map(entryToRedaction);
       const result = await updateRedactions({
         privacy_request_id: privacyRequestId,
@@ -236,7 +242,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
       <Alert
         type="error"
         showIcon
-        message="Could not load access package"
+        title="Could not load access package"
         description={getErrorMessage(error)}
       />
     );
@@ -258,12 +264,12 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
     (!attachments || attachments.length === 0);
 
   return (
-    <div className="flex flex-col gap-4" data-testid="access-package-tab">
+    <Flex vertical gap="large" data-testid="access-package-tab">
       {!isAwaitingReview && (
         <Alert
           type="info"
           showIcon
-          message="This request is not currently awaiting access review."
+          title="This request is not currently awaiting access review."
           description="Redactions and approval are only available while the request is in awaiting_access_review."
         />
       )}
@@ -289,9 +295,11 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
         </Space>
       </Flex>
       <Card size="small">
-        <Flex gap="large" wrap="wrap" align="center">
+        <Flex gap="medium" align="center" className="px-4">
           <Statistic title="Fields" value={totalFields} />
+          <Divider orientation="vertical" />
           <Statistic title="Systems" value={systemCount} />
+          <Divider orientation="vertical" />
           <Statistic title="Redacted" value={redactedCount} />
           {isSaving && (
             <Typography.Text type="secondary">Saving…</Typography.Text>
@@ -316,7 +324,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
               </Space>
             ),
             children: (
-              <div className="flex flex-col gap-4">
+              <Flex vertical gap="large">
                 {du.description && (
                   <Typography.Paragraph type="secondary">
                     {du.description}
@@ -324,7 +332,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
                 )}
                 {du.categories.map((cat) => (
                   <div key={cat.fides_key}>
-                    <Typography.Title level={5} style={{ marginBottom: 8 }}>
+                    <Typography.Title level={5} className="mb-2">
                       {cat.name}
                     </Typography.Title>
                     <CategoryTable
@@ -334,7 +342,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
                     />
                   </div>
                 ))}
-              </div>
+              </Flex>
             ),
           }))}
         />
@@ -347,7 +355,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
               key: "other",
               label: <strong>{data.other.name}</strong>,
               children: (
-                <div className="flex flex-col gap-4">
+                <Flex vertical gap="large">
                   {data.other.description && (
                     <Typography.Paragraph type="secondary">
                       {data.other.description}
@@ -355,7 +363,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
                   )}
                   {data.other.categories.map((cat) => (
                     <div key={cat.fides_key}>
-                      <Typography.Title level={5} style={{ marginBottom: 8 }}>
+                      <Typography.Title level={5} className="mb-2">
                         {cat.name}
                       </Typography.Title>
                       <CategoryTable
@@ -365,7 +373,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
                       />
                     </div>
                   ))}
-                </div>
+                </Flex>
               ),
             },
           ]}
@@ -394,7 +402,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
           />
         </div>
       )}
-    </div>
+    </Flex>
   );
 };
 
