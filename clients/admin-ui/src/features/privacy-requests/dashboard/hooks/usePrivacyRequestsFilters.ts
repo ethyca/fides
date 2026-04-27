@@ -21,6 +21,7 @@ export interface FilterQueryParams {
   status: PrivacyRequestStatus[] | null;
   action_type: ActionType[] | null;
   is_overdue: boolean | null;
+  include_consent_webhook_requests: boolean | null;
   location: string | null;
   custom_privacy_request_fields: Record<string, string | number> | null;
   sort_field: string | null;
@@ -54,6 +55,7 @@ const usePrivacyRequestsFilters = ({
       status: parseAsArrayOf(parseAsStringEnum(allowedStatusFilterOptions)),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
       is_overdue: parseAsBoolean,
+      include_consent_webhook_requests: parseAsBoolean,
       location: parseAsString,
       custom_privacy_request_fields: parseAsCustomFields,
     },
@@ -80,6 +82,7 @@ const usePrivacyRequestsFilters = ({
       status: filters.status,
       action_type: filters.action_type,
       is_overdue: filters.is_overdue,
+      include_consent_webhook_requests: filters.include_consent_webhook_requests,
       location: filters.location,
       custom_privacy_request_fields: filterNullCustomFields(
         filters.custom_privacy_request_fields,
@@ -94,6 +97,7 @@ const usePrivacyRequestsFilters = ({
       filters.status,
       filters.action_type,
       filters.is_overdue,
+      filters.include_consent_webhook_requests,
       filters.location,
       filters.custom_privacy_request_fields,
       sortState.sort_field,

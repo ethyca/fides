@@ -5,6 +5,7 @@ import {
   Flex,
   LocationSelect,
   Select,
+  Switch,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -28,6 +29,7 @@ interface PrivacyRequestFiltersBarProps {
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
     location: string | null;
+    include_consent_webhook_requests: boolean | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   };
   setFilters: (filters: {
@@ -37,6 +39,7 @@ interface PrivacyRequestFiltersBarProps {
     status?: PrivacyRequestStatus[] | null;
     action_type?: ActionType[] | null;
     location?: string | null;
+    include_consent_webhook_requests?: boolean | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   }) => void;
   sortState: SortParams;
@@ -174,6 +177,19 @@ export const PrivacyRequestFiltersBar = ({
         popupMatchSelectWidth={300}
         includeCountryOnlyOptions
       />
+      <Flex align="center" gap={4}>
+        <Switch
+          size="small"
+          checked={filters.include_consent_webhook_requests || false}
+          onChange={(checked) =>
+            setFilters({ include_consent_webhook_requests: checked || null })
+          }
+          data-testid="include-consent-webhook-requests"
+        />
+        <span style={{ fontSize: 14, whiteSpace: "nowrap" }}>
+          Consent webhooks
+        </span>
+      </Flex>
       {/* Custom fields filters */}
       {Object.entries(uniqueCustomFields).map(
         ([fieldName, fieldDefinition]) => (
