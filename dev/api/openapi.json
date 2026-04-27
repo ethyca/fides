@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.84.0"
+    "version": "2.84.1b1.dev1+gee5bb0bea"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10496,6 +10496,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DatasetReachability"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connection/{connection_key}/protected-fields": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Get Dataset Protected Fields",
+        "description": "Returns the fields that are protected on a SaaS connection:\nimmutable top-level metadata fields and collection fields\nreferenced by the SaaS config.\n\nProtected fields are a property of the connection's SaaS config,\nnot any individual dataset.",
+        "operationId": "get_dataset_protected_fields_api_v1_connection__connection_key__protected_fields_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetProtectedFields"
                 }
               }
             }
@@ -22009,6 +22059,14 @@
             },
             "type": "array",
             "title": "Failed"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetFieldWarning"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
           }
         },
         "type": "object",
@@ -26812,6 +26870,52 @@
         "title": "DatasetField",
         "description": "The DatasetField resource model.\n\nThis resource is nested within a DatasetCollection."
       },
+      "DatasetFieldWarning": {
+        "properties": {
+          "collection": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "restored",
+              "removed",
+              "failed"
+            ],
+            "title": "Action"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "message"
+        ],
+        "title": "DatasetFieldWarning",
+        "description": "A structured warning about a restored field on a SaaS dataset."
+      },
       "DatasetMetadata": {
         "properties": {
           "resource_id": {
@@ -26868,6 +26972,31 @@
         "type": "object",
         "title": "DatasetMetadata",
         "description": "The DatasetMetadata resource model.\n\nObject used to hold application specific metadata for a dataset"
+      },
+      "DatasetProtectedFields": {
+        "properties": {
+          "immutable_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Immutable Fields"
+          },
+          "protected_collection_fields": {
+            "items": {
+              "$ref": "#/components/schemas/ProtectedCollectionField"
+            },
+            "type": "array",
+            "title": "Protected Collection Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "immutable_fields",
+          "protected_collection_fields"
+        ],
+        "title": "DatasetProtectedFields",
+        "description": "Fields that cannot be modified on a SaaS dataset."
       },
       "DatasetReachability": {
         "properties": {
@@ -33995,6 +34124,25 @@
         "title": "PrivacyRule",
         "description": "The PrivacyRule resource model.\n\nA list of privacy data types and what match method to use."
       },
+      "ProtectedCollectionField": {
+        "properties": {
+          "collection": {
+            "type": "string",
+            "title": "Collection"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "collection",
+          "field"
+        ],
+        "title": "ProtectedCollectionField",
+        "description": "A single field that is protected by the SaaS config."
+      },
       "QueryParam": {
         "properties": {
           "name": {
@@ -39603,6 +39751,14 @@
                 "type": "null"
               }
             ]
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetFieldWarning"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
           }
         },
         "type": "object",
