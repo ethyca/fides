@@ -31,6 +31,15 @@ export const LEGAL_BASIS_TAG_COLORS: Record<string, CUSTOM_TAG_COLOR> = {
   contract: CUSTOM_TAG_COLOR.SANDSTONE,
 };
 
+export const FEATURE_LABELS: Record<string, string> = {
+  linking_devices: "Linking across devices",
+  automated_decisions: "Automated decision-making",
+  profiling: "Profiling",
+};
+
+export const getFeatureLabel = (key: string): string =>
+  FEATURE_LABELS[key] ?? key;
+
 export type ComplianceStatus = "compliant" | "drift" | "unknown";
 
 export interface CategoryDrift {

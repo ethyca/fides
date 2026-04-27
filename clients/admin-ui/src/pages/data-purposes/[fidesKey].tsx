@@ -1,78 +1,89 @@
-import { Spin, useMessage } from "fidesui";
-import type { NextPage } from "next";
+import { Button, Flex, Result, Spin } from "fidesui";
+import { NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from "next/router";
 
-import ErrorPage from "~/features/common/errors/ErrorPage";
-import { getErrorMessage } from "~/features/common/helpers";
-import Layout from "~/features/common/Layout";
+import { useFeatures } from "~/features/common/features";
+import FixedLayout from "~/features/common/FixedLayout";
+import { isFetchBaseQueryError } from "~/features/common/helpers";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import {
-  useGetDataPurposeByKeyQuery,
-  useUpdateDataPurposeMutation,
-} from "~/features/data-purposes/data-purpose.slice";
-import DataPurposeForm, {
-  DataPurposeFormValues,
-} from "~/features/data-purposes/DataPurposeForm";
-import { RTKErrorResult } from "~/types/errors/api";
+import { useGetDataPurposeByKeyQuery } from "~/features/data-purposes/data-purpose.slice";
+import PurposeDashboard from "~/features/data-purposes/PurposeDashboard";
 
-const EditDataPurposePage: NextPage = () => {
-  const message = useMessage();
+const PurposeDetailPage: NextPage = () => {
+  const { flags } = useFeatures();
   const router = useRouter();
-  const { fidesKey } = router.query;
+  const rawKey = router.query.fidesKey;
+  const fidesKey = typeof rawKey === "string" ? rawKey : undefined;
 
   const {
     data: purpose,
-    error,
     isLoading,
-  } = useGetDataPurposeByKeyQuery(fidesKey as string, {
-    skip: !fidesKey,
+    isError,
+    error,
+  } = useGetDataPurposeByKeyQuery(fidesKey ?? "", {
+    skip: !fidesKey || !flags.alphaPurposeBasedAccessControl,
   });
 
-  const [updateDataPurpose] = useUpdateDataPurposeMutation();
-
-  const handleSubmit = async (values: DataPurposeFormValues) => {
-    try {
-      await updateDataPurpose({
-        fidesKey: values.fides_key,
-        ...values,
-      }).unwrap();
-      message.success(`Data purpose "${values.name}" updated successfully`);
-    } catch (err) {
-      message.error(getErrorMessage(err as RTKErrorResult["error"]));
-    }
-  };
-
-  if (error) {
+  if (!flags.alphaPurposeBasedAccessControl) {
     return (
-      <ErrorPage
-        error={error}
-        defaultMessage="A problem occurred while fetching the data purpose"
-      />
+      <FixedLayout title="Purposes" fullHeight>
+        <Result
+          status="error"
+          title="Purpose management is not enabled"
+          subTitle="Turn on the alpha purpose-based access control flag to preview this feature."
+        />
+      </FixedLayout>
     );
   }
 
+  const is404 = isError && isFetchBaseQueryError(error) && error.status === 404;
+
+  let body: React.ReactNode;
+  if (!fidesKey || isLoading) {
+    body = (
+      <Flex justify="center" className="mt-12">
+        <Spin size="large" />
+      </Flex>
+    );
+  } else if (is404 || (!purpose && !isError)) {
+    body = (
+      <Result
+        status="404"
+        title="Purpose not found"
+        subTitle="This purpose doesn't exist or has been deleted."
+        extra={
+          <Link href={DATA_PURPOSES_ROUTE}>
+            <Button type="primary">Back to purposes</Button>
+          </Link>
+        }
+      />
+    );
+  } else if (isError) {
+    body = (
+      <Result
+        status="error"
+        title="Couldn't load purpose"
+        subTitle="Something went wrong. Refresh to try again."
+      />
+    );
+  } else if (purpose) {
+    body = <PurposeDashboard purpose={purpose} />;
+  }
+
   return (
-    <Layout title={purpose?.name ?? "Data Purpose"}>
+    <FixedLayout title="Purposes" fullHeight>
       <PageHeader
-        heading="Data Purposes"
+        heading="Purposes"
         breadcrumbItems={[
-          {
-            title: "All data purposes",
-            href: DATA_PURPOSES_ROUTE,
-          },
-          {
-            title: purpose?.name ?? "Data Purpose",
-          },
+          { title: "All purposes", href: DATA_PURPOSES_ROUTE },
+          { title: purpose?.name ?? fidesKey ?? "Purpose" },
         ]}
       />
-      {isLoading ? (
-        <Spin />
-      ) : (
-        <DataPurposeForm purpose={purpose} handleSubmit={handleSubmit} />
-      )}
-    </Layout>
+      {body}
+    </FixedLayout>
   );
 };
 
-export default EditDataPurposePage;
+export default PurposeDetailPage;
