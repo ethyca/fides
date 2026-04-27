@@ -40,6 +40,11 @@ class EventAuditType(str, EnumType):
     connection_secrets_created = "connection.secrets.created"
     connection_secrets_updated = "connection.secrets.updated"
 
+    # Dataset operations
+    dataset_created = "dataset.created"
+    dataset_updated = "dataset.updated"
+    dataset_deleted = "dataset.deleted"
+
     # Digest
     digest_execution_started = "digest.execution.started"
     digest_execution_completed = "digest.execution.completed"

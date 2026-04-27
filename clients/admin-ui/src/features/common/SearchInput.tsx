@@ -8,8 +8,10 @@ import styles from "./SearchInput.module.scss";
 
 export const SEARCH_INPUT_HOTKEY = "/";
 
-export interface SearchInputProps
-  extends Omit<CustomInputProps, "onChange" | "variant"> {
+export interface SearchInputProps extends Omit<
+  CustomInputProps,
+  "onChange" | "variant"
+> {
   onChange?: (value: string) => void;
   withIcon?: boolean;
   variant?: "default" | "compact";

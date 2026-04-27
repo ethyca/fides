@@ -18,6 +18,7 @@
     "chromatic": "chromatic --exit-zero-on-changes"
   },
   "dependencies": {
+    "@ant-design/x": "^2.5.0",
     "@carbon/icons-react": "^11.51.0",
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
@@ -59,7 +60,7 @@
     "eslint-plugin-storybook": "^9.1.15",
     "msw": "^2.12.10",
     "postcss": "^8.4.38",
-    "prettier": "^3.3.3",
+    "prettier": "^3.8.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "storybook": "^10.2.10",
