@@ -9,6 +9,7 @@ import type {
   AccessPackageEntry as GeneratedAccessPackageEntry,
   AccessPackageOther as GeneratedAccessPackageOther,
   AccessPackageResponse as GeneratedAccessPackageResponse,
+  AttachmentResponse,
   RedactionEntry,
 } from "~/types/api";
 
@@ -32,8 +33,13 @@ export type AccessPackageDataUse = Omit<
 
 export type AccessPackageOther = Omit<
   GeneratedAccessPackageOther,
-  "categories"
+  "name" | "description" | "categories"
 > & {
+  // The Pydantic schema defaults name and description to non-empty strings,
+  // so they are always present at runtime even though the generator marks
+  // them optional.
+  name: string;
+  description: string;
   categories: AccessPackageCategory[];
 };
 
@@ -44,5 +50,5 @@ export type AccessPackageResponse = Omit<
   data_uses: AccessPackageDataUse[];
   redactions: RedactionEntry[];
   other?: AccessPackageOther | null;
-  attachments: unknown[];
+  attachments: AttachmentResponse[];
 };

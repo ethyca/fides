@@ -1,5 +1,5 @@
 import { Tabs, TabsProps } from "fidesui";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
@@ -45,13 +45,15 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const isAwaitingAccessReview =
     subjectRequest.status === PrivacyRequestStatus.AWAITING_ACCESS_REVIEW;
 
-  const [activeTabKey, setActiveTabKey] = useState("activity");
-
-  useEffect(() => {
-    if (isAwaitingAccessReview) {
-      setActiveTabKey("access-package");
-    }
-  }, [isAwaitingAccessReview]);
+  // Pick the initial tab based on the request's status at mount time.
+  // After mount, never override the user's manual tab selection -- the
+  // poll cycles through the same status and would otherwise yank them
+  // back here mid-review.
+  const [activeTabKey, setActiveTabKey] = useState(() =>
+    initialData.status === PrivacyRequestStatus.AWAITING_ACCESS_REVIEW
+      ? "access-package"
+      : "activity",
+  );
 
   const items: TabsProps["items"] = useMemo(
     () => [

@@ -6,6 +6,7 @@ import {
   Divider,
   Empty,
   Flex,
+  Icons,
   List,
   Skeleton,
   Space,
@@ -38,10 +39,22 @@ type Props = {
   subjectRequest: PrivacyRequestEntity;
 };
 
-const rowKeyFor = (e: AccessPackageEntry) =>
-  `${e.source}::${e.record_index}::${e.field_path}`;
+const redactionKey = (
+  source: string,
+  recordIndex: number,
+  fieldPath: string | null | undefined,
+) => `${source}::${recordIndex}::${fieldPath ?? ""}`;
 
-const entryToRedaction = (e: AccessPackageEntry): RedactionEntry => ({
+const rowKeyFor = (e: AccessPackageEntry) =>
+  redactionKey(e.source, e.record_index, e.field_path);
+
+// This UI only manages REDACT-type redactions. REMOVE_FIELD and REMOVE_RECORD
+// are passed through unchanged so we don't wipe them, but the checkbox can't
+// represent or clear them; if the API starts emitting those, add a per-row
+// type picker.
+type RedactRedactionEntry = RedactionEntry & { type: RedactionType.REDACT };
+
+const entryToRedaction = (e: AccessPackageEntry): RedactRedactionEntry => ({
   source: e.source,
   record_index: e.record_index,
   field_path: e.field_path,
@@ -177,7 +190,7 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
       // Preserve redactions for entries NOT in this category, and any
       // non-redact actions on entries that are in this category.
       const preserved = data.redactions.filter((r) => {
-        const k = `${r.source}::${r.record_index}::${r.field_path}`;
+        const k = redactionKey(r.source, r.record_index, r.field_path);
         return !categoryKeys.has(k) || r.type !== RedactionType.REDACT;
       });
       // Add redact entries for the rows in this category that are NOT
@@ -220,7 +233,10 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
     a.download = `access-package-${privacyRequestId}.zip`;
     a.click();
     a.remove();
-    window.URL.revokeObjectURL(url);
+    // Defer the revoke so Safari has time to start the download before the
+    // URL is invalidated; revoking synchronously after .click() can cancel
+    // the download in Safari.
+    setTimeout(() => window.URL.revokeObjectURL(url), 0);
   }, [downloadPackage, privacyRequestId, message]);
 
   const handleApprove = useCallback(async () => {
@@ -251,16 +267,65 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
     return <Empty description="No access package available" />;
   }
 
-  const attachments = data.attachments as Array<{
-    file_name?: string;
-    size?: number;
-    content_type?: string;
-  }>;
+  const { attachments } = data;
 
   const isEmpty =
-    data.data_uses.length === 0 &&
-    !data.other &&
-    (!attachments || attachments.length === 0);
+    data.data_uses.length === 0 && !data.other && attachments.length === 0;
+
+  const renderSectionBody = (
+    description: string | null | undefined,
+    categories: AccessPackageCategory[],
+  ) => (
+    <Flex vertical gap="large">
+      {description && <Typography.Paragraph>{description}</Typography.Paragraph>}
+      {categories.map((cat) => (
+        <div key={cat.fides_key}>
+          <Typography.Title level={3} className="pb-2">
+            {cat.name}
+          </Typography.Title>
+          <CategoryTable
+            category={cat}
+            onSelectionChange={handleCategorySelectionChange}
+            disabled={!isAwaitingReview}
+          />
+        </div>
+      ))}
+    </Flex>
+  );
+
+  const renderSectionLabel = (
+    name: string,
+    categories: AccessPackageCategory[],
+  ) => (
+    <Space>
+      <Typography.Text strong>{name}</Typography.Text>
+      <Typography.Text type="secondary">
+        ({categories.reduce((n, c) => n + c.entries.length, 0)} fields)
+      </Typography.Text>
+    </Space>
+  );
+
+  const sections = [
+    ...data.data_uses.map((du) => ({
+      key: du.fides_key,
+      label: renderSectionLabel(du.name, du.categories),
+      children: renderSectionBody(du.description, du.categories),
+    })),
+    ...(data.other && data.other.categories.length > 0
+      ? [
+          {
+            key: "other",
+            label: renderSectionLabel(data.other.name, data.other.categories),
+            children: renderSectionBody(
+              data.other.description,
+              data.other.categories,
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  const allSectionKeys = sections.map((s) => s.key);
 
   return (
     <Flex vertical gap="large" data-testid="access-package-tab">
@@ -273,14 +338,20 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
         />
       )}
 
-      <Flex justify="end">
+      <Flex justify="space-between" align="center" gap="middle">
+        <Alert
+          type="info"
+          showIcon
+          title="Uncheck any field to redact it from the access package"
+        />
         <Space>
           <Button
+            icon={<Icons.Download />}
             onClick={handleDownload}
             loading={isDownloading}
             data-testid="download-access-package-btn"
           >
-            Download preview
+            Preview
           </Button>
           <Button
             type="primary"
@@ -296,9 +367,9 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
       <Card size="small">
         <Flex gap="medium" align="center" className="px-4">
           <Statistic title="Fields" value={totalFields} />
-          <Divider orientation="vertical" />
+          <Divider vertical />
           <Statistic title="Systems" value={systemCount} />
-          <Divider orientation="vertical" />
+          <Divider vertical />
           <Statistic title="Redacted" value={redactedCount} />
           {isSaving && (
             <Typography.Text type="secondary">Saving…</Typography.Text>
@@ -308,78 +379,11 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
 
       {isEmpty && <Empty description="Access package is empty" />}
 
-      {data.data_uses.length > 0 && (
-        <Collapse
-          defaultActiveKey={data.data_uses.map((du) => du.fides_key)}
-          items={data.data_uses.map((du) => ({
-            key: du.fides_key,
-            label: (
-              <Space>
-                <strong>{du.name}</strong>
-                <Typography.Text type="secondary">
-                  ({du.categories.reduce((n, c) => n + c.entries.length, 0)}{" "}
-                  fields)
-                </Typography.Text>
-              </Space>
-            ),
-            children: (
-              <Flex vertical gap="large">
-                {du.description && (
-                  <Typography.Paragraph type="secondary">
-                    {du.description}
-                  </Typography.Paragraph>
-                )}
-                {du.categories.map((cat) => (
-                  <div key={cat.fides_key}>
-                    <Typography.Title level={5} className="mb-2">
-                      {cat.name}
-                    </Typography.Title>
-                    <CategoryTable
-                      category={cat}
-                      onSelectionChange={handleCategorySelectionChange}
-                      disabled={!isAwaitingReview}
-                    />
-                  </div>
-                ))}
-              </Flex>
-            ),
-          }))}
-        />
+      {sections.length > 0 && (
+        <Collapse defaultActiveKey={allSectionKeys} items={sections} />
       )}
 
-      {data.other && data.other.categories.length > 0 && (
-        <Collapse
-          items={[
-            {
-              key: "other",
-              label: <strong>{data.other.name}</strong>,
-              children: (
-                <Flex vertical gap="large">
-                  {data.other.description && (
-                    <Typography.Paragraph type="secondary">
-                      {data.other.description}
-                    </Typography.Paragraph>
-                  )}
-                  {data.other.categories.map((cat) => (
-                    <div key={cat.fides_key}>
-                      <Typography.Title level={5} className="mb-2">
-                        {cat.name}
-                      </Typography.Title>
-                      <CategoryTable
-                        category={cat}
-                        onSelectionChange={handleCategorySelectionChange}
-                        disabled={!isAwaitingReview}
-                      />
-                    </div>
-                  ))}
-                </Flex>
-              ),
-            },
-          ]}
-        />
-      )}
-
-      {attachments && attachments.length > 0 && (
+      {attachments.length > 0 && (
         <div>
           <Typography.Title level={5}>Attachments</Typography.Title>
           <List
@@ -388,12 +392,10 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
             dataSource={attachments}
             renderItem={(a) => (
               <List.Item>
-                <Typography.Text>
-                  {a.file_name || "(unnamed attachment)"}
-                </Typography.Text>
-                {typeof a.size === "number" && (
+                <Typography.Text>{a.file_name}</Typography.Text>
+                {typeof a.retrieved_attachment_size === "number" && (
                   <Typography.Text type="secondary">
-                    {a.size} bytes
+                    {a.retrieved_attachment_size} bytes
                   </Typography.Text>
                 )}
               </List.Item>

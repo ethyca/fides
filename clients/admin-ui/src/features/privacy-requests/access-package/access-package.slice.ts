@@ -38,7 +38,6 @@ export const accessPackageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, privacyRequestId) => [
         { type: "Access Package", id: privacyRequestId },
-        { type: "Request" },
       ],
     }),
 
