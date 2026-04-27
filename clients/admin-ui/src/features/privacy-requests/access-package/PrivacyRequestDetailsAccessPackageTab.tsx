@@ -19,8 +19,6 @@ import { useCallback, useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
-  AccessPackageCategory,
-  AccessPackageEntry,
   PrivacyRequestStatus,
   RedactionEntry,
   RedactionType,
@@ -34,6 +32,7 @@ import {
   useLazyDownloadAccessPackageQuery,
   useUpdateAccessPackageRedactionsMutation,
 } from "./access-package.slice";
+import { AccessPackageCategory, AccessPackageEntry } from "./types";
 
 type Props = {
   subjectRequest: PrivacyRequestEntity;

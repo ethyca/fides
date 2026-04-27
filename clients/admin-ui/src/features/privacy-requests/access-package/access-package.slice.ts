@@ -1,9 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
-import {
-  AccessPackageResponse,
-  RedactionEntry,
-  RedactionsRequest,
-} from "~/types/api";
+import { RedactionEntry, RedactionsRequest } from "~/types/api";
+
+import { AccessPackageResponse } from "./types";
 
 export const accessPackageApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
