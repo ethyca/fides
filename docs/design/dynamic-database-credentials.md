@@ -38,7 +38,7 @@ The provider interface exposes two operations:
 - **`get_secret(secret_id)`** — returns the current value of a named secret. In the normal case this returns a cached value with no network call.
 - **`invalidate(secret_id)`** — marks a specific cached secret as stale, forcing the next `get_secret()` call to fetch a fresh value from the upstream source.
 
-A secret value is returned as a dict (matching the JSON structure stored in Secrets Manager), so a single secret can contain multiple fields (e.g., `{"username": "...", "password": "..."}`). The caller is responsible for extracting the fields it needs.
+A secret value is returned as a `SecretValue` wrapper around a dict (matching the JSON structure stored in Secrets Manager), so a single secret can contain multiple fields (e.g., `{"username": "...", "password": "..."}`). The caller accesses fields via subscript (`secret["username"]`). The `SecretValue` class overrides `__repr__` and `__str__` to return `"<redacted>"`, preventing accidental credential leakage in logs, tracebacks, or debug output. The raw dict is accessible internally but never exposed through string coercion.
 
 **Database credentials as a consumer:**
 
@@ -50,7 +50,7 @@ The `AWSSecretsManagerProvider` wraps a `boto3` Secrets Manager client and maint
 
 **Cache refresh logic:**
 
-- `get_secret(secret_id)` checks whether the cached value for that secret ID is within TTL. If yes, returns it. If expired, fetches from Secrets Manager and updates the cache.
+- `get_secret(secret_id)` checks whether the cached value for that secret ID is within TTL. If yes, returns it. If expired, attempts to fetch from Secrets Manager and updates the cache. If the fetch fails (network error, SM outage, rate limiting), the provider falls back to the last-known-good value and logs a warning rather than raising — this "stale-while-revalidate" behavior keeps connections alive during transient Secrets Manager unavailability. A separate `cache_stale_ttl_seconds` (default: 1800) controls how long stale credentials are served; once both the primary TTL and the stale TTL have expired, `get_secret()` raises to force a hard failure.
 - `invalidate(secret_id)` resets the cache timestamp for that secret ID, forcing the next call to fetch regardless of TTL. This is used by the retry-on-auth-failure path (see section 4).
 
 **Thread safety:**
@@ -66,6 +66,7 @@ New top-level config section (not nested under `database`, since the provider is
 - `secrets.provider`: `"static"` (default) or `"aws_secrets_manager"`
 - `secrets.aws_secrets_manager.region`: AWS region
 - `secrets.aws_secrets_manager.cache_ttl_seconds`: TTL for cached values (default: 300)
+- `secrets.aws_secrets_manager.cache_stale_ttl_seconds`: grace period for serving last-known-good credentials when Secrets Manager is unreachable (default: 1800)
 
 Database-specific settings on `DatabaseSettings` reference which secret to use:
 
@@ -119,10 +120,12 @@ When credentials are rotated, existing pooled connections may still be valid (if
 
 This means the first connection attempt after rotation absorbs a single failure and Secrets Manager round-trip. All subsequent connections from other threads use the already-refreshed cache (see thundering-herd protection above).
 
+**Circuit breaker:** If a refresh yields credentials that also fail authentication, the provider records a "last failed fetch" timestamp. Subsequent `invalidate()` calls within a configurable cooldown window (default: 30 seconds) are no-ops — the provider returns the cached value without hitting Secrets Manager again. This prevents retry amplification when credentials are genuinely wrong (misconfigured secret, bad rotation lambda) rather than mid-rotation. The circuit resets automatically after the cooldown expires or when the TTL-based refresh succeeds.
+
 **Error detection:**
 
-- psycopg2: `OperationalError` with "password authentication failed"
-- asyncpg: `InvalidPasswordError`
+- psycopg2: `OperationalError` with `exc.pgcode == "28P01"` (SQLSTATE `invalid_password`). This is locale-independent and version-stable, unlike string matching on the error message.
+- asyncpg: `InvalidPasswordError` (already maps to SQLSTATE `28P01` internally).
 
 The retry happens at the connection level, invisible to application code. Combined with the existing `pool_pre_ping=True` setting (which evicts dead connections before use), this provides self-healing behavior across the full rotation window.
 
