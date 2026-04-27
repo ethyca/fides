@@ -8,6 +8,7 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
+from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -31,6 +32,7 @@ from fides.api.db.system import (
 )
 from fides.api.deps import get_connection_service, get_system_service
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.detection_discovery.core import DiffStatus, StagedResource
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type:ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER
@@ -346,6 +348,12 @@ async def delete(
     """
     system_to_delete = await get_resource(System, fides_key, db)
     async with db.begin():
+        # Unlink any StagedResources that reference this system
+        await db.execute(
+            sa_update(StagedResource.__table__)
+            .where(StagedResource.system_id == system_to_delete.id)
+            .values(system_id=None, diff_status=DiffStatus.ADDITION.value)
+        )
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
     deleted_resource_dict = SystemSchema.model_validate(system_to_delete).model_dump(
@@ -380,6 +388,15 @@ async def system_bulk_delete(
         stmt = select(System).filter(System.fides_key.in_(fides_keys))
         result = await db.execute(stmt)
         systems_to_delete = result.scalars().all()
+
+        # Unlink any StagedResources that reference these systems
+        system_ids = [s.id for s in systems_to_delete]
+        if system_ids:
+            await db.execute(
+                sa_update(StagedResource.__table__)
+                .where(StagedResource.system_id.in_(system_ids))
+                .values(system_id=None, diff_status=DiffStatus.ADDITION.value)
+            )
 
         for system in systems_to_delete:
             await db.delete(system)

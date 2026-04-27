@@ -19,6 +19,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import DiffStatus, StagedResource
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.sql_models import Dataset, System
@@ -1169,3 +1170,83 @@ class TestBulkDeleteSystems:
 
         # System should be removed from the database
         assert db.query(System).filter_by(id=system.id).first() is None
+
+    def test_bulk_delete_systems_with_staged_resources(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        bulk_url,
+    ) -> None:
+        """Deleting systems should unlink any StagedResources referencing them."""
+        staged_resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": f"test_idp_app_{system.fides_key}",
+                "name": "Test IDP App",
+                "resource_type": "IDP App",
+                "system_id": system.id,
+                "diff_status": DiffStatus.MONITORED.value,
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.post(bulk_url, headers=auth_header, json=[system.fides_key])
+
+        assert resp.status_code == HTTP_200_OK
+
+        # System should be deleted
+        assert db.query(System).filter_by(id=system.id).first() is None
+
+        # StagedResource should still exist but with system_id nulled
+        db.refresh(staged_resource)
+        assert staged_resource.system_id is None
+        assert staged_resource.diff_status == DiffStatus.ADDITION.value
+
+        # Cleanup
+        db.delete(staged_resource)
+        db.commit()
+
+
+class TestDeleteSystemWithStagedResource:
+    @pytest.fixture(scope="function")
+    def delete_url(self, system) -> str:
+        return V1_URL_PREFIX + f"/system/{system.fides_key}"
+
+    def test_delete_system_unlinks_staged_resource(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        delete_url,
+    ) -> None:
+        """Deleting a system should unlink any StagedResources referencing it."""
+        staged_resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": f"test_idp_app_{system.fides_key}",
+                "name": "Test IDP App",
+                "resource_type": "IDP App",
+                "system_id": system.id,
+                "diff_status": DiffStatus.MONITORED.value,
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.delete(delete_url, headers=auth_header)
+
+        assert resp.status_code == HTTP_200_OK
+
+        # System should be deleted
+        assert db.query(System).filter_by(id=system.id).first() is None
+
+        # StagedResource should still exist but with system_id nulled
+        db.refresh(staged_resource)
+        assert staged_resource.system_id is None
+        assert staged_resource.diff_status == DiffStatus.ADDITION.value
+
+        # Cleanup
+        db.delete(staged_resource)
+        db.commit()
