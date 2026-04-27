@@ -26,6 +26,7 @@ from fides.api.app_setup import (
     create_fides_app,
     log_startup,
     run_database_startup,
+    run_sqs_migration,
 )
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.cryptography.identity_salt import get_identity_salt
@@ -89,6 +90,11 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     await run_database_startup(wrapped_app)
 
     check_redis()
+
+    # Drain any pending Celery tasks from Redis into SQS when the SQS
+    # broker is enabled (no-op otherwise).  Runs after ``check_redis`` so
+    # Redis connectivity issues surface in a single place.
+    run_sqs_migration()
 
     if not scheduler.running:
         scheduler.start()

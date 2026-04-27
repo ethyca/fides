@@ -270,6 +270,11 @@ multilang_migration_backup_*
 .cline/*
 .clinerules/*
 
+# Kiro
+.kiro/*
+
+# Qwen
+.qwen/*
 # Go shared library build artifacts
 policy-engine/libpbac.*
 policy-engine/*.h

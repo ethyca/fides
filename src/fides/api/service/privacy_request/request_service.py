@@ -295,6 +295,22 @@ def initiate_interrupted_task_requeue_poll() -> None:
     if CONFIG.test_mode:
         return
 
+    # SQS (and ElasticMQ) already provides the safety net that this
+    # watchdog was built for.  When a worker receives a message from SQS
+    # it becomes invisible for the duration of the visibility timeout.
+    # If the worker crashes or fails to acknowledge the task, the message
+    # automatically reappears in the queue — no manual requeuing required.
+    #
+    # In contrast, the Redis broker removes messages immediately on pop,
+    # so a crashed worker permanently loses the task.  That is why the
+    # requeue watchdog is only needed for Redis.
+    if CONFIG.queue.use_sqs_queue:
+        logger.info(
+            "Skipping interrupted task requeue poll — "
+            "SQS visibility timeout handles crashed workers automatically"
+        )
+        return
+
     assert scheduler.running, (
         "Scheduler is not running! Cannot add interrupted task requeue job."
     )

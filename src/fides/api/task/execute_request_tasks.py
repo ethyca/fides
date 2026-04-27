@@ -26,6 +26,7 @@ from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, Reque
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
@@ -286,6 +287,7 @@ def queue_downstream_tasks(
         "privacy_request_task_id": LoggerContextKeys.task_id,
     }
 )
+@sqs_heartbeat
 def run_access_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -354,6 +356,7 @@ def run_access_node(
         "privacy_request_task_id": LoggerContextKeys.task_id,
     }
 )
+@sqs_heartbeat
 def run_erasure_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -428,6 +431,7 @@ def run_erasure_node(
         "privacy_request_task_id": LoggerContextKeys.task_id,
     }
 )
+@sqs_heartbeat
 def run_consent_node(
     self: DatabaseTask,
     privacy_request_id: str,

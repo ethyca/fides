@@ -30,6 +30,8 @@ export interface NavConfigRoute {
   requiresFidesCloud?: boolean;
   /** Requires the backend RBAC feature to be enabled (from Plus health endpoint) */
   requiresRbac?: boolean;
+  /** Requires SQS queue mode to be enabled on the backend */
+  requiresSqsEnabled?: boolean;
   /** Hide this route from the navigation UI but still allow access */
   hidden?: boolean;
   /** This route is only available if the user has ANY of these scopes */
@@ -406,6 +408,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
     ],
   },
+  {
+    title: "Monitor",
+    icon: <Icons.DataAnalytics />,
+    routes: [
+      {
+        title: "SQS Queues",
+        path: routes.QUEUE_MONITOR_ROUTE,
+        requiresSqsEnabled: true,
+        scopes: [],
+      },
+    ],
+  },
   // This section is meant to be hidden but accessible outside of dev builds
   // Any routes added in this section need to have hidden: true
   // to prevent them from being shown in the navigation
@@ -550,6 +564,7 @@ interface ConfigureNavProps {
   hasPlus?: boolean;
   hasFidesCloud?: boolean;
   hasRbac?: boolean;
+  sqsEnabled?: boolean;
   flags?: Record<string, boolean>;
   consentModuleEnabled?: boolean;
 }
@@ -561,6 +576,7 @@ const configureNavRoute = ({
   userScopes,
   hasFidesCloud,
   hasRbac,
+  sqsEnabled,
   navGroupTitle,
 }: Omit<ConfigureNavProps, "config"> & {
   route: NavConfigRoute;
@@ -587,6 +603,12 @@ const configureNavRoute = ({
   // If the target route requires RBAC to be enabled on the backend,
   // exclude it when RBAC is not active.
   if (route.requiresRbac && !hasRbac) {
+    return undefined;
+  }
+
+  // If the target route requires SQS queue mode to be enabled,
+  // exclude it when SQS is not active.
+  if (route.requiresSqsEnabled && !sqsEnabled) {
     return undefined;
   }
 
@@ -656,6 +678,7 @@ export const configureNavGroups = ({
   hasPlus = false,
   hasFidesCloud = false,
   hasRbac = false,
+  sqsEnabled = false,
   flags,
   consentModuleEnabled = true,
 }: ConfigureNavProps): NavGroup[] => {
@@ -693,6 +716,7 @@ export const configureNavGroups = ({
         userScopes,
         hasFidesCloud,
         hasRbac,
+        sqsEnabled,
         navGroupTitle: group.title,
       });
       if (routeConfig) {

@@ -72,6 +72,7 @@ from fides.api.service.privacy_request.attachment_handling import (
     process_attachments_for_upload,
 )
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
+from fides.api.service.privacy_request.sqs_heartbeat import sqs_heartbeat
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
@@ -401,6 +402,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
+@sqs_heartbeat
 def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,

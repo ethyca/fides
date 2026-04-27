@@ -18,6 +18,11 @@ from tenacity import (
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
+from fides.api.tasks.broker import (
+    get_broker_transport_options,
+    get_broker_url,
+    get_task_queues,
+)
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
@@ -33,6 +38,32 @@ DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME = "fidesplus.discovery_monitors_promotio
 
 
 NEW_SESSION_RETRIES = 5
+
+
+def _resolve_result_backend(config: FidesConfig) -> str:
+    """Return the Celery result backend URL.
+
+    Resolution order:
+    1. ``config.celery.result_backend`` (explicit override)
+    2. ``config.redis.get_cluster_connection_url()`` if cluster mode enabled
+    3. ``config.redis.connection_url`` as the final fallback
+
+    The result backend is intentionally **not** changed by the
+    ``use_sqs_queue`` flag — Redis (or an explicit override) always serves
+    as the result backend.
+    """
+    if config.celery.result_backend is not None:
+        return config.celery.result_backend
+    if config.redis.cluster_enabled:
+        return config.redis.get_cluster_connection_url()
+    connection_url = config.redis.connection_url
+    if connection_url is not None:
+        return connection_url
+    raise ValueError(
+        "No result backend could be resolved.  Set one of: "
+        "FIDES__CELERY__RESULT_BACKEND or ensure Redis connection_url is configured."
+    )
+
 
 autodiscover_task_locations: List[str] = [
     "fides.api.tasks",
@@ -121,50 +152,46 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
                 getattr(app.loader, "override_backends", {}) | cluster_backends
             )
 
-    # Broker and result backend. When redis.cluster_enabled is True we use redis+cluster://
-    # (via celery-redis-cluster) unless overridden. Otherwise use redis.connection_url.
-    if config.celery.broker_url is not None:
-        broker_url = config.celery.broker_url
-    elif config.redis.cluster_enabled:
-        broker_url = config.redis.get_cluster_connection_url()
-    else:
-        connection_url = config.redis.connection_url
-        if connection_url is None:
-            raise ValueError(
-                "Redis connection_url is required when cluster is disabled"
-            )
-        broker_url = connection_url
-
-    if config.celery.result_backend is not None:
-        result_backend = config.celery.result_backend
-    elif config.redis.cluster_enabled:
-        result_backend = config.redis.get_cluster_connection_url()
-    else:
-        connection_url = config.redis.connection_url
-        if connection_url is None:
-            raise ValueError(
-                "Redis connection_url is required when cluster is disabled"
-            )
-        result_backend = connection_url
+    broker_url = get_broker_url(config)
+    result_backend = _resolve_result_backend(config)
+    transport_options = get_broker_transport_options(config)
+    task_queues = get_task_queues(config)
 
     celery_config: Dict[str, Any] = {
         "broker_url": broker_url,
         "result_backend": result_backend,
         "event_queue_prefix": "fides_worker",
         "task_always_eager": True,
-        # Ops requires this to route emails to separate queues
-        "task_create_missing_queues": True,
+        # Ops requires this to route emails to separate queues.
+        # When using SQS/ElasticMQ with predefined_queues, Celery must not
+        # attempt to auto-create queues on the broker.
+        "task_create_missing_queues": not config.queue.use_sqs_queue,
         "task_default_queue": "fides",
         "worker_prefetch_multiplier": 1,
         "healthcheck_port": config.celery.healthcheck_port,
         "healthcheck_ping_timeout": config.celery.healthcheck_ping_timeout,
     }
 
+    if config.queue.use_sqs_queue:
+        # Celery's remote control ("pidbox") creates dynamic reply queues with
+        # UUID names that cannot be pre-declared in predefined_queues.
+        # Event sending also creates dynamic event queues.
+        celery_config["worker_enable_remote_control"] = False
+        celery_config["worker_send_task_events"] = False
+
+    if transport_options:
+        celery_config["broker_transport_options"] = transport_options
+    if task_queues:
+        celery_config["task_queues"] = task_queues
+
     celery_config.update(config.celery)
-    # Preserve broker/backend in case config.celery overwrote them with None
+    # Preserve broker/backend/transport_options/task_queues in case config.celery overwrote them
     celery_config["broker_url"] = broker_url
     celery_config["result_backend"] = result_backend
-
+    if transport_options:
+        celery_config["broker_transport_options"] = transport_options
+    if task_queues:
+        celery_config["task_queues"] = task_queues
     app.conf.update(celery_config)
 
     app.autodiscover_tasks(autodiscover_task_locations)
@@ -226,9 +253,10 @@ def get_worker_ids() -> List[Optional[str]]:
     Returns a list of the connected healthy worker UUIDs.
     """
     try:
-        connected_workers = [
-            key for key, _ in celery_app.control.inspect().ping().items()
-        ]
+        ping_result = celery_app.control.inspect().ping()
+        if ping_result is None:
+            return []
+        connected_workers = [key for key, _ in ping_result.items()]
     except Exception as exception:
         logger.critical(exception)
         connected_workers = []

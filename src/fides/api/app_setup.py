@@ -285,6 +285,47 @@ def check_redis() -> None:
     logger.debug("Connection to cache succeeded")
 
 
+def run_sqs_migration() -> None:
+    """Drain any pending Celery tasks from Redis into SQS on startup.
+
+    No-op unless ``CONFIG.queue.use_sqs_queue`` is ``True`` (Requirement 5.10).
+    The migrator is idempotent and safe to invoke on every startup — when
+    Redis queues are empty it returns zero counts without enqueuing anything.
+    Errors are logged but never re-raised so a failed migration does not
+    prevent the application from starting up.
+    """
+    if not CONFIG.queue.use_sqs_queue:
+        return
+
+    # Imported lazily so Redis-only deployments don't pay the boto3 import
+    # cost at module load time.
+    from fides.api.tasks import celery_app
+    from fides.api.tasks.queue_migration import migrate_redis_queues_to_sqs
+
+    logger.info("SQS mode enabled — migrating any pending Redis tasks to SQS...")
+    try:
+        redis_conn = get_cache()
+    except (RedisConnectionError, RedisError, ResponseError) as exc:
+        # Requirement 8.4: Redis unavailable in SQS mode is recoverable;
+        # skip the migration and keep starting up with SQS as the broker.
+        logger.error(
+            "Could not connect to Redis for SQS migration — skipping: {}", str(exc)
+        )
+        return
+
+    result = migrate_redis_queues_to_sqs(redis_conn, celery_app, CONFIG)
+
+    if result.skipped:
+        logger.info(
+            "SQS migration skipped — another process holds the lock or Redis is unavailable"
+        )
+        return
+
+    logger.info("SQS migration complete — migrated per queue: {}", result.migrated)
+    if result.errors:
+        logger.warning("SQS migration completed with errors: {}", result.errors)
+
+
 def load_tcf_purpose_overrides() -> None:
     """Load default tcf purpose overrides"""
     logger.info("Loading default TCF Purpose Overrides")

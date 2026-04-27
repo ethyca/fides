@@ -30,13 +30,13 @@ class TestStartWorker:
             (
                 None,
                 None,
-                "fides,fidesops.messaging,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fides.dsr,fidesplus.consent_webhooks,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
+                "fidesops.messaging,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fides.dsr,fidesplus.consent_webhooks,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion,fides",
             ),
             ("fides.dsr", None, "fides.dsr"),
             (
                 None,
                 "fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection",
-                "fides,fidesops.messaging,fidesplus.consent_webhooks,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
+                "fidesops.messaging,fidesplus.consent_webhooks,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion,fides",
             ),
             ("fides,fides.dsr", None, "fides,fides.dsr"),
             (

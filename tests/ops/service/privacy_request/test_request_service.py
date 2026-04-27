@@ -17,6 +17,7 @@ from fides.api.service.privacy_request.request_service import (
     _handle_privacy_request_requeue,
     build_required_privacy_request_kwargs,
     get_cached_task_id,
+    initiate_interrupted_task_requeue_poll,
     poll_for_exited_privacy_request_tasks,
     remove_saved_dsr_data,
     requeue_interrupted_tasks,
@@ -1010,3 +1011,62 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
                     "is not in the queue or running" in call for call in warning_calls
                 )
                 mock_handle_requeue.assert_called_once_with(db, privacy_request)
+
+
+class TestInitiateInterruptedTaskRequeuePoll:
+    """Test the ``initiate_interrupted_task_requeue_poll`` function."""
+
+    def test_sqs_enabled_skips_requeue_poll(self):
+        """When SQS is enabled, the interrupted task requeue poll is skipped."""
+        config = mock.MagicMock()
+        config.test_mode = False
+        config.queue.use_sqs_queue = True
+
+        with (
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.CONFIG", config
+            ),
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.scheduler"
+            ) as mock_scheduler,
+        ):
+            mock_scheduler.running = True
+            initiate_interrupted_task_requeue_poll()
+
+        mock_scheduler.add_job.assert_not_called()
+
+    def test_sqs_disabled_allows_requeue_poll(self):
+        """When SQS is disabled, the interrupted task requeue poll is allowed."""
+        config = mock.MagicMock()
+        config.test_mode = False
+        config.queue.use_sqs_queue = False
+
+        with (
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.CONFIG", config
+            ),
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.scheduler"
+            ) as mock_scheduler,
+        ):
+            mock_scheduler.running = True
+            initiate_interrupted_task_requeue_poll()
+
+        mock_scheduler.add_job.assert_called_once()
+
+    def test_test_mode_skips_requeue_poll(self):
+        """When test_mode is True, the requeue poll is skipped."""
+        config = mock.MagicMock()
+        config.test_mode = True
+
+        with (
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.CONFIG", config
+            ),
+            mock.patch(
+                "fides.api.service.privacy_request.request_service.scheduler"
+            ) as mock_scheduler,
+        ):
+            initiate_interrupted_task_requeue_poll()
+
+        mock_scheduler.add_job.assert_not_called()

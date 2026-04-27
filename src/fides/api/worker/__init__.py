@@ -9,18 +9,8 @@ from watchfiles.filters import DefaultFilter
 
 from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
-from fides.api.tasks import (
-    CONSENT_WEBHOOK_QUEUE_NAME,
-    DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
-    DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
-    DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
-    DSR_QUEUE_NAME,
-    MESSAGING_QUEUE_NAME,
-    PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME,
-    PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME,
-    PRIVACY_PREFERENCES_QUEUE_NAME,
-    celery_app,
-)
+from fides.api.tasks import celery_app
+from fides.api.tasks.broker import get_all_celery_queue_names
 
 
 class _PythonAndYamlFilter(DefaultFilter):
@@ -67,20 +57,9 @@ def start_worker(
         "Cannot provide both queues and exclude_queues"
     )
 
-    default_queue_name = celery_app.conf.get("task_default_queue", "celery")
-
-    all_queues = [
-        default_queue_name,
-        MESSAGING_QUEUE_NAME,
-        PRIVACY_PREFERENCES_QUEUE_NAME,
-        PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME,
-        PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME,
-        DSR_QUEUE_NAME,
-        CONSENT_WEBHOOK_QUEUE_NAME,
-        DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
-        DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
-        DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
-    ]
+    # Use the canonical queue list from broker.py so the worker stays in sync
+    # with the queues that _create_celery knows about.
+    all_queues = list(get_all_celery_queue_names())
 
     # Fall back to all queues if neither queues nor exclude_queues are provided.
     worker_queues = ",".join(all_queues)

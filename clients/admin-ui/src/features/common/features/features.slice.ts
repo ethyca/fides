@@ -6,6 +6,7 @@ import { type RootState } from "~/app/store";
 import { selectHealth } from "~/features/common/health.slice";
 import { selectInitialConnections } from "~/features/datastore-connections";
 import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
+import { useGetQueueMonitorQuery } from "~/features/queue-monitor/queue-monitor.slice";
 import { selectSystemsCount } from "~/features/system";
 import flagDefaults from "~/flags.json";
 
@@ -139,6 +140,7 @@ export type Features = {
   fidesCloud: boolean;
   rbac: boolean;
   tcf: boolean;
+  sqsEnabled: boolean;
 
   flags: FlagsFor<FlagConfig>;
 };
@@ -163,6 +165,9 @@ export const useFeatures = (): Features => {
 
   const connectionsCount = initialConnections?.total ?? 0;
 
+  const { data: queueMonitorData } = useGetQueueMonitorQuery();
+  const sqsEnabled = queueMonitorData?.sqs_enabled ?? false;
+
   const { flags } = useFlags();
 
   return {
@@ -175,6 +180,7 @@ export const useFeatures = (): Features => {
     fidesCloud,
     rbac,
     tcf,
+    sqsEnabled,
     flags,
   };
 };

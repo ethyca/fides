@@ -23,6 +23,7 @@ export const useNav = ({ path }: { path: string }) => {
         flags: features.flags,
         hasFidesCloud: features.fidesCloud,
         hasRbac: features.rbac,
+        sqsEnabled: features.sqsEnabled,
         userScopes,
         consentModuleEnabled,
       }),
