@@ -19,11 +19,7 @@ import {
 import { useCallback, useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import {
-  PrivacyRequestStatus,
-  RedactionEntry,
-  RedactionType,
-} from "~/types/api";
+import { PrivacyRequestStatus, RedactionType } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { PrivacyRequestEntity } from "../types";
@@ -34,45 +30,19 @@ import {
   useUpdateAccessPackageRedactionsMutation,
 } from "./access-package.slice";
 import { AccessPackageCategory, AccessPackageEntry } from "./types";
-
-type Props = {
-  subjectRequest: PrivacyRequestEntity;
-};
-
-const redactionKey = (
-  source: string,
-  recordIndex: number,
-  fieldPath: string | null | undefined,
-) => `${source}::${recordIndex}::${fieldPath ?? ""}`;
-
-const rowKeyFor = (e: AccessPackageEntry) =>
-  redactionKey(e.source, e.record_index, e.field_path);
-
 // This UI only manages REDACT-type redactions. REMOVE_FIELD and REMOVE_RECORD
 // are passed through unchanged so we don't wipe them, but the checkbox can't
 // represent or clear them; if the API starts emitting those, add a per-row
 // type picker.
-type RedactRedactionEntry = RedactionEntry & { type: RedactionType.REDACT };
+import {
+  entryToRedaction,
+  redactionKey,
+  renderValue,
+  rowKeyFor,
+} from "./utils";
 
-const entryToRedaction = (e: AccessPackageEntry): RedactRedactionEntry => ({
-  source: e.source,
-  record_index: e.record_index,
-  field_path: e.field_path,
-  type: RedactionType.REDACT,
-});
-
-const renderValue = (value: unknown): string => {
-  if (value === null || value === undefined) {
-    return "";
-  }
-  if (typeof value === "string") {
-    return value;
-  }
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return String(value);
-  }
+type Props = {
+  subjectRequest: PrivacyRequestEntity;
 };
 
 const CategoryTable = ({
