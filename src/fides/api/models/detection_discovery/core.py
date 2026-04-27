@@ -627,7 +627,7 @@ class StagedResource(StagedResourceBase):
     # for now, this is just used for web monitor resources.
     system_id = Column(
         String,
-        ForeignKey(System.id_field_path, ondelete="SET NULL"),
+        ForeignKey(System.id_field_path),
         nullable=True,
         index=True,
     )
