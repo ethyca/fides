@@ -15,6 +15,9 @@ from fides.api.service.authentication.authentication_strategy_basic import (
 from fides.api.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
+from fides.api.service.authentication.authentication_strategy_aws_iam_role import (
+    AWSIAMRoleAuthenticationStrategy,
+)
 from fides.api.service.authentication.authentication_strategy_google_cloud_service_account import (
     GoogleCloudServiceAccountAuthenticationStrategy,
 )
@@ -34,6 +37,7 @@ class SupportedAuthenticationStrategies(Enum):
     The supported strategies for authenticating against SaaS APIs.
     """
 
+    aws_iam_role = AWSIAMRoleAuthenticationStrategy
     basic = BasicAuthenticationStrategy
     bearer = BearerAuthenticationStrategy
     query_param = QueryParamAuthenticationStrategy

@@ -198,3 +198,23 @@ class GoogleCloudServiceAccountConfiguration(StrategyConfiguration):
             "'https://www.googleapis.com/auth/devstorage.read_write' for Cloud Storage, "
         ),
     )
+
+
+class AWSIAMRoleAuthenticationConfiguration(StrategyConfiguration):
+    """
+    Configuration for AWS IAM Role authentication using SigV4 request signing.
+
+    Credentials (auth_method, aws_access_key_id, aws_secret_access_key,
+    aws_assume_role_arn) are read from connection_config.secrets. This
+    configuration only captures the per-service parameters needed for signing.
+    """
+
+    aws_service: str = Field(
+        description=(
+            "The AWS service name used as the SigV4 signing scope. "
+            "Examples: 'execute-api' for API Gateway, 'secretsmanager', 'comprehend'."
+        )
+    )
+    region_name: str = Field(
+        description="The AWS region where the service is hosted, e.g. 'us-east-1'."
+    )
