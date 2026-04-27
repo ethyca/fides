@@ -887,9 +887,7 @@ class TestAsyncPollingStrategy:
     ):
         """Response body takes precedence over param_value_map when both have the key."""
         mock_response = Mock(spec=Response)
-        mock_response.json.return_value = {
-            "privacy_request_id": "from-response"
-        }
+        mock_response.json.return_value = {"privacy_request_id": "from-response"}
 
         result = AsyncPollingStrategy._extract_correlation_id(
             mock_response,
