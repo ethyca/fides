@@ -274,23 +274,26 @@ const EditorSection = ({
       const removed = saasWarnings.filter((w) => w.action === "removed");
       const failed = saasWarnings.filter((w) => w.action === "failed");
 
+      const formatWarnings = (warnings: DatasetFieldWarning[]): string =>
+        warnings.map((w) => w.message).join("; ");
+
       const parts: string[] = [];
       if (restored.length > 0) {
         parts.push(
-          `${restored.length} protected field(s) restored to original values`,
+          `Restored: ${formatWarnings(restored)}`,
         );
       }
       if (removed.length > 0) {
-        parts.push(`${removed.length} unauthorized collection(s) removed`);
+        parts.push(`Removed: ${formatWarnings(removed)}`);
       }
       if (failed.length > 0) {
-        parts.push(`${failed.length} field(s) could not be restored`);
+        parts.push(`Failed: ${formatWarnings(failed)}`);
       }
 
       if (failed.length > 0) {
-        messageApi.error(`Dataset saved with issues — ${parts.join("; ")}`);
+        messageApi.error(`Dataset saved with issues — ${parts.join(". ")}`);
       } else {
-        messageApi.warning(`Dataset saved — ${parts.join("; ")}`);
+        messageApi.warning(`Dataset saved — ${parts.join(". ")}`);
       }
     } else {
       messageApi.success("Successfully modified dataset");
