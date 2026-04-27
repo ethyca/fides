@@ -35,8 +35,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY . .
 # Pin setuptools so legacy deps (flatdict, scylla-driver) get pkg_resources in build isolation
 RUN uv pip install --python /opt/venv/bin/python setuptools==80.10.2 wheel
-RUN uv sync --python /opt/venv/bin/python --frozen && \
-    uv pip install --python /opt/venv/bin/python -r docs/fides/requirements.txt
+RUN uv sync --python /opt/venv/bin/python --frozen --group docs
 
 
 FROM python:3.13-slim-bookworm AS docs
