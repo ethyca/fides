@@ -277,6 +277,26 @@ export type SaasConnectionTemplateValues = {
       }
     | {
         /**
+         * Keyfile creds
+         *
+         * The contents of the key file for a GCP service account with domain-wide delegation configured.
+         */
+        keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds;
+        /**
+         * Delegation subject
+         *
+         * Email of a Google Workspace admin to impersonate via domain-wide delegation.
+         */
+        delegation_subject: string;
+        /**
+         * Domain
+         *
+         * The Google Workspace domain (e.g., example.com).
+         */
+        domain: string;
+      }
+    | {
+        /**
          * Access Token
          */
         access_token?: string | null;
@@ -297,6 +317,18 @@ export type SaasConnectionTemplateValues = {
          */
         site_url?: string | null;
         /**
+         * Client Id
+         */
+        client_id?: string | null;
+        /**
+         * Client Secret
+         */
+        client_secret?: string | null;
+        /**
+         * Redirect Uri
+         */
+        redirect_uri?: string | null;
+        /**
          * Domain
          */
         domain?: string | null;
@@ -310,6 +342,12 @@ export type SaasConnectionTemplateValues = {
         api_key?: string | null;
         [key: string]:
           | unknown
+          | string
+          | null
+          | string
+          | null
+          | string
+          | null
           | string
           | null
           | string
