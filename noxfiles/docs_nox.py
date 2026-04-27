@@ -49,6 +49,6 @@ def docs_check(session: nox.Session) -> None:
         "docs",
         "/bin/bash",
         "-c",
-        "uv pip install setuptools==80.10.2 wheel && uv pip install -e /fides && mkdocs build",
+        "cd /fides && uv sync --python /opt/venv/bin/python --frozen && mkdocs build",
     )
     session.run(*run_shell, external=True)

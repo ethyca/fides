@@ -35,7 +35,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY . .
 # Pin setuptools so legacy deps (flatdict, scylla-driver) get pkg_resources in build isolation
 RUN uv pip install --python /opt/venv/bin/python setuptools==80.10.2 wheel
-RUN uv pip install --python /opt/venv/bin/python . && \
+RUN uv sync --python /opt/venv/bin/python --frozen && \
     uv pip install --python /opt/venv/bin/python -r docs/fides/requirements.txt
 
 
@@ -51,7 +51,7 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy uv from build stage so runtime commands can use it (e.g. uv pip install -e /fides when repo is mounted)
+# Copy uv from build stage so runtime commands can use it (e.g. uv sync when repo is mounted)
 COPY --from=build /root/.local/bin/uv /usr/local/bin/uv
 
 WORKDIR /docs
