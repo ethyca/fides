@@ -272,6 +272,17 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         if merged_attachments and aggregated_results:
             aggregated_results[0]["retrieved_attachments"] = merged_attachments
 
+        errored = [
+            sr
+            for sr in request_task.sub_requests
+            if sr.status == ExecutionLogStatus.error.value
+        ]
+        if errored:
+            logger.warning(
+                f"Access task {request_task.id} completed with {len(errored)} failed "
+                f"sub-request(s): {[sr.id for sr in errored]}. Returning partial results."
+            )
+
         return aggregated_results
 
     def _polling_continuation_erasure(
@@ -296,6 +307,18 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         total_rows_masked = sum(
             sub_request.rows_masked or 0 for sub_request in request_task.sub_requests
         )
+
+        errored = [
+            sr
+            for sr in request_task.sub_requests
+            if sr.status == ExecutionLogStatus.error.value
+        ]
+        if errored:
+            logger.warning(
+                f"Erasure task {request_task.id} completed with {len(errored)} failed "
+                f"sub-request(s): {[sr.id for sr in errored]}. Returning partial rows_masked count."
+            )
+
         return total_rows_masked
 
     def _handle_polling_initial_request(
@@ -654,10 +677,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
 
         for sub_request in sub_requests:
-            # Skip already completed or skipped sub-requests
+            # Skip already-terminal sub-requests
             if sub_request.status in [
                 ExecutionLogStatus.complete.value,
                 ExecutionLogStatus.skipped.value,
+                ExecutionLogStatus.error.value,
             ]:
                 continue
 
@@ -668,7 +692,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
                 )
                 sub_request.update_status(self.session, ExecutionLogStatus.error.value)
-                raise exc
 
     def _execute_polling_requests(
         self,
