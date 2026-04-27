@@ -115,6 +115,10 @@ class SQSQueueStatsProvider:
                 get_sqs_base_url(self._config),
                 self._config.queue.sqs_queue_name_prefix,
             )
+            logger.info("Queue URL: %s", queue_url)
+            logger.info("Queue Name: %s", queue_name)
+
+
             response = self._sqs_client.get_queue_attributes(
                 QueueUrl=queue_url,
                 AttributeNames=[
