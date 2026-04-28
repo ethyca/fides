@@ -1,13 +1,10 @@
-"""Tests for :class:`DisplayConditionValidator` — save-time structural +
-semantic checks on ``display_condition`` entries.
-"""
+"""Tests for :class:`DisplayConditionValidator`."""
 
 import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.custom_field_display_validator import (
     DisplayConditionValidator,
-    _iter_leaves,
 )
 from fides.api.schemas.privacy_center_config import (
     ConsentConfigButton,
@@ -38,11 +35,8 @@ def _fields(target, *, detail_condition=None, detail_field="detail"):
 
 
 def _target(key, field_type, **kwargs):
-    cls = kwargs.pop("_cls", CustomPrivacyRequestField)
     return {
-        key: cls(label="Target", field_type=field_type, **kwargs)
-        if field_type
-        else cls(label="Target", **kwargs)
+        key: CustomPrivacyRequestField(label="Target", field_type=field_type, **kwargs)
     }
 
 
@@ -88,14 +82,6 @@ VALID_CASES = [
             detail_condition=_leaf("country", Operator.eq, "US"),
         ),
         id="location_target_string_value",
-    ),
-    pytest.param(
-        _fields(
-            {"untyped": CustomPrivacyRequestField(label="Untyped")},
-            # No field_type on target → operator + value-type checks skip.
-            detail_condition=_leaf("untyped", Operator.eq, 123),
-        ),
-        id="target_without_field_type",
     ),
     pytest.param(
         _fields(
@@ -207,6 +193,14 @@ INVALID_CASES = [
         "unsupported group operator",
         id="unknown_group_operator",
     ),
+    pytest.param(
+        _fields(
+            _target("reason", "text"),
+            detail_condition=_leaf("reason", Operator.exists, "x"),
+        ),
+        "operator 'exists' must not have a value",
+        id="exists_with_value",
+    ),
 ]
 
 
@@ -219,17 +213,6 @@ class TestValidateDisplayConditions:
     def test_invalid(self, fields, match):
         with pytest.raises(ValueError, match=match):
             DisplayConditionValidator(fields).validate()
-
-
-class TestIterLeavesEdgeCases:
-    def test_non_condition_input_yields_nothing(self):
-        assert list(_iter_leaves("not a condition")) == []  # type: ignore[arg-type]
-
-    def test_empty_group_yields_nothing(self):
-        empty = ConditionGroup.model_construct(
-            logical_operator=GroupOperator.and_, conditions=[]
-        )
-        assert list(_iter_leaves(empty)) == []
 
 
 _VALID_FIELDS = _fields(

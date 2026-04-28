@@ -1,21 +1,9 @@
-"""Save-time validation of ``display_condition`` rules attached to
-``custom_privacy_request_fields``.
+"""Save-time validation of ``display_condition`` rules on
+``custom_privacy_request_fields``."""
 
-:class:`DisplayConditionValidator` runs structural + semantic checks when
-a Privacy Center config is saved
-"""
+from typing import Iterator, Optional
 
-from __future__ import annotations
-
-from typing import (
-    TYPE_CHECKING,
-    ClassVar,
-    Dict,
-    Iterator,
-    Optional,
-    Set,
-)
-
+from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
     ConditionGroup,
@@ -24,12 +12,8 @@ from fides.api.task.conditional_dependencies.schemas import (
     Operator,
 )
 
-if TYPE_CHECKING:
-    from fides.api.schemas.privacy_center_config import BaseCustomPrivacyRequestField
-
 
 def _iter_leaves(condition: Condition) -> Iterator[ConditionLeaf]:
-    """Walk a Condition tree and yield every ConditionLeaf."""
     if isinstance(condition, ConditionLeaf):
         yield condition
         return
@@ -39,7 +23,6 @@ def _iter_leaves(condition: Condition) -> Iterator[ConditionLeaf]:
 
 
 def _iter_group_operators(condition: Condition) -> Iterator[GroupOperator]:
-    """Walk a Condition tree and yield every group operator encountered."""
     if isinstance(condition, ConditionGroup):
         yield condition.logical_operator
         for inner in condition.conditions:
@@ -47,15 +30,11 @@ def _iter_group_operators(condition: Condition) -> Iterator[GroupOperator]:
 
 
 class DisplayConditionValidator:
-    """Save-time checker for ``display_condition`` rules attached to a
-    single action's ``custom_privacy_request_fields``.
-
-    Instantiate with the fields map, then call :meth:`validate` to run
-    structural + semantic checks. Raises ``ValueError`` on first failure;
-    callers translate to 422 in HTTP contexts.
+    """Save-time checker for ``display_condition`` rules. Raises
+    ``ValueError`` on first failure; callers translate to 422.
     """
 
-    ALLOWED_DISPLAY_OPERATORS: ClassVar[Set[Operator]] = {
+    ALLOWED_DISPLAY_OPERATORS: set[Operator] = {
         Operator.eq,
         Operator.neq,
         Operator.exists,
@@ -63,7 +42,7 @@ class DisplayConditionValidator:
         Operator.list_contains,
     }
 
-    OPERATORS_BY_TARGET_TYPE: ClassVar[Dict[str, Set[Operator]]] = {
+    OPERATORS_BY_TARGET_TYPE: dict[str, set[Operator]] = {
         "text": {Operator.eq, Operator.neq, Operator.exists, Operator.not_exists},
         "textarea": {Operator.eq, Operator.neq, Operator.exists, Operator.not_exists},
         "select": {Operator.eq, Operator.neq, Operator.exists, Operator.not_exists},
@@ -82,17 +61,17 @@ class DisplayConditionValidator:
         "file": {Operator.exists, Operator.not_exists},
     }
 
-    VALUELESS_OPERATORS: ClassVar[Set[Operator]] = {
+    VALUELESS_OPERATORS: set[Operator] = {
         Operator.exists,
         Operator.not_exists,
     }
 
-    def __init__(self, fields: Dict[str, "BaseCustomPrivacyRequestField"]) -> None:
+    def __init__(self, fields: dict[str, BaseCustomPrivacyRequestField]) -> None:
         self.fields = fields
 
     def validate(self) -> None:
         for field_key, field in self.fields.items():
-            condition = getattr(field, "display_condition", None)
+            condition = field.display_condition
             if condition is None:
                 continue
 
@@ -130,8 +109,11 @@ class DisplayConditionValidator:
         leaf: ConditionLeaf,
         target_type: Optional[str],
     ) -> None:
-        """Reject leaf values whose type does not match the referenced field."""
         if leaf.operator in self.VALUELESS_OPERATORS:
+            if leaf.value is not None:
+                raise ValueError(
+                    f"'{field_key}': operator '{leaf.operator.value}' must not have a value"
+                )
             return
 
         value = leaf.value
