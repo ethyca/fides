@@ -15,6 +15,12 @@ export type AccessPolicyCreate = {
    */
   description?: string | null;
   /**
+   * Control
+   *
+   * Control key to associate with this policy
+   */
+  control?: string | null;
+  /**
    * Yaml
    *
    * Full policy YAML as a string
