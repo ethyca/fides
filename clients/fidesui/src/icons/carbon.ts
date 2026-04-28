@@ -31,6 +31,7 @@ export {
   DataAnalytics,
   DataBase,
   DataTable,
+  DataVis_1 as DataVis1,
   Db2Database,
   Document,
   DocumentBlank,
