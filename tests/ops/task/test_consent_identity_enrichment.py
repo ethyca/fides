@@ -16,6 +16,14 @@ from fides.api.service.connectors.query_configs.query_config import SQLQueryConf
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.consent_identity_enrichment import enrich_identities_for_consent
 from fides.api.task.graph_task import build_consent_identity_enrichment_graph
+from fides.config import CONFIG
+
+
+@pytest.fixture()
+def enable_identity_enrichment():
+    CONFIG.consent.identity_enrichment = True
+    yield
+    CONFIG.consent.identity_enrichment = False
 
 
 def _make_users_collection(
@@ -219,6 +227,7 @@ class TestBuildConsentIdentityEnrichmentGraph:
         dataset_config.get_dataset_with_stubbed_collection.assert_not_called()
 
 
+@pytest.mark.usefixtures("enable_identity_enrichment")
 class TestEnrichIdentitiesForConsent:
     """Tests for the public enrich_identities_for_consent function.
 
@@ -226,6 +235,10 @@ class TestEnrichIdentitiesForConsent:
     infrastructure) and the DSR cache store (Redis). The connector mock
     uses a real SQLQueryConfig for query generation.
     """
+
+    @pytest.fixture(autouse=True)
+    def _store_db(self, db):
+        self.db = db
 
     @pytest.fixture(autouse=True)
     def mock_cache_store(self):
@@ -246,7 +259,7 @@ class TestEnrichIdentitiesForConsent:
         )
         datasets, configs, pr = _make_enrichment_setup()
         result = enrich_identities_for_consent(
-            datasets, configs, {"external_id": "ext_123"}, pr, MagicMock()
+            datasets, configs, {"external_id": "ext_123"}, pr, self.db
         )
         assert result["external_id"] == "ext_123"
         assert result["email"] == "found@test.com"
@@ -262,7 +275,7 @@ class TestEnrichIdentitiesForConsent:
         )
         datasets, configs, pr = _make_enrichment_setup()
         result = enrich_identities_for_consent(
-            datasets, configs, {"email": "user@test.com"}, pr, MagicMock()
+            datasets, configs, {"email": "user@test.com"}, pr, self.db
         )
         assert result["email"] == "user@test.com"
         assert result["external_id"] == "ext_456"
@@ -278,9 +291,7 @@ class TestEnrichIdentitiesForConsent:
         )
         datasets, configs, pr = _make_enrichment_setup()
         identity = {"email": "x@y.com", "external_id": "abc"}
-        result = enrich_identities_for_consent(
-            datasets, configs, identity, pr, MagicMock()
-        )
+        result = enrich_identities_for_consent(datasets, configs, identity, pr, self.db)
         assert result == identity
 
     def test_no_enrichment_when_no_consent_db_integrations(self):
@@ -290,14 +301,14 @@ class TestEnrichIdentitiesForConsent:
         pr = MagicMock()
         identity = {"external_id": "abc"}
         result = enrich_identities_for_consent(
-            [dataset_config], [], identity, pr, MagicMock()
+            [dataset_config], [], identity, pr, self.db
         )
         assert result == identity
 
     def test_no_enrichment_when_empty_datasets(self):
         pr = MagicMock()
         identity = {"external_id": "abc"}
-        result = enrich_identities_for_consent([], [], identity, pr, MagicMock())
+        result = enrich_identities_for_consent([], [], identity, pr, self.db)
         assert result == identity
 
     def test_saas_excluded_from_enrichment(self):
@@ -310,7 +321,7 @@ class TestEnrichIdentitiesForConsent:
         pr = MagicMock()
         identity = {"external_id": "abc"}
         result = enrich_identities_for_consent(
-            [dataset_config], [], identity, pr, MagicMock()
+            [dataset_config], [], identity, pr, self.db
         )
         assert result == identity
 
@@ -326,9 +337,7 @@ class TestEnrichIdentitiesForConsent:
         mock_get_connector.return_value = mock_connector
         datasets, configs, pr = _make_enrichment_setup()
         identity = {"external_id": "ext_123"}
-        result = enrich_identities_for_consent(
-            datasets, configs, identity, pr, MagicMock()
-        )
+        result = enrich_identities_for_consent(datasets, configs, identity, pr, self.db)
         assert result == identity
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
@@ -340,9 +349,7 @@ class TestEnrichIdentitiesForConsent:
         mock_get_connector.return_value = _make_sql_connector_mock([])
         datasets, configs, pr = _make_enrichment_setup()
         identity = {"external_id": "ext_123"}
-        result = enrich_identities_for_consent(
-            datasets, configs, identity, pr, MagicMock()
-        )
+        result = enrich_identities_for_consent(datasets, configs, identity, pr, self.db)
         assert result == identity
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
@@ -356,9 +363,7 @@ class TestEnrichIdentitiesForConsent:
         )
         datasets, configs, pr = _make_enrichment_setup()
         identity = {"email": "original@test.com", "external_id": "ext_123"}
-        result = enrich_identities_for_consent(
-            datasets, configs, identity, pr, MagicMock()
-        )
+        result = enrich_identities_for_consent(datasets, configs, identity, pr, self.db)
         assert result["email"] == "original@test.com"
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
@@ -373,9 +378,7 @@ class TestEnrichIdentitiesForConsent:
         datasets, configs, pr = _make_enrichment_setup()
         original = {"external_id": "ext_123"}
         original_copy = dict(original)
-        result = enrich_identities_for_consent(
-            datasets, configs, original, pr, MagicMock()
-        )
+        result = enrich_identities_for_consent(datasets, configs, original, pr, self.db)
         assert original == original_copy
         assert result != original
 
@@ -390,7 +393,7 @@ class TestEnrichIdentitiesForConsent:
         )
         datasets, configs, pr = _make_enrichment_setup()
         result = enrich_identities_for_consent(
-            datasets, configs, {"email": "my@test.com"}, pr, MagicMock()
+            datasets, configs, {"email": "my@test.com"}, pr, self.db
         )
         assert result["email"] == "my@test.com"
         assert result["external_id"] == "ext_456"
@@ -418,7 +421,7 @@ class TestEnrichIdentitiesForConsent:
             }
         )
         result = enrich_identities_for_consent(
-            datasets, configs, {"email": "found@test.com"}, pr, MagicMock()
+            datasets, configs, {"email": "found@test.com"}, pr, self.db
         )
         assert result["email"] == "found@test.com"
         assert result["external_id"] == "ext_1"
@@ -435,7 +438,7 @@ class TestEnrichIdentitiesForConsent:
         )
         datasets, configs, pr = _make_enrichment_setup()
         result = enrich_identities_for_consent(
-            datasets, configs, {"external_id": "ext_123"}, pr, MagicMock()
+            datasets, configs, {"external_id": "ext_123"}, pr, self.db
         )
         assert "email" not in result
 
@@ -453,7 +456,7 @@ class TestEnrichIdentitiesForConsent:
         )
         datasets, configs, pr = _make_enrichment_setup()
         result = enrich_identities_for_consent(
-            datasets, configs, {"external_id": "ext_123"}, pr, MagicMock()
+            datasets, configs, {"external_id": "ext_123"}, pr, self.db
         )
         assert result["email"] == "first@test.com"
 
@@ -461,7 +464,7 @@ class TestEnrichIdentitiesForConsent:
         dataset_config = _make_mock_dataset_config(enabled_actions=None)
         pr = MagicMock()
         result = enrich_identities_for_consent(
-            [dataset_config], [], {"external_id": "abc"}, pr, MagicMock()
+            [dataset_config], [], {"external_id": "abc"}, pr, self.db
         )
         assert result == {"external_id": "abc"}
 
@@ -470,7 +473,7 @@ class TestEnrichIdentitiesForConsent:
             identity_fields={"email": "email", "external_id": "external_id"}
         )
         result = enrich_identities_for_consent(
-            datasets, configs, {"phone_number": "555-0100"}, pr, MagicMock()
+            datasets, configs, {"phone_number": "555-0100"}, pr, self.db
         )
         assert result == {"phone_number": "555-0100"}
 
@@ -479,6 +482,6 @@ class TestEnrichIdentitiesForConsent:
         mock_get_connector.return_value = MagicMock()
         datasets, configs, pr = _make_enrichment_setup()
         result = enrich_identities_for_consent(
-            datasets, configs, {"external_id": "ext_123"}, pr, MagicMock()
+            datasets, configs, {"external_id": "ext_123"}, pr, self.db
         )
         assert result == {"external_id": "ext_123"}

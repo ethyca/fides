@@ -10,11 +10,23 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.privacy_preference import (
+    ConsentIdentitiesMixin,
+    CurrentPrivacyPreference,
+)
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
 from fides.api.task.consent_identity_enrichment import enrich_identities_for_consent
+from fides.config import CONFIG
 
 pytestmark = pytest.mark.integration
+
+
+@pytest.fixture()
+def enable_identity_enrichment():
+    CONFIG.consent.identity_enrichment = True
+    yield CONFIG
+    CONFIG.consent.identity_enrichment = False
 
 
 IDENTITY_TABLE_SQL = """
@@ -145,6 +157,7 @@ def consent_enrichment_dataset_config(
     ctl_dataset.delete(db)
 
 
+@pytest.mark.usefixtures("enable_identity_enrichment")
 class TestConsentIdentityEnrichmentIntegration:
     @pytest.fixture(autouse=True)
     def mock_cache_store(self):
@@ -285,3 +298,145 @@ class TestConsentIdentityEnrichmentIntegration:
             assert result == identity
         finally:
             non_consent_config.delete(db)
+
+
+@pytest.mark.usefixtures("enable_identity_enrichment")
+class TestPreferenceBasedEnrichment:
+    """Test the fast path: resolving missing identities from
+    CurrentPrivacyPreference records before falling back to DB connectors."""
+
+    @pytest.fixture(autouse=True)
+    def mock_cache_store(self):
+        with patch(
+            "fides.api.task.consent_identity_enrichment.get_dsr_cache_store"
+        ) as mock_store:
+            mock_store.return_value = MagicMock()
+            yield mock_store
+
+    @pytest.fixture()
+    def preference_with_both_identities(self, db):
+        pref = CurrentPrivacyPreference.create(
+            db=db,
+            data={
+                "email": "pref-user@example.com",
+                "hashed_email": ConsentIdentitiesMixin.hash_value(
+                    "pref-user@example.com"
+                ),
+                "external_id": "ext_pref_001",
+                "hashed_external_id": ConsentIdentitiesMixin.hash_value("ext_pref_001"),
+                "preferences": {},
+            },
+        )
+        yield pref
+        pref.delete(db)
+
+    def test_resolves_external_id_from_email(self, db, preference_with_both_identities):
+        privacy_request = MagicMock()
+        result = enrich_identities_for_consent(
+            datasets=[],
+            connection_configs=[],
+            identity_data={"email": "pref-user@example.com"},
+            privacy_request=privacy_request,
+            session=db,
+        )
+        assert result["email"] == "pref-user@example.com"
+        assert result["external_id"] == "ext_pref_001"
+
+    def test_resolves_email_from_external_id(self, db, preference_with_both_identities):
+        privacy_request = MagicMock()
+        result = enrich_identities_for_consent(
+            datasets=[],
+            connection_configs=[],
+            identity_data={"external_id": "ext_pref_001"},
+            privacy_request=privacy_request,
+            session=db,
+        )
+        assert result["external_id"] == "ext_pref_001"
+        assert result["email"] == "pref-user@example.com"
+
+    def test_skips_when_both_present(self, db, preference_with_both_identities):
+        privacy_request = MagicMock()
+        identity = {
+            "email": "pref-user@example.com",
+            "external_id": "ext_pref_001",
+        }
+        result = enrich_identities_for_consent(
+            datasets=[],
+            connection_configs=[],
+            identity_data=identity,
+            privacy_request=privacy_request,
+            session=db,
+        )
+        assert result == identity
+        privacy_request.add_success_execution_log.assert_not_called()
+
+    def test_no_match_returns_original(self, db):
+        privacy_request = MagicMock()
+        identity = {"email": "nonexistent@example.com"}
+        result = enrich_identities_for_consent(
+            datasets=[],
+            connection_configs=[],
+            identity_data=identity,
+            privacy_request=privacy_request,
+            session=db,
+        )
+        assert result == identity
+
+    def test_skips_when_flag_disabled(self, db, enable_identity_enrichment):
+        enable_identity_enrichment.consent.identity_enrichment = False
+        privacy_request = MagicMock()
+        identity = {"email": "pref-user@example.com"}
+        result = enrich_identities_for_consent(
+            datasets=[],
+            connection_configs=[],
+            identity_data=identity,
+            privacy_request=privacy_request,
+            session=db,
+        )
+        assert result == identity
+        privacy_request.add_success_execution_log.assert_not_called()
+
+    def test_preference_preferred_over_db_connector(
+        self,
+        db,
+        preference_with_both_identities,
+        consent_enrichment_connection_config,
+        consent_enrichment_dataset_config,
+        identity_lookup_table,
+    ):
+        """Preference lookup resolves the identity; DB connector is not queried."""
+        privacy_request = MagicMock()
+        result = enrich_identities_for_consent(
+            datasets=[consent_enrichment_dataset_config],
+            connection_configs=[consent_enrichment_connection_config],
+            identity_data={"email": "pref-user@example.com"},
+            privacy_request=privacy_request,
+            session=db,
+        )
+        assert result["external_id"] == "ext_pref_001"
+        log_call = privacy_request.add_success_execution_log.call_args
+        assert "preferences" in log_call.kwargs.get(
+            "message", log_call[1].get("message", "")
+        )
+
+    def test_falls_back_to_db_connector(
+        self,
+        db,
+        consent_enrichment_connection_config,
+        consent_enrichment_dataset_config,
+        identity_lookup_table,
+    ):
+        """No preference match — falls back to DB connector enrichment."""
+        privacy_request = MagicMock()
+        result = enrich_identities_for_consent(
+            datasets=[consent_enrichment_dataset_config],
+            connection_configs=[consent_enrichment_connection_config],
+            identity_data={"email": "enrichment-user@example.com"},
+            privacy_request=privacy_request,
+            session=db,
+        )
+        assert result["external_id"] == "ext_enrich_001"
+        log_call = privacy_request.add_success_execution_log.call_args
+        assert "DB connectors" in log_call.kwargs.get(
+            "message", log_call[1].get("message", "")
+        )

@@ -2,12 +2,14 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import Collection, CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import get_connector
@@ -164,6 +166,52 @@ def _extract_identities_from_rows(
     return discovered
 
 
+def _enrich_from_current_preferences(
+    identity_data: Dict[str, Any],
+    session: Session,
+) -> Dict[str, Any]:
+    """Look up missing email or external_id from CurrentPrivacyPreference.
+
+    Uses indexed hashed identity columns for fast Postgres lookup.
+    Returns enriched identity dict, or the original if no match found.
+    """
+    has_email = bool(identity_data.get("email"))
+    has_external_id = bool(identity_data.get("external_id"))
+
+    if has_email and has_external_id:
+        return identity_data
+
+    filters = []
+    if has_email:
+        hashes = CurrentPrivacyPreference.hash_value_for_search(identity_data["email"])
+        filters.append(CurrentPrivacyPreference.hashed_email.in_(hashes))
+    elif has_external_id:
+        hashes = CurrentPrivacyPreference.hash_value_for_search(
+            identity_data["external_id"]
+        )
+        filters.append(CurrentPrivacyPreference.hashed_external_id.in_(hashes))
+    else:
+        return identity_data
+
+    record = (
+        session.query(CurrentPrivacyPreference)
+        .filter(or_(*filters))
+        .order_by(CurrentPrivacyPreference.updated_at.desc())
+        .first()
+    )
+
+    if not record:
+        return identity_data
+
+    enriched = dict(identity_data)
+    if not has_email and record.email:
+        enriched["email"] = record.email
+    if not has_external_id and record.external_id:
+        enriched["external_id"] = record.external_id
+
+    return enriched
+
+
 def enrich_identities_for_consent(
     datasets: List[DatasetConfig],
     connection_configs: List[ConnectionConfig],
@@ -172,72 +220,66 @@ def enrich_identities_for_consent(
     session: Session,
 ) -> Dict[str, Any]:
     """
-    Resolve additional identities by querying consent-enabled DB integrations
-    before consent propagation.
+    Resolve additional identities before consent propagation.
 
-    Always queries reachable collections in consent-enabled DB integrations
-    to discover any additional identity fields. This ensures bidirectional
-    consent integrations (e.g. Bloomreach needs external_id, Iterable needs
-    email) always get the full set of available identities regardless of
-    which identity the incoming request provided.
+    When enabled via FIDES__CONSENT__IDENTITY_ENRICHMENT, first attempts a
+    fast lookup from CurrentPrivacyPreference records (indexed Postgres
+    query). Falls back to querying consent-enabled DB integrations if the
+    local lookup doesn't resolve the missing identity.
 
     Returns the enriched identity dict. On any failure, returns the original
     identity_data unchanged.
     """
+    if not CONFIG.consent.identity_enrichment:
+        return identity_data
+
+    if identity_data.get("email") and identity_data.get("external_id"):
+        return identity_data
+
     try:
-        graph = build_consent_identity_enrichment_graph(datasets)
-        if not graph.nodes:
-            return identity_data
-
-        targets = _find_reachable_collections(graph, identity_data)
-        if not targets:
-            return identity_data
-
-        logger.info("Consent identity enrichment: querying DB integrations")
-
-        enriched = dict(identity_data)
-        for connection_key, dataset_name, collection in targets:
-            config = _get_connection_config_by_key(connection_configs, connection_key)
-            if not config:
-                continue
-
-            rows = _execute_identity_lookup(
-                config, dataset_name, collection, identity_data, session
-            )
-            discovered = _extract_identities_from_rows(rows, collection, identity_data)
-            enriched.update(discovered)
-
+        enriched = _enrich_from_current_preferences(identity_data, session)
         new_keys = set(enriched.keys()) - set(identity_data.keys())
         if new_keys:
             logger.info(
-                "Consent identity enrichment discovered: {}",
+                "Consent identity enrichment (preferences) discovered: {}",
                 new_keys,
             )
-            store = get_dsr_cache_store(privacy_request.id)
-            for key in new_keys:
-                store.cache_identity_data(
-                    {key: FidesopsRedis.encode_obj(enriched[key])},
-                    expire_seconds=CONFIG.redis.default_ttl_seconds,
-                )
-            privacy_request.add_success_execution_log(
+            _cache_and_log_enrichment(
+                enriched,
+                new_keys,
+                privacy_request,
                 session,
-                connection_key=None,
-                dataset_name="Consent identity enrichment",
-                collection_name=None,
-                message=f"Resolved additional identities: {', '.join(sorted(new_keys))}",
-                action_type=ActionType.consent,
+                source="preferences",
             )
-        else:
-            privacy_request.add_success_execution_log(
-                session,
-                connection_key=None,
-                dataset_name="Consent identity enrichment",
-                collection_name=None,
-                message="No additional identities discovered",
-                action_type=ActionType.consent,
-            )
+            return enriched
 
-        return enriched
+        enriched = _enrich_from_db_connectors(
+            datasets, connection_configs, identity_data, session
+        )
+        new_keys = set(enriched.keys()) - set(identity_data.keys())
+        if new_keys:
+            logger.info(
+                "Consent identity enrichment (DB connectors) discovered: {}",
+                new_keys,
+            )
+            _cache_and_log_enrichment(
+                enriched,
+                new_keys,
+                privacy_request,
+                session,
+                source="DB connectors",
+            )
+            return enriched
+
+        privacy_request.add_success_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Consent identity enrichment",
+            collection_name=None,
+            message="No additional identities discovered",
+            action_type=ActionType.consent,
+        )
+        return identity_data
 
     except Exception as exc:
         logger.warning(
@@ -245,3 +287,59 @@ def enrich_identities_for_consent(
             exc,
         )
         return identity_data
+
+
+def _cache_and_log_enrichment(
+    enriched: Dict[str, Any],
+    new_keys: set,
+    privacy_request: PrivacyRequest,
+    session: Session,
+    source: str,
+) -> None:
+    """Cache discovered identities in Redis and write an execution log."""
+    store = get_dsr_cache_store(privacy_request.id)
+    for key in new_keys:
+        store.cache_identity_data(
+            {key: FidesopsRedis.encode_obj(enriched[key])},
+            expire_seconds=CONFIG.redis.default_ttl_seconds,
+        )
+    privacy_request.add_success_execution_log(
+        session,
+        connection_key=None,
+        dataset_name="Consent identity enrichment",
+        collection_name=None,
+        message=f"Resolved additional identities via {source}: {', '.join(sorted(new_keys))}",
+        action_type=ActionType.consent,
+    )
+
+
+def _enrich_from_db_connectors(
+    datasets: List[DatasetConfig],
+    connection_configs: List[ConnectionConfig],
+    identity_data: Dict[str, Any],
+    session: Session,
+) -> Dict[str, Any]:
+    """Query consent-enabled DB integrations for missing identities."""
+    graph = build_consent_identity_enrichment_graph(datasets)
+    if not graph.nodes:
+        return identity_data
+
+    targets = _find_reachable_collections(graph, identity_data)
+    if not targets:
+        return identity_data
+
+    logger.info("Consent identity enrichment: querying DB integrations")
+
+    enriched = dict(identity_data)
+    for connection_key, dataset_name, collection in targets:
+        config = _get_connection_config_by_key(connection_configs, connection_key)
+        if not config:
+            continue
+
+        rows = _execute_identity_lookup(
+            config, dataset_name, collection, identity_data, session
+        )
+        discovered = _extract_identities_from_rows(rows, collection, identity_data)
+        enriched.update(discovered)
+
+    return enriched
