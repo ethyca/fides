@@ -21,6 +21,7 @@ import {
   Popconfirm,
   SelectProps,
   Space,
+  Splitter,
   Tabs,
   useMessage,
 } from "fidesui";
@@ -1002,28 +1003,30 @@ const AccessPolicyEditor = ({
     </Flex>
   );
 
+  const leftPanelContent = (
+    <div className="h-full py-6 pl-10 pr-3">{mainColumn}</div>
+  );
+
   return (
     <Layout title={title} padded={false}>
-      <Flex className="h-full">
-        <div className="min-w-0 grow py-6 pl-10">{mainColumn}</div>
-        {agentChatEnabled && (
-          <div
-            style={{
-              width: 300,
-              flexShrink: 0,
-              borderLeft: "1px solid var(--ant-color-border)",
-              marginLeft: 16,
-              position: "relative",
-              zIndex: 100,
-            }}
-          >
-            <AgentChatPanel
-              currentYaml={yamlValue}
-              onYamlProposed={handleYamlProposed}
-            />
-          </div>
-        )}
-      </Flex>
+      {agentChatEnabled ? (
+        <Splitter className="h-full">
+          <Splitter.Panel>{leftPanelContent}</Splitter.Panel>
+          <Splitter.Panel defaultSize={350} min={300} max="40%" collapsible>
+            <div
+              className="h-full pl-3"
+              style={{ position: "relative", zIndex: 100 }}
+            >
+              <AgentChatPanel
+                currentYaml={yamlValue}
+                onYamlProposed={handleYamlProposed}
+              />
+            </div>
+          </Splitter.Panel>
+        </Splitter>
+      ) : (
+        leftPanelContent
+      )}
     </Layout>
   );
 };
