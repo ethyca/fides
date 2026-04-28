@@ -122,7 +122,10 @@ export const AssessmentTaskStatusIndicator = ({
   }, [activeTask, onTaskFinish]);
 
   // Detect active → idle transition for the final completion or error.
-  // No "Reload results" action — rows are already live-refreshed above.
+  // The completed-count effect above can't catch the last increment because
+  // `activeTask` flips to null on the same poll that delivers it (the task
+  // status moves to COMPLETE/ERROR and falls out of the active filter), so
+  // refetch once here to surface the final row update.
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
@@ -139,9 +142,10 @@ export const AssessmentTaskStatusIndicator = ({
           message: "Assessment evaluation complete",
         });
       }
+      onTaskFinish?.();
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask, notificationApi]);
+  }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;
