@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_DETAIL_ROUTE,
@@ -26,16 +26,22 @@ import {
 import DatasetNodeEditor from "~/features/test-datasets/DatasetNodeEditor";
 import { removeNulls } from "~/features/test-datasets/helpers";
 import { Dataset } from "~/types/api";
+import { RTKErrorResult } from "~/types/errors/api";
+
+import styles from "./graph-editor.module.scss";
 
 const DatasetGraphEditorPage: NextPage = () => {
   const router = useRouter();
   const messageApi = useMessage();
-  const datasetId = router.query.datasetId as string;
+  const datasetId = router.query.datasetId
+    ? decodeURIComponent(router.query.datasetId as string)
+    : "";
 
   const {
     data: serverDataset,
+    isLoading,
     isError,
-    error,
+    error: queryError,
   } = useGetDatasetByKeyQuery(datasetId, { skip: !datasetId });
   const [updateDataset] = useUpdateDatasetMutation();
 
@@ -68,17 +74,15 @@ const DatasetGraphEditorPage: NextPage = () => {
       return;
     }
 
-    const result = await updateDataset(localDataset);
-
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      return;
+    try {
+      const updated = await updateDataset(localDataset).unwrap();
+      const cleaned = removeNulls(updated) as Dataset;
+      setLocalDataset(cleaned);
+      savedDatasetJson.current = JSON.stringify(cleaned);
+      messageApi.success("Successfully saved dataset");
+    } catch (error) {
+      messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
-
-    const cleaned = removeNulls(result.data) as Dataset;
-    setLocalDataset(cleaned);
-    savedDatasetJson.current = JSON.stringify(cleaned);
-    messageApi.success("Successfully saved dataset");
   }, [localDataset, updateDataset, messageApi]);
 
   const handleReset = useCallback(() => {
@@ -95,7 +99,7 @@ const DatasetGraphEditorPage: NextPage = () => {
     return (
       <Layout title="Datasets">
         <ErrorPage
-          error={error}
+          error={queryError}
           defaultMessage={`Could not load dataset ${datasetId}`}
         />
       </Layout>
@@ -140,18 +144,10 @@ const DatasetGraphEditorPage: NextPage = () => {
           </Space>
         }
       />
-      <Flex
-        vertical
-        style={{
-          flex: "1 1 auto",
-          minHeight: 0,
-          height: "100%",
-          borderRadius: 8,
-          overflow: "hidden",
-          border: "1px solid var(--fidesui-neutral-200)",
-        }}
-      >
-        {localDataset ? (
+      <Flex vertical className={styles.editorContainer}>
+        {isLoading || !localDataset ? (
+          <Spin />
+        ) : (
           <DatasetNodeEditor
             key={editorKey}
             dataset={localDataset}
@@ -159,8 +155,6 @@ const DatasetGraphEditorPage: NextPage = () => {
             allowAddCollection
             allowNameEditing
           />
-        ) : (
-          <Spin />
         )}
       </Flex>
     </Layout>
