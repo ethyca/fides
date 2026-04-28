@@ -7,6 +7,7 @@ import {
   Space,
   Typography,
   useMessage,
+  useNotification,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -58,6 +59,7 @@ const EditorSection = ({
   connectionType,
 }: EditorSectionProps) => {
   const messageApi = useMessage();
+  const notificationApi = useNotification();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
   const [patchConnectionDatasets] = usePatchConnectionDatasetsMutation();
@@ -106,12 +108,8 @@ const EditorSection = ({
   }, [reachability, dispatch]);
 
   const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
-    {
-      connectionKey,
-    },
-    {
-      skip: !isSaas,
-    },
+    { connectionKey },
+    { skip: !isSaas || !connectionKey },
   );
   const datasetOptions = useMemo(
     () =>
@@ -272,10 +270,49 @@ const EditorSection = ({
     }
 
     if (saasWarnings.length > 0) {
-      const details = saasWarnings.map((w) => w.message).join("; ");
-      messageApi.warning(
-        `Dataset saved — ${saasWarnings.length} protected field(s) were restored: ${details}`,
+      const restored = saasWarnings.filter((w) => w.action === "restored");
+      const removed = saasWarnings.filter((w) => w.action === "removed");
+      const failed = saasWarnings.filter((w) => w.action === "failed");
+
+      const renderGroup = (label: string, group: DatasetFieldWarning[]) =>
+        group.length > 0 && (
+          <div className="mb-2 last:mb-0">
+            <Typography.Text strong>{label}</Typography.Text>
+            <ul className="mb-0 mt-1 list-disc pl-5">
+              {group.map((w, idx) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <li key={idx}>{w.message}</li>
+              ))}
+            </ul>
+          </div>
+        );
+
+      const description = (
+        <div>
+          {renderGroup("Restored", restored)}
+          {renderGroup("Removed", removed)}
+          {renderGroup("Failed", failed)}
+        </div>
       );
+
+      const notificationKey = "dataset-save-warnings";
+      notificationApi.warning({
+        message:
+          failed.length > 0
+            ? "Dataset saved with issues"
+            : "Dataset saved with warnings",
+        description,
+        duration: 0,
+        key: notificationKey,
+        btn: (
+          <Button
+            size="small"
+            onClick={() => notificationApi.destroy(notificationKey)}
+          >
+            Dismiss
+          </Button>
+        ),
+      });
     } else {
       messageApi.success("Successfully modified dataset");
     }

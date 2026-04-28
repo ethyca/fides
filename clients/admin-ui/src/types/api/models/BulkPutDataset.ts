@@ -6,6 +6,7 @@ import type { Dataset } from "./Dataset";
 export type DatasetFieldWarning = {
   collection?: string;
   field?: string;
+  action: "restored" | "removed" | "failed";
   message: string;
 };
 

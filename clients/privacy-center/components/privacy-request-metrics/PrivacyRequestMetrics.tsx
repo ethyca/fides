@@ -6,7 +6,6 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
-import { useMemo } from "react";
 
 import {
   METRIC_COLUMNS,
@@ -28,17 +27,7 @@ function formatValue(value: number | null, key: string): string {
 }
 
 export const PrivacyRequestMetrics = () => {
-  const queryParams = useMemo(() => {
-    const year = new Date().getFullYear() - 1;
-    return {
-      start_date: `${year}-01-01`,
-      end_date: `${year}-12-31`,
-      location: "us_ca",
-    };
-  }, []);
-
-  const { data, isLoading, isError } =
-    useGetPrivacyRequestMetricsQuery(queryParams);
+  const { data, isLoading, isError } = useGetPrivacyRequestMetricsQuery();
 
   if (isError) {
     return (
