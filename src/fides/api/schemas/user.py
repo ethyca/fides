@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.fides_user_invite import FidesUserInvite
 
-USERNAME_PATTERN = r"[a-zA-Z0-9._-]{1,100}"
+USERNAME_PATTERN = r"[a-zA-Z0-9._\-+@]{1,100}"
 
 
 class PrivacyRequestUser(FidesSchema):
@@ -44,7 +44,7 @@ class UserCreate(FidesSchema):
         if not re.fullmatch(USERNAME_PATTERN, username):
             raise ValueError(
                 "Usernames must be 1-100 characters and may only contain "
-                "letters, numbers, periods, underscores, and hyphens."
+                "letters, numbers, and the following characters: . @ + _ - "
             )
         return username
 

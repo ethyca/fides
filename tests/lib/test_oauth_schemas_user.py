@@ -37,7 +37,6 @@ def test_bad_password(password, message):
         "user&name",
         "user=name",
         "user<name",
-        "user@name",
         "",
         "a" * 101,
     ],
@@ -63,6 +62,9 @@ def test_user_create_invalid_username(username):
         "john.doe",
         "a",
         "a" * 100,
+        "john.doe@example.com",
+        "john+doe@example.com",
+        "johnny@example.uy",
     ],
 )
 def test_user_create_valid_username(username):
