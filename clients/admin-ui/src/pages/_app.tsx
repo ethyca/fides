@@ -26,6 +26,7 @@ import ForgotPassword from "./forgot-password";
 import Login from "./login";
 import LoginWithOIDC from "./login/[provider]";
 import PocEntryPoint from "./poc/entry-point";
+import PocGridMotion from "./poc/grid-motion";
 
 dayjs.extend(utc);
 
@@ -55,7 +56,7 @@ const renderPage = (
     // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
     return <Component {...pageProps} />;
   }
-  if (Component === PocEntryPoint) {
+  if (Component === PocEntryPoint || Component === PocGridMotion) {
     return (
       <ProtectedRoute>
         <CommonSubscriptions />

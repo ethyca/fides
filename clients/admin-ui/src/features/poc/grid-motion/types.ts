@@ -1,28 +1,86 @@
-export const LEFT_CARDS = ["left-1", "left-2", "left-3", "left-4"] as const;
-
-export const CENTER_CARDS = ["health-score", "ai-briefing"] as const;
-
-export const RIGHT_CARDS = [
-  "trend-governance-posture",
-  "trend-dsr-volume",
-  "trend-system-coverage",
-  "trend-classification-health",
-  "system-coverage",
-  "dsr-status",
-  "generate-report",
+export const CARD_IDS = [
+  "card-tall",
+  "card-wide-a",
+  "card-wide-b",
+  "card-unit-a",
+  "card-unit-b",
+  "card-unit-c",
+  "card-unit-d",
 ] as const;
 
-export type LeftCardId = (typeof LEFT_CARDS)[number];
-export type CenterCardId = (typeof CENTER_CARDS)[number];
-export type RightCardId = (typeof RIGHT_CARDS)[number];
-export type CardId = LeftCardId | CenterCardId | RightCardId;
+export type CardId = (typeof CARD_IDS)[number];
 
-// The page-wide single-expand state only targets center + right cards.
-// Left cards are governed by their own group state (see GridMotionExperiment).
-export type ExpandableCardId = CenterCardId | RightCardId;
+export interface CardSpan {
+  cols: number;
+  rows: number;
+}
 
-export const ALL_CARDS: readonly CardId[] = [
-  ...CENTER_CARDS,
-  ...LEFT_CARDS,
-  ...RIGHT_CARDS,
+export interface CardSpec {
+  id: CardId;
+  label: string;
+  collapsed: CardSpan;
+  expanded: CardSpan;
+  /** Lower = closer to top-right when in collapsed state. */
+  collapsedOrder: number;
+  /** Lower = closer to top-right when in expanded state. */
+  expandedOrder: number;
+}
+
+export const CARD_SPECS: readonly CardSpec[] = [
+  {
+    id: "card-wide-b",
+    label: "Consent Alignment",
+    collapsed: { cols: 2, rows: 2 },
+    expanded: { cols: 4, rows: 3 },
+    collapsedOrder: 3,
+    expandedOrder: 3,
+  },
+  {
+    id: "card-unit-b",
+    label: "Policy Enforcement",
+    collapsed: { cols: 3, rows: 1 },
+    expanded: { cols: 4, rows: 3 },
+    collapsedOrder: 5,
+    expandedOrder: 5,
+  },
+  {
+    id: "card-tall",
+    label: "Coverage",
+    collapsed: { cols: 2, rows: 1 },
+    expanded: { cols: 3, rows: 4 },
+    collapsedOrder: 1,
+    expandedOrder: 1,
+  },
+  {
+    id: "card-wide-a",
+    label: "Classification Health",
+    collapsed: { cols: 2, rows: 1 },
+    expanded: { cols: 4, rows: 3 },
+    collapsedOrder: 2,
+    expandedOrder: 2,
+  },
+  {
+    id: "card-unit-a",
+    label: "DSR Compliance",
+    collapsed: { cols: 2, rows: 1 },
+    expanded: { cols: 3, rows: 3 },
+    collapsedOrder: 4,
+    expandedOrder: 4,
+  },
+  {
+    id: "card-unit-c",
+    label: "AI Readiness",
+    collapsed: { cols: 1, rows: 1 },
+    expanded: { cols: 4, rows: 4 },
+    collapsedOrder: 6,
+    expandedOrder: 6,
+  },
+  {
+    id: "card-unit-d",
+    label: "Assessment Coverage",
+    collapsed: { cols: 1, rows: 1 },
+    expanded: { cols: 3, rows: 3 },
+    collapsedOrder: 7,
+    expandedOrder: 7,
+  },
 ];

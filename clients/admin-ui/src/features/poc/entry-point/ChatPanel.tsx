@@ -139,10 +139,10 @@ const OpenContent = ({
         padding: "64px 72px 52px 72px",
       }}
     >
+      <div style={{ width: "100%", maxWidth: 600, margin: "0 auto" }}>
       <h2
         style={{
           fontFamily: serif,
-          fontStyle: "italic",
           fontWeight: 400,
           fontSize: 44,
           lineHeight: 1.15,
@@ -245,6 +245,7 @@ const OpenContent = ({
           </div>
         ))}
       </div>
+      </div>
     </div>
 
     {/* Footer / input row */}
@@ -273,7 +274,6 @@ const OpenContent = ({
         <span
           style={{
             fontFamily: sans,
-            fontStyle: "italic",
             fontSize: 14,
             color: "#8b8175",
           }}
@@ -302,16 +302,41 @@ const OpenContent = ({
 const ClosedContent = ({ expanded: _expanded }: { expanded: string | null }) => (
   <div
     style={{
+      position: "relative",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       gap: 16,
       padding: "18px 24px",
       width: "100%",
+      overflow: "hidden",
     }}
   >
+    <motion.div
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: "-50%",
+        width: "200%",
+        backgroundImage:
+          "linear-gradient(90deg, rgba(194,90,44,0) 0%, rgba(225,160,125,0.10) 30%, rgba(194,90,44,0.14) 50%, rgba(225,160,125,0.10) 70%, rgba(194,90,44,0) 100%)",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+      animate={{ x: ["-12%", "12%"] }}
+      transition={{
+        duration: 9,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "mirror",
+      }}
+    />
     <div
       style={{
+        position: "relative",
+        zIndex: 1,
         display: "flex",
         alignItems: "center",
         gap: 12,
@@ -325,7 +350,6 @@ const ClosedContent = ({ expanded: _expanded }: { expanded: string | null }) => 
       <span
         style={{
           fontFamily: sans,
-          fontStyle: "italic",
           fontSize: 14,
           color: "#8b8175",
           whiteSpace: "nowrap",
@@ -338,6 +362,8 @@ const ClosedContent = ({ expanded: _expanded }: { expanded: string | null }) => 
     </div>
     <span
       style={{
+        position: "relative",
+        zIndex: 1,
         fontFamily: mono,
         fontSize: 11,
         letterSpacing: "1.32px",
@@ -431,19 +457,24 @@ const ChatPanel = ({ expanded }: { expanded: string | null }) => {
         ref={panelRef}
         layout
         initial={false}
-        animate={{ width: open ? 800 : 500 }}
+        animate={{ width: open ? 960 : 500 }}
         transition={{
           layout: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
           width: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
         }}
         style={{
-          background: "rgba(255, 255, 255, 0.55)",
+          backgroundImage: hovered
+            ? "linear-gradient(90deg, rgba(126,129,133,0.10), rgba(126,129,133,0.10))"
+            : "linear-gradient(90deg, rgba(126,129,133,0.05), rgba(126,129,133,0.05))",
           backdropFilter: "blur(14px)",
           WebkitBackdropFilter: "blur(14px)",
-          border: "1px solid rgba(32, 28, 24, 0.08)",
-          boxShadow: "0 2px 12px rgba(32, 28, 24, 0.04)",
+          boxShadow: hovered
+            ? "0 0 24px rgba(126,129,133,0.28), 0 8px 28px rgba(43,46,53,0.14), inset 0 0 32px rgba(255,255,255,0.45)"
+            : "inset 0 0 24px rgba(255,255,255,0.18)",
+          transition:
+            "background-image 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s cubic-bezier(0.22,1,0.36,1)",
           overflow: "hidden" as const,
-          borderRadius: 2,
+          borderRadius: 4,
           cursor: open ? "default" : "pointer",
           pointerEvents: "auto",
         }}

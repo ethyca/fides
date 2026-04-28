@@ -47,7 +47,11 @@ export interface RadarChartProps {
   animationDuration?: number;
   outerRadius?: string;
   showGrid?: boolean;
+  noFill?: boolean;
+  noTickStroke?: boolean;
   onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
+  onDimensionHover?: (index: number, point: RadarChartDataPoint) => void;
+  onDimensionLeave?: () => void;
   tooltipContent?: (point: RadarChartDataPoint) => ReactNode;
   className?: string;
 }
@@ -60,6 +64,7 @@ interface RadarTickProps {
   statusColors: Record<RadarPointStatus, string>;
   chartColor: string;
   bgColor: string;
+  noTickStroke?: boolean;
   onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
   onTickHover?: (index: number, event: React.MouseEvent) => void;
   onTickLeave?: () => void;
@@ -73,6 +78,7 @@ const RadarTick = ({
   statusColors,
   chartColor,
   bgColor,
+  noTickStroke,
   onDimensionClick,
   onTickHover,
   onTickLeave,
@@ -150,9 +156,9 @@ const RadarTick = ({
         y={point?.tag ? y - 14 : y}
         fill={statusColor ?? chartColor}
         fillOpacity={1}
-        stroke={bgColor}
-        strokeWidth={3}
-        strokeOpacity={0.5}
+        stroke={noTickStroke ? "none" : bgColor}
+        strokeWidth={noTickStroke ? 0 : 3}
+        strokeOpacity={noTickStroke ? 0 : 0.5}
         paintOrder="stroke"
         strokeLinejoin="round"
         maxLines={2}
@@ -224,8 +230,12 @@ export const RadarChart = ({
   color,
   outerRadius = "70%",
   showGrid = true,
+  noFill = false,
+  noTickStroke = false,
   animationDuration = CHART_ANIMATION.defaultDuration,
   onDimensionClick,
+  onDimensionHover,
+  onDimensionLeave,
   tooltipContent,
   className,
 }: RadarChartProps) => {
@@ -246,7 +256,8 @@ export const RadarChart = ({
     [token],
   );
 
-  const interactive = !!onDimensionClick || !!tooltipContent;
+  const interactive =
+    !!onDimensionClick || !!tooltipContent || !!onDimensionHover;
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -256,21 +267,29 @@ export const RadarChart = ({
     y: number;
   } | null>(null);
 
-  const handleTickHover = useCallback((index: number, e: React.MouseEvent) => {
-    if (!containerRef.current) {
-      return;
-    }
-    const rect = containerRef.current.getBoundingClientRect();
-    setTickTooltip({
-      index,
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  }, []);
+  const handleTickHover = useCallback(
+    (index: number, e: React.MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setTickTooltip({
+          index,
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }
+      if (onDimensionHover && data?.[index]) {
+        onDimensionHover(index, data[index]);
+      }
+    },
+    [data, onDimensionHover],
+  );
 
   const handleTickLeave = useCallback(() => {
     setTickTooltip(null);
-  }, []);
+    if (onDimensionLeave) {
+      onDimensionLeave();
+    }
+  }, [onDimensionLeave]);
 
   const tickTooltipStyle = useMemo<React.CSSProperties>(
     () => ({
@@ -291,7 +310,9 @@ export const RadarChart = ({
         "pointer-events-none": !interactive,
         [styles.interactiveContainer]: interactive,
       })}
-      onMouseLeave={tooltipContent ? handleTickLeave : undefined}
+      onMouseLeave={
+        tooltipContent || onDimensionHover ? handleTickLeave : undefined
+      }
     >
       <ResponsiveContainer
         width="100%"
@@ -331,7 +352,7 @@ export const RadarChart = ({
               strokeOpacity={CHART_STROKE.strokeOpacity}
               strokeLinecap={CHART_STROKE.strokeLinecap}
               strokeLinejoin={CHART_STROKE.strokeLinejoin}
-              fill={`url(#${gradientId})`}
+              fill={noFill ? "none" : `url(#${gradientId})`}
               dot={
                 <RadarDot
                   data={data!}
@@ -357,9 +378,18 @@ export const RadarChart = ({
                   statusColors={STATUS_COLORS}
                   chartColor={chartColor}
                   bgColor={token.colorBgContainer}
+                  noTickStroke={noTickStroke}
                   onDimensionClick={onDimensionClick}
-                  onTickHover={tooltipContent ? handleTickHover : undefined}
-                  onTickLeave={tooltipContent ? handleTickLeave : undefined}
+                  onTickHover={
+                    tooltipContent || onDimensionHover
+                      ? handleTickHover
+                      : undefined
+                  }
+                  onTickLeave={
+                    tooltipContent || onDimensionHover
+                      ? handleTickLeave
+                      : undefined
+                  }
                 />
               }
             />
