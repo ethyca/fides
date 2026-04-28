@@ -103,14 +103,22 @@ export const AssessmentTaskStatusIndicator = ({
 
   // Active task just appeared: Celery has picked up the task and materialized
   // the `generating` rows. The mutation's tag invalidation fired before
-  // materialization, so refetch once here to surface those rows.
+  // materialization, so refetch once here to surface those rows. Skip the
+  // very first observation so a page mount with an already-active task
+  // doesn't trigger a redundant refetch on top of the initial query.
   const prevActiveTaskIdRef = useRef<string | null>(null);
+  const hasObservedActiveTaskRef = useRef(false);
   useEffect(() => {
     const currentId = activeTask?.id ?? null;
-    if (currentId && currentId !== prevActiveTaskIdRef.current) {
+    if (
+      hasObservedActiveTaskRef.current &&
+      currentId &&
+      currentId !== prevActiveTaskIdRef.current
+    ) {
       onTaskFinish?.();
     }
     prevActiveTaskIdRef.current = currentId;
+    hasObservedActiveTaskRef.current = true;
   }, [activeTask, onTaskFinish]);
 
   // Detect active → idle transition for the final completion or error.
@@ -142,7 +150,9 @@ export const AssessmentTaskStatusIndicator = ({
     if (activeTask) {
       return (
         <Flex align="center" gap="small">
-          <Spin size="small" />
+          <div>
+            <Spin size="small" />
+          </div>
           <Text type="secondary" size="sm">
             Evaluation in progress · {Math.round(activeTask.progress)}%
           </Text>
