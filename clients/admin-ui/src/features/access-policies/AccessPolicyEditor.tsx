@@ -21,7 +21,6 @@ import {
   Popconfirm,
   SelectProps,
   Space,
-  Splitter,
   Tabs,
   useMessage,
 } from "fidesui";
@@ -953,72 +952,81 @@ const AccessPolicyEditor = ({
     />
   );
 
+  const mainColumn = (
+    <Flex vertical className="h-full min-w-0 grow">
+      <div>
+        <PageHeader
+          heading={title}
+          breadcrumbItems={[
+            { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
+            { title: breadcrumbTitle },
+          ]}
+          rightContent={
+            <Space>
+              {!isNew && (
+                <Popconfirm
+                  title="Delete policy"
+                  description="Are you sure you want to delete this policy?"
+                  onConfirm={onDelete}
+                  okText="Delete"
+                  okButtonProps={{ danger: true }}
+                  cancelText="Cancel"
+                >
+                  <Button
+                    icon={<Icons.TrashCan />}
+                    danger
+                    aria-label="Delete policy"
+                    data-testid="delete-btn"
+                  />
+                </Popconfirm>
+              )}
+              <Button
+                icon={<Icons.Download />}
+                onClick={handleExport}
+                data-testid="export-btn"
+              >
+                Export
+              </Button>
+              <Button
+                type="primary"
+                onClick={handleSave}
+                data-testid="save-btn"
+              >
+                Save
+              </Button>
+            </Space>
+          }
+        />
+      </div>
+      <div className="relative min-h-0 grow">{tabsNode}</div>
+    </Flex>
+  );
+
   return (
     <Layout title={title}>
-      <Flex vertical className="h-full">
-        <div>
-          <PageHeader
-            heading={title}
-            breadcrumbItems={[
-              { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
-              { title: breadcrumbTitle },
-            ]}
-            isSticky
-            rightContent={
-              <Space>
-                {!isNew && (
-                  <Popconfirm
-                    title="Delete policy"
-                    description="Are you sure you want to delete this policy?"
-                    onConfirm={onDelete}
-                    okText="Delete"
-                    okButtonProps={{ danger: true }}
-                    cancelText="Cancel"
-                  >
-                    <Button
-                      icon={<Icons.TrashCan />}
-                      danger
-                      aria-label="Delete policy"
-                      data-testid="delete-btn"
-                    />
-                  </Popconfirm>
-                )}
-                <Button
-                  icon={<Icons.Download />}
-                  onClick={handleExport}
-                  data-testid="export-btn"
-                >
-                  Export
-                </Button>
-                <Button
-                  type="primary"
-                  onClick={handleSave}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </Space>
-            }
-          />
-        </div>
-        <div className="relative min-h-0 grow">
-          {agentChatEnabled ? (
-            <Splitter className="h-full">
-              <Splitter.Panel>
-                <div className="h-full pr-3">{tabsNode}</div>
-              </Splitter.Panel>
-              <Splitter.Panel defaultSize={300} min={260} max="50%" collapsible>
-                <AgentChatPanel
-                  currentYaml={yamlValue}
-                  onYamlProposed={handleYamlProposed}
-                />
-              </Splitter.Panel>
-            </Splitter>
-          ) : (
-            tabsNode
-          )}
-        </div>
-      </Flex>
+      {agentChatEnabled ? (
+        <Flex className="h-full">
+          {mainColumn}
+          <div
+            style={{
+              width: 300,
+              flexShrink: 0,
+              borderLeft: "1px solid var(--ant-color-border)",
+              paddingLeft: 16,
+              marginLeft: 16,
+              position: "relative",
+              zIndex: 100,
+            }}
+          >
+            <AgentChatPanel
+              currentYaml={yamlValue}
+              onYamlProposed={handleYamlProposed}
+            />
+          </div>
+        </Flex>
+      ) : (
+        mainColumn
+      )}
     </Layout>
   );
 };
