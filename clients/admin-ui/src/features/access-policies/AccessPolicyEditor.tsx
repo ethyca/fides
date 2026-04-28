@@ -1003,16 +1003,15 @@ const AccessPolicyEditor = ({
   );
 
   return (
-    <Layout title={title}>
-      {agentChatEnabled ? (
-        <Flex className="h-full">
-          {mainColumn}
+    <Layout title={title} padded={false}>
+      <Flex className="h-full">
+        <div className="min-w-0 grow py-6 pl-10">{mainColumn}</div>
+        {agentChatEnabled && (
           <div
             style={{
               width: 300,
               flexShrink: 0,
               borderLeft: "1px solid var(--ant-color-border)",
-              paddingLeft: 16,
               marginLeft: 16,
               position: "relative",
               zIndex: 100,
@@ -1023,10 +1022,8 @@ const AccessPolicyEditor = ({
               onYamlProposed={handleYamlProposed}
             />
           </div>
-        </Flex>
-      ) : (
-        mainColumn
-      )}
+        )}
+      </Flex>
     </Layout>
   );
 };
