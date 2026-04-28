@@ -5,7 +5,7 @@ access package review workflow. Stores the list of field/record-level
 redactions an admin has applied before approving the package for delivery.
 
 Revision ID: d7e8f9a0b1c2
-Revises: d71c7d274c04
+Revises: 4738e3e3e850
 Create Date: 2026-04-22 10:00:00.000000
 
 """
@@ -16,7 +16,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
 revision = "d7e8f9a0b1c2"
-down_revision = "d71c7d274c04"
+down_revision = "4738e3e3e850"
 branch_labels = None
 depends_on = None
 
