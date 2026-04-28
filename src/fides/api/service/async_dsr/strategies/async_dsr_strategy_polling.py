@@ -59,8 +59,14 @@ if TYPE_CHECKING:
 
 class AsyncPollingStrategy(AsyncDSRStrategy):
     """
-    Enhanced strategy for polling async DSR requests.
+    Strategy for polling async DSR requests.
     Works for both access and erasure operations with internal phase-based organization.
+
+    Session contract: this class commits immediately and deliberately.
+    Initial-phase writes (async_type, sub-requests) must be durable before this method
+    returns, because the polling continuation runs in a separate Celery task invocation
+    with no shared session. Callers should not wrap calls to this strategy in an outer
+    transaction expecting atomicity — each phase is its own durable unit of work.
     """
 
     type = AsyncTaskType.polling
@@ -153,6 +159,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         request_task.async_type = AsyncTaskType.polling
         self.session.add(request_task)
+        # Commit immediately — sub-requests must be visible to the polling Celery task,
+        # which runs in a separate invocation with no shared session.
         self.session.commit()
 
         for read_request in async_requests_to_process:
@@ -193,9 +201,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         masking_request = query_config.get_masking_request()
 
-        # Set async type once for the task
+        # Set async type once for the task.
         request_task.async_type = AsyncTaskType.polling
         self.session.add(request_task)
+        # Commit immediately — sub-requests must be visible to the polling Celery task,
+        # which runs in a separate invocation with no shared session.
         self.session.commit()
 
         if masking_request and masking_request.async_config and masking_request.path:
