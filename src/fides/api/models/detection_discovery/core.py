@@ -823,9 +823,10 @@ def _unlink_staged_resources_on_system_delete(
     """Null out system_id and reset diff_status on StagedResources before a System is deleted.
 
     This keeps the dependency direction correct: the discovery module knows about
-    System (via the FK), not the other way around. Follows the same pattern as
-    fidesplus/jira/jira_credential_sync.py which listens for ConnectionConfig deletion.
+    System (via the FK), not the other way around.
+
     """
+    logger.debug("Unlinking StagedResources from System {} before deletion", target.id)
     connection.execute(
         update(StagedResource.__table__)
         .where(StagedResource.__table__.c.system_id == target.id)
