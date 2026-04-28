@@ -102,6 +102,9 @@ describe("User Authentication", () => {
           "postAcceptInvite",
         );
       });
+      cy.intercept("GET", "/api/v1/user/validate-invite*", {
+        body: { valid: true, reason: null },
+      }).as("validateInvite");
     });
     it("can prefill email and render different copy for an invited user", () => {
       const data = { username: "testuser", invite_code: "123" };
@@ -109,6 +112,7 @@ describe("User Authentication", () => {
       cy.visit("/login", {
         qs: data,
       });
+      cy.wait("@validateInvite");
       cy.getByTestId("input-username").should("be.disabled");
       cy.getByTestId("input-username").should("have.value", data.username);
       cy.get("label").contains("Set new password");
@@ -121,6 +125,55 @@ describe("User Authentication", () => {
         expect(body).to.eql({ new_password: newPassword });
       });
       cy.getByTestId("Home");
+    });
+
+    it("shows an expired-link message and no password form when the invite is expired", () => {
+      cy.intercept("GET", "/api/v1/user/validate-invite*", {
+        body: { valid: false, reason: "expired" },
+      }).as("validateInviteExpired");
+      cy.visit("/login", {
+        qs: { username: "testuser", invite_code: "expired" },
+      });
+      cy.wait("@validateInviteExpired");
+      cy.getByTestId("invalid-token-message").should(
+        "contain",
+        "This link has expired",
+      );
+      cy.getByTestId("input-password").should("not.exist");
+      cy.getByTestId("return-to-login-btn").should("be.visible");
+    });
+
+    it("shows an invalid-link message when the invite was already used", () => {
+      cy.intercept("GET", "/api/v1/user/validate-invite*", {
+        body: { valid: false, reason: "invalid" },
+      }).as("validateInviteInvalid");
+      cy.visit("/login", {
+        qs: { username: "testuser", invite_code: "used" },
+      });
+      cy.wait("@validateInviteInvalid");
+      cy.getByTestId("invalid-token-message").should(
+        "contain",
+        "This link is no longer valid",
+      );
+      cy.getByTestId("input-password").should("not.exist");
+    });
+  });
+
+  describe("password reset user", () => {
+    it("shows an expired-link message and a request-new-link CTA when the reset token is expired", () => {
+      cy.intercept("GET", "/api/v1/user/validate-reset-token*", {
+        body: { valid: false, reason: "expired" },
+      }).as("validateResetExpired");
+      cy.visit("/login", {
+        qs: { username: "testuser", reset_token: "expired" },
+      });
+      cy.wait("@validateResetExpired");
+      cy.getByTestId("invalid-token-message").should(
+        "contain",
+        "This link has expired",
+      );
+      cy.getByTestId("input-password").should("not.exist");
+      cy.getByTestId("request-new-link-btn").should("be.visible");
     });
   });
 });

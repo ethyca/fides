@@ -13,6 +13,7 @@ import {
   LoginWithOIDCRequest,
   LogoutRequest,
   LogoutResponse,
+  TokenValidationResponse,
 } from "./types";
 
 // Currently, the BE response doesn't include whether the user is a root user,
@@ -141,6 +142,26 @@ const authApi = baseApi.injectEndpoints({
         body: { username, token, new_password },
       }),
     }),
+    validateInvite: build.query<
+      TokenValidationResponse,
+      { username: string; inviteCode: string }
+    >({
+      query: ({ username, inviteCode }) => ({
+        url: "user/validate-invite",
+        method: "GET",
+        params: { username, invite_code: inviteCode },
+      }),
+    }),
+    validateResetToken: build.query<
+      TokenValidationResponse,
+      { username: string; token: string }
+    >({
+      query: ({ username, token }) => ({
+        url: "user/validate-reset-token",
+        method: "GET",
+        params: { username, token },
+      }),
+    }),
   }),
 });
 
@@ -153,5 +174,7 @@ export const {
   useGetAuthenticationMethodsQuery,
   useForgotPasswordMutation,
   useResetPasswordWithTokenMutation,
+  useValidateInviteQuery,
+  useValidateResetTokenQuery,
 } = authApi;
 export const { reducer } = authSlice;

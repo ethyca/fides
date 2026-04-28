@@ -192,6 +192,24 @@ class UserResetPasswordWithToken(FidesSchema):
         return UserCreate.validate_password(decoded_password)
 
 
+class TokenValidationReason(str, Enum):
+    """Reasons a token validation check can fail.
+
+    `invalid` covers unknown/malformed tokens as well as tokens that have already
+    been consumed (since consumed tokens are deleted).
+    """
+
+    invalid = "invalid"
+    expired = "expired"
+
+
+class TokenValidationResponse(FidesSchema):
+    """Response body for invite/reset token validation endpoints."""
+
+    valid: bool
+    reason: Optional[TokenValidationReason] = None
+
+
 class DisabledReason(Enum):
     """Reasons for why a user is disabled"""
 

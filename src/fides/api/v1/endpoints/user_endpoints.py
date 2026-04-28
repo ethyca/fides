@@ -35,6 +35,7 @@ from fides.api.deps import get_config_proxy, get_db, get_user_service
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
+from fides.api.models.fides_user_password_reset import FidesUserPasswordReset
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER, EXTERNAL_RESPONDENT, VIEWER
@@ -53,6 +54,8 @@ from fides.api.oauth.utils import (
 from fides.api.schemas.oauth import AccessToken
 from fides.api.schemas.user import (
     DisabledReason,
+    TokenValidationReason,
+    TokenValidationResponse,
     UserCreate,
     UserCreateResponse,
     UserForcePasswordReset,
@@ -628,6 +631,94 @@ def _get_invite_for_user(db: Session, user: FidesUser) -> Optional[FidesUserInvi
     if user.username:
         return FidesUserInvite.get_by(db, field="username", value=user.username)
     return None
+
+
+# NOTE: These two GET routes must be registered *before* the `GET /user/{user_id}`
+# route below. FastAPI matches routes in registration order, and the path
+# `/user/{user_id}` would otherwise swallow GETs to `/user/validate-invite` and
+# `/user/validate-reset-token` (treating the literal as a `user_id` and rejecting
+# the request with 401 because it requires auth).
+@router.get(
+    urls.USER_VALIDATE_INVITE,
+    status_code=HTTP_200_OK,
+    response_model=TokenValidationResponse,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def validate_invite(
+    *,
+    request: Request,
+    username: str,
+    invite_code: str,
+    db: Session = Depends(get_db),
+) -> TokenValidationResponse:
+    """
+    Check whether an invite token is still valid without consuming it.
+
+    Used by the frontend on page load so we can show an "expired" or "invalid"
+    message before the user fills out the create-password form. Always returns
+    200; the `valid` / `reason` fields carry the outcome so the client can
+    render accordingly.
+    """
+    user_invite = FidesUserInvite.get_by(db, field="username", value=username)
+
+    if not user_invite or not user_invite.invite_code_valid(invite_code):
+        return TokenValidationResponse(
+            valid=False, reason=TokenValidationReason.invalid
+        )
+
+    if user_invite.is_expired():
+        return TokenValidationResponse(
+            valid=False, reason=TokenValidationReason.expired
+        )
+
+    return TokenValidationResponse(valid=True)
+
+
+@router.get(
+    urls.USER_VALIDATE_RESET_TOKEN,
+    status_code=HTTP_200_OK,
+    response_model=TokenValidationResponse,
+)
+@fides_limiter.limit(CONFIG.security.auth_rate_limit)
+def validate_reset_token(
+    *,
+    request: Request,
+    username: str,
+    token: str,
+    db: Session = Depends(get_db),
+) -> TokenValidationResponse:
+    """
+    Check whether a password-reset token is still valid without consuming it.
+
+    Used by the frontend on page load so we can show an "expired" or "invalid"
+    message before the user fills out the reset-password form. Always returns
+    200 with a consistent shape to avoid leaking whether the username exists.
+    """
+    user = FidesUser.get_by(db, field="username", value=username)
+    if not user:
+        return TokenValidationResponse(
+            valid=False, reason=TokenValidationReason.invalid
+        )
+
+    matching_reset = FidesUserPasswordReset.get_by(
+        db, field="user_id", value=user.id
+    )
+    if not matching_reset:
+        return TokenValidationResponse(
+            valid=False, reason=TokenValidationReason.invalid
+        )
+
+    if matching_reset.is_expired():
+        return TokenValidationResponse(
+            valid=False, reason=TokenValidationReason.expired
+        )
+
+    if not matching_reset.token_valid(token):
+        return TokenValidationResponse(
+            valid=False, reason=TokenValidationReason.invalid
+        )
+
+    return TokenValidationResponse(valid=True)
 
 
 @router.get(
