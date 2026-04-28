@@ -17,8 +17,10 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    event,
     func,
     text,
+    update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -811,6 +813,23 @@ class StagedResource(StagedResourceBase):
             "urn",
             postgresql_where=text("is_leaf IS TRUE"),
         ),
+    )
+
+
+@event.listens_for(System, "before_delete")
+def _unlink_staged_resources_on_system_delete(
+    mapper: Any, connection: Any, target: System
+) -> None:
+    """Null out system_id and reset diff_status on StagedResources before a System is deleted.
+
+    This keeps the dependency direction correct: the discovery module knows about
+    System (via the FK), not the other way around. Follows the same pattern as
+    fidesplus/jira/jira_credential_sync.py which listens for ConnectionConfig deletion.
+    """
+    connection.execute(
+        update(StagedResource.__table__)
+        .where(StagedResource.__table__.c.system_id == target.id)
+        .values(system_id=None, diff_status=DiffStatus.ADDITION.value)
     )
 
 
