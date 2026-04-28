@@ -1004,7 +1004,9 @@ const AccessPolicyEditor = ({
   );
 
   const leftPanelContent = (
-    <div className="h-full py-6 pl-10 pr-3">{mainColumn}</div>
+    <div className="h-full overflow-hidden pb-4 pl-10 pr-3 pt-6">
+      {mainColumn}
+    </div>
   );
 
   return (
@@ -1014,7 +1016,7 @@ const AccessPolicyEditor = ({
           <Splitter.Panel>{leftPanelContent}</Splitter.Panel>
           <Splitter.Panel defaultSize={350} min={300} max="40%" collapsible>
             <div
-              className="h-full"
+              className="h-full pb-2"
               style={{ position: "relative", zIndex: 100 }}
             >
               <AgentChatPanel

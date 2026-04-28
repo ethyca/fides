@@ -196,6 +196,7 @@ const AgentChatPanel = ({
           onSubmit={handleSend}
           loading={isLoading}
           placeholder="Describe your policy…"
+          autoSize={{ minRows: 1, maxRows: 12 }}
         />
       </div>
     </Flex>

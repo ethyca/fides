@@ -28,8 +28,12 @@
 
 .footer {
   padding: 8px 12px;
-  border-top: 1px solid var(--ant-color-border);
   flex-shrink: 0;
+
+  :global(.ant-sender-content) {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 }
 
 .agentAvatar {
