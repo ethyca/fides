@@ -1,0 +1,4 @@
+type: Fixed
+description: Restore turbopack builds for admin-ui
+pr: 8048
+labels: []
