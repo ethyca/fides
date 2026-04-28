@@ -65,7 +65,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     # Use IF EXISTS since the index may not exist if creation was deferred
     # due to large table size (>= 1 million rows).
-    op.execute(f"DROP INDEX IF EXISTS {INDEX_NAME}")
+    op.execute(sa.text(f"DROP INDEX IF EXISTS {INDEX_NAME}"))
     op.execute(
         sa.text(
             "DELETE FROM post_upgrade_background_migration_tasks "

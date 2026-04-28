@@ -40,7 +40,7 @@ const DuplicatesDrawer = ({
     {
       duplicate_request_group_id: duplicateRequestGroupId,
       page: 1,
-      size: 50,
+      size: 100,
     },
     { skip: !isOpen || !duplicateRequestGroupId },
   );
@@ -59,55 +59,58 @@ const DuplicatesDrawer = ({
     });
   }, [data, currentRequestId]);
 
-  const columns: ColumnsType<DuplicateRequestRow> = [
-    {
-      title: "Request ID",
-      dataIndex: "id",
-      key: "id",
-      render: (id: string) =>
-        id === currentRequestId ? (
-          <Flex gap="small" align="center">
-            <Typography.Text>{id}</Typography.Text>
-            <Tag color={CUSTOM_TAG_COLOR.INFO}>Current</Tag>
-          </Flex>
-        ) : (
-          <RouterLink
-            href={`${PRIVACY_REQUESTS_ROUTE}/${id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid="duplicates-drawer-link"
-          >
-            {id}
-          </RouterLink>
-        ),
-    },
-    {
-      title: "Created at",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (value: string | null | undefined) =>
-        value ? formatDate(value) : "—",
-    },
-    {
-      title: "Source",
-      dataIndex: "source",
-      key: "source",
-      render: (value: string | null | undefined) => value ?? "—",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: PrivacyRequestStatus) => {
-        const props = statusPropMap[status];
-        return props ? (
-          <Tag color={props.colorScheme}>{props.label}</Tag>
-        ) : (
-          <Tag>{status}</Tag>
-        );
+  const columns = useMemo<ColumnsType<DuplicateRequestRow>>(
+    () => [
+      {
+        title: "Request ID",
+        dataIndex: "id",
+        key: "id",
+        render: (id: string) =>
+          id === currentRequestId ? (
+            <Flex gap="small" align="center">
+              <Typography.Text>{id}</Typography.Text>
+              <Tag color={CUSTOM_TAG_COLOR.INFO}>Current</Tag>
+            </Flex>
+          ) : (
+            <RouterLink
+              href={`${PRIVACY_REQUESTS_ROUTE}/${id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="duplicates-drawer-link"
+            >
+              {id}
+            </RouterLink>
+          ),
       },
-    },
-  ];
+      {
+        title: "Created at",
+        dataIndex: "created_at",
+        key: "created_at",
+        render: (value: string | null | undefined) =>
+          value ? formatDate(value) : "—",
+      },
+      {
+        title: "Source",
+        dataIndex: "source",
+        key: "source",
+        render: (value: string | null | undefined) => value ?? "—",
+      },
+      {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        render: (status: PrivacyRequestStatus) => {
+          const props = statusPropMap[status];
+          return props ? (
+            <Tag color={props.colorScheme}>{props.label}</Tag>
+          ) : (
+            <Tag>{status}</Tag>
+          );
+        },
+      },
+    ],
+    [currentRequestId],
+  );
 
   return (
     <Drawer
@@ -126,7 +129,7 @@ const DuplicatesDrawer = ({
         loading={isFetching}
         pagination={false}
         size="small"
-        locale={{ emptyText: "No other duplicate requests in this group." }}
+        locale={{ emptyText: "No duplicate requests found." }}
       />
     </Drawer>
   );

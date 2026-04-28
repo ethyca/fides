@@ -40,7 +40,7 @@ class TestRecreateDuplicateRequestGroupIdIndexMigration:
         """Guarantee the DB is back at head after the test — even if it fails —
         so downstream tests in the session aren't left on a downgraded schema."""
         yield
-        upgrade_db(alembic_config, REVISION)
+        upgrade_db(alembic_config, "head")
         db.execute(
             text(
                 "DELETE FROM post_upgrade_background_migration_tasks "
