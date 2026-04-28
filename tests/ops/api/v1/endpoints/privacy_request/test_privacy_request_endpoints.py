@@ -105,12 +105,12 @@ from fides.common.urn_registry import (
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_FINALIZE,
+    PRIVACY_REQUEST_BULK_IMPORT,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_FILTERED_RESULTS,
-    PRIVACY_REQUEST_IMPORT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -9991,7 +9991,7 @@ class TestSendBatchEmailIntegrations:
 class TestImportHistoricalPrivacyRequests:
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + PRIVACY_REQUEST_IMPORT
+        return V1_URL_PREFIX + PRIVACY_REQUEST_BULK_IMPORT
 
     @pytest.fixture(scope="function")
     def import_record(self, policy):
@@ -10063,9 +10063,7 @@ class TestImportHistoricalPrivacyRequests:
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service.check_for_duplicates"
     )
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service.cache_data"
-    )
+    @mock.patch("fides.service.privacy_request.privacy_request_service.cache_data")
     def test_import_single_record_happy_path(
         self,
         mock_cache_data,
