@@ -12,7 +12,52 @@ import { palette } from "../palette/palette";
  * 6. SCSS modules (for custom-component-specific styles)
  */
 
+// Custom keys are picked up by Ant's `transformToken` (via `cssVar`) and
+// emitted as CSS vars alongside built-ins, so they participate in dark mode.
+const brandTokens = {
+  brandMinos: palette.FIDESUI_MINOS,
+  brandBgMinos: palette.FIDESUI_BG_MINOS,
+  brandCorinth: palette.FIDESUI_CORINTH,
+  brandBgCorinth: palette.FIDESUI_BG_CORINTH,
+  brandLimestone: palette.FIDESUI_LIMESTONE,
+  brandTerracotta: palette.FIDESUI_TERRACOTTA,
+  brandBgTerracotta: palette.FIDESUI_BG_TERRACOTTA,
+  brandOlive: palette.FIDESUI_OLIVE,
+  brandBgOlive: palette.FIDESUI_BG_OLIVE,
+  brandMarble: palette.FIDESUI_MARBLE,
+  brandBgMarble: palette.FIDESUI_BG_MARBLE,
+  brandSandstone: palette.FIDESUI_SANDSTONE,
+  brandBgSandstone: palette.FIDESUI_BG_SANDSTONE,
+  brandNectar: palette.FIDESUI_NECTAR,
+  brandBgNectar: palette.FIDESUI_BG_NECTAR,
+  brandAlert: palette.FIDESUI_ALERT,
+  brandBgAlert: palette.FIDESUI_BG_ALERT,
+  brandBgCaution: palette.FIDESUI_BG_CAUTION,
+  brandBgError: palette.FIDESUI_BG_ERROR,
+  brandBgWarning: palette.FIDESUI_BG_WARNING,
+  brandBgSuccess: palette.FIDESUI_BG_SUCCESS,
+  brandBgInfo: palette.FIDESUI_BG_INFO,
+  brandErrorText: palette.FIDESUI_ERROR_TEXT,
+  brandSuccessText: palette.FIDESUI_SUCCESS_TEXT,
+};
+
+const neutralTokens = {
+  neutral50: palette.FIDESUI_NEUTRAL_50,
+  neutral75: palette.FIDESUI_NEUTRAL_75,
+  neutral100: palette.FIDESUI_NEUTRAL_100,
+  neutral200: palette.FIDESUI_NEUTRAL_200,
+  neutral300: palette.FIDESUI_NEUTRAL_300,
+  neutral400: palette.FIDESUI_NEUTRAL_400,
+  neutral500: palette.FIDESUI_NEUTRAL_500,
+  neutral600: palette.FIDESUI_NEUTRAL_600,
+  neutral700: palette.FIDESUI_NEUTRAL_700,
+  neutral800: palette.FIDESUI_NEUTRAL_800,
+  neutral900: palette.FIDESUI_NEUTRAL_900,
+};
+
 export const defaultAntTheme: ThemeConfig = {
+  cssVar: {},
+  hashed: false,
   token: {
     fontFamily: `"Basier Square", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
     fontFamilyCode: `"Basier Square Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace`,
@@ -41,6 +86,8 @@ export const defaultAntTheme: ThemeConfig = {
     colorBorderSecondary: palette.FIDESUI_NEUTRAL_100,
     colorSplit: palette.FIDESUI_NEUTRAL_100,
     zIndexPopupBase: 1500, // supersede Chakra's modal z-index
+    ...brandTokens,
+    ...neutralTokens,
   },
   components: {
     Avatar: {
