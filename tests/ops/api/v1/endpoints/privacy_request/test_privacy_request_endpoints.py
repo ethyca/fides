@@ -46,7 +46,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
@@ -10021,6 +10021,38 @@ class TestImportHistoricalPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
         resp = api_client.post(url, headers=auth_header, json=[import_record])
         assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_import_rejects_contributor_role(
+        self,
+        api_client: TestClient,
+        generate_role_header,
+        url,
+        import_record,
+    ):
+        """CONTRIBUTOR role must NOT receive PRIVACY_REQUEST_IMPORT — it's owner-tier."""
+        auth_header = generate_role_header(roles=[CONTRIBUTOR])
+        resp = api_client.post(url, headers=auth_header, json=[import_record])
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_import_allows_owner_role(
+        self,
+        mock_run_privacy_request,
+        api_client: TestClient,
+        generate_role_header,
+        db,
+        url,
+        import_record,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        resp = api_client.post(url, headers=auth_header, json=[import_record])
+        assert resp.status_code == 200
+
+        for item in resp.json()["succeeded"]:
+            PrivacyRequest.get(db=db, object_id=item["id"]).delete(db=db)
+        assert not mock_run_privacy_request.called
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
