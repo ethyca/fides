@@ -140,7 +140,7 @@ class TestJiraTicketTaskModel:
         )
         assert jira_ticket_task.external_status == "To Do"
         assert jira_ticket_task.external_status_category == "new"
-        assert jira_ticket_task.is_resolved is False
+        assert jira_ticket_task.needs_polling is True
         assert jira_ticket_task.created_at is not None
         assert jira_ticket_task.updated_at is not None
         assert jira_ticket_task.last_polled_at is None
@@ -200,26 +200,26 @@ class TestJiraTicketTaskModel:
         open_tasks = JiraTicketTask.get_open_tasks(db)
         assert jira_ticket_task.id in [t.id for t in open_tasks]
 
-    def test_get_open_tasks_excludes_resolved(
+    def test_get_open_tasks_excludes_not_needing_polling(
         self,
         db: Session,
         jira_ticket_task: JiraTicketTask,
     ):
-        jira_ticket_task.is_resolved = True
+        jira_ticket_task.needs_polling = False
         db.add(jira_ticket_task)
         db.commit()
 
         open_tasks = JiraTicketTask.get_open_tasks(db)
         assert jira_ticket_task.id not in [t.id for t in open_tasks]
 
-    def test_get_open_tasks_includes_done_category_not_resolved(
+    def test_get_open_tasks_includes_done_category_still_needing_polling(
         self,
         db: Session,
         jira_ticket_task: JiraTicketTask,
     ):
-        """A task in Jira's done category but not yet resolved should still be polled."""
+        """A task in Jira's done category but still needing polling should be returned."""
         jira_ticket_task.external_status_category = "done"
-        jira_ticket_task.is_resolved = False
+        jira_ticket_task.needs_polling = True
         db.add(jira_ticket_task)
         db.commit()
 

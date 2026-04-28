@@ -1,15 +1,15 @@
-"""Add is_resolved to jira_ticket_task
+"""Add needs_polling to jira_ticket_task
 
-Add a boolean column ``is_resolved`` that decouples the Fides
-completion decision from the Jira status category.  This lets admins
-configure a specific Jira status as the completion trigger rather than
-relying on the entire ``done`` category.
+Add a boolean column ``needs_polling`` that decouples the polling
+decision from the Jira status category.  This lets admins configure a
+specific Jira status as the completion trigger rather than relying on
+the entire ``done`` category.
 
-Backfills existing rows: any task whose ``external_status_category`` is
-already ``'done'`` is marked ``is_resolved = True``.
+Backfills existing rows: terminal tasks (done or deleted) get
+``needs_polling = false``; all others default to ``true``.
 
 Replaces the old partial index (filtered on ``external_status_category``)
-with a new one filtered on ``is_resolved = false``.
+with a new one filtered on ``needs_polling = true``.
 
 Revision ID: 55cf25a3e2ca
 Revises: d71c7d274c04
@@ -28,21 +28,21 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Add column with server default so existing rows get false
+    # Add column with server default so existing rows get true (need polling)
     op.add_column(
         "jira_ticket_task",
         sa.Column(
-            "is_resolved",
+            "needs_polling",
             sa.Boolean(),
-            server_default=sa.text("false"),
+            server_default=sa.text("true"),
             nullable=False,
         ),
     )
 
-    # Backfill: existing terminal tasks (done or deleted) are already resolved
+    # Backfill: terminal tasks (done or deleted) no longer need polling
     op.execute(
         "UPDATE jira_ticket_task "
-        "SET is_resolved = true "
+        "SET needs_polling = false "
         "WHERE external_status_category IN ('done', 'deleted')"
     )
 
@@ -51,8 +51,8 @@ def upgrade() -> None:
     op.create_index(
         "ix_jira_ticket_task_open",
         "jira_ticket_task",
-        ["is_resolved"],
-        postgresql_where=sa.text("is_resolved = false"),
+        ["needs_polling"],
+        postgresql_where=sa.text("needs_polling = true"),
     )
 
 
@@ -68,4 +68,4 @@ def downgrade() -> None:
         ),
     )
 
-    op.drop_column("jira_ticket_task", "is_resolved")
+    op.drop_column("jira_ticket_task", "needs_polling")

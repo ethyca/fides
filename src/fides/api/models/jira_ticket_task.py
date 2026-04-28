@@ -61,13 +61,13 @@ class JiraTicketTask(Base):
     external_status = Column(String, nullable=True)
     external_status_category = Column(String, nullable=True)
     last_polled_at = Column(DateTime(timezone=True), nullable=True)
-    is_resolved = Column(Boolean, server_default=text("false"), nullable=False)
+    needs_polling = Column(Boolean, server_default=text("true"), nullable=False)
 
     __table_args__ = (
         Index(
             "ix_jira_ticket_task_open",
-            "is_resolved",
-            postgresql_where=text("is_resolved = false"),
+            "needs_polling",
+            postgresql_where=text("needs_polling = true"),
         ),
         Index("ix_jira_ticket_task_connection_config_id", "connection_config_id"),
     )
@@ -95,7 +95,7 @@ class JiraTicketTask(Base):
                 joinedload(cls.manual_task_instance),
                 joinedload(cls.connection_config),
             )
-            .filter(cls.is_resolved.is_(False))
+            .filter(cls.needs_polling.is_(True))
             .all()
         )
 

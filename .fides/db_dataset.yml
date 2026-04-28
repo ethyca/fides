@@ -1601,7 +1601,7 @@ dataset:
       data_categories: [system.operations]
     - name: connection_config_id
       data_categories: [system.operations]
-    - name: is_resolved
+    - name: needs_polling
       data_categories: [system.operations]
     - name: ticket_key
       data_categories: [system.operations]
