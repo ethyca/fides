@@ -175,9 +175,7 @@ export const accessPoliciesHandlers = () => {
           ctx.json({ detail: `No control found with key '${key}'` }),
         );
       }
-      const assignedCount = policies.filter((p) =>
-        p.controls?.includes(key as string),
-      ).length;
+      const assignedCount = policies.filter((p) => p.control === key).length;
       if (assignedCount > 0) {
         return res(
           ctx.status(409),

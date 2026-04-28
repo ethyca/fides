@@ -69,7 +69,7 @@ export enum EditorMode {
 export interface SidebarFormValues {
   name: string;
   description: string;
-  controls?: string[];
+  control?: string | null;
 }
 
 interface AccessPolicyEditorProps {
@@ -91,9 +91,9 @@ const edgeTypes: EdgeTypes = {
 };
 
 interface PolicyCanvasPanelProps {
-  controls: string[];
+  control: string | null;
   controlOptions: NonNullable<SelectProps["options"]>;
-  onControlsChange: (value: string[]) => void;
+  onControlChange: (value: string | null) => void;
   onYamlChange?: (yaml: string) => void;
   initialYaml?: string;
   syncKey?: number;
@@ -183,7 +183,7 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       fidesKey: "",
       enabled: false,
       priority: 0,
-      controls: props.controls,
+      control: props.control,
       controlOptions: props.controlOptions,
       actionMessage: "",
       onNameChange: () => {},
@@ -191,7 +191,7 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
       onFidesKeyChange: () => {},
       onEnabledChange: () => {},
       onPriorityChange: () => {},
-      onControlsChange: props.onControlsChange,
+      onControlChange: props.onControlChange,
       onActionMessageChange: () => {},
     },
   } satisfies PolicyNodeType,
@@ -240,9 +240,9 @@ const findFirstOfType = (
 
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
-    controls,
+    control,
     controlOptions,
-    onControlsChange,
+    onControlChange,
     onYamlChange,
     initialYaml,
     syncKey,
@@ -445,12 +445,12 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [updateNodeData],
   );
 
-  const handleControlsChange = useCallback(
-    (value: string[]) => {
-      updateNodeData(POLICY_NODE_ID, { controls: value });
-      onControlsChange(value);
+  const handleControlChange = useCallback(
+    (value: string | null) => {
+      updateNodeData(POLICY_NODE_ID, { control: value });
+      onControlChange(value);
     },
-    [updateNodeData, onControlsChange],
+    [updateNodeData, onControlChange],
   );
 
   // Derive YAML from nodes/edges
@@ -638,14 +638,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
-              controls,
+              control,
               controlOptions,
               onNameChange: handleNameChange,
               onDescriptionChange: handleDescriptionChange,
               onFidesKeyChange: handleFidesKeyChange,
               onEnabledChange: handleEnabledChange,
               onPriorityChange: handlePriorityChange,
-              onControlsChange: handleControlsChange,
+              onControlChange: handleControlChange,
               onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
             },
@@ -735,14 +735,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [
       layoutedNodes,
       edges,
-      controls,
+      control,
       controlOptions,
       handleNameChange,
       handleDescriptionChange,
       handleFidesKeyChange,
       handleEnabledChange,
       handlePriorityChange,
-      handleControlsChange,
+      handleControlChange,
       handleAddCondition,
       handleAddActionFromNode,
       handleAddConstraint,
@@ -808,8 +808,8 @@ const AccessPolicyEditor = ({
 
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
-  const [controls, setControls] = useState<string[]>(
-    initialValues?.controls ?? [],
+  const [control, setControl] = useState<string | null>(
+    initialValues?.control ?? null,
   );
   const [syncKey, setSyncKey] = useState(0);
 
@@ -838,14 +838,14 @@ const AccessPolicyEditor = ({
       {
         name,
         description: parsed?.description ?? "",
-        controls: controls.length > 0 ? controls : undefined,
+        control,
       },
       yamlValue,
     );
   };
 
-  const handleControlsChange = useCallback(
-    (value: string[]) => setControls(value),
+  const handleControlChange = useCallback(
+    (value: string | null) => setControl(value),
     [],
   );
 
@@ -853,8 +853,8 @@ const AccessPolicyEditor = ({
     setYamlValue(newYaml);
     setSyncKey((k) => k + 1);
     const parsed = parseYaml(newYaml);
-    if (parsed?.controls) {
-      setControls(parsed.controls);
+    if (parsed?.controls !== undefined) {
+      setControl(parsed.controls?.[0] ?? null);
     }
   }, []);
 
@@ -878,9 +878,9 @@ const AccessPolicyEditor = ({
 
   const canvasPanel = (
     <PolicyCanvasPanel
-      controls={controls}
+      control={control}
       controlOptions={controlOptions}
-      onControlsChange={handleControlsChange}
+      onControlChange={handleControlChange}
       onYamlChange={handleYamlChange}
       initialYaml={yamlValue || undefined}
       syncKey={syncKey}
