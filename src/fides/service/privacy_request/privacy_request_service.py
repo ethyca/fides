@@ -30,6 +30,10 @@ from fides.api.models.privacy_request import (
 from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
+from fides.api.schemas.custom_field_display_evaluator import (
+    DisplayConditionViolation,
+    evaluate_submission,
+)
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_center_config import (
@@ -58,6 +62,7 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
@@ -297,6 +302,50 @@ class PrivacyRequestService:
                 return action
         return None
 
+    def _validate_field_visibility(
+        self, privacy_request_data: PrivacyRequestCreate
+    ) -> None:
+        """Reject payloads that violate the action's display_condition contract:
+        gated-off fields must not be submitted, required-and-applicable
+        fields must have a value. Delegates the logic to
+        :func:`evaluate_submission` and translates its
+        :class:`DisplayConditionViolation` to ``PrivacyRequestError``.
+        """
+        config_dict = self._resolve_privacy_center_config_dict(
+            privacy_request_data.property_id
+        )
+        if not config_dict:
+            return
+
+        privacy_center_config = self._parse_privacy_center_config(config_dict)
+        if not privacy_center_config:
+            return
+
+        action = self._get_matching_action(
+            privacy_center_config, privacy_request_data.policy_key
+        )
+        if not action or not action.custom_privacy_request_fields:
+            return
+
+        fields = {
+            key: cfg
+            for key, cfg in action.custom_privacy_request_fields.items()
+            if not isinstance(cfg, LocationCustomPrivacyRequestField)
+        }
+        if not fields:
+            return
+
+        try:
+            evaluate_submission(
+                fields=fields,
+                submitted=privacy_request_data.custom_privacy_request_fields or {},
+                condition_evaluator=ConditionEvaluator(self.db),
+            )
+        except DisplayConditionViolation as exc:
+            raise PrivacyRequestError(
+                str(exc), privacy_request_data.model_dump(mode="json")
+            ) from exc
+
     @staticmethod
     def _is_required_location_missing(
         action: Any, privacy_request_data: PrivacyRequestCreate
@@ -368,6 +417,9 @@ class PrivacyRequestService:
 
         # Validate location is provided for required location fields
         self._validate_required_location_fields(privacy_request_data)
+
+        # Validate display_condition visibility: no gated-off fields submitted,
+        self._validate_field_visibility(privacy_request_data)
 
         policy = Policy.get_by(
             db=self.db,

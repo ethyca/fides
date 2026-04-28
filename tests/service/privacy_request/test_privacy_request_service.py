@@ -1,6 +1,7 @@
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import List
-from unittest.mock import create_autospec, patch
+from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
 from sqlalchemy.orm import Session
@@ -1478,3 +1479,123 @@ class TestPrivacyRequestService:
             expected_batch = request_ids[start_idx : start_idx + len(batch)]
             assert batch == expected_batch
             start_idx += len(batch)
+
+
+# Unit tests below cover ``_validate_field_visibility`` in isolation —
+# the integration class above marks ``integration_postgres`` and the
+# misc-integration shard's coverage isn't piped through codecov.
+from fides.api.schemas.privacy_center_config import (
+    CustomPrivacyRequestField,
+    LocationCustomPrivacyRequestField,
+)
+
+
+def _make_action(custom_fields):
+    a = MagicMock()
+    a.custom_privacy_request_fields = custom_fields
+    return a
+
+
+@contextmanager
+def _stub_lookups(svc, *, config_dict={"x": 1}, parsed=True, action=True):
+    """Patch the three DB-backed lookups; ``True`` → non-None default."""
+    parsed_v = MagicMock() if parsed is True else parsed
+    action_v = MagicMock() if action is True else action
+    with (
+        patch.object(
+            svc, "_resolve_privacy_center_config_dict", return_value=config_dict
+        ),
+        patch.object(svc, "_parse_privacy_center_config", return_value=parsed_v),
+        patch.object(svc, "_get_matching_action", return_value=action_v),
+    ):
+        yield
+
+
+def _svc():
+    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock())
+
+
+def _req(custom_fields=None, **kw):
+    return PrivacyRequestCreate(
+        identity=Identity(email="jane@example.com"),
+        policy_key="default_access_policy",
+        custom_privacy_request_fields=custom_fields,
+        **kw,
+    )
+
+
+@pytest.mark.unit
+class TestValidateFieldVisibility:
+    """Branch-by-branch coverage of ``_validate_field_visibility`` via mocks."""
+
+    @pytest.mark.parametrize(
+        "stub_kwargs",
+        [
+            pytest.param({"config_dict": None}, id="no_config"),
+            pytest.param({"parsed": None}, id="unparseable_config"),
+            pytest.param({"action": None}, id="no_matching_action"),
+            pytest.param(
+                {"action": _make_action(None)}, id="action_without_custom_fields"
+            ),
+            pytest.param(
+                {
+                    "action": _make_action(
+                        {"country": LocationCustomPrivacyRequestField(label="Country")}
+                    )
+                },
+                id="only_location_fields_after_filter",
+            ),
+        ],
+    )
+    def test_short_circuit_paths(self, stub_kwargs):
+        svc = _svc()
+        with _stub_lookups(svc, **stub_kwargs):
+            svc._validate_field_visibility(_req())
+
+    @pytest.mark.parametrize(
+        "submitted, raises",
+        [
+            pytest.param(None, True, id="missing_required_raises"),
+            pytest.param(
+                {"reason": {"label": "Reason", "value": "just because"}},
+                False,
+                id="provided_passes",
+            ),
+        ],
+    )
+    def test_resolver_invocation(self, submitted, raises):
+        svc = _svc()
+        action = _make_action(
+            {
+                "reason": CustomPrivacyRequestField(
+                    label="Reason", field_type="text", required=True
+                )
+            }
+        )
+        with _stub_lookups(svc, action=action):
+            req = _req(custom_fields=submitted)
+            if raises:
+                with pytest.raises(
+                    PrivacyRequestError, match="Required field 'reason' is missing"
+                ):
+                    svc._validate_field_visibility(req)
+            else:
+                svc._validate_field_visibility(req)
+
+    def test_create_privacy_request_invokes_validate_field_visibility(self):
+        # Covers the call site inside ``create_privacy_request``. Stub the
+        # method itself + Policy.get_by so the request fails at the next
+        # check (``location`` short-circuits the prior location validator).
+        svc = _svc()
+        req = _req(location="US-CA")
+        req.policy_key = "missing-policy"
+        with (
+            patch.object(svc, "_validate_field_visibility") as visibility,
+            patch(
+                "fides.service.privacy_request.privacy_request_service.Policy.get_by",
+                return_value=None,
+            ),
+            pytest.raises(PrivacyRequestError, match="does not exist"),
+        ):
+            svc.create_privacy_request(req, authenticated=True)
+        visibility.assert_called_once_with(req)
