@@ -21,7 +21,31 @@ from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.saas.shared_schemas import PollingStatusResult
 from fides.api.service.privacy_request.request_service import requeue_polling_tasks
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestType,
+    register,
+)
+
+
+# ---------------------------------------------------------------------------
+# Override functions used by the error-scenario tests below.
+# Registered at module level so they're available before any test runs.
+# ---------------------------------------------------------------------------
+
+
+@register("test_async_polling_status_error", [SaaSRequestType.POLLING_STATUS])
+def _test_polling_status_error(
+    client,
+    param_values,
+    request_config,
+    secrets,
+) -> PollingStatusResult:
+    """Simulates an external service error during the polling status check."""
+    raise Exception(
+        f"Simulated polling error for correlation_id={param_values.get('correlation_id')}"
+    )
 
 
 @pytest.mark.async_dsr
@@ -283,4 +307,213 @@ class TestPrivacyRequestWithAsyncPolling:
 
         assert privacy_request.get_raw_masking_counts() == {
             "async_polling_example:user": 1
+        }
+
+    # ------------------------------------------------------------------
+    # Error-handling scenarios
+    # ------------------------------------------------------------------
+
+    @pytest.fixture
+    def async_polling_error_connector(self, db: Session) -> Generator:
+        """
+        Connector whose status_request uses a request_override that always raises.
+        Used to simulate an external service error during the polling status check.
+        """
+        with open(
+            "tests/integration/workflows/data/example_async_polling_error_config.yml",
+            "r",
+            encoding="utf-8",
+        ) as saas_config_file:
+            saas_config = yaml.safe_load(saas_config_file)["saas_config"]
+
+        with open(
+            "tests/integration/workflows/data/example_async_polling_error_dataset.yml",
+            "r",
+            encoding="utf-8",
+        ) as dataset_file:
+            dataset = yaml.safe_load(dataset_file)["dataset"][0]
+
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "async_polling_error",
+                "name": "Async Polling Error Example",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "secrets": {
+                    "domain": "example.com",
+                    "api_token": "123",
+                },
+                "saas_config": saas_config,
+            },
+        )
+
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+
+        DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": dataset["fides_key"],
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+
+        yield connection_config
+
+    @pytest.fixture
+    def mock_authenticated_client_for_error(self) -> MockAuthenticatedClient:
+        """
+        MockAuthenticatedClient for the error scenario.
+        Only the initial requests need HTTP responses — the status check is handled
+        by the request_override (which raises), so no status/result URLs are needed.
+        """
+        client = MockAuthenticatedClient()
+
+        # Initial access request — creates the sub-request with this correlation_id
+        client.add_response(
+            "GET",
+            "/api/access-package",
+            {"request_id": "error_correlation_123", "status": "processing"},
+            status_code=202,
+        )
+
+        # Initial erasure request — creates the sub-request with this correlation_id
+        client.add_response(
+            "DELETE",
+            "/api/anonymize-user/customer-1@example.com",
+            {"correlation_id": "error_correlation_456"},
+            status_code=200,
+        )
+
+        return client
+
+    @patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
+    def test_access_privacy_request_completes_when_polling_sub_request_errors(
+        self,
+        mock_create_client,
+        db,
+        policy,
+        async_polling_error_connector,
+        api_client: TestClient,
+        mock_authenticated_client_for_error,
+        root_auth_header,
+    ):
+        """
+        When the polling status check raises an exception, the sub-request is marked
+        as error (not pending) and the task still completes — it does not hang
+        indefinitely in AwaitingAsyncProcessing.
+
+        The privacy request reaches 'complete' status with empty access results.
+        """
+        mock_create_client.return_value = mock_authenticated_client_for_error
+
+        response = api_client.post(
+            "/api/v1/privacy-request",
+            headers=root_auth_header,
+            json=[
+                {
+                    "identity": {"email": "customer-1@example.com"},
+                    "policy_key": policy.key,
+                }
+            ],
+        )
+        assert response.status_code == HTTP_200_OK
+        privacy_request_id = response.json()["succeeded"][0]["id"]
+
+        wait_for_privacy_request_status(
+            db=db,
+            privacy_request_id=privacy_request_id,
+            target_status=PrivacyRequestStatus.in_processing,
+            timeout_seconds=30,
+            poll_interval_seconds=2,
+        )
+
+        # Trigger the polling cycle — the override raises, sub-request is marked error
+        requeue_polling_tasks.apply().get()
+
+        # Task should complete even though the sub-request errored
+        wait_for_privacy_request_status(
+            db=db,
+            privacy_request_id=privacy_request_id,
+            target_status=PrivacyRequestStatus.complete,
+            timeout_seconds=30,
+            poll_interval_seconds=2,
+        )
+
+        # Sub-request must be in error state (not pending — that would mean it hung)
+        sub_requests = db.query(RequestTaskSubRequest).all()
+        assert len(sub_requests) == 1
+        assert sub_requests[0].status == ExecutionLogStatus.error.value
+
+        # Access results are empty — the errored sub-request produced no data
+        privacy_request = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
+        )
+        access_results = privacy_request.get_raw_access_results()
+        assert access_results.get("async_polling_error_example:user", []) == []
+
+    @patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
+    def test_erasure_privacy_request_completes_when_polling_sub_request_errors(
+        self,
+        mock_create_client,
+        db,
+        erasure_policy,
+        async_polling_error_connector,
+        api_client: TestClient,
+        mock_authenticated_client_for_error,
+        root_auth_header,
+    ):
+        """
+        When the erasure polling status check raises an exception, the sub-request is
+        marked as error and the task still completes with 0 rows masked — it does not
+        hang in AwaitingAsyncProcessing.
+        """
+        mock_create_client.return_value = mock_authenticated_client_for_error
+
+        response = api_client.post(
+            "/api/v1/privacy-request",
+            headers=root_auth_header,
+            json=[
+                {
+                    "identity": {"email": "customer-1@example.com"},
+                    "policy_key": erasure_policy.key,
+                }
+            ],
+        )
+        assert response.status_code == HTTP_200_OK
+        privacy_request_id = response.json()["succeeded"][0]["id"]
+
+        wait_for_privacy_request_status(
+            db=db,
+            privacy_request_id=privacy_request_id,
+            target_status=PrivacyRequestStatus.in_processing,
+            timeout_seconds=30,
+            poll_interval_seconds=2,
+        )
+
+        requeue_polling_tasks.apply().get()
+
+        wait_for_privacy_request_status(
+            db=db,
+            privacy_request_id=privacy_request_id,
+            target_status=PrivacyRequestStatus.complete,
+            timeout_seconds=30,
+            poll_interval_seconds=2,
+        )
+
+        sub_requests = db.query(RequestTaskSubRequest).all()
+        assert len(sub_requests) == 1
+        assert sub_requests[0].status == ExecutionLogStatus.error.value
+
+        privacy_request = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
+        )
+        # 0 rows masked — the errored sub-request contributed nothing
+        assert privacy_request.get_raw_masking_counts() == {
+            "async_polling_error_example:user": 0
         }
