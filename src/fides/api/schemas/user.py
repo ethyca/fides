@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.fides_user_invite import FidesUserInvite
 
-USERNAME_PATTERN = r"[a-zA-Z0-9._\-+@]{1,100}"
+USERNAME_PATTERN = r"[a-zA-Z0-9._\-+@]{3,100}"
 
 
 class PrivacyRequestUser(FidesSchema):

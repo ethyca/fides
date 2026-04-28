@@ -32,14 +32,7 @@ def test_bad_password(password, message):
 
 @pytest.mark.parametrize(
     "username",
-    [
-        "some user",
-        "user&name",
-        "user=name",
-        "user<name",
-        "",
-        "a" * 101,
-    ],
+    ["some user", "user&name", "user=name", "user<name", "", "a" * 101, "a", "aa"],
 )
 def test_user_create_invalid_username(username):
     with pytest.raises(ValueError, match="Usernames must be"):
@@ -60,7 +53,7 @@ def test_user_create_invalid_username(username):
         "test_user",
         "Test_User-123",
         "john.doe",
-        "a",
+        "abc",
         "a" * 100,
         "john.doe@example.com",
         "john+doe@example.com",
