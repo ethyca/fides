@@ -61,9 +61,7 @@ class JiraTicketTask(Base):
     external_status = Column(String, nullable=True)
     external_status_category = Column(String, nullable=True)
     last_polled_at = Column(DateTime(timezone=True), nullable=True)
-    is_fides_complete = Column(
-        Boolean, server_default=text("false"), nullable=False
-    )
+    is_fides_complete = Column(Boolean, server_default=text("false"), nullable=False)
 
     __table_args__ = (
         Index(

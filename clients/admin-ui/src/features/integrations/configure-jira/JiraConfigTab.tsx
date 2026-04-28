@@ -77,9 +77,9 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
       {
         connectionKey: connection.key,
         projectKey: selectedProject!,
-        issueType: selectedIssueType,
+        issueType: selectedIssueType!,
       },
-      { skip: !connection.key || !selectedProject },
+      { skip: !connection.key || !selectedProject || !selectedIssueType },
     );
 
   const { data: templateVariables } = useGetJiraTemplateVariablesQuery(

@@ -553,7 +553,7 @@ async def load_samples(async_session: AsyncSession) -> None:
             )
             messaging_config.set_secrets(
                 db=db,
-                messaging_secrets={
+                messaging_secrets={  # type: ignore[arg-type]
                     "mailgun_api_key": os.getenv("MAILGUN_API_KEY"),
                 },
             )
