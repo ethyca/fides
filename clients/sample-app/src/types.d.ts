@@ -1,4 +1,4 @@
-import { FidesGlobal, FidesOptions } from "fides-js";
+import type { FidesGlobal, FidesOptions } from "fides-js";
 
 declare global {
   interface Window {

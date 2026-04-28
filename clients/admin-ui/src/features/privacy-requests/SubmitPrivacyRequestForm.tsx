@@ -37,6 +37,16 @@ export type LocationCustomPrivacyRequestField = {
   ip_geolocation_hint?: boolean | null;
 };
 
+export type SelectCustomPrivacyRequestField = {
+  label: string;
+  required?: boolean | null;
+  default_value?: string | null;
+  hidden?: boolean | null;
+  query_param_key?: string | null;
+  field_type: "select";
+  options: string[];
+};
+
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
   is_verified: boolean;
 };
@@ -87,16 +97,19 @@ const LocationSelectField = ({
   label,
   name,
   required,
+  rules,
 }: {
   label: string;
   name: string;
   required: boolean;
+  rules?: FormRule[];
 }) => {
   return (
     <Form.Item
       label={label}
       name={name}
-      required={required ?? undefined}
+      required={required}
+      rules={rules}
       layout="vertical"
     >
       <LocationSelect />
@@ -112,6 +125,7 @@ const CustomFields = ({
     string,
     | fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
     | LocationCustomPrivacyRequestField
+    | SelectCustomPrivacyRequestField
   > | null;
   rules: Record<string, FormRule[]>;
 }) => {
@@ -122,26 +136,54 @@ const CustomFields = ({
   return (
     <>
       {allInputs.map(([fieldName, fieldInfo]) => {
-        return "field_type" in fieldInfo &&
-          fieldInfo.field_type === "location" ? (
-          <LocationSelectField
-            name={fieldName}
-            key={fieldName}
-            label={fieldInfo.label}
-            required={Boolean(fieldInfo.required)}
-          />
-        ) : (
-          <Form.Item
-            name={["custom_privacy_request_fields", fieldName, "value"]}
-            key={fieldName}
-            label={fieldInfo.label}
-            rules={rules[`custom_privacy_request_fields.${fieldName}.value`]}
-            layout="vertical"
-          >
-            <Input
-              data-testid={`input-custom_privacy_request_fields.${fieldName}.value`}
+        if ("field_type" in fieldInfo && fieldInfo.field_type === "location") {
+          return (
+            <LocationSelectField
+              name={fieldName}
+              key={fieldName}
+              label={fieldInfo.label}
+              required={Boolean(fieldInfo.required)}
+              rules={rules[fieldName]}
             />
-          </Form.Item>
+          );
+        }
+
+        const isSelectField = (
+          info: typeof fieldInfo,
+        ): info is SelectCustomPrivacyRequestField =>
+          "field_type" in info && info.field_type === "select";
+
+        return (
+          <div key={fieldName}>
+            <Form.Item
+              name={["custom_privacy_request_fields", fieldName, "label"]}
+              hidden
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name={["custom_privacy_request_fields", fieldName, "value"]}
+              label={fieldInfo.label}
+              required={Boolean(fieldInfo.required)}
+              rules={rules[`custom_privacy_request_fields.${fieldName}.value`]}
+              layout="vertical"
+            >
+              {isSelectField(fieldInfo) ? (
+                <Select
+                  aria-label={fieldInfo.label}
+                  options={fieldInfo.options.map((opt) => ({
+                    label: opt,
+                    value: opt,
+                  }))}
+                  data-testid={`input-custom_privacy_request_fields.${fieldName}.value`}
+                />
+              ) : (
+                <Input
+                  data-testid={`input-custom_privacy_request_fields.${fieldName}.value`}
+                />
+              )}
+            </Form.Item>
+          </div>
         );
       })}
     </>
@@ -238,7 +280,7 @@ const SubmitPrivacyRequestForm = ({
           <Select
             aria-label="Request type"
             options={
-              config?.actions.map((action: PrivacyRequestOption) => ({
+              config?.actions?.map((action: PrivacyRequestOption) => ({
                 label: action.title,
                 value: action.policy_key,
               })) ?? []
@@ -340,7 +382,7 @@ export const CopyPrivacyRequestLinkForm = ({
           ]}
           layout="vertical"
         >
-          <Input />
+          <Input data-testid="input-identity.email" />
         </Form.Item>
         <div className="flex gap-4 self-end">
           <Button

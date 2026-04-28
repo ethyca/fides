@@ -1,6 +1,6 @@
 import { ThemeConfig } from "antd/es";
 
-import palette from "../palette/palette.module.scss";
+import { palette } from "../palette/palette";
 
 /**
  * Order of priority for styling
@@ -50,6 +50,9 @@ export const defaultAntTheme: ThemeConfig = {
       colorInfo: palette.FIDESUI_MINOS,
       colorInfoBg: palette.FIDESUI_NEUTRAL_50,
       colorInfoBorder: palette.FIDESUI_NEUTRAL_100,
+      // Ant bumps the title to `fontSizeLG` (16) when a description is present;
+      // pin it back to the body size so alerts don't grow a larger heading.
+      fontSizeLG: 14,
     },
     Button: {
       primaryShadow: undefined,

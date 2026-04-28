@@ -1,7 +1,7 @@
 {
   "name": "admin-ui",
   "private": true,
-  "//webpack-flag": "The `--webpack` flag on next build/dev scripts pins us to the PostCSS pipeline. Turbopack uses Lightning CSS, which can't parse the `:export` pseudo-class in fidesui's palette.module.scss. Remove these flags once ENG-3410 (palette migration) is done.",
+  "//webpack-flag": "The `--webpack` flag on next build/dev scripts pins us to a known export chunk filenaming strategy. Turbopack uses a new pattern we need to adapt to, but in the meantime this allows us to avoid breaking releases.",
   "scripts": {
     "analyze": "cross-env ANALYZE=true next build --webpack",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build --webpack",
@@ -35,7 +35,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ant-design/cssinjs": "^1.21.0",
+    "@ant-design/cssinjs": "^2.1.2",
     "@dagrejs/dagre": "^1.1.4",
     "@date-fns/tz": "^1.2.0",
     "@fontsource/inter": "^4.5.15",
@@ -126,7 +126,7 @@
     "lint-staged": "^13.2.0",
     "msw": "^1.2.1",
     "postcss": "^8.4.41",
-    "prettier": "^3.3.3",
+    "prettier": "^3.8.3",
     "sass": "^1.80.6",
     "tailwindcss": "^3.4.10",
     "typescript": "^5.7.2",

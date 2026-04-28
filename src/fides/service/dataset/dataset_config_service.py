@@ -16,8 +16,9 @@ from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.node_filters import NodeFilter
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.property import Property
@@ -25,16 +26,25 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
+    DatasetFieldWarning,
+    DatasetProtectedFields,
+    ProtectedCollectionField,
     ValidateDatasetResponse,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
+from fides.api.util.event_audit_util import generate_dataset_audit_event_details
+from fides.service.connection.merge_configs_util import (
+    get_saas_config_referenced_field_paths,
+)
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     _get_ctl_dataset,
 )
 from fides.service.dataset.dataset_validator import DatasetValidator
+from fides.service.dataset.validation_steps.saas import MUTABLE_DATASET_FIELDS
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
+from fides.service.event_audit_service import EventAuditService
 
 
 class DatasetFilter(NodeFilter):
@@ -53,15 +63,63 @@ class DatasetFilter(NodeFilter):
 
 
 class DatasetConfigService:
-    def __init__(self, db: Session):
+    def __init__(
+        self,
+        db: Session,
+        event_audit_service: Optional[EventAuditService] = None,
+    ):
         self.db = db
+        self.event_audit_service = event_audit_service
+
+    def _create_dataset_audit_event(
+        self,
+        event_type: EventAuditType,
+        connection_config: ConnectionConfig,
+        dataset_key: str,
+        new_dataset_definition: Optional[Dict[str, Any]] = None,
+        old_dataset_definition: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Emit an audit event for a SaaS dataset operation.
+
+        No-op if the connection is not SaaS or no EventAuditService is configured.
+        """
+        if connection_config.connection_type != ConnectionType.saas:
+            return
+        if not self.event_audit_service:
+            return
+        try:
+            event_details, description = generate_dataset_audit_event_details(
+                event_type,
+                connection_config,
+                dataset_key,
+                new_dataset_definition,
+                old_dataset_definition,
+            )
+            self.event_audit_service.create_event_audit(
+                event_type=event_type,
+                status=EventAuditStatus.succeeded,
+                resource_type="dataset_config",
+                resource_identifier=dataset_key,
+                description=description,
+                event_details=event_details,
+            )
+        except Exception as e:
+            logger.exception(
+                "Error creating dataset audit event for dataset '{}': {}",
+                dataset_key,
+                e,
+            )
 
     def create_or_update_dataset_config(
         self,
         connection_config: ConnectionConfig,
         dataset: Union[DatasetConfigCtlDataset, FideslangDataset],
-    ) -> Tuple[Optional[FideslangDataset], Optional[BulkUpdateFailed]]:
-        """Create or update a single dataset"""
+    ) -> Tuple[
+        Optional[FideslangDataset],
+        Optional[BulkUpdateFailed],
+        List[DatasetFieldWarning],
+    ]:
+        """Create or update a single dataset. Returns (result, error, warnings)."""
         try:
             if isinstance(dataset, DatasetConfigCtlDataset):
                 ctl_dataset = _get_ctl_dataset(self.db, dataset.ctl_dataset_fides_key)
@@ -83,18 +141,81 @@ class DatasetConfigService:
                     "dataset": dataset.model_dump(mode="json"),
                 }
 
-            # Validate dataset
-            DatasetValidator(
+            # Validate dataset — SaaS validation may restore fields and produce warnings.
+            # For non-SaaS connections, SaaSValidationStep is a no-op (no existing
+            # SaaS config to compare against).
+            validation_response = DatasetValidator(
                 self.db,
                 dataset_to_validate,
                 connection_config,
                 skip_steps=[TraversalValidationStep],
             ).validate()
 
+            warnings = validation_response.warnings
+
+            if isinstance(dataset, DatasetConfigCtlDataset):
+                if warnings:
+                    # The CtlDataset doesn't meet SaaS requirements, and we can't
+                    # silently fix it (it wasn't submitted for editing).
+                    field_issues = "; ".join(w.message for w in warnings)
+                    raise ValidationError(
+                        f"CtlDataset '{dataset.ctl_dataset_fides_key}' has SaaS "
+                        f"validation issues that must be fixed before linking: "
+                        f"{field_issues}"
+                    )
+            elif warnings:
+                # The dataset was mutated by validation (restored fields),
+                # update the data_dict with the corrected dataset.
+                data_dict["dataset"] = dataset_to_validate.model_dump(mode="json")
+
+            fides_key = data_dict["fides_key"]
+
+            # Capture the existing dataset definition before the upsert so that
+            # update events can log a before/after diff.
+            old_dataset_definition: Optional[Dict[str, Any]] = None
+            existing_config = DatasetConfig.get_by(
+                self.db, field="fides_key", value=fides_key
+            )
+            if existing_config is not None:
+                try:
+                    old_dataset_definition = FideslangDataset.model_validate(
+                        existing_config.ctl_dataset
+                    ).model_dump(mode="json")
+                except Exception:
+                    pass
+
             # Create or update using unified method
             dataset_config = DatasetConfig.create_or_update(self.db, data=data_dict)
 
-            return dataset_config.ctl_dataset, None
+            # Detect create vs. update from the returned object's timestamps.
+            # On insert, created_at and updated_at are both set to now() by the DB.
+            # On update, only updated_at is refreshed — so equal timestamps → fresh create.
+            # This avoids a separate pre-flight query and the TOCTOU race it introduced.
+            event_type = (
+                EventAuditType.dataset_created
+                if dataset_config.created_at == dataset_config.updated_at
+                else EventAuditType.dataset_updated
+            )
+
+            # Extract the new dataset definition for audit logging.
+            # Dataset definitions are schema metadata only (no secret values).
+            new_dataset_definition: Optional[Dict[str, Any]] = None
+            try:
+                new_dataset_definition = FideslangDataset.model_validate(
+                    dataset_config.ctl_dataset
+                ).model_dump(mode="json")
+            except Exception:
+                pass
+
+            self._create_dataset_audit_event(
+                event_type,
+                connection_config,
+                fides_key,
+                new_dataset_definition,
+                old_dataset_definition,
+            )
+
+            return dataset_config.ctl_dataset, None, warnings
 
         except (SaaSConfigNotFoundException, ValidationError) as exception:
             error = BulkUpdateFailed(
@@ -102,7 +223,7 @@ class DatasetConfigService:
                 data=dataset.model_dump(),
             )
             logger.warning(f"Dataset validation failed: {str(exception)}")
-            return None, error
+            return None, error, []
 
         except (PydanticValidationError, DatasetNotFoundException):
             # Raising errors for now to stay consistent with existing behavior.
@@ -116,7 +237,7 @@ class DatasetConfigService:
                 message="Dataset create/update failed.",
                 data=dataset.model_dump(),
             )
-            return None, error
+            return None, error, []
 
     def _validate_property_ids(self, property_ids: List[str]) -> None:
         """Validate that all property IDs reference existing properties."""
@@ -138,11 +259,12 @@ class DatasetConfigService:
         """Create or update multiple datasets"""
         created_or_updated: List[FideslangDataset] = []
         failed: List[BulkUpdateFailed] = []
+        all_warnings: List[DatasetFieldWarning] = []
 
         logger.info("Starting bulk upsert for {} datasets", len(datasets))
 
         for item in datasets:
-            dataset_result, error = self.create_or_update_dataset_config(
+            dataset_result, error, warnings = self.create_or_update_dataset_config(
                 connection_config=connection_config,
                 dataset=item,
             )
@@ -151,10 +273,34 @@ class DatasetConfigService:
                 created_or_updated.append(dataset_result)
             if error:
                 failed.append(error)
+            all_warnings.extend(warnings)
 
         return BulkPutDataset(
             succeeded=created_or_updated,
             failed=failed,
+            warnings=all_warnings,
+        )
+
+    def delete_dataset_config(
+        self,
+        connection_config: ConnectionConfig,
+        dataset_key: str,
+    ) -> None:
+        """Delete a dataset config and emit a dataset.deleted audit event for SaaS connections."""
+        dataset_config = DatasetConfig.filter(
+            db=self.db,
+            conditions=(
+                (DatasetConfig.connection_config_id == connection_config.id)
+                & (DatasetConfig.fides_key == dataset_key)
+            ),
+        ).first()
+        if not dataset_config:
+            raise DatasetNotFoundException(
+                f"No dataset with fides_key '{dataset_key}' and connection_key '{connection_config.key}'"
+            )
+        dataset_config.delete(self.db)
+        self._create_dataset_audit_event(
+            EventAuditType.dataset_deleted, connection_config, dataset_key
         )
 
     def validate_dataset_config(
@@ -249,6 +395,42 @@ class DatasetConfigService:
                 & (DatasetConfig.fides_key == fides_key)
             ),
         ).first()
+
+    def get_protected_fields(
+        self,
+        connection_config: ConnectionConfig,
+    ) -> DatasetProtectedFields:
+        """
+        Return the fields that are protected on a SaaS connection:
+        immutable top-level metadata fields and collection fields
+        referenced by the SaaS config.
+
+        For non-SaaS connections, returns empty lists.
+        """
+        if (
+            connection_config.connection_type != ConnectionType.saas
+            or not connection_config.saas_config
+        ):
+            return DatasetProtectedFields(
+                immutable_fields=[],
+                protected_collection_fields=[],
+            )
+
+        saas_config = connection_config.get_saas_config()
+        instance_key = connection_config.saas_config["fides_key"]
+        protected = get_saas_config_referenced_field_paths(saas_config, instance_key)
+
+        return DatasetProtectedFields(
+            immutable_fields=[
+                f
+                for f in FideslangDataset.model_fields
+                if f not in MUTABLE_DATASET_FIELDS
+            ],
+            protected_collection_fields=[
+                ProtectedCollectionField(collection=col, field=field_path)
+                for col, field_path in protected
+            ],
+        )
 
     def run_test_access_request(
         self,

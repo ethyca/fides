@@ -44,15 +44,16 @@ const TaxonomyOption = ({
   );
 };
 
-interface ITaxonomySelectProps
-  extends Omit<ICustomSelectProps<string, TaxonomySelectOption>, "options"> {
+interface ITaxonomySelectProps extends Omit<
+  ICustomSelectProps<string, TaxonomySelectOption>,
+  "options"
+> {
   options?: TaxonomySelectOptions;
 }
-interface ITaxonomyMultiSelectProps
-  extends Omit<
-    ICustomMultiSelectProps<string, TaxonomySelectOption>,
-    "options"
-  > {
+interface ITaxonomyMultiSelectProps extends Omit<
+  ICustomMultiSelectProps<string, TaxonomySelectOption>,
+  "options"
+> {
   options?: TaxonomySelectOptions;
 }
 

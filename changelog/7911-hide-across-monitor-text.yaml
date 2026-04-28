@@ -1,4 +1,0 @@
-type: Fixed
-description: Hid redundant "across 1 monitor" text on single-monitor Action Center view
-pr: 7911
-labels: []

@@ -369,7 +369,7 @@ func TestPolicy_ResolveContextField_NonStringValue(t *testing.T) {
 	}
 }
 
-// ── Missing coverage: data_subject dimension ─────────────────────────
+// ── Data subject dimension ────────────────────────────────────────────
 
 func TestPolicy_MatchDataSubject(t *testing.T) {
 	policies := []AccessPolicy{
@@ -433,7 +433,7 @@ func TestPolicy_MatchThreeDimensions(t *testing.T) {
 	}
 }
 
-// ── Missing coverage: consent not_opt_in / not_opt_out ───────────────
+// ── Consent not_opt_in / not_opt_out ─────────────────────────────────
 
 func TestUnless_ConsentNotOptIn(t *testing.T) {
 	policies := []AccessPolicy{
@@ -499,7 +499,7 @@ func TestUnless_ConsentNotOptOut(t *testing.T) {
 	}
 }
 
-// ── Missing coverage: data_flow none_of ──────────────────────────────
+// ── data_flow none_of ────────────────────────────────────────────────
 
 func TestUnless_DataFlowNoneOf(t *testing.T) {
 	policies := []AccessPolicy{
@@ -537,7 +537,7 @@ func TestUnless_DataFlowNoneOf(t *testing.T) {
 	}
 }
 
-// ── Review items #12, #13, #14 ───────────────────────────────────────
+// ── Match dimension combinations ─────────────────────────────────────
 
 func TestMatchDimension_BothAnyAndAll(t *testing.T) {
 	// A single dimension with both Any and All populated.

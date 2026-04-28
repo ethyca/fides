@@ -270,6 +270,7 @@ class TestManualTaskDigestMessageDispatch:
             db=db,
             data={
                 "type": MessagingActionType.MANUAL_TASK_DIGEST.value,
+                "label": "Custom manual task digest",
                 "content": {
                     "subject": "Custom Digest: __ORGANIZATION_NAME__ Tasks",
                     "body": "Hello __VENDOR_CONTACT_NAME__, you have __IMMINENT_TASK_COUNT__ urgent tasks and __UPCOMING_TASK_COUNT__ upcoming tasks from __ORGANIZATION_NAME__. Please visit our portal to review these tasks.",
