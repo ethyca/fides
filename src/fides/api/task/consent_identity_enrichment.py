@@ -9,6 +9,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.graph_task import build_consent_identity_enrichment_graph
@@ -218,6 +219,23 @@ def enrich_identities_for_consent(
                     {key: FidesopsRedis.encode_obj(enriched[key])},
                     expire_seconds=CONFIG.redis.default_ttl_seconds,
                 )
+            privacy_request.add_success_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Consent identity enrichment",
+                collection_name=None,
+                message=f"Resolved additional identities: {', '.join(sorted(new_keys))}",
+                action_type=ActionType.consent,
+            )
+        else:
+            privacy_request.add_success_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Consent identity enrichment",
+                collection_name=None,
+                message="No additional identities discovered",
+                action_type=ActionType.consent,
+            )
 
         return enriched
 
