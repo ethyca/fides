@@ -552,7 +552,7 @@ const plusApi = baseApi.injectEndpoints({
         category_key: string;
         category_name: string | null;
       }>,
-      { connectionKey: string; projectKey?: string; issueType?: string }
+      { connectionKey: string; projectKey: string; issueType: string }
     >({
       query: ({ connectionKey, projectKey, issueType }) => ({
         url: `plus/connection/${connectionKey}/jira/statuses`,

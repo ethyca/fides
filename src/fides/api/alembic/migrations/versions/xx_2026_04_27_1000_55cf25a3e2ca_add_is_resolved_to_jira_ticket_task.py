@@ -1,15 +1,15 @@
-"""Add is_fides_complete to jira_ticket_task
+"""Add is_resolved to jira_ticket_task
 
-Add a boolean column ``is_fides_complete`` that decouples the Fides
+Add a boolean column ``is_resolved`` that decouples the Fides
 completion decision from the Jira status category.  This lets admins
 configure a specific Jira status as the completion trigger rather than
 relying on the entire ``done`` category.
 
 Backfills existing rows: any task whose ``external_status_category`` is
-already ``'done'`` is marked ``is_fides_complete = True``.
+already ``'done'`` is marked ``is_resolved = True``.
 
 Replaces the old partial index (filtered on ``external_status_category``)
-with a new one filtered on ``is_fides_complete = false``.
+with a new one filtered on ``is_resolved = false``.
 
 Revision ID: 55cf25a3e2ca
 Revises: d71c7d274c04
@@ -32,18 +32,18 @@ def upgrade() -> None:
     op.add_column(
         "jira_ticket_task",
         sa.Column(
-            "is_fides_complete",
+            "is_resolved",
             sa.Boolean(),
             server_default=sa.text("false"),
             nullable=False,
         ),
     )
 
-    # Backfill: existing done-category tasks are already complete
+    # Backfill: existing terminal tasks (done or deleted) are already resolved
     op.execute(
         "UPDATE jira_ticket_task "
-        "SET is_fides_complete = true "
-        "WHERE external_status_category = 'done'"
+        "SET is_resolved = true "
+        "WHERE external_status_category IN ('done', 'deleted')"
     )
 
     # Replace partial index
@@ -51,8 +51,8 @@ def upgrade() -> None:
     op.create_index(
         "ix_jira_ticket_task_open",
         "jira_ticket_task",
-        ["is_fides_complete"],
-        postgresql_where=sa.text("is_fides_complete = false"),
+        ["is_resolved"],
+        postgresql_where=sa.text("is_resolved = false"),
     )
 
 
@@ -64,9 +64,8 @@ def downgrade() -> None:
         "jira_ticket_task",
         ["external_status_category"],
         postgresql_where=sa.text(
-            "external_status_category IS NULL "
-            "OR external_status_category != 'done'"
+            "external_status_category IS NULL OR external_status_category != 'done'"
         ),
     )
 
-    op.drop_column("jira_ticket_task", "is_fides_complete")
+    op.drop_column("jira_ticket_task", "is_resolved")

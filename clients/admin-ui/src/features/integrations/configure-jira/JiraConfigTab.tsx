@@ -98,6 +98,10 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
     form.setFieldValue("completion_status", undefined);
   };
 
+  const handleIssueTypeChange = () => {
+    form.setFieldValue("completion_status", undefined);
+  };
+
   const handlePreview = async () => {
     setPreviewData(null);
     try {
@@ -196,6 +200,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
             }
             loading={issueTypesLoading}
             disabled={!selectedProject}
+            onChange={handleIssueTypeChange}
             options={issueTypes
               ?.filter((t) => !t.subtask)
               .map((t) => ({
