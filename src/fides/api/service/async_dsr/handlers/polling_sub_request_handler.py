@@ -84,7 +84,7 @@ class PollingSubRequestHandler:
 
         if (
             len(terminal_sub_requests) == len(all_sub_requests)
-            and len(all_sub_requests) > 0
+            and len(all_sub_requests) > 0  # empty sub_requests list is not complete
         ):
             if failed_sub_requests:
                 logger.warning(
