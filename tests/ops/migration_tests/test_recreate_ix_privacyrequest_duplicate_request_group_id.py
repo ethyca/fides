@@ -16,7 +16,7 @@ from fides.api.db.database import downgrade_db, get_alembic_config, upgrade_db
 from fides.config import CONFIG
 
 REVISION = "e8f9a0b1c2d3"
-DOWN_REVISION = "d6e7f8a9b0c1"
+DOWN_REVISION = "d71c7d274c04"
 INDEX_NAME = "ix_privacyrequest_duplicate_request_group_id"
 
 
