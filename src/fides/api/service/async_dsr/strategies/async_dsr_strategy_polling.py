@@ -271,7 +271,10 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         # If we have merged attachments, add them to the first aggregated result
         if merged_attachments and aggregated_results:
-            aggregated_results[0]["retrieved_attachments"] = merged_attachments
+            aggregated_results[0] = {
+                **aggregated_results[0],
+                "retrieved_attachments": merged_attachments,
+            }
 
         errored = [
             sr
