@@ -1,7 +1,7 @@
-import type {
+import {
   AssessmentResponse as GeneratedAssessmentResponse,
   CreateAssessmentTaskRequest,
-  Page_AssessmentResponse_,
+  Page_AssessmentTaskResponse_,
   TemplateResponse,
 } from "~/types/api";
 
@@ -50,7 +50,7 @@ export interface PrivacyAssessmentResponse extends Omit<
 // Override Page type with our strongly-typed assessment
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface Page_PrivacyAssessmentResponse_ extends Omit<
-  Page_AssessmentResponse_,
+  Page_AssessmentTaskResponse_,
   "items"
 > {
   items: PrivacyAssessmentResponse[];
