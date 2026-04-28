@@ -3,8 +3,8 @@ import {
   Avatar,
   Bubble,
   Flex,
+  Icons,
   Sender,
-  Tag,
   Typography,
   useMessage,
 } from "fidesui";
@@ -131,7 +131,14 @@ const AgentChatPanel = ({
         role: msg.role === "user" ? "user" : "ai",
         content: msg.content,
         footer: msg.yamlApplied ? (
-          <Tag color="success">Policy updated</Tag>
+          <Flex align="center" gap="small">
+            <Icons.CheckmarkFilled
+              style={{ color: "var(--ant-color-success)" }}
+            />
+            <Typography.Text type="secondary">
+              The policy was updated
+            </Typography.Text>
+          </Flex>
         ) : undefined,
       })),
     [messages],
