@@ -1,25 +1,18 @@
 import {
   Button,
   Flex,
-  Icons,
   Space,
   Spin,
   Tooltip,
   Typography,
   useMessage,
-  useModal,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import {
-  getErrorMessage,
-  isErrorResult,
-  isErrorWithMessage,
-  isFetchBaseQueryError,
-} from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_DETAIL_ROUTE,
@@ -37,15 +30,12 @@ import { Dataset } from "~/types/api";
 const DatasetGraphEditorPage: NextPage = () => {
   const router = useRouter();
   const messageApi = useMessage();
-  const modal = useModal();
   const datasetId = router.query.datasetId as string;
 
   const {
     data: serverDataset,
-    isLoading,
     isError,
     error,
-    refetch,
   } = useGetDatasetByKeyQuery(datasetId, { skip: !datasetId });
   const [updateDataset] = useUpdateDatasetMutation();
 
@@ -91,43 +81,6 @@ const DatasetGraphEditorPage: NextPage = () => {
     messageApi.success("Successfully saved dataset");
   }, [localDataset, updateDataset, messageApi]);
 
-  const doRefresh = useCallback(async () => {
-    try {
-      const { data } = await refetch();
-      if (data) {
-        const cleaned = removeNulls(data) as Dataset;
-        setLocalDataset(cleaned);
-        savedDatasetJson.current = JSON.stringify(cleaned);
-        setEditorKey((k) => k + 1);
-        messageApi.success("Successfully refreshed dataset");
-      }
-    } catch (err) {
-      if (isFetchBaseQueryError(err)) {
-        messageApi.error(getErrorMessage(err));
-      } else if (isErrorWithMessage(err)) {
-        messageApi.error(err.message);
-      } else {
-        messageApi.error("Failed to refresh dataset");
-      }
-    }
-  }, [refetch, messageApi]);
-
-  const handleRefresh = useCallback(() => {
-    if (isDirty) {
-      modal.confirm({
-        title: "Unsaved changes",
-        content:
-          "You have unsaved changes that will be lost. Are you sure you want to refresh?",
-        okText: "Discard and refresh",
-        okButtonProps: { danger: true },
-        cancelText: "Cancel",
-        onOk: doRefresh,
-      });
-    } else {
-      doRefresh();
-    }
-  }, [isDirty, modal, doRefresh]);
-
   const handleReset = useCallback(() => {
     if (!savedDatasetJson.current) {
       return;
@@ -171,17 +124,6 @@ const DatasetGraphEditorPage: NextPage = () => {
                 Unsaved changes
               </Typography.Text>
             )}
-            <Tooltip
-              title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
-              placement="top"
-            >
-              <Button
-                onClick={handleRefresh}
-                loading={isLoading}
-                icon={<Icons.Renew />}
-                aria-label="Refresh"
-              />
-            </Tooltip>
             {isDirty && (
               <Button data-testid="discard-btn" onClick={handleReset}>
                 Reset
