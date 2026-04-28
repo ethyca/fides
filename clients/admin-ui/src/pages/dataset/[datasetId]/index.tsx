@@ -169,7 +169,7 @@ const DatasetDetailPage: NextPage = () => {
         breadcrumbItems={breadcrumbs}
         rightContent={
           <Button
-            icon={<Icons.DataVis1 />}
+            icon={<Icons.Flow />}
             onClick={() =>
               router.push({
                 pathname: DATASET_GRAPH_EDITOR_ROUTE,

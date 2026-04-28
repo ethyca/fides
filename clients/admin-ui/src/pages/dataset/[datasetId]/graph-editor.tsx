@@ -14,7 +14,12 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import {
+  getErrorMessage,
+  isErrorResult,
+  isErrorWithMessage,
+  isFetchBaseQueryError,
+} from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_DETAIL_ROUTE,
@@ -97,7 +102,13 @@ const DatasetGraphEditorPage: NextPage = () => {
         messageApi.success("Successfully refreshed dataset");
       }
     } catch (err) {
-      messageApi.error(getErrorMessage(err));
+      if (isFetchBaseQueryError(err)) {
+        messageApi.error(getErrorMessage(err));
+      } else if (isErrorWithMessage(err)) {
+        messageApi.error(err.message);
+      } else {
+        messageApi.error("Failed to refresh dataset");
+      }
     }
   }, [refetch, messageApi]);
 
@@ -116,6 +127,14 @@ const DatasetGraphEditorPage: NextPage = () => {
       doRefresh();
     }
   }, [isDirty, modal, doRefresh]);
+
+  const handleReset = useCallback(() => {
+    if (!savedDatasetJson.current) {
+      return;
+    }
+    setLocalDataset(JSON.parse(savedDatasetJson.current) as Dataset);
+    setEditorKey((k) => k + 1);
+  }, []);
 
   const datasetName = serverDataset?.name || datasetId;
 
@@ -143,12 +162,12 @@ const DatasetGraphEditorPage: NextPage = () => {
               query: { datasetId: encodeURIComponent(datasetId) },
             },
           },
-          { title: "Graph editor" },
+          { title: "Visual editor" },
         ]}
         rightContent={
           <Space>
             {isDirty && (
-              <Typography.Text type="warning" style={{ fontSize: 12 }}>
+              <Typography.Text type="warning" className="text-xs">
                 Unsaved changes
               </Typography.Text>
             )}
@@ -157,22 +176,22 @@ const DatasetGraphEditorPage: NextPage = () => {
               placement="top"
             >
               <Button
-                size="small"
                 onClick={handleRefresh}
                 loading={isLoading}
                 icon={<Icons.Renew />}
                 aria-label="Refresh"
               />
             </Tooltip>
+            {isDirty && (
+              <Button data-testid="discard-btn" onClick={handleReset}>
+                Reset
+              </Button>
+            )}
             <Tooltip
               title="Save your changes to update the dataset in the database."
               placement="top"
             >
-              <Button
-                size="small"
-                type={isDirty ? "primary" : "default"}
-                onClick={handleSave}
-              >
+              <Button type="primary" disabled={!isDirty} onClick={handleSave}>
                 Save
               </Button>
             </Tooltip>
