@@ -600,8 +600,6 @@ class TestAsyncPollingStrategy:
         with MagicMock() as mock_override:
             mock_override.return_value = False
 
-            from unittest.mock import patch
-
             with patch.object(
                 async_polling_strategy,
                 "status_request",
@@ -634,8 +632,6 @@ class TestAsyncPollingStrategy:
         with MagicMock() as mock_override:
             mock_override.return_value = expected_result
 
-            from unittest.mock import patch
-
             with patch.object(
                 async_polling_strategy,
                 "status_request",
@@ -666,8 +662,6 @@ class TestAsyncPollingStrategy:
         mock_client = MagicMock()
 
         # Mock _check_sub_request_status to return skip_result_request=True
-        from unittest.mock import patch
-
         with patch.object(
             async_polling_strategy,
             "_check_sub_request_status",
@@ -1010,8 +1004,6 @@ class TestAsyncPollingStrategy:
         for timeout — it is terminal. Even if its created_at is far in the past,
         check_timeout must not raise PrivacyRequestError.
         """
-        from fides.api.common_exceptions import PrivacyRequestError
-
         request_task = access_request_task
         sub_request = request_task.sub_requests[0]
 
