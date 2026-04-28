@@ -13,6 +13,14 @@ from fides.api.models.privacy_request.request_task import (
 )
 from fides.api.models.worker_task import ExecutionLogStatus
 
+TERMINAL_STATUSES = frozenset(
+    {
+        ExecutionLogStatus.complete.value,
+        ExecutionLogStatus.skipped.value,
+        ExecutionLogStatus.error.value,
+    }
+)
+
 
 class PollingSubRequestHandler:
     """Utility class for managing polling sub-request lifecycle and status checking."""
@@ -62,17 +70,11 @@ class PollingSubRequestHandler:
         Returns:
             bool: True if all sub-requests are in a terminal state, False if still in progress
         """
-        terminal_statuses = {
-            ExecutionLogStatus.complete.value,
-            ExecutionLogStatus.skipped.value,
-            ExecutionLogStatus.error.value,
-        }
-
         all_sub_requests = polling_task.sub_requests
         terminal_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.status in terminal_statuses
+            if sub_request.status in TERMINAL_STATUSES
         ]
         failed_sub_requests = [
             sub_request
@@ -114,17 +116,11 @@ class PollingSubRequestHandler:
         Raises:
             PrivacyRequestError: If any sub-request has timed out
         """
-        timeout_seconds = timeout_days * 24 * 60 * 60  # Convert days to seconds
-
         # Check timeout for incomplete sub-requests only
         timed_out_sub_requests = []
 
         for sub_request in polling_task.sub_requests:
-            if sub_request.status not in [
-                ExecutionLogStatus.complete.value,
-                ExecutionLogStatus.skipped.value,
-                ExecutionLogStatus.error.value,
-            ]:
+            if sub_request.status not in TERMINAL_STATUSES:
                 # Check if this sub-request has timed out
                 if sub_request.created_at:
                     timeout_threshold = sub_request.created_at + timedelta(
