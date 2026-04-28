@@ -28,10 +28,14 @@ const EditAccessPolicyPage: NextPage = () => {
 
   const handleSave = async (values: SidebarFormValues, yaml: string) => {
     try {
-      await updateAccessPolicy({ id: policyId, ...values, yaml }).unwrap();
+      await updateAccessPolicy({
+        id: policyId,
+        ...values,
+        yaml,
+      }).unwrap();
       messageApi.success("Policy saved.");
     } catch (error) {
-      messageApi.error(getErrorMessage((error as RTKErrorResult).error));
+      messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
   };
 
@@ -40,7 +44,7 @@ const EditAccessPolicyPage: NextPage = () => {
       await deleteAccessPolicy(policyId).unwrap();
       router.push(ACCESS_POLICIES_ROUTE);
     } catch (error) {
-      messageApi.error(getErrorMessage((error as RTKErrorResult).error));
+      messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
     }
   };
 

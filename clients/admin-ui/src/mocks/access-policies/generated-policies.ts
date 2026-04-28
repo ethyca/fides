@@ -16,7 +16,7 @@ export const generatedPoliciesForIndustry = (): AccessPolicy[] => {
       name: "Marketing Data — Consent Required",
       description:
         "Deny access to marketing and profiling data unless the user has opted in to marketing consent.",
-      controls: ["eea_uk_gdpr", "us_glba_ccpa"],
+      control: "eea_uk_gdpr",
       is_recommendation: true,
       yaml: [
         "name: Marketing Data — Consent Required",
@@ -48,7 +48,7 @@ export const generatedPoliciesForIndustry = (): AccessPolicy[] => {
       name: "Fraud Detection — Legitimate Interest",
       description:
         "Allow access to fraud detection data under legitimate interest without additional consent.",
-      controls: ["global"],
+      control: "global",
       is_recommendation: true,
       yaml: [
         "name: Fraud Detection — Legitimate Interest",
@@ -72,7 +72,7 @@ export const generatedPoliciesForIndustry = (): AccessPolicy[] => {
       name: "Analytics — EEA Geo Restriction",
       description:
         "Deny analytics data processing for EEA residents unless consent is provided.",
-      controls: ["eea_uk_gdpr"],
+      control: "eea_uk_gdpr",
       is_recommendation: true,
       yaml: [
         "name: Analytics — EEA Geo Restriction",
@@ -106,7 +106,7 @@ export const generatedPoliciesForIndustry = (): AccessPolicy[] => {
       name: "Payment Processing — Contract Basis",
       description:
         "Allow payment processing data access as necessary for contract fulfillment.",
-      controls: ["global"],
+      control: "global",
       yaml: [
         "name: Payment Processing — Contract Basis",
         "description: Allow payment processing under contractual necessity",

@@ -6,11 +6,13 @@
  */
 
 export enum PromptCategory {
+  ACCESS_POLICIES = "access_policies",
   ASSESSMENT = "assessment",
   QUESTIONNAIRE = "questionnaire",
 }
 
 export enum PromptType {
+  ACCESS_POLICY_CHAT = "access_policy_chat",
   ASSESSMENT_ANALYSIS = "assessment_analysis",
   INTENT_CLASSIFICATION = "intent_classification",
   MESSAGE_GENERATION = "message_generation",

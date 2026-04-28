@@ -9,6 +9,7 @@ export type * from "./models/AccessControlSummaryResponse";
 export * from "./models/AccessLevel";
 export type * from "./models/AccessManualWebhookResponse";
 export type * from "./models/AccessManualWebhooks";
+export type * from "./models/AccessPoliciesApplicationConfig";
 export type * from "./models/AccessPolicyCreate";
 export type * from "./models/AccessPolicyResponse";
 export type * from "./models/AccessPolicyUpdate";

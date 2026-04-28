@@ -35,6 +35,21 @@ export const getErrorMessage = (
     if (error.status === 404 && isNotFoundError(error.data)) {
       return `${error.data.detail.error} (${error.data.detail.fides_key})`;
     }
+    // Structured validation error: { detail: { message: string, errors: string[] } }
+    const detail = (error.data as Record<string, unknown>)?.detail;
+    if (
+      detail &&
+      typeof detail === "object" &&
+      "message" in detail &&
+      "errors" in detail &&
+      Array.isArray((detail as { errors: unknown }).errors)
+    ) {
+      const { message, errors } = detail as {
+        message: string;
+        errors: string[];
+      };
+      return errors.length > 0 ? `${message}: ${errors[0]}` : message;
+    }
   }
 
   return defaultMsg;

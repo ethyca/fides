@@ -21,7 +21,6 @@ import PageHeader from "~/features/common/PageHeader";
 import { DEFAULT_DATA_SECTIONS } from "~/features/prompt-explorer/constants";
 import {
   DataSectionConfig,
-  PromptCategory,
   PromptInfo,
   TemplateSummary,
   useExecutePromptMutation,
@@ -33,6 +32,7 @@ import {
   useRenderPromptMutation,
 } from "~/features/prompt-explorer/prompt-explorer.slice";
 import { QuestionnaireControls } from "~/features/prompt-explorer/QuestionnaireControls";
+import { PromptCategory } from "~/features/prompt-explorer/types";
 import { buildQuestionnaireVariables } from "~/features/prompt-explorer/utils";
 
 const { Content } = Layout;
@@ -79,6 +79,10 @@ const PromptExplorer: NextPage = () => {
   const [previousPhrasings, setPreviousPhrasings] = useState<string>(
     "How long do you keep this data?",
   );
+
+  // State for access policy chat prompt inputs
+  const [agentPrompt, setAgentPrompt] = useState<string>("");
+  const [currentPolicyYaml, setCurrentPolicyYaml] = useState<string>("");
 
   // State for rendered prompt and response
   const [renderedPrompt, setRenderedPrompt] = useState<string>("");
@@ -168,7 +172,8 @@ const PromptExplorer: NextPage = () => {
 
     try {
       const questionnaireVariables =
-        selectedPrompt.category === "questionnaire"
+        selectedPrompt.category === PromptCategory.QUESTIONNAIRE ||
+        selectedPrompt.category === PromptCategory.ACCESS_POLICIES
           ? buildQuestionnaireVariables({
               promptType: selectedPrompt.prompt_type,
               questions,
@@ -182,6 +187,8 @@ const PromptExplorer: NextPage = () => {
               isFinalQuestion,
               questionToRephrase,
               previousPhrasings,
+              agentPrompt,
+              currentPolicyYaml,
             })
           : {};
 
@@ -211,6 +218,8 @@ const PromptExplorer: NextPage = () => {
     isFinalQuestion,
     questionToRephrase,
     previousPhrasings,
+    agentPrompt,
+    currentPolicyYaml,
     dataSections,
     selectedAssessmentId,
     selectedTemplateKey,
@@ -307,8 +316,18 @@ const PromptExplorer: NextPage = () => {
                   value={selectedCategory}
                   onChange={(value) => setSelectedCategory(value)}
                   options={[
-                    { label: "Assessment", value: "assessment" },
-                    { label: "Questionnaire", value: "questionnaire" },
+                    {
+                      label: "Access Policies",
+                      value: PromptCategory.ACCESS_POLICIES,
+                    },
+                    {
+                      label: "Assessment",
+                      value: PromptCategory.ASSESSMENT,
+                    },
+                    {
+                      label: "Questionnaire",
+                      value: PromptCategory.QUESTIONNAIRE,
+                    },
                   ]}
                 />
               }
@@ -462,6 +481,10 @@ const PromptExplorer: NextPage = () => {
                 setQuestionToRephrase={setQuestionToRephrase}
                 previousPhrasings={previousPhrasings}
                 setPreviousPhrasings={setPreviousPhrasings}
+                agentPrompt={agentPrompt}
+                setAgentPrompt={setAgentPrompt}
+                currentPolicyYaml={currentPolicyYaml}
+                setCurrentPolicyYaml={setCurrentPolicyYaml}
               />
 
               {/* Actions */}
