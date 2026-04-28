@@ -19,7 +19,18 @@ from fides.config import CONFIG
 
 @dataclass
 class _EnrichmentNode:
-    """Minimal stand-in for ExecutionNode, providing just what QueryConfig needs."""
+    """Minimal stand-in for ExecutionNode for identity enrichment queries.
+
+    QueryConfig subclasses access the following attributes:
+    - SQLQueryConfig.get_formatted_query_string: node.collection.name (table name)
+    - PostgresQueryConfig.generate_table_name: node.collection.name
+    - BigQueryQueryConfig: node.collection.name + namespace_meta (set separately)
+    - SQLLikeQueryConfig.__init__: node (stored as self.node)
+    - QueryConfig.field_map: node.collection.field_dict
+
+    If a future QueryConfig accesses attributes beyond these, this dataclass
+    must be extended to match.
+    """
 
     collection: Collection
     address: CollectionAddress
@@ -117,7 +128,7 @@ def _execute_identity_lookup(
         with engine.connect() as connection:
             connector.set_schema(connection)
             results = connection.execute(query)
-            return SQLConnector.cursor_result_to_rows(results)
+            return connector.cursor_result_to_rows(results)
     except Exception as exc:
         logger.warning(
             "Identity enrichment query failed for {}.{}: {}",
