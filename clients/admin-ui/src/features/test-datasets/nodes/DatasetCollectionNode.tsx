@@ -1,5 +1,5 @@
 import { NodeProps } from "@xyflow/react";
-import { Button, Icons, Typography } from "fidesui";
+import { Button, Flex, Icons, Tag, Typography } from "fidesui";
 import { useContext } from "react";
 
 import DatasetEditorActionsContext from "../context/DatasetEditorActionsContext";
@@ -44,12 +44,14 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>
-        <span className={styles.badge}>
-          <Icons.Column size={10} />
-          {nodeData.filteredFieldCount ??
-            nodeData.collection.fields?.length ??
-            0}
-        </span>
+        <Tag color="marble">
+          <Flex align="center" gap={2}>
+            <Icons.Column size={10} />
+            {nodeData.filteredFieldCount ??
+              nodeData.collection.fields?.length ??
+              0}
+          </Flex>
+        </Tag>
       </Button>
       {nodeData.isRoot && (
         <div className={styles["add-button-container"]}>
