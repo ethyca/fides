@@ -14,22 +14,10 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import {
-  Button,
-  Flex,
-  Icons,
-  Popconfirm,
-  SelectProps,
-  Space,
-  Splitter,
-  Tabs,
-  useMessage,
-} from "fidesui";
+import { Flex, SelectProps, Splitter, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
@@ -48,6 +36,7 @@ import {
   POLICY_NODE_ID,
   yamlToNodesAndEdges,
 } from "./policy-yaml";
+import PolicyEditorPanel from "./PolicyEditorPanel";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
@@ -953,67 +942,22 @@ const AccessPolicyEditor = ({
     />
   );
 
-  const mainColumn = (
-    <Flex vertical className="h-full min-w-0 grow">
-      <div>
-        <PageHeader
-          heading={title}
-          breadcrumbItems={[
-            { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
-            { title: breadcrumbTitle },
-          ]}
-          rightContent={
-            <Space>
-              {!isNew && (
-                <Popconfirm
-                  title="Delete policy"
-                  description="Are you sure you want to delete this policy?"
-                  onConfirm={onDelete}
-                  okText="Delete"
-                  okButtonProps={{ danger: true }}
-                  cancelText="Cancel"
-                >
-                  <Button
-                    icon={<Icons.TrashCan />}
-                    danger
-                    aria-label="Delete policy"
-                    data-testid="delete-btn"
-                  />
-                </Popconfirm>
-              )}
-              <Button
-                icon={<Icons.Download />}
-                onClick={handleExport}
-                data-testid="export-btn"
-              >
-                Export
-              </Button>
-              <Button
-                type="primary"
-                onClick={handleSave}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </Space>
-          }
-        />
-      </div>
-      <div className="relative min-h-0 grow">{tabsNode}</div>
-    </Flex>
-  );
-
-  const leftPanelContent = (
-    <div className="h-full overflow-hidden pb-4 pl-10 pr-3 pt-6">
-      {mainColumn}
-    </div>
-  );
-
   return (
     <Layout title={title} padded={false}>
       {agentChatEnabled ? (
         <Splitter className="h-full">
-          <Splitter.Panel>{leftPanelContent}</Splitter.Panel>
+          <Splitter.Panel>
+            <PolicyEditorPanel
+              title={title}
+              breadcrumbTitle={breadcrumbTitle}
+              isNew={isNew}
+              onDelete={onDelete}
+              onExport={handleExport}
+              onSave={handleSave}
+            >
+              {tabsNode}
+            </PolicyEditorPanel>
+          </Splitter.Panel>
           <Splitter.Panel defaultSize={350} min={300} max="40%" collapsible>
             <div
               className="h-full pb-2"
@@ -1027,7 +971,16 @@ const AccessPolicyEditor = ({
           </Splitter.Panel>
         </Splitter>
       ) : (
-        leftPanelContent
+        <PolicyEditorPanel
+          title={title}
+          breadcrumbTitle={breadcrumbTitle}
+          isNew={isNew}
+          onDelete={onDelete}
+          onExport={handleExport}
+          onSave={handleSave}
+        >
+          {tabsNode}
+        </PolicyEditorPanel>
       )}
     </Layout>
   );
