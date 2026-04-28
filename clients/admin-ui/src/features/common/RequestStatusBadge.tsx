@@ -74,7 +74,7 @@ export const statusPropMap: Record<
     label: "Manual Review Required",
   },
   awaiting_access_review: {
-    color: CUSTOM_TAG_COLOR.MINOS,
+    color: CUSTOM_TAG_COLOR.CAUTION,
     label: "Awaiting Access Review",
   },
 };
