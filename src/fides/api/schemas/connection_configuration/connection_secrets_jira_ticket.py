@@ -68,6 +68,10 @@ class JiraTicketSchema(FidesSchema):
     username: str | None = None  # email address
     api_key: str | None = Field(default=None, json_schema_extra={"sensitive": True})
 
+    # Completion trigger — when set, only this exact Jira status name triggers
+    # Fides completion.  When None, any done-category status triggers completion.
+    completion_status: str | None = None
+
     @model_validator(mode="after")
     def _check_mutual_exclusivity(self) -> "JiraTicketSchema":
         """Reject schemas that mix OAuth and API key fields."""

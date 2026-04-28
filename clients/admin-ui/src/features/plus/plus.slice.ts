@@ -545,6 +545,23 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/connection/${connectionKey}/jira/projects/${projectKey}/issuetypes`,
       }),
     }),
+    getJiraStatuses: build.query<
+      Array<{
+        id: string;
+        name: string;
+        category_key: string;
+        category_name: string | null;
+      }>,
+      { connectionKey: string; projectKey?: string; issueType?: string }
+    >({
+      query: ({ connectionKey, projectKey, issueType }) => ({
+        url: `plus/connection/${connectionKey}/jira/statuses`,
+        params: {
+          ...(projectKey && { project_key: projectKey }),
+          ...(issueType && { issue_type: issueType }),
+        },
+      }),
+    }),
     getJiraTemplateVariables: build.query<
       Array<{
         name: string;
@@ -611,6 +628,7 @@ export const {
   useInitiateJiraOAuthMutation,
   useGetJiraProjectsQuery,
   useGetJiraIssueTypesQuery,
+  useGetJiraStatusesQuery,
   useGetJiraTemplateVariablesQuery,
   usePreviewJiraTicketMutation,
 } = plusApi;
