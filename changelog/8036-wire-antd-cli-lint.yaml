@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Added antd CLI lint to npm lint scripts in admin-ui, privacy-center, and fidesui
+pr: 8036
+labels: []

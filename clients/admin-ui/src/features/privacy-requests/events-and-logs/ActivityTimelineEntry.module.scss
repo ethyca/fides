@@ -73,6 +73,7 @@ $horizontal-padding: 20px;
 .title {
   font-weight: 600;
   flex-shrink: 1;
+  width: auto;
 
   &--error {
     color: var(--fidesui-error);
@@ -85,8 +86,6 @@ $horizontal-padding: 20px;
   &--polling {
     color: var(--fidesui-warning);
   }
-
-  width: auto;
 }
 
 .timestamp {

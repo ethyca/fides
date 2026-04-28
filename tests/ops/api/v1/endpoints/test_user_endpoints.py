@@ -35,6 +35,7 @@ from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.messaging.messaging import MessagingActionType
+from fides.api.schemas.user import DisabledReason
 from fides.common.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
@@ -2865,6 +2866,7 @@ class TestReinviteUser:
                 "username": "invited_user",
                 "email_address": "invited@example.com",
                 "disabled": True,
+                "disabled_reason": DisabledReason.pending_invite,
             },
         )
         FidesUserPermissions.create(
@@ -2959,16 +2961,43 @@ class TestReinviteUser:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "User does not have a pending invitation."
 
-    def test_reinvite_user_without_invite_record(
+    def test_reinvite_disabled_user_without_pending_invite_reason(
         self, db, api_client, generate_auth_header
     ):
-        """Test reinviting a disabled user without FidesUserInvite record returns 400"""
+        """A disabled user whose disabled_reason is not pending_invite must be rejected."""
         user = FidesUser.create(
             db=db,
             data={
-                "username": "disabled_no_invite",
+                "username": "disabled_no_reason",
                 "email_address": "disabled@example.com",
                 "disabled": True,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+
+        url = V1_URL_PREFIX + f"/user/{user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] == "User does not have a pending invitation."
+
+        user.delete(db)
+
+    def test_reinvite_user_without_invite_record(
+        self, db, api_client, generate_auth_header
+    ):
+        """A user flagged as pending_invite but missing a FidesUserInvite row must be rejected."""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "pending_no_invite",
+                "email_address": "pending@example.com",
+                "disabled": True,
+                "disabled_reason": DisabledReason.pending_invite,
             },
         )
         FidesUserPermissions.create(
