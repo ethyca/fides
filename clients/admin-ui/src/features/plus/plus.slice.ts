@@ -556,10 +556,7 @@ const plusApi = baseApi.injectEndpoints({
     >({
       query: ({ connectionKey, projectKey, issueType }) => ({
         url: `plus/connection/${connectionKey}/jira/statuses`,
-        params: {
-          ...(projectKey && { project_key: projectKey }),
-          ...(issueType && { issue_type: issueType }),
-        },
+        params: { project_key: projectKey, issue_type: issueType },
       }),
     }),
     getJiraTemplateVariables: build.query<

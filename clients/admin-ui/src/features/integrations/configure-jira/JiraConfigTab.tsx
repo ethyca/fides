@@ -219,7 +219,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
             aria-label="Completion trigger"
             placeholder="Default (any Done-category status)"
             loading={statusesLoading}
-            disabled={!selectedProject}
+            disabled={!selectedProject || !selectedIssueType}
             allowClear
             showSearch
             optionFilterProp="label"
