@@ -259,16 +259,21 @@ class TestEnrichIdentitiesForConsent:
         assert result["email"] == "user@test.com"
         assert result["external_id"] == "ext_456"
 
+    @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
     @patch("fides.api.task.consent_identity_enrichment.get_connector")
-    def test_no_enrichment_when_all_identities_present(self, mock_get_connector):
+    def test_no_new_identities_when_all_present(
+        self, mock_get_connector, mock_namespace_meta
+    ):
+        mock_namespace_meta.return_value = None
+        mock_get_connector.return_value = _make_sql_connector_mock(
+            [{"email": "x@y.com", "external_id": "abc"}]
+        )
         datasets, configs, pr = _make_enrichment_setup()
         identity = {"email": "x@y.com", "external_id": "abc"}
         result = enrich_identities_for_consent(
             datasets, configs, identity, pr, MagicMock()
         )
         assert result == identity
-        mock_get_connector.assert_not_called()
-        pr.cache_identity.assert_not_called()
 
     def test_no_enrichment_when_no_consent_db_integrations(self):
         dataset_config = _make_mock_dataset_config(

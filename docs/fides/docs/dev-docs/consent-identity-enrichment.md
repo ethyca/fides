@@ -39,8 +39,8 @@ Consent request arrives
 ┌─────────────────────────────────┐
 │  Consent Propagation (existing) │
 │                                 │
-│  Bloomreach ← external_id ✓    │
-│  Iterable   ← email ✓          │
+│  Bloomreach ← external_id ✓     │
+│  Iterable   ← email ✓           │
 └─────────────────────────────────┘
 ```
 
@@ -95,22 +95,30 @@ The `identity` annotation on each field tells the enrichment system which identi
 
 Set `enabled_actions` on the database `ConnectionConfig` to include `consent`:
 
-**Via API:**
+**Via API (system connection endpoint):**
 
 ```bash
-PATCH /api/v1/connection/{connection_key}
-{
-  "enabled_actions": ["consent"]
-}
+PATCH /api/v1/system/{system_fides_key}/connection
+[
+  {
+    "key": "my_postgres_connection",
+    "name": "My Postgres",
+    "connection_type": "postgres",
+    "access": "read",
+    "enabled_actions": ["consent"]
+  }
+]
 ```
 
 If the integration is also used for access and erasure DSRs, include all action types:
 
-```bash
+```json
 {
   "enabled_actions": ["access", "erasure", "consent"]
 }
 ```
+
+Note: `enabled_actions` is available on the system connection endpoint (`/system/{fides_key}/connection`), not the base `/connection` endpoint.
 
 **Important:** A `null` value for `enabled_actions` (the default) does **not** enable consent enrichment. The `consent` action must be explicitly listed. This is an opt-in mechanism to prevent unintended DB queries during consent propagation.
 
@@ -125,12 +133,14 @@ Consent identity enrichment discovered: {'email'}
 
 ### What Qualifies for Enrichment
 
-| Criterion | Required |
-|-----------|----------|
-| Connection type | Non-SaaS (Postgres, MySQL, MSSQL, BigQuery, etc.) |
-| `enabled_actions` | Must explicitly include `consent` |
-| `disabled` | Must be `false` |
-| Dataset | Must have collections with `identity`-annotated fields |
-| Collection | Must have at least one identity field matching the seed identity AND at least one matching a missing identity |
+
+| Criterion         | Required                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| Connection type   | Non-SaaS (Postgres, MySQL, MSSQL, BigQuery, etc.)                                                             |
+| `enabled_actions` | Must explicitly include `consent`                                                                             |
+| `disabled`        | Must be `false`                                                                                               |
+| Dataset           | Must have collections with `identity`-annotated fields                                                        |
+| Collection        | Must have at least one identity field matching the seed identity AND at least one matching a missing identity |
+
 
 SaaS connectors are excluded from enrichment because they typically do not expose read endpoints suitable for identity resolution.

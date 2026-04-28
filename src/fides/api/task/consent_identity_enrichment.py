@@ -12,7 +12,9 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.graph_task import build_consent_identity_enrichment_graph
+from fides.api.util.cache import FidesopsRedis, get_dsr_cache_store
 from fides.api.util.collection_util import Row
+from fides.config import CONFIG
 
 
 @dataclass
@@ -35,34 +37,18 @@ def _get_connection_config_by_key(
     return None
 
 
-def _determine_missing_identities(
+def _find_reachable_collections(
     graph: DatasetGraph,
     identity_data: Dict[str, Any],
-) -> set[str]:
-    """
-    Determine which identity types exist in the enrichment graph's collections
-    but are missing from the current identity_data.
-    """
-    all_identity_types: set[str] = set()
-    for node in graph.nodes.values():
-        for _, identity_type in node.collection.identities().items():
-            all_identity_types.add(identity_type)
-
-    return all_identity_types - set(identity_data.keys())
-
-
-def _find_enrichment_collections(
-    graph: DatasetGraph,
-    identity_data: Dict[str, Any],
-    missing_identities: set[str],
 ) -> List[tuple[str, str, Collection]]:
     """
-    Find collections that are reachable from seed identities AND contain
-    missing identity fields.
+    Find collections reachable from seed identities.
 
-    Returns (dataset_connection_key, dataset_name, collection) triples.
+    Returns (dataset_connection_key, dataset_name, collection) triples
+    for any collection that has at least one identity field matching
+    a key in identity_data.
     """
-    enrichment_targets: List[tuple[str, str, Collection]] = []
+    targets: List[tuple[str, str, Collection]] = []
     for node in graph.nodes.values():
         collection = node.collection
         collection_identities = collection.identities()
@@ -70,16 +56,10 @@ def _find_enrichment_collections(
         has_seed_identity = any(
             id_type in identity_data for id_type in collection_identities.values()
         )
-        has_missing_identity = any(
-            id_type in missing_identities for id_type in collection_identities.values()
-        )
+        if has_seed_identity:
+            targets.append((node.dataset.connection_key, node.dataset.name, collection))
 
-        if has_seed_identity and has_missing_identity:
-            enrichment_targets.append(
-                (node.dataset.connection_key, node.dataset.name, collection)
-            )
-
-    return enrichment_targets
+    return targets
 
 
 def _execute_identity_lookup(
@@ -180,12 +160,14 @@ def enrich_identities_for_consent(
     session: Session,
 ) -> Dict[str, Any]:
     """
-    Resolve missing identities by querying consent-enabled DB integrations
+    Resolve additional identities by querying consent-enabled DB integrations
     before consent propagation.
 
-    Builds an enrichment graph from non-SaaS connectors with ActionType.consent
-    in enabled_actions, finds collections reachable from seed identities that
-    contain missing identity fields, and queries them.
+    Always queries reachable collections in consent-enabled DB integrations
+    to discover any additional identity fields. This ensures bidirectional
+    consent integrations (e.g. Bloomreach needs external_id, Iterable needs
+    email) always get the full set of available identities regardless of
+    which identity the incoming request provided.
 
     Returns the enriched identity dict. On any failure, returns the original
     identity_data unchanged.
@@ -195,20 +177,11 @@ def enrich_identities_for_consent(
         if not graph.nodes:
             return identity_data
 
-        missing = _determine_missing_identities(graph, identity_data)
-        if not missing:
-            logger.debug("No missing identities for consent enrichment")
-            return identity_data
-
-        logger.info(
-            "Consent identity enrichment: resolving missing identities {}",
-            missing,
-        )
-
-        targets = _find_enrichment_collections(graph, identity_data, missing)
+        targets = _find_reachable_collections(graph, identity_data)
         if not targets:
-            logger.debug("No enrichment-capable collections found")
             return identity_data
+
+        logger.info("Consent identity enrichment: querying DB integrations")
 
         enriched = dict(identity_data)
         for connection_key, dataset_name, collection in targets:
@@ -222,15 +195,18 @@ def enrich_identities_for_consent(
             discovered = _extract_identities_from_rows(rows, collection, identity_data)
             enriched.update(discovered)
 
-            if not (missing - set(enriched.keys())):
-                break
-
-        if enriched != identity_data:
+        new_keys = set(enriched.keys()) - set(identity_data.keys())
+        if new_keys:
             logger.info(
                 "Consent identity enrichment discovered: {}",
-                set(enriched.keys()) - set(identity_data.keys()),
+                new_keys,
             )
-            privacy_request.cache_identity(enriched)
+            store = get_dsr_cache_store(privacy_request.id)
+            for key in new_keys:
+                store.cache_identity_data(
+                    {key: FidesopsRedis.encode_obj(enriched[key])},
+                    expire_seconds=CONFIG.redis.default_ttl_seconds,
+                )
 
         return enriched
 
