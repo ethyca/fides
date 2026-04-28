@@ -1,7 +1,7 @@
 """recreate ix_privacyrequest_duplicate_request_group_id
 
 Revision ID: e8f9a0b1c2d3
-Revises: d6e7f8a9b0c1
+Revises: d71c7d274c04
 Create Date: 2026-04-20 12:00:00.000000
 
 The index on privacyrequest.duplicate_request_group_id was created by migration
@@ -22,7 +22,7 @@ from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "e8f9a0b1c2d3"
-down_revision = "d6e7f8a9b0c1"
+down_revision = "d71c7d274c04"
 branch_labels = None
 depends_on = None
 
