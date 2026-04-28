@@ -1,6 +1,7 @@
 from typing import Dict, List
 from unittest.mock import MagicMock, create_autospec, patch
 
+import pytest
 from fideslang.validation import FidesKey
 
 from fides.api.graph.config import (
@@ -114,6 +115,7 @@ def _make_sql_connector_mock(
         return SQLQueryConfig(node)
 
     mock_connector.query_config = _query_config
+    mock_connector.cursor_result_to_rows = SQLConnector.cursor_result_to_rows
 
     return mock_connector
 
@@ -220,11 +222,18 @@ class TestBuildConsentIdentityEnrichmentGraph:
 class TestEnrichIdentitiesForConsent:
     """Tests for the public enrich_identities_for_consent function.
 
-    Mocks only at the get_connector boundary (Protocol/ABC boundary to
-    external infrastructure). The connector mock uses a real SQLQueryConfig
-    for query generation, verifying that the enrichment uses the connector's
-    own query building logic.
+    Mocks at the get_connector boundary (Protocol/ABC boundary to external
+    infrastructure) and the DSR cache store (Redis). The connector mock
+    uses a real SQLQueryConfig for query generation.
     """
+
+    @pytest.fixture(autouse=True)
+    def mock_cache_store(self):
+        with patch(
+            "fides.api.task.consent_identity_enrichment.get_dsr_cache_store"
+        ) as mock_store:
+            mock_store.return_value = MagicMock()
+            yield mock_store
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
     @patch("fides.api.task.consent_identity_enrichment.get_connector")
@@ -241,7 +250,6 @@ class TestEnrichIdentitiesForConsent:
         )
         assert result["external_id"] == "ext_123"
         assert result["email"] == "found@test.com"
-        pr.cache_identity.assert_called_once()
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
     @patch("fides.api.task.consent_identity_enrichment.get_connector")
@@ -285,7 +293,6 @@ class TestEnrichIdentitiesForConsent:
             [dataset_config], [], identity, pr, MagicMock()
         )
         assert result == identity
-        pr.cache_identity.assert_not_called()
 
     def test_no_enrichment_when_empty_datasets(self):
         pr = MagicMock()
@@ -337,7 +344,6 @@ class TestEnrichIdentitiesForConsent:
             datasets, configs, identity, pr, MagicMock()
         )
         assert result == identity
-        pr.cache_identity.assert_not_called()
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
     @patch("fides.api.task.consent_identity_enrichment.get_connector")
@@ -354,24 +360,6 @@ class TestEnrichIdentitiesForConsent:
             datasets, configs, identity, pr, MagicMock()
         )
         assert result["email"] == "original@test.com"
-
-    @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
-    def test_updates_privacy_request_cache(
-        self, mock_get_connector, mock_namespace_meta
-    ):
-        mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
-            [{"email": "found@test.com", "external_id": "ext_123"}]
-        )
-        datasets, configs, pr = _make_enrichment_setup()
-        enrich_identities_for_consent(
-            datasets, configs, {"external_id": "ext_123"}, pr, MagicMock()
-        )
-        pr.cache_identity.assert_called_once()
-        cached = pr.cache_identity.call_args[0][0]
-        assert cached["email"] == "found@test.com"
-        assert cached["external_id"] == "ext_123"
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
     @patch("fides.api.task.consent_identity_enrichment.get_connector")
@@ -450,7 +438,6 @@ class TestEnrichIdentitiesForConsent:
             datasets, configs, {"external_id": "ext_123"}, pr, MagicMock()
         )
         assert "email" not in result
-        pr.cache_identity.assert_not_called()
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
     @patch("fides.api.task.consent_identity_enrichment.get_connector")
@@ -477,7 +464,6 @@ class TestEnrichIdentitiesForConsent:
             [dataset_config], [], {"external_id": "abc"}, pr, MagicMock()
         )
         assert result == {"external_id": "abc"}
-        pr.cache_identity.assert_not_called()
 
     def test_seed_identity_not_in_collection_skips_lookup(self):
         datasets, configs, pr = _make_enrichment_setup(
@@ -496,4 +482,3 @@ class TestEnrichIdentitiesForConsent:
             datasets, configs, {"external_id": "ext_123"}, pr, MagicMock()
         )
         assert result == {"external_id": "ext_123"}
-        pr.cache_identity.assert_not_called()

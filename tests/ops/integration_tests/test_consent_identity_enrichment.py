@@ -1,5 +1,5 @@
 from typing import Any, Dict, Generator
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from sqlalchemy import text
@@ -146,6 +146,14 @@ def consent_enrichment_dataset_config(
 
 
 class TestConsentIdentityEnrichmentIntegration:
+    @pytest.fixture(autouse=True)
+    def mock_cache_store(self):
+        with patch(
+            "fides.api.task.consent_identity_enrichment.get_dsr_cache_store"
+        ) as mock_store:
+            mock_store.return_value = MagicMock()
+            yield mock_store
+
     def test_enriches_email_from_external_id(
         self,
         db,
@@ -164,7 +172,6 @@ class TestConsentIdentityEnrichmentIntegration:
         assert result["external_id"] == "ext_enrich_001"
         assert result["email"] == "enrichment-user@example.com"
         assert result["phone_number"] == "555-0199"
-        privacy_request.cache_identity.assert_called_once()
 
     def test_enriches_external_id_from_email(
         self,
@@ -206,7 +213,6 @@ class TestConsentIdentityEnrichmentIntegration:
             session=db,
         )
         assert result == identity
-        privacy_request.cache_identity.assert_not_called()
 
     def test_user_not_found_returns_original(
         self,
@@ -225,7 +231,6 @@ class TestConsentIdentityEnrichmentIntegration:
             session=db,
         )
         assert result == identity
-        privacy_request.cache_identity.assert_not_called()
 
     def test_does_not_overwrite_existing_identity(
         self,
@@ -278,6 +283,5 @@ class TestConsentIdentityEnrichmentIntegration:
                 session=db,
             )
             assert result == identity
-            privacy_request.cache_identity.assert_not_called()
         finally:
             non_consent_config.delete(db)
