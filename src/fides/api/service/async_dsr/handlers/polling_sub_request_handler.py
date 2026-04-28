@@ -124,7 +124,7 @@ class PollingSubRequestHandler:
                 # Check if this sub-request has timed out
                 if sub_request.created_at:
                     timeout_threshold = sub_request.created_at + timedelta(
-                        seconds=timeout_seconds
+                        days=timeout_days
                     )
                     current_time = datetime.now(timezone.utc)
                     if current_time > timeout_threshold:

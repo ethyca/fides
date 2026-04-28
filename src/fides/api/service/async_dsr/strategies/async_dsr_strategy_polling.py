@@ -36,6 +36,7 @@ from fides.api.service.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
 )
 from fides.api.service.async_dsr.handlers.polling_sub_request_handler import (
+    TERMINAL_STATUSES,
     PollingSubRequestHandler,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
@@ -678,11 +679,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         for sub_request in sub_requests:
             # Skip already-terminal sub-requests
-            if sub_request.status in [
-                ExecutionLogStatus.complete.value,
-                ExecutionLogStatus.skipped.value,
-                ExecutionLogStatus.error.value,
-            ]:
+            if sub_request.status in TERMINAL_STATUSES:
                 continue
 
             try:
