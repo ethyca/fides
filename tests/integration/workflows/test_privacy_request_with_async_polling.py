@@ -28,7 +28,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 
-
 # ---------------------------------------------------------------------------
 # Override functions used by the error-scenario tests below.
 # Registered at module level so they're available before any test runs.

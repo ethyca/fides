@@ -345,14 +345,17 @@ class TestAsyncPollingStrategy:
         mock_request = MagicMock()
         mock_request.async_config = True
 
-        with patch.object(
-            async_polling_strategy,
-            "_process_single_sub_request",
-            side_effect=side_effect,
-        ), patch.object(
-            async_polling_strategy,
-            "_get_requests_for_action",
-            return_value=[mock_request],
+        with (
+            patch.object(
+                async_polling_strategy,
+                "_process_single_sub_request",
+                side_effect=side_effect,
+            ),
+            patch.object(
+                async_polling_strategy,
+                "_get_requests_for_action",
+                return_value=[mock_request],
+            ),
         ):
             # Should raise AwaitingAsyncProcessing, NOT RuntimeError, because:
             # - sub_requests[0] → error (first call raised)
