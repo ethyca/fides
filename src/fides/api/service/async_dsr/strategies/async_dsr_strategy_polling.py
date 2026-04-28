@@ -191,33 +191,26 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
 
-        all_requests = []
         masking_request = query_config.get_masking_request()
-        if masking_request:
-            all_requests.append(masking_request)
 
         # Set async type once for the task
         request_task.async_type = AsyncTaskType.polling
         self.session.add(request_task)
         self.session.commit()
 
-        for request in all_requests:
-            if not (request.async_config and request_task.id):
-                continue
-
-            if request.path:
-                logger.info(
-                    f"Executing initial masking request for polling task {request_task.id}"
-                )
-                self._handle_polling_initial_erasure_request(
-                    request_task,
-                    query_config,
-                    request,
-                    rows,
-                    policy,
-                    privacy_request,
-                    client,
-                )
+        if masking_request and masking_request.async_config and masking_request.path:
+            logger.info(
+                f"Executing initial masking request for polling task {request_task.id}"
+            )
+            self._handle_polling_initial_erasure_request(
+                request_task,
+                query_config,
+                masking_request,
+                rows,
+                policy,
+                privacy_request,
+                client,
+            )
 
         # After processing all requests, raise AwaitingAsyncProcessing (like access flow)
         # But only if we actually created any sub-requests
@@ -433,7 +426,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 if request.skip_missing_param_values:
                     logger.debug("Skipping optional masking request: {}", exc)
                     continue
-                raise exc
+                raise
 
     def _get_requests_for_action(
         self, polling_task: RequestTask, query_config: "SaaSQueryConfig"
@@ -757,7 +750,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 sub_request.access_data = attachment_metadata
                 sub_request.save(self.session)
             except Exception as exc:
-                raise PrivacyRequestError(f"Attachment storage failed: {exc}")
+                raise PrivacyRequestError(f"Attachment storage failed: {exc}") from exc
         else:
             raise PrivacyRequestError(
                 f"Unsupported result type: {polling_result.result_type}"
