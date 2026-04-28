@@ -58,7 +58,7 @@
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
     "sanitize-html": "^2.17.0",
-    "uuid": "^9.0.0",
+    "uuid": "^14.0.0",
     "validator": "^13.15.15",
     "yup": "^0.32.11"
   },
