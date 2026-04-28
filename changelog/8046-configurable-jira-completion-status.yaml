@@ -1,0 +1,4 @@
+type: Added
+description: Allow admins to configure which Jira status triggers Fides completion instead of the entire done category
+pr: 8046
+labels: ["db-migration"]
