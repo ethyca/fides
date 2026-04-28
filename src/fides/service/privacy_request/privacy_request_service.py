@@ -44,6 +44,7 @@ from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     CheckpointActionRequired,
+    HistoricalPrivacyRequestImport,
     PrivacyRequestBulkSelection,
     PrivacyRequestCreate,
     PrivacyRequestFilter,
@@ -520,6 +521,92 @@ class PrivacyRequestService:
             succeeded=created,
             failed=failed,
         )
+
+    def import_historical_privacy_requests(
+        self,
+        data: List[HistoricalPrivacyRequestImport],
+        *,
+        imported_by: Optional[str] = None,
+    ) -> BulkPostPrivacyRequests:
+        """Bulk-import historical, already-completed privacy requests.
+
+        Inserts PrivacyRequest, ProvidedIdentity, and a single AuditLog row per
+        record. Bypasses all processing pipeline side effects: no Celery, no
+        notifications, no webhooks, no duplicate detection, no Redis caching of
+        identity/encryption.
+        """
+
+        succeeded: List[PrivacyRequest] = []
+        failed: List[BulkUpdateFailed] = []
+
+        logger.info("Starting historical import of {} privacy requests", len(data))
+
+        for record in data:
+            try:
+                privacy_request = self._import_single_historical_privacy_request(
+                    record, imported_by=imported_by
+                )
+                succeeded.append(privacy_request)
+            except PrivacyRequestError as exc:
+                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+
+        return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
+
+    def _import_single_historical_privacy_request(
+        self,
+        record: HistoricalPrivacyRequestImport,
+        *,
+        imported_by: Optional[str],
+    ) -> PrivacyRequest:
+        """Insert a single historical privacy request without triggering the
+        normal creation pipeline. See `import_historical_privacy_requests`."""
+
+        if not any(record.identity.model_dump(mode="json").values()):
+            raise PrivacyRequestError(
+                "You must provide at least one identity to process",
+                record.model_dump(mode="json"),
+            )
+
+        policy = Policy.get_by(db=self.db, field="key", value=record.policy_key)
+        if policy is None:
+            raise PrivacyRequestError(
+                f"Policy with key {record.policy_key} does not exist",
+                record.model_dump(mode="json"),
+            )
+
+        kwargs: Dict[str, Any] = {
+            "policy_id": policy.id,
+            "status": record.status,
+            "requested_at": record.requested_at,
+            "started_processing_at": record.requested_at,
+            "finished_processing_at": record.finished_processing_at,
+            "source": record.source,
+        }
+        if record.external_id is not None:
+            kwargs["external_id"] = record.external_id
+        if record.reviewed_at is not None:
+            kwargs["reviewed_at"] = record.reviewed_at
+
+        try:
+            privacy_request = PrivacyRequest.create(db=self.db, data=kwargs)
+            privacy_request.persist_identity(db=self.db, identity=record.identity)
+
+            AuditLog.create(
+                db=self.db,
+                data={
+                    "privacy_request_id": privacy_request.id,
+                    "user_id": imported_by,
+                    "action": AuditLogAction.imported,
+                    "message": f"Imported with status={record.status.value}",
+                },
+            )
+            return privacy_request
+        except Exception as exc:
+            logger.error(f"{exc.__class__.__name__}: {str(exc)}")
+            raise PrivacyRequestError(
+                "This historical record could not be imported",
+                record.model_dump(mode="json"),
+            ) from exc
 
     def resubmit_privacy_request(
         self, privacy_request_id: str

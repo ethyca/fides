@@ -17,6 +17,7 @@ class AuditLogAction(str, EnumType):
     pre_approval_webhook_triggered = "pre_approval_webhook_triggered"
     pre_approval_eligible = "pre_approval_eligible"
     pre_approval_not_eligible = "pre_approval_not_eligible"
+    imported = "imported"
 
 
 class AuditLog(Base):

@@ -88,6 +88,7 @@ from fides.api.schemas.privacy_request import (
     DenyPrivacyRequestSelection,
     ExecutionLogDetailResponse,
     FilteredPrivacyRequestResults,
+    HistoricalPrivacyRequestImport,
     LogEntry,
     ManualWebhookData,
     PrivacyRequestAccessResults,
@@ -128,6 +129,7 @@ from fides.common.scope_registry import (
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
+    PRIVACY_REQUEST_IMPORT,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -150,6 +152,7 @@ from fides.common.urn_registry import (
     PRIVACY_REQUEST_DIAGNOSTICS,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_FINALIZE,
+    PRIVACY_REQUEST_IMPORT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -287,6 +290,40 @@ def create_privacy_request_authenticated(
 
     return privacy_request_service.create_bulk_privacy_requests(
         data, authenticated=True, user_id=client.user_id
+    )
+
+
+@router.post(
+    PRIVACY_REQUEST_IMPORT,
+    status_code=HTTP_200_OK,
+    response_model=BulkPostPrivacyRequests,
+)
+def import_historical_privacy_requests(
+    *,
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_IMPORT],
+    ),
+    data: Annotated[
+        List[HistoricalPrivacyRequestImport],
+        Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE),
+    ],  # type: ignore
+) -> BulkPostPrivacyRequests:
+    """
+    Bulk-import historical, already-completed privacy requests from another Fides
+    deployment for migration purposes. Each record must have a terminal status
+    (complete, denied, canceled, error).
+
+    Bypasses all processing pipeline side effects: no Celery scheduling, no
+    notifications, no webhooks, no identity verification, no duplicate detection,
+    no Redis caching of identity/encryption. Records are written directly to the
+    database with `source="Import"` and a single AuditLog entry per record.
+    """
+    return privacy_request_service.import_historical_privacy_requests(
+        data, imported_by=client.user_id
     )
 
 
