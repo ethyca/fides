@@ -1014,7 +1014,7 @@ const AccessPolicyEditor = ({
           <Splitter.Panel>{leftPanelContent}</Splitter.Panel>
           <Splitter.Panel defaultSize={350} min={300} max="40%" collapsible>
             <div
-              className="h-full pl-3"
+              className="h-full"
               style={{ position: "relative", zIndex: 100 }}
             >
               <AgentChatPanel
