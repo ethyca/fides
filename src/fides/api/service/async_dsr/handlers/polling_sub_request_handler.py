@@ -86,12 +86,7 @@ class PollingSubRequestHandler:
             len(terminal_sub_requests) == len(all_sub_requests)
             and len(all_sub_requests) > 0  # empty sub_requests list is not complete
         ):
-            if failed_sub_requests:
-                logger.warning(
-                    f"Polling task {polling_task.id} finished with {len(failed_sub_requests)} "
-                    f"failed sub-request(s): {[sr.id for sr in failed_sub_requests]}"
-                )
-            else:
+            if not failed_sub_requests:
                 logger.info(
                     f"All sub-requests completed successfully for task {polling_task.id}"
                 )
