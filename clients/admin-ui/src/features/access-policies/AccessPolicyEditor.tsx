@@ -951,7 +951,7 @@ const AccessPolicyEditor = ({
       tabBarExtraContent={
         agentChatEnabled ? (
           <Flex align="center" gap="small">
-            <span>Agent chat</span>
+            <span>Policy agent</span>
             <Switch
               checked={chatVisible}
               onChange={toggleChat}
@@ -981,15 +981,7 @@ const AccessPolicyEditor = ({
           </PolicyEditorPanel>
         </div>
         {agentChatEnabled && chatVisible && (
-          <div
-            className="h-full pb-2"
-            style={{
-              width: 350,
-              flexShrink: 0,
-              position: "relative",
-              zIndex: 100,
-            }}
-          >
+          <div className={`h-full pb-2 ${styles.chatWrapper}`}>
             <AgentChatPanel
               currentYaml={yamlValue}
               onYamlProposed={handleYamlProposed}
