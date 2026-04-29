@@ -1,0 +1,4 @@
+type: Changed
+description: Skip expensive dataset graph parsing for datasets excluded by property-based DSR filtering
+pr: 8019
+labels: []

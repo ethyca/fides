@@ -43,6 +43,22 @@ def apply_dataset_graph_filters(
     return dataset_graphs
 
 
+# Hook for querying whether property-based filtering is active at runtime.
+# Fidesplus registers a callback that checks dsr_property_filtering.enabled.
+_property_filtering_active_fn: Optional[Callable[[], bool]] = None
+
+
+def register_property_filtering_check(fn: Callable[[], bool]) -> None:
+    """Register a callback that reports whether property filtering is active."""
+    global _property_filtering_active_fn
+    _property_filtering_active_fn = fn
+
+
+def is_property_filtering_active() -> bool:
+    """True when a property filtering hook is registered AND enabled."""
+    return _property_filtering_active_fn is not None and _property_filtering_active_fn()
+
+
 class Node:
     """A traversal_node represents a single collection as a graph traversal_node.
     Note that a traversal_node is simply a store of a graph location and connections and does not imply ordering.

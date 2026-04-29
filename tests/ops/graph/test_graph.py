@@ -1,14 +1,21 @@
 import pytest
 
+import fides.api.graph.graph as graph_mod
 from fides.api.graph.config import *
 from fides.api.graph.graph import (
     Node,
     _dataset_graph_filters,
     apply_dataset_graph_filters,
+    is_property_filtering_active,
     register_dataset_graph_filter,
+    register_property_filtering_check,
 )
 from fides.api.graph.traversal import *
 from fides.api.models.policy import ActionType
+from fides.api.service.privacy_request.request_runner_service import (
+    _partition_configs_by_property,
+    _refs_cross_boundary,
+)
 from fides.api.task.graph_task import retry
 from fides.api.task.task_resources import TaskResources
 from fides.config import CONFIG
@@ -144,6 +151,118 @@ class TestDatasetGraphFilterRegistry:
 
         apply_dataset_graph_filters(datasets, None)
         assert captured["property_id"] is None
+
+
+class TestPropertyFilteringCheck:
+    @pytest.fixture(autouse=True)
+    def _clear_check(self):
+        """Reset the property filtering check before and after each test."""
+
+        graph_mod._property_filtering_active_fn = None
+        yield
+        graph_mod._property_filtering_active_fn = None
+
+    def test_inactive_when_no_callback_registered(self):
+        assert is_property_filtering_active() is False
+
+    def test_active_when_callback_returns_true(self):
+        register_property_filtering_check(lambda: True)
+        assert is_property_filtering_active() is True
+
+    def test_inactive_when_callback_returns_false(self):
+        register_property_filtering_check(lambda: False)
+        assert is_property_filtering_active() is False
+
+    def test_reflects_runtime_changes(self):
+        """Callback is evaluated at call time, not registration time."""
+        enabled = [True]
+        register_property_filtering_check(lambda: enabled[0])
+
+        assert is_property_filtering_active() is True
+        enabled[0] = False
+        assert is_property_filtering_active() is False
+
+
+class _StubDatasetConfig:
+    """Minimal stand-in for DatasetConfig for partition tests."""
+
+    def __init__(self, fides_key: str, property_ids: list[str] | None = None):
+        self.fides_key = fides_key
+        self.property_ids = property_ids or []
+
+
+class TestPartitionConfigsByProperty:
+    def test_empty_configs(self):
+        matching, excluded = _partition_configs_by_property([], "prop_1")
+        assert matching == []
+        assert excluded == []
+
+    def test_universal_dataset_matches(self):
+        dc = _StubDatasetConfig("ds_universal", [])
+        matching, excluded = _partition_configs_by_property([dc], "prop_1")
+        assert matching == [dc]
+        assert excluded == []
+
+    def test_none_property_ids_treated_as_universal(self):
+        dc = _StubDatasetConfig("ds_none")
+        dc.property_ids = None
+        matching, excluded = _partition_configs_by_property([dc], "prop_1")
+        assert matching == [dc]
+        assert excluded == []
+
+    def test_matching_property_id(self):
+        dc = _StubDatasetConfig("ds_a", ["prop_1", "prop_2"])
+        matching, excluded = _partition_configs_by_property([dc], "prop_1")
+        assert matching == [dc]
+        assert excluded == []
+
+    def test_non_matching_property_id(self):
+        dc = _StubDatasetConfig("ds_a", ["prop_2", "prop_3"])
+        matching, excluded = _partition_configs_by_property([dc], "prop_1")
+        assert matching == []
+        assert excluded == [dc]
+
+
+class TestRefsCrossBoundary:
+    @staticmethod
+    def _make_graph(
+        name: str, refs: list[tuple[str, str, str]] | None = None
+    ) -> GraphDataset:
+        fields = [ScalarField(name="id", primary_key=True)]
+        if refs:
+            fields.append(
+                ScalarField(
+                    name="fk",
+                    references=[
+                        (FieldAddress(ds, col, field), "to") for ds, col, field in refs
+                    ],
+                )
+            )
+        col = Collection(name="main", fields=fields)
+        return GraphDataset(name=name, collections=[col], connection_key=name)
+
+    def test_no_refs_no_crossing(self):
+        graphs = [self._make_graph("ds_a")]
+        assert _refs_cross_boundary(graphs, {"ds_b"}) is False
+
+    def test_ref_to_non_excluded_no_crossing(self):
+        graphs = [self._make_graph("ds_a", refs=[("ds_b", "main", "id")])]
+        assert _refs_cross_boundary(graphs, {"ds_c"}) is False
+
+    def test_ref_to_excluded_crosses_boundary(self):
+        graphs = [self._make_graph("ds_a", refs=[("ds_b", "main", "id")])]
+        assert _refs_cross_boundary(graphs, {"ds_b"}) is True
+
+    def test_empty_excluded_keys_no_crossing(self):
+        graphs = [self._make_graph("ds_a", refs=[("ds_b", "main", "id")])]
+        assert _refs_cross_boundary(graphs, set()) is False
+
+    def test_multiple_graphs_one_crossing(self):
+        graphs = [
+            self._make_graph("ds_a"),
+            self._make_graph("ds_b", refs=[("ds_excluded", "main", "id")]),
+        ]
+        assert _refs_cross_boundary(graphs, {"ds_excluded"}) is True
 
 
 def test_retry_decorator(privacy_request, policy, db):
