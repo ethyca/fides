@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { JsonRenderSpec } from "./mapper";
 import { streamChatTurn } from "./streaming";
@@ -48,6 +48,8 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
     setStatus("aborted");
   }, []);
 
+  useEffect(() => () => abortRef.current?.abort(), []);
+
   const sendMessage = useCallback(
     async (text: string) => {
       const userMessage: ChatMessage = { role: "user", content: text };
@@ -56,6 +58,7 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
       setStatus("streaming");
       setError(null);
 
+      abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
 
