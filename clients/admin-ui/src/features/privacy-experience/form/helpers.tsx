@@ -144,9 +144,9 @@ type TranslationFieldConfig = {
   required?: boolean;
 };
 
-type TranslationFormConfig = {
-  [Property in keyof ExperienceTranslationCreate]?: TranslationFieldConfig;
-};
+type TranslationFormConfig = Partial<
+  Record<keyof ExperienceTranslationCreate, TranslationFieldConfig>
+>;
 
 export const getTranslationFormFields = (
   component: ComponentType,

@@ -30,6 +30,7 @@ CONSENT_WEBHOOK_QUEUE_NAME = "fidesplus.consent_webhooks"  # This queue is used 
 DISCOVERY_MONITORS_DETECTION_QUEUE_NAME = "fidesplus.discovery_monitors_detection"  # This queue is used for running discovery monitors detection tasks
 DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME = "fidesplus.discovery_monitors_classification"  # This queue is used for running discovery monitors classification tasks
 DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME = "fidesplus.discovery_monitors_promotion"  # This queue is used for running discovery monitors promotion tasks
+BULK_CONSENT_IMPORT_QUEUE_NAME = "fidesplus.bulk_consent_import"  # This queue is used for bulk importing pre-verified consent records
 
 
 NEW_SESSION_RETRIES = 5
