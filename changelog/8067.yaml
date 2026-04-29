@@ -1,0 +1,4 @@
+type: Fixed
+description: Fix connector engine leak in consent identity enrichment by using Connections class for proper lifecycle management
+pr: 8067
+labels: []

@@ -125,6 +125,10 @@ def _make_sql_connector_mock(
     mock_connector.query_config = _query_config
     mock_connector.cursor_result_to_rows = SQLConnector.cursor_result_to_rows
 
+    mock_config = MagicMock()
+    mock_config.key = "mock_connector"
+    mock_connector.configuration = mock_config
+
     return mock_connector
 
 
@@ -249,12 +253,12 @@ class TestEnrichIdentitiesForConsent:
             yield mock_store
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_enriches_email_from_external_id(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [{"email": "found@test.com", "external_id": "ext_123"}]
         )
         datasets, configs, pr = _make_enrichment_setup()
@@ -265,12 +269,12 @@ class TestEnrichIdentitiesForConsent:
         assert result["email"] == "found@test.com"
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_enriches_external_id_from_email(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [{"email": "user@test.com", "external_id": "ext_456"}]
         )
         datasets, configs, pr = _make_enrichment_setup()
@@ -281,12 +285,12 @@ class TestEnrichIdentitiesForConsent:
         assert result["external_id"] == "ext_456"
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_no_new_identities_when_all_present(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [{"email": "x@y.com", "external_id": "abc"}]
         )
         datasets, configs, pr = _make_enrichment_setup()
@@ -326,39 +330,39 @@ class TestEnrichIdentitiesForConsent:
         assert result == identity
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_graceful_fallback_on_db_error(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
         mock_connector = create_autospec(SQLConnector, instance=True)
         mock_connector.client.side_effect = Exception("Connection refused")
         mock_connector.query_config = lambda node: SQLQueryConfig(node)
-        mock_get_connector.return_value = mock_connector
+        mock_build_connector.return_value = mock_connector
         datasets, configs, pr = _make_enrichment_setup()
         identity = {"external_id": "ext_123"}
         result = enrich_identities_for_consent(datasets, configs, identity, pr, self.db)
         assert result == identity
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_graceful_fallback_user_not_found(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock([])
+        mock_build_connector.return_value = _make_sql_connector_mock([])
         datasets, configs, pr = _make_enrichment_setup()
         identity = {"external_id": "ext_123"}
         result = enrich_identities_for_consent(datasets, configs, identity, pr, self.db)
         assert result == identity
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_does_not_overwrite_existing_identities(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [{"email": "different@test.com", "external_id": "ext_123"}]
         )
         datasets, configs, pr = _make_enrichment_setup()
@@ -367,12 +371,12 @@ class TestEnrichIdentitiesForConsent:
         assert result["email"] == "original@test.com"
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_does_not_mutate_original_dict(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [{"email": "found@test.com", "external_id": "ext_123"}]
         )
         datasets, configs, pr = _make_enrichment_setup()
@@ -383,12 +387,12 @@ class TestEnrichIdentitiesForConsent:
         assert result != original
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_preserves_existing_identity_adds_missing(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [{"email": "db@test.com", "external_id": "ext_456"}]
         )
         datasets, configs, pr = _make_enrichment_setup()
@@ -399,12 +403,12 @@ class TestEnrichIdentitiesForConsent:
         assert result["external_id"] == "ext_456"
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_enriches_multiple_missing_identities(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [
                 {
                     "email": "found@test.com",
@@ -428,12 +432,12 @@ class TestEnrichIdentitiesForConsent:
         assert result["phone_number"] == "555-0100"
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_skips_null_identity_values_in_db_row(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [{"email": None, "external_id": "ext_123"}]
         )
         datasets, configs, pr = _make_enrichment_setup()
@@ -443,12 +447,12 @@ class TestEnrichIdentitiesForConsent:
         assert "email" not in result
 
     @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
     def test_uses_first_row_when_multiple_returned(
-        self, mock_get_connector, mock_namespace_meta
+        self, mock_build_connector, mock_namespace_meta
     ):
         mock_namespace_meta.return_value = None
-        mock_get_connector.return_value = _make_sql_connector_mock(
+        mock_build_connector.return_value = _make_sql_connector_mock(
             [
                 {"email": "first@test.com", "external_id": "ext_123"},
                 {"email": "second@test.com", "external_id": "ext_123"},
@@ -477,11 +481,28 @@ class TestEnrichIdentitiesForConsent:
         )
         assert result == {"phone_number": "555-0100"}
 
-    @patch("fides.api.task.consent_identity_enrichment.get_connector")
-    def test_non_sql_connector_skipped(self, mock_get_connector):
-        mock_get_connector.return_value = MagicMock()
+    @patch("fides.api.task.task_resources.Connections.build_connector")
+    def test_non_sql_connector_skipped(self, mock_build_connector):
+        mock_build_connector.return_value = MagicMock()
         datasets, configs, pr = _make_enrichment_setup()
         result = enrich_identities_for_consent(
             datasets, configs, {"external_id": "ext_123"}, pr, self.db
         )
         assert result == {"external_id": "ext_123"}
+
+    @patch("fides.api.task.consent_identity_enrichment.SQLConnector.get_namespace_meta")
+    @patch("fides.api.task.task_resources.Connections.build_connector")
+    def test_connectors_closed_after_enrichment(
+        self, mock_build_connector, mock_namespace_meta
+    ):
+        """Connectors must be closed after enrichment to avoid leaking engine pools."""
+        mock_namespace_meta.return_value = None
+        mock_connector = _make_sql_connector_mock(
+            [{"email": "found@test.com", "external_id": "ext_123"}]
+        )
+        mock_build_connector.return_value = mock_connector
+        datasets, configs, pr = _make_enrichment_setup()
+        enrich_identities_for_consent(
+            datasets, configs, {"external_id": "ext_123"}, pr, self.db
+        )
+        mock_connector.close.assert_called_once()
