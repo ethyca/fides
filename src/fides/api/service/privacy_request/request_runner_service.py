@@ -84,6 +84,9 @@ from fides.api.task.manual.manual_task_utils import create_manual_task_artificia
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import get_all_masking_secret_keys
+from fides.api.util.consent_util import (
+    filter_privacy_preferences_for_propagation,
+)
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
@@ -677,23 +680,50 @@ def run_privacy_request(
                     request_checkpoint=CurrentStep.consent,
                     from_checkpoint=resume_step,
                 ):
-                    identity_data = enrich_identities_for_consent(
-                        datasets=datasets,
-                        connection_configs=connection_configs,
-                        identity_data=identity_data,
-                        privacy_request=privacy_request,
-                        session=session,
-                    )
-                    privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
-                    consent_runner(
-                        privacy_request=privacy_request,
-                        policy=policy,
-                        graph=build_consent_dataset_graph(datasets, session),
-                        connection_configs=connection_configs,
-                        identity=identity_data,
-                        session=session,
-                        privacy_request_proceed=True,  # Should always be True unless we're testing
-                    )
+                    # Early exit: skip the entire consent pipeline if there are no
+                    # actionable consent preferences to propagate.  This avoids
+                    # building the consent graph, creating Celery tasks, and
+                    # dispatching work that every connector would individually skip.
+                    # Only applies to new-workflow requests that have not already
+                    # started consent task processing (reprocessing should proceed).
+                    should_skip_consent = False
+                    if (
+                        not privacy_request.consent_preferences
+                        and privacy_request.consent_tasks.count() == 0
+                    ):
+                        propagatable_preferences = (
+                            filter_privacy_preferences_for_propagation(
+                                system=None,
+                                privacy_preferences=privacy_request.privacy_preferences,
+                            )
+                        )
+                        if not propagatable_preferences:
+                            should_skip_consent = True
+                            logger.info(
+                                "Skipping consent step: no actionable consent "
+                                "preferences to propagate for any system"
+                            )
+
+                    if not should_skip_consent:
+                        identity_data = enrich_identities_for_consent(
+                            datasets=datasets,
+                            connection_configs=connection_configs,
+                            identity_data=identity_data,
+                            privacy_request=privacy_request,
+                            session=session,
+                        )
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.consent
+                        )
+                        consent_runner(
+                            privacy_request=privacy_request,
+                            policy=policy,
+                            graph=build_consent_dataset_graph(datasets, session),
+                            connection_configs=connection_configs,
+                            identity=identity_data,
+                            session=session,
+                            privacy_request_proceed=True,  # Should always be True unless we're testing
+                        )
 
             except PrivacyRequestPaused as exc:
                 privacy_request.pause_processing(session)
