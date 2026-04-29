@@ -1,4 +1,4 @@
 type: Changed
-description: Optimize DSR queries to only SELECT necessary columns
+description: Optimize DSR access queries to only SELECT necessary columns; fields with only system.* categories or no data_categories are no longer fetched, which may change access report output for datasets relying on uncategorized fields or collection-level data_categories
 pr: 7800
 labels: ["high-risk"]

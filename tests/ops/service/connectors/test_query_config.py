@@ -908,3 +908,29 @@ class TestNecessaryFieldPaths:
             FieldPath("field_b"),
             FieldPath("field_c"),
         }
+
+    def test_collection_level_data_categories_do_not_rescue_uncategorized_fields(self):
+        """Collection-level ``data_categories`` are intentionally not propagated to
+        uncategorized sub-fields by ``necessary_field_paths()``. Each field must
+        qualify on its own (PK, identity, edge, reference, or non-system
+        data_category) to be SELECTed."""
+        collection = Collection(
+            name="contact_info",
+            data_categories={"user.contact"},
+            fields=[
+                ScalarField(name="contact_id", primary_key=True),
+                ScalarField(name="uncategorized_note"),
+                ScalarField(name="internal_flag", data_categories=["system.operations"]),
+                ScalarField(name="email_address", data_categories=["user.contact.email"]),
+            ],
+        )
+        node = mock.MagicMock(spec=ExecutionNode)
+        node.collection = collection
+        node.incoming_edges = set()
+        node.outgoing_edges = set()
+
+        config = SQLQueryConfig(node)
+        assert set(config.necessary_field_paths()) == {
+            FieldPath("contact_id"),
+            FieldPath("email_address"),
+        }
