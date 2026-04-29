@@ -1,10 +1,11 @@
 import { baseApi } from "~/features/common/api.slice";
 
 interface DataPurposeParams {
-  page?: number;
-  size?: number;
   search?: string;
   data_use?: string;
+  consumer?: string;
+  category?: string;
+  status?: string;
 }
 
 export interface DataPurpose {
@@ -25,12 +26,21 @@ export interface DataPurpose {
   updated_at?: string;
 }
 
-export interface DataPurposePage {
+export interface DataPurposeFilterOption {
+  value: string;
+  label: string;
+}
+
+export interface DataPurposeFilterOptions {
+  consumers: DataPurposeFilterOption[];
+  data_uses: DataPurposeFilterOption[];
+  categories: DataPurposeFilterOption[];
+}
+
+export interface DataPurposeListResponse {
   items: DataPurpose[];
   total: number;
-  page: number;
-  size: number;
-  pages: number;
+  filter_options: DataPurposeFilterOptions;
 }
 
 export interface PurposeSystemAssignment {
@@ -62,7 +72,10 @@ export interface PurposeSummary {
 
 export const dataPurposesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAllDataPurposes: builder.query<DataPurposePage, DataPurposeParams>({
+    getAllDataPurposes: builder.query<
+      DataPurposeListResponse,
+      DataPurposeParams
+    >({
       query: (params) => ({
         url: `data-purpose`,
         params,
@@ -114,6 +127,14 @@ export const dataPurposesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["DataPurpose"],
     }),
+
+    downloadDataPurposesCsv: builder.query<Blob, DataPurposeParams>({
+      query: (params) => ({
+        url: `data-purpose`,
+        params: { ...params, download_csv: true },
+        responseHandler: "content-type",
+      }),
+    }),
   }),
 });
 
@@ -124,4 +145,5 @@ export const {
   useUpdateDataPurposeMutation,
   useDeleteDataPurposeMutation,
   useGetPurposeSummariesQuery,
+  useLazyDownloadDataPurposesCsvQuery,
 } = dataPurposesApi;

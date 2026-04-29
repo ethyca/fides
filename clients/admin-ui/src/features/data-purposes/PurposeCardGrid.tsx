@@ -11,7 +11,11 @@ import {
   Title,
 } from "fidesui";
 
-import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
+import type {
+  DataPurpose,
+  DataPurposeFilterOptions,
+  PurposeSummary,
+} from "./data-purpose.slice";
 import PurposeCard from "./PurposeCard";
 import { formatDataUse } from "./purposeUtils";
 import usePurposeCardFilters from "./usePurposeCardFilters";
@@ -19,10 +23,18 @@ import usePurposeCardFilters from "./usePurposeCardFilters";
 interface PurposeCardGridProps {
   purposes: DataPurpose[];
   summaries: PurposeSummary[];
+  filterOptions: DataPurposeFilterOptions;
   dataUseFilter: string | null;
   onDataUseFilterChange: (value: string | null) => void;
+  consumerFilter: string | null;
+  onConsumerFilterChange: (value: string | null) => void;
+  categoryFilter: string | null;
+  onCategoryFilterChange: (value: string | null) => void;
+  statusFilter: string | null;
+  onStatusFilterChange: (value: string | null) => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  onClearFilters: () => void;
   onCreatePurpose: () => void;
 }
 
@@ -35,36 +47,28 @@ const STATUS_OPTIONS = [
 const PurposeCardGrid = ({
   purposes,
   summaries,
+  filterOptions,
   dataUseFilter,
   onDataUseFilterChange,
+  consumerFilter,
+  onConsumerFilterChange,
+  categoryFilter,
+  onCategoryFilterChange,
+  statusFilter,
+  onStatusFilterChange,
   searchQuery,
   onSearchChange,
+  onClearFilters,
   onCreatePurpose,
 }: PurposeCardGridProps) => {
-  const {
-    consumerFilter,
-    setConsumerFilter,
-    statusFilter,
-    setStatusFilter,
-    categoryFilter,
-    setCategoryFilter,
-    consumerOptions,
-    dataUseOptions,
-    categoryOptions,
-    groups,
-    summariesByKey,
-    hasActiveFilters,
-    clearFilters,
-  } = usePurposeCardFilters(purposes, summaries);
-
-  const handleClearAll = () => {
-    clearFilters();
-    onDataUseFilterChange(null);
-    onSearchChange("");
-  };
+  const { groups, summariesByKey } = usePurposeCardFilters(purposes, summaries);
 
   const hasAnyFilter =
-    hasActiveFilters || Boolean(dataUseFilter) || Boolean(searchQuery);
+    Boolean(dataUseFilter) ||
+    Boolean(consumerFilter) ||
+    Boolean(categoryFilter) ||
+    Boolean(statusFilter) ||
+    Boolean(searchQuery);
 
   const isEmpty = groups.length === 0;
   const hasNoPurposes = purposes.length === 0 && !hasAnyFilter;
@@ -78,6 +82,7 @@ const PurposeCardGrid = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onSearchChange(e.target.value)
           }
+          debounce
           allowClear
           className="w-[280px]"
         />
@@ -89,32 +94,32 @@ const PurposeCardGrid = ({
             className="w-40"
             options={STATUS_OPTIONS}
             value={statusFilter}
-            onChange={(v) => setStatusFilter(v ?? null)}
+            onChange={(v) => onStatusFilterChange(v ?? null)}
           />
           <Select
             aria-label="Filter by consumer"
             placeholder="Consumer"
             allowClear
             className="w-[200px]"
-            options={consumerOptions}
+            options={filterOptions.consumers}
             value={consumerFilter}
-            onChange={(v) => setConsumerFilter(v ?? null)}
+            onChange={(v) => onConsumerFilterChange(v ?? null)}
           />
           <Select
             aria-label="Filter by data category"
             placeholder="Data category"
             allowClear
             className="w-[200px]"
-            options={categoryOptions}
+            options={filterOptions.categories}
             value={categoryFilter}
-            onChange={(v) => setCategoryFilter(v ?? null)}
+            onChange={(v) => onCategoryFilterChange(v ?? null)}
           />
           <Select
             aria-label="Filter by data use"
             placeholder="Data use"
             allowClear
             className="w-[200px]"
-            options={dataUseOptions}
+            options={filterOptions.data_uses}
             value={dataUseFilter}
             onChange={(v) => onDataUseFilterChange(v ?? null)}
           />
@@ -137,7 +142,7 @@ const PurposeCardGrid = ({
           status="info"
           title="No purposes match your filters"
           subTitle="Try adjusting your search or clearing filters to see more results."
-          extra={<Button onClick={handleClearAll}>Clear filters</Button>}
+          extra={<Button onClick={onClearFilters}>Clear filters</Button>}
         />
       )}
       {!isEmpty &&

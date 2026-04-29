@@ -2,74 +2,44 @@ import { Button, Flex, Icons, Result, Spin } from "fidesui";
 import { NextPage } from "next";
 import { useState } from "react";
 
-import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposeSummariesQuery } from "~/features/data-purposes/data-purpose.slice";
 import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
 import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
-import { downloadRoPA } from "~/features/data-purposes/ropaExport";
+import useDownloadRoPA from "~/features/data-purposes/useDownloadRoPA";
 import usePurposesList from "~/features/data-purposes/usePurposesList";
 
 const DataPurposesPage: NextPage = () => {
-  const { flags } = useFeatures();
   const [modalOpen, setModalOpen] = useState(false);
   const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
+  const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const {
     items: purposes,
+    filterOptions,
     searchQuery,
     updateSearch,
     isLoading,
     error,
   } = usePurposesList({
-    enabled: flags.alphaPurposeBasedAccessControl,
     dataUseFilter,
+    consumerFilter,
+    categoryFilter,
+    statusFilter,
   });
   const isError = Boolean(error);
-  const { data: summaries = [] } = useGetPurposeSummariesQuery(undefined, {
-    skip: !flags.alphaPurposeBasedAccessControl,
-  });
+  const { data: summaries = [] } = useGetPurposeSummariesQuery();
+  const { downloadRoPA, isDownloadingRoPA } = useDownloadRoPA();
 
-  if (!flags.alphaPurposeBasedAccessControl) {
-    return (
-      <FixedLayout title="Purposes" fullHeight>
-        <Result
-          status="error"
-          title="Purpose management is not enabled"
-          subTitle="Turn on the alpha purpose-based access control flag to preview this feature."
-        />
-      </FixedLayout>
-    );
-  }
-
-  let body: React.ReactNode;
-  if (isLoading) {
-    body = (
-      <Flex justify="center" className="mt-12">
-        <Spin size="large" />
-      </Flex>
-    );
-  } else if (isError) {
-    body = (
-      <Result
-        status="error"
-        title="Couldn't load purposes"
-        subTitle="Something went wrong fetching purposes. Refresh to try again."
-      />
-    );
-  } else {
-    body = (
-      <PurposeCardGrid
-        purposes={purposes}
-        summaries={summaries}
-        dataUseFilter={dataUseFilter}
-        onDataUseFilterChange={setDataUseFilter}
-        searchQuery={searchQuery}
-        onSearchChange={updateSearch}
-        onCreatePurpose={() => setModalOpen(true)}
-      />
-    );
-  }
+  const clearFilters = () => {
+    setDataUseFilter(null);
+    setConsumerFilter(null);
+    setCategoryFilter(null);
+    setStatusFilter(null);
+    updateSearch("");
+  };
 
   return (
     <FixedLayout title="Purposes" fullHeight>
@@ -79,7 +49,16 @@ const DataPurposesPage: NextPage = () => {
           <Flex gap="small">
             <Button
               icon={<Icons.Download />}
-              onClick={() => downloadRoPA(purposes, summaries)}
+              onClick={() =>
+                downloadRoPA({
+                  search: searchQuery || undefined,
+                  data_use: dataUseFilter ?? undefined,
+                  consumer: consumerFilter ?? undefined,
+                  category: categoryFilter ?? undefined,
+                  status: statusFilter ?? undefined,
+                })
+              }
+              loading={isDownloadingRoPA}
               disabled={purposes.length === 0}
             >
               Download RoPA
@@ -90,7 +69,37 @@ const DataPurposesPage: NextPage = () => {
           </Flex>
         }
       />
-      {body}
+      {isLoading && (
+        <Flex justify="center" className="mt-12">
+          <Spin size="large" />
+        </Flex>
+      )}
+      {!isLoading && isError && (
+        <Result
+          status="error"
+          title="Couldn't load purposes"
+          subTitle="Something went wrong fetching purposes. Refresh to try again."
+        />
+      )}
+      {!isLoading && !isError && (
+        <PurposeCardGrid
+          purposes={purposes}
+          summaries={summaries}
+          filterOptions={filterOptions}
+          dataUseFilter={dataUseFilter}
+          onDataUseFilterChange={setDataUseFilter}
+          consumerFilter={consumerFilter}
+          onConsumerFilterChange={setConsumerFilter}
+          categoryFilter={categoryFilter}
+          onCategoryFilterChange={setCategoryFilter}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          searchQuery={searchQuery}
+          onSearchChange={updateSearch}
+          onClearFilters={clearFilters}
+          onCreatePurpose={() => setModalOpen(true)}
+        />
+      )}
       <NewPurposeModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}

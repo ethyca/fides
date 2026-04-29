@@ -1,6 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
+import {
+  computeCategoryDrift,
+  formatDataUse,
+} from "~/features/data-purposes/purposeUtils";
 import type { DataPurposeResponse } from "~/types/api";
 
 import {
@@ -38,6 +42,50 @@ const getDetectedCategories = (
   return Array.from(categories);
 };
 
+// CSV export — RoPA shape mirrors what the real fidesplus endpoint will return
+// when called with `?download_csv=true`. Header order is the contract.
+const ROPA_HEADER = [
+  "Reference",
+  "Processing activity",
+  "Description",
+  "Purpose of processing",
+  "Lawful basis (Art. 6)",
+  "Special category basis (Art. 9)",
+  "Categories of data subjects",
+  "Categories of personal data",
+  "Categories of personal data (detected)",
+  "Retention period (days)",
+  "Features",
+  "Last reviewed",
+];
+
+const escapeCsvCell = (value: unknown): string =>
+  `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+const buildRoPACsv = (purposes: DataPurposeResponse[]): string => {
+  const rows = purposes.map((purpose) => {
+    const datasets = datasetsStore[purpose.fides_key] ?? [];
+    return [
+      purpose.fides_key,
+      purpose.name,
+      purpose.description ?? "",
+      purpose.data_use,
+      purpose.legal_basis_for_processing ?? "",
+      purpose.special_category_legal_basis ?? "",
+      purpose.data_subject ?? "",
+      (purpose.data_categories ?? []).join("; "),
+      getDetectedCategories(datasets).join("; "),
+      purpose.retention_period ?? "",
+      (purpose.features ?? []).join("; "),
+      purpose.updated_at ?? "",
+    ];
+  });
+  const body = [ROPA_HEADER, ...rows]
+    .map((row) => row.map(escapeCsvCell).join(","))
+    .join("\r\n");
+  return `\ufeff${body}`;
+};
+
 export const dataPurposesHandlers = () => {
   const apiBase = "/api/v1";
   const plusBase = `${apiBase}/plus`;
@@ -45,10 +93,27 @@ export const dataPurposesHandlers = () => {
   return [
     // --- Real-endpoint handlers (mirroring fidesplus routes) ---
     rest.get(`${apiBase}/data-purpose`, (req, res, ctx) => {
-      const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
-      const size = parseInt(req.url.searchParams.get("size") ?? "50", 10);
       const search = req.url.searchParams.get("search")?.toLowerCase() ?? "";
       const dataUse = req.url.searchParams.get("data_use");
+      const consumer = req.url.searchParams.get("consumer");
+      const category = req.url.searchParams.get("category");
+      const status = req.url.searchParams.get("status");
+      const downloadCsv = req.url.searchParams.get("download_csv") === "true";
+
+      const purposeStatus = (purpose: DataPurposeResponse) => {
+        const datasets = datasetsStore[purpose.fides_key] ?? [];
+        return computeCategoryDrift(
+          purpose.data_categories ?? [],
+          getDetectedCategories(datasets),
+        ).status;
+      };
+
+      const purposeAssignedSystemIds = (purpose: DataPurposeResponse) =>
+        new Set(
+          (systemsStore[purpose.fides_key] ?? [])
+            .filter((assignment) => assignment.assigned)
+            .map((assignment) => assignment.system_id),
+        );
 
       let filtered = [...purposesStore];
       if (search) {
@@ -61,18 +126,73 @@ export const dataPurposesHandlers = () => {
       if (dataUse) {
         filtered = filtered.filter((purpose) => purpose.data_use === dataUse);
       }
+      if (consumer) {
+        filtered = filtered.filter((purpose) =>
+          purposeAssignedSystemIds(purpose).has(consumer),
+        );
+      }
+      if (category) {
+        filtered = filtered.filter((purpose) =>
+          (purpose.data_categories ?? []).includes(category),
+        );
+      }
+      if (status) {
+        filtered = filtered.filter(
+          (purpose) => purposeStatus(purpose) === status,
+        );
+      }
 
-      const start = (page - 1) * size;
-      const items = filtered.slice(start, start + size);
+      if (downloadCsv) {
+        const csv = buildRoPACsv(filtered);
+        return res(
+          ctx.status(200),
+          ctx.set("Content-Type", "text/csv; charset=utf-8"),
+          ctx.set(
+            "Content-Disposition",
+            `attachment; filename="ropa-export.csv"`,
+          ),
+          ctx.body(csv),
+        );
+      }
+
+      // Filter options are derived from the full unfiltered set so the
+      // dropdowns always show every available value (matching the BE pattern
+      // where filter_options come back alongside results).
+      const consumerMap = new Map<string, string>();
+      purposesStore.forEach((purpose) => {
+        (systemsStore[purpose.fides_key] ?? [])
+          .filter((assignment) => assignment.assigned)
+          .forEach((assignment) => {
+            if (!consumerMap.has(assignment.system_id)) {
+              consumerMap.set(assignment.system_id, assignment.system_name);
+            }
+          });
+      });
+      const dataUses = Array.from(
+        new Set(purposesStore.map((purpose) => purpose.data_use)),
+      );
+      const categories = new Set<string>();
+      purposesStore.forEach((purpose) => {
+        (purpose.data_categories ?? []).forEach((c) => categories.add(c));
+      });
 
       return res(
         ctx.status(200),
         ctx.json({
-          items,
+          items: filtered,
           total: filtered.length,
-          page,
-          size,
-          pages: Math.max(1, Math.ceil(filtered.length / size)),
+          filter_options: {
+            consumers: Array.from(consumerMap, ([value, label]) => ({
+              value,
+              label,
+            })).sort((a, b) => a.label.localeCompare(b.label)),
+            data_uses: dataUses
+              .map((value) => ({ value, label: formatDataUse(value) }))
+              .sort((a, b) => a.label.localeCompare(b.label)),
+            categories: Array.from(categories)
+              .sort()
+              .map((value) => ({ value, label: value })),
+          },
         }),
       );
     }),

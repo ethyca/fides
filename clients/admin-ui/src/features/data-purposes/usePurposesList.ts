@@ -1,54 +1,50 @@
-import { useMemo } from "react";
-
-import { useTableState } from "~/features/common/table/hooks";
+import { useMemo, useState } from "react";
 
 import {
   type DataPurpose,
+  type DataPurposeFilterOptions,
   useGetAllDataPurposesQuery,
 } from "./data-purpose.slice";
 
+const EMPTY_FILTER_OPTIONS: DataPurposeFilterOptions = {
+  consumers: [],
+  data_uses: [],
+  categories: [],
+};
+
 interface UsePurposesListOptions {
-  enabled?: boolean;
   dataUseFilter?: string | null;
+  consumerFilter?: string | null;
+  categoryFilter?: string | null;
+  statusFilter?: string | null;
 }
 
 const usePurposesList = ({
-  enabled = true,
   dataUseFilter = null,
+  consumerFilter = null,
+  categoryFilter = null,
+  statusFilter = null,
 }: UsePurposesListOptions = {}) => {
-  const tableState = useTableState({
-    disableUrlState: true,
-    pagination: {
-      // Large page size keeps all purposes client-side so `usePurposeCardFilters`
-      // can apply the `consumer` / `status` / `category` filters without a
-      // round-trip. Drop this once the list endpoint accepts those params —
-      // see the note in `usePurposeCardFilters.ts`.
-      defaultPageSize: 200,
-      pageSizeOptions: [50, 100, 200],
-    },
-    search: { defaultSearchQuery: "" },
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data, error, isLoading, isFetching } = useGetAllDataPurposesQuery({
+    search: searchQuery || undefined,
+    data_use: dataUseFilter ?? undefined,
+    consumer: consumerFilter ?? undefined,
+    category: categoryFilter ?? undefined,
+    status: statusFilter ?? undefined,
   });
-
-  const { pageIndex, pageSize, searchQuery, updateSearch } = tableState;
-
-  const { data, error, isLoading, isFetching } = useGetAllDataPurposesQuery(
-    {
-      page: pageIndex,
-      size: pageSize,
-      search: searchQuery || undefined,
-      data_use: dataUseFilter ?? undefined,
-    },
-    { skip: !enabled },
-  );
 
   const items: DataPurpose[] = useMemo(() => data?.items ?? [], [data?.items]);
   const total = data?.total ?? 0;
+  const filterOptions = data?.filter_options ?? EMPTY_FILTER_OPTIONS;
 
   return {
     items,
     total,
-    searchQuery: searchQuery ?? "",
-    updateSearch,
+    filterOptions,
+    searchQuery,
+    updateSearch: setSearchQuery,
     isLoading,
     isFetching,
     error,
