@@ -1221,7 +1221,10 @@ class PrivacyRequest(
         """
         db = Session.object_session(self)
         if db is None:
-            return []
+            raise RuntimeError(
+                f"PrivacyRequest {self.id} is not bound to a session. "
+                "Cannot query request task IDs on a detached instance."
+            )
 
         stmt = select(RequestTask.id).where(RequestTask.privacy_request_id == self.id)  # type: ignore[arg-type]
         request_task_ids = db.execute(stmt).scalars().all()

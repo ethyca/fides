@@ -119,6 +119,17 @@ class TestGetCeleryTaskRequestTaskIds:
         finally:
             event.remove(db, "loaded_as_persistent", track_load)
 
+    def test_get_celery_task_ids_raises_on_detached_instance(self, db, privacy_request):
+        """Calling get_request_task_celery_task_ids on a detached instance
+        should raise a RuntimeError rather than silently returning an empty list."""
+        db.expunge(privacy_request)
+
+        with pytest.raises(RuntimeError, match="not bound to a session"):
+            privacy_request.get_request_task_celery_task_ids()
+
+        # Re-merge so fixture cleanup doesn't fail
+        db.merge(privacy_request)
+
 
 def test_create_request_task(db, privacy_request, request_task_data):
     # Create a RequestTask
