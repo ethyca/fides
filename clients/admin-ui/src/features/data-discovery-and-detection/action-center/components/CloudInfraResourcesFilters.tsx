@@ -85,8 +85,8 @@ export const CloudInfraResourcesFilters = ({
     <Tooltip
       title={
         <Flex vertical>
-          {omittedValues.map(({ label, value }) => (
-            <span key={value}>{label}</span>
+          {omittedValues.map(({ label, value }, index) => (
+            <span key={value ?? index}>{label}</span>
           ))}
         </Flex>
       }

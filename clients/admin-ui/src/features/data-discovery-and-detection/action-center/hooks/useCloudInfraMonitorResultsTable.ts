@@ -30,38 +30,6 @@ export const useCloudInfraMonitorResultsTable = ({
   const search = useSearch();
   const [searchRegex, setSearchRegex] = useState<boolean>(false);
 
-  // Map status filters to diff_status parameter
-  const diffStatusFilters = useMemo((): DiffStatus[] | undefined => {
-    if (!statusFilters || statusFilters.length === 0) {
-      return undefined;
-    }
-    return statusFilters as DiffStatus[];
-  }, [statusFilters]);
-
-  // Map location filters
-  const locationFilterParams = useMemo(() => {
-    if (!locationFilters || locationFilters.length === 0) {
-      return undefined;
-    }
-    return locationFilters;
-  }, [locationFilters]);
-
-  // Map service filters
-  const serviceFilterParams = useMemo(() => {
-    if (!serviceFilters || serviceFilters.length === 0) {
-      return undefined;
-    }
-    return serviceFilters;
-  }, [serviceFilters]);
-
-  // Map account filters
-  const accountFilterParams = useMemo(() => {
-    if (!accountFilters || accountFilters.length === 0) {
-      return undefined;
-    }
-    return accountFilters;
-  }, [accountFilters]);
-
   // Reset pagination when filters change
   useEffect(() => {
     resetPagination();
@@ -81,10 +49,12 @@ export const useCloudInfraMonitorResultsTable = ({
       size: pageSize,
       search: search.searchQuery,
       search_regex: searchRegex || undefined,
-      diff_status: diffStatusFilters,
-      location: locationFilterParams,
-      cloud_account_id: accountFilterParams,
-      service: serviceFilterParams,
+      diff_status: statusFilters?.length
+        ? (statusFilters as DiffStatus[])
+        : undefined,
+      location: locationFilters?.length ? locationFilters : undefined,
+      cloud_account_id: accountFilters?.length ? accountFilters : undefined,
+      service: serviceFilters?.length ? serviceFilters : undefined,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -114,7 +84,9 @@ export const useCloudInfraMonitorResultsTable = ({
     isFetching,
     refetch,
     // Filters
-    diffStatusFilters,
+    diffStatusFilters: statusFilters?.length
+      ? (statusFilters as DiffStatus[])
+      : undefined,
     locationFilters,
     serviceFilters,
     accountFilters,
