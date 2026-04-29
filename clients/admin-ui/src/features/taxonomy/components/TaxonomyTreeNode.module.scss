@@ -20,7 +20,7 @@
     // important used here because ant default :hover state
     // would otherwise override this
     color: var(--ant-button-primary-color) !important;
-    background-color: var(--fidesui-minos) !important;
+    background-color: var(--ant-brand-minos) !important;
 
     box-shadow:
       0px 1px 2px 0px rgba(0, 0, 0, 0.06),
@@ -28,7 +28,7 @@
   }
 
   &--parent-hover {
-    background-color: var(--fidesui-neutral-50);
+    background-color: var(--ant-neutral-50);
     border-color: var(--ant-button-default-border-color);
     box-shadow:
       0px 1px 2px 0px rgba(0, 0, 0, 0.06),
@@ -36,7 +36,7 @@
   }
 
   &--inactive {
-    color: var(--fidesui-neutral-400);
+    color: var(--ant-neutral-400);
   }
 }
 

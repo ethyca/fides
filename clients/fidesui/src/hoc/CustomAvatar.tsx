@@ -21,7 +21,7 @@ export interface CustomAvatarProps extends AvatarProps {
  *
  * @example
  * // Filled (default — same as Ant Avatar)
- * <Avatar shape="circle" size={28} icon={<Icons.Checkmark />} style={{ backgroundColor: "var(--fidesui-success)" }} />
+ * <Avatar shape="circle" size={28} icon={<Icons.Checkmark />} style={{ backgroundColor: "var(--ant-color-success)" }} />
  *
  * @example
  * // Outlined square — e.g. document icon in an empty state

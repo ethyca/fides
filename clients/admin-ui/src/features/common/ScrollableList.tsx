@@ -95,7 +95,7 @@ const ScrollableListItem = <T extends unknown>({
               tabIndex={0}
               aria-label="Warning"
             >
-              <Icons.WarningAltFilled fill="var(--fidesui-warning)" />
+              <Icons.WarningAltFilled fill="var(--ant-color-warning)" />
             </span>
           </Tooltip>
         )}

@@ -45,7 +45,7 @@ export const ExternalTaskLayout = () => {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "var(--fidesui-neutral-75)",
+        backgroundColor: "var(--ant-neutral-75)",
         padding: "32px 16px",
         position: "relative",
       }}

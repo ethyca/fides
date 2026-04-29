@@ -25,8 +25,8 @@ const HomeContainerInner = () => {
   const activeTheme = resolvedMode === "dark" ? darkAntTheme : defaultAntTheme;
   const bgColor =
     resolvedMode === "dark"
-      ? "var(--fidesui-bg-minos)"
-      : "var(--fidesui-full-white)";
+      ? "var(--ant-brand-bg-minos)"
+      : "var(--ant-color-white)";
 
   if (alphaDashboard) {
     return (

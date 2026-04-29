@@ -1,6 +1,4 @@
-@use "sass:string";
 @use "../fonts/fonts.scss";
-@use "../palette/palette.module.scss" as palette;
 
 /**
  * Global Ant Design styles for Fides applications
@@ -21,17 +19,8 @@ h6 {
   font-weight: bold;
 }
 
-/**
- * Adds the color variables from the palette to the root element
- */
-:root {
-  @each $color, $value in palette.$colors {
-    #{palette.getPrefixedColor("--fidesui-", string.unquote($color))}: $value;
-  }
-}
-
 :focus-visible {
-  outline-color: var(--fidesui-minos);
+  outline-color: var(--ant-brand-minos);
 }
 
 /**
@@ -58,7 +47,7 @@ h6 {
   &-extra {
     --ant-font-size: var(--ant-font-size-sm);
     margin-top: 0.25rem;
-    color: var(--fidesui-neutral-700);
+    color: var(--ant-neutral-700);
   }
   &-tooltip {
     cursor: default !important;
@@ -69,7 +58,7 @@ h6 {
 .ant-menu-dark .ant-menu-sub {
   > .ant-menu-item {
     > .ant-menu-title-content a {
-      color: var(--fidesui-neutral-200);
+      color: var(--ant-neutral-200);
 
       &:focus-visible {
         text-decoration: underline;
@@ -77,11 +66,11 @@ h6 {
     }
 
     &:focus-within:not(.ant-menu-item-selected) {
-      background-color: var(--fidesui-neutral-800);
+      background-color: var(--ant-neutral-800);
     }
 
     &:hover {
-      --ant-menu-dark-item-hover-bg: var(--fidesui-neutral-800);
+      --ant-menu-dark-item-hover-bg: var(--ant-neutral-800);
     }
   }
 
@@ -89,7 +78,7 @@ h6 {
   // But using the token "darkItemSelectedColor" also affect the group title,
   // therefore we need this css rule
   > .ant-menu-item.ant-menu-item-selected > .ant-menu-title-content a {
-    color: var(--fidesui-minos);
+    color: var(--ant-brand-minos);
   }
 }
 
@@ -136,7 +125,7 @@ h6 {
 
 .ant-table {
   &-wrapper & {
-    --ant-table-header-icon-color: var(--fidesui-neutral-300);
+    --ant-table-header-icon-color: var(--ant-neutral-300);
   }
 
   // This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
@@ -180,7 +169,7 @@ h6 {
   .ant-list-item-meta-title a {
     &:hover,
     &:focus-visible {
-      color: var(--fidesui-neutral-600);
+      color: var(--ant-neutral-600);
     }
   }
 
@@ -221,11 +210,11 @@ h6 {
   }
 
   .ant-tree-treenode {
-    --ant-tree-node-selected-bg: var(--fidesui-neutral-100);
+    --ant-tree-node-selected-bg: var(--ant-neutral-100);
     --ant-tree-directory-node-selected-color: var(
       --ant-tree-node-selected-color
     );
-    --ant-tree-directory-node-selected-bg: var(--fidesui-neutral-100);
+    --ant-tree-directory-node-selected-bg: var(--ant-neutral-100);
   }
 
   .ant-tree-title {

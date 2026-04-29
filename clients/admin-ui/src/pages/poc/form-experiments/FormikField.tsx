@@ -169,8 +169,8 @@ export const FormikFieldPOC = () => (
           <Title level={4}>Controlled Values</Title>
           <Card
             style={{
-              backgroundColor: "var(--fidesui-minos)",
-              color: "var(--fidesui-corinth)",
+              backgroundColor: "var(--ant-brand-minos)",
+              color: "var(--ant-brand-corinth)",
             }}
           >
             <pre>
