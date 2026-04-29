@@ -822,7 +822,11 @@ def _unlink_staged_resources_on_system_delete(
 ) -> None:
     """Null out system_id and reset diff_status on StagedResources before a System is deleted.
 
-    This keeps the dependency direction correct: the discovery module knows about
+    StagedResources may reference a System from IDP monitor promotion (app promoted
+    to system) or website monitor vendor matching (resource linked to an existing
+    system by vendor_id).  This listener handles both paths.
+
+    The dependency direction stays correct: the discovery module knows about
     System (via the FK), not the other way around.
 
     """

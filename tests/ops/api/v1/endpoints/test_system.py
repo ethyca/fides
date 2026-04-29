@@ -1248,6 +1248,41 @@ class TestDeleteSystemUnlinksStagedResources:
         assert staged_resource.system_id is None
         assert staged_resource.diff_status == DiffStatus.ADDITION.value
 
+    def test_single_delete_unlinks_web_monitor_staged_resource(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+    ) -> None:
+        """Deleting a system should unlink web monitor StagedResources (Cookies, JS tags, etc.)."""
+        system_id = system.id
+        sr = StagedResource.create(
+            db=db,
+            data={
+                "urn": f"www_example_com.tracker.com.{system.fides_key}_cookie",
+                "name": "Tracker Cookie",
+                "resource_type": "Cookie",
+                "system_id": system_id,
+                "diff_status": DiffStatus.MONITORED.value,
+            },
+        )
+        try:
+            url = V1_URL_PREFIX + f"/system/{system.fides_key}"
+            auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+            resp = api_client.delete(url, headers=auth_header)
+
+            assert resp.status_code == HTTP_200_OK
+            assert db.query(System).filter_by(id=system_id).first() is None
+
+            db.refresh(sr)
+            assert sr.system_id is None
+            assert sr.diff_status == DiffStatus.ADDITION.value
+        finally:
+            if db.query(StagedResource).filter_by(urn=sr.urn).first():
+                db.delete(sr)
+                db.commit()
+
     def test_delete_system_without_staged_resources(
         self,
         api_client: TestClient,
