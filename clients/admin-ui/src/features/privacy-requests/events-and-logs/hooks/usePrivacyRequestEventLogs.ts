@@ -57,17 +57,13 @@ export const usePrivacyRequestEventLogs = (
           title: key,
           date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
-          showViewLog:
-            hasUnresolvedErrorStatus ||
-            hasSkippedEntryStatus ||
-            hasAwaitingProcessingStatus ||
-            hasPollingStatus,
           onClick: () => {}, // This will be overridden in the component
           isError: hasUnresolvedErrorStatus,
           isSkipped: hasSkippedEntryStatus,
           isAwaitingInput: hasAwaitingProcessingStatus,
           isPolling: hasPollingStatus,
           id: `request-${key}`,
+          logCount: logs.length,
         };
       });
 
