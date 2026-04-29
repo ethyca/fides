@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.84.0"
+    "version": "2.84.1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -33054,6 +33054,18 @@
               }
             ],
             "title": "Include Custom Privacy Request Fields",
+            "default": false
+          },
+          "include_consent_webhook_requests": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Consent Webhook Requests",
             "default": false
           },
           "include_deleted_requests": {
