@@ -55,8 +55,8 @@ const BrandLink = ({
       {...props}
     >
       <Space size={4}>
-        <div style={{ color: "var(--fidesui-neutral-500)" }}>Powered by</div>
-        <div style={{ color: "var(--fidesui-minos)" }}>
+        <div style={{ color: "var(--ant-neutral-500)" }}>Powered by</div>
+        <div style={{ color: "var(--ant-brand-minos)" }}>
           <EthycaLogoSvg />
         </div>
       </Space>

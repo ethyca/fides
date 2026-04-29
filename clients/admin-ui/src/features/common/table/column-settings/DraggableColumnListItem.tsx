@@ -133,7 +133,7 @@ export const DraggableColumnListItem = ({
         className="-ml-1 shrink-0"
         data-testid={`column-dragger-${id}`}
       >
-        <Icons.Draggable size={20} color="var(--fidesui-neutral-400)" />
+        <Icons.Draggable size={20} color="var(--ant-neutral-400)" />
       </div>
       <Flex align="center" className="min-w-0 flex-1" title={text}>
         <label htmlFor={id} className="mb-0 min-w-0 flex-1 truncate text-sm">

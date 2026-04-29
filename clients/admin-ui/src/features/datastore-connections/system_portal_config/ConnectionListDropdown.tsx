@@ -218,7 +218,7 @@ const ConnectionListDropdown = ({
       <Box px="8px" mt={2}>
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">
-            <Icons.Search color="var(--fidesui-neutral-500)" />
+            <Icons.Search color="var(--ant-neutral-500)" />
           </InputLeftElement>
           <Input
             data-testid="input-search-integrations"

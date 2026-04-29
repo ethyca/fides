@@ -35,7 +35,7 @@ const HelpIcon = ({ text }: { text: string }) => (
   <Tooltip title={text}>
     <Icons.Information
       style={{
-        color: "var(--fidesui-neutral-500)",
+        color: "var(--ant-neutral-500)",
         marginLeft: 4,
         cursor: "help",
       }}

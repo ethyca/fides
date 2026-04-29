@@ -39,12 +39,12 @@ export const PostureCard = () => {
         Alert: {
           colorInfoBg:
             resolvedMode === "dark"
-              ? "var(--fidesui-bg-minos)"
-              : "var(--fidesui-limestone)",
+              ? "var(--ant-brand-bg-minos)"
+              : "var(--ant-brand-limestone)",
           colorInfoBorder:
             resolvedMode === "dark"
-              ? "var(--fidesui-minos)"
-              : "var(--fidesui-limestone)",
+              ? "var(--ant-brand-minos)"
+              : "var(--ant-brand-limestone)",
         },
       },
     }),

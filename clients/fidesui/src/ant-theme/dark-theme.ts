@@ -26,6 +26,9 @@ const corinthDark = dark(palette.FIDESUI_CORINTH);
 
 export const darkAntTheme: ThemeConfig = {
   ...defaultAntTheme,
+  // Distinct cssVar key so antd emits a separate `.fidesui-dark` block we can
+  // scope to dark-mode subtrees without colliding with the outer light block.
+  cssVar: { ...defaultAntTheme.cssVar, key: "fidesui-dark" },
   algorithm: theme.darkAlgorithm,
   token: {
     ...defaultAntTheme.token,

@@ -1,16 +1,9 @@
 /**
- * Palette color constants for use in JS/TS theme configuration.
+ * Palette color constants — single source of truth for FidesUI brand colors.
  *
- * For component styles, prefer CSS variables (e.g. `var(--fidesui-minos)`)
- * which are generated from the Sass $colors map in global.scss.
- *
- * This module exists for APIs that require resolved hex values at runtime,
- * such as Ant Design's ThemeConfig and Chakra's extendTheme.
- *
- * NOTE: These values are temporarily duplicated in palette.module.scss,
- * which generates CSS variables via Sass. ENG-3479 will eliminate the Sass
- * file by moving all CSS variable generation into Ant Design's token system,
- * making this file the single source of truth.
+ * These values feed Ant Design's ThemeConfig (see ant-theme/default-theme.ts);
+ * Ant's cssVar token system emits them as `--ant-brand-*` and `--ant-neutral-*`
+ * CSS variables for use in component styles.
  */
 export const palette = {
   // General

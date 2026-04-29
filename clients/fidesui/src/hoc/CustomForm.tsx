@@ -5,7 +5,7 @@ import React from "react";
 import { InformationFilled } from "../icons/carbon";
 
 const DEFAULT_TOOLTIP_ICON = (
-  <InformationFilled color="var(--fidesui-neutral-200)" />
+  <InformationFilled color="var(--ant-neutral-200)" />
 );
 
 /**

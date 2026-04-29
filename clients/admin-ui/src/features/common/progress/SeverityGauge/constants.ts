@@ -17,9 +17,9 @@ export const SEVERITY_PROPS: Readonly<ProgressProps> = {
 } as const;
 
 export const SEVERITY_STYLE: Record<Severity, string> = {
-  low: "var(--fidesui-error)",
-  medium: "var(--fidesui-warning)",
-  high: "var(--fidesui-success)",
+  low: "var(--ant-color-error)",
+  medium: "var(--ant-color-warning)",
+  high: "var(--ant-color-success)",
 } as const;
 
 export const SEVERITY_PERCENT: Record<Severity, number> = {

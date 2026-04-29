@@ -30,13 +30,13 @@
   &:focus {
     :global(.ant-tag) {
       // !important is necessary because our custom component adds the background style to the tag inline giving it a higher specificity than our scss style here
-      background: var(--fidesui-neutral-50) !important;
+      background: var(--ant-neutral-50) !important;
     }
   }
   &:focus-visible {
     outline: none;
     :global(.ant-tag) {
-      border: 1px solid var(--fidesui-minos);
+      border: 1px solid var(--ant-brand-minos);
     }
   }
 }
@@ -44,7 +44,7 @@
 .closeButton {
   border-radius: var(--ant-border-radius-xs);
   &:focus-visible {
-    outline: 1px solid var(--fidesui-minos);
+    outline: 1px solid var(--ant-brand-minos);
     outline-offset: 2px;
   }
 }

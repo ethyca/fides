@@ -21,11 +21,11 @@ const TaxonomyTreeEdge = (props: TaxonomyTreeEdgeProps) => {
     switch (targetNodeHoverStatus) {
       case TreeNodeHoverStatus.ACTIVE_HOVER:
       case TreeNodeHoverStatus.PARENT_OF_HOVER:
-        return "var(--fidesui-minos)";
+        return "var(--ant-brand-minos)";
       case TreeNodeHoverStatus.INACTIVE:
-        return "var(--fidesui-neutral-400)";
+        return "var(--ant-neutral-400)";
       default:
-        return "var(--fidesui-sandstone)";
+        return "var(--ant-brand-sandstone)";
     }
   }, [targetNodeHoverStatus]);
 

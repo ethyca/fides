@@ -203,7 +203,7 @@ const TaxonomyInteractiveTree = ({
   return (
     <div
       className="size-full"
-      style={{ backgroundColor: "var(--fidesui-bg-corinth)" }}
+      style={{ backgroundColor: "var(--ant-brand-bg-corinth)" }}
       data-testid="taxonomy-interactive-tree"
     >
       <TaxonomyTreeHoverProvider>
@@ -220,7 +220,7 @@ const TaxonomyInteractiveTree = ({
           proOptions={{ hideAttribution: true }}
         >
           <Background
-            color="var(--fidesui-neutral-100)"
+            color="var(--ant-neutral-100)"
             variant={BackgroundVariant.Dots}
             size={3}
           />

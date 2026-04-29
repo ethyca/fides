@@ -210,14 +210,14 @@ export const MonitorResult = ({
         <Avatar.Group
           max={{
             count: 5,
-            style: { background: "var(--fidesui-neutral-700)" },
+            style: { background: "var(--ant-neutral-700)" },
           }}
           className="hidden flex-[6.5rem] grow-0 justify-end lg:flex"
           size="small"
         >
           {stewards.map((steward) => (
             <Tooltip title={formatUser(steward)} key={steward.id}>
-              <Avatar rootClassName="bg-[--fidesui-bg-default] text-[--fidesui-minos]">
+              <Avatar rootClassName="bg-[--ant-color-bg-layout] text-[--ant-brand-minos]">
                 {steward.first_name?.charAt(0)}
                 {steward.last_name?.charAt(0)}
               </Avatar>

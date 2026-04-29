@@ -55,7 +55,7 @@ const RoleOption = ({
         <Flex vertical gap={16}>
           <Flex align="center" justify="space-between">
             <Text className="text-base font-semibold">{label}</Text>
-            <Icons.CheckmarkFilled color="var(--fidesui-success)" />
+            <Icons.CheckmarkFilled color="var(--ant-color-success)" />
           </Flex>
           {/* The approver and respondent roles cannot be assigned systems */}
           {roleKey !== RoleRegistryEnum.APPROVER &&

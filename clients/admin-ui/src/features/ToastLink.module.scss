@@ -3,9 +3,9 @@
   font-size: var(--ant-font-size);
   padding-left: 0;
   padding-right: 0;
-  color: var(--fidesui-minos);
+  color: var(--ant-brand-minos);
   &:hover,
   &:focus-visible {
-    color: var(--fidesui-neutral-500);
+    color: var(--ant-neutral-500);
   }
 }

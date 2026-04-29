@@ -19,8 +19,8 @@ const TaxonomyTreeNodeHandle = ({
         width: handleRadius,
         height: handleRadius,
         backgroundColor: inactive
-          ? "var(--fidesui-neutral-400)"
-          : "var(--fidesui-minos)",
+          ? "var(--ant-neutral-400)"
+          : "var(--ant-brand-minos)",
       }}
       className="transition-colors duration-300 ease-in"
     />

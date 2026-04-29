@@ -6,18 +6,18 @@
   transition: all 0.15s ease;
 
   &:hover {
-    border-color: var(--fidesui-neutral-300);
+    border-color: var(--ant-neutral-300);
     box-shadow: var(--ant-box-shadow-tertiary);
   }
 }
 
 .messageAvatarBot {
-  background-color: var(--fidesui-minos) !important;
+  background-color: var(--ant-brand-minos) !important;
 }
 
 .messageAvatarUser {
-  background-color: var(--fidesui-neutral-100) !important;
-  color: var(--fidesui-minos) !important;
+  background-color: var(--ant-neutral-100) !important;
+  color: var(--ant-brand-minos) !important;
 }
 
 .messageAvatarImage {
