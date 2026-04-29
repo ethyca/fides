@@ -71,8 +71,10 @@ const ReinviteSection = ({ user }: ReinviteSectionProps) => {
     const content = (
       <>
         <p>
-          Are you sure you want to send a new invitation to {user.username}? A
-          new invitation email will be sent to {user.email_address}.
+          Are you sure you want to send a new invitation to {user.username}?
+          {user.email_address
+            ? ` A new invitation email will be sent to ${user.email_address}.`
+            : ""}
         </p>
         {!user.invite_expired ? (
           <p>The previous invitation code will no longer be valid.</p>

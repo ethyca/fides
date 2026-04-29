@@ -8,6 +8,7 @@ import type { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import type { gcm } from "../integrations/gcm";
 import type { gtm } from "../integrations/gtm";
+import type { matomo } from "../integrations/matomo";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
 import type { FidesEventDetail } from "./events";
@@ -224,8 +225,10 @@ export interface FidesInitOptions {
  * ensure that the documented interface isn't overly specific in areas we may
  * need to change.
  */
-export interface FidesGlobal
-  extends Omit<Fides, "gtm" | "consent" | "updateConsent"> {
+export interface FidesGlobal extends Omit<
+  Fides,
+  "gtm" | "consent" | "updateConsent"
+> {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
@@ -254,6 +257,7 @@ export interface FidesGlobal
   blueconic: typeof blueconic;
   gcm: typeof gcm;
   gtm: typeof gtm;
+  matomo: typeof matomo;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
   onFidesEvent: (
@@ -602,42 +606,39 @@ export type PrivacyExperience = {
   property_id?: string;
 };
 
-interface ExperienceConfigTranslationMinimal
-  extends Partial<ExperienceConfigTranslation> {
+interface ExperienceConfigTranslationMinimal extends Partial<ExperienceConfigTranslation> {
   language: string;
   privacy_experience_config_history_id: string;
 }
 
-export interface ExperienceConfigMinimal
-  extends Pick<
-    ExperienceConfig,
-    | "id"
-    | "component"
-    | "auto_detect_language"
-    | "dismissable"
-    | "auto_subdomain_cookie_deletion"
-    | "cookie_deletion_based_on_host_domain"
-    | "layer1_button_options"
-    | "reject_all_mechanism"
-  > {
+export interface ExperienceConfigMinimal extends Pick<
+  ExperienceConfig,
+  | "id"
+  | "component"
+  | "auto_detect_language"
+  | "dismissable"
+  | "auto_subdomain_cookie_deletion"
+  | "cookie_deletion_based_on_host_domain"
+  | "layer1_button_options"
+  | "reject_all_mechanism"
+> {
   translations: ExperienceConfigTranslationMinimal[];
 }
 
-export interface PrivacyExperienceMinimal
-  extends Pick<
-    PrivacyExperience,
-    | "id"
-    | "property_id"
-    | "privacy_notices"
-    | "available_locales"
-    | "gpp_settings"
-    | "vendor_count"
-    | "minimal_tcf"
-    | "gvl"
-    | "tcf_publisher_country_code"
-    | "non_applicable_privacy_notices"
-    | "tcf_publisher_restrictions"
-  > {
+export interface PrivacyExperienceMinimal extends Pick<
+  PrivacyExperience,
+  | "id"
+  | "property_id"
+  | "privacy_notices"
+  | "available_locales"
+  | "gpp_settings"
+  | "vendor_count"
+  | "minimal_tcf"
+  | "gvl"
+  | "tcf_publisher_country_code"
+  | "non_applicable_privacy_notices"
+  | "tcf_publisher_restrictions"
+> {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
   meta?: Pick<ExperienceMeta, "version_hash">;

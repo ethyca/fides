@@ -18,7 +18,7 @@ const hexToHSL = (hex: string): Hsl | null => {
     let g = parseInt(result[2], 16);
     let b = parseInt(result[3], 16);
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions,no-sequences
-    (r /= 255), (g /= 255), (b /= 255);
+    ((r /= 255), (g /= 255), (b /= 255));
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
     let h;

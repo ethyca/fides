@@ -1,4 +1,0 @@
-type: Changed
-description: Added unstyled mode to RouterLink and migrated all remaining NextLink usages
-pr: 7946
-labels: []

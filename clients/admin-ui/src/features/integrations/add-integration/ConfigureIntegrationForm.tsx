@@ -8,7 +8,7 @@ import {
   Text,
   useMessage,
 } from "fidesui";
-import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -247,12 +247,17 @@ export const ConfigureIntegrationForm = ({
       : {
           name: values.name,
           key: formatKey(values.name),
-          connection_type: connectionOption.identifier as ConnectionType,
+          connection_type: (isSaas
+            ? ConnectionType.SAAS
+            : connectionOption.identifier) as ConnectionType,
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
           secrets: processedValues.secrets,
           dataset: values.dataset,
+          ...(isSaas
+            ? { saas_connector_type: connectionOption.identifier }
+            : {}),
         };
 
     // if system is attached, use patch request that attaches to system
@@ -419,7 +424,10 @@ export const ConfigureIntegrationForm = ({
   // Form state tracking for parent component
   const allValues = Form.useWatch([], form);
   const [submittable, setSubmittable] = useState(false);
-  const isDirty = form.isFieldsTouched();
+  const isDirty = useMemo(
+    () => allValues !== undefined && !isEqual(allValues, initialValues),
+    [allValues, initialValues],
+  );
 
   useEffect(() => {
     form

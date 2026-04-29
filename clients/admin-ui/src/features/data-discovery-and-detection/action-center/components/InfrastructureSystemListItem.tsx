@@ -10,7 +10,7 @@ import {
   Tooltip,
   useMessage,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+import { useQueryState } from "nuqs";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
@@ -28,8 +28,6 @@ interface InfrastructureSystemListItemProps {
   item: StagedResourceAPIResponse;
   selected?: boolean;
   onSelect?: (key: string, selected: boolean) => void;
-  onNavigate?: (url: string) => void;
-  rowClickUrl?: (item: StagedResourceAPIResponse) => string;
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
@@ -42,8 +40,6 @@ export const InfrastructureSystemListItem = ({
   item,
   selected,
   onSelect,
-  onNavigate,
-  rowClickUrl,
   monitorId,
   activeTab,
   allowIgnore,
@@ -52,9 +48,9 @@ export const InfrastructureSystemListItem = ({
   onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
   const itemKey = item.urn;
-  const url = rowClickUrl?.(item);
   const systemName = item.name ?? "Uncategorized";
 
+  const [, setStagedResourceUrn] = useQueryState("stagedResourceUrn");
   const messageApi = useMessage();
 
   const [updateDataUses] = useUpdateInfrastructureSystemDataUsesMutation();
@@ -76,13 +72,7 @@ export const InfrastructureSystemListItem = ({
   );
 
   const handleClick = () => {
-    if (url && onNavigate) {
-      onNavigate(url);
-      return;
-    }
-    if (onSelect && itemKey) {
-      onSelect(itemKey, !selected);
-    }
+    setStagedResourceUrn(itemKey);
   };
 
   const handleCheckboxChange = (checked: boolean) => {
@@ -128,7 +118,7 @@ export const InfrastructureSystemListItem = ({
                 shape="square"
                 icon={
                   <Icons.TransformInstructions
-                    style={{ color: palette.FIDESUI_MINOS }}
+                    style={{ color: "var(--fidesui-minos)" }}
                     className="m-1 size-full"
                   />
                 }
@@ -157,7 +147,12 @@ export const InfrastructureSystemListItem = ({
         }
         description={
           <>
-            <Text>{item.description}</Text>
+            <Text>
+              {"preferred_description" in item &&
+              typeof item.preferred_description === "string"
+                ? item.preferred_description
+                : ""}
+            </Text>
             <InfrastructureClassificationSelect
               mode="multiple"
               value={item.preferred_data_uses ?? []}

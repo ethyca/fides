@@ -98,7 +98,6 @@ const DataUseSelectWithSuggestions = ({
         value={field.value}
         onChange={onChange}
         status={isInvalid ? "error" : undefined}
-        virtual={false}
         {...props}
       />
       <ErrorMessage

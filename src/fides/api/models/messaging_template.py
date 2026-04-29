@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Type
 
 from pydantic import ConfigDict
-from sqlalchemy import Boolean, Column, String
+from sqlalchemy import Boolean, Column, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -72,6 +72,13 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
             "body": "This is your weekly summary of open data subject requests tasks from __ORGANIZATION_NAME__ that require your attention. Please review the tasks in our Privacy Center to ensure timely completion.",
         },
     },
+    MessagingActionType.CORRESPONDENCE.value: {
+        "label": "Correspondence message",
+        "content": {
+            "subject": "You have a new message regarding your privacy request",
+            "body": "You have received a message regarding your privacy request. __MESSAGE_BODY__",
+        },
+    },
     MessagingActionType.EXTERNAL_USER_WELCOME.value: {
         "label": "External user welcome",
         "content": {
@@ -107,7 +114,12 @@ class MessagingTemplate(Base):
     def __tablename__(self) -> str:
         return "messaging_template"
 
+    __table_args__ = (
+        UniqueConstraint("type", "label", name="uq_messaging_template_type_label"),
+    )
+
     type = Column(String, index=True, nullable=False)
+    label = Column(String, nullable=False)
     content = Column(MutableDict.as_mutable(JSONB), nullable=False)
     properties: RelationshipProperty[List[Property]] = relationship(
         "Property",

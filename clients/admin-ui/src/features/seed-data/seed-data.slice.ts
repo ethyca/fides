@@ -15,6 +15,7 @@ export interface SeedTasksConfig {
   discovery_monitors?: boolean;
   pbac?: boolean;
   dashboard?: boolean;
+  disclosure_metrics?: boolean;
 }
 
 export interface SeedProfileDetail {

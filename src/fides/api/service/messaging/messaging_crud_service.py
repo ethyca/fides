@@ -2,6 +2,8 @@ from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -95,6 +97,7 @@ def get_all_basic_messaging_templates(db: Session) -> List[MessagingTemplate]:
             templates.append(
                 MessagingTemplate(
                     type=template_type,
+                    label=template_from_db.label,
                     content=template_from_db.content,
                 )
             )
@@ -102,6 +105,7 @@ def get_all_basic_messaging_templates(db: Session) -> List[MessagingTemplate]:
             templates.append(
                 MessagingTemplate(
                     type=template_type,
+                    label=template["label"],
                     content=template["content"],
                 )
             )
@@ -162,15 +166,19 @@ def get_basic_messaging_template_by_type_or_default(
 
     # If no template is found in the database, use the default
     if not template and template_type in DEFAULT_MESSAGING_TEMPLATES:
-        content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
-        template = MessagingTemplate(type=template_type, content=content)
+        default = DEFAULT_MESSAGING_TEMPLATES[template_type]
+        template = MessagingTemplate(
+            type=template_type,
+            label=default["label"],
+            content=default["content"],
+        )
 
     return template
 
 
 def create_or_update_basic_templates(
     db: Session, data: Dict[str, Any]
-) -> Optional[MessagingTemplate]:
+) -> MessagingTemplate:
     """
     For "basic", or non property-specific messaging templates, we update if template "type" matches an existing db row,
     otherwise we create a new one.
@@ -185,9 +193,20 @@ def create_or_update_basic_templates(
         # basic templates
         if template.properties:
             data["properties"] = [{"id": prop.id} for prop in template.properties]
+        # Preserve existing label if not provided
+        if "label" not in data and template.label:
+            data["label"] = template.label
         template = template.update(db=db, data=data)
 
     else:
+        # Ensure a label exists for new basic templates
+        if "label" not in data:
+            default = DEFAULT_MESSAGING_TEMPLATES.get(data["type"])
+            if not default:
+                raise MessagingTemplateValidationException(
+                    f"Messaging template type '{data['type']}' is not supported."
+                )
+            data["label"] = default["label"]
         template = MessagingTemplate.create(db=db, data=data)
     return template
 
@@ -228,6 +247,57 @@ def get_enabled_messaging_template_by_type_and_property(
         )
 
     return template
+
+
+def get_templates_by_type(db: Session, template_type: str) -> list[MessagingTemplate]:
+    """Return all templates matching the given type, ordered by most recently updated."""
+    stmt = (
+        select(MessagingTemplate)  # type: ignore[arg-type]
+        .where(MessagingTemplate.type == template_type)
+        .order_by(MessagingTemplate.updated_at.desc())
+    )
+    return list(db.execute(stmt).scalars())
+
+
+def _next_available_label(
+    db: Session,
+    template_type: str,
+    base_label: str,
+) -> str:
+    """Return ``base_label`` if available, otherwise append an incrementing number.
+
+    Produces labels like "Subject identity verification",
+    "Subject identity verification (2)", "Subject identity verification (3)", etc.
+    """
+    existing_labels: set[str] = {
+        t.label for t in get_templates_by_type(db, template_type)
+    }
+    if base_label not in existing_labels:
+        return base_label
+    counter = 2
+    while f"{base_label} ({counter})" in existing_labels:
+        counter += 1
+    return f"{base_label} ({counter})"
+
+
+def _validate_unique_label(
+    db: Session,
+    template_type: str,
+    label: str,
+    exclude_id: str | None = None,
+) -> None:
+    """Raise if a template with this (type, label) already exists."""
+    stmt = (
+        select(MessagingTemplate)  # type: ignore[arg-type]
+        .where(MessagingTemplate.type == template_type)
+        .where(MessagingTemplate.label == label)
+    )
+    if exclude_id:
+        stmt = stmt.where(MessagingTemplate.id != exclude_id)
+    if db.execute(stmt).scalars().first():
+        raise MessagingTemplateValidationException(
+            f"A template with type '{template_type}' and label '{label}' already exists."
+        )
 
 
 def _validate_enabled_template_has_properties(
@@ -307,6 +377,12 @@ def patch_property_specific_template(
     get unlinked from the messaging template.
     """
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
+    # Validate label uniqueness if label is being changed
+    new_label = template_patch_data.get("label")
+    if new_label is not None and new_label != messaging_template.label:
+        _validate_unique_label(
+            db, messaging_template.type, new_label, exclude_id=template_id
+        )
     # use passed-in values if they exist, otherwise fall back on existing values in DB
     properties: Optional[List[str]] = (
         template_patch_data["properties"]
@@ -346,6 +422,14 @@ def update_property_specific_template(
     Updating template type is not allowed once it is created, so we don't intake it here.
     """
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
+    # Preserve existing label when not provided (backward compat with clients
+    # that don't yet send label on PUT).
+    label = (
+        template_update_body.label
+        if template_update_body.label is not None
+        else messaging_template.label
+    )
+    _validate_unique_label(db, messaging_template.type, label, exclude_id=template_id)
     _validate_enabled_template_has_properties(
         template_update_body.properties, template_update_body.is_enabled
     )
@@ -357,7 +441,8 @@ def update_property_specific_template(
         template_id,
     )
 
-    data = {
+    data: dict[str, Any] = {
+        "label": label,
         "content": template_update_body.content,
         "is_enabled": template_update_body.is_enabled,
     }
@@ -381,6 +466,15 @@ def create_property_specific_template_by_type(
         raise MessagingTemplateValidationException(
             f"Messaging template type {template_type} is not supported."
         )
+    if template_create_body.label is not None:
+        label = template_create_body.label
+    else:
+        label = _next_available_label(
+            db, template_type, DEFAULT_MESSAGING_TEMPLATES[template_type]["label"]
+        )
+    # Pre-check gives a clean 400 error; the IntegrityError catch below is the
+    # TOCTOU safety net for concurrent requests that both pass validation.
+    _validate_unique_label(db, template_type, label)
     _validate_enabled_template_has_properties(
         template_create_body.properties, template_create_body.is_enabled
     )
@@ -392,7 +486,8 @@ def create_property_specific_template_by_type(
         None,
     )
 
-    data = {
+    data: dict[str, Any] = {
+        "label": label,
         "content": template_create_body.content,
         "is_enabled": template_create_body.is_enabled,
         "type": template_type,
@@ -401,7 +496,13 @@ def create_property_specific_template_by_type(
         data["properties"] = [
             {"id": property_id} for property_id in template_create_body.properties
         ]
-    return MessagingTemplate.create(db=db, data=data)
+    try:
+        return MessagingTemplate.create(db=db, data=data)
+    except IntegrityError:
+        db.rollback()
+        raise MessagingTemplateValidationException(
+            f"A template with type '{template_type}' and label '{label}' already exists."
+        )
 
 
 def delete_template_by_id(db: Session, template_id: str) -> None:
@@ -442,6 +543,7 @@ def get_default_template_by_type(
     template = MessagingTemplateDefault(
         is_enabled=False,
         type=template_type,
+        label=default_template["label"],
         content=default_template["content"],
     )
     return template
@@ -469,8 +571,9 @@ def save_defaults_for_all_messaging_template_types(
             db=db, field="type", value=template_type
         )
         if not any_db_template_with_type:
-            data = {
+            data: dict[str, Any] = {
                 "content": default_template["content"],
+                "label": default_template["label"],
                 "is_enabled": False,
                 "type": template_type,
             }

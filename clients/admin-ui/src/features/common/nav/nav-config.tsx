@@ -363,6 +363,17 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "API clients",
+        path: routes.API_CLIENTS_ROUTE,
+        scopes: [ScopeRegistryEnum.CLIENT_READ],
+      },
+      {
+        title: "API client detail",
+        path: routes.API_CLIENT_DETAIL_ROUTE,
+        hidden: true,
+        scopes: [ScopeRegistryEnum.CLIENT_READ],
+      },
+      {
         title: "User detail",
         path: routes.USER_DETAIL_ROUTE,
         hidden: true, // Don't show in nav but allow access
