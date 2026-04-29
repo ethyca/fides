@@ -1226,7 +1226,7 @@ class PrivacyRequest(
                 "Cannot query request task IDs on a detached instance."
             )
 
-        stmt = select(RequestTask.id).where(RequestTask.privacy_request_id == self.id)  # type: ignore[arg-type]
+        stmt = select(RequestTask.id).where(RequestTask.privacy_request_id == self.id)  # type: ignore[arg-type] # RequestTask.id is a mapped Column, not a plain str
         request_task_ids = db.execute(stmt).scalars().all()
 
         request_task_celery_ids: List[str] = []

@@ -405,6 +405,43 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     return download_urls
 
 
+def _should_skip_consent_pipeline(
+    privacy_request: PrivacyRequest,
+    session: Session,
+) -> bool:
+    """Return True when the consent pipeline can be skipped entirely.
+
+    Skips when all of these hold:
+    - New-workflow request (no legacy consent_preferences)
+    - No consent tasks already created (not a reprocessing run)
+    - No propagatable privacy preferences for any system
+    - No manual consent task addresses configured
+    """
+    if privacy_request.consent_preferences:
+        return False
+    if privacy_request.consent_tasks.count() > 0:
+        return False
+
+    propagatable = filter_privacy_preferences_for_propagation(
+        system=None,
+        privacy_preferences=privacy_request.privacy_preferences,
+    )
+    if propagatable:
+        return False
+
+    has_manual = bool(
+        get_manual_task_addresses(session, config_types=[ActionType.consent])
+    )
+    if has_manual:
+        return False
+
+    logger.info(
+        "Skipping consent step: no actionable consent "
+        "preferences to propagate for any system"
+    )
+    return True
+
+
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
@@ -683,39 +720,9 @@ def run_privacy_request(
                     request_checkpoint=CurrentStep.consent,
                     from_checkpoint=resume_step,
                 ):
-                    # Early exit: skip the entire consent pipeline if there are no
-                    # actionable consent preferences to propagate.  This avoids
-                    # building the consent graph, creating Celery tasks, and
-                    # dispatching work that every connector would individually skip.
-                    # Only applies to new-workflow requests that have not already
-                    # started consent task processing (reprocessing should proceed)
-                    # and have no manual consent tasks configured.
-                    should_skip_consent = False
-                    if (
-                        not privacy_request.consent_preferences
-                        and privacy_request.consent_tasks.count() == 0
-                    ):
-                        propagatable_preferences = (
-                            filter_privacy_preferences_for_propagation(
-                                system=None,
-                                privacy_preferences=privacy_request.privacy_preferences,
-                            )
-                        )
-                        has_manual_consent_tasks = bool(
-                            get_manual_task_addresses(
-                                session,
-                                config_types=[ActionType.consent],
-                            )
-                        )
-                        if (
-                            not propagatable_preferences
-                            and not has_manual_consent_tasks
-                        ):
-                            should_skip_consent = True
-                            logger.info(
-                                "Skipping consent step: no actionable consent "
-                                "preferences to propagate for any system"
-                            )
+                    should_skip_consent = _should_skip_consent_pipeline(
+                        privacy_request, session
+                    )
 
                     if not should_skip_consent:
                         logger.info("Consent processing: starting identity enrichment")

@@ -453,7 +453,7 @@ def run_consent_node(
                 log_task_starting(request_task)
 
                 if can_run_task_body(request_task):
-                    _consent_start = time.monotonic()
+                    consent_start = time.monotonic()
                     # Build GraphTask resource to facilitate execution
                     with TaskResources(
                         privacy_request,
@@ -475,11 +475,11 @@ def run_consent_node(
                         graph_task.consent_request(
                             access_data[0] if access_data else {}
                         )
-                    _consent_elapsed = time.monotonic() - _consent_start
+                    consent_elapsed = time.monotonic() - consent_start
                     logger.info(
                         "Consent task {} completed in {:.2f}s",
                         request_task.collection_address,
-                        _consent_elapsed,
+                        consent_elapsed,
                     )
 
         queue_downstream_tasks_with_retries(

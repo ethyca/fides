@@ -85,6 +85,7 @@ def _execute_identity_lookup(
     collection: Collection,
     identity_data: Dict[str, Any],
     session: Session,
+    executor: ThreadPoolExecutor,
 ) -> List[Row]:
     """
     Execute a query against a collection to look up identity fields,
@@ -145,13 +146,14 @@ def _execute_identity_lookup(
             results = connection.execute(query)
             return connector.cursor_result_to_rows(results)
 
-    executor = ThreadPoolExecutor(max_workers=1)
+    # cancel_futures only cancels queued futures; a running thread will linger
+    # until the DB query completes or the driver-level timeout fires.
+    # Connections.close() in the caller disposes engine pools, bounding the leak.
     future = executor.submit(_run_query)
     try:
         rows = future.result(
             timeout=CONFIG.consent.identity_enrichment_query_timeout_seconds
         )
-        executor.shutdown(wait=False)
         elapsed_total = time.monotonic() - start
         logger.info(
             "Identity enrichment: query on {}.{} returned {} row(s) in {:.2f}s",
@@ -162,7 +164,7 @@ def _execute_identity_lookup(
         )
         return rows
     except FutureTimeoutError:
-        executor.shutdown(wait=False, cancel_futures=True)
+        future.cancel()
         elapsed_total = time.monotonic() - start
         logger.error(
             "Identity enrichment query TIMED OUT for {}.{} after {:.2f}s "
@@ -175,7 +177,6 @@ def _execute_identity_lookup(
         )
         return []
     except Exception as exc:
-        executor.shutdown(wait=False)
         elapsed_total = time.monotonic() - start
         logger.warning(
             "Identity enrichment query failed for {}.{} after {:.2f}s: {}",
@@ -344,14 +345,17 @@ def enrich_identities_for_consent(
             "Consent identity enrichment failed, proceeding with original identities: {}",
             exc,
         )
-        privacy_request.add_error_execution_log(
-            session,
-            connection_key=None,
-            dataset_name="Consent identity enrichment",
-            collection_name=None,
-            message=f"Consent identity enrichment failed: {exc}",
-            action_type=ActionType.consent,
-        )
+        try:
+            privacy_request.add_error_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Consent identity enrichment",
+                collection_name=None,
+                message=f"Consent identity enrichment failed: {exc}",
+                action_type=ActionType.consent,
+            )
+        except Exception:
+            logger.warning("Failed to write enrichment error execution log")
         return identity_data
 
 
@@ -394,7 +398,7 @@ def _enrich_from_db_connectors(
     targets = _find_reachable_collections(graph, identity_data)
     if not targets:
         logger.debug(
-            "Identity enrichment: graph has %d node(s) but none are "
+            "Identity enrichment: graph has {} node(s) but none are "
             "reachable from the seed identities",
             len(graph.nodes),
         )
@@ -402,13 +406,14 @@ def _enrich_from_db_connectors(
 
     target_descriptions = [f"{conn_key}.{coll.name}" for conn_key, _ds, coll in targets]
     logger.info(
-        "Consent identity enrichment: querying %d DB integration(s): %s",
+        "Consent identity enrichment: querying {} DB integration(s): {}",
         len(targets),
         target_descriptions,
     )
 
     start = time.monotonic()
     connections = Connections()
+    executor = ThreadPoolExecutor(max_workers=1)
     enriched = dict(identity_data)
     try:
         for connection_key, dataset_name, collection in targets:
@@ -429,11 +434,12 @@ def _enrich_from_db_connectors(
                 continue
 
             rows = _execute_identity_lookup(
-                connector, dataset_name, collection, identity_data, session
+                connector, dataset_name, collection, identity_data, session, executor
             )
             discovered = _extract_identities_from_rows(rows, collection, identity_data)
             enriched.update(discovered)
     finally:
+        executor.shutdown(wait=False)
         connections.close()
 
     elapsed = time.monotonic() - start
