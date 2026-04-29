@@ -19,7 +19,7 @@ export const CloudInfraResourceListItem = ({
   const resourceName = item.name ?? "Unnamed resource";
 
   return (
-    <List.Item key={item.urn}>
+    <List.Item>
       <Flex align="center" gap="middle" className="w-full">
         <List.Item.Meta
           avatar={
@@ -27,7 +27,7 @@ export const CloudInfraResourceListItem = ({
               src={getServiceIconUrl(item.service)}
               shape="square"
               icon={
-                <Icons.TransformInstructions
+                <Icons.Cloud
                   style={{ color: "var(--fidesui-minos)" }}
                   className="m-1 size-full"
                 />

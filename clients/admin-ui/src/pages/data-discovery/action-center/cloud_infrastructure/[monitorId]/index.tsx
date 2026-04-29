@@ -63,22 +63,22 @@ const CloudInfrastructureMonitorResults: NextPage = () => {
           menu: {
             onDeselect: (info) => {
               setPageSettings({
-                showApproved: info.selectedKeys.includes("showApproved")
-                  ? false
-                  : pageSettings.showApproved,
-                showIgnored: info.selectedKeys.includes("showIgnored")
-                  ? false
-                  : pageSettings.showIgnored,
+                showApproved:
+                  info.key === "showApproved"
+                    ? false
+                    : pageSettings.showApproved,
+                showIgnored:
+                  info.key === "showIgnored" ? false : pageSettings.showIgnored,
               });
             },
             onSelect: (info) => {
               setPageSettings({
-                showApproved: info.selectedKeys.includes("showApproved")
-                  ? true
-                  : pageSettings.showApproved,
-                showIgnored: info.selectedKeys.includes("showIgnored")
-                  ? true
-                  : pageSettings.showIgnored,
+                showApproved:
+                  info.key === "showApproved"
+                    ? true
+                    : pageSettings.showApproved,
+                showIgnored:
+                  info.key === "showIgnored" ? true : pageSettings.showIgnored,
               });
             },
             selectedKeys: Object.entries(pageSettings).flatMap(

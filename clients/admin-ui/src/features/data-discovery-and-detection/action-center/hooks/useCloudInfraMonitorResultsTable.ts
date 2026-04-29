@@ -43,8 +43,7 @@ export const useCloudInfraMonitorResultsTable = ({
 
   const cloudInfraDataQuery = useGetCloudInfraMonitorResultsQuery(
     {
-      // @ts-expect-error - will skip query if monitorId is not defined
-      monitor_config_id: monitorId,
+      monitor_config_id: monitorId ?? "",
       page: pageIndex,
       size: pageSize,
       search: search.searchQuery,

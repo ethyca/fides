@@ -63,7 +63,9 @@ const ActionCenterPage: NextPage = () => {
           trigger({ monitor_type: APIMonitorType.INFRASTRUCTURE }),
           trigger({ monitor_type: APIMonitorType.DATASTORE }),
           trigger({ monitor_type: APIMonitorType.WEBSITE }),
-          trigger({ monitor_type: APIMonitorType.CLOUD_INFRASTRUCTURE }),
+          ...(awsMonitorEnabled
+            ? [trigger({ monitor_type: APIMonitorType.CLOUD_INFRASTRUCTURE })]
+            : []),
         ]);
       }}
     >

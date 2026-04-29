@@ -65,22 +65,6 @@ export const CloudInfraResourcesFilters = ({
     }));
   }, [availableFilters?.cloud_account_id]);
 
-  const handleStatusChange = (values: string[]) => {
-    setStatusFilters(values.length > 0 ? values : []);
-  };
-
-  const handleLocationChange = (values: string[]) => {
-    setLocationFilters(values.length > 0 ? values : []);
-  };
-
-  const handleServiceChange = (values: string[]) => {
-    setServiceFilters(values.length > 0 ? values : []);
-  };
-
-  const handleAccountChange = (values: string[]) => {
-    setAccountFilters(values.length > 0 ? values : []);
-  };
-
   const renderTagPlaceholder = (omittedValues: DisplayValueType[]) => (
     <Tooltip
       title={
@@ -101,7 +85,7 @@ export const CloudInfraResourcesFilters = ({
         placeholder="Status"
         options={STATUS_FILTER_OPTIONS}
         value={statusFilters ?? []}
-        onChange={handleStatusChange}
+        onChange={(values: string[]) => setStatusFilters(values)}
         mode="multiple"
         allowClear
         maxTagCount="responsive"
@@ -114,7 +98,7 @@ export const CloudInfraResourcesFilters = ({
         placeholder="Location"
         options={locationOptions}
         value={locationFilters ?? []}
-        onChange={handleLocationChange}
+        onChange={(values: string[]) => setLocationFilters(values)}
         mode="multiple"
         allowClear
         maxTagCount="responsive"
@@ -127,7 +111,7 @@ export const CloudInfraResourcesFilters = ({
         placeholder="Service"
         options={serviceOptions}
         value={serviceFilters ?? []}
-        onChange={handleServiceChange}
+        onChange={(values: string[]) => setServiceFilters(values)}
         mode="multiple"
         allowClear
         maxTagCount="responsive"
@@ -140,7 +124,7 @@ export const CloudInfraResourcesFilters = ({
         placeholder="Account ID"
         options={accountOptions}
         value={accountFilters ?? []}
-        onChange={handleAccountChange}
+        onChange={(values: string[]) => setAccountFilters(values)}
         mode="multiple"
         allowClear
         maxTagCount="responsive"

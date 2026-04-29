@@ -39,7 +39,7 @@ const MONITOR_TYPE_TO_PRIMARY_STATISTIC: Record<APIMonitorType, string> = {
   infrastructure: "Total systems",
   website: "Resources approved",
   datastore: "Resources approved",
-  cloud_infrastructure: "Resources approved",
+  cloud_infrastructure: "Resources approved", // excluded from stats widgets (see STATS_EXCLUDED_TYPES)
 };
 
 const MONITOR_TYPE_TO_PERCENT_STATISTIC_KEY: Record<
@@ -49,7 +49,7 @@ const MONITOR_TYPE_TO_PERCENT_STATISTIC_KEY: Record<
   datastore: "data_categories",
   infrastructure: "data_uses",
   website: "data_uses",
-  cloud_infrastructure: "data_uses",
+  cloud_infrastructure: "data_uses", // excluded from stats widgets (see STATS_EXCLUDED_TYPES)
 };
 
 const MONITOR_TYPE_TO_PERCENT_STATISTIC_LABEL: Record<APIMonitorType, string> =
@@ -57,7 +57,7 @@ const MONITOR_TYPE_TO_PERCENT_STATISTIC_LABEL: Record<APIMonitorType, string> =
     datastore: "Data categories",
     infrastructure: "Data uses",
     website: "Categories of consent",
-    cloud_infrastructure: "Services",
+    cloud_infrastructure: "Services", // excluded from stats widgets (see STATS_EXCLUDED_TYPES)
   };
 
 const MONITOR_BAR_CHART_SEGMENTS: StackedBarChartProps["segments"] = [
