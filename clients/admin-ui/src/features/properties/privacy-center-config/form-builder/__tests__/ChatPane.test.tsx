@@ -50,4 +50,22 @@ describe("ChatPane", () => {
     );
     expect(screen.getByText(/provider timeout/i)).toBeInTheDocument();
   });
+
+  it("disables input when disabled prop is set", () => {
+    render(
+      <ChatPane
+        messages={[]}
+        status="idle"
+        error={null}
+        disabled
+        disabledReason="LLM provider not configured."
+        onSend={jest.fn()}
+        onAbort={jest.fn()}
+      />,
+    );
+    expect(screen.getByRole("textbox")).toBeDisabled();
+    expect(
+      screen.getByText(/LLM provider not configured/),
+    ).toBeInTheDocument();
+  });
 });
