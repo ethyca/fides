@@ -1,3 +1,5 @@
+import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -18,6 +20,11 @@ from fides.api.task.graph_task import build_consent_identity_enrichment_graph
 from fides.api.util.cache import FidesopsRedis, get_dsr_cache_store
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
+
+# Maximum seconds to wait for a single identity-enrichment DB query.
+# Prevents worker threads from blocking indefinitely on slow backends
+# like BigQuery.
+IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS = 30
 
 
 @dataclass
@@ -126,17 +133,62 @@ def _execute_identity_lookup(
     if query is None:
         return []
 
+    logger.info(
+        "Identity enrichment: connecting to {} for {}.{} (timeout={}s)",
+        connection_config.key,
+        dataset_name,
+        collection.name,
+        IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS,
+    )
+    start = time.monotonic()
     engine = connector.client()
-    try:
+
+    def _run_query() -> List[Row]:
         with engine.connect() as connection:
+            elapsed_connect = time.monotonic() - start
+            logger.info(
+                "Identity enrichment: connected to {} in {:.2f}s, executing query on {}.{}",
+                connection_config.key,
+                elapsed_connect,
+                dataset_name,
+                collection.name,
+            )
             connector.set_schema(connection)
             results = connection.execute(query)
             return connector.cursor_result_to_rows(results)
-    except Exception as exc:
-        logger.warning(
-            "Identity enrichment query failed for {}.{}: {}",
+
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(_run_query)
+            rows = future.result(timeout=IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS)
+        elapsed_total = time.monotonic() - start
+        logger.info(
+            "Identity enrichment: query on {}.{} returned {} row(s) in {:.2f}s",
             connection_config.key,
             collection.name,
+            len(rows),
+            elapsed_total,
+        )
+        return rows
+    except FutureTimeoutError:
+        elapsed_total = time.monotonic() - start
+        logger.error(
+            "Identity enrichment query TIMED OUT for {}.{} after {:.2f}s "
+            "(limit={}s) - this may indicate the external database is "
+            "overloaded or unreachable",
+            connection_config.key,
+            collection.name,
+            elapsed_total,
+            IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS,
+        )
+        return []
+    except Exception as exc:
+        elapsed_total = time.monotonic() - start
+        logger.warning(
+            "Identity enrichment query failed for {}.{} after {:.2f}s: {}",
+            connection_config.key,
+            collection.name,
+            elapsed_total,
             exc,
         )
         return []
@@ -234,7 +286,20 @@ def enrich_identities_for_consent(
         return identity_data
 
     if identity_data.get("email") and identity_data.get("external_id"):
+        logger.debug(
+            "Identity enrichment: both email and external_id already present, skipping"
+        )
         return identity_data
+
+    missing = []
+    if not identity_data.get("email"):
+        missing.append("email")
+    if not identity_data.get("external_id"):
+        missing.append("external_id")
+    logger.info(
+        "Identity enrichment: starting, missing identities: %s",
+        missing,
+    )
 
     try:
         enriched = _enrich_from_current_preferences(identity_data, session)
@@ -322,18 +387,38 @@ def _enrich_from_db_connectors(
     """Query consent-enabled DB integrations for missing identities."""
     graph = build_consent_identity_enrichment_graph(datasets)
     if not graph.nodes:
+        logger.debug(
+            "Identity enrichment: no consent-enabled DB connectors in graph"
+        )
         return identity_data
 
     targets = _find_reachable_collections(graph, identity_data)
     if not targets:
+        logger.debug(
+            "Identity enrichment: graph has %d node(s) but none are "
+            "reachable from the seed identities",
+            len(graph.nodes),
+        )
         return identity_data
 
-    logger.info("Consent identity enrichment: querying DB integrations")
+    target_descriptions = [
+        f"{conn_key}.{coll.name}" for conn_key, _ds, coll in targets
+    ]
+    logger.info(
+        "Consent identity enrichment: querying %d DB integration(s): %s",
+        len(targets),
+        target_descriptions,
+    )
 
+    start = time.monotonic()
     enriched = dict(identity_data)
     for connection_key, dataset_name, collection in targets:
         config = _get_connection_config_by_key(connection_configs, connection_key)
         if not config:
+            logger.warning(
+                "Identity enrichment: connection config '{}' not found, skipping",
+                connection_key,
+            )
             continue
 
         rows = _execute_identity_lookup(
@@ -342,4 +427,9 @@ def _enrich_from_db_connectors(
         discovered = _extract_identities_from_rows(rows, collection, identity_data)
         enriched.update(discovered)
 
+    elapsed = time.monotonic() - start
+    logger.info(
+        "Consent identity enrichment: DB connector queries completed in {:.2f}s",
+        elapsed,
+    )
     return enriched
