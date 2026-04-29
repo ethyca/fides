@@ -260,7 +260,7 @@ const EventLog = ({
       <Tr
         key={detail.updated_at}
         backgroundColor={
-          hasExpandableDetails ? "var(--ant-neutral-50)" : "unset"
+          hasExpandableDetails ? "var(--fidesui-neutral-50)" : "unset"
         }
         onClick={() => {
           if (hasExpandableDetails) {
@@ -270,7 +270,7 @@ const EventLog = ({
         style={{
           cursor: hasExpandableDetails ? "pointer" : "unset",
         }}
-        _hover={{ backgroundColor: "var(--ant-neutral-50)" }}
+        _hover={{ backgroundColor: "var(--fidesui-neutral-50)" }}
       >
         <Td>
           <Text

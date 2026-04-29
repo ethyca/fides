@@ -60,7 +60,7 @@ export const IndicatorLegend = () => {
       trigger={["hover", "focus"]}
     >
       <Icons.HelpFilled
-        style={{ color: "var(--ant-neutral-400)", cursor: "pointer" }}
+        style={{ color: "var(--fidesui-neutral-400)", cursor: "pointer" }}
         tabIndex={0}
       />
     </Popover>

@@ -7,7 +7,7 @@ $horizontal-padding: 20px;
 
   &:hover,
   &--open {
-    border-color: var(--ant-neutral-100);
+    border-color: var(--fidesui-neutral-100);
     border-radius: 6px;
   }
 }
@@ -28,29 +28,29 @@ $horizontal-padding: 20px;
   &--awaiting-input,
   &--polling,
   &:hover {
-    border-color: var(--ant-neutral-100);
+    border-color: var(--fidesui-neutral-100);
   }
 
   &:focus-visible {
-    border-color: var(--ant-neutral-700);
+    border-color: var(--fidesui-neutral-700);
   }
 
   &--error,
   &--error:hover,
   &--error:focus {
-    border-left: 8px solid var(--ant-color-error);
+    border-left: 8px solid var(--fidesui-color-error);
   }
 
   &--awaiting-input,
   &--awaiting-input:hover,
   &--awaiting-input:focus {
-    border-left: 8px solid var(--ant-brand-minos);
+    border-left: 8px solid var(--fidesui-brand-minos);
   }
 
   &--polling,
   &--polling:hover,
   &--polling:focus {
-    border-left: 8px solid var(--ant-color-warning);
+    border-left: 8px solid var(--fidesui-color-warning);
   }
 }
 
@@ -76,20 +76,20 @@ $horizontal-padding: 20px;
   width: auto;
 
   &--error {
-    color: var(--ant-color-error);
+    color: var(--fidesui-color-error);
   }
 
   &--awaiting-input {
-    color: var(--ant-brand-minos);
+    color: var(--fidesui-brand-minos);
   }
 
   &--polling {
-    color: var(--ant-color-warning);
+    color: var(--fidesui-color-warning);
   }
 }
 
 .timestamp {
-  color: var(--ant-neutral-700);
+  color: var(--fidesui-neutral-700);
 }
 
 .type {
@@ -99,7 +99,7 @@ $horizontal-padding: 20px;
 }
 
 .viewLogs {
-  color: var(--ant-color-link);
+  color: var(--fidesui-color-link);
 }
 
 .logs {

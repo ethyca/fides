@@ -89,7 +89,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
       // If it's a brand color, use our palette
       const brandColor: string | undefined =
         typeof color === "string"
-          ? `var(--ant-brand-bg-${color.toLowerCase()})`
+          ? `var(--fidesui-brand-bg-${color.toLowerCase()})`
           : undefined;
       const needsLightText = color && DARK_BACKGROUNDS.includes(color);
       const retainDefaultBorder =
@@ -98,7 +98,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
       if (brandColor) {
         customStyle = {
           background: brandColor,
-          color: needsLightText ? "var(--ant-neutral-100)" : undefined,
+          color: needsLightText ? "var(--fidesui-neutral-100)" : undefined,
         };
       }
 
@@ -113,7 +113,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           ...customStyle,
           marginInlineEnd: 0, // allow for flex gap instead of margin
           paddingInline: shouldReducePadding
-            ? "calc((var(--ant-padding-xs) * 0.5))"
+            ? "calc((var(--fidesui-padding-xs) * 0.5))"
             : undefined,
           ...style,
         },

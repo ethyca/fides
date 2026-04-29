@@ -14,7 +14,7 @@ const AuthorizationStatus = ({ authorized }: AuthorizationStatusProps) => {
   if (authorized) {
     return (
       <Space data-testid="authorize-status">
-        <Icons.CheckmarkFilled color="var(--ant-color-success)" />
+        <Icons.CheckmarkFilled color="var(--fidesui-color-success)" />
         <Text type="success" strong>
           Authorized
         </Text>

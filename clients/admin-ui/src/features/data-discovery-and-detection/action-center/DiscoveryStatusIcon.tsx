@@ -22,7 +22,9 @@ export const DiscoveryStatusIcon = ({
       <div className="mb-px" data-testid="discovery-status-icon-alert">
         {/* div wrapper helps keep tooltip accessible and icon size consistent */}
         {/* mb-px is to assist with vertical centering since the visual weight of the triangle is bottom-heavy */}
-        <Icons.WarningAltFilled style={{ color: "var(--ant-color-error)" }} />
+        <Icons.WarningAltFilled
+          style={{ color: "var(--fidesui-color-error)" }}
+        />
       </div>
     </Tooltip>
   ) : null;

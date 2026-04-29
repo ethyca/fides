@@ -99,7 +99,7 @@ const SystemHistoryTable = ({ system }: Props) => {
               p="16px"
               fontSize="12px"
               border="1px solid #E2E8F0"
-              background="var(--ant-neutral-50)"
+              background="var(--fidesui-neutral-50)"
             >
               System created on {formattedDate} at {formattedTime}
             </Td>

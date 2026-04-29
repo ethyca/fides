@@ -125,7 +125,7 @@ export const AssessmentCard = ({
                     shape="circle"
                     size={28}
                     icon={<Icons.Checkmark size={14} />}
-                    style={{ backgroundColor: "var(--ant-color-success)" }}
+                    style={{ backgroundColor: "var(--fidesui-color-success)" }}
                   />
                   <div>
                     <Text strong type="success" size="sm">

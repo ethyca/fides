@@ -20,8 +20,8 @@ export const CustomSelectOption = ({
       className={`w-full justify-start ${className}`}
       style={{
         fontWeight: 600,
-        padding: "var(--ant-select-option-padding)",
-        backgroundColor: "var(--ant-select-option-selected-bg)",
+        padding: "var(--fidesui-select-option-padding)",
+        backgroundColor: "var(--fidesui-select-option-selected-bg)",
         ...style,
       }}
     >

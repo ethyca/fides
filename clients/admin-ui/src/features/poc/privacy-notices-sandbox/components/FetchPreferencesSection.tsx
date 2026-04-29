@@ -89,7 +89,7 @@ const FetchPreferencesSection = ({
                 }`
               : null
           }
-          headerColor="var(--ant-color-success)"
+          headerColor="var(--fidesui-color-success)"
           body={getCurrentResponse}
           emptyMessage="GET response will appear here after fetching preferences"
         />
