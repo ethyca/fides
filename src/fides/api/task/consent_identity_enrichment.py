@@ -1,5 +1,6 @@
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -387,9 +388,7 @@ def _enrich_from_db_connectors(
     """Query consent-enabled DB integrations for missing identities."""
     graph = build_consent_identity_enrichment_graph(datasets)
     if not graph.nodes:
-        logger.debug(
-            "Identity enrichment: no consent-enabled DB connectors in graph"
-        )
+        logger.debug("Identity enrichment: no consent-enabled DB connectors in graph")
         return identity_data
 
     targets = _find_reachable_collections(graph, identity_data)
@@ -401,9 +400,7 @@ def _enrich_from_db_connectors(
         )
         return identity_data
 
-    target_descriptions = [
-        f"{conn_key}.{coll.name}" for conn_key, _ds, coll in targets
-    ]
+    target_descriptions = [f"{conn_key}.{coll.name}" for conn_key, _ds, coll in targets]
     logger.info(
         "Consent identity enrichment: querying %d DB integration(s): %s",
         len(targets),
