@@ -28,4 +28,28 @@ describe("PreviewPane", () => {
 
     expect(onFieldClick).toHaveBeenCalledWith("f");
   });
+
+  it("renders fields unconditionally even when they have visibility conditions", () => {
+    const spec = {
+      root: "form",
+      elements: {
+        form: { type: "Form", props: {}, children: ["f_country", "f_state"] },
+        f_country: {
+          type: "Text",
+          props: { name: "country", label: "Country", required: true },
+          children: [],
+        },
+        f_state: {
+          type: "Text",
+          props: { name: "state", label: "State", required: false },
+          children: [],
+          visible: [{ $state: "/form/country", eq: "US" }],
+        },
+      },
+    };
+
+    render(<PreviewPane spec={spec as any} onFieldClick={() => {}} />);
+    expect(screen.getByText("Country")).toBeInTheDocument();
+    expect(screen.getByText("State")).toBeInTheDocument();
+  });
 });
