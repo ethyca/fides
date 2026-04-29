@@ -25,6 +25,14 @@ class ConsentSettings(FidesSettings):
         "Recommended setting is to keep it as true. Set to false to store data in plaintext. "
         "WARNING: Changing this setting requires a data migration in order to keep existing data.",
     )
+
+    identity_enrichment: bool = Field(
+        default=False,
+        description="Enable identity enrichment before consent propagation. "
+        "When enabled, resolves missing email or external_id from stored "
+        "preferences before falling back to DB connector queries.",
+    )
+
     model_config = SettingsConfigDict(env_prefix="FIDES__CONSENT__")
 
     @model_validator(mode="after")
