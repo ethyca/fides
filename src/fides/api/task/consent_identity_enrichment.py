@@ -12,9 +12,9 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.graph_task import build_consent_identity_enrichment_graph
+from fides.api.task.task_resources import Connections
 from fides.api.util.cache import FidesopsRedis, get_dsr_cache_store
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
@@ -77,7 +77,7 @@ def _find_reachable_collections(
 
 
 def _execute_identity_lookup(
-    connection_config: ConnectionConfig,
+    connector: SQLConnector,
     dataset_name: str,
     collection: Collection,
     identity_data: Dict[str, Any],
@@ -87,14 +87,6 @@ def _execute_identity_lookup(
     Execute a query against a collection to look up identity fields,
     using the connector's own query_config for correct SQL generation.
     """
-    connector = get_connector(connection_config)
-    if not isinstance(connector, SQLConnector):
-        logger.debug(
-            "Skipping identity enrichment for non-SQL connector: {}",
-            connection_config.key,
-        )
-        return []
-
     collection_identities = collection.identities()
 
     filters: Dict[str, List[Any]] = {}
@@ -135,7 +127,7 @@ def _execute_identity_lookup(
     except Exception as exc:
         logger.warning(
             "Identity enrichment query failed for {}.{}: {}",
-            connection_config.key,
+            connector.configuration.key,
             collection.name,
             exc,
         )
@@ -241,7 +233,7 @@ def enrich_identities_for_consent(
         new_keys = set(enriched.keys()) - set(identity_data.keys())
         if new_keys:
             logger.info(
-                "Consent identity enrichment (preferences) discovered: {}",
+                "Consent identity enrichment discovered: {}",
                 new_keys,
             )
             _cache_and_log_enrichment(
@@ -259,7 +251,7 @@ def enrich_identities_for_consent(
         new_keys = set(enriched.keys()) - set(identity_data.keys())
         if new_keys:
             logger.info(
-                "Consent identity enrichment (DB connectors) discovered: {}",
+                "Consent identity enrichment discovered: {}",
                 new_keys,
             )
             _cache_and_log_enrichment(
@@ -330,16 +322,28 @@ def _enrich_from_db_connectors(
 
     logger.info("Consent identity enrichment: querying DB integrations")
 
+    connections = Connections()
     enriched = dict(identity_data)
-    for connection_key, dataset_name, collection in targets:
-        config = _get_connection_config_by_key(connection_configs, connection_key)
-        if not config:
-            continue
+    try:
+        for connection_key, dataset_name, collection in targets:
+            config = _get_connection_config_by_key(connection_configs, connection_key)
+            if not config:
+                continue
 
-        rows = _execute_identity_lookup(
-            config, dataset_name, collection, identity_data, session
-        )
-        discovered = _extract_identities_from_rows(rows, collection, identity_data)
-        enriched.update(discovered)
+            connector = connections.get_connector(config)
+            if not isinstance(connector, SQLConnector):
+                logger.debug(
+                    "Skipping identity enrichment for non-SQL connector: {}",
+                    config.key,
+                )
+                continue
+
+            rows = _execute_identity_lookup(
+                connector, dataset_name, collection, identity_data, session
+            )
+            discovered = _extract_identities_from_rows(rows, collection, identity_data)
+            enriched.update(discovered)
+    finally:
+        connections.close()
 
     return enriched
