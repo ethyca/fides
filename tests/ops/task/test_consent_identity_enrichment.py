@@ -336,6 +336,7 @@ class TestEnrichIdentitiesForConsent:
     ):
         mock_namespace_meta.return_value = None
         mock_connector = create_autospec(SQLConnector, instance=True)
+        mock_connector.configuration = MagicMock(key="mock_connector")
         mock_connector.client.side_effect = Exception("Connection refused")
         mock_connector.query_config = lambda node: SQLQueryConfig(node)
         mock_build_connector.return_value = mock_connector

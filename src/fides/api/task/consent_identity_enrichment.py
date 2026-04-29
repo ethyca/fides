@@ -122,16 +122,16 @@ def _execute_identity_lookup(
         return []
 
     logger.info(
-        "Identity enrichment: connecting to {} for {}.{} (timeout={}s)",
+        "Identity enrichment: submitting query to {} for {}.{} (timeout={}s)",
         connector.configuration.key,
         dataset_name,
         collection.name,
         CONFIG.consent.identity_enrichment_query_timeout_seconds,
     )
     start = time.monotonic()
-    engine = connector.client()
 
     def _run_query() -> List[Row]:
+        engine = connector.client()
         with engine.connect() as connection:
             elapsed_connect = time.monotonic() - start
             logger.info(
@@ -145,12 +145,13 @@ def _execute_identity_lookup(
             results = connection.execute(query)
             return connector.cursor_result_to_rows(results)
 
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(_run_query)
     try:
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(_run_query)
-            rows = future.result(
-                timeout=CONFIG.consent.identity_enrichment_query_timeout_seconds
-            )
+        rows = future.result(
+            timeout=CONFIG.consent.identity_enrichment_query_timeout_seconds
+        )
+        executor.shutdown(wait=False)
         elapsed_total = time.monotonic() - start
         logger.info(
             "Identity enrichment: query on {}.{} returned {} row(s) in {:.2f}s",
@@ -161,6 +162,7 @@ def _execute_identity_lookup(
         )
         return rows
     except FutureTimeoutError:
+        executor.shutdown(wait=False, cancel_futures=True)
         elapsed_total = time.monotonic() - start
         logger.error(
             "Identity enrichment query TIMED OUT for {}.{} after {:.2f}s "
@@ -173,6 +175,7 @@ def _execute_identity_lookup(
         )
         return []
     except Exception as exc:
+        executor.shutdown(wait=False)
         elapsed_total = time.monotonic() - start
         logger.warning(
             "Identity enrichment query failed for {}.{} after {:.2f}s: {}",
@@ -287,7 +290,7 @@ def enrich_identities_for_consent(
     if not identity_data.get("external_id"):
         missing.append("external_id")
     logger.info(
-        "Identity enrichment: starting, missing identities: %s",
+        "Identity enrichment: starting, missing identities: {}",
         missing,
     )
 
