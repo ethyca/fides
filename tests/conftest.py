@@ -7,7 +7,7 @@ import types
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List
-from unittest.mock import create_autospec, patch
+from unittest.mock import create_autospec
 from uuid import uuid4
 
 import boto3
@@ -108,19 +108,15 @@ TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 @pytest.fixture
 def s3_client(storage_config):
     """Creates a mock S3 client for testing."""
-    # Disable flexible checksums — moto doesn't support CRC64NVME correctly:
-    # moto's _get_checksum constructs header name as 'crc64nvme' but botocore sends 'crc64naive',
-    # and moto's compute_checksum falls back to SHA256 for unknown algorithms.
     with mock_aws():
-        with patch("botocore.client.resolve_checksum_context", return_value=None):
-            session = boto3.Session(
-                aws_access_key_id="fake_access_key",
-                aws_secret_access_key="fake_secret_key",
-                region_name="us-east-1",
-            )
-            s3 = session.client("s3")
-            s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
-            yield s3
+        session = boto3.Session(
+            aws_access_key_id="fake_access_key",
+            aws_secret_access_key="fake_secret_key",
+            region_name="us-east-1",
+        )
+        s3 = session.client("s3")
+        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
+        yield s3
 
 
 @pytest.fixture
