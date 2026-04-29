@@ -130,6 +130,8 @@ CustomPrivacyRequestFieldUnion = Annotated[
 
 
 class PrivacyRequestOption(FidesSchema):
+    model_config = ConfigDict(extra="allow", from_attributes=True)
+
     locations: Optional[Union[List[PrivacyNoticeRegion], Literal["fallback"]]] = None
     policy_key: Optional[str] = None
     icon_path: str
