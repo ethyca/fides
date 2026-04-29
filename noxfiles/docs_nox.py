@@ -28,7 +28,7 @@ def docs_serve(session: nox.Session) -> None:
         "docs",
         "/bin/bash",
         "-c",
-        "mkdocs serve --dev-addr=0.0.0.0:8000",
+        "cd /fides && UV_PROJECT_ENVIRONMENT=/opt/venv uv sync --python /opt/venv/bin/python --frozen --group docs && cd /docs && mkdocs serve --dev-addr=0.0.0.0:8000",
     )
     session.run(*run_shell, external=True)
 
@@ -49,6 +49,6 @@ def docs_check(session: nox.Session) -> None:
         "docs",
         "/bin/bash",
         "-c",
-        "uv pip install setuptools==80.10.2 wheel && uv pip install -e /fides && mkdocs build",
+        "cd /fides && UV_PROJECT_ENVIRONMENT=/opt/venv uv sync --python /opt/venv/bin/python --frozen --group docs && cd /docs && mkdocs build",
     )
     session.run(*run_shell, external=True)

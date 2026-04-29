@@ -266,6 +266,9 @@ multilang_migration_backup_*
 # Claude Code
 .claude/*
 
+# Qwen Code
+.qwen/*
+
 # Cline
 .cline/*
 .clinerules/*

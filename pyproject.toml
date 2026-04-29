@@ -36,6 +36,7 @@ dependencies = [
     "asyncpg==0.30.0",
     "attrs~=25.4.0",
     "boto3==1.41.2",
+    "bitarray==3.0.0",
     "celery-redis-cluster~=0.2.3",
     "celery==5.5.3",
     "certifi==2024.8.30",
@@ -81,12 +82,12 @@ dependencies = [
     "pg8000==1.31.5",
     "platformdirs~=4.5.0",
     "psycopg2-binary==2.9.11",
-    "pyahocorasick==2.1.0",
+    "pyahocorasick==2.3.0",
     "pydantic-settings==2.3.3",
     "pydantic==2.12.4",
     "pydash~=8.0.2",
     "pygtrie==2.5.0",
-    "pyinstrument==4.5.1",
+    "pyinstrument==4.7.2",
     "pymongo[srv]==4.7.3",
     "joserfc~=1.6.3",
     "redis==7.2.0",
@@ -177,6 +178,15 @@ dev = [
     "werkzeug==3.0.6",
     "xenon==0.9.0",
 ]
+docs = [
+    "mkdocs-material",
+    "mkdocs-minify-plugin",
+    "mkdocs-render-swagger-plugin",
+    "mkdocs-click",
+    "mkdocs-git-revision-date-plugin",
+    "mike",
+    "legacy-cgi",
+]
 
 [project.scripts]
 fides = "fides.cli:cli"
@@ -203,6 +213,7 @@ build-constraint-dependencies = ["setuptools==80.10.2"]
 # If a dependency fails in CI with ModuleNotFoundError: pkg_resources or setuptools, add it here.
 # CI and Dockerfile pre-install setuptools/wheel before uv sync so these packages can build.
 no-build-isolation-package = ["pyahocorasick", "scylla-driver"]
+exclude-dependencies = ["bitarray-hardbyte"]
 
 # Packages whose setup uses pkg_resources at build time but don't declare setuptools
 # as a build dependency; required when building via uv (e.g. docs container).
