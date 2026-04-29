@@ -14,7 +14,7 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import { Button, Flex, Icons, SelectProps, Tabs, useMessage } from "fidesui";
+import { Flex, SelectProps, Switch, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
@@ -950,17 +950,16 @@ const AccessPolicyEditor = ({
       className={styles.tabs}
       tabBarExtraContent={
         agentChatEnabled ? (
-          <Button
-            icon={
-              chatVisible ? <Icons.SidePanelClose /> : <Icons.SidePanelOpen />
-            }
-            onClick={toggleChat}
-            aria-label={chatVisible ? "Hide agent" : "Show agent"}
-            aria-pressed={chatVisible}
-            data-testid="toggle-agent-btn"
-          >
-            {chatVisible ? "Hide agent" : "Show agent"}
-          </Button>
+          <Flex align="center" gap="small">
+            <span>Agent chat</span>
+            <Switch
+              checked={chatVisible}
+              onChange={toggleChat}
+              aria-label={chatVisible ? "Hide agent" : "Show agent"}
+              size="small"
+              data-testid="toggle-agent-switch"
+            />
+          </Flex>
         ) : undefined
       }
     />
