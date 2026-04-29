@@ -1,0 +1,4 @@
+type: Changed
+description: Optimized consent pipeline to skip unnecessary Celery task creation when no actionable consent preferences exist
+pr: 8064
+labels: []
