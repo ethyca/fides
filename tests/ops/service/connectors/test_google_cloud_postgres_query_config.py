@@ -92,29 +92,29 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         [
             (
                 GoogleCloudSQLPostgresNamespaceMeta(schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 GoogleCloudSQLPostgresNamespaceMeta(
                     database_name="prod_db", schema="billing"
                 ),
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"schema": "billing"},
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 {
                     "schema": "billing",
                     "connection_type": "google_cloud_sql_postgres",
                 },
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 None,
-                'SELECT address_id, created, email, id, name FROM "customer" WHERE ("email" = :email)',
+                'SELECT address_id, email, id, name FROM "customer" WHERE ("email" = :email)',
             ),
         ],
     )
