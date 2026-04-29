@@ -127,8 +127,8 @@ class TestGetCeleryTaskRequestTaskIds:
         with pytest.raises(RuntimeError, match="not bound to a session"):
             privacy_request.get_request_task_celery_task_ids()
 
-        # Re-merge so fixture cleanup doesn't fail
-        db.merge(privacy_request)
+        # Re-add the same instance so fixture cleanup doesn't fail
+        db.add(privacy_request)
 
 
 def test_create_request_task(db, privacy_request, request_task_data):
