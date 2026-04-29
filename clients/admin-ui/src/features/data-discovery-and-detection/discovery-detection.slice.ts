@@ -12,6 +12,7 @@ import {
   Page_str_,
   Schema,
 } from "~/types/api";
+import type { CloudInfraMonitorResourcesDynamicFilters } from "~/types/api/models/CloudInfraMonitorResourcesDynamicFilters";
 import type { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
 interface State {
@@ -79,13 +80,6 @@ interface CloudInfraMonitorResultsQueryParams {
 
 interface CloudInfraMonitorFiltersQueryParams {
   monitor_config_id: string;
-}
-
-export interface CloudInfraMonitorFiltersResponse {
-  diff_status: string[];
-  location: string[];
-  cloud_account_id: string[];
-  service: string[];
 }
 
 // Identity Provider Monitor interfaces (Okta-specific)
@@ -555,7 +549,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       providesTags: () => ["Cloud Infra Monitor Results"],
     }),
     getCloudInfraMonitorFilters: build.query<
-      CloudInfraMonitorFiltersResponse,
+      CloudInfraMonitorResourcesDynamicFilters,
       CloudInfraMonitorFiltersQueryParams
     >({
       query: ({ monitor_config_id }) => ({

@@ -4,12 +4,14 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import {
   ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
   ACTION_CENTER_CLOUD_INFRASTRUCTURE_MONITOR_ROUTE,
 } from "~/features/common/nav/routes";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { useCloudInfraMonitorResultsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useCloudInfraMonitorResultsTable";
 import { CloudInfraResourcesTable } from "~/features/data-discovery-and-detection/action-center/tables/CloudInfraResourcesTable";
 import { discoveryDetectionUtil } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { APIMonitorType } from "~/types/api/models/APIMonitorType";
@@ -29,10 +31,22 @@ const CloudInfrastructureMonitorResults: NextPage = () => {
     ? decodeURIComponent(params.monitorId)
     : undefined;
   const loading = !monitorId;
+  const { error: cloudInfraError } = useCloudInfraMonitorResultsTable({
+    monitorId,
+  });
   const [pageSettings, setPageSettings] = useState({
     showIgnored: false,
     showApproved: false,
   });
+
+  if (cloudInfraError) {
+    return (
+      <ErrorPage
+        error={cloudInfraError}
+        defaultMessage="A problem occurred while fetching cloud infrastructure resources"
+      />
+    );
+  }
 
   return (
     <ActionCenterLayout
@@ -41,8 +55,7 @@ const CloudInfrastructureMonitorResults: NextPage = () => {
       routeConfig={MONITOR_CLOUD_INFRASTRUCTURE_ACTION_CENTER_CONFIG}
       pageSettings={{
         badgeProps: {
-          count: Object.values(pageSettings).flatMap((s) => (s ? [s] : []))
-            .length,
+          count: Object.values(pageSettings).filter(Boolean).length,
           size: "small",
         },
         dropdownProps: {
