@@ -144,7 +144,7 @@ def sanitise_url_path(path: str) -> str:
     for token in path.split("/"):
         if ".." in token and not (
             re.search(NEXT_JS_CATCH_ALL_SEGMENTS_RE, token)
-            or TURBOPACK_CHUNK_RE.match(token)
+            or TURBOPACK_CHUNK_RE.fullmatch(token)
         ):
             logger.warning(
                 f"Potentially dangerous use of URL hierarchy in path: {path}"

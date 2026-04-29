@@ -132,6 +132,10 @@ class TestApiRouter:
             # Turbopack chunks can include dots *before* the ".." too.
             ("/_next/static/chunks/0te-shorr2._..js", False),
             ("/_next/static/chunks/a.b.c..js", False),
+            # Minimal trailing segment after the "..": ensures the "+"
+            # quantifier isn't accidentally tightened to require a multi-char
+            # suffix.
+            ("/_next/static/chunks/a..b.js", False),
             ("../../../../../../../../../etc/passwd", True),
             ("..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd", True),
             (
