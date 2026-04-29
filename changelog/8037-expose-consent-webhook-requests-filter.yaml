@@ -1,4 +1,0 @@
-type: Added
-description: Add filter to include consent webhook requests in the privacy request search UI and API
-pr: 8037
-labels: []
