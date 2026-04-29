@@ -1223,7 +1223,7 @@ class PrivacyRequest(
         if db is None:
             return []
 
-        stmt = select(RequestTask.id).where(RequestTask.privacy_request_id == self.id)
+        stmt = select(RequestTask.id).where(RequestTask.privacy_request_id == self.id)  # type: ignore[arg-type]
         request_task_ids = db.execute(stmt).scalars().all()
 
         request_task_celery_ids: List[str] = []
