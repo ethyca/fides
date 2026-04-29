@@ -518,4 +518,102 @@ describe("Consent third party extensions", () => {
       });
     });
   });
+
+  describe("Matomo integration", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+        },
+      });
+      cy.get("@FidesInitializing").should("have.been.calledOnce");
+    });
+
+    it("pushes requireConsent synchronously and grants on FidesReady when analytics key is absent (OMIT mode)", () => {
+      cy.waitUntilFidesInitialized().then(() => {
+        // Fides.matomo() pushes `requireConsent` synchronously at call time
+        // (before FidesReady fires) so Matomo enters consent-required mode
+        // before the site's Matomo tracker snippet queues trackPageView.
+        cy.get("@paqPush").should("have.been.calledWith", ["requireConsent"]);
+
+        // The fixture uses `analytics_opt_out`, not `analytics`/`performance`.
+        // In this OMIT mode the integration grants consent so Matomo isn't
+        // left stuck in consent-required mode with no grant.
+        cy.get("@paqPush").should("have.been.calledWith", [
+          "rememberConsentGiven",
+        ]);
+        // No revoke commands in OMIT mode
+        cy.get("@paqPush").should("not.have.been.calledWith", [
+          "forgetConsentGiven",
+        ]);
+      });
+    });
+
+    it("pushes consent commands when the analytics notice key is present", () => {
+      // Override the stub to use a config with an "analytics" notice key
+      stubConfig(
+        {
+          experience: {
+            privacy_notices: [
+              {
+                id: "pri_analytics",
+                origin: "pri_xxx",
+                created_at: "2024-01-01T12:00:00.000000+00:00",
+                updated_at: "2024-01-01T12:00:00.000000+00:00",
+                name: "Analytics",
+                notice_key: "analytics",
+                consent_mechanism: "opt_in" as any,
+                data_uses: ["analytics"],
+                enforcement_level: "frontend" as any,
+                disabled: false,
+                has_gpc_flag: false,
+                framework: null,
+                default_preference: "opt_out" as any,
+                cookies: [],
+                systems_applicable: true,
+                translations: [
+                  {
+                    language: "en",
+                    title: "Analytics",
+                    description: "We use analytics to improve our site.",
+                    privacy_notice_history_id: "pri_analytics_history",
+                  },
+                ],
+              },
+            ],
+          },
+          options: {
+            isOverlayEnabled: true,
+          },
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").then(() => {
+          // `requireConsent` is pushed synchronously at Fides.matomo() call
+          // time, regardless of consent state. Then on FidesReady, because
+          // analytics defaults to opt_out (false), the integration pushes
+          // forgetConsentGiven.
+          cy.get("@paqPush").should("have.been.calledWith", ["requireConsent"]);
+          cy.get("@paqPush").should("have.been.calledWith", [
+            "forgetConsentGiven",
+          ]);
+
+          // Now opt in via the banner
+          cy.get("div#fides-banner").within(() => {
+            cy.contains("button", "Opt in to all").should("be.visible").click();
+          });
+
+          // After opting in, Matomo should receive rememberConsentGiven
+          cy.get("@paqPush").should("have.been.calledWith", [
+            "rememberConsentGiven",
+          ]);
+        });
+      });
+    });
+  });
 });

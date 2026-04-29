@@ -307,7 +307,7 @@ automatically push all [FidesEvent](FidesEvent.md) events to the GTM data layer 
 they occur, which can then be used to trigger/block tags in GTM based on
 `Fides.consent` preferences or other business logic.
 
-See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+See the [Google Tag Manager tutorial](/consent/guides/google-tag-manager-consent-mode) for more.
 
 #### Parameters
 
@@ -500,6 +500,68 @@ With custom consent mapping:
 
 ***
 
+### matomo()
+
+> **matomo**: (`options`?) => `void`
+
+Enable the Matomo integration. FidesJS will automatically sync consent
+with Matomo's tracking and/or cookie consent APIs via `_paq.push()`.
+
+The integration looks for `analytics` or `performance` keys in the Fides
+consent object. When neither key is present (e.g. a non-consent
+jurisdiction), consent is granted to Matomo so tracking proceeds
+normally.
+
+### Call before your Matomo tracker snippet
+
+`Fides.matomo()` synchronously pushes `requireConsent` into `_paq` so
+Matomo enters consent-required mode before the first `trackPageView`.
+For this to work, **`Fides.matomo()` must run before the standard Matomo
+tracker snippet on the page**. If the order is reversed, `trackPageView`
+is queued ahead of `requireConsent` and the first page view fires
+without consent.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | \{ `consentMode`: `"tracking"` \| `"cookie"` \| `"both"`; `rememberConsent`: `boolean`; \} | Optional configuration for the Matomo integration |
+| `options.consentMode`? | `"tracking"` \| `"cookie"` \| `"both"` | Which Matomo consent mechanism to manage: `"tracking"` (default), `"cookie"`, or `"both"` |
+| `options.rememberConsent`? | `boolean` | Persist consent via Matomo's `mtm_consent` cookie. Default `true`. Set `false` for session-only consent. |
+
+#### Returns
+
+`void`
+
+#### Examples
+
+Recommended page setup. `Fides.matomo()` runs before the Matomo tracker
+snippet so `requireConsent` is queued ahead of `trackPageView`:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>Fides.matomo();</script>
+
+  <!-- Your standard Matomo tracker snippet goes here, unchanged -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    // ... _paq.push(['trackPageView']), setTrackerUrl, setSiteId, etc.
+  </script>
+</head>
+```
+
+Manage both tracking and cookie consent:
+```html
+<script>Fides.matomo({ consentMode: "both" });</script>
+```
+
+Session-only consent (no `mtm_consent` cookie written by Matomo):
+```html
+<script>Fides.matomo({ rememberConsent: false });</script>
+```
+
+***
+
 ### shopify()
 
 > **shopify**: (`options`?) => `void`
@@ -509,7 +571,7 @@ FidesJS is included. Once enabled, FidesJS will automatically push all
 consent updates to Shopify's Customer Privacy API, which can then be used
 to ensure consent is enforced on Shopify-managed apps & pixels.
 
-See the [Shopify installation tutorial](/tutorials/consent-management/consent-management-configuration/install-fides-shopify) for more.
+See the [Shopify installation tutorial](/consent/guides/install-fides-shopify) for more.
 
 #### Parameters
 
@@ -567,7 +629,7 @@ However, initialization can be called manually if needed - for example to delay
 initialization until after your own custom JavaScript has run to set up some
 config options. In this case, you can disable the automatic initialization
 by including the query param `initialize=false` in the Fides script URL
-(see [Privacy Center FidesJS Hosting](/dev-docs/js/privacy-center-fidesjs-hosting) for details).
+(see [Privacy Center FidesJS Hosting](/privacy-center-fidesjs/fidesjs/privacy-center-fidesjs-hosting) for details).
 You will then need to call `Fides.init()` manually at the appropriate time.
 
 This function can also be used to reinitialize FidesJS. This is useful when
