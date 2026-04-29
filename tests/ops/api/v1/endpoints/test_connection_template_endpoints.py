@@ -600,6 +600,7 @@ class TestGetConnectionsActionTypeParams:
                 "supported_actions": [
                     ActionType.access.value,
                     ActionType.erasure.value,
+                    ActionType.consent.value,
                 ],
                 "category": None,
                 "tags": None,
@@ -676,9 +677,8 @@ class TestGetConnectionsActionTypeParams:
             ),
             (
                 [ActionType.consent],
-                [ConnectionType.sovrn.value],
+                [ConnectionType.postgres.value, ConnectionType.sovrn.value],
                 [
-                    ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
