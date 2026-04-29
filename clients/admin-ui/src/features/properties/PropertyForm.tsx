@@ -15,6 +15,14 @@ import {
 } from "~/types/api";
 
 import DeletePropertyModal from "./DeletePropertyModal";
+import { PathsEditor } from "./PathsEditor";
+
+const PathsEditorAdapter: React.FC<{
+  value?: string[];
+  onChange?: (next: string[]) => void;
+}> = ({ value, onChange }) => (
+  <PathsEditor value={value ?? []} onChange={(next) => onChange?.(next)} />
+);
 
 interface Props {
   property?: Property;
@@ -150,8 +158,12 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                   data-testid="input-type"
                 />
               </Form.Item>
-              <Form.Item name="paths" hidden noStyle>
-                <Input />
+              <Form.Item
+                label="Privacy center paths"
+                name="paths"
+                tooltip="Paths under your privacy center this property responds to. Each path must be unique across properties."
+              >
+                <PathsEditorAdapter />
               </Form.Item>
               <Form.Item
                 name="experiences"
