@@ -8,7 +8,16 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    select,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -1204,12 +1213,30 @@ class PrivacyRequest(
 
         It is possible Request Tasks get queued multiple times, so the celery task
         id returned is the last celery task queued.
+
+        Uses a column projection query to load only RequestTask.id, avoiding
+        loading large encrypted blobs (_access_data, _data_for_erasures) into
+        memory. This is critical because this method is called from the
+        cancel path in the webserver process.
         """
+        db = Session.object_session(self)
+        if db is None:
+            raise RuntimeError(
+                f"PrivacyRequest {self.id} is not bound to a session. "
+                "Cannot query request task IDs on a detached instance."
+            )
+
+        stmt = select(RequestTask.id).where(RequestTask.privacy_request_id == self.id)  # type: ignore[arg-type]
+        request_task_ids = db.execute(stmt).scalars().all()
+
         request_task_celery_ids: List[str] = []
-        for request_task in self.request_tasks:
-            request_task_id: Optional[str] = request_task.get_cached_task_id()
-            if request_task_id:
-                request_task_celery_ids.append(request_task_id)
+        for rt_id in request_task_ids:
+            # Use the static method with the raw ID rather than the instance
+            # method — we intentionally avoid loading RequestTask ORM objects
+            # to prevent pulling large encrypted blobs into memory.
+            task_id = RequestTask.get_cached_task_id_by_id(rt_id)
+            if task_id:
+                request_task_celery_ids.append(task_id)
         return request_task_celery_ids
 
     def cancel_celery_tasks(self) -> None:
