@@ -7,8 +7,9 @@
   "scripts": {
     "check": "npm run lint && npm run format && npm run typecheck",
     "check:ci": "npm run lint:ci && npm run format:ci && npm run typecheck",
-    "lint": "eslint --fix .",
-    "lint:ci": "eslint .",
+    "lint": "eslint --fix . && npm run lint:antd",
+    "lint:antd": "antd lint src",
+    "lint:ci": "eslint . && npm run lint:antd",
     "format": "prettier --write --log-level warn .",
     "format:ci": "prettier --check .",
     "typecheck": "tsc --noEmit",
@@ -18,6 +19,7 @@
     "chromatic": "chromatic --exit-zero-on-changes"
   },
   "dependencies": {
+    "@ant-design/x": "^2.5.0",
     "@carbon/icons-react": "^11.51.0",
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
@@ -42,6 +44,7 @@
     "@storybook/react-vite": "^10.2.10",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@ant-design/cli": "^6.3.7",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
     "@typescript-eslint/parser": "^7.17.0",
     "autoprefixer": "^10.4.14",
