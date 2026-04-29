@@ -83,6 +83,11 @@ override_vendor_purposes = false # boolean
 # in order to keep existing data.
 consent_v3_encryption_enabled = true # boolean
 
+# Enable identity enrichment before consent propagation. When enabled,
+# resolves missing email or external_id from stored preferences before
+# falling back to DB connector queries.
+identity_enrichment = false # boolean
+
 #--------------#
 #-- DATABASE --#
 #--------------------------------------------------------------------#

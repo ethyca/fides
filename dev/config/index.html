@@ -2252,7 +2252,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">581</span>
 <span class="normal">582</span>
 <span class="normal">583</span>
-<span class="normal">584</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2336,6 +2341,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># plaintext. WARNING: Changing this setting requires a data migration</span>
 <span class="c1"># in order to keep existing data.</span>
 <span class="n">consent_v3_encryption_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Enable identity enrichment before consent propagation. When enabled,</span>
+<span class="c1"># resolves missing email or external_id from stored preferences before</span>
+<span class="c1"># falling back to DB connector queries.</span>
+<span class="n">identity_enrichment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#--------------#</span>
 <span class="c1">#-- DATABASE --#</span>
