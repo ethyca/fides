@@ -71,7 +71,7 @@ export const CARD_SPECS: readonly CardSpec[] = [
     id: "card-unit-c",
     label: "AI Readiness",
     collapsed: { cols: 1, rows: 1 },
-    expanded: { cols: 4, rows: 4 },
+    expanded: { cols: 3, rows: 3 },
     collapsedOrder: 6,
     expandedOrder: 6,
   },

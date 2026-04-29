@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
 import { CardSpec } from "./types";
@@ -1148,7 +1149,7 @@ const PolicyDrawer = ({
           paddingTop: 4,
         }}
       >
-        <a
+        <Link
           href="/access-policies"
           style={{
             display: "inline-flex",
@@ -1169,7 +1170,7 @@ const PolicyDrawer = ({
           <span aria-hidden style={{ fontSize: 11, lineHeight: 1 }}>
             →
           </span>
-        </a>
+        </Link>
       </div>
     </motion.div>
   );
@@ -1480,6 +1481,612 @@ const AssessmentCoverage = () => (
   </div>
 );
 
+// ── Linear-style L2 atoms ───────────────────────────────────────────────────
+
+const SEG_OPACITIES = [0.85, 0.62, 0.42, 0.25, 0.15];
+
+const SegmentedBar = ({
+  segments,
+}: {
+  segments: { label: string; value: number }[];
+}) => {
+  const total = segments.reduce((s, x) => s + x.value, 0);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div
+        style={{
+          height: 6,
+          display: "flex",
+          borderRadius: 2,
+          overflow: "hidden",
+          background: TRACK,
+        }}
+      >
+        {segments.map((s, i) => (
+          <div
+            key={s.label}
+            style={{
+              width: `${(s.value / total) * 100}%`,
+              background: INK,
+              opacity: SEG_OPACITIES[i] ?? 0.15,
+            }}
+          />
+        ))}
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${segments.length}, 1fr)`,
+          gap: 8,
+        }}
+      >
+        {segments.map((s, i) => (
+          <div
+            key={s.label}
+            style={{ display: "flex", flexDirection: "column", gap: 3 }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  background: INK,
+                  opacity: SEG_OPACITIES[i] ?? 0.15,
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: MONO,
+                  fontSize: 9,
+                  letterSpacing: "1.2px",
+                  textTransform: "uppercase",
+                  color: INK_TERTIARY,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {s.label}
+              </span>
+            </div>
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: 14,
+                color: INK,
+                lineHeight: 1,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {s.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const RowAction = ({
+  variant = "ghost",
+  children,
+  ariaLabel,
+}: {
+  variant?: "primary" | "ghost";
+  children: React.ReactNode;
+  ariaLabel?: string;
+}) => (
+  <button
+    type="button"
+    aria-label={ariaLabel}
+    onClick={(e) => e.stopPropagation()}
+    style={{
+      height: 18,
+      minWidth: 18,
+      padding: variant === "primary" ? "0 8px" : "0 5px",
+      border: variant === "ghost" ? "1px solid rgba(43,46,53,0.18)" : "none",
+      background: variant === "primary" ? INK : "transparent",
+      color: variant === "primary" ? "#fff" : INK,
+      borderRadius: 2,
+      cursor: "pointer",
+      fontFamily: MONO,
+      fontSize: 9,
+      letterSpacing: variant === "primary" ? "1.2px" : 0,
+      textTransform: variant === "primary" ? "uppercase" : "none",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      lineHeight: 1,
+      flexShrink: 0,
+    }}
+  >
+    {children}
+  </button>
+);
+
+const ColumnHeader = ({
+  children,
+  align = "left",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+}) => (
+  <span
+    style={{
+      fontFamily: MONO,
+      fontSize: 8,
+      letterSpacing: "1.4px",
+      textTransform: "uppercase",
+      color: INK_TERTIARY,
+      textAlign: align,
+    }}
+  >
+    {children}
+  </span>
+);
+
+// ── DSR Compliance L2 ───────────────────────────────────────────────────────
+
+const DSR_TYPE_SEGMENTS = [
+  { label: "Access", value: 22 },
+  { label: "Erasure", value: 14 },
+  { label: "Portability", value: 6 },
+  { label: "Correction", value: 5 },
+];
+
+type DsrStatus = "Pending" | "In review" | "Overdue";
+
+interface DsrRow {
+  id: string;
+  type: string;
+  status: DsrStatus;
+  age: number;
+  due: number;
+  assignee: string | null;
+}
+
+const DSR_ROWS: DsrRow[] = [
+  {
+    id: "DSR-1247",
+    type: "access",
+    status: "Pending",
+    age: 3,
+    due: 30,
+    assignee: null,
+  },
+  {
+    id: "DSR-1246",
+    type: "erasure",
+    status: "In review",
+    age: 5,
+    due: 30,
+    assignee: "sarah.kim",
+  },
+  {
+    id: "DSR-1245",
+    type: "access",
+    status: "Overdue",
+    age: 32,
+    due: 30,
+    assignee: "john.doe",
+  },
+  {
+    id: "DSR-1244",
+    type: "portability",
+    status: "Pending",
+    age: 1,
+    due: 30,
+    assignee: null,
+  },
+  {
+    id: "DSR-1243",
+    type: "erasure",
+    status: "In review",
+    age: 12,
+    due: 30,
+    assignee: "mike.chen",
+  },
+  {
+    id: "DSR-1242",
+    type: "correction",
+    status: "Pending",
+    age: 2,
+    due: 30,
+    assignee: null,
+  },
+  {
+    id: "DSR-1241",
+    type: "access",
+    status: "In review",
+    age: 8,
+    due: 30,
+    assignee: "sarah.kim",
+  },
+  {
+    id: "DSR-1240",
+    type: "portability",
+    status: "Pending",
+    age: 4,
+    due: 30,
+    assignee: null,
+  },
+  {
+    id: "DSR-1239",
+    type: "erasure",
+    status: "In review",
+    age: 18,
+    due: 30,
+    assignee: "mike.chen",
+  },
+  {
+    id: "DSR-1238",
+    type: "access",
+    status: "Pending",
+    age: 1,
+    due: 30,
+    assignee: null,
+  },
+];
+
+const DSR_GRID_COLS = "84px 80px 84px 76px 1fr 72px";
+
+const DsrComplianceExpanded = () => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      gap: 14,
+    }}
+  >
+    <style>{`
+      .dsr-row { transition: background 0.15s ease-out; border-radius: 2px; }
+      .dsr-row:hover { background: rgba(43,46,53,0.04); }
+    `}</style>
+    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: 32,
+          color: INK,
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        47
+      </div>
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: 9,
+          letterSpacing: "1.4px",
+          textTransform: "uppercase",
+          color: INK_TERTIARY,
+        }}
+      >
+        Active DSRs
+      </div>
+    </div>
+    <SegmentedBar segments={DSR_TYPE_SEGMENTS} />
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        overflow: "hidden",
+        marginLeft: -4,
+        marginRight: -4,
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: DSR_GRID_COLS,
+          alignItems: "center",
+          gap: 10,
+          padding: "0 6px",
+          height: 18,
+        }}
+      >
+        <ColumnHeader>ID</ColumnHeader>
+        <ColumnHeader>Type</ColumnHeader>
+        <ColumnHeader>Status</ColumnHeader>
+        <ColumnHeader>Age / Due</ColumnHeader>
+        <ColumnHeader>Assignee</ColumnHeader>
+        <ColumnHeader align="right">Action</ColumnHeader>
+      </div>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}
+      >
+        {DSR_ROWS.map((row) => {
+          const isOverdue = row.status === "Overdue";
+          return (
+            <div
+              key={row.id}
+              className="dsr-row"
+              style={{
+                display: "grid",
+                gridTemplateColumns: DSR_GRID_COLS,
+                alignItems: "center",
+                gap: 10,
+                padding: "0 6px",
+                height: 26,
+                fontFamily: MONO,
+                fontSize: 10,
+                lineHeight: 1,
+              }}
+            >
+              <span
+                style={{
+                  color: INK,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {row.id}
+              </span>
+              <span
+                style={{
+                  color: INK_MUTED,
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  fontSize: 9,
+                }}
+              >
+                {row.type}
+              </span>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  color: isOverdue ? INK : INK_MUTED,
+                }}
+              >
+                <span
+                  style={{
+                    width: 5,
+                    height: 5,
+                    flexShrink: 0,
+                    background: isOverdue ? INK : "transparent",
+                    border: `1px solid ${INK}`,
+                    boxSizing: "border-box",
+                  }}
+                />
+                {row.status}
+              </span>
+              <span
+                style={{
+                  color: isOverdue ? INK : INK_MUTED,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {row.age}d / {row.due}d
+              </span>
+              <span style={{ color: row.assignee ? INK_MUTED : INK_TERTIARY }}>
+                {row.assignee ?? "—"}
+              </span>
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <RowAction variant="primary">Confirm</RowAction>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+);
+
+// ── Classification Health L2 ────────────────────────────────────────────────
+
+const SENSITIVITY_SEGMENTS = [
+  { label: "Critical", value: 31 },
+  { label: "High", value: 97 },
+  { label: "Medium", value: 218 },
+  { label: "Low", value: 386 },
+  { label: "None", value: 124 },
+];
+
+interface ClassificationField {
+  system: string;
+  field: string;
+  suggested: string;
+}
+
+const CLASSIFICATION_ROWS: ClassificationField[] = [
+  { system: "events.web", field: "user_id", suggested: "user.identifier" },
+  { system: "users.profile", field: "email", suggested: "user.contact.email" },
+  { system: "events.web", field: "ip_address", suggested: "user.location.ip" },
+  {
+    system: "transactions.orders",
+    field: "customer_email",
+    suggested: "user.contact.email",
+  },
+  {
+    system: "users.profile",
+    field: "phone_number",
+    suggested: "user.contact.phone",
+  },
+  {
+    system: "events.web",
+    field: "device_id",
+    suggested: "user.device.identifier",
+  },
+  {
+    system: "inventory.products",
+    field: "supplier_email",
+    suggested: "vendor.contact.email",
+  },
+  {
+    system: "users.profile",
+    field: "dob",
+    suggested: "user.demographic.date_of_birth",
+  },
+  {
+    system: "transactions.orders",
+    field: "billing_zip",
+    suggested: "user.location.postal_code",
+  },
+  {
+    system: "users.profile",
+    field: "preferred_name",
+    suggested: "user.name.preferred",
+  },
+];
+
+const CLASS_GRID_COLS = "150px 130px 1fr 78px";
+
+const ClassificationHealthExpanded = () => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      gap: 14,
+    }}
+  >
+    <style>{`
+      .cls-row { transition: background 0.15s ease-out; border-radius: 2px; }
+      .cls-row:hover { background: rgba(43,46,53,0.04); }
+    `}</style>
+    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: 32,
+          color: INK,
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        78%
+      </div>
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: 9,
+          letterSpacing: "1.4px",
+          textTransform: "uppercase",
+          color: INK_TERTIARY,
+        }}
+      >
+        Classified
+      </div>
+    </div>
+    <SegmentedBar segments={SENSITIVITY_SEGMENTS} />
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        overflow: "hidden",
+        marginLeft: -4,
+        marginRight: -4,
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: CLASS_GRID_COLS,
+          alignItems: "center",
+          gap: 12,
+          padding: "0 6px",
+          height: 18,
+        }}
+      >
+        <ColumnHeader>System</ColumnHeader>
+        <ColumnHeader>Field</ColumnHeader>
+        <ColumnHeader>Suggested label</ColumnHeader>
+        <ColumnHeader align="right">Review</ColumnHeader>
+      </div>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}
+      >
+        {CLASSIFICATION_ROWS.map((row) => (
+          <div
+            key={`${row.system}.${row.field}`}
+            className="cls-row"
+            style={{
+              display: "grid",
+              gridTemplateColumns: CLASS_GRID_COLS,
+              alignItems: "center",
+              gap: 12,
+              padding: "0 6px",
+              height: 26,
+              fontFamily: MONO,
+              fontSize: 10,
+              lineHeight: 1,
+            }}
+          >
+            <span
+              style={{
+                color: INK_MUTED,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {row.system}
+            </span>
+            <span style={{ color: INK }}>{row.field}</span>
+            <span
+              style={{
+                color: INK,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              <span style={{ color: INK_TERTIARY }}>→</span>
+              <span
+                style={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {row.suggested}
+              </span>
+            </span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 4,
+              }}
+            >
+              <RowAction ariaLabel="Accept">✓</RowAction>
+              <RowAction>Edit</RowAction>
+              <RowAction ariaLabel="Reject">✕</RowAction>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 // ── Dispatch ────────────────────────────────────────────────────────────────
 
 const PlaceholderL2 = () => (
@@ -1519,6 +2126,10 @@ const renderL2 = (id: CardSpec["id"]) => {
   switch (id) {
     case "card-unit-b":
       return <PolicyEnforcementExpanded />;
+    case "card-unit-a":
+      return <DsrComplianceExpanded />;
+    case "card-wide-a":
+      return <ClassificationHealthExpanded />;
     default:
       return <PlaceholderL2 />;
   }
