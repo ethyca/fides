@@ -9,6 +9,10 @@ interface ChatPaneProps {
   error: string | null;
   onSend: (text: string) => void;
   onAbort: () => void;
+  // TODO: propagation-ready — wire up via a useGetLlmStatusQuery (or similar)
+  // from FormBuilderPage once that query exists.
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export const ChatPane: React.FC<ChatPaneProps> = ({
@@ -17,6 +21,8 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
   error,
   onSend,
   onAbort,
+  disabled,
+  disabledReason,
 }) => {
   const [draft, setDraft] = useState("");
   const isStreaming = status === "streaming";
@@ -31,6 +37,12 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      {disabled && (
+        <Alert
+          type="info"
+          message={disabledReason ?? "LLM provider not configured."}
+        />
+      )}
       {error && <Alert type="error" message={error} closable />}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {messages.map((m, idx) => (
@@ -50,14 +62,18 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
             handleSubmit();
           }
         }}
-        disabled={isStreaming}
+        disabled={isStreaming || disabled}
         placeholder="Tell the builder what you want…"
         autoSize={{ minRows: 2, maxRows: 6 }}
       />
       {isStreaming ? (
         <Button onClick={onAbort}>Stop</Button>
       ) : (
-        <Button type="primary" onClick={handleSubmit} disabled={!draft.trim()}>
+        <Button
+          type="primary"
+          onClick={handleSubmit}
+          disabled={!draft.trim() || disabled}
+        >
           Send
         </Button>
       )}
