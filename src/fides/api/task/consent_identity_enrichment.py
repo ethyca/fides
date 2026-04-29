@@ -291,20 +291,14 @@ def enrich_identities_for_consent(
             "Consent identity enrichment failed, proceeding with original identities: {}",
             exc,
         )
-        try:
-            privacy_request.add_error_execution_log(
-                session,
-                connection_key=None,
-                dataset_name="Consent identity enrichment",
-                collection_name=None,
-                message=f"Consent identity enrichment failed: {exc}",
-                action_type=ActionType.consent,
-            )
-        except Exception as log_exc:
-            logger.error(
-                "Failed to log enrichment error to activity timeline: {}",
-                log_exc,
-            )
+        privacy_request.add_error_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Consent identity enrichment",
+            collection_name=None,
+            message=f"Consent identity enrichment failed: {exc}",
+            action_type=ActionType.consent,
+        )
         return identity_data
 
 
