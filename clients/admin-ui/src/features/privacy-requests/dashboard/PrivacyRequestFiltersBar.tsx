@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import {
+  antTheme,
   DatePicker,
   DisplayValueType,
   Flex,
@@ -52,6 +53,7 @@ export const PrivacyRequestFiltersBar = ({
   sortState,
   setSortState,
 }: PrivacyRequestFiltersBarProps) => {
+  const { token } = antTheme.useToken();
   const actionTypeOptions = useSubjectRequestActionTypeOptions();
 
   // Fetch privacy center config to get custom fields
@@ -186,7 +188,13 @@ export const PrivacyRequestFiltersBar = ({
           }
           data-testid="include-consent-webhook-requests"
         />
-        <span style={{ fontSize: 14, whiteSpace: "nowrap" }}>
+        <span
+          style={{
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            color: token.colorTextSecondary,
+          }}
+        >
           Consent webhooks
         </span>
       </Flex>
