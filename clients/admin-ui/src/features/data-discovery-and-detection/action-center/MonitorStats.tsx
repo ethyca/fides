@@ -14,7 +14,7 @@ export interface MonitorStatsProps {
 }
 
 // Statistics widgets are not yet enabled for cloud infrastructure monitors
-const STATS_EXCLUDED_TYPES: Set<string> = new Set([
+const STATS_EXCLUDED_TYPES: Set<APIMonitorType> = new Set([
   APIMonitorType.CLOUD_INFRASTRUCTURE,
 ]);
 

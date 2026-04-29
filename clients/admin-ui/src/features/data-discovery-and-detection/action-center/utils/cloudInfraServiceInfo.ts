@@ -1,3 +1,5 @@
+// Known AWS service types. Unknown services fall back to the raw string label
+// and the Cloud icon. Add new entries here as new AWS integrations are added.
 const SERVICE_INFO: Record<string, { icon: string; label: string }> = {
   s3: { icon: "S3-resource.svg", label: "S3" },
   rds: { icon: "RDS-resource.svg", label: "RDS" },
