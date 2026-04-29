@@ -22,11 +22,6 @@ from fides.api.util.cache import FidesopsRedis, get_dsr_cache_store
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
 
-# Maximum seconds to wait for a single identity-enrichment DB query.
-# Prevents worker threads from blocking indefinitely on slow backends
-# like BigQuery.
-IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS = 30
-
 
 @dataclass
 class _EnrichmentNode:
@@ -139,7 +134,7 @@ def _execute_identity_lookup(
         connection_config.key,
         dataset_name,
         collection.name,
-        IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS,
+        CONFIG.consent.identity_enrichment_query_timeout_seconds,
     )
     start = time.monotonic()
     engine = connector.client()
@@ -161,7 +156,9 @@ def _execute_identity_lookup(
     try:
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(_run_query)
-            rows = future.result(timeout=IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS)
+            rows = future.result(
+                timeout=CONFIG.consent.identity_enrichment_query_timeout_seconds
+            )
         elapsed_total = time.monotonic() - start
         logger.info(
             "Identity enrichment: query on {}.{} returned {} row(s) in {:.2f}s",
@@ -180,7 +177,7 @@ def _execute_identity_lookup(
             connection_config.key,
             collection.name,
             elapsed_total,
-            IDENTITY_ENRICHMENT_QUERY_TIMEOUT_SECONDS,
+            CONFIG.consent.identity_enrichment_query_timeout_seconds,
         )
         return []
     except Exception as exc:
