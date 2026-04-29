@@ -255,7 +255,7 @@ export interface Fides {
    * they occur, which can then be used to trigger/block tags in GTM based on
    * `Fides.consent` preferences or other business logic.
    *
-   * See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+   * See the [Google Tag Manager tutorial](/consent/guides/google-tag-manager-consent-mode) for more.
    *
    * @param options - Optional configuration for the GTM integration
    * @param options.non_applicable_flag_mode - Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value.
@@ -481,7 +481,7 @@ export interface Fides {
    * consent updates to Shopify's Customer Privacy API, which can then be used
    * to ensure consent is enforced on Shopify-managed apps & pixels.
    *
-   * See the [Shopify installation tutorial](/tutorials/consent-management/consent-management-configuration/install-fides-shopify) for more.
+   * See the [Shopify installation tutorial](/consent/guides/install-fides-shopify) for more.
    *
    * @param options - Optional configuration for the Shopify integration
    * @param options.sale_of_data_default - Controls the default value for Shopify's "sale of data" consent. If `true`, the user will be opted-in by default. If `false` or omitted, the user will be opted-out by default.
@@ -530,7 +530,7 @@ export interface Fides {
    * initialization until after your own custom JavaScript has run to set up some
    * config options. In this case, you can disable the automatic initialization
    * by including the query param `initialize=false` in the Fides script URL
-   * (see [Privacy Center FidesJS Hosting](/dev-docs/js/privacy-center-fidesjs-hosting) for details).
+   * (see [Privacy Center FidesJS Hosting](/privacy-center-fidesjs/fidesjs/privacy-center-fidesjs-hosting) for details).
    * You will then need to call `Fides.init()` manually at the appropriate time.
    *
    * This function can also be used to reinitialize FidesJS. This is useful when

@@ -1,0 +1,4 @@
+type: Fixed
+description: Allow consent as a selectable request type for database integrations in the Admin UI
+pr: 8057
+labels: []

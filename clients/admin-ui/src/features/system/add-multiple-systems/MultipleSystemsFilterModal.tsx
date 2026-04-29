@@ -55,9 +55,7 @@ interface MultipleSystemsFilterProps<T> {
   onClose: () => void;
 }
 
-type FilterState = {
-  [key in keyof typeof VendorSources]: boolean;
-};
+type FilterState = Record<keyof typeof VendorSources, boolean>;
 const initialFilterState: FilterState = {
   GVL: false,
   AC: false,
