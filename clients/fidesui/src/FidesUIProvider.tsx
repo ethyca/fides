@@ -113,22 +113,6 @@ export const FidesUIProvider = ({
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // Ant scopes its cssVar block to `.fidesui` (theme.cssVar.key) which it only
-  // auto-applies to descendants of Ant components. Attach the class to <body>
-  // so the entire document — including non-Ant DOM (SCSS modules on plain
-  // divs, custom components, portals) — picks up `var(--ant-*)`. Using an
-  // existing element rather than a wrapper avoids inserting a new flex item
-  // that would distort the consuming app's layout.
-  useEffect(() => {
-    if (typeof document === "undefined") {
-      return undefined;
-    }
-    document.body.classList.add("fidesui");
-    return () => {
-      document.body.classList.remove("fidesui");
-    };
-  }, []);
-
   const resolvedAntTheme = useMemo(
     () =>
       prefersReducedMotion
@@ -225,7 +209,9 @@ export const FidesUIProvider = ({
           {messageContextHolder}
           {modalContextHolder}
           {notificationContextHolder}
-          {children}
+          <div className="fidesui" style={{ display: "contents" }}>
+            {children}
+          </div>
         </AntComponentAPIsContext.Provider>
       </BaseChakraProvider>
     </BaseAntDesignProvider>
