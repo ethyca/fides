@@ -80,7 +80,7 @@
     "swagger-ui-react": "^5.19.0",
     "valibot": "^1.2.0",
     "yup": "^1.4.0",
-    "zod": "^3.25.76"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.88.2",
