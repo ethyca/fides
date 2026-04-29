@@ -131,7 +131,29 @@ This means the first connection attempt after rotation absorbs a single failure 
 - psycopg2: `OperationalError` with `exc.pgcode == "28P01"` (SQLSTATE `invalid_password`). This is locale-independent and version-stable, unlike string matching on the error message.
 - asyncpg: `InvalidPasswordError` (already maps to SQLSTATE `28P01` internally). Note: Aurora/RDS can sometimes emit SQLSTATE `28000` (`InvalidAuthorizationSpecificationError`) instead of `28P01` during rotation — the implementation should catch both to be safe.
 
+**`connect_args` forwarding:** Because the `creator` callable bypasses SQLAlchemy's normal connection construction, parameters that currently live in `connect_args` (SSL settings, keepalives, custom type codecs) must be explicitly forwarded into the `psycopg2.connect()` / `asyncpg.connect()` call. Missing a parameter like `sslmode` would silently downgrade connections to unencrypted. See the TLS enforcement test in Section 5 for how this is verified.
+
 The retry happens at the connection level, invisible to application code. Combined with the existing `pool_pre_ping=True` setting (which evicts dead connections before use), this provides self-healing behavior across the full rotation window.
+
+### 5. Security Invariants
+
+**Credential leakage prevention:**
+
+The database password must never appear in any log, traceback, or exception — at any log level, including DEBUG, and including driver-level errors from psycopg2 and asyncpg. The `SecretValue` wrapper (Section 1) handles direct string coercion, but additional measures are required:
+
+- The `creator` callable must catch driver exceptions and re-raise sanitized versions that strip connection parameters from the message before propagation.
+- Never pass `SecretValue` or its inner dict to any logger, Pydantic model, or serialization path.
+
+The following fields **may** be logged during credential operations: secret ID, AWS region, cache hit/miss status, SQLSTATE error code (`28P01`/`28000`), retry attempt count, circuit breaker state, and timestamps. No other fields from the provider response or connection parameters should appear in logs.
+
+**Configuration coherence warning:**
+
+At startup, if `database.credential_secret_id` is set but `secrets.provider` is `"static"`, log a WARNING on every startup: the secret ID is being ignored and credentials are coming from env vars / TOML. This is not a startup failure (customers may stage config before flipping the provider), but ensures the mismatch is visible and doesn't silently persist.
+
+**Test requirements:**
+
+- **Credential leakage test:** Force an authentication failure through both the psycopg2 and asyncpg creator paths. Capture all log output (all levels) and all exception messages. Assert the password string does not appear anywhere in the captured output.
+- **TLS enforcement test:** Run PostgreSQL in TLS-required mode (`sslmode=verify-full` or equivalent). Open a connection through each of the 6 engine paths. Assert all connections succeed — this verifies the `creator` callable correctly forwards SSL parameters from `connect_args`, since a missing `sslmode` or `sslrootcert` would cause the TLS-required server to reject the connection.
 
 ---
 
