@@ -1,4 +1,8 @@
 type: Changed
-description: Optimized consent pipeline to skip unnecessary Celery task creation when no actionable consent preferences exist
+description: >
+  Optimized consent pipeline: skip unnecessary Celery task creation when no
+  actionable preferences exist, fix connector engine leak via Connections
+  lifecycle management, add configurable query timeout, and add checkpoint
+  logging across the consent processing pipeline
 pr: 8064
 labels: []
