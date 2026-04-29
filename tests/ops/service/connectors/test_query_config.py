@@ -920,8 +920,12 @@ class TestNecessaryFieldPaths:
             fields=[
                 ScalarField(name="contact_id", primary_key=True),
                 ScalarField(name="uncategorized_note"),
-                ScalarField(name="internal_flag", data_categories=["system.operations"]),
-                ScalarField(name="email_address", data_categories=["user.contact.email"]),
+                ScalarField(
+                    name="internal_flag", data_categories=["system.operations"]
+                ),
+                ScalarField(
+                    name="email_address", data_categories=["user.contact.email"]
+                ),
             ],
         )
         node = mock.MagicMock(spec=ExecutionNode)
