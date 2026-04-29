@@ -718,12 +718,16 @@ def run_privacy_request(
                             )
 
                     if not should_skip_consent:
+                        logger.info("Consent processing: starting identity enrichment")
                         identity_data = enrich_identities_for_consent(
                             datasets=datasets,
                             connection_configs=connection_configs,
                             identity_data=identity_data,
                             privacy_request=privacy_request,
                             session=session,
+                        )
+                        logger.info(
+                            "Consent processing: enrichment complete, building consent graph"
                         )
                         privacy_request.cache_failed_checkpoint_details(
                             CurrentStep.consent
