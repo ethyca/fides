@@ -112,7 +112,8 @@ class PrivacyRequestService:
             query,
             filters,
             identity=identity,
-            include_consent_webhook_requests=filters.include_consent_webhook_requests or False,
+            include_consent_webhook_requests=filters.include_consent_webhook_requests
+            or False,
         )
 
     def sort_privacy_requests(

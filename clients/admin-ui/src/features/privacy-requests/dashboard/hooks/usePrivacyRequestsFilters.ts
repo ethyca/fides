@@ -82,7 +82,8 @@ const usePrivacyRequestsFilters = ({
       status: filters.status,
       action_type: filters.action_type,
       is_overdue: filters.is_overdue,
-      include_consent_webhook_requests: filters.include_consent_webhook_requests,
+      include_consent_webhook_requests:
+        filters.include_consent_webhook_requests,
       location: filters.location,
       custom_privacy_request_fields: filterNullCustomFields(
         filters.custom_privacy_request_fields,
