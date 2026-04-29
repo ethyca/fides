@@ -32,16 +32,26 @@ export const PreviewPane: React.FC<PreviewPaneProps> = ({
   const wrappedSpec: JsonRenderSpec = {
     ...spec,
     elements: Object.fromEntries(
-      Object.entries(spec.elements).map(([id, element]) => [
-        id,
-        {
-          ...element,
-          props: {
-            ...element.props,
-            "data-element-id": id,
+      Object.entries(spec.elements).map(([id, element]) => {
+        // Strip preview-blocking conditional features so all fields render
+        // unconditionally in the admin builder preview. The dropped-features
+        // modal handles user communication at save time.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { visible, watch, ...rest } = element as JsonRenderSpec["elements"][string] & {
+          visible?: unknown;
+          watch?: unknown;
+        };
+        return [
+          id,
+          {
+            ...rest,
+            props: {
+              ...rest.props,
+              "data-element-id": id,
+            },
           },
-        },
-      ]),
+        ];
+      }),
     ),
   };
 
