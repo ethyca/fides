@@ -149,6 +149,9 @@ const AgentChatPanel = ({
       user: {
         placement: "end" as const,
         variant: "filled" as const,
+        styles: {
+          content: { background: "var(--ant-color-fill-content)" },
+        },
       },
       ai: {
         placement: "start" as const,

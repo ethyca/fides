@@ -14,9 +14,10 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import { Flex, SelectProps, Splitter, Tabs, useMessage } from "fidesui";
+import { Button, Flex, Icons, SelectProps, Tabs, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import Layout from "~/features/common/Layout";
 import { Editor } from "~/features/common/yaml/helpers";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
@@ -801,6 +802,14 @@ const AccessPolicyEditor = ({
     initialValues?.control ?? null,
   );
   const [syncKey, setSyncKey] = useState(0);
+  const [chatVisible, setChatVisible] = useLocalStorage<boolean>(
+    "access-policies:chat-visible",
+    true,
+  );
+  const toggleChat = useCallback(
+    () => setChatVisible((v) => !v),
+    [setChatVisible],
+  );
 
   const handleModeChange = useCallback(
     (newMode: EditorMode) => {
@@ -939,49 +948,56 @@ const AccessPolicyEditor = ({
       data-testid="mode-toggle"
       items={tabItems}
       className={styles.tabs}
+      tabBarExtraContent={
+        agentChatEnabled ? (
+          <Button
+            icon={
+              chatVisible ? <Icons.SidePanelClose /> : <Icons.SidePanelOpen />
+            }
+            onClick={toggleChat}
+            aria-label={chatVisible ? "Hide agent" : "Show agent"}
+            aria-pressed={chatVisible}
+            data-testid="toggle-agent-btn"
+          >
+            {chatVisible ? "Hide agent" : "Show agent"}
+          </Button>
+        ) : undefined
+      }
     />
   );
 
   return (
     <Layout title={title} padded={false}>
-      {agentChatEnabled ? (
-        <Splitter className="h-full">
-          <Splitter.Panel>
-            <PolicyEditorPanel
-              title={title}
-              breadcrumbTitle={breadcrumbTitle}
-              isNew={isNew}
-              onDelete={onDelete}
-              onExport={handleExport}
-              onSave={handleSave}
-            >
-              {tabsNode}
-            </PolicyEditorPanel>
-          </Splitter.Panel>
-          <Splitter.Panel defaultSize={350} min={300} max="40%" collapsible>
-            <div
-              className="h-full pb-2"
-              style={{ position: "relative", zIndex: 100 }}
-            >
-              <AgentChatPanel
-                currentYaml={yamlValue}
-                onYamlProposed={handleYamlProposed}
-              />
-            </div>
-          </Splitter.Panel>
-        </Splitter>
-      ) : (
-        <PolicyEditorPanel
-          title={title}
-          breadcrumbTitle={breadcrumbTitle}
-          isNew={isNew}
-          onDelete={onDelete}
-          onExport={handleExport}
-          onSave={handleSave}
-        >
-          {tabsNode}
-        </PolicyEditorPanel>
-      )}
+      <Flex className="h-full">
+        <div className="flex-1">
+          <PolicyEditorPanel
+            title={title}
+            breadcrumbTitle={breadcrumbTitle}
+            isNew={isNew}
+            onDelete={onDelete}
+            onExport={handleExport}
+            onSave={handleSave}
+          >
+            {tabsNode}
+          </PolicyEditorPanel>
+        </div>
+        {agentChatEnabled && chatVisible && (
+          <div
+            className="h-full pb-2"
+            style={{
+              width: 350,
+              flexShrink: 0,
+              position: "relative",
+              zIndex: 100,
+            }}
+          >
+            <AgentChatPanel
+              currentYaml={yamlValue}
+              onYamlProposed={handleYamlProposed}
+            />
+          </div>
+        )}
+      </Flex>
     </Layout>
   );
 };
