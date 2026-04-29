@@ -16,12 +16,28 @@ import {
 
 import DeletePropertyModal from "./DeletePropertyModal";
 import { PathsEditor } from "./PathsEditor";
+import {
+  PrivacyCenterConfigSection,
+  PrivacyCenterConfigValue,
+} from "./privacy-center-config/PrivacyCenterConfigSection";
 
 const PathsEditorAdapter: React.FC<{
   value?: string[];
   onChange?: (next: string[]) => void;
 }> = ({ value, onChange }) => (
   <PathsEditor value={value ?? []} onChange={(next) => onChange?.(next)} />
+);
+
+const PCConfigSectionAdapter: React.FC<{
+  propertyId: string;
+  value?: PrivacyCenterConfigValue | null;
+  onChange?: (next: PrivacyCenterConfigValue) => void;
+}> = ({ propertyId, value, onChange }) => (
+  <PrivacyCenterConfigSection
+    propertyId={propertyId}
+    value={value ?? null}
+    onChange={(next) => onChange?.(next)}
+  />
 );
 
 interface Props {
@@ -37,6 +53,7 @@ export interface FormValues {
   paths: Array<string>;
   messaging_templates?: Array<MinimalMessagingTemplate> | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
+  privacy_center_config?: PrivacyCenterConfigValue | null;
 }
 
 export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
@@ -91,6 +108,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
         experiences: [],
         messaging_templates: [],
         paths: [],
+        privacy_center_config: null,
       },
     [property],
   );
@@ -101,7 +119,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
       form.setFieldsValue({
         ...property,
         messaging_templates: property.messaging_templates ?? undefined,
-      });
+      } as Parameters<typeof form.setFieldsValue>[0]);
     }
   }, [property, form]);
 
@@ -164,6 +182,13 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                 tooltip="Paths under your privacy center this property responds to. Each path must be unique across properties."
               >
                 <PathsEditorAdapter />
+              </Form.Item>
+              <Form.Item
+                name="privacy_center_config"
+                label="Privacy center config"
+                valuePropName="value"
+              >
+                <PCConfigSectionAdapter propertyId={property?.id ?? ""} />
               </Form.Item>
               <Form.Item
                 name="experiences"

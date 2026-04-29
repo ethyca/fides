@@ -29,7 +29,10 @@ const EditPropertyPage: NextPage = () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { id, messaging_templates, ...updateValues } = values;
 
-    const result = await updateProperty({ id: id!, property: updateValues });
+    const result = await updateProperty({
+      id: id!,
+      property: updateValues as Parameters<typeof updateProperty>[0]["property"],
+    });
 
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
