@@ -52,6 +52,28 @@ class TestBasicFetch:
         with pytest.raises(SecretProviderError, match="no cached value available"):
             provider.get_secret("nonexistent-secret")
 
+    def test_invalid_json_raises_without_leaking_secret(self, aws_env):
+        """If the secret value is not valid JSON, the error must not
+        contain the raw secret string (which could be a plain password)."""
+        raw_password = "super-secret-p@ssw0rd!"
+        aws_env.update_secret(
+            SecretId=SECRET_NAME,
+            SecretString=raw_password,
+        )
+        provider = AWSSecretsManagerProvider(region_name=REGION)
+        with pytest.raises(SecretProviderError) as exc_info:
+            provider.get_secret(SECRET_NAME)
+
+        # Walk the full exception chain and verify the password
+        # doesn't appear anywhere
+        exc = exc_info.value
+        while exc is not None:
+            assert raw_password not in str(exc)
+            # Also check JSONDecodeError's .doc attribute if present
+            if hasattr(exc, "doc"):
+                raise AssertionError("JSONDecodeError with .doc leaked into chain")
+            exc = exc.__cause__
+
 
 class TestCaching:
     def test_second_call_uses_cache(self, aws_env):
@@ -112,6 +134,37 @@ class TestCaching:
             )
             v2 = provider.get_secret(SECRET_NAME)
             assert v2["username"] == "testuser"
+
+    def test_ttl_recheck_inside_lock(self, aws_env):
+        """When fetched_at is 0 (invalidated) at the outer check but another
+        thread refreshes before we acquire the lock, the inner TTL re-check
+        should return the cached value without fetching again."""
+        time_value = [100.0]
+
+        with patch(
+            "fides.config.secrets.aws_secrets_manager_provider.time"
+        ) as mock_time:
+            mock_time.monotonic = lambda: time_value[0]
+
+            provider = AWSSecretsManagerProvider(
+                region_name=REGION, cache_ttl_seconds=60.0
+            )
+            # Prime cache at t=100
+            provider.get_secret(SECRET_NAME)
+
+            # Simulate: outer check sees expired (t=170), but by the time
+            # we re-check inside the lock, fetched_at was updated to t=165
+            # by another thread (within TTL of 60s from t=170)
+            entry = provider._cache[SECRET_NAME]
+            entry.fetched_at = 165.0  # as if another thread just refreshed
+            time_value[0] = 170.0
+
+            # Sabotage client — should NOT be called
+            provider._client.get_secret_value = MagicMock(
+                side_effect=Exception("should not fetch")
+            )
+            secret = provider.get_secret(SECRET_NAME)
+            assert secret["username"] == "testuser"
 
 
 class TestStaleWhileRevalidate:

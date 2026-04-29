@@ -144,7 +144,16 @@ class AWSSecretsManagerProvider(SecretProvider):
             VersionStage="AWSCURRENT",
         )
         secret_string = response["SecretString"]
-        data = json.loads(secret_string)
+        try:
+            data = json.loads(secret_string)
+        except json.JSONDecodeError as exc:
+            # Don't chain the original exception — its .doc attribute
+            # contains the raw secret string, which could leak credentials
+            # if the exception is logged or inspected upstream.
+            raise SecretProviderError(
+                f"Secret {secret_id!r} is not valid JSON "
+                f"(parse error at line {exc.lineno}, column {exc.colno})"
+            ) from None
         return SecretValue(data)
 
     def _handle_fetch_failure(
