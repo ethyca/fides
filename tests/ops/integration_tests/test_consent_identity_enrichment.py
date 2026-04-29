@@ -259,13 +259,14 @@ class TestConsentIdentityEnrichmentIntegration:
             identity_data={
                 "email": "my-original@example.com",
                 "external_id": "ext_enrich_001",
+                "phone_number": "original-phone",
             },
             privacy_request=privacy_request,
             session=db,
         )
         assert result["email"] == "my-original@example.com"
         assert result["external_id"] == "ext_enrich_001"
-        assert result["phone_number"] == "555-0199"
+        assert result["phone_number"] == "original-phone"
 
     def test_skipped_without_consent_enabled_actions(
         self, db, consent_enrichment_dataset_config
