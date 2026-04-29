@@ -89,6 +89,10 @@ export type PrivacyRequestFilter = {
    */
   include_custom_privacy_request_fields?: boolean | null;
   /**
+   * Include Consent Webhook Requests
+   */
+  include_consent_webhook_requests?: boolean | null;
+  /**
    * Include Deleted Requests
    */
   include_deleted_requests?: boolean | null;
