@@ -121,7 +121,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
     const secretsPayload: Record<string, any> = {
       project_key: values.project_key,
       issue_type: values.issue_type,
-      completion_status: values.completion_status || null,
+      completion_status: values.completion_status ?? null,
       summary_template: values.summary_template,
       description_template: values.description_template,
     };
