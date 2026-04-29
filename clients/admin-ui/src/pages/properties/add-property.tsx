@@ -16,7 +16,9 @@ const AddPropertyPage: NextPage = () => {
   const [createProperty] = useCreatePropertyMutation();
 
   const handleSubmit = async (values: FormValues) => {
-    const result = await createProperty(values);
+    const result = await createProperty(
+      values as Parameters<typeof createProperty>[0],
+    );
 
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
