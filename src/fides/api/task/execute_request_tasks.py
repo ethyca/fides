@@ -489,24 +489,8 @@ def run_consent_node(
             CurrentStep.finalize_consent,
             privacy_request_proceed,
         )
-    except (PrivacyRequestNotFound, RequestTaskNotFound, PrivacyRequestCanceled):
-        raise
     except Exception as exc:
-        logger.error("Consent node failed: {}", exc)
-        try:
-            with self.get_new_session() as err_session:
-                pr = PrivacyRequest.get(db=err_session, object_id=privacy_request_id)
-                if pr:
-                    pr.add_error_execution_log(
-                        err_session,
-                        connection_key=None,
-                        dataset_name="Consent task execution",
-                        collection_name=privacy_request_task_id,
-                        message=f"Consent node failed: {exc}",
-                        action_type=ActionType.consent,
-                    )
-        except Exception:
-            logger.error("Failed to write consent error to activity timeline")
+        logger.error("Error in run_consent_node: {}", exc)
         raise
 
 
