@@ -296,7 +296,7 @@ def enrich_identities_for_consent(
         new_keys = set(enriched.keys()) - set(identity_data.keys())
         if new_keys:
             logger.info(
-                "Consent identity enrichment discovered: {}",
+                "Consent identity enrichment (preferences) discovered: {}",
                 new_keys,
             )
             _cache_and_log_enrichment(
@@ -314,7 +314,7 @@ def enrich_identities_for_consent(
         new_keys = set(enriched.keys()) - set(identity_data.keys())
         if new_keys:
             logger.info(
-                "Consent identity enrichment discovered: {}",
+                "Consent identity enrichment (DB connectors) discovered: {}",
                 new_keys,
             )
             _cache_and_log_enrichment(
