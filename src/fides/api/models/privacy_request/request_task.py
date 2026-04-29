@@ -245,11 +245,21 @@ class RequestTask(WorkerTask, Base):
     def allowed_action_types(cls) -> List[str]:
         return [e.value for e in ActionType]
 
+    @staticmethod
+    def get_cached_task_id_by_id(request_task_id: str) -> Optional[str]:
+        """Gets the cached celery task ID for a request task by its primary key.
+
+        This static variant avoids loading a full RequestTask ORM object,
+        which is important when iterating many tasks in memory-sensitive
+        contexts (e.g. the cancel path on the webserver).
+        """
+        cache: FidesopsRedis = get_cache()
+        task_id = cache.get(get_async_task_tracking_cache_key(request_task_id))
+        return task_id
+
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached celery task ID for this request task."""
-        cache: FidesopsRedis = get_cache()
-        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
-        return task_id
+        return RequestTask.get_cached_task_id_by_id(self.id)
 
     def cleanup_external_storage(self) -> None:
         """Clean up all external storage files for this request task"""
