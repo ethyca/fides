@@ -1199,7 +1199,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = "==2.3.3" },
     { name = "pydash", specifier = "~=8.0.2" },
     { name = "pygtrie", specifier = "==2.5.0" },
-    { name = "pyinstrument", specifier = "==4.5.1" },
+    { name = "pyinstrument", specifier = "==4.7.2" },
     { name = "pyjwt", specifier = "~=2.12.0" },
     { name = "pymongo", extras = ["srv"], specifier = "==4.7.3" },
     { name = "pymssql", marker = "extra == 'all'", specifier = "==2.3.13" },
@@ -3578,9 +3578,21 @@ wheels = [
 
 [[package]]
 name = "pyinstrument"
-version = "4.5.1"
+version = "4.7.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/24/94/0d4c272dcc7e04cd2cbb7a60b6e9da3ba8a20233d22f53f556cc48e64033/pyinstrument-4.5.1.tar.gz", hash = "sha256:b55a93be883c65650515319455636d32ab32692b097faa1e07f8cd9d4e0eeaa9", size = 126045, upload-time = "2023-07-22T22:34:05.011Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/50/cb68bc246138f4af7db02866a6213a3685ff44a0efdbbde8adcadfa625aa/pyinstrument-4.7.2.tar.gz", hash = "sha256:8c4e4792e7bc2de6ad757dcb05bb6739b5aed64f834602e8121f611e3278e0d1", size = 128872, upload-time = "2024-08-05T11:09:47.434Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/81/8d24d68bedf7c1be05adf10233debf687c6a06804e2caf88ec1edbcb6cab/pyinstrument-4.7.2-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:2df465b065435152473b7c4d0b80c05d3136769251fd7fe725cfcb6eb87340fa", size = 110042, upload-time = "2024-08-05T11:09:08.256Z" },
+    { url = "https://files.pythonhosted.org/packages/de/aa/e61c24450de8ff34e5e6d4871d330ae68a8dc01bbb978902e5194c8ecd78/pyinstrument-4.7.2-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:50023b396289a27ea5d2f60d78bdeec7e4ccc6051038dfd7f5638c15a314a5d5", size = 102082, upload-time = "2024-08-05T11:09:09.34Z" },
+    { url = "https://files.pythonhosted.org/packages/73/80/91c083c627f5e7c37bd02589e31c75001226c3cc7415cd8596f2956cff12/pyinstrument-4.7.2-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:065451fed990ad050b0fdb4a2bd5f28426f5c5f4b94bd8dab9d144079e073761", size = 125932, upload-time = "2024-08-05T11:09:10.414Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/2a/032d35717a5194bd624cf7411fa365d0815a237b0914706b02c53980f12f/pyinstrument-4.7.2-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:017788c61627f74c3ea503198628bccc46a87e421a282dfb055ff4500026748f", size = 124626, upload-time = "2024-08-05T11:09:11.461Z" },
+    { url = "https://files.pythonhosted.org/packages/35/de/e12e0c5328545411d3295c350d80f67446b16166688b385eb1e3326f7e2a/pyinstrument-4.7.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d8df61a879c7316f31791018c92f8cca92cd4dc5a624e629c3d969d77a3657fb", size = 126027, upload-time = "2024-08-05T11:09:12.498Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/4a/707a278b6c62fbab07283067696495a8277579295a198063754a2b8f8ffd/pyinstrument-4.7.2-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:656910a5fbb7b99232f8f835815cdf69734b229434c26380c29a0ef09ec9874d", size = 125711, upload-time = "2024-08-05T11:09:13.56Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/66/c07b50ff966a83dfb4b5bec5a98b2ee0d2a5dda4079dd4edaf62d28cf6ff/pyinstrument-4.7.2-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:c2337616952ec3bd35dedb9a1ed396a3accfc0305bc54e22179e77fe63d50909", size = 125341, upload-time = "2024-08-05T11:09:14.991Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/84/25b7d9387f9fb585271b06acda46647ff26608ea4aa147dcd8e8d97d35c4/pyinstrument-4.7.2-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:ea4e4e7a8ea9a042fa2c4e0efc00d87b29e0af4a1a0b3dba907c3c63cdde4510", size = 125853, upload-time = "2024-08-05T11:09:16.104Z" },
+    { url = "https://files.pythonhosted.org/packages/79/33/c3fd130dd7fa4fe0372b2d2f997c6d8101b0cac63c6170a1967028a6d6eb/pyinstrument-4.7.2-cp313-cp313-win32.whl", hash = "sha256:24012bc0e5a507189f5f1caa01b4589bb286348e929df6a898c926ffd6e5238a", size = 103883, upload-time = "2024-08-05T11:09:17.136Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/dd/fd45c67ed42cbd3eb56a8713f3c8e5ce49cd15155fc81007cd3fd1fe18b9/pyinstrument-4.7.2-cp313-cp313-win_amd64.whl", hash = "sha256:3d8eaf57bc447b8e108b5d684b371c64232d9895b06a097d8dc2b92f3fdde561", size = 104636, upload-time = "2024-08-05T11:09:18.592Z" },
+]
 
 [[package]]
 name = "pyjwt"
