@@ -259,7 +259,7 @@ export const usePrivacyDeclarationForm = ({
       ) : null}
       {!hideSaved && showSaved && !dirty && initialValues.data_use ? (
         <Text fontSize="sm" data-testid="saved-indicator">
-          <Icons.CheckmarkFilled color="var(--fidesui-success)" /> Saved
+          <Icons.CheckmarkFilled color="var(--ant-color-success)" /> Saved
         </Text>
       ) : null}
     </Box>

@@ -23,7 +23,7 @@ import styles from "./NavMenu.module.scss";
 import NavSearch from "./NavSearch";
 import { RouterLink } from "./RouterLink";
 
-const NAV_BACKGROUND_COLOR = "var(--fidesui-minos)";
+const NAV_BACKGROUND_COLOR = "var(--ant-brand-minos)";
 const NAV_WIDTH = "240px";
 const COLLAPSED_WIDTH = "80px";
 const OPENED_TOGGLES_LOCAL_STORAGE_KEY = "mainSideNavOpenKeys";

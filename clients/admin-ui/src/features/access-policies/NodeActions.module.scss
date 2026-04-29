@@ -66,34 +66,34 @@
 }
 
 .conditionButton {
-  background: var(--fidesui-olive) !important;
-  color: var(--fidesui-full-white) !important;
+  background: var(--ant-brand-olive) !important;
+  color: var(--ant-color-white) !important;
 
   &:hover {
-    background: var(--fidesui-olive) !important;
-    color: var(--fidesui-full-white) !important;
+    background: var(--ant-brand-olive) !important;
+    color: var(--ant-color-white) !important;
     opacity: 0.9;
   }
 }
 
 .constraintButton {
-  background: var(--fidesui-neutral-600) !important;
-  color: var(--fidesui-full-white) !important;
+  background: var(--ant-neutral-600) !important;
+  color: var(--ant-color-white) !important;
 
   &:hover {
-    background: var(--fidesui-neutral-600) !important;
-    color: var(--fidesui-full-white) !important;
+    background: var(--ant-neutral-600) !important;
+    color: var(--ant-color-white) !important;
     opacity: 0.9;
   }
 }
 
 .actionButton {
-  background: var(--fidesui-terracotta) !important;
-  color: var(--fidesui-full-white) !important;
+  background: var(--ant-brand-terracotta) !important;
+  color: var(--ant-color-white) !important;
 
   &:hover {
-    background: var(--fidesui-terracotta) !important;
-    color: var(--fidesui-full-white) !important;
+    background: var(--ant-brand-terracotta) !important;
+    color: var(--ant-color-white) !important;
     opacity: 0.9;
   }
 }

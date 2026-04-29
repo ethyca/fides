@@ -11,13 +11,17 @@
 }
 
 .cardComplete {
-  border-left: 4px solid var(--fidesui-success);
+  border-left: 4px solid var(--ant-color-success);
 }
 
 .completeContainer {
   border-radius: var(--ant-border-radius-lg);
   padding: var(--ant-padding-sm);
-  background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--ant-color-success) 10%,
+    transparent
+  );
 }
 
 .titleLink {

@@ -6,8 +6,8 @@ import { SparkleIcon } from "../icons";
 import { getDefaultAlertIcon } from "../lib/carbon-icon-defaults";
 
 const AGENT_STYLE: React.CSSProperties = {
-  backgroundColor: "var(--fidesui-limestone)",
-  borderColor: "var(--fidesui-limestone)",
+  backgroundColor: "var(--ant-brand-limestone)",
+  borderColor: "var(--ant-brand-limestone)",
 };
 
 export type CustomAlertType = NonNullable<AlertProps["type"]> | "agent";

@@ -171,7 +171,7 @@ export const DiscoveredAssetActionsCell = ({
               loading={isRestoringResults}
               icon={
                 <Icons.WarningAltFilled
-                  style={{ color: "var(--fidesui-error)", width: 14 }}
+                  style={{ color: "var(--ant-color-error)", width: 14 }}
                 />
               }
               title="View compliance issue"

@@ -50,9 +50,7 @@ const SearchInput = ({
       placeholder={placeholder || "Search"}
       aria-label="Search"
       prefix={
-        withIcon ? (
-          <Icons.Search color="var(--fidesui-neutral-200)" />
-        ) : undefined
+        withIcon ? <Icons.Search color="var(--ant-neutral-200)" /> : undefined
       }
       allowClear
       className={classNames({

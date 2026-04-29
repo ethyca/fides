@@ -383,7 +383,7 @@ const RolesForm = () => {
                           type="secondary"
                           style={{
                             fontSize: 12,
-                            color: "var(--fidesui-success)",
+                            color: "var(--ant-color-success)",
                           }}
                         >
                           Custom role
