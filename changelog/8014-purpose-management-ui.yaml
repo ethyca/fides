@@ -1,0 +1,4 @@
+type: Added
+description: Added a Purpose Management UI under /data-purposes with a grouped card grid, network view, and per-purpose detail page (data consumers, datasets, governance insights). CRUD is wired to the existing data-purpose endpoints; supplementary per-purpose read/assign workflows are served by MSW handlers pending plus endpoints.
+pr: 8014
+labels: []

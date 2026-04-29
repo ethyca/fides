@@ -126,7 +126,6 @@ export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
 
 // Data Purposes (Core Configuration)
 export const DATA_PURPOSES_ROUTE = "/data-purposes";
-export const DATA_PURPOSES_NEW_ROUTE = "/data-purposes/new";
 export const DATA_PURPOSES_EDIT_ROUTE = "/data-purposes/[fidesKey]";
 
 // Data Consumers (Core Configuration)

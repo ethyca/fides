@@ -22,7 +22,7 @@ const DataPurposeActionsCell = ({ purpose }: Props) => {
     <Flex gap="small">
       <Restrict scopes={[ScopeRegistryEnum.DATA_PURPOSE_UPDATE]}>
         <Button
-          aria-label="Edit data purpose"
+          aria-label="Edit purpose"
           data-testid="edit-data-purpose-button"
           size="small"
           icon={<Icons.Edit />}
@@ -33,7 +33,7 @@ const DataPurposeActionsCell = ({ purpose }: Props) => {
         purpose={purpose}
         triggerComponent={
           <Button
-            aria-label="Delete data purpose"
+            aria-label="Delete purpose"
             data-testid="delete-data-purpose-button"
             size="small"
             icon={<Icons.TrashCan />}
