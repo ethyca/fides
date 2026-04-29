@@ -80,14 +80,17 @@ from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
 )
-from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
+from fides.api.task.manual.manual_task_utils import (
+    create_manual_task_artificial_graphs,
+    get_manual_task_addresses,
+)
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import get_all_masking_secret_keys
+from fides.api.util.collection_util import Row
 from fides.api.util.consent_util import (
     filter_privacy_preferences_for_propagation,
 )
-from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
@@ -685,7 +688,8 @@ def run_privacy_request(
                     # building the consent graph, creating Celery tasks, and
                     # dispatching work that every connector would individually skip.
                     # Only applies to new-workflow requests that have not already
-                    # started consent task processing (reprocessing should proceed).
+                    # started consent task processing (reprocessing should proceed)
+                    # and have no manual consent tasks configured.
                     should_skip_consent = False
                     if (
                         not privacy_request.consent_preferences
@@ -697,7 +701,16 @@ def run_privacy_request(
                                 privacy_preferences=privacy_request.privacy_preferences,
                             )
                         )
-                        if not propagatable_preferences:
+                        has_manual_consent_tasks = bool(
+                            get_manual_task_addresses(
+                                session,
+                                config_types=[ActionType.consent],
+                            )
+                        )
+                        if (
+                            not propagatable_preferences
+                            and not has_manual_consent_tasks
+                        ):
                             should_skip_consent = True
                             logger.info(
                                 "Skipping consent step: no actionable consent "
