@@ -4,13 +4,13 @@
 
 .emptyIcon {
   font-size: 24px;
-  color: var(--ant-color-success);
+  color: var(--fidesui-color-success);
 }
 
 .actionIcon {
-  color: var(--ant-color-text-secondary);
-  background-color: var(--ant-color-fill-quaternary);
-  border: 1px solid var(--ant-color-border-secondary);
+  color: var(--fidesui-color-text-secondary);
+  background-color: var(--fidesui-color-fill-quaternary);
+  border: 1px solid var(--fidesui-color-border-secondary);
   flex-shrink: 0;
   margin-top: 6px;
 }
@@ -21,10 +21,10 @@
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: var(--ant-color-fill-quaternary);
+    background-color: var(--fidesui-color-fill-quaternary);
 
     .launchIcon {
-      color: var(--ant-color-text);
+      color: var(--fidesui-color-text);
     }
   }
 }
@@ -33,20 +33,20 @@
   flex-shrink: 0;
   align-self: center;
   margin-left: 8px;
-  color: var(--ant-color-text-quaternary);
+  color: var(--fidesui-color-text-quaternary);
   transition: color 0.15s ease;
 }
 
 .filterSelect {
   :global(.ant-select-selector) {
-    background-color: var(--ant-color-bg-container) !important;
+    background-color: var(--fidesui-color-bg-container) !important;
   }
 
   &:global(.ant-select:not(.ant-select-disabled):hover)
     :global(.ant-select-selector),
   &:global(.ant-select-focused:not(.ant-select-disabled))
     :global(.ant-select-selector) {
-    background-color: var(--ant-color-fill-quaternary) !important;
+    background-color: var(--fidesui-color-fill-quaternary) !important;
   }
 }
 
@@ -67,7 +67,7 @@
 
   :global(.ant-list-item) {
     align-items: flex-start;
-    padding-block: var(--ant-padding-sm, 12px);
+    padding-block: var(--fidesui-padding-sm, 12px);
   }
 
   :global(.ant-list-item-meta) {

@@ -10,12 +10,12 @@ import { RouterLink } from "./RouterLink";
 import useNavSearchItems, { FlatNavItem } from "./useNavSearchItems";
 
 const SEARCH_ICON_STYLE = {
-  color: "var(--ant-neutral-400)",
+  color: "var(--fidesui-neutral-400)",
   fontSize: 16,
 };
 const COLLAPSED_ICON_STYLE = {
   fontSize: 16,
-  color: "var(--ant-brand-corinth)",
+  color: "var(--fidesui-brand-corinth)",
 };
 const isMac =
   typeof navigator !== "undefined" &&
@@ -156,7 +156,7 @@ const NavSearchModal = ({ groups }: NavSearchModalProps) => {
     <div className="flex flex-col items-center pb-3">
       <button
         type="button"
-        className="flex size-9 cursor-pointer items-center justify-center rounded-md border-none bg-transparent transition-colors hover:bg-[var(--ant-neutral-700)]"
+        className="flex size-9 cursor-pointer items-center justify-center rounded-md border-none bg-transparent transition-colors hover:bg-[var(--fidesui-neutral-700)]"
         onClick={() => setOpen(true)}
         aria-label="Search navigation"
         data-testid="nav-search-toggle"

@@ -57,7 +57,7 @@ export const EvidenceSection = ({
                   <Text strong>System-derived data</Text>
                   <Badge
                     count={systemItems.length}
-                    color="var(--ant-brand-minos)"
+                    color="var(--fidesui-brand-minos)"
                   />
                 </Flex>
                 <Text type="secondary" size="sm">
@@ -80,7 +80,7 @@ export const EvidenceSection = ({
                   <Text strong>Human input</Text>
                   <Badge
                     count={humanItems.length}
-                    color="var(--ant-brand-minos)"
+                    color="var(--fidesui-brand-minos)"
                   />
                 </Flex>
                 <Text type="secondary" size="sm">

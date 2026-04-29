@@ -233,7 +233,7 @@ const SavePreferencesSection = ({
                 }`
               : null
           }
-          headerColor="var(--ant-brand-alert)"
+          headerColor="var(--fidesui-brand-alert)"
           body={postResponse}
           emptyMessage="POST response will appear here after saving preferences"
         />

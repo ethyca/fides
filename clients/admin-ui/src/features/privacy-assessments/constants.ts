@@ -46,9 +46,9 @@ export const ANSWER_STATUS_TAG_COLORS: Record<AnswerStatus, CUSTOM_TAG_COLOR> =
   };
 
 export const RISK_LEVEL_DOT_COLORS: Record<RiskLevel, string> = {
-  [RiskLevel.HIGH]: "var(--ant-color-error)",
-  [RiskLevel.MEDIUM]: "var(--ant-color-warning)",
-  [RiskLevel.LOW]: "var(--ant-color-success)",
+  [RiskLevel.HIGH]: "var(--fidesui-color-error)",
+  [RiskLevel.MEDIUM]: "var(--fidesui-color-warning)",
+  [RiskLevel.LOW]: "var(--fidesui-color-success)",
 };
 
 export const FREQUENCY_OPTIONS = [

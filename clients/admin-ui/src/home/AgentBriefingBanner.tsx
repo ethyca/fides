@@ -36,12 +36,12 @@ export const AgentBriefingBanner = () => {
         Alert: {
           colorInfoBg:
             resolvedMode === "dark"
-              ? "var(--ant-brand-minos)"
-              : "var(--ant-brand-limestone)",
+              ? "var(--fidesui-brand-minos)"
+              : "var(--fidesui-brand-limestone)",
           colorInfoBorder:
             resolvedMode === "dark"
-              ? "var(--ant-brand-minos)"
-              : "var(--ant-brand-limestone)",
+              ? "var(--fidesui-brand-minos)"
+              : "var(--fidesui-brand-limestone)",
         },
       },
     }),

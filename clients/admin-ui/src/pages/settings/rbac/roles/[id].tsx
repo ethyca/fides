@@ -335,7 +335,7 @@ const RoleDetailPage: NextPage = () => {
                 <Tooltip title={warning.description}>
                   <Icons.WarningAltFilled
                     size={16}
-                    fill="var(--ant-color-warning)"
+                    fill="var(--fidesui-color-warning)"
                     style={{ cursor: "pointer" }}
                   />
                 </Tooltip>

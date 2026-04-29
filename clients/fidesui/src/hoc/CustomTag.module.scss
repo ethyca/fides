@@ -1,10 +1,12 @@
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: calc(var(--ant-margin-xs) * 0.75);
+  gap: calc(var(--fidesui-margin-xs) * 0.75);
   // the line-height is the same Ant uses but -2px to account for border making it 20px instead of 22px
-  line-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm) - 2px);
-  min-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm));
+  line-height: calc(
+    var(--fidesui-line-height-sm) * var(--fidesui-font-size-sm) - 2px
+  );
+  min-height: calc(var(--fidesui-line-height-sm) * var(--fidesui-font-size-sm));
 
   // tags should always be normal weight
   // adding this prevents tags from inheriting font weight from parent
@@ -21,30 +23,30 @@
     width: 12px;
     height: 12px;
   }
-  --ant-padding-xxs: 0; //we're using gap instead
+  --fidesui-padding-xxs: 0; //we're using gap instead
 }
 
 .buttonTag {
-  border-radius: var(--ant-border-radius-sm);
+  border-radius: var(--fidesui-border-radius-sm);
   &:hover,
   &:focus {
     :global(.ant-tag) {
       // !important is necessary because our custom component adds the background style to the tag inline giving it a higher specificity than our scss style here
-      background: var(--ant-neutral-50) !important;
+      background: var(--fidesui-neutral-50) !important;
     }
   }
   &:focus-visible {
     outline: none;
     :global(.ant-tag) {
-      border: 1px solid var(--ant-brand-minos);
+      border: 1px solid var(--fidesui-brand-minos);
     }
   }
 }
 
 .closeButton {
-  border-radius: var(--ant-border-radius-xs);
+  border-radius: var(--fidesui-border-radius-xs);
   &:focus-visible {
-    outline: 1px solid var(--ant-brand-minos);
+    outline: 1px solid var(--fidesui-brand-minos);
     outline-offset: 2px;
   }
 }
