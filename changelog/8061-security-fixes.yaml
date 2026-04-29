@@ -1,0 +1,4 @@
+description: "Fixed security vulnerabilities in cryptography, jwcrypto, and Werkzeug dependencies"
+type: Fixed
+pr: 8061
+labels: []
