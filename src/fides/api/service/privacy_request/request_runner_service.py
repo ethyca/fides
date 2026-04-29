@@ -73,6 +73,7 @@ from fides.api.service.privacy_request.attachment_handling import (
 )
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.storage.storage_uploader_service import upload
+from fides.api.task.consent_identity_enrichment import enrich_identities_for_consent
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.task.graph_task import (
@@ -676,6 +677,13 @@ def run_privacy_request(
                     request_checkpoint=CurrentStep.consent,
                     from_checkpoint=resume_step,
                 ):
+                    identity_data = enrich_identities_for_consent(
+                        datasets=datasets,
+                        connection_configs=connection_configs,
+                        identity_data=identity_data,
+                        privacy_request=privacy_request,
+                        session=session,
+                    )
                     privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
                     consent_runner(
                         privacy_request=privacy_request,
