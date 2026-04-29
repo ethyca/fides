@@ -5,9 +5,9 @@ import { palette } from "../palette/palette";
 /**
  * Order of priority for styling
  * 1. Ant Design default theme
- * 2. FidesUI palette colors
- * 3. Ant Design custom theme (this file, which also includes some custom override colors not found in the palette)
- * 4. global CSS variables (as a last resort when styling Ant components, should rely on the palette vars)
+ * 2. FidesUI palette colors via Ant's token system (see below, these get emitted as CSS variables)
+ * 3. Ant Design custom theme (this file)
+ * 4. global CSS variables (as a last resort when styling Ant components. Should rely on this theme's css vars)
  * 5. tailwindcss (for layout and spacing only)
  * 6. SCSS modules (for custom-component-specific styles)
  */
