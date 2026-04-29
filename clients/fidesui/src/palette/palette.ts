@@ -2,7 +2,7 @@
  * Palette color constants — single source of truth for FidesUI brand colors.
  *
  * These values feed Ant Design's ThemeConfig (see ant-theme/default-theme.ts);
- * Ant's cssVar token system emits them as `--ant-brand-*` and `--ant-neutral-*`
+ * Ant's cssVar token system emits them as `--fidesui-brand-*` and `--fidesui-neutral-*`
  * CSS variables for use in component styles.
  */
 export const palette = {

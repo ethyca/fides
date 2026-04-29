@@ -75,7 +75,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Add a system"
-              color="var(--ant-brand-sandstone)"
+              color="var(--fidesui-brand-sandstone)"
               icon={<ManualSetupIcon size={24} />}
               description="Manually add a system for services not covered by AWS or Okta discovery"
             />
@@ -110,7 +110,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Add multiple systems"
-              color="var(--ant-brand-olive)"
+              color="var(--fidesui-brand-olive)"
               icon={<ManualSetupIcon size={24} />}
               description="Choose vendors and automatically populate system details"
             />
@@ -133,7 +133,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Scan your infrastructure (AWS)"
-              color="var(--ant-brand-terracotta)"
+              color="var(--fidesui-brand-terracotta)"
               description="Automatically discover new systems in your AWS infrastructure"
               icon={<AWSLogo size={24} />}
             />
@@ -150,7 +150,7 @@ const AddSystem = () => {
           >
             <CalloutNavCard
               title="Scan your Sign On Provider (Okta)"
-              color="var(--ant-brand-minos)"
+              color="var(--fidesui-brand-minos)"
               description="Automatically discover new systems in your Okta infrastructure"
               icon={<OktaLogo size={24} />}
             />

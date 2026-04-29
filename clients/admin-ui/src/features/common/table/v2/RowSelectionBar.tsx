@@ -40,7 +40,7 @@ export const RowSelectionBar = <T,>({
         pr={2}
         py={0}
         colSpan={tableInstance.getAllColumns().length}
-        bgColor="var(--ant-color-white)"
+        bgColor="var(--fidesui-color-white)"
       >
         <HStack>
           <Text data-testid="selected-row-count" fontSize="xs">

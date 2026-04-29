@@ -4,7 +4,7 @@
   justify-content: center;
   background-color: transparent;
   border: none;
-  color: var(--ant-neutral-400);
+  color: var(--fidesui-neutral-400);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -13,8 +13,8 @@
     color 0.2s ease;
 
   &:hover {
-    background-color: var(--ant-neutral-700);
-    color: var(--ant-brand-corinth);
+    background-color: var(--fidesui-neutral-700);
+    color: var(--fidesui-brand-corinth);
   }
 }
 
@@ -24,7 +24,7 @@
   justify-content: center;
   background-color: transparent !important;
   border: none !important;
-  color: var(--ant-neutral-400) !important;
+  color: var(--fidesui-neutral-400) !important;
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -33,8 +33,8 @@
     color 0.2s ease;
 
   &:hover {
-    background-color: var(--ant-neutral-700) !important;
-    color: var(--ant-brand-corinth) !important;
+    background-color: var(--fidesui-neutral-700) !important;
+    color: var(--fidesui-brand-corinth) !important;
   }
 }
 
@@ -140,10 +140,10 @@
 }
 
 .menu {
-  --ant-menu-item-margin-block: 0 !important;
-  --ant-menu-item-margin-inline: 0 !important;
-  --ant-menu-item-width: 100% !important;
-  --ant-margin: 8px;
+  --fidesui-menu-item-margin-block: 0 !important;
+  --fidesui-menu-item-margin-inline: 0 !important;
+  --fidesui-menu-item-width: 100% !important;
+  --fidesui-margin: 8px;
 
   :global(.ant-menu-item),
   :global(.ant-menu-submenu > .ant-menu-submenu-title) {
@@ -153,7 +153,7 @@
 
 .menu:global(.ant-menu-inline-collapsed) {
   padding-inline: 8px !important;
-  --ant-menu-item-margin-block: 4px !important;
+  --fidesui-menu-item-margin-block: 4px !important;
 
   :global(.ant-menu-item),
   :global(.ant-menu-submenu > .ant-menu-submenu-title) {
@@ -174,25 +174,25 @@
   }
 
   :global(.ant-menu-submenu-selected > .ant-menu-submenu-title) {
-    background-color: var(--ant-brand-sandstone);
+    background-color: var(--fidesui-brand-sandstone);
     border-radius: 4px;
   }
 
   :global(
     .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon
   ) {
-    color: var(--ant-brand-minos);
+    color: var(--fidesui-brand-minos);
   }
 
   :global(.ant-menu-submenu > .ant-menu-submenu-title:hover) {
-    background-color: var(--ant-neutral-700);
+    background-color: var(--fidesui-neutral-700);
     border-radius: 4px;
   }
 
   :global(
     .ant-menu-submenu > .ant-menu-submenu-title:hover .ant-menu-item-icon
   ) {
-    color: var(--ant-brand-corinth);
+    color: var(--fidesui-brand-corinth);
   }
 }
 
@@ -201,23 +201,23 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ant-neutral-400);
+  color: var(--fidesui-neutral-400);
   cursor: default;
 }
 
 .flyout {
-  background-color: var(--ant-brand-minos) !important;
+  background-color: var(--fidesui-brand-minos) !important;
 
   :global(.ant-menu) {
-    background-color: var(--ant-brand-minos) !important;
-    background: var(--ant-brand-minos) !important;
-    --ant-menu-item-margin-inline: 0 !important;
-    --ant-menu-item-margin-block: 8px !important;
+    background-color: var(--fidesui-brand-minos) !important;
+    background: var(--fidesui-brand-minos) !important;
+    --fidesui-menu-item-margin-inline: 0 !important;
+    --fidesui-menu-item-margin-block: 8px !important;
     padding-block: 8px !important;
   }
 
   :global(.ant-menu-title-content) {
-    color: var(--ant-brand-corinth);
+    color: var(--fidesui-brand-corinth);
     padding: 0 !important;
     margin: 0 !important;
     display: block;
@@ -230,7 +230,7 @@
     margin: 0 !important;
 
     a {
-      color: var(--ant-brand-corinth) !important;
+      color: var(--fidesui-brand-corinth) !important;
       display: block;
       width: 100%;
       margin: 0 !important;
@@ -238,18 +238,18 @@
     }
 
     &:global(.ant-menu-item-selected) {
-      background-color: var(--ant-brand-sandstone) !important;
+      background-color: var(--fidesui-brand-sandstone) !important;
 
       a {
-        color: var(--ant-brand-minos) !important;
+        color: var(--fidesui-brand-minos) !important;
       }
     }
 
     &:hover {
-      background-color: var(--ant-neutral-700) !important;
+      background-color: var(--fidesui-neutral-700) !important;
 
       a {
-        color: var(--ant-brand-corinth) !important;
+        color: var(--fidesui-brand-corinth) !important;
       }
     }
   }

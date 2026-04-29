@@ -11,23 +11,23 @@
 }
 
 .cardComplete {
-  border-left: 4px solid var(--ant-color-success);
+  border-left: 4px solid var(--fidesui-color-success);
 }
 
 .completeContainer {
-  border-radius: var(--ant-border-radius-lg);
-  padding: var(--ant-padding-sm);
+  border-radius: var(--fidesui-border-radius-lg);
+  padding: var(--fidesui-padding-sm);
   background-color: color-mix(
     in srgb,
-    var(--ant-color-success) 10%,
+    var(--fidesui-color-success) 10%,
     transparent
   );
 }
 
 .titleLink {
-  --ant-color-link: var(--ant-color-text);
-  --ant-color-link-hover: var(--ant-color-text-secondary);
-  --ant-color-link-active: var(--ant-color-text);
+  --fidesui-color-link: var(--fidesui-color-text);
+  --fidesui-color-link-hover: var(--fidesui-color-text-secondary);
+  --fidesui-color-link-active: var(--fidesui-color-text);
 }
 
 .textWithTags {

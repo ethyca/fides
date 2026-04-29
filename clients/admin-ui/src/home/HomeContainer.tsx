@@ -25,8 +25,8 @@ const HomeContainerInner = () => {
   const activeTheme = resolvedMode === "dark" ? darkAntTheme : defaultAntTheme;
   const bgColor =
     resolvedMode === "dark"
-      ? "var(--ant-brand-bg-minos)"
-      : "var(--ant-color-white)";
+      ? "var(--fidesui-brand-bg-minos)"
+      : "var(--fidesui-color-white)";
 
   // Dark cssVar block is scoped to `.fidesui-dark` (see dark-theme.ts) so non-Ant
   // DOM (SCSS modules, plain divs) inside this subtree picks up the dark vars.

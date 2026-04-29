@@ -15,7 +15,7 @@ const isMac =
 const SHORTCUT_LABEL = isMac ? "⌘K" : "Ctrl+K";
 
 const SEARCH_ICON_STYLE = {
-  color: "var(--ant-neutral-400)",
+  color: "var(--fidesui-neutral-400)",
   fontSize: 14,
 };
 const DEBOUNCE_MS = 200;

@@ -202,7 +202,7 @@ const DatamapGraph = ({
     >
       <div
         className="size-full"
-        style={{ backgroundColor: "var(--ant-brand-bg-corinth)" }}
+        style={{ backgroundColor: "var(--fidesui-brand-bg-corinth)" }}
       >
         <ReactFlow
           nodes={nodes}
@@ -220,7 +220,7 @@ const DatamapGraph = ({
           proOptions={{ hideAttribution: true }}
         >
           <Background
-            color="var(--ant-neutral-100)"
+            color="var(--fidesui-neutral-100)"
             variant={BackgroundVariant.Dots}
             size={3}
           />

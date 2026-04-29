@@ -127,7 +127,7 @@ export const InfrastructureSystemListItem = ({
                 shape="square"
                 icon={
                   <Icons.TransformInstructions
-                    style={{ color: "var(--ant-brand-minos)" }}
+                    style={{ color: "var(--fidesui-brand-minos)" }}
                     className="m-1 size-full"
                   />
                 }

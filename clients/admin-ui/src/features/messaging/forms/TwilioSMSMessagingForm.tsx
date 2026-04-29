@@ -434,7 +434,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <Icons.CheckmarkFilled color="var(--ant-color-success)" />
+                        <Icons.CheckmarkFilled color="var(--fidesui-color-success)" />
                       ) : undefined
                     }
                   >

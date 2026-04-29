@@ -44,12 +44,12 @@ export const useDatamapGraph = ({ data }: UseDatamapGraphProps) => {
         target: link.target,
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: "var(--ant-neutral-300)",
+          color: "var(--fidesui-neutral-300)",
           width: 15,
           height: 15,
         },
         style: {
-          stroke: "var(--ant-neutral-300)",
+          stroke: "var(--fidesui-neutral-300)",
           strokeWidth: 1.5,
           strokeOpacity: 0.8,
         },

@@ -30,10 +30,10 @@ const ColorSwatch = ({
       aria-hidden
       className="mr-2 inline-block size-4 rounded-lg align-middle"
       style={{
-        backgroundColor: `var(--ant-brand-bg-${COLOR_VALUE_MAP[color]})`,
+        backgroundColor: `var(--fidesui-brand-bg-${COLOR_VALUE_MAP[color]})`,
         border:
           color === CustomTaxonomyColor.TAXONOMY_WHITE
-            ? "1px solid var(--ant-neutral-200)"
+            ? "1px solid var(--fidesui-neutral-200)"
             : "none",
         ...props.style,
       }}

@@ -14,7 +14,10 @@ export const InfoTooltip = ({ label, size, ...props }: InfoTooltipProps) =>
       {...props}
     >
       <span className="inline-block">
-        <Icons.InformationFilled color="var(--ant-neutral-200)" size={size} />
+        <Icons.InformationFilled
+          color="var(--fidesui-neutral-200)"
+          size={size}
+        />
       </span>
     </Tooltip>
   ) : null;

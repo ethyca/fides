@@ -1,7 +1,8 @@
 .tooltipChild {
   --custom-tooltip-outline-width: 1px;
   &:focus-visible {
-    outline: var(--custom-tooltip-outline-width) dashed var(--ant-brand-minos);
+    outline: var(--custom-tooltip-outline-width) dashed
+      var(--fidesui-brand-minos);
     outline-offset: 1px;
     transition:
       outline-offset 0s,

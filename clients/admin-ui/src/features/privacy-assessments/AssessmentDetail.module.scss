@@ -1,6 +1,6 @@
 .collapse {
-  --ant-color-border: var(--ant-neutral-75);
-  --ant-collapse-header-bg: var(--ant-color-bg-container) !important;
+  --fidesui-color-border: var(--fidesui-neutral-75);
+  --fidesui-collapse-header-bg: var(--fidesui-color-bg-container) !important;
 
   :global(.ant-collapse-item) {
     border-left: 6px solid transparent;
@@ -8,7 +8,7 @@
   }
 
   :global(.ant-collapse-item-active) {
-    border-left: 6px solid var(--ant-brand-minos);
+    border-left: 6px solid var(--fidesui-brand-minos);
   }
 
   :global(.ant-collapse-header-text) {
