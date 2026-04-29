@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -119,16 +120,28 @@ def _execute_identity_lookup(
         return []
 
     engine = connector.client()
+    start = time.monotonic()
     try:
         with engine.connect() as connection:
             connector.set_schema(connection)
             results = connection.execute(query)
-            return connector.cursor_result_to_rows(results)
+            rows = connector.cursor_result_to_rows(results)
+            elapsed = time.monotonic() - start
+            logger.info(
+                "Identity enrichment query for {}.{} completed in {:.3f}s ({} rows)",
+                connector.configuration.key,
+                collection.name,
+                elapsed,
+                len(rows),
+            )
+            return rows
     except Exception as exc:
+        elapsed = time.monotonic() - start
         logger.warning(
-            "Identity enrichment query failed for {}.{}: {}",
+            "Identity enrichment query failed for {}.{} after {:.3f}s: {}",
             connector.configuration.key,
             collection.name,
+            elapsed,
             exc,
         )
         return []

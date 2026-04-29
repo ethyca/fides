@@ -125,6 +125,10 @@ def _make_sql_connector_mock(
     mock_connector.query_config = _query_config
     mock_connector.cursor_result_to_rows = SQLConnector.cursor_result_to_rows
 
+    mock_config = MagicMock()
+    mock_config.key = "mock_connector"
+    mock_connector.configuration = mock_config
+
     return mock_connector
 
 
