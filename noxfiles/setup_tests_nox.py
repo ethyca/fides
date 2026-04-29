@@ -498,6 +498,7 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "pytest",
         *pytest_config.args,
         "tests/common/",
+        "tests/config/",
         "tests/service/",
         "tests/system_integration_link/",
         "tests/task/",
