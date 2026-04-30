@@ -45,6 +45,10 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Allows custom privacy request fields to be used in request execution.",
     )
+    allow_custom_privacy_request_file_upload: bool = Field(
+        default=False,
+        description="Allows file uploads to be attached to incoming privacy requests.",
+    )
     request_task_ttl: int = Field(
         default=604800,
         description="The number of seconds a request task should live.",

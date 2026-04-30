@@ -1,0 +1,4 @@
+type: Added
+description: Upload service + attachment endpoint for data-subject file attachments on custom Privacy Center fields
+pr: 8042
+labels: []
