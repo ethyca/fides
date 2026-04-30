@@ -1,22 +1,28 @@
 // jsdom does not expose Web Streams or TextEncoder/TextDecoder by default.
 // Pull them from Node's stream/web + util before importing the module under test.
 import { ReadableStream as NodeReadableStream } from "node:stream/web";
-import { TextDecoder as NodeTextDecoder, TextEncoder as NodeTextEncoder } from "node:util";
-
-if (typeof globalThis.TextEncoder === "undefined") {
-  (globalThis as unknown as { TextEncoder: typeof NodeTextEncoder }).TextEncoder =
-    NodeTextEncoder;
-}
-if (typeof globalThis.TextDecoder === "undefined") {
-  (globalThis as unknown as { TextDecoder: typeof NodeTextDecoder }).TextDecoder =
-    NodeTextDecoder as unknown as typeof NodeTextDecoder;
-}
-if (typeof globalThis.ReadableStream === "undefined") {
-  (globalThis as unknown as { ReadableStream: typeof NodeReadableStream }).ReadableStream =
-    NodeReadableStream;
-}
+import {
+  TextDecoder as NodeTextDecoder,
+  TextEncoder as NodeTextEncoder,
+} from "node:util";
 
 import { parseSseStream } from "../streaming";
+
+if (typeof globalThis.TextEncoder === "undefined") {
+  (
+    globalThis as unknown as { TextEncoder: typeof NodeTextEncoder }
+  ).TextEncoder = NodeTextEncoder;
+}
+if (typeof globalThis.TextDecoder === "undefined") {
+  (
+    globalThis as unknown as { TextDecoder: typeof NodeTextDecoder }
+  ).TextDecoder = NodeTextDecoder as unknown as typeof NodeTextDecoder;
+}
+if (typeof globalThis.ReadableStream === "undefined") {
+  (
+    globalThis as unknown as { ReadableStream: typeof NodeReadableStream }
+  ).ReadableStream = NodeReadableStream;
+}
 
 const encoder = new TextEncoder();
 
@@ -36,6 +42,7 @@ describe("parseSseStream", () => {
     ]);
 
     const events: { event: string; data: string }[] = [];
+    // eslint-disable-next-line no-restricted-syntax
     for await (const ev of parseSseStream(stream)) {
       events.push(ev);
     }
@@ -54,6 +61,7 @@ describe("parseSseStream", () => {
     ]);
 
     const events: { event: string; data: string }[] = [];
+    // eslint-disable-next-line no-restricted-syntax
     for await (const ev of parseSseStream(stream)) {
       events.push(ev);
     }

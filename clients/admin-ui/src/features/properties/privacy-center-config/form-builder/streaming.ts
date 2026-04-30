@@ -11,6 +11,9 @@ export async function* parseSseStream(
   let buffer = "";
 
   while (true) {
+    // Sequential reads are required: each chunk depends on draining the
+    // previous one, so concurrent reads would interleave SSE frames.
+    // eslint-disable-next-line no-await-in-loop
     const { done, value } = await reader.read();
     if (done) {
       break;
@@ -24,13 +27,13 @@ export async function* parseSseStream(
 
       let event = "message";
       const dataLines: string[] = [];
-      for (const line of raw.split("\n")) {
+      raw.split("\n").forEach((line) => {
         if (line.startsWith("event: ")) {
           event = line.slice(7).trim();
         } else if (line.startsWith("data: ")) {
           dataLines.push(line.slice(6));
         }
-      }
+      });
       if (dataLines.length > 0) {
         yield { event, data: dataLines.join("\n") };
       }

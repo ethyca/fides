@@ -99,7 +99,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
   const errors: ValidationError[] = [];
   const pcShape: PcCustomFields = {};
 
-  const root = spec.elements[spec.root];
+  const root = spec.elements?.[spec.root];
   if (!root || root.type !== "Form") {
     errors.push({ kind: "missing_form_root", rootId: spec.root });
     return { pcShape, droppedFeatures, errors };
@@ -107,7 +107,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
 
   const seenNames: Record<string, string[]> = {};
 
-  for (const childId of root.children) {
+  root.children.forEach((childId) => {
     const child = spec.elements[childId];
     if (!child) {
       errors.push({
@@ -115,7 +115,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
         elementId: childId,
         parentId: spec.root,
       });
-      continue;
+      return;
     }
 
     if (child.visible !== undefined) {
@@ -124,7 +124,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
     if (child.watch !== undefined) {
       droppedFeatures.push({ kind: "watch", elementId: childId });
     }
-    for (const [propPath, propValue] of Object.entries(child.props ?? {})) {
+    Object.entries(child.props ?? {}).forEach(([propPath, propValue]) => {
       if (hasExpression(propValue)) {
         droppedFeatures.push({
           kind: "expression",
@@ -132,7 +132,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
           path: propPath,
         });
       }
-    }
+    });
 
     if (!(child.type in FIELD_TYPE)) {
       droppedFeatures.push({
@@ -140,12 +140,13 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
         elementId: childId,
         type: child.type,
       });
-      continue;
+      return;
     }
 
     const componentType = child.type as Exclude<ComponentType, "Form">;
-    const validation =
-      catalog.components[componentType].props.safeParse(child.props);
+    const validation = catalog.components[componentType].props.safeParse(
+      child.props,
+    );
     if (!validation.success) {
       errors.push({
         kind: "invalid_props",
@@ -154,7 +155,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
           .map((i) => `${i.path.join(".")}: ${i.message}`)
           .join("; "),
       });
-      continue;
+      return;
     }
 
     const props = validation.data as Record<string, any>;
@@ -170,13 +171,16 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
     switch (componentType) {
       case "Text": {
         const text: PcTextField = { ...baseField, field_type: "text" };
-        if (props.default_value != null) {
+        if (props.default_value !== undefined && props.default_value !== null) {
           text.default_value = props.default_value;
         }
         if (props.hidden !== undefined) {
           text.hidden = props.hidden;
         }
-        if (props.query_param_key != null) {
+        if (
+          props.query_param_key !== undefined &&
+          props.query_param_key !== null
+        ) {
           text.query_param_key = props.query_param_key;
         }
         pcField = text;
@@ -188,7 +192,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
           field_type: "select",
           options: props.options as string[],
         };
-        if (props.default_value != null) {
+        if (props.default_value !== undefined && props.default_value !== null) {
           select.default_value = props.default_value;
         }
         pcField = select;
@@ -200,7 +204,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
           field_type: "multiselect",
           options: props.options as string[],
         };
-        if (props.default_value != null) {
+        if (props.default_value !== undefined && props.default_value !== null) {
           multi.default_value = props.default_value;
         }
         pcField = multi;
@@ -221,18 +225,18 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
         break;
       }
       default: {
-        const _exhaustive: never = componentType;
-        throw new Error(`Unhandled component type: ${_exhaustive as string}`);
+        const exhaustive: never = componentType;
+        throw new Error(`Unhandled component type: ${exhaustive as string}`);
       }
     }
     pcShape[name] = pcField;
-  }
+  });
 
-  for (const [name, ids] of Object.entries(seenNames)) {
+  Object.entries(seenNames).forEach(([name, ids]) => {
     if (ids.length > 1) {
       errors.push({ kind: "duplicate_name", name, elementIds: ids });
     }
-  }
+  });
 
   return { pcShape, droppedFeatures, errors };
 }

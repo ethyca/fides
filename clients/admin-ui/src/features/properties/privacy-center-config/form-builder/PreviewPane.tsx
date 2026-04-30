@@ -30,14 +30,10 @@ const formCardStyle: React.CSSProperties = {
   maxWidth: 360,
   padding: 32,
   borderRadius: 4,
-  boxShadow:
-    "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+  boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
 };
 
-export const PreviewPane: React.FC<PreviewPaneProps> = ({
-  spec,
-  onFieldClick,
-}) => {
+export const PreviewPane = ({ spec, onFieldClick }: PreviewPaneProps) => {
   if (!spec) {
     return (
       <div style={canvasStyle}>
@@ -67,10 +63,11 @@ export const PreviewPane: React.FC<PreviewPaneProps> = ({
         // unconditionally in the admin builder preview. The dropped-features
         // modal handles user communication at save time.
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { visible, watch, ...rest } = element as JsonRenderSpec["elements"][string] & {
-          visible?: unknown;
-          watch?: unknown;
-        };
+        const { visible, watch, ...rest } =
+          element as JsonRenderSpec["elements"][string] & {
+            visible?: unknown;
+            watch?: unknown;
+          };
         return [
           id,
           {
@@ -85,8 +82,8 @@ export const PreviewPane: React.FC<PreviewPaneProps> = ({
     ),
   };
 
-  // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div style={canvasStyle} onClick={handleClick}>
       <div style={formCardStyle}>
         <JSONUIProvider registry={registry}>

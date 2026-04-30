@@ -64,8 +64,6 @@ describe("ChatPane", () => {
       />,
     );
     expect(screen.getByRole("textbox")).toBeDisabled();
-    expect(
-      screen.getByText(/LLM provider not configured/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/LLM provider not configured/)).toBeInTheDocument();
   });
 });

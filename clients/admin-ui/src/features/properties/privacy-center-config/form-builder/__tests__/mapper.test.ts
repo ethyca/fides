@@ -120,6 +120,7 @@ describe("mapSpecToPcShape", () => {
           type: "Text",
           props: {
             name: "computed",
+            // eslint-disable-next-line no-template-curly-in-string
             label: { $template: "Hello ${/x}" },
             required: false,
           },

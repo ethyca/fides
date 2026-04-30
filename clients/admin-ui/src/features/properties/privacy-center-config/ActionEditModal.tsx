@@ -15,12 +15,12 @@ interface ActionEditModalProps {
   onCancel: () => void;
 }
 
-export const ActionEditModal: React.FC<ActionEditModalProps> = ({
+export const ActionEditModal = ({
   open,
   initial,
   onOk,
   onCancel,
-}) => {
+}: ActionEditModalProps) => {
   const [form] = Form.useForm<ActionFormValues>();
 
   return (
@@ -70,6 +70,7 @@ export const ActionEditModal: React.FC<ActionEditModalProps> = ({
           tooltip="Whether the privacy center asks for email before this action."
         >
           <Select
+            aria-label="Identity inputs"
             options={[
               { label: "Email required", value: "required" },
               { label: "Email optional", value: "optional" },

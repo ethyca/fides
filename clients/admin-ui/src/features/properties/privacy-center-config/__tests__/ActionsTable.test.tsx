@@ -8,7 +8,9 @@ const sampleAction = {
   title: "Access My Data",
   description: "...",
   icon_path: "/icon.svg",
-  custom_privacy_request_fields: { email: { label: "Email", field_type: "text" } },
+  custom_privacy_request_fields: {
+    email: { label: "Email", field_type: "text" },
+  },
 };
 
 describe("ActionsTable", () => {

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { PathsEditor } from "../PathsEditor";
 
-const Harness: React.FC<{ initial?: string[] }> = ({ initial = [] }) => {
+const Harness = ({ initial = [] }: { initial?: string[] }) => {
   const [paths, setPaths] = useState<string[]>(initial);
   return <PathsEditor value={paths} onChange={setPaths} />;
 };

@@ -15,7 +15,7 @@ interface ChatPaneProps {
   disabledReason?: string;
 }
 
-export const ChatPane: React.FC<ChatPaneProps> = ({
+export const ChatPane = ({
   messages,
   status,
   error,
@@ -23,7 +23,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
   onAbort,
   disabled,
   disabledReason,
-}) => {
+}: ChatPaneProps) => {
   const [draft, setDraft] = useState("");
   const isStreaming = status === "streaming";
 
