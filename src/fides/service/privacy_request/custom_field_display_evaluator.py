@@ -9,6 +9,7 @@ their layer expects (HTTP error, ``PrivacyRequestError``, etc.).
 from typing import Any
 
 from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
+from fides.api.schemas.redis_cache import CustomPrivacyRequestField
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 
 
@@ -20,7 +21,7 @@ class DisplayConditionViolation(ValueError):
 
 def evaluate_submission(
     fields: dict[str, BaseCustomPrivacyRequestField],
-    submitted: dict[str, Any],
+    submitted: dict[str, CustomPrivacyRequestField],
     condition_evaluator: ConditionEvaluator,
 ) -> None:
     """Resolve which fields are applicable given ``submitted`` and raise
@@ -28,10 +29,6 @@ def evaluate_submission(
 
     * a field gated off by its ``display_condition`` must not be submitted;
     * a required field that is applicable must have a value.
-
-    ``submitted`` may hold raw JSON dicts, ``CustomPrivacyRequestField``
-    Pydantic instances, or bare values — :func:`_extract_submitted_value`
-    normalises all three.
     """
     applicable = _resolve_applicable(fields, submitted, condition_evaluator)
     _enforce_visibility(fields, submitted, applicable)
@@ -39,11 +36,11 @@ def evaluate_submission(
 
 def _resolve_applicable(
     fields: dict[str, BaseCustomPrivacyRequestField],
-    submitted_values: dict[str, Any],
+    submitted_values: dict[str, CustomPrivacyRequestField],
     evaluator: ConditionEvaluator,
 ) -> set[str]:
     """Fixed-point: keep filtering until the applicable set stops shrinking."""
-    normalised = {k: _extract_submitted_value(v) for k, v in submitted_values.items()}
+    normalised = {k: v.value for k, v in submitted_values.items()}
     applicable: set[str] = set(fields.keys())
     previous: set[str] = set()
     while previous != applicable:
@@ -57,7 +54,7 @@ def _resolve_applicable(
 
 def _enforce_visibility(
     fields: dict[str, BaseCustomPrivacyRequestField],
-    submitted_values: dict[str, Any],
+    submitted_values: dict[str, CustomPrivacyRequestField],
     applicable: set[str],
 ) -> None:
     """Reject gated-off submissions + missing required-applicable values."""

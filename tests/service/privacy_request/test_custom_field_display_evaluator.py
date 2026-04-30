@@ -3,14 +3,17 @@ check on ``custom_privacy_request_fields``."""
 
 import pytest
 
-from fides.api.schemas.custom_field_display_evaluator import (
+from fides.api.schemas.privacy_center_config import CustomPrivacyRequestField
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField as SubmittedField,
+)
+from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
+from fides.api.task.conditional_dependencies.schemas import ConditionLeaf, Operator
+from fides.service.privacy_request.custom_field_display_evaluator import (
     DisplayConditionViolation,
     _submitted_has_value,
     evaluate_submission,
 )
-from fides.api.schemas.privacy_center_config import CustomPrivacyRequestField
-from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
-from fides.api.task.conditional_dependencies.schemas import ConditionLeaf, Operator
 
 
 def _leaf(field_address, operator, value=None):
@@ -19,6 +22,13 @@ def _leaf(field_address, operator, value=None):
 
 def _cprf(label, **kw):
     return CustomPrivacyRequestField(label=label, **kw)
+
+
+def _sv(value, label="x"):
+    """Build a submitted ``CustomPrivacyRequestField`` (runtime model with
+    ``.value``) — what callers actually pass to ``evaluate_submission``.
+    """
+    return SubmittedField(label=label, value=value)
 
 
 def _agree_detail(detail_condition=None, *, agree_kw=None, detail_kw=None):
@@ -56,18 +66,13 @@ class TestEvaluateSubmission:
             ),
             pytest.param(
                 _agree_detail(_AGREE_TRUE),
-                {"agree": True, "detail": "text"},
+                {"agree": _sv(True), "detail": _sv("text")},
                 id="condition_true",
             ),
             pytest.param(
                 _agree_detail(_AGREE_TRUE),
-                {"agree": False},
+                {"agree": _sv(False)},
                 id="condition_false_nothing_submitted",
-            ),
-            pytest.param(
-                _agree_detail(_AGREE_TRUE),
-                {"agree": {"label": "Agree", "value": True}, "detail": {"value": "x"}},
-                id="wrapped_label_value",
             ),
             pytest.param(
                 _agree_detail(_leaf("agree", Operator.exists)),
@@ -84,7 +89,7 @@ class TestEvaluateSubmission:
         with pytest.raises(DisplayConditionViolation, match="'detail' is gated off"):
             evaluate_submission(
                 _agree_detail(_AGREE_TRUE),
-                {"agree": {"value": False}, "detail": {"value": "x"}},
+                {"agree": _sv(False), "detail": _sv("x")},
                 evaluator,
             )
 
@@ -96,11 +101,11 @@ class TestEvaluateSubmission:
     def test_required_non_applicable_passes(self, evaluator):
         # required=True is ignored when the field is not applicable.
         fields = _agree_detail(_AGREE_TRUE, detail_kw={"required": True})
-        evaluate_submission(fields, {"agree": False}, evaluator)
+        evaluate_submission(fields, {"agree": _sv(False)}, evaluator)
 
     def test_unknown_submitted_key_ignored(self, evaluator):
         fields = {"agree": _cprf("Agree", field_type="checkbox", required=False)}
-        evaluate_submission(fields, {"stray": "x"}, evaluator)
+        evaluate_submission(fields, {"stray": _sv("x")}, evaluator)
 
     def test_transitive_hide_through_fixed_point(self, evaluator):
         # b depends on a; c depends on b. Hiding a cascades to c.
@@ -116,7 +121,7 @@ class TestEvaluateSubmission:
         with pytest.raises(DisplayConditionViolation, match="'b' is gated off"):
             evaluate_submission(
                 fields,
-                {"a": False, "b": "x", "c": "y"},
+                {"a": _sv(False), "b": _sv("x"), "c": _sv("y")},
                 evaluator,
             )
 
@@ -129,20 +134,9 @@ class TestEvaluateSubmission:
         with pytest.raises(DisplayConditionViolation, match="'detail' is gated off"):
             evaluate_submission(
                 _agree_detail(_AGREE_TRUE),
-                {"agree": True, "detail": "text"},
+                {"agree": _sv(True), "detail": _sv("text")},
                 evaluator,
             )
-
-    def test_extract_submitted_value_reads_attribute_shape(self, evaluator):
-        # Pydantic-style ``.value`` attr (in-process form) is unwrapped.
-        class _Wrapped:
-            value = True
-
-        evaluate_submission(
-            _agree_detail(_AGREE_TRUE),
-            {"agree": _Wrapped(), "detail": {"value": "x"}},
-            evaluator,
-        )
 
 
 @pytest.mark.parametrize(

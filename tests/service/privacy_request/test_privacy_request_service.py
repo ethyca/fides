@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import List
 from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
@@ -20,8 +19,11 @@ from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_center_config import (
+    CustomPrivacyRequestField,
+    LocationCustomPrivacyRequestField,
+)
 from fides.api.schemas.privacy_request import (
-    BulkUpdateFailed,
     PrivacyRequestCreate,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -1481,15 +1483,6 @@ class TestPrivacyRequestService:
             start_idx += len(batch)
 
 
-# Unit tests below cover ``_validate_field_visibility`` in isolation —
-# the integration class above marks ``integration_postgres`` and the
-# misc-integration shard's coverage isn't piped through codecov.
-from fides.api.schemas.privacy_center_config import (
-    CustomPrivacyRequestField,
-    LocationCustomPrivacyRequestField,
-)
-
-
 def _make_action(custom_fields):
     a = MagicMock()
     a.custom_privacy_request_fields = custom_fields
@@ -1599,3 +1592,50 @@ class TestValidateFieldVisibility:
         ):
             svc.create_privacy_request(req, authenticated=True)
         visibility.assert_called_once_with(req)
+
+
+@pytest.mark.unit
+class TestValidateRequiredLocationFields:
+    @pytest.mark.parametrize(
+        "stub_kwargs",
+        [
+            pytest.param({"config_dict": None}, id="no_config"),
+            pytest.param({"parsed": None}, id="unparseable_config"),
+            pytest.param({"action": None}, id="no_matching_action"),
+            pytest.param(
+                {"action": _make_action(None)}, id="action_without_custom_fields"
+            ),
+            pytest.param(
+                {
+                    "action": _make_action(
+                        {
+                            "reason": CustomPrivacyRequestField(
+                                label="Reason", field_type="text", required=True
+                            )
+                        }
+                    )
+                },
+                id="non_location_required_field_ignored",
+            ),
+        ],
+    )
+    def test_short_circuit_paths(self, stub_kwargs):
+        svc = _svc()
+        with _stub_lookups(svc, **stub_kwargs):
+            svc._validate_required_location_fields(_req())
+
+    def test_missing_required_location_raises(self):
+        svc = _svc()
+        action = _make_action(
+            {
+                "country": LocationCustomPrivacyRequestField(
+                    label="Country", required=True
+                )
+            }
+        )
+        with _stub_lookups(svc, action=action):
+            with pytest.raises(
+                PrivacyRequestError,
+                match="Location is required for field 'country'",
+            ):
+                svc._validate_required_location_fields(_req())
