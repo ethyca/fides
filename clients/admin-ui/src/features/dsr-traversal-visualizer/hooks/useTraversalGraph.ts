@@ -3,10 +3,10 @@ import { useMemo } from "react";
 
 import { EDGE_TYPES, NODE_TYPES } from "../constants";
 import { LayoutDirection, layoutTraversal } from "../layout-utils";
-import { TraversalPreviewResponse } from "../types";
+import { AppNode, TraversalPreviewResponse } from "../types";
 
 export interface TraversalGraph {
-  nodes: Node[];
+  nodes: AppNode[];
   edges: Edge[];
 }
 
@@ -21,30 +21,26 @@ export const useTraversalGraph = (
     if (!payload) {
       return { nodes: [], edges: [] };
     }
-    const nodes: Node[] = [];
-
-    nodes.push({
-      id: payload.identity_root.id,
-      type: NODE_TYPES.IDENTITY_ROOT,
-      data: payload.identity_root,
-      position: { x: 0, y: 0 },
-    });
-    payload.integrations.forEach((i) => {
-      nodes.push({
+    const nodes: AppNode[] = [
+      {
+        id: payload.identity_root.id,
+        type: "identityRoot",
+        data: payload.identity_root,
+        position: { x: 0, y: 0 },
+      },
+      ...payload.integrations.map<AppNode>((i) => ({
         id: i.id,
-        type: NODE_TYPES.INTEGRATION,
+        type: "integration",
         data: i,
         position: { x: 0, y: 0 },
-      });
-    });
-    payload.manual_tasks.forEach((m) => {
-      nodes.push({
+      })),
+      ...payload.manual_tasks.map<AppNode>((m) => ({
         id: m.id,
-        type: NODE_TYPES.MANUAL_TASK,
+        type: "manualTask",
         data: m,
         position: { x: 0, y: 0 },
-      });
-    });
+      })),
+    ];
 
     const edges: Edge[] = payload.edges.map((e) => ({
       id: edgeId(e.kind, e.source, e.target),
@@ -54,5 +50,6 @@ export const useTraversalGraph = (
       data: { dep_count: e.dep_count, kind: e.kind },
     }));
 
-    return layoutTraversal(nodes, edges, direction);
+    const layouted = layoutTraversal(nodes as Node[], edges, direction);
+    return { nodes: layouted.nodes as AppNode[], edges: layouted.edges };
   }, [payload, direction]);

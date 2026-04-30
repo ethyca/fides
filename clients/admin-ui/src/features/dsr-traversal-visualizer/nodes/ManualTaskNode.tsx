@@ -12,7 +12,7 @@ const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => (
       <Avatar
         shape="square"
         size="small"
-        icon={<Icons.UserActivity size={16} />}
+        icon={<Icons.Activity size={16} />}
         className={styles.avatar}
       />
       <Text strong style={{ flex: 1 }}>
