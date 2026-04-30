@@ -6,6 +6,8 @@ from pytest import param
 
 from fides.api.service.storage.util import (
     AllowedFileType,
+    FilesMagicBytes,
+    extension_for_mime,
     get_allowed_file_type_or_raise,
     get_local_filename,
     get_unique_filename,
@@ -431,3 +433,46 @@ class TestResolvePathFromContext:
         attachment = {"_context": None}
         result = resolve_path_from_context(attachment, "default")
         assert result == "default"
+
+
+class TestFilesMagicBytes:
+    @pytest.mark.parametrize(
+        "data, expected",
+        [
+            param(b"%PDF-1.4 body", "pdf", id="pdf"),
+            param(b"\xff\xd8\xff\xe0 body", "jpg", id="jpeg"),
+            param(b"\x89PNG\r\n\x1a\n body", "png", id="png"),
+            param(b"PK\x03\x04 body", "docx", id="zip_family"),
+            param(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1 ole", "doc", id="ole_family"),
+        ],
+    )
+    def test_from_bytes_matches_known_signatures(self, data, expected):
+        assert FilesMagicBytes.from_bytes(data) == expected
+
+    def test_from_bytes_returns_none_for_unknown(self):
+        assert FilesMagicBytes.from_bytes(b"not a real file") is None
+
+    def test_default_public_upload_allowed_file_types(self):
+        assert FilesMagicBytes.default_public_upload_allowed_file_types() == {
+            "pdf",
+            "jpg",
+            "png",
+        }
+
+
+class TestExtensionForMime:
+    @pytest.mark.parametrize(
+        "mime",
+        [
+            param("application/pdf", id="pdf"),
+            param("image/jpeg", id="jpeg"),
+            param("image/png", id="png"),
+        ],
+    )
+    def test_returns_extension(self, mime):
+        # jpg/jpeg share image/jpeg in AllowedFileType — either name is valid.
+        assert extension_for_mime(mime) in {"pdf", "jpg", "jpeg", "png"}
+
+    def test_raises_for_unknown_mime(self):
+        with pytest.raises(ValueError, match="No extension registered"):
+            extension_for_mime("application/x-unknown")

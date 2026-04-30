@@ -8,6 +8,36 @@ from loguru import logger
 
 from fides.api.util.storage_util import format_size
 
+
+class FilesMagicBytes:
+    """Magic-byte signatures keyed by file extension."""
+
+    SIGNATURES: dict[str, bytes] = {
+        "pdf": b"%PDF",
+        "doc": b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1",
+        "docx": b"PK\x03\x04",
+        "jpg": b"\xff\xd8\xff",
+        "jpeg": b"\xff\xd8\xff",
+        "png": b"\x89PNG\r\n\x1a\n",
+        "xls": b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1",
+        "xlsx": b"PK\x03\x04",
+        "zip": b"PK\x03\x04",
+    }
+
+    @classmethod
+    def from_bytes(cls, data: bytes) -> Optional[str]:
+        """Return extension whose magic prefix matches ``data``, else None."""
+        for ext, magic in cls.SIGNATURES.items():
+            if data[: len(magic)] == magic:
+                return ext
+        return None
+
+    @classmethod
+    def default_public_upload_allowed_file_types(cls) -> set[str]:
+        """Default extensions accepted on public (unauthenticated) upload endpoints."""
+        return {"pdf", "jpg", "png"}
+
+
 # This is the max file size for downloading the content of an attachment.
 # This is an industry standard used by companies like Google and Microsoft.
 LARGE_FILE_THRESHOLD = 2 * 1024 * 1024 * 1024  # 2 GB
@@ -29,6 +59,19 @@ class AllowedFileType(EnumType):
     xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     csv = "text/csv"
     zip = "application/zip"
+
+
+MIME_TO_EXTENSION: dict[str, str] = {
+    member.value: member.name for member in AllowedFileType
+}
+
+
+def extension_for_mime(mime: str) -> str:
+    """Return the file extension matching an allowed MIME (without leading dot)."""
+    try:
+        return MIME_TO_EXTENSION[mime]
+    except KeyError as exc:
+        raise ValueError(f"No extension registered for MIME {mime!r}") from exc
 
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
