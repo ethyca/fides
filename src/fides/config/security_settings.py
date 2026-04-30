@@ -131,6 +131,10 @@ class SecuritySettings(FidesSettings):
         default="10/minute",
         description="The number of authentication requests from a single IP address allowed to hit authentication endpoints (login, OAuth token) within the specified time period.",
     )
+    privacy_request_attachment_rate_limit: str = Field(
+        default="30/minute",
+        description="Per-IP rate limit for the unauthenticated privacy-request attachment upload endpoint. Tighter than the global limit because the endpoint accepts large multipart bodies.",
+    )
     root_user_scopes: List[str] = Field(
         default=SCOPE_REGISTRY,
         description="The list of scopes that are given to the root user.",
@@ -302,7 +306,11 @@ class SecuritySettings(FidesSettings):
             )
         return v
 
-    @field_validator("request_rate_limit", "auth_rate_limit")
+    @field_validator(
+        "request_rate_limit",
+        "auth_rate_limit",
+        "privacy_request_attachment_rate_limit",
+    )
     @classmethod
     def validate_rate_limits(
         cls,
