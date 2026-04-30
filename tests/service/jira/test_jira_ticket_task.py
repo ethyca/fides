@@ -330,4 +330,6 @@ class TestPollJiraTicketsTask:
 
 class TestJiraPollingConfig:
     def test_default_polling_interval(self):
+        # Exact-value assertion is intentional: catches unintended default
+        # changes. Update this value (and the changelog) when changing the default.
         assert CONFIG.execution.jira_polling_interval_minutes == 3
