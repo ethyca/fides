@@ -9,6 +9,7 @@ from watchfiles.filters import DefaultFilter
 
 from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
+from fides.config import CONFIG
 from fides.api.tasks import (
     BULK_CONSENT_IMPORT_QUEUE_NAME,
     CONSENT_WEBHOOK_QUEUE_NAME,
@@ -37,15 +38,20 @@ class _PythonAndYamlFilter(DefaultFilter):
 
 def _run_celery_worker(worker_queues: str) -> None:
     """Run the Celery worker process. Extracted so it can be used as a watchfiles target."""
-    celery_app.worker_main(
-        argv=[
-            "--quiet",  # Disable Celery startup banner
-            "worker",
-            "--loglevel=info",
-            "--concurrency=2",
-            f"--queues={worker_queues}",
-        ]
-    )
+    argv = [
+        "--quiet",  # Disable Celery startup banner
+        "worker",
+        "--loglevel=info",
+        "--concurrency=2",
+        f"--queues={worker_queues}",
+    ]
+    if CONFIG.celery.worker_disable_gossip_heartbeat_mingle:
+        argv += ["--without-heartbeat", "--without-gossip", "--without-mingle"]
+        logger.info(
+            "Worker started with --without-heartbeat --without-gossip --without-mingle "
+            "(FIDES__CELERY__WORKER_DISABLE_GOSSIP_HEARTBEAT_MINGLE=true)"
+        )
+    celery_app.worker_main(argv=argv)
 
 
 def start_worker(

@@ -33,6 +33,11 @@ class CelerySettings(FidesSettings):
     healthcheck_ping_timeout: float = Field(
         default=2.0, description="The timeout in seconds for the health check ping"
     )
+    worker_disable_gossip_heartbeat_mingle: bool = Field(
+        default=False,
+        description="If true, starts the worker with --without-heartbeat --without-gossip --without-mingle. "
+        "Use this as a workaround for Celery BRPOP connection drop issues (celery/celery#7276).",
+    )
     broker_url: Optional[str] = Field(
         default=None,
         description="Celery broker URL. When set, overrides the default. With redis.cluster_enabled, "
