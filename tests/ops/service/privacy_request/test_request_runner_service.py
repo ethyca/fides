@@ -2833,8 +2833,8 @@ class TestSaveAccessResults:
 
 
 @pytest.mark.unit
-class TestShouldSkipConsentPipeline:
-    """Tests for the _should_skip_consent_pipeline helper."""
+class TestShouldProcessConsent:
+    """Tests for the _should_process_consent helper."""
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
@@ -2847,7 +2847,7 @@ class TestShouldSkipConsentPipeline:
     ):
         """Should skip when there are no propagatable preferences and no manual consent tasks."""
         from fides.api.service.privacy_request.request_runner_service import (
-            _should_skip_consent_pipeline,
+            _should_process_consent,
         )
 
         mock_filter.return_value = []
@@ -2858,7 +2858,7 @@ class TestShouldSkipConsentPipeline:
         pr.consent_tasks.count.return_value = 0
         pr.privacy_preferences = []
 
-        assert _should_skip_consent_pipeline(pr, db) is True
+        assert _should_process_consent(pr, db) is False
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
@@ -2866,18 +2866,18 @@ class TestShouldSkipConsentPipeline:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
     )
-    def test_no_skip_when_consent_preferences_present(
+    def test_has_work_when_consent_preferences_present(
         self, mock_filter, mock_manual, db
     ):
-        """Should NOT skip when legacy consent_preferences (old workflow) is populated."""
+        """Should have work when legacy consent_preferences (old workflow) is populated."""
         from fides.api.service.privacy_request.request_runner_service import (
-            _should_skip_consent_pipeline,
+            _should_process_consent,
         )
 
         pr = Mock(spec=PrivacyRequest)
         pr.consent_preferences = [{"opt_in": True}]
 
-        assert _should_skip_consent_pipeline(pr, db) is False
+        assert _should_process_consent(pr, db) is True
         mock_filter.assert_not_called()
 
     @mock.patch(
@@ -2886,17 +2886,17 @@ class TestShouldSkipConsentPipeline:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
     )
-    def test_no_skip_when_consent_tasks_exist(self, mock_filter, mock_manual, db):
-        """Should NOT skip when consent tasks already exist (reprocessing scenario)."""
+    def test_has_work_when_consent_tasks_exist(self, mock_filter, mock_manual, db):
+        """Should have work when consent tasks already exist (reprocessing scenario)."""
         from fides.api.service.privacy_request.request_runner_service import (
-            _should_skip_consent_pipeline,
+            _should_process_consent,
         )
 
         pr = Mock(spec=PrivacyRequest)
         pr.consent_preferences = None
         pr.consent_tasks.count.return_value = 3
 
-        assert _should_skip_consent_pipeline(pr, db) is False
+        assert _should_process_consent(pr, db) is True
         mock_filter.assert_not_called()
 
     @mock.patch(
@@ -2905,12 +2905,12 @@ class TestShouldSkipConsentPipeline:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
     )
-    def test_no_skip_when_propagatable_preferences_exist(
+    def test_has_work_when_propagatable_preferences_exist(
         self, mock_filter, mock_manual, db
     ):
-        """Should NOT skip when there are propagatable preferences."""
+        """Should have work when there are propagatable preferences."""
         from fides.api.service.privacy_request.request_runner_service import (
-            _should_skip_consent_pipeline,
+            _should_process_consent,
         )
 
         mock_filter.return_value = [Mock()]
@@ -2920,7 +2920,7 @@ class TestShouldSkipConsentPipeline:
         pr.consent_tasks.count.return_value = 0
         pr.privacy_preferences = [Mock()]
 
-        assert _should_skip_consent_pipeline(pr, db) is False
+        assert _should_process_consent(pr, db) is True
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.get_manual_task_addresses"
@@ -2928,12 +2928,12 @@ class TestShouldSkipConsentPipeline:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.filter_privacy_preferences_for_propagation"
     )
-    def test_no_skip_when_manual_consent_tasks_configured(
+    def test_has_work_when_manual_consent_tasks_configured(
         self, mock_filter, mock_manual, db
     ):
-        """Should NOT skip when manual consent task addresses are configured."""
+        """Should have work when manual consent task addresses are configured."""
         from fides.api.service.privacy_request.request_runner_service import (
-            _should_skip_consent_pipeline,
+            _should_process_consent,
         )
 
         mock_filter.return_value = []
@@ -2944,7 +2944,7 @@ class TestShouldSkipConsentPipeline:
         pr.consent_tasks.count.return_value = 0
         pr.privacy_preferences = []
 
-        assert _should_skip_consent_pipeline(pr, db) is False
+        assert _should_process_consent(pr, db) is True
 
 
 class TestSoftTimeLimit:
@@ -2978,8 +2978,8 @@ class TestSoftTimeLimit:
         side_effect=SoftTimeLimitExceeded(),
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service._should_skip_consent_pipeline",
-        return_value=False,
+        "fides.api.service.privacy_request.request_runner_service._should_process_consent",
+        return_value=True,
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.enrich_identities_for_consent",

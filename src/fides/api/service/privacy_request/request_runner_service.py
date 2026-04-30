@@ -407,41 +407,38 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     return download_urls
 
 
-def _should_skip_consent_pipeline(
+def _should_process_consent(
     privacy_request: PrivacyRequest,
     session: Session,
 ) -> bool:
-    """Return True when the consent pipeline can be skipped entirely.
+    """Return True when the consent pipeline has work to do.
 
-    Skips when all of these hold:
-    - New-workflow request (no legacy consent_preferences)
-    - No consent tasks already created (not a reprocessing run)
-    - No propagatable privacy preferences for any system
-    - No manual consent task addresses configured
+    Returns True when any of these hold:
+    - Legacy consent_preferences present
+    - Consent tasks already created (reprocessing run)
+    - Propagatable privacy preferences exist for any system
+    - Manual consent task addresses configured
     """
     if privacy_request.consent_preferences:
-        return False
+        return True
     if privacy_request.consent_tasks.count() > 0:
-        return False
+        return True
 
     propagatable = filter_privacy_preferences_for_propagation(
         system=None,
         privacy_preferences=privacy_request.privacy_preferences,  # type: ignore[attr-defined]
     )
     if propagatable:
-        return False
+        return True
 
-    has_manual = bool(
-        get_manual_task_addresses(session, config_types=[ActionType.consent])
-    )
-    if has_manual:
-        return False
+    if get_manual_task_addresses(session, config_types=[ActionType.consent]):
+        return True
 
     logger.info(
         "Skipping consent step: no actionable consent "
         "preferences to propagate for any system"
     )
-    return True
+    return False
 
 
 @celery_app.task(
@@ -726,11 +723,7 @@ def run_privacy_request(
                     request_checkpoint=CurrentStep.consent,
                     from_checkpoint=resume_step,
                 ):
-                    should_skip_consent = _should_skip_consent_pipeline(
-                        privacy_request, session
-                    )
-
-                    if not should_skip_consent:
+                    if _should_process_consent(privacy_request, session):
                         logger.info("Consent processing: starting identity enrichment")
                         identity_data = enrich_identities_for_consent(
                             datasets=datasets,
