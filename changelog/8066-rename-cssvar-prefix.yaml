@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Rename Ant cssVar prefix to fidesui and migrate all var(--ant-*) consumers
+pr: 8066
+labels: []
