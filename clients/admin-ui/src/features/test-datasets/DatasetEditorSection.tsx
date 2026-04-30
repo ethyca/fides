@@ -1,18 +1,15 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Alert,
   Button,
   Card,
   Flex,
-  Icons,
   Select,
   Space,
-  Tooltip,
   Typography,
   useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -23,7 +20,7 @@ import {
   useGetConnectionConfigDatasetConfigsQuery,
   useGetDatasetReachabilityQuery,
 } from "~/features/datastore-connections";
-import { Dataset } from "~/types/api";
+import { ConnectionType, Dataset } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -31,10 +28,12 @@ import {
   setCurrentDataset,
   setReachability,
 } from "./dataset-test.slice";
+import DatasetNodeEditor from "./DatasetNodeEditor";
 import { removeNulls } from "./helpers";
 
 interface EditorSectionProps {
   connectionKey: string;
+  connectionType?: ConnectionType;
 }
 
 const getReachabilityMessage = (details: any) => {
@@ -52,23 +51,35 @@ const getReachabilityMessage = (details: any) => {
   return details;
 };
 
-const EditorSection = ({ connectionKey }: EditorSectionProps) => {
+const EditorSection = ({
+  connectionKey,
+  connectionType,
+}: EditorSectionProps) => {
   const messageApi = useMessage();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
 
+  const isSaas = connectionType === ConnectionType.SAAS;
+
+  const [localDataset, setLocalDataset] = useState<Dataset | undefined>();
   const [editorContent, setEditorContent] = useState<string>("");
+  const savedDatasetJson = useRef<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
-  const {
-    data: datasetConfigs,
-    isLoading: isDatasetConfigsLoading,
-    refetch: refetchDatasets,
-  } = useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
-    skip: !connectionKey,
-  });
+  const { data: datasetConfigs, refetch: refetchDatasets } =
+    useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
+      skip: !connectionKey,
+      // Always refetch when the editor is opened: deleting + rebuilding an
+      // integration with the same key otherwise serves cached ctl_dataset
+      // (incl. stale user edits). Drilling into collections is in-memory and
+      // doesn't re-fire this query.
+      refetchOnMountOrArgChange: true,
+    });
 
+  // Reachability only applies on the test-datasets page (no connectionType),
+  // where the user selects a policy. The edit-dataset page has no policy
+  // selector, so showing reachability there would use stale global state.
   const { data: reachability, refetch: refetchReachability } =
     useGetDatasetReachabilityQuery(
       {
@@ -77,7 +88,11 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
         policyKey: currentPolicyKey,
       },
       {
-        skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
+        skip:
+          !!connectionType ||
+          !connectionKey ||
+          !currentDataset?.fides_key ||
+          !currentPolicyKey,
       },
     );
 
@@ -86,7 +101,6 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       dispatch(setReachability(reachability.reachable));
     }
   }, [reachability, dispatch]);
-
   const datasetOptions = useMemo(
     () =>
       (datasetConfigs?.items || []).map((item) => ({
@@ -97,41 +111,62 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   );
 
   useEffect(() => {
-    if (datasetConfigs?.items.length) {
-      if (
-        !currentDataset ||
-        !datasetConfigs.items.find(
-          (item) => item.fides_key === currentDataset.fides_key,
-        )
-      ) {
-        const initialDataset = datasetConfigs.items[0];
-        dispatch(setCurrentDataset(initialDataset));
-      }
+    if (!datasetConfigs?.items.length) {
+      return;
     }
-  }, [datasetConfigs, currentDataset, dispatch]);
+    // Always pull the freshest DatasetConfig from the server response into
+    // Redux — not only on key mismatch. Otherwise deleting + rebuilding an
+    // integration with the same fides_key keeps the previously-edited
+    // ctl_dataset in Redux and re-seeds localDataset with stale fields.
+    const matched = datasetConfigs.items.find(
+      (item) => item.fides_key === currentDataset?.fides_key,
+    );
+    dispatch(setCurrentDataset(matched ?? datasetConfigs.items[0]));
+    // currentDataset intentionally excluded from deps: we only want to re-sync
+    // when a new server response arrives, not when Redux updates in response.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datasetConfigs, dispatch]);
 
+  // SaaS: store as Dataset object; DB: store as YAML string
   useEffect(() => {
     if (currentDataset?.ctl_dataset) {
-      setEditorContent(yaml.dump(removeNulls(currentDataset?.ctl_dataset)));
+      const cleaned = removeNulls(currentDataset.ctl_dataset);
+      if (isSaas) {
+        setLocalDataset(cleaned as Dataset);
+        savedDatasetJson.current = JSON.stringify(cleaned);
+      } else {
+        setEditorContent(yaml.dump(cleaned));
+      }
     }
-  }, [currentDataset]);
+  }, [currentDataset, isSaas]);
+
+  // Key-ordering stability: both savedDatasetJson and localDataset are produced
+  // through the same removeNulls → JSON.stringify path, so key order is consistent.
+  // If this assumption ever breaks (e.g., server returns keys in different order),
+  // replace with a structural deep-equal.
+  const isDirty = useMemo(() => {
+    if (!isSaas || !localDataset) {
+      return false;
+    }
+    return JSON.stringify(localDataset) !== savedDatasetJson.current;
+  }, [isSaas, localDataset]);
 
   useEffect(() => {
-    if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
+    if (
+      !connectionType &&
+      currentPolicyKey &&
+      currentDataset?.fides_key &&
+      connectionKey
+    ) {
       refetchReachability();
     }
   }, [
+    connectionType,
     currentPolicyKey,
     currentDataset?.fides_key,
     connectionKey,
     refetchReachability,
   ]);
-
-  useEffect(() => {
-    if (reachability) {
-      dispatch(setReachability(reachability.reachable));
-    }
-  }, [reachability, dispatch]);
 
   const handleDatasetChange = async (value: string) => {
     const selectedConfig = datasetConfigs?.items.find(
@@ -142,27 +177,36 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     }
   };
 
+  const handleLocalDatasetChange = useCallback((updated: Dataset) => {
+    setLocalDataset(updated);
+  }, []);
+
   const handleSave = async () => {
     if (!currentDataset) {
       return;
     }
 
-    // Parse YAML first
     let datasetValues: Dataset;
-    try {
-      datasetValues = yaml.load(editorContent) as Dataset;
-    } catch (yamlError) {
-      messageApi.error(
-        `YAML Parsing Error: ${
-          yamlError instanceof YAMLException
-            ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
-            : "Invalid YAML format"
-        }`,
-      );
-      return;
+    if (isSaas) {
+      if (!localDataset) {
+        return;
+      }
+      datasetValues = localDataset;
+    } else {
+      try {
+        datasetValues = yaml.load(editorContent) as Dataset;
+      } catch (yamlError) {
+        messageApi.error(
+          `YAML Parsing Error: ${
+            yamlError instanceof YAMLException
+              ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
+              : "Invalid YAML format"
+          }`,
+        );
+        return;
+      }
     }
 
-    // Then handle the API update
     const result = await updateDataset(datasetValues);
 
     if (isErrorResult(result)) {
@@ -176,23 +220,25 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
         ctl_dataset: result.data,
       }),
     );
+    if (isSaas) {
+      savedDatasetJson.current = JSON.stringify(removeNulls(result.data));
+    }
     messageApi.success("Successfully modified dataset");
     await refetchDatasets();
-    await refetchReachability();
+    if (!connectionType && currentPolicyKey) {
+      await refetchReachability();
+    }
   };
 
-  const handleRefresh = async () => {
-    try {
-      const { data } = await refetchDatasets();
-      const refreshedDataset = data?.items.find(
-        (item) => item.fides_key === currentDataset?.fides_key,
-      );
-      if (refreshedDataset?.ctl_dataset) {
-        setEditorContent(yaml.dump(removeNulls(refreshedDataset.ctl_dataset)));
-      }
-      messageApi.success("Successfully refreshed datasets");
-    } catch (error) {
-      messageApi.error(getErrorMessage(error as FetchBaseQueryError));
+  const handleDiscard = () => {
+    if (!currentDataset?.ctl_dataset) {
+      return;
+    }
+    const cleaned = removeNulls(currentDataset.ctl_dataset);
+    if (isSaas) {
+      setLocalDataset(cleaned as Dataset);
+    } else {
+      setEditorContent(yaml.dump(cleaned));
     }
   };
 
@@ -201,12 +247,12 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       align="stretch"
       flex="1"
       gap="small"
-      className="max-h-screen max-w-[70vw]"
       vertical
+      className="h-full min-h-0"
     >
       <Flex align="center" justify="space-between">
         <Space>
-          <Typography.Title level={3}>Edit dataset: </Typography.Title>
+          <Typography.Text className="!mb-0">Dataset:</Typography.Text>
           <Select
             id="format"
             aria-label="Select a dataset"
@@ -218,70 +264,79 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           />
         </Space>
         <Space>
-          <ClipboardButton copyText={editorContent} />
-          <Tooltip
-            title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
-            placement="top"
-          >
-            <Button
-              size="small"
-              data-testid="refresh-btn"
-              onClick={handleRefresh}
-              loading={isDatasetConfigsLoading}
-              icon={<Icons.Renew />}
-              aria-label="Refresh"
-            />
-          </Tooltip>
-          <Tooltip
-            title="Save your changes to update the dataset in the database."
-            placement="top"
-          >
-            <Button htmlType="submit" size="small" onClick={handleSave}>
-              Save
+          {isDirty && (
+            <Typography.Text type="warning" className="text-xs">
+              Unsaved changes
+            </Typography.Text>
+          )}
+          {!isSaas && <ClipboardButton copyText={editorContent} />}
+          {isDirty && (
+            <Button data-testid="discard-btn" onClick={handleDiscard}>
+              Reset
             </Button>
-          </Tooltip>
+          )}
+          <Button
+            htmlType="submit"
+            type="primary"
+            disabled={!isDirty}
+            onClick={handleSave}
+          >
+            Save
+          </Button>
         </Space>
       </Flex>
-      <Card
-        data-testid="empty-state"
-        className="flex flex-1"
-        styles={{
-          body: {
-            minHeight: "200px",
-            display: "flex",
-            flex: "1 1 auto",
-            paddingLeft: 0,
-          },
-        }}
-      >
-        <Editor
-          defaultLanguage="yaml"
-          value={editorContent}
-          height="100%"
-          onChange={(value) => setEditorContent(value || "")}
-          onMount={() => {}}
-          options={{
-            fontFamily: "Menlo",
-            fontSize: 13,
-            minimap: { enabled: false },
-            readOnly: false,
-            hideCursorInOverviewRuler: true,
-            overviewRulerBorder: false,
-            scrollBeyondLastLine: false,
-          }}
-          theme="light"
-        />
-      </Card>
-      {reachability && (
-        <Alert
-          type={reachability?.reachable ? "success" : "error"}
-          title={
-            reachability?.reachable
-              ? "Dataset is reachable"
-              : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`
-          }
-          showIcon
-        />
+      {isSaas ? (
+        <div className="min-h-0 flex-auto overflow-hidden rounded-lg border border-neutral-2">
+          {localDataset && (
+            <DatasetNodeEditor
+              dataset={localDataset}
+              onDatasetChange={handleLocalDatasetChange}
+            />
+          )}
+        </div>
+      ) : (
+        <>
+          <Card
+            data-testid="empty-state"
+            className="flex flex-1"
+            styles={{
+              body: {
+                minHeight: "200px",
+                display: "flex",
+                flex: "1 1 auto",
+                paddingLeft: 0,
+              },
+            }}
+          >
+            <Editor
+              defaultLanguage="yaml"
+              value={editorContent}
+              height="100%"
+              onChange={(value) => setEditorContent(value || "")}
+              options={{
+                fontFamily: "Menlo",
+                fontSize: 13,
+                minimap: { enabled: false },
+                readOnly: false,
+                hideCursorInOverviewRuler: true,
+                overviewRulerBorder: false,
+                scrollBeyondLastLine: false,
+              }}
+              theme="light"
+            />
+          </Card>
+          {reachability && (
+            <Alert
+              type={reachability?.reachable ? "success" : "error"}
+              title={
+                reachability?.reachable
+                  ? "Dataset is reachable"
+                  : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`
+              }
+              showIcon
+            />
+          )}
+        </>
       )}
     </Flex>
   );
