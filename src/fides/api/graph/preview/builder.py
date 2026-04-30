@@ -63,10 +63,13 @@ class TraversalPreviewBuilder:
     # --- internals ---
 
     def _capture_traversal(self) -> Dict[CollectionAddress, List[CollectionAddress]]:
-        """Run Traversal in capture mode. Returns {node_address: [parent_addresses]}."""
+        """Run Traversal in capture mode. Returns {node_address: [parent_addresses]}.
+
+        Construction runs verification (which builds edge indices required by
+        ``traverse``); we don't pass ``skip_verification`` here. Unreachable graphs
+        are handled by the caller in Task 4 via a different code path.
+        """
         traversal = Traversal(self.graph, self.identity_seed)
-        # Skip verification so partial / unreachable graphs don't raise during preview.
-        traversal._skip_verification = True  # noqa: SLF001
         deps: Dict[CollectionAddress, List[CollectionAddress]] = defaultdict(list)
 
         def capture(node: TraversalNode, _env: Dict[CollectionAddress, Any]) -> None:
