@@ -92,6 +92,7 @@ class PrivacyRequestSource(str, EnumType):
     - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
     - Dataset Test: Standalone dataset test
     - Janus SDK: Request created from the Mobile SDK
+    - Import: Historical privacy request imported from another Fides deployment (no processing)
     """
 
     privacy_center = "Privacy Center"
@@ -100,6 +101,7 @@ class PrivacyRequestSource(str, EnumType):
     fides_js = "Fides.js"
     dataset_test = "Dataset Test"
     janus_sdk = "Janus SDK"
+    import_ = "Import"
 
 
 class PrivacyRequestCreate(FidesSchema):
@@ -340,6 +342,44 @@ ACTIVE_REQUEST_STATUSES = frozenset(
         PrivacyRequestStatus.pending_external,
     }
 )
+
+TERMINAL_PRIVACY_REQUEST_STATUSES = frozenset(
+    {
+        PrivacyRequestStatus.complete,
+        PrivacyRequestStatus.denied,
+        PrivacyRequestStatus.canceled,
+        PrivacyRequestStatus.error,
+    }
+)
+
+
+class HistoricalPrivacyRequestImport(FidesSchema):
+    """Schema for importing a single historical, already-completed privacy request.
+
+    Used by the admin import endpoint to backfill DSRs from another Fides deployment
+    without triggering any processing pipeline. Status must be terminal.
+    """
+
+    external_id: Optional[str] = None
+    identity: Identity
+    policy_key: FidesKey
+    status: PrivacyRequestStatus
+    requested_at: datetime
+    finished_processing_at: datetime
+    reviewed_at: Optional[datetime] = None
+    source: PrivacyRequestSource = PrivacyRequestSource.import_
+
+    @field_validator("status")
+    @classmethod
+    def status_must_be_terminal(
+        cls, value: PrivacyRequestStatus
+    ) -> PrivacyRequestStatus:
+        if value not in TERMINAL_PRIVACY_REQUEST_STATUSES:
+            allowed = sorted(s.value for s in TERMINAL_PRIVACY_REQUEST_STATUSES)
+            raise ValueError(
+                f"status must be one of {allowed} for an imported privacy request"
+            )
+        return value
 
 
 class IdentityValue(BaseModel):

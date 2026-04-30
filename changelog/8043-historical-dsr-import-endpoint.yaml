@@ -1,0 +1,4 @@
+type: Added
+description: Added owner-only endpoint for bulk-inserting historical privacy requests. Useful for migrations between Fides deployments. Bypasses all processing pipeline side effects.
+pr: 8043
+labels: ["db-migration"]
