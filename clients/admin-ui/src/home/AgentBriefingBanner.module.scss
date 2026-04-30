@@ -1,6 +1,6 @@
 .alertSm {
   :global(.ant-alert-message) {
-    font-size: var(--ant-font-size-sm);
+    font-size: var(--fidesui-font-size-sm);
   }
 }
 
@@ -12,32 +12,32 @@
   font-weight: 600;
 
   &.error {
-    color: var(--ant-color-error);
-    border-color: var(--ant-color-error);
+    color: var(--fidesui-color-error);
+    border-color: var(--fidesui-color-error);
 
     &:hover {
-      color: var(--ant-color-error-hover);
-      border-color: var(--ant-color-error-hover);
+      color: var(--fidesui-color-error-hover);
+      border-color: var(--fidesui-color-error-hover);
     }
   }
 
   &.warning {
-    color: var(--ant-color-warning);
-    border-color: var(--ant-color-warning);
+    color: var(--fidesui-color-warning);
+    border-color: var(--fidesui-color-warning);
 
     &:hover {
-      color: var(--ant-color-warning-hover);
-      border-color: var(--ant-color-warning-hover);
+      color: var(--fidesui-color-warning-hover);
+      border-color: var(--fidesui-color-warning-hover);
     }
   }
 
   &.info {
-    color: var(--ant-color-info);
-    border-color: var(--ant-color-info);
+    color: var(--fidesui-color-info);
+    border-color: var(--fidesui-color-info);
 
     &:hover {
-      color: var(--ant-color-info-hover);
-      border-color: var(--ant-color-info-hover);
+      color: var(--fidesui-color-info-hover);
+      border-color: var(--fidesui-color-info-hover);
     }
   }
 }

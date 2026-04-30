@@ -886,6 +886,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return False
 
+        logger.info(
+            "Sending consent request to connector {}",
+            self.connector.configuration.key,
+        )
         output: bool = self.connector.run_consent_request(
             self.execution_node,
             self.resources.policy,
@@ -895,6 +899,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.resources.session,
         )
         self.request_task.consent_sent = output
+        logger.info(
+            "Consent request to {} completed, consent_sent={}",
+            self.connector.configuration.key,
+            output,
+        )
         self.log_end(ActionType.consent)
         return output
 
