@@ -67,9 +67,15 @@ type MonacoEditor = Parameters<OnMount>[0];
 type MonacoDecorationsCollection = ReturnType<
   MonacoEditor["createDecorationsCollection"]
 >;
-type MonacoDecorationOptions = Parameters<
-  MonacoEditor["createDecorationsCollection"]
->[0][number];
+type MonacoDecorationOptions = {
+  range: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  };
+  options: { isWholeLine?: boolean; inlineClassName?: string };
+};
 
 const DRAFT_NODE_ID = "draft-node";
 
