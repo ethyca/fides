@@ -1,10 +1,12 @@
 # pylint: disable=too-many-lines
 import time
+import traceback
 from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
 import sqlalchemy.exc
+from celery.exceptions import SoftTimeLimitExceeded
 from loguru import logger
 
 # pylint: disable=no-name-in-module
@@ -442,7 +444,11 @@ def _should_skip_consent_pipeline(
     return True
 
 
-@celery_app.task(base=DatabaseTask, bind=True)
+@celery_app.task(
+    base=DatabaseTask,
+    bind=True,
+    soft_time_limit=CONFIG.execution.task_soft_time_limit_seconds or None,
+)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def run_privacy_request(
@@ -777,6 +783,22 @@ def run_privacy_request(
                 )
                 privacy_request.error_processing(db=session)
                 return
+
+            except SoftTimeLimitExceeded:
+                logger.error(
+                    "Privacy request exceeded soft time limit. "
+                    "Stack at interruption:\n{}",
+                    traceback.format_exc(),
+                )
+                privacy_request.add_error_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Privacy request processing",
+                    collection_name=None,
+                    message=f"Task exceeded soft time limit ({CONFIG.execution.task_soft_time_limit_seconds}s)",
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                )
+                privacy_request.error_processing(db=session)
 
             except BaseException as exc:  # pylint: disable=broad-except
                 # Log the error to the activity timeline before marking as errored
