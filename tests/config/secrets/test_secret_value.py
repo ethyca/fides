@@ -12,7 +12,7 @@ class TestSecretValue:
     def test_missing_key_raises_key_error(self):
         sv = SecretValue({"username": "admin"})
         with pytest.raises(KeyError):
-            sv["nonexistent"]
+            _ = sv["nonexistent"]
 
     def test_contains(self):
         sv = SecretValue({"username": "admin"})

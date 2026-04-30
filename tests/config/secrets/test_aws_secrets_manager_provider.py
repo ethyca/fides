@@ -135,77 +135,6 @@ class TestCaching:
             v2 = provider.get_secret(SECRET_NAME)
             assert v2["username"] == "testuser"
 
-    def test_ttl_recheck_inside_lock(self, aws_env):
-        """When fetched_at is 0 (invalidated) at the outer check but another
-        thread refreshes before we acquire the lock, the inner TTL re-check
-        should return the cached value without fetching again."""
-        time_value = [100.0]
-
-        with patch(
-            "fides.config.secrets.aws_secrets_manager_provider.time"
-        ) as mock_time:
-            mock_time.monotonic = lambda: time_value[0]
-
-            provider = AWSSecretsManagerProvider(
-                region_name=REGION, cache_ttl_seconds=60.0
-            )
-            # Prime cache at t=100
-            provider.get_secret(SECRET_NAME)
-
-            # Simulate: outer check sees expired (t=170), but by the time
-            # we re-check inside the lock, fetched_at was updated to t=165
-            # by another thread (within TTL of 60s from t=170)
-            entry = provider._cache[SECRET_NAME]
-            entry.fetched_at = 165.0  # as if another thread just refreshed
-            time_value[0] = 170.0
-
-            # Sabotage client — should NOT be called
-            provider._client.get_secret_value = MagicMock(
-                side_effect=Exception("should not fetch")
-            )
-            secret = provider.get_secret(SECRET_NAME)
-            assert secret["username"] == "testuser"
-
-    def test_ttl_recheck_inside_lock_via_time_progression(self, aws_env):
-        """The inner TTL re-check fires when the outer check sees expired
-        but the inner monotonic() call returns a time within TTL."""
-        from loguru import logger
-
-        provider = AWSSecretsManagerProvider(region_name=REGION, cache_ttl_seconds=60.0)
-
-        # Prime cache with real time so we don't have to guess call count
-        provider.get_secret(SECRET_NAME)
-        entry = provider._cache[SECRET_NAME]
-        fetched = entry.fetched_at
-
-        # Capture loguru output to verify which branch is hit
-        messages = []
-        handler_id = logger.add(lambda m: messages.append(m.record["message"]))
-
-        try:
-            # Now mock time: outer check sees expired, inner check sees valid
-            with patch(
-                "fides.config.secrets.aws_secrets_manager_provider.time"
-            ) as mock_time:
-                # Call 1: outer check — fetched+61 > 60 → expired
-                # Call 2: inner re-check — fetched+59 < 60 → valid
-                times = iter([fetched + 61.0, fetched + 59.0])
-                mock_time.monotonic = lambda: next(times)
-
-                # Sabotage client — must not be called
-                provider._client.get_secret_value = MagicMock(
-                    side_effect=Exception("should not fetch")
-                )
-
-                secret = provider.get_secret(SECRET_NAME)
-                assert secret["username"] == "testuser"
-                assert entry.fetched_at == fetched
-                assert any("TTL re-check inside lock" in m for m in messages), (
-                    f"inner TTL re-check branch was not hit; messages: {messages}"
-                )
-        finally:
-            logger.remove(handler_id)
-
 
 class TestStaleWhileRevalidate:
     def test_stale_value_served_on_fetch_failure(self, aws_env):
@@ -348,8 +277,9 @@ class TestCircuitBreaker:
             provider.invalidate(SECRET_NAME)
 
             # Next get_secret should NOT re-fetch (circuit breaker active)
+            calls_before = call_count
             provider.get_secret(SECRET_NAME)
-            assert call_count == 1
+            assert call_count == calls_before
 
     def test_invalidate_after_cooldown_resets(self, aws_env):
         time_value = [100.0]

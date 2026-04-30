@@ -60,34 +60,15 @@ class AWSSecretsManagerProvider(SecretProvider):
     def get_secret(self, secret_id: str) -> SecretValue:
         entry = self._get_or_create_entry(secret_id)
 
-        now = time.monotonic()
-        if (
-            entry.value is not None
-            and entry.fetched_at > 0
-            and (now - entry.fetched_at) < self._cache_ttl
-        ):
-            return entry.value
-
-        # Snapshot fetched_at before acquiring the lock — if another thread
-        # refreshes while we wait, we'll see the change and skip re-fetching.
-        observed_fetched_at = entry.fetched_at
-
-        # Cache miss or expired — acquire per-secret lock
         with entry.lock:
-            # Another thread refreshed while we were waiting for the lock
-            if entry.fetched_at != observed_fetched_at and entry.value is not None:
-                return entry.value
-
-            # Re-check TTL (covers the case where we didn't wait long)
             now = time.monotonic()
+
+            # Cache hit — return without network call
             if (
                 entry.value is not None
                 and entry.fetched_at > 0
                 and (now - entry.fetched_at) < self._cache_ttl
             ):
-                log.debug(
-                    "TTL re-check inside lock: cache still valid for {!r}", secret_id
-                )
                 return entry.value
 
             # Circuit breaker: if we recently failed, serve cached value
@@ -156,6 +137,11 @@ class AWSSecretsManagerProvider(SecretProvider):
             SecretId=secret_id,
             VersionStage="AWSCURRENT",
         )
+        if "SecretBinary" in response:
+            raise SecretProviderError(
+                f"Secret {secret_id!r} is stored as binary; "
+                f"only SecretString secrets are supported"
+            )
         secret_string = response["SecretString"]
         try:
             data = json.loads(secret_string)
@@ -182,9 +168,11 @@ class AWSSecretsManagerProvider(SecretProvider):
             ) from exc
 
         now = time.monotonic()
-        # fetched_at may be 0 if invalidated — use the stale window from
-        # the original fetch time. If fetched_at is 0 but we have a value,
-        # we lost the original timestamp; serve stale and let TTL sort it out.
+        # fetched_at may be 0 if invalidated, meaning we lost the original
+        # fetch timestamp and cannot bound the age. In that case we
+        # unconditionally prefer serving stale data over raising, since the
+        # caller (e.g. a connection creator) can still function with the
+        # old credentials until a successful refresh occurs.
         age = now - entry.fetched_at if entry.fetched_at > 0 else self._cache_stale_ttl
         if age < self._cache_ttl + self._cache_stale_ttl:
             log.warning(

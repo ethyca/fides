@@ -29,6 +29,8 @@ class SecretValue:
             return self._data == other._data
         return NotImplemented
 
+    __hash__ = None  # type: ignore[assignment]  # unhashable by design
+
     def __repr__(self) -> str:
         return "<redacted>"
 
