@@ -1,5 +1,6 @@
 import pytest
 from moto import mock_aws
+from pydantic import ValidationError
 
 from fides.config.secrets.aws_secrets_manager_provider import (
     AWSSecretsManagerProvider,
@@ -40,10 +41,15 @@ class TestCreateSecretProvider:
         assert provider._cache_ttl == 120.0
 
     def test_unknown_provider_raises_at_validation(self):
-        from pydantic import ValidationError
-
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValidationError, match="literal_error"):
             SecretsSettings(provider="vault")
+
+    def test_unknown_provider_raises_in_factory(self):
+        """Bypass Pydantic validation to test the factory's own guard."""
+        settings = SecretsSettings()
+        settings.provider = "unknown"  # type: ignore[assignment]
+        with pytest.raises(SecretProviderError, match="Unknown secrets provider"):
+            create_secret_provider(settings)
 
     def test_default_provider_is_static(self):
         settings = SecretsSettings()

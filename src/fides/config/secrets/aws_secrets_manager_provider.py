@@ -85,6 +85,9 @@ class AWSSecretsManagerProvider(SecretProvider):
                 and entry.fetched_at > 0
                 and (now - entry.fetched_at) < self._cache_ttl
             ):
+                log.debug(
+                    "TTL re-check inside lock: cache still valid for {!r}", secret_id
+                )
                 return entry.value
 
             # Circuit breaker: if we recently failed, serve cached value
