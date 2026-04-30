@@ -1,4 +1,4 @@
-import { Button, Col, Row, Spin, Tabs, useMessage } from "fidesui";
+import { Button, Col, Icons, Row, Spin, Tabs, useMessage } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
@@ -187,6 +187,17 @@ const IntegrationDetailView: NextPage = () => {
             title: connection?.name ?? connection?.key ?? "",
           },
         ]}
+        rightContent={
+          <Button
+            icon={<Icons.Edit />}
+            onClick={() =>
+              router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${id}/edit-dataset`)
+            }
+            data-testid="edit-dataset-btn"
+          >
+            Edit dataset
+          </Button>
+        }
       />
       <Row wrap={false} gutter={24}>
         <Col flex="1 1 auto">

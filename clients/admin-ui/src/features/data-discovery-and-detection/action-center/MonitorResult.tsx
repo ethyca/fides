@@ -217,7 +217,7 @@ export const MonitorResult = ({
         >
           {stewards.map((steward) => (
             <Tooltip title={formatUser(steward)} key={steward.id}>
-              <Avatar rootClassName="bg-[--fidesui-bg-default] text-[--fidesui-minos]">
+              <Avatar rootClassName="bg-[--fidesui-color-bg-layout] text-[--fidesui-brand-minos]">
                 {steward.first_name?.charAt(0)}
                 {steward.last_name?.charAt(0)}
               </Avatar>

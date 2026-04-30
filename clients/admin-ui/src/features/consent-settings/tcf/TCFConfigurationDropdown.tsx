@@ -170,7 +170,7 @@ const DropdownContent = ({
         />
       }
       style={{
-        boxShadow: "var(--ant-box-shadow)",
+        boxShadow: "var(--fidesui-box-shadow)",
       }}
     >
       {configurations.length > 10 && (
