@@ -61,7 +61,11 @@ class AWSSecretsManagerProvider(SecretProvider):
         entry = self._get_or_create_entry(secret_id)
 
         now = time.monotonic()
-        if entry.fetched_at > 0 and (now - entry.fetched_at) < self._cache_ttl:
+        if (
+            entry.value is not None
+            and entry.fetched_at > 0
+            and (now - entry.fetched_at) < self._cache_ttl
+        ):
             return entry.value
 
         # Snapshot fetched_at before acquiring the lock — if another thread
@@ -71,12 +75,16 @@ class AWSSecretsManagerProvider(SecretProvider):
         # Cache miss or expired — acquire per-secret lock
         with entry.lock:
             # Another thread refreshed while we were waiting for the lock
-            if entry.fetched_at != observed_fetched_at:
+            if entry.fetched_at != observed_fetched_at and entry.value is not None:
                 return entry.value
 
             # Re-check TTL (covers the case where we didn't wait long)
             now = time.monotonic()
-            if entry.fetched_at > 0 and (now - entry.fetched_at) < self._cache_ttl:
+            if (
+                entry.value is not None
+                and entry.fetched_at > 0
+                and (now - entry.fetched_at) < self._cache_ttl
+            ):
                 return entry.value
 
             # Circuit breaker: if we recently failed, serve cached value
@@ -164,8 +172,8 @@ class AWSSecretsManagerProvider(SecretProvider):
         """Serve stale value if within grace period, otherwise raise."""
         entry.last_failed_at = time.monotonic()
 
-        has_cached_value = entry.value is not None
-        if not has_cached_value:
+        cached_value = entry.value
+        if cached_value is None:
             raise SecretProviderError(
                 f"Failed to fetch secret {secret_id!r} and no cached value available"
             ) from exc
@@ -181,7 +189,7 @@ class AWSSecretsManagerProvider(SecretProvider):
                 secret_id,
                 exc,
             )
-            return entry.value
+            return cached_value
 
         raise SecretProviderError(
             f"Failed to fetch secret {secret_id!r} and stale cache has expired"
