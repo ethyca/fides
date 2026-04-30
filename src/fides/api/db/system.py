@@ -12,11 +12,12 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger as log
 from sqlalchemy import select
+from sqlalchemy import update as sql_update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.db.crud import create_resource, get_resource, update_resource
+from fides.api.db.crud import create_resource, get_resource
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataCategory,
     DataSubject,
@@ -133,7 +134,7 @@ async def upsert_system(
 
     for resource in resources:
         try:
-            await get_resource(System, resource.fides_key, db)
+            existing_system = await get_resource(System, resource.fides_key, db)
         except NotFoundError:
             log.debug(
                 f"Upsert System with fides_key {resource.fides_key} not found, will create"
@@ -146,7 +147,14 @@ async def upsert_system(
             )
             inserted += 1
             continue
-        await update_system(resource=resource, db=db, current_user_id=current_user_id)
+        # Pass the already-loaded System through so update_system doesn't
+        # re-fetch it.
+        await update_system(
+            resource=resource,
+            db=db,
+            current_user_id=current_user_id,
+            existing_system=existing_system,
+        )
         updated += 1
     return (inserted, updated)
 
@@ -186,19 +194,30 @@ async def upsert_privacy_declarations(
 
 
 async def update_system(
-    resource: SystemSchema, db: AsyncSession, current_user_id: Optional[str] = None
-) -> Tuple[Dict, bool]:
-    """Helper function to share core system update logic for wrapping endpoint functions"""
-    system: System = await get_resource(
-        sql_model=System, fides_key=resource.fides_key, async_session=db
-    )
+    resource: SystemSchema,
+    db: AsyncSession,
+    current_user_id: Optional[str] = None,
+    existing_system: Optional[System] = None,
+) -> Tuple[System, bool]:
+    """Helper function to share core system update logic for wrapping endpoint functions.
+
+    If ``existing_system`` is supplied, it is used in place of an explicit
+    ``get_resource`` call. Callers that already loaded the System (e.g.
+    ``upsert_system`` after its existence check) should pass it through to
+    avoid a redundant fetch.
+    """
+    if existing_system is None:
+        existing_system = await get_resource(
+            sql_model=System, fides_key=resource.fides_key, async_session=db
+        )
+
     existing_system_dict = copy.deepcopy(
-        SystemSchema.model_validate(system)
+        SystemSchema.model_validate(existing_system)
     ).model_dump(mode="json")
 
     # handle the privacy declaration upsert logic
     try:
-        await upsert_privacy_declarations(db, resource, system)
+        await upsert_privacy_declarations(db, resource, existing_system)
     except Exception as e:
         log.error(
             f"Error adding privacy declarations, reverting system creation: {str(e)}"
@@ -209,21 +228,35 @@ async def update_system(
         resource, "privacy_declarations"
     )  # remove the attribute on the system since we've already updated declarations
 
-    # perform any updates on the system resource itself
-    updated_system = await update_resource(System, resource.model_dump(), db)
+    # Inline the UPDATE rather than calling ``crud.update_resource``, which
+    # otherwise issues two extra ``get_resource`` calls (one before the
+    # UPDATE and one to return the post-UPDATE row). We already hold the
+    # ORM object and ``db.refresh`` below picks up any DB-side coercions.
+    resource_dict = resource.model_dump()
+    async with db.begin():
+        log.debug(
+            "Updating resource",
+            sql_model="System",
+            fides_key=resource.fides_key,
+        )
+        await db.execute(
+            sql_update(System.__table__)
+            .where(System.fides_key == resource.fides_key)
+            .values(resource_dict)
+        )
 
     async with db.begin():
-        await db.refresh(updated_system)
+        await db.refresh(existing_system)
 
         system_updated: bool = _audit_system_changes(
             db,
-            system.id,
+            existing_system.id,
             current_user_id,
             existing_system_dict,
-            SystemSchema.model_validate(updated_system).model_dump(mode="json"),
+            SystemSchema.model_validate(existing_system).model_dump(mode="json"),
         )
 
-    return updated_system, system_updated
+    return existing_system, system_updated
 
 
 def _audit_system_changes(
@@ -259,8 +292,18 @@ def _audit_system_changes(
 
     system_updated: bool = False
 
+    # Compute each axis's diff once so we can both gate the SystemHistory
+    # write and emit observability around how often each axis actually
+    # changes. These logs help quantify the steady-state no-op rate before
+    # we consider skipping the UPDATE for unchanged systems.
+    general_diff = DeepDiff(existing_system, updated_system, ignore_order=True)
+    privacy_diff = DeepDiff(privacy_existing, privacy_updated, ignore_order=True)
+    data_flow_diff = DeepDiff(
+        egress_ingress_existing, egress_ingress_updated, ignore_order=True
+    )
+
     # Create a SystemHistory entry for general changes
-    if DeepDiff(existing_system, updated_system, ignore_order=True):
+    if general_diff:
         system_updated = True
 
         SystemHistory(
@@ -272,7 +315,7 @@ def _audit_system_changes(
         ).save(db=db)
 
     # Create a SystemHistory entry for changes to privacy_declarations
-    if DeepDiff(privacy_existing, privacy_updated, ignore_order=True):
+    if privacy_diff:
         system_updated = True
 
         SystemHistory(
@@ -284,7 +327,7 @@ def _audit_system_changes(
         ).save(db=db)
 
     # Create a SystemHistory entry for changes to egress and ingress
-    if DeepDiff(egress_ingress_existing, egress_ingress_updated, ignore_order=True):
+    if data_flow_diff:
         system_updated = True
 
         SystemHistory(
@@ -294,6 +337,20 @@ def _audit_system_changes(
             after=egress_ingress_updated,
             created_at=now,
         ).save(db=db)
+
+    log.debug(
+        "System change detection",
+        system_id=system_id,
+        general_changed=bool(general_diff),
+        privacy_declarations_changed=bool(privacy_diff),
+        data_flow_changed=bool(data_flow_diff),
+        any_changed=system_updated,
+        general_diff_keys=len(general_diff.affected_paths) if general_diff else 0,
+        privacy_diff_keys=len(privacy_diff.affected_paths) if privacy_diff else 0,
+        data_flow_diff_keys=(
+            len(data_flow_diff.affected_paths) if data_flow_diff else 0
+        ),
+    )
 
     return system_updated
 
