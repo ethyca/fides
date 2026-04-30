@@ -358,7 +358,7 @@ class TestCircuitBreaker:
 
 
 class TestThreadSafety:
-    def test_concurrent_invalidations_single_fetch(self, aws_env):
+    def test_concurrent_access_single_fetch(self, aws_env):
         """Multiple threads hitting get_secret after invalidation should
         result in only 1 actual Secrets Manager call."""
         time_value = [100.0]
