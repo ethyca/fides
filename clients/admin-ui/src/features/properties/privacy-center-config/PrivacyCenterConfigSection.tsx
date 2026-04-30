@@ -68,7 +68,25 @@ export const PrivacyCenterConfigSection: React.FC<
                 description: "",
                 logo_path: "",
                 actions: [],
-              })
+                // The backend's PrivacyCenterConfig schema requires a
+                // non-empty `consent` block. v1 doesn't surface consent
+                // editing in this UI, so we seed minimal placeholder
+                // content. Users can edit it later via JSON or once a
+                // consent UI is added.
+                consent: {
+                  button: {
+                    description: "Manage your consent preferences.",
+                    icon_path: "/consent.svg",
+                    identity_inputs: { email: "required" },
+                    title: "Manage your consent",
+                  },
+                  page: {
+                    description: "Manage your consent preferences.",
+                    title: "Consent",
+                    consentOptions: [],
+                  },
+                },
+              } as unknown as PrivacyCenterConfigValue)
             }
           >
             Set up privacy center config
