@@ -3,6 +3,7 @@ from fideslang.models import Dataset
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.util.data_category import DataCategory
 
 
@@ -33,7 +34,9 @@ def linear_two_dataset_graph() -> DatasetGraph:
             ],
         }],
     })
-    return DatasetGraph(*[d.graph for d in (postgres_dataset, stripe_dataset)])
+    postgres_graph = convert_dataset_to_graph(postgres_dataset, "postgres-users-db")
+    stripe_graph = convert_dataset_to_graph(stripe_dataset, "stripe")
+    return DatasetGraph(postgres_graph, stripe_graph)
 
 
 @pytest.fixture
