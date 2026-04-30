@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed excessive memory usage in DSR cancel path by using column projection instead of loading full RequestTask ORM objects with large encrypted blobs
+pr: 8062
+labels: []

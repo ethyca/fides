@@ -244,7 +244,7 @@ def filter_privacy_request_queryset(
             )
         )
 
-    if not include_consent_webhook_requests:
+    if not include_consent_webhook_requests and not filters.request_id:
         query = query.filter(
             or_(
                 PrivacyRequest.source != PrivacyRequestSource.consent_webhook,

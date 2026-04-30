@@ -40,7 +40,9 @@ export type IntegrationTypeInfo = {
 // Define SaaS integrations
 export const SAAS_INTEGRATIONS: IntegrationTypeInfo[] = [SALESFORCE_TYPE_INFO];
 
-const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
+const INTEGRATION_TYPE_MAP: Partial<
+  Record<ConnectionType, IntegrationTypeInfo>
+> = {
   [ConnectionType.AWS]: AWS_TYPE_INFO,
   [ConnectionType.BIGQUERY]: BIGQUERY_TYPE_INFO,
   [ConnectionType.DATAHUB]: DATAHUB_TYPE_INFO,

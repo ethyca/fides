@@ -285,7 +285,7 @@ const ActionCenterFields = ({
         <Splitter.Panel
           defaultSize={250}
           /** Note: style attr used here due to specificity of ant css. */
-          style={{ paddingRight: "var(--ant-padding-md)" }}
+          style={{ paddingRight: "var(--fidesui-padding-md)" }}
         >
           <MonitorTree
             showIgnored={showIgnored}
@@ -331,7 +331,10 @@ const ActionCenterFields = ({
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel
-          style={{ paddingLeft: "var(--ant-padding-md)", overflow: "hidden" }}
+          style={{
+            paddingLeft: "var(--fidesui-padding-md)",
+            overflow: "hidden",
+          }}
         >
           <Flex vertical gap="medium" className="h-full">
             <Flex justify="space-between">
@@ -531,7 +534,7 @@ const ActionCenterFields = ({
                               // Hack: because Sparkle is so weird, and Ant is using `inline-block`
                               // for actions, this is needed to get the buttons to align correctly.
                               fontSize:
-                                "var(--ant-button-content-font-size-lg)",
+                                "var(--fidesui-button-content-font-size-lg)",
                             }}
                           />
                         </Tooltip>
@@ -565,7 +568,7 @@ const ActionCenterFields = ({
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
                 .color
             : undefined,
-          className: "font-normal text-[var(--ant-font-size-sm)]",
+          className: "font-normal text-[var(--fidesui-font-size-sm)]",
           children: resource?.diff_status
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
                 .label
