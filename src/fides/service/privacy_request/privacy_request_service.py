@@ -105,7 +105,6 @@ class PrivacyRequestService:
         query: Query,
         filters: PrivacyRequestFilter,
         identity: Optional[str] = None,
-        include_consent_webhook_requests: Optional[bool] = False,
     ) -> Query:
         """Apply filters to a privacy request query."""
         return filter_privacy_request_queryset(
@@ -113,7 +112,8 @@ class PrivacyRequestService:
             query,
             filters,
             identity=identity,
-            include_consent_webhook_requests=include_consent_webhook_requests,
+            include_consent_webhook_requests=filters.include_consent_webhook_requests
+            or False,
         )
 
     def sort_privacy_requests(

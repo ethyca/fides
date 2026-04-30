@@ -57,7 +57,13 @@ const ForgotPassword: NextPage = () => {
           justify="center"
           className="px-6 py-12"
         >
-          <Image src="/logo.svg" alt="Fides logo" width={205} height={46} />
+          <Image
+            src="/logo.svg"
+            alt="Fides logo"
+            width={205}
+            height={46}
+            loading="eager"
+          />
           <Flex vertical align="center" gap="large">
             <Typography.Title level={1}>
               {submitted ? "Check your email" : "Forgot your password?"}

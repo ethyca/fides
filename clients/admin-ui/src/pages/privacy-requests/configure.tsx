@@ -33,7 +33,7 @@ const ConfigurePrivacyRequests: NextPage = () => (
       <RouterLink
         unstyled
         href="/privacy-requests/configure/messaging"
-        className="mr-5 block min-h-full rounded-md border border-gray-300 p-5 hover:cursor-pointer hover:border-[var(--fidesui-complimentary-500)]"
+        className="mr-5 block min-h-full rounded-md border border-gray-300 p-5 hover:cursor-pointer hover:border-[var(--fidesui-color-primary)]"
       >
         <Heading mb={2} size="sm">
           Configure messaging provider
@@ -45,7 +45,7 @@ const ConfigurePrivacyRequests: NextPage = () => (
       <RouterLink
         unstyled
         href="/privacy-requests/configure/storage"
-        className="block min-h-full rounded-md border border-gray-300 p-5 hover:cursor-pointer hover:border-[var(--fidesui-complimentary-500)]"
+        className="block min-h-full rounded-md border border-gray-300 p-5 hover:cursor-pointer hover:border-[var(--fidesui-color-primary)]"
       >
         <Heading mb={2} size="sm">
           Configure storage

@@ -129,6 +129,15 @@ async def test_timescale_erasure_request_task(
     # Set some data categories on fields that will be targeted by the policy above
     field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
     field([dataset], database_name, "address", "street").data_categories = ["user"]
+    field([dataset], database_name, "address", "state").data_categories = [
+        "system.operations"
+    ]
+    field([dataset], database_name, "address", "city").data_categories = [
+        "system.operations"
+    ]
+    field([dataset], database_name, "address", "zip").data_categories = [
+        "system.operations"
+    ]
     field([dataset], database_name, "payment_card", "ccn").data_categories = ["user"]
 
     graph = DatasetGraph(dataset)
