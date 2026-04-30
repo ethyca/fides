@@ -1,5 +1,5 @@
-import { Alert, Button, Input, Space } from "fidesui";
-import { useState } from "react";
+import { Alert, Button, Input } from "fidesui";
+import { useEffect, useRef, useState } from "react";
 
 import type { ChatMessage, Status } from "./useFormBuilder";
 
@@ -15,6 +15,29 @@ interface ChatPaneProps {
   disabledReason?: string;
 }
 
+const rootStyle: React.CSSProperties = {
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  padding: 12,
+  gap: 8,
+  minHeight: 0,
+};
+
+const messagesStyle: React.CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  overflowY: "auto",
+  padding: 4,
+};
+
+const composerStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 4,
+  flexShrink: 0,
+};
+
 export const ChatPane = ({
   messages,
   status,
@@ -26,6 +49,15 @@ export const ChatPane = ({
 }: ChatPaneProps) => {
   const [draft, setDraft] = useState("");
   const isStreaming = status === "streaming";
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const node = messagesRef.current;
+    if (!node) {
+      return;
+    }
+    node.scrollTop = node.scrollHeight;
+  }, [messages, isStreaming]);
 
   const handleSubmit = () => {
     if (!draft.trim() || isStreaming) {
@@ -36,7 +68,7 @@ export const ChatPane = ({
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <div style={rootStyle}>
       {disabled && (
         <Alert
           type="info"
@@ -44,7 +76,7 @@ export const ChatPane = ({
         />
       )}
       {error && <Alert type="error" message={error} closable />}
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      <div ref={messagesRef} style={messagesStyle}>
         {messages.map((m, idx) => (
           // eslint-disable-next-line react/no-array-index-key
           <div key={idx} data-role={m.role} style={{ padding: 8 }}>
@@ -53,30 +85,32 @@ export const ChatPane = ({
           </div>
         ))}
       </div>
-      <Input.TextArea
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onPressEnter={(e) => {
-          if (!e.shiftKey) {
-            e.preventDefault();
-            handleSubmit();
-          }
-        }}
-        disabled={isStreaming || disabled}
-        placeholder="Tell the builder what you want…"
-        autoSize={{ minRows: 2, maxRows: 6 }}
-      />
-      {isStreaming ? (
-        <Button onClick={onAbort}>Stop</Button>
-      ) : (
-        <Button
-          type="primary"
-          onClick={handleSubmit}
-          disabled={!draft.trim() || disabled}
-        >
-          Send
-        </Button>
-      )}
-    </Space>
+      <div style={composerStyle}>
+        <Input.TextArea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onPressEnter={(e) => {
+            if (!e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          disabled={isStreaming || disabled}
+          placeholder="Tell the builder what you want…"
+          autoSize={{ minRows: 2, maxRows: 6 }}
+        />
+        {isStreaming ? (
+          <Button onClick={onAbort}>Stop</Button>
+        ) : (
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            disabled={!draft.trim() || disabled}
+          >
+            Send
+          </Button>
+        )}
+      </div>
+    </div>
   );
 };
