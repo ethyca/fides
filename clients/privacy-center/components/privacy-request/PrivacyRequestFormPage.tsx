@@ -4,10 +4,8 @@ import { useMessage } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { decodePolicyKey } from "~/common/policy-key";
-import { useConfig } from "~/features/common/config.slice";
+import useActionFromRoute from "~/common/hooks/useActionFromRoute";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import { PrivacyRequestOption } from "~/types/config";
 
 import PrivacyRequestForm from "../modals/privacy-request-modal/PrivacyRequestForm";
 
@@ -16,7 +14,6 @@ type PrivacyRequestFormPageProps = {
 };
 
 const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
-  const config = useConfig();
   const router = useRouter();
   const params = useParams();
   const propertyPath = params?.propertyPath as string | undefined;
@@ -24,21 +21,8 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
-
   const messageApi = useMessage();
-
-  const decoded = decodePolicyKey(actionKey);
-  const colonIndex = decoded.indexOf(":");
-  const actionIndex =
-    colonIndex !== -1 ? parseInt(decoded.slice(0, colonIndex), 10) : NaN;
-  const policyKey = colonIndex !== -1 ? decoded.slice(colonIndex + 1) : decoded;
-
-  const actions = config.actions ?? [];
-  const selectedAction = (
-    !Number.isNaN(actionIndex) && actions[actionIndex]?.policy_key === policyKey
-      ? actions[actionIndex]
-      : actions.find((action) => action.policy_key === policyKey)
-  ) as PrivacyRequestOption | undefined;
+  const selectedAction = useActionFromRoute(actionKey);
 
   // Update verification requirement from API
   useEffect(() => {
@@ -51,10 +35,10 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
 
   useEffect(() => {
     if (!selectedAction) {
-      messageApi.error(`Invalid action key "${policyKey}" for privacy request`);
+      messageApi.error(`Invalid action key "${actionKey}" for privacy request`);
       router.push(basePath || "/");
     }
-  }, [selectedAction, policyKey, messageApi, router, basePath]);
+  }, [selectedAction, actionKey, messageApi, router, basePath]);
 
   const handleExit = () => {
     router.push(basePath || "/");

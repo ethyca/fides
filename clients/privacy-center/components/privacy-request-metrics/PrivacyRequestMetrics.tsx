@@ -33,8 +33,7 @@ export const PrivacyRequestMetrics = () => {
   const config = useConfig();
   const { data, isLoading, isError } = useGetPrivacyRequestMetricsQuery();
 
-  const metricsTitle =
-    config.metrics?.title ?? "Privacy request disclosures";
+  const metricsTitle = config.metrics?.title ?? "Privacy request disclosures";
 
   if (isError) {
     return (
@@ -146,9 +145,10 @@ export const PrivacyRequestMetrics = () => {
 
       <Box w="100%" maxWidth={1080} borderRadius="md" p={5}>
         <Text color="gray.500" fontSize="xs">
-          {(
-            config.metrics?.description ?? DEFAULT_METRICS_DESCRIPTION
-          ).replace("{reportingPeriod}", data.reporting_period)}
+          {(config.metrics?.description ?? DEFAULT_METRICS_DESCRIPTION).replace(
+            "{reportingPeriod}",
+            data.reporting_period,
+          )}
         </Text>
       </Box>
     </Stack>

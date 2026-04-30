@@ -4,41 +4,22 @@ import { Button, Flex, Image, Text, Title } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 
-import { decodePolicyKey } from "~/common/policy-key";
-import { useConfig } from "~/features/common/config.slice";
-import { PrivacyRequestOption } from "~/types/config";
+import useActionFromRoute from "~/common/hooks/useActionFromRoute";
 
 const RequestSubmittedPage = () => {
-  const config = useConfig();
   const router = useRouter();
   const params = useParams();
   const propertyPath = params?.propertyPath as string | undefined;
   const basePath = propertyPath ? `/${propertyPath}` : "";
   const actionKey = params?.actionKey as string | undefined;
-
-  let action: PrivacyRequestOption | undefined;
-  if (actionKey) {
-    const decoded = decodePolicyKey(actionKey);
-    const colonIndex = decoded.indexOf(":");
-    const actionIndex =
-      colonIndex !== -1 ? parseInt(decoded.slice(0, colonIndex), 10) : NaN;
-    const policyKey =
-      colonIndex !== -1 ? decoded.slice(colonIndex + 1) : decoded;
-    const actions = config.actions ?? [];
-    action = (
-      !Number.isNaN(actionIndex) &&
-      actions[actionIndex]?.policy_key === policyKey
-        ? actions[actionIndex]
-        : actions.find((a) => a.policy_key === policyKey)
-    ) as PrivacyRequestOption | undefined;
-  }
+  const action = useActionFromRoute(actionKey);
 
   const handleContinue = () => {
     router.push(basePath || "/");
   };
 
   return (
-    <Flex gap="middle" vertical align="center">
+    <Flex gap="medium" vertical align="center">
       <Image
         src="/green-check.svg"
         alt="green-checkmark"
