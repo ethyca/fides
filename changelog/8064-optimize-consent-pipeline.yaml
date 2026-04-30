@@ -1,0 +1,4 @@
+type: Changed
+description: Add configurable soft time limit for privacy request tasks, fix connector engine leak, and improve consent pipeline logging
+pr: 8064
+labels: []
