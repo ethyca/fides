@@ -1,6 +1,4 @@
 import time
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as FutureTimeoutError
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -85,7 +83,6 @@ def _execute_identity_lookup(
     collection: Collection,
     identity_data: Dict[str, Any],
     session: Session,
-    executor: ThreadPoolExecutor,
 ) -> List[Row]:
     """
     Execute a query against a collection to look up identity fields,
@@ -123,66 +120,35 @@ def _execute_identity_lookup(
         return []
 
     logger.info(
-        "Identity enrichment: submitting query to {} for {}.{} (timeout={}s)",
+        "Identity enrichment: querying {} for {}.{}",
         connector.configuration.key,
         dataset_name,
         collection.name,
-        CONFIG.consent.identity_enrichment_query_timeout_seconds,
     )
     start = time.monotonic()
 
-    def _run_query() -> List[Row]:
+    try:
         engine = connector.client()
         with engine.connect() as connection:
-            elapsed_connect = time.monotonic() - start
-            logger.info(
-                "Identity enrichment: connected to {} in {:.2f}s, executing query on {}.{}",
-                connector.configuration.key,
-                elapsed_connect,
-                dataset_name,
-                collection.name,
-            )
             connector.set_schema(connection)
             results = connection.execute(query)
-            return connector.cursor_result_to_rows(results)
-
-    # cancel_futures only cancels queued futures; a running thread will linger
-    # until the DB query completes or the driver-level timeout fires.
-    # Connections.close() in the caller disposes engine pools, bounding the leak.
-    future = executor.submit(_run_query)
-    try:
-        rows = future.result(
-            timeout=CONFIG.consent.identity_enrichment_query_timeout_seconds
-        )
-        elapsed_total = time.monotonic() - start
+            rows = connector.cursor_result_to_rows(results)
+        elapsed = time.monotonic() - start
         logger.info(
             "Identity enrichment: query on {}.{} returned {} row(s) in {:.2f}s",
             connector.configuration.key,
             collection.name,
             len(rows),
-            elapsed_total,
+            elapsed,
         )
         return rows
-    except FutureTimeoutError:
-        future.cancel()
-        elapsed_total = time.monotonic() - start
-        logger.error(
-            "Identity enrichment query TIMED OUT for {}.{} after {:.2f}s "
-            "(limit={}s) - this may indicate the external database is "
-            "overloaded or unreachable",
-            connector.configuration.key,
-            collection.name,
-            elapsed_total,
-            CONFIG.consent.identity_enrichment_query_timeout_seconds,
-        )
-        return []
     except Exception as exc:
-        elapsed_total = time.monotonic() - start
+        elapsed = time.monotonic() - start
         logger.warning(
             "Identity enrichment query failed for {}.{} after {:.2f}s: {}",
             connector.configuration.key,
             collection.name,
-            elapsed_total,
+            elapsed,
             exc,
         )
         return []
@@ -413,7 +379,6 @@ def _enrich_from_db_connectors(
 
     start = time.monotonic()
     connections = Connections()
-    executor = ThreadPoolExecutor(max_workers=1)
     enriched = dict(identity_data)
     try:
         for connection_key, dataset_name, collection in targets:
@@ -434,12 +399,11 @@ def _enrich_from_db_connectors(
                 continue
 
             rows = _execute_identity_lookup(
-                connector, dataset_name, collection, identity_data, session, executor
+                connector, dataset_name, collection, identity_data, session
             )
             discovered = _extract_identities_from_rows(rows, collection, identity_data)
             enriched.update(discovered)
     finally:
-        executor.shutdown(wait=False)
         connections.close()
 
     elapsed = time.monotonic() - start
