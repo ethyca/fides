@@ -122,10 +122,19 @@ export const FieldPropertiesPanel = ({
   const componentType = element.type as EditableType;
 
   const handleValuesChange = (
-    _changed: Partial<FormValues>,
+    changed: Partial<FormValues>,
     all: FormValues,
   ) => {
-    onUpdateField(selectedElementId, stripUndefined(all));
+    // Hidden + required is contradictory — if the user can't see the
+    // field, they can't fill it in. When Hidden turns on, clear required.
+    let next = all;
+    if ("hidden" in changed && changed.hidden === true && all.required) {
+      next = { ...all, required: false };
+      form.setFieldsValue({ required: false } as Parameters<
+        typeof form.setFieldsValue
+      >[0]);
+    }
+    onUpdateField(selectedElementId, stripUndefined(next));
   };
 
   return (
@@ -163,19 +172,30 @@ export const FieldPropertiesPanel = ({
           <Input data-testid="prop-label" />
         </Form.Item>
         <Form.Item
-          label="Required"
-          name="required"
-          valuePropName="checked"
-          tooltip="Whether the user must fill this field before submitting."
+          noStyle
+          shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
         >
-          <Switch data-testid="prop-required" />
+          {({ getFieldValue }) => {
+            const hiddenOn = !!getFieldValue("hidden");
+            return (
+              <Form.Item
+                label="Required"
+                name="required"
+                valuePropName="checked"
+                tooltip={
+                  hiddenOn
+                    ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
+                    : "Whether the user must fill this field before submitting."
+                }
+              >
+                <Switch data-testid="prop-required" disabled={hiddenOn} />
+              </Form.Item>
+            );
+          }}
         </Form.Item>
 
         {componentType === "Text" && (
           <>
-            <Form.Item label="Default value" name="default_value">
-              <Input data-testid="prop-default-value" />
-            </Form.Item>
             <Form.Item
               label="Hidden"
               name="hidden"
@@ -183,6 +203,9 @@ export const FieldPropertiesPanel = ({
               tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
             >
               <Switch data-testid="prop-hidden" />
+            </Form.Item>
+            <Form.Item label="Default value" name="default_value">
+              <Input data-testid="prop-default-value" />
             </Form.Item>
             <Form.Item
               label="Query param key"
