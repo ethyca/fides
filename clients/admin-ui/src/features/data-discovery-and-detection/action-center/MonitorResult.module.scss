@@ -9,10 +9,10 @@
     flex-grow: initial;
     justify-content: end;
     margin-inline-start: 0px;
-    padding-left: var(--ant-padding-xs);
+    padding-left: var(--fidesui-padding-xs);
   }
 
   &:global(.ant-list-item) :global(.ant-list-item-action) li {
-    padding-left: var(--ant-padding-xs);
+    padding-left: var(--fidesui-padding-xs);
   }
 }
