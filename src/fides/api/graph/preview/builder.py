@@ -46,8 +46,35 @@ class TraversalPreviewBuilder:
         self.identity_types = identity_types or sorted(identity_seed.keys())
 
     def build(self) -> TraversalPreview:
+        from fides.api.graph.preview.reachability import classify_per_integration
+
         captured = self._capture_traversal()
         integrations = self._build_integration_nodes(captured)
+
+        classification = classify_per_integration(
+            self.graph, set(captured.keys()), self.connection_lookup
+        )
+        existing = {i.connection_key: i for i in integrations}
+        for integration_key, reach in classification.items():
+            if integration_key in existing:
+                existing[integration_key].reachability = reach
+                continue
+            conn = next(
+                c for c in self.connection_lookup.values()
+                if c["connection_key"] == integration_key
+            )
+            integrations.append(IntegrationNode(
+                id=f"integration:{integration_key}",
+                connection_key=integration_key,
+                connector_type=conn["connector_type"],
+                system=SystemRef(**conn["system"]) if conn.get("system") else None,
+                reachability=reach,
+                action_status=ActionStatus.ACTIVE,
+                collection_count=CollectionCount(traversed=0, total=0),
+                data_categories=[],
+                datasets=[],
+            ))
+
         edges = self._build_edges(captured, integrations)
         edges += self._manual_task_edges()
 
@@ -65,11 +92,11 @@ class TraversalPreviewBuilder:
     def _capture_traversal(self) -> Dict[CollectionAddress, List[CollectionAddress]]:
         """Run Traversal in capture mode. Returns {node_address: [parent_addresses]}.
 
-        Construction runs verification (which builds edge indices required by
-        ``traverse``); we don't pass ``skip_verification`` here. Unreachable graphs
-        are handled by the caller in Task 4 via a different code path.
+        If the graph contains unreachable nodes, ``Traversal`` raises during
+        construction (it runs a verification traverse). We catch that and return
+        an empty deps map; the caller falls back to static reachability
+        classification for unreachable integrations.
         """
-        traversal = Traversal(self.graph, self.identity_seed)
         deps: Dict[CollectionAddress, List[CollectionAddress]] = defaultdict(list)
 
         def capture(node: TraversalNode, _env: Dict[CollectionAddress, Any]) -> None:
@@ -78,10 +105,13 @@ class TraversalPreviewBuilder:
                 if parent != node.address:
                     deps[node.address].append(parent)
 
-        environment: Dict[CollectionAddress, Any] = {ROOT_COLLECTION_ADDRESS: [self.identity_seed]}
         try:
+            traversal = Traversal(self.graph, self.identity_seed)
+            environment: Dict[CollectionAddress, Any] = {
+                ROOT_COLLECTION_ADDRESS: [self.identity_seed]
+            }
             traversal.traverse(environment, capture)
-        except Exception as exc:  # capture-mode should not raise on partial graphs
+        except Exception as exc:  # graph has unreachable nodes or other defects
             logger.warning("Traversal capture failed: {}", exc)
         return deps
 

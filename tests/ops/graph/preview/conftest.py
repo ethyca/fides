@@ -8,8 +8,11 @@ from fides.api.util.data_category import DataCategory
 
 
 @pytest.fixture
-def linear_two_dataset_graph() -> DatasetGraph:
-    """A → B: postgres.users (identity: email) → stripe.customers (lookup by user_id)."""
+def linear_two_graph_datasets() -> list:
+    """A → B: postgres.users (identity: email) → stripe.customers (lookup by user_id).
+
+    Returns the list of GraphDatasets so callers can compose larger graphs.
+    """
     postgres_dataset = Dataset.parse_obj({
         "fides_key": "postgres_users",
         "name": "postgres_users",
@@ -34,9 +37,15 @@ def linear_two_dataset_graph() -> DatasetGraph:
             ],
         }],
     })
-    postgres_graph = convert_dataset_to_graph(postgres_dataset, "postgres-users-db")
-    stripe_graph = convert_dataset_to_graph(stripe_dataset, "stripe")
-    return DatasetGraph(postgres_graph, stripe_graph)
+    return [
+        convert_dataset_to_graph(postgres_dataset, "postgres-users-db"),
+        convert_dataset_to_graph(stripe_dataset, "stripe"),
+    ]
+
+
+@pytest.fixture
+def linear_two_dataset_graph(linear_two_graph_datasets) -> DatasetGraph:
+    return DatasetGraph(*linear_two_graph_datasets)
 
 
 @pytest.fixture
