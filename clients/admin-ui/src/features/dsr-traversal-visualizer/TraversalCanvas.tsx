@@ -13,11 +13,7 @@ import ManualTaskNode from "./nodes/ManualTaskNode";
 import IntegrationDetailPanel from "./panels/IntegrationDetailPanel";
 import LegendPanel from "./panels/LegendPanel";
 import ManualTaskDetailPanel from "./panels/ManualTaskDetailPanel";
-import {
-  IntegrationNodeData,
-  ManualTaskNodeData,
-  TraversalPreviewResponse,
-} from "./types";
+import { TraversalPreviewResponse } from "./types";
 
 const NODE_TYPES = {
   identityRoot: IdentityRootNode,
@@ -40,13 +36,8 @@ const TraversalCanvas = ({ payload, direction }: Props) => {
   const { selected, onNodeClick, clear } = useNodeSelection();
 
   const integrationData =
-    selected?.type === "integration"
-      ? (selected.data as unknown as IntegrationNodeData)
-      : null;
-  const manualData =
-    selected?.type === "manualTask"
-      ? (selected.data as unknown as ManualTaskNodeData)
-      : null;
+    selected?.type === "integration" ? selected.data : null;
+  const manualData = selected?.type === "manualTask" ? selected.data : null;
 
   return (
     <div

@@ -5,6 +5,11 @@ from typing import Any, Dict, List, Literal, Optional
 
 from loguru import logger
 
+from fides.api.common_exceptions import (
+    TraversalError,
+    UnreachableEdgesError,
+    UnreachableNodesError,
+)
 from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.preview.schemas import (
@@ -44,6 +49,10 @@ class TraversalPreviewBuilder:
         self.connection_lookup = connection_lookup
         self.manual_tasks = manual_tasks
         self.identity_types = identity_types or sorted(identity_seed.keys())
+        # Pre-build connection_key → connection-metadata index for O(1) lookup.
+        self._conn_by_key: Dict[str, Dict[str, Any]] = {
+            conn["connection_key"]: conn for conn in connection_lookup.values()
+        }
 
     def build(self) -> TraversalPreview:
         from fides.api.graph.preview.reachability import classify_per_integration
@@ -59,10 +68,7 @@ class TraversalPreviewBuilder:
             if integration_key in existing:
                 existing[integration_key].reachability = reach
                 continue
-            conn = next(
-                c for c in self.connection_lookup.values()
-                if c["connection_key"] == integration_key
-            )
+            conn = self._conn_by_key[integration_key]
             integrations.append(IntegrationNode(
                 id=f"integration:{integration_key}",
                 connection_key=integration_key,
@@ -111,7 +117,7 @@ class TraversalPreviewBuilder:
                 ROOT_COLLECTION_ADDRESS: [self.identity_seed]
             }
             traversal.traverse(environment, capture)
-        except Exception as exc:  # graph has unreachable nodes or other defects
+        except (UnreachableNodesError, UnreachableEdgesError, TraversalError) as exc:
             logger.warning("Traversal capture failed: {}", exc)
         return deps
 
@@ -145,7 +151,7 @@ class TraversalPreviewBuilder:
 
         nodes: List[IntegrationNode] = []
         for integration_key, bucket in per_integration.items():
-            conn = next(c for c in self.connection_lookup.values() if c["connection_key"] == integration_key)
+            conn = self._conn_by_key[integration_key]
             datasets = [
                 DatasetDetail(fides_key=ds_key, collections=ds_bucket["collections"])
                 for ds_key, ds_bucket in bucket["datasets"].items()

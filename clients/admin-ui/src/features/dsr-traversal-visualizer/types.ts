@@ -1,3 +1,5 @@
+import type { Node } from "@xyflow/react";
+
 export type ActionType = "access" | "erasure";
 export type Reachability =
   | "reachable"
@@ -28,7 +30,7 @@ export interface SystemRef {
   data_use?: string;
 }
 
-export interface IntegrationNodeData {
+export interface IntegrationNodeData extends Record<string, unknown> {
   id: string;
   connection_key: string;
   connector_type: string;
@@ -40,7 +42,7 @@ export interface IntegrationNodeData {
   datasets: DatasetDetail[];
 }
 
-export interface ManualTaskNodeData {
+export interface ManualTaskNodeData extends Record<string, unknown> {
   id: string;
   name: string;
   assignees: { type: "user" | "team"; name: string }[];
@@ -55,7 +57,7 @@ export interface PrivacyCenterFormRef {
   url_path: string;
 }
 
-export interface IdentityRootData {
+export interface IdentityRootData extends Record<string, unknown> {
   id: "identity-root";
   identity_types: string[];
   privacy_center_forms: PrivacyCenterFormRef[];
@@ -79,3 +81,8 @@ export interface TraversalPreviewResponse {
   edges: PreviewEdge[];
   warnings: string[];
 }
+
+export type AppNode =
+  | Node<IdentityRootData, "identityRoot">
+  | Node<IntegrationNodeData, "integration">
+  | Node<ManualTaskNodeData, "manualTask">;
