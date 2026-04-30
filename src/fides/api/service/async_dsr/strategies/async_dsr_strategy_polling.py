@@ -36,6 +36,7 @@ from fides.api.service.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
 )
 from fides.api.service.async_dsr.handlers.polling_sub_request_handler import (
+    TERMINAL_STATUSES,
     PollingSubRequestHandler,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
@@ -58,8 +59,14 @@ if TYPE_CHECKING:
 
 class AsyncPollingStrategy(AsyncDSRStrategy):
     """
-    Enhanced strategy for polling async DSR requests.
+    Strategy for polling async DSR requests.
     Works for both access and erasure operations with internal phase-based organization.
+
+    Session contract: this class commits immediately and deliberately.
+    Initial-phase writes (async_type, sub-requests) must be durable before this method
+    returns, because the polling continuation runs in a separate Celery task invocation
+    with no shared session. Callers should not wrap calls to this strategy in an outer
+    transaction expecting atomicity — each phase is its own durable unit of work.
     """
 
     type = AsyncTaskType.polling
@@ -152,6 +159,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         request_task.async_type = AsyncTaskType.polling
         self.session.add(request_task)
+        # Commit immediately — sub-requests must be visible to the polling Celery task,
+        # which runs in a separate invocation with no shared session.
         self.session.commit()
 
         for read_request in async_requests_to_process:
@@ -190,33 +199,28 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         privacy_request = request_task.privacy_request
         policy = privacy_request.policy
 
-        all_requests = []
         masking_request = query_config.get_masking_request()
-        if masking_request:
-            all_requests.append(masking_request)
 
-        # Set async type once for the task
+        # Set async type once for the task.
         request_task.async_type = AsyncTaskType.polling
         self.session.add(request_task)
+        # Commit immediately — sub-requests must be visible to the polling Celery task,
+        # which runs in a separate invocation with no shared session.
         self.session.commit()
 
-        for request in all_requests:
-            if not (request.async_config and request_task.id):
-                continue
-
-            if request.path:
-                logger.info(
-                    f"Executing initial masking request for polling task {request_task.id}"
-                )
-                self._handle_polling_initial_erasure_request(
-                    request_task,
-                    query_config,
-                    request,
-                    rows,
-                    policy,
-                    privacy_request,
-                    client,
-                )
+        if masking_request and masking_request.async_config and masking_request.path:
+            logger.info(
+                f"Executing initial masking request for polling task {request_task.id}"
+            )
+            self._handle_polling_initial_erasure_request(
+                request_task,
+                query_config,
+                masking_request,
+                rows,
+                policy,
+                privacy_request,
+                client,
+            )
 
         # After processing all requests, raise AwaitingAsyncProcessing (like access flow)
         # But only if we actually created any sub-requests
@@ -270,7 +274,21 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         # If we have merged attachments, add them to the first aggregated result
         if merged_attachments and aggregated_results:
-            aggregated_results[0]["retrieved_attachments"] = merged_attachments
+            aggregated_results[0] = {
+                **aggregated_results[0],
+                "retrieved_attachments": merged_attachments,
+            }
+
+        errored = [
+            sr
+            for sr in request_task.sub_requests
+            if sr.status == ExecutionLogStatus.error.value
+        ]
+        if errored:
+            logger.warning(
+                f"Access task {request_task.id} completed with {len(errored)} failed "
+                f"sub-request(s): {[sr.id for sr in errored]}. Returning partial results."
+            )
 
         return aggregated_results
 
@@ -296,6 +314,18 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         total_rows_masked = sum(
             sub_request.rows_masked or 0 for sub_request in request_task.sub_requests
         )
+
+        errored = [
+            sr
+            for sr in request_task.sub_requests
+            if sr.status == ExecutionLogStatus.error.value
+        ]
+        if errored:
+            logger.warning(
+                f"Erasure task {request_task.id} completed with {len(errored)} failed "
+                f"sub-request(s): {[sr.id for sr in errored]}. Returning partial rows_masked count."
+            )
+
         return total_rows_masked
 
     def _handle_polling_initial_request(
@@ -406,7 +436,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 if request.skip_missing_param_values:
                     logger.debug("Skipping optional masking request: {}", exc)
                     continue
-                raise exc
+                raise
 
     def _get_requests_for_action(
         self, polling_task: RequestTask, query_config: "SaaSQueryConfig"
@@ -654,11 +684,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
 
         for sub_request in sub_requests:
-            # Skip already completed or skipped sub-requests
-            if sub_request.status in [
-                ExecutionLogStatus.complete.value,
-                ExecutionLogStatus.skipped.value,
-            ]:
+            # Skip already-terminal sub-requests
+            if sub_request.status in TERMINAL_STATUSES:
                 continue
 
             try:
@@ -668,7 +695,6 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
                 )
                 sub_request.update_status(self.session, ExecutionLogStatus.error.value)
-                raise exc
 
     def _execute_polling_requests(
         self,
@@ -734,7 +760,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 sub_request.access_data = attachment_metadata
                 sub_request.save(self.session)
             except Exception as exc:
-                raise PrivacyRequestError(f"Attachment storage failed: {exc}")
+                raise PrivacyRequestError(f"Attachment storage failed: {exc}") from exc
         else:
             raise PrivacyRequestError(
                 f"Unsupported result type: {polling_result.result_type}"

@@ -24,6 +24,9 @@ from fides.api.schemas.saas.async_polling_configuration import (
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.schemas.saas.shared_schemas import PollingStatusResult
+from fides.api.service.async_dsr.handlers.polling_sub_request_handler import (
+    PollingSubRequestHandler,
+)
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
 )
@@ -245,24 +248,26 @@ class TestAsyncPollingStrategy:
             {"id": 3, "name": "test3"},
         ]
 
-    def test_polling_completion_with_mixed_sub_request_statuses(
+    def test_polling_continuation_waits_while_any_sub_request_pending(
         self, multi_sub_request_task, async_polling_strategy, db
     ):
-        """Test polling completion logic with various sub-request statuses"""
+        """
+        Polling continues as long as at least one sub-request is still pending,
+        even when others have already reached a terminal state (complete or error).
+        """
         request_task = multi_sub_request_task
 
-        # Mock client and query_config
         mock_client = MagicMock()
         mock_query_config = MagicMock()
 
-        # Test with mixed statuses: complete, error, pending
+        # [complete, error, pending] — one pending means we must keep waiting
         sub_requests = request_task.sub_requests
         sub_requests[0].update_status(db, ExecutionLogStatus.complete.value)
+        sub_requests[0].access_data = [{"id": 1, "name": "test1"}]
         sub_requests[1].update_status(db, ExecutionLogStatus.error.value)
         # sub_requests[2] remains pending
         db.commit()
 
-        # Should still wait because not all sub-requests are complete (only successful completions count)
         with pytest.raises(AwaitingAsyncProcessing) as exc:
             async_polling_strategy.async_retrieve_data(
                 client=mock_client,
@@ -272,19 +277,36 @@ class TestAsyncPollingStrategy:
             )
         assert "Waiting for next scheduled check" in str(exc.value)
 
-        # Mark the pending sub-request as complete and also fix the failed one
-        sub_requests[1].update_status(
-            db, ExecutionLogStatus.complete.value
-        )  # Fix the failed one
-        sub_requests[2].update_status(
-            db, ExecutionLogStatus.complete.value
-        )  # Complete the pending one
+        # Once the last pending sub-request also becomes terminal (error), polling is done
+        sub_requests[2].update_status(db, ExecutionLogStatus.error.value)
         db.commit()
 
-        # Mock the access data on sub-requests
+        # Partial results returned — only the one complete sub-request contributes data
+        result = async_polling_strategy.async_retrieve_data(
+            client=mock_client,
+            request_task_id=request_task.id,
+            query_config=mock_query_config,
+            input_data=MagicMock(),
+        )
+        assert result == [{"id": 1, "name": "test1"}]
+
+    def test_partial_results_returned_when_some_sub_requests_errored(
+        self, multi_sub_request_task, async_polling_strategy, db
+    ):
+        """
+        When all sub-requests are terminal but some errored, partial data from the
+        successful sub-requests is returned without raising an exception.
+        """
+        request_task = multi_sub_request_task
+
+        mock_client = MagicMock()
+        mock_query_config = MagicMock()
+
+        sub_requests = request_task.sub_requests
+        sub_requests[0].update_status(db, ExecutionLogStatus.complete.value)
         sub_requests[0].access_data = [{"id": 1, "name": "test1"}]
-        sub_requests[1].access_data = [{"id": 2, "name": "test2"}]
-        sub_requests[2].access_data = [{"id": 3, "name": "test3"}]
+        sub_requests[1].update_status(db, ExecutionLogStatus.error.value)
+        sub_requests[2].update_status(db, ExecutionLogStatus.error.value)
         db.commit()
 
         result = async_polling_strategy.async_retrieve_data(
@@ -294,12 +316,72 @@ class TestAsyncPollingStrategy:
             input_data=MagicMock(),
         )
 
-        # Should aggregate all sub-request data
-        assert result == [
-            {"id": 1, "name": "test1"},
-            {"id": 2, "name": "test2"},
-            {"id": 3, "name": "test3"},
-        ]
+        # Only data from the successful sub-request is included
+        assert result == [{"id": 1, "name": "test1"}]
+
+    def test_sub_request_error_does_not_stop_other_sub_requests(
+        self, multi_sub_request_task, async_polling_strategy, db
+    ):
+        """
+        When _process_single_sub_request raises for one sub-request, that sub-request is
+        marked as error but the remaining pending sub-requests are still processed.
+        The cycle ends with AwaitingAsyncProcessing (not a hard exception) because
+        sub-requests 1 and 2 have completed while sub-request 0 errored.
+        """
+        request_task = multi_sub_request_task
+        sub_requests = request_task.sub_requests
+
+        call_count = {"n": 0}
+
+        def side_effect(client, sub_request, polling_task):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                raise RuntimeError("simulated failure on first sub-request")
+            # Subsequent calls succeed — mark as complete so check_completion sees them
+            sub_request.update_status(db, ExecutionLogStatus.complete.value)
+
+        mock_client = MagicMock()
+        mock_query_config = MagicMock()
+        mock_request = MagicMock()
+        mock_request.async_config = True
+
+        with (
+            patch.object(
+                async_polling_strategy,
+                "_process_single_sub_request",
+                side_effect=side_effect,
+            ),
+            patch.object(
+                async_polling_strategy,
+                "_get_requests_for_action",
+                return_value=[mock_request],
+            ),
+        ):
+            # Should raise AwaitingAsyncProcessing, NOT RuntimeError, because:
+            # - sub_requests[0] → error (first call raised)
+            # - sub_requests[1] → complete (second call succeeded)
+            # - sub_requests[2] → complete (third call succeeded)
+            # All three are terminal but we still need to check aggregation via
+            # async_retrieve_data; the mock query_config returns polling phase so
+            # _execute_polling_requests runs and check_completion returns True.
+            result = async_polling_strategy._execute_polling_requests(
+                client=mock_client,
+                polling_task=request_task,
+                query_config=mock_query_config,
+            )
+
+        # All three sub-requests were visited (loop was not aborted)
+        assert call_count["n"] == 3
+
+        db.refresh(sub_requests[0])
+        db.refresh(sub_requests[1])
+        db.refresh(sub_requests[2])
+        assert sub_requests[0].status == ExecutionLogStatus.error.value
+        assert sub_requests[1].status == ExecutionLogStatus.complete.value
+        assert sub_requests[2].status == ExecutionLogStatus.complete.value
+
+        # _execute_polling_requests returns True because all are terminal
+        assert result is True
 
     def test_polling_completion_with_no_sub_requests(
         self, access_request_task, async_polling_strategy, db
@@ -521,8 +603,6 @@ class TestAsyncPollingStrategy:
         with MagicMock() as mock_override:
             mock_override.return_value = False
 
-            from unittest.mock import patch
-
             with patch.object(
                 async_polling_strategy,
                 "status_request",
@@ -555,8 +635,6 @@ class TestAsyncPollingStrategy:
         with MagicMock() as mock_override:
             mock_override.return_value = expected_result
 
-            from unittest.mock import patch
-
             with patch.object(
                 async_polling_strategy,
                 "status_request",
@@ -587,8 +665,6 @@ class TestAsyncPollingStrategy:
         mock_client = MagicMock()
 
         # Mock _check_sub_request_status to return skip_result_request=True
-        from unittest.mock import patch
-
         with patch.object(
             async_polling_strategy,
             "_check_sub_request_status",
@@ -843,3 +919,166 @@ class TestAsyncPollingStrategy:
         assert result == 0
         assert len(request_task.sub_requests) == 0
         mock_client.send.assert_called_once()
+
+    def test_errored_sub_requests_are_skipped_not_reprocessed(
+        self, multi_sub_request_task, async_polling_strategy, db
+    ):
+        """
+        Sub-requests already in 'error' status must be skipped by the processing
+        loop — they should not be re-tried on subsequent polling cycles.
+        """
+        request_task = multi_sub_request_task
+        sub_requests = request_task.sub_requests
+
+        # Pre-set the first sub-request to error before any processing
+        sub_requests[0].update_status(db, ExecutionLogStatus.error.value)
+        db.commit()
+
+        mock_client = MagicMock()
+        mock_request = MagicMock()
+        mock_request.async_config = True
+
+        call_count = {"n": 0}
+
+        def record_call(client, sub_request, polling_task):
+            call_count["n"] += 1
+
+        with patch.object(
+            async_polling_strategy,
+            "_process_single_sub_request",
+            side_effect=record_call,
+        ):
+            async_polling_strategy._process_sub_requests_for_request(
+                mock_client, mock_request, request_task
+            )
+
+        # Only the 2 pending sub-requests should have been processed
+        assert call_count["n"] == 2
+
+        # The errored sub-request status must be unchanged
+        db.refresh(sub_requests[0])
+        assert sub_requests[0].status == ExecutionLogStatus.error.value
+
+    def test_check_completion_returns_true_when_all_complete(
+        self, multi_sub_request_task, db
+    ):
+        """All sub-requests complete → check_completion returns True."""
+        request_task = multi_sub_request_task
+        for sr in request_task.sub_requests:
+            sr.update_status(db, ExecutionLogStatus.complete.value)
+        db.commit()
+
+        assert PollingSubRequestHandler.check_completion(request_task) is True
+
+    def test_check_completion_returns_true_when_mix_of_terminal_statuses_including_error(
+        self, multi_sub_request_task, db
+    ):
+        """
+        All sub-requests terminal (complete, error, skipped) → check_completion
+        returns True. Error does not block completion.
+        """
+        request_task = multi_sub_request_task
+        sub_requests = request_task.sub_requests
+        sub_requests[0].update_status(db, ExecutionLogStatus.complete.value)
+        sub_requests[1].update_status(db, ExecutionLogStatus.error.value)
+        sub_requests[2].update_status(db, ExecutionLogStatus.skipped.value)
+        db.commit()
+
+        assert PollingSubRequestHandler.check_completion(request_task) is True
+
+    def test_check_completion_returns_false_when_any_pending(
+        self, multi_sub_request_task, db
+    ):
+        """Any pending sub-request keeps check_completion returning False."""
+        request_task = multi_sub_request_task
+        sub_requests = request_task.sub_requests
+        sub_requests[0].update_status(db, ExecutionLogStatus.complete.value)
+        sub_requests[1].update_status(db, ExecutionLogStatus.error.value)
+        # sub_requests[2] stays pending
+        db.commit()
+
+        assert PollingSubRequestHandler.check_completion(request_task) is False
+
+    def test_check_timeout_ignores_already_errored_sub_requests(
+        self, access_request_task, db
+    ):
+        """
+        A sub-request that is already in 'error' status should not be checked
+        for timeout — it is terminal. Even if its created_at is far in the past,
+        check_timeout must not raise PrivacyRequestError.
+        """
+        request_task = access_request_task
+        sub_request = request_task.sub_requests[0]
+
+        # Mark as errored and backdate created_at well past any timeout threshold
+        sub_request.update_status(db, ExecutionLogStatus.error.value)
+        sub_request.created_at = sub_request.created_at - timedelta(days=365)
+        db.commit()
+
+        # Should not raise — errored sub-requests are terminal and exempt
+        try:
+            PollingSubRequestHandler.check_timeout(request_task, timeout_days=1)
+        except PrivacyRequestError:
+            pytest.fail(
+                "check_timeout raised PrivacyRequestError for an already-errored sub-request"
+            )
+
+    def test_partial_erasure_rows_masked_when_some_sub_requests_errored(
+        self, db, async_polling_strategy
+    ):
+        """
+        When some erasure sub-requests error, rows_masked is aggregated only from
+        the successful ones. None is treated as 0.
+        """
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "erasure_partial_123",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "polling",
+                "action_type": "erasure",
+                "async_type": "polling",
+            },
+        )
+        sr0 = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": request_task.id,
+                "param_values": {"correlation_id": "r1"},
+                "status": ExecutionLogStatus.complete.value,
+            },
+        )
+        sr1 = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": request_task.id,
+                "param_values": {"correlation_id": "r2"},
+                "status": ExecutionLogStatus.error.value,
+            },
+        )
+        sr2 = RequestTaskSubRequest.create(
+            db,
+            data={
+                "request_task_id": request_task.id,
+                "param_values": {"correlation_id": "r3"},
+                "status": ExecutionLogStatus.complete.value,
+            },
+        )
+        sr0.rows_masked = 3
+        sr1.rows_masked = None  # errored — no rows masked
+        sr2.rows_masked = 5
+        db.commit()
+
+        mock_client = MagicMock()
+        mock_query_config = MagicMock()
+
+        result = async_polling_strategy.async_mask_data(
+            client=mock_client,
+            request_task_id=request_task.id,
+            query_config=mock_query_config,
+            rows=MagicMock(),
+        )
+
+        assert result == 8

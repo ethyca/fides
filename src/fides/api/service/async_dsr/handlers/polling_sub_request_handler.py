@@ -13,6 +13,14 @@ from fides.api.models.privacy_request.request_task import (
 )
 from fides.api.models.worker_task import ExecutionLogStatus
 
+TERMINAL_STATUSES = frozenset(
+    {
+        ExecutionLogStatus.complete.value,
+        ExecutionLogStatus.skipped.value,
+        ExecutionLogStatus.error.value,
+    }
+)
+
 
 class PollingSubRequestHandler:
     """Utility class for managing polling sub-request lifecycle and status checking."""
@@ -52,19 +60,21 @@ class PollingSubRequestHandler:
         """
         Check if all sub-requests for a polling task are complete.
 
+        A sub-request is considered terminal when its status is complete, skipped, or error.
+        Errored sub-requests do not block completion — partial results from successful
+        sub-requests will be returned and a warning will be logged.
+
         Args:
             polling_task: The polling task to check
 
         Returns:
-            bool: True if all sub-requests are complete, False if still in progress
+            bool: True if all sub-requests are in a terminal state, False if still in progress
         """
-        # Get all sub-requests and categorize by status
         all_sub_requests = polling_task.sub_requests
-        completed_sub_requests = [
+        terminal_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.status
-            in [ExecutionLogStatus.complete.value, ExecutionLogStatus.skipped.value]
+            if sub_request.status in TERMINAL_STATUSES
         ]
         failed_sub_requests = [
             sub_request
@@ -73,18 +83,19 @@ class PollingSubRequestHandler:
         ]
 
         if (
-            len(completed_sub_requests) == len(all_sub_requests)
-            and len(all_sub_requests) > 0
+            len(terminal_sub_requests) == len(all_sub_requests)
+            and len(all_sub_requests) > 0  # empty sub_requests list is not complete
         ):
-            # All sub-requests completed successfully (or skipped) - aggregate results
-            logger.info(
-                f"All sub-requests completed successfully for task {polling_task.id}"
-            )
+            if not failed_sub_requests:
+                logger.info(
+                    f"All sub-requests completed successfully for task {polling_task.id}"
+                )
             return True
 
         # Still polling - some sub-requests are pending
         logger.info(
-            f"Polling task {polling_task.id}: {len(completed_sub_requests)}/{len(all_sub_requests)} sub-requests complete, {len(failed_sub_requests)} failed"
+            f"Polling task {polling_task.id}: {len(terminal_sub_requests)}/{len(all_sub_requests)} "
+            f"sub-requests terminal, {len(failed_sub_requests)} failed"
         )
         return False
 
@@ -100,20 +111,15 @@ class PollingSubRequestHandler:
         Raises:
             PrivacyRequestError: If any sub-request has timed out
         """
-        timeout_seconds = timeout_days * 24 * 60 * 60  # Convert days to seconds
-
         # Check timeout for incomplete sub-requests only
         timed_out_sub_requests = []
 
         for sub_request in polling_task.sub_requests:
-            if sub_request.status not in [
-                ExecutionLogStatus.complete.value,
-                ExecutionLogStatus.skipped.value,
-            ]:
+            if sub_request.status not in TERMINAL_STATUSES:
                 # Check if this sub-request has timed out
                 if sub_request.created_at:
                     timeout_threshold = sub_request.created_at + timedelta(
-                        seconds=timeout_seconds
+                        days=timeout_days
                     )
                     current_time = datetime.now(timezone.utc)
                     if current_time > timeout_threshold:
