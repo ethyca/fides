@@ -1,7 +1,7 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { Avatar, Flex, Tag, Text } from "fidesui";
 
-import { REACHABILITY_LABEL } from "../constants";
+import { REACHABILITY_COLOR, REACHABILITY_LABEL } from "../constants";
 import { IntegrationNodeData } from "../types";
 import styles from "./IntegrationNode.module.scss";
 
@@ -31,29 +31,43 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           {connectorType[0]?.toUpperCase()}
         </Avatar>
         <Flex vertical style={{ flex: 1, minWidth: 0 }}>
-          <Text strong>{connectionKey}</Text>
-          {system && (
-            <Text type="secondary" style={{ fontSize: 12 }}>
+          <Text strong ellipsis={{ tooltip: connectionKey }}>
+            {connectionKey}
+          </Text>
+          {system?.name && (
+            <Text
+              type="secondary"
+              style={{ fontSize: 12 }}
+              ellipsis={{ tooltip: system.name }}
+            >
               {system.name}
             </Text>
           )}
         </Flex>
-        <Tag>{REACHABILITY_LABEL[reachability]}</Tag>
       </Flex>
       <div className={styles.body}>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          {collectionCount.traversed} of {collectionCount.total} collections
-        </Text>
-        <Flex gap={4} wrap style={{ marginTop: 6 }}>
-          {dataCategories.slice(0, 4).map((dc) => (
-            <Tag key={dc} style={{ fontSize: 10 }}>
-              {dc}
-            </Tag>
-          ))}
-          {dataCategories.length > 4 && (
-            <Tag style={{ fontSize: 10 }}>+{dataCategories.length - 4}</Tag>
-          )}
+        <Flex justify="space-between" align="center" gap="small">
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {collectionCount.traversed} of {collectionCount.total} collections
+          </Text>
+          <Tag color={REACHABILITY_COLOR[reachability]} style={{ margin: 0 }}>
+            {REACHABILITY_LABEL[reachability]}
+          </Tag>
         </Flex>
+        {dataCategories.length > 0 && (
+          <Flex gap={4} wrap style={{ marginTop: 6 }}>
+            {dataCategories.slice(0, 3).map((dc) => (
+              <Tag key={dc} style={{ fontSize: 10, margin: 0 }}>
+                {dc}
+              </Tag>
+            ))}
+            {dataCategories.length > 3 && (
+              <Tag style={{ fontSize: 10, margin: 0 }}>
+                +{dataCategories.length - 3}
+              </Tag>
+            )}
+          </Flex>
+        )}
       </div>
       <Handle
         type="source"
