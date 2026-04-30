@@ -10,12 +10,42 @@ interface PreviewPaneProps {
   onFieldClick: (elementId: string) => void;
 }
 
+// Privacy-center-inspired canvas: light grey backdrop, white card with
+// subtle shadow, narrow column to mirror the actual rendered form width.
+const canvasStyle: React.CSSProperties = {
+  background: "#f5f5f5",
+  width: "100%",
+  height: "100%",
+  minHeight: 480,
+  padding: 32,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "flex-start",
+  overflowY: "auto",
+};
+
+const formCardStyle: React.CSSProperties = {
+  background: "white",
+  width: "100%",
+  maxWidth: 360,
+  padding: 32,
+  borderRadius: 4,
+  boxShadow:
+    "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+};
+
 export const PreviewPane: React.FC<PreviewPaneProps> = ({
   spec,
   onFieldClick,
 }) => {
   if (!spec) {
-    return <Empty description="Start by chatting with the form builder." />;
+    return (
+      <div style={canvasStyle}>
+        <div style={formCardStyle}>
+          <Empty description="Start by chatting with the form builder." />
+        </div>
+      </div>
+    );
   }
 
   const handleClick: React.MouseEventHandler<HTMLDivElement> = (event) => {
@@ -57,10 +87,12 @@ export const PreviewPane: React.FC<PreviewPaneProps> = ({
 
   // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
   return (
-    <div onClick={handleClick}>
-      <JSONUIProvider registry={registry}>
-        <Renderer spec={wrappedSpec as any} registry={registry} />
-      </JSONUIProvider>
+    <div style={canvasStyle} onClick={handleClick}>
+      <div style={formCardStyle}>
+        <JSONUIProvider registry={registry}>
+          <Renderer spec={wrappedSpec as any} registry={registry} />
+        </JSONUIProvider>
+      </div>
     </div>
   );
 };
