@@ -237,6 +237,7 @@ export type { MessagingServiceDetailsTwilioEmail } from "./models/MessagingServi
 export type { MessagingServiceSecretsMailchimpTransactionalDocs } from "./models/MessagingServiceSecretsMailchimpTransactionalDocs";
 export { MessagingServiceType } from "./models/MessagingServiceType";
 export type { MessagingTemplateDefault } from "./models/MessagingTemplateDefault";
+export type { MetricsConfig } from "./models/MetricsConfig";
 export type { MessagingTemplateWithPropertiesBodyParams } from "./models/MessagingTemplateWithPropertiesBodyParams";
 export type { MessagingTemplateWithPropertiesDetail } from "./models/MessagingTemplateWithPropertiesDetail";
 export type { MessagingTemplateWithPropertiesPatchBodyParams } from "./models/MessagingTemplateWithPropertiesPatchBodyParams";

@@ -7,6 +7,7 @@ import {
   ChakraText as Text,
 } from "fidesui";
 
+import { useConfig } from "~/features/common/config.slice";
 import {
   METRIC_COLUMNS,
   REQUEST_TYPE_LABELS,
@@ -26,14 +27,20 @@ function formatValue(value: number | null, key: string): string {
   return value.toLocaleString();
 }
 
+const DEFAULT_METRICS_DESCRIPTION = `Disclosure published pursuant to California Civil Code \u00A7 1798.130(a)(5) and 11 CCR \u00A7 7102, and comparable state privacy laws. Figures reflect requests received from California Consumer Privacy Act (CCPA / CPRA) residents between {reportingPeriod}. A request is counted as \u201Cdenied\u201D when it was rejected in whole or in part because the identity of the requester could not be verified, the requester was not a consumer, the information requested was exempt from disclosure, or the request was otherwise invalid.`;
+
 export const PrivacyRequestMetrics = () => {
+  const config = useConfig();
   const { data, isLoading, isError } = useGetPrivacyRequestMetricsQuery();
+
+  const metricsTitle =
+    config.metrics?.title ?? "Privacy request disclosures";
 
   if (isError) {
     return (
       <Stack align="center" py={["6", "16"]} px={5} spacing={4}>
         <Heading as="h1" fontSize={["2xl", "3xl"]} fontWeight="semibold">
-          Privacy request disclosures
+          {metricsTitle}
         </Heading>
         <Text color="gray.500" fontSize="sm">
           Unable to load disclosure metrics. Please try again later.
@@ -63,7 +70,7 @@ export const PrivacyRequestMetrics = () => {
     <Stack align="center" py={["6", "16"]} px={5} spacing={10}>
       <Stack align="center" spacing={3} w="100%" maxWidth={1080}>
         <Heading as="h1" fontSize={["2xl", "3xl"]} fontWeight="semibold">
-          Privacy request disclosures
+          {metricsTitle}
         </Heading>
         <Text color="gray.600" fontSize="sm">
           Reporting period: {data.reporting_period}
@@ -139,14 +146,9 @@ export const PrivacyRequestMetrics = () => {
 
       <Box w="100%" maxWidth={1080} borderRadius="md" p={5}>
         <Text color="gray.500" fontSize="xs">
-          Disclosure published pursuant to California Civil Code &sect;
-          1798.130(a)(5) and 11 CCR &sect; 7102, and comparable state privacy
-          laws. Figures reflect requests received from California Consumer
-          Privacy Act (CCPA / CPRA) residents between {data.reporting_period}. A
-          request is counted as &ldquo;denied&rdquo; when it was rejected in
-          whole or in part because the identity of the requester could not be
-          verified, the requester was not a consumer, the information requested
-          was exempt from disclosure, or the request was otherwise invalid.
+          {(
+            config.metrics?.description ?? DEFAULT_METRICS_DESCRIPTION
+          ).replace("{reportingPeriod}", data.reporting_period)}
         </Text>
       </Box>
     </Stack>

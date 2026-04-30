@@ -18,4 +18,11 @@ export type PrivacyRequestOption = {
     string,
     fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
   > | null;
+  verification_title?: string | null;
+  verification_description?: string | null;
+  verification_submit_button_text?: string | null;
+  verification_resend_button_text?: string | null;
+  success_title?: string | null;
+  success_description?: string | null;
+  success_button_text?: string | null;
 };
