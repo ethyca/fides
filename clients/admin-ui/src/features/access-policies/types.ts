@@ -136,7 +136,7 @@ export interface AccessPolicyYaml {
   description?: string;
   enabled?: boolean;
   priority?: number;
-  controls?: string[];
+  control?: string | null;
   decision: ActionType;
   match: MatchBlock;
   unless?: UnlessItem[];

@@ -851,8 +851,8 @@ const AccessPolicyEditor = ({
     setYamlValue(newYaml);
     setSyncKey((k) => k + 1);
     const parsed = parseYaml(newYaml);
-    if (parsed?.controls !== undefined) {
-      setControl(parsed.controls?.[0] ?? null);
+    if (parsed?.control !== undefined) {
+      setControl(parsed.control ?? null);
     }
   }, []);
 

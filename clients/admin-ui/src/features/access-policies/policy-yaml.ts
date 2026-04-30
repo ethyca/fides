@@ -124,7 +124,7 @@ export const yamlToNodesAndEdges = (
       fidesKey: policy.fides_key ?? "",
       enabled: policy.enabled ?? true,
       priority: policy.priority ?? 0,
-      control: policy.controls?.[0] ?? null,
+      control: policy.control ?? null,
       controlOptions: [],
       actionMessage: policy.action?.message ?? "",
       onNameChange: () => {},
@@ -422,7 +422,7 @@ export const nodesToYaml = (nodes: Node[], edges: Edge[]): string => {
     policyYaml.priority = priority;
   }
   if (control) {
-    policyYaml.controls = [control];
+    policyYaml.control = control;
   }
 
   if (!actionNode) {
