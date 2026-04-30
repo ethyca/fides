@@ -426,7 +426,7 @@ def _should_skip_consent_pipeline(
 
     propagatable = filter_privacy_preferences_for_propagation(
         system=None,
-        privacy_preferences=privacy_request.privacy_preferences,
+        privacy_preferences=privacy_request.privacy_preferences,  # type: ignore[attr-defined]
     )
     if propagatable:
         return False
