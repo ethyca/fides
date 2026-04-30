@@ -7,11 +7,17 @@ import {
   Splitter,
   useMessage,
 } from "fidesui";
-import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import {
+  FormGuard,
+  useIsAnyFormDirty,
+} from "~/features/common/hooks/useIsAnyFormDirty";
 
 import type { ComponentType } from "./catalog";
 import { ChatPane } from "./ChatPane";
-import { detectDrift } from "./drift";
+import { detectDrift, stableJson } from "./drift";
 import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
 import type { DroppedFeature, JsonRenderSpec, PcCustomFields } from "./mapper";
 import { mapSpecToPcShape } from "./mapper";
@@ -179,6 +185,63 @@ export const FormBuilderPage = ({
     [builder],
   );
 
+  // Dirty = current spec differs from the spec the page loaded with.
+  // Compare via stable JSON so reordered keys don't flag false-positives.
+  const isDirty = useMemo(
+    () => stableJson(builder.spec) !== stableJson(initialSpec),
+    [builder.spec, initialSpec],
+  );
+
+  // Block Next.js navigation away when the form is dirty.
+  // Pattern: synchronously abort the routeChangeStart, show the existing
+  // Unsaved Changes modal via attemptAction, then re-push to the intended
+  // path if the user confirms. The bypassNavigationRef keeps the second
+  // push from re-triggering the guard.
+  const router = useRouter();
+  const { attemptAction } = useIsAnyFormDirty();
+  const bypassNavigationRef = useRef(false);
+  useEffect(() => {
+    const handleRouteChange = (nextPath: string) => {
+      if (bypassNavigationRef.current) {
+        bypassNavigationRef.current = false;
+        return;
+      }
+      if (!isDirty || nextPath === router.asPath) {
+        return;
+      }
+      // Show the modal and re-attempt navigation if confirmed.
+      attemptAction().then((confirmed) => {
+        if (confirmed) {
+          bypassNavigationRef.current = true;
+          router.push(nextPath);
+        }
+      });
+      router.events.emit("routeChangeError");
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw "Route change aborted by FormGuard (safe to ignore).";
+    };
+    router.events.on("routeChangeStart", handleRouteChange);
+    return () => {
+      router.events.off("routeChangeStart", handleRouteChange);
+    };
+  }, [router, attemptAction, isDirty]);
+
+  // Browser refresh / tab close.
+  useEffect(() => {
+    if (!isDirty) {
+      return undefined;
+    }
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Modern browsers ignore the return value but require preventDefault();
+      // older Chromium needs returnValue to be a non-empty string.
+      // eslint-disable-next-line no-param-reassign
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
   if (!action) {
     return <Alert type="error" message="Action not found on property." />;
   }
@@ -233,6 +296,11 @@ export const FormBuilderPage = ({
 
   return (
     <Space direction="vertical" style={{ width: "100%" }}>
+      <FormGuard
+        id={`form-builder-${propertyId}-${actionPolicyKey}`}
+        name={`Form Builder (${actionPolicyKey})`}
+        isDirty={isDirty}
+      />
       {driftDetected && (
         <Alert
           type="warning"

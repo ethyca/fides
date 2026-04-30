@@ -1,7 +1,7 @@
 import type { JsonRenderSpec, PcCustomFields } from "./mapper";
 import { mapSpecToPcShape } from "./mapper";
 
-const stableJson = (value: unknown): string => {
+export const stableJson = (value: unknown): string => {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     return JSON.stringify(value);
   }
