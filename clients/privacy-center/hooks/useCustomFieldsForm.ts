@@ -1,3 +1,4 @@
+import { UploadFile } from "fidesui";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
@@ -8,6 +9,8 @@ interface UseCustomFieldsFormProps {
   customPrivacyRequestFields: Record<string, CustomConfigField>;
   searchParams?: URLSearchParams | null;
 }
+
+const DEFAULT_MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export const useCustomFieldsForm = ({
   customPrivacyRequestFields,
@@ -29,8 +32,8 @@ export const useCustomFieldsForm = ({
             : null;
 
         switch (field.field_type) {
-          case "multiselect": {
-            // Determine the multiselect value with proper precedence
+          case "multiselect":
+          case "checkbox_group": {
             let value: string[];
             if (valueFromQueryParam) {
               value = [valueFromQueryParam];
@@ -41,6 +44,10 @@ export const useCustomFieldsForm = ({
             }
             return [key, value];
           }
+          case "checkbox":
+            return [key, field?.default_value === "true"];
+          case "file":
+            return [key, [] as UploadFile[]];
           case "location":
             return [
               key,
@@ -63,22 +70,68 @@ export const useCustomFieldsForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required, field_type }]) => {
+          .map(([key, field]) => {
+            const { label, required } = field;
             const isRequired = required !== false;
-            if (field_type === "multiselect") {
-              return [
-                key,
-                isRequired
-                  ? Yup.array().min(1, `${label} is required`)
-                  : Yup.array().notRequired(),
-              ];
+
+            switch (field.field_type) {
+              case "multiselect":
+              case "checkbox_group":
+                return [
+                  key,
+                  isRequired
+                    ? Yup.array().min(1, `${label} is required`)
+                    : Yup.array().notRequired(),
+                ];
+              case "checkbox":
+                // Checkbox is always valid — false is a legitimate value
+                return [key, Yup.boolean().notRequired()];
+              case "file": {
+                const maxSize = field.max_size_bytes ?? DEFAULT_MAX_SIZE_BYTES;
+                const allowedTypes = field.allowed_mime_types;
+                let fileSchema = Yup.array();
+                if (isRequired) {
+                  fileSchema = fileSchema.min(
+                    1,
+                    `${label} requires at least one file`,
+                  );
+                }
+                fileSchema = fileSchema.test(
+                  "file-size",
+                  `Each file must be under ${Math.round(maxSize / (1024 * 1024))}MB`,
+                  (files) => {
+                    if (!files) {
+                      return true;
+                    }
+                    return (files as UploadFile[]).every(
+                      (f) => !f.size || f.size <= maxSize,
+                    );
+                  },
+                );
+                if (allowedTypes && allowedTypes.length > 0) {
+                  fileSchema = fileSchema.test(
+                    "file-type",
+                    `Allowed file types: ${allowedTypes.join(", ")}`,
+                    (files) => {
+                      if (!files) {
+                        return true;
+                      }
+                      return (files as UploadFile[]).every(
+                        (f) => !f.type || allowedTypes.includes(f.type),
+                      );
+                    },
+                  );
+                }
+                return [key, fileSchema];
+              }
+              default:
+                return [
+                  key,
+                  isRequired
+                    ? Yup.string().required(`${label} is required`)
+                    : Yup.string().notRequired(),
+                ];
             }
-            return [
-              key,
-              isRequired
-                ? Yup.string().required(`${label} is required`)
-                : Yup.string().notRequired(),
-            ];
           }),
       ),
     });

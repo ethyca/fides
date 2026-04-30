@@ -1,4 +1,4 @@
-import { useChakraToast as useToast } from "fidesui";
+import { UploadFile, useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useSearchParams } from "next/navigation";
@@ -20,7 +20,11 @@ import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 import { PrivacyRequestOption as ConfigPrivacyRequestOption } from "~/types/config";
-import { FormValues, MultiselectFieldValue } from "~/types/forms";
+import {
+  FormFieldValue,
+  FormValues,
+  MultiselectFieldValue,
+} from "~/types/forms";
 
 /**
  *
@@ -30,6 +34,80 @@ import { FormValues, MultiselectFieldValue } from "~/types/forms";
 const fallbackNull = (
   value: string | MultiselectFieldValue | null | undefined,
 ) => (value === undefined || value === "" ? null : value);
+
+/**
+ * Upload a single file to the privacy request attachment endpoint.
+ * Returns the attachment ID on success.
+ */
+const uploadFile = async (file: File, apiUrl: string): Promise<string> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${apiUrl}/privacy-request/attachment`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.detail || `File upload failed (${response.status})`);
+  }
+
+  const data = await response.json();
+  return data.id;
+};
+
+/**
+ * Upload all files for a single field and return their attachment IDs.
+ * Uploads sequentially to respect rate limits.
+ */
+const uploadFieldFiles = async (
+  fileList: UploadFile[],
+  apiUrl: string,
+): Promise<string[]> => {
+  const filesToUpload = fileList
+    .filter((f) => f.originFileObj)
+    .map((f) => f.originFileObj as File);
+
+  // Sequential uploads to respect rate limits
+  const ids: string[] = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for (const file of filesToUpload) {
+    // eslint-disable-next-line no-await-in-loop
+    const id = await uploadFile(file, apiUrl);
+    ids.push(id);
+  }
+  return ids;
+};
+
+/**
+ * Upload all files for file-type custom fields and return a map of
+ * field key → attachment ID array.
+ */
+const uploadAllFiles = async (
+  values: FormValues,
+  fields: Record<string, { field_type?: string | null }>,
+  apiUrl: string,
+): Promise<Record<string, string[]>> => {
+  const fileFieldKeys = Object.entries(fields)
+    .filter(([, field]) => field.field_type === "file")
+    .map(([key]) => key);
+
+  const entries = await Promise.all(
+    fileFieldKeys
+      .filter((key) => {
+        const fileList = values[key] as UploadFile[];
+        return fileList && fileList.length > 0;
+      })
+      .map(async (key) => {
+        const fileList = values[key] as UploadFile[];
+        const ids = await uploadFieldFiles(fileList, apiUrl);
+        return [key, ids] as [string, string[]];
+      }),
+  );
+
+  return Object.fromEntries(entries.filter(([, ids]) => ids.length > 0));
+};
 
 const usePrivacyRequestForm = ({
   onExit,
@@ -111,6 +189,22 @@ const usePrivacyRequestForm = ({
       }
       setIsSubmitPending(true);
 
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: unknown;
+      }) => {
+        setIsSubmitPending(false);
+        const errorMessage = typeof error === "string" ? error : undefined;
+        toast({
+          title,
+          description: errorMessage,
+          ...ErrorToastOptions,
+        });
+      };
+
       // extract identity input values
       const identityInputValues = Object.fromEntries(
         Object.entries(action.identity_inputs ?? {})
@@ -130,29 +224,64 @@ const usePrivacyRequestForm = ({
           }),
       );
 
+      // Upload files first, before building the submission payload
+      let fileAttachmentIds: Record<string, string[]> = {};
+      if (action.custom_privacy_request_fields) {
+        try {
+          fileAttachmentIds = await uploadAllFiles(
+            values,
+            action.custom_privacy_request_fields,
+            settings.FIDES_API_URL,
+          );
+        } catch (uploadError) {
+          handleError({
+            title: "An error occurred while uploading your file",
+            error:
+              uploadError instanceof Error ? uploadError.message : undefined,
+          });
+          return;
+        }
+      }
+
       const customPrivacyRequestFieldValues =
         action.custom_privacy_request_fields
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
-                .filter(([, field]) => field.field_type !== "location")
+                .filter(
+                  ([, field]) =>
+                    field.field_type !== "location" &&
+                    field.field_type !== "file",
+                )
                 .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&
                     searchParams?.get(field.query_param_key);
                   const hiddenValue = paramValue ?? field.default_value;
-                  const value = !field.hidden ? values[key] : hiddenValue;
+                  const value: FormFieldValue = !field.hidden
+                    ? values[key]
+                    : (hiddenValue ?? "");
 
                   let processedValue;
-                  if (field.field_type === "multiselect") {
+                  if (
+                    field.field_type === "multiselect" ||
+                    field.field_type === "checkbox_group"
+                  ) {
                     processedValue = value || [];
+                  } else if (field.field_type === "checkbox") {
+                    processedValue = Boolean(value);
                   } else {
-                    processedValue = fallbackNull(value);
+                    processedValue = fallbackNull(
+                      value as
+                        | string
+                        | MultiselectFieldValue
+                        | null
+                        | undefined,
+                    );
                   }
 
                   return [
                     key,
                     {
-                      // only include label and value
                       label: field.label,
                       value: processedValue,
                     },
@@ -161,9 +290,20 @@ const usePrivacyRequestForm = ({
                 .filter(
                   ([, fieldData]) =>
                     typeof fieldData === "object" && fieldData.value !== null,
-                ), // Filter out null values (but keep empty arrays for multiselect)
+                ),
             )
           : {};
+
+      // Add file field values as attachment ID arrays
+      Object.entries(fileAttachmentIds).forEach(([key, ids]) => {
+        const field = action.custom_privacy_request_fields?.[key];
+        if (field) {
+          customPrivacyRequestFieldValues[key] = {
+            label: field.label,
+            value: ids,
+          };
+        }
+      });
 
       // Extract custom fields object for cleaner code
       const customFieldsPayload =
@@ -181,22 +321,6 @@ const usePrivacyRequestForm = ({
           location: values?.location ? values.location : undefined,
         },
       ];
-
-      const handleError = ({
-        title,
-        error,
-      }: {
-        title: string;
-        error?: unknown;
-      }) => {
-        setIsSubmitPending(false);
-        const errorMessage = typeof error === "string" ? error : undefined;
-        toast({
-          title,
-          description: errorMessage,
-          ...ErrorToastOptions,
-        });
-      };
 
       try {
         const headers: Headers = new Headers();
