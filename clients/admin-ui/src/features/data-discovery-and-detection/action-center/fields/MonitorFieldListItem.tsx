@@ -52,7 +52,7 @@ export const tagRender: TagRender = (props) => {
       onClose={onClose}
       /** Style required because of tailwind limitations and our ui package presets */
       style={{
-        marginInlineEnd: "calc((var(--ant-padding-xs) * 0.5))",
+        marginInlineEnd: "calc((var(--fidesui-padding-xs) * 0.5))",
       }}
       icon={isFromClassifier && <SparkleIcon />}
     >

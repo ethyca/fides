@@ -686,11 +686,12 @@ def run_consent_request(  # pylint: disable = too-many-arguments
     """
 
     if privacy_request.consent_tasks.count():
+        logger.info("Consent processing: reprocessing existing tasks")
         ready_tasks: List[RequestTask] = get_existing_ready_tasks(
             session, privacy_request, ActionType.consent
         )
     else:
-        logger.info("Building consent graph")
+        logger.info("Consent processing: building consent graph")
         traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
         # Unlike erasure and access graphs, we don't call traversal.traverse, but build a simpler
         # graph that just has one node per dataset
@@ -706,10 +707,18 @@ def run_consent_request(  # pylint: disable = too-many-arguments
         ready_tasks = persist_new_consent_request_tasks(
             session, privacy_request, traversal_nodes, identity, graph
         )
+        logger.info(
+            "Consent processing: persisted {} consent task(s)",
+            len(ready_tasks),
+        )
 
     for task in ready_tasks:
         log_task_queued(task, "main runner")
         queue_request_task(task, privacy_request_proceed)
+    logger.info(
+        "Consent processing: queued {} task(s) for execution",
+        len(ready_tasks),
+    )
     return ready_tasks
 
 

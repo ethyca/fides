@@ -203,7 +203,7 @@ const TaxonomyInteractiveTree = ({
   return (
     <div
       className="size-full"
-      style={{ backgroundColor: "var(--fidesui-bg-corinth)" }}
+      style={{ backgroundColor: "var(--fidesui-brand-bg-corinth)" }}
       data-testid="taxonomy-interactive-tree"
     >
       <TaxonomyTreeHoverProvider>

@@ -5,7 +5,7 @@ import pytest
 from fideslang.models import Dataset
 
 from fides.api.common_exceptions import MissingNamespaceSchemaException
-from fides.api.graph.config import CollectionAddress, FieldPath
+from fides.api.graph.config import Collection, CollectionAddress, FieldPath, ScalarField
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
@@ -23,7 +23,7 @@ from fides.api.util.data_category import DataCategory
 from tests.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.dataset_utils import remove_primary_keys
 
-from ...task.traversal_data import integration_db_graph
+from ...task.traversal_data import integration_db_graph, sample_traversal
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 # customers -> address, order
@@ -851,3 +851,90 @@ class TestSQLLikeQueryConfig:
             "NewSQLQueryConfig must define a namespace_meta_schema when namespace_meta is provided."
             in str(exc)
         )
+
+
+class TestNecessaryFieldPaths:
+    def _node(self, dataset: str, collection: str) -> ExecutionNode:
+        traversal_nodes = sample_traversal().traversal_node_dict
+        return traversal_nodes[
+            CollectionAddress(dataset, collection)
+        ].to_mock_execution_node()
+
+    def test_includes_primary_key_identity_references_and_pii_categories(self):
+        # Customer covers: primary_key (customer_id), identity (email),
+        # outgoing references (contact_address_id), non-system data_category (name)
+        config = SQLQueryConfig(self._node("mysql", "Customer"))
+        assert set(config.necessary_field_paths()) == {
+            FieldPath("customer_id"),
+            FieldPath("email"),
+            FieldPath("contact_address_id"),
+            FieldPath("name"),
+        }
+
+    def test_includes_incoming_edge_targets(self):
+        # Order.customer_id is an incoming edge target from Customer.customer_id
+        config = SQLQueryConfig(self._node("postgres", "Order"))
+        paths = set(config.necessary_field_paths())
+        assert FieldPath("customer_id") in paths
+        assert FieldPath("order_id") in paths  # primary_key
+        assert FieldPath("shipping_address_id") in paths  # outgoing reference
+        assert FieldPath("billing_address_id") in paths  # outgoing reference
+
+    def test_returns_sorted_alphabetically(self):
+        config = SQLQueryConfig(self._node("mysql", "Address"))
+        paths = config.necessary_field_paths()
+        assert paths == sorted(paths, key=lambda fp: fp.string_path)
+
+    def test_returns_all_fields_when_nothing_qualifies(self):
+        """Fallback path: when no field is a PK, identity, edge endpoint, or
+        reference, and all data_categories are either the `system` node or its
+        children, every field is returned so the SELECT is never empty."""
+        collection = Collection(
+            name="uncategorized",
+            fields=[
+                ScalarField(name="field_a", data_categories=["system.operations"]),
+                ScalarField(name="field_b", data_categories=["system"]),
+                ScalarField(name="field_c"),
+            ],
+        )
+        node = mock.MagicMock(spec=ExecutionNode)
+        node.collection = collection
+        node.incoming_edges = set()
+        node.outgoing_edges = set()
+
+        config = SQLQueryConfig(node)
+        assert set(config.necessary_field_paths()) == {
+            FieldPath("field_a"),
+            FieldPath("field_b"),
+            FieldPath("field_c"),
+        }
+
+    def test_collection_level_data_categories_do_not_rescue_uncategorized_fields(self):
+        """Collection-level ``data_categories`` are intentionally not propagated to
+        uncategorized sub-fields by ``necessary_field_paths()``. Each field must
+        qualify on its own (PK, identity, edge, reference, or non-system
+        data_category) to be SELECTed."""
+        collection = Collection(
+            name="contact_info",
+            data_categories={"user.contact"},
+            fields=[
+                ScalarField(name="contact_id", primary_key=True),
+                ScalarField(name="uncategorized_note"),
+                ScalarField(
+                    name="internal_flag", data_categories=["system.operations"]
+                ),
+                ScalarField(
+                    name="email_address", data_categories=["user.contact.email"]
+                ),
+            ],
+        )
+        node = mock.MagicMock(spec=ExecutionNode)
+        node.collection = collection
+        node.incoming_edges = set()
+        node.outgoing_edges = set()
+
+        config = SQLQueryConfig(node)
+        assert set(config.necessary_field_paths()) == {
+            FieldPath("contact_id"),
+            FieldPath("email_address"),
+        }

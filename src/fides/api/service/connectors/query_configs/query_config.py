@@ -112,6 +112,63 @@ class QueryConfig(Generic[T], ABC):
             if field_path in {edge.f2.field_path for edge in self.node.incoming_edges}
         }
 
+    def necessary_field_paths(self) -> List[FieldPath]:
+        """Return only the FieldPaths that are necessary for DSR processing.
+
+        A field is necessary if it satisfies at least one of:
+        1. It is a primary key (needed for erasure WHERE clauses)
+        2. It is an identity field (seed entry point)
+        3. It is referenced by an incoming edge (used as query input)
+        4. It is referenced by an outgoing edge (its value feeds downstream nodes)
+        5. It has a `references` entry that did not produce a graph edge
+           (e.g. a reference pointing at a collection outside the current graph)
+        6. It has a data_category that is not the `system` taxonomy node or
+           one of its children (actual PII for access/erasure)
+
+        Falls back to all fields if filtering produces an empty set.
+        """
+        all_field_paths = self.field_map()
+        outgoing_source_field_paths = {
+            edge.f1.field_path for edge in self.node.outgoing_edges
+        }
+        incoming_target_field_paths = {
+            edge.f2.field_path for edge in self.node.incoming_edges
+        }
+
+        necessary = set()
+        for field_path, field in all_field_paths.items():
+            if field.primary_key:
+                necessary.add(field_path)
+            elif field.identity:
+                necessary.add(field_path)
+            elif field_path in incoming_target_field_paths:
+                necessary.add(field_path)
+            elif field_path in outgoing_source_field_paths:
+                necessary.add(field_path)
+            elif field.references:
+                # Reference that didn't produce a graph edge (e.g. target
+                # collection is outside this traversal's DatasetGraph).
+                necessary.add(field_path)
+            elif field.data_categories and any(
+                not (cat == "system" or cat.startswith("system."))
+                for cat in field.data_categories
+            ):
+                necessary.add(field_path)
+
+        if not necessary:
+            return sorted(all_field_paths.keys(), key=lambda fp: fp.string_path)
+
+        # Ensure top-level parent fields are included when any of their nested
+        # sub-fields are necessary (needed for connectors like BigQuery that
+        # only SELECT top-level fields).
+        top_level_parents = set()
+        for field_path in necessary:
+            if len(field_path.levels) > 1:
+                top_level_parents.add(FieldPath(field_path.levels[0]))
+        necessary.update(top_level_parents)
+
+        return sorted(necessary, key=lambda fp: fp.string_path)
+
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
         """Display the input collection(s) for each query key for display purposes.
 
@@ -505,7 +562,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 
         if filtered_data:
             formatted_fields = self.format_fields_for_query(
-                list(self.field_map().keys())
+                self.necessary_field_paths()
             )
 
             return self.generate_raw_query_without_tuples(
@@ -649,7 +706,7 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
 
         if filtered_data:
             formatted_fields: List[str] = self.format_fields_for_query(
-                list(self.field_map().keys())
+                self.necessary_field_paths()
             )
 
             return self.generate_raw_query(formatted_fields, filtered_data)
