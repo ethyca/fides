@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 from loguru import logger as log
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 def create_secret_provider(
     secrets_settings: SecretsSettings,
-    static_secrets: Dict[str, Dict[str, str]] | None = None,
+    static_secrets: Dict[str, Dict[str, Any]] | None = None,
 ) -> SecretProvider:
     """Instantiate the configured secret provider.
 

@@ -166,6 +166,46 @@ class TestCaching:
             secret = provider.get_secret(SECRET_NAME)
             assert secret["username"] == "testuser"
 
+    def test_ttl_recheck_inside_lock_via_time_progression(self, aws_env):
+        """The inner TTL re-check (line 80) fires when the outer check sees
+        expired but by the time we call monotonic() again inside the lock,
+        the entry is within TTL. This happens when time barely crosses the
+        TTL boundary between the two checks."""
+
+        call_count = [0]
+
+        with patch(
+            "fides.config.secrets.aws_secrets_manager_provider.time"
+        ) as mock_time:
+            # monotonic() returns sequential values on each call:
+            # call 1 (t=100): initial fetch in get_secret -> _fetch_and_update
+            # call 2 (t=100): _fetch_and_update sets fetched_at = 100
+            # call 3 (t=161): outer TTL check -> 161-100=61 > 60 -> expired
+            # call 4 (t=161): observed_fetched_at snapshot (not a monotonic call)
+            # call 5 (t=159): inner TTL re-check -> 159-100=59 < 60 -> valid!
+            times = iter([100.0, 100.0, 161.0, 159.0])
+            mock_time.monotonic = lambda: next(times)
+
+            provider = AWSSecretsManagerProvider(
+                region_name=REGION, cache_ttl_seconds=60.0
+            )
+            provider.get_secret(SECRET_NAME)
+
+            # Sabotage client — should NOT be called if inner TTL check works
+            real_get = provider._client.get_secret_value
+
+            def counting_get(**kwargs):
+                call_count[0] += 1
+                return real_get(**kwargs)
+
+            provider._client.get_secret_value = counting_get
+
+            secret = provider.get_secret(SECRET_NAME)
+            assert secret["username"] == "testuser"
+            assert call_count[0] == 0, (
+                "inner TTL re-check should have prevented re-fetch"
+            )
+
 
 class TestStaleWhileRevalidate:
     def test_stale_value_served_on_fetch_failure(self, aws_env):

@@ -1,6 +1,6 @@
 """Static secret provider — returns fixed values from config."""
 
-from typing import Dict
+from typing import Any, Dict
 
 from loguru import logger as log
 
@@ -12,7 +12,7 @@ class StaticSecretProvider(SecretProvider):
     (environment variables / TOML config) where rotation is not needed.
     """
 
-    def __init__(self, secrets: Dict[str, Dict[str, str]]) -> None:
+    def __init__(self, secrets: Dict[str, Dict[str, Any]]) -> None:
         self._secrets = secrets
 
     def get_secret(self, secret_id: str) -> SecretValue:

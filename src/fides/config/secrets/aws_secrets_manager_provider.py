@@ -17,7 +17,7 @@ from fides.config.secrets.base import SecretProvider, SecretProviderError, Secre
 class _CacheEntry:
     """Per-secret cache state."""
 
-    value: SecretValue
+    value: Optional[SecretValue]
     fetched_at: float
     last_failed_at: float = 0.0
     lock: threading.Lock = field(default_factory=threading.Lock)
@@ -84,7 +84,7 @@ class AWSSecretsManagerProvider(SecretProvider):
             if (
                 entry.last_failed_at > 0
                 and (now - entry.last_failed_at) < self._circuit_breaker_cooldown
-                and entry.value.keys()
+                and entry.value is not None
             ):
                 return entry.value
 
@@ -97,17 +97,19 @@ class AWSSecretsManagerProvider(SecretProvider):
         if entry is None:
             return
 
-        now = time.monotonic()
-        if (
-            entry.last_failed_at > 0
-            and (now - entry.last_failed_at) < self._circuit_breaker_cooldown
-        ):
-            log.debug(
-                "Circuit breaker active for {!r}, skipping invalidation", secret_id
-            )
-            return
+        with entry.lock:
+            now = time.monotonic()
+            if (
+                entry.last_failed_at > 0
+                and (now - entry.last_failed_at) < self._circuit_breaker_cooldown
+            ):
+                log.debug(
+                    "Circuit breaker active for {!r}, skipping invalidation",
+                    secret_id,
+                )
+                return
 
-        entry.fetched_at = 0.0
+            entry.fetched_at = 0.0
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -119,7 +121,7 @@ class AWSSecretsManagerProvider(SecretProvider):
             if entry is None:
                 # Placeholder entry — fetched_at=0 forces a fetch on first access
                 entry = _CacheEntry(
-                    value=SecretValue({}),
+                    value=None,
                     fetched_at=0.0,
                 )
                 self._cache[secret_id] = entry
@@ -162,7 +164,7 @@ class AWSSecretsManagerProvider(SecretProvider):
         """Serve stale value if within grace period, otherwise raise."""
         entry.last_failed_at = time.monotonic()
 
-        has_cached_value = entry.fetched_at > 0 or entry.value.keys()
+        has_cached_value = entry.value is not None
         if not has_cached_value:
             raise SecretProviderError(
                 f"Failed to fetch secret {secret_id!r} and no cached value available"

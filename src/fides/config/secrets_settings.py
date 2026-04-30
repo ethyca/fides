@@ -1,6 +1,6 @@
 """Configuration settings for the secret provider subsystem."""
 
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
@@ -42,7 +42,7 @@ class AWSSecretsManagerSettings(FidesSettings):
 class SecretsSettings(FidesSettings):
     """Top-level configuration for the secrets provider."""
 
-    provider: str = Field(
+    provider: Literal["static", "aws_secrets_manager"] = Field(
         default="static",
         description="Which secret provider to use: 'static' or 'aws_secrets_manager'.",
     )

@@ -1,7 +1,7 @@
 """Base classes for the secret provider abstraction."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, KeysView
+from typing import Any, Dict, KeysView
 
 
 class SecretProviderError(Exception):
@@ -15,10 +15,10 @@ class SecretValue:
     coercion so credentials never appear in logs, tracebacks, or debug output.
     """
 
-    def __init__(self, data: Dict[str, str]) -> None:
+    def __init__(self, data: Dict[str, Any]) -> None:
         self._data = data
 
-    def __getitem__(self, key: str) -> str:
+    def __getitem__(self, key: str) -> Any:
         return self._data[key]
 
     def __contains__(self, key: object) -> bool:

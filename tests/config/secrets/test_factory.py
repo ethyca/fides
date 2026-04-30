@@ -39,10 +39,11 @@ class TestCreateSecretProvider:
         assert isinstance(provider, AWSSecretsManagerProvider)
         assert provider._cache_ttl == 120.0
 
-    def test_unknown_provider_raises(self):
-        settings = SecretsSettings(provider="vault")
-        with pytest.raises(SecretProviderError, match="Unknown secrets provider"):
-            create_secret_provider(settings)
+    def test_unknown_provider_raises_at_validation(self):
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            SecretsSettings(provider="vault")
 
     def test_default_provider_is_static(self):
         settings = SecretsSettings()
