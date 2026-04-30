@@ -150,7 +150,7 @@ const AgentChatPanel = ({
         placement: "end" as const,
         variant: "filled" as const,
         styles: {
-          content: { background: "var(--ant-color-fill-content)" },
+          content: { background: "var(--fidesui-color-fill-content)" },
         },
       },
       ai: {
