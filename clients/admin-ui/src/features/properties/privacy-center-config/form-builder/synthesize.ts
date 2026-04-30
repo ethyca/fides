@@ -23,7 +23,7 @@ export function synthesizeSpecFromPcShape(
   };
 
   const childIds: string[] = [];
-  for (const [name, field] of Object.entries(pcShape)) {
+  Object.entries(pcShape).forEach(([name, field]) => {
     const elementId = `f_${name}`;
     childIds.push(elementId);
 
@@ -78,9 +78,9 @@ export function synthesizeSpecFromPcShape(
         break;
       }
       default: {
-        const _exhaustive: never = field;
+        const exhaustive: never = field;
         throw new Error(
-          `Unhandled field type: ${(_exhaustive as PcCustomField).field_type}`,
+          `Unhandled field type: ${(exhaustive as PcCustomField).field_type}`,
         );
       }
     }
@@ -90,7 +90,7 @@ export function synthesizeSpecFromPcShape(
       props,
       children: [],
     };
-  }
+  });
   elements.form.children = childIds;
 
   return { root: "form", elements };

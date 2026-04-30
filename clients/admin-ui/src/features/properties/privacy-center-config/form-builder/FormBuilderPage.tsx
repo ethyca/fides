@@ -50,12 +50,12 @@ const describeDropped = (d: DroppedFeature): string => {
   }
 };
 
-export const FormBuilderPage: React.FC<FormBuilderPageProps> = ({
+export const FormBuilderPage = ({
   propertyId,
   property,
   actionPolicyKey,
   onSave,
-}) => {
+}: FormBuilderPageProps) => {
   const message = useMessage();
 
   const action = useMemo(

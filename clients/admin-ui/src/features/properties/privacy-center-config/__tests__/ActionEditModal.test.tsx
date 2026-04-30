@@ -45,12 +45,7 @@ describe("ActionEditModal", () => {
   it("submits a new action with required fields", async () => {
     const onOk = jest.fn();
     render(
-      <ActionEditModal
-        open
-        initial={null}
-        onCancel={jest.fn()}
-        onOk={onOk}
-      />,
+      <ActionEditModal open initial={null} onCancel={jest.fn()} onOk={onOk} />,
     );
 
     await userEvent.type(

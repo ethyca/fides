@@ -2,6 +2,11 @@ import { act, renderHook } from "@testing-library/react";
 
 import { useFormBuilder } from "../useFormBuilder";
 
+// Avoid pulling the full Redux store into Jest (query-string ESM parse error).
+jest.mock("~/app/hooks", () => ({
+  useAppSelector: () => "test-token",
+}));
+
 const mockStreamChatTurn = jest.fn();
 
 jest.mock("../streaming", () => ({
@@ -11,7 +16,10 @@ jest.mock("../streaming", () => ({
 
 async function* fakeEvents() {
   yield { event: "chunk", data: '{"root":"form","elements":{' };
-  yield { event: "chunk", data: '"form":{"type":"Form","props":{},"children":[]}' };
+  yield {
+    event: "chunk",
+    data: '"form":{"type":"Form","props":{},"children":[]}',
+  };
   yield { event: "chunk", data: "}}" };
   yield {
     event: "done",

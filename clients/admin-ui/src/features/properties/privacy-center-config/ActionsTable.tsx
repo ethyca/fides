@@ -14,12 +14,12 @@ interface ActionsTableProps {
   onAddAction: () => void;
 }
 
-export const ActionsTable: React.FC<ActionsTableProps> = ({
+export const ActionsTable = ({
   propertyId,
   actions,
   onEditAction,
   onAddAction,
-}) => {
+}: ActionsTableProps) => {
   const columns = [
     { title: "Action", dataIndex: "title", key: "title" },
     { title: "Policy key", dataIndex: "policy_key", key: "policy_key" },
@@ -27,7 +27,9 @@ export const ActionsTable: React.FC<ActionsTableProps> = ({
       title: "Fields",
       key: "fields",
       render: (_: unknown, row: (typeof actions)[number]) => {
-        const count = Object.keys(row.custom_privacy_request_fields ?? {}).length;
+        const count = Object.keys(
+          row.custom_privacy_request_fields ?? {},
+        ).length;
         return count === 1 ? "1 field" : `${count} fields`;
       },
     },

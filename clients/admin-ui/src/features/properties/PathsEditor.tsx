@@ -6,10 +6,7 @@ interface PathsEditorProps {
   onChange: (next: string[]) => void;
 }
 
-export const PathsEditor: React.FC<PathsEditorProps> = ({
-  value,
-  onChange,
-}) => {
+export const PathsEditor = ({ value, onChange }: PathsEditorProps) => {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
 

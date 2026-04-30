@@ -106,7 +106,9 @@ describe("Privacy center form builder", () => {
     cy.wait("@savePut");
     // Scope to the Ant Design message container to avoid false positives from
     // other text on the page that contains "saved".
-    cy.get(".ant-message").findByText(/^saved$/i).should("be.visible");
+    cy.get(".ant-message")
+      .findByText(/^saved$/i)
+      .should("be.visible");
   });
 
   // ── Test 2: dropped-features acknowledgement ────────────────────────────────
@@ -160,6 +162,8 @@ describe("Privacy center form builder", () => {
     // Confirm save despite dropped features
     cy.findByRole("button", { name: /save anyway/i }).click();
     cy.wait("@savePut");
-    cy.get(".ant-message").findByText(/^saved$/i).should("be.visible");
+    cy.get(".ant-message")
+      .findByText(/^saved$/i)
+      .should("be.visible");
   });
 });

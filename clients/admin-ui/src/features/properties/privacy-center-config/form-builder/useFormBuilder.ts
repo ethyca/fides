@@ -36,10 +36,14 @@ export interface UseFormBuilder {
 const extractJson = (raw: string): string => {
   let body = raw.trim();
   const fence = body.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/);
-  if (fence) body = fence[1].trim();
+  if (fence) {
+    body = fence[1].trim();
+  }
 
   const firstBrace = body.indexOf("{");
-  if (firstBrace === -1) return body;
+  if (firstBrace === -1) {
+    return body;
+  }
 
   let depth = 0;
   let inString = false;
@@ -53,10 +57,13 @@ const extractJson = (raw: string): string => {
     } else if (ch === '"') {
       inString = !inString;
     } else if (!inString) {
-      if (ch === "{") depth += 1;
-      else if (ch === "}") {
+      if (ch === "{") {
+        depth += 1;
+      } else if (ch === "}") {
         depth -= 1;
-        if (depth === 0) return body.slice(firstBrace, i + 1);
+        if (depth === 0) {
+          return body.slice(firstBrace, i + 1);
+        }
       }
     }
   }
@@ -109,6 +116,7 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
           authToken,
         });
 
+        // eslint-disable-next-line no-restricted-syntax
         for await (const ev of stream) {
           if (ev.event === "chunk") {
             buffer += ev.data;
@@ -122,8 +130,8 @@ export function useFormBuilder(input: UseFormBuilderInput): UseFormBuilder {
               const final = tryParse(payload.raw);
               if (final) {
                 setSpec(final);
-                const fieldCount =
-                  (final.elements?.form?.children ?? []).length;
+                const fieldCount = (final.elements?.form?.children ?? [])
+                  .length;
                 setMessages((prev) => [
                   ...prev,
                   {

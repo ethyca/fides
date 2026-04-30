@@ -22,9 +22,11 @@ interface PrivacyCenterConfigSectionProps {
   onChange?: (next: PrivacyCenterConfigValue) => void;
 }
 
-export const PrivacyCenterConfigSection: React.FC<
-  PrivacyCenterConfigSectionProps
-> = ({ propertyId, value, onChange }) => {
+export const PrivacyCenterConfigSection = ({
+  propertyId,
+  value,
+  onChange,
+}: PrivacyCenterConfigSectionProps) => {
   const [editing, setEditing] = useState<ActionFormValues | null>(null);
   const [open, setOpen] = useState(false);
 

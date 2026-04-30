@@ -12,32 +12,36 @@ interface BaseFieldProps {
   "data-element-id"?: string;
 }
 
-const FormContainer: React.FC<{ children?: React.ReactNode }> = ({
-  children,
-}) => <Form layout="vertical">{children}</Form>;
+const FormContainer = ({ children }: { children?: React.ReactNode }) => (
+  <Form layout="vertical">{children}</Form>
+);
 
-const FieldWrapper: React.FC<{
+const FieldWrapper = ({
+  elementId,
+  children,
+}: {
   elementId?: string;
   children: React.ReactNode;
-}> = ({ elementId, children }) => {
+}) => {
   if (!elementId) {
-    return <>{children}</>;
+    return children as React.ReactElement;
   }
   return <span data-element-id={elementId}>{children}</span>;
 };
 
-const TextField: React.FC<{ props: BaseFieldProps }> = ({ props }) => (
+const TextField = ({ props }: { props: BaseFieldProps }) => (
   <FieldWrapper elementId={props["data-element-id"]}>
     <Form.Item label={props.label} required={props.required}>
-      <Input data-testid={`field-${props.name}`} />
+      <Input aria-label={props.label} data-testid={`field-${props.name}`} />
     </Form.Item>
   </FieldWrapper>
 );
 
-const SelectField: React.FC<{ props: BaseFieldProps }> = ({ props }) => (
+const SelectField = ({ props }: { props: BaseFieldProps }) => (
   <FieldWrapper elementId={props["data-element-id"]}>
     <Form.Item label={props.label} required={props.required}>
       <Select
+        aria-label={props.label}
         data-testid={`field-${props.name}`}
         options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
       />
@@ -45,10 +49,11 @@ const SelectField: React.FC<{ props: BaseFieldProps }> = ({ props }) => (
   </FieldWrapper>
 );
 
-const MultiSelectField: React.FC<{ props: BaseFieldProps }> = ({ props }) => (
+const MultiSelectField = ({ props }: { props: BaseFieldProps }) => (
   <FieldWrapper elementId={props["data-element-id"]}>
     <Form.Item label={props.label} required={props.required}>
       <Select
+        aria-label={props.label}
         mode="multiple"
         data-testid={`field-${props.name}`}
         options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
@@ -57,10 +62,11 @@ const MultiSelectField: React.FC<{ props: BaseFieldProps }> = ({ props }) => (
   </FieldWrapper>
 );
 
-const LocationField: React.FC<{ props: BaseFieldProps }> = ({ props }) => (
+const LocationField = ({ props }: { props: BaseFieldProps }) => (
   <FieldWrapper elementId={props["data-element-id"]}>
     <Form.Item label={props.label} required={props.required}>
       <Select
+        aria-label={props.label}
         data-testid={`field-${props.name}`}
         options={(
           props.options ?? ["United States", "Canada", "United Kingdom"]
