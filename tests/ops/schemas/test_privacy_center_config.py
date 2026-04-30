@@ -377,6 +377,26 @@ class TestPrivacyCenterConfig:
         assert config.server_url_development is None
         assert config.logo_url is None
 
+    def test_error_message_defaults_to_none_when_omitted(self):
+        config = PrivacyCenterConfig(
+            **json.loads(
+                load_as_string("tests/ops/resources/privacy_center_config.json")
+            )
+        )
+        assert config.error_message is None
+
+    def test_error_message_round_trips_when_provided(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["error_message"] = "Our team is on it, please hold."
+        config = PrivacyCenterConfig(**config_data)
+        assert config.error_message == "Our team is on it, please hold."
+        assert (
+            config.model_dump(mode="json")["error_message"]
+            == "Our team is on it, please hold."
+        )
+
     def test_empty_actions(self):
         config_data = json.loads(
             load_as_string("tests/ops/resources/privacy_center_config.json")

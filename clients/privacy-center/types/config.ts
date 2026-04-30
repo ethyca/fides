@@ -94,6 +94,7 @@ export type Config = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string;
   links?: PrivacyCenterLink[];
+  error_message?: string;
 };
 
 export type PrivacyCenterLink = {
