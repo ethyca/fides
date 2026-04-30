@@ -1,24 +1,36 @@
-"""Upload service for data-subject-uploaded file attachments."""
+"""Upload, resolve, and promote service for data-subject-uploaded file attachments."""
 
+import os
 import posixpath
 from io import BytesIO
-from typing import Optional
+from typing import Any, Optional
 from uuid import uuid4
 
 from loguru import logger
 from sqlalchemy.orm import Session
 
+from fides.api.models.attachment import (
+    AttachmentReferenceType,
+    AttachmentType,
+    AttachmentUserProvided,
+)
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.attachment import PrivacyRequestAttachment
 from fides.api.schemas.privacy_center_config import DEFAULT_FILE_MAX_SIZE_BYTES
+from fides.api.schemas.redis_cache import CustomPrivacyRequestField
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.storage.providers import StorageProviderFactory
 from fides.api.service.storage.providers.base import StorageProvider
 from fides.api.service.storage.util import AllowedFileType, FilesMagicBytes
 from fides.common.session_management import with_optional_sync_session
+from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+    AttachmentNotFoundError,
     DisallowedFileTypeError,
     FileTooLargeError,
+    InvalidAttachmentValueError,
     StorageBucketNotConfiguredError,
     StorageNotConfiguredError,
 )
@@ -106,3 +118,119 @@ class AttachmentUserProvidedService:
         )
 
         return PrivacyRequestAttachment(id=record.id)
+
+    @with_optional_sync_session
+    def resolve_file_attachments(
+        self,
+        custom_privacy_request_fields: Optional[dict[str, CustomPrivacyRequestField]],
+        file_field_names: set[str],
+        *,
+        session: Session,
+    ) -> list[AttachmentUserProvided]:
+        """Resolve file-field values to ``uploaded`` rows under ``FOR UPDATE``.
+
+        Returns the locked ORM rows so :meth:`promote_rows_to_attachments`
+        can mutate them in the same transaction. The lock holds until the
+        caller's next commit/rollback. Returns ``[]`` if the
+        ``allow_custom_privacy_request_field_collection`` flag is off.
+        """
+        if not custom_privacy_request_fields or not file_field_names:
+            return []
+
+        if not CONFIG.execution.allow_custom_privacy_request_field_collection:
+            return []
+
+        rows: list[AttachmentUserProvided] = []
+        for name in file_field_names:
+            field = custom_privacy_request_fields.get(name)
+            if field is None:
+                continue
+
+            value = field.value
+            if not isinstance(value, list) or not all(
+                isinstance(v, str) for v in value
+            ):
+                raise InvalidAttachmentValueError(name)
+            ids: list[str] = [v for v in value if isinstance(v, str)]
+            if not ids:
+                continue
+
+            pending = {
+                r.id: r for r in self._repo.lock_uploaded_by_ids(ids, session=session)
+            }
+            for item in ids:
+                row = pending.get(item)
+                if row is None:
+                    raise AttachmentNotFoundError(name)
+                rows.append(row)
+
+        return rows
+
+    @with_optional_sync_session
+    def promote_rows_to_attachments(
+        self,
+        privacy_request: PrivacyRequest,
+        rows: list[AttachmentUserProvided],
+        *,
+        session: Session,
+    ) -> None:
+        """Transition pending rows → ``promoted`` and create ``Attachment`` records."""
+        if not rows:
+            return
+
+        provider, bucket, storage_config = _get_provider_and_bucket(session)
+        attachment_service = AttachmentService(db=session)
+
+        self._repo.mark_promoted(rows, session=session)
+
+        created: list[Any] = []
+        try:
+            for row in rows:
+                file_content = provider.download(bucket, row.object_key)
+                file_name = os.path.basename(row.object_key)
+                attachment = attachment_service.create_and_upload(
+                    data={
+                        "file_name": file_name,
+                        "user_id": None,
+                        "username": "data_subject",
+                        "attachment_type": AttachmentType.user_provided,
+                        "storage_key": storage_config.key,
+                    },
+                    file_data=file_content,
+                    references=[
+                        {
+                            "reference_id": privacy_request.id,
+                            "reference_type": AttachmentReferenceType.privacy_request,
+                        }
+                    ],
+                )
+                created.append(attachment)
+                logger.info(
+                    "Promoted attachment {} on request {} → Attachment {}",
+                    row.id,
+                    privacy_request.id,
+                    attachment.id,
+                )
+        except Exception:
+            for attachment in created:
+                try:
+                    attachment_service.delete(attachment)
+                except Exception:
+                    logger.warning(
+                        "Failed to clean up partially-created Attachment {} after "
+                        "promotion failure",
+                        attachment.id,
+                        exc_info=True,
+                    )
+            raise
+
+        # Phase 3: best-effort delete of temp objects.
+        for row in rows:
+            try:
+                provider.delete(bucket, row.object_key)
+            except Exception:
+                logger.warning(
+                    "Could not delete temporary file {} after promotion",
+                    row.object_key,
+                    exc_info=True,
+                )

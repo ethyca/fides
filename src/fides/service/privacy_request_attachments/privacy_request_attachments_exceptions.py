@@ -41,3 +41,37 @@ class DisallowedFileTypeError(AttachmentsServiceError):
         super().__init__(
             f"File type is not allowed. Allowed extensions: {sorted(allowed_extensions)}"
         )
+
+
+class InvalidAttachmentStateError(AttachmentsServiceError):
+    """Raised when an attachment is not in the expected lifecycle state."""
+
+    def __init__(self, object_key: str, status: str, expected: str = "uploaded"):
+        self.object_key = object_key
+        self.status = status
+        self.expected = expected
+        super().__init__(
+            f"Attachment '{object_key}' is in state {status}, "
+            f"expected '{expected}'. Refusing to promote."
+        )
+
+
+class AttachmentNotFoundError(AttachmentsServiceError):
+    """Raised when a referenced attachment id can't be locked as ``uploaded``."""
+
+    def __init__(self, field_name: str):
+        self.field_name = field_name
+        super().__init__(
+            f"File attachment for field '{field_name}' "
+            "has expired or is invalid. Please re-upload and resubmit."
+        )
+
+
+class InvalidAttachmentValueError(AttachmentsServiceError):
+    """Raised when a file field's value isn't a list of attachment ids."""
+
+    def __init__(self, field_name: str):
+        self.field_name = field_name
+        super().__init__(
+            f"File attachment for field '{field_name}' must be a list of attachment ids."
+        )
