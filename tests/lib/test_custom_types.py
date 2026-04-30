@@ -1,16 +1,18 @@
 from typing import Optional
 
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from fides.api.custom_types import (
     GPPMechanismConsentValue,
     PhoneNumber,
     SafeStr,
     URLOriginString,
+    UserGeography,
     validate_gpp_mechanism_consent_value,
     validate_phone_number,
     validate_safe_str,
+    validate_user_geography,
 )
 
 DANGEROUS_STRINGS = [
@@ -236,3 +238,71 @@ class TestURLOriginString:
             instance = TestURLOriginString.TestModel(origin=input_value)
             # validated value is a URL object, needs to be converted to a string
             assert str(instance.origin) == expected_validated_value
+
+
+VALID_USER_GEOGRAPHIES = [
+    "fr",
+    "us",
+    "gb",
+    "eea",
+    "us_ca",
+    "fr_idf",
+    "us_1",
+    "us_123",
+    "de_by",
+    "ie_eea",
+    "US",
+    "us-ca",
+    "us_CA",
+    "EEA",
+]
+
+INVALID_USER_GEOGRAPHIES = [
+    "USA",
+    "us_",
+    "_ca",
+    "us_california",
+    "123",
+    "",
+    "eea2",
+    "fr_idfg",
+    "a",
+    "us__ca",
+    "'; DROP TABLE users; --",
+    "<script>alert(1)</script>",
+]
+
+
+@pytest.mark.unit
+class TestValidateUserGeography:
+    def test_none_returns_none(self) -> None:
+        assert validate_user_geography(None) is None
+
+    @pytest.mark.parametrize("value", VALID_USER_GEOGRAPHIES)
+    def test_valid_geographies(self, value: str) -> None:
+        assert validate_user_geography(value) == value
+
+    @pytest.mark.parametrize("value", INVALID_USER_GEOGRAPHIES)
+    def test_invalid_geographies(self, value: str) -> None:
+        with pytest.raises(ValueError):
+            validate_user_geography(value)
+
+
+@pytest.mark.unit
+class TestUserGeography:
+    class TestModel(BaseModel):
+        geography: Optional[UserGeography] = None
+
+    @pytest.mark.parametrize("value", VALID_USER_GEOGRAPHIES)
+    def test_valid_geographies(self, value: str) -> None:
+        instance = self.TestModel(geography=value)
+        assert instance.geography == value
+
+    @pytest.mark.parametrize("value", INVALID_USER_GEOGRAPHIES)
+    def test_invalid_geographies(self, value: str) -> None:
+        with pytest.raises(ValidationError):
+            self.TestModel(geography=value)
+
+    def test_none_accepted(self) -> None:
+        instance = self.TestModel(geography=None)
+        assert instance.geography is None

@@ -3,11 +3,12 @@
 
 from html import escape
 from re import compile as regex
-from typing import Annotated
+from typing import Annotated, Optional
 
 from nh3 import clean
 from pydantic import AfterValidator, AnyHttpUrl, AnyUrl, BeforeValidator
 
+from fides.api.util.text import is_valid_location_code
 from fides.api.util.unsafe_file_util import verify_css
 
 
@@ -187,3 +188,23 @@ def validate_path_of_http_url_no_slash(value: AnyHttpUrl) -> str:
 AnyHttpUrlStringRemovesSlash = Annotated[
     AnyHttpUrl, AfterValidator(validate_path_of_http_url_no_slash)
 ]
+
+
+def validate_user_geography(v: Optional[str]) -> Optional[str]:
+    """
+    Validates that a user_geography value is a well-formed ISO 3166-2 locale
+    code (or the synthetic ``EEA`` code). Accepts either separator
+    (``_``/``-``) and any case; rejects anything else to prevent malicious
+    data from being persisted (ENG-2488).
+    """
+    if v is None:
+        return None
+    if not is_valid_location_code(v):
+        raise ValueError(
+            "user_geography must be an ISO 3166-2 locale code "
+            "(e.g. 'us', 'us_ca', 'US-CA', 'eea')"
+        )
+    return v
+
+
+UserGeography = Annotated[Optional[str], BeforeValidator(validate_user_geography)]

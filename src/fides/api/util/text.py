@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from anyascii import anyascii  # type: ignore
 
@@ -12,6 +13,28 @@ from anyascii import anyascii  # type: ignore
 VALID_ISO_3166_LOCATION_REGEX = re.compile(
     r"^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$", re.IGNORECASE
 )
+
+
+def _to_canonical_location_form(location: str) -> str:
+    """Uppercase and hyphenate so both ``us_ca`` and ``US-CA`` reduce to the
+    canonical ISO 3166-2 form (``US-CA``) before regex checking.
+    """
+    return location.upper().replace("_", "-")
+
+
+def is_valid_location_code(location: Optional[str]) -> bool:
+    """Return ``True`` if ``location`` is a well-formed ISO 3166-2 code (or
+    the synthetic ``EEA`` code) in any accepted form — hyphen or underscore
+    separator, any case.
+
+    Empty / ``None`` → ``False``.
+    """
+    if not location:
+        return False
+    return (
+        VALID_ISO_3166_LOCATION_REGEX.match(_to_canonical_location_form(location))
+        is not None
+    )
 
 
 def normalize_location_code(location: str) -> str:
@@ -41,17 +64,13 @@ def normalize_location_code(location: str) -> str:
     if not location:
         raise ValueError("Location code cannot be empty")
 
-    # Convert to uppercase and replace underscores with hyphens
-    normalized = location.upper().replace("_", "-")
-
-    # Validate against ISO 3166-2 format
-    if not VALID_ISO_3166_LOCATION_REGEX.match(normalized):
+    if not is_valid_location_code(location):
         raise ValueError(
             f"Invalid location format '{location}'. Must follow ISO 3166 format "
             "(e.g., 'US', 'US-CA', 'GB', 'CA-ON', 'EEA')"
         )
 
-    return normalized
+    return _to_canonical_location_form(location)
 
 
 def to_snake_case(text: str) -> str:
