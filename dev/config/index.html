@@ -2257,7 +2257,17 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">586</span>
 <span class="normal">587</span>
 <span class="normal">588</span>
-<span class="normal">589</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2346,6 +2356,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># resolves missing email or external_id from stored preferences before</span>
 <span class="c1"># falling back to DB connector queries.</span>
 <span class="n">identity_enrichment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Maximum seconds to wait for a single identity enrichment DB query.</span>
+<span class="c1"># Prevents worker threads from blocking indefinitely on slow or</span>
+<span class="c1"># unreachable external databases.</span>
+<span class="n">identity_enrichment_query_timeout_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1">#--------------#</span>
 <span class="c1">#-- DATABASE --#</span>
@@ -2554,6 +2569,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># as a temporary safety net in case of regressions with the optimized</span>
 <span class="c1"># traversal.</span>
 <span class="n">use_legacy_traversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Soft time limit in seconds for privacy request Celery tasks. When</span>
+<span class="c1"># exceeded, SoftTimeLimitExceeded is raised and the full stack trace is</span>
+<span class="c1"># logged. Set to 0 to disable (default).</span>
+<span class="n">task_soft_time_limit_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1"># Minutes between polling Jira for ticket status updates.</span>
 <span class="n">jira_polling_interval_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># integer</span>
