@@ -41,6 +41,29 @@ export interface CustomMultiSelectField extends ICustomField {
   options?: string[];
 }
 
+export interface CustomCheckboxField extends ICustomField {
+  default_value?: string | null;
+  field_type: "checkbox";
+}
+
+export interface CustomCheckboxGroupField extends ICustomField {
+  default_value?: string[] | null;
+  field_type: "checkbox_group";
+  options: string[];
+}
+
+export interface CustomTextareaField extends ICustomField {
+  default_value?: string | null;
+  field_type: "textarea";
+}
+
+export interface CustomFileUploadField extends ICustomField {
+  default_value?: string | null;
+  field_type: "file";
+  max_size_bytes?: number;
+  allowed_mime_types?: string[];
+}
+
 export interface CustomLocationField extends ICustomField {
   default_value?: string | null;
   field_type: "location";
@@ -52,6 +75,10 @@ export type CustomConfigField =
   | CustomTextField
   | CustomSelectField
   | CustomMultiSelectField
+  | CustomCheckboxField
+  | CustomCheckboxGroupField
+  | CustomTextareaField
+  | CustomFileUploadField
   | CustomLocationField;
 export type CustomIdentityField =
   | CustomTextField
