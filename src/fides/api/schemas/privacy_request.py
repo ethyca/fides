@@ -589,6 +589,7 @@ class PrivacyRequestFilter(FidesSchema):
     errored_gt: Optional[datetime] = None
     external_id: Optional[str] = None
     location: Optional[str] = None
+    duplicate_request_group_id: Optional[UUID] = None
     action_type: Optional[Union[ActionType, List[ActionType]]] = None
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False

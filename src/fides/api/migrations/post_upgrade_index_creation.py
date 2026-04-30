@@ -140,6 +140,12 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "type": "index",
             "migration_key": "ix_privacyrequest_policy_created",
         },
+        {
+            "name": "ix_privacyrequest_duplicate_request_group_id",
+            "statement": "CREATE INDEX CONCURRENTLY ix_privacyrequest_duplicate_request_group_id ON privacyrequest (duplicate_request_group_id)",
+            "type": "index",
+            "migration_key": "ix_privacyrequest_duplicate_request_group_id",
+        },
     ],
     "servednoticehistory": [
         {

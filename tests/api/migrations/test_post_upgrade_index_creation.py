@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.migrations.backfill_scripts.utils import get_registered_index_keys
 from fides.api.migrations.post_upgrade_index_creation import (
+    TABLE_OBJECT_MAP,
     check_and_create_objects,
     post_upgrade_index_creation_task,
 )
@@ -226,3 +227,55 @@ class TestRegisteredIndexKeys:
 
         keys = get_registered_index_keys(db)
         assert backfill_key not in keys
+
+
+class TestDeferredDuplicateRequestGroupIdIndex:
+    """End-to-end test for the deferred branch of
+    xx_2026_04_20_1200_e8f9a0b1c2d3_recreate_ix_privacyrequest_duplicate_request_group_id.py.
+
+    The other tests in this module mock `create_object` because they use a
+    fake table. This one uses the real `privacyrequest` table so the actual
+    `CREATE INDEX CONCURRENTLY` statement is executed, catching typos or
+    column-name drift in our `TABLE_OBJECT_MAP` entry."""
+
+    INDEX_NAME = "ix_privacyrequest_duplicate_request_group_id"
+
+    @pytest.fixture(autouse=True)
+    def clean_index_and_registration(self, db: Session):
+        def cleanup():
+            # Drop with IF EXISTS via AUTOCOMMIT — CONCURRENTLY-created indexes
+            # can't be dropped inside a transaction either.
+            with db.bind.connect().execution_options(
+                isolation_level="AUTOCOMMIT"
+            ) as conn:
+                conn.execute(text(f"DROP INDEX IF EXISTS {self.INDEX_NAME}"))
+            db.execute(
+                text(
+                    "DELETE FROM post_upgrade_background_migration_tasks "
+                    "WHERE key = :key AND task_type = 'index'"
+                ),
+                {"key": self.INDEX_NAME},
+            )
+            db.commit()
+
+        cleanup()
+        yield
+        cleanup()
+
+    def test_creates_index_from_real_table_object_map_entry(self, db: Session):
+        db.execute(
+            text(
+                "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
+                "VALUES (:key, 'index')"
+            ),
+            {"key": self.INDEX_NAME},
+        )
+        db.commit()
+
+        check_and_create_objects(db, TABLE_OBJECT_MAP, MagicMock())
+
+        index_exists = db.execute(
+            text("SELECT 1 FROM pg_indexes WHERE indexname = :name"),
+            {"name": self.INDEX_NAME},
+        ).scalar()
+        assert index_exists == 1

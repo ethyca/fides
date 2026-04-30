@@ -160,6 +160,11 @@ def filter_privacy_request_queryset(
         query = query.filter(
             PrivacyRequest.external_id.ilike(f"{filters.external_id}%")
         )
+    if filters.duplicate_request_group_id:
+        query = query.filter(
+            PrivacyRequest.duplicate_request_group_id
+            == filters.duplicate_request_group_id
+        )
     if filters.location:
         # Support filtering by exact location match or country prefix
         # e.g., "US" matches both "US" and "US-CA", "US-NY", etc.

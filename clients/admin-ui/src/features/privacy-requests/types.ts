@@ -133,6 +133,7 @@ export interface PrivacyRequestEntity {
   source?: string;
   location?: string;
   property_id?: string | null;
+  duplicate_request_group_id?: string | null;
 }
 
 export interface PrivacyRequestResponse {
@@ -265,4 +266,6 @@ export interface ActivityTimelineItem {
   isPolling: boolean;
   id: string;
   attachments?: { id: string; file_name: string }[];
+  isDuplicateDetection?: boolean;
+  hasDuplicateGroup?: boolean;
 }

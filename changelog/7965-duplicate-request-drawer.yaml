@@ -1,0 +1,4 @@
+type: Added
+description: Added "View duplicates" drawer linking to other requests in the same duplicate group
+pr: 7965
+labels: ["db-migration"]
