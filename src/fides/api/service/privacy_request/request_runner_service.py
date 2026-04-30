@@ -778,17 +778,18 @@ def run_privacy_request(
                 return
 
             except SoftTimeLimitExceeded:
+                tb = traceback.format_exc()
                 logger.error(
                     "Privacy request exceeded soft time limit. "
                     "Stack at interruption:\n{}",
-                    traceback.format_exc(),
+                    tb,
                 )
                 privacy_request.add_error_execution_log(
                     session,
                     connection_key=None,
                     dataset_name="Privacy request processing",
                     collection_name=None,
-                    message=f"Task exceeded soft time limit ({CONFIG.execution.task_soft_time_limit_seconds}s)",
+                    message=f"Task exceeded soft time limit ({CONFIG.execution.task_soft_time_limit_seconds}s)\n\n{tb}",
                     action_type=privacy_request.policy.get_action_type(),  # type: ignore
                 )
                 privacy_request.error_processing(db=session)
