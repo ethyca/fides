@@ -1,5 +1,5 @@
 import { NodeProps } from "@xyflow/react";
-import { Button, Icons, Typography } from "fidesui";
+import { Button, Icons, Tag, Typography } from "fidesui";
 import { useContext } from "react";
 
 import DatasetEditorActionsContext from "../context/DatasetEditorActionsContext";
@@ -40,15 +40,9 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>
-        {nodeData.isProtected && (
-          <span className={`${styles.badge} ${styles["badge--warning"]}`}>
-            protected
-          </span>
-        )}
+        {nodeData.isProtected && <Tag color="warning">protected</Tag>}
         {hasCategories && !nodeData.isProtected && (
-          <span className={`${styles.badge} ${styles["badge--muted"]}`}>
-            {categories.length}
-          </span>
+          <Tag color="marble">{categories.length}</Tag>
         )}
       </Button>
       <div className={styles["add-button-container"]}>

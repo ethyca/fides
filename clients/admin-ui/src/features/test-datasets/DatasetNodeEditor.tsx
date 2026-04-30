@@ -1,5 +1,7 @@
 import "@xyflow/react/dist/style.css";
+import "~/features/test-datasets/DatasetNodeEditor.scss";
 
+import type { OnMount } from "@monaco-editor/react";
 import {
   Background,
   BackgroundVariant,
@@ -44,7 +46,7 @@ import DatasetNodeDetailPanel, {
   DatasetNodeDetailPanelHandle,
 } from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
-import { removeNulls } from "./helpers";
+import { buildProtectedPathsByCollection, removeNulls } from "./helpers";
 import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
 import DatasetFieldNode from "./nodes/DatasetFieldNode";
 import DatasetRootNode from "./nodes/DatasetRootNode";
@@ -60,6 +62,20 @@ import useDatasetGraph, {
   ProtectedFieldsInfo,
 } from "./useDatasetGraph";
 import useDatasetNodeLayout from "./useDatasetNodeLayout";
+
+type MonacoEditor = Parameters<OnMount>[0];
+type MonacoDecorationsCollection = ReturnType<
+  MonacoEditor["createDecorationsCollection"]
+>;
+type MonacoDecorationOptions = {
+  range: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  };
+  options: { isWholeLine?: boolean; inlineClassName?: string };
+};
 
 const DRAFT_NODE_ID = "draft-node";
 
@@ -137,6 +153,8 @@ const DatasetNodeEditorInner = ({
   // cleared, causing one extra (but idempotent) YAML re-dump — this is cosmetic.
   const changeSourceRef = useRef<"graph" | "yaml" | null>(null);
   const yamlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const yamlEditorRef = useRef<MonacoEditor | null>(null);
+  const yamlDecorationsRef = useRef<MonacoDecorationsCollection | null>(null);
 
   // Clean up YAML debounce timer on unmount to prevent firing against
   // an unmounted component if the user navigates away while typing.
@@ -235,6 +253,111 @@ const DatasetNodeEditorInner = ({
     },
     [onDatasetChange, focusedCollection],
   );
+
+  // Compute protected YAML line ranges for Monaco decorations
+  const protectedRanges = useMemo((): MonacoDecorationOptions[] => {
+    if (!yamlPanelOpen || !yamlContent) {
+      return [];
+    }
+
+    const lines = yamlContent.split("\n");
+    const ranges: MonacoDecorationOptions[] = [];
+
+    // Build lookup: collection → Set of field paths (including ancestor paths)
+    const protectedPathsByCollection = protectedFields
+      ? buildProtectedPathsByCollection(
+          protectedFields.protected_collection_fields,
+        )
+      : new Map<string, Set<string>>();
+
+    let currentCollection = "";
+    const fieldStack: [number, string][] = [];
+
+    // Detect the collection indent level from the first `- name:` line
+    // instead of hardcoding a threshold.
+    const firstNameLine = lines.find((l) => /^(\s*)-\s+name:\s+\S+/.test(l));
+    const collectionIndent = firstNameLine
+      ? (firstNameLine.match(/^(\s*)-/)?.[1].length ?? null)
+      : null;
+
+    lines.forEach((line: string, i: number) => {
+      let isProtected = false;
+
+      // Top-level keys outside "collections" are immutable
+      if (/^\S/.test(line) && line.includes(":")) {
+        const key = line.split(":")[0].trim();
+        if (key !== "collections") {
+          isProtected = true;
+        }
+      }
+
+      // Track collection/field structure
+      const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)/);
+      if (nameMatch) {
+        const [, indent, name] = nameMatch;
+        const indentLevel = indent.length;
+
+        if (collectionIndent !== null && indentLevel <= collectionIndent) {
+          currentCollection = name;
+          fieldStack.length = 0;
+        } else {
+          while (
+            fieldStack.length > 0 &&
+            fieldStack[fieldStack.length - 1][0] >= indentLevel
+          ) {
+            fieldStack.pop();
+          }
+          fieldStack.push([indentLevel, name]);
+
+          if (protectedPathsByCollection.has(currentCollection)) {
+            const currentPath = fieldStack.map(([, n]) => n).join(".");
+            if (
+              protectedPathsByCollection
+                .get(currentCollection)!
+                .has(currentPath)
+            ) {
+              isProtected = true;
+            }
+          }
+        }
+      }
+
+      if (isProtected) {
+        ranges.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: line.length + 1,
+          },
+          options: {
+            isWholeLine: true,
+            inlineClassName: "immutable-line",
+          },
+        });
+      }
+    });
+
+    return ranges;
+  }, [yamlPanelOpen, protectedFields, yamlContent]);
+
+  // Apply decorations when ranges change or editor is available
+  const applyYamlDecorations = useCallback(() => {
+    const monacoEditor = yamlEditorRef.current;
+    if (!monacoEditor) {
+      return;
+    }
+    if (yamlDecorationsRef.current) {
+      yamlDecorationsRef.current.set(protectedRanges);
+    } else {
+      yamlDecorationsRef.current =
+        monacoEditor.createDecorationsCollection(protectedRanges);
+    }
+  }, [protectedRanges]);
+
+  useEffect(() => {
+    applyYamlDecorations();
+  }, [applyYamlDecorations]);
 
   const availableCategories = useMemo(
     () => collectDatasetCategories(dataset),
@@ -534,8 +657,8 @@ const DatasetNodeEditorInner = ({
         });
       },
       addField: (collectionName: string, parentFieldPath?: string) => {
-        const currentDataset = datasetRef.current;
-        const collection = currentDataset.collections.find(
+        const { current } = datasetRef;
+        const collection = current.collections.find(
           (c) => c.name === collectionName,
         );
         const siblingFields = parentFieldPath

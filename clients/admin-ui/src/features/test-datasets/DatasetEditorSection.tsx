@@ -7,6 +7,7 @@ import {
   Space,
   Typography,
   useMessage,
+  useNotification,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -18,9 +19,11 @@ import { Editor } from "~/features/common/yaml/helpers";
 import { useUpdateDatasetMutation } from "~/features/dataset";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
+  useGetDatasetProtectedFieldsQuery,
   useGetDatasetReachabilityQuery,
+  usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { ConnectionType, Dataset } from "~/types/api";
+import { ConnectionType, Dataset, DatasetFieldWarning } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -56,8 +59,10 @@ const EditorSection = ({
   connectionType,
 }: EditorSectionProps) => {
   const messageApi = useMessage();
+  const notificationApi = useNotification();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
+  const [patchConnectionDatasets] = usePatchConnectionDatasetsMutation();
 
   const isSaas = connectionType === ConnectionType.SAAS;
 
@@ -101,6 +106,14 @@ const EditorSection = ({
       dispatch(setReachability(reachability.reachable));
     }
   }, [reachability, dispatch]);
+
+  const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
+    { connectionKey },
+    {
+      skip: !isSaas || !connectionKey,
+    },
+  );
+
   const datasetOptions = useMemo(
     () =>
       (datasetConfigs?.items || []).map((item) => ({
@@ -207,23 +220,110 @@ const EditorSection = ({
       }
     }
 
-    const result = await updateDataset(datasetValues);
+    let saasWarnings: DatasetFieldWarning[] = [];
+    let succeededDataset: Dataset | undefined;
 
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      return;
-    }
-
-    dispatch(
-      setCurrentDataset({
-        fides_key: currentDataset.fides_key,
-        ctl_dataset: result.data,
-      }),
-    );
     if (isSaas) {
-      savedDatasetJson.current = JSON.stringify(removeNulls(result.data));
+      const result = await patchConnectionDatasets({
+        connectionKey,
+        datasets: [datasetValues],
+      });
+
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+
+      const failedMessage = result.data?.failed?.[0]?.message;
+      if (failedMessage) {
+        messageApi.error(failedMessage);
+        return;
+      }
+
+      succeededDataset = result.data?.succeeded?.[0];
+      if (succeededDataset) {
+        dispatch(
+          setCurrentDataset({
+            fides_key: currentDataset.fides_key,
+            ctl_dataset: succeededDataset,
+          }),
+        );
+        // Refresh local state with server response (may have restored fields)
+        setLocalDataset(removeNulls(succeededDataset) as Dataset);
+      } else {
+        messageApi.warning("No changes were saved.");
+        return;
+      }
+
+      saasWarnings = result.data?.warnings ?? [];
+    } else {
+      const result = await updateDataset(datasetValues);
+
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+
+      dispatch(
+        setCurrentDataset({
+          fides_key: currentDataset.fides_key,
+          ctl_dataset: result.data,
+        }),
+      );
     }
-    messageApi.success("Successfully modified dataset");
+
+    if (saasWarnings.length > 0) {
+      const restored = saasWarnings.filter((w) => w.action === "restored");
+      const removed = saasWarnings.filter((w) => w.action === "removed");
+      const failed = saasWarnings.filter((w) => w.action === "failed");
+
+      const renderGroup = (label: string, group: DatasetFieldWarning[]) =>
+        group.length > 0 && (
+          <div className="mb-2 last:mb-0">
+            <Typography.Text strong>{label}</Typography.Text>
+            <ul className="mb-0 mt-1 list-disc pl-5">
+              {group.map((w, idx) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <li key={idx}>{w.message}</li>
+              ))}
+            </ul>
+          </div>
+        );
+
+      const description = (
+        <div>
+          {renderGroup("Restored", restored)}
+          {renderGroup("Removed", removed)}
+          {renderGroup("Failed", failed)}
+        </div>
+      );
+
+      const notificationKey = "dataset-save-warnings";
+      notificationApi.warning({
+        message:
+          failed.length > 0
+            ? "Dataset saved with issues"
+            : "Dataset saved with warnings",
+        description,
+        duration: 0,
+        key: notificationKey,
+        btn: (
+          <Button
+            size="small"
+            onClick={() => notificationApi.destroy(notificationKey)}
+          >
+            Dismiss
+          </Button>
+        ),
+      });
+    } else {
+      messageApi.success("Successfully modified dataset");
+    }
+
+    if (isSaas) {
+      savedDatasetJson.current = JSON.stringify(removeNulls(succeededDataset));
+    }
+
     await refetchDatasets();
     if (!connectionType && currentPolicyKey) {
       await refetchReachability();
@@ -290,6 +390,7 @@ const EditorSection = ({
           {localDataset && (
             <DatasetNodeEditor
               dataset={localDataset}
+              protectedFields={protectedFields}
               onDatasetChange={handleLocalDatasetChange}
             />
           )}
