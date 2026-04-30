@@ -289,7 +289,6 @@ class TestCircuitBreaker:
 
             # Make fetches fail — triggers last_failed_at
             call_count = 0
-            real_get = provider._client.get_secret_value
 
             def counting_fail(**kwargs):
                 nonlocal call_count
