@@ -44,6 +44,9 @@ def _run_celery_worker(worker_queues: str) -> None:
             "--loglevel=info",
             "--concurrency=2",
             f"--queues={worker_queues}",
+            "--without-heartbeat",
+            "--without-gossip",
+            "--without-mingle",
         ]
     )
 
