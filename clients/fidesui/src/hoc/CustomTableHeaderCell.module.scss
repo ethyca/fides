@@ -8,7 +8,7 @@
 .customTableHeaderCell__button {
   &:global(.ant-table-filter-trigger) {
     margin-inline-start: calc(
-      var(--ant-table-cell-padding-inline-sm) / 2
+      var(--fidesui-table-cell-padding-inline-sm) / 2
     ); // make up for filter button negative margin
     width: 20px; // match filter button width
   }

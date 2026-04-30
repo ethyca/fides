@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import event
 from sqlalchemy.orm import Query
 
 from fides.api.models.privacy_request.request_task import RequestTask, TraversalDetails
@@ -83,6 +84,51 @@ class TestGetCeleryTaskRequestTaskIds:
             "test_celery_task_key",
             "test_root_task_celery_key",
         }
+
+    def test_get_celery_task_ids_does_not_load_access_data(
+        self, db, privacy_request, request_task
+    ):
+        """Regression test: get_request_task_celery_task_ids must use a column
+        projection query and NOT load full RequestTask ORM objects. Loading full
+        objects pulls in _access_data and _data_for_erasures encrypted blobs,
+        which caused OOM crashes when the cancel path ran in the webserver."""
+        cache_task_tracking_key(request_task.id, "test_celery_task_key")
+
+        # Expire all cached ORM state so the method must query the DB
+        db.expire_all()
+
+        # Track any RequestTask instances loaded into the session
+        loaded_request_tasks = []
+
+        def track_load(target, _context):
+            if isinstance(target, RequestTask):
+                loaded_request_tasks.append(target)
+
+        event.listen(db, "loaded_as_persistent", track_load)
+        try:
+            result = privacy_request.get_request_task_celery_task_ids()
+            assert "test_celery_task_key" in result
+
+            # The column projection query should NOT load any RequestTask ORM
+            # instances — it only selects the id column as raw scalars.
+            assert loaded_request_tasks == [], (
+                f"Expected no RequestTask ORM objects to be loaded, but got "
+                f"{len(loaded_request_tasks)}. This means the query is loading "
+                f"full rows including large encrypted blobs."
+            )
+        finally:
+            event.remove(db, "loaded_as_persistent", track_load)
+
+    def test_get_celery_task_ids_raises_on_detached_instance(self, db, privacy_request):
+        """Calling get_request_task_celery_task_ids on a detached instance
+        should raise a RuntimeError rather than silently returning an empty list."""
+        db.expunge(privacy_request)
+
+        with pytest.raises(RuntimeError, match="not bound to a session"):
+            privacy_request.get_request_task_celery_task_ids()
+
+        # Re-add the same instance so fixture cleanup doesn't fail
+        db.add(privacy_request)
 
 
 def test_create_request_task(db, privacy_request, request_task_data):

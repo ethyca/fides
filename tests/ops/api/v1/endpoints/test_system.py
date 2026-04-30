@@ -19,6 +19,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import DiffStatus, StagedResource
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.sql_models import Dataset, System
@@ -1169,3 +1170,131 @@ class TestBulkDeleteSystems:
 
         # System should be removed from the database
         assert db.query(System).filter_by(id=system.id).first() is None
+
+    def test_bulk_delete_systems_with_staged_resources(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        bulk_url,
+    ) -> None:
+        """Deleting systems via bulk endpoint should unlink any StagedResources referencing them."""
+        system_id = system.id
+        fides_key = system.fides_key
+        staged_resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": f"test_idp_app_{fides_key}",
+                "name": "Test IDP App",
+                "resource_type": "IDP App",
+                "system_id": system_id,
+                "diff_status": DiffStatus.MONITORED.value,
+            },
+        )
+        try:
+            auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+            resp = api_client.post(bulk_url, headers=auth_header, json=[fides_key])
+
+            assert resp.status_code == HTTP_200_OK
+            assert db.query(System).filter_by(id=system_id).first() is None
+
+            db.refresh(staged_resource)
+            assert staged_resource.system_id is None
+            assert staged_resource.diff_status == DiffStatus.ADDITION.value
+        finally:
+            db.delete(staged_resource)
+            db.commit()
+
+
+class TestDeleteSystemUnlinksStagedResources:
+    """Verify that deleting a system unlinks StagedResources via the before_delete listener."""
+
+    @pytest.fixture(scope="function")
+    def staged_resource(self, db: Session, system) -> StagedResource:
+        sr = StagedResource.create(
+            db=db,
+            data={
+                "urn": f"test_idp_app_{system.fides_key}",
+                "name": "Test IDP App",
+                "resource_type": "IDP App",
+                "system_id": system.id,
+                "diff_status": DiffStatus.MONITORED.value,
+            },
+        )
+        yield sr
+        if db.query(StagedResource).filter_by(urn=sr.urn).first():
+            db.delete(sr)
+            db.commit()
+
+    def test_single_delete_unlinks_staged_resource(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        staged_resource,
+    ) -> None:
+        """Deleting a system via DELETE endpoint should unlink its StagedResources."""
+        system_id = system.id
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}"
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+
+        assert resp.status_code == HTTP_200_OK
+        assert db.query(System).filter_by(id=system_id).first() is None
+
+        db.refresh(staged_resource)
+        assert staged_resource.system_id is None
+        assert staged_resource.diff_status == DiffStatus.ADDITION.value
+
+    def test_single_delete_unlinks_web_monitor_staged_resource(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+    ) -> None:
+        """Deleting a system should unlink web monitor StagedResources (Cookies, JS tags, etc.)."""
+        system_id = system.id
+        sr = StagedResource.create(
+            db=db,
+            data={
+                "urn": f"www_example_com.tracker.com.{system.fides_key}_cookie",
+                "name": "Tracker Cookie",
+                "resource_type": "Cookie",
+                "system_id": system_id,
+                "diff_status": DiffStatus.MONITORED.value,
+            },
+        )
+        try:
+            url = V1_URL_PREFIX + f"/system/{system.fides_key}"
+            auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+            resp = api_client.delete(url, headers=auth_header)
+
+            assert resp.status_code == HTTP_200_OK
+            assert db.query(System).filter_by(id=system_id).first() is None
+
+            db.refresh(sr)
+            assert sr.system_id is None
+            assert sr.diff_status == DiffStatus.ADDITION.value
+        finally:
+            if db.query(StagedResource).filter_by(urn=sr.urn).first():
+                db.delete(sr)
+                db.commit()
+
+    def test_delete_system_without_staged_resources(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+    ) -> None:
+        """Deleting a system with no linked StagedResources should succeed without errors."""
+        system_id = system.id
+        url = V1_URL_PREFIX + f"/system/{system.fides_key}"
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+
+        assert resp.status_code == HTTP_200_OK
+        assert db.query(System).filter_by(id=system_id).first() is None

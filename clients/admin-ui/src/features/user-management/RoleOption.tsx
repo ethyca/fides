@@ -47,15 +47,15 @@ const RoleOption = ({
       <Card
         size="small"
         style={{
-          borderColor: "var(--ant-color-border)",
-          backgroundColor: "var(--ant-color-bg-layout)",
+          borderColor: "var(--fidesui-color-border)",
+          backgroundColor: "var(--fidesui-color-bg-layout)",
         }}
         data-testid="selected"
       >
         <Flex vertical gap={16}>
           <Flex align="center" justify="space-between">
             <Text className="text-base font-semibold">{label}</Text>
-            <Icons.CheckmarkFilled color="var(--fidesui-success)" />
+            <Icons.CheckmarkFilled color="var(--fidesui-color-success)" />
           </Flex>
           {/* The approver and respondent roles cannot be assigned systems */}
           {roleKey !== RoleRegistryEnum.APPROVER &&
