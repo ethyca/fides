@@ -37,6 +37,9 @@
     "@ant-design/cssinjs": "^1.21.0",
     "@dagrejs/dagre": "^1.1.4",
     "@date-fns/tz": "^1.2.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@fontsource/inter": "^4.5.15",
     "@json-render/core": "^0.18.0",
     "@json-render/react": "^0.18.0",
@@ -83,6 +86,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@ant-design/cli": "^6.3.7",
     "@hey-api/openapi-ts": "^0.88.2",
     "@jest/globals": "^29.7.0",
     "@next/bundle-analyzer": "^16.2.0",

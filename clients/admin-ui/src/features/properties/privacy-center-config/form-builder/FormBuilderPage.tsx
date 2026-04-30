@@ -1,13 +1,31 @@
-import { Alert, Button, Col, Modal, Row, Space, useMessage } from "fidesui";
-import { useMemo, useState } from "react";
+import {
+  Alert,
+  Button,
+  Flex,
+  Modal,
+  Space,
+  Splitter,
+  useMessage,
+} from "fidesui";
+import { useCallback, useMemo, useState } from "react";
 
+import type { ComponentType } from "./catalog";
 import { ChatPane } from "./ChatPane";
 import { detectDrift } from "./drift";
+import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
 import type { DroppedFeature, JsonRenderSpec, PcCustomFields } from "./mapper";
 import { mapSpecToPcShape } from "./mapper";
 import { PreviewPane } from "./PreviewPane";
+import {
+  addField as addFieldMutation,
+  removeField as removeFieldMutation,
+  reorderFields as reorderFieldsMutation,
+  updateField as updateFieldMutation,
+} from "./specMutations";
 import { synthesizeSpecFromPcShape } from "./synthesize";
 import { useFormBuilder } from "./useFormBuilder";
+
+type EditableComponentType = Exclude<ComponentType, "Form">;
 
 interface ActionShape {
   policy_key?: string;
@@ -48,6 +66,16 @@ const describeDropped = (d: DroppedFeature): string => {
     default:
       return JSON.stringify(d);
   }
+};
+
+const splitterStyle: React.CSSProperties = {
+  height: "calc(100vh - 240px)",
+  minHeight: 480,
+};
+
+const stickyFooterStyle: React.CSSProperties = {
+  borderTop: "1px solid var(--fidesui-color-border)",
+  backgroundColor: "var(--fidesui-color-bg-container)",
 };
 
 export const FormBuilderPage = ({
@@ -98,6 +126,58 @@ export const FormBuilderPage = ({
 
   const [confirmingDropped, setConfirmingDropped] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(
+    null,
+  );
+
+  const handleAddField = useCallback(
+    (type: EditableComponentType) => {
+      const { spec: nextSpec, elementId } = addFieldMutation(
+        builder.spec,
+        type,
+      );
+      builder.setSpec(nextSpec);
+      setSelectedElementId(elementId);
+    },
+    [builder],
+  );
+
+  const handleSelectField = useCallback((elementId: string) => {
+    setSelectedElementId(elementId);
+  }, []);
+
+  const handleUpdateField = useCallback(
+    (elementId: string, props: Record<string, unknown>) => {
+      if (!builder.spec) {
+        return;
+      }
+      builder.setSpec(updateFieldMutation(builder.spec, elementId, props));
+    },
+    [builder],
+  );
+
+  const handleRemoveField = useCallback(
+    (elementId: string) => {
+      if (!builder.spec) {
+        return;
+      }
+      builder.setSpec(removeFieldMutation(builder.spec, elementId));
+      setSelectedElementId((current) =>
+        current === elementId ? null : current,
+      );
+    },
+    [builder],
+  );
+
+  const handleReorderFields = useCallback(
+    (newOrder: string[]) => {
+      if (!builder.spec) {
+        return;
+      }
+      builder.setSpec(reorderFieldsMutation(builder.spec, newOrder));
+    },
+    [builder],
+  );
 
   if (!action) {
     return <Alert type="error" message="Action not found on property." />;
@@ -138,19 +218,6 @@ export const FormBuilderPage = ({
     persist();
   };
 
-  const handleClickField = (elementId: string) => {
-    const element = builder.spec?.elements?.[elementId];
-    if (!element) {
-      return;
-    }
-    const name = (element.props as Record<string, unknown> | undefined)
-      ?.name as string | undefined;
-    if (!name) {
-      return;
-    }
-    builder.sendMessage(`Edit the field "${name}". Tell me what changed.`);
-  };
-
   const droppedSummary: DroppedFeature[] = builder.spec
     ? mapSpecToPcShape(builder.spec).droppedFeatures
     : [];
@@ -160,6 +227,7 @@ export const FormBuilderPage = ({
       builder.setSpec(
         synthesizeSpecFromPcShape(action.custom_privacy_request_fields),
       );
+      setSelectedElementId(null);
     }
   };
 
@@ -176,8 +244,13 @@ export const FormBuilderPage = ({
           }
         />
       )}
-      <Row gutter={16} style={{ height: "calc(100vh - 200px)" }}>
-        <Col span={10} style={{ display: "flex", flexDirection: "column" }}>
+      <Splitter style={splitterStyle}>
+        <Splitter.Panel
+          defaultSize="25%"
+          min={0}
+          collapsible
+          data-testid="chat-panel"
+        >
           <ChatPane
             messages={builder.messages}
             status={builder.status}
@@ -185,14 +258,45 @@ export const FormBuilderPage = ({
             onSend={builder.sendMessage}
             onAbort={builder.abort}
           />
-        </Col>
-        <Col span={14} style={{ display: "flex", flexDirection: "column" }}>
-          <PreviewPane spec={builder.spec} onFieldClick={handleClickField} />
-        </Col>
-      </Row>
-      <Button type="primary" onClick={handleSave} loading={saving}>
-        Save
-      </Button>
+        </Splitter.Panel>
+        <Splitter.Panel min={240} data-testid="preview-panel">
+          <PreviewPane
+            spec={builder.spec}
+            selectedElementId={selectedElementId}
+            onFieldClick={handleSelectField}
+            onAddField={handleAddField}
+            onReorderFields={handleReorderFields}
+          />
+        </Splitter.Panel>
+        <Splitter.Panel
+          defaultSize="30%"
+          min={0}
+          collapsible
+          data-testid="properties-panel"
+        >
+          <FieldPropertiesPanel
+            spec={builder.spec}
+            selectedElementId={selectedElementId}
+            onUpdateField={handleUpdateField}
+            onRemoveField={handleRemoveField}
+          />
+        </Splitter.Panel>
+      </Splitter>
+      <Flex
+        justify="flex-end"
+        gap="small"
+        className="sticky bottom-0 z-10 px-4 py-2"
+        style={stickyFooterStyle}
+      >
+        <Button
+          type="primary"
+          onClick={handleSave}
+          loading={saving}
+          data-testid="save-button"
+        >
+          Save
+        </Button>
+      </Flex>
       <Modal
         open={confirmingDropped}
         title="Some features won't be saved"

@@ -3,10 +3,20 @@ import userEvent from "@testing-library/user-event";
 
 import { PreviewPane } from "../PreviewPane";
 
+const noop = () => {};
+
 describe("PreviewPane", () => {
-  it("renders 'no fields yet' empty state for null spec", () => {
-    render(<PreviewPane spec={null} onFieldClick={() => {}} />);
-    expect(screen.getByText(/start by chatting/i)).toBeInTheDocument();
+  it("renders empty-state and Add field button for a null spec", () => {
+    render(
+      <PreviewPane
+        spec={null}
+        onFieldClick={noop}
+        onAddField={noop}
+        onReorderFields={noop}
+      />,
+    );
+    expect(screen.getByText(/no fields yet/i)).toBeInTheDocument();
+    expect(screen.getByTestId("add-field-button")).toBeInTheDocument();
   });
 
   it("calls onFieldClick when a field is clicked", async () => {
@@ -23,7 +33,14 @@ describe("PreviewPane", () => {
       },
     };
 
-    render(<PreviewPane spec={spec as any} onFieldClick={onFieldClick} />);
+    render(
+      <PreviewPane
+        spec={spec as any}
+        onFieldClick={onFieldClick}
+        onAddField={noop}
+        onReorderFields={noop}
+      />,
+    );
     await userEvent.click(screen.getByText("Email"));
 
     expect(onFieldClick).toHaveBeenCalledWith("f");
@@ -48,8 +65,30 @@ describe("PreviewPane", () => {
       },
     };
 
-    render(<PreviewPane spec={spec as any} onFieldClick={() => {}} />);
+    render(
+      <PreviewPane
+        spec={spec as any}
+        onFieldClick={noop}
+        onAddField={noop}
+        onReorderFields={noop}
+      />,
+    );
     expect(screen.getByText("Country")).toBeInTheDocument();
     expect(screen.getByText("State")).toBeInTheDocument();
+  });
+
+  it("calls onAddField with the chosen type from the dropdown", async () => {
+    const onAddField = jest.fn();
+    render(
+      <PreviewPane
+        spec={null}
+        onFieldClick={noop}
+        onAddField={onAddField}
+        onReorderFields={noop}
+      />,
+    );
+    await userEvent.click(screen.getByTestId("add-field-button"));
+    await userEvent.click(await screen.findByText(/text input/i));
+    expect(onAddField).toHaveBeenCalledWith("Text");
   });
 });
