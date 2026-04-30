@@ -1,0 +1,29 @@
+.node {
+  position: relative;
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
+  width: 240px;
+  box-sizing: border-box;
+}
+
+.header {
+  padding: 12px 16px;
+}
+
+.avatar {
+  background-color: var(--fidesui-color-text) !important;
+  border-radius: var(--fidesui-border-radius) !important;
+}
+
+.body {
+  padding: 12px 16px;
+  border-top: 1px solid var(--fidesui-color-border);
+}
+
+.handle {
+  background: var(--fidesui-color-text-quaternary);
+  border: none;
+  width: 8px;
+  height: 8px;
+}

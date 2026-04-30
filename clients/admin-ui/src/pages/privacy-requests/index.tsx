@@ -6,6 +6,7 @@ import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
+import PrivacyRequestVisualizerCTA from "~/features/dsr-traversal-visualizer/PrivacyRequestVisualizerCTA";
 import { ManualTasks } from "~/features/manual-tasks/ManualTasks";
 import ActionButtons from "~/features/privacy-requests/buttons/ActionButtons";
 import { PrivacyRequestsDashboard } from "~/features/privacy-requests/dashboard/PrivacyRequestsDashboard";
@@ -62,6 +63,11 @@ const PrivacyRequests: NextPage = () => {
             {hasPlus && (
               <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_CREATE]}>
                 <SubmitPrivacyRequest />
+              </Restrict>
+            )}
+            {hasPlus && (
+              <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_READ]}>
+                <PrivacyRequestVisualizerCTA />
               </Restrict>
             )}
             <ActionButtons />
