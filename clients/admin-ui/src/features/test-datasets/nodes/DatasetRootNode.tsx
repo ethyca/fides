@@ -2,6 +2,7 @@ import { NodeProps } from "@xyflow/react";
 import { Button, Icons, Typography } from "fidesui";
 import { useContext } from "react";
 
+import DatasetEditorActionsContext from "../context/DatasetEditorActionsContext";
 import {
   DatasetNodeHoverStatus,
   DatasetTreeHoverContext,
@@ -12,10 +13,11 @@ import DatasetNodeHandle from "./DatasetNodeHandle";
 import { getNodeHoverClass } from "./getNodeHoverClass";
 
 const DatasetRootNode = ({ data, id }: NodeProps) => {
-  const nodeData = data as { label: string };
+  const nodeData = data as { label: string; allowAddCollection?: boolean };
   const { onMouseEnter, onMouseLeave, getNodeHoverStatus } = useContext(
     DatasetTreeHoverContext,
   );
+  const actions = useContext(DatasetEditorActionsContext);
   const hoverStatus = getNodeHoverStatus(id);
 
   return (
@@ -34,6 +36,21 @@ const DatasetRootNode = ({ data, id }: NodeProps) => {
           {nodeData.label}
         </Typography.Text>
       </Button>
+      {nodeData.allowAddCollection && (
+        <div className={styles["add-button-container"]}>
+          <Button
+            type="default"
+            className={`${styles["add-button"]} ${hoverStatus === DatasetNodeHoverStatus.ACTIVE_HOVER ? styles["add-button--visible"] : ""}`}
+            icon={<Icons.Add size={16} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              actions.addCollection();
+            }}
+            size="small"
+            aria-label="Add collection"
+          />
+        </div>
+      )}
       <DatasetNodeHandle
         type="source"
         inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}

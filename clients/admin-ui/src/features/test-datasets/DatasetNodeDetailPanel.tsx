@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Collapse,
   Drawer,
@@ -44,6 +45,7 @@ interface DatasetNodeDetailPanelProps {
     updates: Partial<DatasetField>,
   ) => void;
   allowNameEditing?: boolean;
+  isSaas?: boolean;
 }
 
 export interface DatasetNodeDetailPanelHandle {
@@ -62,6 +64,7 @@ const DatasetNodeDetailPanel = forwardRef<
       onUpdateCollection,
       onUpdateField,
       allowNameEditing = false,
+      isSaas = false,
     },
     ref,
   ) => {
@@ -102,7 +105,7 @@ const DatasetNodeDetailPanel = forwardRef<
           redact: field.fides_meta?.redact ?? "",
         });
       }
-      initialValuesRef.current = JSON.stringify(form.getFieldsValue());
+      initialValuesRef.current = JSON.stringify(form.getFieldsValue(true));
       // Only run when a different node is selected, not on every nodeData
       // reference change. nodeData identity changes on parent re-renders but
       // the logical node (identified by open + selectedNodeId) stays the same.
@@ -115,7 +118,7 @@ const DatasetNodeDetailPanel = forwardRef<
         return;
       }
 
-      const allValues = form.getFieldsValue();
+      const allValues = form.getFieldsValue(true);
       if (JSON.stringify(allValues) === initialValuesRef.current) {
         return;
       }
@@ -240,6 +243,17 @@ const DatasetNodeDetailPanel = forwardRef<
               <DataCategoryTagSelect />
             </Form.Item>
 
+            {nodeData.nodeType === "field" &&
+              (nodeData as FieldNodeData).hasChildren && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="This field contains nested sub-fields"
+                  description="Data categories assigned here apply to all nested fields as a group. Individual categories on sub-fields will not be evaluated separately."
+                  className="-mt-2 mb-4"
+                />
+              )}
+
             {nodeData.nodeType === "collection" && (
               <Collapse
                 size="small"
@@ -284,7 +298,7 @@ const DatasetNodeDetailPanel = forwardRef<
                   {
                     key: "field-meta",
                     label: "Field Metadata (fides_meta)",
-                    children: <FieldMetadataFormItems />,
+                    children: <FieldMetadataFormItems isSaas={isSaas} />,
                   },
                 ]}
               />

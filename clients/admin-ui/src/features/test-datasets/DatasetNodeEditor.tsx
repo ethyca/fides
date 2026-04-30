@@ -85,7 +85,9 @@ interface DatasetNodeEditorProps {
   dataset: Dataset;
   protectedFields?: ProtectedFieldsInfo;
   onDatasetChange: (dataset: Dataset) => void;
+  allowAddCollection?: boolean;
   allowNameEditing?: boolean;
+  isSaas?: boolean;
 }
 
 const nodeTypes: NodeTypes = {
@@ -113,7 +115,9 @@ const DatasetNodeEditorInner = ({
   dataset,
   protectedFields,
   onDatasetChange,
+  allowAddCollection = false,
   allowNameEditing = false,
+  isSaas = false,
 }: DatasetNodeEditorProps) => {
   const reactFlowInstance = useReactFlow();
   const reactFlowRef = useRef<HTMLDivElement>(null);
@@ -155,6 +159,10 @@ const DatasetNodeEditorInner = ({
   const yamlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const yamlEditorRef = useRef<MonacoEditor | null>(null);
   const yamlDecorationsRef = useRef<MonacoDecorationsCollection | null>(null);
+  // Set when YAML content is updated programmatically (not by user typing).
+  // handleYamlChange checks this to avoid a JSON→YAML→JSON round-trip that
+  // can subtly alter key ordering and trigger a false dirty flag.
+  const yamlProgrammaticRef = useRef(false);
 
   // Clean up YAML debounce timer on unmount to prevent firing against
   // an unmounted component if the user navigates away while typing.
@@ -188,6 +196,7 @@ const DatasetNodeEditorInner = ({
       return;
     }
     const cleaned = removeNulls(dataset);
+    yamlProgrammaticRef.current = true;
     setYamlContent(yaml.dump(cleaned));
     setYamlError(null);
   }, [dataset, yamlPanelOpen]);
@@ -199,6 +208,7 @@ const DatasetNodeEditorInner = ({
       setYamlPanelSize(0);
     } else {
       const cleaned = removeNulls(dataset);
+      yamlProgrammaticRef.current = true;
       setYamlContent(yaml.dump(cleaned));
       setYamlError(null);
       setYamlPanelSize(YAML_PANEL_DEFAULT_WIDTH);
@@ -211,6 +221,13 @@ const DatasetNodeEditorInner = ({
     (value: string | undefined) => {
       const newValue = value || "";
       setYamlContent(newValue);
+
+      // Skip round-trip when content was set programmatically (sync effect
+      // or panel open) to avoid false dirty flags from YAML key reordering.
+      if (yamlProgrammaticRef.current) {
+        yamlProgrammaticRef.current = false;
+        return;
+      }
 
       if (yamlDebounceRef.current) {
         clearTimeout(yamlDebounceRef.current);
@@ -603,9 +620,10 @@ const DatasetNodeEditorInner = ({
         data: {
           ...node.data,
           isHighlighted: node.id === highlightedNodeId,
+          ...(node.id === DATASET_ROOT_ID && { allowAddCollection }),
         },
       })),
-    [layoutedNodes, selectedNodeId, highlightedNodeId],
+    [layoutedNodes, selectedNodeId, highlightedNodeId, allowAddCollection],
   );
 
   const handleDeleteCollection = useCallback(
@@ -861,6 +879,7 @@ const DatasetNodeEditorInner = ({
           onUpdateCollection={handleUpdateCollection}
           onUpdateField={handleUpdateField}
           allowNameEditing={allowNameEditing}
+          isSaas={isSaas}
         />
       </Flex>
     </DatasetEditorActionsContext.Provider>
