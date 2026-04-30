@@ -5,24 +5,24 @@
 
 .questionRow {
   padding: 10px 12px;
-  border: 1px solid var(--ant-color-border);
-  border-radius: var(--ant-border-radius);
-  background: var(--ant-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius);
+  background: var(--fidesui-color-bg-container);
   width: 100%;
   transition: background 0.15s;
 
   &:hover {
-    background: var(--ant-color-bg-layout);
+    background: var(--fidesui-color-bg-layout);
   }
 }
 
 .selectLink {
   cursor: pointer;
-  color: var(--ant-color-primary);
-  font-size: var(--ant-font-size-sm);
+  color: var(--fidesui-color-primary);
+  font-size: var(--fidesui-font-size-sm);
 
   &:hover {
-    color: var(--ant-color-primary-hover);
+    color: var(--fidesui-color-primary-hover);
     text-decoration: underline;
   }
 }

@@ -57,7 +57,7 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border-radius: var(--ant-border-radius-lg) !important;
+  border-radius: var(--fidesui-border-radius-lg) !important;
   border: none !important;
 
   svg {
@@ -66,41 +66,41 @@
 }
 
 .conditionButton {
-  background: var(--fidesui-olive) !important;
-  color: var(--fidesui-full-white) !important;
+  background: var(--fidesui-brand-olive) !important;
+  color: var(--fidesui-color-white) !important;
 
   &:hover {
-    background: var(--fidesui-olive) !important;
-    color: var(--fidesui-full-white) !important;
+    background: var(--fidesui-brand-olive) !important;
+    color: var(--fidesui-color-white) !important;
     opacity: 0.9;
   }
 }
 
 .constraintButton {
   background: var(--fidesui-neutral-600) !important;
-  color: var(--fidesui-full-white) !important;
+  color: var(--fidesui-color-white) !important;
 
   &:hover {
     background: var(--fidesui-neutral-600) !important;
-    color: var(--fidesui-full-white) !important;
+    color: var(--fidesui-color-white) !important;
     opacity: 0.9;
   }
 }
 
 .actionButton {
-  background: var(--fidesui-terracotta) !important;
-  color: var(--fidesui-full-white) !important;
+  background: var(--fidesui-brand-terracotta) !important;
+  color: var(--fidesui-color-white) !important;
 
   &:hover {
-    background: var(--fidesui-terracotta) !important;
-    color: var(--fidesui-full-white) !important;
+    background: var(--fidesui-brand-terracotta) !important;
+    color: var(--fidesui-color-white) !important;
     opacity: 0.9;
   }
 }
 
 .actionLabel {
-  color: var(--ant-color-text);
-  font-size: var(--ant-font-size);
+  color: var(--fidesui-color-text);
+  font-size: var(--fidesui-font-size);
   display: block;
   word-break: keep-all;
 }

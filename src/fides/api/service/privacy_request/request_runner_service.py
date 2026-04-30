@@ -1,10 +1,12 @@
 # pylint: disable=too-many-lines
 import time
+import traceback
 from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
 import sqlalchemy.exc
+from celery.exceptions import SoftTimeLimitExceeded
 from loguru import logger
 
 # pylint: disable=no-name-in-module
@@ -73,17 +75,24 @@ from fides.api.service.privacy_request.attachment_handling import (
 )
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.storage.storage_uploader_service import upload
+from fides.api.task.consent_identity_enrichment import enrich_identities_for_consent
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
 )
-from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
+from fides.api.task.manual.manual_task_utils import (
+    create_manual_task_artificial_graphs,
+    get_manual_task_addresses,
+)
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import get_all_masking_secret_keys
 from fides.api.util.collection_util import Row
+from fides.api.util.consent_util import (
+    filter_privacy_preferences_for_propagation,
+)
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
@@ -398,7 +407,45 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     return download_urls
 
 
-@celery_app.task(base=DatabaseTask, bind=True)
+def _should_process_consent(
+    privacy_request: PrivacyRequest,
+    session: Session,
+) -> bool:
+    """Return True when the consent pipeline has work to do.
+
+    Returns True when any of these hold:
+    - Legacy consent_preferences present
+    - Consent tasks already created (reprocessing run)
+    - Propagatable privacy preferences exist for any system
+    - Manual consent task addresses configured
+    """
+    if privacy_request.consent_preferences:
+        return True
+    if privacy_request.consent_tasks.count() > 0:
+        return True
+
+    propagatable = filter_privacy_preferences_for_propagation(
+        system=None,
+        privacy_preferences=privacy_request.privacy_preferences,  # type: ignore[attr-defined]
+    )
+    if propagatable:
+        return True
+
+    if get_manual_task_addresses(session, config_types=[ActionType.consent]):
+        return True
+
+    logger.info(
+        "Skipping consent step: no actionable consent "
+        "preferences to propagate for any system"
+    )
+    return False
+
+
+@celery_app.task(
+    base=DatabaseTask,
+    bind=True,
+    soft_time_limit=CONFIG.execution.task_soft_time_limit_seconds or None,
+)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def run_privacy_request(
@@ -676,16 +723,30 @@ def run_privacy_request(
                     request_checkpoint=CurrentStep.consent,
                     from_checkpoint=resume_step,
                 ):
-                    privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
-                    consent_runner(
-                        privacy_request=privacy_request,
-                        policy=policy,
-                        graph=build_consent_dataset_graph(datasets, session),
-                        connection_configs=connection_configs,
-                        identity=identity_data,
-                        session=session,
-                        privacy_request_proceed=True,  # Should always be True unless we're testing
-                    )
+                    if _should_process_consent(privacy_request, session):
+                        logger.info("Consent processing: starting identity enrichment")
+                        identity_data = enrich_identities_for_consent(
+                            datasets=datasets,
+                            connection_configs=connection_configs,
+                            identity_data=identity_data,
+                            privacy_request=privacy_request,
+                            session=session,
+                        )
+                        logger.info(
+                            "Consent processing: enrichment complete, building consent graph"
+                        )
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.consent
+                        )
+                        consent_runner(
+                            privacy_request=privacy_request,
+                            policy=policy,
+                            graph=build_consent_dataset_graph(datasets, session),
+                            connection_configs=connection_configs,
+                            identity=identity_data,
+                            session=session,
+                            privacy_request_proceed=True,  # Should always be True unless we're testing
+                        )
 
             except PrivacyRequestPaused as exc:
                 privacy_request.pause_processing(session)
@@ -715,6 +776,23 @@ def run_privacy_request(
                 )
                 privacy_request.error_processing(db=session)
                 return
+
+            except SoftTimeLimitExceeded:
+                tb = traceback.format_exc()
+                logger.error(
+                    "Privacy request exceeded soft time limit. "
+                    "Stack at interruption:\n{}",
+                    tb,
+                )
+                privacy_request.add_error_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Privacy request processing",
+                    collection_name=None,
+                    message=f"Task exceeded soft time limit ({CONFIG.execution.task_soft_time_limit_seconds}s)\n\n{tb}",
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                )
+                privacy_request.error_processing(db=session)
 
             except BaseException as exc:  # pylint: disable=broad-except
                 # Log the error to the activity timeline before marking as errored
