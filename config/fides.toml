@@ -88,6 +88,11 @@ consent_v3_encryption_enabled = true # boolean
 # falling back to DB connector queries.
 identity_enrichment = false # boolean
 
+# Maximum seconds to wait for a single identity enrichment DB query.
+# Prevents worker threads from blocking indefinitely on slow or
+# unreachable external databases.
+identity_enrichment_query_timeout_seconds = 30 # integer
+
 #--------------#
 #-- DATABASE --#
 #--------------------------------------------------------------------#
@@ -295,6 +300,11 @@ memory_watchdog_enabled = false # boolean
 # as a temporary safety net in case of regressions with the optimized
 # traversal.
 use_legacy_traversal = false # boolean
+
+# Soft time limit in seconds for privacy request Celery tasks. When
+# exceeded, SoftTimeLimitExceeded is raised and the full stack trace is
+# logged. Set to 0 to disable (default).
+task_soft_time_limit_seconds = 0 # integer
 
 # Minutes between polling Jira for ticket status updates.
 jira_polling_interval_minutes = 10 # integer
