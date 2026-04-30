@@ -1,26 +1,33 @@
-import { CustomTextInput, Option } from "common/form/inputs";
+import type { Option } from "common/form/inputs";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
-import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
-import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
+import {
+  useLazyGetDatastoreConnectionStatusQuery,
+  usePatchDatastoreConnectionsMutation,
+} from "datastore-connections/datastore-connection.slice";
+import { DSRCustomizationModal } from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
   Button,
-  ChakraSpacer as Spacer,
-  ChakraVStack as VStack,
+  Flex,
+  Form,
+  Icons,
+  Input,
+  Modal,
+  Select,
+  Switch,
+  useMessage,
 } from "fidesui";
-import { Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import {
   FIDES_DATASET_REFERENCE,
   useFormFieldsFromSchema,
 } from "~/features/common/form/useFormFieldsFromSchema";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
-import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
+import { useIntegrationPropertySelect } from "~/features/properties/useIntegrationPropertySelect";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -28,7 +35,6 @@ import {
   SystemType,
 } from "~/types/api";
 
-import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
 
@@ -45,15 +51,19 @@ type ConnectorParametersFormProps = {
   /**
    * Parent callback when Save is clicked
    */
-  onSaveClick: (values: any, actions: any) => void;
+  onSaveClick: (values: ConnectionConfigFormValues) => Promise<void>;
   /**
    * Parent callback when Test Connection is clicked
    */
   onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
-   * Parent callback when Test Dataset is clicked
+   * Parent callback when Edit Dataset is clicked
    */
   onTestDatasetsClick: () => void;
+  /**
+   * Parent callback when Test Datasets is clicked (DB only)
+   */
+  onTestDatasetsRunClick?: () => void;
   /**
    * Text for the test button. Defaults to "Test connection"
    */
@@ -79,6 +89,7 @@ export const ConnectorParametersForm = ({
   onSaveClick,
   onTestConnectionClick,
   onTestDatasetsClick,
+  onTestDatasetsRunClick,
   onAuthorizeConnectionClick,
   testButtonLabel = "Test integration",
   connectionOption,
@@ -91,29 +102,47 @@ export const ConnectorParametersForm = ({
 }: ConnectorParametersFormProps) => {
   const [trigger, { isLoading, isFetching }] =
     useLazyGetDatastoreConnectionStatusQuery();
+  const [patchConnection] = usePatchDatastoreConnectionsMutation();
   const { plus: isPlusEnabled } = useFeatures();
+  const messageApi = useMessage();
+
+  const isEditingConnection = !!connectionConfig;
+
+  const {
+    propertyOptions,
+    initialPropertyIds,
+    savePropertyAssignments,
+    hasDatasets,
+    isLoading: isLoadingProperties,
+  } = useIntegrationPropertySelect(
+    isEditingConnection ? connectionConfig?.key : undefined,
+  );
 
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secretsSchema);
 
-  const getInitialValues = () => {
-    const initialValues = { ...defaultValues };
+  const [form] = Form.useForm<ConnectionConfigFormValues>();
+  const [modal, contextHolder] = Modal.useModal();
+
+  const initialFormValues = useMemo(() => {
+    const values = { ...defaultValues };
     if (connectionConfig?.key) {
-      initialValues.name = connectionConfig.name ?? "";
-      initialValues.description = connectionConfig.description as string;
-      initialValues.instance_key =
+      values.name = connectionConfig.name ?? "";
+      values.description = connectionConfig.description as string;
+      values.instance_key =
         connectionConfig.connection_type === ConnectionType.SAAS
           ? (connectionConfig.saas_config?.fides_key as string)
           : connectionConfig.key;
-      initialValues.enabled_actions = (
-        connectionConfig.enabled_actions || []
-      ).map((action) => action.toString());
+      values.enabled_actions = (connectionConfig.enabled_actions || []).map(
+        (action) => action.toString(),
+      );
 
-      initialValues.secrets = connectionConfig.secrets
+      values.secrets = connectionConfig.secrets
         ? _.cloneDeep(connectionConfig.secrets)
         : {};
 
-      initialValues.dataset = initialDatasets;
+      values.dataset = initialDatasets;
+      values.property_ids = initialPropertyIds;
 
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
@@ -121,209 +150,317 @@ export const ConnectorParametersForm = ({
       if (secretsSchema?.properties) {
         Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
           if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
-            const datasetReference = initialValues.secrets[key];
+            const datasetReference = values.secrets[key];
             if (datasetReference) {
-              initialValues.secrets[key] =
+              values.secrets[key] =
                 `${datasetReference.dataset}.${datasetReference.field}`;
             }
           }
           // Convert boolean secret values to string so they correctly match ControlledSelect options
           if (secretsSchema.properties[key]?.type === "boolean") {
-            const boolVal = initialValues.secrets[key];
+            const boolVal = values.secrets[key];
             if (typeof boolVal === "boolean") {
-              initialValues.secrets[key] = boolVal.toString();
+              values.secrets[key] = boolVal.toString();
             }
           }
         });
       }
-      return initialValues;
+      return values;
     }
 
-    if (_.isEmpty(initialValues.enabled_actions)) {
-      initialValues.enabled_actions = connectionOption.supported_actions.map(
+    if (_.isEmpty(values.enabled_actions)) {
+      values.enabled_actions = connectionOption.supported_actions.map(
         (action) => action.toString(),
       );
     }
 
-    return fillInDefaults(initialValues, secretsSchema);
-  };
+    return fillInDefaults(values, secretsSchema);
+  }, [
+    connectionConfig,
+    defaultValues,
+    secretsSchema,
+    initialDatasets,
+    initialPropertyIds,
+    connectionOption,
+  ]);
 
-  const handleSubmit = (values: any, actions: any) => {
+  useEffect(() => {
+    if (isEditingConnection) {
+      form.setFieldsValue(initialFormValues);
+    }
+  }, [form, initialFormValues, isEditingConnection]);
+
+  const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
-    onSaveClick(processedValues, actions);
-  };
+    await onSaveClick(processedValues);
 
-  const handleAuthorizeConnectionClick = async (
-    values: ConnectionConfigFormValues,
-    props: FormikProps<ConnectionConfigFormValues>,
-  ) => {
-    const errors = await props.validateForm();
-
-    if (Object.keys(errors).length > 0) {
-      return;
+    // After a successful create, mask secrets immediately so the user sees
+    // stars instead of blank fields while waiting for the refetch.
+    if (!isEditingConnection && secretsSchema) {
+      const maskedSecrets: Record<string, string> = {};
+      Object.keys(secretsSchema.properties).forEach((key) => {
+        if (processedValues.secrets[key]) {
+          maskedSecrets[key] = "**********";
+        }
+      });
+      form.setFieldsValue({ secrets: maskedSecrets });
     }
 
-    const processedValues = preprocessValues(values);
+    // Save property assignments if editing
+    if (
+      isEditingConnection &&
+      values.property_ids !== undefined &&
+      hasDatasets
+    ) {
+      try {
+        await savePropertyAssignments(values.property_ids);
+      } catch {
+        messageApi.error(
+          "Integration saved but failed to update properties. Please try again.",
+        );
+      }
+    }
+  };
+
+  const handleAuthorizeConnectionClick = async () => {
+    try {
+      await form.validateFields();
+    } catch {
+      return;
+    }
+    const processedValues = preprocessValues(form.getFieldsValue(true));
     onAuthorizeConnectionClick(processedValues);
   };
 
-  const handleTestConnectionClick = async (
-    props: FormikProps<ConnectionConfigFormValues>,
-  ) => {
-    const errors = await props.validateForm();
-
-    if (Object.keys(errors).length > 0) {
+  const handleTestConnectionClick = async () => {
+    try {
+      await form.validateFields();
+    } catch {
       return;
     }
-
     const result = await trigger(connectionConfig!.key);
     onTestConnectionClick(result);
   };
 
   const isDisabledConnection = connectionConfig?.disabled || false;
 
+  const confirmToggleConnection = () => {
+    const action = isDisabledConnection ? "Enable" : "Disable";
+    modal.confirm({
+      title: `${action} connection`,
+      content: `${action === "Enable" ? "Enabling" : "Disabling"} a connection may impact any privacy request that is currently in progress. Do you wish to proceed?`,
+      okText: `${action} connection`,
+      onOk: () =>
+        patchConnection({
+          key: connectionConfig!.key,
+          name: connectionConfig?.name ?? connectionConfig!.key,
+          disabled: !isDisabledConnection,
+          access: connectionConfig!.access,
+          connection_type: connectionConfig!.connection_type,
+        }),
+    });
+  };
+
+  const confirmDeleteConnection = () => {
+    modal.confirm({
+      title: "Delete integration",
+      content:
+        "Deleting an integration may impact any privacy request that is currently in progress. Do you wish to proceed?",
+      okText: "Delete integration",
+      okButtonProps: { danger: true },
+      onOk: onDelete,
+    });
+  };
+
+  const allValues = Form.useWatch([], form);
+  const isDirty = useMemo(
+    () => allValues !== undefined && !_.isEqual(allValues, initialFormValues),
+    [allValues, initialFormValues],
+  );
+  const authorized = !isDirty && connectionConfig?.authorized;
+
   return (
-    <Formik
-      enableReinitialize
-      initialValues={getInitialValues()}
-      onSubmit={handleSubmit}
-      validateOnBlur
-    >
-      {(props) => {
-        const authorized = !props.dirty && connectionConfig?.authorized;
-        return (
-          <Form>
-            <VStack align="stretch" gap="16px">
-              <div className="flex flex-row">
-                {connectionConfig ? (
-                  <DisableConnectionModal
-                    connection_key={connectionConfig?.key}
-                    disabled={isDisabledConnection}
-                    connection_type={connectionConfig?.connection_type}
-                    access_type={connectionConfig?.access}
-                    name={connectionConfig?.name ?? connectionConfig.key}
-                  />
-                ) : null}
-                {connectionConfig ? (
-                  <DeleteConnectionModal
-                    onDelete={onDelete}
-                    deleteResult={deleteResult}
-                  />
-                ) : null}
-              </div>
-              {/* Connection Identifier */}
-              {!!connectionConfig?.key && (
-                <CustomTextInput
-                  name="instance_key"
-                  key="instance_key"
-                  id="instance_key"
-                  label="Integration identifier"
-                  isRequired
-                  disabled={!!connectionConfig?.key}
-                  tooltip="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                />
-              )}
-              {/* Dynamic connector secret fields */}
-              {secretsSchema
-                ? Object.entries(secretsSchema.properties).map(
-                    ([key, item]) => {
-                      if (key === "advanced_settings") {
-                        // TODO: advanced settings
-                        return null;
-                      }
-                      return (
-                        <FormFieldFromSchema
-                          key={`secrets.${key}`}
-                          name={`secrets.${key}`}
-                          fieldSchema={item}
-                          isRequired={secretsSchema.required?.includes(key)}
-                          secretsSchema={secretsSchema}
-                          validate={getFieldValidation(key, item)}
-                          layout="inline"
-                        />
-                      );
-                    },
-                  )
-                : null}
-              {isPlusEnabled && (
-                <ControlledSelect
-                  name="enabled_actions"
-                  key="enabled_actions"
-                  id="enabled_actions"
-                  label="Request types"
-                  isRequired
-                  layout="inline"
-                  mode="multiple"
-                  tooltip="The request types that are supported for this integration"
-                  options={connectionOption.supported_actions.map((action) => ({
-                    label: _.upperFirst(action),
-                    value: action,
-                  }))}
-                />
-              )}
-              {SystemType.DATABASE === connectionOption.type &&
-                !isCreatingConnectionConfig && (
-                  <ControlledSelect
-                    name="dataset"
-                    id="dataset"
-                    tooltip="Select datasets to associate with this integration"
-                    label="Datasets"
-                    options={datasetDropdownOptions}
+    <>
+      {contextHolder}
+      <Form
+        form={form}
+        layout="horizontal"
+        initialValues={initialFormValues}
+        onFinish={handleFinish}
+        key={connectionConfig?.key ?? "create"}
+        validateTrigger="onBlur"
+        labelCol={{ flex: "180px" }}
+        labelAlign="left"
+      >
+        <Flex vertical>
+          {/* Hidden fields to preserve values in form submission */}
+          <Form.Item name="name" hidden noStyle>
+            <Input />
+          </Form.Item>
+          <Form.Item name="description" hidden noStyle>
+            <Input />
+          </Form.Item>
+          {connectionConfig && (
+            <Flex align="center" gap="middle" className="pb-4">
+              <span>Enable integration</span>
+              <Switch
+                checked={!isDisabledConnection}
+                onChange={confirmToggleConnection}
+              />
+              <div className="grow" />
+              <span>Delete integration</span>
+              <Button
+                aria-label="Delete integration"
+                icon={<Icons.TrashCan />}
+                disabled={deleteResult.isLoading}
+                onClick={confirmDeleteConnection}
+              />
+            </Flex>
+          )}
+          {/* Connection Identifier */}
+          {!!connectionConfig?.key && (
+            <Form.Item
+              name="instance_key"
+              label="Integration identifier"
+              tooltip="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+              rules={[{ required: true }]}
+            >
+              <Input
+                data-testid="input-instance_key"
+                disabled={!!connectionConfig?.key}
+              />
+            </Form.Item>
+          )}
+          {/* Dynamic connector secret fields */}
+          {secretsSchema
+            ? Object.entries(secretsSchema.properties).map(([key, item]) => {
+                if (key === "advanced_settings") {
+                  // TODO: advanced settings
+                  return null;
+                }
+                return (
+                  <FormFieldFromSchema
+                    key={`secrets.${key}`}
+                    name={`secrets.${key}`}
+                    fieldSchema={item}
+                    isRequired={secretsSchema.required?.includes(key)}
+                    secretsSchema={secretsSchema}
+                    validate={getFieldValidation(key, item)}
                     layout="inline"
-                    mode="multiple"
-                    optionRender={DatasetSelectOption}
                   />
-                )}
-              <div className="flex gap-4">
-                {!connectionOption.authorization_required || authorized ? (
-                  <Button
-                    disabled={
-                      !connectionConfig?.key ||
-                      isSubmitting ||
-                      deleteResult.isLoading
-                    }
-                    loading={isLoading || isFetching}
-                    onClick={() => handleTestConnectionClick(props)}
-                    data-testid="test-connection-button"
-                  >
-                    {testButtonLabel}
-                  </Button>
-                ) : null}
-                {isPlusEnabled &&
-                  SystemType.DATABASE === connectionOption.type &&
-                  !_.isEmpty(initialDatasets) && (
-                    <Button onClick={() => onTestDatasetsClick()}>
-                      Test datasets
-                    </Button>
-                  )}
-                {connectionOption.authorization_required && !authorized ? (
-                  <Button
-                    loading={isAuthorizing}
-                    onClick={() =>
-                      handleAuthorizeConnectionClick(props.values, props)
-                    }
-                  >
-                    Authorize integration
-                  </Button>
-                ) : null}
-                {connectionOption.type === SystemType.MANUAL ? (
-                  <DSRCustomizationModal connectionConfig={connectionConfig} />
-                ) : null}
-                <Spacer />
+                );
+              })
+            : null}
+          {isPlusEnabled ? (
+            <Form.Item
+              name="enabled_actions"
+              label="Request types"
+              tooltip="The request types that are supported for this integration"
+              rules={[{ required: true }]}
+            >
+              <Select
+                aria-label="Request types"
+                data-testid="controlled-select-enabled_actions"
+                mode="multiple"
+                options={connectionOption.supported_actions.map((action) => ({
+                  label: _.upperFirst(action),
+                  value: action,
+                }))}
+              />
+            </Form.Item>
+          ) : (
+            <Form.Item name="enabled_actions" hidden noStyle>
+              <Input />
+            </Form.Item>
+          )}
+          {SystemType.DATABASE === connectionOption.type &&
+            !isCreatingConnectionConfig && (
+              <Form.Item
+                name="dataset"
+                label="Datasets"
+                tooltip="Select datasets to associate with this integration"
+              >
+                <Select
+                  aria-label="Datasets"
+                  data-testid="controlled-select-dataset"
+                  mode="multiple"
+                  options={datasetDropdownOptions}
+                  optionRender={DatasetSelectOption}
+                />
+              </Form.Item>
+            )}
+          {isPlusEnabled && isEditingConnection && hasDatasets && (
+            <Form.Item
+              name="property_ids"
+              label="Properties"
+              tooltip="Assign properties to this integration's datasets to scope privacy request processing"
+            >
+              <Select
+                aria-label="Properties"
+                mode="multiple"
+                options={propertyOptions}
+                loading={isLoadingProperties}
+                allowClear
+                placeholder="Select properties..."
+              />
+            </Form.Item>
+          )}
+          <Flex justify="space-between">
+            <Flex gap="small">
+              {!connectionOption.authorization_required || authorized ? (
                 <Button
-                  type="primary"
-                  disabled={deleteResult.isLoading || isSubmitting}
-                  loading={isSubmitting}
-                  htmlType="submit"
-                  data-testid="save-integration-btn"
+                  disabled={
+                    !connectionConfig?.key ||
+                    isSubmitting ||
+                    deleteResult.isLoading
+                  }
+                  loading={isLoading || isFetching}
+                  onClick={() => handleTestConnectionClick()}
+                  data-testid="test-connection-button"
                 >
-                  Save
+                  {testButtonLabel}
                 </Button>
-              </div>
-            </VStack>
-          </Form>
-        );
-      }}
-    </Formik>
+              ) : null}
+              {isPlusEnabled &&
+                (SystemType.DATABASE === connectionOption.type ||
+                  SystemType.SAAS === connectionOption.type) &&
+                !_.isEmpty(initialDatasets) && (
+                  <Button onClick={() => onTestDatasetsClick()}>
+                    Edit dataset
+                  </Button>
+                )}
+              {isPlusEnabled &&
+                SystemType.DATABASE === connectionOption.type &&
+                !_.isEmpty(initialDatasets) &&
+                onTestDatasetsRunClick && (
+                  <Button onClick={() => onTestDatasetsRunClick()}>
+                    Test datasets
+                  </Button>
+                )}
+              {connectionOption.authorization_required && !authorized ? (
+                <Button
+                  loading={isAuthorizing}
+                  onClick={() => handleAuthorizeConnectionClick()}
+                >
+                  Authorize integration
+                </Button>
+              ) : null}
+              {connectionOption.type === SystemType.MANUAL ? (
+                <DSRCustomizationModal connectionConfig={connectionConfig} />
+              ) : null}
+            </Flex>
+            <Button
+              type="primary"
+              disabled={deleteResult.isLoading || isSubmitting}
+              loading={isSubmitting}
+              htmlType="submit"
+              data-testid="save-integration-btn"
+            >
+              Save
+            </Button>
+          </Flex>
+        </Flex>
+      </Form>
+    </>
   );
 };

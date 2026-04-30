@@ -1,21 +1,47 @@
-import { Button, Text } from "fidesui";
+import { Button, Flex, Icons, Text } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
+import { useState } from "react";
 
+import { useGetAccessPoliciesQuery } from "~/features/access-policies/access-policies.slice";
 import PoliciesContainer from "~/features/access-policies/PoliciesContainer";
+import PolicySettingsModal from "~/features/access-policies/PolicySettingsModal";
+import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { ACCESS_POLICIES_NEW_ROUTE } from "~/features/common/nav/routes";
+import { RouterLink } from "~/features/common/nav/RouterLink";
+import {
+  ACCESS_POLICIES_NEW_ROUTE,
+  CONTROLS_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const AccessPoliciesPage: NextPage = () => {
+  const { flags } = useFlags();
+  const { data, isLoading } = useGetAccessPoliciesQuery({});
+  const hasPolicies = !isLoading && (data?.items?.length ?? 0) > 0;
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <Layout title="Access policies">
       <PageHeader
         heading="Access policies"
         rightContent={
-          <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
-            <Button type="primary">New policy</Button>
-          </NextLink>
+          hasPolicies ? (
+            <Flex gap={8}>
+              <RouterLink href={CONTROLS_ROUTE}>
+                <Button>Manage controls</Button>
+              </RouterLink>
+              {flags.alphaPrivacyDocUpload && (
+                <Button
+                  aria-label="Policy settings"
+                  icon={<Icons.Settings />}
+                  onClick={() => setSettingsOpen(true)}
+                />
+              )}
+              <RouterLink href={ACCESS_POLICIES_NEW_ROUTE}>
+                <Button type="primary">New policy</Button>
+              </RouterLink>
+            </Flex>
+          ) : undefined
         }
         isSticky
       >
@@ -28,6 +54,12 @@ const AccessPoliciesPage: NextPage = () => {
         </div>
       </PageHeader>
       <PoliciesContainer />
+      {flags.alphaPrivacyDocUpload && (
+        <PolicySettingsModal
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </Layout>
   );
 };

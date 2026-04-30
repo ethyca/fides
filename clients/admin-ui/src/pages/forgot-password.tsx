@@ -10,11 +10,11 @@ import {
   useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
-import Link from "next/link";
 import { useState } from "react";
 
 import { useForgotPasswordMutation } from "~/features/auth";
 import { getErrorMessage } from "~/features/common/helpers";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { RTKErrorResult } from "~/types/errors/api";
 
 interface ForgotPasswordFormValues {
@@ -57,7 +57,13 @@ const ForgotPassword: NextPage = () => {
           justify="center"
           className="px-6 py-12"
         >
-          <Image src="/logo.svg" alt="Fides logo" width={205} height={46} />
+          <Image
+            src="/logo.svg"
+            alt="Fides logo"
+            width={205}
+            height={46}
+            loading="eager"
+          />
           <Flex vertical align="center" gap="large">
             <Typography.Title level={1}>
               {submitted ? "Check your email" : "Forgot your password?"}
@@ -70,11 +76,11 @@ const ForgotPassword: NextPage = () => {
                       If an account with that email exists, we&apos;ve sent a
                       password reset link. Please check your inbox.
                     </Typography.Text>
-                    <Link href="/login">
+                    <RouterLink href="/login">
                       <Button type="link" data-testid="back-to-login-btn">
                         Back to sign in
                       </Button>
-                    </Link>
+                    </RouterLink>
                   </Flex>
                 ) : (
                   <Form
@@ -123,11 +129,11 @@ const ForgotPassword: NextPage = () => {
                         Send reset link
                       </Button>
                       <Flex justify="center" className="mt-4">
-                        <Link href="/login">
+                        <RouterLink href="/login">
                           <Button type="link" data-testid="back-to-login-btn">
                             Back to sign in
                           </Button>
-                        </Link>
+                        </RouterLink>
                       </Flex>
                     </Flex>
                   </Form>

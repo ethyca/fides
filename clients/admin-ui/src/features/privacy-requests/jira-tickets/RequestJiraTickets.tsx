@@ -13,8 +13,9 @@ import {
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { PrivacyRequestStatus, StatusType } from "~/types/api";
+import { ConnectionType, PrivacyRequestStatus, StatusType } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import ForceCloseModal from "./ForceCloseModal";
@@ -115,13 +116,20 @@ interface RequestJiraTicketsProps {
 }
 
 const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
+  const { data: jiraConnections } = useGetAllDatastoreConnectionsQuery({
+    connection_type: [ConnectionType.JIRA_TICKET],
+    size: 1,
+  });
+  const hasJiraConnection = !!jiraConnections?.total;
+
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isForceCloseModalOpen, setIsForceCloseModalOpen] = useState(false);
   const message = useMessage();
 
-  const { data: tickets, isLoading } = useGetJiraTicketsQuery({
-    privacy_request_id: subjectRequest.id,
-  });
+  const { data: tickets, isLoading } = useGetJiraTicketsQuery(
+    { privacy_request_id: subjectRequest.id },
+    { skip: !hasJiraConnection },
+  );
 
   const [retryJiraTicket, { isLoading: isRetrying, originalArgs: retryArgs }] =
     useRetryJiraTicketMutation();
@@ -129,6 +137,10 @@ const RequestJiraTickets = ({ subjectRequest }: RequestJiraTicketsProps) => {
     refreshJiraTicket,
     { isLoading: isRefreshing, originalArgs: refreshArgs },
   ] = useRefreshJiraTicketMutation();
+
+  if (!hasJiraConnection) {
+    return null;
+  }
 
   const handleRetry = async (ticket: JiraTicketResult) => {
     if (!ticket.instance_id) {

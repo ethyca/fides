@@ -159,7 +159,7 @@ export const Filter = ({
           type="text"
           size="small"
           onClick={handleClear}
-          style={{ color: "var(--ant-color-text-secondary)" }}
+          style={{ color: "var(--fidesui-color-text-secondary)" }}
         >
           Clear
         </Button>
@@ -189,7 +189,7 @@ export const Filter = ({
     >
       <Button
         icon={activeFiltersCount > 0 ? undefined : <ChevronDown />}
-        iconPosition="end"
+        iconPlacement="end"
         aria-label={
           activeFiltersCount > 0
             ? `Filter, ${activeFiltersCount} active`

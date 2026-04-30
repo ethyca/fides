@@ -95,7 +95,7 @@ const ScrollableListItem = <T extends unknown>({
               tabIndex={0}
               aria-label="Warning"
             >
-              <Icons.WarningAltFilled fill="var(--fidesui-warning)" />
+              <Icons.WarningAltFilled fill="var(--fidesui-color-warning)" />
             </span>
           </Tooltip>
         )}
@@ -191,7 +191,7 @@ const ScrollableListAdd = ({
       data-testid={`add-${baseTestId}`}
       block
       icon={<Icons.Add size={16} />}
-      iconPosition="end"
+      iconPlacement="end"
     >
       {label}
     </Button>

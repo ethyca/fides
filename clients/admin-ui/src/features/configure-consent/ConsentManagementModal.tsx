@@ -48,7 +48,9 @@ export const ConsentManagementModal = ({
       {list?.length ? (
         <div>
           <Space size={[0, 2]} wrap>
-            {list?.map((item) => <Tag key={item}>{item}</Tag>)}
+            {list?.map((item) => (
+              <Tag key={item}>{item}</Tag>
+            ))}
           </Space>
         </div>
       ) : (
@@ -100,14 +102,14 @@ export const ConsentManagementModal = ({
                               {listRender(
                                 "Data uses",
                                 systemPurposeSummary.purposes[purposeName]
-                                  .data_uses,
+                                  .data_uses as string[],
                               )}
                             </Flex>
                             <Flex className="my-4" vertical>
                               {listRender(
                                 "Legal basis",
                                 systemPurposeSummary.purposes[purposeName]
-                                  .legal_bases,
+                                  .legal_bases as string[],
                               )}
                             </Flex>
                           </AccordionPanel>

@@ -13,19 +13,23 @@ import {
   Tooltip,
 } from "fidesui";
 import _ from "lodash";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
+import {
+  getErrorMessage,
+  isFetchBaseQueryError,
+} from "~/features/common/helpers";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import {
   useGetDatastoreFiltersQuery,
   useGetMonitorConfigQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
@@ -60,6 +64,7 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -90,6 +95,7 @@ const ActionCenterFields = ({
       query: {
         staged_resource_urn?: string[];
         search?: string;
+        search_regex?: boolean;
         diff_status?: DiffStatus[];
         confidence_bucket?: ConfidenceBucket[];
         data_category?: string[];
@@ -112,6 +118,7 @@ const ActionCenterFields = ({
           ),
         ],
         search: query.search ?? undefined,
+        search_regex: query.search_regex ?? undefined,
         staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
       },
     }),
@@ -252,7 +259,18 @@ const ActionCenterFields = ({
     () => listQueryMeta.refetch(),
   );
 
-  if (listQueryMeta.error) {
+  const isRegexValidationError =
+    listQueryMeta.error &&
+    isFetchBaseQueryError(listQueryMeta.error) &&
+    listQueryMeta.error.status === 422 &&
+    !!requestData.query?.search_regex;
+
+  const regexErrorMessage =
+    isRegexValidationError && listQueryMeta.error
+      ? getErrorMessage(listQueryMeta.error, "Invalid regex pattern")
+      : null;
+
+  if (listQueryMeta.error && !isRegexValidationError) {
     return (
       <ErrorPage
         error={listQueryMeta.error}
@@ -267,7 +285,7 @@ const ActionCenterFields = ({
         <Splitter.Panel
           defaultSize={250}
           /** Note: style attr used here due to specificity of ant css. */
-          style={{ paddingRight: "var(--ant-padding-md)" }}
+          style={{ paddingRight: "var(--fidesui-padding-md)" }}
         >
           <MonitorTree
             showIgnored={showIgnored}
@@ -313,7 +331,10 @@ const ActionCenterFields = ({
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel
-          style={{ paddingLeft: "var(--ant-padding-md)", overflow: "hidden" }}
+          style={{
+            paddingLeft: "var(--fidesui-padding-md)",
+            overflow: "hidden",
+          }}
         >
           <Flex vertical gap="medium" className="h-full">
             <Flex justify="space-between">
@@ -331,7 +352,7 @@ const ActionCenterFields = ({
                 )}
               </Flex>
             </Flex>
-            <Flex justify="space-between" wrap="wrap" gap="small">
+            <div className="grid w-full grid-cols-[1fr,1fr,1fr,auto] grid-rows-2 gap-2 2xl:grid-cols-[max-content,1fr,1fr,1fr,1fr,auto] 2xl:grid-rows-1">
               <MonitorFieldsSearchForm
                 form={form}
                 {...formProps}
@@ -343,67 +364,57 @@ const ActionCenterFields = ({
                 availableFilters={{
                   data_category: availableFilters?.data_category ?? undefined,
                 }}
+                regexError={regexErrorMessage}
                 shortcutCallback={() => setHotkeysHelperModalOpen(true)}
               />
-              <Flex gap="small">
-                <Dropdown
-                  onOpenChange={onActionDropdownOpenChange}
-                  menu={{
-                    items: [
-                      ...DROPDOWN_ACTIONS.map((actionType) => ({
-                        key: actionType,
-                        label:
-                          isFetchingAllowedActions ||
-                          !availableActions?.includes(actionType) ? (
-                            <Tooltip
-                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
-                            >
-                              {FIELD_ACTION_LABEL[actionType]}
-                            </Tooltip>
-                          ) : (
-                            FIELD_ACTION_LABEL[actionType]
-                          ),
-                        disabled:
-                          isFetchingAllowedActions ||
-                          !availableActions?.includes(actionType),
-                        onClick: async () => {
-                          if (listSelectMode === "exclusive") {
-                            await bulkActions[actionType](
-                              baseMonitorFilters,
-                              excludedKeys.map((key) => key.toString()),
-                              selectedListItemCount,
-                            );
-                          } else {
-                            await fieldActions[actionType](
-                              selectedKeys.map((key) => key.toString()),
-                            );
-                          }
+              <Dropdown
+                onOpenChange={onActionDropdownOpenChange}
+                menu={{
+                  items: [
+                    ...DROPDOWN_ACTIONS.map((actionType) => ({
+                      key: actionType,
+                      label:
+                        isFetchingAllowedActions ||
+                        !availableActions?.includes(actionType) ? (
+                          <Tooltip title={ACTIONS_DISABLED_MESSAGE[actionType]}>
+                            {FIELD_ACTION_LABEL[actionType]}
+                          </Tooltip>
+                        ) : (
+                          FIELD_ACTION_LABEL[actionType]
+                        ),
+                      disabled:
+                        isFetchingAllowedActions ||
+                        !availableActions?.includes(actionType),
+                      onClick: async () => {
+                        if (listSelectMode === "exclusive") {
+                          await bulkActions[actionType](
+                            baseMonitorFilters,
+                            excludedKeys.map((key) => key.toString()),
+                            selectedListItemCount,
+                          );
+                        } else {
+                          await fieldActions[actionType](
+                            selectedKeys.map((key) => key.toString()),
+                          );
+                        }
 
-                          resetListSelect();
-                        },
-                      })),
-                    ],
-                  }}
-                  disabled={selectedKeys.length <= 0}
+                        resetListSelect();
+                      },
+                    })),
+                  ],
+                }}
+                disabled={selectedKeys.length <= 0}
+              >
+                <Button
+                  type="primary"
+                  icon={<Icons.ChevronDown />}
+                  iconPlacement="end"
+                  loading={isFetchingAllowedActions}
                 >
-                  <Button
-                    type="primary"
-                    icon={<Icons.ChevronDown />}
-                    iconPosition="end"
-                    loading={isFetchingAllowedActions}
-                  >
-                    Actions
-                  </Button>
-                </Dropdown>
-                <Tooltip title="Refresh">
-                  <Button
-                    icon={<Icons.Renew />}
-                    onClick={() => listQueryMeta.refetch()}
-                    aria-label="Refresh"
-                  />
-                </Tooltip>
-              </Flex>
-            </Flex>
+                  Actions
+                </Button>
+              </Dropdown>
+            </div>
             <Flex gap="medium" align="center">
               <Checkbox id="select-all" {...checkboxProps} />
               <label htmlFor="select-all">Select all</label>
@@ -448,13 +459,9 @@ const ActionCenterFields = ({
                           }
                         >
                           <Flex gap="medium" justify="center">
-                            <NextLink
-                              href={DATASET_ROUTE}
-                              passHref
-                              legacyBehavior
-                            >
+                            <RouterLink href={DATASET_ROUTE}>
                               <Button>Manage datasets view</Button>
-                            </NextLink>
+                            </RouterLink>
                             <Button
                               type="primary"
                               aria-label="Refresh page"
@@ -527,7 +534,7 @@ const ActionCenterFields = ({
                               // Hack: because Sparkle is so weird, and Ant is using `inline-block`
                               // for actions, this is needed to get the buttons to align correctly.
                               fontSize:
-                                "var(--ant-button-content-font-size-lg)",
+                                "var(--fidesui-button-content-font-size-lg)",
                             }}
                           />
                         </Tooltip>
@@ -561,7 +568,7 @@ const ActionCenterFields = ({
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
                 .color
             : undefined,
-          className: "font-normal text-[var(--ant-font-size-sm)]",
+          className: "font-normal text-[var(--fidesui-font-size-sm)]",
           children: resource?.diff_status
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
                 .label

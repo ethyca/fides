@@ -9,14 +9,13 @@ import {
   Field,
   Schema,
   Table,
-  TreeResourceChangeIndicator,
 } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
+
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 
 export type MonitorResource =
   | DatastoreStagedResource
-  | Page_DatastoreStagedResourceAPIResponse_["items"][number]
   | Database
   | Schema
   | Table
@@ -39,6 +38,7 @@ export type FieldActionTypeValue = `${FieldActionType}`;
 interface MonitorFieldQueryParameters {
   staged_resource_urn?: Array<string>;
   search?: string;
+  search_regex?: boolean;
   diff_status?: Array<DiffStatus>;
   confidence_bucket?: Array<ConfidenceBucket>;
   data_category?: Array<string>;

@@ -1,14 +1,12 @@
 """Tests for violation filtering through policy evaluation."""
 
-from datetime import datetime, timezone
-
 from fides.service.pbac.policies.interface import (
     AccessEvaluationRequest,
     PolicyDecision,
     PolicyEvaluationResult,
 )
 from fides.service.pbac.policies.noop import NoOpPolicyEvaluator
-from fides.service.pbac.types import ValidationResult, Violation
+from fides.service.pbac.types import PurposeViolation
 
 # -- Helpers -----------------------------------------------------------------
 
@@ -18,9 +16,8 @@ def _make_violation(
     collection: str | None = None,
     consumer_id: str = "consumer-1",
     consumer_name: str = "Test Consumer",
-) -> Violation:
-    return Violation(
-        query_id="query-1",
+) -> PurposeViolation:
+    return PurposeViolation(
         consumer_id=consumer_id,
         consumer_name=consumer_name,
         dataset_key=dataset_key,
@@ -28,18 +25,6 @@ def _make_violation(
         consumer_purposes=frozenset({"marketing"}),
         dataset_purposes=frozenset({"billing"}),
         reason="Purposes do not overlap",
-    )
-
-
-def _make_validation_result(
-    violations: list[Violation] | None = None,
-) -> ValidationResult:
-    viol = violations or []
-    return ValidationResult(
-        violations=viol,
-        is_compliant=len(viol) == 0,
-        total_accesses=max(len(viol), 1),
-        checked_at=datetime.now(timezone.utc),
     )
 
 
@@ -67,21 +52,20 @@ class AlwaysDenyEvaluator:
             decision=PolicyDecision.DENY,
             decisive_policy_key="test_deny_policy",
             decisive_policy_priority=200,
-            reason="Policy explicitly denies this access.",
         )
 
 
 def _filter_violations(
-    validation_result: ValidationResult,
+    violations: list[PurposeViolation],
     evaluator: object,
     system_fides_key: str | None = None,
-) -> ValidationResult:
+) -> list[PurposeViolation]:
     """Replicate the filtering logic from InProcessPBACEvaluationService."""
-    if validation_result.is_compliant:
-        return validation_result
+    if not violations:
+        return []
 
-    remaining: list[Violation] = []
-    for violation in validation_result.violations:
+    remaining: list[PurposeViolation] = []
+    for violation in violations:
         request = AccessEvaluationRequest(
             consumer_id=violation.consumer_id,
             consumer_name=violation.consumer_name,
@@ -95,12 +79,7 @@ def _filter_violations(
         if result.decision != PolicyDecision.ALLOW:
             remaining.append(violation)
 
-    return ValidationResult(
-        violations=remaining,
-        is_compliant=len(remaining) == 0,
-        total_accesses=validation_result.total_accesses,
-        checked_at=validation_result.checked_at,
-    )
+    return remaining
 
 
 # -- Tests -------------------------------------------------------------------
@@ -108,65 +87,46 @@ def _filter_violations(
 
 class TestFilterWithNoOp:
     def test_compliant_result_passthrough(self) -> None:
-        result = _make_validation_result(violations=[])
-        filtered = _filter_violations(result, NoOpPolicyEvaluator())
-        assert filtered.is_compliant is True
-        assert filtered.violations == []
+        filtered = _filter_violations([], NoOpPolicyEvaluator())
+        assert filtered == []
 
     def test_violations_preserved(self) -> None:
         violations = [_make_violation("ds_1"), _make_violation("ds_2")]
-        result = _make_validation_result(violations=violations)
-        filtered = _filter_violations(result, NoOpPolicyEvaluator())
-        assert len(filtered.violations) == 2
-        assert filtered.is_compliant is False
-
-    def test_total_accesses_preserved(self) -> None:
-        result = _make_validation_result(violations=[_make_violation()])
-        result.total_accesses = 5
-        filtered = _filter_violations(result, NoOpPolicyEvaluator())
-        assert filtered.total_accesses == 5
+        filtered = _filter_violations(violations, NoOpPolicyEvaluator())
+        assert len(filtered) == 2
 
 
 class TestFilterWithAllowEvaluator:
     def test_allowed_dataset_suppressed(self) -> None:
         violations = [_make_violation("ds_allowed"), _make_violation("ds_denied")]
-        result = _make_validation_result(violations=violations)
         evaluator = AllowSpecificDatasetEvaluator(allowed_datasets={"ds_allowed"})
-        filtered = _filter_violations(result, evaluator)
-        assert len(filtered.violations) == 1
-        assert filtered.violations[0].dataset_key == "ds_denied"
-        assert filtered.is_compliant is False
+        filtered = _filter_violations(violations, evaluator)
+        assert len(filtered) == 1
+        assert filtered[0].dataset_key == "ds_denied"
 
     def test_all_violations_suppressed(self) -> None:
         violations = [_make_violation("ds_a"), _make_violation("ds_b")]
-        result = _make_validation_result(violations=violations)
         evaluator = AllowSpecificDatasetEvaluator(allowed_datasets={"ds_a", "ds_b"})
-        filtered = _filter_violations(result, evaluator)
-        assert len(filtered.violations) == 0
-        assert filtered.is_compliant is True
+        filtered = _filter_violations(violations, evaluator)
+        assert len(filtered) == 0
 
     def test_no_violations_suppressed(self) -> None:
         violations = [_make_violation("ds_x")]
-        result = _make_validation_result(violations=violations)
         evaluator = AllowSpecificDatasetEvaluator(allowed_datasets={"ds_other"})
-        filtered = _filter_violations(result, evaluator)
-        assert len(filtered.violations) == 1
-        assert filtered.is_compliant is False
+        filtered = _filter_violations(violations, evaluator)
+        assert len(filtered) == 1
 
 
 class TestFilterWithDenyEvaluator:
     def test_deny_preserves_violations(self) -> None:
         violations = [_make_violation()]
-        result = _make_validation_result(violations=violations)
-        filtered = _filter_violations(result, AlwaysDenyEvaluator())
-        assert len(filtered.violations) == 1
-        assert filtered.is_compliant is False
+        filtered = _filter_violations(violations, AlwaysDenyEvaluator())
+        assert len(filtered) == 1
 
 
 class TestRequestConstruction:
     def test_request_fields_from_violation(self) -> None:
-        violation = Violation(
-            query_id="q1",
+        violation = PurposeViolation(
             consumer_id="c1",
             consumer_name="Analytics Team",
             dataset_key="postgres_main",

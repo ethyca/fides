@@ -1,16 +1,11 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraText as Text,
-  Divider,
-  Icons,
-  Popover,
-} from "fidesui";
+import { Button, Divider, Flex, Icons, Popover, Typography } from "fidesui";
 import { useMemo, useState } from "react";
 
 import CheckboxTree from "~/features/common/CheckboxTree";
 import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 import { DataCategory } from "~/types/api";
+
+const { Text } = Typography;
 
 interface Props {
   dataCategories: DataCategory[];
@@ -19,7 +14,7 @@ interface Props {
   buttonLabel?: string;
 }
 
-const DataCategoryDropdown = ({
+export const DataCategoryDropdown = ({
   dataCategories,
   checked,
   onChecked,
@@ -35,9 +30,9 @@ const DataCategoryDropdown = ({
   const label = buttonLabel ?? "Select data categories";
 
   const content = (
-    <Box maxHeight="50vh" minWidth="300px" maxW="full" overflowY="scroll">
-      <Box position="sticky" top={0} zIndex={1} backgroundColor="white" pt={1}>
-        <Box display="flex" justifyContent="space-between" px={2} mb={2}>
+    <div className="max-h-[50vh] min-w-[300px] max-w-full overflow-y-auto">
+      <div className="sticky top-0 z-10 pt-1">
+        <Flex justify="space-between" className="mb-2 px-2">
           <Button
             size="small"
             className="mr-2 !w-auto"
@@ -46,7 +41,7 @@ const DataCategoryDropdown = ({
           >
             Clear
           </Button>
-          <Text mr={2}>Data Categories</Text>
+          <Text className="mr-2">Data Categories</Text>
           <Button
             size="small"
             className="!w-auto"
@@ -55,17 +50,17 @@ const DataCategoryDropdown = ({
           >
             Done
           </Button>
-        </Box>
+        </Flex>
         <Divider />
-      </Box>
-      <Box px={2} data-testid="data-category-checkbox-tree">
+      </div>
+      <div className="px-2" data-testid="data-category-checkbox-tree">
         <CheckboxTree
           nodes={dataCategoryNodes}
           selected={checked}
           onSelected={onChecked}
         />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 
   return (
@@ -74,7 +69,6 @@ const DataCategoryDropdown = ({
       trigger="click"
       open={open}
       onOpenChange={setOpen}
-      styles={{ content: { padding: 0 } }}
     >
       <Button
         icon={<Icons.ChevronDown />}
@@ -87,5 +81,3 @@ const DataCategoryDropdown = ({
     </Popover>
   );
 };
-
-export default DataCategoryDropdown;

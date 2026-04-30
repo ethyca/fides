@@ -1,5 +1,4 @@
 import { AutoComplete, Icons, Input, InputRef } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -16,7 +15,7 @@ const isMac =
 const SHORTCUT_LABEL = isMac ? "⌘K" : "Ctrl+K";
 
 const SEARCH_ICON_STYLE = {
-  color: palette.FIDESUI_NEUTRAL_400,
+  color: "var(--fidesui-neutral-400)",
   fontSize: 14,
 };
 const DEBOUNCE_MS = 200;
@@ -130,7 +129,7 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
         onOpenChange={handleOpenChange}
         defaultActiveFirstOption
         className={styles.expandedAutoComplete}
-        popupClassName={styles.searchDropdown}
+        classNames={{ popup: { root: styles.searchDropdown } }}
         value={searchValue}
         onSearch={setSearchValue}
       >

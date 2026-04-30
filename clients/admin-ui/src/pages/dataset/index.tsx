@@ -17,7 +17,6 @@ import {
   Icons,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -26,6 +25,7 @@ import { usePollForClassifications } from "~/features/common/classifications";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
@@ -42,7 +42,7 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
-import EditDatasetDrawer from "~/features/dataset/EditDatasetDrawer";
+import { EditDatasetDrawer } from "~/features/dataset/EditDatasetDrawer";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 const columnHelper = createColumnHelper<Dataset>();
@@ -219,9 +219,9 @@ const DataSets: NextPage = () => {
             },
           ]}
           rightContent={
-            <NextLink href="/dataset/new" passHref legacyBehavior>
+            <RouterLink href="/dataset/new">
               <Button data-testid="create-dataset-btn">+ Add dataset</Button>
-            </NextLink>
+            </RouterLink>
           }
         />
 

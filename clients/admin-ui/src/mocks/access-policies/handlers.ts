@@ -1,17 +1,27 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
-import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
+import {
+  AccessPolicy,
+  Control,
+} from "~/features/access-policies/access-policies.slice";
 
-import { mockAccessPolicies, mockControlGroups } from "./data";
+import { mockAccessPolicies, mockControls } from "./data";
+import { generatedPoliciesForIndustry } from "./generated-policies";
+import {
+  GEO_DATA_USES,
+  INDUSTRY_DATA_USES,
+  INDUSTRY_LABELS,
+} from "./onboarding-data";
 
 /**
  * MSW handlers for access policy endpoints
  */
 export const accessPoliciesHandlers = () => {
   const apiBase = "/api/v1";
-  // Use a mutable copy so create/update/delete persist within a session
+  // Use mutable copies so create/update/delete persist within a session
   const policies: AccessPolicy[] = [...mockAccessPolicies];
+  const controls: Control[] = [...mockControls];
 
   return [
     // GET /api/v1/plus/access-policy - list all
@@ -34,11 +44,151 @@ export const accessPoliciesHandlers = () => {
       );
     }),
 
-    // GET /api/v1/plus/access-policy/control-group - list control groups
-    // Must be registered before /:id to avoid the wildcard matching "control-group"
-    rest.get(`${apiBase}/plus/access-policy/control-group`, (_req, res, ctx) =>
-      res(ctx.status(200), ctx.json(mockControlGroups)),
+    // GET /api/v1/plus/access-policy/presets/industries - available industries
+    rest.get(
+      `${apiBase}/plus/access-policy/presets/industries`,
+      (_req, res, ctx) =>
+        res(
+          ctx.status(200),
+          ctx.json({
+            items: Object.keys(INDUSTRY_DATA_USES).map((key) => ({
+              label: INDUSTRY_LABELS[key] ?? key,
+              value: key,
+            })),
+          }),
+        ),
     ),
+
+    // GET /api/v1/plus/access-policy/presets/config - saved config
+    rest.get(`${apiBase}/plus/access-policy/presets/config`, (_req, res, ctx) =>
+      res(
+        ctx.status(200),
+        ctx.json({ industry: "fintech", geographies: ["eea", "us"] }),
+      ),
+    ),
+
+    // GET /api/v1/plus/access-policy/presets/data-uses - data uses by industry + geography
+    rest.get(
+      `${apiBase}/plus/access-policy/presets/data-uses`,
+      (req, res, ctx) => {
+        const industry = req.url.searchParams.get("industry") ?? "";
+        const geographies = req.url.searchParams.getAll("geographies");
+
+        const industryUses = INDUSTRY_DATA_USES[industry] ?? [];
+        const geoUses = geographies.flatMap((geo) => GEO_DATA_USES[geo] ?? []);
+        const uses = [
+          ...industryUses,
+          ...geoUses.filter((u) => !industryUses.includes(u)),
+        ];
+
+        return res(ctx.status(200), ctx.json({ items: uses }));
+      },
+    ),
+
+    // POST /api/v1/plus/access-policy/presets/generate - generate policies from onboarding
+    rest.post(
+      `${apiBase}/plus/access-policy/presets/generate`,
+      (_req, res, ctx) => {
+        // Push generated policies into the mutable array so the list view picks them up
+        const generated = generatedPoliciesForIndustry();
+        generated.forEach((p) => policies.push(p));
+
+        return res(
+          ctx.delay(800),
+          ctx.status(200),
+          ctx.json({ status: "success" }),
+        );
+      },
+    ),
+
+    // GET /api/v1/plus/controls/:key - get single control
+    // Must be registered before the list handler so MSW matches the parameterized route
+    rest.get(`${apiBase}/plus/controls/:key`, (req, res, ctx) => {
+      const { key } = req.params;
+      const control = controls.find((c) => c.key === key);
+      if (!control) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `No control found with key '${key}'` }),
+        );
+      }
+      return res(ctx.status(200), ctx.json(control));
+    }),
+
+    // GET /api/v1/plus/controls - list controls
+    rest.get(`${apiBase}/plus/controls`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(controls)),
+    ),
+
+    // POST /api/v1/plus/controls - create control
+    rest.post(`${apiBase}/plus/controls`, async (req, res, ctx) => {
+      const body = await req.json();
+      const key =
+        body.key ??
+        body.label
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_|_$/g, "");
+      if (controls.find((c) => c.key === key)) {
+        return res(
+          ctx.status(409),
+          ctx.json({
+            detail: `Control with key '${key}' already exists`,
+          }),
+        );
+      }
+      const newControl: Control = {
+        key,
+        label: body.label,
+        description: body.description,
+      };
+      controls.push(newControl);
+      return res(ctx.status(201), ctx.json(newControl));
+    }),
+
+    // PATCH /api/v1/plus/controls/:key - update control
+    rest.patch(`${apiBase}/plus/controls/:key`, async (req, res, ctx) => {
+      const { key } = req.params;
+      const index = controls.findIndex((c) => c.key === key);
+      if (index === -1) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `No control found with key '${key}'` }),
+        );
+      }
+      const body = await req.json();
+      controls[index] = {
+        ...controls[index],
+        label: body.label,
+        description: body.description,
+      };
+      return res(ctx.status(200), ctx.json(controls[index]));
+    }),
+
+    // DELETE /api/v1/plus/controls/:key - delete control
+    rest.delete(`${apiBase}/plus/controls/:key`, (req, res, ctx) => {
+      const { key } = req.params;
+      const index = controls.findIndex((c) => c.key === key);
+      if (index === -1) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `No control found with key '${key}'` }),
+        );
+      }
+      const assignedCount = policies.filter((p) =>
+        p.controls?.includes(key as string),
+      ).length;
+      if (assignedCount > 0) {
+        return res(
+          ctx.status(409),
+          ctx.json({
+            detail: `Cannot delete control '${key}': it is assigned to ${assignedCount} ${assignedCount === 1 ? "policy" : "policies"}. Reassign or remove those policies first.`,
+          }),
+        );
+      }
+      controls.splice(index, 1);
+      return res(ctx.status(204));
+    }),
 
     // GET /api/v1/plus/access-policy/:id - get single
     rest.get(`${apiBase}/plus/access-policy/:id`, (req, res, ctx) => {
@@ -69,7 +219,6 @@ export const accessPoliciesHandlers = () => {
     }),
 
     // POST /api/v1/plus/access-policy/:id/reorder - reorder
-    // Must be registered before PUT /:id to avoid the wildcard matching "reorder"
     rest.post(
       `${apiBase}/plus/access-policy/:id/reorder`,
       async (req, res, ctx) => {
@@ -117,8 +266,8 @@ export const accessPoliciesHandlers = () => {
       },
     ),
 
-    // PUT /api/v1/plus/access-policy/:id - update
-    rest.put(`${apiBase}/plus/access-policy/:id`, async (req, res, ctx) => {
+    // PATCH /api/v1/plus/access-policy/:id - partial update
+    rest.patch(`${apiBase}/plus/access-policy/:id`, async (req, res, ctx) => {
       const { id } = req.params;
       const index = policies.findIndex((p) => p.id === id);
 

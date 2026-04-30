@@ -52,7 +52,7 @@ export const tagRender: TagRender = (props) => {
       onClose={onClose}
       /** Style required because of tailwind limitations and our ui package presets */
       style={{
-        marginInlineEnd: "calc((var(--ant-padding-xs) * 0.5))",
+        marginInlineEnd: "calc((var(--fidesui-padding-xs) * 0.5))",
       }}
       icon={isFromClassifier && <SparkleIcon />}
     >
@@ -108,7 +108,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
 }) => {
   const preferredDataCategories =
     "preferred_data_categories" in restProps
-      ? restProps.preferred_data_categories
+      ? (restProps.preferred_data_categories as string[] | null | undefined)
       : [];
 
   const onSelectDataCategory = (value: string) => {

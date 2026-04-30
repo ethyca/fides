@@ -4,8 +4,6 @@ import {
   ChakraVStack as VStack,
   Icons,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -23,8 +21,9 @@ import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
 import styles from "./NavMenu.module.scss";
 import NavSearch from "./NavSearch";
+import { RouterLink } from "./RouterLink";
 
-const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
+const NAV_BACKGROUND_COLOR = "var(--fidesui-brand-minos)";
 const NAV_WIDTH = "240px";
 const COLLAPSED_WIDTH = "80px";
 const OPENED_TOGGLES_LOCAL_STORAGE_KEY = "mainSideNavOpenKeys";
@@ -77,13 +76,14 @@ export const UnconnectedMainSideNav = ({
           .map((child) => ({
             key: child.path,
             label: (
-              <NextLink
+              <RouterLink
+                unstyled
                 href={child.path}
                 data-testid={`${child.title}-nav-link`}
                 className="ml-4 pl-0.5"
               >
                 {child.title}
-              </NextLink>
+              </RouterLink>
             ),
           })),
       ],

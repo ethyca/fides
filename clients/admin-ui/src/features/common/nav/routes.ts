@@ -19,6 +19,7 @@ export const DATASET_COLLECTION_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]";
 export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]/[...subfieldNames]";
+export const DATASET_GRAPH_EDITOR_ROUTE = "/dataset/[datasetId]/graph-editor";
 
 // Detection and discovery
 export const ACTION_CENTER_ROUTE = "/data-discovery/action-center";
@@ -58,6 +59,8 @@ export const PROPERTIES_ROUTE = "/properties";
 export const ADD_PROPERTY_ROUTE = "/properties/add-property";
 export const EDIT_PROPERTY_ROUTE = "/properties/[id]";
 
+export const API_CLIENTS_ROUTE = "/api-clients";
+export const API_CLIENT_DETAIL_ROUTE = "/api-clients/[id]";
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const USER_PROFILE_ROUTE = "/user-management/profile/[id]";
 export const USER_DETAIL_ROUTE = "/user-management/profile/[id]";
@@ -137,6 +140,9 @@ export const ACCESS_POLICIES_ROUTE = "/access-policies";
 export const ACCESS_POLICIES_ONBOARDING_ROUTE = "/access-policies/onboarding";
 export const ACCESS_POLICIES_NEW_ROUTE = "/access-policies/new";
 export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
+export const CONTROLS_ROUTE = "/access-policies/controls";
+export const CONTROLS_NEW_ROUTE = "/access-policies/controls/new";
+export const CONTROLS_EDIT_ROUTE = "/access-policies/controls/[controlKey]";
 
 // Access Control (Detection & Discovery)
 export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";

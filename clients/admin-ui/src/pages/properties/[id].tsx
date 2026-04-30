@@ -14,13 +14,16 @@ import {
 import PropertyForm, {
   PropertyFormValues,
 } from "~/features/properties/PropertyForm";
+import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
   const message = useMessage();
   const router = useRouter();
   const { id: propertyId } = router.query;
-  const { data, error } = useGetPropertyByIdQuery(propertyId as string);
+  const { data, error, isLoading } = useGetPropertyByIdQuery(
+    propertyId as string,
+  );
   const [updateProperty] = useUpdatePropertyMutation();
 
   const handleSubmit = async (values: PropertyFormValues) => {
@@ -62,8 +65,12 @@ const EditPropertyPage: NextPage = () => {
           },
         ]}
       />
-      <div style={{ maxWidth: 720 }}>
-        <PropertyForm property={data} handleSubmit={handleSubmit} />
+      <div className="max-w-[720px]">
+        <PropertyForm
+          property={data}
+          isLoading={isLoading}
+          handleSubmit={handleSubmit}
+        />
       </div>
     </Layout>
   );

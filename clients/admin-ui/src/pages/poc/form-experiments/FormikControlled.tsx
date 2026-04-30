@@ -15,7 +15,6 @@ import {
   Tag,
   Typography,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { Form, Formik } from "formik";
 
 import { initialValues } from "../../../features/poc/constants";
@@ -150,8 +149,8 @@ export const FormikControlledPOC = () => (
           <Title level={4}>Controlled Values</Title>
           <Card
             style={{
-              backgroundColor: palette.FIDESUI_MINOS,
-              color: palette.FIDESUI_CORINTH,
+              backgroundColor: "var(--fidesui-brand-minos)",
+              color: "var(--fidesui-brand-corinth)",
             }}
           >
             <pre>

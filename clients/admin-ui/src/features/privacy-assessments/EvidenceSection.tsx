@@ -1,5 +1,4 @@
 import { Badge, Collapse, Flex, Text } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 import { EvidenceCardGroup } from "./EvidenceCardGroup";
 import styles from "./EvidenceSection.module.scss";
@@ -58,7 +57,7 @@ export const EvidenceSection = ({
                   <Text strong>System-derived data</Text>
                   <Badge
                     count={systemItems.length}
-                    color={palette.FIDESUI_MINOS}
+                    color="var(--fidesui-brand-minos)"
                   />
                 </Flex>
                 <Text type="secondary" size="sm">
@@ -81,7 +80,7 @@ export const EvidenceSection = ({
                   <Text strong>Human input</Text>
                   <Badge
                     count={humanItems.length}
-                    color={palette.FIDESUI_MINOS}
+                    color="var(--fidesui-brand-minos)"
                   />
                 </Flex>
                 <Text type="secondary" size="sm">

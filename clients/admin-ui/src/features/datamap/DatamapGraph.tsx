@@ -11,7 +11,6 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
 import DatamapSystemNode from "~/features/datamap/DatamapSystemNode";
@@ -203,7 +202,7 @@ const DatamapGraph = ({
     >
       <div
         className="size-full"
-        style={{ backgroundColor: palette.FIDESUI_BG_CORINTH }}
+        style={{ backgroundColor: "var(--fidesui-brand-bg-corinth)" }}
       >
         <ReactFlow
           nodes={nodes}
@@ -221,7 +220,7 @@ const DatamapGraph = ({
           proOptions={{ hideAttribution: true }}
         >
           <Background
-            color={palette.FIDESUI_NEUTRAL_100}
+            color="var(--fidesui-neutral-100)"
             variant={BackgroundVariant.Dots}
             size={3}
           />

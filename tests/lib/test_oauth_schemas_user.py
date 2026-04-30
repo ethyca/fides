@@ -30,15 +30,45 @@ def test_bad_password(password, message):
     assert message in str(excinfo.value)
 
 
-def test_user_create_user_name_with_spaces():
-    with pytest.raises(ValueError):
+@pytest.mark.parametrize(
+    "username",
+    ["some user", "user&name", "user=name", "user<name", "", "a" * 101, "a", "aa"],
+)
+def test_user_create_invalid_username(username):
+    with pytest.raises(ValueError, match="Usernames must be"):
         UserCreate(
-            username="some user",
+            username=username,
             password=str_to_b64_str("Testtest1!"),
             email_address="test.user@ethyca.com",
             first_name="test",
             last_name="test",
         )
+
+
+@pytest.mark.parametrize(
+    "username",
+    [
+        "testuser",
+        "test-user",
+        "test_user",
+        "Test_User-123",
+        "john.doe",
+        "abc",
+        "a" * 100,
+        "john.doe@example.com",
+        "john+doe@example.com",
+        "johnny@example.uy",
+    ],
+)
+def test_user_create_valid_username(username):
+    user = UserCreate(
+        username=username,
+        password=str_to_b64_str("Testtest1!"),
+        email_address="test.user@ethyca.com",
+        first_name="test",
+        last_name="test",
+    )
+    assert user.username == username
 
 
 def test_user_create_invalid_email():

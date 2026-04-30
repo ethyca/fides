@@ -35,7 +35,10 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
 
 const getItemKey = <T,>(item: T, index: number): React.Key => {
   if (item && typeof item === "object" && "key" in item) {
-    return (item as { key: React.Key }).key;
+    const { key } = item as Record<string, unknown>;
+    if (typeof key === "string" || typeof key === "number") {
+      return key;
+    }
   }
   return index;
 };
@@ -83,7 +86,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
           return;
         }
 
-        const newSelectedRowKeys = checked
+        const newSelectedRowKeys: React.Key[] = checked
           ? [...selectedRowKeys, itemKey]
           : selectedRowKeys.filter((key) => key !== itemKey);
 
@@ -206,7 +209,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
             checked={isSelected}
             onChange={(e) => handleCheckboxChange(itemKey, e.target.checked)}
             {...checkboxProps}
-            aria-label={`Select item ${itemKey}`}
+            aria-label={`Select item ${String(itemKey)}`}
             className={enableKeyboardShortcuts ? "ml-2" : undefined} // active rows need a bit of padding to the left or it will be too close to edge
           />
         );
@@ -244,7 +247,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
  * Features:
  * - Keyboard navigation: j (down), k (up), space (toggle selection), escape (clear active)
  * - Automatic scroll-into-view for active items (uses data-listitem attribute)
- * - Automatic active item styling with `var(--ant-color-primary-bg)` background color
+ * - Automatic active item styling with `var(--fidesui-color-primary-bg)` background color
  * - Active state provided to renderItem for additional custom styling
  * - Optional item selection with checkboxes
  * - onActiveItemChange callback to track currently active item

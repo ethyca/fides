@@ -66,6 +66,7 @@ const useSearchForm = <RequestData, FormType>({
       ...searchForm,
     },
     requestData: translate(searchForm as FormType),
+    setSearchForm,
   };
 };
 

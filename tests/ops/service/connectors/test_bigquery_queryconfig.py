@@ -95,12 +95,12 @@ class TestBigQueryQueryConfig:
                 BigQueryNamespaceMeta(
                     project_id="cool_project", dataset_id="first_dataset"
                 ),
-                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
+                "SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"project_id": "cool_project", "dataset_id": "first_dataset"},
-                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
+                "SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
             ),
             (
                 {
@@ -108,11 +108,11 @@ class TestBigQueryQueryConfig:
                     "dataset_id": "first_dataset",
                     "connection_type": "bigquery",
                 },
-                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
+                "SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
             ),
             (
                 None,
-                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `customer` WHERE (`email` = :email)",
+                "SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `customer` WHERE (`email` = :email)",
             ),
         ],
     )
@@ -137,7 +137,7 @@ class TestBigQueryQueryConfig:
                     "email": ["customer-1@example.com", "customer-2@example.com"]
                 }
             ).text
-            == "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `customer` WHERE (`email` IN (:email_in_stmt_generated_0, :email_in_stmt_generated_1))"
+            == "SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `customer` WHERE (`email` IN (:email_in_stmt_generated_0, :email_in_stmt_generated_1))"
         )
 
     def test_generate_query_with_nested_identity(

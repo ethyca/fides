@@ -1,17 +1,20 @@
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, Any
 
+from loguru import logger
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, func, orm
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.attachment import AttachmentReferenceType
 from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment, AttachmentReference
+    from fides.api.models.correspondence_metadata import CorrespondenceMetadata
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
 
@@ -20,12 +23,23 @@ class CommentType(str, EnumType):
     """
     Enum for comment types. Indicates comment usage.
 
-    - notes are internal comments.
-    - reply is reserved for future use and is not currently supported
+    - note: internal comments
+    - reply: reserved for future use
+    - message_to_subject: outbound correspondence to data subject
+    - reply_from_subject: inbound reply from data subject
     """
 
     note = "note"
     reply = "reply"
+    message_to_subject = "message_to_subject"
+    reply_from_subject = "reply_from_subject"
+
+
+# Correspondence comments are protected from deletion for audit purposes.
+# The TLA+ spec (CorrespondenceConcurrency.tla) relies on this guard.
+CORRESPONDENCE_COMMENT_TYPES = frozenset(
+    {CommentType.message_to_subject, CommentType.reply_from_subject}
+)
 
 
 class CommentReferenceType(str, EnumType):
@@ -96,16 +110,47 @@ class Comment(Base):
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
     )
+    parent_id = Column(
+        String(255),
+        ForeignKey("comment.id", name="comment_parent_id_fkey", ondelete="SET NULL"),
+        nullable=True,
+    )
     # Not all users in the system have a username, and users can be deleted.
     # Store a non-normalized copy of username for these cases.
     username = Column(String, nullable=True)
-    comment_text = Column(String, nullable=False)
+    comment_text = Column(encrypted_type(type_in=String()), nullable=False)
     comment_type = Column(EnumColumn(CommentType), nullable=False)
+
+    __table_args__ = (Index("ix_comment_parent_id", "parent_id"),)
+
+    parent = relationship(
+        "Comment",
+        remote_side="Comment.id",
+        foreign_keys=[parent_id],
+        back_populates="replies",
+        uselist=False,
+    )
+
+    replies = relationship(
+        "Comment",
+        foreign_keys=[parent_id],
+        back_populates="parent",
+        uselist=True,
+        order_by="Comment.created_at",
+        passive_deletes=True,
+    )
 
     user = relationship(
         "FidesUser",
         lazy="selectin",
         uselist=False,
+    )
+
+    correspondence_metadata = relationship(
+        "CorrespondenceMetadata",
+        back_populates="comment",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
     references = relationship(
@@ -129,14 +174,59 @@ class Comment(Base):
     )
 
     def delete(self, db: Session) -> None:
-        """Delete the comment and all associated references."""
-        # Delete attachments associated with this comment
+        """Delete the comment, its replies, and all associated references.
+
+        Correspondence comments (message_to_subject, reply_from_subject) are
+        protected from deletion to preserve the audit trail. Attempting to
+        delete one raises ValueError.
+
+        Replies are deleted explicitly rather than via ON DELETE CASCADE to ensure
+        each reply's attachments and references are cleaned up properly. The FK
+        uses SET NULL as a safety net: if a comment is deleted outside this method,
+        replies become orphans rather than being silently cascade-deleted without
+        attachment cleanup.
+
+        Uses iterative traversal to avoid unbounded recursion and session state
+        hazards from lazy loading mid-delete.
+        """
+        if self.comment_type in CORRESPONDENCE_COMMENT_TYPES:
+            raise ValueError(
+                f"Cannot delete correspondence comment (type={self.comment_type}). "
+                "Correspondence comments are retained for audit purposes."
+            )
+
+        # Re-fetch from the DB to guarantee a session-bound instance.
+        # Callers (e.g. test fixture teardown) may hold a detached reference,
+        # which would raise DetachedInstanceError on any lazy relationship access.
+        comment = db.query(Comment).filter(Comment.id == self.id).first()
+        if comment is None:
+            logger.debug("Comment {} already deleted, skipping", self.id)
+            return
+
+        # Collect all descendants iteratively (breadth-first)
+        to_delete = []
+        stack = list(comment.replies)
+        while stack:
+            node = stack.pop()
+            stack.extend(node.replies)
+            to_delete.append(node)
+
+        # Delete children before parents (reverse of discovery order)
+        for node in reversed(to_delete):
+            AttachmentService(db).delete_for_reference(
+                node.id, AttachmentReferenceType.comment
+            )
+            for reference in node.references:
+                reference.delete(db)
+            db.delete(node)
+
+        # Delete self
         AttachmentService(db).delete_for_reference(
-            self.id, AttachmentReferenceType.comment
+            comment.id, AttachmentReferenceType.comment
         )
-        for reference in self.references:
+        for reference in comment.references:
             reference.delete(db)
-        db.delete(self)
+        db.delete(comment)
 
     @staticmethod
     def delete_comments_for_reference_and_type(
@@ -157,16 +247,22 @@ class Comment(Base):
                 db, privacy_request.id, CommentReferenceType.privacy_request
             )``
         """
-        # Query comments explicitly to avoid lazy loading
+        # Query comments explicitly to avoid lazy loading.
+        # Correspondence comments are excluded — they are retained for audit.
         comments = (
             db.query(Comment)
             .join(CommentReference)
             .filter(
                 CommentReference.reference_id == reference_id,
                 CommentReference.reference_type == reference_type,
+                Comment.comment_type.notin_(CORRESPONDENCE_COMMENT_TYPES),
             )
             .all()
         )
 
         for comment in comments:
-            comment.delete(db)
+            # If a reply has its own CommentReference (e.g. ENG-3299
+            # correspondence types), it may appear in the query AND be
+            # reached via a parent's delete() BFS — skip already-deleted.
+            if comment not in db.deleted:
+                comment.delete(db)

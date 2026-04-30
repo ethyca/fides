@@ -23,6 +23,7 @@ def messaging_template_with_property_disabled(db: Session, property_a) -> Genera
     }
     data = {
         "content": content,
+        "label": "Subject identity verification",
         "properties": [{"id": property_a.id, "name": property_a.name}],
         "is_enabled": False,
         "type": template_type,
@@ -44,6 +45,7 @@ def messaging_template_no_property_disabled(db: Session) -> Generator:
     }
     data = {
         "content": content,
+        "label": "Subject identity verification",
         "properties": [],
         "is_enabled": False,
         "type": template_type,
@@ -65,6 +67,7 @@ def messaging_template_no_property(db: Session) -> Generator:
     }
     data = {
         "content": content,
+        "label": "Subject identity verification",
         "properties": [],
         "is_enabled": True,
         "type": template_type,
@@ -88,6 +91,7 @@ def messaging_template_subject_identity_verification(
     }
     data = {
         "content": content,
+        "label": "Subject identity verification",
         "properties": [{"id": property_a.id, "name": property_a.name}],
         "is_enabled": True,
         "type": template_type,
@@ -109,6 +113,7 @@ def messaging_template_privacy_request_receipt(db: Session, property_a) -> Gener
     }
     data = {
         "content": content,
+        "label": "Privacy request received",
         "properties": [{"id": property_a.id, "name": property_a.name}],
         "is_enabled": True,
         "type": template_type,

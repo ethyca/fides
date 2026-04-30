@@ -6,12 +6,13 @@ import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 import { Rule } from "./types";
 
-export const statusPropMap: {
-  [key in PrivacyRequestStatus]: {
+export const statusPropMap: Record<
+  PrivacyRequestStatus,
+  {
     label: string;
     colorScheme: CUSTOM_TAG_COLOR;
-  };
-} = {
+  }
+> = {
   approved: {
     colorScheme: CUSTOM_TAG_COLOR.SUCCESS,
     label: "Approved",
@@ -125,7 +126,11 @@ export const RequestDaysLeftCell = ({
 
   return (
     <BadgeCell
-      value={includeText ? `${daysLeft} days left` : daysLeft.toString()}
+      value={
+        includeText
+          ? `${Math.abs(daysLeft)} days ${daysLeft < 0 ? "overdue" : "left"}`
+          : daysLeft.toString()
+      }
       color={colorScheme}
     />
   );

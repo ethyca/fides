@@ -12,22 +12,25 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/fides.d.ts",
       "module": "./dist/fides.mjs",
       "import": "./dist/fides.mjs",
-      "require": "./dist/fides.js",
-      "types": "./dist/fides.d.ts"
+      "require": "./dist/fides.js"
     },
     "./headless": {
+      "types": "./dist/fides-headless.d.ts",
       "module": "./dist/fides-headless.mjs",
       "import": "./dist/fides-headless.mjs",
-      "require": "./dist/fides-headless.js",
-      "types": "./dist/fides-headless.d.ts"
+      "require": "./dist/fides-headless.js"
     },
     "./tcf": {
+      "types": "./dist/fides-tcf.d.ts",
       "module": "./dist/fides-tcf.mjs",
       "import": "./dist/fides-tcf.mjs",
-      "require": "./dist/fides-tcf.js",
-      "types": "./dist/fides-tcf.d.ts"
+      "require": "./dist/fides-tcf.js"
+    },
+    "./types": {
+      "types": "./dist/fides-types.d.ts"
     }
   },
   "scripts": {
@@ -89,7 +92,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.31",
-    "prettier": "^3.3.3",
+    "prettier": "^3.8.3",
     "rollup": "^4.44.2",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-dts": "^6.1.1",

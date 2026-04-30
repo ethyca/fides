@@ -9,7 +9,6 @@ import {
   List,
   Pagination,
   Text,
-  Tooltip,
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
@@ -24,6 +23,7 @@ import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
 import { useInfrastructureSystemsBulkActions } from "../hooks/useInfrastructureSystemsBulkActions";
 import { useInfrastructureSystemsSelection } from "../hooks/useInfrastructureSystemsSelection";
+import { SystemDetailsDrawer } from "../SystemDetailsDrawer";
 import {
   getBulkActionsMenuItems,
   shouldAllowIgnore,
@@ -47,7 +47,6 @@ export const DiscoveredInfrastructureSystemsTable = ({
     paginationProps,
     activeTab,
     diffStatusFilters,
-    rowClickUrl,
     getRecordKey,
     refetch,
   } = useDiscoveredInfrastructureSystemsTable({
@@ -149,7 +148,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
     <Flex vertical gap="medium" className="h-full overflow-hidden">
       <Alert
         showIcon
-        message="Fides detected the following systems"
+        title="Fides detected the following systems"
         description="Some may not yet be in your inventory. Review each system's detected data use — approve to add it to your inventory, or ignore if it's not relevant."
         closable
       />
@@ -173,21 +172,13 @@ export const DiscoveredInfrastructureSystemsTable = ({
             <Button
               type="primary"
               icon={<Icons.ChevronDown />}
-              iconPosition="end"
+              iconPlacement="end"
               disabled={!hasSelectedRows || isBulkActionInProgress}
               loading={isBulkActionInProgress}
             >
               Actions
             </Button>
           </Dropdown>
-          <Tooltip title="Refresh">
-            <Button
-              icon={<Icons.Renew />}
-              aria-label="Refresh"
-              onClick={refetch}
-              loading={isLoading}
-            />
-          </Tooltip>
         </Flex>
       </Flex>
       <Flex gap="medium" align="center">
@@ -229,7 +220,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
               item={item}
               selected={isItemSelected(item)}
               onSelect={handleSelectItem}
-              rowClickUrl={rowClickUrl}
+              // rowClickUrl={rowClickUrl}
               monitorId={monitorId}
               activeTab={activeTab as ActionCenterTabHash | null}
               allowIgnore={allowIgnore}
@@ -250,6 +241,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
           paginationProps.pageSizeOptions?.[0]
         }
       />
+      <SystemDetailsDrawer monitorId={monitorId} />
     </Flex>
   );
 };

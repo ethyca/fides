@@ -24,3 +24,9 @@ class IntegrationFeature(StrEnum):
 
     # Enables conditions configuration for manual task creation - shows "Conditions" tab
     CONDITIONS = "CONDITIONS"
+
+    # Enables query log monitoring - shows "Query logging" tab
+    QUERY_LOGGING = "QUERY_LOGGING"
+
+    # Enables identity group provider configuration - shows "Identity resolution" tab
+    IDENTITY_RESOLUTION = "IDENTITY_RESOLUTION"

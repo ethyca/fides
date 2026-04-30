@@ -9,10 +9,10 @@ import {
   Input,
   Typography,
   useMessage,
+  usePrefersReducedMotion,
 } from "fidesui";
 import { motion } from "motion/react";
 import type { NextPage } from "next";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import { useEffect, useMemo, useState } from "react";
@@ -28,7 +28,7 @@ import {
 } from "~/features/auth";
 import { passwordRules as strongPasswordRules } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
-import { usePrefersReducedMotion } from "~/features/common/hooks";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 import { RTKErrorResult } from "~/types/errors/api";
 
@@ -169,21 +169,25 @@ const useLogin = () => {
     } catch (error) {
       setShowAnimation(false);
       // eslint-disable-next-line no-console
-      console.log(error);
-      let defaultErrorMsg: string;
+      console.error(error);
+      let errorMsg: string;
       if (isFromInvite) {
-        defaultErrorMsg = "Setup failed. Please try the invite link again.";
+        // Invite and reset-password flows may surface backend error detail
+        // (e.g. expired/invalid token) since it is actionable to the user.
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Setup failed. Please try the invite link again.",
+        );
       } else if (isResetPassword) {
-        defaultErrorMsg =
-          "Password reset failed. The link may have expired. Please request a new one.";
+        errorMsg = getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Password reset failed. The link may have expired. Please request a new one.",
+        );
       } else {
-        defaultErrorMsg =
-          "Login failed. Please check your credentials and try again.";
+        // Always show a generic message for standard login failures to avoid
+        // leaking backend details (SSO config, authorization state, etc.)
+        errorMsg = "Login failed. Please check your credentials and try again.";
       }
-      const errorMsg = getErrorMessage(
-        error as RTKErrorResult["error"],
-        defaultErrorMsg,
-      );
       message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
@@ -315,7 +319,13 @@ const Login: NextPage = () => {
           justify="center"
           className="px-6 py-12"
         >
-          <Image src="/logo.svg" alt="Fides logo" width={205} height={46} />
+          <Image
+            src="/logo.svg"
+            alt="Fides logo"
+            width={205}
+            height={46}
+            loading="eager"
+          />
           <Flex vertical align="center" gap="large">
             <Typography.Title level={1}>
               {isResetPassword
@@ -385,14 +395,14 @@ const Login: NextPage = () => {
                             className="h-8 w-full"
                             animate={
                               showAnimation
-                                ? { width: ["100%", "32px"] }
-                                : { width: ["32px", "100%"] }
+                                ? { width: ["100%", "32px"], opacity: [1, 0.5] }
+                                : { width: ["32px", "100%"], opacity: [0.5, 1] }
                             }
                           >
                             <Button
                               htmlType="submit"
                               type="primary"
-                              disabled={!canSubmit}
+                              disabled={!canSubmit || showAnimation}
                               data-testid="sign-in-btn"
                               loading={isSubmitting}
                               className="w-full"
@@ -404,14 +414,14 @@ const Login: NextPage = () => {
                         </Flex>
                         {!isFromInvite && !isResetPassword && (
                           <Flex justify="center" className="mt-4">
-                            <Link href="/forgot-password">
+                            <RouterLink href="/forgot-password">
                               <Button
                                 type="link"
                                 data-testid="forgot-password-btn"
                               >
                                 Forgot password?
                               </Button>
-                            </Link>
+                            </RouterLink>
                           </Flex>
                         )}
                       </>

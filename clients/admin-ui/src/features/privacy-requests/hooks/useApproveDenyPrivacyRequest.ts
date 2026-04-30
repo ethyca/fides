@@ -1,5 +1,6 @@
 import { useChakraDisclosure as useDisclosure, useMessage } from "fidesui";
 
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import { PrivacyRequestEntity } from "../types";
@@ -17,11 +18,20 @@ const useApproveDenyPrivacyRequest = ({
   });
 
   const message = useMessage();
+  const { data: config } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const identityVerificationRequired =
+    config?.execution?.subject_identity_verification_required ?? false;
 
   const isPendingStatus =
     privacyRequest.status === PrivacyRequestStatus.PENDING;
   const isDuplicateStatus =
     privacyRequest.status === PrivacyRequestStatus.DUPLICATE;
+  const isUnverifiedDuplicate =
+    isDuplicateStatus &&
+    !privacyRequest.identity_verified_at &&
+    identityVerificationRequired;
   const isAwaitingPreApproval =
     privacyRequest.status === PrivacyRequestStatus.AWAITING_PRE_APPROVAL;
   const isPreApprovalNotEligible =
@@ -29,7 +39,7 @@ const useApproveDenyPrivacyRequest = ({
 
   const showAction =
     isPendingStatus ||
-    isDuplicateStatus ||
+    (isDuplicateStatus && !(action === "approve" && isUnverifiedDuplicate)) ||
     isAwaitingPreApproval ||
     isPreApprovalNotEligible;
   const modal = useDisclosure();

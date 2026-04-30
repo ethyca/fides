@@ -183,6 +183,7 @@ export type {
   FormInstance,
   FormItemProps,
   FormProps,
+  FormRule,
   GetProps,
   InputProps as InputPropsOriginal,
   InputRef,
@@ -197,6 +198,7 @@ export type {
   TableProps,
   TabsProps,
   TooltipProps,
+  TransferProps,
   TreeDataNode,
   TreeProps,
   UploadFile,
@@ -217,7 +219,6 @@ export {
   Divider,
   Empty,
   Flex,
-  Form,
   Image,
   InputNumber,
   Layout,
@@ -243,6 +244,7 @@ export {
   Spin as TableSpinner,
   Tabs,
   TimePicker,
+  Transfer,
   Tree,
   TreeSelect,
   Upload,
@@ -272,10 +274,10 @@ export {
   CustomAlert as Alert,
   CustomAvatar as Avatar,
   CustomCard as Card,
-  CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomDrawer as Drawer,
   CustomDropdown as Dropdown,
+  CustomForm as Form,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
@@ -356,6 +358,7 @@ export type {
 } from "./components/charts/StackedBarChart";
 export { StackedBarChart } from "./components/charts/StackedBarChart";
 export { XAxisTick } from "./components/charts/XAxisTick";
+export { CopyTooltip } from "./components/data-display/CopyTooltip";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
@@ -433,6 +436,21 @@ export {
 export { theme as antTheme } from "antd/lib";
 
 /**
+ * Ant Design X components (@ant-design/x)
+ *
+ * Imported from the specific sub-paths rather than the package index for two
+ * reasons:
+ *   1. The index eagerly loads code-highlighter, which pulls in mermaid and
+ *      react-syntax-highlighter (and refractor, which ships ESM that Jest
+ *      can't parse without transform config).
+ *   2. Using `/lib` (CJS) keeps the module identity consistent with antd's
+ *      CJS re-exports above.
+ */
+export type { BubbleItemType } from "@ant-design/x/lib/bubble";
+export { default as Bubble } from "@ant-design/x/lib/bubble";
+export { default as Sender } from "@ant-design/x/lib/sender";
+
+/**
  * Custom ChakraUI Components (deprecated)
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
@@ -450,4 +468,9 @@ export type {
   ThemeModeProviderProps,
   UseFormModalOptions,
 } from "./hooks";
-export { ThemeModeProvider, useFormModal, useThemeMode } from "./hooks";
+export {
+  ThemeModeProvider,
+  useFormModal,
+  usePrefersReducedMotion,
+  useThemeMode,
+} from "./hooks";

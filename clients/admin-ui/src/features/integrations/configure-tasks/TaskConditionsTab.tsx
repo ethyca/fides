@@ -69,10 +69,13 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
     ) {
       const firstGroup = manualTaskConfig.dependency_conditions[0];
       // Filter to only ConditionLeaf items (not nested groups)
-      const leafConditions = firstGroup.conditions.filter(
-        (condition): condition is ConditionLeaf =>
-          "field_address" in condition && "operator" in condition,
-      );
+      const leafConditions =
+        "conditions" in firstGroup
+          ? firstGroup.conditions.filter(
+              (condition): condition is ConditionLeaf =>
+                "field_address" in condition && "operator" in condition,
+            )
+          : [];
       setConditions(leafConditions);
     } else {
       setConditions([]);
@@ -211,7 +214,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
       {/* Warning banner for mixed consent + access/erasure configurations */}
       {hasConsentTasks && hasAccessOrErasureTasks && (
         <Alert
-          message="Consent task limitations"
+          title="Consent task limitations"
           description="Dataset field conditions and some privacy request fields (like due date) are not evaluated for consent manual tasks. These conditions will only apply to access and erasure tasks."
           type="warning"
           showIcon

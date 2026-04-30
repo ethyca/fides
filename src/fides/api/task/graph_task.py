@@ -886,6 +886,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return False
 
+        logger.info(
+            "Sending consent request to connector {}",
+            self.connector.configuration.key,
+        )
         output: bool = self.connector.run_consent_request(
             self.execution_node,
             self.resources.policy,
@@ -895,6 +899,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.resources.session,
         )
         self.request_task.consent_sent = output
+        logger.info(
+            "Consent request to {} completed, consent_sent={}",
+            self.connector.configuration.key,
+            output,
+        )
         self.log_end(ActionType.consent)
         return output
 
@@ -1076,3 +1085,33 @@ def build_consent_dataset_graph(
         consent_datasets.extend(manual_task_graphs)
 
     return DatasetGraph(*consent_datasets)
+
+
+def build_consent_identity_enrichment_graph(
+    datasets: List[DatasetConfig],
+) -> DatasetGraph:
+    """
+    Build an access-style graph from consent-enabled non-SaaS datasets
+    for identity resolution before consent propagation.
+
+    Uses full collection definitions (not stubbed) so the traversal
+    can follow identity fields across collections.
+
+    Only includes connections where enabled_actions explicitly contains
+    ActionType.consent. A None value (default) does NOT qualify —
+    the customer must opt in.
+    """
+    enrichment_datasets: List[GraphDataset] = []
+    for dataset_config in datasets:
+        connection_config: ConnectionConfig = dataset_config.connection_config
+        if connection_config.disabled:
+            continue
+        if connection_config.connection_type == ConnectionType.saas:
+            continue
+        if (
+            connection_config.enabled_actions is not None
+            and ActionType.consent in connection_config.enabled_actions
+        ):
+            enrichment_datasets.append(dataset_config.get_graph())
+
+    return DatasetGraph(*enrichment_datasets)

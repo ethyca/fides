@@ -1,0 +1,6 @@
+-- dave@demo.example is registered (Onboarding) but declares no purposes.
+--
+-- Gap (UNCONFIGURED_CONSUMER): the engine emits UNRESOLVED_IDENTITY and
+-- the CLI reclassifies it to UNCONFIGURED_CONSUMER because the consumer
+-- was found but its purposes list is empty.
+SELECT page_path FROM page_views LIMIT 100;

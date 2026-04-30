@@ -1,23 +1,12 @@
-import { Button, ChakraBox as Box, ChakraFlex as Flex } from "fidesui";
-import { Form, Formik, useFormikContext } from "formik";
+import { Button, Card, Flex, Form, Input, Select, Space, Spin } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useAppSelector } from "~/app/hooks";
-import FormSection from "~/features/common/form/FormSection";
-import {
-  CustomClipboardCopy,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { enumToOptions } from "~/features/common/helpers";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
-import ScrollableList from "~/features/common/ScrollableList";
-import {
-  selectAllExperienceConfigs,
-  selectPage,
-  selectPageSize,
-  useGetAllExperienceConfigsQuery,
-} from "~/features/privacy-experience/privacy-experience.slice";
+import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
 import {
   MinimalMessagingTemplate,
   MinimalPrivacyExperienceConfig,
@@ -26,7 +15,6 @@ import {
   PropertyType,
 } from "~/types/api";
 
-import { ControlledSelect } from "../common/form/ControlledSelect";
 import DeletePropertyModal from "./DeletePropertyModal";
 import { DEFAULT_PRIVACY_CENTER_CONFIG } from "./privacy-center/helpers";
 import PathsFieldArray from "./privacy-center/PathsFieldArray";
@@ -35,12 +23,15 @@ import PrivacyCenterConfigForm from "./privacy-center/PrivacyCenterConfigForm";
 interface Props {
   property?: Property;
   handleSubmit: (values: PropertyFormValues) => Promise<void>;
+  isLoading?: boolean;
+  handleSubmit: (values: FormValues) => Promise<void>;
 }
 
 export interface PropertyFormValues {
   id?: string | null;
   name: string;
   type: PropertyType;
+  paths: Array<string>;
   messaging_templates?: Array<MinimalMessagingTemplate> | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
   privacy_center_config: PrivacyCenterConfig;
@@ -59,32 +50,49 @@ const ExperiencesFormSection = () => {
   });
   const experienceConfigs = useAppSelector(selectAllExperienceConfigs);
   const { values, setFieldValue } = useFormikContext<PropertyFormValues>();
-
-  return (
-    <FormSection title="Experiences">
-      <ScrollableList
-        addButtonLabel="Add experience"
-        idField="id"
-        nameField="name"
-        allItems={experienceConfigs.map((exp) => ({
-          id: exp.id,
-          name: exp.name,
-        }))}
-        values={values.experiences ?? []}
-        setValues={(newValues) => setFieldValue("experiences", newValues)}
-        draggable
-        baseTestId="experience"
-      />
-    </FormSection>
-  );
-};
-
-const PropertyForm = ({ property, handleSubmit }: Props) => {
+export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
   const router = useRouter();
+  const [form] = Form.useForm<FormValues>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCancel = () => {
-    router.push(PROPERTIES_ROUTE);
-  };
+  // Load experience configs for the multi-select
+  const { data: experienceData, isLoading: experiencesLoading } =
+    useGetAllExperienceConfigsQuery({
+      page: 1,
+      size: 100,
+    });
+  const experienceConfigs = useMemo(
+    () => experienceData?.items ?? [],
+    [experienceData],
+  );
+
+  const experienceOptions = useMemo(
+    () => experienceConfigs.map((exp) => ({ value: exp.id, label: exp.name })),
+    [experienceConfigs],
+  );
+
+  // Transform selected IDs back to MinimalPrivacyExperienceConfig objects
+  const handleExperienceChange = useCallback(
+    (selectedIds: string[]) =>
+      selectedIds
+        .map((id) => {
+          const config = experienceConfigs.find((e) => e.id === id);
+          return config ? { id: config.id, name: config.name } : undefined;
+        })
+        .filter(Boolean) as MinimalPrivacyExperienceConfig[],
+    [experienceConfigs],
+  );
+
+  // Track valid state for submit button
+  const allValues = Form.useWatch([], form);
+  const [submittable, setSubmittable] = useState(false);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, allValues]);
 
   const initialValues: PropertyFormValues = useMemo(
     () =>
@@ -110,11 +118,35 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
     [property],
   );
 
+  // Re-initialize form when property data loads
+  useEffect(() => {
+    if (property) {
+      form.setFieldsValue({
+        ...property,
+        messaging_templates: property.messaging_templates ?? undefined,
+      });
+    }
+  }, [property, form]);
+
+  const handleCancel = () => {
+    router.push(PROPERTIES_ROUTE);
+  };
+
+  const onFinish = async (values: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      await handleSubmit(values);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <Formik
-      enableReinitialize
+    <Form
+      form={form}
+      layout="vertical"
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onFinish={onFinish}
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form style={{ paddingTop: "12px", paddingBottom: "12px" }}>
@@ -123,13 +155,29 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
               <CustomTextInput
                 isRequired
                 label="Property name"
+      <Flex vertical gap="large">
+        <Card title="Property details">
+          {isLoading ? (
+            <Flex justify="center" align="center" className="min-h-72">
+              <Spin />
+            </Flex>
+          ) : (
+            <>
+              <Form.Item
                 name="name"
-                tooltip="Unique name to identify this property"
-                variant="stacked"
-              />
-              <ControlledSelect
-                isRequired
-                label="Type"
+                label={
+                  <Flex align="center" gap={4}>
+                    Property name
+                    <InfoTooltip label="Unique name to identify this property" />
+                  </Flex>
+                }
+                rules={[
+                  { required: true, message: "Property name is required" },
+                ]}
+              >
+                <Input data-testid="input-name" />
+              </Form.Item>
+              <Form.Item
                 name="type"
                 options={enumToOptions(PropertyType)}
                 layout="stacked"
@@ -149,48 +197,82 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
             <Box py={3}>
               <FormSection title="Advanced settings">
                 <CustomClipboardCopy
-                  label="Property ID"
-                  name="id"
-                  tooltip="Automatically generated unique ID for this property, used for developer configurations"
-                  variant="stacked"
-                  readOnly
-                />
-              </FormSection>
-            </Box>
-          )}
-          <Flex justifyContent="space-between" width="100%" paddingTop={2}>
-            {property && (
-              <DeletePropertyModal
-                property={property}
-                triggerComponent={
-                  <Button
-                    data-testid="delete-property-button"
-                    loading={false}
-                    className="mr-3"
-                  >
-                    Delete
-                  </Button>
-                }
-              />
-            )}
-            <Flex justifyContent="right" width="100%" paddingTop={2}>
-              <Button onClick={handleCancel} loading={false} className="mr-3">
-                Cancel
-              </Button>
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={isSubmitting || !dirty || !isValid}
-                loading={isSubmitting}
+                label="Type"
+                rules={[{ required: true, message: "Type is required" }]}
               >
-                Save
-              </Button>
-            </Flex>
+                <Select
+                  aria-label="Type"
+                  options={enumToOptions(PropertyType)}
+                  data-testid="input-type"
+                />
+              </Form.Item>
+              <Form.Item name="paths" hidden noStyle>
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="experiences"
+                label="Experiences"
+                getValueProps={(value: MinimalPrivacyExperienceConfig[]) => ({
+                  value: (value || []).map((exp) => exp.id),
+                })}
+                getValueFromEvent={handleExperienceChange}
+              >
+                <Select
+                  aria-label="Experiences"
+                  mode="multiple"
+                  options={experienceOptions}
+                  loading={experiencesLoading}
+                  placeholder="Select experiences"
+                  data-testid="input-experiences"
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                />
+              </Form.Item>
+              {property && (
+                <Form.Item
+                  label="Property ID"
+                  tooltip="Automatically generated unique ID for this property, used for developer configurations"
+                  className="!mb-0"
+                >
+                  <Space.Compact className="w-full">
+                    <Input readOnly value={property.id ?? ""} />
+                    <Space.Addon>
+                      <ClipboardButton copyText={property.id ?? ""} />
+                    </Space.Addon>
+                  </Space.Compact>
+                </Form.Item>
+              )}
+            </>
+          )}
+        </Card>
+        <Flex justify="space-between">
+          {property && (
+            <DeletePropertyModal
+              property={property}
+              triggerComponent={
+                <Button data-testid="delete-property-button">Delete</Button>
+              }
+            />
+          )}
+          <Flex justify="end" className="w-full pt-2">
+            <Button onClick={handleCancel} className="mr-3">
+              Cancel
+            </Button>
+            <Button
+              htmlType="submit"
+              type="primary"
+              disabled={isSubmitting || !form.isFieldsTouched() || !submittable}
+              loading={isSubmitting}
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
           </Flex>
-        </Form>
-      )}
-    </Formik>
+        </Flex>
+      </Flex>
+    </Form>
   );
 };
-
-export default PropertyForm;

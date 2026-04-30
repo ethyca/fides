@@ -1,6 +1,6 @@
 # Enumeration: PrivacyNoticeRegion
 
-A string that represents a specific region of the world. It is used to specify regions that apply to a [Privacy Experience](/tutorials/consent-management/consent-management-configuration/privacy-experiences#what-are-privacy-experiences).
+A string that represents a specific region of the world. It is used to specify regions that apply to a [Privacy Experience](/consent/guides/privacy-experiences#what-are-privacy-experiences).
 The string is formatted with [ISO 3166](https://en.wikipedia.org/wiki/ISO_3166) two-letter codes for a country and subdivisions. They're written in lowercase and separated with an underscore. Subdivisions are currently supported for the United States and Canada.
 The PrivacyNoticeRegion can also be one of the following non-iso standard codes:
 - `eea` : European Economic Area

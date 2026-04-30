@@ -1,8 +1,16 @@
 import { baseApi } from "~/features/common/api.slice";
 
-export interface ControlGroup {
+import type {
+  GeneratePoliciesResponse,
+  OnboardingConfigResponse,
+  OnboardingDataUsesResponse,
+  OnboardingIndustriesResponse,
+} from "./types";
+
+export interface Control {
   key: string;
   label: string;
+  description?: string;
 }
 
 export interface AccessPolicy {
@@ -84,12 +92,82 @@ const accessPoliciesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Access Policies"],
     }),
-    getControlGroups: build.query<ControlGroup[], void>({
+    getControls: build.query<Control[], void>({
       query: () => ({
         method: "GET",
-        url: "plus/access-policy/control-group",
+        url: "plus/controls",
       }),
-      providesTags: ["Access Policy Control Groups"],
+      providesTags: ["Controls"],
+    }),
+    getControl: build.query<Control, string>({
+      query: (key) => ({
+        method: "GET",
+        url: `plus/controls/${key}`,
+      }),
+      providesTags: (_result, _error, key) => [{ type: "Controls", id: key }],
+    }),
+    createControl: build.mutation<
+      Control,
+      { key?: string; label: string; description?: string }
+    >({
+      query: (body) => ({
+        method: "POST",
+        url: "plus/controls",
+        body,
+      }),
+      invalidatesTags: ["Controls"],
+    }),
+    updateControl: build.mutation<
+      Control,
+      { key: string; label?: string; description?: string | null }
+    >({
+      query: ({ key, ...body }) => ({
+        method: "PATCH",
+        url: `plus/controls/${key}`,
+        body,
+      }),
+      invalidatesTags: ["Controls"],
+    }),
+    deleteControl: build.mutation<void, string>({
+      query: (key) => ({
+        method: "DELETE",
+        url: `plus/controls/${key}`,
+      }),
+      invalidatesTags: ["Controls", "Access Policies"],
+    }),
+    getOnboardingIndustries: build.query<OnboardingIndustriesResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/presets/industries",
+      }),
+    }),
+    getOnboardingDataUses: build.query<
+      OnboardingDataUsesResponse,
+      { industry: string; geographies: string[] }
+    >({
+      query: ({ industry, geographies }) => {
+        const params = new URLSearchParams();
+        params.append("industry", industry);
+        geographies.forEach((g) => params.append("geographies", g));
+        return {
+          method: "GET",
+          url: `plus/access-policy/presets/data-uses?${params.toString()}`,
+        };
+      },
+    }),
+    getOnboardingConfig: build.query<OnboardingConfigResponse, void>({
+      query: () => ({
+        method: "GET",
+        url: "plus/access-policy/presets/config",
+      }),
+    }),
+    generatePolicies: build.mutation<GeneratePoliciesResponse, FormData>({
+      query: (formData) => ({
+        method: "POST",
+        url: "plus/access-policy/presets/generate",
+        body: formData,
+      }),
+      invalidatesTags: ["Access Policies"],
     }),
   }),
 });
@@ -101,5 +179,13 @@ export const {
   useUpdateAccessPolicyMutation,
   useDeleteAccessPolicyMutation,
   useReorderAccessPolicyMutation,
-  useGetControlGroupsQuery,
+  useGetControlsQuery,
+  useGetControlQuery,
+  useCreateControlMutation,
+  useUpdateControlMutation,
+  useDeleteControlMutation,
+  useGetOnboardingIndustriesQuery,
+  useGetOnboardingDataUsesQuery,
+  useGetOnboardingConfigQuery,
+  useGeneratePoliciesMutation,
 } = accessPoliciesApi;

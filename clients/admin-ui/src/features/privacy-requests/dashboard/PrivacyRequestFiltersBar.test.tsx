@@ -85,6 +85,15 @@ jest.mock("fidesui", () => {
   });
 });
 
+// Mock the useSubjectRequestActionTypeOptions hook to avoid needing Redux Provider
+jest.mock("../hooks/useSubjectRequestActionTypeOptions", () => {
+  const { SubjectRequestActionTypeOptions } =
+    jest.requireActual("../constants");
+  return {
+    useSubjectRequestActionTypeOptions: () => SubjectRequestActionTypeOptions,
+  };
+});
+
 // Mock the privacy center config query
 const mockUseGetPrivacyCenterConfigQuery = jest.fn();
 jest.mock("../privacy-requests.slice", () => ({
@@ -122,6 +131,7 @@ describe("PrivacyRequestFiltersBar", () => {
       status: null,
       action_type: null,
       location: null,
+      include_consent_webhook_requests: null,
       custom_privacy_request_fields: null,
     },
     setFilters: mockSetFilters,
@@ -166,6 +176,7 @@ describe("PrivacyRequestFiltersBar", () => {
             status: [PrivacyRequestStatus.PENDING],
             action_type: [ActionType.ACCESS],
             location: "US",
+            include_consent_webhook_requests: null,
             custom_privacy_request_fields: null,
           }}
         />,
@@ -235,6 +246,7 @@ describe("PrivacyRequestFiltersBar", () => {
             status: [PrivacyRequestStatus.PENDING],
             action_type: [ActionType.ACCESS],
             location: "US",
+            include_consent_webhook_requests: null,
             custom_privacy_request_fields: null,
           }}
         />,

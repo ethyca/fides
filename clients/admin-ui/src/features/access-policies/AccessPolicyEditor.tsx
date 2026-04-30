@@ -21,6 +21,7 @@ import {
   Popconfirm,
   SelectProps,
   Space,
+  Splitter,
   Tabs,
   useMessage,
 } from "fidesui";
@@ -30,12 +31,12 @@ import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
-import {
-  AccessPolicy,
-  useGetControlGroupsQuery,
-} from "./access-policies.slice";
+import { AccessPolicy, useGetControlsQuery } from "./access-policies.slice";
+import styles from "./AccessPolicyEditor.module.scss";
+import AgentChatPanel from "./AgentChatPanel";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import ActionNode, { ActionNodeType } from "./DecisionNode";
 import LabeledEdge from "./LabeledEdge";
@@ -68,7 +69,7 @@ export enum EditorMode {
 export interface SidebarFormValues {
   name: string;
   description: string;
-  control_group?: string;
+  controls?: string[];
 }
 
 interface AccessPolicyEditorProps {
@@ -758,13 +759,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
 
   return (
-    <div
-      style={{
-        height: "calc(100vh - 220px)",
-        border: "1px solid var(--ant-color-border)",
-        borderRadius: "var(--ant-border-radius-lg)",
-      }}
-    >
+    <div className={styles.canvasContainer}>
       <ReactFlow
         nodes={nodesWithCallbacks}
         edges={edges}
@@ -798,7 +793,13 @@ const AccessPolicyEditor = ({
   const isNew = !policyId;
   const messageApi = useMessage();
 
-  const { data: controlGroups = [] } = useGetControlGroupsQuery();
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const agentChatEnabled =
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
+
+  const { data: controlGroups = [] } = useGetControlsQuery();
 
   const controlOptions = useMemo(
     () => controlGroups.map((cg) => ({ value: cg.key, label: cg.label })),
@@ -837,7 +838,7 @@ const AccessPolicyEditor = ({
       {
         name,
         description: parsed?.description ?? "",
-        control_group: controls.length > 0 ? controls.join(",") : undefined,
+        controls: controls.length > 0 ? controls : undefined,
       },
       yamlValue,
     );
@@ -847,6 +848,15 @@ const AccessPolicyEditor = ({
     (value: string[]) => setControls(value),
     [],
   );
+
+  const handleYamlProposed = useCallback((newYaml: string) => {
+    setYamlValue(newYaml);
+    setSyncKey((k) => k + 1);
+    const parsed = parseYaml(newYaml);
+    if (parsed?.controls) {
+      setControls(parsed.controls);
+    }
+  }, []);
 
   const parsedForDisplay = useMemo(() => parseYaml(yamlValue), [yamlValue]);
   const displayName = parsedForDisplay?.name ?? "";
@@ -877,108 +887,138 @@ const AccessPolicyEditor = ({
     />
   );
 
-  return (
-    <Layout title={title}>
-      <PageHeader
-        heading={title}
-        breadcrumbItems={[
-          { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
-          { title: breadcrumbTitle },
-        ]}
-        isSticky
-        rightContent={
-          <Space>
-            {!isNew && (
-              <Popconfirm
-                title="Delete policy"
-                description="Are you sure you want to delete this policy?"
-                onConfirm={onDelete}
-                okText="Delete"
-                okButtonProps={{ danger: true }}
-                cancelText="Cancel"
-              >
-                <Button
-                  icon={<Icons.TrashCan />}
-                  danger
-                  aria-label="Delete policy"
-                  data-testid="delete-btn"
-                />
-              </Popconfirm>
-            )}
-            <Button
-              icon={<Icons.Download />}
-              onClick={handleExport}
-              data-testid="export-btn"
-            >
-              Export
-            </Button>
-            <Button type="primary" onClick={handleSave} data-testid="save-btn">
-              Save
-            </Button>
-          </Space>
-        }
-      />
-
-      <Tabs
-        activeKey={mode}
-        onChange={(key) => handleModeChange(key as EditorMode)}
-        data-testid="mode-toggle"
-        items={[
+  const tabItems = [
+    {
+      key: EditorMode.Builder,
+      label: "Builder",
+      children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
+    },
+    ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
+      ? [
           {
-            key: EditorMode.Builder,
-            label: "Builder",
-            children: <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>,
-          },
-          ...(process.env.NEXT_PUBLIC_APP_ENV === "development"
-            ? [
-                {
-                  key: EditorMode.Split,
-                  label: "Split (dev only)",
-                  children: (
-                    <Flex gap="middle">
-                      <div style={{ flex: "0 0 60%" }}>
-                        <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
-                      </div>
-                      <div style={{ flex: "0 0 calc(40% - 8px)" }}>
-                        <Editor
-                          defaultLanguage="yaml"
-                          value={yamlValue}
-                          height="calc(100vh - 220px)"
-                          options={{
-                            fontFamily: "Menlo",
-                            fontSize: 13,
-                            minimap: { enabled: false },
-                            readOnly: true,
-                            domReadOnly: true,
-                          }}
-                          theme="light"
-                        />
-                      </div>
-                    </Flex>
-                  ),
-                },
-              ]
-            : []),
-          {
-            key: EditorMode.Code,
-            label: "Code",
+            key: EditorMode.Split,
+            label: "Split (dev only)",
             children: (
-              <Editor
-                defaultLanguage="yaml"
-                value={yamlValue}
-                height="calc(100vh - 220px)"
-                onChange={(val) => setYamlValue(val ?? "")}
-                options={{
-                  fontFamily: "Menlo",
-                  fontSize: 13,
-                  minimap: { enabled: false },
-                }}
-                theme="light"
-              />
+              <Flex gap="middle" className="h-full">
+                <div style={{ flex: "0 0 60%" }}>
+                  <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
+                </div>
+                <div style={{ flex: "0 0 calc(40% - 8px)" }}>
+                  <Editor
+                    defaultLanguage="yaml"
+                    value={yamlValue}
+                    height="100%"
+                    options={{
+                      fontFamily: "Menlo",
+                      fontSize: 13,
+                      minimap: { enabled: false },
+                      readOnly: true,
+                      domReadOnly: true,
+                    }}
+                    theme="light"
+                  />
+                </div>
+              </Flex>
             ),
           },
-        ]}
-      />
+        ]
+      : []),
+    {
+      key: EditorMode.Code,
+      label: "Code",
+      children: (
+        <Editor
+          defaultLanguage="yaml"
+          value={yamlValue}
+          height="100%"
+          onChange={(val) => setYamlValue(val ?? "")}
+          options={{
+            fontFamily: "Menlo",
+            fontSize: 13,
+            minimap: { enabled: false },
+          }}
+          theme="light"
+        />
+      ),
+    },
+  ];
+
+  const tabsNode = (
+    <Tabs
+      activeKey={mode}
+      onChange={(key) => handleModeChange(key as EditorMode)}
+      data-testid="mode-toggle"
+      items={tabItems}
+      className={styles.tabs}
+    />
+  );
+
+  return (
+    <Layout title={title}>
+      <Flex vertical className="h-full">
+        <div>
+          <PageHeader
+            heading={title}
+            breadcrumbItems={[
+              { title: "Access policies", href: ACCESS_POLICIES_ROUTE },
+              { title: breadcrumbTitle },
+            ]}
+            isSticky
+            rightContent={
+              <Space>
+                {!isNew && (
+                  <Popconfirm
+                    title="Delete policy"
+                    description="Are you sure you want to delete this policy?"
+                    onConfirm={onDelete}
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    cancelText="Cancel"
+                  >
+                    <Button
+                      icon={<Icons.TrashCan />}
+                      danger
+                      aria-label="Delete policy"
+                      data-testid="delete-btn"
+                    />
+                  </Popconfirm>
+                )}
+                <Button
+                  icon={<Icons.Download />}
+                  onClick={handleExport}
+                  data-testid="export-btn"
+                >
+                  Export
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleSave}
+                  data-testid="save-btn"
+                >
+                  Save
+                </Button>
+              </Space>
+            }
+          />
+        </div>
+        <div className="relative min-h-0 grow">
+          {agentChatEnabled ? (
+            <Splitter className="h-full">
+              <Splitter.Panel>
+                <div className="h-full pr-3">{tabsNode}</div>
+              </Splitter.Panel>
+              <Splitter.Panel defaultSize={300} min={260} max="50%" collapsible>
+                <AgentChatPanel
+                  currentYaml={yamlValue}
+                  onYamlProposed={handleYamlProposed}
+                />
+              </Splitter.Panel>
+            </Splitter>
+          ) : (
+            tabsNode
+          )}
+        </div>
+      </Flex>
     </Layout>
   );
 };

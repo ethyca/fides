@@ -1,6 +1,7 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
+import { ExecutionAndAuditLogResponse } from "~/types/api/models/ExecutionAndAuditLogResponse";
 import { PrivacyRequestUser } from "~/types/api/models/PrivacyRequestUser";
 
 export interface DenyPrivacyRequest {
@@ -69,14 +70,16 @@ export const ExecutionLogStatusColors: Record<
   [ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE]: CUSTOM_TAG_COLOR.WARNING,
 };
 
-export interface ExecutionLog {
+export interface ExecutionLog extends Pick<
+  ExecutionAndAuditLogResponse,
+  "connection_key" | "saas_version"
+> {
   collection_name: string | null;
   fields_affected: FieldsAffected[];
   message: string;
   action_type: string;
   status: ExecutionLogStatus;
   updated_at: string;
-  saas_version?: string | null;
 }
 
 export type GetUploadedManualWebhookDataRequest = {
@@ -105,7 +108,7 @@ export interface PrivacyRequestEntity {
   identity: {
     [key: string]: { label: string; value: string | null };
   };
-  identity_verified_at?: string;
+  identity_verified_at?: string | null;
   custom_privacy_request_fields?: {
     [key: string]: { label: string; value: any };
   };
@@ -129,6 +132,7 @@ export interface PrivacyRequestEntity {
   days_left?: number;
   source?: string;
   location?: string;
+  property_id?: string | null;
 }
 
 export interface PrivacyRequestResponse {

@@ -38,6 +38,7 @@ export {
   Draggable,
   Edit,
   ExpandAll,
+  Flow,
   Fork,
   Grid,
   Help,

@@ -1,8 +1,9 @@
-import { Button, Form, Input, Modal, Typography, useMessage } from "fidesui";
-import Link from "next/link";
+import { Button, Form, Input, Typography, useMessage } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import ConfirmCloseModal from "~/features/common/modals/ConfirmCloseModal";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 import { useCreateExternalUserMutation } from "./external-user.slice";
@@ -74,10 +75,11 @@ const CreateExternalUserModal = ({
   };
 
   return (
-    <Modal
+    <ConfirmCloseModal
       title="Create external respondent user"
       open={isOpen}
-      onCancel={handleCancel}
+      onClose={handleCancel}
+      getIsDirty={() => form.isFieldsTouched()}
       footer={null}
       data-testid="create-external-user-modal"
     >
@@ -90,7 +92,8 @@ const CreateExternalUserModal = ({
         <Paragraph type="secondary">
           If you need to create an internal user that can log in to the Fides
           admin interface, please use the{" "}
-          <Link href={USER_MANAGEMENT_ROUTE}>Users page</Link> instead.
+          <RouterLink href={USER_MANAGEMENT_ROUTE}>Users page</RouterLink>{" "}
+          instead.
         </Paragraph>
       </div>
 
@@ -150,7 +153,7 @@ const CreateExternalUserModal = ({
           </div>
         </Form.Item>
       </Form>
-    </Modal>
+    </ConfirmCloseModal>
   );
 };
 

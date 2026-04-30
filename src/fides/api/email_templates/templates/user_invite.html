@@ -6,7 +6,7 @@
   </head>
   <body>
     <main>
-      <p>You've been invited to join Fides, click <a href={{admin_ui_url}}/login?invite_code={{invite_code}}&username={{username}}>here</a> to accept the invite and setup your account.</p>
+      <p>You've been invited to join Fides, <a href="{{admin_ui_url}}/login?invite_code={{invite_code|urlencode}}&amp;username={{username|urlencode}}">accept the invite</a> and setup your account.</p>
     </main>
   </body>
 </html>

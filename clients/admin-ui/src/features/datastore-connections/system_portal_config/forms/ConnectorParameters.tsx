@@ -52,6 +52,13 @@ import {
 } from "./ConnectorParametersForm";
 import { generateIntegrationKey } from "./helpers";
 
+const DEFAULT_VALUES: ConnectionConfigFormValues = {
+  description: "",
+  instance_key: "",
+  name: "",
+  dataset: [],
+};
+
 /**
  * Only handles creating saas connectors. The BE handler automatically
  * configures the connector using the saas config and creates the
@@ -217,7 +224,7 @@ export const useConnectorForm = ({
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
-    () => connectionConfig?.secrets ?? {},
+    () => (connectionConfig?.secrets as Record<string, string>) ?? {},
     [connectionConfig],
   );
 
@@ -385,10 +392,6 @@ export const ConnectorParameters = ({
     },
   );
 
-  const handleTestDatasetsClick = () => {
-    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
-  };
-
   const {
     isSubmitting,
     isAuthorizing,
@@ -406,11 +409,18 @@ export const ConnectorParameters = ({
     setSelectedConnectionOption,
   });
 
-  const defaultValues: ConnectionConfigFormValues = {
-    description: "",
-    instance_key: "",
-    name: "",
-    dataset: [],
+  const handleTestDatasetsClick = () => {
+    if (connectionOption.type === SystemType.SAAS) {
+      if (connectionConfig?.key) {
+        router.push(`/integrations/${connectionConfig.key}/edit-dataset`);
+      }
+    } else if (initialDatasets?.length) {
+      router.push(`/dataset/${initialDatasets[0]}/graph-editor`);
+    }
+  };
+
+  const handleTestDatasetsRunClick = () => {
+    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
   };
 
   if (!secretsSchema && connectionOption.type !== SystemType.MANUAL) {
@@ -443,12 +453,13 @@ export const ConnectorParameters = ({
       </Box>
       <ConnectorParametersForm
         secretsSchema={secretsSchema}
-        defaultValues={defaultValues}
+        defaultValues={DEFAULT_VALUES}
         isSubmitting={isSubmitting}
         isAuthorizing={isAuthorizing}
         onSaveClick={handleSubmit}
         onTestConnectionClick={handleTestConnectionClick}
         onTestDatasetsClick={handleTestDatasetsClick}
+        onTestDatasetsRunClick={handleTestDatasetsRunClick}
         onAuthorizeConnectionClick={handleAuthorization}
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}

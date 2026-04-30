@@ -241,7 +241,13 @@ def delete_connection_config(db: Session, connection_key: FidesKey) -> None:
                 .filter(CtlDataset.fides_key == saas_dataset_fides_key)
                 .first()
             )
-            saas_dataset.delete(db)  # type: ignore[union-attr]
+            if saas_dataset:
+                saas_dataset.delete(db)
+            else:
+                logger.warning(
+                    "No CtlDataset found for SaaS fides_key '{}' during connection deletion.",
+                    saas_dataset_fides_key,
+                )
 
     # Use connection service to delete with audit logging
     connection_service.delete_connection_config(connection_key)

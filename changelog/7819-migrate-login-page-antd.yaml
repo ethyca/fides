@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated login page from Formik+Chakra to antd Form components
-pr: 7819
-labels: []

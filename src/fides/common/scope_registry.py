@@ -80,6 +80,9 @@ WORKER_STATS = "worker-stats"
 HEAP_DUMP = "heap_dump"
 BACKFILL = "backfill"
 
+CORRESPONDENCE = "correspondence"
+NOTIFICATION = "notification"
+
 ASSIGN_OWNERS = "assign_owners"
 
 CLIENT_CREATE = f"{CLIENT}:{CREATE}"
@@ -94,6 +97,9 @@ CLI_OBJECTS_DELETE = f"{CLI_OBJECTS}:{DELETE}"
 
 CONFIG_READ = f"{CONFIG}:{READ}"
 CONFIG_UPDATE = f"{CONFIG}:{UPDATE}"
+
+CORRESPONDENCE_SEND = f"{CORRESPONDENCE}:{SEND}"
+CORRESPONDENCE_READ = f"{CORRESPONDENCE}:{READ}"
 
 CONNECTION_CREATE_OR_UPDATE = f"{CONNECTION}:{CREATE_OR_UPDATE}"
 CONNECTION_DELETE = f"{CONNECTION}:{DELETE}"
@@ -169,6 +175,8 @@ MESSAGING_CREATE_OR_UPDATE = f"{MESSAGING}:{CREATE_OR_UPDATE}"
 MESSAGING_DELETE = f"{MESSAGING}:{DELETE}"
 MESSAGING_READ = f"{MESSAGING}:{READ}"
 MESSAGING_TEMPLATE_UPDATE = f"{MESSAGING_TEMPLATE}:{UPDATE}"
+
+NOTIFICATION_READ = f"{NOTIFICATION}:{READ}"
 
 ORGANIZATION_CREATE = f"{ORGANIZATION}:{CREATE}"
 ORGANIZATION_READ = f"{ORGANIZATION}:{READ}"
@@ -271,6 +279,8 @@ SCOPE_DOCS = {
     CLIENT_DELETE: "Remove OAuth clients",
     CLIENT_READ: "View current scopes for OAuth clients",
     CLIENT_UPDATE: "Modify existing scopes for OAuth clients",
+    CORRESPONDENCE_SEND: "Send correspondence messages to data subjects",
+    CORRESPONDENCE_READ: "View correspondence messages",
     CONNECTION_CREATE_OR_UPDATE: "Create or modify connections",
     CONNECTION_DELETE: "Remove connections",
     CONNECTION_READ: "View connections",
@@ -324,6 +334,7 @@ SCOPE_DOCS = {
     MESSAGING_CREATE_OR_UPDATE: "",
     MESSAGING_DELETE: "",
     MESSAGING_READ: "",
+    NOTIFICATION_READ: "View notifications",
     ORGANIZATION_CREATE: "Create organization",
     ORGANIZATION_READ: "Read organization details",
     ORGANIZATION_DELETE: "Delete organization",

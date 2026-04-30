@@ -1,5 +1,4 @@
 import { Button, Flex, Input, Typography } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 
 import type { PrivacyNoticeResponse } from "~/types/api";
 
@@ -114,7 +113,7 @@ const ExperienceConfigSection = ({
           <PreviewCard
             title="Available notices"
             height="200px"
-            headerColor={palette.FIDESUI_MINOS}
+            headerColor="var(--fidesui-brand-minos)"
             emptyMessage="Available notices will appear here after fetching experience"
           >
             {privacyNotices.length > 0 ? (

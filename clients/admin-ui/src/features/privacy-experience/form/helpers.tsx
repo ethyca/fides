@@ -1,3 +1,5 @@
+import { FormInstance } from "fidesui";
+
 import {
   ComponentType,
   ExperienceConfigCreate,
@@ -119,6 +121,7 @@ export const transformConfigResponseToCreate = (
     translations: config.translations
       ? config.translations.map((t) => transformTranslationResponseToCreate(t))
       : [],
+    resurface_behavior: rest.resurface_behavior ?? undefined,
   };
 
   // If vendor/asset disclosure is enabled but there are no include types,
@@ -141,9 +144,9 @@ type TranslationFieldConfig = {
   required?: boolean;
 };
 
-type TranslationFormConfig = {
-  [Property in keyof ExperienceTranslationCreate]?: TranslationFieldConfig;
-};
+type TranslationFormConfig = Partial<
+  Record<keyof ExperienceTranslationCreate, TranslationFieldConfig>
+>;
 
 export const getTranslationFormFields = (
   component: ComponentType,
@@ -234,4 +237,20 @@ export const getTranslationFormFields = (
     privacy_preferences_link_label: { included: true, required: true },
     modal_link_label: { included: true },
   };
+};
+
+export const removeUncommittedTranslation = (
+  form: FormInstance<ExperienceConfigCreate>,
+  translationToEdit: TranslationWithLanguageName,
+) => {
+  const allTranslations = (form.getFieldValue("translations") ??
+    []) as ExperienceTranslation[];
+  const idx = allTranslations.findIndex(
+    (t) => t.language === translationToEdit.language,
+  );
+  if (idx >= 0) {
+    const updated = allTranslations.slice();
+    updated.splice(idx, 1);
+    form.setFieldValue("translations", updated);
+  }
 };

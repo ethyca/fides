@@ -243,13 +243,23 @@ class RequestTask(WorkerTask, Base):
     def allowed_action_types(cls) -> List[str]:
         return [e.value for e in ActionType]
 
-    def get_cached_task_id(self) -> Optional[str]:
-        """Gets the cached celery task ID for this request task."""
-        store = get_dsr_cache_store(self.id)
+    @staticmethod
+    def get_cached_task_id_by_id(request_task_id: str) -> Optional[str]:
+        """Gets the cached celery task ID for a request task by its primary key.
+
+        This static variant avoids loading a full RequestTask ORM object,
+        which is important when iterating many tasks in memory-sensitive
+        contexts (e.g. the cancel path on the webserver).
+        """
+        store = get_dsr_cache_store(request_task_id)
         task_id = store.get_async_execution()
         if isinstance(task_id, bytes):
             return task_id.decode(CONFIG.security.encoding)
         return task_id
+
+    def get_cached_task_id(self) -> Optional[str]:
+        """Gets the cached celery task ID for this request task."""
+        return RequestTask.get_cached_task_id_by_id(self.id)
 
     def cleanup_external_storage(self) -> None:
         """Clean up all external storage files for this request task"""

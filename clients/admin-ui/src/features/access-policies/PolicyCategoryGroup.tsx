@@ -1,13 +1,13 @@
 import { Col, Divider, Flex, Row, Text, Typography } from "fidesui";
 
-import { ControlGroup } from "./access-policies.slice";
+import { Control } from "./access-policies.slice";
 import PolicyCard from "./PolicyCard";
 import { AccessPolicyListItem } from "./types";
 
 const { Title } = Typography;
 
 interface PolicyCategoryGroupProps {
-  controlGroup: ControlGroup;
+  controlGroup: Control;
   policies: AccessPolicyListItem[];
   onTogglePolicy: (policy: AccessPolicyListItem) => void;
 }

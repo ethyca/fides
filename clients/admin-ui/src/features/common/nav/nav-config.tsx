@@ -14,6 +14,8 @@ export interface NavConfigTab {
   path: string;
 }
 
+export type NavModule = "consent";
+
 export interface NavConfigRoute {
   title?: string;
   path: string;
@@ -26,6 +28,8 @@ export interface NavConfigRoute {
   /** Hide route if this flag is enabled */
   hidesIfFlag?: FlagNames;
   requiresFidesCloud?: boolean;
+  /** Requires the backend RBAC feature to be enabled (from Plus health endpoint) */
+  requiresRbac?: boolean;
   /** Hide this route from the navigation UI but still allow access */
   hidden?: boolean;
   /** This route is only available if the user has ANY of these scopes */
@@ -34,12 +38,16 @@ export interface NavConfigRoute {
   routes?: NavConfigRoute[];
   /** Tabs within this page that should appear in search */
   tabs?: NavConfigTab[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export interface NavConfigGroup {
   title: string;
   icon: ReactNode;
   routes: NavConfigRoute[];
+  /** Stable module identifier used to toggle visibility via env vars */
+  module?: NavModule;
 }
 
 export const NAV_CONFIG: NavConfigGroup[] = [
@@ -170,6 +178,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Consent",
     icon: <Icons.SettingsAdjust />,
+    module: "consent",
     routes: [
       {
         title: "Vendors",
@@ -339,6 +348,17 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "API clients",
+        path: routes.API_CLIENTS_ROUTE,
+        scopes: [ScopeRegistryEnum.CLIENT_READ],
+      },
+      {
+        title: "API client detail",
+        path: routes.API_CLIENT_DETAIL_ROUTE,
+        hidden: true,
+        scopes: [ScopeRegistryEnum.CLIENT_READ],
+      },
+      {
         title: "User detail",
         path: routes.USER_DETAIL_ROUTE,
         hidden: true, // Don't show in nav but allow access
@@ -348,7 +368,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Role Management",
         path: routes.RBAC_ROUTE,
         requiresPlus: true,
-        requiresFlag: "alphaRbac",
+        requiresRbac: true,
         scopes: [
           // Only Owners can access Role Management - they have assign_owners scope
           ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
@@ -371,6 +391,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Consent",
         path: routes.GLOBAL_CONSENT_CONFIG_ROUTE,
+        module: "consent",
         requiresPlus: true,
         requiresFidesCloud: false,
         scopes: [
@@ -528,7 +549,9 @@ interface ConfigureNavProps {
   userScopes: ScopeRegistryEnum[];
   hasPlus?: boolean;
   hasFidesCloud?: boolean;
+  hasRbac?: boolean;
   flags?: Record<string, boolean>;
+  consentModuleEnabled?: boolean;
 }
 
 const configureNavRoute = ({
@@ -537,6 +560,7 @@ const configureNavRoute = ({
   flags,
   userScopes,
   hasFidesCloud,
+  hasRbac,
   navGroupTitle,
 }: Omit<ConfigureNavProps, "config"> & {
   route: NavConfigRoute;
@@ -557,6 +581,12 @@ const configureNavRoute = ({
   // If the target route would require fides cloud in a non-fides-cloud environment,
   // exclude it from the group.
   if (route.requiresFidesCloud && !hasFidesCloud) {
+    return undefined;
+  }
+
+  // If the target route requires RBAC to be enabled on the backend,
+  // exclude it when RBAC is not active.
+  if (route.requiresRbac && !hasRbac) {
     return undefined;
   }
 
@@ -599,6 +629,7 @@ const configureNavRoute = ({
         hasPlus,
         flags,
         hasFidesCloud,
+        hasRbac,
         navGroupTitle,
       });
       if (configuredChildRoute) {
@@ -624,10 +655,17 @@ export const configureNavGroups = ({
   userScopes,
   hasPlus = false,
   hasFidesCloud = false,
+  hasRbac = false,
   flags,
+  consentModuleEnabled = true,
 }: ConfigureNavProps): NavGroup[] => {
   const navGroups: NavGroup[] = [];
   config.forEach((group) => {
+    // If consent module is disabled, skip groups tagged with module: "consent"
+    if (!consentModuleEnabled && group.module === "consent") {
+      return;
+    }
+
     // if no nav routes are scoped for the user or all require plus
     if (
       !navGroupInScope(group, userScopes) ||
@@ -643,12 +681,18 @@ export const configureNavGroups = ({
     };
 
     group.routes.forEach((route) => {
+      // If consent module is disabled, skip routes tagged with module: "consent"
+      if (!consentModuleEnabled && route.module === "consent") {
+        return;
+      }
+
       const routeConfig = configureNavRoute({
         route,
         hasPlus,
         flags,
         userScopes,
         hasFidesCloud,
+        hasRbac,
         navGroupTitle: group.title,
       });
       if (routeConfig) {

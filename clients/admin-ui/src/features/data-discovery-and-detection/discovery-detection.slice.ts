@@ -250,13 +250,12 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     unmuteResources: build.mutation<any, BulkResourceActionQueryParams>({
-      query: (params) => ({
-        params,
+      query: ({ staged_resource_urns }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/un-mute?${queryString.stringify(
-          { staged_resource_urns: params.staged_resource_urns },
-          { arrayFormat: "none" },
-        )}`,
+        url: "/plus/discovery-monitor/un-mute",
+        body: {
+          staged_resource_urns,
+        },
       }),
       invalidatesTags: [
         "Discovery Monitor Results",
@@ -277,12 +276,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     promoteResource: build.mutation<any, ResourceActionQueryParams>({
       query: (params) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/promote?${queryString.stringify(
-          { staged_resource_urns: [params.staged_resource_urn] },
-          {
-            arrayFormat: "none",
-          },
-        )}`,
+        url: "/plus/discovery-monitor/promote",
+        body: {
+          staged_resource_urns: [params.staged_resource_urn],
+        },
       }),
       invalidatesTags: [
         "Discovery Monitor Results",
@@ -309,10 +306,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     promoteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/promote?${queryString.stringify(
-          { staged_resource_urns },
-          { arrayFormat: "none" },
-        )}`,
+        url: "/plus/discovery-monitor/promote",
+        body: {
+          staged_resource_urns,
+        },
       }),
       invalidatesTags: [
         "Discovery Monitor Results",
@@ -450,6 +447,20 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
+    updateInfrastructureSystemDescription: build.mutation<
+      Schema,
+      { monitorId: string; urn: string; description: string }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/identity-provider-monitors/${params.monitorId}/results/${params.urn}`,
+        body: {
+          urn: params.urn,
+          user_assigned_description: params.description,
+        },
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
     bulkPromoteIdentityProviderMonitorResults: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
@@ -475,6 +486,18 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     bulkUnmuteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    updateIdentityProviderMonitorDescription: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
     >({
@@ -518,6 +541,8 @@ export const {
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
+  useUpdateInfrastructureSystemDescriptionMutation,
+  util: discoveryDetectionUtil,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({

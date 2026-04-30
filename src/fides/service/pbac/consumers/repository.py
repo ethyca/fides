@@ -40,8 +40,9 @@ class DataConsumerRedisRepository(RedisRepository[DataConsumerEntity]):
         entries: list[tuple[str, str]] = [("type", entity.type)]
         if entity.contact_email:
             entries.append(("contact_email", entity.contact_email))
-        if entity.external_id:
-            entries.append(("external_id", entity.external_id))
+        # Index each scope key individually for filtering
+        for key, value in sorted(entity.scope.items()):
+            entries.append(("scope", f"{key}={value}"))
         for tag in entity.tags:
             entries.append(("tag", tag))
         for fk in entity.purpose_fides_keys:
@@ -81,7 +82,7 @@ class DataConsumerRedisRepository(RedisRepository[DataConsumerEntity]):
             name=data["name"],
             type=data["type"],
             description=data.get("description"),
-            external_id=data.get("external_id"),
+            scope=data.get("scope") or {},
             egress=data.get("egress"),
             ingress=data.get("ingress"),
             data_shared_with_third_parties=data.get("data_shared_with_third_parties"),
@@ -105,7 +106,7 @@ class DataConsumerRedisRepository(RedisRepository[DataConsumerEntity]):
         MUTABLE_FIELDS = {
             "name",
             "description",
-            "external_id",
+            "scope",
             "egress",
             "ingress",
             "data_shared_with_third_parties",

@@ -10,10 +10,10 @@ import {
   Text,
   Title,
 } from "fidesui";
-import NextLink from "next/link";
 import { useSelector } from "react-redux";
 
 import { selectUser } from "~/features/auth";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { useGetSystemsQuery } from "~/features/system";
 
@@ -57,7 +57,7 @@ export const EmptyMonitorsResult = () => {
               <Col span={8} />
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/bigquery.svg"
                   preview={false}
                   alt=""
@@ -68,7 +68,7 @@ export const EmptyMonitorsResult = () => {
             <Row align="middle" justify="center">
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/okta.svg"
                   preview={false}
                   alt=""
@@ -77,7 +77,7 @@ export const EmptyMonitorsResult = () => {
               <Col span={8} />
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/snowflake.svg"
                   preview={false}
                   alt=""
@@ -88,7 +88,7 @@ export const EmptyMonitorsResult = () => {
               <Col span={8} />
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/generic.svg"
                   preview={false}
                   alt=""
@@ -99,7 +99,7 @@ export const EmptyMonitorsResult = () => {
           </div>
           <div className="relative">
             <Image
-              rootClassName="flex"
+              classNames={{ root: "flex" }}
               src="/images/service.svg"
               preview={false}
               alt=""
@@ -131,9 +131,9 @@ export const EmptyMonitorsResult = () => {
         </>
       }
     >
-      <NextLink href={SYSTEM_ROUTE} passHref legacyBehavior>
+      <RouterLink href={SYSTEM_ROUTE}>
         <Button type="primary">View inventory</Button>
-      </NextLink>
+      </RouterLink>
     </Empty>
   );
 };

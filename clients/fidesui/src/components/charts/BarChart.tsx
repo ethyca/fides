@@ -1,5 +1,6 @@
 import { theme } from "antd/lib";
-import { useEffect, useRef } from "react";
+import type { ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -12,6 +13,7 @@ import type { AntColorTokenKey, BarSize } from "./chart-constants";
 import {
   BAR_SIZE_TOKEN,
   CHART_ANIMATION,
+  CHART_TYPOGRAPHY,
   LABEL_WIDTH,
 } from "./chart-constants";
 import {
@@ -39,6 +41,10 @@ export interface BarChartProps {
   animationDuration?: number;
   showTooltip?: boolean;
   size?: BarSize;
+  /** When true, renders 3 evenly spaced interior x-axis labels using the bar labels. */
+  simpleXAxis?: boolean;
+  /** Custom tooltip renderer. Receives the value and label for the hovered bar. */
+  tooltipContent?: (value: number, label: string) => ReactNode;
 }
 
 export const BarChart = ({
@@ -49,6 +55,8 @@ export const BarChart = ({
   animationDuration = CHART_ANIMATION.defaultDuration,
   showTooltip = true,
   size = "md",
+  simpleXAxis = false,
+  tooltipContent,
 }: BarChartProps) => {
   const { token } = theme.useToken();
   const animationActive = useChartAnimation(animationDuration);
@@ -85,10 +93,78 @@ export const BarChart = ({
     LABEL_WIDTH,
   );
 
+  /** 3 evenly spaced interior tick indices for simpleXAxis mode. */
+  const simpleTickIndices = useMemo(() => {
+    if (!simpleXAxis || chartData.length < 4) {
+      return undefined;
+    }
+    const last = chartData.length - 1;
+    return new Set([
+      Math.round(last * 0.25),
+      Math.round(last * 0.5),
+      Math.round(last * 0.75),
+    ]);
+  }, [simpleXAxis, chartData.length]);
+
+  const renderTooltipContent = useCallback(
+    ({
+      payload,
+    }: {
+      payload?: ReadonlyArray<{ payload: BarChartDataPoint }>;
+    }) => {
+      if (!payload?.length) {
+        return null;
+      }
+      const entry = payload[0].payload;
+      return (
+        <div
+          style={{
+            backgroundColor: token.colorBgElevated,
+            borderRadius: token.borderRadius,
+            padding: `${token.paddingXXS}px ${token.paddingXS}px`,
+            boxShadow: token.boxShadow,
+            fontSize: token.fontSizeSM,
+          }}
+        >
+          {tooltipContent?.(entry.value, entry.label)}
+        </div>
+      );
+    },
+    [token, tooltipContent],
+  );
+
+  const renderSimpleTick = useCallback(
+    (props: Record<string, unknown>) => {
+      const index = props.index as number;
+      if (!simpleTickIndices?.has(index)) {
+        return <g />;
+      }
+      return (
+        <text
+          x={Number(props.x)}
+          y={Number(props.y) + 10}
+          fontSize={token.fontSizeSM}
+          fontFamily={token.fontFamilyCode}
+          fontWeight={CHART_TYPOGRAPHY.fontWeight}
+          letterSpacing={CHART_TYPOGRAPHY.letterSpacing}
+          fill={token.colorTextTertiary}
+          textAnchor="middle"
+        >
+          {(props.payload as { value: string }).value}
+        </text>
+      );
+    },
+    [simpleTickIndices, token],
+  );
+
   return (
     <div ref={containerRef} className="h-full w-full">
       {containerWidth > 0 && (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 1, height: 1 }}
+        >
           <RechartsBarChart
             data={chartData}
             margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
@@ -97,26 +173,38 @@ export const BarChart = ({
             <XAxis
               dataKey="label"
               tick={
-                <XAxisTick
-                  intervalMs={intervalMs}
-                  fill={token.colorTextTertiary}
-                />
+                simpleXAxis && simpleTickIndices ? (
+                  renderSimpleTick
+                ) : (
+                  <XAxisTick
+                    intervalMs={intervalMs}
+                    fill={token.colorTextTertiary}
+                  />
+                )
               }
-              interval={tickInterval}
+              interval={simpleXAxis ? 0 : tickInterval}
               axisLine={false}
               tickLine={false}
             />
-            {showTooltip && (
+            {(showTooltip || tooltipContent) && (
               <Tooltip
                 cursor={false}
-                contentStyle={{
-                  backgroundColor: token.colorBgElevated,
-                  border: `1px solid ${token.colorBorder}`,
-                  borderRadius: token.borderRadiusLG,
-                  boxShadow: token.boxShadowSecondary,
-                }}
-                labelFormatter={(label) =>
-                  formatTimestamp(String(label), intervalMs, true)
+                content={tooltipContent ? renderTooltipContent : undefined}
+                contentStyle={
+                  !tooltipContent
+                    ? {
+                        backgroundColor: token.colorBgElevated,
+                        border: `1px solid ${token.colorBorder}`,
+                        borderRadius: token.borderRadiusLG,
+                        boxShadow: token.boxShadowSecondary,
+                      }
+                    : undefined
+                }
+                labelFormatter={
+                  !tooltipContent
+                    ? (label) =>
+                        formatTimestamp(String(label), intervalMs, true)
+                    : undefined
                 }
               />
             )}

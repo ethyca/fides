@@ -7,6 +7,7 @@ import {
   DatePicker,
   Flex,
   Form,
+  FormInstance,
   Input,
   isoCodesToOptions,
   LocationSelect,
@@ -35,8 +36,10 @@ import { SharedConfigSelect } from "./SharedConfigSelect";
 
 dayjs.extend(utc);
 
-interface WebsiteMonitorConfig
-  extends Omit<EditableMonitorConfig, "datasource_params"> {
+interface WebsiteMonitorConfig extends Omit<
+  EditableMonitorConfig,
+  "datasource_params"
+> {
   datasource_params?: WebsiteMonitorParams;
   url: string;
 }
@@ -64,14 +67,17 @@ const ConfigureWebsiteMonitorForm = ({
   integrationSystem,
   onClose,
   onSubmit,
+  form: formProp,
 }: {
   monitor?: EditableMonitorConfig;
   url: string;
   integrationSystem?: string | null;
   onClose: () => void;
   onSubmit: (values: EditableMonitorConfig) => Promise<void>;
+  form?: FormInstance<WebsiteMonitorConfigFormValues>;
 }) => {
-  const [form] = Form.useForm<WebsiteMonitorConfigFormValues>();
+  const [internalForm] = Form.useForm<WebsiteMonitorConfigFormValues>();
+  const form = formProp ?? internalForm;
   const [submittable, setSubmittable] = useState(false);
   const formValues = Form.useWatch([], form);
 

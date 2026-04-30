@@ -1051,7 +1051,7 @@ class TestMessageDispatchService:
             ),
         )
 
-        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Welcome to Fides</title>\n  </head>\n  <body>\n    <main>\n      <p>You\'ve been invited to join Fides, click <a href=http://localhost:3000/login?invite_code=123&username=test>here</a> to accept the invite and setup your account.</p>\n    </main>\n  </body>\n</html>'
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Welcome to Fides</title>\n  </head>\n  <body>\n    <main>\n      <p>You\'ve been invited to join Fides, <a href="http://localhost:3000/login?invite_code=123&amp;username=test">accept the invite</a> and setup your account.</p>\n    </main>\n  </body>\n</html>'
 
         mock_mailgun_dispatcher.assert_called_with(
             messaging_config,

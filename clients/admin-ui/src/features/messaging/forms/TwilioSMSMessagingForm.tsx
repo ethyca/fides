@@ -9,7 +9,6 @@ import {
   Input,
   useMessage,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -435,9 +434,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <Icons.CheckmarkFilled
-                          color={palette.FIDESUI_SUCCESS}
-                        />
+                        <Icons.CheckmarkFilled color="var(--fidesui-color-success)" />
                       ) : undefined
                     }
                   >
