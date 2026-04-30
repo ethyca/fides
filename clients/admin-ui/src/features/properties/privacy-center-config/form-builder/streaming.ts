@@ -45,16 +45,24 @@ export interface ChatTurnInput {
   currentSpec: unknown | null;
   messages: { role: "user" | "assistant" | "system"; content: string }[];
   signal: AbortSignal;
+  authToken?: string | null;
 }
 
 export async function* streamChatTurn(
   input: ChatTurnInput,
 ): AsyncGenerator<SseEvent> {
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+  };
+  if (input.authToken) {
+    headers.authorization = `Bearer ${input.authToken}`;
+  }
+
   const response = await fetch(
     `/api/v1/plus/property/${input.propertyId}/form-builder/chat`,
     {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       credentials: "include",
       body: JSON.stringify({
         action_policy_key: input.actionPolicyKey,
