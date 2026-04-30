@@ -133,7 +133,7 @@ const AgentChatPanel = ({
         footer: msg.yamlApplied ? (
           <Flex align="center" gap="small">
             <Icons.CheckmarkFilled
-              style={{ color: "var(--ant-color-success)" }}
+              style={{ color: "var(--fidesui-color-success)" }}
             />
             <Typography.Text type="secondary">
               The policy was updated
