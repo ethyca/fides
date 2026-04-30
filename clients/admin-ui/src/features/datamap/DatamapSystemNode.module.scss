@@ -31,15 +31,15 @@
   &:focus,
   &:focus-visible {
     color: white !important;
-    background-color: var(--fidesui-minos) !important;
-    border: 1px solid var(--fidesui-minos) !important;
+    background-color: var(--fidesui-brand-minos) !important;
+    border: 1px solid var(--fidesui-brand-minos) !important;
   }
 
   // Active/selected state
   &--selected {
     color: white !important;
-    background-color: var(--fidesui-minos) !important;
-    border: 1px solid var(--fidesui-minos) !important;
+    background-color: var(--fidesui-brand-minos) !important;
+    border: 1px solid var(--fidesui-brand-minos) !important;
   }
 }
 

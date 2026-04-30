@@ -37,52 +37,56 @@ const inlineIcon = (
 ): ReactNode => <Icon size={size} style={{ color, marginInlineEnd }} />;
 
 const MODAL_ICON_MAP: Record<ModalType, ReactNode> = {
-  info: modalIcon(InformationFilled, "var(--fidesui-minos)"),
-  success: modalIcon(CheckmarkFilled, "var(--fidesui-success)"),
-  warning: modalIcon(WarningFilled, "var(--fidesui-warning)"),
-  error: modalIcon(Misuse, "var(--fidesui-error)"),
-  confirm: modalIcon(WarningFilled, "var(--fidesui-warning)"),
+  info: modalIcon(InformationFilled, "var(--fidesui-brand-minos)"),
+  success: modalIcon(CheckmarkFilled, "var(--fidesui-color-success)"),
+  warning: modalIcon(WarningFilled, "var(--fidesui-color-warning)"),
+  error: modalIcon(Misuse, "var(--fidesui-color-error)"),
+  confirm: modalIcon(WarningFilled, "var(--fidesui-color-warning)"),
 };
 
 const MESSAGE_ICON_MAP: Record<FeedbackType, ReactNode> = {
   info: inlineIcon(
     InformationFilled,
-    "var(--fidesui-minos)",
+    "var(--fidesui-brand-minos)",
     MESSAGE_ICON_SIZE,
     8,
   ),
   success: inlineIcon(
     CheckmarkFilled,
-    "var(--fidesui-success)",
+    "var(--fidesui-color-success)",
     MESSAGE_ICON_SIZE,
     8,
   ),
   warning: inlineIcon(
     WarningFilled,
-    "var(--fidesui-warning)",
+    "var(--fidesui-color-warning)",
     MESSAGE_ICON_SIZE,
     8,
   ),
-  error: inlineIcon(Misuse, "var(--fidesui-error)", MESSAGE_ICON_SIZE, 8),
+  error: inlineIcon(Misuse, "var(--fidesui-color-error)", MESSAGE_ICON_SIZE, 8),
 };
 
 const NOTIFICATION_ICON_MAP: Record<FeedbackType, ReactNode> = {
   info: inlineIcon(
     InformationFilled,
-    "var(--fidesui-minos)",
+    "var(--fidesui-brand-minos)",
     NOTIFICATION_ICON_SIZE,
   ),
   success: inlineIcon(
     CheckmarkFilled,
-    "var(--fidesui-success)",
+    "var(--fidesui-color-success)",
     NOTIFICATION_ICON_SIZE,
   ),
   warning: inlineIcon(
     WarningFilled,
-    "var(--fidesui-warning)",
+    "var(--fidesui-color-warning)",
     NOTIFICATION_ICON_SIZE,
   ),
-  error: inlineIcon(Misuse, "var(--fidesui-error)", NOTIFICATION_ICON_SIZE),
+  error: inlineIcon(
+    Misuse,
+    "var(--fidesui-color-error)",
+    NOTIFICATION_ICON_SIZE,
+  ),
 };
 
 const ALERT_ICON_MAP: Record<FeedbackType, CarbonIconType> = {
