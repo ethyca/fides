@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Collapse,
   Drawer,
@@ -243,6 +244,17 @@ const DatasetNodeDetailPanel = forwardRef<
             <Form.Item label="Data Categories" name="data_categories">
               <DataCategoryTagSelect />
             </Form.Item>
+
+            {nodeData.nodeType === "field" &&
+              (nodeData as FieldNodeData).hasChildren && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="This field contains nested sub-fields"
+                  description="Data categories assigned here apply to all nested fields as a group. Individual categories on sub-fields will not be evaluated separately."
+                  className="-mt-2 mb-4"
+                />
+              )}
 
             {nodeData.nodeType === "collection" && (
               <Collapse
