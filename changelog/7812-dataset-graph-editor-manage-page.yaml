@@ -1,0 +1,4 @@
+type: New Feature
+description: Add node-based graph editor to manage datasets page with collection CRUD, parent field warnings, and dirty state tracking fixes
+pr: 7812
+labels: []

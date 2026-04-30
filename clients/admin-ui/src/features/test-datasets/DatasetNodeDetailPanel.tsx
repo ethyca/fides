@@ -105,9 +105,7 @@ const DatasetNodeDetailPanel = forwardRef<
           redact: field.fides_meta?.redact ?? "",
         });
       }
-      initialValuesRef.current = JSON.stringify(
-        form.getFieldsValue(true),
-      );
+      initialValuesRef.current = JSON.stringify(form.getFieldsValue(true));
       // Only run when a different node is selected, not on every nodeData
       // reference change. nodeData identity changes on parent re-renders but
       // the logical node (identified by open + selectedNodeId) stays the same.
