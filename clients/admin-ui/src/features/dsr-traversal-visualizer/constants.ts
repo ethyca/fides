@@ -15,5 +15,11 @@ export const EDGE_TYPES = {
 export const REACHABILITY_LABEL = {
   reachable: "Reachable",
   unreachable: "Unreachable",
-  requires_manual_identity: "Manual identity required",
+  requires_manual_identity: "Needs manual ID",
+} as const;
+
+export const REACHABILITY_COLOR = {
+  reachable: "success",
+  unreachable: "default",
+  requires_manual_identity: "warning",
 } as const;

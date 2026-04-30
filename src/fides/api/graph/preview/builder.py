@@ -69,6 +69,7 @@ class TraversalPreviewBuilder:
                 existing[integration_key].reachability = reach
                 continue
             conn = self._conn_by_key[integration_key]
+            datasets, total, data_categories = self._static_dataset_detail(integration_key)
             integrations.append(IntegrationNode(
                 id=f"integration:{integration_key}",
                 connection_key=integration_key,
@@ -76,12 +77,16 @@ class TraversalPreviewBuilder:
                 system=SystemRef(**conn["system"]) if conn.get("system") else None,
                 reachability=reach,
                 action_status=ActionStatus.ACTIVE,
-                collection_count=CollectionCount(traversed=0, total=0),
-                data_categories=[],
-                datasets=[],
+                collection_count=CollectionCount(traversed=0, total=total),
+                data_categories=data_categories,
+                datasets=datasets,
             ))
 
         edges = self._build_edges(captured, integrations)
+        if not edges:
+            # Traversal didn't capture deps (e.g. graph has unreachable nodes);
+            # fall back to FK-derived static edges so the canvas still shows flow.
+            edges = self._static_edges(integrations)
         edges += self._manual_task_edges()
 
         return TraversalPreview(
@@ -186,6 +191,35 @@ class TraversalPreviewBuilder:
             ],
         )
 
+    def _static_dataset_detail(
+        self, integration_key: str
+    ) -> tuple[List[DatasetDetail], int, List[str]]:
+        """Build dataset/collection/field detail directly from ``self.graph`` for an
+        integration that didn't participate in the traversal.
+
+        Returns ``(datasets, total_collection_count, sorted_data_categories)``.
+        """
+        dataset_keys = {
+            ds_key
+            for ds_key, conn in self.connection_lookup.items()
+            if conn["connection_key"] == integration_key
+        }
+        per_dataset: Dict[str, List[CollectionDetail]] = defaultdict(list)
+        data_categories: set = set()
+        for addr, node in self.graph.nodes.items():
+            if addr.dataset not in dataset_keys:
+                continue
+            detail = self._collection_detail(node)
+            per_dataset[addr.dataset].append(detail)
+            for f in detail.fields:
+                data_categories.update(f.data_categories)
+        datasets = [
+            DatasetDetail(fides_key=ds_key, collections=collections)
+            for ds_key, collections in per_dataset.items()
+        ]
+        total = sum(len(d.collections) for d in datasets)
+        return datasets, total, sorted(data_categories)
+
     def _build_edges(
         self,
         captured: Dict[CollectionAddress, List[CollectionAddress]],
@@ -232,3 +266,57 @@ class TraversalPreviewBuilder:
             for mt in self.manual_tasks
             for gated in mt.gates
         ]
+
+    def _static_edges(self, integrations: List[IntegrationNode]) -> List[PreviewEdge]:
+        """Build integration-level edges from ``self.graph.edges`` directly.
+
+        When ``Traversal`` fails (e.g. unreachable nodes), ``captured`` is empty
+        and ``_build_edges`` produces nothing. Walking the static graph edges
+        still yields the FK-reference shape between integrations, so users can
+        see how data flows even without a successful traversal.
+        """
+        integration_ids = {i.connection_key for i in integrations}
+        dataset_to_integration: Dict[str, str] = {
+            ds_key: conn["connection_key"]
+            for ds_key, conn in self.connection_lookup.items()
+        }
+        edge_counts: Dict[tuple, int] = defaultdict(int)
+        identity_targets: set = set()
+        for address, node in self.graph.nodes.items():
+            ds_integration = dataset_to_integration.get(address.dataset)
+            if ds_integration not in integration_ids:
+                continue
+            for field in node.collection.fields:
+                if getattr(field, "identity", None):
+                    identity_targets.add(ds_integration)
+                    break
+
+        for edge in self.graph.edges:
+            src_addr = edge.f1.collection_address()
+            tgt_addr = edge.f2.collection_address()
+            if src_addr == ROOT_COLLECTION_ADDRESS or tgt_addr == ROOT_COLLECTION_ADDRESS:
+                continue
+            src_integration = dataset_to_integration.get(src_addr.dataset)
+            tgt_integration = dataset_to_integration.get(tgt_addr.dataset)
+            if src_integration is None or tgt_integration is None:
+                continue
+            if src_integration == tgt_integration:
+                continue
+            if src_integration not in integration_ids or tgt_integration not in integration_ids:
+                continue
+            edge_counts[(f"integration:{src_integration}", f"integration:{tgt_integration}")] += 1
+
+        edges = [
+            PreviewEdge(source=src, target=tgt, kind="depends_on", dep_count=cnt)
+            for (src, tgt), cnt in edge_counts.items()
+        ]
+        for integration_key in identity_targets:
+            edges.append(
+                PreviewEdge(
+                    source="identity-root",
+                    target=f"integration:{integration_key}",
+                    kind="depends_on",
+                    dep_count=1,
+                )
+            )
+        return edges

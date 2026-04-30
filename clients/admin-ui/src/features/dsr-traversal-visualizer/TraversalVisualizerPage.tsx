@@ -22,10 +22,18 @@ interface Props {
 
 const TraversalVisualizerPage = ({ propertyId, actionType }: Props) => {
   const [direction, setDirection] = useState<LayoutDirection>("LR");
+  const [refreshTick, setRefreshTick] = useState(0);
   const { data, isLoading, isError, refetch } = useGetTraversalPreviewQuery({
     propertyId,
     actionType,
+    // Bumping refresh on Regenerate changes the RTK Query cache key, forcing
+    // a backend recompute (the request param ``refresh=true`` is also sent).
+    refresh: refreshTick > 0,
   });
+  const regenerate = () => {
+    setRefreshTick((t) => t + 1);
+    refetch();
+  };
 
   if (isLoading) {
     return <Spin />;
@@ -57,7 +65,7 @@ const TraversalVisualizerPage = ({ propertyId, actionType }: Props) => {
             <Radio.Button value="LR">Horizontal</Radio.Button>
             <Radio.Button value="TB">Vertical</Radio.Button>
           </Radio.Group>
-          <Button onClick={() => refetch()}>Regenerate</Button>
+          <Button onClick={regenerate}>Regenerate</Button>
         </Flex>
       </Flex>
       {data?.warnings.length ? (
