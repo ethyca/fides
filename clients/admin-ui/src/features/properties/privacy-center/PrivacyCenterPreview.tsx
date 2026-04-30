@@ -197,7 +197,7 @@ const PrivacyCenterPreview = () => {
         {/* Links */}
         {(config?.links ?? []).length > 0 && (
           <Flex justifyContent="center" gap={4} mt={6} flexWrap="wrap">
-            {(config.links ?? []).map((link, i) => (
+            {(config?.links ?? []).map((link, i) => (
               // eslint-disable-next-line react/no-array-index-key
               <Text key={i} fontSize="xs" color="gray.500">
                 {link.label}

@@ -1,4 +1,7 @@
-import { PrivacyCenterConfig, PrivacyRequestOption } from "~/types/api";
+import type {
+  fides__api__schemas__privacy_center_config__PrivacyCenterConfig as PrivacyCenterConfig,
+  PrivacyRequestOption,
+} from "~/types/api";
 
 /**
  * Default icon URLs for the three standard policy keys.

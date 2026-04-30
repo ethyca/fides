@@ -11,10 +11,10 @@ import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
 } from "~/features/properties/property.slice";
-import PropertyForm, {
+import {
+  PropertyForm,
   PropertyFormValues,
 } from "~/features/properties/PropertyForm";
-import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
