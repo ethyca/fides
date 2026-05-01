@@ -15,25 +15,55 @@ import {
 } from "~/types/api";
 
 import DeletePropertyModal from "./DeletePropertyModal";
+import { PathsEditor } from "./PathsEditor";
+import {
+  PrivacyCenterConfigSection,
+  PrivacyCenterConfigValue,
+} from "./privacy-center-config/PrivacyCenterConfigSection";
+
+const PathsEditorAdapter = ({
+  value,
+  onChange,
+}: {
+  value?: string[];
+  onChange?: (next: string[]) => void;
+}) => <PathsEditor value={value ?? []} onChange={(next) => onChange?.(next)} />;
+
+const PCConfigSectionAdapter = ({
+  value,
+  onChange,
+}: {
+  value?: PrivacyCenterConfigValue | null;
+  onChange?: (next: PrivacyCenterConfigValue) => void;
+}) => (
+  <PrivacyCenterConfigSection
+    value={value ?? null}
+    onChange={(next) => onChange?.(next)}
+  />
+);
 
 interface Props {
   property?: Property;
   isLoading?: boolean;
-  handleSubmit: (values: FormValues) => Promise<void>;
+  handleSubmit: (values: PropertyFormValues) => Promise<void>;
 }
 
-export interface FormValues {
+export interface PropertyFormValues {
   id?: string | null;
   name: string;
   type: PropertyType;
   paths: Array<string>;
   messaging_templates?: Array<MinimalMessagingTemplate> | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
+  privacy_center_config?: PrivacyCenterConfigValue | null;
 }
+
+/** @deprecated Use PropertyFormValues */
+export type FormValues = PropertyFormValues;
 
 export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
   const router = useRouter();
-  const [form] = Form.useForm<FormValues>();
+  const [form] = Form.useForm<PropertyFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load experience configs for the multi-select
@@ -83,6 +113,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
         experiences: [],
         messaging_templates: [],
         paths: [],
+        privacy_center_config: null,
       },
     [property],
   );
@@ -93,7 +124,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
       form.setFieldsValue({
         ...property,
         messaging_templates: property.messaging_templates ?? undefined,
-      });
+      } as Parameters<typeof form.setFieldsValue>[0]);
     }
   }, [property, form]);
 
@@ -101,7 +132,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
     router.push(PROPERTIES_ROUTE);
   };
 
-  const onFinish = async (values: FormValues) => {
+  const onFinish = async (values: PropertyFormValues) => {
     setIsSubmitting(true);
     try {
       await handleSubmit(values);
@@ -150,8 +181,19 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                   data-testid="input-type"
                 />
               </Form.Item>
-              <Form.Item name="paths" hidden noStyle>
-                <Input />
+              <Form.Item
+                label="Privacy center paths"
+                name="paths"
+                tooltip="Paths under your privacy center this property responds to. Each path must be unique across properties."
+              >
+                <PathsEditorAdapter />
+              </Form.Item>
+              <Form.Item
+                name="privacy_center_config"
+                label="Privacy center config"
+                valuePropName="value"
+              >
+                <PCConfigSectionAdapter />
               </Form.Item>
               <Form.Item
                 name="experiences"

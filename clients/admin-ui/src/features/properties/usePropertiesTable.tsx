@@ -26,6 +26,8 @@ const usePropertiesTable = () => {
 
   const [isExperiencesExpanded, setIsExperiencesExpanded] = useState(false);
   const [experiencesVersion, setExperiencesVersion] = useState(0);
+  const [isPathsExpanded, setIsPathsExpanded] = useState(false);
+  const [pathsVersion, setPathsVersion] = useState(0);
 
   const { pageIndex, pageSize, searchQuery, updateSearch } = tableState;
 
@@ -113,13 +115,33 @@ const usePropertiesTable = () => {
         ),
       },
       {
+        title: "Property ID",
+        dataIndex: "id",
+        key: "id",
+      },
+      {
+        title: "Paths",
+        dataIndex: "paths",
+        key: "paths",
+        render: (_, { paths }) => (
+          <TagExpandableCell
+            values={(paths ?? []).map((path) => ({ label: path, key: path }))}
+            columnState={{
+              isExpanded: isPathsExpanded,
+              version: pathsVersion,
+            }}
+          />
+        ),
+        menu: buildExpandCollapseMenu(setIsPathsExpanded, setPathsVersion),
+      },
+      {
         title: "Actions",
         dataIndex: "actions",
         key: "actions",
         render: (_, property) => <PropertyActionsCell property={property} />,
       },
     ],
-    [isExperiencesExpanded, experiencesVersion],
+    [isExperiencesExpanded, experiencesVersion, isPathsExpanded, pathsVersion],
   );
 
   return { tableProps, columns, error, searchQuery, updateSearch };

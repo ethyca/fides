@@ -19,7 +19,7 @@ import Providers from "~/components/Providers";
 const Layout = async ({ children }: { children: ReactNode }) => {
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
         <Providers version={process.env.version || "unknown"}>
           {children}
         </Providers>

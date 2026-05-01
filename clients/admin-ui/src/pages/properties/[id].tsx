@@ -11,7 +11,10 @@ import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
 } from "~/features/properties/property.slice";
-import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
+import {
+  PropertyForm,
+  PropertyFormValues,
+} from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
@@ -23,7 +26,7 @@ const EditPropertyPage: NextPage = () => {
   );
   const [updateProperty] = useUpdatePropertyMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: PropertyFormValues) => {
     // We do not support adding messaging templates through the property form. This ensures we do not overwrite
     // previously-configured messaging templates.
     // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -49,7 +49,7 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
     border="1px solid"
     borderColor="transparent"
   >
-    <Image alt={description} boxSize="32px" src={iconPath} />
+    {iconPath && <Image alt={description} boxSize="32px" src={iconPath} />}
     <Text
       color="gray.800"
       fontSize="md"
