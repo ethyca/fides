@@ -22,6 +22,7 @@ import {
   useRestoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
+import { useConfirmPromotion } from "../../hooks/useConfirmPromotion";
 import hasConsentComplianceIssue from "../../utils/hasConsentComplianceIssue";
 
 interface DiscoveredAssetActionsCellProps {
@@ -41,6 +42,7 @@ export const DiscoveredAssetActionsCell = ({
   const { assetConsentStatusLabels: isConsentStatusFlagEnabled } = flags;
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
+  const { confirmPromotion, isCheckingImpact } = useConfirmPromotion();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultAssetsMutation();
   const [
@@ -54,7 +56,10 @@ export const DiscoveredAssetActionsCell = ({
   const router = useRouter();
 
   const anyActionIsLoading =
-    isAddingResults || isIgnoringResults || isRestoringResults;
+    isAddingResults ||
+    isCheckingImpact ||
+    isIgnoringResults ||
+    isRestoringResults;
 
   const {
     urn,
@@ -73,9 +78,11 @@ export const DiscoveredAssetActionsCell = ({
     hasConsentComplianceIssue(consentAggregated);
 
   const handleAdd = async () => {
-    const result = await addMonitorResultAssetsMutation({
-      urnList: [urn],
-    });
+    const confirmed = await confirmPromotion([urn]);
+    if (!confirmed) {
+      return;
+    }
+    const result = await addMonitorResultAssetsMutation({ urnList: [urn] });
     if (isErrorResult(result)) {
       message.error(getErrorMessage(result.error));
     } else {
