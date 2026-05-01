@@ -1,13 +1,5 @@
 import classNames from "classnames";
-import {
-  Button,
-  Flex,
-  Icons,
-  Popover,
-  Spin,
-  Text,
-  useNotification,
-} from "fidesui";
+import { Flex, Icons, Popover, Spin, Text, useNotification } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -92,6 +84,8 @@ export const AssessmentTaskStatusIndicator = ({
 
   const completedCount = activeTask?.completed_count ?? 0;
 
+  // A row just flipped from `generating` → `in_progress`; pull fresh list
+  // data so the card updates in place without requiring user interaction.
   const prevCompletedCountRef = useRef<number | null>(null);
   useEffect(() => {
     if (!activeTask) {
@@ -102,26 +96,36 @@ export const AssessmentTaskStatusIndicator = ({
       prevCompletedCountRef.current !== null &&
       completedCount > prevCompletedCountRef.current
     ) {
-      notificationApi.success({
-        message: "New assessment results are available",
-        actions: onTaskFinish ? (
-          <Button
-            size="small"
-            onClick={() => {
-              onTaskFinish();
-              notificationApi.destroy();
-            }}
-          >
-            Reload results
-          </Button>
-        ) : undefined,
-        duration: 0,
-      });
+      onTaskFinish?.();
     }
     prevCompletedCountRef.current = completedCount;
-  }, [activeTask, completedCount, notificationApi, onTaskFinish]);
+  }, [activeTask, completedCount, onTaskFinish]);
 
-  // Detect active → idle transition for the final completion or error
+  // Active task just appeared: Celery has picked up the task and materialized
+  // the `generating` rows. The mutation's tag invalidation fired before
+  // materialization, so refetch once here to surface those rows. Skip the
+  // very first observation so a page mount with an already-active task
+  // doesn't trigger a redundant refetch on top of the initial query.
+  const prevActiveTaskIdRef = useRef<string | null>(null);
+  const hasObservedActiveTaskRef = useRef(false);
+  useEffect(() => {
+    const currentId = activeTask?.id ?? null;
+    if (
+      hasObservedActiveTaskRef.current &&
+      currentId &&
+      currentId !== prevActiveTaskIdRef.current
+    ) {
+      onTaskFinish?.();
+    }
+    prevActiveTaskIdRef.current = currentId;
+    hasObservedActiveTaskRef.current = true;
+  }, [activeTask, onTaskFinish]);
+
+  // Detect active → idle transition for the final completion or error.
+  // The completed-count effect above can't catch the last increment because
+  // `activeTask` flips to null on the same poll that delivers it (the task
+  // status moves to COMPLETE/ERROR and falls out of the active filter), so
+  // refetch once here to surface the final row update.
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
@@ -135,21 +139,10 @@ export const AssessmentTaskStatusIndicator = ({
         });
       } else {
         notificationApi.success({
-          message: "New assessment results are available",
-          actions: onTaskFinish ? (
-            <Button
-              size="small"
-              onClick={() => {
-                onTaskFinish();
-                notificationApi.destroy();
-              }}
-            >
-              Reload results
-            </Button>
-          ) : undefined,
-          duration: 0,
+          message: "Assessment evaluation complete",
         });
       }
+      onTaskFinish?.();
     }
     hadActiveTaskRef.current = activeTask !== null;
   }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
@@ -161,7 +154,9 @@ export const AssessmentTaskStatusIndicator = ({
     if (activeTask) {
       return (
         <Flex align="center" gap="small">
-          <Spin size="small" />
+          <div>
+            <Spin size="small" />
+          </div>
           <Text type="secondary" size="sm">
             Evaluation in progress · {Math.round(activeTask.progress)}%
           </Text>
