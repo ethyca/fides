@@ -1,4 +1,4 @@
-import { Card, Empty, Form, Input, Space } from "fidesui";
+import { Button, Card, Empty, Form, Input, Space } from "fidesui";
 import { useState } from "react";
 
 import { ActionEditModal, ActionFormValues } from "./ActionEditModal";
@@ -62,8 +62,7 @@ export const PrivacyCenterConfigSection = ({
     return (
       <Card title="Privacy center config">
         <Empty description="No privacy center config yet.">
-          <button
-            type="button"
+          <Button
             onClick={() =>
               onChange?.({
                 title: "",
@@ -92,7 +91,7 @@ export const PrivacyCenterConfigSection = ({
             }
           >
             Set up privacy center config
-          </button>
+          </Button>
         </Empty>
       </Card>
     );

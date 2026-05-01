@@ -3,6 +3,18 @@ import userEvent from "@testing-library/user-event";
 
 import { ActionEditModal } from "../ActionEditModal";
 
+jest.mock("~/features/policies/policy.slice", () => ({
+  useGetPoliciesQuery: () => ({
+    data: {
+      items: [
+        { name: "Default Access Policy", key: "default_access_policy" },
+        { name: "Default Erasure Policy", key: "default_erasure_policy" },
+      ],
+    },
+    isLoading: false,
+  }),
+}));
+
 // Test adaptation: antd's Select inside an antd Modal triggers a known jsdom +
 // nwsapi crash ("e.parentElement.querySelectorAll(...).includes is not a
 // function") when the dropdown's virtual list layer mounts. Other tests in this
@@ -18,6 +30,11 @@ jest.mock(
             value,
             onChange,
             options,
+            loading: _loading,
+            showSearch: _showSearch,
+            optionFilterProp: _optionFilterProp,
+            allowClear: _allowClear,
+            mode: _mode,
             ...props
           }: any) => (
             <select
@@ -48,8 +65,8 @@ describe("ActionEditModal", () => {
       <ActionEditModal open initial={null} onCancel={jest.fn()} onOk={onOk} />,
     );
 
-    await userEvent.type(
-      screen.getByLabelText(/policy key/i),
+    await userEvent.selectOptions(
+      screen.getByLabelText(/^policy$/i),
       "default_access_policy",
     );
     await userEvent.type(screen.getByLabelText(/^title/i), "Access My Data");
