@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import type { DataPurposeResponse } from "~/types/api/models/DataPurposeResponse";
 
 interface DataPurposeParams {
   search?: string;
@@ -8,23 +9,7 @@ interface DataPurposeParams {
   status?: string;
 }
 
-export interface DataPurpose {
-  id?: string;
-  fides_key: string;
-  name: string;
-  description?: string | null;
-  data_use: string;
-  data_subject?: string | null;
-  data_categories?: string[];
-  legal_basis_for_processing?: string | null;
-  flexible_legal_basis_for_processing?: boolean;
-  special_category_legal_basis?: string | null;
-  impact_assessment_location?: string | null;
-  retention_period?: string | null;
-  features?: string[];
-  created_at?: string;
-  updated_at?: string;
-}
+export type DataPurpose = DataPurposeResponse;
 
 export interface DataPurposeFilterOption {
   value: string;

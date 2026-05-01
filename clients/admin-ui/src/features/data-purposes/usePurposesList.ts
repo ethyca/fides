@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   type DataPurpose,
@@ -12,42 +12,58 @@ const EMPTY_FILTER_OPTIONS: DataPurposeFilterOptions = {
   categories: [],
 };
 
-interface UsePurposesListOptions {
-  dataUseFilter?: string | null;
-  consumerFilter?: string | null;
-  categoryFilter?: string | null;
-  statusFilter?: string | null;
-}
-
-const usePurposesList = ({
-  dataUseFilter = null,
-  consumerFilter = null,
-  categoryFilter = null,
-  statusFilter = null,
-}: UsePurposesListOptions = {}) => {
+const usePurposesList = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
+  const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-  const { data, error, isLoading, isFetching } = useGetAllDataPurposesQuery({
-    search: searchQuery || undefined,
-    data_use: dataUseFilter ?? undefined,
-    consumer: consumerFilter ?? undefined,
-    category: categoryFilter ?? undefined,
-    status: statusFilter ?? undefined,
-  });
+  const filterParams = useMemo(
+    () => ({
+      search: searchQuery || undefined,
+      data_use: dataUseFilter ?? undefined,
+      consumer: consumerFilter ?? undefined,
+      category: categoryFilter ?? undefined,
+      status: statusFilter ?? undefined,
+    }),
+    [searchQuery, dataUseFilter, consumerFilter, categoryFilter, statusFilter],
+  );
+
+  const { data, error, isLoading, isFetching } =
+    useGetAllDataPurposesQuery(filterParams);
 
   const items: DataPurpose[] = useMemo(() => data?.items ?? [], [data?.items]);
   const total = data?.total ?? 0;
   const filterOptions = data?.filter_options ?? EMPTY_FILTER_OPTIONS;
 
+  const clearFilters = useCallback(() => {
+    setSearchQuery("");
+    setDataUseFilter(null);
+    setConsumerFilter(null);
+    setCategoryFilter(null);
+    setStatusFilter(null);
+  }, []);
+
   return {
     items,
     total,
     filterOptions,
-    searchQuery,
-    updateSearch: setSearchQuery,
     isLoading,
     isFetching,
     error,
+    searchQuery,
+    setSearchQuery,
+    dataUseFilter,
+    setDataUseFilter,
+    consumerFilter,
+    setConsumerFilter,
+    categoryFilter,
+    setCategoryFilter,
+    statusFilter,
+    setStatusFilter,
+    clearFilters,
+    filterParams,
   };
 };
 

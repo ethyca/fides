@@ -12,34 +12,27 @@ import usePurposesList from "~/features/data-purposes/usePurposesList";
 
 const DataPurposesPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
-  const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const {
     items: purposes,
     filterOptions,
-    searchQuery,
-    updateSearch,
     isLoading,
     error,
-  } = usePurposesList({
+    searchQuery,
+    setSearchQuery,
     dataUseFilter,
+    setDataUseFilter,
     consumerFilter,
+    setConsumerFilter,
     categoryFilter,
+    setCategoryFilter,
     statusFilter,
-  });
+    setStatusFilter,
+    clearFilters,
+    filterParams,
+  } = usePurposesList();
   const isError = Boolean(error);
   const { data: summaries = [] } = useGetPurposeSummariesQuery();
   const { downloadRoPA, isDownloadingRoPA } = useDownloadRoPA();
-
-  const clearFilters = () => {
-    setDataUseFilter(null);
-    setConsumerFilter(null);
-    setCategoryFilter(null);
-    setStatusFilter(null);
-    updateSearch("");
-  };
 
   return (
     <FixedLayout title="Purposes" fullHeight>
@@ -49,22 +42,18 @@ const DataPurposesPage: NextPage = () => {
           <Flex gap="small">
             <Button
               icon={<Icons.Download />}
-              onClick={() =>
-                downloadRoPA({
-                  search: searchQuery || undefined,
-                  data_use: dataUseFilter ?? undefined,
-                  consumer: consumerFilter ?? undefined,
-                  category: categoryFilter ?? undefined,
-                  status: statusFilter ?? undefined,
-                })
-              }
+              onClick={() => downloadRoPA(filterParams)}
               loading={isDownloadingRoPA}
               disabled={purposes.length === 0}
             >
               Download RoPA
             </Button>
-            <Button type="primary" onClick={() => setModalOpen(true)}>
-              + New purpose
+            <Button
+              type="primary"
+              icon={<Icons.Add />}
+              onClick={() => setModalOpen(true)}
+            >
+              New purpose
             </Button>
           </Flex>
         }
@@ -95,7 +84,7 @@ const DataPurposesPage: NextPage = () => {
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           searchQuery={searchQuery}
-          onSearchChange={updateSearch}
+          onSearchChange={setSearchQuery}
           onClearFilters={clearFilters}
           onCreatePurpose={() => setModalOpen(true)}
         />

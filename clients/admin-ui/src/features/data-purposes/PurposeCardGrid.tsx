@@ -3,6 +3,7 @@ import {
   Col,
   Divider,
   Flex,
+  Icons,
   Input,
   Result,
   Row,
@@ -131,8 +132,12 @@ const PurposeCardGrid = ({
           title="No purposes yet"
           subTitle="Define your first purpose to start governing how data flows through your systems."
           extra={
-            <Button type="primary" onClick={onCreatePurpose}>
-              + New purpose
+            <Button
+              type="primary"
+              icon={<Icons.Add />}
+              onClick={onCreatePurpose}
+            >
+              New purpose
             </Button>
           }
         />
@@ -160,7 +165,13 @@ const PurposeCardGrid = ({
             <Divider className="!mt-0 mb-4" />
             <Row gutter={[16, 16]}>
               {items.map((purpose) => (
-                <Col key={purpose.id ?? purpose.fides_key} span={6}>
+                <Col
+                  key={purpose.id ?? purpose.fides_key}
+                  xs={24}
+                  sm={12}
+                  lg={8}
+                  xl={6}
+                >
                   <PurposeCard
                     purpose={purpose}
                     summary={summariesByKey.get(purpose.fides_key)}
