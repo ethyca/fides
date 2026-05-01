@@ -4,11 +4,14 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
+    DEFAULT_FILE_MAX_SIZE_BYTES,
     ConsentConfigPage,
     CustomPrivacyRequestField,
+    FileUploadCustomPrivacyRequestField,
     IdentityInputs,
     LocationCustomPrivacyRequestField,
     PrivacyCenterConfig,
+    _default_allowed_mime_types,
     get_field_type_discriminator,
     reorder_custom_privacy_request_fields,
 )
@@ -734,3 +737,62 @@ class TestReorderCustomPrivacyRequestFields:
         result = reorder_custom_privacy_request_fields(config)
         keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
         assert keys == ["b", "a", "new_field"]  # new_field appended at end
+
+
+class TestFileUploadCustomPrivacyRequestField:
+    def test_defaults(self):
+        field = FileUploadCustomPrivacyRequestField(label="Receipt")
+        assert field.field_type == "file"
+        assert field.required is False
+        assert field.max_size_bytes == DEFAULT_FILE_MAX_SIZE_BYTES
+        assert field.allowed_mime_types == sorted(_default_allowed_mime_types())
+
+    def test_explicit_allowed_mime_types(self):
+        field = FileUploadCustomPrivacyRequestField(
+            label="Receipt", allowed_mime_types=["application/pdf"]
+        )
+        assert field.allowed_mime_types == ["application/pdf"]
+
+    def test_rejects_options(self):
+        with pytest.raises(ValidationError, match="do not support options"):
+            FileUploadCustomPrivacyRequestField(label="Receipt", options=["a"])
+
+    def test_rejects_empty_allowed_mime_types(self):
+        with pytest.raises(ValidationError, match="must not be empty"):
+            FileUploadCustomPrivacyRequestField(label="Receipt", allowed_mime_types=[])
+
+    def test_rejects_unsupported_mime(self):
+        with pytest.raises(ValidationError, match="Unsupported MIME types"):
+            FileUploadCustomPrivacyRequestField(
+                label="Receipt", allowed_mime_types=["application/x-fake"]
+            )
+
+    def test_rejects_zero_max_size(self):
+        with pytest.raises(ValidationError):
+            FileUploadCustomPrivacyRequestField(label="Receipt", max_size_bytes=0)
+
+
+class TestFieldTypeDiscriminator:
+    def test_dispatches_file(self):
+        assert get_field_type_discriminator({"field_type": "file"}) == "file"
+
+    def test_dispatches_location(self):
+        assert get_field_type_discriminator({"field_type": "location"}) == "location"
+
+    def test_dispatches_custom_default(self):
+        assert get_field_type_discriminator({"field_type": "text"}) == "custom"
+
+    def test_dispatches_from_model_instance(self):
+        field = FileUploadCustomPrivacyRequestField(label="Receipt")
+        assert get_field_type_discriminator(field) == "file"
+
+    def test_privacy_center_config_parses_file_field(self):
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        config_data["actions"][0]["custom_privacy_request_fields"] = {
+            "receipt": {"label": "Receipt", "field_type": "file"},
+        }
+        config = PrivacyCenterConfig(**config_data)
+        field = config.actions[0].custom_privacy_request_fields["receipt"]
+        assert isinstance(field, FileUploadCustomPrivacyRequestField)

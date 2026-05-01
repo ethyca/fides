@@ -94,6 +94,38 @@ dataset:
     - name: username
       data_categories:
         - user.account.username
+  - name: attachment_user_provided
+    fields:
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: field_name
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: object_key
+      data_categories:
+      - system.operations
+    - name: policy_key
+      data_categories:
+      - system.operations
+    - name: promoted_at
+      data_categories:
+      - system.operations
+    - name: property_id
+      data_categories:
+      - system.operations
+    - name: status
+      data_categories:
+      - system.operations
+    - name: storage_key
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: answer_version
     description: 'Immutable history of assessment answer versions'
     fields:
