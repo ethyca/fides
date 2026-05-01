@@ -61,22 +61,29 @@ class AttachmentUserProvidedRepository:
             .all()
         )
 
+    @staticmethod
+    def assert_all_uploaded(rows: list[AttachmentUserProvided]) -> None:
+        """Raise :class:`InvalidAttachmentStateError` if any row is not in
+        ``uploaded``. Caller uses this to fail fast before mutating state."""
+        for row in rows:
+            if row.status != AttachmentUserProvidedStatus.uploaded:
+                raise InvalidAttachmentStateError(row.object_key, row.status)
+
     @with_optional_sync_session
     def mark_promoted(
         self,
-        rows: list[AttachmentUserProvided],
+        row: AttachmentUserProvided,
         *,
         promoted_at: Optional[datetime] = None,
         session: Session,  # pylint: disable=unused-argument
     ) -> None:
-        """Flip rows from ``uploaded`` to ``promoted``.
+        """Flip a single row from ``uploaded`` to ``promoted``.
 
-        Raises :class:`InvalidAttachmentStateError` if any row is not in
-        ``uploaded``.
+        Raises :class:`InvalidAttachmentStateError` if the row is not in
+        ``uploaded``. Per-row so callers can flip after each successful
+        side effect; a mid-batch failure leaves remaining rows alone.
         """
-        now = promoted_at or datetime.now(timezone.utc)
-        for row in rows:
-            if row.status != AttachmentUserProvidedStatus.uploaded:
-                raise InvalidAttachmentStateError(row.object_key, row.status)
-            row.status = AttachmentUserProvidedStatus.promoted
-            row.promoted_at = now
+        if row.status != AttachmentUserProvidedStatus.uploaded:
+            raise InvalidAttachmentStateError(row.object_key, row.status)
+        row.status = AttachmentUserProvidedStatus.promoted
+        row.promoted_at = promoted_at or datetime.now(timezone.utc)

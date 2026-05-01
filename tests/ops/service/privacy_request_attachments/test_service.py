@@ -424,6 +424,15 @@ class TestPromoteRowsToAttachments:
                 )
             instance.delete.assert_called_once_with(first)
 
+        # Both rows must remain ``uploaded`` after the failure: the first
+        # was flipped to ``promoted`` mid-loop and must be rolled back so a
+        # caller commit cannot persist a ``promoted`` row pointing at the
+        # Attachment we just deleted; the second never got that far.
+        assert row1.status == AttachmentUserProvidedStatus.uploaded
+        assert row1.promoted_at is None
+        assert row2.status == AttachmentUserProvidedStatus.uploaded
+        assert row2.promoted_at is None
+
         row1.delete(db)
         row2.delete(db)
 

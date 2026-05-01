@@ -13,6 +13,7 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType,
     AttachmentUserProvided,
+    AttachmentUserProvidedStatus,
 )
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
@@ -178,12 +179,17 @@ class AttachmentUserProvidedService:
         if not rows:
             return
 
+        self._repo.assert_all_uploaded(rows)
+
         provider, bucket, storage_config = _get_provider_and_bucket(session)
         attachment_service = AttachmentService(db=session)
 
-        self._repo.mark_promoted(rows, session=session)
-
-        created: list[Any] = []
+        # ``(row, attachment)`` pairs we have already promoted in-memory.
+        # On a mid-loop failure we use this to undo BOTH the Attachment
+        # records and the in-memory ``promoted`` flips so a caller commit
+        # (e.g. ``privacy_request.delete``) cannot persist a ``promoted``
+        # row that points at no Attachment.
+        created: list[tuple[AttachmentUserProvided, Any]] = []
         try:
             for row in rows:
                 file_content = provider.download(bucket, row.object_key)
@@ -204,7 +210,10 @@ class AttachmentUserProvidedService:
                         }
                     ],
                 )
-                created.append(attachment)
+                # Flip only after a successful create_and_upload so the
+                # row's status invariant tracks Attachment existence.
+                self._repo.mark_promoted(row, session=session)
+                created.append((row, attachment))
                 logger.info(
                     "Promoted attachment {} on request {} → Attachment {}",
                     row.id,
@@ -212,7 +221,7 @@ class AttachmentUserProvidedService:
                     attachment.id,
                 )
         except Exception:
-            for attachment in created:
+            for row, attachment in created:
                 try:
                     attachment_service.delete(attachment)
                 except Exception:
@@ -222,6 +231,8 @@ class AttachmentUserProvidedService:
                         attachment.id,
                         exc_info=True,
                     )
+                row.status = AttachmentUserProvidedStatus.uploaded
+                row.promoted_at = None
             raise
 
         # Phase 3: best-effort delete of temp objects.
