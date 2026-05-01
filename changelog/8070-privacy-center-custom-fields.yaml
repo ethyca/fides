@@ -1,0 +1,4 @@
+type: Added
+description: Support for checkbox, checkbox_group, textarea, and file upload custom field types in the privacy center request form
+pr: 8070
+labels: []
