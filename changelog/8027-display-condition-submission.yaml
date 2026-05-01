@@ -1,0 +1,4 @@
+type: Added
+description: Added submission-time resolution and enforcement of display_condition rules on custom Privacy Center fields
+pr: 8027
+labels: []

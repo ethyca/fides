@@ -34,11 +34,13 @@ from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_center_config import (
     LocationCustomPrivacyRequestField,
+    PrivacyRequestOption,
     reorder_custom_privacy_request_fields,
 )
 from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
+from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
 from fides.api.schemas.privacy_request import (
     BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
@@ -58,6 +60,7 @@ from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
@@ -68,6 +71,10 @@ from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
+)
+from fides.service.privacy_request.custom_field_display_evaluator import (
+    DisplayConditionViolation,
+    evaluate_submission,
 )
 from fides.service.privacy_request.privacy_request_csv_download import (
     privacy_request_csv_download,
@@ -200,19 +207,7 @@ class PrivacyRequestService:
         if privacy_request_data.location:
             return
 
-        config_dict = self._resolve_privacy_center_config_dict(
-            privacy_request_data.property_id
-        )
-        if not config_dict:
-            return
-
-        privacy_center_config = self._parse_privacy_center_config(config_dict)
-        if not privacy_center_config:
-            return
-
-        action = self._get_matching_action(
-            privacy_center_config, privacy_request_data.policy_key
-        )
+        action = self._resolve_action_for_request(privacy_request_data)
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -290,22 +285,73 @@ class PrivacyRequestService:
     @staticmethod
     def _get_matching_action(
         privacy_center_config: PrivacyCenterConfigSchema, policy_key: str
-    ) -> Optional[Any]:
+    ) -> Optional[PrivacyRequestOption]:
         """Return the action entry matching the given policy key, if any."""
         for action in privacy_center_config.actions:
             if action.policy_key == policy_key:
                 return action
         return None
 
+    def _resolve_action_for_request(
+        self, privacy_request_data: PrivacyRequestCreate
+    ) -> Optional[PrivacyRequestOption]:
+        """Walk config dict → parsed schema → matching action; return
+        ``None`` at the first step that yields nothing."""
+        property_id = privacy_request_data.property_id
+        policy_key = privacy_request_data.policy_key
+        config_dict = self._resolve_privacy_center_config_dict(property_id)
+        if not config_dict:
+            logger.debug("No privacy center config for property_id={}", property_id)
+            return None
+
+        privacy_center_config = self._parse_privacy_center_config(config_dict)
+        if not privacy_center_config:
+            logger.debug("Config failed to parse for property_id={}", property_id)
+            return None
+
+        action = self._get_matching_action(privacy_center_config, policy_key)
+        if not action or not action.custom_privacy_request_fields:
+            logger.debug("No matching action with fields for policy_key={}", policy_key)
+            return None
+
+        return action
+
+    def _validate_field_visibility(
+        self, privacy_request_data: PrivacyRequestCreate
+    ) -> None:
+        """Reject payloads that violate the action's display_condition
+        contract; translate :class:`DisplayConditionViolation` to ``PrivacyRequestError``."""
+        action = self._resolve_action_for_request(privacy_request_data)
+        if not action or not action.custom_privacy_request_fields:
+            return
+
+        # Location fields validated separately in ``_validate_required_location_fields``.
+        fields: dict[str, BaseCustomPrivacyRequestField] = {
+            key: cfg
+            for key, cfg in action.custom_privacy_request_fields.items()
+            if not isinstance(cfg, LocationCustomPrivacyRequestField)
+        }
+        if not fields:
+            return
+
+        try:
+            evaluate_submission(
+                fields=fields,
+                submitted=privacy_request_data.custom_privacy_request_fields or {},
+                condition_evaluator=ConditionEvaluator(self.db),
+            )
+        except DisplayConditionViolation as exc:
+            raise PrivacyRequestError(
+                str(exc), privacy_request_data.model_dump(mode="json")
+            ) from exc
+
     @staticmethod
     def _is_required_location_missing(
-        action: Any, privacy_request_data: PrivacyRequestCreate
+        action: PrivacyRequestOption, privacy_request_data: PrivacyRequestCreate
     ) -> bool:
         """Check if any required location fields exist without values in the request."""
-        if not getattr(action, "custom_privacy_request_fields", None):
-            return False
-
-        custom_fields = action.custom_privacy_request_fields
+        # Caller already guards against ``None``/empty; ``or {}`` narrows for mypy.
+        custom_fields = action.custom_privacy_request_fields or {}
         for field_name, field_config in custom_fields.items():
             if not isinstance(field_config, LocationCustomPrivacyRequestField):
                 continue
@@ -368,6 +414,9 @@ class PrivacyRequestService:
 
         # Validate location is provided for required location fields
         self._validate_required_location_fields(privacy_request_data)
+
+        # Validate display_condition visibility: no gated-off fields submitted,
+        self._validate_field_visibility(privacy_request_data)
 
         policy = Policy.get_by(
             db=self.db,
