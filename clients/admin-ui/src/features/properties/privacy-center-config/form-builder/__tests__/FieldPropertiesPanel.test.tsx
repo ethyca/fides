@@ -1,8 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { render as rtlRender, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { FidesUIProvider } from "fidesui";
 
 import { FieldPropertiesPanel } from "../FieldPropertiesPanel";
 import type { JsonRenderSpec } from "../mapper";
+
+const render = (ui: React.ReactElement) =>
+  rtlRender(<FidesUIProvider>{ui}</FidesUIProvider>);
 
 const noop = () => {};
 
@@ -82,7 +86,7 @@ describe("FieldPropertiesPanel", () => {
     expect(screen.getByTestId("option-add")).toBeInTheDocument();
   });
 
-  it("calls onRemoveField when 'Remove field' is clicked", async () => {
+  it("confirms before removing the field", async () => {
     const onRemoveField = jest.fn();
     render(
       <FieldPropertiesPanel
@@ -93,6 +97,35 @@ describe("FieldPropertiesPanel", () => {
       />,
     );
     await userEvent.click(screen.getByTestId("remove-field-button"));
+
+    // Confirmation modal renders in a portal; find the "Remove" button inside it.
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent(/remove field/i);
+    expect(onRemoveField).not.toHaveBeenCalled();
+
+    const confirmButton = within(dialog).getByRole("button", {
+      name: /remove/i,
+    });
+    await userEvent.click(confirmButton);
     expect(onRemoveField).toHaveBeenCalledWith("f_email");
+  });
+
+  it("does not remove the field when confirmation is cancelled", async () => {
+    const onRemoveField = jest.fn();
+    render(
+      <FieldPropertiesPanel
+        spec={specWithText}
+        selectedElementId="f_email"
+        onUpdateField={noop}
+        onRemoveField={onRemoveField}
+      />,
+    );
+    await userEvent.click(screen.getByTestId("remove-field-button"));
+    const dialog = await screen.findByRole("dialog");
+    const cancelButton = within(dialog).getByRole("button", {
+      name: /cancel/i,
+    });
+    await userEvent.click(cancelButton);
+    expect(onRemoveField).not.toHaveBeenCalled();
   });
 });

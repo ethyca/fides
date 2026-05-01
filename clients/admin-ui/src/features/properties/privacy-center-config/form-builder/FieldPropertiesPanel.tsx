@@ -1,4 +1,13 @@
-import { Button, Empty, Form, Input, Space, Switch } from "fidesui";
+import {
+  Button,
+  Empty,
+  Form,
+  Icons,
+  Input,
+  Space,
+  Switch,
+  useModal,
+} from "fidesui";
 import { useEffect } from "react";
 
 import type { ComponentType } from "./catalog";
@@ -35,13 +44,16 @@ const stripUndefined = (
   return result;
 };
 
-// Editor for a list of string options. Used by Select / MultiSelect.
+// Editor for a list of string options. Used by Select / MultiSelect / Location.
 const OptionsEditor = ({
   value = [],
   onChange,
+  minItems = 1,
 }: {
   value?: string[];
   onChange?: (next: string[]) => void;
+  /** Minimum number of options to keep. Below this, remove is disabled. */
+  minItems?: number;
 }) => {
   const setItem = (idx: number, next: string) => {
     const copy = [...value];
@@ -69,11 +81,11 @@ const OptionsEditor = ({
           />
           <Button
             onClick={() => remove(idx)}
-            disabled={value.length <= 1}
+            disabled={value.length <= minItems}
             data-testid={`option-remove-${idx}`}
-          >
-            Remove
-          </Button>
+            icon={<Icons.TrashCan />}
+            aria-label={`Remove option ${idx + 1}`}
+          />
         </Space.Compact>
       ))}
       <Button onClick={append} block data-testid="option-add">
@@ -99,13 +111,38 @@ export const FieldPropertiesPanel = ({
   onRemoveField,
 }: FieldPropertiesPanelProps) => {
   const [form] = Form.useForm<FormValues>();
+  const modal = useModal();
 
   const element = selectedElementId
     ? spec?.elements?.[selectedElementId]
     : null;
 
-  // Reset form whenever the selection changes so inputs reflect the
-  // current field's props.
+  const handleRemoveClick = () => {
+    if (!selectedElementId || !element) {
+      return;
+    }
+    const fieldName =
+      (element.props as { name?: string }).name ?? selectedElementId;
+    modal.confirm({
+      title: "Remove field?",
+      content: (
+        <span>
+          This will remove <code>{fieldName}</code> from the form. You can undo
+          this by adding the field again before saving.
+        </span>
+      ),
+      okText: "Remove",
+      okButtonProps: { danger: true },
+      centered: true,
+      onOk: () => onRemoveField(selectedElementId),
+    });
+  };
+
+  // Re-sync the form ONLY when the selection changes — not when the
+  // element's props change. The antd Form is the source of truth while
+  // the user is typing; re-applying setFieldsValue on every keystroke
+  // would steal focus from inputs (especially the Options editor).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (element) {
       form.resetFields();
@@ -113,7 +150,7 @@ export const FieldPropertiesPanel = ({
         element.props as Parameters<typeof form.setFieldsValue>[0],
       );
     }
-  }, [selectedElementId, element, form]);
+  }, [selectedElementId]);
 
   if (!element || !selectedElementId) {
     return <EmptyState />;
@@ -139,15 +176,24 @@ export const FieldPropertiesPanel = ({
 
   return (
     <div style={panelStyle} data-testid="field-properties-panel">
-      <h3 style={{ marginTop: 0, marginBottom: 4 }}>{componentType} field</h3>
-      <p
+      <div
         style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
           marginBottom: 16,
-          color: "var(--fidesui-color-text-secondary)",
         }}
       >
-        Editing <code>{(element.props as { name?: string }).name}</code>
-      </p>
+        <h3 style={{ margin: 0 }}>{componentType} field</h3>
+        <Button
+          type="text"
+          icon={<Icons.TrashCan />}
+          onClick={handleRemoveClick}
+          aria-label="Remove field"
+          data-testid="remove-field-button"
+        />
+      </div>
       <Form
         form={form}
         layout="vertical"
@@ -239,7 +285,7 @@ export const FieldPropertiesPanel = ({
               name="options"
               tooltip="Override the default country list. Leave empty for the built-in list."
             >
-              <OptionsEditor />
+              <OptionsEditor minItems={0} />
             </Form.Item>
             <Form.Item
               label="IP geolocation hint"
@@ -252,16 +298,6 @@ export const FieldPropertiesPanel = ({
           </>
         )}
       </Form>
-      <div style={{ flex: 1 }} />
-      <Button
-        danger
-        block
-        onClick={() => onRemoveField(selectedElementId)}
-        data-testid="remove-field-button"
-        style={{ marginTop: 16 }}
-      >
-        Remove field
-      </Button>
     </div>
   );
 };

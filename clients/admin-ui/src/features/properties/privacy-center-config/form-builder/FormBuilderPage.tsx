@@ -1,12 +1,4 @@
-import {
-  Alert,
-  Button,
-  Flex,
-  Modal,
-  Space,
-  Splitter,
-  useMessage,
-} from "fidesui";
+import { Alert, Button, Modal, Splitter, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -74,14 +66,20 @@ const describeDropped = (d: DroppedFeature): string => {
   }
 };
 
-const splitterStyle: React.CSSProperties = {
-  height: "calc(100vh - 240px)",
-  minHeight: 480,
+const rootStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  minHeight: 0,
+  width: "100%",
 };
 
-const stickyFooterStyle: React.CSSProperties = {
-  borderTop: "1px solid var(--fidesui-color-border)",
-  backgroundColor: "var(--fidesui-color-bg-container)",
+const splitterStyle: React.CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  border: "1px solid var(--fidesui-neutral-100)",
+  borderRadius: 4,
+  overflow: "hidden",
 };
 
 export const FormBuilderPage = ({
@@ -295,7 +293,7 @@ export const FormBuilderPage = ({
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <div style={rootStyle}>
       <FormGuard
         id={`form-builder-${propertyId}-${actionPolicyKey}`}
         name={`Form Builder (${actionPolicyKey})`}
@@ -334,6 +332,24 @@ export const FormBuilderPage = ({
             onFieldClick={handleSelectField}
             onAddField={handleAddField}
             onReorderFields={handleReorderFields}
+            actions={
+              <>
+                <Button
+                  onClick={() => router.push(`/properties/${propertyId}`)}
+                  data-testid="cancel-button"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleSave}
+                  loading={saving}
+                  data-testid="save-button"
+                >
+                  Save
+                </Button>
+              </>
+            }
           />
         </Splitter.Panel>
         <Splitter.Panel
@@ -350,21 +366,6 @@ export const FormBuilderPage = ({
           />
         </Splitter.Panel>
       </Splitter>
-      <Flex
-        justify="flex-end"
-        gap="small"
-        className="sticky bottom-0 z-10 px-4 py-2"
-        style={stickyFooterStyle}
-      >
-        <Button
-          type="primary"
-          onClick={handleSave}
-          loading={saving}
-          data-testid="save-button"
-        >
-          Save
-        </Button>
-      </Flex>
       <Modal
         open={confirmingDropped}
         title="Some features won't be saved"
@@ -385,6 +386,6 @@ export const FormBuilderPage = ({
           ))}
         </ul>
       </Modal>
-    </Space>
+    </div>
   );
 };

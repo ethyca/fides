@@ -62,19 +62,27 @@ const MultiSelectField = ({ props }: { props: BaseFieldProps }) => (
   </FieldWrapper>
 );
 
-const LocationField = ({ props }: { props: BaseFieldProps }) => (
-  <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required}>
-      <Select
-        aria-label={props.label}
-        data-testid={`field-${props.name}`}
-        options={(
-          props.options ?? ["United States", "Canada", "United Kingdom"]
-        ).map((o) => ({ label: o, value: o }))}
-      />
-    </Form.Item>
-  </FieldWrapper>
-);
+const LOCATION_DEFAULT_OPTIONS = ["United States", "Canada", "United Kingdom"];
+
+const LocationField = ({ props }: { props: BaseFieldProps }) => {
+  // Empty array means "no custom options" — fall back to defaults so the
+  // dropdown is never empty in the preview.
+  const options =
+    props.options && props.options.length > 0
+      ? props.options
+      : LOCATION_DEFAULT_OPTIONS;
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label={props.label} required={props.required}>
+        <Select
+          aria-label={props.label}
+          data-testid={`field-${props.name}`}
+          options={options.map((o) => ({ label: o, value: o }))}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
 
 export const { registry } = defineRegistry(catalog.jsonRender, {
   components: {
