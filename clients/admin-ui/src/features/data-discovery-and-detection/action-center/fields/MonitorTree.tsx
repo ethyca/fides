@@ -52,6 +52,7 @@ import {
   shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
 import { intoDiffStatus } from "./utils";
 
@@ -100,6 +101,10 @@ const mapResponseToTreeData = (
           )
         : undefined,
       diffStatus: treeNode.diff_status,
+      status:
+        treeNode.diff_status === DiffStatus.REMOVAL
+          ? TreeResourceChangeIndicator.REMOVAL
+          : undefined,
       isLeaf:
         treeNode.resource_type === StagedResourceTypeValue.FIELD ||
         !treeNode.has_grandchildren,
