@@ -15,6 +15,7 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
+from fides.api.request_context import get_client_id
 from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.service.storage.providers import StorageProviderFactory
 from fides.api.service.storage.providers.base import StorageProvider
@@ -208,6 +209,11 @@ class AttachmentService:
             Exception: If upload fails (after rolling back DB record).
         """
         db = self._require_db()
+
+        # Populate client_id from request context if not already set by the caller.
+        # This covers API client actors whose user_id is None.
+        if "client_id" not in data:
+            data = {**data, "client_id": get_client_id()}
 
         # Create the attachment record using internal _create_record to avoid
         # triggering the deprecation warning on the public create() method

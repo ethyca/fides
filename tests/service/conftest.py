@@ -5,7 +5,7 @@ from typing import Any, Dict
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.request_context import reset_request_context, set_user_id
+from fides.api.request_context import reset_request_context, set_client_id, set_user_id
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
 
@@ -33,6 +33,15 @@ def request_context_user_id():
     test_user_id = "context_user_123"
     set_user_id(test_user_id)
     yield test_user_id
+    reset_request_context()  # Clean up after test
+
+
+@pytest.fixture
+def request_context_client_id():
+    """Fixture that sets a client_id in the request context and cleans up after test."""
+    test_client_id = "context_client_456"
+    set_client_id(test_client_id)
+    yield test_client_id
     reset_request_context()  # Clean up after test
 
 

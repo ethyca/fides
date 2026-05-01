@@ -20,9 +20,11 @@ from dataclasses import asdict, dataclass
 from typing import Any, Optional
 
 __all__ = [
+    "get_client_id",
     "get_request_id",
     "get_user_id",
     "reset_request_context",
+    "set_client_id",
     "set_request_id",
     "set_user_id",
 ]
@@ -32,6 +34,7 @@ __all__ = [
 class RequestContext:
     user_id: Optional[str] = None
     request_id: Optional[str] = None
+    client_id: Optional[str] = None
 
 
 # A single ContextVar holding the current request context.
@@ -95,3 +98,18 @@ def get_request_id() -> Optional[str]:
 def set_request_id(request_id: Optional[str] = None) -> None:
     """Set or clear the request_id in the current request context."""
     set_request_context(request_id=request_id)
+
+
+def get_client_id() -> Optional[str]:
+    """Return the client_id from the current request context.
+
+    Set when the authenticated actor is a non-user-linked API client.
+    Mutually exclusive with user_id — only one will be non-None per request.
+    """
+    ctx = get_request_context()
+    return ctx.client_id
+
+
+def set_client_id(client_id: str) -> None:
+    """Set the client_id in the current request context."""
+    set_request_context(client_id=client_id)

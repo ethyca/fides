@@ -1,0 +1,7 @@
+# Copy this file and rename it to <pr_number>-<short-description>.yaml (e.g., 1234-add-user-endpoint.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Comments and attachments now reflect the specific API client responsible when applicable
+pr: 7869 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

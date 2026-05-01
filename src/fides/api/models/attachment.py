@@ -20,6 +20,7 @@ from fides.api.db.base_class import Base
 from fides.api.service.storage.util import AllowedFileType
 
 if TYPE_CHECKING:
+    from fides.api.models.client import ClientDetail
     from fides.api.models.comment import Comment
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
@@ -104,6 +105,9 @@ class Attachment(Base):
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
     )
+    client_id = Column(
+        String, ForeignKey("client.id", ondelete="SET NULL"), nullable=True
+    )
     # Not all users in the system have a username, and users can be deleted.
     # Store a non-normalized copy of username for these cases.
     username = Column(String, nullable=True)
@@ -117,6 +121,13 @@ class Attachment(Base):
         "FidesUser",
         lazy="selectin",
         uselist=False,
+    )
+    client = relationship(
+        "ClientDetail",
+        lazy="selectin",
+        uselist=False,
+        foreign_keys=[client_id],
+        primaryjoin="Attachment.client_id == ClientDetail.id",
     )
 
     references = relationship(
