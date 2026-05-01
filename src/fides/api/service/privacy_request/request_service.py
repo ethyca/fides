@@ -876,8 +876,10 @@ def batch_execution_and_audit_logs_by_dataset(
         if pr_id not in result:
             result[pr_id] = defaultdict(list)
 
-        dataset_name: str = log.dataset_name or log.message or audit_log_display_names.get(
-            log.status, f"Request {log.status}"
+        dataset_name: str = (
+            log.dataset_name
+            or log.message
+            or audit_log_display_names.get(log.status, f"Request {log.status}")
         )
 
         if len(result[pr_id][dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
