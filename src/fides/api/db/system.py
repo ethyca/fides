@@ -206,18 +206,23 @@ async def update_system(
     ``upsert_system`` after its existence check) should pass it through to
     avoid a redundant fetch.
     """
+    # Local variable with explicit type so mypy narrows correctly even though
+    # crud.get_resource is inferred as returning Any.
+    system: System
     if existing_system is None:
-        existing_system = await get_resource(
+        system = await get_resource(
             sql_model=System, fides_key=resource.fides_key, async_session=db
         )
+    else:
+        system = existing_system
 
     existing_system_dict = copy.deepcopy(
-        SystemSchema.model_validate(existing_system)
+        SystemSchema.model_validate(system)
     ).model_dump(mode="json")
 
     # handle the privacy declaration upsert logic
     try:
-        await upsert_privacy_declarations(db, resource, existing_system)
+        await upsert_privacy_declarations(db, resource, system)
     except Exception as e:
         log.error(
             f"Error adding privacy declarations, reverting system creation: {str(e)}"
@@ -246,17 +251,17 @@ async def update_system(
         )
 
     async with db.begin():
-        await db.refresh(existing_system)
+        await db.refresh(system)
 
         system_updated: bool = _audit_system_changes(
             db,
-            existing_system.id,
+            system.id,
             current_user_id,
             existing_system_dict,
-            SystemSchema.model_validate(existing_system).model_dump(mode="json"),
+            SystemSchema.model_validate(system).model_dump(mode="json"),
         )
 
-    return existing_system, system_updated
+    return system, system_updated
 
 
 def _audit_system_changes(
