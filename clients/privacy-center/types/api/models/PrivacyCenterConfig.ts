@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { fides__api__schemas__privacy_center_config__ConsentConfig } from "./fides__api__schemas__privacy_center_config__ConsentConfig";
+import type { MetricsConfig } from "./MetricsConfig";
 import type { PrivacyCenterLink } from "./PrivacyCenterLink";
 import type { PrivacyRequestOption } from "./PrivacyRequestOption";
 
@@ -31,4 +32,5 @@ export type PrivacyCenterConfig = {
   /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string | null;
   links?: Array<PrivacyCenterLink>;
+  metrics?: MetricsConfig | null;
 };

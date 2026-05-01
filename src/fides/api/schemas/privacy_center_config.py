@@ -142,6 +142,13 @@ class PrivacyRequestOption(FidesSchema):
     custom_privacy_request_fields: Optional[
         Dict[str, CustomPrivacyRequestFieldUnion]
     ] = None
+    verification_title: Optional[str] = None
+    verification_description: Optional[str] = None
+    verification_submit_button_text: Optional[str] = None
+    verification_resend_button_text: Optional[str] = None
+    success_title: Optional[str] = None
+    success_description: Optional[str] = None
+    success_button_text: Optional[str] = None
 
 
 class ConsentConfigButton(FidesSchema):
@@ -209,6 +216,12 @@ class PolicyUnavailableMessages(FidesSchema):
     action_link: str
 
 
+class MetricsConfig(FidesSchema):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    link_text: Optional[str] = None
+
+
 class PrivacyCenterConfig(FidesSchema):
     """
     NOTE: Add to this schema with care. Any fields added to
@@ -236,6 +249,7 @@ class PrivacyCenterConfig(FidesSchema):
     privacy_policy_url_text: Optional[str] = None
     links: List[PrivacyCenterLink] = []
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
+    metrics: Optional[MetricsConfig] = None
 
     @field_validator(
         "server_url_development",

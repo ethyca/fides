@@ -1,0 +1,4 @@
+type: Added
+description: Add configurable text for privacy center verification, success, and metrics pages via config API
+pr: 8071
+labels: []
