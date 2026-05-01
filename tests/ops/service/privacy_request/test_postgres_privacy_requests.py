@@ -404,7 +404,7 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
     }
 
     assert logs == {
-        ("Dataset reference validation", "complete", None),
+        ("Planning request execution", "complete", None),
         ("Access package upload", "complete", None),
         (
             "Dataset traversal",
@@ -437,9 +437,9 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
     logs = get_sorted_execution_logs(db, pr)
 
     assert logs == [
-        ("Dataset reference validation", "complete"),
+        ("Planning request execution", "complete"),
         ("Dataset traversal", "complete"),
-        ("Dataset reference validation", "complete"),
+        ("Planning request execution", "complete"),
         ("Access package upload", "complete"),
     ]
 

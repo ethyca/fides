@@ -2242,7 +2242,7 @@ class TestDatasetReferenceValidation:
         validation_logs = [
             log
             for log in success_logs
-            if log.dataset_name == "Dataset reference validation"
+            if log.dataset_name == "Planning request execution"
         ]
 
         assert len(validation_logs) == 1
@@ -2251,7 +2251,7 @@ class TestDatasetReferenceValidation:
         assert log.collection_name is None
         assert (
             log.message
-            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
+            == f"Planning request execution successful for privacy request: {privacy_request.id}"
         )
         assert log.action_type == privacy_request.policy.get_action_type()
 
@@ -2289,7 +2289,7 @@ class TestDatasetReferenceValidation:
         validation_logs = [
             log
             for log in error_logs
-            if log.dataset_name == "Dataset reference validation"
+            if log.dataset_name == "Planning request execution"
         ]
 
         assert len(validation_logs) == 1

@@ -1,0 +1,7 @@
+type: Changed
+description: >
+  Improved privacy request activity timeline labels: render policy_evaluated and
+  finished audit log actions with human-readable text, and rename
+  "Dataset reference validation" to "Planning request execution"
+pr: 8088
+labels: []

@@ -8,6 +8,7 @@ from httpx import HTTPStatusError
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.db.seed import create_or_update_parent_user
+from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
@@ -15,6 +16,7 @@ from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.fides.fides_client import poll_server_for_completion
 from fides.api.service.privacy_request.request_service import (
     _handle_privacy_request_requeue,
+    batch_execution_and_audit_logs_by_dataset,
     build_required_privacy_request_kwargs,
     get_cached_task_id,
     poll_for_exited_privacy_request_tasks,
@@ -1010,3 +1012,50 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
                     "is not in the queue or running" in call for call in warning_calls
                 )
                 mock_handle_requeue.assert_called_once_with(db, privacy_request)
+
+
+class TestBatchExecutionAndAuditLogsByDataset:
+    """Test that every AuditLogAction has a display-name mapping, so new
+    actions don't silently fall through to the raw snake_case
+    `f"Request {status}"` fallback."""
+
+    @pytest.mark.parametrize(
+        "action,expected_key",
+        [
+            (AuditLogAction.approved, "Request approved"),
+            (AuditLogAction.denied, "Request denied"),
+            (AuditLogAction.finished, "Request finished"),
+            (AuditLogAction.policy_evaluated, "Request policy evaluated"),
+            (
+                AuditLogAction.pre_approval_webhook_triggered,
+                "Triggered pre-approval webhooks",
+            ),
+            (
+                AuditLogAction.pre_approval_eligible,
+                "Request auto-approved by pre-approval webhooks",
+            ),
+            (
+                AuditLogAction.pre_approval_not_eligible,
+                "Request flagged for manual review by pre-approval webhooks",
+            ),
+        ],
+    )
+    def test_audit_log_action_display_names(
+        self, db, privacy_request, action, expected_key
+    ):
+        audit_log = AuditLog.create(
+            db=db,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": action,
+                "message": "",
+            },
+        )
+        try:
+            result = batch_execution_and_audit_logs_by_dataset(
+                db, [privacy_request.id]
+            )
+            assert expected_key in result[privacy_request.id]
+        finally:
+            audit_log.delete(db)

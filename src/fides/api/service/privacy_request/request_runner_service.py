@@ -606,9 +606,9 @@ def run_privacy_request(
                 privacy_request.add_success_execution_log(
                     session,
                     connection_key=None,
-                    dataset_name="Dataset reference validation",
+                    dataset_name="Planning request execution",
                     collection_name=None,
-                    message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
+                    message=f"Planning request execution successful for privacy request: {privacy_request.id}",
                     action_type=privacy_request.policy.get_action_type(),  # type: ignore
                 )
 
@@ -769,7 +769,7 @@ def run_privacy_request(
                 privacy_request.add_error_execution_log(
                     session,
                     connection_key=None,
-                    dataset_name="Dataset reference validation",
+                    dataset_name="Planning request execution",
                     collection_name=None,
                     message=str(exc),
                     action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
