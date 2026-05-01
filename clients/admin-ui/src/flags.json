@@ -75,7 +75,7 @@
     "description": "Privacy request policies management",
     "development": true,
     "test": true,
-    "production": false
+    "production": true
   },
   "alphaDarkMode": {
     "label": "Alpha light and dark theme",
