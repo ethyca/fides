@@ -42,11 +42,19 @@ export interface IntegrationNodeData extends Record<string, unknown> {
   datasets: DatasetDetail[];
 }
 
+export interface ManualTaskFieldDetail {
+  name: string;
+  type: string;
+  label?: string | null;
+  help_text?: string | null;
+  required?: boolean;
+}
+
 export interface ManualTaskNodeData extends Record<string, unknown> {
   id: string;
   name: string;
   assignees: { type: "user" | "team"; name: string }[];
-  fields: { name: string; type: string }[];
+  fields: ManualTaskFieldDetail[];
   conditions: { summary: string; expression: string }[];
   gates: string[];
 }

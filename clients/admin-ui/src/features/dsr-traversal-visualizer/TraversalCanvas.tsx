@@ -60,7 +60,12 @@ const TraversalCanvas = ({ payload, direction }: Props) => {
         <MiniMap pannable zoomable />
       </ReactFlow>
       <LegendPanel />
-      <IntegrationDetailPanel data={integrationData} onClose={clear} />
+      <IntegrationDetailPanel
+        data={integrationData}
+        edges={payload?.edges ?? []}
+        integrations={payload?.integrations ?? []}
+        onClose={clear}
+      />
       <ManualTaskDetailPanel data={manualData} onClose={clear} />
     </div>
   );
