@@ -10,6 +10,7 @@ from loguru import logger
 
 from fides.api.common_exceptions import RedisConnectionError
 from fides.api.util.cache import FidesopsRedis
+from fides.config import CONFIG
 
 T = TypeVar("T")
 
@@ -29,8 +30,9 @@ class RedisRepository(ABC, Generic[T]):
 
     PREFIX: str  # e.g. "data_purpose"
 
-    def __init__(self, cache: FidesopsRedis) -> None:
+    def __init__(self, cache: FidesopsRedis, ttl_seconds: Optional[int] = None) -> None:
         self._cache = cache
+        self._ttl_seconds = ttl_seconds if ttl_seconds is not None else CONFIG.redis.default_ttl_seconds
 
     # ── Key construction (private) ────────────────────────────────────
 
@@ -77,11 +79,13 @@ class RedisRepository(ABC, Generic[T]):
                 for field, value in self._get_index_entries(old_entity):
                     pipe.srem(self._index_key(field, value), pk)
 
-            # Write entity + add new indexes
-            pipe.set(key, self._serialize(entity))
+            # Write entity + add new indexes (all keys get a TTL)
+            pipe.set(key, self._serialize(entity), ex=self._ttl_seconds)
             pipe.sadd(self._all_key(), pk)
+            pipe.expire(self._all_key(), self._ttl_seconds)
             for field, value in self._get_index_entries(entity):
                 pipe.sadd(self._index_key(field, value), pk)
+                pipe.expire(self._index_key(field, value), self._ttl_seconds)
             pipe.execute()
         except RedisConnectionError:
             logger.error("Redis connection error during save of {}:{}", self.PREFIX, pk)
