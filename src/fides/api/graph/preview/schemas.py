@@ -67,6 +67,9 @@ class Assignee(FidesSchema):
 class ManualTaskField(FidesSchema):
     name: str
     type: str
+    label: Optional[str] = None
+    help_text: Optional[str] = None
+    required: bool = False
 
 
 class ManualTaskCondition(FidesSchema):
