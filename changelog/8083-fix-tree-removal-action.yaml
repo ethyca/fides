@@ -1,0 +1,4 @@
+type: Fixed
+description: Enable "Remove" action on tree nodes for endpoint removals in action center
+pr: 8083
+labels: []
