@@ -438,16 +438,6 @@ class PrivacyRequestService:
             raise PrivacyRequestError(
                 str(exc), privacy_request_data.model_dump(mode="json")
             ) from exc
-        if file_field_names and privacy_request_data.custom_privacy_request_fields:
-            non_file = {
-                k: v
-                for k, v in privacy_request_data.custom_privacy_request_fields.items()
-                if k not in file_field_names
-            }
-            privacy_request_data = privacy_request_data.model_copy(
-                update={"custom_privacy_request_fields": non_file or None}
-            )
-
         if privacy_request_data.property_id:
             valid_property = Property.get_by(
                 self.db, field="id", value=privacy_request_data.property_id
@@ -461,8 +451,19 @@ class PrivacyRequestService:
         # Validate location is provided for required location fields
         self._validate_required_location_fields(privacy_request_data)
 
-        # Validate display_condition visibility: no gated-off fields submitted,
+        # Validate display_condition visibility BEFORE stripping file fields so
+        # required FileUpload fields are seen as having a submitted value.
         self._validate_field_visibility(privacy_request_data)
+
+        if file_field_names and privacy_request_data.custom_privacy_request_fields:
+            non_file = {
+                k: v
+                for k, v in privacy_request_data.custom_privacy_request_fields.items()
+                if k not in file_field_names
+            }
+            privacy_request_data = privacy_request_data.model_copy(
+                update={"custom_privacy_request_fields": non_file or None}
+            )
 
         policy = Policy.get_by(
             db=self.db,

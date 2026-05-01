@@ -21,6 +21,7 @@ from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_center_config import (
     CustomPrivacyRequestField,
+    FileUploadCustomPrivacyRequestField,
     LocationCustomPrivacyRequestField,
 )
 from fides.api.schemas.privacy_request import (
@@ -1731,3 +1732,56 @@ class TestCreatePrivacyRequestAttachmentPromotion:
             ):
                 svc.create_privacy_request(_req(), authenticated=True)
         privacy_request.delete.assert_called_once()
+
+    def test_required_file_field_passes_visibility_before_strip(self):
+        # Regression: required FileUpload fields were stripped before the
+        # display_condition visibility check, causing the check to falsely
+        # raise "Required field 'X' is missing" for any required file field.
+        svc = _svc()
+        prs = "fides.service.privacy_request.privacy_request_service"
+
+        action = _make_action(
+            {
+                "doc": FileUploadCustomPrivacyRequestField(
+                    label="Doc", required=True
+                )
+            }
+        )
+
+        attachment_service = MagicMock()
+        attachment_service.resolve_file_attachments.return_value = []
+        attachment_service.promote_rows_to_attachments.return_value = None
+
+        privacy_request = MagicMock(id="pr-1")
+        policy = MagicMock(id="pol-1")
+        policy.generate_masking_secrets.return_value = {}
+
+        with (
+            patch.object(
+                svc, "_resolve_privacy_center_config_dict", return_value={"x": 1}
+            ),
+            patch.object(svc, "_parse_privacy_center_config", return_value=MagicMock()),
+            patch.object(svc, "_get_matching_action", return_value=action),
+            patch.object(svc, "_validate_required_location_fields"),
+            patch(
+                f"{prs}.AttachmentUserProvidedService", return_value=attachment_service
+            ),
+            patch(f"{prs}.Property.get_by", return_value=MagicMock(id="prop-1")),
+            patch(f"{prs}.Policy.get_by", return_value=policy),
+            patch(f"{prs}.build_required_privacy_request_kwargs", return_value={}),
+            patch(f"{prs}.PrivacyRequest.create", return_value=privacy_request),
+            patch(f"{prs}._create_or_update_custom_fields"),
+            patch(f"{prs}.cache_data"),
+            patch(f"{prs}.check_and_dispatch_error_notifications"),
+            patch(f"{prs}._handle_notifications_and_processing"),
+            patch(f"{prs}.check_for_duplicates"),
+        ):
+            result = svc.create_privacy_request(
+                _req(
+                    custom_fields={"doc": {"label": "Doc", "value": ["att-id-1"]}},
+                    property_id="prop-1",
+                ),
+                authenticated=True,
+            )
+
+        assert result is privacy_request
