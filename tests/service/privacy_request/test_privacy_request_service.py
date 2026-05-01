@@ -1639,3 +1639,95 @@ class TestValidateRequiredLocationFields:
                 match="Location is required for field 'country'",
             ):
                 svc._validate_required_location_fields(_req())
+
+
+@pytest.mark.unit
+class TestCreatePrivacyRequestAttachmentPromotion:
+    """Cover the attachment-promotion branch in ``create_privacy_request``."""
+
+    @contextmanager
+    def _drive_to_promotion(
+        self,
+        svc,
+        *,
+        attachment_rows,
+        promote_side_effect=None,
+        delete_side_effect=None,
+    ):
+        prs = "fides.service.privacy_request.privacy_request_service"
+
+        attachment_service = MagicMock()
+        attachment_service.resolve_file_attachments.return_value = attachment_rows
+        if promote_side_effect is not None:
+            attachment_service.promote_rows_to_attachments.side_effect = (
+                promote_side_effect
+            )
+        else:
+            attachment_service.promote_rows_to_attachments.return_value = None
+
+        privacy_request = MagicMock(id="pr-1")
+        if delete_side_effect is not None:
+            privacy_request.delete.side_effect = delete_side_effect
+
+        policy = MagicMock(id="pol-1")
+        policy.generate_masking_secrets.return_value = {}
+
+        with (
+            patch.object(svc, "_resolve_privacy_center_config_dict", return_value=None),
+            patch.object(svc, "_validate_required_location_fields"),
+            patch.object(svc, "_validate_field_visibility"),
+            patch(
+                f"{prs}.AttachmentUserProvidedService", return_value=attachment_service
+            ),
+            patch(f"{prs}.Policy.get_by", return_value=policy),
+            patch(f"{prs}.build_required_privacy_request_kwargs", return_value={}),
+            patch(f"{prs}.PrivacyRequest.create", return_value=privacy_request),
+            patch(f"{prs}._create_or_update_custom_fields"),
+            patch(f"{prs}.cache_data"),
+            patch(f"{prs}.check_and_dispatch_error_notifications"),
+            patch(f"{prs}._handle_notifications_and_processing"),
+            patch(f"{prs}.check_for_duplicates"),
+        ):
+            yield attachment_service, privacy_request
+
+    def test_promote_success(self):
+        svc = _svc()
+        rows = [MagicMock()]
+        with self._drive_to_promotion(svc, attachment_rows=rows) as (
+            attachment_service,
+            privacy_request,
+        ):
+            result = svc.create_privacy_request(_req(), authenticated=True)
+        attachment_service.promote_rows_to_attachments.assert_called_once()
+        privacy_request.delete.assert_not_called()
+        assert result is privacy_request
+
+    def test_promote_failure_deletes_request_and_raises_specific_error(self):
+        svc = _svc()
+        rows = [MagicMock()]
+        with self._drive_to_promotion(
+            svc,
+            attachment_rows=rows,
+            promote_side_effect=RuntimeError("storage offline"),
+        ) as (_, privacy_request):
+            with pytest.raises(
+                PrivacyRequestError,
+                match="Attachment processing failed: storage offline",
+            ):
+                svc.create_privacy_request(_req(), authenticated=True)
+        privacy_request.delete.assert_called_once()
+
+    def test_promote_failure_with_delete_failure_still_raises_specific_error(self):
+        svc = _svc()
+        rows = [MagicMock()]
+        with self._drive_to_promotion(
+            svc,
+            attachment_rows=rows,
+            promote_side_effect=RuntimeError("storage offline"),
+            delete_side_effect=RuntimeError("db down"),
+        ) as (_, privacy_request):
+            with pytest.raises(
+                PrivacyRequestError, match="Attachment processing failed"
+            ):
+                svc.create_privacy_request(_req(), authenticated=True)
+        privacy_request.delete.assert_called_once()
