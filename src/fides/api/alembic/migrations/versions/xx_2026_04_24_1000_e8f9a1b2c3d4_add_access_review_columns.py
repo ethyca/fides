@@ -24,6 +24,9 @@ def upgrade() -> None:
     op.execute(
         "ALTER TYPE privacyrequeststatus ADD VALUE IF NOT EXISTS 'awaiting_access_review'"
     )
+    op.execute(
+        "ALTER TYPE auditlogaction ADD VALUE IF NOT EXISTS 'access_package_approved'"
+    )
     op.add_column(
         "privacyrequest",
         sa.Column("access_review_approved_at", sa.DateTime(timezone=True), nullable=True),
@@ -37,5 +40,48 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_column("privacyrequest", "access_review_approved_by")
     op.drop_column("privacyrequest", "access_review_approved_at")
-    # Note: PostgreSQL does not support removing enum values.
-    # The 'awaiting_access_review' value will remain in the enum type.
+
+    # Migrate rows using the new status back to in_processing (these
+    # requests had already collected data and were paused for review)
+    op.execute(
+        "UPDATE privacyrequest SET status = 'in_processing' "
+        "WHERE status = 'awaiting_access_review'"
+    )
+
+    # Recreate privacyrequeststatus enum without 'awaiting_access_review'
+    op.execute(
+        "ALTER TYPE privacyrequeststatus RENAME TO privacyrequeststatus_old"
+    )
+    op.execute(
+        "CREATE TYPE privacyrequeststatus AS ENUM("
+        "'identity_unverified', 'requires_input', 'pending', 'approved', 'denied', "
+        "'in_processing', 'complete', 'paused', 'awaiting_email_send', "
+        "'requires_manual_finalization', 'canceled', 'error', 'duplicate', "
+        "'awaiting_pre_approval', 'pre_approval_not_eligible', 'pending_external')"
+    )
+    op.execute(
+        "ALTER TABLE privacyrequest ALTER COLUMN status TYPE privacyrequeststatus "
+        "USING status::text::privacyrequeststatus"
+    )
+    op.execute("DROP TYPE privacyrequeststatus_old")
+
+    # Migrate access_package_approved audit logs — the request still
+    # needs to upload after approval, so it's mid-processing
+    op.execute(
+        "UPDATE auditlog SET action = 'approved' "
+        "WHERE action = 'access_package_approved'"
+    )
+
+    # Recreate auditlogaction enum without 'access_package_approved'
+    op.execute("ALTER TYPE auditlogaction RENAME TO auditlogaction_old")
+    op.execute(
+        "CREATE TYPE auditlogaction AS ENUM("
+        "'approved', 'denied', 'email_sent', 'finished', 'policy_evaluated', "
+        "'pre_approval_webhook_triggered', 'pre_approval_eligible', "
+        "'pre_approval_not_eligible')"
+    )
+    op.execute(
+        "ALTER TABLE auditlog ALTER COLUMN action TYPE auditlogaction "
+        "USING action::text::auditlogaction"
+    )
+    op.execute("DROP TYPE auditlogaction_old")

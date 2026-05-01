@@ -869,6 +869,7 @@ def batch_execution_and_audit_logs_by_dataset(
         "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
         "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
         "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
+        "access_package_approved": "Access package approved",
     }
 
     for log in combined.order_by(ExecutionLog.updated_at.asc()):
@@ -876,10 +877,8 @@ def batch_execution_and_audit_logs_by_dataset(
         if pr_id not in result:
             result[pr_id] = defaultdict(list)
 
-        dataset_name: str = (
-            log.dataset_name
-            or log.message
-            or audit_log_display_names.get(log.status, f"Request {log.status}")
+        dataset_name: str = log.dataset_name or audit_log_display_names.get(
+            log.status, f"Request {log.status}"
         )
 
         if len(result[pr_id][dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
