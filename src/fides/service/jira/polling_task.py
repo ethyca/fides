@@ -66,9 +66,8 @@ def initiate_jira_ticket_polling() -> None:
 
     logger.info("Initiating scheduler for Jira ticket polling")
     scheduler.add_job(
-        func=poll_jira_tickets,
+        func=poll_jira_tickets.delay,
         trigger="interval",
-        kwargs={},
         id=JIRA_TICKET_POLLING_JOB,
         coalesce=True,
         replace_existing=True,

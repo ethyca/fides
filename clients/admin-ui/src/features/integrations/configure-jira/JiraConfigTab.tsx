@@ -31,6 +31,15 @@ const DUE_DATE_OPTIONS = [
   { value: "60", label: "60 days" },
 ];
 
+interface JiraSecrets {
+  project_key?: string;
+  issue_type?: string;
+  completion_status?: string | null;
+  summary_template?: string;
+  description_template?: string;
+  due_date_config?: { type: string; days: number } | null;
+}
+
 interface JiraConfigTabProps {
   connection: ConnectionConfigurationResponse;
 }
@@ -50,9 +59,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewData, setPreviewData] = useState<JiraTicketData | null>(null);
 
-  const secrets = (connection as any)?.secrets as
-    | Record<string, any>
-    | undefined;
+  const secrets = connection.secrets as JiraSecrets | undefined;
 
   const selectedProject = Form.useWatch("project_key", form);
   const selectedIssueType = Form.useWatch("issue_type", form);
@@ -118,7 +125,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   };
 
   const handleSave = async (values: JiraConfigFormValues) => {
-    const secretsPayload: Record<string, any> = {
+    const secretsPayload: JiraSecrets = {
       project_key: values.project_key,
       issue_type: values.issue_type,
       completion_status: values.completion_status ?? null,
