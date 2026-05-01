@@ -72,7 +72,7 @@ const AssessmentSettingsModal = ({
     useUpdateAssessmentConfigMutation();
 
   const enabledChatConfig = chatConfigs?.items.find((c) => c.enabled);
-  const isTerminalProvider = enabledChatConfig?.provider_type === "terminal";
+  const isFidesProvider = enabledChatConfig?.provider_type === "fides";
 
   // Derive initial form values from config
   const initialValues = useMemo(() => {
@@ -197,7 +197,7 @@ const AssessmentSettingsModal = ({
           />
 
           {/* Chat Provider Configuration Section */}
-          {isTerminalProvider && (
+          {isFidesProvider && (
             <Alert
               type="success"
               title="Terminal provider active"
@@ -206,7 +206,7 @@ const AssessmentSettingsModal = ({
               className="mb-4"
             />
           )}
-          {!isTerminalProvider &&
+          {!isFidesProvider &&
             channelOptions.length === 0 &&
             !isLoadingChannels && (
               <Alert
@@ -226,7 +226,7 @@ const AssessmentSettingsModal = ({
                 className="mb-4"
               />
             )}
-          {!isTerminalProvider && channelOptions.length > 0 && (
+          {!isFidesProvider && channelOptions.length > 0 && (
             <Form.Item
               name="slack_channel_id"
               label="Notifications channel"

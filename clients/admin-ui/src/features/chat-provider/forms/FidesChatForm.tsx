@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
-import type { ChatConfigCreate } from "~/types/api";
 
 import {
   useCreateChatConfigMutation,
@@ -15,11 +14,11 @@ import ConfigurationCard from "../components/ConfigurationCard";
 
 const { Text } = Typography;
 
-interface TerminalChatFormProps {
+interface FidesChatFormProps {
   configId?: string;
 }
 
-const TerminalChatForm = ({ configId }: TerminalChatFormProps) => {
+const FidesChatForm = ({ configId }: FidesChatFormProps) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
   const message = useMessage();
@@ -34,16 +33,17 @@ const TerminalChatForm = ({ configId }: TerminalChatFormProps) => {
 
   const handleCreate = async () => {
     try {
-      const payload: ChatConfigCreate = {
-        provider_type: "terminal",
+      const payload = {
+        provider_type: "fides" as const,
       };
 
-      const result = await createConfig(payload);
+      // TODO: regenerate API types after backend schema change (terminal → fides)
+      const result = await createConfig(payload as any);
 
       if (isErrorResult(result)) {
         handleError(result.error);
       } else if ("data" in result && result.data) {
-        message.success("Terminal provider enabled.");
+        message.success("Fides chat provider enabled.");
         router.push(`${CHAT_PROVIDERS_ROUTE}/configure?id=${result.data.id}`);
       }
     } catch (error) {
@@ -53,7 +53,7 @@ const TerminalChatForm = ({ configId }: TerminalChatFormProps) => {
 
   return (
     <ConfigurationCard
-      title="Terminal chat provider"
+      title="Fides chat provider"
       icon={<Icons.Checkmark />}
     >
       <Space orientation="vertical" size="medium" className="w-full">
@@ -62,26 +62,14 @@ const TerminalChatForm = ({ configId }: TerminalChatFormProps) => {
           showIcon
           description={
             <Text>
-              The Terminal provider lets you run questionnaire conversations
-              from a terminal using the CLI chat script. Answers are persisted
-              to the database and progress is visible in the Admin UI.
+              Use this provider to test the questionnaire feature directly in
+              the Admin UI without configuring an external chat provider like
+              Slack. Intended for testing and development only, not production
+              usage.
             </Text>
           }
           message="How it works"
         />
-
-        <Alert
-          type="warning"
-          showIcon
-          description={
-            <Text>
-              Start a questionnaire conversation from the terminal. You can
-              launch one from any assessment detail page.
-            </Text>
-          }
-          message="How to start a conversation"
-        />
-
         {isEditMode && isAuthorized && (
           <AuthorizationStatus authorized />
         )}
@@ -110,4 +98,4 @@ const TerminalChatForm = ({ configId }: TerminalChatFormProps) => {
   );
 };
 
-export default TerminalChatForm;
+export default FidesChatForm;

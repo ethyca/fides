@@ -135,6 +135,7 @@ export enum QuestionnaireSessionStatus {
 }
 
 export interface QuestionnaireStatus {
+  questionnaire_id: string | null;
   status: QuestionnaireSessionStatus;
   stop_reason: string | null;
   sent_at: string;
@@ -366,4 +367,41 @@ export interface AssessmentTaskPage {
   page: number;
   size: number;
   pages: number;
+}
+
+// ── Questionnaire chat types ────────────────────────────────────────
+
+export interface QuestionnaireChatMessage {
+  text: string;
+  is_bot_message: boolean;
+  sender_email: string | null;
+  timestamp: string | null;
+  question_index: number | null;
+}
+
+export interface StartChatRequest {
+  assessment_id: string;
+  user_email: string;
+  include_question_ids?: string[];
+}
+
+export interface StartChatResponse {
+  questionnaire_id: string;
+  assessment_id: string;
+  messages: QuestionnaireChatMessage[];
+  total_questions: number;
+}
+
+export interface ChatReplyRequest {
+  assessment_id: string;
+  questionnaire_id: string;
+  message_text: string;
+  user_email: string;
+}
+
+export interface ChatReplyResponse {
+  bot_messages: QuestionnaireChatMessage[];
+  status: string;
+  answered_questions: number;
+  total_questions: number;
 }

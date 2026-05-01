@@ -144,7 +144,7 @@ export const ChatConfigurations = () => {
             switch (record.provider_type) {
               case "slack":
                 return <SlackLogo size={20} />;
-              case "terminal":
+              case "fides":
                 return <Icons.Checkmark />;
               default:
                 return <SlackLogo size={20} />;
@@ -219,7 +219,7 @@ export const ChatConfigurations = () => {
         key: ChatProviderColumnKeys.ACTIONS,
         render: (_value: unknown, record: ChatConfigResponse) => (
           <Space>
-            {userCanUpdate && !record.authorized && record.client_id && record.provider_type !== "terminal" && (
+            {userCanUpdate && !record.authorized && record.client_id && record.provider_type !== "fides" && (
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
