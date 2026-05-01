@@ -47,15 +47,26 @@ const ManualTaskDetailPanel = ({ data, onClose }: Props) => {
           </Flex>
         )}
         {data.fields.length > 0 && (
-          <Flex vertical>
+          <Flex vertical gap={8}>
             <Text strong>Fields</Text>
-            <Flex gap={4} wrap>
-              {data.fields.map((f) => (
-                <Tag key={f.name}>
-                  {f.name}: {f.type}
-                </Tag>
-              ))}
-            </Flex>
+            {data.fields.map((f) => (
+              <Flex key={f.name} vertical gap={2}>
+                <Flex gap={6} align="baseline">
+                  <Text>{f.label ?? f.name}</Text>
+                  <Tag style={{ fontSize: 10, margin: 0 }}>{f.type}</Tag>
+                  {f.required && (
+                    <Tag color="error" style={{ fontSize: 10, margin: 0 }}>
+                      required
+                    </Tag>
+                  )}
+                </Flex>
+                {f.help_text && (
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {f.help_text}
+                  </Text>
+                )}
+              </Flex>
+            ))}
           </Flex>
         )}
       </Flex>

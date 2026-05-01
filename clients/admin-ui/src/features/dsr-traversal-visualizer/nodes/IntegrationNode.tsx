@@ -31,16 +31,19 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           {connectorType[0]?.toUpperCase()}
         </Avatar>
         <Flex vertical style={{ flex: 1, minWidth: 0 }}>
-          <Text strong ellipsis={{ tooltip: connectionKey }}>
-            {connectionKey}
+          <Text
+            strong
+            ellipsis={{ tooltip: system?.name ?? connectionKey }}
+          >
+            {system?.name ?? connectionKey}
           </Text>
           {system?.name && (
             <Text
               type="secondary"
               style={{ fontSize: 12 }}
-              ellipsis={{ tooltip: system.name }}
+              ellipsis={{ tooltip: connectionKey }}
             >
-              {system.name}
+              {connectionKey}
             </Text>
           )}
         </Flex>

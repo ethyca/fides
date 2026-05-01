@@ -6,8 +6,10 @@ import {
   RadioChangeEvent,
   Result,
   Spin,
+  Switch,
   Typography,
 } from "fidesui";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 import TraversalCanvas from "./TraversalCanvas";
@@ -21,11 +23,25 @@ interface Props {
 }
 
 const TraversalVisualizerPage = ({ propertyId, actionType }: Props) => {
-  const [direction, setDirection] = useState<LayoutDirection>("LR");
+  const router = useRouter();
+  const onActionTypeChange = (next: ActionType) => {
+    if (next === actionType) {
+      return;
+    }
+    router.replace(
+      `/privacy-requests/visualizer/${encodeURIComponent(propertyId)}/${next}`,
+    );
+  };
+  const [direction, setDirection] = useState<LayoutDirection>("TB");
+  const [showUnreachable, setShowUnreachable] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+
+  // Always fetch the full payload so we can compute the unreachable count
+  // locally and toggle visibility without round-tripping the server.
   const { data, isLoading, isError, refetch } = useGetTraversalPreviewQuery({
     propertyId,
     actionType,
+    includeUnreachable: true,
     // Bumping refresh on Regenerate changes the RTK Query cache key, forcing
     // a backend recompute (the request param ``refresh=true`` is also sent).
     refresh: refreshTick > 0,
@@ -34,6 +50,30 @@ const TraversalVisualizerPage = ({ propertyId, actionType }: Props) => {
     setRefreshTick((t) => t + 1);
     refetch();
   };
+
+  const unreachableCount =
+    data?.integrations.filter((i) => i.reachability === "unreachable").length ??
+    0;
+  const filteredData =
+    data && !showUnreachable
+      ? (() => {
+          const kept = data.integrations.filter(
+            (i) => i.reachability !== "unreachable",
+          );
+          const keptIds = new Set<string>([
+            data.identity_root.id,
+            ...kept.map((i) => i.id),
+            ...data.manual_tasks.map((m) => m.id),
+          ]);
+          return {
+            ...data,
+            integrations: kept,
+            edges: data.edges.filter(
+              (e) => keptIds.has(e.source) && keptIds.has(e.target),
+            ),
+          };
+        })()
+      : data;
 
   if (isLoading) {
     return <Spin />;
@@ -55,6 +95,28 @@ const TraversalVisualizerPage = ({ propertyId, actionType }: Props) => {
           Traversal preview · {actionType}
         </Typography.Title>
         <Flex gap="small" align="center">
+          {unreachableCount > 0 && (
+            <Flex gap={6} align="center">
+              <Switch
+                size="small"
+                checked={showUnreachable}
+                onChange={setShowUnreachable}
+              />
+              <Typography.Text style={{ fontSize: 13 }}>
+                Show {unreachableCount} unreachable
+              </Typography.Text>
+            </Flex>
+          )}
+          <Radio.Group
+            value={actionType}
+            onChange={(e: RadioChangeEvent) =>
+              onActionTypeChange(e.target.value as ActionType)
+            }
+            size="small"
+          >
+            <Radio.Button value="access">Access</Radio.Button>
+            <Radio.Button value="erasure">Erasure</Radio.Button>
+          </Radio.Group>
           <Radio.Group
             value={direction}
             onChange={(e: RadioChangeEvent) =>
@@ -71,7 +133,7 @@ const TraversalVisualizerPage = ({ propertyId, actionType }: Props) => {
       {data?.warnings.length ? (
         <Alert type="warning" message={data.warnings.join(" • ")} closable />
       ) : null}
-      <TraversalCanvas payload={data} direction={direction} />
+      <TraversalCanvas payload={filteredData} direction={direction} />
     </Flex>
   );
 };
