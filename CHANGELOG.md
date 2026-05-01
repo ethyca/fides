@@ -22,7 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.84.2..main)
 
 ### Fixed
-- Update Cookie House sample privacy center config to use the harpocrates.ethyca.com CloudFront URL instead of the direct S3 URL
+- Update Cookie House sample privacy center config to use the harpocrates.ethyca.com CloudFront URL instead of the direct S3 URL [#8081](https://github.com/ethyca/fides/pull/8081)
 
 ## [2.84.2](https://github.com/ethyca/fides/compare/2.84.1..2.84.2)
 
