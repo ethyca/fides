@@ -127,7 +127,7 @@ export const ConnectorParametersForm = ({
   const initialFormValues = useMemo(() => {
     const values = { ...defaultValues };
     if (connectionConfig?.key) {
-      values.name = connectionConfig.name ?? "";
+      values.name = connectionConfig.name || connectionConfig.key;
       values.description = connectionConfig.description as string;
       values.instance_key =
         connectionConfig.connection_type === ConnectionType.SAAS
@@ -293,10 +293,14 @@ export const ConnectorParametersForm = ({
         labelAlign="left"
       >
         <Flex vertical>
-          {/* Hidden fields to preserve values in form submission */}
-          <Form.Item name="name" hidden noStyle>
-            <Input />
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: "Name is required" }]}
+          >
+            <Input data-testid="input-name" />
           </Form.Item>
+          {/* Hidden field to preserve description in form submission */}
           <Form.Item name="description" hidden noStyle>
             <Input />
           </Form.Item>
