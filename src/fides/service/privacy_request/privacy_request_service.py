@@ -205,18 +205,22 @@ class PrivacyRequestService:
         return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption] = None,
     ) -> None:
         """Validate that location is provided for required location fields.
 
         Looks up the actual Privacy Center configuration to check if any location
-        fields are marked as required for the specified policy.
+        fields are marked as required for the specified policy. ``action`` can
+        be passed by callers that already resolved it to skip the lookup.
         """
         # If location is already provided, no validation needed
         if privacy_request_data.location:
             return
 
-        action = self._resolve_action_for_request(privacy_request_data)
+        if action is None:
+            action = self._resolve_action_for_request(privacy_request_data)
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -326,11 +330,16 @@ class PrivacyRequestService:
         return action
 
     def _validate_field_visibility(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption] = None,
     ) -> None:
         """Reject payloads that violate the action's display_condition
-        contract; translate :class:`DisplayConditionViolation` to ``PrivacyRequestError``."""
-        action = self._resolve_action_for_request(privacy_request_data)
+        contract; translate :class:`DisplayConditionViolation` to
+        ``PrivacyRequestError``. ``action`` can be passed by callers that
+        already resolved it to skip the lookup."""
+        if action is None:
+            action = self._resolve_action_for_request(privacy_request_data)
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -411,15 +420,7 @@ class PrivacyRequestService:
                 privacy_request_data.model_dump(mode="json"),
             )
 
-        config_dict = self._resolve_privacy_center_config_dict(
-            privacy_request_data.property_id
-        )
-        parsed = self._parse_privacy_center_config(config_dict) if config_dict else None
-        action = (
-            self._get_matching_action(parsed, privacy_request_data.policy_key)
-            if parsed
-            else None
-        )
+        action = self._resolve_action_for_request(privacy_request_data)
         file_field_names: set[str] = (
             {
                 name
@@ -451,11 +452,11 @@ class PrivacyRequestService:
                 )
 
         # Validate location is provided for required location fields
-        self._validate_required_location_fields(privacy_request_data)
+        self._validate_required_location_fields(privacy_request_data, action)
 
         # Validate display_condition visibility BEFORE stripping file fields so
         # required FileUpload fields are seen as having a submitted value.
-        self._validate_field_visibility(privacy_request_data)
+        self._validate_field_visibility(privacy_request_data, action)
 
         if file_field_names and privacy_request_data.custom_privacy_request_fields:
             non_file = {
