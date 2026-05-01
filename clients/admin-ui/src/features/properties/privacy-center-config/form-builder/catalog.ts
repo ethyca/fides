@@ -21,6 +21,7 @@ const components = {
     props: z
       .object({
         ...baseField,
+        placeholder: z.string().optional(),
         default_value: z.string().nullable().optional(),
         hidden: z.boolean().optional(),
         query_param_key: z.string().nullable().optional(),
@@ -32,6 +33,7 @@ const components = {
     props: z
       .object({
         ...baseField,
+        placeholder: z.string().optional(),
         options: z.array(z.string()).min(1),
         default_value: z.string().nullable().optional(),
       })
@@ -42,6 +44,7 @@ const components = {
     props: z
       .object({
         ...baseField,
+        placeholder: z.string().optional(),
         options: z.array(z.string()).min(1),
         default_value: z.array(z.string()).nullable().optional(),
       })
@@ -52,6 +55,7 @@ const components = {
     props: z
       .object({
         ...baseField,
+        placeholder: z.string().optional(),
         options: z.array(z.string()).optional(),
         ip_geolocation_hint: z.boolean().optional(),
       })

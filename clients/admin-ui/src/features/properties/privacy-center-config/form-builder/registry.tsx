@@ -9,6 +9,7 @@ interface BaseFieldProps {
   label: string;
   required: boolean;
   options?: string[];
+  placeholder?: string;
   "data-element-id"?: string;
 }
 
@@ -31,18 +32,23 @@ const FieldWrapper = ({
 
 const TextField = ({ props }: { props: BaseFieldProps }) => (
   <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required}>
-      <Input aria-label={props.label} data-testid={`field-${props.name}`} />
+    <Form.Item label={props.label} required={props.required} className="!mb-0">
+      <Input
+        aria-label={props.label}
+        data-testid={`field-${props.name}`}
+        placeholder={props.placeholder}
+      />
     </Form.Item>
   </FieldWrapper>
 );
 
 const SelectField = ({ props }: { props: BaseFieldProps }) => (
   <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required}>
+    <Form.Item label={props.label} required={props.required} className="!mb-0">
       <Select
         aria-label={props.label}
         data-testid={`field-${props.name}`}
+        placeholder={props.placeholder}
         options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
       />
     </Form.Item>
@@ -51,11 +57,12 @@ const SelectField = ({ props }: { props: BaseFieldProps }) => (
 
 const MultiSelectField = ({ props }: { props: BaseFieldProps }) => (
   <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required}>
+    <Form.Item label={props.label} required={props.required} className="!mb-0">
       <Select
         aria-label={props.label}
         mode="multiple"
         data-testid={`field-${props.name}`}
+        placeholder={props.placeholder}
         options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
       />
     </Form.Item>
@@ -73,10 +80,15 @@ const LocationField = ({ props }: { props: BaseFieldProps }) => {
       : LOCATION_DEFAULT_OPTIONS;
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
-      <Form.Item label={props.label} required={props.required}>
+      <Form.Item
+        label={props.label}
+        required={props.required}
+        className="!mb-0"
+      >
         <Select
           aria-label={props.label}
           data-testid={`field-${props.name}`}
+          placeholder={props.placeholder}
           options={options.map((o) => ({ label: o, value: o }))}
         />
       </Form.Item>

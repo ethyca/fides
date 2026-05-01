@@ -16,6 +16,7 @@ import { mapSpecToPcShape } from "./mapper";
 import { PreviewPane } from "./PreviewPane";
 import {
   addField as addFieldMutation,
+  defaultSpec,
   removeField as removeFieldMutation,
   reorderFields as reorderFieldsMutation,
   updateField as updateFieldMutation,
@@ -77,7 +78,7 @@ const rootStyle: React.CSSProperties = {
 const splitterStyle: React.CSSProperties = {
   flex: 1,
   minHeight: 0,
-  border: "1px solid var(--fidesui-neutral-100)",
+  border: "1px solid var(--fidesui-color-border)",
   borderRadius: 4,
   overflow: "hidden",
 };
@@ -107,7 +108,9 @@ export const FormBuilderPage = ({
     if (action?.custom_privacy_request_fields) {
       return synthesizeSpecFromPcShape(action.custom_privacy_request_fields);
     }
-    return null;
+    // No saved fields yet — seed with the standard DSR defaults so the
+    // builder isn't empty on first load.
+    return defaultSpec();
   }, [action]);
 
   const driftDetected = useMemo(() => {
@@ -130,8 +133,10 @@ export const FormBuilderPage = ({
 
   const [confirmingDropped, setConfirmingDropped] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Pre-select the first field on initial load so the properties panel
+  // isn't empty. Subsequent changes (add/remove/select) are user-driven.
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
-    null,
+    () => initialSpec?.elements[initialSpec.root]?.children[0] ?? null,
   );
 
   const handleAddField = useCallback(
@@ -142,6 +147,14 @@ export const FormBuilderPage = ({
       );
       builder.setSpec(nextSpec);
       setSelectedElementId(elementId);
+      // Move focus to the newly added field card after React mounts it,
+      // so keyboard users land on the new field (and onFocus auto-selects).
+      requestAnimationFrame(() => {
+        const node = document.querySelector<HTMLElement>(
+          `[data-testid="sortable-field-${elementId}"]`,
+        );
+        node?.focus();
+      });
     },
     [builder],
   );
@@ -241,7 +254,7 @@ export const FormBuilderPage = ({
   }, [isDirty]);
 
   if (!action) {
-    return <Alert type="error" message="Action not found on property." />;
+    return <Alert type="error" title="Action not found on property." />;
   }
 
   const persist = async () => {
@@ -302,7 +315,7 @@ export const FormBuilderPage = ({
       {driftDetected && (
         <Alert
           type="warning"
-          message="Saved builder state differs from saved fields. The builder is showing the rich saved state."
+          title="Saved builder state differs from saved fields. The builder is showing the rich saved state."
           action={
             <Button size="small" onClick={handleRebuild}>
               Rebuild from saved fields
