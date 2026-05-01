@@ -1,0 +1,4 @@
+type: Fixed
+description: Integrations created from a system's Integrations tab now require a name, so they no longer appear as "(No name)" on the integrations list
+pr: 8085
+labels: []

@@ -71,7 +71,8 @@ const createSaasConnector = async (
   systemFidesKey: string,
   createSaasConnectorFunc: any,
 ) => {
-  const connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name"> = {
+  const connectionConfig: CreateSaasConnectionConfigRequest = {
+    name: values.name!,
     description: values.description || "",
     instance_key: generateIntegrationKey(systemFidesKey, connectionOption),
     saas_connector_type: connectionOption.identifier,
@@ -111,18 +112,18 @@ export const patchConnectionConfig = async (
     : generateIntegrationKey(systemFidesKey, connectionOption);
 
   // the enabled_actions are conditionally added if plus is enabled
-  const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
-    {
-      access: AccessLevel.WRITE,
-      connection_type: (connectionOption.type === SystemType.SAAS
-        ? connectionOption.type
-        : connectionOption.identifier) as ConnectionType,
-      description: values.description,
-      key,
-      ...(values.enabled_actions
-        ? { enabled_actions: values.enabled_actions as ActionType[] }
-        : {}),
-    };
+  const params1: Omit<ConnectionConfigurationResponse, "created_at"> = {
+    access: AccessLevel.WRITE,
+    connection_type: (connectionOption.type === SystemType.SAAS
+      ? connectionOption.type
+      : connectionOption.identifier) as ConnectionType,
+    description: values.description,
+    key,
+    name: values.name!,
+    ...(values.enabled_actions
+      ? { enabled_actions: values.enabled_actions as ActionType[] }
+      : {}),
+  };
   const payload = await patchFunc({
     systemFidesKey,
     connectionConfigs: [params1],
