@@ -13,8 +13,8 @@ interface SortableFieldItemProps {
 const containerStyle = (selected: boolean): React.CSSProperties => ({
   display: "flex",
   alignItems: "flex-start",
-  gap: 8,
-  padding: 8,
+  gap: 4,
+  padding: "4px 8px 8px 4px",
   marginBottom: 4,
   borderRadius: 4,
   border: selected
@@ -28,7 +28,6 @@ const handleStyle: React.CSSProperties = {
   cursor: "grab",
   display: "flex",
   alignItems: "center",
-  paddingTop: 4,
   touchAction: "none",
 };
 
@@ -55,15 +54,28 @@ export const SortableFieldItem = ({
   };
 
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       ref={setNodeRef}
       style={style}
       data-element-id={id}
       data-testid={`sortable-field-${id}`}
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(id);
+      }}
+      // Auto-select on focus so keyboard users (Tab) populate the
+      // properties panel without an extra Space/Enter press. The
+      // onKeyDown handler still satisfies activation for AT users
+      // who expect a button to be pressable.
+      onFocus={() => onSelect(id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(id);
+        }
       }}
     >
       <span

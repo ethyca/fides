@@ -3,25 +3,20 @@ import type { JsonRenderSpec } from "./mapper";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
+// Defaults excluding name/label — those are derived from the type so that
+// snakeCase(label) === name, which lets the FieldPropertiesPanel auto-sync
+// the name from the label until the user explicitly customizes the name.
 const DEFAULT_PROPS: Record<EditableComponentType, Record<string, unknown>> = {
-  Text: { label: "New text field", required: false },
-  Select: {
-    label: "New select field",
-    required: false,
-    options: ["Option 1"],
-  },
-  MultiSelect: {
-    label: "New multi-select field",
-    required: false,
-    options: ["Option 1"],
-  },
-  Location: { label: "Location", required: false },
+  Text: { required: false },
+  Select: { required: false, options: ["Option 1"] },
+  MultiSelect: { required: false, options: ["Option 1"] },
+  Location: { required: false },
 };
 
 const uniqueName = (
   spec: JsonRenderSpec,
   base: string,
-): { name: string; elementId: string } => {
+): { suffix: number; name: string; elementId: string } => {
   const usedNames = new Set<string>();
   Object.values(spec.elements).forEach((el) => {
     const candidate = (el.props as { name?: unknown } | undefined)?.name;
@@ -35,14 +30,21 @@ const uniqueName = (
     suffix += 1;
     name = `${base}_${suffix}`;
   }
-  return { name, elementId: `f_${name}` };
+  return { suffix, name, elementId: `f_${name}` };
 };
 
-const baseFromType: Record<EditableComponentType, string> = {
-  Text: "text_field",
-  Select: "select_field",
-  MultiSelect: "multi_select_field",
-  Location: "location_field",
+interface TypeDefaults {
+  base: string;
+  label: string;
+}
+
+// Pairs name-base + label-base such that snakeCase(label) === name. The
+// matching `_${suffix}` / ` ${suffix}` is appended to both at add time.
+const TYPE_DEFAULTS: Record<EditableComponentType, TypeDefaults> = {
+  Text: { base: "text_field", label: "Text field" },
+  Select: { base: "select_field", label: "Select field" },
+  MultiSelect: { base: "multi_select_field", label: "Multi select field" },
+  Location: { base: "location_field", label: "Location field" },
 };
 
 export const emptySpec = (): JsonRenderSpec => ({
@@ -52,13 +54,53 @@ export const emptySpec = (): JsonRenderSpec => ({
   },
 });
 
+/**
+ * Seed used when a form-builder page loads for an action that has no saved
+ * fields yet. Mirrors the historical Fides privacy-center config defaults
+ * (first_name + last_name) plus a hidden tenant_id field for multi-tenant
+ * routing via URL query param.
+ */
+export const defaultSpec = (): JsonRenderSpec => ({
+  root: "form",
+  elements: {
+    form: {
+      type: "Form",
+      props: {},
+      children: ["f_first_name", "f_last_name", "f_tenant_id"],
+    },
+    f_first_name: {
+      type: "Text",
+      props: { name: "first_name", label: "First name", required: true },
+      children: [],
+    },
+    f_last_name: {
+      type: "Text",
+      props: { name: "last_name", label: "Last name", required: false },
+      children: [],
+    },
+    f_tenant_id: {
+      type: "Text",
+      props: {
+        name: "tenant_id",
+        label: "Tenant ID",
+        required: false,
+        hidden: true,
+        query_param_key: "tenant_id",
+      },
+      children: [],
+    },
+  },
+});
+
 export const addField = (
   spec: JsonRenderSpec | null,
   type: EditableComponentType,
 ): { spec: JsonRenderSpec; elementId: string } => {
   const current = spec ?? emptySpec();
   const root = current.elements[current.root];
-  const { name, elementId } = uniqueName(current, baseFromType[type]);
+  const defaults = TYPE_DEFAULTS[type];
+  const { suffix, name, elementId } = uniqueName(current, defaults.base);
+  const label = `${defaults.label} ${suffix}`;
 
   const next: JsonRenderSpec = {
     ...current,
@@ -66,7 +108,7 @@ export const addField = (
       ...current.elements,
       [elementId]: {
         type,
-        props: { name, ...DEFAULT_PROPS[type] },
+        props: { name, label, ...DEFAULT_PROPS[type] },
         children: [],
       },
       [current.root]: {

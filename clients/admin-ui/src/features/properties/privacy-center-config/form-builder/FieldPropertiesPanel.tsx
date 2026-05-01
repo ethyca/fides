@@ -1,6 +1,6 @@
 import {
+  Alert,
   Button,
-  Empty,
   Form,
   Icons,
   Input,
@@ -8,7 +8,8 @@ import {
   Switch,
   useModal,
 } from "fidesui";
-import { useEffect } from "react";
+import snakeCase from "lodash.snakecase";
+import { useEffect, useRef } from "react";
 
 import type { ComponentType } from "./catalog";
 import type { JsonRenderSpec } from "./mapper";
@@ -67,7 +68,7 @@ const OptionsEditor = ({
     onChange?.([...value, `Option ${value.length + 1}`]);
   };
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space orientation="vertical" style={{ width: "100%" }}>
       {value.map((opt, idx) => (
         <Space.Compact
           // eslint-disable-next-line react/no-array-index-key
@@ -97,10 +98,7 @@ const OptionsEditor = ({
 
 const EmptyState = () => (
   <div style={panelStyle}>
-    <Empty
-      description="Select a field to edit its properties."
-      style={{ marginTop: 64 }}
-    />
+    <Alert type="info" title="Select a field to edit its properties." />
   </div>
 );
 
@@ -112,6 +110,11 @@ export const FieldPropertiesPanel = ({
 }: FieldPropertiesPanelProps) => {
   const [form] = Form.useForm<FormValues>();
   const modal = useModal();
+  // Auto-sync the field's name from its label until the user manually edits
+  // the name. The flag is recomputed on every selection change based on
+  // whether the existing name still matches snakeCase(label) — fields with
+  // customized names start with auto-sync off.
+  const autoSyncNameRef = useRef(true);
 
   const element = selectedElementId
     ? spec?.elements?.[selectedElementId]
@@ -142,14 +145,25 @@ export const FieldPropertiesPanel = ({
   // element's props change. The antd Form is the source of truth while
   // the user is typing; re-applying setFieldsValue on every keystroke
   // would steal focus from inputs (especially the Options editor).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // The exhaustive-deps disable here is intentional: depending on `element`
+  // (which is recomputed every render) would trigger setFieldsValue on every
+  // keystroke and steal focus.
   useEffect(() => {
-    if (element) {
-      form.resetFields();
-      form.setFieldsValue(
-        element.props as Parameters<typeof form.setFieldsValue>[0],
-      );
+    if (!element) {
+      return;
     }
+    form.resetFields();
+    form.setFieldsValue(
+      element.props as Parameters<typeof form.setFieldsValue>[0],
+    );
+    const props = element.props as { name?: string; label?: string };
+    // Auto-sync name only when the existing name matches snakeCase(label).
+    // If the user has customized either field, leave them alone.
+    autoSyncNameRef.current =
+      typeof props.name === "string" &&
+      typeof props.label === "string" &&
+      props.name === snakeCase(props.label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedElementId]);
 
   if (!element || !selectedElementId) {
@@ -162,16 +176,53 @@ export const FieldPropertiesPanel = ({
     changed: Partial<FormValues>,
     all: FormValues,
   ) => {
+    // The user manually edited the name field — stop auto-syncing it.
+    if ("name" in changed) {
+      autoSyncNameRef.current = false;
+    }
+    // While auto-sync is on, derive the name from the label. Skip if we'd
+    // collide with another field's name.
+    let next = all;
+    let pendingNameSync: string | null = null;
+    if (
+      "label" in changed &&
+      typeof changed.label === "string" &&
+      autoSyncNameRef.current
+    ) {
+      const derived = snakeCase(changed.label);
+      const collision = Object.entries(spec?.elements ?? {}).some(
+        ([id, el]) =>
+          id !== selectedElementId &&
+          (el.props as { name?: string }).name === derived,
+      );
+      if (derived && !collision) {
+        next = { ...all, name: derived };
+        pendingNameSync = derived;
+      }
+    }
     // Hidden + required is contradictory — if the user can't see the
     // field, they can't fill it in. When Hidden turns on, clear required.
-    let next = all;
-    if ("hidden" in changed && changed.hidden === true && all.required) {
-      next = { ...all, required: false };
-      form.setFieldsValue({ required: false } as Parameters<
-        typeof form.setFieldsValue
-      >[0]);
+    let pendingRequiredSync = false;
+    if ("hidden" in changed && changed.hidden === true && next.required) {
+      next = { ...next, required: false };
+      pendingRequiredSync = true;
     }
     onUpdateField(selectedElementId, stripUndefined(next));
+    // Defer field-state writes until after the current input event has
+    // finished propagating. setFieldsValue mid-event tends to steal focus
+    // from the input the user is typing into.
+    if (pendingNameSync !== null || pendingRequiredSync) {
+      queueMicrotask(() => {
+        const patch: Record<string, unknown> = {};
+        if (pendingNameSync !== null) {
+          patch.name = pendingNameSync;
+        }
+        if (pendingRequiredSync) {
+          patch.required = false;
+        }
+        form.setFieldsValue(patch as Parameters<typeof form.setFieldsValue>[0]);
+      });
+    }
   };
 
   return (
@@ -200,10 +251,13 @@ export const FieldPropertiesPanel = ({
         onValuesChange={handleValuesChange}
         initialValues={element.props}
       >
+        <Form.Item label="Label" name="label" rules={[{ required: true }]}>
+          <Input data-testid="prop-label" />
+        </Form.Item>
         <Form.Item
           label="Name"
           name="name"
-          tooltip="Field key sent to the backend. snake_case, ≤ 64 chars."
+          tooltip="Field key sent to the backend. Auto-generated from the label until you edit it. snake_case, ≤ 64 chars."
           rules={[
             {
               required: true,
@@ -214,42 +268,16 @@ export const FieldPropertiesPanel = ({
         >
           <Input data-testid="prop-name" />
         </Form.Item>
-        <Form.Item label="Label" name="label" rules={[{ required: true }]}>
-          <Input data-testid="prop-label" />
-        </Form.Item>
         <Form.Item
-          noStyle
-          shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
+          label="Placeholder"
+          name="placeholder"
+          tooltip="Hint text shown inside the empty input. Currently shown in the builder preview only — the privacy center backend will need a schema update before it reaches end users."
         >
-          {({ getFieldValue }) => {
-            const hiddenOn = !!getFieldValue("hidden");
-            return (
-              <Form.Item
-                label="Required"
-                name="required"
-                valuePropName="checked"
-                tooltip={
-                  hiddenOn
-                    ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
-                    : "Whether the user must fill this field before submitting."
-                }
-              >
-                <Switch data-testid="prop-required" disabled={hiddenOn} />
-              </Form.Item>
-            );
-          }}
+          <Input data-testid="prop-placeholder" />
         </Form.Item>
 
         {componentType === "Text" && (
           <>
-            <Form.Item
-              label="Hidden"
-              name="hidden"
-              valuePropName="checked"
-              tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
-            >
-              <Switch data-testid="prop-hidden" />
-            </Form.Item>
             <Form.Item label="Default value" name="default_value">
               <Input data-testid="prop-default-value" />
             </Form.Item>
@@ -259,6 +287,36 @@ export const FieldPropertiesPanel = ({
               tooltip="If set, this field's default value is read from the matching URL query parameter."
             >
               <Input data-testid="prop-query-param-key" />
+            </Form.Item>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
+            >
+              {({ getFieldValue }) => {
+                const hiddenOn = !!getFieldValue("hidden");
+                return (
+                  <Form.Item
+                    label="Required"
+                    name="required"
+                    valuePropName="checked"
+                    tooltip={
+                      hiddenOn
+                        ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
+                        : "Whether the user must fill this field before submitting."
+                    }
+                  >
+                    <Switch data-testid="prop-required" disabled={hiddenOn} />
+                  </Form.Item>
+                );
+              }}
+            </Form.Item>
+            <Form.Item
+              label="Hidden"
+              name="hidden"
+              valuePropName="checked"
+              tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
+            >
+              <Switch data-testid="prop-hidden" />
             </Form.Item>
           </>
         )}
@@ -274,6 +332,14 @@ export const FieldPropertiesPanel = ({
             </Form.Item>
             <Form.Item label="Default value" name="default_value">
               <Input data-testid="prop-default-value" />
+            </Form.Item>
+            <Form.Item
+              label="Required"
+              name="required"
+              valuePropName="checked"
+              tooltip="Whether the user must fill this field before submitting."
+            >
+              <Switch data-testid="prop-required" />
             </Form.Item>
           </>
         )}
@@ -294,6 +360,14 @@ export const FieldPropertiesPanel = ({
               tooltip="Pre-fill the location based on the user's IP address (best-effort)."
             >
               <Switch data-testid="prop-ip-hint" />
+            </Form.Item>
+            <Form.Item
+              label="Required"
+              name="required"
+              valuePropName="checked"
+              tooltip="Whether the user must fill this field before submitting."
+            >
+              <Switch data-testid="prop-required" />
             </Form.Item>
           </>
         )}

@@ -99,7 +99,7 @@ export const PrivacyCenterConfigSection = ({
 
   return (
     <Card title="Privacy center config">
-      <Space direction="vertical" style={{ width: "100%" }}>
+      <Space orientation="vertical" style={{ width: "100%" }}>
         <Form.Item label="Title">
           <Input
             value={value?.title ?? ""}

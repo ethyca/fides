@@ -72,10 +72,10 @@ export const ChatPane = ({
       {disabled && (
         <Alert
           type="info"
-          message={disabledReason ?? "LLM provider not configured."}
+          title={disabledReason ?? "LLM provider not configured."}
         />
       )}
-      {error && <Alert type="error" message={error} closable />}
+      {error && <Alert type="error" title={error} closable />}
       <div ref={messagesRef} style={messagesStyle}>
         {messages.map((m, idx) => (
           // eslint-disable-next-line react/no-array-index-key
@@ -106,7 +106,7 @@ export const ChatPane = ({
             type="primary"
             icon={<SparkleIcon size={14} />}
             onClick={handleSubmit}
-            disabled={!draft.trim() || disabled}
+            disabled={disabled}
           >
             Send
           </Button>

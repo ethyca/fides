@@ -52,7 +52,7 @@ export const ActionsTable = ({
   ];
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space orientation="vertical" style={{ width: "100%" }}>
       <Button onClick={onAddAction}>Add action</Button>
       <Table
         rowKey="policy_key"
