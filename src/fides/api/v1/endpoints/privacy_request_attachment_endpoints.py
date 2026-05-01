@@ -1,6 +1,15 @@
 """Unauthenticated upload endpoint for privacy-request file attachments."""
 
-from fastapi import Depends, File, Header, HTTPException, Request, Response, UploadFile
+from fastapi import (
+    Depends,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+)
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -26,9 +35,9 @@ from fides.service.privacy_request_attachments.privacy_request_attachments_excep
     StorageNotConfiguredError,
 )
 from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
-    DEFAULT_MAX_SIZE_BYTES,
     UPLOAD_READ_CHUNK_BYTES,
     AttachmentUserProvidedService,
+    resolve_upload_constraints,
 )
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
@@ -44,6 +53,9 @@ def upload_privacy_request_attachment(
     request: Request,  # required for rate limiting
     response: Response,  # required for rate limiting
     file: UploadFile = File(...),
+    property_id: str = Form(...),
+    policy_key: str = Form(...),
+    field_name: str = Form(...),
     content_length: int | None = Header(default=None),
     db: Session = Depends(get_db),
     service: AttachmentUserProvidedService = Depends(
@@ -51,8 +63,15 @@ def upload_privacy_request_attachment(
     ),
 ) -> PrivacyRequestAttachment:
     """Upload a file attachment for a custom privacy request field. Returns
-    an ``id`` to echo back in the field's ``value`` list. Gated on
-    ``allow_custom_privacy_request_field_collection`` and
+    an ``id`` to echo back in the field's ``value`` list.
+
+    ``property_id``, ``policy_key``, and ``field_name`` are mandatory.
+    All three are persisted on the resulting row so submission can verify
+    the upload was made under the same
+    ``(property, policy, field)`` triple it's being claimed under — the
+    same triple submission itself uses to look up the field's config.
+
+    Gated on ``allow_custom_privacy_request_field_collection`` and
     ``allow_custom_privacy_request_file_upload``."""
     if not (
         CONFIG.execution.allow_custom_privacy_request_field_collection
@@ -63,13 +82,20 @@ def upload_privacy_request_attachment(
             detail="File attachments are disabled.",
         )
 
+    constraints = resolve_upload_constraints(
+        db,
+        property_id=property_id,
+        policy_key=policy_key,
+        field_name=field_name,
+    )
+
     # Content-Length pre-check — clients can lie, so the streaming check
     # below is the authoritative guard.
-    if content_length is not None and content_length > DEFAULT_MAX_SIZE_BYTES:
+    if content_length is not None and content_length > constraints.max_size_bytes:
         raise HTTPException(
             status_code=HTTP_413_CONTENT_TOO_LARGE,
             detail=(
-                f"File exceeds maximum allowed size of {DEFAULT_MAX_SIZE_BYTES} bytes"
+                f"File exceeds maximum allowed size of {constraints.max_size_bytes} bytes"
             ),
         )
 
@@ -80,11 +106,11 @@ def upload_privacy_request_attachment(
         if not chunk:
             break
         total += len(chunk)
-        if total > DEFAULT_MAX_SIZE_BYTES:
+        if total > constraints.max_size_bytes:
             raise HTTPException(
                 status_code=HTTP_413_CONTENT_TOO_LARGE,
                 detail=(
-                    f"File exceeds maximum allowed size of {DEFAULT_MAX_SIZE_BYTES} bytes"
+                    f"File exceeds maximum allowed size of {constraints.max_size_bytes} bytes"
                 ),
             )
         chunks.append(chunk)
@@ -92,7 +118,14 @@ def upload_privacy_request_attachment(
     file_data = b"".join(chunks)
 
     try:
-        result = service.upload_attachment(file_data=file_data, session=db)
+        result = service.upload_attachment(
+            file_data=file_data,
+            session=db,
+            constraints=constraints,
+            field_name=field_name,
+            property_id=property_id,
+            policy_key=policy_key,
+        )
         db.commit()
         return result
     except FileTooLargeError as exc:

@@ -431,10 +431,17 @@ class PrivacyRequestService:
             else set()
         )
         attachment_service = self.attachment_user_provided_service
+        if file_field_names and not privacy_request_data.property_id:
+            raise PrivacyRequestError(
+                "property_id is required when the submission includes file fields.",
+                privacy_request_data.model_dump(mode="json"),
+            )
         try:
             attachment_rows = attachment_service.resolve_file_attachments(
                 privacy_request_data.custom_privacy_request_fields,
                 file_field_names,
+                privacy_request_data.property_id or "",
+                privacy_request_data.policy_key or "",
                 session=self.db,
             )
         except AttachmentsServiceError as exc:

@@ -453,11 +453,16 @@ class TestFilesMagicBytes:
         assert FilesMagicBytes.from_bytes(b"not a real file") is None
 
     def test_default_public_upload_allowed_file_types(self):
-        assert FilesMagicBytes.default_public_upload_allowed_file_types() == {
+        assert AllowedFileType.default_public_upload_allowed_file_types() == {
             "pdf",
             "jpg",
             "png",
         }
+
+    def test_supported_file_types(self):
+        assert AllowedFileType.supported_file_types() == set(
+            AllowedFileType.__members__.keys()
+        )
 
 
 class TestExtensionForMime:

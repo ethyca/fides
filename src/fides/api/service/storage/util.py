@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+from dataclasses import dataclass
 from enum import Enum as EnumType
 from typing import Any, Callable, Optional
 from urllib.parse import quote
@@ -7,6 +8,8 @@ from urllib.parse import quote
 from loguru import logger
 
 from fides.api.util.storage_util import format_size
+
+DEFAULT_FILE_MAX_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
 
 class FilesMagicBytes:
@@ -32,11 +35,6 @@ class FilesMagicBytes:
                 return ext
         return None
 
-    @classmethod
-    def default_public_upload_allowed_file_types(cls) -> set[str]:
-        """Default extensions accepted on public (unauthenticated) upload endpoints."""
-        return {"pdf", "jpg", "png"}
-
 
 # This is the max file size for downloading the content of an attachment.
 # This is an industry standard used by companies like Google and Microsoft.
@@ -60,10 +58,56 @@ class AllowedFileType(EnumType):
     csv = "text/csv"
     zip = "application/zip"
 
+    @classmethod
+    def default_public_upload_allowed_file_types(cls) -> set[str]:
+        """Default extensions accepted on public (unauthenticated) upload endpoints."""
+        return {"pdf", "jpg", "png"}
+
+    @classmethod
+    def supported_file_types(cls) -> set[str]:
+        """File extensions that have a known ``AllowedFileType`` enum entry."""
+        return set(cls.__members__.keys())
+
 
 MIME_TO_EXTENSION: dict[str, str] = {
     member.value: member.name for member in AllowedFileType
 }
+
+
+@dataclass(frozen=True)
+class FileUploadConstraints:
+    """Resolved upload constraints for a privacy-center file field.
+
+    ``allowed_file_types`` is a frozenset of file extensions (e.g.
+    ``{"pdf", "png"}``) that match keys of :class:`AllowedFileType`.
+    The class self-validates on construction so any value reaching the
+    upload service is guaranteed to be well-formed.
+    """
+
+    max_size_bytes: int
+    allowed_file_types: frozenset[str]
+
+    def __post_init__(self) -> None:
+        if self.max_size_bytes <= 0:
+            raise ValueError("max_size_bytes must be greater than 0")
+        if not self.allowed_file_types:
+            raise ValueError("allowed_file_types must not be empty")
+        supported = AllowedFileType.supported_file_types()
+        unsupported = self.allowed_file_types - supported
+        if unsupported:
+            raise ValueError(
+                f"Unsupported file types: {sorted(unsupported)}. "
+                f"Supported: {sorted(supported)}"
+            )
+
+    @classmethod
+    def defaults(cls) -> "FileUploadConstraints":
+        return cls(
+            max_size_bytes=DEFAULT_FILE_MAX_SIZE_BYTES,
+            allowed_file_types=frozenset(
+                AllowedFileType.default_public_upload_allowed_file_types()
+            ),
+        )
 
 
 def extension_for_mime(mime: str) -> str:

@@ -75,3 +75,36 @@ class InvalidAttachmentValueError(AttachmentsServiceError):
         super().__init__(
             f"File attachment for field '{field_name}' must be a list of attachment ids."
         )
+
+
+class AttachmentContextMismatchError(AttachmentsServiceError):
+    """Raised when an attachment's stored ``(field_name, property_id, policy_key)``
+    does not match the privacy-request submission context. Prevents an
+    upload made under one ``(property, policy, field)`` triple from being
+    reused under another.
+    """
+
+    def __init__(
+        self,
+        attachment_id: str,
+        expected_field: str,
+        actual_field: str,
+        expected_property: str,
+        actual_property: str,
+        expected_policy: str,
+        actual_policy: str,
+    ):
+        self.attachment_id = attachment_id
+        self.expected_field = expected_field
+        self.actual_field = actual_field
+        self.expected_property = expected_property
+        self.actual_property = actual_property
+        self.expected_policy = expected_policy
+        self.actual_policy = actual_policy
+        super().__init__(
+            f"Attachment '{attachment_id}' was uploaded for field "
+            f"'{actual_field}' / property '{actual_property}' / "
+            f"policy '{actual_policy}', but submitted under field "
+            f"'{expected_field}' / property '{expected_property}' / "
+            f"policy '{expected_policy}'."
+        )

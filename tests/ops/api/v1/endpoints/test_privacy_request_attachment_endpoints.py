@@ -46,7 +46,11 @@ class TestPostPrivacyRequestAttachment:
     ):
         # File-upload flag alone is insufficient; field-collection must
         # also be on.
-        resp = api_client.post(URL, files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))})
+        resp = api_client.post(
+            URL,
+            files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))},
+            data={"property_id": "p", "policy_key": "k", "field_name": "f"},
+        )
         assert resp.status_code == 403
         assert "disabled" in resp.json()["detail"].lower()
 
@@ -58,7 +62,11 @@ class TestPostPrivacyRequestAttachment:
     ):
         # Field-collection alone is insufficient; file-upload flag is
         # an independent gate.
-        resp = api_client.post(URL, files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))})
+        resp = api_client.post(
+            URL,
+            files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))},
+            data={"property_id": "p", "policy_key": "k", "field_name": "f"},
+        )
         assert resp.status_code == 403
         assert "disabled" in resp.json()["detail"].lower()
 
@@ -69,7 +77,11 @@ class TestPostPrivacyRequestAttachment:
         allow_custom_privacy_request_file_upload_enabled,
     ):
         oversize = b"%PDF" + b"x" * (DEFAULT_MAX_SIZE_BYTES + 1)
-        resp = api_client.post(URL, files={"file": ("x.pdf", io.BytesIO(oversize))})
+        resp = api_client.post(
+            URL,
+            files={"file": ("x.pdf", io.BytesIO(oversize))},
+            data={"property_id": "p", "policy_key": "k", "field_name": "f"},
+        )
         assert resp.status_code == 413
         assert "maximum allowed size" in resp.json()["detail"]
 
@@ -82,7 +94,9 @@ class TestPostPrivacyRequestAttachment:
         patch_storage_factory,
     ):
         resp = api_client.post(
-            URL, files={"file": ("x.pdf", io.BytesIO(b"not a real pdf"))}
+            URL,
+            files={"file": ("x.pdf", io.BytesIO(b"not a real pdf"))},
+            data={"property_id": "p", "policy_key": "k", "field_name": "f"},
         )
         assert resp.status_code == 400
         assert "not allowed" in resp.json()["detail"]
@@ -98,7 +112,9 @@ class TestPostPrivacyRequestAttachment:
             return_value=None,
         ):
             resp = api_client.post(
-                URL, files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))}
+                URL,
+                files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))},
+                data={"property_id": "p", "policy_key": "k", "field_name": "f"},
             )
         assert resp.status_code == 503
         assert resp.json()["detail"] == "File attachments are temporarily unavailable."
@@ -126,6 +142,9 @@ class TestPostPrivacyRequestAttachment:
                 request=MagicMock(),
                 response=MagicMock(),
                 file=upload,
+                property_id="p",
+                policy_key="k",
+                field_name="f",
                 content_length=1,
                 db=db,
                 service=MagicMock(),
@@ -166,12 +185,54 @@ class TestPostPrivacyRequestAttachment:
                 request=MagicMock(),
                 response=MagicMock(),
                 file=upload,
+                property_id="p",
+                policy_key="k",
+                field_name="f",
                 content_length=None,
                 db=db,
                 service=service,
             )
         assert exc.value.status_code == 413
         assert str(DEFAULT_MAX_SIZE_BYTES) in exc.value.detail
+
+    def test_upload_rejects_missing_property_id(
+        self,
+        api_client: TestClient,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_file_upload_enabled,
+    ):
+        resp = api_client.post(
+            URL,
+            files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))},
+            data={"policy_key": "k", "field_name": "f"},
+        )
+        assert resp.status_code == 422
+
+    def test_upload_rejects_missing_policy_key(
+        self,
+        api_client: TestClient,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_file_upload_enabled,
+    ):
+        resp = api_client.post(
+            URL,
+            files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))},
+            data={"property_id": "p", "field_name": "f"},
+        )
+        assert resp.status_code == 422
+
+    def test_upload_rejects_missing_field_name(
+        self,
+        api_client: TestClient,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_file_upload_enabled,
+    ):
+        resp = api_client.post(
+            URL,
+            files={"file": ("x.pdf", io.BytesIO(PDF_BYTES))},
+            data={"property_id": "p", "policy_key": "k"},
+        )
+        assert resp.status_code == 422
 
     def test_upload_happy_path(
         self,
@@ -183,7 +244,9 @@ class TestPostPrivacyRequestAttachment:
         mock_provider,
     ):
         resp = api_client.post(
-            URL, files={"file": ("original.pdf", io.BytesIO(PDF_BYTES))}
+            URL,
+            files={"file": ("original.pdf", io.BytesIO(PDF_BYTES))},
+            data={"property_id": "p", "policy_key": "k", "field_name": "f"},
         )
         assert resp.status_code == 200, resp.text
         body = resp.json()
@@ -194,3 +257,93 @@ class TestPostPrivacyRequestAttachment:
         assert kwargs["key"].startswith("privacy_request_attachments/")
         assert kwargs["key"].endswith(".pdf")
         assert kwargs["content_type"] == "application/pdf"
+
+    def test_upload_passes_property_id_policy_key_field_name_to_resolver(
+        self,
+        api_client: TestClient,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_file_upload_enabled,
+        storage_config_default,
+        patch_storage_factory,
+    ):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+        )
+
+        with patch(
+            "fides.api.v1.endpoints.privacy_request_attachment_endpoints.resolve_upload_constraints",
+            return_value=FileUploadConstraints.defaults(),
+        ) as resolver:
+            resp = api_client.post(
+                URL,
+                files={"file": ("original.pdf", io.BytesIO(PDF_BYTES))},
+                data={
+                    "property_id": "prop_xyz",
+                    "policy_key": "default_access_policy",
+                    "field_name": "passport",
+                },
+            )
+        assert resp.status_code == 200, resp.text
+        resolver.assert_called_once()
+        kwargs = resolver.call_args.kwargs
+        assert kwargs == {
+            "property_id": "prop_xyz",
+            "policy_key": "default_access_policy",
+            "field_name": "passport",
+        }
+
+    def test_upload_rejects_per_field_oversize_via_content_length(
+        self,
+        api_client: TestClient,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_file_upload_enabled,
+        storage_config_default,
+    ):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+        )
+
+        # Per-field cap of 8 bytes via the resolver — Content-Length pre-check
+        # fires before any streaming or service call.
+        with patch(
+            "fides.api.v1.endpoints.privacy_request_attachment_endpoints.resolve_upload_constraints",
+            return_value=FileUploadConstraints(
+                max_size_bytes=8,
+                allowed_file_types=frozenset({"pdf", "png", "jpg"}),
+            ),
+        ):
+            resp = api_client.post(
+                URL,
+                files={"file": ("original.pdf", io.BytesIO(PDF_BYTES))},
+                data={"field_name": "passport"},
+            )
+        assert resp.status_code == 413
+        assert "8 bytes" in resp.json()["detail"]
+
+    def test_upload_rejects_per_field_disallowed_file_type(
+        self,
+        api_client: TestClient,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_file_upload_enabled,
+        storage_config_default,
+        patch_storage_factory,
+    ):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+        )
+
+        # PDF passes platform allow list; per-field allow list excludes PDF.
+        with patch(
+            "fides.api.v1.endpoints.privacy_request_attachment_endpoints.resolve_upload_constraints",
+            return_value=FileUploadConstraints(
+                max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                allowed_file_types=frozenset({"png"}),
+            ),
+        ):
+            resp = api_client.post(
+                URL,
+                files={"file": ("original.pdf", io.BytesIO(PDF_BYTES))},
+                data={"field_name": "headshot"},
+            )
+        assert resp.status_code == 400
+        assert "not allowed" in resp.json()["detail"]
