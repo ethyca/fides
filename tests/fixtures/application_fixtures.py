@@ -3674,6 +3674,22 @@ def allow_custom_privacy_request_field_collection_disabled():
 
 
 @pytest.fixture(scope="function")
+def allow_custom_privacy_request_file_upload_enabled():
+    original_value = CONFIG.execution.allow_custom_privacy_request_file_upload
+    CONFIG.execution.allow_custom_privacy_request_file_upload = True
+    yield
+    CONFIG.execution.allow_custom_privacy_request_file_upload = original_value
+
+
+@pytest.fixture(scope="function")
+def allow_custom_privacy_request_file_upload_disabled():
+    original_value = CONFIG.execution.allow_custom_privacy_request_file_upload
+    CONFIG.execution.allow_custom_privacy_request_file_upload = False
+    yield
+    CONFIG.execution.allow_custom_privacy_request_file_upload = original_value
+
+
+@pytest.fixture(scope="function")
 def allow_custom_privacy_request_fields_in_request_execution_enabled():
     original_value = (
         CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution
