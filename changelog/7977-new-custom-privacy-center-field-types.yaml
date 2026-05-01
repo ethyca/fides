@@ -1,0 +1,4 @@
+type: Added
+description: Added checkbox, checkbox_group, and textarea field types for Privacy Center custom fields; MultiValue now accepts StrictBool so checkbox values round-trip as bool.
+pr: 7977
+labels: []

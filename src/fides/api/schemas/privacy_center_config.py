@@ -16,6 +16,10 @@ from fides.api.schemas.base_class import FidesSchema
 
 RequiredType = Literal["optional", "required"]
 
+CustomFieldType = Literal[
+    "text", "select", "multiselect", "checkbox", "checkbox_group", "textarea"
+]
+
 
 class PrivacyCenterLink(FidesSchema):
     label: str
@@ -78,10 +82,26 @@ class BaseCustomPrivacyRequestField(FidesSchema, ABC):
 
 
 class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
-    """Regular custom privacy request field supporting text, select, and multiselect types"""
+    """Regular custom privacy request field supporting text, select, multiselect,
+    checkbox, checkbox_group, and textarea types"""
 
-    field_type: Optional[Literal["text", "select", "multiselect"]] = None
+    field_type: Optional[CustomFieldType] = None
     options: Optional[List[str]] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_field_type_constraints(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        field_type = values.get("field_type")
+        if field_type == "checkbox_group" and not values.get("options"):
+            raise ValueError("checkbox_group fields require at least one option")
+        if field_type in ("checkbox", "textarea") and values.get("options"):
+            raise ValueError(f"{field_type} fields do not support options")
+        if field_type in ("multiselect", "checkbox_group") and values.get("hidden"):
+            raise ValueError(
+                f"{field_type} fields cannot be hidden: default_value does not "
+                "support list values"
+            )
+        return values
 
 
 class LocationCustomPrivacyRequestField(BaseCustomPrivacyRequestField):

@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
@@ -13,15 +12,16 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.util import EnumColumn
-from fides.api.models.privacy_request.privacy_request import CustomPrivacyRequestField
+from fides.api.models.privacy_request.custom_field_persistence import (
+    CustomPrivacyRequestFieldPersistenceMixin,
+)
+from fides.api.models.privacy_request.privacy_request import (  # noqa: F401 (referenced via SQLAlchemy string lookup)
+    CustomPrivacyRequestField,
+)
 from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
 from fides.api.schemas.privacy_request import PrivacyRequestSource
-from fides.api.schemas.redis_cache import (
-    CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
-)
 from fides.api.schemas.redis_cache import IdentityBase
 from fides.api.util.identity_verification import IdentityVerificationMixin
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.privacy_request import (
@@ -60,8 +60,12 @@ class Consent(Base):
     identity: Optional[IdentityBase] = None
 
 
-class ConsentRequest(IdentityVerificationMixin, Base):
+class ConsentRequest(
+    CustomPrivacyRequestFieldPersistenceMixin, IdentityVerificationMixin, Base
+):
     """Tracks consent requests."""
+
+    _custom_field_fk_column = "consent_request_id"
 
     property_id = Column(
         String,
@@ -106,36 +110,6 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         self._verify_identity(provided_code=provided_code)
         self.identity_verified_at = datetime.utcnow()
         self.save(db)
-
-    def persist_custom_privacy_request_fields(
-        self,
-        db: Session,
-        custom_privacy_request_fields: Optional[
-            Dict[str, CustomPrivacyRequestFieldSchema]
-        ],
-    ) -> None:
-        if not custom_privacy_request_fields:
-            return
-
-        if CONFIG.execution.allow_custom_privacy_request_field_collection:
-            for key, item in custom_privacy_request_fields.items():
-                if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
-                    CustomPrivacyRequestField.create(
-                        db=db,
-                        data={
-                            "consent_request_id": self.id,
-                            "field_name": key,
-                            "field_label": item.label,
-                            "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
-                        },
-                    )
-        else:
-            logger.info(
-                "Custom fields provided in consent request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
-                self.id,
-            )
 
     def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
         return {
