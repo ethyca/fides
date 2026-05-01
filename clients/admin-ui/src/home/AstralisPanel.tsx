@@ -10,8 +10,8 @@ import { useGetAstralisQuery } from "~/features/dashboard/dashboard.slice";
 import styles from "./AstralisPanel.module.scss";
 
 const ROW_COLORS: Record<string, string> = {
-  success: "var(--ant-color-success)",
-  warning: "var(--ant-color-warning)",
+  success: "var(--fidesui-color-success)",
+  warning: "var(--fidesui-color-warning)",
 };
 
 export const AstralisPanel = () => {

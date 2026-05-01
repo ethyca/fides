@@ -24,8 +24,8 @@
 
 .feedItem {
   display: block;
-  padding: var(--ant-padding-xs, 8px) var(--ant-padding, 16px);
-  border-radius: var(--ant-border-radius, 6px);
+  padding: var(--fidesui-padding-xs, 8px) var(--fidesui-padding, 16px);
+  border-radius: var(--fidesui-border-radius, 6px);
   transition: background-color 0.15s;
 
   &:focus-visible {
@@ -39,7 +39,7 @@
   color: inherit;
 
   &:hover {
-    background-color: var(--ant-color-fill-quaternary);
+    background-color: var(--fidesui-color-fill-quaternary);
   }
 }
 
@@ -48,9 +48,9 @@
 }
 
 .actorIcon {
-  color: var(--ant-color-text-secondary);
-  background-color: var(--ant-color-fill-quaternary);
-  border: 1px solid var(--ant-color-border-secondary);
+  color: var(--fidesui-color-text-secondary);
+  background-color: var(--fidesui-color-fill-quaternary);
+  border: 1px solid var(--fidesui-color-border-secondary);
   flex-shrink: 0;
 }
 
@@ -60,11 +60,11 @@
 }
 
 .attributionText {
-  font-size: var(--ant-font-size-sm);
-  color: var(--ant-color-text-quaternary);
+  font-size: var(--fidesui-font-size-sm);
+  color: var(--fidesui-color-text-quaternary);
 }
 
 .timestampText {
-  font-size: var(--ant-font-size-sm);
+  font-size: var(--fidesui-font-size-sm);
   flex-shrink: 0;
 }

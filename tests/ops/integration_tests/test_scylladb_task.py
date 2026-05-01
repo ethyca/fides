@@ -73,7 +73,6 @@ class TestScyllaDSRs:
                 "email",
                 "name",
                 "last_contacted",
-                "logins",
                 "states_lived",
             ],
         )

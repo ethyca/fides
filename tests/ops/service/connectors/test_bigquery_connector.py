@@ -564,11 +564,11 @@ class TestBigQueryConnector:
             # without modifying the BigQueryConnector class to allow for a SQL queries generation
             # that's decoupled from the actual execution of the queries.
             assert (
-                f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
+                f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
                 in loguru_caplog.text
             )
             assert (
-                f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
+                f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
                 in loguru_caplog.text
             )
 
@@ -1031,11 +1031,11 @@ class TestBigQueryConnectorTimeBasedPartitioning:
             # without modifying the BigQueryConnector class to allow for a SQL queries generation
             # that's decoupled from the actual execution of the queries.
             assert (
-                f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` >= CURRENT_TIMESTAMP - INTERVAL 2000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 1000 DAY)"
+                f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` >= CURRENT_TIMESTAMP - INTERVAL 2000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 1000 DAY)"
                 in loguru_caplog.text
             )
         assert (
-            f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP)"
+            f"INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `{PROJECT_NAME}.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP)"
             in loguru_caplog.text
         )
 

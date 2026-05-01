@@ -113,7 +113,7 @@ const ExperienceConfigSection = ({
           <PreviewCard
             title="Available notices"
             height="200px"
-            headerColor="var(--fidesui-minos)"
+            headerColor="var(--fidesui-brand-minos)"
             emptyMessage="Available notices will appear here after fetching experience"
           >
             {privacyNotices.length > 0 ? (

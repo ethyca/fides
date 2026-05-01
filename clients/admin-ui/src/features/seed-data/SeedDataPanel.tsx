@@ -110,6 +110,12 @@ const SEED_SCENARIOS: SeedScenario[] = [
     description:
       "Populate the landing page dashboard with privacy requests, system coverage metrics, audit activity, staged resources, and 30 days of trend history.",
   },
+  {
+    key: "disclosure_metrics",
+    label: "Disclosure Metrics (CCPA/CPRA)",
+    description:
+      "Seed historical privacy requests from the previous calendar year for the CCPA/CPRA disclosure metrics page. Includes access, erasure, and consent opt-out requests with locations and response times.",
+  },
 ];
 
 const ALL_TASK_KEYS = SEED_SCENARIOS.map((s) => s.key);
