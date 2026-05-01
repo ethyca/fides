@@ -35,7 +35,6 @@ interface PurposeCardGridProps {
   onStatusFilterChange: (value: string | null) => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  onClearFilters: () => void;
   onCreatePurpose: () => void;
 }
 
@@ -59,20 +58,11 @@ const PurposeCardGrid = ({
   onStatusFilterChange,
   searchQuery,
   onSearchChange,
-  onClearFilters,
   onCreatePurpose,
 }: PurposeCardGridProps) => {
   const { groups, summariesByKey } = usePurposeCardFilters(purposes, summaries);
 
-  const hasAnyFilter =
-    Boolean(dataUseFilter) ||
-    Boolean(consumerFilter) ||
-    Boolean(categoryFilter) ||
-    Boolean(statusFilter) ||
-    Boolean(searchQuery);
-
   const isEmpty = groups.length === 0;
-  const hasNoPurposes = purposes.length === 0 && !hasAnyFilter;
 
   return (
     <div>
@@ -126,11 +116,11 @@ const PurposeCardGrid = ({
           />
         </Flex>
       </Flex>
-      {isEmpty && hasNoPurposes && (
+      {isEmpty && (
         <Result
           status="info"
-          title="No purposes yet"
-          subTitle="Define your first purpose to start governing how data flows through your systems."
+          title="No purposes to show"
+          subTitle="Create a new purpose to get started."
           extra={
             <Button
               type="primary"
@@ -140,14 +130,6 @@ const PurposeCardGrid = ({
               New purpose
             </Button>
           }
-        />
-      )}
-      {isEmpty && !hasNoPurposes && (
-        <Result
-          status="info"
-          title="No purposes match your filters"
-          subTitle="Try adjusting your search or clearing filters to see more results."
-          extra={<Button onClick={onClearFilters}>Clear filters</Button>}
         />
       )}
       {!isEmpty &&

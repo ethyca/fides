@@ -115,32 +115,50 @@ export const dataPurposesHandlers = () => {
             .map((assignment) => assignment.system_id),
         );
 
-      let filtered = [...purposesStore];
-      if (search) {
-        filtered = filtered.filter(
-          (purpose) =>
-            purpose.name.toLowerCase().includes(search) ||
-            purpose.fides_key.toLowerCase().includes(search),
-        );
-      }
-      if (dataUse) {
-        filtered = filtered.filter((purpose) => purpose.data_use === dataUse);
-      }
-      if (consumer) {
-        filtered = filtered.filter((purpose) =>
-          purposeAssignedSystemIds(purpose).has(consumer),
-        );
-      }
-      if (category) {
-        filtered = filtered.filter((purpose) =>
-          (purpose.data_categories ?? []).includes(category),
-        );
-      }
-      if (status) {
-        filtered = filtered.filter(
-          (purpose) => purposeStatus(purpose) === status,
-        );
-      }
+      const applyFilters = (
+        purposes: DataPurposeResponse[],
+        active: {
+          search?: string;
+          dataUse?: string | null;
+          consumer?: string | null;
+          category?: string | null;
+          status?: string | null;
+        },
+      ) => {
+        let result = purposes;
+        if (active.search) {
+          const term = active.search;
+          result = result.filter(
+            (purpose) =>
+              purpose.name.toLowerCase().includes(term) ||
+              purpose.fides_key.toLowerCase().includes(term),
+          );
+        }
+        if (active.dataUse) {
+          result = result.filter(
+            (purpose) => purpose.data_use === active.dataUse,
+          );
+        }
+        if (active.consumer) {
+          result = result.filter((purpose) =>
+            purposeAssignedSystemIds(purpose).has(active.consumer!),
+          );
+        }
+        if (active.category) {
+          result = result.filter((purpose) =>
+            (purpose.data_categories ?? []).includes(active.category!),
+          );
+        }
+        if (active.status) {
+          result = result.filter(
+            (purpose) => purposeStatus(purpose) === active.status,
+          );
+        }
+        return result;
+      };
+
+      const allFilters = { search, dataUse, consumer, category, status };
+      const filtered = applyFilters(purposesStore, allFilters);
 
       if (downloadCsv) {
         const csv = buildRoPACsv(filtered);
@@ -155,11 +173,26 @@ export const dataPurposesHandlers = () => {
         );
       }
 
-      // Filter options are derived from the full unfiltered set so the
-      // dropdowns always show every available value (matching the BE pattern
-      // where filter_options come back alongside results).
+      // Faceted filter options — each dimension's options are derived from the
+      // population obtained by applying *all other* filters. The currently-
+      // selected value persists in its own dropdown; values that would yield
+      // zero results given the current selection don't appear. Mirrors the
+      // action-center / discovered-assets pattern (see useDiscoveredAssetsTable).
+      const consumerPool = applyFilters(purposesStore, {
+        ...allFilters,
+        consumer: null,
+      });
+      const dataUsePool = applyFilters(purposesStore, {
+        ...allFilters,
+        dataUse: null,
+      });
+      const categoryPool = applyFilters(purposesStore, {
+        ...allFilters,
+        category: null,
+      });
+
       const consumerMap = new Map<string, string>();
-      purposesStore.forEach((purpose) => {
+      consumerPool.forEach((purpose) => {
         (systemsStore[purpose.fides_key] ?? [])
           .filter((assignment) => assignment.assigned)
           .forEach((assignment) => {
@@ -169,10 +202,10 @@ export const dataPurposesHandlers = () => {
           });
       });
       const dataUses = Array.from(
-        new Set(purposesStore.map((purpose) => purpose.data_use)),
+        new Set(dataUsePool.map((purpose) => purpose.data_use)),
       );
       const categories = new Set<string>();
-      purposesStore.forEach((purpose) => {
+      categoryPool.forEach((purpose) => {
         (purpose.data_categories ?? []).forEach((c) => categories.add(c));
       });
 

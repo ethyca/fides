@@ -27,7 +27,6 @@ const DataPurposesPage: NextPage = () => {
     setCategoryFilter,
     statusFilter,
     setStatusFilter,
-    clearFilters,
     filterParams,
   } = usePurposesList();
   const isError = Boolean(error);
@@ -85,7 +84,6 @@ const DataPurposesPage: NextPage = () => {
           onStatusFilterChange={setStatusFilter}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          onClearFilters={clearFilters}
           onCreatePurpose={() => setModalOpen(true)}
         />
       )}
