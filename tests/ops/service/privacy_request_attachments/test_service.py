@@ -159,3 +159,23 @@ class TestProviderHelpers:
         ):
             with pytest.raises(StorageBucketNotConfiguredError):
                 _get_provider_and_bucket(db)
+
+    def test_get_provider_and_bucket_local_no_bucket_ok(self, db, mock_provider):
+        from fides.api.schemas.storage.storage import StorageType
+
+        config = MagicMock(details={}, type=StorageType.local)
+        with (
+            patch(
+                "fides.service.privacy_request_attachments.privacy_request_attachments_service.get_active_default_storage_config",
+                return_value=config,
+            ),
+            patch(
+                "fides.service.privacy_request_attachments.privacy_request_attachments_service.StorageProviderFactory.create",
+                return_value=mock_provider,
+            ),
+        ):
+            provider, bucket, returned_config = _get_provider_and_bucket(db)
+        assert provider is mock_provider
+        assert bucket == ""
+        assert returned_config is config
+

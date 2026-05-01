@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.attachment import PrivacyRequestAttachment
 from fides.api.schemas.privacy_center_config import DEFAULT_FILE_MAX_SIZE_BYTES
+from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.storage.providers import StorageProviderFactory
 from fides.api.service.storage.providers.base import StorageProvider
 from fides.api.service.storage.util import AllowedFileType, FilesMagicBytes
@@ -43,7 +44,7 @@ def _get_provider_and_bucket(
     if not storage_config:
         raise StorageNotConfiguredError()
     bucket = _bucket(storage_config)
-    if not bucket:
+    if not bucket and storage_config.type != StorageType.local:
         raise StorageBucketNotConfiguredError()
     provider = StorageProviderFactory.create(storage_config)
     return provider, bucket, storage_config
