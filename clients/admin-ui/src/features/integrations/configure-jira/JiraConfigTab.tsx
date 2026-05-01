@@ -14,6 +14,7 @@ import { usePatchDatastoreConnectionSecretsMutation } from "~/features/datastore
 import {
   useGetJiraIssueTypesQuery,
   useGetJiraProjectsQuery,
+  useGetJiraStatusesQuery,
   useGetJiraTemplateVariablesQuery,
   usePreviewJiraTicketMutation,
 } from "~/features/plus/plus.slice";
@@ -30,6 +31,15 @@ const DUE_DATE_OPTIONS = [
   { value: "60", label: "60 days" },
 ];
 
+interface JiraSecrets {
+  project_key?: string;
+  issue_type?: string;
+  completion_status?: string | null;
+  summary_template?: string;
+  description_template?: string;
+  due_date_config?: { type: string; days: number } | null;
+}
+
 interface JiraConfigTabProps {
   connection: ConnectionConfigurationResponse;
 }
@@ -37,6 +47,7 @@ interface JiraConfigTabProps {
 interface JiraConfigFormValues {
   project_key?: string;
   issue_type?: string;
+  completion_status?: string;
   summary_template?: string;
   description_template?: string;
   due_date_days?: string;
@@ -48,11 +59,10 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewData, setPreviewData] = useState<JiraTicketData | null>(null);
 
-  const secrets = (connection as any)?.secrets as
-    | Record<string, any>
-    | undefined;
+  const secrets = connection.secrets as JiraSecrets | undefined;
 
   const selectedProject = Form.useWatch("project_key", form);
+  const selectedIssueType = Form.useWatch("issue_type", form);
   const summaryTemplate = Form.useWatch("summary_template", form);
   const descriptionTemplate = Form.useWatch("description_template", form);
 
@@ -69,6 +79,16 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
       { skip: !connection.key || !selectedProject },
     );
 
+  const { data: statuses, isLoading: statusesLoading } =
+    useGetJiraStatusesQuery(
+      {
+        connectionKey: connection.key,
+        projectKey: selectedProject!,
+        issueType: selectedIssueType!,
+      },
+      { skip: !connection.key || !selectedProject || !selectedIssueType },
+    );
+
   const { data: templateVariables } = useGetJiraTemplateVariablesQuery(
     { connectionKey: connection.key },
     { skip: !connection.key },
@@ -82,6 +102,11 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
 
   const handleProjectChange = () => {
     form.setFieldValue("issue_type", undefined);
+    form.setFieldValue("completion_status", undefined);
+  };
+
+  const handleIssueTypeChange = () => {
+    form.setFieldValue("completion_status", undefined);
   };
 
   const handlePreview = async () => {
@@ -100,9 +125,10 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   };
 
   const handleSave = async (values: JiraConfigFormValues) => {
-    const secretsPayload: Record<string, any> = {
+    const secretsPayload: JiraSecrets = {
       project_key: values.project_key,
       issue_type: values.issue_type,
+      completion_status: values.completion_status ?? null,
       summary_template: values.summary_template,
       description_template: values.description_template,
     };
@@ -140,6 +166,7 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
         initialValues={{
           project_key: secrets?.project_key || undefined,
           issue_type: secrets?.issue_type || undefined,
+          completion_status: secrets?.completion_status || undefined,
           summary_template: secrets?.summary_template || undefined,
           description_template: secrets?.description_template || undefined,
           due_date_days:
@@ -180,12 +207,33 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
             }
             loading={issueTypesLoading}
             disabled={!selectedProject}
+            onChange={handleIssueTypeChange}
             options={issueTypes
               ?.filter((t) => !t.subtask)
               .map((t) => ({
                 value: t.name,
                 label: t.name,
               }))}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="completion_status"
+          label="Completion trigger"
+          tooltip="Which Jira status should trigger Fides to mark the request as complete? Leave as default to use any Done-category status."
+        >
+          <Select
+            aria-label="Completion trigger"
+            placeholder="Default (any Done-category status)"
+            loading={statusesLoading}
+            disabled={!selectedProject || !selectedIssueType}
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            options={statuses?.map((s) => ({
+              value: s.name,
+              label: s.name,
+            }))}
           />
         </Form.Item>
 

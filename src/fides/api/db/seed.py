@@ -41,7 +41,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetailsMailgun,
     MessagingServiceType,
 )
-from fides.api.schemas.messaging.shared_schemas import MessagingSecretsMailgunDocs
 from fides.api.schemas.policy import ActionType, DrpAction
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors.saas.connector_registry_service import (
@@ -554,9 +553,9 @@ async def load_samples(async_session: AsyncSession) -> None:
             )
             messaging_config.set_secrets(
                 db=db,
-                messaging_secrets=MessagingSecretsMailgunDocs(
-                    mailgun_api_key=os.getenv("MAILGUN_API_KEY")
-                ),
+                messaging_secrets={  # type: ignore[arg-type]  # model_validate accepts dicts
+                    "mailgun_api_key": os.getenv("MAILGUN_API_KEY"),
+                },
             )
             CONFIG.notifications.notification_service_type = "mailgun"
             ApplicationConfig.update_config_set(db, CONFIG)

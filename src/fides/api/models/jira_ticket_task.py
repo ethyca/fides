@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, NamedTuple
 
-from sqlalchemy import Column, DateTime, ForeignKey, Index, String, text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, text
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, backref, joinedload, relationship
 
@@ -61,14 +61,13 @@ class JiraTicketTask(Base):
     external_status = Column(String, nullable=True)
     external_status_category = Column(String, nullable=True)
     last_polled_at = Column(DateTime(timezone=True), nullable=True)
+    needs_polling = Column(Boolean, server_default=text("true"), nullable=False)
 
     __table_args__ = (
         Index(
             "ix_jira_ticket_task_open",
-            "external_status_category",
-            postgresql_where=text(
-                "external_status_category IS NULL OR external_status_category != 'done'"
-            ),
+            "needs_polling",
+            postgresql_where=text("needs_polling = true"),
         ),
         Index("ix_jira_ticket_task_connection_config_id", "connection_config_id"),
     )
@@ -96,10 +95,7 @@ class JiraTicketTask(Base):
                 joinedload(cls.manual_task_instance),
                 joinedload(cls.connection_config),
             )
-            .filter(
-                (cls.external_status_category.is_(None))
-                | (cls.external_status_category != DONE_STATUS_CATEGORY)
-            )
+            .filter(cls.needs_polling.is_(True))
             .all()
         )
 
