@@ -273,3 +273,6 @@ multilang_migration_backup_*
 # Go shared library build artifacts
 policy-engine/libpbac.*
 policy-engine/*.h
+
+# Git worktrees (local development)
+.worktrees/
