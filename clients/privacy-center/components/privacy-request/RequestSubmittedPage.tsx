@@ -17,17 +17,19 @@ const RequestSubmittedPage = () => {
   return (
     <Flex gap="medium" vertical align="center">
       <Image
+        className="pc-success-icon"
         src="/green-check.svg"
         alt="green-checkmark"
         width="48px"
         height="48px"
         preview={false}
       />
-      <Text style={{ textAlign: "center" }}>
+      <Text className="pc-success-message" style={{ textAlign: "center" }}>
         Thanks for your request. A member of our team will review and be in
         contact with you shortly.
       </Text>
       <Button
+        className="pc-button-return"
         type="primary"
         onClick={handleContinue}
         block

@@ -39,6 +39,7 @@ const ConsentItem = ({
   disabled,
 }: ConsentItemProps) => (
   <Box
+    className="pc-consent-toggle"
     backgroundColor={highlight ? "gray.75" : undefined}
     borderRadius="md"
     data-testid={`consent-item-${id}`}

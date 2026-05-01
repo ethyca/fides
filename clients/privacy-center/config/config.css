@@ -16,6 +16,80 @@ Override basic theme colors by uncommenting and editing those below
   /* --chakra-colors-primary-400: #464B83; */
   /* Primary button color */
   /* --chakra-colors-primary-800: #111439; */
+
   /* respect new line breaks \n */
   white-space: pre-line;
 }
+
+/*
+ * Privacy Center CSS Class Reference
+ * ===================================
+ * Use these classes to customize specific elements. Target them in this file
+ * or in property.stylesheet via the Fides API.
+ *
+ * Page scoping (use to target elements on a specific page):
+ *   .pc-page-home              Home page
+ *   .pc-page-privacy-request   Privacy request form page
+ *   .pc-page-verify            Verification code page
+ *   .pc-page-success           Request submitted page
+ *   .pc-page-consent           Consent preferences page
+ *   .pc-page-metrics           Privacy request metrics page
+ *
+ * Homepage:
+ *   .pc-header                 Top navigation bar
+ *   .pc-logo                   Logo image (in header)
+ *   .pc-heading                Main title
+ *   .pc-description            Description text
+ *   .pc-card                   Action card
+ *   .pc-card-icon              Card icon
+ *   .pc-card-title             Card title text
+ *   .pc-card-description       Card description text
+ *   .pc-policy-links           Policy links container
+ *   .pc-policy-link            Individual policy link
+ *   .pc-brand-link             Brand/attribution link
+ *
+ * Form pages (privacy request, verify, success):
+ *   .pc-form-logo              Form page logo
+ *   .pc-form-box               Form container box
+ *   .pc-form-title             Form page title
+ *   .pc-form-content           Form content area
+ *
+ * Privacy request form:
+ *   .pc-field-name             Name input field
+ *   .pc-field-email            Email input field
+ *   .pc-field-phone            Phone input field
+ *   .pc-field-custom           Custom identity fields
+ *   .pc-button-submit          Submit/Continue button
+ *   .pc-button-cancel          Cancel button
+ *
+ * Verification:
+ *   .pc-field-code             Verification code input
+ *   .pc-button-resend          Resend code button
+ *   .pc-button-verify          Submit code button
+ *
+ * Success:
+ *   .pc-success-icon           Checkmark icon
+ *   .pc-success-message        Confirmation message text
+ *   .pc-button-return          Return home button
+ *
+ * Consent:
+ *   .pc-consent-heading        Consent page heading
+ *   .pc-consent-description    Consent page description
+ *   .pc-consent-toggle         Individual consent toggle
+ *   .pc-consent-banner         GPC banner
+ *
+ * Metrics:
+ *   .pc-metrics-table          Metrics data table
+ *   .pc-metrics-disclaimer     Legal disclaimer text
+ *
+ * Examples:
+ *
+ *   .pc-page-privacy-request .pc-form-box {
+ *     background-color: #fafafa;
+ *     border: 1px solid #e0e0e0;
+ *   }
+ *
+ *   .pc-card:hover {
+ *     border-color: #6c63ff;
+ *   }
+ */

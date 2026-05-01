@@ -19,6 +19,7 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
     borderRadius={12}
     boxShadow="base"
     cursor="pointer"
+    className="pc-card"
     data-testid="card"
     flexDirection="column"
     gap="12px"
@@ -49,8 +50,14 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
     border="1px solid"
     borderColor="transparent"
   >
-    <Image alt={description} boxSize="32px" src={iconPath} />
+    <Image
+      alt={description}
+      boxSize="32px"
+      src={iconPath}
+      className="pc-card-icon"
+    />
     <Text
+      className="pc-card-title"
       color="gray.800"
       fontSize="md"
       fontWeight="semibold"
@@ -58,7 +65,13 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
     >
       {title}
     </Text>
-    <Text color="gray.800" fontSize="xs" fontWeight="normal" lineHeight="16px">
+    <Text
+      className="pc-card-description"
+      color="gray.800"
+      fontSize="xs"
+      fontWeight="normal"
+      lineHeight="16px"
+    >
       {description}
     </Text>
   </Flex>

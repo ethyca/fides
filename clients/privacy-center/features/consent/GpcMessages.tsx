@@ -80,6 +80,7 @@ export const GpcBanner = () => {
 
   return (
     <Stack
+      className="pc-consent-banner"
       border="1px solid"
       borderColor="blue.400"
       borderRadius="lg"

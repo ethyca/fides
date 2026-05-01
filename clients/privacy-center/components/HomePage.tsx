@@ -184,10 +184,11 @@ const HomePage: NextPage = () => {
   }
 
   return (
-    <main data-testid="home">
+    <main data-testid="home" className="pc-page-home">
       <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
         <Stack align="center" spacing={3}>
           <Heading
+            className="pc-heading"
             fontSize={["3xl", "4xl"]}
             color="gray.800"
             fontWeight="semibold"
@@ -198,6 +199,7 @@ const HomePage: NextPage = () => {
           </Heading>
 
           <TextOrHtml
+            className="pc-description"
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}
@@ -248,9 +250,15 @@ const HomePage: NextPage = () => {
           policyLinks.length > 0 ||
           PRIVACY_REQUEST_DISCLOSURE_ENABLED) && (
           <Box position="relative" width="100%">
-            <Flex justifyContent="center" gap={6} flexWrap="wrap">
+            <Flex
+              className="pc-policy-links"
+              justifyContent="center"
+              gap={6}
+              flexWrap="wrap"
+            >
               {policyLinks.map(({ url, label }) => (
                 <Link
+                  className="pc-policy-link"
                   key={`${url}-${label}`}
                   fontSize={["small", "medium"]}
                   fontWeight="medium"

@@ -276,7 +276,12 @@ const ConsentPage: NextPage = () => {
   }, [experience, setI18nInstance, isConfigDrivenConsent]);
 
   return (
-    <Stack as="main" align="center" data-testid="consent">
+    <Stack
+      as="main"
+      align="center"
+      data-testid="consent"
+      className="pc-page-consent"
+    >
       <ClientMetadata title="Privacy Center" icon={config.favicon_path} />
 
       {/* Wait until i18n is initalized so we can diplay the correct language and
