@@ -1,4 +1,4 @@
 type: Added
-description: Add CSS custom properties for privacy center request flow page styling
+description: Add semantic CSS class names across Privacy Center components for custom styling
 pr: 8072
 labels: []

@@ -60,7 +60,7 @@ export const PrivacyRequestMetrics = () => {
   );
 
   return (
-    <Stack align="center" py={["6", "16"]} px={5} spacing={10}>
+    <Stack align="center" py={["6", "16"]} px={5} spacing={10} className="pc-page-metrics">
       <Stack align="center" spacing={3} w="100%" maxWidth={1080}>
         <Heading as="h1" fontSize={["2xl", "3xl"]} fontWeight="semibold">
           Privacy request disclosures
@@ -70,7 +70,7 @@ export const PrivacyRequestMetrics = () => {
         </Text>
       </Stack>
 
-      <Box w="100%" maxWidth={1080} overflowX="auto">
+      <Box className="pc-metrics-table" w="100%" maxWidth={1080} overflowX="auto">
         <Box
           as="table"
           w="100%"
@@ -137,7 +137,7 @@ export const PrivacyRequestMetrics = () => {
         </Box>
       </Box>
 
-      <Box w="100%" maxWidth={1080} borderRadius="md" p={5}>
+      <Box className="pc-metrics-disclaimer" w="100%" maxWidth={1080} borderRadius="md" p={5}>
         <Text color="gray.500" fontSize="xs">
           Disclosure published pursuant to California Civil Code &sect;
           1798.130(a)(5) and 11 CCR &sect; 7102, and comparable state privacy

@@ -24,7 +24,7 @@ const ConsentDescription = () => {
 
   if (!isNoticeDriven) {
     return (
-      <Box data-testid="consent-description">
+      <Box className="pc-consent-description" data-testid="consent-description">
         <Text {...TEXT_PROPS} data-testid="description">
           {config.consent?.page.description}
         </Text>
@@ -41,7 +41,7 @@ const ConsentDescription = () => {
     );
   }
   return (
-    <Text {...TEXT_PROPS} data-testid="consent-description">
+    <Text className="pc-consent-description" {...TEXT_PROPS} data-testid="consent-description">
       {i18n.t("exp.description")}
     </Text>
   );
