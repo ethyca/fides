@@ -1053,9 +1053,7 @@ class TestBatchExecutionAndAuditLogsByDataset:
             },
         )
         try:
-            result = batch_execution_and_audit_logs_by_dataset(
-                db, [privacy_request.id]
-            )
+            result = batch_execution_and_audit_logs_by_dataset(db, [privacy_request.id])
             assert expected_key in result[privacy_request.id]
         finally:
             audit_log.delete(db)
