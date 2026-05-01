@@ -217,6 +217,14 @@ class AttachmentUserProvided(Base):
     storage_key = Column(String, nullable=False)
     promoted_at = Column(DateTime(timezone=True), nullable=True)
 
+    # ``field_name`` + ``property_id`` + ``policy_key`` tie the upload to
+    # the exact privacy-center config triple it was issued under. All
+    # three are re-validated at submission so a row can only be promoted
+    # under the same (property, policy, field) combination.
+    field_name = Column(String, nullable=False, server_default="")
+    property_id = Column(String, nullable=False, server_default="")
+    policy_key = Column(String, nullable=False, server_default="")
+
     __table_args__ = (
         # Speeds up the orphan-cleanup sweep:
         #   WHERE status = 'uploaded' AND created_at < :cutoff
