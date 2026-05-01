@@ -2240,9 +2240,7 @@ class TestDatasetReferenceValidation:
         success_logs = privacy_request.execution_logs.filter_by(status="complete").all()
 
         validation_logs = [
-            log
-            for log in success_logs
-            if log.dataset_name == "Dataset reference validation"
+            log for log in success_logs if log.dataset_name == "Request execution plan"
         ]
 
         assert len(validation_logs) == 1
@@ -2251,7 +2249,7 @@ class TestDatasetReferenceValidation:
         assert log.collection_name is None
         assert (
             log.message
-            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
+            == f"Request execution plan successful for privacy request: {privacy_request.id}"
         )
         assert log.action_type == privacy_request.policy.get_action_type()
 
@@ -2287,9 +2285,7 @@ class TestDatasetReferenceValidation:
         error_logs = privacy_request.execution_logs.filter_by(status="error").all()
 
         validation_logs = [
-            log
-            for log in error_logs
-            if log.dataset_name == "Dataset reference validation"
+            log for log in error_logs if log.dataset_name == "Request execution plan"
         ]
 
         assert len(validation_logs) == 1
