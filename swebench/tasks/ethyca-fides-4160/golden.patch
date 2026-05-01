@@ -1,0 +1,1188 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index c4b83d6d2..880e10a8c 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -40,6 +40,8 @@ The types of changes are:
+ - Embed the GVL in the GET Experiences response [#4143](https://github.com/ethyca/fides/pull/4143)
+ - Button to view how many vendors and to open the vendor tab in the TCF modal [#4144](https://github.com/ethyca/fides/pull/4144)
+ - "Edit vendor" flow to configuring consent page [#4162](https://github.com/ethyca/fides/pull/4162)
++- TCF overlay description updates [#4051] https://github.com/ethyca/fides/pull/4151
++- Added developer-friendly TCF information under Experience meta [#4160](https://github.com/ethyca/fides/pull/4160/)
+ 
+ ### Changed
+ - Added further config options to customize the privacy center [#4090](https://github.com/ethyca/fides/pull/4090)
+diff --git a/requirements.txt b/requirements.txt
+index de298b84a..f82fda3b0 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -19,6 +19,7 @@ firebase-admin==5.3.0
+ GitPython==3.1.35
+ httpx==0.23.1
+ hvac==0.11.2
++iab-tcf==0.2.2
+ importlib_resources==5.12.0
+ Jinja2==3.1.2
+ loguru==0.6.0
+diff --git a/src/fides/api/api/v1/endpoints/privacy_experience_endpoints.py b/src/fides/api/api/v1/endpoints/privacy_experience_endpoints.py
+index c0ec960dc..d94f3040f 100644
+--- a/src/fides/api/api/v1/endpoints/privacy_experience_endpoints.py
++++ b/src/fides/api/api/v1/endpoints/privacy_experience_endpoints.py
+@@ -34,9 +34,11 @@ from fides.api.util.consent_util import (
+     get_fides_user_device_id_provided_identity,
+ )
+ from fides.api.util.endpoint_utils import fides_limiter, transform_fields
+-from fides.api.util.tcf_util import (
++from fides.api.util.tcf.experience_meta import build_experience_tcf_meta
++from fides.api.util.tcf.tcf_experience_contents import (
+     TCF_COMPONENT_MAPPING,
+     TCFExperienceContents,
++    get_tcf_contents,
+     load_gvl,
+ )
+ from fides.common.api.v1 import urn_registry as urls
+@@ -136,6 +138,7 @@ def privacy_experience_list(
+     fides_user_device_id: Optional[str] = None,
+     systems_applicable: Optional[bool] = False,
+     include_gvl: Optional[bool] = False,
++    include_meta: Optional[bool] = False,
+     request: Request,  # required for rate limiting
+     response: Response,  # required for rate limiting
+ ) -> AbstractPage[PrivacyExperience]:
+@@ -156,6 +159,7 @@ def privacy_experience_list(
+     :param fides_user_device_id: Supplement the response with current saved preferences of the given user
+     :param systems_applicable: Only return embedded Notices associated with systems.
+     :param include_gvl: Embeds gvl.json in the response provided we also have TCF content
++    :param include_meta: If True, returns TCF Experience meta if applicable
+     :param request:
+     :param response:
+     :return:
+@@ -211,6 +215,9 @@ def privacy_experience_list(
+ 
+     results: List[PrivacyExperience] = []
+     should_unescape: Optional[str] = request.headers.get(UNESCAPE_SAFESTR_HEADER)
++    # Builds TCF Experience Contents once here, in case multiple TCF Experiences are requested
++    base_tcf_contents: TCFExperienceContents = get_tcf_contents(db)
++
+     for privacy_experience in experience_query.order_by(
+         PrivacyExperience.created_at.desc()
+     ):
+@@ -222,6 +229,8 @@ def privacy_experience_list(
+             fides_user_provided_identity=fides_user_provided_identity,
+             should_unescape=should_unescape,
+             include_gvl=include_gvl,
++            include_meta=include_meta,
++            base_tcf_contents=base_tcf_contents,
+         )
+ 
+         if content_required and not content_exists:
+@@ -253,6 +262,8 @@ def embed_experience_details(
+     fides_user_provided_identity: Optional[ProvidedIdentity],
+     should_unescape: Optional[str],
+     include_gvl: Optional[bool],
++    include_meta: Optional[bool],
++    base_tcf_contents: TCFExperienceContents,
+ ) -> bool:
+     """
+     Embed the contents of the PrivacyExperience at runtime. Adds Privacy Notices or TCF contents if applicable.
+@@ -262,22 +273,22 @@ def embed_experience_details(
+     """
+     # Reset any temporary cached items just in case
+     privacy_experience.privacy_notices = []
++    privacy_experience.meta = {}
++    privacy_experience.gvl = {}
+     for component in TCF_COMPONENT_MAPPING:
+         setattr(privacy_experience, component, [])
+ 
+-    # Fetch the base TCF Contents
+-    tcf_contents: TCFExperienceContents = privacy_experience.get_related_tcf_contents(
+-        db, fides_user_provided_identity
+-    )
+-    has_tcf_contents: bool = any(
+-        getattr(tcf_contents, component) for component in TCF_COMPONENT_MAPPING
++    # Updates Privacy Experience in-place with TCF Contents if applicable, and then returns
++    # if TCF contents exist
++    has_tcf_contents: bool = privacy_experience.update_with_tcf_contents(
++        db, base_tcf_contents, fides_user_provided_identity
+     )
+-    if has_tcf_contents and include_gvl:
+-        privacy_experience.gvl = load_gvl()
+ 
+-    # Add fetched TCF contents to the Privacy Experience if applicable
+-    for component in TCF_COMPONENT_MAPPING:
+-        setattr(privacy_experience, component, getattr(tcf_contents, component))
++    if has_tcf_contents:
++        if include_meta:
++            privacy_experience.meta = build_experience_tcf_meta(base_tcf_contents)
++        if include_gvl:
++            privacy_experience.gvl = load_gvl()
+ 
+     privacy_notices: List[
+         PrivacyNotice
+diff --git a/src/fides/api/api/v1/endpoints/served_notice_endpoints.py b/src/fides/api/api/v1/endpoints/served_notice_endpoints.py
+index 2c348368a..27aa27f6b 100644
+--- a/src/fides/api/api/v1/endpoints/served_notice_endpoints.py
++++ b/src/fides/api/api/v1/endpoints/served_notice_endpoints.py
+@@ -32,7 +32,10 @@ from fides.api.util.consent_util import (
+     get_or_create_fides_user_device_id_provided_identity,
+ )
+ from fides.api.util.endpoint_utils import fides_limiter
+-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, ConsentRecordType
++from fides.api.util.tcf.tcf_experience_contents import (
++    TCF_COMPONENT_MAPPING,
++    ConsentRecordType,
++)
+ from fides.common.api.v1.urn_registry import (
+     CONSENT_REQUEST_NOTICES_SERVED,
+     NOTICES_SERVED,
+diff --git a/src/fides/api/models/privacy_experience.py b/src/fides/api/models/privacy_experience.py
+index 5b7efb995..9d3ce97ba 100644
+--- a/src/fides/api/models/privacy_experience.py
++++ b/src/fides/api/models/privacy_experience.py
+@@ -1,5 +1,6 @@
+ from __future__ import annotations
+ 
++from copy import copy
+ from enum import Enum
+ from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+ 
+@@ -24,11 +25,10 @@ from fides.api.models.privacy_preference import (
+ from fides.api.models.privacy_request import ProvidedIdentity
+ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+ from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
+-from fides.api.util.tcf_util import (
++from fides.api.util.tcf.tcf_experience_contents import (
+     TCF_COMPONENT_MAPPING,
+     ConsentRecordType,
+     TCFExperienceContents,
+-    get_tcf_contents,
+ )
+ 
+ BANNER_CONSENT_MECHANISMS: Set[ConsentMechanism] = {
+@@ -224,6 +224,8 @@ class PrivacyExperience(Base):
+     tcf_special_features: List = []
+     tcf_systems: List = []
+     gvl: Optional[Dict] = {}
++    # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
++    meta: Dict = {}
+ 
+     # Attribute that is cached on the PrivacyExperience object by "get_should_show_banner", calculated at runtime
+     show_banner: bool
+@@ -309,15 +311,23 @@ class PrivacyExperience(Base):
+ 
+         return notices
+ 
+-    def get_related_tcf_contents(
+-        self, db: Session, fides_user_provided_identity: Optional[ProvidedIdentity]
+-    ) -> TCFExperienceContents:
+-        """Returns the contents of a TCF experience supplemented with any previous records of
+-        a user being served TCF components and/or consenting to any of the individual TCF components
++    def update_with_tcf_contents(
++        self,
++        db: Session,
++        base_tcf_contents: TCFExperienceContents,
++        fides_user_provided_identity: Optional[ProvidedIdentity],
++    ) -> bool:
++        """
++        Supplements the given TCF experience in-place with TCF contents at runtime, and returns whether
++        TCF contents exist.
++
++        The TCF experience is determined by systems in the data map as well as any previous records
++        of a user being served TCF components and/or consenting to any individual TCF components.
+         """
+         if self.component == ComponentType.tcf_overlay:
+-            tcf_contents: TCFExperienceContents = get_tcf_contents(db)
++            tcf_contents = copy(base_tcf_contents)
+ 
++            # Fetch previously saved records for the current user
+             for tcf_component, field_name in TCF_COMPONENT_MAPPING.items():
+                 for record in getattr(tcf_contents, tcf_component):
+                     cache_saved_and_served_on_consent_record(
+@@ -326,8 +336,19 @@ class PrivacyExperience(Base):
+                         fides_user_provided_identity=fides_user_provided_identity,
+                         record_type=field_name,
+                     )
+-            return tcf_contents
+-        return TCFExperienceContents()
++
++            has_tcf_contents: bool = False
++            for component in TCF_COMPONENT_MAPPING:
++                tcf_contents_for_component = getattr(tcf_contents, component)
++                if bool(tcf_contents_for_component):
++                    has_tcf_contents = True
++                # Add TCF contents to the privacy experience where applicable
++                setattr(self, component, tcf_contents_for_component)
++
++            if has_tcf_contents:
++                return True
++
++        return False
+ 
+     @staticmethod
+     def create_default_experience_for_region(
+diff --git a/src/fides/api/models/privacy_notice.py b/src/fides/api/models/privacy_notice.py
+index 78a486954..b89245c64 100644
+--- a/src/fides/api/models/privacy_notice.py
++++ b/src/fides/api/models/privacy_notice.py
+@@ -84,6 +84,7 @@ PrivacyNoticeRegion = Enum(
+         ("us_wv", "us_wv"),  # west virginia
+         ("us_wi", "us_wi"),  # wisconsin
+         ("us_wy", "us_wy"),  # wyoming
++        ("eea", "eea"),  # european economic area
+         ("be", "be"),  # belgium
+         ("bg", "bg"),  # bulgaria
+         ("cz", "cz"),  # czechia
+diff --git a/src/fides/api/models/privacy_preference.py b/src/fides/api/models/privacy_preference.py
+index 1307e9fed..bba0345bc 100644
+--- a/src/fides/api/models/privacy_preference.py
++++ b/src/fides/api/models/privacy_preference.py
+@@ -34,7 +34,7 @@ from fides.api.models.privacy_request import (
+     ProvidedIdentity,
+ )
+ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+-from fides.api.util.tcf_util import (
++from fides.api.util.tcf.tcf_experience_contents import (
+     ConsentRecordType,
+     TCFComponentType,
+     get_relevant_systems_for_tcf_attribute,
+diff --git a/src/fides/api/schemas/privacy_experience.py b/src/fides/api/schemas/privacy_experience.py
+index 74f0c8cb5..37c5fff65 100644
+--- a/src/fides/api/schemas/privacy_experience.py
++++ b/src/fides/api/schemas/privacy_experience.py
+@@ -1,7 +1,7 @@
+ from __future__ import annotations
+ 
+ from datetime import datetime
+-from typing import Any, Dict, List, Optional
++from typing import Any, Dict, List, Literal, Optional
+ 
+ from pydantic import Extra, Field, root_validator, validator
+ 
+@@ -182,6 +182,90 @@ class PrivacyExperienceWithId(PrivacyExperience):
+     id: str
+ 
+ 
++BinaryChoice = Literal[0, 1]
++
++
++class TCMobileData(FidesSchema):
++    """Pre-parsed TC data and TC string for a CMP SDK:
++
++    https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#in-app-details
++    """
++
++    IABTCF_CmpSdkID: Optional[int] = Field(
++        description="The unsigned integer ID of CMP SDK"
++    )
++    IABTCF_CmpSdkVersion: Optional[int] = Field(
++        description="The unsigned integer version number of CMP SDK"
++    )
++    IABTCF_PolicyVersion: Optional[int] = Field(
++        description="The unsigned integer representing the version of the TCF that these consents adhere to."
++    )
++    IABTCF_gdprApplies: Optional[BinaryChoice] = Field(
++        description="1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined"
++    )
++    IABTCF_PublisherCC: Optional[str] = Field(
++        default="AA", description="Two-letter ISO 3166-1 alpha-2 code"
++    )
++    IABTCF_PurposeOneTreatment: Optional[BinaryChoice] = Field(
++        description="Vendors can use this value to determine whether consent for purpose one is required. 0: "
++        "no special treatment. 1: purpose one not disclosed"
++    )
++    IABTCF_UseNonStandardTexts: Optional[BinaryChoice] = Field(
++        description="1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations."
++        "0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations"
++    )
++    IABTCF_TCString: Optional[str] = Field(description="Fully encoded TC string")
++    IABTCF_VendorConsents: Optional[str] = Field(
++        description="Binary string: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
++        "consent status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is consent "
++        "true for vendor ID 1"
++    )
++    IABTCF_VendorLegitimateInterests: Optional[str] = Field(
++        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
++        "legitimate interest status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is "
++        "legitimate interest established true for vendor ID 1"
++    )
++    IABTCF_PurposeConsents: Optional[str] = Field(
++        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the "
++        "consent status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is consent "
++        "true for purpose ID 1"
++    )
++    IABTCF_PurposeLegitimateInterests: Optional[str] = Field(
++        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the"
++        " legitimate interest status for purpose ID n+1; false and true respectively. eg. '1' at index 0 "
++        "is legitimate interest established true for purpose ID 1"
++    )
++    IABTCF_SpecialFeaturesOptIns: Optional[str] = Field(
++        description="Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates "
++        "the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is "
++        "opt-in true for special feature ID 1"
++    )
++    # IABTCF_PublisherRestrictions{ID}  # TODO this field has dynamic keys.  Add when we start surfacing publisher restrictions
++    IABTCF_PublisherConsent: Optional[str] = None
++    IABTCF_PublisherLegitimateInterests: Optional[str] = None
++    IABTCF_PublisherCustomPurposesConsents: Optional[str] = None
++    IABTCF_PublisherCustomPurposesLegitimateInterests: Optional[str] = None
++
++
++class ExperienceMeta(FidesSchema):
++    """Supplements experience with developer-friendly meta information"""
++
++    version_hash: Optional[str] = Field(
++        description="A hashed value that can be compared to previously-fetched "
++        "hash values to determine if the Experience has meaningfully changed"
++    )
++    accept_all_tc_string: Optional[str] = Field(
++        description="The TC string corresponding to a user opting in to all "
++        "available options"
++    )
++    accept_all_tc_mobile_data: Optional[TCMobileData] = None
++    reject_all_tc_string: Optional[str] = Field(
++        description="The TC string corresponding to a user opting out of all "
++        "available options"
++    )
++    reject_all_tc_mobile_data: Optional[TCMobileData] = None
++
++
+ class PrivacyExperienceResponse(PrivacyExperienceWithId):
+     """
+     An API representation of a PrivacyExperience used for response payloads
+@@ -218,3 +302,4 @@ class PrivacyExperienceResponse(PrivacyExperienceWithId):
+         description="The Experience copy or language"
+     )
+     gvl: Optional[Dict] = None
++    meta: Optional[ExperienceMeta] = None
+diff --git a/src/fides/api/schemas/privacy_preference.py b/src/fides/api/schemas/privacy_preference.py
+index e04d8152e..cd6fb18a4 100644
+--- a/src/fides/api/schemas/privacy_preference.py
++++ b/src/fides/api/schemas/privacy_preference.py
+@@ -29,7 +29,10 @@ from fides.api.schemas.tcf import (
+     TCFSpecialPurposeSave,
+     TCFVendorSave,
+ )
+-from fides.api.util.tcf_util import TCF_COMPONENT_MAPPING, TCFComponentType
++from fides.api.util.tcf.tcf_experience_contents import (
++    TCF_COMPONENT_MAPPING,
++    TCFComponentType,
++)
+ 
+ # Maps the sections in the request body for saving various TCF preferences
+ # against the specific database column name on which these preferences are saved
+@@ -86,6 +89,10 @@ class PrivacyPreferencesRequest(FidesSchema):
+ 
+     browser_identity: Identity
+     code: Optional[SafeStr]
++    tc_string: Optional[str] = Field(
++        description="If supplied, *_preferences fields will be ignored in favor of this TC string. Saves preferences"
++        "against purposes, special features, and vendors."
++    )  # TODO: Not yet implemented
+     preferences: conlist(ConsentOptionCreate, max_items=200) = []  # type: ignore
+     purpose_preferences: conlist(TCFPurposeSave, max_items=200) = []  # type: ignore
+     special_purpose_preferences: conlist(TCFSpecialPurposeSave, max_items=200) = []  # type: ignore
+diff --git a/src/fides/api/util/consent_util.py b/src/fides/api/util/consent_util.py
+index 5f3dd684d..bc0333fe4 100644
+--- a/src/fides/api/util/consent_util.py
++++ b/src/fides/api/util/consent_util.py
+@@ -650,6 +650,7 @@ EEA_COUNTRIES: List[PrivacyNoticeRegion] = [
+     PrivacyNoticeRegion.no,
+     PrivacyNoticeRegion["is"],
+     PrivacyNoticeRegion.li,
++    PrivacyNoticeRegion.eea,  # Catch-all region - can query this Experience directly to get a generic TCF experience
+ ]
+ 
+ 
+diff --git a/src/fides/api/util/tcf/__init__.py b/src/fides/api/util/tcf/__init__.py
+new file mode 100644
+index 000000000..e69de29bb
+diff --git a/src/fides/api/util/tcf/experience_meta.py b/src/fides/api/util/tcf/experience_meta.py
+new file mode 100644
+index 000000000..940ca2f05
+--- /dev/null
++++ b/src/fides/api/util/tcf/experience_meta.py
+@@ -0,0 +1,85 @@
++import hashlib
++import json
++from typing import Dict, List
++
++from pydantic import Extra, root_validator
++
++from fides.api.models.privacy_notice import UserConsentPreference
++from fides.api.schemas.base_class import FidesSchema
++from fides.api.schemas.privacy_experience import ExperienceMeta, TCMobileData
++from fides.api.util.tcf.tc_mobile_data import build_tc_data_for_mobile
++from fides.api.util.tcf.tc_model import TCModel, convert_tcf_contents_to_tc_model
++from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents
++
++
++class TCFVersionHash(FidesSchema):
++    """Minimal subset of the TCF experience details that capture when consent should be resurfaced"""
++
++    policy_version: int
++    purpose_consents: List[int]
++    purpose_legitimate_interests: List[int]
++    special_feature_optins: List[int]
++    vendor_consents: List[int]
++    vendor_legitimate_interests: List[int]
++
++    @root_validator()
++    @classmethod
++    def sort_lists(cls, values: Dict) -> Dict:
++        """Verify lists are sorted ascending for repeatability"""
++        for field, val in values.items():
++            if isinstance(val, list):
++                values[field] = sorted(val)
++        return values
++
++    class Config:
++        extra = Extra.ignore
++
++
++def _build_tcf_version_hash_model(
++    tcf_contents: TCFExperienceContents,
++) -> TCFVersionHash:
++    """Given tcf_contents, constructs the TCFVersionHash model containing
++    the raw contents to build the `version_hash` for the TCF Experience.
++
++    Builds a model that assumes the customer has *opted in* to all preferences, to
++    get the maximum possible number of attributes added to our hash for the current
++    system configuration.
++    """
++    model: TCModel = convert_tcf_contents_to_tc_model(
++        tcf_contents, UserConsentPreference.opt_in
++    )
++    return TCFVersionHash(**model.dict())
++
++
++def build_tcf_version_hash(tcf_contents: TCFExperienceContents) -> str:
++    """Returns a 12-character version hash for TCF that should only change
++    if there are updates to vendors, purposes, and special features sections or legal basis.
++
++    This hash can be used to determine if the TCF Experience needs to be resurfaced to the customer,
++    because the experience has changed in a meaningful way.
++    """
++    tcf_version_hash_model: TCFVersionHash = _build_tcf_version_hash_model(tcf_contents)
++    json_str: str = json.dumps(tcf_version_hash_model.dict(), sort_keys=True)
++    hashed_val: str = hashlib.sha256(json_str.encode()).hexdigest()
++    return hashed_val[:12]  # Shortening string for usability, collision risk is low
++
++
++def build_experience_tcf_meta(tcf_contents: TCFExperienceContents) -> Dict:
++    """Build TCF Meta information to supplement a TCF Privacy Experience at runtime"""
++    accept_all_tc_model: TCModel = convert_tcf_contents_to_tc_model(
++        tcf_contents, UserConsentPreference.opt_in
++    )
++    reject_all_tc_model: TCModel = convert_tcf_contents_to_tc_model(
++        tcf_contents, UserConsentPreference.opt_out
++    )
++
++    accept_all_mobile_data: TCMobileData = build_tc_data_for_mobile(accept_all_tc_model)
++    reject_all_mobile_data: TCMobileData = build_tc_data_for_mobile(reject_all_tc_model)
++
++    return ExperienceMeta(
++        version_hash=build_tcf_version_hash(tcf_contents),
++        accept_all_tc_string=accept_all_mobile_data.IABTCF_TCString,
++        reject_all_tc_string=reject_all_mobile_data.IABTCF_TCString,
++        accept_all_tc_mobile_data=accept_all_mobile_data,
++        reject_all_tc_mobile_data=reject_all_mobile_data,
++    ).dict()
+diff --git a/src/fides/api/util/tcf/tc_mobile_data.py b/src/fides/api/util/tcf/tc_mobile_data.py
+new file mode 100644
+index 000000000..11105cce3
+--- /dev/null
++++ b/src/fides/api/util/tcf/tc_mobile_data.py
+@@ -0,0 +1,56 @@
++from fides.api.schemas.privacy_experience import TCMobileData
++from fides.api.util.tcf.tc_model import TCModel
++from fides.api.util.tcf.tc_string import (
++    PURPOSE_CONSENTS_BITS,
++    PURPOSE_LEGITIMATE_INTERESTS_BITS,
++    SPECIAL_FEATURE_BITS,
++    USE_NON_STANDARD_TEXT_BITS,
++    TCField,
++    _get_max_vendor_id,
++    build_tc_string,
++    get_bits_for_section,
++)
++
++
++def build_tc_data_for_mobile(tc_model: TCModel) -> TCMobileData:
++    """Build TC Data for Mobile App"""
++
++    def _build_binary_string(name: str, num_bits: int) -> str:
++        """Internal helper to build a bit string of 0's and 1's to represent list data
++        pulled from the TC model using the prescribed number of bits"""
++        return get_bits_for_section([TCField(name=name, bits=num_bits)], tc_model)
++
++    # If vendors have consent or legitimate interest data, show the max id that exists.
++    # This will end up being the bitstring length of these sections
++    max_vendor_consents: int = _get_max_vendor_id(tc_model.vendor_consents)
++    max_vendor_li: int = _get_max_vendor_id(tc_model.vendor_legitimate_interests)
++
++    tc_string: str = build_tc_string(tc_model)
++
++    return TCMobileData(
++        IABTCF_CmpSdkID=tc_model.cmp_id,
++        IABTCF_CmpSdkVersion=tc_model.cmp_version,
++        IABTCF_PolicyVersion=tc_model.policy_version,
++        IABTCF_gdprApplies=1,
++        IABTCF_PublisherCC=tc_model.publisher_country_code,
++        IABTCF_PurposeOneTreatment=tc_model.purpose_one_treatment,
++        IABTCF_UseNonStandardTexts=int(
++            _build_binary_string("use_non_standard_texts", USE_NON_STANDARD_TEXT_BITS)
++        ),
++        IABTCF_TCString=tc_string,
++        IABTCF_VendorConsents=_build_binary_string(
++            "vendor_consents", max_vendor_consents
++        ),
++        IABTCF_VendorLegitimateInterests=_build_binary_string(
++            "vendor_legitimate_interests", max_vendor_li
++        ),
++        IABTCF_PurposeConsents=_build_binary_string(
++            "purpose_consents", PURPOSE_CONSENTS_BITS
++        ),
++        IABTCF_PurposeLegitimateInterests=_build_binary_string(
++            "purpose_legitimate_interests", PURPOSE_LEGITIMATE_INTERESTS_BITS
++        ),
++        IABTCF_SpecialFeaturesOptIns=_build_binary_string(
++            "special_feature_optins", SPECIAL_FEATURE_BITS
++        ),
++    )
+diff --git a/src/fides/api/util/tcf/tc_model.py b/src/fides/api/util/tcf/tc_model.py
+new file mode 100644
+index 000000000..0f043365d
+--- /dev/null
++++ b/src/fides/api/util/tcf/tc_model.py
+@@ -0,0 +1,428 @@
++import re
++from datetime import datetime
++from typing import Dict, List, Optional, Tuple
++
++from fideslang.models import LegalBasisForProcessingEnum
++from pydantic import Field, NonNegativeInt, PositiveInt, root_validator, validator
++
++from fides.api.models.privacy_notice import UserConsentPreference
++from fides.api.schemas.base_class import FidesSchema
++from fides.api.schemas.tcf import TCFFeatureRecord, TCFPurposeRecord, TCFVendorRecord
++from fides.api.util.tcf.tcf_experience_contents import TCFExperienceContents, load_gvl
++
++CMP_ID: int = 12  # TODO: hardcode our unique CMP ID after certification
++CMP_VERSION = 1
++CONSENT_SCREEN = 1  # TODO On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
++
++FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6]
++gvl: Dict = load_gvl()
++
++
++class TCModel(FidesSchema):
++    """Base internal TC schema to store and validate key details from which to later build the TC String"""
++
++    _gvl: Dict = {}
++
++    is_service_specific: bool = Field(
++        default=False,
++        description="Whether the signals encoded in this TC String were from site-specific storage `true` versus "
++        "‘global’ consensu.org shared storage `false`. A string intended to be stored in global/shared "
++        "scope but the CMP is unable to store due to a user agent not accepting third-party cookies "
++        "would be considered site-specific `true`.",
++    )
++    support_oob: bool = Field(
++        default=True,
++        description="Whether or not this publisher supports OOB signaling.  On Global TC String OOB Vendors Disclosed "
++        "will be included if the publish wishes to not allow these vendors they should set this to false.",
++    )
++    use_non_standard_texts: bool = Field(
++        default=False,
++        description="Non-standard stacks means that a CMP is using publisher-customized stack descriptions. Stacks "
++        "(in terms of purposes in a stack) are pre-set by the IAB. As are titles. Descriptions are pre-set, "
++        "but publishers can customize them. If they do, they need to set this bit to indicate that they've "
++        "customized descriptions.",
++    )
++    purpose_one_treatment: bool = Field(
++        default=False,
++        description="`false` There is no special Purpose 1 status. Purpose 1 was disclosed normally (consent) as "
++        "expected by Policy.  `true` Purpose 1 not disclosed at all. CMPs use PublisherCC to indicate the "
++        "publisher’s country of establishment to help Vendors determine whether the vendor requires Purpose "
++        "1 consent. In global scope TC strings, this field must always have a value of `false`. When a "
++        "CMP encounters a global scope string with `purposeOneTreatment=true` then that string should be "
++        "considered invalid and the CMP must re-establish transparency and consent.",
++    )
++    publisher_country_code: str = "AA"
++    version: int = 2
++    consent_screen: PositiveInt = Field(
++        default=1,
++        description="The screen number is CMP and CmpVersion specific, and is for logging proof of consent. "
++        "(For example, a CMP could keep records so that a publisher can request information about the "
++        "context in which consent was gathered.)",
++    )
++    policy_version: NonNegativeInt = Field(
++        default=4,
++        description="From the corresponding field in the GVL that was used for obtaining consent. A new policy version "
++        "invalidates existing strings and requires CMPs to re-establish transparency and consent from users.",
++    )
++    consent_language: str = "EN"
++    cmp_id: NonNegativeInt = Field(
++        default=0,
++        description="A unique ID will be assigned to each Consent Manager Provider (CMP) from the iab.",
++    )
++    cmp_version: PositiveInt = Field(
++        default=1,
++        description="Each change to an operating CMP should receive a new version number, for logging proof of "
++        "consent. CmpVersion defined by each CMP.",
++    )
++    vendor_list_version: NonNegativeInt = Field(
++        default=0,
++        description="Version of the GVL used to create this TCModel. "
++        "Global Vendor List versions will be released periodically.",
++    )
++    num_custom_purposes: int = 0
++
++    created: Optional[int] = None
++    last_updated: Optional[int] = None
++
++    special_feature_optins: List = Field(
++        default=[],
++        description="The TCF designates certain Features as special, that is, a CMP must afford the user a means to "
++        "opt in to their use. These Special Features are published and numbered in the GVL separately from "
++        "normal Features. Provides for up to 12 special features.",
++    )
++
++    purpose_consents: List = Field(
++        default=[],
++        description="Renamed from `PurposesAllowed` in TCF v1.1. The user’s consent value for each Purpose established "
++        "on the legal basis of consent. Purposes are published in the Global Vendor List.",
++    )
++
++    purpose_legitimate_interests: List = Field(
++        default=[],
++        description="The user’s permission for each Purpose established on the legal basis of legitimate interest. "
++        "If the user has exercised right-to-object for a purpose.",
++    )
++
++    publisher_consents: List = Field(
++        default=[],
++        description="The user’s consent value for each Purpose established on the legal basis of consent, for the "
++        "publisher.  Purposes are published in the Global Vendor List.",
++    )
++
++    publisher_legitimate_interests: List = Field(
++        default=[],
++        description="The user’s permission for each Purpose established on the legal basis of legitimate interest, for "
++        "the publisher. If the user has exercised right-to-object for a purpose.",
++    )
++
++    publisher_custom_consents: List = Field(
++        default=[],
++        description="The user’s consent value for each custom Purpose established on the legal basis of consent, "
++        "for the publisher.  Purposes are published in the Global Vendor List.",
++    )
++
++    publisher_custom_legitimate_interests: List = Field(
++        default=[],
++        description="The user’s permission for each custom Purpose established on the legal basis of legitimate "
++        "interest.  If the user has exercised right-to-object for a purpose that is established in "
++        "the publisher's custom purposes.",
++    )
++
++    custom_purposes: Dict = Field(
++        default={},
++        description="Set by a publisher if they wish to collect consent "
++        "and LI Transparency for purposes outside of the TCF",
++    )
++
++    vendor_consents: List[int] = Field(
++        default=[],
++        description="Each Vendor is keyed by id. Their consent value is true if it is in the Vector",
++    )
++
++    vendor_legitimate_interests: List[int] = Field(
++        default=[],
++        description="Each Vendor is keyed by id. Whether their Legitimate Interests Disclosures have been "
++        "established is stored as boolean.",
++    )
++
++    vendors_disclosed: List = Field(
++        default=[],
++        description=" The value included for disclosed vendors signals which vendors have been disclosed to the user "
++        "in the interface surfaced by the CMP. This section content is required when writing a TC string "
++        "to the global (consensu) scope. When a CMP has read from and is updating a TC string from the "
++        "global consensu.org storage, the CMP MUST retain the existing disclosure information and only"
++        " add information for vendors that it has disclosed that had not been disclosed by other CMPs in "
++        "prior interactions with this device/user agent.",
++    )
++
++    vendors_allowed: List = Field(
++        default=[],
++        description="Signals which vendors the publisher permits to use OOB legal bases.",
++    )
++
++    # TODO: no way to set this currently
++    publisher_restrictions: List = Field(
++        default=[],
++    )
++
++    num_pub_restrictions: int = 0  # Hardcoded here for now
++
++    @validator("publisher_country_code")
++    def check_publisher_country_code(cls, publisher_country_code: str) -> str:
++        """Validates that a publisher_country_code is an upper-cased two letter string"""
++        upper_case_country_code: str = publisher_country_code.upper()
++        pattern = r"^[A-Z]{2}$"
++        if not re.match(pattern, upper_case_country_code):
++            raise ValueError(
++                "publisher_country_code must be a length-2 string of alpha characters"
++            )
++
++        return upper_case_country_code
++
++    @validator("consent_language")
++    def check_consent_language(cls, consent_language: str) -> str:
++        """Forces consent language to be upper cased and no longer than 2 characters"""
++        consent_language = consent_language.upper()[:2]
++        if len(consent_language) < 2:
++            raise ValueError("Consent language is less than two characters")
++        return consent_language
++
++    @validator("purpose_legitimate_interests")
++    def filter_purpose_legitimate_interests(
++        cls, purpose_legitimate_interests: List[int]
++    ) -> List[int]:
++        """Purpose 1 is never allowed to be true for legitimate interest
++        As of TCF v2.2 purposes 3,4,5 & 6 are not allowed to be true.
++        """
++        return [
++            li
++            for li in purpose_legitimate_interests
++            if li not in FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS
++        ]
++
++    @root_validator()
++    @classmethod
++    def vendor_legal_basis_validation(cls, values: Dict) -> Dict:
++        """Multiple operations in the root_validator:
++
++        - Remove any vendor ids from vendor_consents if the legal basis is not allowed
++        - Remove any vendor ids from vendor_legitimate_interests if the legal basis is not allowed
++        """
++        is_service_specific: Optional[bool] = values.get("is_service_specific")
++
++        values["vendor_consents"] = _validate_vendor_legal_basis_fields(
++            values.get("vendor_consents", []),
++            corresponding_gvl_key="purposes",
++            is_service_specific=is_service_specific,
++        )
++
++        values["vendor_legitimate_interests"] = _validate_vendor_legal_basis_fields(
++            values.get("vendor_legitimate_interests", []),
++            corresponding_gvl_key="legIntPurposes",
++            is_service_specific=is_service_specific,
++        )
++
++        return values
++
++
++def _validate_vendor_legal_basis_fields(
++    vendor_list: List[int],
++    corresponding_gvl_key: str,
++    is_service_specific: Optional[bool],
++) -> List[int]:
++    """Helper for looping through legal basis vendor lists and removing vendors where the legal basis
++    is not permitted"""
++    to_remove: List[int] = []
++    for vendor_id in vendor_list:
++        vendor_record: Optional[Dict] = gvl.get("vendors", {}).get(str(vendor_id))
++
++        if not vendor_record:
++            # This vendor isn't in the GVLvalues.get("is_service_specific")
++            # , we've got to remove it!
++            to_remove.append(vendor_id)
++            continue
++
++        if vendor_record.get(corresponding_gvl_key):
++            # The vendor has the matching legal basis, so this is fine!
++            continue
++
++        if (
++            corresponding_gvl_key == "legIntPurposes"
++            and not vendor_record.get("purposes")
++            and vendor_record.get("specialPurposes")
++        ):
++            # While vendor record is missing legIntPurposes, it has specialPurposes, so this is fine!
++            # Vendors only declaring special purposes must have their legitimate interest vendor bit set.
++            continue
++
++        if not is_service_specific or not vendor_record.get("flexiblePurposes"):
++            # Either this is a globally scoped string, in which cases flexible purposes don't have an effect,
++            # or there are no flexible purposes at all.  We have to remove the vendor from the legal bases list.
++            to_remove.append(vendor_id)
++            continue
++
++        # TODO once adding publisher_restrictions to the TCModel are supported, check if there is a publisher
++        # restriction value that would enable this vendor to have the override preferred basis.
++        # For now, assume there are no restrictions defined:
++        to_remove.append(vendor_id)
++
++    return [v_id for v_id in vendor_list if v_id not in to_remove]
++
++
++def _build_vendor_consents_and_legitimate_interests(
++    vendors: List[TCFVendorRecord],
++) -> Tuple[List, List]:
++    """Construct the vendor_consents and vendor_legitimate_interests sections
++    Only add the vendor id to the vendor consents list if one of its purposes
++    has a consent legal basis, same for legitimate interests.
++
++    Later, in the TCModel construction, we validate if the vendor is allowed to have
++    this legal basis
++    """
++    vendor_consents: List[int] = []
++    vendor_legitimate_interests: List[int] = []
++
++    for vendor in vendors:
++        try:
++            int(vendor.id)
++        except ValueError:
++            # Early check that filters out non-integer vendor ids.  Later we'll run a separate
++            # check that ensures this id is also in the gvl.
++            continue
++
++        consent_purpose_ids: List[int] = [
++            purpose.id
++            for purpose in vendor.purposes
++            if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases
++        ]
++        if consent_purpose_ids:
++            vendor_consents.append(int(vendor.id))
++
++        leg_int_purpose_ids: List[int] = [
++            purpose.id
++            for purpose in vendor.purposes
++            if LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value
++            in purpose.legal_bases
++        ]
++
++        # Ensure vendor doesn't have forbidden legint purpose set
++        if leg_int_purpose_ids and not bool(
++            set(leg_int_purpose_ids) & set(FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS)
++        ):
++            vendor_legitimate_interests.append(int(vendor.id))
++
++    return vendor_consents, vendor_legitimate_interests
++
++
++def _build_purpose_consent_and_legitimate_interests(
++    purposes: List[TCFPurposeRecord],
++) -> Tuple[List, List]:
++    """Construct the purpose_consents and purpose_legitimate_interests sections"""
++
++    purpose_consents: List[int] = []
++    purpose_legitimate_interests: List[int] = []
++
++    for purpose in purposes:
++        if LegalBasisForProcessingEnum.CONSENT.value in purpose.legal_bases:
++            purpose_consents.append(purpose.id)
++
++        if (
++            LegalBasisForProcessingEnum.LEGITIMATE_INTEREST.value in purpose.legal_bases
++            and purpose.id not in FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS
++        ):
++            purpose_legitimate_interests.append(purpose.id)
++
++    return purpose_consents, purpose_legitimate_interests
++
++
++def _build_special_feature_opt_ins(
++    special_features: List[TCFFeatureRecord],
++) -> List[int]:
++    """Construct the special_feature_opt_ins section"""
++    special_feature_opt_ins: List[int] = []
++    for special_feature in special_features:
++        special_feature_opt_ins.append(special_feature.id)
++
++    return special_feature_opt_ins
++
++
++def _build_vendors_disclosed(vendors: List[TCFVendorRecord]) -> List[int]:
++    """
++    Returns the vendor ids that we surface in the TCF Experience, provided they show up in the GVL.
++
++    The DisclosedVendors is an optional TC String segment that records which vendors have been disclosed to a
++    given user by a CMP. It may be used by a CMP while storing TC Strings, but must not be included in the TC String
++    when returned by the CMP API."""
++    all_vendor_ids: List[str] = [vendor_id for vendor_id in gvl.get("vendors", {})]
++    return [
++        int(vendor.id)
++        for vendor in vendors
++        if str.isdigit(vendor.id) and vendor.id in all_vendor_ids
++    ]
++
++
++def _get_epoch_time() -> int:
++    """Calculate the epoch time to be used for both created and updated_at
++
++    Matches this: Math.round(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())/100)
++    Had to add an extra "0" to get it to match.
++    """
++    return int(datetime.utcnow().date().strftime("%s") + "0")
++
++
++def transform_user_preference_to_boolean(preference: UserConsentPreference) -> bool:
++    """Convert opt_in/acknowledge preferences to True and opt_out/other preferences to False"""
++    return preference in [
++        UserConsentPreference.opt_in,
++        UserConsentPreference.acknowledge,
++    ]
++
++
++def convert_tcf_contents_to_tc_model(
++    tcf_contents: TCFExperienceContents, preference: Optional[UserConsentPreference]
++) -> TCModel:
++    """
++    Helper for building a TCModel from TCFExperienceContents that contains the prerequisite information to build
++    an accept-all or reject-all string, depending on the supplied preference.
++    """
++    if not preference:
++        # Dev-level error
++        raise Exception(
++            "Overall preference must be specified. Only accept or reject-all strings are currently supported."
++        )
++
++    consented: bool = transform_user_preference_to_boolean(preference)
++
++    (
++        vendor_consents,
++        vendor_legitimate_interests,
++    ) = _build_vendor_consents_and_legitimate_interests(tcf_contents.tcf_vendors)
++
++    (
++        purpose_consents,
++        purpose_legitimate_interests,
++    ) = _build_purpose_consent_and_legitimate_interests(tcf_contents.tcf_purposes)
++
++    special_feature_opt_ins: List[int] = _build_special_feature_opt_ins(
++        tcf_contents.tcf_special_features
++    )
++
++    current_time: int = _get_epoch_time()
++
++    tc_model = TCModel(
++        created=current_time,
++        last_updated=current_time,
++        cmp_id=CMP_ID,
++        cmp_version=CMP_VERSION,
++        consent_screen=CONSENT_SCREEN,
++        vendor_list_version=gvl.get("vendorListVersion"),
++        policy_version=gvl.get("tcfPolicyVersion"),
++        special_feature_optins=special_feature_opt_ins if consented else [],
++        purpose_consents=purpose_consents if consented else [],
++        purpose_legitimate_interests=purpose_legitimate_interests if consented else [],
++        vendor_consents=vendor_consents if consented else [],
++        vendor_legitimate_interests=vendor_legitimate_interests if consented else [],
++        vendors_disclosed=_build_vendors_disclosed(tcf_contents.tcf_vendors),
++    )
++
++    return tc_model
+diff --git a/src/fides/api/util/tcf/tc_string.py b/src/fides/api/util/tcf/tc_string.py
+new file mode 100644
+index 000000000..e4732095e
+--- /dev/null
++++ b/src/fides/api/util/tcf/tc_string.py
+@@ -0,0 +1,182 @@
++import base64
++from typing import Any, List, Optional, Union
++
++from pydantic import Field
++
++from fides.api.schemas.base_class import FidesSchema
++from fides.api.util.tcf.tc_model import TCModel
++
++# Number of bits allowed for certain sections that are used in multiple places
++USE_NON_STANDARD_TEXT_BITS = 1
++SPECIAL_FEATURE_BITS = 12
++PURPOSE_CONSENTS_BITS = 24
++PURPOSE_LEGITIMATE_INTERESTS_BITS = 24
++
++
++class TCField(FidesSchema):
++    """Schema to represent a field within a TC string segment"""
++
++    name: str = Field(description="Field name")
++    bits: int = Field(
++        description="The number of bits that should be used to represent this value"
++    )
++    value_override: Optional[Any] = Field(
++        description="The value that should be used instead of the field on the TC model"
++    )
++
++
++def get_bits_for_section(fields: List[TCField], tc_model: TCModel) -> str:
++    """Construct a representation of the fields supplied in bits for a given section."""
++
++    def _convert_val_to_bitstring(val: Union[str, list, int], num_bits: int) -> str:
++        """Internal helper to take a string, list of integers, or integer, and convert it to a bitstring"""
++        bit_components: str = ""
++
++        if isinstance(val, str):
++            # Used for things like publisher country code and consent_language.
++            # There are two letters, represented by 12 bits total, so we convert
++            # the letters to numbers, and they are represented by 6 bits apiece
++            bit_allocation = int(num_bits / len(val))
++            for char in val:
++                converted_num: int = _convert_letter_to_number(char)
++                bit_components += format(converted_num, f"0{bit_allocation}b")
++            return bit_components
++
++        if isinstance(val, list):
++            # List of integers expected.  Bitstring should be the length of the
++            # maximum integer in the list
++            for i in range(1, num_bits + 1):
++                bit_components += "1" if i in val else "0"
++            return bit_components
++
++        # Converts an integer to bits, padding to use the specified number of bits
++        return format(val, f"0{num_bits}b")
++
++    total_bits: str = ""
++    for field in fields:
++        # Either fetch the field of the same name off of the TCModel for encoding,
++        # or use the value override, if supplied.
++        field_value: Any = (
++            field.value_override
++            if field.value_override is not None
++            else getattr(tc_model, field.name)
++        )
++
++        # Cleanup before building bit strings by converting bools to ints
++        if isinstance(field_value, bool):
++            field_value = int(field_value)
++
++        # Converting field value to bitstring of specified length and add that onto the string we're building
++        total_bits += _convert_val_to_bitstring(field_value, field.bits)
++    return total_bits
++
++
++def _convert_letter_to_number(letter: str) -> int:
++    """A->0, Z->25"""
++    return ord(letter) - ord("A")
++
++
++def _convert_bitstring_to_bytes(bitstr: str) -> bytes:
++    """Convert a string of 0's and 1's to bytes, padded to both work with base64
++    and bit->byte conversion"""
++    least_common_multiple = 24  # 6 bits (basis for base 64) and 8 bits (one byte)
++    padding: int = len(bitstr) % least_common_multiple
++    new_bits: str = "0" * (least_common_multiple - padding)
++    bitstr += new_bits
++
++    integer_val: int = int(bitstr, 2)
++    return integer_val.to_bytes((len(bitstr)) // 8, byteorder="big")
++
++
++def _get_max_vendor_id(vendor_list: List[int]) -> int:
++    """Get the maximum vendor id in the supplied list"""
++    if not vendor_list:
++        return 0
++
++    return max(int(vendor_id) for vendor_id in vendor_list)
++
++
++def build_tc_string(model: TCModel) -> str:
++    """Construct a TC String from the given TCModel
++
++    Currently only core and vendors_disclosed sections are supported.
++    """
++    core_string: str = build_core_string(model)
++    vendors_disclosed_string: str = build_disclosed_vendors_string(model)
++
++    return core_string + "." + vendors_disclosed_string
++
++
++def build_core_string(model: TCModel) -> str:
++    """
++    Build the "core" TC String
++
++    https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20Consent%20string%20and%20vendor%20list%20formats%20v2.md#the-core-string
++    """
++    max_vendor_consents: int = _get_max_vendor_id(model.vendor_consents)
++    max_vendor_li: int = _get_max_vendor_id(model.vendor_legitimate_interests)
++
++    # List of core fields.  Order is intentional!
++    core_fields: list = [
++        TCField(name="version", bits=6),
++        TCField(name="created", bits=36),
++        TCField(name="last_updated", bits=36),
++        TCField(name="cmp_id", bits=12),
++        TCField(name="cmp_version", bits=12),
++        TCField(name="consent_screen", bits=6),
++        TCField(name="consent_language", bits=12),
++        TCField(name="vendor_list_version", bits=12),
++        TCField(name="policy_version", bits=6),
++        TCField(name="is_service_specific", bits=1),
++        TCField(name="use_non_standard_texts", bits=USE_NON_STANDARD_TEXT_BITS),
++        TCField(name="special_feature_optins", bits=SPECIAL_FEATURE_BITS),
++        TCField(name="purpose_consents", bits=PURPOSE_CONSENTS_BITS),
++        TCField(
++            name="purpose_legitimate_interests", bits=PURPOSE_LEGITIMATE_INTERESTS_BITS
++        ),
++        TCField(name="purpose_one_treatment", bits=1),
++        TCField(name="publisher_country_code", bits=12),
++        TCField(name="max_vendor_consent", bits=16, value_override=max_vendor_consents),
++        TCField(
++            name="is_vendor_consent_range_encoding", bits=1, value_override=0
++        ),  # Using bitfield
++        TCField(name="vendor_consents", bits=max_vendor_consents),
++        TCField(name="max_vendor_li", bits=16, value_override=max_vendor_li),
++        TCField(
++            name="is_vendor_li_range_encoding", bits=1, value_override=0
++        ),  # Using bitfield
++        TCField(name="vendor_legitimate_interests", bits=max_vendor_li),
++        TCField(name="num_pub_restrictions", bits=12),
++    ]
++
++    core_bits: str = get_bits_for_section(core_fields, model)
++    return base64.urlsafe_b64encode(_convert_bitstring_to_bytes(core_bits)).decode()
++
++
++def build_disclosed_vendors_string(model: TCModel) -> str:
++    """Build the Optional Disclosed Vendors" section of the TC String
++
++    https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20Consent%20string%20and%20vendor%20list%20formats%20v2.md#disclosed-vendors
++    """
++    max_vendor_id: int = _get_max_vendor_id(model.vendors_disclosed)
++
++    # List of disclosed vendor fields.  Order is intentional!
++    disclosed_vendor_fields: list = [
++        TCField(
++            name="segment_type", bits=3, value_override=1
++        ),  # 1 for Disclosed Vendors section
++        TCField(name="max_vendor_id", bits=16, value_override=max_vendor_id),
++        TCField(
++            name="is_range_encoding", bits=1, value_override=0
++        ),  # Using Bitfield encoding
++        TCField(
++            name="vendors_disclosed",
++            bits=max_vendor_id,
++            value_override=model.vendors_disclosed,
++        ),
++    ]
++
++    disclosed_vendor_bits: str = get_bits_for_section(disclosed_vendor_fields, model)
++    return base64.urlsafe_b64encode(
++        _convert_bitstring_to_bytes(disclosed_vendor_bits)
++    ).decode()
+diff --git a/src/fides/api/util/tcf_util.py b/src/fides/api/util/tcf/tcf_experience_contents.py
+similarity index 99%
+rename from src/fides/api/util/tcf_util.py
+rename to src/fides/api/util/tcf/tcf_experience_contents.py
+index 6eedc8e17..a201c536b 100644
+--- a/src/fides/api/util/tcf_util.py
++++ b/src/fides/api/util/tcf/tcf_experience_contents.py
+@@ -36,7 +36,7 @@ _gvl: Optional[Dict] = None
+ 
+ GVL_PATH = join(
+     dirname(__file__),
+-    "../../data",
++    "../../../data",
+     "gvl.json",
+ )
+ 
