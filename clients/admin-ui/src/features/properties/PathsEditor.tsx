@@ -5,7 +5,7 @@ interface Props {
   onChange?: (next: string[]) => void;
 }
 
-export const PathsEditor: React.FC<Props> = ({ value = [], onChange }) => {
+export const PathsEditor = ({ value = [], onChange }: Props) => {
   const update = (index: number, val: string) => {
     const next = [...value];
     next[index] = val;
@@ -51,11 +51,7 @@ export const PathsEditor: React.FC<Props> = ({ value = [], onChange }) => {
           </Flex>
         </Flex>
       ))}
-      <Button
-        icon={<Icons.Add />}
-        onClick={add}
-        data-testid="add-path-button"
-      >
+      <Button icon={<Icons.Add />} onClick={add} data-testid="add-path-button">
         Add path
       </Button>
     </Flex>

@@ -21,20 +21,22 @@ import {
   PrivacyCenterConfigValue,
 } from "./privacy-center-config/PrivacyCenterConfigSection";
 
-const PathsEditorAdapter: React.FC<{
+const PathsEditorAdapter = ({
+  value,
+  onChange,
+}: {
   value?: string[];
   onChange?: (next: string[]) => void;
-}> = ({ value, onChange }) => (
-  <PathsEditor value={value ?? []} onChange={(next) => onChange?.(next)} />
-);
+}) => <PathsEditor value={value ?? []} onChange={(next) => onChange?.(next)} />;
 
-const PCConfigSectionAdapter: React.FC<{
-  propertyId: string;
+const PCConfigSectionAdapter = ({
+  value,
+  onChange,
+}: {
   value?: PrivacyCenterConfigValue | null;
   onChange?: (next: PrivacyCenterConfigValue) => void;
-}> = ({ propertyId, value, onChange }) => (
+}) => (
   <PrivacyCenterConfigSection
-    propertyId={propertyId}
     value={value ?? null}
     onChange={(next) => onChange?.(next)}
   />
@@ -191,7 +193,7 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                 label="Privacy center config"
                 valuePropName="value"
               >
-                <PCConfigSectionAdapter propertyId={property?.id ?? ""} />
+                <PCConfigSectionAdapter />
               </Form.Item>
               <Form.Item
                 name="experiences"
