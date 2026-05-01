@@ -1,4 +1,7 @@
 import { Form, Input, Modal, Select } from "fidesui";
+import { useMemo } from "react";
+
+import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 
 export interface ActionFormValues {
   policy_key: string;
@@ -23,6 +26,32 @@ export const ActionEditModal = ({
 }: ActionEditModalProps) => {
   const [form] = Form.useForm<ActionFormValues>();
 
+  const { data: policiesData, isLoading: isLoadingPolicies } =
+    useGetPoliciesQuery();
+
+  const initialPolicyKey = initial?.policy_key;
+  const policyOptions = useMemo(() => {
+    const options =
+      policiesData?.items.map((p) => ({
+        label: p.name,
+        value: p.key ?? "",
+      })) ?? [];
+
+    const hasInitial = options.some((o) => o.value === initialPolicyKey);
+    if (initialPolicyKey && !hasInitial && !isLoadingPolicies) {
+      options.push({
+        label: `${initialPolicyKey} (not found)`,
+        value: initialPolicyKey,
+      });
+    }
+    return options;
+  }, [policiesData, initialPolicyKey, isLoadingPolicies]);
+
+  const isStalePolicy =
+    !!initialPolicyKey &&
+    !isLoadingPolicies &&
+    !policiesData?.items.some((p) => p.key === initialPolicyKey);
+
   return (
     <Modal
       open={open}
@@ -41,11 +70,24 @@ export const ActionEditModal = ({
         initialValues={initial ?? { identity_inputs: { email: "required" } }}
       >
         <Form.Item
-          label="Policy key"
+          label="Policy"
           name="policy_key"
           rules={[{ required: true }]}
+          validateStatus={isStalePolicy ? "warning" : undefined}
+          help={
+            isStalePolicy
+              ? "This policy no longer exists. Pick a different one to save."
+              : undefined
+          }
         >
-          <Input placeholder="default_access_policy" />
+          <Select
+            options={policyOptions}
+            loading={isLoadingPolicies}
+            showSearch
+            optionFilterProp="label"
+            placeholder="Select a policy"
+            aria-label="Policy"
+          />
         </Form.Item>
         <Form.Item label="Title" name="title" rules={[{ required: true }]}>
           <Input />
