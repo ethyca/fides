@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Set
 
 from loguru import logger
 
@@ -26,6 +26,7 @@ from fides.api.graph.preview.schemas import (
     SystemRef,
     TraversalPreview,
 )
+from fides.api.graph.preview.policy_filter import filter_categories_by_targets
 from fides.api.graph.traversal import Traversal, TraversalNode
 
 ActionType = Literal["access", "erasure"]
@@ -42,6 +43,7 @@ class TraversalPreviewBuilder:
         connection_lookup: Dict[str, Dict[str, Any]],
         manual_tasks: List[ManualTaskNode],
         identity_types: Optional[List[str]] = None,
+        target_categories: Optional[Set[str]] = None,
     ):
         self.graph = graph
         self.identity_seed = identity_seed
@@ -49,6 +51,10 @@ class TraversalPreviewBuilder:
         self.connection_lookup = connection_lookup
         self.manual_tasks = manual_tasks
         self.identity_types = identity_types or sorted(identity_seed.keys())
+        # When ``None``, all categories pass through (no policy bound). When a
+        # set is supplied, fields and integration rollups are filtered to
+        # categories that are descendants of (or equal to) any target.
+        self.target_categories = target_categories
         # Pre-build connection_key → connection-metadata index for O(1) lookup.
         self._conn_by_key: Dict[str, Dict[str, Any]] = {
             conn["connection_key"]: conn for conn in connection_lookup.values()
@@ -184,7 +190,10 @@ class TraversalPreviewBuilder:
             fields=[
                 FieldDetail(
                     name=f.name,
-                    data_categories=list(getattr(f, "data_categories", []) or []),
+                    data_categories=filter_categories_by_targets(
+                        getattr(f, "data_categories", []) or [],
+                        self.target_categories,
+                    ),
                     is_identity=f.name in identity_field_names,
                 )
                 for f in collection.fields
