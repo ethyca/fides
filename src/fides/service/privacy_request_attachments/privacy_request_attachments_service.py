@@ -7,6 +7,7 @@ from typing import Any, Optional
 from uuid import uuid4
 
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.models.attachment import (
@@ -15,19 +16,32 @@ from fides.api.models.attachment import (
     AttachmentUserProvided,
     AttachmentUserProvidedStatus,
 )
+from fides.api.models.privacy_center_config import (
+    PrivacyCenterConfig as PrivacyCenterConfigModel,
+)
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.models.property import Property
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.attachment import PrivacyRequestAttachment
-from fides.api.schemas.privacy_center_config import DEFAULT_FILE_MAX_SIZE_BYTES
+from fides.api.schemas.privacy_center_config import FileUploadCustomPrivacyRequestField
+from fides.api.schemas.privacy_center_config import (
+    PrivacyCenterConfig as PrivacyCenterConfigSchema,
+)
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.service.storage.providers import StorageProviderFactory
 from fides.api.service.storage.providers.base import StorageProvider
-from fides.api.service.storage.util import AllowedFileType, FilesMagicBytes
+from fides.api.service.storage.util import (
+    DEFAULT_FILE_MAX_SIZE_BYTES,
+    AllowedFileType,
+    FilesMagicBytes,
+    FileUploadConstraints,
+)
 from fides.common.session_management import with_optional_sync_session
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
 from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+    AttachmentContextMismatchError,
     AttachmentNotFoundError,
     DisallowedFileTypeError,
     FileTooLargeError,
@@ -63,6 +77,64 @@ def _get_provider_and_bucket(
     return provider, bucket, storage_config
 
 
+def _resolve_privacy_center_config_dict(
+    db: Session, property_id: Optional[str]
+) -> Optional[dict[str, Any]]:
+    """Return privacy-center config: property_id → default property → global table."""
+    if property_id:
+        prop = Property.get_by(db, field="id", value=property_id)
+        cfg = prop.privacy_center_config if prop else None
+        if cfg:
+            return cfg
+    default_prop = Property.get_by(db, field="is_default", value=True)
+    cfg = default_prop.privacy_center_config if default_prop else None
+    if cfg:
+        return cfg
+    record = PrivacyCenterConfigModel.filter(
+        db=db,
+        conditions=PrivacyCenterConfigModel.single_row,  # type: ignore[arg-type]
+    ).first()
+    if record:
+        return record.config  # type: ignore[return-value]
+    return None
+
+
+def resolve_upload_constraints(
+    db: Session,
+    *,
+    property_id: str,
+    policy_key: str,
+    field_name: str,
+) -> FileUploadConstraints:
+    """Return constraints for the action's file field, else defaults.
+
+    Mirrors submission-time action scoping so upload and submission
+    enforce identical limits.
+    """
+    config_dict = _resolve_privacy_center_config_dict(db, property_id)
+    if not config_dict:
+        return FileUploadConstraints.defaults()
+
+    try:
+        cfg = PrivacyCenterConfigSchema.model_validate(config_dict)
+    except ValidationError as exc:
+        logger.warning("Could not parse Privacy Center config for upload: {}", exc)
+        return FileUploadConstraints.defaults()
+
+    for action in cfg.actions:
+        if action.policy_key != policy_key:
+            continue
+        fields = action.custom_privacy_request_fields or {}
+        candidate = fields.get(field_name)
+        if isinstance(candidate, FileUploadCustomPrivacyRequestField):
+            return FileUploadConstraints(
+                max_size_bytes=candidate.max_size_bytes,
+                allowed_file_types=frozenset(candidate.allowed_file_types),
+            )
+        break
+    return FileUploadConstraints.defaults()
+
+
 class AttachmentUserProvidedService:
     """Validate, store, and register data-subject-uploaded attachments."""
 
@@ -75,20 +147,25 @@ class AttachmentUserProvidedService:
         *,
         file_data: bytes,
         session: Session,
+        constraints: "FileUploadConstraints",
+        field_name: str,
+        property_id: str,
+        policy_key: str,
     ) -> PrivacyRequestAttachment:
         """Validate, store, and register a file attachment. Object key is
         server-generated; client filename + Content-Type are discarded.
+        ``(field_name, property_id, policy_key)`` is persisted so submission
+        can verify the upload context.
 
         Raises ``FileTooLargeError``, ``DisallowedFileTypeError``,
         ``StorageNotConfiguredError``, or ``StorageBucketNotConfiguredError``.
         """
-        if len(file_data) > DEFAULT_MAX_SIZE_BYTES:
-            raise FileTooLargeError(DEFAULT_MAX_SIZE_BYTES)
+        if len(file_data) > constraints.max_size_bytes:
+            raise FileTooLargeError(constraints.max_size_bytes)
 
-        allowed = FilesMagicBytes.default_public_upload_allowed_file_types()
         sig = FilesMagicBytes.from_bytes(file_data)
-        if sig is None or sig not in allowed:
-            raise DisallowedFileTypeError(sorted(allowed))
+        if sig is None or sig not in constraints.allowed_file_types:
+            raise DisallowedFileTypeError(sorted(constraints.allowed_file_types))
 
         content_type = AllowedFileType[sig].value
         provider, bucket, storage_config = _get_provider_and_bucket(session)
@@ -102,6 +179,9 @@ class AttachmentUserProvidedService:
         record = self._repo.create_uploaded(
             object_key=object_key,
             storage_key=storage_config.key,
+            field_name=field_name,
+            property_id=property_id,
+            policy_key=policy_key,
             session=session,
         )
         result = provider.upload(
@@ -125,15 +205,16 @@ class AttachmentUserProvidedService:
         self,
         custom_privacy_request_fields: Optional[dict[str, CustomPrivacyRequestField]],
         file_field_names: set[str],
+        property_id: str,
+        policy_key: str,
         *,
         session: Session,
     ) -> list[AttachmentUserProvided]:
         """Resolve file-field values to ``uploaded`` rows under ``FOR UPDATE``.
 
-        Returns the locked ORM rows so :meth:`promote_rows_to_attachments`
-        can mutate them in the same transaction. The lock holds until the
-        caller's next commit/rollback. Returns ``[]`` if the
-        ``allow_custom_privacy_request_field_collection`` flag is off.
+        Each row's ``(field_name, property_id, policy_key)`` must match
+        the submission's; mismatches raise :class:`AttachmentContextMismatchError`.
+        Returns ``[]`` if ``allow_custom_privacy_request_field_collection`` is off.
         """
         if not custom_privacy_request_fields or not file_field_names:
             return []
@@ -163,6 +244,20 @@ class AttachmentUserProvidedService:
                 row = pending.get(item)
                 if row is None:
                     raise AttachmentNotFoundError(name)
+                if (
+                    row.field_name != name
+                    or row.property_id != property_id
+                    or row.policy_key != policy_key
+                ):
+                    raise AttachmentContextMismatchError(
+                        attachment_id=row.id,
+                        expected_field=name,
+                        actual_field=row.field_name,
+                        expected_property=property_id,
+                        actual_property=row.property_id,
+                        expected_policy=policy_key,
+                        actual_policy=row.policy_key,
+                    )
                 rows.append(row)
 
         return rows
@@ -175,9 +270,25 @@ class AttachmentUserProvidedService:
         *,
         session: Session,
     ) -> None:
-        """Transition pending rows → ``promoted`` and create ``Attachment`` records."""
+        """Transition pending rows → ``promoted`` and create ``Attachment`` records.
+        Re-validates context per row (defense in depth)."""
         if not rows:
             return
+
+        for row in rows:
+            if (
+                row.property_id != privacy_request.property_id
+                or row.policy_key != privacy_request.policy.key
+            ):
+                raise AttachmentContextMismatchError(
+                    attachment_id=row.id,
+                    expected_field=row.field_name,
+                    actual_field=row.field_name,
+                    expected_property=privacy_request.property_id or "",
+                    actual_property=row.property_id,
+                    expected_policy=privacy_request.policy.key,
+                    actual_policy=row.policy_key,
+                )
 
         self._repo.assert_all_uploaded(rows)
 

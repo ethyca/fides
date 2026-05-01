@@ -27,6 +27,9 @@ class AttachmentUserProvidedRepository:
         *,
         object_key: str,
         storage_key: str,
+        field_name: str,
+        property_id: str,
+        policy_key: str,
         session: Session,
     ) -> AttachmentUserProvidedRecord:
         """Insert a new ``uploaded`` row; flush so ``id`` is populated."""
@@ -34,6 +37,9 @@ class AttachmentUserProvidedRepository:
             object_key=object_key,
             status=AttachmentUserProvidedStatus.uploaded,
             storage_key=storage_key,
+            field_name=field_name,
+            property_id=property_id,
+            policy_key=policy_key,
         )
         session.add(row)
         session.flush()

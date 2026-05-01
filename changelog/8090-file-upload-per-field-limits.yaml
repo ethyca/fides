@@ -1,0 +1,4 @@
+type: Added
+description: Per-field upload size/file-type limits + context-bound privacy-request attachments
+pr: 8090
+labels: []

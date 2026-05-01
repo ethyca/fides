@@ -4,18 +4,18 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
-    DEFAULT_FILE_MAX_SIZE_BYTES,
     ConsentConfigPage,
     CustomPrivacyRequestField,
     FileUploadCustomPrivacyRequestField,
     IdentityInputs,
     LocationCustomPrivacyRequestField,
     PrivacyCenterConfig,
-    _default_allowed_mime_types,
+    _default_allowed_file_types,
     get_field_type_discriminator,
     reorder_custom_privacy_request_fields,
 )
 from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
+from fides.api.service.storage.util import DEFAULT_FILE_MAX_SIZE_BYTES
 from fides.api.util.saas_util import load_as_string
 
 
@@ -745,31 +745,35 @@ class TestFileUploadCustomPrivacyRequestField:
         assert field.field_type == "file"
         assert field.required is False
         assert field.max_size_bytes == DEFAULT_FILE_MAX_SIZE_BYTES
-        assert field.allowed_mime_types == sorted(_default_allowed_mime_types())
+        assert field.allowed_file_types == sorted(_default_allowed_file_types())
 
-    def test_explicit_allowed_mime_types(self):
+    def test_explicit_allowed_file_types(self):
         field = FileUploadCustomPrivacyRequestField(
-            label="Receipt", allowed_mime_types=["application/pdf"]
+            label="Receipt", allowed_file_types=["pdf"]
         )
-        assert field.allowed_mime_types == ["application/pdf"]
+        assert field.allowed_file_types == ["pdf"]
 
     def test_rejects_options(self):
         with pytest.raises(ValidationError, match="do not support options"):
             FileUploadCustomPrivacyRequestField(label="Receipt", options=["a"])
 
-    def test_rejects_empty_allowed_mime_types(self):
+    def test_rejects_empty_allowed_file_types(self):
         with pytest.raises(ValidationError, match="must not be empty"):
-            FileUploadCustomPrivacyRequestField(label="Receipt", allowed_mime_types=[])
+            FileUploadCustomPrivacyRequestField(label="Receipt", allowed_file_types=[])
 
-    def test_rejects_unsupported_mime(self):
-        with pytest.raises(ValidationError, match="Unsupported MIME types"):
+    def test_rejects_unsupported_file_type(self):
+        with pytest.raises(ValidationError, match="Unsupported file types"):
             FileUploadCustomPrivacyRequestField(
-                label="Receipt", allowed_mime_types=["application/x-fake"]
+                label="Receipt", allowed_file_types=["exe"]
             )
 
     def test_rejects_zero_max_size(self):
         with pytest.raises(ValidationError):
             FileUploadCustomPrivacyRequestField(label="Receipt", max_size_bytes=0)
+
+    def test_rejects_negative_max_size(self):
+        with pytest.raises(ValidationError):
+            FileUploadCustomPrivacyRequestField(label="Receipt", max_size_bytes=-1)
 
 
 class TestFieldTypeDiscriminator:
