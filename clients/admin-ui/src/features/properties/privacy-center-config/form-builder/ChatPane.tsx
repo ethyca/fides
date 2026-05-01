@@ -1,4 +1,4 @@
-import { Alert, Button, Input } from "fidesui";
+import { Alert, Button, Input, SparkleIcon } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import type { ChatMessage, Status } from "./useFormBuilder";
@@ -104,6 +104,7 @@ export const ChatPane = ({
         ) : (
           <Button
             type="primary"
+            icon={<SparkleIcon size={14} />}
             onClick={handleSubmit}
             disabled={!draft.trim() || disabled}
           >

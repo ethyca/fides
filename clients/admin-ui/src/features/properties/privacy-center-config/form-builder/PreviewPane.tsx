@@ -31,12 +31,33 @@ interface PreviewPaneProps {
   onFieldClick: (elementId: string) => void;
   onAddField: (type: EditableComponentType) => void;
   onReorderFields: (newOrder: string[]) => void;
+  /** Action buttons rendered in the bottom-right toolbar of the pane (e.g. Save). */
+  actions?: React.ReactNode;
 }
+
+const wrapperStyle: React.CSSProperties = {
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  minHeight: 0,
+};
+
+const toolbarStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  gap: 8,
+  padding: "8px 16px",
+  background: "#f5f5f5",
+  borderTop: "1px solid var(--fidesui-color-border)",
+  flexShrink: 0,
+  minHeight: 48,
+};
 
 const canvasStyle: React.CSSProperties = {
   background: "#f5f5f5",
   width: "100%",
-  height: "100%",
+  flex: 1,
   minHeight: 0,
   padding: 32,
   display: "flex",
@@ -117,6 +138,7 @@ export const PreviewPane = ({
   onFieldClick,
   onAddField,
   onReorderFields,
+  actions,
 }: PreviewPaneProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -142,47 +164,52 @@ export const PreviewPane = ({
   };
 
   return (
-    <div style={canvasStyle}>
-      <div style={formCardStyle}>
-        {hasFields && spec ? (
-          <Form layout="vertical" style={{ marginBottom: 16 }}>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={childIds}
-                strategy={verticalListSortingStrategy}
+    <div style={wrapperStyle}>
+      <div style={canvasStyle}>
+        <div style={formCardStyle}>
+          {hasFields && spec ? (
+            <Form layout="vertical" style={{ marginBottom: 16 }}>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                {childIds.map((childId) => {
-                  const subSpec = singleFieldSpec(spec, childId);
-                  if (!subSpec) {
-                    return null;
-                  }
-                  return (
-                    <SortableFieldItem
-                      key={childId}
-                      id={childId}
-                      selected={childId === selectedElementId}
-                      onSelect={onFieldClick}
-                    >
-                      <JSONUIProvider registry={registry}>
-                        <Renderer spec={subSpec as any} registry={registry} />
-                      </JSONUIProvider>
-                    </SortableFieldItem>
-                  );
-                })}
-              </SortableContext>
-            </DndContext>
-          </Form>
-        ) : (
-          <Empty
-            description="No fields yet. Add one below or chat with the builder."
-            style={{ marginBottom: 16 }}
-          />
-        )}
-        <AddFieldButton onAddField={onAddField} />
+                <SortableContext
+                  items={childIds}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {childIds.map((childId) => {
+                    const subSpec = singleFieldSpec(spec, childId);
+                    if (!subSpec) {
+                      return null;
+                    }
+                    return (
+                      <SortableFieldItem
+                        key={childId}
+                        id={childId}
+                        selected={childId === selectedElementId}
+                        onSelect={onFieldClick}
+                      >
+                        <JSONUIProvider registry={registry}>
+                          <Renderer spec={subSpec as any} registry={registry} />
+                        </JSONUIProvider>
+                      </SortableFieldItem>
+                    );
+                  })}
+                </SortableContext>
+              </DndContext>
+            </Form>
+          ) : (
+            <Empty
+              description="No fields yet. Add one below or chat with the builder."
+              style={{ marginBottom: 16 }}
+            />
+          )}
+          <AddFieldButton onAddField={onAddField} />
+        </div>
+      </div>
+      <div style={toolbarStyle} data-testid="preview-toolbar">
+        {actions}
       </div>
     </div>
   );
