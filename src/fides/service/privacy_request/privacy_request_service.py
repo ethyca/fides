@@ -427,7 +427,7 @@ class PrivacyRequestService:
                 for name, cfg in (action.custom_privacy_request_fields or {}).items()
                 if isinstance(cfg, FileUploadCustomPrivacyRequestField)
             }
-            if action and getattr(action, "custom_privacy_request_fields", None)
+            if action and action.custom_privacy_request_fields
             else set()
         )
         attachment_service = self.attachment_user_provided_service
