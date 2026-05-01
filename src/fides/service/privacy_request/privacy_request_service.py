@@ -99,10 +99,12 @@ class PrivacyRequestService:
         db: Session,
         config_proxy: ConfigProxy,
         messaging_service: MessagingService,
+        attachment_user_provided_service: AttachmentUserProvidedService,
     ):
         self.db = db
         self.config_proxy = config_proxy
         self.messaging_service = messaging_service
+        self.attachment_user_provided_service = attachment_user_provided_service
 
     def get_privacy_request(self, privacy_request_id: str) -> Optional[PrivacyRequest]:
         privacy_request: Optional[PrivacyRequest] = (
@@ -427,7 +429,7 @@ class PrivacyRequestService:
             if action and getattr(action, "custom_privacy_request_fields", None)
             else set()
         )
-        attachment_service = AttachmentUserProvidedService()
+        attachment_service = self.attachment_user_provided_service
         try:
             attachment_rows = attachment_service.resolve_file_attachments(
                 privacy_request_data.custom_privacy_request_fields,

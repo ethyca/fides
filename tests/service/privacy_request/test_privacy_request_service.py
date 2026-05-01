@@ -33,6 +33,9 @@ from fides.api.schemas.redis_cache import Identity
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+    AttachmentUserProvidedService,
+)
 from tests.conftest import wait_for_tasks_to_complete
 
 
@@ -52,7 +55,12 @@ class TestPrivacyRequestService:
     def privacy_request_service(
         self, db: Session, mock_messaging_service
     ) -> PrivacyRequestService:
-        return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
+        return PrivacyRequestService(
+            db,
+            ConfigProxy(db),
+            mock_messaging_service,
+            AttachmentUserProvidedService(),
+        )
 
     @pytest.fixture
     def reviewing_user(self, db):
@@ -1506,7 +1514,7 @@ def _stub_lookups(svc, *, config_dict={"x": 1}, parsed=True, action=True):
 
 
 def _svc():
-    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock())
+    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock(), MagicMock())
 
 
 def _req(custom_fields=None, **kw):
@@ -1657,7 +1665,7 @@ class TestCreatePrivacyRequestAttachmentPromotion:
     ):
         prs = "fides.service.privacy_request.privacy_request_service"
 
-        attachment_service = MagicMock()
+        attachment_service = svc.attachment_user_provided_service
         attachment_service.resolve_file_attachments.return_value = attachment_rows
         if promote_side_effect is not None:
             attachment_service.promote_rows_to_attachments.side_effect = (
@@ -1677,9 +1685,6 @@ class TestCreatePrivacyRequestAttachmentPromotion:
             patch.object(svc, "_resolve_privacy_center_config_dict", return_value=None),
             patch.object(svc, "_validate_required_location_fields"),
             patch.object(svc, "_validate_field_visibility"),
-            patch(
-                f"{prs}.AttachmentUserProvidedService", return_value=attachment_service
-            ),
             patch(f"{prs}.Policy.get_by", return_value=policy),
             patch(f"{prs}.build_required_privacy_request_kwargs", return_value={}),
             patch(f"{prs}.PrivacyRequest.create", return_value=privacy_request),
@@ -1748,7 +1753,7 @@ class TestCreatePrivacyRequestAttachmentPromotion:
             }
         )
 
-        attachment_service = MagicMock()
+        attachment_service = svc.attachment_user_provided_service
         attachment_service.resolve_file_attachments.return_value = []
         attachment_service.promote_rows_to_attachments.return_value = None
 
@@ -1763,9 +1768,6 @@ class TestCreatePrivacyRequestAttachmentPromotion:
             patch.object(svc, "_parse_privacy_center_config", return_value=MagicMock()),
             patch.object(svc, "_get_matching_action", return_value=action),
             patch.object(svc, "_validate_required_location_fields"),
-            patch(
-                f"{prs}.AttachmentUserProvidedService", return_value=attachment_service
-            ),
             patch(f"{prs}.Property.get_by", return_value=MagicMock(id="prop-1")),
             patch(f"{prs}.Policy.get_by", return_value=policy),
             patch(f"{prs}.build_required_privacy_request_kwargs", return_value={}),

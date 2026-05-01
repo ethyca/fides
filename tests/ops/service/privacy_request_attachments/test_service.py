@@ -447,7 +447,9 @@ def file_svc_req():
             "doc": FileUploadCustomPrivacyRequestField(label="Doc")
         }
     )
-    svc = PrivacyRequestService(MagicMock(), MagicMock(), MagicMock())
+    svc = PrivacyRequestService(
+        MagicMock(), MagicMock(), MagicMock(), AttachmentUserProvidedService()
+    )
     svc._resolve_privacy_center_config_dict = MagicMock(return_value={"x": 1})
     svc._parse_privacy_center_config = MagicMock(return_value=MagicMock())
     svc._get_matching_action = MagicMock(return_value=action)
