@@ -18,9 +18,9 @@ const containerStyle = (selected: boolean): React.CSSProperties => ({
   marginBottom: 4,
   borderRadius: 4,
   border: selected
-    ? "1px solid var(--fidesui-color-primary)"
+    ? "1px solid var(--ant-color-primary)"
     : "1px solid transparent",
-  background: selected ? "var(--fidesui-color-primary-bg)" : "transparent",
+  background: selected ? "var(--ant-color-primary-bg)" : "transparent",
   cursor: "pointer",
 });
 

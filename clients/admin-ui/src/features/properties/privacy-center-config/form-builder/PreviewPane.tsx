@@ -49,7 +49,7 @@ const toolbarStyle: React.CSSProperties = {
   gap: 8,
   padding: "8px 16px",
   background: "#f5f5f5",
-  borderTop: "1px solid var(--fidesui-color-border)",
+  borderTop: "1px solid var(--ant-color-border)",
   flexShrink: 0,
   minHeight: 48,
 };
