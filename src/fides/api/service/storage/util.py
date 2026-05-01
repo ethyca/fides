@@ -28,12 +28,19 @@ class FilesMagicBytes:
     }
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> Optional[str]:
-        """Return extension whose magic prefix matches ``data``, else None."""
-        for ext, magic in cls.SIGNATURES.items():
-            if data[: len(magic)] == magic:
-                return ext
-        return None
+    def candidates(cls, data: bytes) -> set[str]:
+        """All extensions whose magic prefix matches ``data``.
+
+        The shared ZIP container family (``docx``, ``xlsx``, ``zip``, ...)
+        all match ``PK\\x03\\x04`` so this returns a set; callers
+        disambiguate by intersecting with their own allow-list rather
+        than relying on dict-iteration order.
+        """
+        return {
+            ext
+            for ext, magic in cls.SIGNATURES.items()
+            if data[: len(magic)] == magic
+        }
 
 
 # This is the max file size for downloading the content of an attachment.

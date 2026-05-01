@@ -439,18 +439,26 @@ class TestFilesMagicBytes:
     @pytest.mark.parametrize(
         "data, expected",
         [
-            param(b"%PDF-1.4 body", "pdf", id="pdf"),
-            param(b"\xff\xd8\xff\xe0 body", "jpg", id="jpeg"),
-            param(b"\x89PNG\r\n\x1a\n body", "png", id="png"),
-            param(b"PK\x03\x04 body", "docx", id="zip_family"),
-            param(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1 ole", "doc", id="ole_family"),
+            param(b"%PDF-1.4 body", {"pdf"}, id="pdf"),
+            param(b"\xff\xd8\xff\xe0 body", {"jpg", "jpeg"}, id="jpeg"),
+            param(b"\x89PNG\r\n\x1a\n body", {"png"}, id="png"),
+            param(
+                b"PK\x03\x04 body",
+                {"docx", "xlsx", "zip"},
+                id="zip_family_returns_all_matches",
+            ),
+            param(
+                b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1 ole",
+                {"doc", "xls"},
+                id="ole_family_returns_all_matches",
+            ),
         ],
     )
-    def test_from_bytes_matches_known_signatures(self, data, expected):
-        assert FilesMagicBytes.from_bytes(data) == expected
+    def test_candidates_matches_known_signatures(self, data, expected):
+        assert FilesMagicBytes.candidates(data) == expected
 
-    def test_from_bytes_returns_none_for_unknown(self):
-        assert FilesMagicBytes.from_bytes(b"not a real file") is None
+    def test_candidates_returns_empty_set_for_unknown(self):
+        assert FilesMagicBytes.candidates(b"not a real file") == set()
 
     def test_default_public_upload_allowed_file_types(self):
         assert AllowedFileType.default_public_upload_allowed_file_types() == {

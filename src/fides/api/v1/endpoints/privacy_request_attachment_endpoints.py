@@ -125,6 +125,7 @@ def upload_privacy_request_attachment(
             field_name=field_name,
             property_id=property_id,
             policy_key=policy_key,
+            client_filename=file.filename,
         )
         db.commit()
         return result

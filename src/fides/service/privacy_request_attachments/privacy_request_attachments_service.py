@@ -156,6 +156,46 @@ class AttachmentUserProvidedService:
     def __init__(self, repo: Optional[AttachmentUserProvidedRepository] = None) -> None:
         self._repo = repo or AttachmentUserProvidedRepository()
 
+    @staticmethod
+    def _resolve_extension(
+        file_data: bytes,
+        constraints: "FileUploadConstraints",
+        client_filename: Optional[str],
+    ) -> str:
+        """Pick the file extension to record for this upload.
+
+        1. If magic-byte candidates intersect the allow-list, use that
+           intersection. The client-claimed extension wins when present
+           in the intersection; otherwise pick the first sorted entry
+           for determinism. Resolves ZIP-family collisions
+           (``docx``/``xlsx``/``zip`` all match ``PK\\x03\\x04``).
+        2. If no magic-byte signature matches at all (e.g. CSV, TXT),
+           fall back to the client-claimed extension iff it is in the
+           allow-list.
+        3. Otherwise raise :class:`DisallowedFileTypeError`.
+        """
+        candidates = FilesMagicBytes.candidates(file_data)
+        allowed_intersection = candidates & constraints.allowed_file_types
+        client_ext = (
+            client_filename.rsplit(".", 1)[-1].lower()
+            if client_filename and "." in client_filename
+            else None
+        )
+
+        if allowed_intersection:
+            if client_ext and client_ext in allowed_intersection:
+                return client_ext
+            return sorted(allowed_intersection)[0]
+
+        if (
+            not candidates
+            and client_ext
+            and client_ext in constraints.allowed_file_types
+        ):
+            return client_ext
+
+        raise DisallowedFileTypeError(sorted(constraints.allowed_file_types))
+
     @with_optional_sync_session
     def upload_attachment(
         self,
@@ -166,9 +206,10 @@ class AttachmentUserProvidedService:
         field_name: str,
         property_id: str,
         policy_key: str,
+        client_filename: Optional[str] = None,
     ) -> PrivacyRequestAttachment:
         """Validate, store, and register a file attachment. Object key is
-        server-generated; client filename + Content-Type are discarded.
+        server-generated; client Content-Type is discarded.
 
         ``constraints`` carries the resolved size + allowed extensions
         for this upload; the dataclass self-validates so a single
@@ -178,19 +219,24 @@ class AttachmentUserProvidedService:
         submission flow can verify the upload was made in the same
         ``(property, field)`` context it's being claimed under.
 
+        ``client_filename`` is consulted only to disambiguate ZIP-family
+        magic-byte collisions and as a last-resort fallback when the file
+        has no recognizable magic prefix (CSV, TXT). The chosen extension
+        must still be in ``constraints.allowed_file_types``.
+
         Raises ``FileTooLargeError``, ``DisallowedFileTypeError``,
         ``StorageNotConfiguredError``, or ``StorageBucketNotConfiguredError``.
         """
         if len(file_data) > constraints.max_size_bytes:
             raise FileTooLargeError(constraints.max_size_bytes)
 
-        sig = FilesMagicBytes.from_bytes(file_data)
-        if sig is None or sig not in constraints.allowed_file_types:
-            raise DisallowedFileTypeError(sorted(constraints.allowed_file_types))
+        extension = self._resolve_extension(
+            file_data, constraints, client_filename
+        )
 
-        content_type = AllowedFileType[sig].value
+        content_type = AllowedFileType[extension].value
         provider, bucket, storage_config = _get_provider_and_bucket(session)
-        object_key = posixpath.join(OBJECT_KEY_PREFIX, f"{uuid4()}.{sig}")
+        object_key = posixpath.join(OBJECT_KEY_PREFIX, f"{uuid4()}.{extension}")
 
         # Insert + flush DB row before the storage write. If the upload
         # raises, the row rolls back and no orphan file is created. If

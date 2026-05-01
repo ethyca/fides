@@ -196,6 +196,121 @@ class TestUploadAttachment:
                 policy_key="default_access_policy",
             )
 
+    def test_upload_zip_with_zip_only_allow_list_succeeds(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # Regression: ``PK\x03\x04`` matches ``docx``/``xlsx``/``zip``;
+        # picking the first dict entry rejected legitimate .zip uploads
+        # whose allow-list only contains ``zip``.
+        result = AttachmentUserProvidedService().upload_attachment(
+            file_data=b"PK\x03\x04 body",
+            session=db,
+            constraints=FileUploadConstraints(
+                max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                allowed_file_types=frozenset({"zip"}),
+            ),
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+        )
+        row = (
+            db.query(AttachmentUserProvided)
+            .filter(AttachmentUserProvided.id == result.id)
+            .one()
+        )
+        assert row.object_key.endswith(".zip")
+        row.delete(db)
+
+    def test_upload_zip_family_uses_client_filename_to_disambiguate(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # Allow-list spans the full ZIP family; the client's claimed
+        # filename extension picks among them so the recorded MIME
+        # matches what the client uploaded.
+        result = AttachmentUserProvidedService().upload_attachment(
+            file_data=b"PK\x03\x04 body",
+            session=db,
+            constraints=FileUploadConstraints(
+                max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                allowed_file_types=frozenset({"docx", "xlsx", "zip"}),
+            ),
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+            client_filename="report.xlsx",
+        )
+        row = (
+            db.query(AttachmentUserProvided)
+            .filter(AttachmentUserProvided.id == result.id)
+            .one()
+        )
+        assert row.object_key.endswith(".xlsx")
+        row.delete(db)
+
+    def test_upload_falls_back_to_client_filename_when_no_magic_match(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # CSV / TXT have no distinctive magic prefix. Without magic
+        # candidates the client filename is the only signal — accepted
+        # iff the claimed extension is in the allow-list.
+        result = AttachmentUserProvidedService().upload_attachment(
+            file_data=b"a,b,c\n1,2,3\n",
+            session=db,
+            constraints=FileUploadConstraints(
+                max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                allowed_file_types=frozenset({"csv"}),
+            ),
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+            client_filename="export.csv",
+        )
+        row = (
+            db.query(AttachmentUserProvided)
+            .filter(AttachmentUserProvided.id == result.id)
+            .one()
+        )
+        assert row.object_key.endswith(".csv")
+        row.delete(db)
+
+    def test_upload_rejects_when_client_filename_not_in_allow_list(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # No magic match + client extension not in allow-list → reject.
+        with pytest.raises(DisallowedFileTypeError):
+            AttachmentUserProvidedService().upload_attachment(
+                file_data=b"a,b,c\n1,2,3\n",
+                session=db,
+                constraints=FileUploadConstraints(
+                    max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                    allowed_file_types=frozenset({"pdf"}),
+                ),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
+                client_filename="export.csv",
+            )
+
+    def test_upload_rejects_when_magic_match_disjoint_from_allow_list(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # Magic bytes match a real type (PDF) but the allow-list does
+        # not include it; the client-filename fallback only applies
+        # when there are no magic candidates at all.
+        with pytest.raises(DisallowedFileTypeError):
+            AttachmentUserProvidedService().upload_attachment(
+                file_data=PDF_BYTES,
+                session=db,
+                constraints=FileUploadConstraints(
+                    max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                    allowed_file_types=frozenset({"csv"}),
+                ),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
+                client_filename="anything.csv",
+            )
+
 
 class TestProviderHelpers:
     def test_bucket_returns_value_from_details(self):
