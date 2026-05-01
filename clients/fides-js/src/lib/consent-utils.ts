@@ -266,9 +266,9 @@ export const shouldResurfaceBanner = (
 
   const shouldResurfaceBasedOnConfiguration = Boolean(
     cookie?.fides_meta.consentMethod &&
-      experience.experience_config?.resurface_behavior?.includes(
-        cookie.fides_meta.consentMethod,
-      ),
+    experience.experience_config?.resurface_behavior?.includes(
+      cookie.fides_meta.consentMethod,
+    ),
   );
 
   // Never surface banner if modal is set to show immediately
