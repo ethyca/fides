@@ -206,8 +206,6 @@ async def update_system(
     ``upsert_system`` after its existence check) should pass it through to
     avoid a redundant fetch.
     """
-    # Local variable with explicit type so mypy narrows correctly even though
-    # crud.get_resource is inferred as returning Any.
     system: System
     if existing_system is None:
         system = await get_resource(
