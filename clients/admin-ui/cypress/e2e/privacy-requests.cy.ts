@@ -730,11 +730,9 @@ describe("Privacy Requests", () => {
 
     beforeEach(() => {
       stubPlus(true);
-      cy.intercept(
-        "GET",
-        "/api/v1/plus/privacy-request/*/access-package",
-        { fixture: "privacy-requests/access-package.json" },
-      ).as("getAccessPackage");
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/access-package", {
+        fixture: "privacy-requests/access-package.json",
+      }).as("getAccessPackage");
       cy.intercept(
         "PUT",
         "/api/v1/plus/privacy-request/*/access-package/redactions",
@@ -804,7 +802,9 @@ describe("Privacy Requests", () => {
         cy.wait("@updateRedactions").then((interception) => {
           const body = interception.request.body;
           expect(body.redactions).to.have.length(2);
-          const targets = body.redactions.map((r: { field_path: string }) => r.field_path);
+          const targets = body.redactions.map(
+            (r: { field_path: string }) => r.field_path,
+          );
           expect(targets).to.include("name");
           expect(targets).to.include("email");
         });

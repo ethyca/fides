@@ -247,7 +247,9 @@ const PrivacyRequestDetailsAccessPackageTab = ({ subjectRequest }: Props) => {
     categories: AccessPackageCategory[],
   ) => (
     <Flex vertical gap="large">
-      {description && <Typography.Paragraph>{description}</Typography.Paragraph>}
+      {description && (
+        <Typography.Paragraph>{description}</Typography.Paragraph>
+      )}
       {categories.map((cat) => (
         <div key={cat.fides_key}>
           <Typography.Title level={3} className="pb-2">
