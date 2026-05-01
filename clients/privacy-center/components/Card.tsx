@@ -50,7 +50,12 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
     border="1px solid"
     borderColor="transparent"
   >
-    <Image alt={description} boxSize="32px" src={iconPath} className="pc-card-icon" />
+    <Image
+      alt={description}
+      boxSize="32px"
+      src={iconPath}
+      className="pc-card-icon"
+    />
     <Text
       className="pc-card-title"
       color="gray.800"
@@ -60,7 +65,13 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
     >
       {title}
     </Text>
-    <Text className="pc-card-description" color="gray.800" fontSize="xs" fontWeight="normal" lineHeight="16px">
+    <Text
+      className="pc-card-description"
+      color="gray.800"
+      fontSize="xs"
+      fontWeight="normal"
+      lineHeight="16px"
+    >
       {description}
     </Text>
   </Flex>

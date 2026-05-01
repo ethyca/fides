@@ -250,7 +250,12 @@ const HomePage: NextPage = () => {
           policyLinks.length > 0 ||
           PRIVACY_REQUEST_DISCLOSURE_ENABLED) && (
           <Box position="relative" width="100%">
-            <Flex className="pc-policy-links" justifyContent="center" gap={6} flexWrap="wrap">
+            <Flex
+              className="pc-policy-links"
+              justifyContent="center"
+              gap={6}
+              flexWrap="wrap"
+            >
               {policyLinks.map(({ url, label }) => (
                 <Link
                   className="pc-policy-link"

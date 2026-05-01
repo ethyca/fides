@@ -74,7 +74,12 @@ const VerificationForm = ({
           />
         </Form.Item>
         <Flex justify="stretch" gap="medium">
-          <Button className="pc-button-resend" variant="outlined" onClick={resetVerificationProcess} block>
+          <Button
+            className="pc-button-resend"
+            variant="outlined"
+            onClick={resetVerificationProcess}
+            block
+          >
             Resend code
           </Button>
           <Button

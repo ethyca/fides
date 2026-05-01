@@ -41,7 +41,11 @@ const ConsentDescription = () => {
     );
   }
   return (
-    <Text className="pc-consent-description" {...TEXT_PROPS} data-testid="consent-description">
+    <Text
+      className="pc-consent-description"
+      {...TEXT_PROPS}
+      data-testid="consent-description"
+    >
       {i18n.t("exp.description")}
     </Text>
   );

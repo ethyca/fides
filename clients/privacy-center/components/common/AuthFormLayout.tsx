@@ -9,18 +9,13 @@
  * Used by both ExternalAuthLayout and PrivacyRequestLayout to avoid duplication.
  */
 
-import {
-  ChakraLink as Link,
-  Flex,
-  Space,
-  Typography,
-} from "fidesui";
+import { ChakraLink as Link, Flex, Space, Typography } from "fidesui";
 import React from "react";
 
 import { getEffectivePrivacyCenterLinks } from "~/common/config-links";
 import { useConfig } from "~/features/common/config.slice";
-import CustomStylesWrapper from "../CustomStylesWrapper";
 
+import CustomStylesWrapper from "../CustomStylesWrapper";
 import styles from "./AuthFormLayout.module.scss";
 
 interface AuthFormLayoutProps {
@@ -65,11 +60,7 @@ export const AuthFormLayout = ({
             <Space direction="vertical" size={24} style={{ width: "100%" }}>
               {/* Form Box */}
               <div className={[styles.formBox, "pc-form-box"].join(" ")}>
-                <Space
-                  direction="vertical"
-                  size={32}
-                  style={{ width: "100%" }}
-                >
+                <Space direction="vertical" size={32} style={{ width: "100%" }}>
                   {title && (
                     <div>
                       <Space
@@ -80,7 +71,9 @@ export const AuthFormLayout = ({
                         <Flex justify="center">
                           <Typography.Title
                             level={2}
-                            className={[styles.title, "pc-form-title"].join(" ")}
+                            className={[styles.title, "pc-form-title"].join(
+                              " ",
+                            )}
                           >
                             {title}
                           </Typography.Title>
@@ -90,13 +83,24 @@ export const AuthFormLayout = ({
                   )}
 
                   {/* Form Content */}
-                  <div className={[styles.formContent, "pc-form-content"].join(" ")}>{children}</div>
+                  <div
+                    className={[styles.formContent, "pc-form-content"].join(
+                      " ",
+                    )}
+                  >
+                    {children}
+                  </div>
                 </Space>
               </div>
 
               {/* Policy Links */}
               {policyLinks.length > 0 && (
-                <Flex className="pc-policy-links" vertical align="center" gap="small">
+                <Flex
+                  className="pc-policy-links"
+                  vertical
+                  align="center"
+                  gap="small"
+                >
                   {policyLinks.map(({ url, label }) => (
                     <Link
                       className="pc-policy-link"

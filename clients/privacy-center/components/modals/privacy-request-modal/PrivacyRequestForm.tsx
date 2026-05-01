@@ -192,7 +192,13 @@ const PrivacyRequestForm = ({
             ) : null;
           })}
         <Flex justify="stretch" gap="medium">
-          <Button className="pc-button-cancel" type="default" variant="outlined" onClick={onExit} block>
+          <Button
+            className="pc-button-cancel"
+            type="default"
+            variant="outlined"
+            onClick={onExit}
+            block
+          >
             {action.cancelButtonText || "Cancel"}
           </Button>
           <Button
