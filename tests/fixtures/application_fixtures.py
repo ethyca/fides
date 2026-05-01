@@ -2863,6 +2863,7 @@ def ctl_dataset(db: Session, example_datasets):
                     {
                         "name": "id",
                         "data_categories": ["system.operations"],
+                        "fides_meta": {"primary_key": True},
                     },
                     {
                         "name": "email",

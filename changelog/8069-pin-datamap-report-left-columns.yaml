@@ -1,0 +1,4 @@
+type: Fixed
+description: Pinned the first two columns of the datamap report table to the left
+pr: 8069
+labels: []

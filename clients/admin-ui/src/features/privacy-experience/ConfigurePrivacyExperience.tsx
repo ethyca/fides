@@ -283,13 +283,13 @@ const ConfigurePrivacyExperience = ({
             <Flex
               vertical
               className="size-full overflow-y-hidden"
-              style={{ backgroundColor: "var(--ant-color-bg-layout)" }}
+              style={{ backgroundColor: "var(--fidesui-color-bg-layout)" }}
             >
               <Flex
                 className="flex-row items-center p-4"
                 style={{
-                  backgroundColor: "var(--ant-color-bg-elevated)",
-                  borderBottom: `1px solid var(--ant-color-border)`,
+                  backgroundColor: "var(--fidesui-color-bg-elevated)",
+                  borderBottom: `1px solid var(--fidesui-color-border)`,
                 }}
               >
                 <Typography.Text strong>PREVIEW</Typography.Text>

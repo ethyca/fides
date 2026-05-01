@@ -1,8 +1,8 @@
 .node {
   position: relative;
-  background: var(--ant-color-bg-container);
-  border: 1px solid var(--ant-color-border);
-  border-radius: var(--ant-border-radius-lg);
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
   width: 100%;
   min-width: 150px;
   box-sizing: border-box;
@@ -13,13 +13,13 @@
 }
 
 .avatar {
-  background-color: var(--ant-color-text) !important;
-  border-radius: var(--ant-border-radius) !important;
+  background-color: var(--fidesui-color-text) !important;
+  border-radius: var(--fidesui-border-radius) !important;
 }
 
 .body {
   padding: 12px 16px;
-  border-top: 1px solid var(--ant-color-border);
+  border-top: 1px solid var(--fidesui-color-border);
 
   :global(.ant-collapse-content-box) {
     padding-left: 0 !important;
@@ -38,7 +38,7 @@
 }
 
 .handle {
-  background: var(--ant-color-text-quaternary);
+  background: var(--fidesui-color-text-quaternary);
   border: none;
   width: 8px;
   height: 8px;

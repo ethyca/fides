@@ -12,8 +12,8 @@ const HomeBanner = () => {
   // Once we're using ant Layout globally, we won't need to hard-code the colors.
   const bgColor =
     resolvedMode === "dark"
-      ? "var(--fidesui-bg-minos)"
-      : "var(--fidesui-corinth)";
+      ? "var(--fidesui-brand-bg-minos)"
+      : "var(--fidesui-brand-corinth)";
 
   const hasSystems = systemsCount > 0;
 

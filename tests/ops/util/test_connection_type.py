@@ -26,7 +26,11 @@ def test_get_connection_types():
         "encoded_icon": None,
         "authorization_required": False,
         "user_guide": None,
-        "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+        "supported_actions": [
+            ActionType.access.value,
+            ActionType.erasure.value,
+            ActionType.consent.value,
+        ],
         "category": None,
         "tags": None,
         "enabled_features": None,
@@ -100,7 +104,11 @@ def connection_type_objects():
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
-            "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "supported_actions": [
+                ActionType.access.value,
+                ActionType.erasure.value,
+                ActionType.consent.value,
+            ],
             "category": None,
             "tags": None,
             "enabled_features": None,
@@ -160,9 +168,8 @@ def connection_type_objects():
     [
         (
             [ActionType.consent],
-            [ConnectionType.sovrn.value],
+            [ConnectionType.postgres.value, ConnectionType.sovrn.value],
             [
-                ConnectionType.postgres.value,
                 ConnectionType.manual_webhook.value,
                 HUBSPOT,
                 MAILCHIMP,

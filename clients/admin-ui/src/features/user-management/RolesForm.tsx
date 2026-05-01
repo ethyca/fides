@@ -350,10 +350,10 @@ const RolesForm = () => {
                 cursor: isDisabled ? "not-allowed" : "pointer",
                 opacity: isDisabled ? 0.6 : 1,
                 borderColor: isSelected
-                  ? "var(--ant-color-primary)"
+                  ? "var(--fidesui-color-primary)"
                   : undefined,
                 backgroundColor: isSelected
-                  ? "var(--ant-color-primary-bg)"
+                  ? "var(--fidesui-color-primary-bg)"
                   : undefined,
               }}
               onClick={() => !isDisabled && handleRoleToggle(role.id)}
@@ -383,7 +383,7 @@ const RolesForm = () => {
                           type="secondary"
                           style={{
                             fontSize: 12,
-                            color: "var(--fidesui-success)",
+                            color: "var(--fidesui-color-success)",
                           }}
                         >
                           Custom role
