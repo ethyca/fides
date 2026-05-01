@@ -81,12 +81,12 @@
             "user_id": null
           }
         ],
-        "Planning request execution": [
+        "Request execution plan": [
           {
             "connection_key": null,
             "collection_name": null,
             "fields_affected": null,
-            "message": "Planning request execution successful for privacy request: pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
+            "message": "Request execution plan successful for privacy request: pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
             "action_type": "erasure",
             "status": "complete",
             "updated_at": "2025-04-07T17:47:10.932124Z",
