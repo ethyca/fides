@@ -1,8 +1,8 @@
 """add attachment_user_provided
 
 Revision ID: 9b449105864d
-Revises: 4738e3e3e850
-Create Date: 2026-04-17 16:00:00.000000
+Revises: 3a91e5d4f7b2
+Create Date: 2026-05-05 12:00:00.000000
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "9b449105864d"
-down_revision = "4738e3e3e850"
+down_revision = "3a91e5d4f7b2"
 branch_labels = None
 depends_on = None
 
