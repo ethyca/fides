@@ -92,7 +92,9 @@ def upload_privacy_request_attachment(
     file_data = b"".join(chunks)
 
     try:
-        return service.upload_attachment(file_data=file_data, session=db)
+        result = service.upload_attachment(file_data=file_data, session=db)
+        db.commit()
+        return result
     except FileTooLargeError as exc:
         raise HTTPException(status_code=HTTP_413_CONTENT_TOO_LARGE, detail=str(exc))
     except DisallowedFileTypeError as exc:

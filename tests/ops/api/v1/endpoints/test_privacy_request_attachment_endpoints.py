@@ -132,6 +132,47 @@ class TestPostPrivacyRequestAttachment:
             )
         assert exc.value.status_code == 413
 
+    def test_upload_returns_413_when_service_raises_file_too_large(
+        self,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_file_upload_enabled,
+        db,
+    ):
+        """Service-raised ``FileTooLargeError`` maps to HTTP 413.
+
+        The streaming guard normally fires first, so the only way to
+        reach the service-side size check from the endpoint is to pass
+        the streaming guard and have the service raise. We mock the
+        service directly to cover the except branch.
+        """
+        from fastapi import HTTPException
+
+        from fides.api.v1.endpoints.privacy_request_attachment_endpoints import (
+            upload_privacy_request_attachment,
+        )
+        from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+            FileTooLargeError,
+        )
+
+        upload = MagicMock()
+        upload.file.read.side_effect = [PDF_BYTES, b""]
+        service = MagicMock()
+        service.upload_attachment.side_effect = FileTooLargeError(
+            DEFAULT_MAX_SIZE_BYTES
+        )
+
+        with pytest.raises(HTTPException) as exc:
+            upload_privacy_request_attachment(
+                request=MagicMock(),
+                response=MagicMock(),
+                file=upload,
+                content_length=None,
+                db=db,
+                service=service,
+            )
+        assert exc.value.status_code == 413
+        assert str(DEFAULT_MAX_SIZE_BYTES) in exc.value.detail
+
     def test_upload_happy_path(
         self,
         api_client: TestClient,
