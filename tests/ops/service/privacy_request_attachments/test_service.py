@@ -178,4 +178,3 @@ class TestProviderHelpers:
         assert provider is mock_provider
         assert bucket == ""
         assert returned_config is config
-
