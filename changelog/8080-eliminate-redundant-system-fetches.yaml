@@ -1,0 +1,4 @@
+type: Changed
+description: Reduce redundant System fetches per row in /system/upsert from four to one, and add per-axis change-detection logging in the system audit path.
+pr: 8080
+labels: []

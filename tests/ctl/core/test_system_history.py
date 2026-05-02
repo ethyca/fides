@@ -1,3 +1,4 @@
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
@@ -6,7 +7,8 @@ from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System as SystemSchema
 from sqlalchemy import delete
 
-from fides.api.db.system import create_system, update_system
+from fides.api.db.crud import get_resource
+from fides.api.db.system import create_system, update_system, upsert_system
 from fides.api.models.sql_models import System
 from fides.api.models.system_history import SystemHistory
 from fides.config import get_config
@@ -137,3 +139,138 @@ class TestSystemHistory:
         ).all()
 
         assert system_histories[0].edited_by == "automatic_system_update"
+
+
+class TestUpsertSystemFetchOptimization:
+    """Regression coverage for the ENG-3593 fetch-count reduction in
+    /system/upsert. Each updated system used to fan out to 4 get_resource
+    calls; after the fix it should be exactly 1."""
+
+    @pytest.fixture()
+    async def system(self, async_session):
+        resource = SystemSchema(
+            fides_key=str(uuid4()),
+            organization_fides_key="default_organization",
+            name="upsert_fetch_opt_system",
+            system_type="test",
+            privacy_declarations=[],
+        )
+
+        system = await create_system(
+            resource, async_session, CONFIG.security.oauth_root_client_id
+        )
+        yield system
+        delete(System).where(System.id == system.id)
+
+    async def test_upsert_passes_existing_system_to_update(
+        self, async_session, system: System
+    ):
+        """upsert_system must pass the System loaded by its existence check
+        through to update_system as `existing_system`. If this contract is
+        broken, the redundant fetch the optimization removed is silently
+        re-introduced via update_system's fallback path."""
+        system_schema = SystemSchema.model_validate(system)
+
+        with patch(
+            "fides.api.db.system.update_system",
+            new=AsyncMock(return_value=(system, False)),
+        ) as mock_update:
+            await upsert_system(
+                resources=[system_schema],
+                db=async_session,
+                current_user_id=CONFIG.security.oauth_root_client_id,
+            )
+
+        mock_update.assert_called_once()
+        call_kwargs = mock_update.call_args.kwargs
+        assert call_kwargs.get("existing_system") is not None, (
+            "update_system was called without existing_system - this defeats "
+            "the ENG-3593 fetch optimization."
+        )
+        assert call_kwargs["existing_system"].fides_key == system.fides_key
+
+    async def test_update_system_with_existing_system_persists_changes(
+        self, db, async_session, system: System
+    ):
+        """When update_system is called with an explicit existing_system
+        (the new ENG-3593 code path), the inline UPDATE + db.refresh still
+        persist the change to the DB and emit the expected audit entry."""
+        pre_loaded = await get_resource(System, system.fides_key, async_session)
+
+        system_schema = SystemSchema.model_validate(system)
+        system_schema.description = "Modified via explicit existing_system path"
+
+        _, updated = await update_system(
+            resource=system_schema,
+            db=async_session,
+            current_user_id=CONFIG.security.oauth_root_client_id,
+            existing_system=pre_loaded,
+        )
+        assert updated
+
+        # The DB row was actually updated.
+        fresh = await get_resource(System, system.fides_key, async_session)
+        assert fresh.description == "Modified via explicit existing_system path"
+
+        # An audit entry on the general axis was created.
+        system_histories = SystemHistory.filter(
+            db=db, conditions=(SystemHistory.system_id == system.id)
+        ).all()
+        assert len(system_histories) == 1
+
+    async def test_upsert_system_emits_one_fetch_per_updated_system(
+        self, async_session
+    ):
+        """Regression guard for ENG-3593: each updated system on the UPDATE
+        path should issue exactly one `crud.get_resource` call (the existence
+        check in `upsert_system`). Before the fix this was four. If a future
+        change re-introduces a redundant call, this test fails loudly.
+
+        Uses two systems to also catch any accidental constant-cost bug
+        (e.g., loading systems once but counting wrong).
+        """
+        # Stable fides_keys across both passes so the second pass hits the
+        # rows the first pass created. The schema instances themselves must
+        # be rebuilt because `update_system` mutates inputs (it does a
+        # `delattr(resource, "privacy_declarations")` after upserting them).
+        fides_keys = [f"fetch_count_{uuid4()}" for _ in range(2)]
+
+        def build_payload() -> list[SystemSchema]:
+            return [
+                SystemSchema(
+                    fides_key=fk,
+                    organization_fides_key="default_organization",
+                    name=f"Fetch count test {i}",
+                    system_type="test",
+                    privacy_declarations=[],
+                )
+                for i, fk in enumerate(fides_keys)
+            ]
+
+        # Prime: this run creates the rows (INSERT path); not what we measure.
+        await upsert_system(
+            resources=build_payload(),
+            db=async_session,
+            current_user_id=CONFIG.security.oauth_root_client_id,
+        )
+
+        # Measure: every row exists, every row hits the UPDATE path. Patch
+        # `get_resource` at the call site (system.py) and wrap the original
+        # so behavior is unchanged but invocations are counted.
+        with patch(
+            "fides.api.db.system.get_resource", wraps=get_resource
+        ) as mock_get_resource:
+            await upsert_system(
+                resources=build_payload(),
+                db=async_session,
+                current_user_id=CONFIG.security.oauth_root_client_id,
+            )
+
+        # One call per system: `upsert_system`'s existence check. The
+        # `update_system` call no longer needs to fetch because
+        # `existing_system` is threaded through.
+        assert mock_get_resource.call_count == len(fides_keys), (
+            f"Expected {len(fides_keys)} get_resource calls on the UPDATE "
+            f"path (one existence check per system), got "
+            f"{mock_get_resource.call_count}."
+        )
