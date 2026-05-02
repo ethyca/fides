@@ -334,8 +334,8 @@ class TestPostPrivacyRequestAttachment:
                 URL,
                 files={"file": ("original.pdf", io.BytesIO(PDF_BYTES))},
                 data={
-                    "property_id": "test_prop",
-                    "policy_key": "default_access_policy",
+                    "property_id": "p",
+                    "policy_key": "k",
                     "field_name": "headshot",
                 },
             )

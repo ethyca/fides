@@ -37,10 +37,17 @@ class FilesMagicBytes:
         than relying on dict-iteration order.
         """
         return {
-            ext
-            for ext, magic in cls.SIGNATURES.items()
-            if data[: len(magic)] == magic
+            ext for ext, magic in cls.SIGNATURES.items() if data[: len(magic)] == magic
         }
+
+    @classmethod
+    def extensions_without_magic(cls) -> set[str]:
+        """Supported extensions that have no magic-byte signature (CSV,
+        TXT). Callers fall back to the client-claimed filename for these
+        only — types with a real signature stay magic-byte-authoritative
+        so a malicious file cannot bypass validation by claiming a
+        misleading extension."""
+        return AllowedFileType.supported_file_types() - set(cls.SIGNATURES.keys())
 
 
 # This is the max file size for downloading the content of an attachment.
