@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { parseSecretsFieldErrors } from "~/features/common/form/parseSecretsFieldErrors";
 import TemplateVariableInput from "~/features/common/TemplateVariableInput";
 import { usePatchDatastoreConnectionSecretsMutation } from "~/features/datastore-connections";
 import {
@@ -122,7 +123,22 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
         secrets: secretsPayload,
       }).unwrap();
       message.success("Jira configuration saved");
-    } catch {
+    } catch (error) {
+      const fieldErrors = parseSecretsFieldErrors(error, {
+        knownFields: [
+          "project_key",
+          "issue_type",
+          "summary_template",
+          "description_template",
+        ],
+        namePrefix: [],
+      });
+      if (fieldErrors) {
+        form.setFields(
+          fieldErrors as unknown as Parameters<typeof form.setFields>[0],
+        );
+        return;
+      }
       message.error("Failed to save configuration");
     }
   };

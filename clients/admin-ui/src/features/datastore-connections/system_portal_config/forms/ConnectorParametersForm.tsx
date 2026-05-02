@@ -22,6 +22,7 @@ import { DatastoreConnectionStatus } from "src/features/datastore-connections/ty
 
 import { useFeatures } from "~/features/common/features";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
+import { parseSecretsFieldErrors } from "~/features/common/form/parseSecretsFieldErrors";
 import {
   FIDES_DATASET_REFERENCE,
   useFormFieldsFromSchema,
@@ -192,7 +193,22 @@ export const ConnectorParametersForm = ({
 
   const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
-    await onSaveClick(processedValues);
+    try {
+      await onSaveClick(processedValues);
+    } catch (error) {
+      const fieldErrors = parseSecretsFieldErrors(error, {
+        knownFields: Object.keys(secretsSchema?.properties ?? {}),
+      });
+      if (fieldErrors) {
+        // antd's typed form narrows NamePath to the form's value shape; our
+        // nested ["secrets", fieldName] paths work at runtime but don't match
+        // the narrowed tuple type, so we cast here.
+        form.setFields(
+          fieldErrors as unknown as Parameters<typeof form.setFields>[0],
+        );
+      }
+      return;
+    }
 
     // After a successful create, mask secrets immediately so the user sees
     // stars instead of blank fields while waiting for the refetch.
