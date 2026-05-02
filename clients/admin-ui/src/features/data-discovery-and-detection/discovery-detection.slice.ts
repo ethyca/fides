@@ -4,6 +4,8 @@ import queryString from "query-string";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  CloudInfraMonitorResourcesDynamicFilters,
+  CloudInfraStagedResource,
   DiffStatus,
   EditableMonitorConfig,
   MonitorConfig,
@@ -12,8 +14,6 @@ import {
   Page_str_,
   Schema,
 } from "~/types/api";
-import type { CloudInfraMonitorResourcesDynamicFilters } from "~/types/api/models/CloudInfraMonitorResourcesDynamicFilters";
-import type { CloudInfraStagedResource } from "~/types/api/models/CloudInfraStagedResource";
 
 interface State {
   page?: number;

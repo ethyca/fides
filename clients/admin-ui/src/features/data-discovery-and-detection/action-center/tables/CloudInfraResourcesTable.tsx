@@ -2,6 +2,7 @@ import { Empty, Flex, Icons, List, Pagination, Space } from "fidesui";
 import { useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { DiffStatus } from "~/types/api";
 
 import { CloudInfraResourceListItem } from "../components/CloudInfraResourceListItem";
@@ -45,6 +46,7 @@ export const CloudInfraResourcesTable = ({
   const {
     data,
     isLoading,
+    error,
     searchQuery,
     updateSearch,
     searchRegex,
@@ -57,6 +59,15 @@ export const CloudInfraResourcesTable = ({
     serviceFilters: cloudInfraFilters.serviceFilters,
     accountFilters: cloudInfraFilters.accountFilters,
   });
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching cloud infrastructure resources"
+      />
+    );
+  }
 
   return (
     <Flex vertical gap="medium" className="h-full overflow-hidden">
@@ -101,10 +112,7 @@ export const CloudInfraResourcesTable = ({
         showSizeChanger={{
           suffixIcon: <Icons.ChevronDown />,
         }}
-        hideOnSinglePage={
-          paginationProps.pageSize?.toString() ===
-          paginationProps.pageSizeOptions?.[0]
-        }
+        hideOnSinglePage
       />
     </Flex>
   );
