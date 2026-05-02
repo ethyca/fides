@@ -1,41 +1,67 @@
 import { baseApi } from "~/features/common/api.slice";
+import type { DataPurposeResponse } from "~/types/api/models/DataPurposeResponse";
 
 interface DataPurposeParams {
-  page?: number;
-  size?: number;
   search?: string;
   data_use?: string;
+  consumer?: string;
+  category?: string;
+  status?: string;
 }
 
-export interface DataPurpose {
-  id?: string;
-  fides_key: string;
-  name: string;
-  description?: string;
-  data_use: string;
-  data_subject?: string;
-  data_categories?: string[];
-  legal_basis_for_processing?: string;
-  flexible_legal_basis_for_processing?: boolean;
-  special_category_legal_basis?: string;
-  impact_assessment_location?: string;
-  retention_period?: string;
-  features?: string[];
-  created_at?: string;
-  updated_at?: string;
+export type DataPurpose = DataPurposeResponse;
+
+export interface DataPurposeFilterOption {
+  value: string;
+  label: string;
 }
 
-export interface DataPurposePage {
+export interface DataPurposeFilterOptions {
+  consumers: DataPurposeFilterOption[];
+  data_uses: DataPurposeFilterOption[];
+  categories: DataPurposeFilterOption[];
+  statuses: DataPurposeFilterOption[];
+}
+
+export interface DataPurposeListResponse {
   items: DataPurpose[];
   total: number;
-  page: number;
-  size: number;
-  pages: number;
+  filter_options: DataPurposeFilterOptions;
+}
+
+export interface PurposeSystemAssignment {
+  system_id: string;
+  system_name: string;
+  system_type: string;
+  assigned: boolean;
+  consumer_category?: "system" | "group";
+}
+
+export interface PurposeDatasetAssignment {
+  dataset_fides_key: string;
+  dataset_name: string;
+  system_name: string;
+  collection_count: number;
+  data_categories: string[];
+  updated_at: string;
+  steward: string;
+}
+
+export interface PurposeSummary {
+  fides_key: string;
+  system_count: number;
+  dataset_count: number;
+  detected_data_categories: string[];
+  systems: PurposeSystemAssignment[];
+  datasets: PurposeDatasetAssignment[];
 }
 
 export const dataPurposesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAllDataPurposes: builder.query<DataPurposePage, DataPurposeParams>({
+    getAllDataPurposes: builder.query<
+      DataPurposeListResponse,
+      DataPurposeParams
+    >({
       query: (params) => ({
         url: `data-purpose`,
         params,
@@ -78,6 +104,23 @@ export const dataPurposesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["DataPurpose", "DataConsumer"],
     }),
+
+    // Plus-only, MSW-mocked for now.
+    // TODO: replace with real endpoint once fidesplus ships it.
+    getPurposeSummaries: builder.query<PurposeSummary[], void>({
+      query: () => ({
+        url: `plus/data-purpose/summaries`,
+      }),
+      providesTags: ["DataPurpose"],
+    }),
+
+    downloadDataPurposesCsv: builder.query<Blob, DataPurposeParams>({
+      query: (params) => ({
+        url: `data-purpose`,
+        params: { ...params, download_csv: true },
+        responseHandler: "content-type",
+      }),
+    }),
   }),
 });
 
@@ -87,4 +130,6 @@ export const {
   useCreateDataPurposeMutation,
   useUpdateDataPurposeMutation,
   useDeleteDataPurposeMutation,
+  useGetPurposeSummariesQuery,
+  useLazyDownloadDataPurposesCsvQuery,
 } = dataPurposesApi;
