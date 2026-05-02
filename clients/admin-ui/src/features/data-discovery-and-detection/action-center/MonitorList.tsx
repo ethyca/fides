@@ -25,7 +25,7 @@ import MonitorStats from "./MonitorStats";
 const MonitorList = () => {
   const message = useMessage();
   const {
-    flags: { webMonitor: webMonitorEnabled },
+    flags: { webMonitor: webMonitorEnabled, awsMonitor: awsMonitorEnabled },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
@@ -34,6 +34,7 @@ const MonitorList = () => {
     ...(webMonitorEnabled ? [APIMonitorType.WEBSITE] : []),
     APIMonitorType.DATASTORE,
     APIMonitorType.INFRASTRUCTURE,
+    ...(awsMonitorEnabled ? [APIMonitorType.CLOUD_INFRASTRUCTURE] : []),
   ] as const;
 
   const currentUser = useAppSelector(selectUser);

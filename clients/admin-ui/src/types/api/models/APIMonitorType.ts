@@ -9,4 +9,5 @@ export enum APIMonitorType {
   WEBSITE = "website",
   DATASTORE = "datastore",
   INFRASTRUCTURE = "infrastructure",
+  CLOUD_INFRASTRUCTURE = "cloud_infrastructure",
 }

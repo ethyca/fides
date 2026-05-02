@@ -11,6 +11,7 @@ export const MONITOR_TYPE_TO_LABEL: Record<APIMonitorType, string> = {
   datastore: "Monitored data stores",
   infrastructure: "Monitored infrastructure",
   website: "Monitored websites",
+  cloud_infrastructure: "Monitored cloud infrastructure",
 };
 
 export const MONITOR_TYPE_TO_ICON: Record<
@@ -20,6 +21,7 @@ export const MONITOR_TYPE_TO_ICON: Record<
   datastore: Icons.DataBase,
   infrastructure: Icons.TransformInstructions,
   website: Icons.Wikis,
+  cloud_infrastructure: Icons.Cloud,
 };
 
 export const MONITOR_TYPE_TO_EMPTY_TEXT: Record<APIMonitorType, string> = {
@@ -29,12 +31,15 @@ export const MONITOR_TYPE_TO_EMPTY_TEXT: Record<APIMonitorType, string> = {
     "Connect an identity provider or cloud environment to populate the system inventory.",
   website:
     "Add a web monitor to start tracking cookies, tags, and other resources across your sites.",
+  cloud_infrastructure:
+    "Connect a cloud provider to discover and monitor your infrastructure resources.",
 };
 
 const MONITOR_TYPE_TO_PRIMARY_STATISTIC: Record<APIMonitorType, string> = {
   infrastructure: "Total systems",
   website: "Resources approved",
   datastore: "Resources approved",
+  cloud_infrastructure: "Resources approved", // excluded from stats widgets (see STATS_EXCLUDED_TYPES)
 };
 
 const MONITOR_TYPE_TO_PERCENT_STATISTIC_KEY: Record<
@@ -44,6 +49,7 @@ const MONITOR_TYPE_TO_PERCENT_STATISTIC_KEY: Record<
   datastore: "data_categories",
   infrastructure: "data_uses",
   website: "data_uses",
+  cloud_infrastructure: "data_uses", // excluded from stats widgets (see STATS_EXCLUDED_TYPES)
 };
 
 const MONITOR_TYPE_TO_PERCENT_STATISTIC_LABEL: Record<APIMonitorType, string> =
@@ -51,6 +57,7 @@ const MONITOR_TYPE_TO_PERCENT_STATISTIC_LABEL: Record<APIMonitorType, string> =
     datastore: "Data categories",
     infrastructure: "Data uses",
     website: "Categories of consent",
+    cloud_infrastructure: "Services", // excluded from stats widgets (see STATS_EXCLUDED_TYPES)
   };
 
 const MONITOR_BAR_CHART_SEGMENTS: StackedBarChartProps["segments"] = [

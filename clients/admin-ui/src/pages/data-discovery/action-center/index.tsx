@@ -25,7 +25,8 @@ export const ROOT_ACTION_CENTER_CONFIG = {
 const ActionCenterPage: NextPage = () => {
   const dispatch = useDispatch();
   const { flags } = useFeatures();
-  const { webMonitor: webMonitorEnabled } = flags;
+  const { webMonitor: webMonitorEnabled, awsMonitor: awsMonitorEnabled } =
+    flags;
 
   const [trigger] = useCalcAggregateStatisticsMutation();
 
@@ -33,6 +34,7 @@ const ActionCenterPage: NextPage = () => {
   const monitorTypes: APIMonitorType[] = [
     ...(webMonitorEnabled ? [APIMonitorType.WEBSITE] : []),
     APIMonitorType.DATASTORE,
+    ...(awsMonitorEnabled ? [APIMonitorType.CLOUD_INFRASTRUCTURE] : []),
   ];
 
   const { error } = useGetAggregateMonitorResultsQuery({
@@ -61,6 +63,9 @@ const ActionCenterPage: NextPage = () => {
           trigger({ monitor_type: APIMonitorType.INFRASTRUCTURE }),
           trigger({ monitor_type: APIMonitorType.DATASTORE }),
           trigger({ monitor_type: APIMonitorType.WEBSITE }),
+          ...(awsMonitorEnabled
+            ? [trigger({ monitor_type: APIMonitorType.CLOUD_INFRASTRUCTURE })]
+            : []),
         ]);
       }}
     >

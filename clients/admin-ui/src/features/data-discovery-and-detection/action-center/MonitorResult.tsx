@@ -40,6 +40,7 @@ const MONITOR_RESULT_COUNT_TYPES = {
   [APIMonitorType.WEBSITE]: ["asset", "assets"],
   [APIMonitorType.DATASTORE]: ["field", "fields"],
   [APIMonitorType.INFRASTRUCTURE]: ["system", "systems"],
+  [APIMonitorType.CLOUD_INFRASTRUCTURE]: ["resource", "resources"],
 } as const;
 
 interface MonitorResultProps extends ListItemProps {
