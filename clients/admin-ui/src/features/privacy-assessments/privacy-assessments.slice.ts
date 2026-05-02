@@ -342,6 +342,9 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: (_result, _error, { assessment_id }) => [
+        { type: "Privacy Assessment", id: assessment_id },
+      ],
       async onQueryStarted({ assessment_id }, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;

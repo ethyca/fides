@@ -108,10 +108,13 @@ const QuestionnaireChat = ({
     }
   }, [existingMessages, mapBackendMessages]);
 
+  const initChatCalled = useRef(false);
+
   useEffect(() => {
-    if (initialQuestionnaireId) {
+    if (initialQuestionnaireId || initChatCalled.current) {
       return;
     }
+    initChatCalled.current = true;
 
     const initChat = async () => {
       try {
@@ -285,7 +288,7 @@ const QuestionnaireChat = ({
           onChange={setInputValue}
           onSubmit={handleSend}
           loading={isSending}
-          disabled={status === "completed" || status === "stopped" || isStarting}
+          disabled={isComplete || isStarting}
           placeholder={
             status === "stopped"
               ? "Questionnaire stopped"
