@@ -232,20 +232,27 @@ class TestUpsertSystemFetchOptimization:
         """
         loguru_caplog.set_level(logging.DEBUG)
 
-        payload = [
-            SystemSchema(
-                fides_key=f"fetch_count_{uuid4()}",
-                organization_fides_key="default_organization",
-                name=f"Fetch count test {i}",
-                system_type="test",
-                privacy_declarations=[],
-            )
-            for i in range(2)
-        ]
+        # Stable fides_keys across both passes so the second pass hits the
+        # rows the first pass created. The schema instances themselves must
+        # be rebuilt because `update_system` mutates inputs (it does a
+        # `delattr(resource, "privacy_declarations")` after upserting them).
+        fides_keys = [f"fetch_count_{uuid4()}" for _ in range(2)]
+
+        def build_payload() -> list[SystemSchema]:
+            return [
+                SystemSchema(
+                    fides_key=fk,
+                    organization_fides_key="default_organization",
+                    name=f"Fetch count test {i}",
+                    system_type="test",
+                    privacy_declarations=[],
+                )
+                for i, fk in enumerate(fides_keys)
+            ]
 
         # Prime: this run creates the rows (INSERT path); not what we measure.
         await upsert_system(
-            resources=payload,
+            resources=build_payload(),
             db=async_session,
             current_user_id=CONFIG.security.oauth_root_client_id,
         )
@@ -256,19 +263,19 @@ class TestUpsertSystemFetchOptimization:
 
         # Measure: every row exists, every row hits the UPDATE path.
         await upsert_system(
-            resources=payload,
+            resources=build_payload(),
             db=async_session,
             current_user_id=CONFIG.security.oauth_root_client_id,
         )
 
-        for resource in payload:
+        for fides_key in fides_keys:
             matching = [
                 line
                 for line in loguru_caplog.text.splitlines()
-                if "Fetching resource" in line and resource.fides_key in line
+                if "Fetching resource" in line and fides_key in line
             ]
             assert len(matching) == 1, (
                 f"Expected exactly 1 'Fetching resource' log for "
-                f"{resource.fides_key} on the UPDATE path, found "
+                f"{fides_key} on the UPDATE path, found "
                 f"{len(matching)}:\n" + "\n".join(matching)
             )
