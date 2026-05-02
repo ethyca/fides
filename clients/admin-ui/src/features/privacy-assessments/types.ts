@@ -375,6 +375,7 @@ export interface QuestionnaireChatMessage {
   text: string;
   is_bot_message: boolean;
   sender_email: string | null;
+  sender_display_name: string | null;
   timestamp: string | null;
   question_index: number | null;
 }

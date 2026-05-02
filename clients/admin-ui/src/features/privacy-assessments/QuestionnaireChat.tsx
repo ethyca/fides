@@ -51,6 +51,7 @@ interface LocalMessage {
   key: string;
   role: "user" | "ai";
   content: string;
+  senderName?: string;
 }
 
 const QuestionnaireChat = ({
@@ -91,6 +92,7 @@ const QuestionnaireChat = ({
         key: nextKey(m.is_bot_message ? "ai" : "user"),
         role: m.is_bot_message ? ("ai" as const) : ("user" as const),
         content: m.text,
+        senderName: m.sender_display_name ?? m.sender_email ?? undefined,
       })),
     [nextKey],
   );
@@ -152,7 +154,7 @@ const QuestionnaireChat = ({
 
       setMessages((prev) => [
         ...prev,
-        { key: nextKey("user"), role: "user", content: trimmed },
+        { key: nextKey("user"), role: "user", content: trimmed, senderName: userName },
       ]);
       setInputValue("");
 
@@ -204,6 +206,7 @@ const QuestionnaireChat = ({
         key: msg.key,
         role: msg.role,
         content: msg.content,
+        header: msg.role === "user" ? msg.senderName : undefined,
       })),
     [messages],
   );
@@ -213,7 +216,6 @@ const QuestionnaireChat = ({
       user: {
         placement: "end" as const,
         variant: "filled" as const,
-        header: userName,
       },
       ai: {
         placement: "start" as const,
@@ -221,7 +223,7 @@ const QuestionnaireChat = ({
         avatar: <AgentAvatar />,
       },
     }),
-    [userName],
+    [],
   );
 
   const isComplete = status === "completed" || status === "stopped";
