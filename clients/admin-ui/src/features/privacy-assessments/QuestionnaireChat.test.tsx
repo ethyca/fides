@@ -98,7 +98,6 @@ import QuestionnaireChat from "./QuestionnaireChat";
 
 const defaultProps = {
   assessmentId: "assessment-1",
-  userEmail: "user@example.com",
   userName: "Test User",
 };
 
@@ -147,7 +146,6 @@ describe("QuestionnaireChat — new session", () => {
 
     expect(mockStartChat).toHaveBeenCalledWith({
       assessment_id: "assessment-1",
-      user_email: "user@example.com",
     });
   });
 
@@ -276,10 +274,8 @@ describe("QuestionnaireChat — sending messages", () => {
 
     expect(mockSendReply).toHaveBeenCalledWith(
       expect.objectContaining({
-        assessment_id: "assessment-1",
         questionnaire_id: "qn-existing",
         message_text: "Email addresses",
-        user_email: "user@example.com",
       }),
     );
   });

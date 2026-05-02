@@ -381,7 +381,6 @@ export interface QuestionnaireChatMessage {
 
 export interface StartChatRequest {
   assessment_id: string;
-  user_email: string;
   include_question_ids?: string[];
 }
 
@@ -393,10 +392,8 @@ export interface StartChatResponse {
 }
 
 export interface ChatReplyRequest {
-  assessment_id: string;
   questionnaire_id: string;
   message_text: string;
-  user_email: string;
 }
 
 export interface ChatReplyResponse {

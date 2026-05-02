@@ -364,7 +364,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
                 ? (assessment.questionnaire?.questionnaire_id ?? undefined)
                 : undefined
             }
-            userEmail={currentUser?.email_address ?? "user@example.com"}
             userName={
               currentUser?.isRootUser
                 ? "Root User"

@@ -25,7 +25,6 @@ import { QuestionnaireChatMessage } from "./types";
 interface QuestionnaireChatProps {
   assessmentId: string;
   questionnaireId?: string;
-  userEmail: string;
   userName?: string;
   onStatusChange?: () => void;
 }
@@ -57,7 +56,6 @@ interface LocalMessage {
 const QuestionnaireChat = ({
   assessmentId,
   questionnaireId: initialQuestionnaireId,
-  userEmail,
   userName,
   onStatusChange,
 }: QuestionnaireChatProps) => {
@@ -120,7 +118,6 @@ const QuestionnaireChat = ({
       try {
         const response = await startChat({
           assessment_id: assessmentId,
-          user_email: userEmail,
         }).unwrap();
 
         initialLoadDone.current = true;
@@ -161,10 +158,8 @@ const QuestionnaireChat = ({
 
       try {
         const response = await sendReply({
-          assessment_id: assessmentId,
           questionnaire_id: questionnaireId,
           message_text: trimmed,
-          user_email: userEmail,
         }).unwrap();
 
         const botMessages: LocalMessage[] = response.bot_messages.map((m) => ({
@@ -198,8 +193,6 @@ const QuestionnaireChat = ({
       questionnaireId,
       nextKey,
       sendReply,
-      assessmentId,
-      userEmail,
       onStatusChange,
       messageApi,
     ],
