@@ -27,6 +27,7 @@ from fides.service.privacy_request_attachments.privacy_request_attachments_repos
 from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
     DEFAULT_MAX_SIZE_BYTES,
     AttachmentUserProvidedService,
+    FileUploadConstraints,
     _bucket,
     _get_provider_and_bucket,
 )
@@ -67,7 +68,12 @@ class TestUploadAttachment:
         mock_provider,
     ):
         result = AttachmentUserProvidedService().upload_attachment(
-            file_data=PDF_BYTES, session=db
+            file_data=PDF_BYTES,
+            session=db,
+            constraints=FileUploadConstraints.defaults(),
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
         )
 
         assert result.id.startswith("att_")
@@ -101,7 +107,12 @@ class TestUploadAttachment:
         before = db.query(AttachmentUserProvided).count()
         with pytest.raises(RuntimeError, match="s3 boom"):
             AttachmentUserProvidedService().upload_attachment(
-                file_data=PDF_BYTES, session=db
+                file_data=PDF_BYTES,
+                session=db,
+                constraints=FileUploadConstraints.defaults(),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
             )
         # Caller-supplied session: decorator only flushes; row should not
         # be visible after the rollback we trigger to clear the failed
@@ -114,7 +125,12 @@ class TestUploadAttachment:
         oversize = b"%PDF" + b"x" * (DEFAULT_MAX_SIZE_BYTES + 1)
         with pytest.raises(FileTooLargeError):
             AttachmentUserProvidedService().upload_attachment(
-                file_data=oversize, session=db
+                file_data=oversize,
+                session=db,
+                constraints=FileUploadConstraints.defaults(),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
             )
 
     def test_upload_rejects_unknown_magic(
@@ -122,7 +138,12 @@ class TestUploadAttachment:
     ):
         with pytest.raises(DisallowedFileTypeError):
             AttachmentUserProvidedService().upload_attachment(
-                file_data=b"not a real file format", session=db
+                file_data=b"not a real file format",
+                session=db,
+                constraints=FileUploadConstraints.defaults(),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
             )
 
     def test_upload_without_storage_config_raises(self, db):
@@ -132,8 +153,163 @@ class TestUploadAttachment:
         ):
             with pytest.raises(StorageNotConfiguredError):
                 AttachmentUserProvidedService().upload_attachment(
-                    file_data=PDF_BYTES, session=db
+                    file_data=PDF_BYTES,
+                    session=db,
+                    constraints=FileUploadConstraints.defaults(),
+                    field_name="file",
+                    property_id="test_prop",
+                    policy_key="default_access_policy",
                 )
+
+    def test_upload_respects_per_field_max_size(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # PDF is ~25 bytes; cap at 1 byte to force the override path.
+        with pytest.raises(FileTooLargeError):
+            AttachmentUserProvidedService().upload_attachment(
+                file_data=PDF_BYTES,
+                session=db,
+                constraints=FileUploadConstraints(
+                    max_size_bytes=1,
+                    allowed_file_types=frozenset({"pdf", "png", "jpg"}),
+                ),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
+            )
+
+    def test_upload_respects_per_field_allowed_file_types(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # PDF magic bytes pass platform check; per-field allow list excludes
+        # ``pdf`` so the override path raises.
+        with pytest.raises(DisallowedFileTypeError):
+            AttachmentUserProvidedService().upload_attachment(
+                file_data=PDF_BYTES,
+                session=db,
+                constraints=FileUploadConstraints(
+                    max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                    allowed_file_types=frozenset({"png"}),
+                ),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
+            )
+
+    def test_upload_zip_with_zip_only_allow_list_succeeds(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # Regression: ``PK\x03\x04`` matches ``docx``/``xlsx``/``zip``;
+        # picking the first dict entry rejected legitimate .zip uploads
+        # whose allow-list only contains ``zip``.
+        result = AttachmentUserProvidedService().upload_attachment(
+            file_data=b"PK\x03\x04 body",
+            session=db,
+            constraints=FileUploadConstraints(
+                max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                allowed_file_types=frozenset({"zip"}),
+            ),
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+        )
+        row = (
+            db.query(AttachmentUserProvided)
+            .filter(AttachmentUserProvided.id == result.id)
+            .one()
+        )
+        assert row.object_key.endswith(".zip")
+        row.delete(db)
+
+    def test_upload_zip_family_uses_client_filename_to_disambiguate(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # Allow-list spans the full ZIP family; the client's claimed
+        # filename extension picks among them so the recorded MIME
+        # matches what the client uploaded.
+        result = AttachmentUserProvidedService().upload_attachment(
+            file_data=b"PK\x03\x04 body",
+            session=db,
+            constraints=FileUploadConstraints(
+                max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                allowed_file_types=frozenset({"docx", "xlsx", "zip"}),
+            ),
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+            client_filename="report.xlsx",
+        )
+        row = (
+            db.query(AttachmentUserProvided)
+            .filter(AttachmentUserProvided.id == result.id)
+            .one()
+        )
+        assert row.object_key.endswith(".xlsx")
+        row.delete(db)
+
+    def test_upload_falls_back_to_client_filename_when_no_magic_match(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # CSV / TXT have no distinctive magic prefix. Without magic
+        # candidates the client filename is the only signal — accepted
+        # iff the claimed extension is in the allow-list.
+        result = AttachmentUserProvidedService().upload_attachment(
+            file_data=b"a,b,c\n1,2,3\n",
+            session=db,
+            constraints=FileUploadConstraints(
+                max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                allowed_file_types=frozenset({"csv"}),
+            ),
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+            client_filename="export.csv",
+        )
+        row = (
+            db.query(AttachmentUserProvided)
+            .filter(AttachmentUserProvided.id == result.id)
+            .one()
+        )
+        assert row.object_key.endswith(".csv")
+        row.delete(db)
+
+    def test_upload_rejects_when_client_filename_not_in_allow_list(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # No magic match + client extension not in allow-list → reject.
+        with pytest.raises(DisallowedFileTypeError):
+            AttachmentUserProvidedService().upload_attachment(
+                file_data=b"a,b,c\n1,2,3\n",
+                session=db,
+                constraints=FileUploadConstraints(
+                    max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                    allowed_file_types=frozenset({"pdf"}),
+                ),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
+                client_filename="export.csv",
+            )
+
+    def test_upload_rejects_when_magic_match_disjoint_from_allow_list(
+        self, db, storage_config_default, patch_provider_factory
+    ):
+        # Magic bytes match a real type (PDF) but the allow-list does
+        # not include it; the client-filename fallback only applies
+        # when there are no magic candidates at all.
+        with pytest.raises(DisallowedFileTypeError):
+            AttachmentUserProvidedService().upload_attachment(
+                file_data=PDF_BYTES,
+                session=db,
+                constraints=FileUploadConstraints(
+                    max_size_bytes=DEFAULT_MAX_SIZE_BYTES,
+                    allowed_file_types=frozenset({"csv"}),
+                ),
+                field_name="file",
+                property_id="test_prop",
+                policy_key="default_access_policy",
+                client_filename="anything.csv",
+            )
 
 
 class TestProviderHelpers:
@@ -195,7 +371,7 @@ class TestResolveFileAttachments:
     def test_returns_empty_when_no_fields(self, db):
         assert (
             AttachmentUserProvidedService().resolve_file_attachments(
-                None, {"file"}, session=db
+                None, {"file"}, "test_prop", "default_access_policy", session=db
             )
             == []
         )
@@ -204,7 +380,7 @@ class TestResolveFileAttachments:
         fields = {"o": CustomPrivacyRequestField(label="o", value="x")}
         assert (
             AttachmentUserProvidedService().resolve_file_attachments(
-                fields, set(), session=db
+                fields, set(), "test_prop", "default_access_policy", session=db
             )
             == []
         )
@@ -215,7 +391,7 @@ class TestResolveFileAttachments:
         fields = {"file": CustomPrivacyRequestField(label="file", value=["x"])}
         assert (
             AttachmentUserProvidedService().resolve_file_attachments(
-                fields, {"file"}, session=db
+                fields, {"file"}, "test_prop", "default_access_policy", session=db
             )
             == []
         )
@@ -229,13 +405,16 @@ class TestResolveFileAttachments:
         record = AttachmentUserProvidedRepository().create_uploaded(
             object_key="privacy_request_attachments/one.pdf",
             storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
             session=db,
         )
         db.commit()
 
         fields = {"file": CustomPrivacyRequestField(label="file", value=[record.id])}
         rows = AttachmentUserProvidedService().resolve_file_attachments(
-            fields, {"file"}, session=db
+            fields, {"file"}, "test_prop", "default_access_policy", session=db
         )
         assert [r.id for r in rows] == [record.id]
 
@@ -252,7 +431,7 @@ class TestResolveFileAttachments:
         }
         with pytest.raises(AttachmentNotFoundError):
             AttachmentUserProvidedService().resolve_file_attachments(
-                fields, {"file"}, session=db
+                fields, {"file"}, "test_prop", "default_access_policy", session=db
             )
 
     def test_non_list_value_raises(
@@ -264,7 +443,7 @@ class TestResolveFileAttachments:
         fields = {"file": CustomPrivacyRequestField(label="file", value="not a list")}
         with pytest.raises(InvalidAttachmentValueError):
             AttachmentUserProvidedService().resolve_file_attachments(
-                fields, {"file"}, session=db
+                fields, {"file"}, "test_prop", "default_access_policy", session=db
             )
 
     @pytest.mark.parametrize(
@@ -283,10 +462,123 @@ class TestResolveFileAttachments:
     ):
         assert (
             AttachmentUserProvidedService().resolve_file_attachments(
-                fields, {"file"}, session=db
+                fields, {"file"}, "test_prop", "default_access_policy", session=db
             )
             == []
         )
+
+    def test_field_name_mismatch_raises(
+        self,
+        db,
+        storage_config_default,
+        allow_custom_privacy_request_field_collection_enabled,
+    ):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+            AttachmentContextMismatchError,
+        )
+
+        record = AttachmentUserProvidedRepository().create_uploaded(
+            object_key="privacy_request_attachments/wrong_field.pdf",
+            storage_key=storage_config_default.key,
+            field_name="other_field",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+            session=db,
+        )
+        db.commit()
+
+        fields = {"file": CustomPrivacyRequestField(label="file", value=[record.id])}
+        try:
+            with pytest.raises(AttachmentContextMismatchError):
+                AttachmentUserProvidedService().resolve_file_attachments(
+                    fields, {"file"}, "test_prop", "default_access_policy", session=db
+                )
+        finally:
+            db.rollback()
+            row = (
+                db.query(AttachmentUserProvided)
+                .filter(AttachmentUserProvided.id == record.id)
+                .one()
+            )
+            row.delete(db)
+
+    def test_property_id_mismatch_raises(
+        self,
+        db,
+        storage_config_default,
+        allow_custom_privacy_request_field_collection_enabled,
+    ):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+            AttachmentContextMismatchError,
+        )
+
+        record = AttachmentUserProvidedRepository().create_uploaded(
+            object_key="privacy_request_attachments/wrong_prop.pdf",
+            storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="prop_uploaded",
+            policy_key="default_access_policy",
+            session=db,
+        )
+        db.commit()
+
+        fields = {"file": CustomPrivacyRequestField(label="file", value=[record.id])}
+        try:
+            with pytest.raises(AttachmentContextMismatchError):
+                AttachmentUserProvidedService().resolve_file_attachments(
+                    fields,
+                    {"file"},
+                    "prop_submitted",
+                    "default_access_policy",
+                    session=db,
+                )
+        finally:
+            db.rollback()
+            row = (
+                db.query(AttachmentUserProvided)
+                .filter(AttachmentUserProvided.id == record.id)
+                .one()
+            )
+            row.delete(db)
+
+    def test_policy_key_mismatch_raises(
+        self,
+        db,
+        storage_config_default,
+        allow_custom_privacy_request_field_collection_enabled,
+    ):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+            AttachmentContextMismatchError,
+        )
+
+        record = AttachmentUserProvidedRepository().create_uploaded(
+            object_key="privacy_request_attachments/wrong_policy.pdf",
+            storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="test_prop",
+            policy_key="default_access_policy",
+            session=db,
+        )
+        db.commit()
+
+        fields = {"file": CustomPrivacyRequestField(label="file", value=[record.id])}
+        try:
+            with pytest.raises(AttachmentContextMismatchError):
+                AttachmentUserProvidedService().resolve_file_attachments(
+                    fields,
+                    {"file"},
+                    "test_prop",
+                    "default_erasure_policy",
+                    session=db,
+                )
+        finally:
+            db.rollback()
+            row = (
+                db.query(AttachmentUserProvided)
+                .filter(AttachmentUserProvided.id == record.id)
+                .one()
+            )
+            row.delete(db)
 
 
 class TestPromoteRowsToAttachments:
@@ -309,6 +601,9 @@ class TestPromoteRowsToAttachments:
         record = AttachmentUserProvidedRepository().create_uploaded(
             object_key="privacy_request_attachments/promote.pdf",
             storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="test_prop",
+            policy_key="example_access_request_policy",
             session=db,
         )
         db.commit()
@@ -319,6 +614,8 @@ class TestPromoteRowsToAttachments:
         )
         if delete_raises:
             mock_provider.delete.side_effect = RuntimeError("storage offline")
+        privacy_request.property_id = "test_prop"
+        db.commit()
         # AttachmentService.upload would hit S3 — short-circuit it.
         with patch(
             "fides.service.privacy_request_attachments.privacy_request_attachments_service.AttachmentService.upload",
@@ -349,6 +646,41 @@ class TestPromoteRowsToAttachments:
         db.delete(attachment)
         row.delete(db)
 
+    def test_promote_rejects_property_id_mismatch(
+        self,
+        db,
+        storage_config_default,
+        privacy_request,
+        patch_provider_factory,
+    ):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+            AttachmentContextMismatchError,
+        )
+
+        record = AttachmentUserProvidedRepository().create_uploaded(
+            object_key="privacy_request_attachments/mismatch.pdf",
+            storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="prop_uploaded",
+            policy_key="example_access_request_policy",
+            session=db,
+        )
+        db.commit()
+        row = (
+            db.query(AttachmentUserProvided)
+            .filter(AttachmentUserProvided.id == record.id)
+            .one()
+        )
+        privacy_request.property_id = "prop_submitted"
+        db.commit()
+
+        with pytest.raises(AttachmentContextMismatchError):
+            AttachmentUserProvidedService().promote_rows_to_attachments(
+                privacy_request, [row], session=db
+            )
+
+        row.delete(db)
+
     def test_promote_rejects_non_uploaded_row(
         self,
         db,
@@ -359,6 +691,9 @@ class TestPromoteRowsToAttachments:
         record = AttachmentUserProvidedRepository().create_uploaded(
             object_key="privacy_request_attachments/bad.pdf",
             storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="test_prop",
+            policy_key="example_access_request_policy",
             session=db,
         )
         row = (
@@ -367,6 +702,7 @@ class TestPromoteRowsToAttachments:
             .one()
         )
         row.status = AttachmentUserProvidedStatus.deleted
+        privacy_request.property_id = "test_prop"
         db.commit()
 
         with pytest.raises(InvalidAttachmentStateError):
@@ -391,11 +727,17 @@ class TestPromoteRowsToAttachments:
         rec1 = repo.create_uploaded(
             object_key="privacy_request_attachments/p1.pdf",
             storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="test_prop",
+            policy_key="example_access_request_policy",
             session=db,
         )
         rec2 = repo.create_uploaded(
             object_key="privacy_request_attachments/p2.pdf",
             storage_key=storage_config_default.key,
+            field_name="file",
+            property_id="test_prop",
+            policy_key="example_access_request_policy",
             session=db,
         )
         db.commit()
@@ -411,6 +753,8 @@ class TestPromoteRowsToAttachments:
         )
 
         first = MagicMock(id="att_partial")
+        privacy_request.property_id = "test_prop"
+        db.commit()
         with patch(
             "fides.service.privacy_request_attachments.privacy_request_attachments_service.AttachmentService"
         ) as svc_cls:
@@ -465,7 +809,8 @@ def file_svc_req():
     svc._validate_field_visibility = MagicMock()
     return svc, PrivacyRequestCreate(
         identity=Identity(email="x@y.z"),
-        policy_key="default_access_policy",
+        policy_key="example_access_request_policy",
+        property_id="test_prop",
         custom_privacy_request_fields={"doc": {"label": "Doc", "value": ["att_123"]}},
     )
 
@@ -489,8 +834,10 @@ class TestCreatePrivacyRequestFileResolution:
         svc, req = file_svc_req
         captured: dict = {}
 
-        def _capture(_self, _fields, names, *, session):
+        def _capture(_self, _fields, names, property_id, policy_key, *, session):
             captured["names"] = names
+            captured["property_id"] = property_id
+            captured["policy_key"] = policy_key
             return []
 
         with (
@@ -504,3 +851,245 @@ class TestCreatePrivacyRequestFileResolution:
         ):
             svc.create_privacy_request(req, authenticated=True)
         assert captured["names"] == {"doc"}
+        assert captured["property_id"] == "test_prop"
+        assert captured["policy_key"] == "example_access_request_policy"
+
+    def test_rejects_when_property_id_missing(self, file_svc_req):
+        from fides.api.common_exceptions import PrivacyRequestError
+
+        svc, req = file_svc_req
+        # Strip property_id from the request — service must refuse before
+        # ever calling resolve_file_attachments.
+        req = req.model_copy(update={"property_id": None})
+        with pytest.raises(
+            PrivacyRequestError,
+            match="property_id is required when the submission includes file fields",
+        ):
+            svc.create_privacy_request(req, authenticated=True)
+
+
+class TestResolveUploadConstraints:
+    """Cover ``resolve_upload_constraints`` precedence + first-match resolution."""
+
+    _MODULE = (
+        "fides.service.privacy_request_attachments.privacy_request_attachments_service"
+    )
+
+    def _file_field(self, label, *, max_size_bytes, allowed_file_types):
+        from fides.api.schemas.privacy_center_config import (
+            FileUploadCustomPrivacyRequestField,
+        )
+
+        return FileUploadCustomPrivacyRequestField(
+            label=label,
+            max_size_bytes=max_size_bytes,
+            allowed_file_types=list(allowed_file_types),
+        )
+
+    def _faux_action(self, fields, *, policy_key="default_access_policy"):
+        action = MagicMock(custom_privacy_request_fields=fields)
+        action.policy_key = policy_key
+        return action
+
+    def _faux_config(self, actions):
+        cfg = MagicMock()
+        cfg.actions = actions
+        return cfg
+
+    def test_no_field_name_returns_defaults(self, db):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+            resolve_upload_constraints,
+        )
+
+        assert (
+            resolve_upload_constraints(
+                db, property_id=None, policy_key=None, field_name=None
+            )
+            == FileUploadConstraints.defaults()
+        )
+
+    def test_no_config_returns_defaults(self, db):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+            resolve_upload_constraints,
+        )
+
+        with patch(
+            f"{self._MODULE}._resolve_privacy_center_config_dict",
+            return_value=None,
+        ):
+            assert (
+                resolve_upload_constraints(
+                    db,
+                    property_id=None,
+                    policy_key="default_access_policy",
+                    field_name="passport",
+                )
+                == FileUploadConstraints.defaults()
+            )
+
+    def test_unparseable_config_returns_defaults(self, db):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+            resolve_upload_constraints,
+        )
+
+        with (
+            patch(
+                f"{self._MODULE}._resolve_privacy_center_config_dict",
+                return_value={"actions": []},
+            ),
+            patch(f"{self._MODULE}.PrivacyCenterConfigSchema") as cfg_cls,
+        ):
+            cfg_cls.model_validate.side_effect = ValueError("bad")
+            assert (
+                resolve_upload_constraints(
+                    db,
+                    property_id=None,
+                    policy_key="default_access_policy",
+                    field_name="passport",
+                )
+                == FileUploadConstraints.defaults()
+            )
+
+    def test_no_matching_field_returns_defaults(self, db):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+            resolve_upload_constraints,
+        )
+
+        cfg = self._faux_config([self._faux_action({"other": MagicMock()})])
+        with (
+            patch(
+                f"{self._MODULE}._resolve_privacy_center_config_dict",
+                return_value={"actions": []},
+            ),
+            patch(f"{self._MODULE}.PrivacyCenterConfigSchema") as cfg_cls,
+        ):
+            cfg_cls.model_validate.return_value = cfg
+            assert (
+                resolve_upload_constraints(
+                    db,
+                    property_id=None,
+                    policy_key="default_access_policy",
+                    field_name="passport",
+                )
+                == FileUploadConstraints.defaults()
+            )
+
+    def test_single_action_returns_field_limits(self, db):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+            resolve_upload_constraints,
+        )
+
+        field = self._file_field(
+            "Passport",
+            max_size_bytes=2048,
+            allowed_file_types=["pdf", "png"],
+        )
+        cfg = self._faux_config([self._faux_action({"passport": field})])
+        with (
+            patch(
+                f"{self._MODULE}._resolve_privacy_center_config_dict",
+                return_value={"actions": []},
+            ),
+            patch(f"{self._MODULE}.PrivacyCenterConfigSchema") as cfg_cls,
+        ):
+            cfg_cls.model_validate.return_value = cfg
+            assert resolve_upload_constraints(
+                db,
+                property_id=None,
+                policy_key="default_access_policy",
+                field_name="passport",
+            ) == FileUploadConstraints(
+                max_size_bytes=2048,
+                allowed_file_types=frozenset({"pdf", "png"}),
+            )
+
+    def test_property_id_passed_through(self, db):
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            resolve_upload_constraints,
+        )
+
+        field = self._file_field(
+            "Passport",
+            max_size_bytes=512,
+            allowed_file_types=["pdf"],
+        )
+        cfg = self._faux_config([self._faux_action({"passport": field})])
+        with (
+            patch(
+                f"{self._MODULE}._resolve_privacy_center_config_dict",
+                return_value={"actions": []},
+            ) as resolver,
+            patch(f"{self._MODULE}.PrivacyCenterConfigSchema") as cfg_cls,
+        ):
+            cfg_cls.model_validate.return_value = cfg
+            resolve_upload_constraints(
+                db,
+                property_id="prop_xyz",
+                policy_key="default_access_policy",
+                field_name="passport",
+            )
+        resolver.assert_called_once_with(db, "prop_xyz")
+
+    def test_skips_non_file_field_with_matching_name(self, db):
+        from fides.api.schemas.privacy_center_config import CustomPrivacyRequestField
+        from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+            FileUploadConstraints,
+            resolve_upload_constraints,
+        )
+
+        # A non-file field happens to share the name; helper must ignore it.
+        text_field = CustomPrivacyRequestField(label="Reason", field_type="text")
+        cfg = self._faux_config([self._faux_action({"passport": text_field})])
+        with (
+            patch(
+                f"{self._MODULE}._resolve_privacy_center_config_dict",
+                return_value={"actions": []},
+            ),
+            patch(f"{self._MODULE}.PrivacyCenterConfigSchema") as cfg_cls,
+        ):
+            cfg_cls.model_validate.return_value = cfg
+            assert (
+                resolve_upload_constraints(
+                    db,
+                    property_id=None,
+                    policy_key="default_access_policy",
+                    field_name="passport",
+                )
+                == FileUploadConstraints.defaults()
+            )
+
+
+class TestFileUploadConstraintsValidation:
+    """Self-validation invariants enforced by ``__post_init__``."""
+
+    def test_rejects_zero_max_size(self):
+        with pytest.raises(ValueError, match="max_size_bytes must be greater than 0"):
+            FileUploadConstraints(
+                max_size_bytes=0, allowed_file_types=frozenset({"pdf"})
+            )
+
+    def test_rejects_negative_max_size(self):
+        with pytest.raises(ValueError, match="max_size_bytes must be greater than 0"):
+            FileUploadConstraints(
+                max_size_bytes=-1, allowed_file_types=frozenset({"pdf"})
+            )
+
+    def test_rejects_empty_allowed_file_types(self):
+        with pytest.raises(ValueError, match="allowed_file_types must not be empty"):
+            FileUploadConstraints(max_size_bytes=1024, allowed_file_types=frozenset())
+
+    def test_rejects_unsupported_file_types(self):
+        with pytest.raises(ValueError, match="Unsupported file types"):
+            FileUploadConstraints(
+                max_size_bytes=1024, allowed_file_types=frozenset({"exe"})
+            )
+
+    def test_defaults_pass_validation(self):
+        c = FileUploadConstraints.defaults()
+        assert c.max_size_bytes > 0
+        assert c.allowed_file_types
