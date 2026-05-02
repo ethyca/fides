@@ -1600,7 +1600,8 @@ class TestValidateFieldVisibility:
             pytest.raises(PrivacyRequestError, match="does not exist"),
         ):
             svc.create_privacy_request(req, authenticated=True)
-        visibility.assert_called_once_with(req)
+        visibility.assert_called_once()
+        assert visibility.call_args.args[0] is req
 
 
 @pytest.mark.unit
@@ -1746,11 +1747,7 @@ class TestCreatePrivacyRequestAttachmentPromotion:
         prs = "fides.service.privacy_request.privacy_request_service"
 
         action = _make_action(
-            {
-                "doc": FileUploadCustomPrivacyRequestField(
-                    label="Doc", required=True
-                )
-            }
+            {"doc": FileUploadCustomPrivacyRequestField(label="Doc", required=True)}
         )
 
         attachment_service = svc.attachment_user_provided_service
