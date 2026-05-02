@@ -17,6 +17,9 @@ from fides.api.task.conditional_dependencies.schemas import ConditionGroup
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+    AttachmentUserProvidedService,
+)
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 
@@ -773,7 +776,12 @@ class TestDuplicatePrivacyRequestService:
     def privacy_request_service(
         self, db: Session, mock_config_proxy, mock_messaging_service
     ) -> PrivacyRequestService:
-        return PrivacyRequestService(db, mock_config_proxy, mock_messaging_service)
+        return PrivacyRequestService(
+            db,
+            mock_config_proxy,
+            mock_messaging_service,
+            AttachmentUserProvidedService(),
+        )
 
     def test_privacy_request_service_duplicate_detection(
         self,

@@ -33,6 +33,7 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_center_config import (
+    FileUploadCustomPrivacyRequestField,
     LocationCustomPrivacyRequestField,
     PrivacyRequestOption,
     reorder_custom_privacy_request_fields,
@@ -84,6 +85,12 @@ from fides.service.privacy_request.privacy_request_query_utils import (
     resolve_request_ids_from_filters,
     sort_privacy_request_queryset,
 )
+from fides.service.privacy_request_attachments.privacy_request_attachments_exceptions import (
+    AttachmentsServiceError,
+)
+from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+    AttachmentUserProvidedService,
+)
 
 
 class PrivacyRequestService:
@@ -92,10 +99,12 @@ class PrivacyRequestService:
         db: Session,
         config_proxy: ConfigProxy,
         messaging_service: MessagingService,
+        attachment_user_provided_service: AttachmentUserProvidedService,
     ):
         self.db = db
         self.config_proxy = config_proxy
         self.messaging_service = messaging_service
+        self.attachment_user_provided_service = attachment_user_provided_service
 
     def get_privacy_request(self, privacy_request_id: str) -> Optional[PrivacyRequest]:
         privacy_request: Optional[PrivacyRequest] = (
@@ -196,18 +205,22 @@ class PrivacyRequestService:
         return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption] = None,
     ) -> None:
         """Validate that location is provided for required location fields.
 
         Looks up the actual Privacy Center configuration to check if any location
-        fields are marked as required for the specified policy.
+        fields are marked as required for the specified policy. ``action`` can
+        be passed by callers that already resolved it to skip the lookup.
         """
         # If location is already provided, no validation needed
         if privacy_request_data.location:
             return
 
-        action = self._resolve_action_for_request(privacy_request_data)
+        if action is None:
+            action = self._resolve_action_for_request(privacy_request_data)
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -317,11 +330,16 @@ class PrivacyRequestService:
         return action
 
     def _validate_field_visibility(
-        self, privacy_request_data: PrivacyRequestCreate
+        self,
+        privacy_request_data: PrivacyRequestCreate,
+        action: Optional[PrivacyRequestOption] = None,
     ) -> None:
         """Reject payloads that violate the action's display_condition
-        contract; translate :class:`DisplayConditionViolation` to ``PrivacyRequestError``."""
-        action = self._resolve_action_for_request(privacy_request_data)
+        contract; translate :class:`DisplayConditionViolation` to
+        ``PrivacyRequestError``. ``action`` can be passed by callers that
+        already resolved it to skip the lookup."""
+        if action is None:
+            action = self._resolve_action_for_request(privacy_request_data)
         if not action or not action.custom_privacy_request_fields:
             return
 
@@ -402,6 +420,27 @@ class PrivacyRequestService:
                 privacy_request_data.model_dump(mode="json"),
             )
 
+        action = self._resolve_action_for_request(privacy_request_data)
+        file_field_names: set[str] = (
+            {
+                name
+                for name, cfg in (action.custom_privacy_request_fields or {}).items()
+                if isinstance(cfg, FileUploadCustomPrivacyRequestField)
+            }
+            if action and action.custom_privacy_request_fields
+            else set()
+        )
+        attachment_service = self.attachment_user_provided_service
+        try:
+            attachment_rows = attachment_service.resolve_file_attachments(
+                privacy_request_data.custom_privacy_request_fields,
+                file_field_names,
+                session=self.db,
+            )
+        except AttachmentsServiceError as exc:
+            raise PrivacyRequestError(
+                str(exc), privacy_request_data.model_dump(mode="json")
+            ) from exc
         if privacy_request_data.property_id:
             valid_property = Property.get_by(
                 self.db, field="id", value=privacy_request_data.property_id
@@ -413,10 +452,21 @@ class PrivacyRequestService:
                 )
 
         # Validate location is provided for required location fields
-        self._validate_required_location_fields(privacy_request_data)
+        self._validate_required_location_fields(privacy_request_data, action)
 
-        # Validate display_condition visibility: no gated-off fields submitted,
-        self._validate_field_visibility(privacy_request_data)
+        # Validate display_condition visibility BEFORE stripping file fields so
+        # required FileUpload fields are seen as having a submitted value.
+        self._validate_field_visibility(privacy_request_data, action)
+
+        if file_field_names and privacy_request_data.custom_privacy_request_fields:
+            non_file = {
+                k: v
+                for k, v in privacy_request_data.custom_privacy_request_fields.items()
+                if k not in file_field_names
+            }
+            privacy_request_data = privacy_request_data.model_copy(
+                update={"custom_privacy_request_fields": non_file or None}
+            )
 
         policy = Policy.get_by(
             db=self.db,
@@ -505,6 +555,36 @@ class PrivacyRequestService:
                 )
                 privacy_request.persist_masking_secrets(masking_secrets)
 
+            # Promote data-subject-uploaded files to Attachment records.
+            # Must happen before _handle_notifications_and_processing so a
+            # failure here deletes the just-created privacy request — files
+            # are required, not supplementary, so a request missing its
+            # attachments must not be processed.
+            if attachment_rows:
+                try:
+                    attachment_service.promote_rows_to_attachments(
+                        privacy_request, attachment_rows, session=self.db
+                    )
+                except Exception as promotion_exc:
+                    logger.exception(
+                        "Attachment promotion failed for privacy request {} — "
+                        "deleting the request to preserve the 'files required' invariant",
+                        privacy_request.id,
+                    )
+                    try:
+                        privacy_request.delete(self.db)
+                    except Exception:
+                        logger.exception(
+                            "Failed to delete privacy request {} after promotion failure",
+                            privacy_request.id,
+                        )
+                    # Surface the attachment-specific reason directly instead
+                    # of letting the outer broad except wrap it in the generic
+                    # "This record could not be added" message.
+                    raise PrivacyRequestError(
+                        f"Attachment processing failed: {promotion_exc}", kwargs
+                    ) from promotion_exc
+
             check_and_dispatch_error_notifications(db=self.db)
 
             _handle_notifications_and_processing(
@@ -530,6 +610,10 @@ class PrivacyRequestService:
             raise PrivacyRequestError(
                 "Verification message could not be sent.", kwargs
             ) from exc
+        except PrivacyRequestError:
+            # Already carries a specific reason (e.g. attachment promotion
+            # failure) — don't rewrap with the generic message below.
+            raise
         except Exception as exc:
             logger.error(f"{exc.__class__.__name__}: {str(exc)}")
             raise PrivacyRequestError("This record could not be added", kwargs) from exc

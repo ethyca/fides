@@ -24,6 +24,9 @@ from fides.service.privacy_request.privacy_request_service import (
     _trigger_pre_approval_webhooks,
     handle_approval,
 )
+from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+    AttachmentUserProvidedService,
+)
 
 
 class TestHandleApprovalSetsAwaitingPreApproval:
@@ -146,7 +149,12 @@ class TestApproveAndDenyFromPreApprovalStatuses:
     def privacy_request_service(
         self, db: Session, mock_messaging_service: MessagingService
     ) -> PrivacyRequestService:
-        return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
+        return PrivacyRequestService(
+            db,
+            ConfigProxy(db),
+            mock_messaging_service,
+            AttachmentUserProvidedService(),
+        )
 
     @patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"

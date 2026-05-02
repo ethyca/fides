@@ -21,6 +21,7 @@ from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_center_config import (
     CustomPrivacyRequestField,
+    FileUploadCustomPrivacyRequestField,
     LocationCustomPrivacyRequestField,
 )
 from fides.api.schemas.privacy_request import (
@@ -32,6 +33,9 @@ from fides.api.schemas.redis_cache import Identity
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+    AttachmentUserProvidedService,
+)
 from tests.conftest import wait_for_tasks_to_complete
 
 
@@ -51,7 +55,12 @@ class TestPrivacyRequestService:
     def privacy_request_service(
         self, db: Session, mock_messaging_service
     ) -> PrivacyRequestService:
-        return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
+        return PrivacyRequestService(
+            db,
+            ConfigProxy(db),
+            mock_messaging_service,
+            AttachmentUserProvidedService(),
+        )
 
     @pytest.fixture
     def reviewing_user(self, db):
@@ -1505,7 +1514,7 @@ def _stub_lookups(svc, *, config_dict={"x": 1}, parsed=True, action=True):
 
 
 def _svc():
-    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock())
+    return PrivacyRequestService(MagicMock(), MagicMock(), MagicMock(), MagicMock())
 
 
 def _req(custom_fields=None, **kw):
@@ -1591,7 +1600,8 @@ class TestValidateFieldVisibility:
             pytest.raises(PrivacyRequestError, match="does not exist"),
         ):
             svc.create_privacy_request(req, authenticated=True)
-        visibility.assert_called_once_with(req)
+        visibility.assert_called_once()
+        assert visibility.call_args.args[0] is req
 
 
 @pytest.mark.unit
@@ -1639,3 +1649,138 @@ class TestValidateRequiredLocationFields:
                 match="Location is required for field 'country'",
             ):
                 svc._validate_required_location_fields(_req())
+
+
+@pytest.mark.unit
+class TestCreatePrivacyRequestAttachmentPromotion:
+    """Cover the attachment-promotion branch in ``create_privacy_request``."""
+
+    @contextmanager
+    def _drive_to_promotion(
+        self,
+        svc,
+        *,
+        attachment_rows,
+        promote_side_effect=None,
+        delete_side_effect=None,
+    ):
+        prs = "fides.service.privacy_request.privacy_request_service"
+
+        attachment_service = svc.attachment_user_provided_service
+        attachment_service.resolve_file_attachments.return_value = attachment_rows
+        if promote_side_effect is not None:
+            attachment_service.promote_rows_to_attachments.side_effect = (
+                promote_side_effect
+            )
+        else:
+            attachment_service.promote_rows_to_attachments.return_value = None
+
+        privacy_request = MagicMock(id="pr-1")
+        if delete_side_effect is not None:
+            privacy_request.delete.side_effect = delete_side_effect
+
+        policy = MagicMock(id="pol-1")
+        policy.generate_masking_secrets.return_value = {}
+
+        with (
+            patch.object(svc, "_resolve_privacy_center_config_dict", return_value=None),
+            patch.object(svc, "_validate_required_location_fields"),
+            patch.object(svc, "_validate_field_visibility"),
+            patch(f"{prs}.Policy.get_by", return_value=policy),
+            patch(f"{prs}.build_required_privacy_request_kwargs", return_value={}),
+            patch(f"{prs}.PrivacyRequest.create", return_value=privacy_request),
+            patch(f"{prs}._create_or_update_custom_fields"),
+            patch(f"{prs}.cache_data"),
+            patch(f"{prs}.check_and_dispatch_error_notifications"),
+            patch(f"{prs}._handle_notifications_and_processing"),
+            patch(f"{prs}.check_for_duplicates"),
+        ):
+            yield attachment_service, privacy_request
+
+    def test_promote_success(self):
+        svc = _svc()
+        rows = [MagicMock()]
+        with self._drive_to_promotion(svc, attachment_rows=rows) as (
+            attachment_service,
+            privacy_request,
+        ):
+            result = svc.create_privacy_request(_req(), authenticated=True)
+        attachment_service.promote_rows_to_attachments.assert_called_once()
+        privacy_request.delete.assert_not_called()
+        assert result is privacy_request
+
+    def test_promote_failure_deletes_request_and_raises_specific_error(self):
+        svc = _svc()
+        rows = [MagicMock()]
+        with self._drive_to_promotion(
+            svc,
+            attachment_rows=rows,
+            promote_side_effect=RuntimeError("storage offline"),
+        ) as (_, privacy_request):
+            with pytest.raises(
+                PrivacyRequestError,
+                match="Attachment processing failed: storage offline",
+            ):
+                svc.create_privacy_request(_req(), authenticated=True)
+        privacy_request.delete.assert_called_once()
+
+    def test_promote_failure_with_delete_failure_still_raises_specific_error(self):
+        svc = _svc()
+        rows = [MagicMock()]
+        with self._drive_to_promotion(
+            svc,
+            attachment_rows=rows,
+            promote_side_effect=RuntimeError("storage offline"),
+            delete_side_effect=RuntimeError("db down"),
+        ) as (_, privacy_request):
+            with pytest.raises(
+                PrivacyRequestError, match="Attachment processing failed"
+            ):
+                svc.create_privacy_request(_req(), authenticated=True)
+        privacy_request.delete.assert_called_once()
+
+    def test_required_file_field_passes_visibility_before_strip(self):
+        # Regression: required FileUpload fields were stripped before the
+        # display_condition visibility check, causing the check to falsely
+        # raise "Required field 'X' is missing" for any required file field.
+        svc = _svc()
+        prs = "fides.service.privacy_request.privacy_request_service"
+
+        action = _make_action(
+            {"doc": FileUploadCustomPrivacyRequestField(label="Doc", required=True)}
+        )
+
+        attachment_service = svc.attachment_user_provided_service
+        attachment_service.resolve_file_attachments.return_value = []
+        attachment_service.promote_rows_to_attachments.return_value = None
+
+        privacy_request = MagicMock(id="pr-1")
+        policy = MagicMock(id="pol-1")
+        policy.generate_masking_secrets.return_value = {}
+
+        with (
+            patch.object(
+                svc, "_resolve_privacy_center_config_dict", return_value={"x": 1}
+            ),
+            patch.object(svc, "_parse_privacy_center_config", return_value=MagicMock()),
+            patch.object(svc, "_get_matching_action", return_value=action),
+            patch.object(svc, "_validate_required_location_fields"),
+            patch(f"{prs}.Property.get_by", return_value=MagicMock(id="prop-1")),
+            patch(f"{prs}.Policy.get_by", return_value=policy),
+            patch(f"{prs}.build_required_privacy_request_kwargs", return_value={}),
+            patch(f"{prs}.PrivacyRequest.create", return_value=privacy_request),
+            patch(f"{prs}._create_or_update_custom_fields"),
+            patch(f"{prs}.cache_data"),
+            patch(f"{prs}.check_and_dispatch_error_notifications"),
+            patch(f"{prs}._handle_notifications_and_processing"),
+            patch(f"{prs}.check_for_duplicates"),
+        ):
+            result = svc.create_privacy_request(
+                _req(
+                    custom_fields={"doc": {"label": "Doc", "value": ["att-id-1"]}},
+                    property_id="prop-1",
+                ),
+                authenticated=True,
+            )
+
+        assert result is privacy_request
