@@ -171,23 +171,11 @@ describe("Data map report table", () => {
     it("should reorder columns", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
-      cy.getAntDropdownOverlay("more-menu-list").should("not.be.visible");
-      // react-dnd's HTML5 backend requires a DataTransfer on every event and
-      // reorders on hover (not drop), so we simulate the full drag lifecycle.
-      const dataTransfer = new DataTransfer();
-      cy.getByTestId("column-dragger-legal_name").trigger("dragstart", {
-        dataTransfer,
-      });
-      cy.getByTestId("column-dragger-data_categories").trigger("dragover", {
-        dataTransfer,
-      });
-      cy.getByTestId("column-dragger-data_categories").trigger("drop", {
-        dataTransfer,
-      });
-      cy.getByTestId("column-dragger-legal_name").trigger("dragend", {
-        dataTransfer,
-      });
-      cy.getByTestId("save-button").click();
+      cy.getAntModal().should("be.visible");
+      cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
+      cy.getByTestId("column-list-item-data_categories").trigger("drop");
+      cy.getByTestId("column-dragger-legal_name").trigger("dragend");
+      cy.getByTestId("save-button").click({ force: true });
 
       // Verify the new order
       cy.getByTestId("fidesTable").within(() => {
@@ -609,8 +597,9 @@ describe("Data map report table", () => {
         }).as("getCustomReportsMinimalWithSystemTemplate");
       });
       it("groups system templates above user reports with a 'Standard' tag", () => {
-        cy.getByTestId("custom-reports-trigger").click();
         cy.wait("@getCustomReportsMinimalWithSystemTemplate");
+        cy.getByTestId("custom-reports-trigger").click();
+        cy.getByTestId("custom-reports-popover").should("be.visible");
         cy.getByTestId("custom-reports-popover").within(() => {
           cy.getByTestId("custom-reports-section-system").should("be.visible");
           cy.getByTestId("custom-reports-section-user").should("be.visible");
