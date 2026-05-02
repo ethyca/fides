@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { parseAsString, useQueryStates } from "nuqs";
+import { useMemo } from "react";
 
 import {
   type DataPurpose,
@@ -10,24 +11,29 @@ const EMPTY_FILTER_OPTIONS: DataPurposeFilterOptions = {
   consumers: [],
   data_uses: [],
   categories: [],
+  statuses: [],
+};
+
+const FILTER_PARSERS = {
+  search: parseAsString.withOptions({ throttleMs: 300 }),
+  data_use: parseAsString,
+  consumer: parseAsString,
+  category: parseAsString,
+  status: parseAsString,
 };
 
 const usePurposesList = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dataUseFilter, setDataUseFilter] = useState<string | null>(null);
-  const [consumerFilter, setConsumerFilter] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [filters, setFilters] = useQueryStates(FILTER_PARSERS);
 
   const filterParams = useMemo(
     () => ({
-      search: searchQuery || undefined,
-      data_use: dataUseFilter ?? undefined,
-      consumer: consumerFilter ?? undefined,
-      category: categoryFilter ?? undefined,
-      status: statusFilter ?? undefined,
+      search: filters.search ?? undefined,
+      data_use: filters.data_use ?? undefined,
+      consumer: filters.consumer ?? undefined,
+      category: filters.category ?? undefined,
+      status: filters.status ?? undefined,
     }),
-    [searchQuery, dataUseFilter, consumerFilter, categoryFilter, statusFilter],
+    [filters],
   );
 
   const { data, error, isLoading, isFetching } =
@@ -37,14 +43,6 @@ const usePurposesList = () => {
   const total = data?.total ?? 0;
   const filterOptions = data?.filter_options ?? EMPTY_FILTER_OPTIONS;
 
-  const clearFilters = useCallback(() => {
-    setSearchQuery("");
-    setDataUseFilter(null);
-    setConsumerFilter(null);
-    setCategoryFilter(null);
-    setStatusFilter(null);
-  }, []);
-
   return {
     items,
     total,
@@ -52,17 +50,24 @@ const usePurposesList = () => {
     isLoading,
     isFetching,
     error,
-    searchQuery,
-    setSearchQuery,
-    dataUseFilter,
-    setDataUseFilter,
-    consumerFilter,
-    setConsumerFilter,
-    categoryFilter,
-    setCategoryFilter,
-    statusFilter,
-    setStatusFilter,
-    clearFilters,
+    searchQuery: filters.search ?? "",
+    setSearchQuery: (v: string) => setFilters({ search: v || null }),
+    dataUseFilter: filters.data_use,
+    setDataUseFilter: (v: string | null) => setFilters({ data_use: v }),
+    consumerFilter: filters.consumer,
+    setConsumerFilter: (v: string | null) => setFilters({ consumer: v }),
+    categoryFilter: filters.category,
+    setCategoryFilter: (v: string | null) => setFilters({ category: v }),
+    statusFilter: filters.status,
+    setStatusFilter: (v: string | null) => setFilters({ status: v }),
+    clearFilters: () =>
+      setFilters({
+        search: null,
+        data_use: null,
+        consumer: null,
+        category: null,
+        status: null,
+      }),
     filterParams,
   };
 };

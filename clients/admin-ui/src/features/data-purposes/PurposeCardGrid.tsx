@@ -12,54 +12,32 @@ import {
   Title,
 } from "fidesui";
 
-import type {
-  DataPurpose,
-  DataPurposeFilterOptions,
-  PurposeSummary,
-} from "./data-purpose.slice";
+import { useGetPurposeSummariesQuery } from "./data-purpose.slice";
 import PurposeCard from "./PurposeCard";
 import { formatDataUse } from "./purposeUtils";
 import usePurposeCardFilters from "./usePurposeCardFilters";
+import usePurposesList from "./usePurposesList";
 
 interface PurposeCardGridProps {
-  purposes: DataPurpose[];
-  summaries: PurposeSummary[];
-  filterOptions: DataPurposeFilterOptions;
-  dataUseFilter: string | null;
-  onDataUseFilterChange: (value: string | null) => void;
-  consumerFilter: string | null;
-  onConsumerFilterChange: (value: string | null) => void;
-  categoryFilter: string | null;
-  onCategoryFilterChange: (value: string | null) => void;
-  statusFilter: string | null;
-  onStatusFilterChange: (value: string | null) => void;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
   onCreatePurpose: () => void;
 }
 
-const STATUS_OPTIONS = [
-  { value: "drift", label: "Has risks" },
-  { value: "compliant", label: "Compliant" },
-  { value: "unknown", label: "Not scanned" },
-];
-
-const PurposeCardGrid = ({
-  purposes,
-  summaries,
-  filterOptions,
-  dataUseFilter,
-  onDataUseFilterChange,
-  consumerFilter,
-  onConsumerFilterChange,
-  categoryFilter,
-  onCategoryFilterChange,
-  statusFilter,
-  onStatusFilterChange,
-  searchQuery,
-  onSearchChange,
-  onCreatePurpose,
-}: PurposeCardGridProps) => {
+const PurposeCardGrid = ({ onCreatePurpose }: PurposeCardGridProps) => {
+  const {
+    items: purposes,
+    filterOptions,
+    searchQuery,
+    setSearchQuery,
+    dataUseFilter,
+    setDataUseFilter,
+    consumerFilter,
+    setConsumerFilter,
+    categoryFilter,
+    setCategoryFilter,
+    statusFilter,
+    setStatusFilter,
+  } = usePurposesList();
+  const { data: summaries = [] } = useGetPurposeSummariesQuery();
   const { groups, summariesByKey } = usePurposeCardFilters(purposes, summaries);
 
   const isEmpty = groups.length === 0;
@@ -71,7 +49,7 @@ const PurposeCardGrid = ({
           placeholder="Search purposes..."
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onSearchChange(e.target.value)
+            setSearchQuery(e.target.value)
           }
           debounce
           allowClear
@@ -83,9 +61,9 @@ const PurposeCardGrid = ({
             placeholder="Status"
             allowClear
             className="w-40"
-            options={STATUS_OPTIONS}
+            options={filterOptions.statuses}
             value={statusFilter}
-            onChange={(v) => onStatusFilterChange(v ?? null)}
+            onChange={(v) => setStatusFilter(v ?? null)}
           />
           <Select
             aria-label="Filter by consumer"
@@ -94,7 +72,7 @@ const PurposeCardGrid = ({
             className="w-[200px]"
             options={filterOptions.consumers}
             value={consumerFilter}
-            onChange={(v) => onConsumerFilterChange(v ?? null)}
+            onChange={(v) => setConsumerFilter(v ?? null)}
           />
           <Select
             aria-label="Filter by data category"
@@ -103,7 +81,7 @@ const PurposeCardGrid = ({
             className="w-[200px]"
             options={filterOptions.categories}
             value={categoryFilter}
-            onChange={(v) => onCategoryFilterChange(v ?? null)}
+            onChange={(v) => setCategoryFilter(v ?? null)}
           />
           <Select
             aria-label="Filter by data use"
@@ -112,7 +90,7 @@ const PurposeCardGrid = ({
             className="w-[200px]"
             options={filterOptions.data_uses}
             value={dataUseFilter}
-            onChange={(v) => onDataUseFilterChange(v ?? null)}
+            onChange={(v) => setDataUseFilter(v ?? null)}
           />
         </Flex>
       </Flex>

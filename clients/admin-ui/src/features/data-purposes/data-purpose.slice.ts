@@ -20,6 +20,7 @@ export interface DataPurposeFilterOptions {
   consumers: DataPurposeFilterOption[];
   data_uses: DataPurposeFilterOption[];
   categories: DataPurposeFilterOption[];
+  statuses: DataPurposeFilterOption[];
 }
 
 export interface DataPurposeListResponse {

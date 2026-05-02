@@ -190,6 +190,10 @@ export const dataPurposesHandlers = () => {
         ...allFilters,
         category: null,
       });
+      const statusPool = applyFilters(purposesStore, {
+        ...allFilters,
+        status: null,
+      });
 
       const consumerMap = new Map<string, string>();
       consumerPool.forEach((purpose) => {
@@ -208,6 +212,14 @@ export const dataPurposesHandlers = () => {
       categoryPool.forEach((purpose) => {
         (purpose.data_categories ?? []).forEach((c) => categories.add(c));
       });
+      const statuses = new Set<string>();
+      statusPool.forEach((purpose) => statuses.add(purposeStatus(purpose)));
+      const STATUS_LABELS: Record<string, string> = {
+        drift: "Has risks",
+        compliant: "Compliant",
+        unknown: "Not scanned",
+      };
+      const STATUS_ORDER = ["drift", "compliant", "unknown"];
 
       return res(
         ctx.status(200),
@@ -225,6 +237,9 @@ export const dataPurposesHandlers = () => {
             categories: Array.from(categories)
               .sort()
               .map((value) => ({ value, label: value })),
+            statuses: STATUS_ORDER.filter((value) => statuses.has(value)).map(
+              (value) => ({ value, label: STATUS_LABELS[value] }),
+            ),
           },
         }),
       );

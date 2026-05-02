@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import { useGetPurposeSummariesQuery } from "~/features/data-purposes/data-purpose.slice";
 import NewPurposeModal from "~/features/data-purposes/NewPurposeModal";
 import PurposeCardGrid from "~/features/data-purposes/PurposeCardGrid";
 import useDownloadRoPA from "~/features/data-purposes/useDownloadRoPA";
@@ -12,25 +11,8 @@ import usePurposesList from "~/features/data-purposes/usePurposesList";
 
 const DataPurposesPage: NextPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const {
-    items: purposes,
-    filterOptions,
-    isLoading,
-    error,
-    searchQuery,
-    setSearchQuery,
-    dataUseFilter,
-    setDataUseFilter,
-    consumerFilter,
-    setConsumerFilter,
-    categoryFilter,
-    setCategoryFilter,
-    statusFilter,
-    setStatusFilter,
-    filterParams,
-  } = usePurposesList();
+  const { items: purposes, isLoading, error, filterParams } = usePurposesList();
   const isError = Boolean(error);
-  const { data: summaries = [] } = useGetPurposeSummariesQuery();
   const { downloadRoPA, isDownloadingRoPA } = useDownloadRoPA();
 
   return (
@@ -70,22 +52,7 @@ const DataPurposesPage: NextPage = () => {
         />
       )}
       {!isLoading && !isError && (
-        <PurposeCardGrid
-          purposes={purposes}
-          summaries={summaries}
-          filterOptions={filterOptions}
-          dataUseFilter={dataUseFilter}
-          onDataUseFilterChange={setDataUseFilter}
-          consumerFilter={consumerFilter}
-          onConsumerFilterChange={setConsumerFilter}
-          categoryFilter={categoryFilter}
-          onCategoryFilterChange={setCategoryFilter}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onCreatePurpose={() => setModalOpen(true)}
-        />
+        <PurposeCardGrid onCreatePurpose={() => setModalOpen(true)} />
       )}
       <NewPurposeModal
         open={modalOpen}
