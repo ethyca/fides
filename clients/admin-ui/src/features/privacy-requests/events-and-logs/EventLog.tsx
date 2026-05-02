@@ -32,6 +32,7 @@ const AUDIT_STATUSES_WITH_DETAILS: ExecutionLogStatus[] = [
   ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED,
   ExecutionLogStatus.PRE_APPROVAL_ELIGIBLE,
   ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE,
+  ExecutionLogStatus.ACCESS_PACKAGE_APPROVED,
 ];
 
 const isAuditStatusWithDetails = (status: ExecutionLogStatus): boolean =>

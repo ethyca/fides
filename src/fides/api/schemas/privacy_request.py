@@ -327,6 +327,7 @@ class PrivacyRequestStatus(StrEnum):
         "awaiting_pre_approval"  # Awaiting external pre-approval webhook responses
     )
     pre_approval_not_eligible = "pre_approval_not_eligible"  # Pre-approval webhook(s) responded not eligible; manual review required
+    awaiting_access_review = "awaiting_access_review"  # Paused for admin review of access package before delivery
 
 
 ACTIVE_REQUEST_STATUSES = frozenset(
@@ -338,6 +339,7 @@ ACTIVE_REQUEST_STATUSES = frozenset(
         PrivacyRequestStatus.requires_input,
         PrivacyRequestStatus.requires_manual_finalization,
         PrivacyRequestStatus.pending_external,
+        PrivacyRequestStatus.awaiting_access_review,
     }
 )
 

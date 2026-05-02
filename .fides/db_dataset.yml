@@ -2169,8 +2169,14 @@ dataset:
   - name: privacyrequest
     data_categories: []
     fields:
+    - name: access_package_redactions
+      data_categories: [system.operations]
     - name: access_result_urls
       data_categories: [user]
+    - name: access_review_approved_at
+      data_categories: [system.operations]
+    - name: access_review_approved_by
+      data_categories: [user.name]
     - name: cancel_reason
       data_categories: [system.operations]
     - name: canceled_at

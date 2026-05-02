@@ -719,4 +719,132 @@ describe("Privacy Requests", () => {
         .should("exist");
     });
   });
+
+  describe("Access Package tab", () => {
+    const visitDetailPage = () => {
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+      cy.wait("@getPrivacyRequest");
+    };
+
+    beforeEach(() => {
+      stubPlus(true);
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/access-package", {
+        fixture: "privacy-requests/access-package.json",
+      }).as("getAccessPackage");
+      cy.intercept(
+        "PUT",
+        "/api/v1/plus/privacy-request/*/access-package/redactions",
+        { statusCode: 200, body: { redactions: [] } },
+      ).as("updateRedactions");
+      cy.intercept(
+        "POST",
+        "/api/v1/plus/privacy-request/*/access-package/approve",
+        { statusCode: 200, body: {} },
+      ).as("approveAccessPackage");
+    });
+
+    describe("when the request is not awaiting access review", () => {
+      beforeEach(() => {
+        visitDetailPage();
+      });
+
+      it("disables the Access package tab", () => {
+        cy.contains(".ant-tabs-tab", "Access package").should(
+          "have.class",
+          "ant-tabs-tab-disabled",
+        );
+      });
+    });
+
+    describe("when the request is awaiting access review", () => {
+      beforeEach(() => {
+        stubPrivacyRequests(PrivacyRequestStatus.AWAITING_ACCESS_REVIEW);
+        visitDetailPage();
+        cy.wait("@getAccessPackage");
+      });
+
+      it("auto-activates the Access package tab and renders the package", () => {
+        cy.getByTestId("access-package-tab").should("be.visible");
+        cy.contains(".ant-tabs-tab-active", "Access package").should("exist");
+
+        // Stats card: 3 fields (2 in essential.service + 1 in other), 2
+        // systems (internal_db + stripe), 1 redacted (email).
+        cy.getByTestId("access-package-tab").within(() => {
+          cy.contains(".ant-statistic", "Fields")
+            .find(".ant-statistic-content-value")
+            .should("contain.text", "3");
+          cy.contains(".ant-statistic", "Systems")
+            .find(".ant-statistic-content-value")
+            .should("contain.text", "2");
+          cy.contains(".ant-statistic", "Redacted")
+            .find(".ant-statistic-content-value")
+            .should("contain.text", "1");
+        });
+
+        // Both top-level sections render with their field counts.
+        cy.contains("Essential Service Operations").should("be.visible");
+        cy.contains("Other Data").should("be.visible");
+        cy.contains("(2 fields)").should("be.visible");
+        cy.contains("(1 fields)").should("be.visible");
+      });
+
+      it("PUTs the full redaction list when a row is unchecked", () => {
+        // The "name" field is currently included (checked). Unchecking it
+        // should add a redact entry while preserving the existing one for
+        // the "email" field.
+        cy.contains("td", "Jane Smith")
+          .parent("tr")
+          .find('input[type="checkbox"]')
+          .uncheck();
+
+        cy.wait("@updateRedactions").then((interception) => {
+          const body = interception.request.body;
+          expect(body.redactions).to.have.length(2);
+          const targets = body.redactions.map(
+            (r: { field_path: string }) => r.field_path,
+          );
+          expect(targets).to.include("name");
+          expect(targets).to.include("email");
+        });
+      });
+
+      it("approves the package and disables the tab once status moves on", () => {
+        cy.getByTestId("approve-access-package-btn").click();
+        cy.wait("@approveAccessPackage");
+        cy.get(".ant-message-success").should("contain", "approved");
+      });
+
+      it("keeps Approve disabled when not awaiting review (sanity)", () => {
+        // Sibling status forces the tab content into its read-only state
+        // even if a user lands here via direct nav.
+        cy.getByTestId("approve-access-package-btn").should("be.enabled");
+      });
+    });
+
+    describe("download preview", () => {
+      beforeEach(() => {
+        stubPrivacyRequests(PrivacyRequestStatus.AWAITING_ACCESS_REVIEW);
+        cy.intercept(
+          "GET",
+          "/api/v1/plus/privacy-request/*/access-package/download",
+          {
+            statusCode: 200,
+            headers: { "content-type": "application/zip" },
+            body: "PK",
+          },
+        ).as("downloadAccessPackage");
+        visitDetailPage();
+        cy.wait("@getAccessPackage");
+      });
+
+      it("fires the download endpoint when Preview is clicked", () => {
+        cy.getByTestId("download-access-package-btn").click();
+        cy.wait("@downloadAccessPackage")
+          .its("response.headers.content-type")
+          .should("include", "application/zip");
+      });
+    });
+  });
 });

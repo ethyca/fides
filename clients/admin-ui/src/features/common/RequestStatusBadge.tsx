@@ -2,12 +2,13 @@ import { CUSTOM_TAG_COLOR, Tag, TagProps } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
-export const statusPropMap: {
-  [key in PrivacyRequestStatus]: Omit<TagProps, "color"> & {
+export const statusPropMap: Record<
+  PrivacyRequestStatus,
+  Omit<TagProps, "color"> & {
     color: CUSTOM_TAG_COLOR;
     label?: string;
-  };
-} = {
+  }
+> = {
   approved: {
     color: CUSTOM_TAG_COLOR.SUCCESS,
     label: "Approved",
@@ -71,6 +72,10 @@ export const statusPropMap: {
   pre_approval_not_eligible: {
     color: CUSTOM_TAG_COLOR.WARNING,
     label: "Manual Review Required",
+  },
+  awaiting_access_review: {
+    color: CUSTOM_TAG_COLOR.CAUTION,
+    label: "Awaiting Access Review",
   },
 };
 

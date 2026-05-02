@@ -307,9 +307,10 @@ export const CustomReportTemplates = ({
                           <Radio
                             value={customReport.id}
                             name="custom-report-id"
-                            data-testid="custom-report-item"
                           >
-                            {customReport.name}
+                            <span data-testid="custom-report-item">
+                              {customReport.name}
+                            </span>
                           </Radio>
                           <Tooltip title="Out-of-the-box reporting template. Standard templates cannot be deleted.">
                             <Tag
