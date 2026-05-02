@@ -1,4 +1,3 @@
-import logging
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
@@ -220,18 +219,16 @@ class TestUpsertSystemFetchOptimization:
         assert len(system_histories) == 1
 
     async def test_upsert_system_emits_one_fetch_per_updated_system(
-        self, async_session, loguru_caplog
+        self, async_session
     ):
         """Regression guard for ENG-3593: each updated system on the UPDATE
-        path should emit exactly one 'Fetching resource' debug log for its
-        fides_key. Before the fix this was four. If a future change re-
-        introduces a redundant get_resource call, this test fails loudly.
+        path should issue exactly one `crud.get_resource` call (the existence
+        check in `upsert_system`). Before the fix this was four. If a future
+        change re-introduces a redundant call, this test fails loudly.
 
         Uses two systems to also catch any accidental constant-cost bug
         (e.g., loading systems once but counting wrong).
         """
-        loguru_caplog.set_level(logging.DEBUG)
-
         # Stable fides_keys across both passes so the second pass hits the
         # rows the first pass created. The schema instances themselves must
         # be rebuilt because `update_system` mutates inputs (it does a
@@ -257,25 +254,23 @@ class TestUpsertSystemFetchOptimization:
             current_user_id=CONFIG.security.oauth_root_client_id,
         )
 
-        # Drop log lines from the prime so the count below reflects only the
-        # measure pass.
-        loguru_caplog.clear()
-
-        # Measure: every row exists, every row hits the UPDATE path.
-        await upsert_system(
-            resources=build_payload(),
-            db=async_session,
-            current_user_id=CONFIG.security.oauth_root_client_id,
-        )
-
-        for fides_key in fides_keys:
-            matching = [
-                line
-                for line in loguru_caplog.text.splitlines()
-                if "Fetching resource" in line and fides_key in line
-            ]
-            assert len(matching) == 1, (
-                f"Expected exactly 1 'Fetching resource' log for "
-                f"{fides_key} on the UPDATE path, found "
-                f"{len(matching)}:\n" + "\n".join(matching)
+        # Measure: every row exists, every row hits the UPDATE path. Patch
+        # `get_resource` at the call site (system.py) and wrap the original
+        # so behavior is unchanged but invocations are counted.
+        with patch(
+            "fides.api.db.system.get_resource", wraps=get_resource
+        ) as mock_get_resource:
+            await upsert_system(
+                resources=build_payload(),
+                db=async_session,
+                current_user_id=CONFIG.security.oauth_root_client_id,
             )
+
+        # One call per system: `upsert_system`'s existence check. The
+        # `update_system` call no longer needs to fetch because
+        # `existing_system` is threaded through.
+        assert mock_get_resource.call_count == len(fides_keys), (
+            f"Expected {len(fides_keys)} get_resource calls on the UPDATE "
+            f"path (one existence check per system), got "
+            f"{mock_get_resource.call_count}."
+        )

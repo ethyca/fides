@@ -13,6 +13,7 @@ from fideslang.validation import FidesKey
 from loguru import logger as log
 from sqlalchemy import select
 from sqlalchemy import update as sql_update
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -26,6 +27,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     System,
 )
 from fides.api.models.system_history import SystemHistory
+from fides.api.util import errors
 from fides.api.util.errors import NotFoundError
 
 
@@ -242,11 +244,16 @@ async def update_system(
             sql_model="System",
             fides_key=resource.fides_key,
         )
-        await db.execute(
-            sql_update(System.__table__)
-            .where(System.fides_key == resource.fides_key)
-            .values(resource_dict)
-        )
+        try:
+            await db.execute(
+                sql_update(System.__table__)
+                .where(System.fides_key == resource.fides_key)
+                .values(resource_dict)
+            )
+        except SQLAlchemyError as exc:
+            # Mirrors the guard the prior `crud.update_resource` call had.
+            log.exception(f"Failed to update System with error: '{exc}'")
+            raise errors.QueryError()
 
     async with db.begin():
         await db.refresh(system)
