@@ -1,3 +1,5 @@
+import { CONNECTOR_LOGOS_PATH } from "~/features/datastore-connections/constants";
+
 // Known AWS service types. Unknown services fall back to the raw string label
 // and the Cloud icon. Add new entries here as new AWS integrations are added.
 const SERVICE_INFO: Record<string, { icon: string; label: string }> = {
@@ -11,7 +13,7 @@ export const getServiceIconUrl = (service?: string): string | undefined => {
     return undefined;
   }
   const info = SERVICE_INFO[service.toLowerCase()];
-  return info ? `/images/connector-logos/${info.icon}` : undefined;
+  return info ? `${CONNECTOR_LOGOS_PATH}${info.icon}` : undefined;
 };
 
 export const getServiceLabel = (service: string): string => {
