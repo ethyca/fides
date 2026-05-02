@@ -852,7 +852,7 @@ class TestCreatePrivacyRequestFileResolution:
             svc.create_privacy_request(req, authenticated=True)
         assert captured["names"] == {"doc"}
         assert captured["property_id"] == "test_prop"
-        assert captured["policy_key"] == "default_access_policy"
+        assert captured["policy_key"] == "example_access_request_policy"
 
     def test_rejects_when_property_id_missing(self, file_svc_req):
         from fides.api.common_exceptions import PrivacyRequestError

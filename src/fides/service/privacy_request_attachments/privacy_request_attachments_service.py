@@ -169,9 +169,11 @@ class AttachmentUserProvidedService:
            in the intersection; otherwise pick the first sorted entry
            for determinism. Resolves ZIP-family collisions
            (``docx``/``xlsx``/``zip`` all match ``PK\\x03\\x04``).
-        2. If no magic-byte signature matches at all (e.g. CSV, TXT),
-           fall back to the client-claimed extension iff it is in the
-           allow-list.
+        2. If no magic-byte signature matches and the client-claimed
+           extension is one of the magic-less types (CSV, TXT) AND in
+           the allow-list, accept it. Types that DO have a signature
+           stay magic-byte-authoritative so a malicious file cannot
+           bypass validation by claiming a misleading extension.
         3. Otherwise raise :class:`DisallowedFileTypeError`.
         """
         candidates = FilesMagicBytes.candidates(file_data)
@@ -190,6 +192,7 @@ class AttachmentUserProvidedService:
         if (
             not candidates
             and client_ext
+            and client_ext in FilesMagicBytes.extensions_without_magic()
             and client_ext in constraints.allowed_file_types
         ):
             return client_ext
@@ -230,9 +233,7 @@ class AttachmentUserProvidedService:
         if len(file_data) > constraints.max_size_bytes:
             raise FileTooLargeError(constraints.max_size_bytes)
 
-        extension = self._resolve_extension(
-            file_data, constraints, client_filename
-        )
+        extension = self._resolve_extension(file_data, constraints, client_filename)
 
         content_type = AllowedFileType[extension].value
         provider, bucket, storage_config = _get_provider_and_bucket(session)

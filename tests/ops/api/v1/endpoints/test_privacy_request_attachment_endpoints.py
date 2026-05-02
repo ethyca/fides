@@ -343,7 +343,11 @@ class TestPostPrivacyRequestAttachment:
             resp = api_client.post(
                 URL,
                 files={"file": ("original.pdf", io.BytesIO(PDF_BYTES))},
-                data={"field_name": "headshot"},
+                data={
+                    "property_id": "p",
+                    "policy_key": "k",
+                    "field_name": "headshot",
+                },
             )
         assert resp.status_code == 400
         assert "not allowed" in resp.json()["detail"]
