@@ -37,6 +37,7 @@ const ConfigurationCard = ({
         )
       }
       style={{ maxWidth }}
+      styles={{ body: { paddingTop: 0 } }}
       className="mt-6"
     >
       {children}

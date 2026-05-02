@@ -9,11 +9,11 @@ export type ChatConfigCreate = {
   /**
    * Provider Type
    */
-  provider_type?: "slack";
+  provider_type?: "slack" | "terminal";
   /**
    * Workspace Url
    */
-  workspace_url: string;
+  workspace_url?: string | null;
   /**
    * Client Id
    */

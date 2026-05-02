@@ -413,7 +413,7 @@ class AnswerVersion(Base):
         nullable=False,
         index=True,
     )
-    created_by = Column(String, nullable=False, index=True)
+    created_by = Column(String, nullable=True, index=True)
 
     # Evidence and source references (JSONB for flexibility)
     evidence = Column(JSONB, server_default="{}", nullable=False)
