@@ -33,11 +33,6 @@ const STATUS_CONFIG = {
     label: "Questionnaire stopped",
     iconClass: "stoppedIcon",
   },
-  [QuestionnaireSessionStatus.ABANDONED]: {
-    icon: <Icons.WarningFilled size={16} />,
-    label: "Questionnaire abandoned",
-    iconClass: "stoppedIcon",
-  },
 };
 
 export const QuestionnaireStatusBar = ({

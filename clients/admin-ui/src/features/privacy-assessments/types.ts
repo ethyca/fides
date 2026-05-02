@@ -131,7 +131,6 @@ export enum QuestionnaireSessionStatus {
   IN_PROGRESS = "in_progress",
   COMPLETED = "completed",
   STOPPED = "stopped",
-  ABANDONED = "abandoned",
 }
 
 export interface QuestionnaireStatus {
