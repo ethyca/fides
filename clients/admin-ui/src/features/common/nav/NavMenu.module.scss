@@ -14,7 +14,7 @@
 
   &:hover {
     background-color: var(--fidesui-neutral-700);
-    color: var(--fidesui-corinth);
+    color: var(--fidesui-brand-corinth);
   }
 }
 
@@ -34,7 +34,7 @@
 
   &:hover {
     background-color: var(--fidesui-neutral-700) !important;
-    color: var(--fidesui-corinth) !important;
+    color: var(--fidesui-brand-corinth) !important;
   }
 }
 
@@ -140,10 +140,10 @@
 }
 
 .menu {
-  --ant-menu-item-margin-block: 0 !important;
-  --ant-menu-item-margin-inline: 0 !important;
-  --ant-menu-item-width: 100% !important;
-  --ant-margin: 8px;
+  --fidesui-menu-item-margin-block: 0 !important;
+  --fidesui-menu-item-margin-inline: 0 !important;
+  --fidesui-menu-item-width: 100% !important;
+  --fidesui-margin: 8px;
 
   :global(.ant-menu-item),
   :global(.ant-menu-submenu > .ant-menu-submenu-title) {
@@ -153,7 +153,7 @@
 
 .menu:global(.ant-menu-inline-collapsed) {
   padding-inline: 8px !important;
-  --ant-menu-item-margin-block: 4px !important;
+  --fidesui-menu-item-margin-block: 4px !important;
 
   :global(.ant-menu-item),
   :global(.ant-menu-submenu > .ant-menu-submenu-title) {
@@ -174,14 +174,14 @@
   }
 
   :global(.ant-menu-submenu-selected > .ant-menu-submenu-title) {
-    background-color: var(--fidesui-sandstone);
+    background-color: var(--fidesui-brand-sandstone);
     border-radius: 4px;
   }
 
   :global(
     .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon
   ) {
-    color: var(--fidesui-minos);
+    color: var(--fidesui-brand-minos);
   }
 
   :global(.ant-menu-submenu > .ant-menu-submenu-title:hover) {
@@ -192,7 +192,7 @@
   :global(
     .ant-menu-submenu > .ant-menu-submenu-title:hover .ant-menu-item-icon
   ) {
-    color: var(--fidesui-corinth);
+    color: var(--fidesui-brand-corinth);
   }
 }
 
@@ -206,18 +206,18 @@
 }
 
 .flyout {
-  background-color: var(--fidesui-minos) !important;
+  background-color: var(--fidesui-brand-minos) !important;
 
   :global(.ant-menu) {
-    background-color: var(--fidesui-minos) !important;
-    background: var(--fidesui-minos) !important;
-    --ant-menu-item-margin-inline: 0 !important;
-    --ant-menu-item-margin-block: 8px !important;
+    background-color: var(--fidesui-brand-minos) !important;
+    background: var(--fidesui-brand-minos) !important;
+    --fidesui-menu-item-margin-inline: 0 !important;
+    --fidesui-menu-item-margin-block: 8px !important;
     padding-block: 8px !important;
   }
 
   :global(.ant-menu-title-content) {
-    color: var(--fidesui-corinth);
+    color: var(--fidesui-brand-corinth);
     padding: 0 !important;
     margin: 0 !important;
     display: block;
@@ -230,7 +230,7 @@
     margin: 0 !important;
 
     a {
-      color: var(--fidesui-corinth) !important;
+      color: var(--fidesui-brand-corinth) !important;
       display: block;
       width: 100%;
       margin: 0 !important;
@@ -238,10 +238,10 @@
     }
 
     &:global(.ant-menu-item-selected) {
-      background-color: var(--fidesui-sandstone) !important;
+      background-color: var(--fidesui-brand-sandstone) !important;
 
       a {
-        color: var(--fidesui-minos) !important;
+        color: var(--fidesui-brand-minos) !important;
       }
     }
 
@@ -249,7 +249,7 @@
       background-color: var(--fidesui-neutral-700) !important;
 
       a {
-        color: var(--fidesui-corinth) !important;
+        color: var(--fidesui-brand-corinth) !important;
       }
     }
   }

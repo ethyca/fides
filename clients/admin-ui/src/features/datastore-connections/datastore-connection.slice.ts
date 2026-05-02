@@ -5,6 +5,7 @@ import {
   BulkPutDataset,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
+  Dataset,
   Page_DatasetConfigSchema_,
   SystemType,
 } from "~/types/api";
@@ -395,6 +396,30 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Datastore Connection"],
     }),
+    patchConnectionDatasets: build.mutation<
+      BulkPutDataset,
+      { connectionKey: string; datasets: Dataset[] }
+    >({
+      query: ({ connectionKey, datasets }) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset`,
+        method: "PATCH",
+        body: datasets,
+      }),
+      invalidatesTags: () => ["Datastore Connection", "Datasets"],
+    }),
+    getDatasetProtectedFields: build.query<
+      {
+        immutable_fields: string[];
+        protected_collection_fields: { collection: string; field: string }[];
+      },
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/protected-fields`,
+        method: "GET",
+      }),
+      providesTags: () => ["Datastore Connection"],
+    }),
     getDatasetReachability: build.query<
       { reachable: boolean; details: string },
       { connectionKey: string; datasetKey: string; policyKey?: string }
@@ -435,6 +460,8 @@ export const {
   usePatchDatastoreConnectionSecretsMutation,
   useTestDatastoreConnectionDatasetsMutation,
   useGetDatasetInputsQuery,
+  usePatchConnectionDatasetsMutation,
+  useGetDatasetProtectedFieldsQuery,
   useGetDatasetReachabilityQuery,
 } = datastoreConnectionApi;
 

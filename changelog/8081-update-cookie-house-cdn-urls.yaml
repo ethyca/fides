@@ -1,0 +1,4 @@
+type: Fixed
+description: Updated Cookie House sample privacy center config to use the harpocrates.ethyca.com CloudFront URL instead of the direct S3 URL
+pr: 8081
+labels: []

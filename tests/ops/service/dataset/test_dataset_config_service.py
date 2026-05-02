@@ -239,7 +239,6 @@ class TestRunTestAccessRequest:
             "postgres_example_test_dataset:customer": [
                 {
                     "address_id": 4,
-                    "created": datetime.datetime(2020, 4, 1, 11, 47, 42),
                     "email": "jane@example.com",
                     "id": 3,
                     "name": "Jane Customer",
@@ -333,8 +332,8 @@ class TestRunTestAccessRequest:
                 }
             ],
             "multiple_identities_with_external_dependency:orders": [
-                {"customer_id": 1, "id": "ord_aaa-aaa", "shipping_address_id": 2},
-                {"customer_id": 1, "id": "ord_ccc-ccc", "shipping_address_id": 1},
-                {"customer_id": 1, "id": "ord_ddd-ddd", "shipping_address_id": 1},
+                {"customer_id": 1, "id": "ord_aaa-aaa"},
+                {"customer_id": 1, "id": "ord_ccc-ccc"},
+                {"customer_id": 1, "id": "ord_ddd-ddd"},
             ],
         }
