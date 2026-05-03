@@ -2,7 +2,7 @@ import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { Avatar, Flex, Icons, Tag, Text } from "fidesui";
 
 import { ManualTaskNodeData } from "../types";
-import styles from "./IntegrationNode.module.scss";
+import styles from "./ManualTaskNode.module.scss";
 
 export type ManualTaskNodeType = Node<ManualTaskNodeData, "manualTask">;
 
