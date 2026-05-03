@@ -164,6 +164,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    icon: <Icons.View />,
+    title: "DSR Traversal",
+    routes: [
+      {
+        title: "Traversal preview",
+        path: routes.DSR_TRAVERSAL_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
+      },
+    ],
+  },
+  {
     title: "Privacy assessments",
     icon: <Icons.Document />,
     routes: [
