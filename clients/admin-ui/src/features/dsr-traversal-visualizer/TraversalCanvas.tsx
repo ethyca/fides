@@ -4,7 +4,6 @@ import {
   Background,
   Controls,
   MarkerType,
-  MiniMap,
   ReactFlow,
   useReactFlow,
 } from "@xyflow/react";
@@ -12,15 +11,16 @@ import { useEffect } from "react";
 
 import DependencyEdge from "./edges/DependencyEdge";
 import GatesEdge from "./edges/GatesEdge";
+import { useLaneCollapseState } from "./hooks/useLaneCollapseState";
 import { useNodeSelection } from "./hooks/useNodeSelection";
 import { useTraversalGraph } from "./hooks/useTraversalGraph";
-import { LayoutDirection } from "./layout-utils";
 import IdentityRootNode from "./nodes/IdentityRootNode";
 import IntegrationNode from "./nodes/IntegrationNode";
 import ManualTaskNode from "./nodes/ManualTaskNode";
 import IntegrationDetailPanel from "./panels/IntegrationDetailPanel";
 import LegendPanel from "./panels/LegendPanel";
 import ManualTaskDetailPanel from "./panels/ManualTaskDetailPanel";
+import LaneChrome from "./LaneChrome";
 import { TraversalPreviewResponse } from "./types";
 
 const NODE_TYPES = {
@@ -35,30 +35,16 @@ const EDGE_TYPES = {
 };
 
 const DEFAULT_EDGE_OPTIONS = {
-  markerEnd: {
-    type: MarkerType.ArrowClosed,
-    width: 14,
-    height: 14,
-  },
+  markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14 },
 };
 
-// Refit the viewport whenever the visible node set or layout direction
-// changes (e.g. toggling "show unreachable", switching access/erasure, or
-// flipping LR/TB). The short timeout gives React Flow's ResizeObserver a
-// chance to measure any newly-mounted cards before fitView reads their
-// bounds -- without it, the first fit underestimates the layout extent and
-// crops content on the right.
 const FIT_VIEW_DELAY_MS = 120;
 
-const FitViewOnLayoutChange = ({
-  trigger,
-}: {
-  trigger: string | number;
-}) => {
+const FitViewOnLayoutChange = ({ trigger }: { trigger: string | number }) => {
   const { fitView } = useReactFlow();
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      fitView({ padding: 0.2, duration: 250 });
+      fitView({ padding: 0.15, duration: 250 });
     }, FIT_VIEW_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [trigger, fitView]);
@@ -67,16 +53,49 @@ const FitViewOnLayoutChange = ({
 
 interface Props {
   payload: TraversalPreviewResponse | undefined;
-  direction: LayoutDirection;
 }
 
-const TraversalCanvas = ({ payload, direction }: Props) => {
+const TraversalCanvas = ({ payload }: Props) => {
+  const { collapse, toggle, expand } = useLaneCollapseState();
   const { selected, onNodeClick, clear } = useNodeSelection();
-  const { nodes, edges } = useTraversalGraph(
+  const { nodes, edges, lanes } = useTraversalGraph(
     payload,
-    direction,
+    collapse,
     selected?.id ?? null,
   );
+
+  // Auto-expand a collapsed lane when the selected chain reaches a node in it.
+  // The chain is exactly the set of edges flagged `animated` by useTraversalGraph.
+  useEffect(() => {
+    if (!selected) return;
+    const chainNodeIds = new Set<string>();
+    chainNodeIds.add(selected.id);
+    edges.forEach((e) => {
+      if (e.animated) {
+        chainNodeIds.add(e.source);
+        chainNodeIds.add(e.target);
+      }
+    });
+    const idToLane = new Map<string, "identity" | "reach" | "gated" | "skipped">();
+    if (payload?.identity_root.id) idToLane.set(payload.identity_root.id, "identity");
+    payload?.integrations.forEach((i) => {
+      idToLane.set(
+        i.id,
+        i.reachability === "unreachable" ? "skipped" : "reach",
+      );
+    });
+    payload?.manual_tasks.forEach((m) => idToLane.set(m.id, "gated"));
+
+    const lanesToExpand = new Set<typeof lanes[number]["id"]>();
+    chainNodeIds.forEach((id) => {
+      const laneId = idToLane.get(id);
+      if (laneId) lanesToExpand.add(laneId);
+    });
+    lanesToExpand.forEach((laneId) => {
+      const lane = lanes.find((l) => l.id === laneId);
+      if (lane?.collapsed) expand(laneId);
+    });
+  }, [selected, edges, lanes, payload, expand]);
 
   const integrationData =
     selected?.type === "integration" ? selected.data : null;
@@ -87,7 +106,7 @@ const TraversalCanvas = ({ payload, direction }: Props) => {
       style={{
         position: "relative",
         width: "100%",
-        height: "calc(100vh - 200px)",
+        height: "calc(100vh - 240px)",
       }}
     >
       <ReactFlow
@@ -98,11 +117,12 @@ const TraversalCanvas = ({ payload, direction }: Props) => {
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         onNodeClick={onNodeClick}
         fitView
+        proOptions={{ hideAttribution: true }}
       >
-        <Background />
-        <Controls />
-        <MiniMap pannable zoomable />
-        <FitViewOnLayoutChange trigger={`${direction}:${nodes.length}`} />
+        <LaneChrome lanes={lanes} onToggleCollapse={toggle} />
+        <Background style={{ opacity: 0 }} />
+        <Controls showInteractive={false} />
+        <FitViewOnLayoutChange trigger={`${nodes.length}:${JSON.stringify(collapse)}`} />
       </ReactFlow>
       <LegendPanel />
       <IntegrationDetailPanel
