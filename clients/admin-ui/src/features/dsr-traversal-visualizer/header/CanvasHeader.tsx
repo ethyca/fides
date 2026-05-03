@@ -55,6 +55,7 @@ const CanvasHeader = ({
       value={actionType}
       onChange={(e) => onActionChange(e.target.value)}
       data-testid="action-type-toggle"
+      style={{ flexShrink: 0, whiteSpace: "nowrap" }}
     >
       <Radio.Button value="access">Access</Radio.Button>
       <Radio.Button value="erasure">Erasure</Radio.Button>
