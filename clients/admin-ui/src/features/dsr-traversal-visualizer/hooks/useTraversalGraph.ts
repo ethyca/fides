@@ -1,26 +1,27 @@
-import { Edge, Node } from "@xyflow/react";
+import { Edge } from "@xyflow/react";
 import { useMemo } from "react";
 
-import { EDGE_TYPES, NODE_HEIGHT, NODE_WIDTH } from "../constants";
-import { LayoutDirection, layoutTraversal } from "../layout-utils";
-import { AppNode, PreviewEdge, TraversalPreviewResponse } from "../types";
+import { EDGE_TYPES } from "../constants";
+import { computeLaneLayout } from "../layout/compute-lane-layout";
+import { computeStages } from "../layout/compute-stages";
+import {
+  AppNode,
+  LaneBounds,
+  LaneCollapseMap,
+  PreviewEdge,
+  TraversalPreviewResponse,
+} from "../types";
 
 export interface TraversalGraph {
   nodes: AppNode[];
   edges: Edge[];
+  lanes: LaneBounds[];
+  canvas: { width: number; height: number };
 }
 
-// Encode source/target so edge IDs stay collision-safe even when a
-// connection_key or manual-task_key contains the separator literal. ``>`` is
-// always encoded by encodeURIComponent (to ``%3E``), so a bare ``>`` only
-// appears between the encoded segments.
 const edgeId = (kind: string, source: string, target: string) =>
   `edge:${kind}:${encodeURIComponent(source)}>${encodeURIComponent(target)}`;
 
-// Walk the dependency graph from ``rootId`` in both directions and collect
-// every edge along the way. Used to highlight the full traversal path that
-// flows through a clicked card -- upstream tells the user how this node gets
-// reached, downstream what its data feeds into.
 const collectPathEdgeIds = (
   payloadEdges: PreviewEdge[],
   rootId: string,
@@ -52,58 +53,77 @@ const collectPathEdgeIds = (
       }
     }
   };
-  walk(
-    rootId,
-    (id) => incomingByTarget.get(id) ?? [],
-    (e) => e.source,
-  );
-  walk(
-    rootId,
-    (id) => outgoingBySource.get(id) ?? [],
-    (e) => e.target,
-  );
+  walk(rootId, (id) => incomingByTarget.get(id) ?? [], (e) => e.source);
+  walk(rootId, (id) => outgoingBySource.get(id) ?? [], (e) => e.target);
   return result;
 };
 
-const GRID_H_SPACING = NODE_WIDTH + 32;
-const GRID_V_SPACING = NODE_HEIGHT + 60;
-const GRID_GAP_BELOW_DAGRE = 80;
-const IDENTITY_GAP_LEFT_OF_DAGRE = 80;
-const MANUAL_TASK_ROW_GAP = 100;
-const MANUAL_TASK_H_SPACING = NODE_WIDTH + 32;
-
 export const useTraversalGraph = (
   payload: TraversalPreviewResponse | undefined,
-  direction: LayoutDirection,
+  collapse: LaneCollapseMap,
   selectedNodeId: string | null = null,
 ): TraversalGraph =>
   useMemo(() => {
     if (!payload) {
-      return { nodes: [], edges: [] };
+      return { nodes: [], edges: [], lanes: [], canvas: { width: 0, height: 0 } };
+    }
+
+    const { positions, lanes, canvas } = computeLaneLayout(payload, collapse);
+
+    // Stage-2+ subtitles: immediate upstream system name from dep edges.
+    const reachIds = payload.integrations
+      .filter((i) => i.reachability !== "unreachable")
+      .map((i) => i.id);
+    const stageMap = computeStages(reachIds, payload.edges);
+    const upstreamByTarget = new Map<string, string>();
+    for (const e of payload.edges) {
+      if (e.kind !== "depends_on" || e.source === "identity-root") continue;
+      if (!upstreamByTarget.has(e.target)) {
+        const src = payload.integrations.find((i) => i.id === e.source);
+        if (src) {
+          upstreamByTarget.set(e.target, src.system?.name ?? src.connection_key);
+        }
+      }
     }
 
     const animatedEdgeIds = selectedNodeId
       ? collectPathEdgeIds(payload.edges, selectedNodeId)
       : null;
-    const nodes: AppNode[] = [
-      {
-        id: payload.identity_root.id,
-        type: "identityRoot",
-        data: payload.identity_root,
-        position: { x: 0, y: 0 },
-      },
-      ...payload.integrations.map<AppNode>((i) => ({
+
+    const integrationNodes = payload.integrations.map<AppNode>((i) => {
+      const stage = stageMap[i.id] ?? 1;
+      const stageVia = stage >= 2 ? upstreamByTarget.get(i.id) ?? null : null;
+      const pos = positions[i.id];
+      return {
         id: i.id,
         type: "integration",
-        data: i,
-        position: { x: 0, y: 0 },
-      })),
-      ...payload.manual_tasks.map<AppNode>((m) => ({
-        id: m.id,
-        type: "manualTask",
-        data: m,
-        position: { x: 0, y: 0 },
-      })),
+        data: { ...i, stage_via: stageVia },
+        position: pos ?? { x: 0, y: 0 },
+        hidden: !pos,
+      };
+    });
+
+    const identityNode: AppNode | null = positions[payload.identity_root.id]
+      ? {
+          id: payload.identity_root.id,
+          type: "identityRoot",
+          data: payload.identity_root,
+          position: positions[payload.identity_root.id]!,
+        }
+      : null;
+
+    const manualTaskNodes = payload.manual_tasks.map<AppNode>((m) => ({
+      id: m.id,
+      type: "manualTask",
+      data: m,
+      position: positions[m.id] ?? { x: 0, y: 0 },
+      hidden: !positions[m.id],
+    }));
+
+    const nodes: AppNode[] = [
+      ...(identityNode ? [identityNode] : []),
+      ...integrationNodes,
+      ...manualTaskNodes,
     ];
 
     const edges: Edge[] = payload.edges.map((e) => {
@@ -113,146 +133,10 @@ export const useTraversalGraph = (
         source: e.source,
         target: e.target,
         type: e.kind === "gates" ? EDGE_TYPES.GATES : EDGE_TYPES.DEPENDENCY,
-        // ``animated`` is React Flow's built-in marching-ants effect.
-        // When a card is selected we light up every edge in its upstream
-        // and downstream traversal so the data flow reads at a glance.
         animated: animatedEdgeIds ? animatedEdgeIds.has(id) : false,
         data: { dep_count: e.dep_count, kind: e.kind },
       };
     });
 
-    // Split nodes into four groups:
-    //   - identity-root: rendered to the left of the integration tree
-    //   - manual tasks: rendered in their own row below the integration tree
-    //   - linked integrations: have at least one dependency edge → dagre
-    //   - isolated integrations: no edges (typically unreachable) → grid
-    const dependencyLinkedIds = new Set<string>();
-    edges.forEach((e) => {
-      if (e.data?.kind === "depends_on") {
-        dependencyLinkedIds.add(e.source);
-        dependencyLinkedIds.add(e.target);
-      }
-    });
-
-    let identityNode: AppNode | undefined;
-    const manualTaskNodes: AppNode[] = [];
-    const linkedNodes: AppNode[] = [];
-    const isolatedNodes: AppNode[] = [];
-    nodes.forEach((n) => {
-      if (n.type === "identityRoot") {
-        identityNode = n;
-        return;
-      }
-      if (n.type === "manualTask") {
-        manualTaskNodes.push(n);
-        return;
-      }
-      if (dependencyLinkedIds.has(n.id)) {
-        linkedNodes.push(n);
-      } else {
-        isolatedNodes.push(n);
-      }
-    });
-
-    // Dagre lays out only the integration dependency tree. Identity, manual
-    // tasks, and gates edges are excluded so they don't pull nodes into the
-    // tree; we re-include them in the final edge list so React Flow still
-    // routes them between our hand-placed nodes.
-    const dagreInputEdges = edges.filter(
-      (e) =>
-        e.data?.kind === "depends_on" &&
-        e.source !== "identity-root" &&
-        e.target !== "identity-root",
-    );
-
-    const dagreOut = layoutTraversal(
-      linkedNodes as Node[],
-      dagreInputEdges,
-      direction,
-    );
-    const dagreNodes = dagreOut.nodes as AppNode[];
-
-    const dagreBounds = dagreNodes.length
-      ? dagreNodes.reduce(
-          (acc, n) => ({
-            minX: Math.min(acc.minX, n.position.x),
-            maxX: Math.max(acc.maxX, n.position.x + NODE_WIDTH),
-            minY: Math.min(acc.minY, n.position.y),
-            maxY: Math.max(acc.maxY, n.position.y + NODE_HEIGHT),
-          }),
-          { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity },
-        )
-      : null;
-
-    // Identity-root: left of the dagre block, vertically aligned with the top.
-    const identityPlaced: AppNode[] = [];
-    if (identityNode) {
-      const x = dagreBounds
-        ? dagreBounds.minX - NODE_WIDTH - IDENTITY_GAP_LEFT_OF_DAGRE
-        : 0;
-      const y = dagreBounds ? dagreBounds.minY : 0;
-      identityPlaced.push({ ...identityNode, position: { x, y } });
-    }
-
-    // Manual tasks: a horizontal row directly below the dagre block, aligned
-    // to its left edge. Always below regardless of LR/TB so the gating
-    // relationship reads consistently as "tasks support these integrations".
-    const manualRowY = dagreBounds
-      ? dagreBounds.maxY + MANUAL_TASK_ROW_GAP
-      : 0;
-    const manualRowX = dagreBounds ? dagreBounds.minX : 0;
-    const manualTasksPlaced: AppNode[] = manualTaskNodes.map((n, idx) => ({
-      ...n,
-      position: {
-        x: manualRowX + idx * MANUAL_TASK_H_SPACING,
-        y: manualRowY,
-      },
-    }));
-
-    // Isolated integration nodes: grid below dagre (or below manual-task row
-    // when present) for TB; beside dagre for LR.
-    let positionedIsolated: AppNode[] = [];
-    if (isolatedNodes.length > 0) {
-      const cols = Math.max(1, Math.ceil(Math.sqrt(isolatedNodes.length)));
-      const gridLaidOut = isolatedNodes.map((n, idx) => ({
-        ...n,
-        position: {
-          x: (idx % cols) * GRID_H_SPACING,
-          y: Math.floor(idx / cols) * GRID_V_SPACING,
-        },
-      }));
-
-      if (!dagreBounds) {
-        positionedIsolated = gridLaidOut;
-      } else {
-        const manualRowBottom = manualTasksPlaced.length
-          ? manualRowY + NODE_HEIGHT
-          : dagreBounds.maxY;
-        const offsetX =
-          direction === "TB"
-            ? dagreBounds.maxX + GRID_GAP_BELOW_DAGRE
-            : dagreBounds.minX;
-        const offsetY =
-          direction === "TB"
-            ? dagreBounds.minY
-            : manualRowBottom + GRID_GAP_BELOW_DAGRE;
-        positionedIsolated = gridLaidOut.map((n) => ({
-          ...n,
-          position: {
-            x: n.position.x + offsetX,
-            y: n.position.y + offsetY,
-          },
-        }));
-      }
-    }
-
-    return {
-      nodes: [
-        ...identityPlaced,
-        ...dagreNodes,
-        ...manualTasksPlaced,
-        ...positionedIsolated,
-      ],
-      edges,
-    };
-  }, [payload, direction, selectedNodeId]);
+    return { nodes, edges, lanes, canvas };
+  }, [payload, collapse, selectedNodeId]);
