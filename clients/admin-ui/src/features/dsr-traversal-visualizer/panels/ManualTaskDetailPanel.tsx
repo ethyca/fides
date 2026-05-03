@@ -1,13 +1,14 @@
 import { Drawer, Flex, Tag, Text } from "fidesui";
 
-import { ManualTaskNodeData } from "../types";
+import { IntegrationNodeData, ManualTaskNodeData } from "../types";
 
 interface Props {
   data: ManualTaskNodeData | null;
+  integrations: IntegrationNodeData[];
   onClose: () => void;
 }
 
-const ManualTaskDetailPanel = ({ data, onClose }: Props) => {
+const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
   if (!data) {
     return null;
   }
@@ -48,7 +49,7 @@ const ManualTaskDetailPanel = ({ data, onClose }: Props) => {
         )}
         {data.fields.length > 0 && (
           <Flex vertical gap={8}>
-            <Text strong>Fields</Text>
+            <Text strong>Required Fields</Text>
             {data.fields.map((f) => (
               <Flex key={f.name} vertical gap={2}>
                 <Flex gap={6} align="baseline">
@@ -67,6 +68,18 @@ const ManualTaskDetailPanel = ({ data, onClose }: Props) => {
                 )}
               </Flex>
             ))}
+          </Flex>
+        )}
+        {data.gates && data.gates.length > 0 && (
+          <Flex vertical>
+            <Text strong>Gates</Text>
+            {data.gates.map((id) => {
+              const integration = integrations.find((i) => i.id === id);
+              const name = integration?.system?.name ?? integration?.connection_key ?? id;
+              return (
+                <div key={id} data-testid="gated-integration">{name}</div>
+              );
+            })}
           </Flex>
         )}
       </Flex>
