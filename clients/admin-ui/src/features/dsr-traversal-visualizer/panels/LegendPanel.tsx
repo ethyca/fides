@@ -1,33 +1,32 @@
-import { Card, Flex, Text } from "fidesui";
-
 import styles from "./LegendPanel.module.scss";
 
 const LegendPanel = () => (
-  <Card size="small" className={styles.panel} data-testid="visualizer-legend">
-    <Flex vertical gap={6}>
-      <Text strong style={{ fontSize: 12 }}>
-        Legend
-      </Text>
-      <div className={styles.row}>
-        <span className={styles.swatch} />
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          Integration / Identity / Manual task
-        </Text>
-      </div>
-      <div className={styles.row}>
-        <span className={styles.lineSwatch} />
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          depends on
-        </Text>
-      </div>
-      <div className={styles.row}>
-        <span className={`${styles.lineSwatch} ${styles.lineSwatchDashed}`} />
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          gates
-        </Text>
-      </div>
-    </Flex>
-  </Card>
+  <div className={styles.root} data-testid="legend-panel">
+    <div className={styles.row}>
+      <svg className={styles.swatch} viewBox="0 0 30 8">
+        <line x1="0" y1="4" x2="30" y2="4" stroke="#1d4ed8" strokeWidth="2" />
+      </svg>
+      <span>Data dependency</span>
+    </div>
+    <div className={styles.row}>
+      <svg className={styles.swatch} viewBox="0 0 30 8">
+        <line x1="0" y1="4" x2="30" y2="4" stroke="#b45309" strokeWidth="2" strokeDasharray="6 4" />
+      </svg>
+      <span>Manual review gate</span>
+    </div>
+    <div className={styles.row}>
+      <span className={`${styles.cardSwatch} ${styles.cardInFlow}`} />
+      <span>In-flow system</span>
+    </div>
+    <div className={styles.row}>
+      <span className={`${styles.cardSwatch} ${styles.cardSkipped}`} />
+      <span>Not touched</span>
+    </div>
+    <div className={styles.row}>
+      <span className={styles.chevron}>›</span>
+      <span>Process flow</span>
+    </div>
+  </div>
 );
 
 export default LegendPanel;
