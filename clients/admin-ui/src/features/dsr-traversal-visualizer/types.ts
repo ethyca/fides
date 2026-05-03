@@ -43,6 +43,8 @@ export interface IntegrationNodeData extends Record<string, unknown> {
   collection_count: { traversed: number; total: number };
   data_categories: string[];
   datasets: DatasetDetail[];
+  /** Optional plain-English upstream system name, populated for stage 2+ cards. */
+  stage_via?: string | null;
 }
 
 export interface ManualTaskFieldDetail {

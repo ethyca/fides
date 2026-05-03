@@ -71,6 +71,9 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           )}
         </Flex>
       </Flex>
+      {data.stage_via ? (
+        <span className={styles.stageVia}>via {data.stage_via}</span>
+      ) : null}
       <div className={styles.body}>
         <Flex justify="space-between" align="center" gap="small">
           <Text type="secondary" className={styles.metaText}>
