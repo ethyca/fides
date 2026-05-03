@@ -4,6 +4,8 @@ import {
   COLLAPSED_LANE_WIDTH,
   LANE_GAP,
   LANE_HEADER_HEIGHT,
+  LANE_PADDING_BOTTOM,
+  LANE_PADDING_X,
   LANE_Y_TOP,
   STAGE_GAP,
   STAGE_HEADER_HEIGHT,
@@ -102,10 +104,12 @@ export const computeLaneLayout = (
   // ---- Identity lane ----
   const identityCollapsed = collapse.identity;
   const identityHidden = false;
-  const identityWidth = identityCollapsed ? COLLAPSED_LANE_WIDTH : COL_WIDTH;
+  const identityWidth = identityCollapsed
+    ? COLLAPSED_LANE_WIDTH
+    : LANE_PADDING_X * 2 + COL_WIDTH;
   if (!identityCollapsed) {
     positions[identityNodeId] = {
-      x: cursorX,
+      x: cursorX + LANE_PADDING_X,
       y: LANE_Y_TOP + LANE_HEADER_HEIGHT,
     };
   }
@@ -114,7 +118,7 @@ export const computeLaneLayout = (
     x: cursorX,
     y: LANE_Y_TOP,
     width: identityWidth,
-    height: LANE_HEADER_HEIGHT + CARD_PITCH,
+    height: LANE_HEADER_HEIGHT + CARD_PITCH + LANE_PADDING_BOTTOM,
     cardCount: 1,
     collapsed: identityCollapsed,
     hidden: identityHidden,
@@ -148,7 +152,7 @@ export const computeLaneLayout = (
         const col = idx % cols;
         const row = Math.floor(idx / cols);
         positions[m.id] = {
-          x: laneX + col * COL_WIDTH,
+          x: laneX + LANE_PADDING_X + col * COL_WIDTH,
           y: yStart + row * CARD_PITCH,
         };
         ids.push(m.id);
@@ -166,8 +170,8 @@ export const computeLaneLayout = (
       });
       stageY = yEnd + STAGE_GAP;
     });
-    reachWidth = maxCols * COL_WIDTH;
-    reachHeight = stageY;
+    reachWidth = LANE_PADDING_X * 2 + maxCols * COL_WIDTH;
+    reachHeight = stageY - STAGE_GAP + LANE_PADDING_BOTTOM;
   }
 
   lanes.push({
@@ -201,12 +205,12 @@ export const computeLaneLayout = (
         const col = idx % cols;
         const row = Math.floor(idx / cols);
         positions[t.id] = {
-          x: cursorX + col * COL_WIDTH,
+          x: cursorX + LANE_PADDING_X + col * COL_WIDTH,
           y: LANE_HEADER_HEIGHT + row * CARD_PITCH,
         };
       });
-      gatedWidth = cols * COL_WIDTH;
-      gatedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH;
+      gatedWidth = LANE_PADDING_X * 2 + cols * COL_WIDTH;
+      gatedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
     }
   }
   lanes.push({
@@ -238,12 +242,12 @@ export const computeLaneLayout = (
         const col = idx % cols;
         const row = Math.floor(idx / cols);
         positions[i.id] = {
-          x: cursorX + col * COL_WIDTH,
+          x: cursorX + LANE_PADDING_X + col * COL_WIDTH,
           y: LANE_HEADER_HEIGHT + row * CARD_PITCH,
         };
       });
-      skippedWidth = cols * COL_WIDTH;
-      skippedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH;
+      skippedWidth = LANE_PADDING_X * 2 + cols * COL_WIDTH;
+      skippedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
     }
   }
   lanes.push({

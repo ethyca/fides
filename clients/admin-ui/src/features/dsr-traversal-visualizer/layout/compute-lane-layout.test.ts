@@ -39,11 +39,15 @@ describe("computeLaneLayout", () => {
     ]);
   });
 
-  it("places identity at x=0", () => {
+  it("anchors the identity lane at x=0 and places its card inside the lane padding", () => {
     const result = computeLaneLayout(buildPayload(), allExpanded);
     const identity = result.lanes.find((l) => l.id === "identity")!;
     expect(identity.x).toBe(0);
-    expect(result.positions["identity-root"].x).toBe(0);
+    // The card sits inside the lane's horizontal padding, not flush against
+    // the lane's left edge. Asserting >0 keeps the test resilient to the
+    // exact padding value while pinning the contract.
+    expect(result.positions["identity-root"].x).toBeGreaterThan(0);
+    expect(result.positions["identity-root"].x).toBeLessThan(identity.width);
   });
 
   it("hides gated and skipped lanes when empty", () => {

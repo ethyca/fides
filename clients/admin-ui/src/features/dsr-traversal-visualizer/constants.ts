@@ -38,11 +38,18 @@ export const LANE_X = {
 
 export const LANE_Y_TOP = 0;
 
-// Cards stack vertically with this pitch (card height + gap).
-export const CARD_PITCH = NODE_HEIGHT + 12;
+// Cards stack vertically with this pitch (card height + gap between rows).
+export const CARD_PITCH = NODE_HEIGHT + 20;
 
-// Width of a single column inside a lane.
-export const COL_WIDTH = NODE_WIDTH + 12;
+// Width of a single column inside a lane (card + horizontal gap between cols).
+export const COL_WIDTH = NODE_WIDTH + 16;
+
+// Horizontal padding on each side of a lane — keeps cards from sitting flush
+// against the lane border and gives the chrome breathing room.
+export const LANE_PADDING_X = 14;
+
+// Vertical breathing room at the bottom of a lane after the last card.
+export const LANE_PADDING_BOTTOM = 16;
 
 // Multi-column promotion thresholds. >MAX_SINGLE_COL → 2-col, >MAX_DOUBLE_COL → 3-col.
 export const LANE_SINGLE_COL_MAX = 5;
@@ -54,11 +61,14 @@ export const MAX_LANE_COLS = 3;
 // Vertical gap between stage sub-sections inside the reach lane.
 export const STAGE_GAP = 28;
 
-// Header reserves vertical space at the top of each lane.
-export const LANE_HEADER_HEIGHT = 36;
+// Header reserves vertical space at the top of each lane (header bar + gap
+// below it before the first card).
+export const LANE_HEADER_HEIGHT = 48;
 
-// Stage sub-header reserves vertical space inside a lane.
-export const STAGE_HEADER_HEIGHT = 22;
+// Stage sub-header reserves vertical space inside a lane. Tall enough that
+// labels which wrap to two lines (narrow lanes) don't overlap the cards
+// below them.
+export const STAGE_HEADER_HEIGHT = 40;
 
 // Width of a collapsed lane (just the rotated label + count chip).
 export const COLLAPSED_LANE_WIDTH = 44;
