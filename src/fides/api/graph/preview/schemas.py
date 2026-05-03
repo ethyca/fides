@@ -51,6 +51,7 @@ class IntegrationNode(FidesSchema):
     id: str  # "integration:<connection_key>"
     connection_key: str
     connector_type: str
+    saas_type: Optional[str] = None
     system: Optional[SystemRef] = None
     reachability: Reachability
     action_status: ActionStatus
