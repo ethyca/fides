@@ -1,0 +1,270 @@
+import {
+  CARD_PITCH,
+  COLLAPSED_LANE_WIDTH,
+  COL_WIDTH,
+  LANE_GAP,
+  LANE_HEADER_HEIGHT,
+  LANE_Y_TOP,
+  STAGE_GAP,
+  STAGE_HEADER_HEIGHT,
+} from "../constants";
+import {
+  LaneBounds,
+  LaneCollapseMap,
+  LaneLayoutResult,
+  StageBlock,
+  TraversalPreviewResponse,
+} from "../types";
+
+import { computeColumnCount } from "./compute-column-count";
+import { computeStages } from "./compute-stages";
+
+const LANE_LABELS: Record<string, { label: string; tooltip: string }> = {
+  identity: {
+    label: "Identity input",
+    tooltip:
+      "The identity values this property's privacy-center forms accept. Every traversal starts here.",
+  },
+  reach: {
+    label: "Will be queried",
+    tooltip:
+      "These systems contain data that will be searched for the data subject's records when this DSR runs.",
+  },
+  gated: {
+    label: "Gated by manual review",
+    tooltip:
+      "These manual tasks must be completed before the systems they gate will run.",
+  },
+  skipped: {
+    label: "Not touched",
+    tooltip:
+      "These systems can't be reached with the identity types this property accepts, so the DSR won't query them.",
+  },
+};
+
+const STAGE_COPY: Record<number, { label: string; tooltip: string }> = {
+  1: {
+    label: "First — from identity directly",
+    tooltip:
+      "These systems are queried using the data subject's identity inputs (e.g., email) directly.",
+  },
+  2: {
+    label: "Second — from upstream system",
+    tooltip:
+      "These systems can't be queried with identity alone — they need an identifier returned from a Stage 1 system first.",
+  },
+};
+
+const stageCopy = (n: number) =>
+  STAGE_COPY[n] ?? {
+    label: `Stage ${n} — from upstream system`,
+    tooltip:
+      "These systems are queried after one or more upstream systems return an identifier.",
+  };
+
+/**
+ * Build the four-lane layout for a traversal preview payload.
+ *
+ * Determinism: positions only depend on (payload, collapseMap). Same input
+ * yields the same output, so React Flow won't re-jitter cards on re-render.
+ */
+export const computeLaneLayout = (
+  payload: TraversalPreviewResponse,
+  collapse: LaneCollapseMap,
+): LaneLayoutResult => {
+  const identityNodeId = payload.identity_root.id;
+  const reachIntegrations = payload.integrations.filter(
+    (i) => i.reachability !== "unreachable",
+  );
+  const skippedIntegrations = payload.integrations.filter(
+    (i) => i.reachability === "unreachable",
+  );
+
+  const reachIds = reachIntegrations.map((i) => i.id);
+  const stageMap = computeStages(reachIds, payload.edges);
+
+  const stageGroups = new Map<number, typeof reachIntegrations>();
+  for (const i of reachIntegrations) {
+    const s = stageMap[i.id] ?? 1;
+    const list = stageGroups.get(s);
+    if (list) {
+      list.push(i);
+    } else {
+      stageGroups.set(s, [i]);
+    }
+  }
+  const sortedStages = [...stageGroups.entries()].sort((a, b) => a[0] - b[0]);
+
+  const positions: Record<string, { x: number; y: number }> = {};
+  const lanes: LaneBounds[] = [];
+
+  let cursorX = 0;
+
+  // ---- Identity lane ----
+  const identityCollapsed = collapse.identity;
+  const identityHidden = false;
+  const identityWidth = identityCollapsed ? COLLAPSED_LANE_WIDTH : COL_WIDTH;
+  if (!identityCollapsed) {
+    positions[identityNodeId] = {
+      x: cursorX,
+      y: LANE_Y_TOP + LANE_HEADER_HEIGHT,
+    };
+  }
+  lanes.push({
+    id: "identity",
+    x: cursorX,
+    y: LANE_Y_TOP,
+    width: identityWidth,
+    height: LANE_HEADER_HEIGHT + CARD_PITCH,
+    cardCount: 1,
+    collapsed: identityCollapsed,
+    hidden: identityHidden,
+    label: LANE_LABELS.identity.label,
+    tooltip: LANE_LABELS.identity.tooltip,
+  });
+  cursorX += identityWidth + LANE_GAP;
+
+  // ---- Reach lane (with stages) ----
+  const reachCollapsed = collapse.reach;
+  const reachHidden = reachIntegrations.length === 0;
+
+  let reachWidth: number;
+  let reachHeight: number;
+  const stageBlocks: StageBlock[] = [];
+
+  if (reachCollapsed || reachHidden) {
+    reachWidth = reachHidden ? 0 : COLLAPSED_LANE_WIDTH;
+    reachHeight = LANE_HEADER_HEIGHT;
+  } else {
+    let stageY = LANE_HEADER_HEIGHT;
+    let maxCols = 1;
+    for (const [stageIndex, members] of sortedStages) {
+      const cols = computeColumnCount(members.length);
+      maxCols = Math.max(maxCols, cols);
+      const rows = Math.ceil(members.length / cols);
+      const yStart = stageY + STAGE_HEADER_HEIGHT;
+      const ids: string[] = [];
+      members.forEach((m, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        positions[m.id] = {
+          x: cursorX + col * COL_WIDTH,
+          y: yStart + row * CARD_PITCH,
+        };
+        ids.push(m.id);
+      });
+      const yEnd = yStart + rows * CARD_PITCH;
+      const copy = stageCopy(stageIndex);
+      stageBlocks.push({
+        index: stageIndex,
+        label: copy.label,
+        tooltip: copy.tooltip,
+        nodeIds: ids,
+        yStart: stageY,
+        yEnd,
+        columns: cols,
+      });
+      stageY = yEnd + STAGE_GAP;
+    }
+    reachWidth = maxCols * COL_WIDTH;
+    reachHeight = stageY;
+  }
+
+  lanes.push({
+    id: "reach",
+    x: cursorX,
+    y: LANE_Y_TOP,
+    width: reachWidth,
+    height: reachHeight,
+    cardCount: reachIntegrations.length,
+    collapsed: reachCollapsed,
+    hidden: reachHidden,
+    label: LANE_LABELS.reach.label,
+    tooltip: LANE_LABELS.reach.tooltip,
+    stages: reachCollapsed || reachHidden ? undefined : stageBlocks,
+  });
+  cursorX += reachWidth + (reachHidden ? 0 : LANE_GAP);
+
+  // ---- Gated lane ----
+  const gatedTasks = payload.manual_tasks ?? [];
+  const gatedHidden = gatedTasks.length === 0;
+  const gatedCollapsed = collapse.gated && !gatedHidden;
+  let gatedWidth = 0;
+  let gatedHeight = LANE_HEADER_HEIGHT;
+  if (!gatedHidden) {
+    if (gatedCollapsed) {
+      gatedWidth = COLLAPSED_LANE_WIDTH;
+    } else {
+      const cols = computeColumnCount(gatedTasks.length);
+      const rows = Math.ceil(gatedTasks.length / cols);
+      gatedTasks.forEach((t, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        positions[t.id] = {
+          x: cursorX + col * COL_WIDTH,
+          y: LANE_HEADER_HEIGHT + row * CARD_PITCH,
+        };
+      });
+      gatedWidth = cols * COL_WIDTH;
+      gatedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH;
+    }
+  }
+  lanes.push({
+    id: "gated",
+    x: cursorX,
+    y: LANE_Y_TOP,
+    width: gatedWidth,
+    height: gatedHeight,
+    cardCount: gatedTasks.length,
+    collapsed: gatedCollapsed,
+    hidden: gatedHidden,
+    label: LANE_LABELS.gated.label,
+    tooltip: LANE_LABELS.gated.tooltip,
+  });
+  cursorX += gatedWidth + (gatedHidden ? 0 : LANE_GAP);
+
+  // ---- Skipped lane (out of flow) ----
+  const skippedHidden = skippedIntegrations.length === 0;
+  const skippedCollapsed = collapse.skipped && !skippedHidden;
+  let skippedWidth = 0;
+  let skippedHeight = LANE_HEADER_HEIGHT;
+  if (!skippedHidden) {
+    if (skippedCollapsed) {
+      skippedWidth = COLLAPSED_LANE_WIDTH;
+    } else {
+      const cols = computeColumnCount(skippedIntegrations.length);
+      const rows = Math.ceil(skippedIntegrations.length / cols);
+      skippedIntegrations.forEach((i, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        positions[i.id] = {
+          x: cursorX + col * COL_WIDTH,
+          y: LANE_HEADER_HEIGHT + row * CARD_PITCH,
+        };
+      });
+      skippedWidth = cols * COL_WIDTH;
+      skippedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH;
+    }
+  }
+  lanes.push({
+    id: "skipped",
+    x: cursorX,
+    y: LANE_Y_TOP,
+    width: skippedWidth,
+    height: skippedHeight,
+    cardCount: skippedIntegrations.length,
+    collapsed: skippedCollapsed,
+    hidden: skippedHidden,
+    label: LANE_LABELS.skipped.label,
+    tooltip: LANE_LABELS.skipped.tooltip,
+    outOfFlow: true,
+  });
+  const totalWidth = cursorX + skippedWidth;
+  const totalHeight = Math.max(...lanes.map((l) => l.height));
+
+  return {
+    positions,
+    lanes,
+    canvas: { width: totalWidth, height: totalHeight },
+  };
+};
