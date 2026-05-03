@@ -1,0 +1,124 @@
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lane {
+  position: absolute;
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px 10px;
+  pointer-events: auto;
+  // When a lane's content (cards positioned by React Flow above this layer)
+  // overflows the available viewport height, the lane background does not
+  // need to scroll — React Flow handles pan natively.
+  overflow: visible;
+
+  &.lane-identity { background: #f8fbff; border-color: #dbeafe; }
+  &.lane-reach    { background: #f6fbf7; border-color: #bbf7d0; }
+  &.lane-gated    { background: #fffaf0; border-color: #fde68a; }
+  &.lane-skipped  { background: #fafafa; border-color: var(--fidesui-color-border); }
+
+  &.collapsed {
+    .label { writing-mode: vertical-rl; transform: rotate(180deg); }
+  }
+
+  &.outOfFlow {
+    border-style: dashed;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+  padding-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.label { flex: 1; cursor: help; }
+.count {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--fidesui-color-text-secondary);
+  border-radius: 9px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+.toggle {
+  background: none;
+  border: 0;
+  font-size: 14px;
+  color: var(--fidesui-color-text-tertiary);
+  cursor: pointer;
+  padding: 0 4px;
+  &:hover { color: var(--fidesui-color-text); }
+}
+
+.stage {
+  position: absolute;
+  left: 12px; right: 12px;
+  height: 18px;
+  pointer-events: none;
+}
+.stageLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #166534;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  pointer-events: auto;
+  cursor: help;
+}
+.stageNum {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #15803d;
+  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+}
+
+.outOfFlowBadge {
+  position: absolute; top: -10px; right: 12px;
+  background: #fff;
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
+  color: var(--fidesui-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rail {
+  position: absolute;
+  height: 2px;
+  background: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.chevron {
+  position: absolute;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #94a3b8;
+  display: flex; align-items: center; justify-content: center;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}

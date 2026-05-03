@@ -1,0 +1,111 @@
+import { Tooltip } from "fidesui";
+import { CSSProperties } from "react";
+
+import { LaneId } from "./constants";
+import styles from "./LaneChrome.module.scss";
+import { LaneBounds } from "./types";
+
+interface Props {
+  lanes: LaneBounds[];
+  onToggleCollapse: (lane: LaneId) => void;
+}
+
+const LaneChrome = ({ lanes, onToggleCollapse }: Props) => (
+  <div className={styles.root} aria-hidden="false">
+    {lanes
+      .filter((lane) => !lane.hidden)
+      .map((lane) => {
+        const style: CSSProperties = {
+          left: lane.x,
+          top: lane.y,
+          width: lane.width,
+          height: lane.height,
+        };
+        const classes = [
+          styles.lane,
+          styles[`lane-${lane.id}`],
+          lane.collapsed ? styles.collapsed : "",
+          lane.outOfFlow ? styles.outOfFlow : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        return (
+          <div
+            key={lane.id}
+            className={classes}
+            style={style}
+            data-testid={`lane-${lane.id}`}
+            data-collapsed={lane.collapsed ? "true" : "false"}
+          >
+            <div className={styles.header}>
+              <Tooltip title={lane.tooltip} placement="top">
+                <span className={styles.label}>{lane.label}</span>
+              </Tooltip>
+              <span className={styles.count}>{lane.cardCount}</span>
+              <button
+                type="button"
+                className={styles.toggle}
+                aria-label={
+                  lane.collapsed
+                    ? `Expand ${lane.label} lane`
+                    : `Collapse ${lane.label} lane`
+                }
+                data-testid={`lane-${lane.id}-toggle`}
+                onClick={() => onToggleCollapse(lane.id)}
+              >
+                {lane.collapsed ? "›" : "‹"}
+              </button>
+            </div>
+
+            {!lane.collapsed &&
+              lane.stages?.map((stage) => (
+                <div
+                  key={stage.index}
+                  className={styles.stage}
+                  style={{ top: stage.yStart }}
+                >
+                  <Tooltip title={stage.tooltip} placement="right">
+                    <span className={styles.stageLabel}>
+                      <span className={styles.stageNum}>{stage.index}</span>
+                      {stage.label}
+                    </span>
+                  </Tooltip>
+                </div>
+              ))}
+
+            {!lane.collapsed && lane.outOfFlow && (
+              <span className={styles.outOfFlowBadge}>Not in flow</span>
+            )}
+          </div>
+        );
+      })}
+
+    {/* Flow rails connecting in-flow lanes */}
+    {lanes.map((lane, idx) => {
+      if (lane.outOfFlow || lane.hidden || idx === lanes.length - 1) {
+        return null;
+      }
+      const next = lanes[idx + 1];
+      if (next.outOfFlow || next.hidden) {
+        return null;
+      }
+      return (
+        <div
+          key={`rail-${lane.id}-${next.id}`}
+          className={styles.rail}
+          style={{
+            left: lane.x + lane.width,
+            top: lane.y + 24,
+            width: next.x - (lane.x + lane.width),
+          }}
+          data-testid={`rail-${lane.id}-${next.id}`}
+        >
+          <span className={styles.chevron}>›</span>
+        </div>
+      );
+    })}
+  </div>
+);
+
+export default LaneChrome;
