@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+import { AssessmentDetail } from "./AssessmentDetail";
 import {
   AnswerSource,
   AnswerStatus,
@@ -49,7 +50,7 @@ jest.mock("~/features/common/hooks/useRelativeTime", () => ({
 }));
 
 jest.mock("~/features/common/helpers", () => ({
-  getErrorMessage: jest.fn((e: unknown) => "Error"),
+  getErrorMessage: jest.fn(() => "Error"),
 }));
 
 const mockCreateQuestionnaire = jest.fn();
@@ -105,7 +106,7 @@ jest.mock(
           });
         }
         if (prop === "Drawer") {
-          return ({
+          const MockDrawer = ({
             open,
             children,
             title,
@@ -120,9 +121,13 @@ jest.mock(
                 {children}
               </div>
             ) : null;
+          MockDrawer.displayName = "MockDrawer";
+          return MockDrawer;
         }
         if (prop === "Collapse") {
-          return () => <div data-testid="collapse" />;
+          const MockCollapse = () => <div data-testid="collapse" />;
+          MockCollapse.displayName = "MockCollapse";
+          return MockCollapse;
         }
         return target[prop as keyof typeof target];
       },
@@ -130,14 +135,17 @@ jest.mock(
 );
 
 jest.mock("./QuestionnaireChat", () => {
-  const MockChat = (props: {
+  const MockChat = ({
+    questionnaireId,
+    assessmentId,
+  }: {
     questionnaireId?: string;
     assessmentId: string;
   }) => (
     <div
       data-testid="questionnaire-chat"
-      data-questionnaire-id={props.questionnaireId ?? ""}
-      data-assessment-id={props.assessmentId}
+      data-questionnaire-id={questionnaireId ?? ""}
+      data-assessment-id={assessmentId}
     />
   );
   MockChat.displayName = "MockQuestionnaireChat";
@@ -177,8 +185,6 @@ jest.mock("../common/logos/SlackLogo", () => ({
 }));
 
 // ── Helpers ────────────────────────────────────────────────────────────
-
-import { AssessmentDetail } from "./AssessmentDetail";
 
 const makeQuestion = (overrides: Record<string, unknown> = {}) => ({
   id: "q-1",

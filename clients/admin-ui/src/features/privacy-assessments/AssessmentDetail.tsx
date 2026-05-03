@@ -26,7 +26,6 @@ import { useGetChatConfigsQuery } from "../chat-provider/chatProvider.slice";
 import { SlackLogo } from "../common/logos/SlackLogo";
 import styles from "./AssessmentDetail.module.scss";
 import { EvidenceDrawer } from "./EvidenceDrawer";
-import QuestionnaireChat from "./QuestionnaireChat";
 import {
   useCreateQuestionnaireMutation,
   useCreateQuestionnaireReminderMutation,
@@ -35,6 +34,7 @@ import {
 } from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
+import QuestionnaireChat from "./QuestionnaireChat";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import {
   AnswerSource,
@@ -304,13 +304,19 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
               disabled={!hasChannel}
               loading={isSending}
             >
-              {isFidesProvider
-                ? assessment.questionnaire?.sent_at &&
+              {!isFidesProvider && "Request input from team"}
+              {isFidesProvider &&
+                assessment.questionnaire?.sent_at &&
+                assessment.questionnaire?.status ===
+                  QuestionnaireSessionStatus.IN_PROGRESS &&
+                "Resume questionnaire"}
+              {isFidesProvider &&
+                !(
+                  assessment.questionnaire?.sent_at &&
                   assessment.questionnaire?.status ===
                     QuestionnaireSessionStatus.IN_PROGRESS
-                  ? "Resume questionnaire"
-                  : "Start questionnaire"
-                : "Request input from team"}
+                ) &&
+                "Start questionnaire"}
             </Button>
           </Tooltip>
         )}
