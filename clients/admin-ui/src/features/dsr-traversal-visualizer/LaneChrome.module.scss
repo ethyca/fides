@@ -2,6 +2,15 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  // React Flow's viewport is a single stacking context (z-index 2) that
+  // contains the pane, edges, and nodes. Lane chrome must render BELOW
+  // everything in that context so cards stay visible on top. The collapse
+  // toggle buttons inside lane chrome are not clickable through the React
+  // Flow pane — that's handled by the toolbar's "Show not touched" switch
+  // for the lane that actually needs hiding. Per-lane collapse via in-canvas
+  // chevrons is a follow-up (would require lane chrome to render as React
+  // Flow node types so it can interleave with the node layer).
+  z-index: 0;
 }
 
 .lane {
