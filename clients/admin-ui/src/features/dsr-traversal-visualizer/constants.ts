@@ -27,3 +27,53 @@ export const REACHABILITY_COLOR = {
   unreachable: "default",
   requires_manual_identity: "warning",
 } as const;
+
+// Lane layout — pixel coordinates and widths used by computeLaneLayout.
+export const LANE_X = {
+  identity: 0,
+  reach: 320,
+  gated: 0, // computed at runtime — depends on reach lane width
+  skipped: 0, // computed at runtime — depends on gated lane width
+} as const;
+
+export const LANE_Y_TOP = 0;
+
+// Cards stack vertically with this pitch (card height + gap).
+export const CARD_PITCH = NODE_HEIGHT + 12;
+
+// Width of a single column inside a lane.
+export const COL_WIDTH = NODE_WIDTH + 12;
+
+// Multi-column promotion thresholds. >MAX_SINGLE_COL → 2-col, >MAX_DOUBLE_COL → 3-col.
+export const LANE_SINGLE_COL_MAX = 5;
+export const LANE_DOUBLE_COL_MAX = 12;
+
+// Maximum columns supported per lane.
+export const MAX_LANE_COLS = 3;
+
+// Vertical gap between stage sub-sections inside the reach lane.
+export const STAGE_GAP = 28;
+
+// Header reserves vertical space at the top of each lane.
+export const LANE_HEADER_HEIGHT = 36;
+
+// Stage sub-header reserves vertical space inside a lane.
+export const STAGE_HEADER_HEIGHT = 22;
+
+// Width of a collapsed lane (just the rotated label + count chip).
+export const COLLAPSED_LANE_WIDTH = 44;
+
+// Inter-lane gap (between lane right edge and the next lane's left edge).
+export const LANE_GAP = 56;
+
+// Where useLaneCollapseState persists user preferences.
+export const LANE_COLLAPSE_STORAGE_KEY = "fides:dsr-traversal:lane-collapse:v1";
+
+export type LaneId = "identity" | "reach" | "gated" | "skipped";
+
+export const LANE_IDS: readonly LaneId[] = [
+  "identity",
+  "reach",
+  "gated",
+  "skipped",
+] as const;
