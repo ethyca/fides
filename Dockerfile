@@ -79,6 +79,8 @@ ENV USER=fidesuser
 
 COPY --chown=fidesuser:fidesgroup . /fides
 COPY --from=libpbac_builder --chown=fidesuser:fidesgroup /build/libpbac.so /fides/src/fides/bin/libpbac.so
+# Copy policy-engine source into the package tree so it ships with pip install
+COPY --chown=fidesuser:fidesgroup policy-engine/ /fides/src/fides/policy-engine/
 WORKDIR /fides
 
 # Immediately flush to stdout, globally
