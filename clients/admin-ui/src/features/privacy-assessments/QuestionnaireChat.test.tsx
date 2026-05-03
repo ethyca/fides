@@ -1,4 +1,12 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+
+import QuestionnaireChat from "./QuestionnaireChat";
 
 // ── Mocks ──────────────────────────────────────────────────────────────
 
@@ -41,7 +49,7 @@ jest.mock(
           return { List: BubbleList };
         }
         if (prop === "Sender") {
-          return ({
+          const MockSender = ({
             onSubmit,
             disabled,
             value,
@@ -69,6 +77,8 @@ jest.mock(
               </button>
             </div>
           );
+          MockSender.displayName = "MockSender";
+          return MockSender;
         }
         return target[prop as keyof typeof target];
       },
@@ -93,8 +103,6 @@ jest.mock("./privacy-assessments.slice", () => ({
 }));
 
 // ── Helpers ────────────────────────────────────────────────────────────
-
-import QuestionnaireChat from "./QuestionnaireChat";
 
 const defaultProps = {
   assessmentId: "assessment-1",
@@ -192,7 +200,9 @@ describe("QuestionnaireChat — resume session", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("We process email addresses")).toBeInTheDocument();
+      expect(
+        screen.getByText("We process email addresses"),
+      ).toBeInTheDocument();
     });
 
     expect(mockStartChat).not.toHaveBeenCalled();
@@ -267,9 +277,7 @@ describe("QuestionnaireChat — sending messages", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Email addresses")).toBeInTheDocument();
-      expect(
-        screen.getByText("Thanks for your answer."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Thanks for your answer.")).toBeInTheDocument();
     });
 
     expect(mockSendReply).toHaveBeenCalledWith(

@@ -1,4 +1,12 @@
-import { Alert, Button, Flex, Icons, Space, Typography, useMessage } from "fidesui";
+import {
+  Alert,
+  Button,
+  Flex,
+  Icons,
+  Space,
+  Typography,
+  useMessage,
+} from "fidesui";
 import { useRouter } from "next/router";
 
 import { isErrorResult } from "~/features/common/helpers";
@@ -52,10 +60,7 @@ const FidesChatForm = ({ configId }: FidesChatFormProps) => {
   };
 
   return (
-    <ConfigurationCard
-      title="Fides chat provider"
-      icon={<Icons.Checkmark />}
-    >
+    <ConfigurationCard title="Fides chat provider" icon={<Icons.Checkmark />}>
       <Space orientation="vertical" size="medium" className="w-full">
         <Alert
           type="info"
@@ -70,9 +75,7 @@ const FidesChatForm = ({ configId }: FidesChatFormProps) => {
           }
           title="How it works"
         />
-        {isEditMode && isAuthorized && (
-          <AuthorizationStatus authorized />
-        )}
+        {isEditMode && isAuthorized && <AuthorizationStatus authorized />}
       </Space>
 
       {!isEditMode && (

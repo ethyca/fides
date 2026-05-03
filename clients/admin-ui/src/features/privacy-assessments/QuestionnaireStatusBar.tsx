@@ -2,9 +2,8 @@ import classNames from "classnames";
 import { Button, CUSTOM_TAG_COLOR, Flex, Icons, Tag, Text } from "fidesui";
 import type { HTMLAttributes } from "react";
 
-import { QuestionnaireSessionStatus } from "./types";
-
 import styles from "./QuestionnaireStatusBar.module.scss";
+import { QuestionnaireSessionStatus } from "./types";
 
 interface QuestionnaireStatusBarProps extends HTMLAttributes<HTMLDivElement> {
   status: QuestionnaireSessionStatus;
@@ -49,7 +48,16 @@ export const QuestionnaireStatusBar = ({
 }: QuestionnaireStatusBarProps) => {
   const isAllAnswered = answeredCount === totalCount;
   const isStopped = status === QuestionnaireSessionStatus.STOPPED;
-  const config = STATUS_CONFIG[status] || STATUS_CONFIG[QuestionnaireSessionStatus.IN_PROGRESS];
+  const config =
+    STATUS_CONFIG[status] ||
+    STATUS_CONFIG[QuestionnaireSessionStatus.IN_PROGRESS];
+
+  let tagColor = CUSTOM_TAG_COLOR.DEFAULT;
+  if (isStopped) {
+    tagColor = CUSTOM_TAG_COLOR.WARNING;
+  } else if (isAllAnswered) {
+    tagColor = CUSTOM_TAG_COLOR.SUCCESS;
+  }
 
   return (
     <div className={classNames(styles.container, className)} {...props}>
@@ -66,15 +74,7 @@ export const QuestionnaireStatusBar = ({
           </Text>
           <Flex align="center" gap="small">
             <Text size="sm">Progress:</Text>
-            <Tag
-              color={
-                isStopped
-                  ? CUSTOM_TAG_COLOR.WARNING
-                  : isAllAnswered
-                    ? CUSTOM_TAG_COLOR.SUCCESS
-                    : CUSTOM_TAG_COLOR.DEFAULT
-              }
-            >
+            <Tag color={tagColor}>
               {answeredCount}/{totalCount} answered
               {isStopped ? " (stopped)" : ""}
             </Tag>

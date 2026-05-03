@@ -1,4 +1,4 @@
-"""add stopped questionnaire status
+"""rename abandoned to stopped and make answer_version.created_by nullable
 
 Revision ID: ae57c33876cc
 Revises: d71c7d274c04
@@ -17,10 +17,36 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("ALTER TYPE questionnairestatus ADD VALUE IF NOT EXISTS 'stopped'")
+    op.execute("ALTER TYPE questionnairestatus RENAME VALUE 'abandoned' TO 'stopped'")
+
+    op.alter_column(
+        "answer_version",
+        "created_by",
+        existing_type=sa.String(),
+        nullable=True,
+    )
+    op.execute(
+        "UPDATE answer_version SET created_by = NULL "
+        "WHERE created_by IN ('system', 'scheduler', 'unknown')"
+    )
+    op.execute(
+        "UPDATE answer_version av "
+        "SET created_by = fu.email_address "
+        "FROM fidesuser fu "
+        "WHERE av.created_by = fu.username "
+        "AND fu.email_address IS NOT NULL "
+        "AND av.created_by NOT LIKE '%%@%%'"
+    )
 
 
 def downgrade():
-    # PostgreSQL does not support removing enum values directly.
-    # The 'stopped' value will remain but be unused after downgrade.
-    pass
+    op.execute(
+        "UPDATE answer_version SET created_by = 'system' WHERE created_by IS NULL"
+    )
+    op.alter_column(
+        "answer_version",
+        "created_by",
+        existing_type=sa.String(),
+        nullable=False,
+    )
+    op.execute("ALTER TYPE questionnairestatus RENAME VALUE 'stopped' TO 'abandoned'")

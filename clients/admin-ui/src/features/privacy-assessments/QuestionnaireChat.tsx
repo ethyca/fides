@@ -154,7 +154,12 @@ const QuestionnaireChat = ({
 
       setMessages((prev) => [
         ...prev,
-        { key: nextKey("user"), role: "user", content: trimmed, senderName: userName },
+        {
+          key: nextKey("user"),
+          role: "user",
+          content: trimmed,
+          senderName: userName,
+        },
       ]);
       setInputValue("");
 
@@ -230,9 +235,14 @@ const QuestionnaireChat = ({
 
   const isComplete = status === "completed" || status === "stopped";
   const progressText =
-    progress.total > 0
-      ? `${progress.answered}/${progress.total} answered`
-      : "";
+    progress.total > 0 ? `${progress.answered}/${progress.total} answered` : "";
+
+  let placeholderText = "Type your response...";
+  if (status === "stopped") {
+    placeholderText = "Questionnaire stopped";
+  } else if (status === "completed") {
+    placeholderText = "Questionnaire complete";
+  }
 
   return (
     <Flex vertical className={styles.panel} data-testid="questionnaire-chat">
@@ -244,7 +254,7 @@ const QuestionnaireChat = ({
       </Flex>
 
       <div className={styles.body}>
-        {isStarting ? (
+        {isStarting && (
           <Flex
             vertical
             align="center"
@@ -257,7 +267,8 @@ const QuestionnaireChat = ({
               Preparing questionnaire...
             </Typography.Text>
           </Flex>
-        ) : messages.length === 0 ? (
+        )}
+        {!isStarting && messages.length === 0 && (
           <Flex
             vertical
             align="center"
@@ -265,11 +276,10 @@ const QuestionnaireChat = ({
             gap="small"
             className={styles.emptyState}
           >
-            <Typography.Text type="secondary">
-              No messages yet.
-            </Typography.Text>
+            <Typography.Text type="secondary">No messages yet.</Typography.Text>
           </Flex>
-        ) : (
+        )}
+        {!isStarting && messages.length > 0 && (
           <Bubble.List
             className={styles.list}
             autoScroll
@@ -286,13 +296,7 @@ const QuestionnaireChat = ({
           onSubmit={handleSend}
           loading={isSending}
           disabled={isComplete || isStarting}
-          placeholder={
-            status === "stopped"
-              ? "Questionnaire stopped"
-              : status === "completed"
-                ? "Questionnaire complete"
-                : "Type your response..."
-          }
+          placeholder={placeholderText}
         />
       </div>
     </Flex>

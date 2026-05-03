@@ -291,10 +291,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
           body,
         }),
         invalidatesTags: ["Privacy Assessment"],
-        async onQueryStarted(
-          { assessment_id },
-          { dispatch, queryFulfilled },
-        ) {
+        async onQueryStarted({ assessment_id }, { dispatch, queryFulfilled }) {
           try {
             const { data } = await queryFulfilled;
             dispatch(
@@ -308,8 +305,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
                     draft.questionnaire.questionnaire_id =
                       data.questionnaire_id;
                     draft.questionnaire.answered_questions = 0;
-                    draft.questionnaire.total_questions =
-                      data.total_questions;
+                    draft.questionnaire.total_questions = data.total_questions;
                   } else {
                     draft.questionnaire = {
                       questionnaire_id: data.questionnaire_id,

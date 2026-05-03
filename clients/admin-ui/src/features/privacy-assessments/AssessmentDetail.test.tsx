@@ -323,9 +323,7 @@ describe("AssessmentDetail — Status bar visibility", () => {
         })}
       />,
     );
-    expect(
-      screen.getByTestId("questionnaire-status-bar"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("questionnaire-status-bar")).toBeInTheDocument();
   });
 
   it("shows status bar with stopped status and stop reason", () => {

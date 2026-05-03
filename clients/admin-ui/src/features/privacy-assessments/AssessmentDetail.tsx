@@ -353,14 +353,20 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           open={chatOpen}
           onClose={() => setChatOpen(false)}
           width={480}
-          destroyOnHidden={assessment.questionnaire?.status !== QuestionnaireSessionStatus.IN_PROGRESS}
-          styles={{ body: { padding: 0, display: "flex", flexDirection: "column" } }}
+          destroyOnHidden={
+            assessment.questionnaire?.status !==
+            QuestionnaireSessionStatus.IN_PROGRESS
+          }
+          styles={{
+            body: { padding: 0, display: "flex", flexDirection: "column" },
+          }}
         >
           <QuestionnaireChat
             key={chatSessionKey}
             assessmentId={assessment.id}
             questionnaireId={
-              assessment.questionnaire?.status === QuestionnaireSessionStatus.IN_PROGRESS
+              assessment.questionnaire?.status ===
+              QuestionnaireSessionStatus.IN_PROGRESS
                 ? (assessment.questionnaire?.questionnaire_id ?? undefined)
                 : undefined
             }
