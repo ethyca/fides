@@ -9,7 +9,7 @@ export type ChatConfigCreate = {
   /**
    * Provider Type
    */
-  provider_type?: "slack" | "terminal";
+  provider_type?: "slack" | "fides";
   /**
    * Workspace Url
    */

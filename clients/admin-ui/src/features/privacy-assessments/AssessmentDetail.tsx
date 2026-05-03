@@ -353,7 +353,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           open={chatOpen}
           onClose={() => setChatOpen(false)}
           width={480}
-          destroyOnClose={assessment.questionnaire?.status !== QuestionnaireSessionStatus.IN_PROGRESS}
+          destroyOnHidden={assessment.questionnaire?.status !== QuestionnaireSessionStatus.IN_PROGRESS}
           styles={{ body: { padding: 0, display: "flex", flexDirection: "column" } }}
         >
           <QuestionnaireChat
@@ -372,7 +372,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
                   currentUser?.email_address ||
                   "User"
             }
-            onStatusChange={() => undefined}
           />
         </Drawer>
       )}

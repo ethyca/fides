@@ -10,7 +10,6 @@ import {
   useMessage,
 } from "fidesui";
 
-
 import { useEffect, useMemo } from "react";
 
 import {
@@ -200,8 +199,8 @@ const AssessmentSettingsModal = ({
           {isFidesProvider && (
             <Alert
               type="success"
-              title="Terminal provider active"
-              description="Start questionnaire conversations from the terminal. Launch one from any assessment detail page, and progress will appear here automatically."
+              title="Fides provider active"
+              description="Start questionnaire conversations from the chat drawer. Launch one from any assessment detail page, and progress will appear here automatically."
               showIcon
               className="mb-4"
             />

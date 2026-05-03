@@ -206,6 +206,7 @@ const makeAssessment = (
   status: AssessmentStatus.IN_PROGRESS,
   risk_level: null,
   assessment_type: "dpia",
+  template_id: "template-1",
   template_name: "DPIA Template",
   question_groups: [
     {
@@ -223,7 +224,6 @@ const makeAssessment = (
   questionnaire: null,
   metadata: null,
   data_categories: [],
-  description: "",
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
   system_fides_key: "test-system",

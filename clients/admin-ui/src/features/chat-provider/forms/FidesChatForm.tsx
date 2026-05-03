@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import { RouterLink } from "~/features/common/nav/RouterLink";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 
 import {
@@ -37,8 +38,7 @@ const FidesChatForm = ({ configId }: FidesChatFormProps) => {
         provider_type: "fides" as const,
       };
 
-      // TODO: regenerate API types after backend schema change (terminal → fides)
-      const result = await createConfig(payload as any);
+      const result = await createConfig(payload);
 
       if (isErrorResult(result)) {
         handleError(result.error);
@@ -68,7 +68,7 @@ const FidesChatForm = ({ configId }: FidesChatFormProps) => {
               usage.
             </Text>
           }
-          message="How it works"
+          title="How it works"
         />
         {isEditMode && isAuthorized && (
           <AuthorizationStatus authorized />
@@ -78,12 +78,9 @@ const FidesChatForm = ({ configId }: FidesChatFormProps) => {
       {!isEditMode && (
         <Flex justify="flex-end" className="mt-6">
           <Space>
-            <Button
-              onClick={() => router.push(CHAT_PROVIDERS_ROUTE)}
-              data-testid="cancel-btn"
-            >
-              Cancel
-            </Button>
+            <RouterLink href={CHAT_PROVIDERS_ROUTE}>
+              <Button data-testid="cancel-btn">Cancel</Button>
+            </RouterLink>
             <Button
               type="primary"
               onClick={handleCreate}

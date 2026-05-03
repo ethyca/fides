@@ -392,13 +392,14 @@ export interface StartChatResponse {
 }
 
 export interface ChatReplyRequest {
+  assessment_id: string;
   questionnaire_id: string;
   message_text: string;
 }
 
 export interface ChatReplyResponse {
   bot_messages: QuestionnaireChatMessage[];
-  status: string;
+  status: QuestionnaireSessionStatus;
   answered_questions: number;
   total_questions: number;
 }

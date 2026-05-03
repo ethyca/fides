@@ -160,6 +160,7 @@ const QuestionnaireChat = ({
 
       try {
         const response = await sendReply({
+          assessment_id: assessmentId,
           questionnaire_id: questionnaireId,
           message_text: trimmed,
         }).unwrap();
@@ -191,8 +192,9 @@ const QuestionnaireChat = ({
     },
     [
       isSending,
-      status,
+      assessmentId,
       questionnaireId,
+      userName,
       nextKey,
       sendReply,
       onStatusChange,

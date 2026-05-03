@@ -354,7 +354,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
               assessment_id,
               (draft) => {
                 if (draft.questionnaire) {
-                  draft.questionnaire.status = data.status as QuestionnaireSessionStatus;
+                  draft.questionnaire.status = data.status;
                   draft.questionnaire.answered_questions =
                     data.answered_questions;
                   draft.questionnaire.total_questions = data.total_questions;
