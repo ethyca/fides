@@ -1,7 +1,7 @@
 import { Button, Radio, Switch } from "fidesui";
 
-import PropertyPicker from "./PropertyPicker";
 import { TraversalPreviewResponse } from "../types";
+import PropertyPicker from "./PropertyPicker";
 
 interface Props {
   propertyKey: string | null;
@@ -15,7 +15,9 @@ interface Props {
 }
 
 const summarize = (payload: TraversalPreviewResponse | undefined) => {
-  if (!payload) return "";
+  if (!payload) {
+    return "";
+  }
   const reach = payload.integrations.filter(
     (i) => i.reachability !== "unreachable",
   ).length;
@@ -25,8 +27,14 @@ const summarize = (payload: TraversalPreviewResponse | undefined) => {
 };
 
 const CanvasHeader = ({
-  propertyKey, actionType, showNotTouched, payload,
-  onPropertyChange, onActionChange, onShowNotTouchedChange, onRegenerate,
+  propertyKey,
+  actionType,
+  showNotTouched,
+  payload,
+  onPropertyChange,
+  onActionChange,
+  onShowNotTouchedChange,
+  onRegenerate,
 }: Props) => (
   <div
     data-testid="canvas-header"
@@ -61,11 +69,17 @@ const CanvasHeader = ({
     </span>
     <span style={{ flex: 1 }} />
     {payload ? (
-      <span style={{ fontSize: 12, color: "var(--fidesui-color-text-secondary)" }}>
+      <span
+        style={{ fontSize: 12, color: "var(--fidesui-color-text-secondary)" }}
+      >
         {summarize(payload)}
       </span>
     ) : null}
-    <Button onClick={onRegenerate} data-testid="regenerate" disabled={!propertyKey}>
+    <Button
+      onClick={onRegenerate}
+      data-testid="regenerate"
+      disabled={!propertyKey}
+    >
       Regenerate
     </Button>
   </div>

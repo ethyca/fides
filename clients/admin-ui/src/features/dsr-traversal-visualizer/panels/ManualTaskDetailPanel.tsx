@@ -34,8 +34,8 @@ const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
         {data.conditions.length > 0 && (
           <Flex vertical>
             <Text strong>Conditions</Text>
-            {data.conditions.map((c, idx) => (
-              <Flex key={idx} vertical style={{ marginBottom: 8 }}>
+            {data.conditions.map((c) => (
+              <Flex key={c.expression} vertical style={{ marginBottom: 8 }}>
                 <Text>{c.summary}</Text>
                 <Text
                   type="secondary"
@@ -75,9 +75,12 @@ const ManualTaskDetailPanel = ({ data, integrations, onClose }: Props) => {
             <Text strong>Gates</Text>
             {data.gates.map((id) => {
               const integration = integrations.find((i) => i.id === id);
-              const name = integration?.system?.name ?? integration?.connection_key ?? id;
+              const name =
+                integration?.system?.name ?? integration?.connection_key ?? id;
               return (
-                <div key={id} data-testid="gated-integration">{name}</div>
+                <div key={id} data-testid="gated-integration">
+                  {name}
+                </div>
               );
             })}
           </Flex>

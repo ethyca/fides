@@ -1,5 +1,4 @@
 import { LaneCollapseMap, TraversalPreviewResponse } from "../types";
-
 import { computeLaneLayout } from "./compute-lane-layout";
 
 const allExpanded: LaneCollapseMap = {
@@ -78,7 +77,12 @@ describe("computeLaneLayout", () => {
         } as any,
       ],
       edges: [
-        { source: "identity-root", target: "i:a", kind: "depends_on", dep_count: 1 },
+        {
+          source: "identity-root",
+          target: "i:a",
+          kind: "depends_on",
+          dep_count: 1,
+        },
         { source: "i:a", target: "i:b", kind: "depends_on", dep_count: 1 },
       ],
     });

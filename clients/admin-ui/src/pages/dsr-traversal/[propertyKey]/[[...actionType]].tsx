@@ -7,7 +7,9 @@ import TraversalVisualizerPage from "~/features/dsr-traversal-visualizer/Travers
 const DsrTraversalPropertyPage: NextPage = () => {
   const router = useRouter();
   const propertyKey =
-    typeof router.query.propertyKey === "string" ? router.query.propertyKey : null;
+    typeof router.query.propertyKey === "string"
+      ? router.query.propertyKey
+      : null;
   const actionTypeParam = router.query.actionType;
   const actionType =
     Array.isArray(actionTypeParam) && actionTypeParam[0] === "erasure"
@@ -15,7 +17,10 @@ const DsrTraversalPropertyPage: NextPage = () => {
       : "access";
   return (
     <FixedLayout title="DSR Traversal" fullHeight>
-      <TraversalVisualizerPage propertyKey={propertyKey} actionType={actionType} />
+      <TraversalVisualizerPage
+        propertyKey={propertyKey}
+        actionType={actionType}
+      />
     </FixedLayout>
   );
 };

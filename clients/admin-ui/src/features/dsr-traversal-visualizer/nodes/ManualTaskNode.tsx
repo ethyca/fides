@@ -31,7 +31,10 @@ const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
       </Flex>
       <div className={styles.body}>
         {primaryLabel && (
-          <Text className={styles.metaText} ellipsis={{ tooltip: primaryLabel }}>
+          <Text
+            className={styles.metaText}
+            ellipsis={{ tooltip: primaryLabel }}
+          >
             {primaryLabel}
           </Text>
         )}

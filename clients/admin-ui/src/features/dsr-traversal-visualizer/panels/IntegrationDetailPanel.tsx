@@ -24,9 +24,13 @@ const IntegrationDetailPanel = ({
   onClose,
 }: Props) => {
   const gatingTasks = useMemo(() => {
-    if (!data) return [];
+    if (!data) {
+      return [];
+    }
     const gatingTaskIds = new Set(
-      edges.filter((e) => e.kind === "gates" && e.target === data.id).map((e) => e.source),
+      edges
+        .filter((e) => e.kind === "gates" && e.target === data.id)
+        .map((e) => e.source),
     );
     return manualTasks.filter((t) => gatingTaskIds.has(t.id));
   }, [data, edges, manualTasks]);
@@ -124,7 +128,12 @@ const IntegrationDetailPanel = ({
                   <div>
                     <strong>{t.name}</strong>
                   </div>
-                  <div style={{ fontSize: 11, color: "var(--fidesui-color-text-tertiary)" }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--fidesui-color-text-tertiary)",
+                    }}
+                  >
                     must complete before this runs
                   </div>
                 </div>

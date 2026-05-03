@@ -29,8 +29,14 @@ const collectPathEdgeIds = (
   const incomingByTarget = new Map<string, PreviewEdge[]>();
   const outgoingBySource = new Map<string, PreviewEdge[]>();
   payloadEdges.forEach((e) => {
-    incomingByTarget.set(e.target, [...(incomingByTarget.get(e.target) ?? []), e]);
-    outgoingBySource.set(e.source, [...(outgoingBySource.get(e.source) ?? []), e]);
+    incomingByTarget.set(e.target, [
+      ...(incomingByTarget.get(e.target) ?? []),
+      e,
+    ]);
+    outgoingBySource.set(e.source, [
+      ...(outgoingBySource.get(e.source) ?? []),
+      e,
+    ]);
   });
 
   const result = new Set<string>();
@@ -43,18 +49,26 @@ const collectPathEdgeIds = (
     const queue: string[] = [seedId];
     while (queue.length) {
       const id = queue.shift()!;
-      for (const e of edgesFor(id)) {
+      edgesFor(id).forEach((e) => {
         result.add(edgeId(e.kind, e.source, e.target));
         const next = nextNodeId(e);
         if (!visited.has(next)) {
           visited.add(next);
           queue.push(next);
         }
-      }
+      });
     }
   };
-  walk(rootId, (id) => incomingByTarget.get(id) ?? [], (e) => e.source);
-  walk(rootId, (id) => outgoingBySource.get(id) ?? [], (e) => e.target);
+  walk(
+    rootId,
+    (id) => incomingByTarget.get(id) ?? [],
+    (e) => e.source,
+  );
+  walk(
+    rootId,
+    (id) => outgoingBySource.get(id) ?? [],
+    (e) => e.target,
+  );
   return result;
 };
 
@@ -65,7 +79,12 @@ export const useTraversalGraph = (
 ): TraversalGraph =>
   useMemo(() => {
     if (!payload) {
-      return { nodes: [], edges: [], lanes: [], canvas: { width: 0, height: 0 } };
+      return {
+        nodes: [],
+        edges: [],
+        lanes: [],
+        canvas: { width: 0, height: 0 },
+      };
     }
 
     const { positions, lanes, canvas } = computeLaneLayout(payload, collapse);
@@ -76,15 +95,20 @@ export const useTraversalGraph = (
       .map((i) => i.id);
     const stageMap = computeStages(reachIds, payload.edges);
     const upstreamByTarget = new Map<string, string>();
-    for (const e of payload.edges) {
-      if (e.kind !== "depends_on" || e.source === "identity-root") continue;
+    payload.edges.forEach((e) => {
+      if (e.kind !== "depends_on" || e.source === "identity-root") {
+        return;
+      }
       if (!upstreamByTarget.has(e.target)) {
         const src = payload.integrations.find((i) => i.id === e.source);
         if (src) {
-          upstreamByTarget.set(e.target, src.system?.name ?? src.connection_key);
+          upstreamByTarget.set(
+            e.target,
+            src.system?.name ?? src.connection_key,
+          );
         }
       }
-    }
+    });
 
     const animatedEdgeIds = selectedNodeId
       ? collectPathEdgeIds(payload.edges, selectedNodeId)
@@ -92,7 +116,7 @@ export const useTraversalGraph = (
 
     const integrationNodes = payload.integrations.map<AppNode>((i) => {
       const stage = stageMap[i.id] ?? 1;
-      const stageVia = stage >= 2 ? upstreamByTarget.get(i.id) ?? null : null;
+      const stageVia = stage >= 2 ? (upstreamByTarget.get(i.id) ?? null) : null;
       const pos = positions[i.id];
       return {
         id: i.id,

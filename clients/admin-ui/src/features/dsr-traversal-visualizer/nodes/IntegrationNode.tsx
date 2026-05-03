@@ -36,7 +36,11 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           name: system?.name ?? null,
           key: connectionKey,
           saas_config: saasType
-            ? { type: saasType, fides_key: connectionKey, name: system?.name ?? "" }
+            ? {
+                type: saasType,
+                fides_key: connectionKey,
+                name: system?.name ?? "",
+              }
             : null,
           secrets: null,
         }) as ConnectionConfigurationResponse,
@@ -79,10 +83,7 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           <Text type="secondary" className={styles.metaText}>
             {collectionCount.traversed} of {collectionCount.total} collections
           </Text>
-          <Tag
-            color={REACHABILITY_COLOR[reachability]}
-            className={styles.tag}
-          >
+          <Tag color={REACHABILITY_COLOR[reachability]} className={styles.tag}>
             {REACHABILITY_LABEL[reachability]}
           </Tag>
         </Flex>
@@ -94,9 +95,7 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
               </Tag>
             ))}
             {dataCategories.length > 3 && (
-              <Tag className={styles.tag}>
-                +{dataCategories.length - 3}
-              </Tag>
+              <Tag className={styles.tag}>+{dataCategories.length - 3}</Tag>
             )}
           </Flex>
         )}

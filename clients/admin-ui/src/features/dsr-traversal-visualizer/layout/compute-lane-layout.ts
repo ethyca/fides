@@ -1,7 +1,7 @@
 import {
   CARD_PITCH,
-  COLLAPSED_LANE_WIDTH,
   COL_WIDTH,
+  COLLAPSED_LANE_WIDTH,
   LANE_GAP,
   LANE_HEADER_HEIGHT,
   LANE_Y_TOP,
@@ -15,7 +15,6 @@ import {
   StageBlock,
   TraversalPreviewResponse,
 } from "../types";
-
 import { computeColumnCount } from "./compute-column-count";
 import { computeStages } from "./compute-stages";
 
@@ -84,7 +83,7 @@ export const computeLaneLayout = (
   const stageMap = computeStages(reachIds, payload.edges);
 
   const stageGroups = new Map<number, typeof reachIntegrations>();
-  for (const i of reachIntegrations) {
+  reachIntegrations.forEach((i) => {
     const s = stageMap[i.id] ?? 1;
     const list = stageGroups.get(s);
     if (list) {
@@ -92,7 +91,7 @@ export const computeLaneLayout = (
     } else {
       stageGroups.set(s, [i]);
     }
-  }
+  });
   const sortedStages = [...stageGroups.entries()].sort((a, b) => a[0] - b[0]);
 
   const positions: Record<string, { x: number; y: number }> = {};
@@ -138,17 +137,18 @@ export const computeLaneLayout = (
   } else {
     let stageY = LANE_HEADER_HEIGHT;
     let maxCols = 1;
-    for (const [stageIndex, members] of sortedStages) {
+    sortedStages.forEach(([stageIndex, members]) => {
       const cols = computeColumnCount(members.length);
       maxCols = Math.max(maxCols, cols);
       const rows = Math.ceil(members.length / cols);
       const yStart = stageY + STAGE_HEADER_HEIGHT;
       const ids: string[] = [];
+      const laneX = cursorX;
       members.forEach((m, idx) => {
         const col = idx % cols;
         const row = Math.floor(idx / cols);
         positions[m.id] = {
-          x: cursorX + col * COL_WIDTH,
+          x: laneX + col * COL_WIDTH,
           y: yStart + row * CARD_PITCH,
         };
         ids.push(m.id);
@@ -165,7 +165,7 @@ export const computeLaneLayout = (
         columns: cols,
       });
       stageY = yEnd + STAGE_GAP;
-    }
+    });
     reachWidth = maxCols * COL_WIDTH;
     reachHeight = stageY;
   }

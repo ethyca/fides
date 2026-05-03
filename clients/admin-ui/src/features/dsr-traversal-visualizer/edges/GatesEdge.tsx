@@ -1,12 +1,25 @@
 import { Edge, EdgeProps, getBezierPath } from "@xyflow/react";
 
-const GatesEdge = (props: EdgeProps<Edge<Record<string, unknown>, "gates">>) => {
+const GatesEdge = (
+  props: EdgeProps<Edge<Record<string, unknown>, "gates">>,
+) => {
   const {
-    sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition,
-    markerEnd, animated,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    markerEnd,
+    animated,
   } = props;
   const [path] = getBezierPath({
-    sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
   });
   return (
     <path

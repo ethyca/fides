@@ -1,7 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 
 import { LANE_COLLAPSE_STORAGE_KEY } from "../constants";
-
 import { useLaneCollapseState } from "./useLaneCollapseState";
 
 describe("useLaneCollapseState", () => {

@@ -14,13 +14,13 @@ import GatesEdge from "./edges/GatesEdge";
 import { useLaneCollapseState } from "./hooks/useLaneCollapseState";
 import { useNodeSelection } from "./hooks/useNodeSelection";
 import { useTraversalGraph } from "./hooks/useTraversalGraph";
+import LaneChrome from "./LaneChrome";
 import IdentityRootNode from "./nodes/IdentityRootNode";
 import IntegrationNode from "./nodes/IntegrationNode";
 import ManualTaskNode from "./nodes/ManualTaskNode";
 import IntegrationDetailPanel from "./panels/IntegrationDetailPanel";
 import LegendPanel from "./panels/LegendPanel";
 import ManualTaskDetailPanel from "./panels/ManualTaskDetailPanel";
-import LaneChrome from "./LaneChrome";
 import { TraversalPreviewResponse } from "./types";
 
 const NODE_TYPES = {
@@ -67,7 +67,9 @@ const TraversalCanvas = ({ payload }: Props) => {
   // Auto-expand a collapsed lane when the selected chain reaches a node in it.
   // The chain is exactly the set of edges flagged `animated` by useTraversalGraph.
   useEffect(() => {
-    if (!selected) return;
+    if (!selected) {
+      return;
+    }
     const chainNodeIds = new Set<string>();
     chainNodeIds.add(selected.id);
     edges.forEach((e) => {
@@ -76,8 +78,13 @@ const TraversalCanvas = ({ payload }: Props) => {
         chainNodeIds.add(e.target);
       }
     });
-    const idToLane = new Map<string, "identity" | "reach" | "gated" | "skipped">();
-    if (payload?.identity_root.id) idToLane.set(payload.identity_root.id, "identity");
+    const idToLane = new Map<
+      string,
+      "identity" | "reach" | "gated" | "skipped"
+    >();
+    if (payload?.identity_root.id) {
+      idToLane.set(payload.identity_root.id, "identity");
+    }
     payload?.integrations.forEach((i) => {
       idToLane.set(
         i.id,
@@ -86,14 +93,18 @@ const TraversalCanvas = ({ payload }: Props) => {
     });
     payload?.manual_tasks.forEach((m) => idToLane.set(m.id, "gated"));
 
-    const lanesToExpand = new Set<typeof lanes[number]["id"]>();
+    const lanesToExpand = new Set<(typeof lanes)[number]["id"]>();
     chainNodeIds.forEach((id) => {
       const laneId = idToLane.get(id);
-      if (laneId) lanesToExpand.add(laneId);
+      if (laneId) {
+        lanesToExpand.add(laneId);
+      }
     });
     lanesToExpand.forEach((laneId) => {
       const lane = lanes.find((l) => l.id === laneId);
-      if (lane?.collapsed) expand(laneId);
+      if (lane?.collapsed) {
+        expand(laneId);
+      }
     });
   }, [selected, edges, lanes, payload, expand]);
 
@@ -122,7 +133,9 @@ const TraversalCanvas = ({ payload }: Props) => {
         <LaneChrome lanes={lanes} onToggleCollapse={toggle} />
         <Background style={{ opacity: 0 }} />
         <Controls showInteractive={false} />
-        <FitViewOnLayoutChange trigger={`${nodes.length}:${JSON.stringify(collapse)}`} />
+        <FitViewOnLayoutChange
+          trigger={`${nodes.length}:${JSON.stringify(collapse)}`}
+        />
       </ReactFlow>
       <LegendPanel />
       <IntegrationDetailPanel

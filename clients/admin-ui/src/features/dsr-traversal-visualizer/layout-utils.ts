@@ -24,7 +24,5 @@ export const layoutTraversal = (
   getLayoutedElements(nodes, edges, direction, {
     nodeWidth: NODE_WIDTH,
     nodeHeight: NODE_HEIGHT,
-    ...(direction === "LR"
-      ? { ranksep: LR_RANKSEP, nodesep: LR_NODESEP }
-      : {}),
+    ...(direction === "LR" ? { ranksep: LR_RANKSEP, nodesep: LR_NODESEP } : {}),
   });

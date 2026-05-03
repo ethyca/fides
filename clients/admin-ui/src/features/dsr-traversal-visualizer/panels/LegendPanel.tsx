@@ -10,7 +10,15 @@ const LegendPanel = () => (
     </div>
     <div className={styles.row}>
       <svg className={styles.swatch} viewBox="0 0 30 8">
-        <line x1="0" y1="4" x2="30" y2="4" stroke="#b45309" strokeWidth="2" strokeDasharray="6 4" />
+        <line
+          x1="0"
+          y1="4"
+          x2="30"
+          y2="4"
+          stroke="#b45309"
+          strokeWidth="2"
+          strokeDasharray="6 4"
+        />
       </svg>
       <span>Manual review gate</span>
     </div>

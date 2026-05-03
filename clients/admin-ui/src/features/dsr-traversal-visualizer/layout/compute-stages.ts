@@ -12,9 +12,9 @@ export const computeStages = (
   edges: PreviewEdge[],
 ): Record<string, number> => {
   const outgoing = new Map<string, string[]>();
-  for (const e of edges) {
+  edges.forEach((e) => {
     if (e.kind !== "depends_on") {
-      continue;
+      return;
     }
     const list = outgoing.get(e.source);
     if (list) {
@@ -22,7 +22,7 @@ export const computeStages = (
     } else {
       outgoing.set(e.source, [e.target]);
     }
-  }
+  });
 
   const reachSet = new Set(reachNodeIds);
   // depth starts undefined; BFS fills it. Orphans fall back to 1 at the end.
@@ -36,9 +36,9 @@ export const computeStages = (
     const u = queue.shift()!;
     const depthOfU = u === IDENTITY_ROOT_ID ? 0 : (depth[u] ?? 1);
     const targets = outgoing.get(u) ?? [];
-    for (const v of targets) {
+    targets.forEach((v) => {
       if (!reachSet.has(v)) {
-        continue;
+        return;
       }
       const candidate = depthOfU + 1;
       if (candidate > (depth[v] ?? 0)) {
@@ -48,14 +48,14 @@ export const computeStages = (
           queue.push(v);
         }
       }
-    }
+    });
   }
 
   // Assign Stage 1 to any reach node that was never reached by a dep edge.
   const result: Record<string, number> = {};
-  for (const id of reachNodeIds) {
+  reachNodeIds.forEach((id) => {
     result[id] = depth[id] ?? 1;
-  }
+  });
 
   return result;
 };

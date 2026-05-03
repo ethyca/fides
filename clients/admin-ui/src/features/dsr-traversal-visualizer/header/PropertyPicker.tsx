@@ -23,6 +23,7 @@ const PropertyPicker = ({ value, onChange }: Props) => {
   return (
     <Select
       data-testid="property-picker"
+      aria-label="Select a property"
       showSearch
       placeholder="Select a property"
       style={{ minWidth: 240 }}

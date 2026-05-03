@@ -8,11 +8,22 @@ const DependencyEdge = (
   props: EdgeProps<Edge<DependencyEdgeData, "dependency">>,
 ) => {
   const {
-    sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition,
-    markerEnd, animated,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    markerEnd,
+    animated,
   } = props;
   const [path] = getBezierPath({
-    sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition,
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
   });
   return (
     <path
