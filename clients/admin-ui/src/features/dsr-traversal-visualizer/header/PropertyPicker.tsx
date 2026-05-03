@@ -9,7 +9,7 @@ interface Props {
 }
 
 const PropertyPicker = ({ value, onChange }: Props) => {
-  const { data, isLoading } = useGetAllPropertiesQuery({ size: 200 });
+  const { data, isLoading } = useGetAllPropertiesQuery({ size: 100 });
 
   const options = useMemo(
     () =>
