@@ -7,9 +7,17 @@ import {
   LANE_PADDING_BOTTOM,
   LANE_PADDING_X,
   LANE_Y_TOP,
+  NODE_WIDTH,
   STAGE_GAP,
   STAGE_HEADER_HEIGHT,
 } from "../constants";
+
+/**
+ * Lane width that accounts for inter-column gaps only between columns,
+ * not after the last one. Symmetric horizontal padding around the card grid.
+ */
+const laneContentWidth = (cols: number): number =>
+  LANE_PADDING_X * 2 + NODE_WIDTH + Math.max(0, cols - 1) * COL_WIDTH;
 import {
   LaneBounds,
   LaneCollapseMap,
@@ -106,7 +114,7 @@ export const computeLaneLayout = (
   const identityHidden = false;
   const identityWidth = identityCollapsed
     ? COLLAPSED_LANE_WIDTH
-    : LANE_PADDING_X * 2 + COL_WIDTH;
+    : laneContentWidth(1);
   if (!identityCollapsed) {
     positions[identityNodeId] = {
       x: cursorX + LANE_PADDING_X,
@@ -170,7 +178,7 @@ export const computeLaneLayout = (
       });
       stageY = yEnd + STAGE_GAP;
     });
-    reachWidth = LANE_PADDING_X * 2 + maxCols * COL_WIDTH;
+    reachWidth = laneContentWidth(maxCols);
     reachHeight = stageY - STAGE_GAP + LANE_PADDING_BOTTOM;
   }
 
@@ -209,7 +217,7 @@ export const computeLaneLayout = (
           y: LANE_HEADER_HEIGHT + row * CARD_PITCH,
         };
       });
-      gatedWidth = LANE_PADDING_X * 2 + cols * COL_WIDTH;
+      gatedWidth = laneContentWidth(cols);
       gatedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
     }
   }
@@ -246,7 +254,7 @@ export const computeLaneLayout = (
           y: LANE_HEADER_HEIGHT + row * CARD_PITCH,
         };
       });
-      skippedWidth = LANE_PADDING_X * 2 + cols * COL_WIDTH;
+      skippedWidth = laneContentWidth(cols);
       skippedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
     }
   }

@@ -41,8 +41,13 @@ export const LANE_Y_TOP = 0;
 // Cards stack vertically with this pitch (card height + gap between rows).
 export const CARD_PITCH = NODE_HEIGHT + 20;
 
-// Width of a single column inside a lane (card + horizontal gap between cols).
-export const COL_WIDTH = NODE_WIDTH + 16;
+// Horizontal gap between adjacent columns in a multi-column lane.
+export const INTER_COL_GAP = 16;
+
+// Width of a single column slot inside a lane (card + the gap that follows
+// it). Used for column-index → x positioning. Only the gap *between*
+// columns counts toward the lane's width — see laneWidth() below.
+export const COL_WIDTH = NODE_WIDTH + INTER_COL_GAP;
 
 // Horizontal padding on each side of a lane — keeps cards from sitting flush
 // against the lane border and gives the chrome breathing room.
