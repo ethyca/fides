@@ -1,5 +1,7 @@
 import type { Node } from "@xyflow/react";
 
+import { LaneId } from "./constants";
+
 export type ActionType = "access" | "erasure";
 export type Reachability =
   | "reachable"
@@ -95,3 +97,53 @@ export type AppNode =
   | Node<IdentityRootData, "identityRoot">
   | Node<IntegrationNodeData, "integration">
   | Node<ManualTaskNodeData, "manualTask">;
+
+export interface StageBlock {
+  /** 1-based index — Stage 1, Stage 2, ... */
+  index: number;
+  /** Plain-English label, e.g. "First — from identity directly". */
+  label: string;
+  /** Plain-English tooltip. */
+  tooltip: string;
+  /** Cards in this stage, in render order. */
+  nodeIds: string[];
+  /** Y where this block starts inside its lane. */
+  yStart: number;
+  /** Y where this block ends. */
+  yEnd: number;
+  /** Column count promoted for this stage (1, 2, or 3). */
+  columns: number;
+}
+
+export interface LaneBounds {
+  id: LaneId;
+  /** Pixel X of the lane's left edge in the canvas coord system. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Card count, used for the header chip. */
+  cardCount: number;
+  /** Whether the lane is currently collapsed (header-only). */
+  collapsed: boolean;
+  /** True if the lane has no cards and is hidden entirely. */
+  hidden: boolean;
+  /** Plain-English label and tooltip. */
+  label: string;
+  tooltip: string;
+  /** Stage blocks — only populated for the reach lane. */
+  stages?: StageBlock[];
+  /** True for the not-touched lane — drawn separated from the flow rail. */
+  outOfFlow?: boolean;
+}
+
+export interface LaneLayoutResult {
+  /** Per-node positions, keyed by node id. */
+  positions: Record<string, { x: number; y: number }>;
+  /** Lane bounds in render order (left to right). */
+  lanes: LaneBounds[];
+  /** Total canvas size for fit/sizing calculations. */
+  canvas: { width: number; height: number };
+}
+
+export type LaneCollapseMap = Record<LaneId, boolean>;
