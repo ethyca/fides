@@ -25,6 +25,7 @@ from .consent_settings import ConsentSettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
 from .duplicate_detection_settings import DuplicateDetectionSettings
+from .event_settings import EventSettings
 from .execution_settings import ExecutionSettings
 from .fides_settings import FidesSettings
 from .helpers import handle_deprecated_env_variables, handle_deprecated_fields
@@ -81,6 +82,7 @@ class FidesConfig(FidesSettings):
     )
     database: DatabaseSettings
     privacy_request_duplicate_detection: DuplicateDetectionSettings
+    events: EventSettings
     execution: ExecutionSettings
     logging: LoggingSettings
     notifications: NotificationSettings
@@ -170,6 +172,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "cli": CLISettings,
         "database": DatabaseSettings,
         "privacy_request_duplicate_detection": DuplicateDetectionSettings,
+        "events": EventSettings,
         "execution": ExecutionSettings,
         "logging": LoggingSettings,
         "notifications": NotificationSettings,

@@ -21,6 +21,10 @@ from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
+# Importing the event-framework Celery integration here ensures its signal
+# handlers (event_id propagation) are connected before any task fires.
+import fides.common.events.celery_integration  # noqa: E402, F401  # isort:skip
+
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
 PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME = "fides.privacy_request_exports"
@@ -174,6 +178,16 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
 
 
 celery_app = _create_celery(CONFIG)
+
+
+# Import event-framework subscriber modules so their @subscribes_to
+# decorators run and the in-process registry is populated. Must happen
+# AFTER celery_app is defined, since make_subscriber_task imports it.
+from fides.common.events.autodiscover import (  # noqa: E402  # isort:skip
+    import_subscriber_modules,
+)
+
+import_subscriber_modules()
 
 
 @celery_setup_logging.connect
