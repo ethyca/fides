@@ -129,6 +129,7 @@ const TraversalCanvas = ({ payload }: Props) => {
         data={integrationData}
         edges={payload?.edges ?? []}
         integrations={payload?.integrations ?? []}
+        manualTasks={payload?.manual_tasks ?? []}
         onClose={clear}
       />
       <ManualTaskDetailPanel data={manualData} onClose={clear} />

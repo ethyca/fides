@@ -1,7 +1,9 @@
 import { Collapse, Drawer, Flex, Tag, Text } from "fidesui";
+import { useMemo } from "react";
 
 import {
   IntegrationNodeData,
+  ManualTaskNodeData,
   PreviewEdge,
   TraversalPreviewResponse,
 } from "../types";
@@ -10,6 +12,7 @@ interface Props {
   data: IntegrationNodeData | null;
   edges: PreviewEdge[];
   integrations: TraversalPreviewResponse["integrations"];
+  manualTasks: ManualTaskNodeData[];
   onClose: () => void;
 }
 
@@ -17,8 +20,17 @@ const IntegrationDetailPanel = ({
   data,
   edges,
   integrations,
+  manualTasks,
   onClose,
 }: Props) => {
+  const gatingTasks = useMemo(() => {
+    if (!data) return [];
+    const gatingTaskIds = new Set(
+      edges.filter((e) => e.kind === "gates" && e.target === data.id).map((e) => e.source),
+    );
+    return manualTasks.filter((t) => gatingTaskIds.has(t.id));
+  }, [data, edges, manualTasks]);
+
   if (!data) {
     return null;
   }
@@ -60,7 +72,7 @@ const IntegrationDetailPanel = ({
         )}
         {incoming.length > 0 && (
           <Flex vertical gap={4}>
-            <Text strong>Depends on</Text>
+            <Text strong>Triggered by</Text>
             {incoming.map(({ sourceLabel, count }) => (
               <Text key={sourceLabel} style={{ fontSize: 13 }}>
                 {sourceLabel}
@@ -69,6 +81,54 @@ const IntegrationDetailPanel = ({
                   {count} field reference{count === 1 ? "" : "s"}
                 </Text>
               </Text>
+            ))}
+          </Flex>
+        )}
+        {gatingTasks.length > 0 && (
+          <Flex vertical gap={4}>
+            <Text strong>Manual review required</Text>
+            {gatingTasks.map((t) => (
+              <div
+                key={t.id}
+                data-testid="gating-task"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "6px 8px",
+                  marginTop: 4,
+                  background: "#fffaf0",
+                  border: "1px solid #fde68a",
+                  borderRadius: 6,
+                  fontSize: 12,
+                }}
+              >
+                <span
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 4,
+                    background: "#fef3c7",
+                    color: "#92400e",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  !
+                </span>
+                <div>
+                  <div>
+                    <strong>{t.name}</strong>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--fidesui-color-text-tertiary)" }}>
+                    must complete before this runs
+                  </div>
+                </div>
+              </div>
             ))}
           </Flex>
         )}
