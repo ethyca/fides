@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Include `src/fides/bin` in build artifacts so the libpbac shared library is distributed with the package
+pr: 8093
+labels: []
