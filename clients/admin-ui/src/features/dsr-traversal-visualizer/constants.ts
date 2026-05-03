@@ -57,8 +57,10 @@ export const LANE_PADDING_X = 14;
 export const LANE_PADDING_BOTTOM = 16;
 
 // Multi-column promotion thresholds. >MAX_SINGLE_COL → 2-col, >MAX_DOUBLE_COL → 3-col.
-export const LANE_SINGLE_COL_MAX = 5;
-export const LANE_DOUBLE_COL_MAX = 12;
+// Tuned so a single column never gets taller than ~4 cards before wrapping
+// kicks in — keeps tall lanes from scrolling off the viewport.
+export const LANE_SINGLE_COL_MAX = 4;
+export const LANE_DOUBLE_COL_MAX = 8;
 
 // Maximum columns supported per lane.
 export const MAX_LANE_COLS = 3;
