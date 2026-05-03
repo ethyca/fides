@@ -63,13 +63,46 @@
   font-weight: 600;
 }
 .toggle {
-  background: none;
-  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 14px;
   color: var(--fidesui-color-text-tertiary);
-  cursor: pointer;
   padding: 0 4px;
-  &:hover { color: var(--fidesui-color-text); }
+}
+
+// Floating click-target layer that sits above React Flow's pane so the
+// per-lane collapse buttons receive clicks. The wrapper itself doesn't
+// capture pointer events (so cards stay clickable through it); only the
+// individual button hit areas do.
+.toggleLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.floatingToggle {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--fidesui-color-bg-container, #fff);
+  border: 1px solid var(--fidesui-color-border);
+  color: var(--fidesui-color-text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  padding: 0;
+  &:hover {
+    color: var(--fidesui-color-text);
+    border-color: var(--fidesui-color-border-secondary, #94a3b8);
+  }
 }
 
 .stage {
