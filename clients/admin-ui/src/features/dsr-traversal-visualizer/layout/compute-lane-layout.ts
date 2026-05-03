@@ -272,11 +272,24 @@ export const computeLaneLayout = (
     outOfFlow: true,
   });
   const totalWidth = cursorX + skippedWidth;
-  const totalHeight = Math.max(...lanes.map((l) => l.height));
+  // Stretch collapsed lanes to match the tallest expanded lane so the
+  // canvas reads as a row of equal-height strips. Without this, a
+  // collapsed lane sits at LANE_HEADER_HEIGHT (~48px) and looks orphaned
+  // next to a 700px-tall expanded reach lane.
+  const expandedMaxHeight = Math.max(
+    LANE_HEADER_HEIGHT,
+    ...lanes
+      .filter((l) => !l.collapsed && !l.hidden)
+      .map((l) => l.height),
+  );
+  const balancedLanes = lanes.map((l) =>
+    l.collapsed && !l.hidden ? { ...l, height: expandedMaxHeight } : l,
+  );
+  const totalHeight = Math.max(...balancedLanes.map((l) => l.height));
 
   return {
     positions,
-    lanes,
+    lanes: balancedLanes,
     canvas: { width: totalWidth, height: totalHeight },
   };
 };

@@ -30,8 +30,42 @@
   &.lane-gated    { background: #fffaf0; border-color: #fde68a; }
   &.lane-skipped  { background: #fafafa; border-color: var(--fidesui-color-border); }
 
+  // Collapsed lanes shrink to a narrow vertical strip. Restack the header
+  // as a column: count chip on top (just under the floating toggle), then
+  // the rotated label running the rest of the lane height. The visual
+  // chevron in the header is hidden — the floating toggle button at the
+  // lane's top-right takes its place.
   &.collapsed {
-    .label { writing-mode: vertical-rl; transform: rotate(180deg); }
+    padding: 6px 4px;
+
+    .header {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      height: 100%;
+      border-bottom: 0;
+      // Top padding clears the floating toggle button (22px button at
+      // top: 6px + a small gap before the count).
+      padding: 36px 0 8px 0;
+      margin: 0;
+    }
+
+    .count {
+      order: -1;
+    }
+
+    .label {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      letter-spacing: 0.16em;
+    }
+
+    .toggle {
+      display: none;
+    }
   }
 
   &.outOfFlow {
