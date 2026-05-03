@@ -15,29 +15,29 @@ const IdentityRootNode = ({ data }: NodeProps<IdentityRootNodeType>) => (
         icon={<Icons.User size={16} />}
         className={styles.avatar}
       />
-      <Text strong style={{ flex: 1 }}>
+      <Text strong className={styles.headerLabel}>
         Identity
       </Text>
     </Flex>
     <div className={styles.body}>
-      <Text type="secondary" style={{ fontSize: 12 }}>
+      <Text type="secondary" className={styles.metaText}>
         Identity types
       </Text>
-      <Flex gap={4} wrap style={{ marginTop: 4, marginBottom: 8 }}>
+      <Flex gap={4} wrap className={styles.metaRow}>
         {data.identity_types.map((t) => (
-          <Tag key={t} style={{ fontSize: 10 }}>
+          <Tag key={t} className={styles.tag}>
             {t}
           </Tag>
         ))}
       </Flex>
       {data.privacy_center_forms.length > 0 && (
         <>
-          <Text type="secondary" style={{ fontSize: 12 }}>
+          <Text type="secondary" className={styles.metaText}>
             Privacy center forms
           </Text>
-          <Flex vertical style={{ marginTop: 4 }}>
+          <Flex vertical className={styles.metaRow}>
             {data.privacy_center_forms.map((f) => (
-              <Text key={f.id} style={{ fontSize: 12 }}>
+              <Text key={f.id} className={styles.metaText}>
                 {f.name}
               </Text>
             ))}

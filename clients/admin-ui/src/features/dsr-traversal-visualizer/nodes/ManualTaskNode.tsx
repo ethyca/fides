@@ -21,23 +21,24 @@ const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
           icon={<Icons.Activity size={16} />}
           className={styles.avatar}
         />
-        <Text strong style={{ flex: 1 }} ellipsis={{ tooltip: data.name }}>
+        <Text
+          strong
+          className={styles.headerLabel}
+          ellipsis={{ tooltip: data.name }}
+        >
           {data.name}
         </Text>
       </Flex>
       <div className={styles.body}>
         {primaryLabel && (
-          <Text
-            style={{ fontSize: 12, display: "block" }}
-            ellipsis={{ tooltip: primaryLabel }}
-          >
+          <Text className={styles.metaText} ellipsis={{ tooltip: primaryLabel }}>
             {primaryLabel}
           </Text>
         )}
         {primaryHelp && (
           <Text
             type="secondary"
-            style={{ fontSize: 11, display: "block", marginTop: 2 }}
+            className={`${styles.miniText} ${styles.fieldHelp}`}
             ellipsis={{ tooltip: primaryHelp }}
           >
             {primaryHelp}
@@ -46,16 +47,18 @@ const ManualTaskNode = ({ data }: NodeProps<ManualTaskNodeType>) => {
         {extraCount > 0 && (
           <Text
             type="secondary"
-            style={{ fontSize: 11, display: "block", marginTop: 4 }}
+            className={`${styles.miniText} ${styles.fieldExtra}`}
           >
             +{extraCount} more field{extraCount === 1 ? "" : "s"}
           </Text>
         )}
         {data.conditions.length > 0 && (
-          <Tag color="warning" style={{ fontSize: 10, marginTop: 6 }}>
-            {data.conditions.length} condition
-            {data.conditions.length === 1 ? "" : "s"}
-          </Tag>
+          <div className={styles.metaRow}>
+            <Tag color="warning" className={styles.tag}>
+              {data.conditions.length} condition
+              {data.conditions.length === 1 ? "" : "s"}
+            </Tag>
+          </div>
         )}
       </div>
       <Handle

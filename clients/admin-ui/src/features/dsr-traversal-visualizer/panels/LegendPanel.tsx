@@ -1,21 +1,31 @@
 import { Card, Flex, Text } from "fidesui";
 
+import styles from "./LegendPanel.module.scss";
+
 const LegendPanel = () => (
-  <Card
-    size="small"
-    style={{ position: "absolute", bottom: 16, left: 16, zIndex: 10 }}
-    data-testid="visualizer-legend"
-  >
-    <Flex vertical gap={4}>
+  <Card size="small" className={styles.panel} data-testid="visualizer-legend">
+    <Flex vertical gap={6}>
       <Text strong style={{ fontSize: 12 }}>
         Legend
       </Text>
-      <Text type="secondary" style={{ fontSize: 11 }}>
-        ● Integration ▲ Manual task ◆ Identity
-      </Text>
-      <Text type="secondary" style={{ fontSize: 11 }}>
-        — depends on - - - gates
-      </Text>
+      <div className={styles.row}>
+        <span className={styles.swatch} />
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Integration / Identity / Manual task
+        </Text>
+      </div>
+      <div className={styles.row}>
+        <span className={styles.lineSwatch} />
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          depends on
+        </Text>
+      </div>
+      <div className={styles.row}>
+        <span className={`${styles.lineSwatch} ${styles.lineSwatchDashed}`} />
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          gates
+        </Text>
+      </div>
     </Flex>
   </Card>
 );

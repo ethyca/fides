@@ -3,15 +3,67 @@ import { useMemo } from "react";
 
 import { EDGE_TYPES, NODE_HEIGHT, NODE_WIDTH } from "../constants";
 import { LayoutDirection, layoutTraversal } from "../layout-utils";
-import { AppNode, TraversalPreviewResponse } from "../types";
+import { AppNode, PreviewEdge, TraversalPreviewResponse } from "../types";
 
 export interface TraversalGraph {
   nodes: AppNode[];
   edges: Edge[];
 }
 
+// Encode source/target so edge IDs stay collision-safe even when a
+// connection_key or manual-task_key contains the separator literal. ``>`` is
+// always encoded by encodeURIComponent (to ``%3E``), so a bare ``>`` only
+// appears between the encoded segments.
 const edgeId = (kind: string, source: string, target: string) =>
-  `edge:${kind}:${source}__${target}`;
+  `edge:${kind}:${encodeURIComponent(source)}>${encodeURIComponent(target)}`;
+
+// Walk the dependency graph from ``rootId`` in both directions and collect
+// every edge along the way. Used to highlight the full traversal path that
+// flows through a clicked card -- upstream tells the user how this node gets
+// reached, downstream what its data feeds into.
+const collectPathEdgeIds = (
+  payloadEdges: PreviewEdge[],
+  rootId: string,
+): Set<string> => {
+  const incomingByTarget = new Map<string, PreviewEdge[]>();
+  const outgoingBySource = new Map<string, PreviewEdge[]>();
+  payloadEdges.forEach((e) => {
+    incomingByTarget.set(e.target, [...(incomingByTarget.get(e.target) ?? []), e]);
+    outgoingBySource.set(e.source, [...(outgoingBySource.get(e.source) ?? []), e]);
+  });
+
+  const result = new Set<string>();
+  const walk = (
+    seedId: string,
+    edgesFor: (id: string) => PreviewEdge[],
+    nextNodeId: (e: PreviewEdge) => string,
+  ) => {
+    const visited = new Set<string>([seedId]);
+    const queue: string[] = [seedId];
+    while (queue.length) {
+      const id = queue.shift()!;
+      for (const e of edgesFor(id)) {
+        result.add(edgeId(e.kind, e.source, e.target));
+        const next = nextNodeId(e);
+        if (!visited.has(next)) {
+          visited.add(next);
+          queue.push(next);
+        }
+      }
+    }
+  };
+  walk(
+    rootId,
+    (id) => incomingByTarget.get(id) ?? [],
+    (e) => e.source,
+  );
+  walk(
+    rootId,
+    (id) => outgoingBySource.get(id) ?? [],
+    (e) => e.target,
+  );
+  return result;
+};
 
 const GRID_H_SPACING = NODE_WIDTH + 32;
 const GRID_V_SPACING = NODE_HEIGHT + 60;
@@ -23,11 +75,16 @@ const MANUAL_TASK_H_SPACING = NODE_WIDTH + 32;
 export const useTraversalGraph = (
   payload: TraversalPreviewResponse | undefined,
   direction: LayoutDirection,
+  selectedNodeId: string | null = null,
 ): TraversalGraph =>
   useMemo(() => {
     if (!payload) {
       return { nodes: [], edges: [] };
     }
+
+    const animatedEdgeIds = selectedNodeId
+      ? collectPathEdgeIds(payload.edges, selectedNodeId)
+      : null;
     const nodes: AppNode[] = [
       {
         id: payload.identity_root.id,
@@ -49,13 +106,20 @@ export const useTraversalGraph = (
       })),
     ];
 
-    const edges: Edge[] = payload.edges.map((e) => ({
-      id: edgeId(e.kind, e.source, e.target),
-      source: e.source,
-      target: e.target,
-      type: e.kind === "gates" ? EDGE_TYPES.GATES : EDGE_TYPES.DEPENDENCY,
-      data: { dep_count: e.dep_count, kind: e.kind },
-    }));
+    const edges: Edge[] = payload.edges.map((e) => {
+      const id = edgeId(e.kind, e.source, e.target);
+      return {
+        id,
+        source: e.source,
+        target: e.target,
+        type: e.kind === "gates" ? EDGE_TYPES.GATES : EDGE_TYPES.DEPENDENCY,
+        // ``animated`` is React Flow's built-in marching-ants effect.
+        // When a card is selected we light up every edge in its upstream
+        // and downstream traversal so the data flow reads at a glance.
+        animated: animatedEdgeIds ? animatedEdgeIds.has(id) : false,
+        data: { dep_count: e.dep_count, kind: e.kind },
+      };
+    });
 
     // Split nodes into four groups:
     //   - identity-root: rendered to the left of the integration tree
@@ -191,4 +255,4 @@ export const useTraversalGraph = (
       ],
       edges,
     };
-  }, [payload, direction]);
+  }, [payload, direction, selectedNodeId]);

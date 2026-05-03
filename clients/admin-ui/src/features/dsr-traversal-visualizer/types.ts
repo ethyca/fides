@@ -34,6 +34,7 @@ export interface IntegrationNodeData extends Record<string, unknown> {
   id: string;
   connection_key: string;
   connector_type: string;
+  saas_type?: string | null;
   system?: SystemRef;
   reachability: Reachability;
   action_status: ActionStatus;

@@ -76,7 +76,15 @@ const TraversalVisualizerPage = ({ propertyId, actionType }: Props) => {
       : data;
 
   if (isLoading) {
-    return <Spin />;
+    return (
+      <Flex
+        justify="center"
+        align="center"
+        style={{ height: "calc(100vh - 200px)" }}
+      >
+        <Spin size="large" />
+      </Flex>
+    );
   }
   if (isError) {
     return (

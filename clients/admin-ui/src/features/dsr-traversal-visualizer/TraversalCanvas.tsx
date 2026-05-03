@@ -1,6 +1,14 @@
 import "@xyflow/react/dist/style.css";
 
-import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
+import {
+  Background,
+  Controls,
+  MarkerType,
+  MiniMap,
+  ReactFlow,
+  useReactFlow,
+} from "@xyflow/react";
+import { useEffect } from "react";
 
 import DependencyEdge from "./edges/DependencyEdge";
 import GatesEdge from "./edges/GatesEdge";
@@ -26,14 +34,49 @@ const EDGE_TYPES = {
   gates: GatesEdge,
 };
 
+const DEFAULT_EDGE_OPTIONS = {
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    width: 14,
+    height: 14,
+  },
+};
+
+// Refit the viewport whenever the visible node set or layout direction
+// changes (e.g. toggling "show unreachable", switching access/erasure, or
+// flipping LR/TB). The short timeout gives React Flow's ResizeObserver a
+// chance to measure any newly-mounted cards before fitView reads their
+// bounds -- without it, the first fit underestimates the layout extent and
+// crops content on the right.
+const FIT_VIEW_DELAY_MS = 120;
+
+const FitViewOnLayoutChange = ({
+  trigger,
+}: {
+  trigger: string | number;
+}) => {
+  const { fitView } = useReactFlow();
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      fitView({ padding: 0.2, duration: 250 });
+    }, FIT_VIEW_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [trigger, fitView]);
+  return null;
+};
+
 interface Props {
   payload: TraversalPreviewResponse | undefined;
   direction: LayoutDirection;
 }
 
 const TraversalCanvas = ({ payload, direction }: Props) => {
-  const { nodes, edges } = useTraversalGraph(payload, direction);
   const { selected, onNodeClick, clear } = useNodeSelection();
+  const { nodes, edges } = useTraversalGraph(
+    payload,
+    direction,
+    selected?.id ?? null,
+  );
 
   const integrationData =
     selected?.type === "integration" ? selected.data : null;
@@ -52,12 +95,14 @@ const TraversalCanvas = ({ payload, direction }: Props) => {
         edges={edges}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
+        defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         onNodeClick={onNodeClick}
         fitView
       >
         <Background />
         <Controls />
         <MiniMap pannable zoomable />
+        <FitViewOnLayoutChange trigger={`${direction}:${nodes.length}`} />
       </ReactFlow>
       <LegendPanel />
       <IntegrationDetailPanel
