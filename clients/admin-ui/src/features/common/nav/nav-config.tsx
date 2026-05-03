@@ -161,12 +161,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
         ],
       },
-    ],
-  },
-  {
-    icon: <Icons.View />,
-    title: "DSR Traversal",
-    routes: [
       {
         title: "Traversal preview",
         path: routes.DSR_TRAVERSAL_ROUTE,
