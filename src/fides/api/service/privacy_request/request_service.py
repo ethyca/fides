@@ -866,6 +866,7 @@ def batch_execution_and_audit_logs_by_dataset(
     audit_log_display_names = {
         "approved": "Request approved",
         "denied": "Request denied",
+        "email_sent": "Email sent",
         "finished": "Request finished",
         "policy_evaluated": "Request policy evaluated",
         "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",

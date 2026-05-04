@@ -1014,32 +1014,33 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
                 mock_handle_requeue.assert_called_once_with(db, privacy_request)
 
 
+EXPECTED_AUDIT_LOG_DISPLAY_NAMES = [
+    (AuditLogAction.approved, "Request approved"),
+    (AuditLogAction.denied, "Request denied"),
+    (AuditLogAction.email_sent, "Email sent"),
+    (AuditLogAction.finished, "Request finished"),
+    (AuditLogAction.policy_evaluated, "Request policy evaluated"),
+    (
+        AuditLogAction.pre_approval_webhook_triggered,
+        "Triggered pre-approval webhooks",
+    ),
+    (
+        AuditLogAction.pre_approval_eligible,
+        "Request auto-approved by pre-approval webhooks",
+    ),
+    (
+        AuditLogAction.pre_approval_not_eligible,
+        "Request flagged for manual review by pre-approval webhooks",
+    ),
+]
+
+
 class TestBatchExecutionAndAuditLogsByDataset:
     """Test that every AuditLogAction has a display-name mapping, so new
     actions don't silently fall through to the raw snake_case
     `f"Request {status}"` fallback."""
 
-    @pytest.mark.parametrize(
-        "action,expected_key",
-        [
-            (AuditLogAction.approved, "Request approved"),
-            (AuditLogAction.denied, "Request denied"),
-            (AuditLogAction.finished, "Request finished"),
-            (AuditLogAction.policy_evaluated, "Request policy evaluated"),
-            (
-                AuditLogAction.pre_approval_webhook_triggered,
-                "Triggered pre-approval webhooks",
-            ),
-            (
-                AuditLogAction.pre_approval_eligible,
-                "Request auto-approved by pre-approval webhooks",
-            ),
-            (
-                AuditLogAction.pre_approval_not_eligible,
-                "Request flagged for manual review by pre-approval webhooks",
-            ),
-        ],
-    )
+    @pytest.mark.parametrize("action,expected_key", EXPECTED_AUDIT_LOG_DISPLAY_NAMES)
     def test_audit_log_action_display_names(
         self, db, privacy_request, action, expected_key
     ):
@@ -1057,3 +1058,12 @@ class TestBatchExecutionAndAuditLogsByDataset:
             assert expected_key in result[privacy_request.id]
         finally:
             audit_log.delete(db)
+
+    def test_parametrize_covers_every_audit_log_action(self):
+        """Guard against drift: every AuditLogAction enum value must appear
+        in EXPECTED_AUDIT_LOG_DISPLAY_NAMES. If this fails after adding a
+        new action, add the action + expected display name to the list."""
+        parametrized = {action for action, _ in EXPECTED_AUDIT_LOG_DISPLAY_NAMES}
+        assert set(AuditLogAction) == parametrized, (
+            f"Missing from parametrize: {set(AuditLogAction) - parametrized}"
+        )
