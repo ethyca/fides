@@ -42,6 +42,14 @@ export const PrivacyCenterConfigSection = ({
     setOpen(true);
   };
 
+  const handleDelete = (policyKey: string) => {
+    const current = value ?? { actions: [] };
+    const nextActions = (current.actions ?? []).filter(
+      (a) => a.policy_key !== policyKey,
+    );
+    onChange?.({ ...current, actions: nextActions });
+  };
+
   const handleOk = (action: ActionFormValues) => {
     const current = value ?? { actions: [] };
     const existingActions = current.actions ?? [];
@@ -129,6 +137,7 @@ export const PrivacyCenterConfigSection = ({
           actions={value?.actions ?? []}
           onEditAction={handleEdit}
           onAddAction={handleAdd}
+          onDeleteAction={handleDelete}
         />
       </Space>
       <ActionEditModal

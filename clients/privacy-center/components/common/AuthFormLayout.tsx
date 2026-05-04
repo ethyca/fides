@@ -41,7 +41,7 @@ export const AuthFormLayout = ({
       className={[styles.root, className].filter(Boolean).join(" ")}
     >
       <div className={styles.container}>
-        <Space direction="vertical" size={64} style={{ width: "100%" }}>
+        <Space orientation="vertical" size={64} style={{ width: "100%" }}>
           {/* Fides Logo */}
           <Flex justify="center">
             <img
@@ -54,14 +54,14 @@ export const AuthFormLayout = ({
           </Flex>
 
           {/* Title and Form Container */}
-          <Space direction="vertical" size={24} style={{ width: "100%" }}>
+          <Space orientation="vertical" size={24} style={{ width: "100%" }}>
             {/* Form Box */}
             <div className={styles.formBox}>
-              <Space direction="vertical" size={32} style={{ width: "100%" }}>
+              <Space orientation="vertical" size={32} style={{ width: "100%" }}>
                 {title && (
                   <div>
                     <Space
-                      direction="vertical"
+                      orientation="vertical"
                       size={16}
                       style={{ width: "100%" }}
                     >

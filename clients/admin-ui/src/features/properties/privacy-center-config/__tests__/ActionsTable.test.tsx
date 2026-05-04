@@ -21,6 +21,7 @@ describe("ActionsTable", () => {
         actions={[sampleAction]}
         onEditAction={jest.fn()}
         onAddAction={jest.fn()}
+        onDeleteAction={jest.fn()}
       />,
     );
     expect(screen.getByText("Access My Data")).toBeInTheDocument();
@@ -35,6 +36,7 @@ describe("ActionsTable", () => {
         actions={[sampleAction]}
         onEditAction={onEdit}
         onAddAction={jest.fn()}
+        onDeleteAction={jest.fn()}
       />,
     );
 

@@ -24,6 +24,11 @@ const FormBuilderRoute: NextPage = () => {
     skip: !id,
   });
   const [updateProperty] = useUpdatePropertyMutation();
+  const matchedAction = (
+    (property?.privacy_center_config as { actions?: any[] } | null)?.actions ??
+    []
+  ).find((a) => a?.policy_key === actionPolicyKey);
+  const breadcrumbTitle = matchedAction?.title || actionPolicyKey;
 
   const handleSave = async ({
     actionPolicyKey: key,
@@ -69,13 +74,13 @@ const FormBuilderRoute: NextPage = () => {
   }
 
   return (
-    <Layout title="Form Builder">
+    <Layout title="Form editor">
       <PageHeader
-        heading={`Form Builder: ${property.name}`}
+        heading="Form editor"
         breadcrumbItems={[
           { title: "All properties", href: PROPERTIES_ROUTE },
           { title: property.name, href: `${PROPERTIES_ROUTE}/${property.id}` },
-          { title: actionPolicyKey },
+          { title: breadcrumbTitle },
         ]}
       />
       <FormBuilderPage
