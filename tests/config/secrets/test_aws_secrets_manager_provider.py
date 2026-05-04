@@ -177,6 +177,36 @@ class TestStaleWhileRevalidate:
             secret = provider.get_secret(SECRET_NAME)
             assert secret["username"] == "testuser"
 
+    def test_stale_value_served_after_invalidation_and_fetch_failure(self, aws_env):
+        """When fetched_at=0 (post-invalidation) and the fetch fails, the
+        provider should serve the stale cached value rather than raising."""
+        time_value = [100.0]
+
+        with patch(
+            "fides.config.secrets.aws_secrets_manager_provider.time"
+        ) as mock_time:
+            mock_time.monotonic = lambda: time_value[0]
+
+            provider = AWSSecretsManagerProvider(
+                region_name=REGION,
+                cache_ttl_seconds=10.0,
+                cache_stale_ttl_seconds=60.0,
+            )
+            provider.get_secret(SECRET_NAME)
+
+            # Invalidate (sets fetched_at=0), then make fetches fail
+            provider.invalidate(SECRET_NAME)
+            provider._client.get_secret_value = MagicMock(
+                side_effect=ClientError(
+                    {"Error": {"Code": "InternalServiceError", "Message": "boom"}},
+                    "GetSecretValue",
+                )
+            )
+
+            # Should serve stale value, not raise
+            secret = provider.get_secret(SECRET_NAME)
+            assert secret["username"] == "testuser"
+
     def test_hard_failure_after_stale_ttl(self, aws_env):
         time_value = [100.0]
 

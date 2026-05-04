@@ -65,6 +65,11 @@ class TestSecretValue:
         with pytest.raises(TypeError, match="cannot be pickled"):
             pickle.dumps(sv)
 
+    def test_getstate_blocked(self):
+        sv = SecretValue({"password": "s3cret"})
+        with pytest.raises(TypeError, match="cannot be serialized"):
+            sv.__getstate__()
+
     def test_copy_blocked(self):
         import copy  # local import — only used in this test
 
