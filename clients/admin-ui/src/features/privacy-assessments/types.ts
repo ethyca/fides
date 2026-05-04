@@ -15,6 +15,7 @@ export enum AssessmentStatus {
   IN_PROGRESS = "in_progress",
   COMPLETED = "completed",
   OUTDATED = "outdated",
+  GENERATING = "generating",
 }
 
 export enum AnswerStatus {
