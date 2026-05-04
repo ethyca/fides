@@ -397,20 +397,18 @@ export const FieldPropertiesPanel = ({
             </Form.Item>
           </>
         )}
+        <Form.Item
+          label="Visibility"
+          tooltip="Show this field only when conditions are met. Conditions are preserved in the builder; backend support pending (see ENG follow-up)."
+        >
+          <VisibilityEditor
+            spec={spec}
+            selectedElementId={selectedElementId}
+            rows={visibilityRows}
+            onChange={handleVisibilityChange}
+          />
+        </Form.Item>
       </Form>
-      <Form.Item
-        label="Visibility"
-        tooltip="Show this field only when conditions are met. Conditions are preserved in the builder; backend support pending (see ENG follow-up)."
-        layout="vertical"
-        style={{ marginTop: 16 }}
-      >
-        <VisibilityEditor
-          spec={spec}
-          selectedElementId={selectedElementId}
-          rows={visibilityRows}
-          onChange={handleVisibilityChange}
-        />
-      </Form.Item>
     </div>
   );
 };

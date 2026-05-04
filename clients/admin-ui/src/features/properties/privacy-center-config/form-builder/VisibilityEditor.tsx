@@ -253,11 +253,11 @@ export const VisibilityEditor = ({
                   borderRadius: 4,
                 }}
               >
-                <Space.Compact style={{ width: "100%" }}>
+                <Space orientation="vertical" style={{ width: "100%" }} size="small">
                   <Select
                     aria-label="Source field"
                     placeholder="Field"
-                    style={{ width: "40%" }}
+                    style={{ width: "100%" }}
                     value={row.fieldName || undefined}
                     onChange={(v) => updateRow(idx, { fieldName: v })}
                     options={fieldOptions}
@@ -265,7 +265,7 @@ export const VisibilityEditor = ({
                   />
                   <Select
                     aria-label="Operator"
-                    style={{ width: "30%" }}
+                    style={{ width: "100%" }}
                     value={row.operator}
                     onChange={(v) => updateRow(idx, { operator: v })}
                     options={(Object.keys(OPERATOR_LABELS) as Operator[]).map(
@@ -273,12 +273,11 @@ export const VisibilityEditor = ({
                     )}
                     data-testid={`visibility-operator-${idx}`}
                   />
-                  {!needsValue && <span style={{ width: "30%" }} />}
                   {needsValue && sourceValues && (
                     <Select
                       aria-label="Value"
                       placeholder="Value"
-                      style={{ width: "30%" }}
+                      style={{ width: "100%" }}
                       value={row.value || undefined}
                       onChange={(v) => updateRow(idx, { value: v })}
                       options={sourceValues.map((o) => ({
@@ -292,7 +291,7 @@ export const VisibilityEditor = ({
                     <Input
                       aria-label="Value"
                       placeholder="Value"
-                      style={{ width: "30%" }}
+                      style={{ width: "100%" }}
                       value={row.value}
                       onChange={(e) =>
                         updateRow(idx, { value: e.target.value })
@@ -300,7 +299,7 @@ export const VisibilityEditor = ({
                       data-testid={`visibility-value-${idx}`}
                     />
                   )}
-                </Space.Compact>
+                </Space>
                 <Button
                   size="small"
                   type="text"

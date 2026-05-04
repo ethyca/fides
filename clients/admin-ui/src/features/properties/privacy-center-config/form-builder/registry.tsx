@@ -1,4 +1,4 @@
-import { defineRegistry } from "@json-render/react";
+import { defineRegistry, useStateBinding } from "@json-render/react";
 import { Form, Input, Radio, Select } from "fidesui";
 import React from "react";
 
@@ -30,56 +30,83 @@ const FieldWrapper = ({
   return <span data-element-id={elementId}>{children}</span>;
 };
 
-const TextField = ({ props }: { props: BaseFieldProps }) => (
-  <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required} className="!mb-0">
-      <Input
-        aria-label={props.label}
-        data-testid={`field-${props.name}`}
-        placeholder={props.placeholder}
-      />
-    </Form.Item>
-  </FieldWrapper>
-);
+// Each field binds its current value to /form/<name> in the json-render
+// state model. In Preview mode this lets visibility conditions react to
+// user input (e.g. show field B when /form/country eq "US"). In Edit mode
+// each field has its own isolated provider, so the binding is harmless.
+const useFieldBinding = <T,>(name: string) =>
+  useStateBinding<T>(`/form/${name}`);
 
-const SelectField = ({ props }: { props: BaseFieldProps }) => (
-  <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required} className="!mb-0">
-      <Select
-        aria-label={props.label}
-        data-testid={`field-${props.name}`}
-        placeholder={props.placeholder}
-        options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
-      />
-    </Form.Item>
-  </FieldWrapper>
-);
+const TextField = ({ props }: { props: BaseFieldProps }) => {
+  const [value, setValue] = useFieldBinding<string>(props.name);
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label={props.label} required={props.required} className="!mb-0">
+        <Input
+          aria-label={props.label}
+          data-testid={`field-${props.name}`}
+          placeholder={props.placeholder}
+          value={value ?? ""}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
 
-const MultiSelectField = ({ props }: { props: BaseFieldProps }) => (
-  <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required} className="!mb-0">
-      <Select
-        aria-label={props.label}
-        mode="multiple"
-        data-testid={`field-${props.name}`}
-        placeholder={props.placeholder}
-        options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
-      />
-    </Form.Item>
-  </FieldWrapper>
-);
+const SelectField = ({ props }: { props: BaseFieldProps }) => {
+  const [value, setValue] = useFieldBinding<string>(props.name);
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label={props.label} required={props.required} className="!mb-0">
+        <Select
+          aria-label={props.label}
+          data-testid={`field-${props.name}`}
+          placeholder={props.placeholder}
+          value={value}
+          onChange={(v) => setValue(v)}
+          options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
 
-const RadioField = ({ props }: { props: BaseFieldProps }) => (
-  <FieldWrapper elementId={props["data-element-id"]}>
-    <Form.Item label={props.label} required={props.required} className="!mb-0">
-      <Radio.Group
-        aria-label={props.label}
-        data-testid={`field-${props.name}`}
-        options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
-      />
-    </Form.Item>
-  </FieldWrapper>
-);
+const MultiSelectField = ({ props }: { props: BaseFieldProps }) => {
+  const [value, setValue] = useFieldBinding<string[]>(props.name);
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label={props.label} required={props.required} className="!mb-0">
+        <Select
+          aria-label={props.label}
+          mode="multiple"
+          data-testid={`field-${props.name}`}
+          placeholder={props.placeholder}
+          value={value ?? []}
+          onChange={(v) => setValue(v)}
+          options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
+
+const RadioField = ({ props }: { props: BaseFieldProps }) => {
+  const [value, setValue] = useFieldBinding<string>(props.name);
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label={props.label} required={props.required} className="!mb-0">
+        <Radio.Group
+          aria-label={props.label}
+          data-testid={`field-${props.name}`}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
 
 const LOCATION_DEFAULT_OPTIONS = ["United States", "Canada", "United Kingdom"];
 
@@ -90,6 +117,7 @@ const LocationField = ({ props }: { props: BaseFieldProps }) => {
     props.options && props.options.length > 0
       ? props.options
       : LOCATION_DEFAULT_OPTIONS;
+  const [value, setValue] = useFieldBinding<string>(props.name);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item
@@ -101,6 +129,8 @@ const LocationField = ({ props }: { props: BaseFieldProps }) => {
           aria-label={props.label}
           data-testid={`field-${props.name}`}
           placeholder={props.placeholder}
+          value={value}
+          onChange={(v) => setValue(v)}
           options={options.map((o) => ({ label: o, value: o }))}
         />
       </Form.Item>
