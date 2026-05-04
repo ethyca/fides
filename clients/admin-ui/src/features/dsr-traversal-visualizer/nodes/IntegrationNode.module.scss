@@ -37,6 +37,8 @@
   margin-top: 6px;
 }
 
+// Chips may wrap to a second row when labels are long; card height
+// adapts and stages top-align around the tallest card.
 .chipRow {
   margin-top: 6px;
 }

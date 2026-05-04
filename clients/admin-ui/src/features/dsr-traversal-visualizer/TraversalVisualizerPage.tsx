@@ -2,6 +2,8 @@ import { Flex, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import { ReactNode, useState } from "react";
 
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+
 import CanvasHeader from "./header/CanvasHeader";
 import { useGetTraversalPreviewQuery } from "./traversal-preview.slice";
 import TraversalCanvas from "./TraversalCanvas";
@@ -14,6 +16,11 @@ interface Props {
 const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
   const router = useRouter();
   const [showNotTouched, setShowNotTouched] = useState(true);
+
+  // Prefetch taxonomy data at the page level so data-category labels resolve
+  // before first paint of the integration nodes. RTK Query dedupes the
+  // identical calls inside IntegrationNode.
+  useTaxonomies();
   const { data, isLoading, refetch } = useGetTraversalPreviewQuery(
     { propertyId: propertyKey!, actionType, includeUnreachable: true },
     { skip: !propertyKey },
