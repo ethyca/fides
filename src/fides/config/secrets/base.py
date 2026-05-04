@@ -13,10 +13,22 @@ class SecretValue:
 
     Supports subscript access (``secret["username"]``) but overrides string
     coercion so credentials never appear in logs, tracebacks, or debug output.
+
+    Uses ``__slots__`` to prevent ``vars()`` / ``__dict__`` access, which
+    blocks error reporters (Sentry, Datadog APM) from capturing the secret
+    data when serializing local variables on exception frames.
     """
+
+    __slots__ = ("_data",)
 
     def __init__(self, data: Dict[str, Any]) -> None:
         self._data = data
+
+    def __reduce__(self) -> None:  # type: ignore[override]
+        raise TypeError("SecretValue cannot be pickled")
+
+    def __getstate__(self) -> None:
+        raise TypeError("SecretValue cannot be serialized")
 
     def __getitem__(self, key: str) -> Any:
         return self._data[key]

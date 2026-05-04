@@ -177,10 +177,15 @@ class AWSSecretsManagerProvider(SecretProvider):
         # old credentials until a successful refresh occurs.
         age = now - entry.fetched_at if entry.fetched_at > 0 else self._cache_stale_ttl
         if age < self._cache_ttl + self._cache_stale_ttl:
+            exc_summary = (
+                f"{type(exc).__name__}({exc.response['Error']['Code']})"
+                if hasattr(exc, "response")
+                else type(exc).__name__
+            )
             log.warning(
-                "Failed to refresh secret {!r}, serving stale value: {}",
+                "Failed to refresh secret {!r}, serving stale value ({})",
                 secret_id,
-                exc,
+                exc_summary,
             )
             return cached_value
 

@@ -5,9 +5,9 @@ from fides.config.secrets.base import SecretValue
 
 class TestSecretValue:
     def test_subscript_access(self):
-        sv = SecretValue({"username": "admin", "password": "hunter2"})
+        sv = SecretValue({"username": "admin", "password": "s3cret"})
         assert sv["username"] == "admin"
-        assert sv["password"] == "hunter2"
+        assert sv["password"] == "s3cret"
 
     def test_missing_key_raises_key_error(self):
         sv = SecretValue({"username": "admin"})
@@ -46,5 +46,28 @@ class TestSecretValue:
         assert sv != {"k": "v"}
 
     def test_keys(self):
-        sv = SecretValue({"username": "admin", "password": "hunter2"})
+        sv = SecretValue({"username": "admin", "password": "s3cret"})
         assert set(sv.keys()) == {"username", "password"}
+
+    def test_vars_blocked(self):
+        sv = SecretValue({"password": "s3cret"})
+        with pytest.raises(TypeError):
+            vars(sv)
+
+    def test_no_dict(self):
+        sv = SecretValue({"password": "s3cret"})
+        assert not hasattr(sv, "__dict__")
+
+    def test_pickle_blocked(self):
+        import pickle  # local import — only used in this test
+
+        sv = SecretValue({"password": "s3cret"})
+        with pytest.raises(TypeError, match="cannot be pickled"):
+            pickle.dumps(sv)
+
+    def test_copy_blocked(self):
+        import copy  # local import — only used in this test
+
+        sv = SecretValue({"password": "s3cret"})
+        with pytest.raises(TypeError):
+            copy.copy(sv)
