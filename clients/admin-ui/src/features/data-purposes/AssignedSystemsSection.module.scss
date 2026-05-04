@@ -4,12 +4,8 @@
   cursor: pointer;
 
   &.atRisk {
-    background-color: color-mix(
-      in srgb,
-      var(--ant-color-error) 12%,
-      transparent
-    );
-    border: 1px solid var(--ant-color-error);
+    background-color: var(--fidesui-color-warning-bg);
+    border-color: var(--fidesui-color-warning-border);
   }
 
   &:hover .datasetCount {
@@ -42,6 +38,6 @@
 }
 
 .warningIcon {
-  color: var(--ant-color-error);
+  color: var(--fidesui-color-warning);
   line-height: 0;
 }

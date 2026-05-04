@@ -32,15 +32,11 @@ const LabeledTags = ({ label, values, maxVisible }: LabeledTagsProps) => {
         {label}
       </Text>
       {visible.map((value) => (
-        <Tag key={value} bordered={false}>
-          {value}
-        </Tag>
+        <Tag key={value}>{value}</Tag>
       ))}
       {remaining > 0 && (
         <Tooltip title={hiddenValues.join(", ")}>
-          <Tag bordered={false} className="cursor-default">
-            +{remaining} more
-          </Tag>
+          <Tag className="cursor-default">+{remaining} more</Tag>
         </Tooltip>
       )}
     </Flex>

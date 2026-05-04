@@ -44,11 +44,7 @@ const renderDataCategories = (
   definedSet: Set<string>,
 ) => {
   if (!categories || categories.length === 0) {
-    return (
-      <Tag bordered={false} className="cursor-default">
-        None detected
-      </Tag>
-    );
+    return <Tag className="cursor-default">None detected</Tag>;
   }
   const visible = categories.slice(0, MAX_VISIBLE_CATEGORIES);
   const remaining = categories.length - MAX_VISIBLE_CATEGORIES;
@@ -59,16 +55,13 @@ const renderDataCategories = (
         <Tag
           key={category}
           color={!definedSet.has(category) ? "error" : undefined}
-          bordered={false}
         >
           {category}
         </Tag>
       ))}
       {remaining > 0 && (
         <Tooltip title={hidden.join(", ")}>
-          <Tag bordered={false} className="cursor-default">
-            +{remaining} more
-          </Tag>
+          <Tag className="cursor-default">+{remaining} more</Tag>
         </Tooltip>
       )}
     </Flex>
