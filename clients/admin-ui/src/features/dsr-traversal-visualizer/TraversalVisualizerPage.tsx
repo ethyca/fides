@@ -5,7 +5,10 @@ import { ReactNode, useState } from "react";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
 import CanvasHeader from "./header/CanvasHeader";
-import { useGetTraversalPreviewQuery } from "./traversal-preview.slice";
+import {
+  useGetTraversalPreviewQuery,
+  useLazyGetTraversalPreviewQuery,
+} from "./traversal-preview.slice";
 import TraversalCanvas from "./TraversalCanvas";
 
 interface Props {
@@ -21,10 +24,11 @@ const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
   // before first paint of the integration nodes. RTK Query dedupes the
   // identical calls inside IntegrationNode.
   useTaxonomies();
-  const { data, isLoading, refetch } = useGetTraversalPreviewQuery(
+  const { data, isLoading } = useGetTraversalPreviewQuery(
     { propertyId: propertyKey!, actionType, includeUnreachable: true },
     { skip: !propertyKey },
   );
+  const [triggerRefresh] = useLazyGetTraversalPreviewQuery();
 
   const filteredPayload = data
     ? {
@@ -76,7 +80,15 @@ const TraversalVisualizerPage = ({ propertyKey, actionType }: Props) => {
         onPropertyChange={(k) => goTo(k)}
         onActionChange={(a) => propertyKey && goTo(propertyKey, a)}
         onShowNotTouchedChange={setShowNotTouched}
-        onRegenerate={() => refetch()}
+        onRegenerate={() =>
+          propertyKey &&
+          triggerRefresh({
+            propertyId: propertyKey,
+            actionType,
+            includeUnreachable: true,
+            refresh: true,
+          })
+        }
       />
       {canvasContent}
     </>
