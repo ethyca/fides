@@ -39,7 +39,11 @@ export const LANE_X = {
 export const LANE_Y_TOP = 0;
 
 // Cards stack vertically with this pitch (card height + gap between rows).
-export const CARD_PITCH = NODE_HEIGHT + 20;
+// The +70 leaves room for an integration card whose chip row has wrapped to
+// up to three lines (each wrapped row adds ~24px) plus a 20px visual gap to
+// the next card. The .node SCSS sets min-height to match so cards in the
+// same column read as uniformly tall regardless of chip wrap.
+export const CARD_PITCH = NODE_HEIGHT + 70;
 
 // Horizontal gap between adjacent columns in a multi-column lane.
 export const INTER_COL_GAP = 16;

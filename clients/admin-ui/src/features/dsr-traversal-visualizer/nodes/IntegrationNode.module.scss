@@ -4,6 +4,11 @@
   border: 1px solid var(--fidesui-color-border);
   border-radius: var(--fidesui-border-radius-lg);
   width: 320px;
+  // Matches CARD_PITCH minus the 20px inter-card gap (NODE_HEIGHT + 50).
+  // Cards with short chip rows pad up to this height so vertically-stacked
+  // siblings read as uniformly tall; cards with wrapped chip rows still
+  // grow naturally up to CARD_PITCH.
+  min-height: 210px;
   box-sizing: border-box;
 }
 
