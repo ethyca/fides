@@ -37,6 +37,10 @@ export interface IdentityInputs {
 
 interface ActionShape {
   policy_key?: string;
+  description?: string | null;
+  description_subtext?: string[] | null;
+  confirmButtonText?: string | null;
+  cancelButtonText?: string | null;
   custom_privacy_request_fields?: PcCustomFields;
   identity_inputs?: IdentityInputs | null;
   // eslint-disable-next-line no-underscore-dangle
@@ -393,6 +397,16 @@ export const FormBuilderPage = ({
             spec={builder.spec}
             selectedElementId={selectedElementId}
             identityInputs={action?.identity_inputs ?? null}
+            actionCopy={
+              action
+                ? {
+                    description: action.description,
+                    description_subtext: action.description_subtext,
+                    confirmButtonText: action.confirmButtonText,
+                    cancelButtonText: action.cancelButtonText,
+                  }
+                : null
+            }
             onFieldClick={handleSelectField}
             onAddField={handleAddField}
             onReorderFields={handleReorderFields}

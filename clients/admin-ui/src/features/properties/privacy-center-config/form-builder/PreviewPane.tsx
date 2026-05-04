@@ -43,6 +43,19 @@ interface IdentityInputs {
   phone?: IdentityInputMode | null;
 }
 
+/**
+ * Action-level copy that PC renders around the form: description above,
+ * description_subtext paragraphs, and the Cancel / Continue button labels.
+ * Read-only in the builder — managed via the action edit modal — but shown
+ * in Preview mode so authors see what end users actually see.
+ */
+export interface ActionCopy {
+  description?: string | null;
+  description_subtext?: string[] | null;
+  confirmButtonText?: string | null;
+  cancelButtonText?: string | null;
+}
+
 interface PreviewPaneProps {
   spec: JsonRenderSpec | null;
   selectedElementId?: string | null;
@@ -53,6 +66,11 @@ interface PreviewPaneProps {
    * edit modal, not the form builder.
    */
   identityInputs?: IdentityInputs | null;
+  /**
+   * Action-level copy (description, subtext, button labels). Rendered in
+   * Preview mode only, around the custom fields, mirroring PC.
+   */
+  actionCopy?: ActionCopy | null;
   onFieldClick: (elementId: string) => void;
   onAddField: (type: EditableComponentType) => void;
   onReorderFields: (newOrder: string[]) => void;
@@ -217,6 +235,7 @@ export const PreviewPane = ({
   previewMode = "edit",
   onPreviewModeChange,
   identityInputs,
+  actionCopy,
 }: PreviewPaneProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -314,8 +333,33 @@ export const PreviewPane = ({
     };
   }, [spec]);
 
+  const description = actionCopy?.description?.trim();
+  const subtext = (actionCopy?.description_subtext ?? []).filter(
+    (line): line is string => typeof line === "string" && line.length > 0,
+  );
+  const confirmLabel = actionCopy?.confirmButtonText || "Continue";
+  const cancelLabel = actionCopy?.cancelButtonText || "Cancel";
+
   const renderPreviewCanvas = () => (
     <div style={formCardStyle}>
+      {(description || subtext.length > 0) && (
+        <div style={{ marginBottom: 16 }}>
+          {description && (
+            <Typography.Paragraph style={{ marginBottom: subtext.length ? 8 : 0 }}>
+              {description}
+            </Typography.Paragraph>
+          )}
+          {subtext.map((line, i) => (
+            <Typography.Paragraph
+              key={i}
+              type="secondary"
+              style={{ marginBottom: i === subtext.length - 1 ? 0 : 8 }}
+            >
+              {line}
+            </Typography.Paragraph>
+          ))}
+        </div>
+      )}
       {identityInputs && <IdentityInputsSection inputs={identityInputs} />}
       {hasFields && previewSpec ? (
         <JSONUIProvider registry={registry}>
@@ -324,6 +368,14 @@ export const PreviewPane = ({
       ) : (
         <Empty description="No fields yet. Switch to Edit to add one." />
       )}
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <Button block disabled>
+          {cancelLabel}
+        </Button>
+        <Button type="primary" block disabled>
+          {confirmLabel}
+        </Button>
+      </div>
     </div>
   );
 

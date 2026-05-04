@@ -47,7 +47,9 @@ const stripBackendDefaults = (
 const normalizeShape = (shape: PcCustomFields): Record<string, unknown> => {
   const out: Record<string, unknown> = {};
   Object.entries(shape).forEach(([name, field]) => {
-    out[name] = stripBackendDefaults(field as unknown as Record<string, unknown>);
+    out[name] = stripBackendDefaults(
+      field as unknown as Record<string, unknown>,
+    );
   });
   return out;
 };

@@ -319,29 +319,55 @@ export const FieldPropertiesPanel = ({
         onValuesChange={handleValuesChange}
         initialValues={element.props}
       >
-        <Form.Item label="Label" name="label" rules={[{ required: true }]}>
-          <Input data-testid="prop-label" />
-        </Form.Item>
         <Form.Item
-          label="Name"
-          name="name"
-          tooltip="Field key sent to the backend. Auto-generated from the label until you edit it. snake_case, ≤ 64 chars."
-          rules={[
-            {
-              required: true,
-              pattern: /^[a-z][a-z0-9_]{0,63}$/,
-              message: "snake_case, must start with a letter, ≤ 64 chars",
-            },
-          ]}
+          noStyle
+          shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
         >
-          <Input data-testid="prop-name" />
-        </Form.Item>
-        <Form.Item
-          label="Placeholder"
-          name="placeholder"
-          tooltip="Hint text shown inside the empty input."
-        >
-          <Input data-testid="prop-placeholder" />
+          {({ getFieldValue }) => {
+            const hiddenOn = !!getFieldValue("hidden");
+            return (
+              <>
+                <Form.Item
+                  label="Label"
+                  name="label"
+                  rules={[{ required: !hiddenOn }]}
+                  tooltip={
+                    hiddenOn
+                      ? "Hidden fields aren't shown to end users, so the label is unused. Toggle Hidden off to edit."
+                      : undefined
+                  }
+                >
+                  <Input data-testid="prop-label" disabled={hiddenOn} />
+                </Form.Item>
+                <Form.Item
+                  label="Name"
+                  name="name"
+                  tooltip="Field key sent to the backend. Auto-generated from the label until you edit it. snake_case, ≤ 64 chars."
+                  rules={[
+                    {
+                      required: true,
+                      pattern: /^[a-z][a-z0-9_]{0,63}$/,
+                      message:
+                        "snake_case, must start with a letter, ≤ 64 chars",
+                    },
+                  ]}
+                >
+                  <Input data-testid="prop-name" />
+                </Form.Item>
+                <Form.Item
+                  label="Placeholder"
+                  name="placeholder"
+                  tooltip={
+                    hiddenOn
+                      ? "Hidden fields aren't rendered, so placeholder text isn't shown. Toggle Hidden off to edit."
+                      : "Hint text shown inside the empty input."
+                  }
+                >
+                  <Input data-testid="prop-placeholder" disabled={hiddenOn} />
+                </Form.Item>
+              </>
+            );
+          }}
         </Form.Item>
 
         {componentType === "Text" && (
