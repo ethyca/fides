@@ -1,5 +1,5 @@
 import { defineRegistry } from "@json-render/react";
-import { Form, Input, Select } from "fidesui";
+import { Form, Input, Radio, Select } from "fidesui";
 import React from "react";
 
 import { catalog } from "./catalog";
@@ -69,6 +69,18 @@ const MultiSelectField = ({ props }: { props: BaseFieldProps }) => (
   </FieldWrapper>
 );
 
+const RadioField = ({ props }: { props: BaseFieldProps }) => (
+  <FieldWrapper elementId={props["data-element-id"]}>
+    <Form.Item label={props.label} required={props.required} className="!mb-0">
+      <Radio.Group
+        aria-label={props.label}
+        data-testid={`field-${props.name}`}
+        options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
+      />
+    </Form.Item>
+  </FieldWrapper>
+);
+
 const LOCATION_DEFAULT_OPTIONS = ["United States", "Canada", "United Kingdom"];
 
 const LocationField = ({ props }: { props: BaseFieldProps }) => {
@@ -104,6 +116,7 @@ export const { registry } = defineRegistry(catalog.jsonRender, {
     MultiSelect: ({ props }) => (
       <MultiSelectField props={props as BaseFieldProps} />
     ),
+    Radio: ({ props }) => <RadioField props={props as BaseFieldProps} />,
     Location: ({ props }) => <LocationField props={props as BaseFieldProps} />,
   },
 });

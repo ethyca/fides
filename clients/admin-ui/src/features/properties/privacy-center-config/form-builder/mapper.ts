@@ -71,10 +71,14 @@ export interface JsonRenderSpec {
   elements: Record<string, JsonRenderElement>;
 }
 
+// Radio collapses to legacy "select" — the PC schema doesn't distinguish
+// radio groups from dropdowns. The rich _form_builder_spec preserves the
+// Radio type so reload still renders it as a radio group.
 const FIELD_TYPE: Record<Exclude<ComponentType, "Form">, PcFieldType> = {
   Text: "text",
   Select: "select",
   MultiSelect: "multiselect",
+  Radio: "select",
   Location: "location",
 };
 
@@ -186,7 +190,8 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
         pcField = text;
         break;
       }
-      case "Select": {
+      case "Select":
+      case "Radio": {
         const select: PcSelectField = {
           ...baseField,
           field_type: "select",

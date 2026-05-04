@@ -71,7 +71,7 @@ const FormBuilderRoute: NextPage = () => {
   return (
     <Layout title="Form Builder">
       <PageHeader
-        heading={`Form Builder — ${property.name}`}
+        heading={`Form Builder: ${property.name}`}
         breadcrumbItems={[
           { title: "All properties", href: PROPERTIES_ROUTE },
           { title: property.name, href: `${PROPERTIES_ROUTE}/${property.id}` },

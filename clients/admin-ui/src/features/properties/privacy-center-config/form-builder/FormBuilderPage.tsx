@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Splitter, useMessage } from "fidesui";
+import { Alert, Button, Modal, Segmented, Splitter, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -13,12 +13,13 @@ import { detectDrift, stableJson } from "./drift";
 import { FieldPropertiesPanel } from "./FieldPropertiesPanel";
 import type { DroppedFeature, JsonRenderSpec, PcCustomFields } from "./mapper";
 import { mapSpecToPcShape } from "./mapper";
-import { PreviewPane } from "./PreviewPane";
+import { type PreviewMode, PreviewPane } from "./PreviewPane";
 import {
   addField as addFieldMutation,
   defaultSpec,
   removeField as removeFieldMutation,
   reorderFields as reorderFieldsMutation,
+  setFieldVisibility as setFieldVisibilityMutation,
   updateField as updateFieldMutation,
 } from "./specMutations";
 import { synthesizeSpecFromPcShape } from "./synthesize";
@@ -52,16 +53,27 @@ interface FormBuilderPageProps {
   }) => Promise<void>;
 }
 
-const describeDropped = (d: DroppedFeature): string => {
+const fieldLabel = (spec: JsonRenderSpec | null, elementId: string): string => {
+  const props = (spec?.elements?.[elementId]?.props ?? {}) as {
+    name?: string;
+    label?: string;
+  };
+  return props.label ?? props.name ?? elementId;
+};
+
+const describeDropped = (
+  d: DroppedFeature,
+  spec: JsonRenderSpec | null,
+): string => {
   switch (d.kind) {
     case "visible":
-      return `visible expression on ${d.elementId}`;
+      return `Conditional visibility on "${fieldLabel(spec, d.elementId)}" — preserved in the builder, but won't take effect in the privacy center until backend support ships.`;
     case "watch":
-      return `watch expression on ${d.elementId}`;
+      return `Watch expression on "${fieldLabel(spec, d.elementId)}" — preserved in the builder only.`;
     case "expression":
-      return `expression in props.${d.path} on ${d.elementId}`;
+      return `Dynamic expression in props.${d.path} on "${fieldLabel(spec, d.elementId)}" — preserved in the builder only.`;
     case "unknown_component":
-      return `unknown component ${d.type} on ${d.elementId}`;
+      return `Unknown component ${d.type} on "${fieldLabel(spec, d.elementId)}" — won't render outside the builder.`;
     default:
       return JSON.stringify(d);
   }
@@ -138,6 +150,7 @@ export const FormBuilderPage = ({
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     () => initialSpec?.elements[initialSpec.root]?.children[0] ?? null,
   );
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("edit");
 
   const handleAddField = useCallback(
     (type: EditableComponentType) => {
@@ -192,6 +205,18 @@ export const FormBuilderPage = ({
         return;
       }
       builder.setSpec(reorderFieldsMutation(builder.spec, newOrder));
+    },
+    [builder],
+  );
+
+  const handleUpdateVisibility = useCallback(
+    (elementId: string, visible: unknown | undefined) => {
+      if (!builder.spec) {
+        return;
+      }
+      builder.setSpec(
+        setFieldVisibilityMutation(builder.spec, elementId, visible),
+      );
     },
     [builder],
   );
@@ -345,8 +370,18 @@ export const FormBuilderPage = ({
             onFieldClick={handleSelectField}
             onAddField={handleAddField}
             onReorderFields={handleReorderFields}
+            previewMode={previewMode}
             actions={
               <>
+                <Segmented
+                  value={previewMode}
+                  onChange={(v) => setPreviewMode(v as PreviewMode)}
+                  options={[
+                    { label: "Edit", value: "edit" },
+                    { label: "Preview", value: "preview" },
+                  ]}
+                  data-testid="preview-mode-toggle"
+                />
                 <Button
                   onClick={() => router.push(`/properties/${propertyId}`)}
                   data-testid="cancel-button"
@@ -376,6 +411,7 @@ export const FormBuilderPage = ({
             selectedElementId={selectedElementId}
             onUpdateField={handleUpdateField}
             onRemoveField={handleRemoveField}
+            onUpdateVisibility={handleUpdateVisibility}
           />
         </Splitter.Panel>
       </Splitter>
@@ -395,7 +431,7 @@ export const FormBuilderPage = ({
         <ul>
           {droppedSummary.map((d, idx) => (
             // eslint-disable-next-line react/no-array-index-key
-            <li key={idx}>{describeDropped(d)}</li>
+            <li key={idx}>{describeDropped(d, builder.spec)}</li>
           ))}
         </ul>
       </Modal>

@@ -47,6 +47,7 @@ describe("FieldPropertiesPanel", () => {
         selectedElementId={null}
         onUpdateField={noop}
         onRemoveField={noop}
+        onUpdateVisibility={noop}
       />,
     );
     expect(
@@ -62,6 +63,7 @@ describe("FieldPropertiesPanel", () => {
         selectedElementId="f_email"
         onUpdateField={onUpdateField}
         onRemoveField={noop}
+        onUpdateVisibility={noop}
       />,
     );
     const labelInput = screen.getByTestId("prop-label");
@@ -79,6 +81,7 @@ describe("FieldPropertiesPanel", () => {
         selectedElementId="f_color"
         onUpdateField={noop}
         onRemoveField={noop}
+        onUpdateVisibility={noop}
       />,
     );
     expect(screen.getByTestId("option-input-0")).toHaveValue("Red");
@@ -94,6 +97,7 @@ describe("FieldPropertiesPanel", () => {
         selectedElementId="f_email"
         onUpdateField={noop}
         onRemoveField={onRemoveField}
+        onUpdateVisibility={noop}
       />,
     );
     await userEvent.click(screen.getByTestId("remove-field-button"));
@@ -118,6 +122,7 @@ describe("FieldPropertiesPanel", () => {
         selectedElementId="f_email"
         onUpdateField={noop}
         onRemoveField={onRemoveField}
+        onUpdateVisibility={noop}
       />,
     );
     await userEvent.click(screen.getByTestId("remove-field-button"));

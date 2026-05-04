@@ -6,6 +6,7 @@ describe("form builder catalog", () => {
       "Form",
       "Location",
       "MultiSelect",
+      "Radio",
       "Select",
       "Text",
     ]);

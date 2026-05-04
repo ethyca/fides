@@ -25,6 +25,8 @@ import { SortableFieldItem } from "./SortableFieldItem";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
+export type PreviewMode = "edit" | "preview";
+
 interface PreviewPaneProps {
   spec: JsonRenderSpec | null;
   selectedElementId?: string | null;
@@ -33,6 +35,13 @@ interface PreviewPaneProps {
   onReorderFields: (newOrder: string[]) => void;
   /** Action buttons rendered in the bottom-right toolbar of the pane (e.g. Save). */
   actions?: React.ReactNode;
+  /**
+   * "edit" (default) renders fields one-at-a-time wrapped in SortableFieldItem
+   * with all visibility conditions stripped, so authors can edit any field.
+   * "preview" renders the spec straight through, honoring `visible` so the
+   * builder shows what an end user would see.
+   */
+  previewMode?: PreviewMode;
 }
 
 const wrapperStyle: React.CSSProperties = {
@@ -79,6 +88,7 @@ const FIELD_TYPE_LABELS: Record<EditableComponentType, string> = {
   Text: "Text input",
   Select: "Single-select dropdown",
   MultiSelect: "Multi-select dropdown",
+  Radio: "Radio group",
   Location: "Location picker",
 };
 
@@ -109,9 +119,9 @@ const AddFieldButton = ({
 );
 
 // Build a single-element spec for one field so the Renderer can render
-// it in isolation. visible/watch are stripped because the admin preview
-// always shows fields unconditionally — the Save modal warns about
-// dropped conditional features.
+// it in isolation. visible/watch are stripped because Edit mode shows
+// fields unconditionally — the Save modal warns about dropped conditional
+// features. Preview mode uses the full spec (see renderPreview below).
 const singleFieldSpec = (
   spec: JsonRenderSpec,
   elementId: string,
@@ -139,6 +149,7 @@ export const PreviewPane = ({
   onAddField,
   onReorderFields,
   actions,
+  previewMode = "edit",
 }: PreviewPaneProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -163,50 +174,69 @@ export const PreviewPane = ({
     onReorderFields(arrayMove(childIds, oldIndex, newIndex));
   };
 
+  const renderEditCanvas = () => (
+    <div style={formCardStyle}>
+      {hasFields && spec ? (
+        <Form layout="vertical" style={{ marginBottom: 16 }}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={childIds}
+              strategy={verticalListSortingStrategy}
+            >
+              {childIds.map((childId) => {
+                const subSpec = singleFieldSpec(spec, childId);
+                if (!subSpec) {
+                  return null;
+                }
+                return (
+                  <SortableFieldItem
+                    key={childId}
+                    id={childId}
+                    selected={childId === selectedElementId}
+                    onSelect={onFieldClick}
+                  >
+                    <JSONUIProvider registry={registry}>
+                      <Renderer spec={subSpec as any} registry={registry} />
+                    </JSONUIProvider>
+                  </SortableFieldItem>
+                );
+              })}
+            </SortableContext>
+          </DndContext>
+        </Form>
+      ) : (
+        <Empty
+          description="No fields yet. Add one below or chat with the builder."
+          style={{ marginBottom: 16 }}
+        />
+      )}
+      <AddFieldButton onAddField={onAddField} />
+    </div>
+  );
+
+  // Preview mode: render the entire spec through one JSONUIProvider so the
+  // shared state model can resolve cross-field $state references (e.g.
+  // "show this field when /form/country eq 'US'").
+  const renderPreviewCanvas = () => (
+    <div style={formCardStyle}>
+      {hasFields && spec ? (
+        <JSONUIProvider registry={registry}>
+          <Renderer spec={spec as any} registry={registry} />
+        </JSONUIProvider>
+      ) : (
+        <Empty description="No fields yet. Switch to Edit to add one." />
+      )}
+    </div>
+  );
+
   return (
     <div style={wrapperStyle}>
       <div style={canvasStyle}>
-        <div style={formCardStyle}>
-          {hasFields && spec ? (
-            <Form layout="vertical" style={{ marginBottom: 16 }}>
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={childIds}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {childIds.map((childId) => {
-                    const subSpec = singleFieldSpec(spec, childId);
-                    if (!subSpec) {
-                      return null;
-                    }
-                    return (
-                      <SortableFieldItem
-                        key={childId}
-                        id={childId}
-                        selected={childId === selectedElementId}
-                        onSelect={onFieldClick}
-                      >
-                        <JSONUIProvider registry={registry}>
-                          <Renderer spec={subSpec as any} registry={registry} />
-                        </JSONUIProvider>
-                      </SortableFieldItem>
-                    );
-                  })}
-                </SortableContext>
-              </DndContext>
-            </Form>
-          ) : (
-            <Empty
-              description="No fields yet. Add one below or chat with the builder."
-              style={{ marginBottom: 16 }}
-            />
-          )}
-          <AddFieldButton onAddField={onAddField} />
-        </div>
+        {previewMode === "edit" ? renderEditCanvas() : renderPreviewCanvas()}
       </div>
       <div style={toolbarStyle} data-testid="preview-toolbar">
         {actions}

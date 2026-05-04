@@ -10,6 +10,7 @@ const DEFAULT_PROPS: Record<EditableComponentType, Record<string, unknown>> = {
   Text: { required: false },
   Select: { required: false, options: ["Option 1"] },
   MultiSelect: { required: false, options: ["Option 1"] },
+  Radio: { required: false, options: ["Option 1", "Option 2"] },
   Location: { required: false },
 };
 
@@ -44,6 +45,7 @@ const TYPE_DEFAULTS: Record<EditableComponentType, TypeDefaults> = {
   Text: { base: "text_field", label: "Text field" },
   Select: { base: "select_field", label: "Select field" },
   MultiSelect: { base: "multi_select_field", label: "Multi select field" },
+  Radio: { base: "radio_field", label: "Radio field" },
   Location: { base: "location_field", label: "Location field" },
 };
 
@@ -156,6 +158,36 @@ export const removeField = (
         ...root,
         children: root.children.filter((id) => id !== elementId),
       },
+    },
+  };
+};
+
+/**
+ * Set or clear the `visible` condition on an element. Pass `undefined` to
+ * remove the condition entirely (the field becomes always-visible).
+ */
+export const setFieldVisibility = (
+  spec: JsonRenderSpec,
+  elementId: string,
+  visible: unknown | undefined,
+): JsonRenderSpec => {
+  const target = spec.elements[elementId];
+  if (!target) {
+    return spec;
+  }
+  const next = { ...target } as JsonRenderSpec["elements"][string] & {
+    visible?: unknown;
+  };
+  if (visible === undefined) {
+    delete next.visible;
+  } else {
+    next.visible = visible;
+  }
+  return {
+    ...spec,
+    elements: {
+      ...spec.elements,
+      [elementId]: next,
     },
   };
 };

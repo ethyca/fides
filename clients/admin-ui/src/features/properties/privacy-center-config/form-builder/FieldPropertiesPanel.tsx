@@ -9,16 +9,23 @@ import {
   useModal,
 } from "fidesui";
 import snakeCase from "lodash.snakecase";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { ComponentType } from "./catalog";
 import type { JsonRenderSpec } from "./mapper";
+import {
+  type ConditionRow,
+  rowsToVisible,
+  VisibilityEditor,
+  visibleToRows,
+} from "./VisibilityEditor";
 
 interface FieldPropertiesPanelProps {
   spec: JsonRenderSpec | null;
   selectedElementId: string | null;
   onUpdateField: (elementId: string, props: Record<string, unknown>) => void;
   onRemoveField: (elementId: string) => void;
+  onUpdateVisibility: (elementId: string, visible: unknown | undefined) => void;
 }
 
 type EditableType = Exclude<ComponentType, "Form">;
@@ -107,6 +114,7 @@ export const FieldPropertiesPanel = ({
   selectedElementId,
   onUpdateField,
   onRemoveField,
+  onUpdateVisibility,
 }: FieldPropertiesPanelProps) => {
   const [form] = Form.useForm<FormValues>();
   const modal = useModal();
@@ -115,6 +123,9 @@ export const FieldPropertiesPanel = ({
   // whether the existing name still matches snakeCase(label) — fields with
   // customized names start with auto-sync off.
   const autoSyncNameRef = useRef(true);
+  // Visibility-condition rows. Local state mirrors the saved element.visible
+  // and is re-synced whenever selection changes.
+  const [visibilityRows, setVisibilityRows] = useState<ConditionRow[]>([]);
 
   const element = selectedElementId
     ? spec?.elements?.[selectedElementId]
@@ -163,8 +174,21 @@ export const FieldPropertiesPanel = ({
       typeof props.name === "string" &&
       typeof props.label === "string" &&
       props.name === snakeCase(props.label);
+    setVisibilityRows(
+      visibleToRows(
+        (element as JsonRenderSpec["elements"][string] & { visible?: unknown })
+          .visible,
+      ),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedElementId]);
+
+  const handleVisibilityChange = (next: ConditionRow[]) => {
+    setVisibilityRows(next);
+    if (selectedElementId) {
+      onUpdateVisibility(selectedElementId, rowsToVisible(next));
+    }
+  };
 
   if (!element || !selectedElementId) {
     return <EmptyState />;
@@ -321,7 +345,9 @@ export const FieldPropertiesPanel = ({
           </>
         )}
 
-        {(componentType === "Select" || componentType === "MultiSelect") && (
+        {(componentType === "Select" ||
+          componentType === "MultiSelect" ||
+          componentType === "Radio") && (
           <>
             <Form.Item
               label="Options"
@@ -372,6 +398,19 @@ export const FieldPropertiesPanel = ({
           </>
         )}
       </Form>
+      <Form.Item
+        label="Visibility"
+        tooltip="Show this field only when conditions are met. Conditions are preserved in the builder; backend support pending (see ENG follow-up)."
+        layout="vertical"
+        style={{ marginTop: 16 }}
+      >
+        <VisibilityEditor
+          spec={spec}
+          selectedElementId={selectedElementId}
+          rows={visibilityRows}
+          onChange={handleVisibilityChange}
+        />
+      </Form.Item>
     </div>
   );
 };
