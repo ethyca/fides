@@ -65,6 +65,11 @@ export const LANE_DOUBLE_COL_MAX = 8;
 // Maximum columns supported per lane.
 export const MAX_LANE_COLS = 3;
 
+// Horizontal gap between consecutive stage blocks inside the reach lane.
+// Sized to leave room for the inter-stage flow chevron without ballooning
+// the lane.
+export const STAGE_GAP_HORIZONTAL = 48;
+
 // Vertical gap between stage sub-sections inside the reach lane.
 export const STAGE_GAP = 28;
 
