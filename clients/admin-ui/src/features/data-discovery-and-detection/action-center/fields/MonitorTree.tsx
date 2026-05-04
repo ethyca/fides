@@ -45,6 +45,7 @@ import {
 } from "./MonitorFields.const";
 import styles from "./MonitorTree.module.scss";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
+import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import {
   collectAllDescendantUrns,
   findNodeByUrn,
@@ -52,7 +53,6 @@ import {
   shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
-import { TreeResourceChangeIndicator } from "./TreeResourceChangeIndicator";
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
 import { intoDiffStatus } from "./utils";
 
