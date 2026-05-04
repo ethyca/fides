@@ -3539,6 +3539,7 @@ class TestHealthchecks:
                     async_readonly_database_pool_size=getattr(
                         test_config.database, "async_readonly_database_pool_size", 10
                     ),
+                    healthcheck_query_timeout=1.0,
                 )
             ),
         )
