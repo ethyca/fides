@@ -8,7 +8,7 @@ const withCustomProps = (WrappedComponent: typeof DatePicker.RangePicker) => {
   const WrappedSelect = ({
     suffixIcon = <Calendar />,
     separator = (
-      <ArrowRight style={{ color: "var(--ant-color-text-disabled)" }} />
+      <ArrowRight style={{ color: "var(--fidesui-color-text-disabled)" }} />
     ),
     ...props
   }: RangePickerProps) => {

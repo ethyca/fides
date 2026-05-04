@@ -39,10 +39,11 @@ export const AutosuggestSuffix = ({
         pointerEvents: "none",
         position: "absolute",
         zIndex: 10,
-        top: "var(--ant-line-width)",
-        bottom: "var(--ant-line-width)",
-        left: "var(--ant-padding-sm)",
-        lineHeight: "calc(var(--ant-control-height) - var(--ant-line-width))",
+        top: "var(--fidesui-line-width)",
+        bottom: "var(--fidesui-line-width)",
+        left: "var(--fidesui-padding-sm)",
+        lineHeight:
+          "calc(var(--fidesui-control-height) - var(--fidesui-line-width))",
       }}
       {...props}
     >

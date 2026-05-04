@@ -57,7 +57,7 @@ export type fides__api__schemas__privacy_center_config__PrivacyCenterConfig = {
   /**
    * Actions
    */
-  actions: Array<PrivacyRequestOption>;
+  actions?: Array<PrivacyRequestOption>;
   /**
    * Includeconsent
    */
