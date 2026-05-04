@@ -94,11 +94,50 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
+  const completedCount = activeTask?.completed_count ?? 0;
+
+  // A row just flipped from `generating` → `in_progress`; pull fresh list
+  // data so the card updates in place without requiring user interaction.
+  const prevCompletedCountRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!activeTask) {
+      prevCompletedCountRef.current = null;
+      return;
+    }
+    if (
+      prevCompletedCountRef.current !== null &&
+      completedCount > prevCompletedCountRef.current
+    ) {
+      onTaskFinish?.();
+    }
+    prevCompletedCountRef.current = completedCount;
+  }, [activeTask, completedCount, onTaskFinish]);
+
+  // Active task just appeared: Celery has picked up the task and materialized
+  // the `generating` rows. The mutation's tag invalidation fired before
+  // materialization, so refetch once here to surface those rows. Skip the
+  // very first observation so a page mount with an already-active task
+  // doesn't trigger a redundant refetch on top of the initial query.
+  const prevActiveTaskIdRef = useRef<string | null>(null);
+  const hasObservedActiveTaskRef = useRef(false);
+  useEffect(() => {
+    const currentId = activeTask?.id ?? null;
+    if (
+      hasObservedActiveTaskRef.current &&
+      currentId &&
+      currentId !== prevActiveTaskIdRef.current
+    ) {
+      onTaskFinish?.();
+    }
+    prevActiveTaskIdRef.current = currentId;
+    hasObservedActiveTaskRef.current = true;
+  }, [activeTask, onTaskFinish]);
+
   // Detect active → idle transition for the final completion or error.
-  // The list-poll subscription above stops the moment `activeTask` becomes
-  // null, so the very last row flip (committed at the same time the task
-  // moves to COMPLETE) won't be picked up by polling. Fire one explicit
-  // refetch here to surface that final state.
+  // The completed-count effect above can't catch the last increment because
+  // `activeTask` flips to null on the same poll that delivers it (the task
+  // status moves to COMPLETE/ERROR and falls out of the active filter), so
+  // refetch once here to surface the final row update.
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
