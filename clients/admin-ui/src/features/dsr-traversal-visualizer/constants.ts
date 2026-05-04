@@ -70,9 +70,6 @@ export const MAX_LANE_COLS = 3;
 // the lane.
 export const STAGE_GAP_HORIZONTAL = 48;
 
-// Vertical gap between stage sub-sections inside the reach lane.
-export const STAGE_GAP = 28;
-
 // Header reserves vertical space at the top of each lane (header bar + gap
 // below it before the first card).
 export const LANE_HEADER_HEIGHT = 48;
