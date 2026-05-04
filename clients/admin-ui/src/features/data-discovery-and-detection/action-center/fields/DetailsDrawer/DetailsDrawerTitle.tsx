@@ -25,13 +25,13 @@ export const DetailsDrawerTitle = ({
 
   return (
     <Flex align="center" gap="small">
-      {titleIcon}
+      {titleIcon && <span className="flex-none">{titleIcon}</span>}
       <Tooltip title={isTruncated ? title : null}>
         <span ref={titleRef} className="grow truncate">
           {title}
         </span>
       </Tooltip>
-      {titleTag && <Tag {...titleTag} />}
+      {titleTag && <Tag {...titleTag} className="flex-none" />}
     </Flex>
   );
 };
