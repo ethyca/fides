@@ -41,7 +41,7 @@ const TextField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
-      <Form.Item label={props.label} required={props.required} className="!mb-0">
+      <Form.Item label={props.label} required={props.required}>
         <Input
           aria-label={props.label}
           data-testid={`field-${props.name}`}
@@ -58,7 +58,7 @@ const SelectField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
-      <Form.Item label={props.label} required={props.required} className="!mb-0">
+      <Form.Item label={props.label} required={props.required}>
         <Select
           aria-label={props.label}
           data-testid={`field-${props.name}`}
@@ -76,7 +76,7 @@ const MultiSelectField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string[]>(props.name);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
-      <Form.Item label={props.label} required={props.required} className="!mb-0">
+      <Form.Item label={props.label} required={props.required}>
         <Select
           aria-label={props.label}
           mode="multiple"
@@ -95,7 +95,7 @@ const RadioField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
-      <Form.Item label={props.label} required={props.required} className="!mb-0">
+      <Form.Item label={props.label} required={props.required}>
         <Radio.Group
           aria-label={props.label}
           data-testid={`field-${props.name}`}
@@ -120,11 +120,7 @@ const LocationField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
-      <Form.Item
-        label={props.label}
-        required={props.required}
-        className="!mb-0"
-      >
+      <Form.Item label={props.label} required={props.required}>
         <Select
           aria-label={props.label}
           data-testid={`field-${props.name}`}

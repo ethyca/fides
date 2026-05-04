@@ -57,6 +57,10 @@ export const SortableFieldItem = ({
     <div
       ref={setNodeRef}
       style={style}
+      // Edit-mode chrome: zero out Form.Item margin since the card itself
+      // provides the vertical rhythm. Preview mode renders without this
+      // wrapper so fields keep their natural form-item spacing.
+      className="[&_.ant-form-item]:!mb-0"
       data-element-id={id}
       data-testid={`sortable-field-${id}`}
       role="button"
