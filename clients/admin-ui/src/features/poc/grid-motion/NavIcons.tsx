@@ -91,10 +91,7 @@ export const LightningIcon = ({ size = 22, style }: IconProps) => (
     xmlns="http://www.w3.org/2000/svg"
     style={style}
   >
-    <path
-      d="M13.5 2L4 14h6l-1.5 8L18 10h-6l1.5-8z"
-      fill="currentColor"
-    />
+    <path d="M13.5 2L4 14h6l-1.5 8L18 10h-6l1.5-8z" fill="currentColor" />
   </svg>
 );
 

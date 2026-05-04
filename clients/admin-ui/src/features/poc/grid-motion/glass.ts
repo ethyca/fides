@@ -1,5 +1,7 @@
 import { CSSProperties } from "react";
 
+export const SURFACE_BASE = "#f5f3f1";
+
 export const GLASS_BG_NEUTRAL = "rgba(126,129,133,0.05)";
 export const GLASS_BG_NEUTRAL_HOVER = "rgba(126,129,133,0.08)";
 
@@ -10,6 +12,12 @@ export const GLASS_BLUR = "blur(14px)";
 
 export const GLASS_TRANSITION =
   "background-color 0.6s cubic-bezier(0.22,1,0.36,1), box-shadow 0.6s cubic-bezier(0.22,1,0.36,1)";
+
+export const CHROME_GLASS_BG = "rgba(245,243,241,0.55)";
+export const CHROME_GLASS_BG_HOVER = "rgba(245,243,241,0.72)";
+export const CHROME_GLASS_BORDER = "rgba(43,46,53,0.06)";
+export const CHROME_GLASS_SHADOW =
+  "0 1px 1px rgba(43,46,53,0.04), 0 8px 24px rgba(43,46,53,0.06), inset 0 0 0 1px rgba(255,255,255,0.4)";
 
 export const getGlassBgStyle = (
   critical: boolean,

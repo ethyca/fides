@@ -287,7 +287,7 @@ const SideNav = () => {
       style={{
         position: "fixed",
         left: 0,
-        top: 0,
+        top: 56,
         bottom: 0,
         zIndex: 5,
         boxSizing: "border-box",
