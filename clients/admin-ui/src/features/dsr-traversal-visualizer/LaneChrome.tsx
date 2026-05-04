@@ -2,7 +2,12 @@ import { useViewport } from "@xyflow/react";
 import { Tooltip } from "fidesui";
 import { CSSProperties } from "react";
 
-import { LaneId } from "./constants";
+import {
+  CARD_PITCH,
+  LANE_PADDING_X,
+  LaneId,
+  STAGE_GAP_HORIZONTAL,
+} from "./constants";
 import styles from "./LaneChrome.module.scss";
 import { LaneBounds } from "./types";
 
@@ -66,57 +71,60 @@ const LaneChrome = ({ lanes, onToggleCollapse }: Props) => {
                   </div>
 
                   {!lane.collapsed &&
-                    lane.stages?.map((stage, stageIdx) => {
-                      const stages = lane.stages!;
-                      // Sub-header: positioned above the stage's card grid,
-                      // sized to the stage's grid width.
-                      const headerStyle: CSSProperties = {
-                        position: "absolute",
-                        left: 14 /* LANE_PADDING_X */ + stage.xStart,
-                        top: stage.headerY,
-                        width: stage.width,
-                      };
-                      const isLast = stageIdx === stages.length - 1;
-                      // Inter-stage chevron: rendered between this stage and
-                      // the next, vertically centered on the (uniform) card
-                      // grid baseline.
+                    lane.stages &&
+                    (() => {
+                      const { stages } = lane;
                       const tallestRows = stages.reduce(
                         (n, s) => Math.max(n, s.nodeIds.length / s.columns),
                         0,
                       );
-                      // CARD_PITCH/2 approximation; refined in CSS
-                      const chevronTop =
-                        stage.gridY + Math.ceil(tallestRows) * 90;
-                      return (
-                        <div key={stage.index}>
-                          <div className={styles.stage} style={headerStyle}>
-                            <Tooltip title={stage.tooltip} placement="top">
-                              <span className={styles.stageLabel}>
-                                <span className={styles.stageNum}>
-                                  {stage.index}
+                      return stages.map((stage, stageIdx) => {
+                        // Sub-header: positioned above the stage's card grid,
+                        // sized to the stage's grid width.
+                        const headerStyle: CSSProperties = {
+                          position: "absolute",
+                          left: LANE_PADDING_X + stage.xStart,
+                          top: stage.headerY,
+                          width: stage.width,
+                        };
+                        const isLast = stageIdx === stages.length - 1;
+                        // Vertically centered on the grid baseline;
+                        // `transform: translate(-50%, -50%)` in `.stageChevron`
+                        // recenters the element on this anchor.
+                        const chevronTop =
+                          stage.gridY +
+                          Math.ceil(tallestRows) * (CARD_PITCH / 2);
+                        return (
+                          <div key={stage.index}>
+                            <div className={styles.stage} style={headerStyle}>
+                              <Tooltip title={stage.tooltip} placement="top">
+                                <span className={styles.stageLabel}>
+                                  <span className={styles.stageNum}>
+                                    {stage.index}
+                                  </span>
+                                  {stage.label}
                                 </span>
-                                {stage.label}
-                              </span>
-                            </Tooltip>
-                          </div>
-                          {!isLast && (
-                            <div
-                              className={styles.stageChevron}
-                              style={{
-                                left:
-                                  14 /* LANE_PADDING_X */ +
-                                  stage.xEnd +
-                                  48 /* STAGE_GAP_HORIZONTAL */ / 2,
-                                top: chevronTop,
-                              }}
-                              data-testid={`stage-chevron-${stage.index}`}
-                            >
-                              ›
+                              </Tooltip>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            {!isLast && (
+                              <div
+                                className={styles.stageChevron}
+                                style={{
+                                  left:
+                                    LANE_PADDING_X +
+                                    stage.xEnd +
+                                    STAGE_GAP_HORIZONTAL / 2,
+                                  top: chevronTop,
+                                }}
+                                data-testid={`stage-chevron-${stage.index}`}
+                              >
+                                ›
+                              </div>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
 
                   {!lane.collapsed && lane.outOfFlow && (
                     <span className={styles.outOfFlowBadge}>Not in flow</span>

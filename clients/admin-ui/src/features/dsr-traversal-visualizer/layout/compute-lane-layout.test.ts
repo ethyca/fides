@@ -1,3 +1,4 @@
+import { STAGE_GAP_HORIZONTAL } from "../constants";
 import { LaneCollapseMap, TraversalPreviewResponse } from "../types";
 import { computeLaneLayout } from "./compute-lane-layout";
 
@@ -115,8 +116,8 @@ describe("computeLaneLayout", () => {
     // Stages flow left-to-right with strictly ascending xStart.
     expect(s1.xStart).toBeLessThan(s2.xStart);
 
-    // Stage 2's left edge sits past Stage 1's right edge plus the gap.
-    expect(s2.xStart).toBeGreaterThanOrEqual(s1.xEnd);
+    // Stage 2's left edge sits exactly STAGE_GAP_HORIZONTAL past Stage 1's right edge.
+    expect(s2.xStart - s1.xEnd).toBe(STAGE_GAP_HORIZONTAL);
 
     // Top-aligned: every stage uses the same gridY.
     expect(s2.gridY).toBe(s1.gridY);

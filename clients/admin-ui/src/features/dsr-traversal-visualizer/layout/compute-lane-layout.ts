@@ -150,6 +150,7 @@ export const computeLaneLayout = (
     const headerY = LANE_HEADER_HEIGHT;
     const gridY = LANE_HEADER_HEIGHT + STAGE_HEADER_HEIGHT;
     let stageCursorX = 0; // lane-local, after LANE_PADDING_X is applied at card-positioning time
+    // Only 0 when sortedStages is empty — unreachable here because reachHidden guards above.
     let maxRows = 0;
 
     sortedStages.forEach(([stageIndex, members], orderIdx) => {
