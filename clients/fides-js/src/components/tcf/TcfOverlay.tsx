@@ -103,6 +103,51 @@ const parseModalDefaultView = (
   return tabRoutes.indexOf(defaultView);
 };
 
+/**
+ * When ATT is denied, non-exempt custom notices must start as opted-out regardless of
+ * what the FidesJS cookie says.
+ *
+ * Why this is needed:
+ * The FidesJS cookie persists user consent across sessions. In the TCF overlay, the
+ * draft state (draftIds.customPurposesConsent) is initialized from that cookie. If a
+ * returning user previously opted-in to a custom notice, the cookie has it as opted-in,
+ * so the draft includes it — and handleAcceptAll / handleRejectAll both preserve
+ * disabled-but-opted-in draft IDs (to handle notice_only notices that are always opt-in).
+ *
+ * ATT-denied non-exempt notices are the opposite of notice_only: they're locked at
+ * OPT-OUT by a system constraint, not opt-in by design. If we leave their cookie
+ * value in the draft, Accept All and Reject All will incorrectly preserve them as
+ * opted-in and save that back to the API.
+ *
+ * Fix: strip non-exempt ATT notices from the draft at initialization. With them absent
+ * from draftIds, the existing handleAcceptAll / handleRejectAll logic automatically
+ * excludes them from the opted-in set (their disabled=true keeps them out of Accept All,
+ * and they're absent from draftIds so Reject All doesn't preserve them either).
+ *
+ * notice_only notices are kept — they're a separate concept (always opt-in regardless
+ * of ATT) and must remain in the draft.
+ */
+const filterAttDeniedFromDraft = (
+  draftIds: string[],
+  notices: Array<PrivacyNoticeWithPreference>,
+  fidesAttDenied: boolean,
+): string[] => {
+  if (!fidesAttDenied) {
+    return draftIds;
+  }
+  const noticeMap = new Map(notices.map((n) => [n.id, n]));
+  return draftIds.filter((id) => {
+    const notice = noticeMap.get(id);
+    // Keep notice_only notices (always locked opt-in regardless of ATT).
+    // Keep att_exempt notices (user can still interact with these when ATT is denied).
+    // Remove everything else — non-exempt ATT notices must start as opted-out.
+    return (
+      notice?.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+      notice?.att_exempt === true
+    );
+  });
+};
+
 export const TcfOverlay = () => {
   const { isActive: isSaved, activate: markSaved } = useAutoResetFlag(false);
   const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
@@ -309,7 +354,11 @@ export const TcfOverlay = () => {
         if (isMounted) {
           setDraftIds({
             ...EMPTY_ENABLED_IDS,
-            customPurposesConsent,
+            customPurposesConsent: filterAttDeniedFromDraft(
+              customPurposesConsent,
+              experienceMinimal.privacy_notices || [],
+              options.fidesAttDenied,
+            ),
           });
         }
       } else {
@@ -337,7 +386,11 @@ export const TcfOverlay = () => {
           // Vendors and systems are the same to the FE, so we combine them here
           setDraftIds({
             purposesConsent: getEnabledIds(consentPurposes),
-            customPurposesConsent,
+            customPurposesConsent: filterAttDeniedFromDraft(
+              customPurposesConsent,
+              customPurposes,
+              options.fidesAttDenied,
+            ),
             purposesLegint: getEnabledIds(legintPurposes),
             specialPurposes: getEnabledIds(specialPurposes),
             features: getEnabledIds(features),
@@ -523,6 +576,15 @@ export const TcfOverlay = () => {
     (wasAutomated?: boolean) => {
       let allIds: EnabledIds;
       let exp = experienceFull || experienceMinimal;
+      // Include a custom notice in "Accept All" if it is not disabled, OR if it is
+      // disabled-but-opted-in (which covers notice_only notices that are always
+      // locked at opt-in and must be preserved).
+      //
+      // ATT-denied non-exempt notices are disabled, but they must NOT be included
+      // even if they appear opted-in in draftIds. filterAttDeniedFromDraft() strips
+      // those IDs from the draft at initialization, so they won't appear in
+      // draftIds.customPurposesConsent here — the existing logic handles them
+      // correctly without any extra ATT-specific branching.
       const enabledActiveNotices = privacyNoticesWithBestTranslation.filter(
         (n) => !n.disabled || draftIds.customPurposesConsent.includes(n.id),
       );
@@ -585,8 +647,17 @@ export const TcfOverlay = () => {
 
   const handleRejectAll = useCallback(
     (wasAutomated?: boolean) => {
-      // Notice-only and disabled custom purposes should not be rejected
       const enabledIds: EnabledIds = EMPTY_ENABLED_IDS;
+      // "Reject All" must still preserve two kinds of custom notices as opted-in:
+      //   1. notice_only — always locked at opt-in regardless of user action
+      //   2. Other disabled notices (e.g. fidesDisabledNotices) that the user had
+      //      previously opted into — their locked state keeps them opted-in
+      //
+      // ATT-denied non-exempt notices look like case 2 (disabled + potentially opted-in
+      // in the draft from a previous cookie), but they must NOT be preserved — they're
+      // forced opt-out by system constraint. filterAttDeniedFromDraft() strips them from
+      // draftIds at initialization so they won't appear in
+      // draftIds.customPurposesConsent here, and the existing logic correctly excludes them.
       enabledIds.customPurposesConsent =
         privacyNoticesWithBestTranslation
           .filter((n) => {
