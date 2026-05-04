@@ -123,6 +123,8 @@ class AWSSecretsManagerProvider(SecretProvider):
         """Fetch from Secrets Manager, update cache, handle failures."""
         try:
             new_value = self._fetch(secret_id)
+        except SecretProviderError:
+            raise  # Don't wrap our own errors (e.g. binary secret, invalid JSON)
         except Exception as exc:
             return self._handle_fetch_failure(secret_id, entry, exc)
 

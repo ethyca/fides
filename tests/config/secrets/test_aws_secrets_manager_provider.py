@@ -74,6 +74,18 @@ class TestBasicFetch:
                 raise AssertionError("JSONDecodeError with .doc leaked into chain")
             exc = exc.__cause__
 
+    def test_binary_secret_raises_clear_error(self, aws_env):
+        """Secrets stored as SecretBinary should raise a clear error
+        rather than a confusing KeyError."""
+        aws_env.delete_secret(SecretId=SECRET_NAME, ForceDeleteWithoutRecovery=True)
+        aws_env.create_secret(
+            Name=SECRET_NAME,
+            SecretBinary=b"\x00\x01\x02binary-data",
+        )
+        provider = AWSSecretsManagerProvider(region_name=REGION)
+        with pytest.raises(SecretProviderError, match="stored as binary"):
+            provider.get_secret(SECRET_NAME)
+
 
 class TestCaching:
     def test_second_call_uses_cache(self, aws_env):
