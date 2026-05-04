@@ -351,7 +351,7 @@ export const FormBuilderPage = ({
       <Splitter style={splitterStyle}>
         <Splitter.Panel
           defaultSize="25%"
-          min={0}
+          min={240}
           collapsible
           data-testid="chat-panel"
         >
@@ -363,7 +363,7 @@ export const FormBuilderPage = ({
             onAbort={builder.abort}
           />
         </Splitter.Panel>
-        <Splitter.Panel min={240} data-testid="preview-panel">
+        <Splitter.Panel min={400} data-testid="preview-panel">
           <PreviewPane
             spec={builder.spec}
             selectedElementId={selectedElementId}
@@ -401,8 +401,8 @@ export const FormBuilderPage = ({
           />
         </Splitter.Panel>
         <Splitter.Panel
-          defaultSize="30%"
-          min={0}
+          defaultSize="25%"
+          min={240}
           collapsible
           data-testid="properties-panel"
         >
