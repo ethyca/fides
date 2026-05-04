@@ -33,6 +33,13 @@ class ConsentSettings(FidesSettings):
         "preferences before falling back to DB connector queries.",
     )
 
+    identity_enrichment_query_timeout_seconds: int = Field(
+        default=30,
+        description="Maximum seconds to wait for a single identity enrichment "
+        "DB query. Prevents worker threads from blocking indefinitely on slow "
+        "or unreachable external databases.",
+    )
+
     model_config = SettingsConfigDict(env_prefix="FIDES__CONSENT__")
 
     @model_validator(mode="after")

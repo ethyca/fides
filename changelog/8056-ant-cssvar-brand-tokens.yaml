@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Enable Ant Design cssVar with custom brand and neutral palette tokens (foundation for theme-aware dark mode)
+pr: 8056
+labels: []
