@@ -21,6 +21,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.82.1..main)
 
+## [2.82.2](https://github.com/ethyca/fides/compare/2.82.1..2.82.2)
+
+### Changed
+- Reduce redundant System fetches per row in /system/upsert from four to one, and add per-axis change-detection logging in the system audit path. [#8080](https://github.com/ethyca/fides/pull/8080)
+
+### Fixed
+- Fixed excessive memory usage in DSR cancel path by using column projection instead of loading full RequestTask ORM objects with large encrypted blobs [#8062](https://github.com/ethyca/fides/pull/8062)
+- Fixed N+1 query performance issue in system upsert endpoint where privacy declaration label validation issued individual database queries per label instead of batching them. [#8009](https://github.com/ethyca/fides/pull/8009)
+
+
 ## [2.82.1](https://github.com/ethyca/fides/compare/2.82.0..2.82.1)
 
 ### Added
