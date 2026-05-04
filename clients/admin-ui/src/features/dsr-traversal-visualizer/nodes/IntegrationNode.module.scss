@@ -1,0 +1,79 @@
+.node {
+  position: relative;
+  background: var(--fidesui-color-bg-container);
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: var(--fidesui-border-radius-lg);
+  width: 320px;
+  // Matches CARD_PITCH minus the 20px inter-card gap (NODE_HEIGHT + 50).
+  // Cards with short chip rows pad up to this height so vertically-stacked
+  // siblings read as uniformly tall; cards with wrapped chip rows still
+  // grow naturally up to CARD_PITCH.
+  min-height: 210px;
+  box-sizing: border-box;
+}
+
+.header {
+  padding: 12px 16px;
+}
+
+.avatar {
+  background-color: var(--fidesui-color-text) !important;
+  border-radius: var(--fidesui-border-radius) !important;
+}
+
+.body {
+  padding: 12px 16px;
+  border-top: 1px solid var(--fidesui-color-border);
+}
+
+.handle {
+  background: var(--fidesui-color-text-quaternary);
+  border: none;
+  width: 8px;
+  height: 8px;
+}
+
+.headerLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.metaRow {
+  margin-top: 6px;
+}
+
+// Chips may wrap to a second row when labels are long; card height
+// adapts and stages top-align around the tallest card.
+.chipRow {
+  margin-top: 6px;
+}
+
+.metaText {
+  font-size: 12px;
+}
+
+.miniText {
+  font-size: 11px;
+}
+
+.tag {
+  font-size: 10px;
+  margin: 0;
+}
+
+.fieldHelp {
+  display: block;
+  margin-top: 2px;
+}
+
+.fieldExtra {
+  display: block;
+  margin-top: 4px;
+}
+
+.stageVia {
+  display: block;
+  font-size: 11px;
+  color: var(--fidesui-color-text-tertiary);
+  margin-top: 1px;
+}
