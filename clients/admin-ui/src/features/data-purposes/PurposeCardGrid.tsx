@@ -3,6 +3,7 @@ import {
   Col,
   Divider,
   Flex,
+  Icons,
   Input,
   Result,
   Row,
@@ -11,63 +12,35 @@ import {
   Title,
 } from "fidesui";
 
-import type { DataPurpose, PurposeSummary } from "./data-purpose.slice";
+import { useGetPurposeSummariesQuery } from "./data-purpose.slice";
 import PurposeCard from "./PurposeCard";
 import { formatDataUse } from "./purposeUtils";
 import usePurposeCardFilters from "./usePurposeCardFilters";
+import usePurposesList from "./usePurposesList";
 
 interface PurposeCardGridProps {
-  purposes: DataPurpose[];
-  summaries: PurposeSummary[];
-  dataUseFilter: string | null;
-  onDataUseFilterChange: (value: string | null) => void;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
   onCreatePurpose: () => void;
 }
 
-const STATUS_OPTIONS = [
-  { value: "drift", label: "Has risks" },
-  { value: "compliant", label: "Compliant" },
-  { value: "unknown", label: "Not scanned" },
-];
-
-const PurposeCardGrid = ({
-  purposes,
-  summaries,
-  dataUseFilter,
-  onDataUseFilterChange,
-  searchQuery,
-  onSearchChange,
-  onCreatePurpose,
-}: PurposeCardGridProps) => {
+const PurposeCardGrid = ({ onCreatePurpose }: PurposeCardGridProps) => {
   const {
+    items: purposes,
+    filterOptions,
+    searchQuery,
+    setSearchQuery,
+    dataUseFilter,
+    setDataUseFilter,
     consumerFilter,
     setConsumerFilter,
-    statusFilter,
-    setStatusFilter,
     categoryFilter,
     setCategoryFilter,
-    consumerOptions,
-    dataUseOptions,
-    categoryOptions,
-    groups,
-    summariesByKey,
-    hasActiveFilters,
-    clearFilters,
-  } = usePurposeCardFilters(purposes, summaries);
-
-  const handleClearAll = () => {
-    clearFilters();
-    onDataUseFilterChange(null);
-    onSearchChange("");
-  };
-
-  const hasAnyFilter =
-    hasActiveFilters || Boolean(dataUseFilter) || Boolean(searchQuery);
+    statusFilter,
+    setStatusFilter,
+  } = usePurposesList();
+  const { data: summaries = [] } = useGetPurposeSummariesQuery();
+  const { groups, summariesByKey } = usePurposeCardFilters(purposes, summaries);
 
   const isEmpty = groups.length === 0;
-  const hasNoPurposes = purposes.length === 0 && !hasAnyFilter;
 
   return (
     <div>
@@ -76,8 +49,9 @@ const PurposeCardGrid = ({
           placeholder="Search purposes..."
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onSearchChange(e.target.value)
+            setSearchQuery(e.target.value)
           }
+          debounce
           allowClear
           className="w-[280px]"
         />
@@ -87,7 +61,7 @@ const PurposeCardGrid = ({
             placeholder="Status"
             allowClear
             className="w-40"
-            options={STATUS_OPTIONS}
+            options={filterOptions.statuses}
             value={statusFilter}
             onChange={(v) => setStatusFilter(v ?? null)}
           />
@@ -96,7 +70,7 @@ const PurposeCardGrid = ({
             placeholder="Consumer"
             allowClear
             className="w-[200px]"
-            options={consumerOptions}
+            options={filterOptions.consumers}
             value={consumerFilter}
             onChange={(v) => setConsumerFilter(v ?? null)}
           />
@@ -105,7 +79,7 @@ const PurposeCardGrid = ({
             placeholder="Data category"
             allowClear
             className="w-[200px]"
-            options={categoryOptions}
+            options={filterOptions.categories}
             value={categoryFilter}
             onChange={(v) => setCategoryFilter(v ?? null)}
           />
@@ -114,30 +88,26 @@ const PurposeCardGrid = ({
             placeholder="Data use"
             allowClear
             className="w-[200px]"
-            options={dataUseOptions}
+            options={filterOptions.data_uses}
             value={dataUseFilter}
-            onChange={(v) => onDataUseFilterChange(v ?? null)}
+            onChange={(v) => setDataUseFilter(v ?? null)}
           />
         </Flex>
       </Flex>
-      {isEmpty && hasNoPurposes && (
+      {isEmpty && (
         <Result
           status="info"
-          title="No purposes yet"
-          subTitle="Define your first purpose to start governing how data flows through your systems."
+          title="No purposes to show"
+          subTitle="Create a new purpose to get started."
           extra={
-            <Button type="primary" onClick={onCreatePurpose}>
-              + New purpose
+            <Button
+              type="primary"
+              icon={<Icons.Add />}
+              onClick={onCreatePurpose}
+            >
+              New purpose
             </Button>
           }
-        />
-      )}
-      {isEmpty && !hasNoPurposes && (
-        <Result
-          status="info"
-          title="No purposes match your filters"
-          subTitle="Try adjusting your search or clearing filters to see more results."
-          extra={<Button onClick={handleClearAll}>Clear filters</Button>}
         />
       )}
       {!isEmpty &&
@@ -155,7 +125,13 @@ const PurposeCardGrid = ({
             <Divider className="!mt-0 mb-4" />
             <Row gutter={[16, 16]}>
               {items.map((purpose) => (
-                <Col key={purpose.id ?? purpose.fides_key} span={6}>
+                <Col
+                  key={purpose.id ?? purpose.fides_key}
+                  xs={24}
+                  sm={12}
+                  lg={8}
+                  xl={6}
+                >
                   <PurposeCard
                     purpose={purpose}
                     summary={summariesByKey.get(purpose.fides_key)}

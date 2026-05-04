@@ -11,14 +11,6 @@ export const DATA_USE_LABELS: Record<string, string> = {
 export const formatDataUse = (key: string): string =>
   DATA_USE_LABELS[key] ?? key;
 
-export const DATA_USE_COLORS: Record<string, string> = {
-  analytics: "var(--fidesui-olive)",
-  "marketing.advertising": "var(--fidesui-terracotta)",
-  "essential.service.security": "var(--fidesui-minos)",
-  "essential.service.operations": "var(--fidesui-sandstone)",
-  improve: "var(--fidesui-info)",
-};
-
 export const LEGAL_BASIS_LABELS: Record<string, string> = {
   legitimate_interests: "Legitimate interests",
   consent: "Consent",

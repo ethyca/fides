@@ -247,7 +247,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
  * Features:
  * - Keyboard navigation: j (down), k (up), space (toggle selection), escape (clear active)
  * - Automatic scroll-into-view for active items (uses data-listitem attribute)
- * - Automatic active item styling with `var(--ant-color-primary-bg)` background color
+ * - Automatic active item styling with `var(--fidesui-color-primary-bg)` background color
  * - Active state provided to renderItem for additional custom styling
  * - Optional item selection with checkboxes
  * - onActiveItemChange callback to track currently active item

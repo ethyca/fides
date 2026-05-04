@@ -1,36 +1,32 @@
 import { baseApi } from "~/features/common/api.slice";
+import type { DataPurposeResponse } from "~/types/api/models/DataPurposeResponse";
 
 interface DataPurposeParams {
-  page?: number;
-  size?: number;
   search?: string;
   data_use?: string;
+  consumer?: string;
+  category?: string;
+  status?: string;
 }
 
-export interface DataPurpose {
-  id?: string;
-  fides_key: string;
-  name: string;
-  description?: string | null;
-  data_use: string;
-  data_subject?: string | null;
-  data_categories?: string[];
-  legal_basis_for_processing?: string | null;
-  flexible_legal_basis_for_processing?: boolean;
-  special_category_legal_basis?: string | null;
-  impact_assessment_location?: string | null;
-  retention_period?: string | null;
-  features?: string[];
-  created_at?: string;
-  updated_at?: string;
+export type DataPurpose = DataPurposeResponse;
+
+export interface DataPurposeFilterOption {
+  value: string;
+  label: string;
 }
 
-export interface DataPurposePage {
+export interface DataPurposeFilterOptions {
+  consumers: DataPurposeFilterOption[];
+  data_uses: DataPurposeFilterOption[];
+  categories: DataPurposeFilterOption[];
+  statuses: DataPurposeFilterOption[];
+}
+
+export interface DataPurposeListResponse {
   items: DataPurpose[];
   total: number;
-  page: number;
-  size: number;
-  pages: number;
+  filter_options: DataPurposeFilterOptions;
 }
 
 export interface PurposeSystemAssignment {
@@ -78,7 +74,10 @@ export interface PurposeSummary {
 
 export const dataPurposesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAllDataPurposes: builder.query<DataPurposePage, DataPurposeParams>({
+    getAllDataPurposes: builder.query<
+      DataPurposeListResponse,
+      DataPurposeParams
+    >({
       query: (params) => ({
         url: `data-purpose`,
         params,
@@ -269,6 +268,14 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         { type: "PurposeDatasets", id: fidesKey },
       ],
     }),
+
+    downloadDataPurposesCsv: builder.query<Blob, DataPurposeParams>({
+      query: (params) => ({
+        url: `data-purpose`,
+        params: { ...params, download_csv: true },
+        responseHandler: "content-type",
+      }),
+    }),
   }),
 });
 
@@ -289,4 +296,5 @@ export const {
   useRemoveDatasetsFromPurposeMutation,
   useAcceptPurposeCategoriesMutation,
   useMarkPurposeCategoriesMisclassifiedMutation,
+  useLazyDownloadDataPurposesCsvQuery,
 } = dataPurposesApi;

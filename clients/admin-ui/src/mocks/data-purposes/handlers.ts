@@ -1,6 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
+import {
+  computeCategoryDrift,
+  formatDataUse,
+} from "~/features/data-purposes/purposeUtils";
 import type { DataPurposeResponse } from "~/types/api";
 
 import {
@@ -50,6 +54,50 @@ const getDetectedCategories = (
   return Array.from(categories);
 };
 
+// CSV export — RoPA shape mirrors what the real fidesplus endpoint will return
+// when called with `?download_csv=true`. Header order is the contract.
+const ROPA_HEADER = [
+  "Reference",
+  "Processing activity",
+  "Description",
+  "Purpose of processing",
+  "Lawful basis (Art. 6)",
+  "Special category basis (Art. 9)",
+  "Categories of data subjects",
+  "Categories of personal data",
+  "Categories of personal data (detected)",
+  "Retention period (days)",
+  "Features",
+  "Last reviewed",
+];
+
+const escapeCsvCell = (value: unknown): string =>
+  `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+const buildRoPACsv = (purposes: DataPurposeResponse[]): string => {
+  const rows = purposes.map((purpose) => {
+    const datasets = datasetsStore[purpose.fides_key] ?? [];
+    return [
+      purpose.fides_key,
+      purpose.name,
+      purpose.description ?? "",
+      purpose.data_use,
+      purpose.legal_basis_for_processing ?? "",
+      purpose.special_category_legal_basis ?? "",
+      purpose.data_subject ?? "",
+      (purpose.data_categories ?? []).join("; "),
+      getDetectedCategories(datasets).join("; "),
+      purpose.retention_period ?? "",
+      (purpose.features ?? []).join("; "),
+      purpose.updated_at ?? "",
+    ];
+  });
+  const body = [ROPA_HEADER, ...rows]
+    .map((row) => row.map(escapeCsvCell).join(","))
+    .join("\r\n");
+  return `\ufeff${body}`;
+};
+
 export const dataPurposesHandlers = () => {
   const apiBase = "/api/v1";
   const plusBase = `${apiBase}/plus`;
@@ -57,34 +105,154 @@ export const dataPurposesHandlers = () => {
   return [
     // --- Real-endpoint handlers (mirroring fidesplus routes) ---
     rest.get(`${apiBase}/data-purpose`, (req, res, ctx) => {
-      const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
-      const size = parseInt(req.url.searchParams.get("size") ?? "50", 10);
       const search = req.url.searchParams.get("search")?.toLowerCase() ?? "";
       const dataUse = req.url.searchParams.get("data_use");
+      const consumer = req.url.searchParams.get("consumer");
+      const category = req.url.searchParams.get("category");
+      const status = req.url.searchParams.get("status");
+      const downloadCsv = req.url.searchParams.get("download_csv") === "true";
 
-      let filtered = [...purposesStore];
-      if (search) {
-        filtered = filtered.filter(
-          (purpose) =>
-            purpose.name.toLowerCase().includes(search) ||
-            purpose.fides_key.toLowerCase().includes(search),
+      const purposeStatus = (purpose: DataPurposeResponse) => {
+        const datasets = datasetsStore[purpose.fides_key] ?? [];
+        return computeCategoryDrift(
+          purpose.data_categories ?? [],
+          getDetectedCategories(datasets),
+        ).status;
+      };
+
+      const purposeAssignedSystemIds = (purpose: DataPurposeResponse) =>
+        new Set(
+          (systemsStore[purpose.fides_key] ?? [])
+            .filter((assignment) => assignment.assigned)
+            .map((assignment) => assignment.system_id),
+        );
+
+      const applyFilters = (
+        purposes: DataPurposeResponse[],
+        active: {
+          search?: string;
+          dataUse?: string | null;
+          consumer?: string | null;
+          category?: string | null;
+          status?: string | null;
+        },
+      ) => {
+        let result = purposes;
+        if (active.search) {
+          const term = active.search;
+          result = result.filter(
+            (purpose) =>
+              purpose.name.toLowerCase().includes(term) ||
+              purpose.fides_key.toLowerCase().includes(term),
+          );
+        }
+        if (active.dataUse) {
+          result = result.filter(
+            (purpose) => purpose.data_use === active.dataUse,
+          );
+        }
+        if (active.consumer) {
+          result = result.filter((purpose) =>
+            purposeAssignedSystemIds(purpose).has(active.consumer!),
+          );
+        }
+        if (active.category) {
+          result = result.filter((purpose) =>
+            (purpose.data_categories ?? []).includes(active.category!),
+          );
+        }
+        if (active.status) {
+          result = result.filter(
+            (purpose) => purposeStatus(purpose) === active.status,
+          );
+        }
+        return result;
+      };
+
+      const allFilters = { search, dataUse, consumer, category, status };
+      const filtered = applyFilters(purposesStore, allFilters);
+
+      if (downloadCsv) {
+        const csv = buildRoPACsv(filtered);
+        return res(
+          ctx.status(200),
+          ctx.set("Content-Type", "text/csv; charset=utf-8"),
+          ctx.set(
+            "Content-Disposition",
+            `attachment; filename="ropa-export.csv"`,
+          ),
+          ctx.body(csv),
         );
       }
-      if (dataUse) {
-        filtered = filtered.filter((purpose) => purpose.data_use === dataUse);
-      }
 
-      const start = (page - 1) * size;
-      const items = filtered.slice(start, start + size);
+      // Faceted filter options — each dimension's options are derived from the
+      // population obtained by applying *all other* filters. The currently-
+      // selected value persists in its own dropdown; values that would yield
+      // zero results given the current selection don't appear. Mirrors the
+      // action-center / discovered-assets pattern (see useDiscoveredAssetsTable).
+      const consumerPool = applyFilters(purposesStore, {
+        ...allFilters,
+        consumer: null,
+      });
+      const dataUsePool = applyFilters(purposesStore, {
+        ...allFilters,
+        dataUse: null,
+      });
+      const categoryPool = applyFilters(purposesStore, {
+        ...allFilters,
+        category: null,
+      });
+      const statusPool = applyFilters(purposesStore, {
+        ...allFilters,
+        status: null,
+      });
+
+      const consumerMap = new Map<string, string>();
+      consumerPool.forEach((purpose) => {
+        (systemsStore[purpose.fides_key] ?? [])
+          .filter((assignment) => assignment.assigned)
+          .forEach((assignment) => {
+            if (!consumerMap.has(assignment.system_id)) {
+              consumerMap.set(assignment.system_id, assignment.system_name);
+            }
+          });
+      });
+      const dataUses = Array.from(
+        new Set(dataUsePool.map((purpose) => purpose.data_use)),
+      );
+      const categories = new Set<string>();
+      categoryPool.forEach((purpose) => {
+        (purpose.data_categories ?? []).forEach((c) => categories.add(c));
+      });
+      const statuses = new Set<string>();
+      statusPool.forEach((purpose) => statuses.add(purposeStatus(purpose)));
+      const STATUS_LABELS: Record<string, string> = {
+        drift: "Has risks",
+        compliant: "Compliant",
+        unknown: "Not scanned",
+      };
+      const STATUS_ORDER = ["drift", "compliant", "unknown"];
 
       return res(
         ctx.status(200),
         ctx.json({
-          items,
+          items: filtered,
           total: filtered.length,
-          page,
-          size,
-          pages: Math.max(1, Math.ceil(filtered.length / size)),
+          filter_options: {
+            consumers: Array.from(consumerMap, ([value, label]) => ({
+              value,
+              label,
+            })).sort((a, b) => a.label.localeCompare(b.label)),
+            data_uses: dataUses
+              .map((value) => ({ value, label: formatDataUse(value) }))
+              .sort((a, b) => a.label.localeCompare(b.label)),
+            categories: Array.from(categories)
+              .sort()
+              .map((value) => ({ value, label: value })),
+            statuses: STATUS_ORDER.filter((value) => statuses.has(value)).map(
+              (value) => ({ value, label: STATUS_LABELS[value] }),
+            ),
+          },
         }),
       );
     }),

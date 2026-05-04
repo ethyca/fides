@@ -26,12 +26,12 @@ const RISK_VARIANTS: Record<
   }
 > = {
   drift: (riskCount) => ({
-    dotClass: "bg-[var(--ant-color-error)]",
+    dotClass: "bg-[var(--fidesui-color-error)]",
     label: `${riskCount} ${riskCount === 1 ? "Risk" : "Risks"}`,
     textProps: { className: "!text-[var(--fidesui-minos)]" },
   }),
   compliant: () => ({
-    dotClass: "bg-[var(--ant-color-success)]",
+    dotClass: "bg-[var(--fidesui-color-success)]",
     label: "Compliant",
     textProps: { className: "!text-[var(--fidesui-minos)]" },
   }),

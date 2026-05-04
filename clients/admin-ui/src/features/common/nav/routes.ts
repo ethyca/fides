@@ -19,6 +19,7 @@ export const DATASET_COLLECTION_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]";
 export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]/[...subfieldNames]";
+export const DATASET_GRAPH_EDITOR_ROUTE = "/dataset/[datasetId]/graph-editor";
 
 // Detection and discovery
 export const ACTION_CENTER_ROUTE = "/data-discovery/action-center";

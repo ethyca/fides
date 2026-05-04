@@ -57,7 +57,7 @@ export const EmptyMonitorsResult = () => {
               <Col span={8} />
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/bigquery.svg"
                   preview={false}
                   alt=""
@@ -68,7 +68,7 @@ export const EmptyMonitorsResult = () => {
             <Row align="middle" justify="center">
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/okta.svg"
                   preview={false}
                   alt=""
@@ -77,7 +77,7 @@ export const EmptyMonitorsResult = () => {
               <Col span={8} />
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/snowflake.svg"
                   preview={false}
                   alt=""
@@ -88,7 +88,7 @@ export const EmptyMonitorsResult = () => {
               <Col span={8} />
               <Col span={8}>
                 <Image
-                  rootClassName="flex"
+                  classNames={{ root: "flex" }}
                   src="/images/connector-logos/generic.svg"
                   preview={false}
                   alt=""
@@ -99,7 +99,7 @@ export const EmptyMonitorsResult = () => {
           </div>
           <div className="relative">
             <Image
-              rootClassName="flex"
+              classNames={{ root: "flex" }}
               src="/images/service.svg"
               preview={false}
               alt=""
