@@ -141,6 +141,25 @@ describe("Error fallback", () => {
     expect(logo).toHaveAttribute("src", "/tenant-logo.svg");
   });
 
+  it("wraps the logo in a clickable link when logo_url is configured", () => {
+    renderErrorFallback({
+      logo_path: "/tenant-logo.svg",
+      logo_url: "https://example.com/home",
+    });
+
+    const logo = screen.getByTestId("logo");
+    const link = logo.closest("a");
+    expect(link).not.toBeNull();
+    expect(link).toHaveAttribute("href", "https://example.com/home");
+  });
+
+  it("renders the logo without a link when logo_url is missing", () => {
+    renderErrorFallback({ logo_path: "/tenant-logo.svg" });
+
+    const logo = screen.getByTestId("logo");
+    expect(logo.closest("a")).toBeNull();
+  });
+
   it("omits the logo bar when logo_path is not configured", () => {
     renderErrorFallback();
 

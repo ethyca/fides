@@ -6,6 +6,7 @@ import {
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraImage as Image,
+  ChakraLink as Link,
   ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
@@ -23,8 +24,20 @@ const Error = ({ resetErrorBoundary }: FallbackProps) => {
     ? config.error_message
     : DEFAULT_ERROR_MESSAGE;
   const logoPath = config?.logo_path;
+  const logoUrl = config?.logo_url;
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = Boolean(logoPath) && !logoFailed;
+
+  const logoImage = (
+    <Image
+      src={logoPath || undefined}
+      alt="Logo"
+      margin="8px"
+      height="68px"
+      data-testid="logo"
+      onError={() => setLogoFailed(true)}
+    />
+  );
 
   return (
     <Box
@@ -43,14 +56,7 @@ const Error = ({ resetErrorBoundary }: FallbackProps) => {
           justifyContent="center"
           alignItems="center"
         >
-          <Image
-            src={logoPath || undefined}
-            alt="Logo"
-            margin="8px"
-            height="68px"
-            data-testid="logo"
-            onError={() => setLogoFailed(true)}
-          />
+          {logoUrl ? <Link href={logoUrl}>{logoImage}</Link> : logoImage}
         </Flex>
       ) : null}
       <Stack flex="1" align="center" justify="center" spacing={6} py={8} px={4}>
@@ -62,23 +68,21 @@ const Error = ({ resetErrorBoundary }: FallbackProps) => {
           borderRadius={4}
           boxShadow="base"
         >
-          <Stack align="center" spacing={9}>
-            <Stack align="center" justify="center" spacing={3}>
-              <Heading
-                fontSize="3xl"
-                lineHeight="1"
-                colorScheme="primary"
-                color="gray.700"
-              >
-                Error
-              </Heading>
-              <Text fontWeight="semibold" textAlign="center">
-                {message}
-              </Text>
-              <Button variant="text" onClick={resetErrorBoundary}>
-                Try again
-              </Button>
-            </Stack>
+          <Stack align="center" justify="center" spacing={3}>
+            <Heading
+              fontSize="3xl"
+              lineHeight="1"
+              colorScheme="primary"
+              color="gray.700"
+            >
+              Error
+            </Heading>
+            <Text fontWeight="semibold" textAlign="center">
+              {message}
+            </Text>
+            <Button variant="text" onClick={resetErrorBoundary}>
+              Try again
+            </Button>
           </Stack>
         </Box>
       </Stack>
