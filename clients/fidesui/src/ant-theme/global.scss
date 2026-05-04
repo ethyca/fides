@@ -234,6 +234,13 @@ h6 {
   }
 }
 
+// Reduce bottom padding when notification has no description
+.ant-notification .ant-notification-notice-wrapper .ant-notification-notice {
+  &:not(:has(.ant-notification-notice-description)) {
+    padding-bottom: 12px;
+  }
+}
+
 // Used to move the close button for drawers to the right side
 .ant-drawer-header-title {
   flex-direction: row-reverse;

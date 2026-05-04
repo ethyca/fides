@@ -9,6 +9,7 @@ import {
   Icons,
   Paragraph,
   Progress,
+  Spin,
   Tag,
   TagList,
   Text,
@@ -60,11 +61,14 @@ export const AssessmentCard = ({
 
   const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : "N/A";
   const statusLabel = status ? ASSESSMENT_STATUS_LABELS[status] : "N/A";
-  const isComplete = completeness === 100;
+  const isGenerating = status === AssessmentStatus.GENERATING;
+  const isComplete = status === AssessmentStatus.COMPLETED;
   const completionDate =
     isComplete && assessment.updated_at
       ? `Completed on ${formatDate(assessment.updated_at, { showTime: false })}`
       : statusLabel;
+
+  const titleText = assessment.template_name ?? assessment.name;
 
   return (
     <Card
@@ -75,12 +79,16 @@ export const AssessmentCard = ({
       <Flex vertical gap="small" justify="space-between" className="flex-1">
         <div>
           <Title level={3} className={`!mb-1 ${styles.titleLink}`}>
-            <RouterLink
-              unstyled
-              href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
-            >
-              {assessment.template_name ?? assessment.name}
-            </RouterLink>
+            {isGenerating ? (
+              titleText
+            ) : (
+              <RouterLink
+                unstyled
+                href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}
+              >
+                {titleText}
+              </RouterLink>
+            )}
           </Title>
           {assessment.system_name && (
             <Text type="secondary" size="sm" className="block">
@@ -114,7 +122,17 @@ export const AssessmentCard = ({
         <div>
           <Divider className="my-3" />
           <div>
-            {isComplete ? (
+            {isGenerating && (
+              <Flex align="center" justify="center" gap="small">
+                <div>
+                  <Spin size="small" />
+                </div>
+                <Text type="secondary" size="sm">
+                  Generating this assessment
+                </Text>
+              </Flex>
+            )}
+            {isComplete && (
               <Flex
                 justify="space-between"
                 align="center"
@@ -140,7 +158,8 @@ export const AssessmentCard = ({
                   View
                 </Button>
               </Flex>
-            ) : (
+            )}
+            {!isGenerating && !isComplete && (
               <>
                 <Flex justify="space-between">
                   <Text type="secondary" size="sm">
