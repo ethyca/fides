@@ -109,11 +109,8 @@ const EditorSection = ({
 
   const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
     { connectionKey },
-    {
-      skip: !isSaas || !connectionKey,
-    },
+    { skip: !isSaas || !connectionKey },
   );
-
   const datasetOptions = useMemo(
     () =>
       (datasetConfigs?.items || []).map((item) => ({
@@ -392,6 +389,7 @@ const EditorSection = ({
               dataset={localDataset}
               protectedFields={protectedFields}
               onDatasetChange={handleLocalDatasetChange}
+              isSaas
             />
           )}
         </div>
