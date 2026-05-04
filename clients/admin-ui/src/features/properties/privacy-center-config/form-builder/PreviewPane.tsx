@@ -14,7 +14,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { JSONUIProvider, Renderer } from "@json-render/react";
-import { Button, Dropdown, Empty, Form } from "fidesui";
+import { Button, Dropdown, Empty, Form, Switch, Typography } from "fidesui";
 import React from "react";
 
 import type { ComponentType } from "./catalog";
@@ -42,6 +42,7 @@ interface PreviewPaneProps {
    * builder shows what an end user would see.
    */
   previewMode?: PreviewMode;
+  onPreviewModeChange?: (next: PreviewMode) => void;
 }
 
 const wrapperStyle: React.CSSProperties = {
@@ -53,7 +54,7 @@ const wrapperStyle: React.CSSProperties = {
 
 const toolbarStyle: React.CSSProperties = {
   display: "flex",
-  justifyContent: "flex-end",
+  justifyContent: "space-between",
   alignItems: "center",
   gap: 8,
   padding: "8px 16px",
@@ -61,6 +62,12 @@ const toolbarStyle: React.CSSProperties = {
   borderTop: "1px solid var(--ant-color-border)",
   flexShrink: 0,
   minHeight: 48,
+};
+
+const toolbarSideStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
 };
 
 const canvasStyle: React.CSSProperties = {
@@ -150,6 +157,7 @@ export const PreviewPane = ({
   onReorderFields,
   actions,
   previewMode = "edit",
+  onPreviewModeChange,
 }: PreviewPaneProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -220,12 +228,38 @@ export const PreviewPane = ({
 
   // Preview mode: render the entire spec through one JSONUIProvider so the
   // shared state model can resolve cross-field $state references (e.g.
-  // "show this field when /form/country eq 'US'").
+  // "show this field when /form/country eq 'US'"). Drop any field marked
+  // `hidden` from the rendered tree — hidden fields are query-param-driven
+  // and never visible to end users, so they shouldn't show in Preview either.
+  const previewSpec = React.useMemo(() => {
+    if (!spec) {
+      return null;
+    }
+    const rootChildren = spec.elements[spec.root]?.children ?? [];
+    const visibleChildIds = rootChildren.filter((id) => {
+      const el = spec.elements[id];
+      return !(el && (el.props as { hidden?: boolean }).hidden === true);
+    });
+    if (visibleChildIds.length === rootChildren.length) {
+      return spec;
+    }
+    return {
+      ...spec,
+      elements: {
+        ...spec.elements,
+        [spec.root]: {
+          ...spec.elements[spec.root],
+          children: visibleChildIds,
+        },
+      },
+    };
+  }, [spec]);
+
   const renderPreviewCanvas = () => (
     <div style={formCardStyle}>
-      {hasFields && spec ? (
+      {hasFields && previewSpec ? (
         <JSONUIProvider registry={registry}>
-          <Renderer spec={spec as any} registry={registry} />
+          <Renderer spec={previewSpec as any} registry={registry} />
         </JSONUIProvider>
       ) : (
         <Empty description="No fields yet. Switch to Edit to add one." />
@@ -239,7 +273,18 @@ export const PreviewPane = ({
         {previewMode === "edit" ? renderEditCanvas() : renderPreviewCanvas()}
       </div>
       <div style={toolbarStyle} data-testid="preview-toolbar">
-        {actions}
+        <div style={toolbarSideStyle}>
+          <Typography.Text>Preview mode</Typography.Text>
+          <Switch
+            checked={previewMode === "preview"}
+            onChange={(checked) =>
+              onPreviewModeChange?.(checked ? "preview" : "edit")
+            }
+            data-testid="preview-mode-toggle"
+            aria-label="Toggle preview mode"
+          />
+        </div>
+        <div style={toolbarSideStyle}>{actions}</div>
       </div>
     </div>
   );

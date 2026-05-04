@@ -253,7 +253,11 @@ export const VisibilityEditor = ({
                   borderRadius: 4,
                 }}
               >
-                <Space orientation="vertical" style={{ width: "100%" }} size="small">
+                <Space
+                  orientation="vertical"
+                  style={{ width: "100%" }}
+                  size="small"
+                >
                   <Select
                     aria-label="Source field"
                     placeholder="Field"

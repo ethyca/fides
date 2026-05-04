@@ -75,7 +75,11 @@ const useFieldBinding = <T,>(name: string) =>
 
 const TextField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
-  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
+  useDefaultValueSeed(
+    value,
+    setValue,
+    props.default_value as string | undefined,
+  );
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>
@@ -93,7 +97,11 @@ const TextField = ({ props }: { props: BaseFieldProps }) => {
 
 const SelectField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
-  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
+  useDefaultValueSeed(
+    value,
+    setValue,
+    props.default_value as string | undefined,
+  );
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>
@@ -136,7 +144,11 @@ const MultiSelectField = ({ props }: { props: BaseFieldProps }) => {
 
 const RadioField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
-  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
+  useDefaultValueSeed(
+    value,
+    setValue,
+    props.default_value as string | undefined,
+  );
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>
@@ -162,7 +174,11 @@ const LocationField = ({ props }: { props: BaseFieldProps }) => {
       ? props.options
       : LOCATION_DEFAULT_OPTIONS;
   const [value, setValue] = useFieldBinding<string>(props.name);
-  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
+  useDefaultValueSeed(
+    value,
+    setValue,
+    props.default_value as string | undefined,
+  );
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>

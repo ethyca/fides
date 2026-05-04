@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Segmented, Splitter, useMessage } from "fidesui";
+import { Alert, Button, Modal, Splitter, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -371,17 +371,9 @@ export const FormBuilderPage = ({
             onAddField={handleAddField}
             onReorderFields={handleReorderFields}
             previewMode={previewMode}
+            onPreviewModeChange={setPreviewMode}
             actions={
               <>
-                <Segmented
-                  value={previewMode}
-                  onChange={(v) => setPreviewMode(v as PreviewMode)}
-                  options={[
-                    { label: "Edit", value: "edit" },
-                    { label: "Preview", value: "preview" },
-                  ]}
-                  data-testid="preview-mode-toggle"
-                />
                 <Button
                   onClick={() => router.push(`/properties/${propertyId}`)}
                   data-testid="cancel-button"

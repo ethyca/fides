@@ -1,6 +1,7 @@
 import {
   Alert,
   Button,
+  Flex,
   Form,
   Icons,
   Input,
@@ -232,6 +233,17 @@ export const FieldPropertiesPanel = ({
       next = { ...next, required: false };
       pendingRequiredSync = true;
     }
+    // Hidden + visibility conditions also contradict — a hidden field is
+    // never shown, so per-condition visibility is moot. Clear any rows
+    // when Hidden turns on.
+    if (
+      "hidden" in changed &&
+      changed.hidden === true &&
+      visibilityRows.length > 0
+    ) {
+      setVisibilityRows([]);
+      onUpdateVisibility(selectedElementId, undefined);
+    }
     onUpdateField(selectedElementId, stripUndefined(next));
     // Defer field-state writes until after the current input event has
     // finished propagating. setFieldsValue mid-event tends to steal focus
@@ -313,36 +325,42 @@ export const FieldPropertiesPanel = ({
             >
               <Input data-testid="prop-query-param-key" />
             </Form.Item>
-            <Form.Item
-              noStyle
-              shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
-            >
-              {({ getFieldValue }) => {
-                const hiddenOn = !!getFieldValue("hidden");
-                return (
-                  <Form.Item
-                    label="Required"
-                    name="required"
-                    valuePropName="checked"
-                    tooltip={
-                      hiddenOn
-                        ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
-                        : "Whether the user must fill this field before submitting."
-                    }
-                  >
-                    <Switch data-testid="prop-required" disabled={hiddenOn} />
-                  </Form.Item>
-                );
-              }}
-            </Form.Item>
-            <Form.Item
-              label="Hidden"
-              name="hidden"
-              valuePropName="checked"
-              tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
-            >
-              <Switch data-testid="prop-hidden" />
-            </Form.Item>
+            <Flex align="center" justify="space-between">
+              <Form.Item
+                noStyle
+                shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
+              >
+                {({ getFieldValue }) => {
+                  const hiddenOn = !!getFieldValue("hidden");
+                  return (
+                    <Form.Item
+                      label="Required"
+                      name="required"
+                      valuePropName="checked"
+                      layout="horizontal"
+                      colon={false}
+                      tooltip={
+                        hiddenOn
+                          ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
+                          : "Whether the user must fill this field before submitting."
+                      }
+                    >
+                      <Switch data-testid="prop-required" disabled={hiddenOn} />
+                    </Form.Item>
+                  );
+                }}
+              </Form.Item>
+              <Form.Item
+                label="Hidden"
+                name="hidden"
+                valuePropName="checked"
+                layout="horizontal"
+                colon={false}
+                tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
+              >
+                <Switch data-testid="prop-hidden" />
+              </Form.Item>
+            </Flex>
           </>
         )}
 
@@ -369,6 +387,7 @@ export const FieldPropertiesPanel = ({
                 return (
                   <Form.Item label="Default value" name="default_value">
                     <Select
+                      aria-label="Default value"
                       mode={isMulti ? "multiple" : undefined}
                       allowClear
                       placeholder="No default"
@@ -418,15 +437,36 @@ export const FieldPropertiesPanel = ({
           </>
         )}
         <Form.Item
-          label="Visibility"
-          tooltip="Show this field only when conditions are met. Conditions are preserved in the builder; backend support pending (see ENG follow-up)."
+          noStyle
+          shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
         >
-          <VisibilityEditor
-            spec={spec}
-            selectedElementId={selectedElementId}
-            rows={visibilityRows}
-            onChange={handleVisibilityChange}
-          />
+          {({ getFieldValue }) => {
+            const hiddenOn = !!getFieldValue("hidden");
+            return (
+              <Form.Item
+                label="Visibility"
+                tooltip={
+                  hiddenOn
+                    ? "Hidden fields can't have visibility conditions — the field is never shown to end users. Toggle Hidden off first."
+                    : "Show this field only when conditions are met. Conditions are preserved in the builder; backend support pending (see ENG follow-up)."
+                }
+              >
+                {hiddenOn ? (
+                  <Alert
+                    type="info"
+                    title="Visibility conditions are unavailable while this field is hidden."
+                  />
+                ) : (
+                  <VisibilityEditor
+                    spec={spec}
+                    selectedElementId={selectedElementId}
+                    rows={visibilityRows}
+                    onChange={handleVisibilityChange}
+                  />
+                )}
+              </Form.Item>
+            );
+          }}
         </Form.Item>
       </Form>
     </div>
