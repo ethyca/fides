@@ -6,11 +6,13 @@ from fideslang.models import DataFlow as DataFlowSchema
 from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System as SystemSchema
 from sqlalchemy import delete
+from sqlalchemy.exc import SQLAlchemyError
 
 from fides.api.db.crud import get_resource
 from fides.api.db.system import create_system, update_system, upsert_system
 from fides.api.models.sql_models import System
 from fides.api.models.system_history import SystemHistory
+from fides.api.util import errors
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -274,3 +276,52 @@ class TestUpsertSystemFetchOptimization:
             f"path (one existence check per system), got "
             f"{mock_get_resource.call_count}."
         )
+
+    async def test_update_system_raises_query_error_on_sqlalchemy_error(
+        self, async_session
+    ):
+        """When the inlined UPDATE raises a SQLAlchemyError, update_system
+        must wrap it in a domain-level errors.QueryError. This mirrors the
+        guard the prior `crud.update_resource` call provided and prevents
+        raw SQLAlchemy exceptions from propagating to API callers.
+
+        Builds the System inline rather than using the class `system`
+        fixture: ``async with db.begin()`` auto-rolls back when the
+        injected error propagates, which expires ORM objects bound to the
+        shared session-scoped fixture. The fixture's teardown then tries
+        to access ``system.id`` and triggers a lazy reload that fails
+        outside an async greenlet context.
+        """
+        fides_key = f"qe_test_{uuid4()}"
+        resource = SystemSchema(
+            fides_key=fides_key,
+            organization_fides_key="default_organization",
+            name="query_error_test_system",
+            system_type="test",
+            privacy_declarations=[],
+        )
+        await create_system(
+            resource, async_session, CONFIG.security.oauth_root_client_id
+        )
+        pre_loaded = await get_resource(System, fides_key, async_session)
+
+        system_schema = SystemSchema.model_validate(pre_loaded)
+        system_schema.description = "Should fail"
+
+        original_execute = async_session.execute
+
+        async def execute_or_fail(stmt, *args, **kwargs):
+            # Fail only on the System UPDATE so we don't break transaction
+            # control or other internal session machinery.
+            if getattr(stmt, "table", None) is System.__table__:
+                raise SQLAlchemyError("simulated DB failure")
+            return await original_execute(stmt, *args, **kwargs)
+
+        with patch.object(async_session, "execute", side_effect=execute_or_fail):
+            with pytest.raises(errors.QueryError):
+                await update_system(
+                    resource=system_schema,
+                    db=async_session,
+                    current_user_id=CONFIG.security.oauth_root_client_id,
+                    existing_system=pre_loaded,
+                )
