@@ -1,0 +1,4 @@
+type: Fixed
+description: Default `single_dataset` to `true` for new DynamoDB monitors so classification no longer silently fails on duplicate schema/table names.
+pr: 8084
+labels: []
