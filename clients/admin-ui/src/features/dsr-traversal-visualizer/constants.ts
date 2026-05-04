@@ -1,4 +1,4 @@
-export const NODE_WIDTH = 240;
+export const NODE_WIDTH = 320;
 // Matches the rendered height of an integration card with our pinned chip
 // row. Dagre uses this to allocate vertical space in the LR layout -- if
 // it lags the real height, sibling cards crowd together and the spacing
