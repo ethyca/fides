@@ -11,13 +11,6 @@ import {
   STAGE_GAP_HORIZONTAL,
   STAGE_HEADER_HEIGHT,
 } from "../constants";
-
-/**
- * Lane width that accounts for inter-column gaps only between columns,
- * not after the last one. Symmetric horizontal padding around the card grid.
- */
-const laneContentWidth = (cols: number): number =>
-  LANE_PADDING_X * 2 + NODE_WIDTH + Math.max(0, cols - 1) * COL_WIDTH;
 import {
   LaneBounds,
   LaneCollapseMap,
@@ -27,6 +20,13 @@ import {
 } from "../types";
 import { computeColumnCount } from "./compute-column-count";
 import { computeStages } from "./compute-stages";
+
+/**
+ * Lane width that accounts for inter-column gaps only between columns,
+ * not after the last one. Symmetric horizontal padding around the card grid.
+ */
+const laneContentWidth = (cols: number): number =>
+  LANE_PADDING_X * 2 + NODE_WIDTH + Math.max(0, cols - 1) * COL_WIDTH;
 
 const LANE_LABELS: Record<string, { label: string; tooltip: string }> = {
   identity: {
@@ -232,7 +232,8 @@ export const computeLaneLayout = (
         };
       });
       gatedWidth = laneContentWidth(cols);
-      gatedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
+      gatedHeight =
+        LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
     }
   }
   lanes.push({
@@ -269,7 +270,8 @@ export const computeLaneLayout = (
         };
       });
       skippedWidth = laneContentWidth(cols);
-      skippedHeight = LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
+      skippedHeight =
+        LANE_HEADER_HEIGHT + rows * CARD_PITCH + LANE_PADDING_BOTTOM;
     }
   }
   lanes.push({
@@ -292,9 +294,7 @@ export const computeLaneLayout = (
   // next to a 700px-tall expanded reach lane.
   const expandedMaxHeight = Math.max(
     LANE_HEADER_HEIGHT,
-    ...lanes
-      .filter((l) => !l.collapsed && !l.hidden)
-      .map((l) => l.height),
+    ...lanes.filter((l) => !l.collapsed && !l.hidden).map((l) => l.height),
   );
   const balancedLanes = lanes.map((l) =>
     l.collapsed && !l.hidden ? { ...l, height: expandedMaxHeight } : l,

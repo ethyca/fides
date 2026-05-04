@@ -25,10 +25,22 @@
   // need to scroll — React Flow handles pan natively.
   overflow: visible;
 
-  &.lane-identity { background: #f8fbff; border-color: #dbeafe; }
-  &.lane-reach    { background: #f6fbf7; border-color: #bbf7d0; }
-  &.lane-gated    { background: #fffaf0; border-color: #fde68a; }
-  &.lane-skipped  { background: #fafafa; border-color: var(--fidesui-color-border); }
+  &.lane-identity {
+    background: #f8fbff;
+    border-color: #dbeafe;
+  }
+  &.lane-reach {
+    background: #f6fbf7;
+    border-color: #bbf7d0;
+  }
+  &.lane-gated {
+    background: #fffaf0;
+    border-color: #fde68a;
+  }
+  &.lane-skipped {
+    background: #fafafa;
+    border-color: var(--fidesui-color-border);
+  }
 
   // Collapsed lanes shrink to a narrow vertical strip. Restack the header
   // as a column: count chip on top (just under the floating toggle), then
@@ -87,7 +99,10 @@
   letter-spacing: 0.08em;
 }
 
-.label { flex: 1; cursor: help; }
+.label {
+  flex: 1;
+  cursor: help;
+}
 .count {
   background: rgba(0, 0, 0, 0.05);
   color: var(--fidesui-color-text-secondary);
@@ -160,12 +175,16 @@
   cursor: help;
 }
 .stageNum {
-  width: 16px; height: 16px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #15803d;
   color: #fff;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .stageChevron {
@@ -188,7 +207,9 @@
 }
 
 .outOfFlowBadge {
-  position: absolute; top: -10px; right: 12px;
+  position: absolute;
+  top: -10px;
+  right: 12px;
   background: #fff;
   border: 1px solid var(--fidesui-color-border);
   border-radius: 10px;
@@ -210,11 +231,14 @@
 }
 .chevron {
   position: absolute;
-  width: 22px; height: 22px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #fff;
   border: 2px solid #94a3b8;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #94a3b8;
   font-size: 12px;
   font-weight: 800;
