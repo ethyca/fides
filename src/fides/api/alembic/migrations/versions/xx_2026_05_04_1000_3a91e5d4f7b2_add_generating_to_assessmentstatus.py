@@ -1,7 +1,7 @@
 """add generating to assessmentstatus
 
 Revision ID: 3a91e5d4f7b2
-Revises: e8f9a1b2c3d4
+Revises: ae57c33876cc
 Create Date: 2026-05-04 10:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "3a91e5d4f7b2"
-down_revision = "e8f9a1b2c3d4"
+down_revision = "ae57c33876cc"
 branch_labels = None
 depends_on = None
 

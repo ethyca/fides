@@ -1,7 +1,7 @@
 """rename abandoned to stopped and make answer_version.created_by nullable
 
 Revision ID: ae57c33876cc
-Revises: d71c7d274c04
+Revises: e8f9a1b2c3d4
 Create Date: 2026-04-27 10:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ae57c33876cc"
-down_revision = "d71c7d274c04"
+down_revision = "e8f9a1b2c3d4"
 branch_labels = None
 depends_on = None
 
