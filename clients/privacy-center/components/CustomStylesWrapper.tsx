@@ -2,10 +2,10 @@
 
 import { ReactNode } from "react";
 
-import { useStyles } from "~/features/common/styles.slice";
+import { useAppSelector } from "~/app/hooks";
 
 const CustomStylesWrapper = ({ children }: { children: ReactNode }) => {
-  const styles = useStyles();
+  const { styles } = useAppSelector((state) => state.styles);
 
   return (
     <>
