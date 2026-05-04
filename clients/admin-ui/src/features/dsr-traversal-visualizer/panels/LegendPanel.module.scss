@@ -1,0 +1,62 @@
+.root {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: #fff;
+  border: 1px solid var(--fidesui-color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11.5px;
+  color: var(--fidesui-color-text-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch {
+  width: 30px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.cardSwatch {
+  display: inline-block;
+  width: 28px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--fidesui-color-border);
+  flex-shrink: 0;
+}
+
+.cardInFlow {
+  background: #f6fbf7;
+  border-color: #bbf7d0;
+}
+
+.cardSkipped {
+  background: #fafafa;
+  opacity: 0.6;
+}
+
+.chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #94a3b8;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
