@@ -31,7 +31,9 @@ def classify_per_integration(
         if dataset_key in captured_datasets:
             classification[integration_key] = Reachability.REACHABLE
         elif dataset_key in datasets_with_identity:
-            classification.setdefault(integration_key, Reachability.REQUIRES_MANUAL_IDENTITY)
+            classification.setdefault(
+                integration_key, Reachability.REQUIRES_MANUAL_IDENTITY
+            )
         else:
             classification.setdefault(integration_key, Reachability.UNREACHABLE)
     return classification

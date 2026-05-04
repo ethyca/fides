@@ -25,7 +25,9 @@ def _parent_map() -> Dict[str, Optional[str]]:
     }
 
 
-def _matches(category: str, targets: Set[str], parents: Dict[str, Optional[str]]) -> bool:
+def _matches(
+    category: str, targets: Set[str], parents: Dict[str, Optional[str]]
+) -> bool:
     cursor: Optional[str] = category
     visited: Set[str] = set()
     while cursor:

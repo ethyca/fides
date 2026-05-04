@@ -13,30 +13,52 @@ def linear_two_graph_datasets() -> list:
 
     Returns the list of GraphDatasets so callers can compose larger graphs.
     """
-    postgres_dataset = Dataset.parse_obj({
-        "fides_key": "postgres_users",
-        "name": "postgres_users",
-        "collections": [{
-            "name": "users",
-            "fields": [
-                {"name": "email", "fides_meta": {"identity": "email"}, "data_categories": ["user.contact.email"]},
-                {"name": "user_id", "data_categories": ["user.unique_id"]},
+    postgres_dataset = Dataset.parse_obj(
+        {
+            "fides_key": "postgres_users",
+            "name": "postgres_users",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "fides_meta": {"identity": "email"},
+                            "data_categories": ["user.contact.email"],
+                        },
+                        {"name": "user_id", "data_categories": ["user.unique_id"]},
+                    ],
+                }
             ],
-        }],
-    })
-    stripe_dataset = Dataset.parse_obj({
-        "fides_key": "stripe",
-        "name": "stripe",
-        "collections": [{
-            "name": "customers",
-            "fields": [
-                {"name": "id", "data_categories": ["user.unique_id"], "fides_meta": {
-                    "references": [{"dataset": "postgres_users", "field": "users.user_id", "direction": "from"}],
-                }},
-                {"name": "balance", "data_categories": ["user.financial"]},
+        }
+    )
+    stripe_dataset = Dataset.parse_obj(
+        {
+            "fides_key": "stripe",
+            "name": "stripe",
+            "collections": [
+                {
+                    "name": "customers",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                            "fides_meta": {
+                                "references": [
+                                    {
+                                        "dataset": "postgres_users",
+                                        "field": "users.user_id",
+                                        "direction": "from",
+                                    }
+                                ],
+                            },
+                        },
+                        {"name": "balance", "data_categories": ["user.financial"]},
+                    ],
+                }
             ],
-        }],
-    })
+        }
+    )
     return [
         convert_dataset_to_graph(postgres_dataset, "postgres-users-db"),
         convert_dataset_to_graph(stripe_dataset, "stripe"),
@@ -55,11 +77,19 @@ def connection_lookup() -> dict:
         "postgres_users": {
             "connection_key": "postgres-users-db",
             "connector_type": "postgres",
-            "system": {"fides_key": "users-system", "name": "Users", "data_use": "user.functional"},
+            "system": {
+                "fides_key": "users-system",
+                "name": "Users",
+                "data_use": "user.functional",
+            },
         },
         "stripe": {
             "connection_key": "stripe",
             "connector_type": "stripe",
-            "system": {"fides_key": "billing-system", "name": "Billing", "data_use": "user.financial"},
+            "system": {
+                "fides_key": "billing-system",
+                "name": "Billing",
+                "data_use": "user.financial",
+            },
         },
     }

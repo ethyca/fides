@@ -11,7 +11,8 @@ from fides.api.common_exceptions import (
     UnreachableNodesError,
 )
 from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, CollectionAddress
-from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.graph import DatasetGraph, Node
+from fides.api.graph.preview.policy_filter import filter_categories_by_targets
 from fides.api.graph.preview.schemas import (
     ActionStatus,
     CollectionCount,
@@ -26,7 +27,6 @@ from fides.api.graph.preview.schemas import (
     SystemRef,
     TraversalPreview,
 )
-from fides.api.graph.preview.policy_filter import filter_categories_by_targets
 from fides.api.graph.traversal import Traversal, TraversalNode
 
 ActionType = Literal["access", "erasure"]
@@ -75,19 +75,23 @@ class TraversalPreviewBuilder:
                 existing[integration_key].reachability = reach
                 continue
             conn = self._conn_by_key[integration_key]
-            datasets, total, data_categories = self._static_dataset_detail(integration_key)
-            integrations.append(IntegrationNode(
-                id=f"integration:{integration_key}",
-                connection_key=integration_key,
-                connector_type=conn["connector_type"],
-                saas_type=conn.get("saas_type"),
-                system=SystemRef(**conn["system"]) if conn.get("system") else None,
-                reachability=reach,
-                action_status=ActionStatus.ACTIVE,
-                collection_count=CollectionCount(traversed=0, total=total),
-                data_categories=data_categories,
-                datasets=datasets,
-            ))
+            datasets, total, data_categories = self._static_dataset_detail(
+                integration_key
+            )
+            integrations.append(
+                IntegrationNode(
+                    id=f"integration:{integration_key}",
+                    connection_key=integration_key,
+                    connector_type=conn["connector_type"],
+                    saas_type=conn.get("saas_type"),
+                    system=SystemRef(**conn["system"]) if conn.get("system") else None,
+                    reachability=reach,
+                    action_status=ActionStatus.ACTIVE,
+                    collection_count=CollectionCount(traversed=0, total=total),
+                    data_categories=data_categories,
+                    datasets=datasets,
+                )
+            )
 
         edges = self._build_edges(captured, integrations)
         if not edges:
@@ -137,11 +141,13 @@ class TraversalPreviewBuilder:
         self, captured: Dict[CollectionAddress, List[CollectionAddress]]
     ) -> List[IntegrationNode]:
         """Group captured collection addresses by ConnectionConfig."""
-        per_integration: Dict[str, Dict[str, Any]] = defaultdict(lambda: {
-            "datasets": defaultdict(lambda: {"collections": []}),
-            "data_categories": set(),
-            "traversed": 0,
-        })
+        per_integration: Dict[str, Dict[str, Any]] = defaultdict(
+            lambda: {
+                "datasets": defaultdict(lambda: {"collections": []}),
+                "data_categories": set(),
+                "traversed": 0,
+            }
+        )
 
         for addr in captured.keys():
             if addr == ROOT_COLLECTION_ADDRESS:
@@ -169,23 +175,29 @@ class TraversalPreviewBuilder:
                 for ds_key, ds_bucket in bucket["datasets"].items()
             ]
             total = sum(len(ds.collections) for ds in datasets)
-            nodes.append(IntegrationNode(
-                id=f"integration:{integration_key}",
-                connection_key=integration_key,
-                connector_type=conn["connector_type"],
-                saas_type=conn.get("saas_type"),
-                system=SystemRef(**conn["system"]) if conn.get("system") else None,
-                reachability=Reachability.REACHABLE,
-                action_status=ActionStatus.ACTIVE,
-                collection_count=CollectionCount(traversed=bucket["traversed"], total=total),
-                data_categories=sorted(bucket["data_categories"]),
-                datasets=datasets,
-            ))
+            nodes.append(
+                IntegrationNode(
+                    id=f"integration:{integration_key}",
+                    connection_key=integration_key,
+                    connector_type=conn["connector_type"],
+                    saas_type=conn.get("saas_type"),
+                    system=SystemRef(**conn["system"]) if conn.get("system") else None,
+                    reachability=Reachability.REACHABLE,
+                    action_status=ActionStatus.ACTIVE,
+                    collection_count=CollectionCount(
+                        traversed=bucket["traversed"], total=total
+                    ),
+                    data_categories=sorted(bucket["data_categories"]),
+                    datasets=datasets,
+                )
+            )
         return nodes
 
-    def _collection_detail(self, node) -> CollectionDetail:
+    def _collection_detail(self, node: Node) -> CollectionDetail:
         collection = node.collection
-        identity_field_names = {f.name for f in collection.fields if getattr(f, "identity", None)}
+        identity_field_names = {
+            f.name for f in collection.fields if getattr(f, "identity", None)
+        }
         return CollectionDetail(
             name=collection.name,
             skipped=getattr(collection, "skip_processing", False),
@@ -305,7 +317,10 @@ class TraversalPreviewBuilder:
         for edge in self.graph.edges:
             src_addr = edge.f1.collection_address()
             tgt_addr = edge.f2.collection_address()
-            if src_addr == ROOT_COLLECTION_ADDRESS or tgt_addr == ROOT_COLLECTION_ADDRESS:
+            if (
+                src_addr == ROOT_COLLECTION_ADDRESS
+                or tgt_addr == ROOT_COLLECTION_ADDRESS
+            ):
                 continue
             src_integration = dataset_to_integration.get(src_addr.dataset)
             tgt_integration = dataset_to_integration.get(tgt_addr.dataset)
@@ -313,9 +328,14 @@ class TraversalPreviewBuilder:
                 continue
             if src_integration == tgt_integration:
                 continue
-            if src_integration not in integration_ids or tgt_integration not in integration_ids:
+            if (
+                src_integration not in integration_ids
+                or tgt_integration not in integration_ids
+            ):
                 continue
-            edge_counts[(f"integration:{src_integration}", f"integration:{tgt_integration}")] += 1
+            edge_counts[
+                (f"integration:{src_integration}", f"integration:{tgt_integration}")
+            ] += 1
 
         edges = [
             PreviewEdge(source=src, target=tgt, kind="depends_on", dep_count=cnt)

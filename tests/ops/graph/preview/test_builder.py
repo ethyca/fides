@@ -6,7 +6,9 @@ from fides.api.graph.preview.schemas import ManualTaskNode, Reachability
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 
 
-def test_builder_returns_preview_for_linear_graph(linear_two_dataset_graph, connection_lookup):
+def test_builder_returns_preview_for_linear_graph(
+    linear_two_dataset_graph, connection_lookup
+):
     builder = TraversalPreviewBuilder(
         graph=linear_two_dataset_graph,
         identity_seed={"email": "preview@example.com"},
@@ -25,40 +27,60 @@ def test_builder_returns_preview_for_linear_graph(linear_two_dataset_graph, conn
     assert by_key["stripe"].reachability == Reachability.REACHABLE
 
     edge_kinds = {(e.source, e.target, e.kind) for e in preview.edges}
-    assert ("identity-root", "integration:postgres-users-db", "depends_on") in edge_kinds
-    assert ("integration:postgres-users-db", "integration:stripe", "depends_on") in edge_kinds
+    assert (
+        "identity-root",
+        "integration:postgres-users-db",
+        "depends_on",
+    ) in edge_kinds
+    assert (
+        "integration:postgres-users-db",
+        "integration:stripe",
+        "depends_on",
+    ) in edge_kinds
 
 
 def test_skipped_collection_excluded_from_traversed_count(connection_lookup):
     """A collection marked skip_processing must not contribute to ``traversed``."""
-    ds = Dataset.parse_obj({
-        "fides_key": "postgres_users",
-        "name": "postgres_users",
-        "collections": [
-            {
-                "name": "users",
-                "fields": [
-                    {"name": "email", "fides_meta": {"identity": "email"}, "data_categories": ["user.contact.email"]},
-                ],
-            },
-            {
-                "name": "audit_log",
-                "fides_meta": {"skip_processing": True},
-                "fields": [{"name": "id", "data_categories": ["system.operations"]}],
-            },
-        ],
-    })
+    ds = Dataset.parse_obj(
+        {
+            "fides_key": "postgres_users",
+            "name": "postgres_users",
+            "collections": [
+                {
+                    "name": "users",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "fides_meta": {"identity": "email"},
+                            "data_categories": ["user.contact.email"],
+                        },
+                    ],
+                },
+                {
+                    "name": "audit_log",
+                    "fides_meta": {"skip_processing": True},
+                    "fields": [
+                        {"name": "id", "data_categories": ["system.operations"]}
+                    ],
+                },
+            ],
+        }
+    )
     graph = DatasetGraph(convert_dataset_to_graph(ds, "postgres-users-db"))
 
     preview = TraversalPreviewBuilder(
         graph=graph,
         identity_seed={"email": "preview@example.com"},
         action_type="access",
-        connection_lookup={k: v for k, v in connection_lookup.items() if k == "postgres_users"},
+        connection_lookup={
+            k: v for k, v in connection_lookup.items() if k == "postgres_users"
+        },
         manual_tasks=[],
     ).build()
 
-    pg = next(i for i in preview.integrations if i.connection_key == "postgres-users-db")
+    pg = next(
+        i for i in preview.integrations if i.connection_key == "postgres-users-db"
+    )
     # Only `users` was traversed; `audit_log` was excluded from the graph at construction.
     assert pg.collection_count.traversed == 1
 
