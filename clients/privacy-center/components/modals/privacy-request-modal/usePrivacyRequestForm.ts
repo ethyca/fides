@@ -7,6 +7,7 @@ import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { isFieldVisible } from "~/common/visibility";
 import { ModalViews } from "~/components/modals/types";
 import {
   emailValidation,
@@ -135,6 +136,9 @@ const usePrivacyRequestForm = ({
           ? Object.fromEntries(
               Object.entries(action.custom_privacy_request_fields)
                 .filter(([, field]) => field.field_type !== "location")
+                .filter(
+                  ([, field]) => field.hidden || isFieldVisible(field, values),
+                )
                 .map(([key, field]) => {
                   const paramValue =
                     field.query_param_key &&

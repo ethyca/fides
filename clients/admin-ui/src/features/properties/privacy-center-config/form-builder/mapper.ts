@@ -1,10 +1,25 @@
 import { catalog, ComponentType } from "./catalog";
 
-export type PcFieldType = "text" | "select" | "multiselect" | "location";
+export type PcFieldType =
+  | "text"
+  | "select"
+  | "multiselect"
+  | "radio"
+  | "location";
+
+export type VisibilityOperator = "eq" | "ne" | "set" | "empty" | "contains";
+
+export interface VisibilityCondition {
+  source_field: string;
+  operator: VisibilityOperator;
+  value?: string | number;
+}
 
 interface PcFieldBase {
   label: string;
   required?: boolean;
+  placeholder?: string;
+  visible_when?: VisibilityCondition[];
 }
 
 export interface PcTextField extends PcFieldBase {
@@ -16,6 +31,12 @@ export interface PcTextField extends PcFieldBase {
 
 export interface PcSelectField extends PcFieldBase {
   field_type: "select";
+  options: string[];
+  default_value?: string | null;
+}
+
+export interface PcRadioField extends PcFieldBase {
+  field_type: "radio";
   options: string[];
   default_value?: string | null;
 }
@@ -35,6 +56,7 @@ export interface PcLocationField extends PcFieldBase {
 export type PcCustomField =
   | PcTextField
   | PcSelectField
+  | PcRadioField
   | PcMultiSelectField
   | PcLocationField;
 
@@ -71,15 +93,83 @@ export interface JsonRenderSpec {
   elements: Record<string, JsonRenderElement>;
 }
 
-// Radio collapses to legacy "select" — the PC schema doesn't distinguish
-// radio groups from dropdowns. The rich _form_builder_spec preserves the
-// Radio type so reload still renders it as a radio group.
 const FIELD_TYPE: Record<Exclude<ComponentType, "Form">, PcFieldType> = {
   Text: "text",
   Select: "select",
   MultiSelect: "multiselect",
-  Radio: "select",
+  Radio: "radio",
   Location: "location",
+};
+
+const VISIBILITY_OPERATORS: VisibilityOperator[] = [
+  "eq",
+  "ne",
+  "set",
+  "empty",
+  "contains",
+];
+
+const FORM_STATE_PREFIX = "/form/";
+
+/**
+ * Translate one json-render `visible` entry (e.g. `{ $state: "/form/x", eq: "y" }`)
+ * into the legacy `VisibilityCondition` shape PC consumes. Returns null when
+ * the entry doesn't match the supported pattern — caller should treat that as
+ * a dropped feature so the Save dialog can warn the author.
+ */
+const visibilityEntryToCondition = (
+  entry: unknown,
+): VisibilityCondition | null => {
+  if (!entry || typeof entry !== "object") {
+    return null;
+  }
+  const obj = entry as Record<string, unknown>;
+  const path = typeof obj.$state === "string" ? obj.$state : "";
+  if (!path.startsWith(FORM_STATE_PREFIX)) {
+    return null;
+  }
+  const sourceField = path.slice(FORM_STATE_PREFIX.length);
+  if (!sourceField) {
+    return null;
+  }
+  const matchedOp = VISIBILITY_OPERATORS.find((op) => op in obj);
+  if (!matchedOp) {
+    return null;
+  }
+  if (matchedOp === "set" || matchedOp === "empty") {
+    if (obj[matchedOp] !== true) {
+      return null;
+    }
+    return { source_field: sourceField, operator: matchedOp };
+  }
+  const rawValue = obj[matchedOp];
+  if (typeof rawValue !== "string" && typeof rawValue !== "number") {
+    return null;
+  }
+  return {
+    source_field: sourceField,
+    operator: matchedOp,
+    value: rawValue as string | number,
+  };
+};
+
+const translateVisible = (
+  visible: unknown,
+): { conditions: VisibilityCondition[]; failed: boolean } => {
+  if (!Array.isArray(visible) || visible.length === 0) {
+    return { conditions: [], failed: false };
+  }
+  const conditions: VisibilityCondition[] = [];
+  let failed = false;
+  visible.forEach((entry) => {
+    const cond = visibilityEntryToCondition(entry);
+    if (cond) {
+      conditions.push(cond);
+    } else {
+      failed = true;
+    }
+  });
+  return { conditions, failed };
 };
 
 const hasExpression = (value: unknown): boolean => {
@@ -122,7 +212,9 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
       return;
     }
 
-    if (child.visible !== undefined) {
+    const { conditions: translatedVisibility, failed: visibilityFailed } =
+      translateVisible(child.visible);
+    if (child.visible !== undefined && visibilityFailed) {
       droppedFeatures.push({ kind: "visible", elementId: childId });
     }
     if (child.watch !== undefined) {
@@ -166,10 +258,16 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
     const name = props.name as string;
     seenNames[name] = [...(seenNames[name] ?? []), childId];
 
-    const baseField = {
+    const baseField: PcFieldBase = {
       label: props.label as string,
       required: props.required as boolean,
     };
+    if (typeof props.placeholder === "string" && props.placeholder.length > 0) {
+      baseField.placeholder = props.placeholder;
+    }
+    if (translatedVisibility.length > 0) {
+      baseField.visible_when = translatedVisibility;
+    }
 
     let pcField: PcCustomField;
     switch (componentType) {
@@ -190,8 +288,7 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
         pcField = text;
         break;
       }
-      case "Select":
-      case "Radio": {
+      case "Select": {
         const select: PcSelectField = {
           ...baseField,
           field_type: "select",
@@ -201,6 +298,18 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
           select.default_value = props.default_value;
         }
         pcField = select;
+        break;
+      }
+      case "Radio": {
+        const radio: PcRadioField = {
+          ...baseField,
+          field_type: "radio",
+          options: props.options as string[],
+        };
+        if (props.default_value !== undefined && props.default_value !== null) {
+          radio.default_value = props.default_value;
+        }
+        pcField = radio;
         break;
       }
       case "MultiSelect": {

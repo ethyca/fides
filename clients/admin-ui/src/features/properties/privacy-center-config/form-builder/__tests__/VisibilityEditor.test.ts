@@ -24,12 +24,6 @@ describe("VisibilityEditor serialization", () => {
       ).toEqual([{ $state: "/form/email", empty: true }]);
     });
 
-    it("coerces numeric operators to numbers", () => {
-      expect(
-        rowsToVisible([{ fieldName: "age", operator: "gt", value: "18" }]),
-      ).toEqual([{ $state: "/form/age", gt: 18 }]);
-    });
-
     it("emits multiple rows as an implicit AND array", () => {
       expect(
         rowsToVisible([

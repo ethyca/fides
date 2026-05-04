@@ -1,8 +1,16 @@
 import { Button, Icons, Input, Radio, Select, Space } from "fidesui";
+import dynamic from "next/dynamic";
 
 import type { JsonRenderSpec } from "./mapper";
 
-type Operator = "eq" | "ne" | "set" | "empty" | "contains" | "gt" | "lt";
+// LocationSelect transitively imports iso-3166 (CJS), which Turbopack rejects
+// on the SSR path. Mirror the dynamic-import pattern used by LocationField.
+const LocationSelect = dynamic(
+  () => import("fidesui").then((m) => m.LocationSelect),
+  { ssr: false },
+);
+
+type Operator = "eq" | "ne" | "set" | "empty" | "contains";
 
 const OPERATOR_LABELS: Record<Operator, string> = {
   eq: "equals",
@@ -10,17 +18,9 @@ const OPERATOR_LABELS: Record<Operator, string> = {
   set: "is set",
   empty: "is empty",
   contains: "contains",
-  gt: "greater than",
-  lt: "less than",
 };
 
-const OPERATORS_NEEDING_VALUE: Operator[] = [
-  "eq",
-  "ne",
-  "contains",
-  "gt",
-  "lt",
-];
+const OPERATORS_NEEDING_VALUE: Operator[] = ["eq", "ne", "contains"];
 
 /** A single condition row in the editor's UI state. */
 export interface ConditionRow {
@@ -37,11 +37,7 @@ interface SerializedCondition {
   set?: boolean;
   empty?: boolean;
   contains?: unknown;
-  gt?: unknown;
-  lt?: unknown;
 }
-
-const numericOps: Operator[] = ["gt", "lt"];
 
 /** Convert UI rows → JsonRenderElement.visible value. */
 export const rowsToVisible = (
@@ -60,17 +56,11 @@ export const rowsToVisible = (
       case "empty":
         cond.empty = true;
         break;
-      case "gt":
-      case "lt":
       case "eq":
       case "ne":
-      case "contains": {
-        const coerced = numericOps.includes(row.operator)
-          ? Number(row.value)
-          : row.value;
-        cond[row.operator] = coerced;
+      case "contains":
+        cond[row.operator] = row.value;
         break;
-      }
       default:
         break;
     }
@@ -105,12 +95,6 @@ export const visibleToRows = (visible: unknown): ConditionRow[] => {
       } else if ("contains" in obj) {
         operator = "contains";
         value = obj.contains;
-      } else if ("gt" in obj) {
-        operator = "gt";
-        value = obj.gt;
-      } else if ("lt" in obj) {
-        operator = "lt";
-        value = obj.lt;
       } else if ("eq" in obj) {
         operator = "eq";
         value = obj.eq;
@@ -157,22 +141,23 @@ const sourceFieldOptions = (
     });
 };
 
-// Mirror of registry.tsx's LOCATION_DEFAULT_OPTIONS — used as the
-// option list when a Location field has no custom options.
-const LOCATION_DEFAULT_OPTIONS = ["United States", "Canada", "United Kingdom"];
+type SourceValueMode =
+  | { kind: "options"; values: string[] }
+  | { kind: "location" }
+  | { kind: "free_text" };
 
-const sourceFieldOptionValues = (
+const sourceValueMode = (
   spec: JsonRenderSpec | null,
   fieldName: string | undefined,
-): string[] | null => {
+): SourceValueMode => {
   if (!spec || !fieldName) {
-    return null;
+    return { kind: "free_text" };
   }
   const match = Object.values(spec.elements).find(
     (el) => (el.props as { name?: string }).name === fieldName,
   );
   if (!match) {
-    return null;
+    return { kind: "free_text" };
   }
   if (
     match.type !== "Select" &&
@@ -180,18 +165,18 @@ const sourceFieldOptionValues = (
     match.type !== "Radio" &&
     match.type !== "Location"
   ) {
-    return null;
+    return { kind: "free_text" };
   }
   const opts = (match.props as { options?: unknown }).options;
   if (Array.isArray(opts) && opts.length > 0) {
-    return opts as string[];
+    return { kind: "options", values: opts as string[] };
   }
-  // Location falls back to the built-in country list when no custom
-  // options are set, so the picker reflects what the user will see.
+  // Location with no custom options uses the full ISO list — render the
+  // LocationSelect picker so authors pick a real ISO code instead of typing.
   if (match.type === "Location") {
-    return LOCATION_DEFAULT_OPTIONS;
+    return { kind: "location" };
   }
-  return null;
+  return { kind: "free_text" };
 };
 
 export const VisibilityEditor = ({
@@ -236,7 +221,7 @@ export const VisibilityEditor = ({
       {!isAlwaysShow && (
         <Space orientation="vertical" style={{ width: "100%" }}>
           {rows.map((row, idx) => {
-            const sourceValues = sourceFieldOptionValues(spec, row.fieldName);
+            const valueMode = sourceValueMode(spec, row.fieldName);
             const needsValue = OPERATORS_NEEDING_VALUE.includes(row.operator);
             // Stable-ish key per row position. Conditions are append-only;
             // editing a row doesn't shuffle others.
@@ -277,21 +262,31 @@ export const VisibilityEditor = ({
                     )}
                     data-testid={`visibility-operator-${idx}`}
                   />
-                  {needsValue && sourceValues && (
+                  {needsValue && valueMode.kind === "options" && (
                     <Select
                       aria-label="Value"
                       placeholder="Value"
                       style={{ width: "100%" }}
                       value={row.value || undefined}
                       onChange={(v) => updateRow(idx, { value: v })}
-                      options={sourceValues.map((o) => ({
+                      options={valueMode.values.map((o) => ({
                         label: o,
                         value: o,
                       }))}
                       data-testid={`visibility-value-${idx}`}
                     />
                   )}
-                  {needsValue && !sourceValues && (
+                  {needsValue && valueMode.kind === "location" && (
+                    <LocationSelect
+                      aria-label="Value"
+                      placeholder="Value"
+                      style={{ width: "100%" }}
+                      value={row.value || undefined}
+                      onChange={(v: string) => updateRow(idx, { value: v })}
+                      data-testid={`visibility-value-${idx}`}
+                    />
+                  )}
+                  {needsValue && valueMode.kind === "free_text" && (
                     <Input
                       aria-label="Value"
                       placeholder="Value"

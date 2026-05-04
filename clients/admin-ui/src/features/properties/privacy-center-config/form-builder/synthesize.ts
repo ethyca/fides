@@ -4,6 +4,7 @@ import type {
   PcCustomFields,
   PcLocationField,
   PcMultiSelectField,
+  PcRadioField,
   PcSelectField,
   PcTextField,
 } from "./mapper";
@@ -12,8 +13,24 @@ const COMPONENT_FOR_FIELD: Record<PcCustomField["field_type"], string> = {
   text: "Text",
   select: "Select",
   multiselect: "MultiSelect",
+  radio: "Radio",
   location: "Location",
 };
+
+const visibilityToJsonRender = (
+  conditions: NonNullable<PcCustomField["visible_when"]>,
+): unknown[] =>
+  conditions.map((c) => {
+    const entry: Record<string, unknown> = {
+      $state: `/form/${c.source_field}`,
+    };
+    if (c.operator === "set" || c.operator === "empty") {
+      entry[c.operator] = true;
+    } else {
+      entry[c.operator] = c.value;
+    }
+    return entry;
+  });
 
 export function synthesizeSpecFromPcShape(
   pcShape: PcCustomFields,
@@ -33,6 +50,9 @@ export function synthesizeSpecFromPcShape(
       label: field.label,
       required: field.required ?? false,
     };
+    if (field.placeholder !== undefined) {
+      props.placeholder = field.placeholder;
+    }
 
     switch (field.field_type) {
       case "text": {
@@ -56,6 +76,14 @@ export function synthesizeSpecFromPcShape(
         props.options = sel.options;
         if (sel.default_value !== undefined && sel.default_value !== null) {
           props.default_value = sel.default_value;
+        }
+        break;
+      }
+      case "radio": {
+        const rad = field as PcRadioField;
+        props.options = rad.options;
+        if (rad.default_value !== undefined && rad.default_value !== null) {
+          props.default_value = rad.default_value;
         }
         break;
       }
@@ -85,11 +113,17 @@ export function synthesizeSpecFromPcShape(
       }
     }
 
-    elements[elementId] = {
+    const element: JsonRenderSpec["elements"][string] = {
       type: componentType,
       props,
       children: [],
     };
+    if (field.visible_when && field.visible_when.length > 0) {
+      (element as { visible?: unknown }).visible = visibilityToJsonRender(
+        field.visible_when,
+      );
+    }
+    elements[elementId] = element;
   });
   elements.form.children = childIds;
 

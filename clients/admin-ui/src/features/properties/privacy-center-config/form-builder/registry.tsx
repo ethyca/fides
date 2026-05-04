@@ -1,8 +1,18 @@
 import { defineRegistry, useStateBinding } from "@json-render/react";
 import { Form, Input, Radio, Select } from "fidesui";
+import dynamic from "next/dynamic";
 import React, { useEffect, useRef } from "react";
 
 import { catalog } from "./catalog";
+
+// LocationField pulls in fidesui's LocationSelect, which transitively imports
+// iso-3166 (CJS). Turbopack rejects that on the SSR path with "CJS module
+// can't be async." Loading the field via next/dynamic with ssr:false keeps
+// it client-only and avoids polluting the synchronous chunk.
+const LocationField = dynamic(
+  () => import("./LocationField").then((m) => m.LocationField),
+  { ssr: false },
+);
 
 interface BaseFieldProps {
   name: string;
@@ -14,39 +24,46 @@ interface BaseFieldProps {
   "data-element-id"?: string;
 }
 
+const isEmptyValue = (v: unknown) =>
+  v === undefined ||
+  v === null ||
+  v === "" ||
+  (Array.isArray(v) && v.length === 0);
+
+const stableValueKey = (v: unknown) => JSON.stringify(v ?? null);
+
 /**
- * Seed the field's binding from `default_value` on first mount when the
- * shared state model has nothing for this path yet. Subsequent user
- * interactions override the seed; navigating away and back keeps the
- * user's value, not the default.
+ * Seed the field's binding from `default_value`:
+ * - On first mount when nothing is in state yet.
+ * - When the author changes `default_value` in the properties panel and the
+ *   field is either empty or still showing the previous default. This keeps
+ *   the Edit-mode preview in sync with the property the author just edited.
+ *
+ * If the end user has typed something different, we leave their value alone.
  */
 const useDefaultValueSeed = <T,>(
   value: T | undefined,
   setValue: (next: T) => void,
   defaultValue: T | undefined,
 ) => {
-  const seeded = useRef(false);
+  const previousDefaultRef = useRef<T | undefined>(defaultValue);
   useEffect(() => {
-    if (seeded.current) {
+    const hasDefault = !isEmptyValue(defaultValue);
+    if (!hasDefault) {
+      previousDefaultRef.current = defaultValue;
       return;
     }
-    seeded.current = true;
-    const isEmpty =
-      value === undefined ||
-      value === null ||
-      value === "" ||
-      (Array.isArray(value) && value.length === 0);
-    const hasDefault =
-      defaultValue !== undefined &&
-      defaultValue !== null &&
-      defaultValue !== "" &&
-      !(Array.isArray(defaultValue) && defaultValue.length === 0);
-    if (isEmpty && hasDefault) {
+    const matchesPreviousDefault =
+      stableValueKey(value) === stableValueKey(previousDefaultRef.current);
+    if (isEmptyValue(value) || matchesPreviousDefault) {
       setValue(defaultValue as T);
     }
-    // We intentionally only run this once on mount.
+    previousDefaultRef.current = defaultValue;
+    // setValue is stable (state-binding setter). Re-running on every value
+    // change would clobber user input — we intentionally trigger only on
+    // defaultValue changes plus the initial mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [stableValueKey(defaultValue)]);
 };
 
 const FormContainer = ({ children }: { children?: React.ReactNode }) => (
@@ -158,37 +175,6 @@ const RadioField = ({ props }: { props: BaseFieldProps }) => {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           options={(props.options ?? []).map((o) => ({ label: o, value: o }))}
-        />
-      </Form.Item>
-    </FieldWrapper>
-  );
-};
-
-const LOCATION_DEFAULT_OPTIONS = ["United States", "Canada", "United Kingdom"];
-
-const LocationField = ({ props }: { props: BaseFieldProps }) => {
-  // Empty array means "no custom options" — fall back to defaults so the
-  // dropdown is never empty in the preview.
-  const options =
-    props.options && props.options.length > 0
-      ? props.options
-      : LOCATION_DEFAULT_OPTIONS;
-  const [value, setValue] = useFieldBinding<string>(props.name);
-  useDefaultValueSeed(
-    value,
-    setValue,
-    props.default_value as string | undefined,
-  );
-  return (
-    <FieldWrapper elementId={props["data-element-id"]}>
-      <Form.Item label={props.label} required={props.required}>
-        <Select
-          aria-label={props.label}
-          data-testid={`field-${props.name}`}
-          placeholder={props.placeholder}
-          value={value}
-          onChange={(v) => setValue(v)}
-          options={options.map((o) => ({ label: o, value: o }))}
         />
       </Form.Item>
     </FieldWrapper>

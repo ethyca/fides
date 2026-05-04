@@ -2,7 +2,7 @@ import type { JsonRenderSpec } from "../mapper";
 import { mapSpecToPcShape } from "../mapper";
 
 describe("Radio mapping (legacy PC shape)", () => {
-  it("collapses Radio to legacy field_type=select", () => {
+  it("emits field_type=radio for Radio components", () => {
     const spec: JsonRenderSpec = {
       root: "form",
       elements: {
@@ -24,7 +24,7 @@ describe("Radio mapping (legacy PC shape)", () => {
     expect(pcShape.user_type).toEqual({
       label: "User type",
       required: true,
-      field_type: "select",
+      field_type: "radio",
       options: ["Employee", "External"],
     });
   });

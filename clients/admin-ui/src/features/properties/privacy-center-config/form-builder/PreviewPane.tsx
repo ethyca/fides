@@ -14,7 +14,15 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { JSONUIProvider, Renderer } from "@json-render/react";
-import { Button, Dropdown, Empty, Form, Switch, Typography } from "fidesui";
+import {
+  Button,
+  Dropdown,
+  Empty,
+  Form,
+  Input,
+  Switch,
+  Typography,
+} from "fidesui";
 import React from "react";
 
 import type { ComponentType } from "./catalog";
@@ -27,9 +35,24 @@ type EditableComponentType = Exclude<ComponentType, "Form">;
 
 export type PreviewMode = "edit" | "preview";
 
+type IdentityInputMode = "required" | "optional";
+
+interface IdentityInputs {
+  name?: IdentityInputMode | null;
+  email?: IdentityInputMode | null;
+  phone?: IdentityInputMode | null;
+}
+
 interface PreviewPaneProps {
   spec: JsonRenderSpec | null;
   selectedElementId?: string | null;
+  /**
+   * Identity inputs configured on the action (email/name/phone with required
+   * or optional mode). Rendered above the custom fields, mirroring the
+   * privacy center end-user form. Read-only here — managed via the action
+   * edit modal, not the form builder.
+   */
+  identityInputs?: IdentityInputs | null;
   onFieldClick: (elementId: string) => void;
   onAddField: (type: EditableComponentType) => void;
   onReorderFields: (newOrder: string[]) => void;
@@ -44,6 +67,41 @@ interface PreviewPaneProps {
   previewMode?: PreviewMode;
   onPreviewModeChange?: (next: PreviewMode) => void;
 }
+
+const IDENTITY_INPUT_LABELS: Record<keyof IdentityInputs, string> = {
+  name: "Name",
+  email: "Email",
+  phone: "Phone",
+};
+
+// Read-only display of the action's identity inputs. Shown above the custom
+// fields so the preview matches what privacy-center renders.
+const IdentityInputsSection = ({ inputs }: { inputs: IdentityInputs }) => {
+  const entries = (
+    Object.keys(IDENTITY_INPUT_LABELS) as Array<keyof IdentityInputs>
+  )
+    .map((key) => ({ key, mode: inputs[key] }))
+    .filter(
+      (e): e is { key: keyof IdentityInputs; mode: IdentityInputMode } =>
+        e.mode === "required" || e.mode === "optional",
+    );
+  if (entries.length === 0) {
+    return null;
+  }
+  return (
+    <Form layout="vertical" style={{ marginBottom: 16 }}>
+      {entries.map(({ key, mode }) => (
+        <Form.Item
+          key={key}
+          label={IDENTITY_INPUT_LABELS[key]}
+          required={mode === "required"}
+        >
+          <Input placeholder={IDENTITY_INPUT_LABELS[key]} />
+        </Form.Item>
+      ))}
+    </Form>
+  );
+};
 
 const wrapperStyle: React.CSSProperties = {
   height: "100%",
@@ -158,6 +216,7 @@ export const PreviewPane = ({
   actions,
   previewMode = "edit",
   onPreviewModeChange,
+  identityInputs,
 }: PreviewPaneProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -257,6 +316,7 @@ export const PreviewPane = ({
 
   const renderPreviewCanvas = () => (
     <div style={formCardStyle}>
+      {identityInputs && <IdentityInputsSection inputs={identityInputs} />}
       {hasFields && previewSpec ? (
         <JSONUIProvider registry={registry}>
           <Renderer spec={previewSpec as any} registry={registry} />

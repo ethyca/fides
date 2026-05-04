@@ -34,6 +34,12 @@ describe("synthesizeSpecFromPcShape", () => {
         field_type: "location" as const,
         required: true,
       },
+      contact_method: {
+        label: "Contact method",
+        field_type: "radio" as const,
+        options: ["Email", "Phone"],
+        required: true,
+      },
     };
 
     const spec = synthesizeSpecFromPcShape(pcShape);
@@ -44,5 +50,6 @@ describe("synthesizeSpecFromPcShape", () => {
     expect(back.pcShape.email.label).toBe("Email");
     expect(back.pcShape.reason.field_type).toBe("select");
     expect(back.pcShape.country.field_type).toBe("location");
+    expect(back.pcShape.contact_method.field_type).toBe("radio");
   });
 });

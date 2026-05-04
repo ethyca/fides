@@ -1,7 +1,6 @@
 import {
   Alert,
   Button,
-  Flex,
   Form,
   Icons,
   Input,
@@ -128,6 +127,11 @@ export const FieldPropertiesPanel = ({
   // Visibility-condition rows. Local state mirrors the saved element.visible
   // and is re-synced whenever selection changes.
   const [visibilityRows, setVisibilityRows] = useState<ConditionRow[]>([]);
+  // Signature of the props/visible we last synced into the antd form +
+  // visibilityRows. Used to detect EXTERNAL spec changes (e.g. the chat
+  // agent rewrote the spec) without re-syncing on every local keystroke,
+  // which would steal focus from inputs.
+  const lastSyncedSignatureRef = useRef<string>("");
 
   const element = selectedElementId
     ? spec?.elements?.[selectedElementId]
@@ -154,15 +158,23 @@ export const FieldPropertiesPanel = ({
     });
   };
 
-  // Re-sync the form ONLY when the selection changes — not when the
-  // element's props change. The antd Form is the source of truth while
-  // the user is typing; re-applying setFieldsValue on every keystroke
-  // would steal focus from inputs (especially the Options editor).
-  // The exhaustive-deps disable here is intentional: depending on `element`
-  // (which is recomputed every render) would trigger setFieldsValue on every
-  // keystroke and steal focus.
+  // Re-sync the panel from the spec on selection change AND on external
+  // spec edits (e.g. the chat agent rewriting the spec while a field is
+  // selected). We track a signature of the props+visible that were last
+  // synced; if the live element's signature differs, the change came from
+  // outside this panel and we re-apply. Local keystrokes update the spec
+  // and the ref together, so the signatures stay equal and we don't steal
+  // focus.
   useEffect(() => {
     if (!element) {
+      lastSyncedSignatureRef.current = "";
+      return;
+    }
+    const { visible } = element as JsonRenderSpec["elements"][string] & {
+      visible?: unknown;
+    };
+    const signature = JSON.stringify({ props: element.props, visible });
+    if (signature === lastSyncedSignatureRef.current) {
       return;
     }
     form.resetFields();
@@ -176,19 +188,21 @@ export const FieldPropertiesPanel = ({
       typeof props.name === "string" &&
       typeof props.label === "string" &&
       props.name === snakeCase(props.label);
-    setVisibilityRows(
-      visibleToRows(
-        (element as JsonRenderSpec["elements"][string] & { visible?: unknown })
-          .visible,
-      ),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedElementId]);
+    setVisibilityRows(visibleToRows(visible));
+    lastSyncedSignatureRef.current = signature;
+  }, [selectedElementId, element, form]);
 
   const handleVisibilityChange = (next: ConditionRow[]) => {
     setVisibilityRows(next);
     if (selectedElementId) {
-      onUpdateVisibility(selectedElementId, rowsToVisible(next));
+      const nextVisible = rowsToVisible(next);
+      onUpdateVisibility(selectedElementId, nextVisible);
+      // Track the signature we just wrote so the resync effect treats
+      // this as a local edit and doesn't re-apply on the next render.
+      lastSyncedSignatureRef.current = JSON.stringify({
+        props: element?.props ?? {},
+        visible: nextVisible,
+      });
     }
   };
 
@@ -244,7 +258,24 @@ export const FieldPropertiesPanel = ({
       setVisibilityRows([]);
       onUpdateVisibility(selectedElementId, undefined);
     }
-    onUpdateField(selectedElementId, stripUndefined(next));
+    const nextProps = stripUndefined(next);
+    onUpdateField(selectedElementId, nextProps);
+    // Track the signature we just wrote — including any visibility we
+    // just cleared — so the resync effect skips local edits.
+    const nextVisible =
+      "hidden" in changed &&
+      changed.hidden === true &&
+      visibilityRows.length > 0
+        ? undefined
+        : (
+            element as JsonRenderSpec["elements"][string] & {
+              visible?: unknown;
+            }
+          ).visible;
+    lastSyncedSignatureRef.current = JSON.stringify({
+      props: nextProps,
+      visible: nextVisible,
+    });
     // Defer field-state writes until after the current input event has
     // finished propagating. setFieldsValue mid-event tends to steal focus
     // from the input the user is typing into.
@@ -308,7 +339,7 @@ export const FieldPropertiesPanel = ({
         <Form.Item
           label="Placeholder"
           name="placeholder"
-          tooltip="Hint text shown inside the empty input. Currently shown in the builder preview only — the privacy center backend will need a schema update before it reaches end users."
+          tooltip="Hint text shown inside the empty input."
         >
           <Input data-testid="prop-placeholder" />
         </Form.Item>
@@ -325,42 +356,36 @@ export const FieldPropertiesPanel = ({
             >
               <Input data-testid="prop-query-param-key" />
             </Form.Item>
-            <Flex align="center" justify="space-between">
-              <Form.Item
-                noStyle
-                shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
-              >
-                {({ getFieldValue }) => {
-                  const hiddenOn = !!getFieldValue("hidden");
-                  return (
-                    <Form.Item
-                      label="Required"
-                      name="required"
-                      valuePropName="checked"
-                      layout="horizontal"
-                      colon={false}
-                      tooltip={
-                        hiddenOn
-                          ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
-                          : "Whether the user must fill this field before submitting."
-                      }
-                    >
-                      <Switch data-testid="prop-required" disabled={hiddenOn} />
-                    </Form.Item>
-                  );
-                }}
-              </Form.Item>
-              <Form.Item
-                label="Hidden"
-                name="hidden"
-                valuePropName="checked"
-                layout="horizontal"
-                colon={false}
-                tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
-              >
-                <Switch data-testid="prop-hidden" />
-              </Form.Item>
-            </Flex>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
+            >
+              {({ getFieldValue }) => {
+                const hiddenOn = !!getFieldValue("hidden");
+                return (
+                  <Form.Item
+                    label="Required"
+                    name="required"
+                    valuePropName="checked"
+                    tooltip={
+                      hiddenOn
+                        ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
+                        : "Whether the user must fill this field before submitting."
+                    }
+                  >
+                    <Switch data-testid="prop-required" disabled={hiddenOn} />
+                  </Form.Item>
+                );
+              }}
+            </Form.Item>
+            <Form.Item
+              label="Hidden"
+              name="hidden"
+              valuePropName="checked"
+              tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
+            >
+              <Switch data-testid="prop-hidden" />
+            </Form.Item>
           </>
         )}
 
@@ -448,7 +473,7 @@ export const FieldPropertiesPanel = ({
                 tooltip={
                   hiddenOn
                     ? "Hidden fields can't have visibility conditions — the field is never shown to end users. Toggle Hidden off first."
-                    : "Show this field only when conditions are met. Conditions are preserved in the builder; backend support pending (see ENG follow-up)."
+                    : "Show this field only when conditions are met."
                 }
               >
                 {hiddenOn ? (

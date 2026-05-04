@@ -27,9 +27,18 @@ import { useFormBuilder } from "./useFormBuilder";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
+type IdentityInputMode = "required" | "optional";
+
+export interface IdentityInputs {
+  name?: IdentityInputMode | null;
+  email?: IdentityInputMode | null;
+  phone?: IdentityInputMode | null;
+}
+
 interface ActionShape {
   policy_key?: string;
   custom_privacy_request_fields?: PcCustomFields;
+  identity_inputs?: IdentityInputs | null;
   // eslint-disable-next-line no-underscore-dangle
   _form_builder_spec?: { spec: JsonRenderSpec; version: number };
 }
@@ -67,7 +76,7 @@ const describeDropped = (
 ): string => {
   switch (d.kind) {
     case "visible":
-      return `Conditional visibility on "${fieldLabel(spec, d.elementId)}" — preserved in the builder, but won't take effect in the privacy center until backend support ships.`;
+      return `Conditional visibility on "${fieldLabel(spec, d.elementId)}" couldn't be translated to the privacy center schema — the field will render unconditionally for end users.`;
     case "watch":
       return `Watch expression on "${fieldLabel(spec, d.elementId)}" — preserved in the builder only.`;
     case "expression":
@@ -125,7 +134,16 @@ export const FormBuilderPage = ({
     return defaultSpec();
   }, [action]);
 
-  const driftDetected = useMemo(() => {
+  const builder = useFormBuilder({
+    propertyId,
+    actionPolicyKey,
+    initialSpec,
+  });
+
+  // Drift = the saved rich spec doesn't round-trip cleanly to the saved
+  // legacy `custom_privacy_request_fields`. Comparing live `builder.spec`
+  // would flag every unsaved edit, so we compare the persisted pair only.
+  const savedDrift = useMemo(() => {
     /* eslint-disable no-underscore-dangle */
     if (!action?._form_builder_spec?.spec) {
       return false;
@@ -137,11 +155,11 @@ export const FormBuilderPage = ({
     /* eslint-enable no-underscore-dangle */
   }, [action]);
 
-  const builder = useFormBuilder({
-    propertyId,
-    actionPolicyKey,
-    initialSpec,
-  });
+  // Rebuild swaps the in-memory spec; the persisted state is unchanged
+  // until Save. Suppress the alert in the meantime so the user isn't
+  // told their reconciled state still drifts.
+  const [driftAcknowledged, setDriftAcknowledged] = useState(false);
+  const driftDetected = savedDrift && !driftAcknowledged;
 
   const [confirmingDropped, setConfirmingDropped] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -298,6 +316,10 @@ export const FormBuilderPage = ({
         pcShape: result.pcShape,
         richSpec: builder.spec,
       });
+      // Save just wrote rich + legacy in lockstep, so any prior drift is
+      // resolved. Acknowledge it now so the warning hides immediately,
+      // even if the property refetch hasn't returned yet.
+      setDriftAcknowledged(true);
       message.success("Saved");
     } finally {
       setSaving(false);
@@ -327,6 +349,7 @@ export const FormBuilderPage = ({
         synthesizeSpecFromPcShape(action.custom_privacy_request_fields),
       );
       setSelectedElementId(null);
+      setDriftAcknowledged(true);
     }
   };
 
@@ -334,16 +357,18 @@ export const FormBuilderPage = ({
     <div style={rootStyle}>
       <FormGuard
         id={`form-builder-${propertyId}-${actionPolicyKey}`}
-        name={`Form Builder (${actionPolicyKey})`}
+        name={`Form editor (${actionPolicyKey})`}
         isDirty={isDirty}
       />
       {driftDetected && (
         <Alert
           type="warning"
-          title="Saved builder state differs from saved fields. The builder is showing the rich saved state."
+          showIcon
+          title="This form was edited outside this editor"
+          description="The editor is showing the configuration from your last edit here. Newer changes were saved elsewhere. Reset to load those instead."
           action={
             <Button size="small" onClick={handleRebuild}>
-              Rebuild from saved fields
+              Reset to latest saved fields
             </Button>
           }
         />
@@ -367,6 +392,7 @@ export const FormBuilderPage = ({
           <PreviewPane
             spec={builder.spec}
             selectedElementId={selectedElementId}
+            identityInputs={action?.identity_inputs ?? null}
             onFieldClick={handleSelectField}
             onAddField={handleAddField}
             onReorderFields={handleReorderFields}
