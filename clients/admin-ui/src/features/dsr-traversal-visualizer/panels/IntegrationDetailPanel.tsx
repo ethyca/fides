@@ -1,6 +1,8 @@
 import { Collapse, Drawer, Flex, Tag, Text } from "fidesui";
 import { useMemo } from "react";
 
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+
 import {
   IntegrationNodeData,
   ManualTaskNodeData,
@@ -23,6 +25,8 @@ const IntegrationDetailPanel = ({
   manualTasks,
   onClose,
 }: Props) => {
+  const { getDataCategoryDisplayName, getDataUseDisplayName } = useTaxonomies();
+
   const gatingTasks = useMemo(() => {
     if (!data) {
       return [];
@@ -70,7 +74,12 @@ const IntegrationDetailPanel = ({
             <Text strong>System</Text>
             <Text>
               {data.system.name}
-              {data.system.data_use ? ` · ${data.system.data_use}` : ""}
+              {data.system.data_use && (
+                <>
+                  {" · "}
+                  {getDataUseDisplayName(data.system.data_use)}
+                </>
+              )}
             </Text>
           </Flex>
         )}
@@ -164,7 +173,7 @@ const IntegrationDetailPanel = ({
                               key={`${c.name}.${f.name}.${dc}`}
                               style={{ fontSize: 10 }}
                             >
-                              {dc}
+                              {getDataCategoryDisplayName(dc)}
                             </Tag>
                           )),
                         )}
