@@ -122,14 +122,25 @@ export const SelectInline = ({
 
   const customMaxTagPlaceholder = maxTagPlaceholder || renderMaxTagPlaceholder;
 
+  // antd v6 moves filterOption (and other search options) under showSearch.
+  // Keep the public API of SelectInline as-is and merge them here. Callers
+  // passing showSearch as an object take priority over the default filter.
+  let showSearchProp: ComponentProps<typeof Select>["showSearch"];
+  if (readonly || showSearch === false) {
+    showSearchProp = false;
+  } else if (typeof showSearch === "object") {
+    showSearchProp = { filterOption, ...showSearch };
+  } else {
+    showSearchProp = { filterOption };
+  }
+
   return (
     <Select
       mode={mode}
       variant={variant}
-      showSearch={readonly ? false : showSearch}
+      showSearch={showSearchProp}
       maxTagCount={expanded ? undefined : maxTagCount}
       maxTagPlaceholder={customMaxTagPlaceholder}
-      filterOption={filterOption}
       style={style}
       size={size}
       prefix={readonly ? null : prefix}
