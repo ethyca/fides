@@ -1,6 +1,4 @@
-@use "sass:string";
 @use "../fonts/fonts.scss";
-@use "../palette/palette.module.scss" as palette;
 
 /**
  * Global Ant Design styles for Fides applications
@@ -21,17 +19,8 @@ h6 {
   font-weight: bold;
 }
 
-/**
- * Adds the color variables from the palette to the root element
- */
-:root {
-  @each $color, $value in palette.$colors {
-    #{palette.getPrefixedColor("--fidesui-", string.unquote($color))}: $value;
-  }
-}
-
 :focus-visible {
-  outline-color: var(--fidesui-minos);
+  outline-color: var(--fidesui-brand-minos);
 }
 
 /**
@@ -40,7 +29,7 @@ h6 {
 
 .ant-space {
   &-addon {
-    --ant-space-addon-background: unset;
+    --fidesui-space-addon-background: unset;
   }
 }
 
@@ -56,7 +45,7 @@ h6 {
   }
   &-explain,
   &-extra {
-    --ant-font-size: var(--ant-font-size-sm);
+    --fidesui-font-size: var(--fidesui-font-size-sm);
     margin-top: 0.25rem;
     color: var(--fidesui-neutral-700);
   }
@@ -81,7 +70,7 @@ h6 {
     }
 
     &:hover {
-      --ant-menu-dark-item-hover-bg: var(--fidesui-neutral-800);
+      --fidesui-menu-dark-item-hover-bg: var(--fidesui-neutral-800);
     }
   }
 
@@ -89,7 +78,7 @@ h6 {
   // But using the token "darkItemSelectedColor" also affect the group title,
   // therefore we need this css rule
   > .ant-menu-item.ant-menu-item-selected > .ant-menu-title-content a {
-    color: var(--fidesui-minos);
+    color: var(--fidesui-brand-minos);
   }
 }
 
@@ -97,13 +86,13 @@ h6 {
   .ant-menu-submenu-arrow {
     // Remove rounding from submenu arrow
     // to better match the style Carbon icons
-    --ant-border-radius: 0px;
+    --fidesui-border-radius: 0px;
 
     // fix missing pixel in the arrow icon
     // (it's the same width as ant only changing 0.6 to 0.65 here)
     &::before,
     &::after {
-      width: calc(calc(var(--ant-font-size) / 7 * 5) * 0.65);
+      width: calc(calc(var(--fidesui-font-size) / 7 * 5) * 0.65);
     }
   }
 
@@ -119,14 +108,14 @@ h6 {
 .ant-input {
   // Read-only inputs should match disabled.
   &:read-only {
-    --ant-color-text: var(--ant-color-text-disabled);
-    --ant-color-bg-container: var(--ant-color-bg-container-disabled);
-    --ant-input-hover-bg: var(--ant-color-bg-container-disabled);
-    --ant-input-active-bg: var(--ant-color-bg-container-disabled);
-    --ant-input-active-border-color: var(--ant-color-border-disabled);
-    --ant-input-hover-border-color: var(--ant-color-border-disabled);
-    --ant-input-active-shadow: none;
-    --ant-input-hover-shadow: none;
+    --fidesui-color-text: var(--fidesui-color-text-disabled);
+    --fidesui-color-bg-container: var(--fidesui-color-bg-container-disabled);
+    --fidesui-input-hover-bg: var(--fidesui-color-bg-container-disabled);
+    --fidesui-input-active-bg: var(--fidesui-color-bg-container-disabled);
+    --fidesui-input-active-border-color: var(--fidesui-color-border-disabled);
+    --fidesui-input-hover-border-color: var(--fidesui-color-border-disabled);
+    --fidesui-input-active-shadow: none;
+    --fidesui-input-hover-shadow: none;
   }
 }
 
@@ -136,27 +125,27 @@ h6 {
 
 .ant-table {
   &-wrapper & {
-    --ant-table-header-icon-color: var(--fidesui-neutral-300);
+    --fidesui-table-header-icon-color: var(--fidesui-neutral-300);
   }
 
   // This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
   &-cell * {
-    --ant-font-size: var(--ant-table-cell-font-size-sm);
+    --fidesui-font-size: var(--fidesui-table-cell-font-size-sm);
   }
 
   // fixes container bleeding over the border radius of the table itself when horizontally scrollable
   // We may be able to remove this once we update to a version containing this fix https://github.com/ant-design/ant-design/pull/56478
   &-container {
     &::before {
-      border-start-start-radius: var(--ant-table-header-border-radius);
+      border-start-start-radius: var(--fidesui-table-header-border-radius);
     }
     &::after {
-      border-start-end-radius: var(--ant-table-header-border-radius);
+      border-start-end-radius: var(--fidesui-table-header-border-radius);
     }
   }
   &-content {
-    border-start-start-radius: var(--ant-table-header-border-radius);
-    border-start-end-radius: var(--ant-table-header-border-radius);
+    border-start-start-radius: var(--fidesui-table-header-border-radius);
+    border-start-end-radius: var(--fidesui-table-header-border-radius);
   }
 }
 
@@ -192,12 +181,12 @@ h6 {
 .ant-select-dropdown {
   & .ant-select-item-group {
     font-weight: 600;
-    font-size: var(--ant-select-option-font-size);
-    color: var(--ant-color-text);
+    font-size: var(--fidesui-select-option-font-size);
+    color: var(--fidesui-color-text);
     border-radius: 0;
 
     &:not(:first-child) {
-      border-top: 1px solid var(--ant-color-border);
+      border-top: 1px solid var(--fidesui-color-border);
     }
   }
 }
@@ -205,7 +194,7 @@ h6 {
 .ant-progress {
   &-steps-item {
     // rounded edges for Ant Progress Component with steps
-    border-radius: calc(var(--ant-progress-line-border-radius) / 40);
+    border-radius: calc(var(--fidesui-progress-line-border-radius) / 40);
   }
   &-steps &-text {
     // override Ant's hardcoded 2em width
@@ -221,11 +210,11 @@ h6 {
   }
 
   .ant-tree-treenode {
-    --ant-tree-node-selected-bg: var(--fidesui-neutral-100);
-    --ant-tree-directory-node-selected-color: var(
-      --ant-tree-node-selected-color
+    --fidesui-tree-node-selected-bg: var(--fidesui-neutral-100);
+    --fidesui-tree-directory-node-selected-color: var(
+      --fidesui-tree-node-selected-color
     );
-    --ant-tree-directory-node-selected-bg: var(--fidesui-neutral-100);
+    --fidesui-tree-directory-node-selected-bg: var(--fidesui-neutral-100);
   }
 
   .ant-tree-title {
@@ -241,7 +230,7 @@ h6 {
 .ant-popover {
   .ant-popover-inner-content {
     // default to no padding. It's easier to pad the instance content than use negative margins to compensate for the padding.
-    --ant-popover-inner-content-padding: 0;
+    --fidesui-popover-inner-content-padding: 0;
   }
 }
 
