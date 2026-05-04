@@ -1019,6 +1019,4 @@ def test_audit_log_display_names_covers_every_action():
     don't silently fall through to the raw `f"Request {action}"` fallback in
     batch_execution_and_audit_logs_by_dataset. If this fails, add the new
     action to AUDIT_LOG_DISPLAY_NAMES in request_service.py."""
-    assert {action.value for action in AuditLogAction} == set(
-        AUDIT_LOG_DISPLAY_NAMES
-    )
+    assert {action.value for action in AuditLogAction} == set(AUDIT_LOG_DISPLAY_NAMES)
