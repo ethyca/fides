@@ -1,0 +1,4 @@
+type: Changed
+description: Added optional `dbname` override to `MicrosoftSQLServerConnector.build_uri` for callers that need to target a specific database without mutating connection secrets
+pr: 8017
+labels: []

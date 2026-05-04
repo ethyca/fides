@@ -4,6 +4,8 @@ import queryString from "query-string";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  CloudInfraMonitorResourcesDynamicFilters,
+  CloudInfraStagedResource,
   DiffStatus,
   EditableMonitorConfig,
   MonitorConfig,
@@ -61,6 +63,23 @@ interface ChangeResourceCategoryQueryParam {
   staged_resource_urn: string;
   user_assigned_data_categories?: string[];
   user_assigned_system_key?: string;
+}
+
+// Cloud Infrastructure Monitor interfaces
+interface CloudInfraMonitorResultsQueryParams {
+  monitor_config_id: string;
+  page?: number;
+  size?: number;
+  search?: string;
+  search_regex?: boolean;
+  diff_status?: DiffStatus[];
+  location?: string[];
+  cloud_account_id?: string[];
+  service?: string[];
+}
+
+interface CloudInfraMonitorFiltersQueryParams {
+  monitor_config_id: string;
 }
 
 // Identity Provider Monitor interfaces (Okta-specific)
@@ -447,6 +466,20 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
+    updateInfrastructureSystemDescription: build.mutation<
+      Schema,
+      { monitorId: string; urn: string; description: string }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/identity-provider-monitors/${params.monitorId}/results/${params.urn}`,
+        body: {
+          urn: params.urn,
+          user_assigned_description: params.description,
+        },
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
     bulkPromoteIdentityProviderMonitorResults: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
@@ -483,6 +516,51 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
+    updateIdentityProviderMonitorDescription: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    // Cloud Infrastructure Monitor endpoints
+    getCloudInfraMonitorResults: build.query<
+      {
+        items: CloudInfraStagedResource[];
+        total: number;
+        page: number;
+        size: number;
+        pages: number;
+      },
+      CloudInfraMonitorResultsQueryParams
+    >({
+      query: ({ monitor_config_id, ...params }) => ({
+        method: "GET",
+        url: `/plus/discovery-monitor/${monitor_config_id}/cloud-infra-results?${queryString.stringify(
+          params,
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      providesTags: () => ["Cloud Infra Monitor Results"],
+    }),
+    getCloudInfraMonitorFilters: build.query<
+      CloudInfraMonitorResourcesDynamicFilters,
+      CloudInfraMonitorFiltersQueryParams
+    >({
+      query: ({ monitor_config_id }) => ({
+        method: "GET",
+        url: `/plus/filters/cloud_infra_monitor_resources?${queryString.stringify(
+          { monitor_config_id },
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      providesTags: () => ["Cloud Infra Monitor Filters"],
+    }),
   }),
 });
 
@@ -515,6 +593,9 @@ export const {
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
+  useUpdateInfrastructureSystemDescriptionMutation,
+  useGetCloudInfraMonitorResultsQuery,
+  useGetCloudInfraMonitorFiltersQuery,
   util: discoveryDetectionUtil,
 } = discoveryDetectionApi;
 

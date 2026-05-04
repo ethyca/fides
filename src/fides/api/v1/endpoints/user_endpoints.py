@@ -603,16 +603,10 @@ def reinvite_user(
             detail="User not found.",
         )
 
-    if not user.disabled:
+    if not user.disabled or user.disabled_reason != DisabledReason.pending_invite:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="User does not have a pending invitation.",
-        )
-
-    if user.disabled_reason and user.disabled_reason != DisabledReason.pending_invite:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="User is disabled for a reason other than a pending invitation.",
         )
 
     try:

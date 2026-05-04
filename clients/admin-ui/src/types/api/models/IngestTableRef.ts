@@ -7,13 +7,13 @@
  */
 export type IngestTableRef = {
   /**
-   * Project
+   * Catalog
    */
-  project?: string;
+  catalog?: string;
   /**
-   * Dataset
+   * Schema
    */
-  dataset?: string;
+  schema?: string;
   /**
    * Table
    */

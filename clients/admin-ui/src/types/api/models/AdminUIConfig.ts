@@ -15,5 +15,8 @@ export type AdminUIConfig = {
    */
   url?: string | null;
   error_notification_mode?: ErrorNotificationMode | null;
+  /**
+   * Consent Module Enabled
+   */
   consent_module_enabled?: boolean | null;
 };
