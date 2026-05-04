@@ -1,6 +1,6 @@
 import { defineRegistry, useStateBinding } from "@json-render/react";
 import { Form, Input, Radio, Select } from "fidesui";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 import { catalog } from "./catalog";
 
@@ -10,8 +10,44 @@ interface BaseFieldProps {
   required: boolean;
   options?: string[];
   placeholder?: string;
+  default_value?: string | string[];
   "data-element-id"?: string;
 }
+
+/**
+ * Seed the field's binding from `default_value` on first mount when the
+ * shared state model has nothing for this path yet. Subsequent user
+ * interactions override the seed; navigating away and back keeps the
+ * user's value, not the default.
+ */
+const useDefaultValueSeed = <T,>(
+  value: T | undefined,
+  setValue: (next: T) => void,
+  defaultValue: T | undefined,
+) => {
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (seeded.current) {
+      return;
+    }
+    seeded.current = true;
+    const isEmpty =
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      (Array.isArray(value) && value.length === 0);
+    const hasDefault =
+      defaultValue !== undefined &&
+      defaultValue !== null &&
+      defaultValue !== "" &&
+      !(Array.isArray(defaultValue) && defaultValue.length === 0);
+    if (isEmpty && hasDefault) {
+      setValue(defaultValue as T);
+    }
+    // We intentionally only run this once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+};
 
 const FormContainer = ({ children }: { children?: React.ReactNode }) => (
   <Form layout="vertical">{children}</Form>
@@ -39,6 +75,7 @@ const useFieldBinding = <T,>(name: string) =>
 
 const TextField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
+  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>
@@ -56,6 +93,7 @@ const TextField = ({ props }: { props: BaseFieldProps }) => {
 
 const SelectField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
+  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>
@@ -74,6 +112,11 @@ const SelectField = ({ props }: { props: BaseFieldProps }) => {
 
 const MultiSelectField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string[]>(props.name);
+  useDefaultValueSeed(
+    value,
+    setValue,
+    props.default_value as string[] | undefined,
+  );
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>
@@ -93,6 +136,7 @@ const MultiSelectField = ({ props }: { props: BaseFieldProps }) => {
 
 const RadioField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
+  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>
@@ -118,6 +162,7 @@ const LocationField = ({ props }: { props: BaseFieldProps }) => {
       ? props.options
       : LOCATION_DEFAULT_OPTIONS;
   const [value, setValue] = useFieldBinding<string>(props.name);
+  useDefaultValueSeed(value, setValue, props.default_value as string | undefined);
   return (
     <FieldWrapper elementId={props["data-element-id"]}>
       <Form.Item label={props.label} required={props.required}>

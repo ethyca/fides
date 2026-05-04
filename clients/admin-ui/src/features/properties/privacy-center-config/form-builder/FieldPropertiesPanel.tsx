@@ -4,6 +4,7 @@ import {
   Form,
   Icons,
   Input,
+  Select,
   Space,
   Switch,
   useModal,
@@ -356,8 +357,27 @@ export const FieldPropertiesPanel = ({
             >
               <OptionsEditor />
             </Form.Item>
-            <Form.Item label="Default value" name="default_value">
-              <Input data-testid="prop-default-value" />
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, next) =>
+                JSON.stringify(prev.options) !== JSON.stringify(next.options)
+              }
+            >
+              {({ getFieldValue }) => {
+                const opts = (getFieldValue("options") ?? []) as string[];
+                const isMulti = componentType === "MultiSelect";
+                return (
+                  <Form.Item label="Default value" name="default_value">
+                    <Select
+                      mode={isMulti ? "multiple" : undefined}
+                      allowClear
+                      placeholder="No default"
+                      data-testid="prop-default-value"
+                      options={opts.map((o) => ({ label: o, value: o }))}
+                    />
+                  </Form.Item>
+                );
+              }}
             </Form.Item>
             <Form.Item
               label="Required"
