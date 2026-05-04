@@ -1,6 +1,5 @@
 from unittest.mock import AsyncMock
 
-import pytest
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from fides.api.db.ctl_session import warm_async_pool

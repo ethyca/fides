@@ -1,6 +1,5 @@
-import asyncio
 import ssl
-from asyncio import Lock
+from asyncio import Lock, gather
 from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
 from typing import Any, AsyncGenerator, Callable, Dict
 
@@ -171,7 +170,7 @@ async def warm_async_pool(pool_id: str, pool_size: int, engine: AsyncEngine) -> 
     connections = []
     try:
         # Open all connections concurrently to avoid paying N * RTT sequentially
-        results = await asyncio.gather(
+        results = await gather(
             *(engine.connect() for _ in range(pool_size)),
             return_exceptions=True,
         )
@@ -185,11 +184,9 @@ async def warm_async_pool(pool_id: str, pool_size: int, engine: AsyncEngine) -> 
         logger.info(
             f"Pool {pool_id} warmed up with {len(connections)}/{pool_size} connections. Releasing connections..."
         )
-    except Exception as e:
-        logger.error(f"An error occurred during warming of {pool_id}: {e}")
     finally:
         # Release all connections back to the pool
-        await asyncio.gather(*(conn.close() for conn in connections))
+        await gather(*(conn.close() for conn in connections))
         logger.info(f"Connections released back to the pool for {pool_id}.")
 
 
