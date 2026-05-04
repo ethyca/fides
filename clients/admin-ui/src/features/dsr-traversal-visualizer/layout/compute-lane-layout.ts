@@ -8,7 +8,7 @@ import {
   LANE_PADDING_X,
   LANE_Y_TOP,
   NODE_WIDTH,
-  STAGE_GAP,
+  STAGE_GAP_HORIZONTAL,
   STAGE_HEADER_HEIGHT,
 } from "../constants";
 
@@ -53,12 +53,12 @@ const LANE_LABELS: Record<string, { label: string; tooltip: string }> = {
 
 const STAGE_COPY: Record<number, { label: string; tooltip: string }> = {
   1: {
-    label: "First — from identity directly",
+    label: "Stage 1 · From identity",
     tooltip:
       "These systems are queried using the data subject's identity inputs (e.g., email) directly.",
   },
   2: {
-    label: "Second — from upstream system",
+    label: "Stage 2 · From upstream",
     tooltip:
       "These systems can't be queried with identity alone — they need an identifier returned from a Stage 1 system first.",
   },
@@ -66,7 +66,7 @@ const STAGE_COPY: Record<number, { label: string; tooltip: string }> = {
 
 const stageCopy = (n: number) =>
   STAGE_COPY[n] ?? {
-    label: `Stage ${n} — from upstream system`,
+    label: `Stage ${n} · From upstream`,
     tooltip:
       "These systems are queried after one or more upstream systems return an identifier.",
   };
@@ -147,39 +147,52 @@ export const computeLaneLayout = (
     reachWidth = reachHidden ? 0 : COLLAPSED_LANE_WIDTH;
     reachHeight = LANE_HEADER_HEIGHT;
   } else {
-    let stageY = LANE_HEADER_HEIGHT;
-    let maxCols = 1;
-    sortedStages.forEach(([stageIndex, members]) => {
+    const headerY = LANE_HEADER_HEIGHT;
+    const gridY = LANE_HEADER_HEIGHT + STAGE_HEADER_HEIGHT;
+    let stageCursorX = 0; // lane-local, after LANE_PADDING_X is applied at card-positioning time
+    let maxRows = 0;
+
+    sortedStages.forEach(([stageIndex, members], orderIdx) => {
       const cols = computeColumnCount(members.length);
-      maxCols = Math.max(maxCols, cols);
       const rows = Math.ceil(members.length / cols);
-      const yStart = stageY + STAGE_HEADER_HEIGHT;
+      maxRows = Math.max(maxRows, rows);
+      const stageWidth = NODE_WIDTH + (cols - 1) * COL_WIDTH;
       const ids: string[] = [];
-      const laneX = cursorX;
+
       members.forEach((m, idx) => {
         const col = idx % cols;
         const row = Math.floor(idx / cols);
         positions[m.id] = {
-          x: laneX + LANE_PADDING_X + col * COL_WIDTH,
-          y: yStart + row * CARD_PITCH,
+          x: cursorX + LANE_PADDING_X + stageCursorX + col * COL_WIDTH,
+          y: LANE_Y_TOP + gridY + row * CARD_PITCH,
         };
         ids.push(m.id);
       });
-      const yEnd = yStart + rows * CARD_PITCH;
+
       const copy = stageCopy(stageIndex);
       stageBlocks.push({
         index: stageIndex,
         label: copy.label,
         tooltip: copy.tooltip,
         nodeIds: ids,
-        yStart: stageY,
-        yEnd,
+        xStart: stageCursorX,
+        xEnd: stageCursorX + stageWidth,
+        width: stageWidth,
+        headerY,
+        gridY,
         columns: cols,
       });
-      stageY = yEnd + STAGE_GAP;
+
+      const isLast = orderIdx === sortedStages.length - 1;
+      stageCursorX += stageWidth + (isLast ? 0 : STAGE_GAP_HORIZONTAL);
     });
-    reachWidth = laneContentWidth(maxCols);
-    reachHeight = stageY - STAGE_GAP + LANE_PADDING_BOTTOM;
+
+    reachWidth = LANE_PADDING_X * 2 + stageCursorX;
+    reachHeight =
+      LANE_HEADER_HEIGHT +
+      STAGE_HEADER_HEIGHT +
+      maxRows * CARD_PITCH +
+      LANE_PADDING_BOTTOM;
   }
 
   lanes.push({

@@ -103,16 +103,22 @@ export type AppNode =
 export interface StageBlock {
   /** 1-based index — Stage 1, Stage 2, ... */
   index: number;
-  /** Plain-English label, e.g. "First — from identity directly". */
+  /** Plain-English label, e.g. "Stage 1 · From identity". */
   label: string;
   /** Plain-English tooltip. */
   tooltip: string;
   /** Cards in this stage, in render order. */
   nodeIds: string[];
-  /** Y where this block starts inside its lane. */
-  yStart: number;
-  /** Y where this block ends. */
-  yEnd: number;
+  /** Lane-local x where the stage's left edge sits (after LANE_PADDING_X). */
+  xStart: number;
+  /** Lane-local x where the stage's right edge sits. */
+  xEnd: number;
+  /** Stage width — equals NODE_WIDTH + (columns - 1) * COL_WIDTH. */
+  width: number;
+  /** Lane-local y of the stage sub-header (sits below the lane header). */
+  headerY: number;
+  /** Lane-local y of the first card row (below the stage sub-header). */
+  gridY: number;
   /** Column count promoted for this stage (1, 2, or 3). */
   columns: number;
 }

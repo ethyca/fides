@@ -140,12 +140,10 @@
 }
 
 .stage {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  // Don't pin a hard height — long stage labels can wrap to two lines, and
-  // the next card below sits at STAGE_HEADER_HEIGHT (40px) anyway, so the
-  // label has up to ~32px of room before any visual overlap with cards.
+  // Position is set inline (left/top/width) per stage block.
+  height: 40px; // STAGE_HEADER_HEIGHT
+  display: flex;
+  align-items: center;
   pointer-events: none;
 }
 .stageLabel {
@@ -168,6 +166,25 @@
   color: #fff;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 700;
+}
+
+.stageChevron {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  // Centered horizontally on its inline `left` anchor.
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .outOfFlowBadge {
