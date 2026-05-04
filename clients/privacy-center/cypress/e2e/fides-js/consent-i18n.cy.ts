@@ -886,8 +886,7 @@ describe("Consent i18n", () => {
               overrideExperience: (experience: any) => {
                 /* eslint-disable no-param-reassign */
                 // Override the test data to specify Spanish as the default translation for the experience.
-                experience.experience_config!.translations[0].is_default =
-                  false;
+                experience.experience_config!.translations[0].is_default = false;
                 experience.experience_config!.translations[1].is_default = true;
                 // Modify the first notice (Advertising) and remove the French translations
                 const testNotices: PrivacyNotice[] = experience.privacy_notices;

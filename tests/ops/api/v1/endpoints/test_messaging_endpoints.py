@@ -2208,7 +2208,9 @@ class TestGetBasicMessagingTemplates:
         assert response.status_code == 200
 
         # Validate the response conforms to the expected model
-        [BasicMessagingTemplateResponse(**item) for item in response.json()]
+        templates = [BasicMessagingTemplateResponse(**item) for item in response.json()]
+        for template in templates:
+            assert template.label is not None
 
 
 class TestPutBasicMessagingTemplates:
@@ -2426,6 +2428,7 @@ class TestGetMessagingTemplateById:
         assert len(template["properties"]) == 1
         assert template["properties"][0]["id"] == property_a.id
         assert template["is_enabled"] is True
+        assert template["label"] == "Subject identity verification"
 
 
 class TestDeleteMessagingTemplateById:
@@ -2485,6 +2488,7 @@ class TestDeleteMessagingTemplateById:
         }
         data = {
             "content": content,
+            "label": "Template to delete",
             "properties": [{"id": property_a.id, "name": property_a.name}],
             "is_enabled": True,
             "type": template_type,

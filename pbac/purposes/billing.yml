@@ -1,0 +1,8 @@
+purpose:
+- fides_key: billing
+  name: Billing Operations
+  data_use: essential.service.payment_processing
+  data_subject: customer
+  data_categories:
+  - user.financial
+  description: Processing payments, invoices, and receipts.

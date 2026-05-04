@@ -3,11 +3,14 @@ import time
 import unittest.mock as mock
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Generator, List
 
 import pytest
+from freezegun import freeze_time
 from requests import Session
 
+from fides.api.common_exceptions import RedisConnectionError
 from fides.api.db import session
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import (
@@ -218,6 +221,88 @@ def test_limiter_times_out_when_bucket_full() -> None:
             time.sleep(0.002)
 
 
+@pytest.mark.integration
+def test_minute_period_breach_waits_for_rollover() -> None:
+    """A MINUTE-period breach must sleep until the bucket rolls over, not time out.
+
+    Regression: the old default timeout_seconds=30 was shorter than the MINUTE
+    bucket period (60s).  When a breach occurred more than 30s before the next
+    boundary the limiter would raise RateLimiterTimeoutException instead of
+    waiting.  This affected the Okta client (period=MINUTE) and any SaaS
+    connector with a per-minute rate limit (e.g. Zenoti, SurveyMonkey).
+
+    Uses real Redis for bucket state; only mocks time to avoid 60s wall-clock
+    waits.
+    """
+    # "2024-01-01 00:00:05" is 5s into a minute, so the next bucket is 55s
+    # away.  The old 30s default would time out before reaching it.
+    with freeze_time("2024-01-01 00:00:05") as frozen:
+        limiter = RateLimiter()
+        key = f"test_minute_rollover_{random.randint(0, 10**12)}"
+        request = RateLimiterRequest(
+            key=key, rate_limit=1, period=RateLimiterPeriod.MINUTE
+        )
+
+        def advancing_sleep(seconds: float) -> None:
+            frozen.tick(timedelta(seconds=seconds))
+
+        with mock.patch(
+            "fides.api.service.connectors.limiter.rate_limiter.time.sleep",
+            side_effect=advancing_sleep,
+        ):
+            limiter.limit(requests=[request])  # fills the single slot
+            limiter.limit(requests=[request])  # breach -> sleep to boundary -> succeed
+
+        # Confirm the limiter actually slept past the bucket boundary (00:01:00),
+        # not just that it didn't raise.
+        assert frozen().timestamp() >= datetime(2024, 1, 1, 0, 1, 0).timestamp()
+
+
+@pytest.mark.integration
+def test_dynamic_timeout_capped_for_day_limits() -> None:
+    """Mixed MINUTE + DAY limits must not block a worker for hours.
+
+    SurveyMonkey configures ``rate: 120/minute`` and ``rate: 500/day``.
+    Without a cap the dynamic timeout would be ``86400 + 5 = 86405s`` (~24h),
+    leaving a Celery worker sleeping until the next day bucket rolls over.
+    The 120s cap ensures the limiter fails fast and surfaces an error instead.
+
+    Uses real Redis for bucket state; only mocks time to avoid real sleeping.
+    """
+    with freeze_time("2024-01-01 00:00:05") as frozen:
+        limiter = RateLimiter()
+        key = f"test_day_cap_{random.randint(0, 10**12)}"
+
+        minute_request = RateLimiterRequest(
+            key=f"{key}:min", rate_limit=1, period=RateLimiterPeriod.MINUTE
+        )
+        day_request = RateLimiterRequest(
+            key=f"{key}:day", rate_limit=1, period=RateLimiterPeriod.DAY
+        )
+        both = [minute_request, day_request]
+
+        sleep_total = [0.0]
+
+        def advancing_sleep(seconds: float) -> None:
+            sleep_total[0] += seconds
+            frozen.tick(timedelta(seconds=seconds))
+
+        with mock.patch(
+            "fides.api.service.connectors.limiter.rate_limiter.time.sleep",
+            side_effect=advancing_sleep,
+        ):
+            # Fill both buckets.
+            limiter.limit(requests=both)
+
+            # Next call breaches both. Should timeout, not sleep for 24h.
+            with pytest.raises(RateLimiterTimeoutException):
+                limiter.limit(requests=both)
+
+    # Total mocked sleep must reflect the 120s cap, not the 86405s
+    # uncapped value.
+    assert 110 <= sleep_total[0] < 130  # should be ~120 s, not 86400 s
+
+
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 async def test_rate_limiter_full_integration(
@@ -273,3 +358,98 @@ def call_log_spy(method_to_decorate: Callable) -> Callable:
 
     wrapper.call_log = call_log
     return wrapper
+
+
+class TestRateLimiterRedisFailure:
+    """Unit tests for RateLimiter.limit() when Redis is unavailable."""
+
+    def test_redis_connection_error_is_silently_skipped(self) -> None:
+        with mock.patch(
+            "fides.api.service.connectors.limiter.rate_limiter.get_cache",
+            side_effect=RedisConnectionError("Redis unavailable"),
+        ):
+            # Should not raise — limiter is a no-op when Redis is down.
+            RateLimiter().limit(
+                requests=[
+                    RateLimiterRequest(
+                        key="k", rate_limit=1, period=RateLimiterPeriod.SECOND
+                    )
+                ]
+            )
+
+
+class TestSecondsUntilNextBucket:
+    """Unit tests for RateLimiter.seconds_until_next_bucket."""
+
+    def _req(self, period: RateLimiterPeriod) -> RateLimiterRequest:
+        return RateLimiterRequest(key="k", rate_limit=10, period=period)
+
+    def test_second_at_boundary(self) -> None:
+        # At the start of a second (e.g. t=1000), 1s remains.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                1000, self._req(RateLimiterPeriod.SECOND)
+            )
+            == 1
+        )
+
+    def test_day_at_start(self) -> None:
+        # At the exact start of a day (t=86400), 86400s remain.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                86400, self._req(RateLimiterPeriod.DAY)
+            )
+            == 86400
+        )
+
+    def test_day_mid(self) -> None:
+        # 12 hours into a day → 12 hours remain.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                86400 + 43200, self._req(RateLimiterPeriod.DAY)
+            )
+            == 43200
+        )
+
+    def test_minute_at_start(self) -> None:
+        # At the exact start of a minute (e.g. t=600), 60s remain.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                600, self._req(RateLimiterPeriod.MINUTE)
+            )
+            == 60
+        )
+
+    def test_minute_30s_in(self) -> None:
+        # 30 seconds into a minute → 30s remain.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                630, self._req(RateLimiterPeriod.MINUTE)
+            )
+            == 30
+        )
+
+    def test_minute_59s_in(self) -> None:
+        # 59 seconds into a minute → 1s remains.
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                659, self._req(RateLimiterPeriod.MINUTE)
+            )
+            == 1
+        )
+
+    def test_hour_at_start(self) -> None:
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                3600, self._req(RateLimiterPeriod.HOUR)
+            )
+            == 3600
+        )
+
+    def test_hour_mid(self) -> None:
+        assert (
+            RateLimiter().seconds_until_next_bucket(
+                5400, self._req(RateLimiterPeriod.HOUR)
+            )
+            == 1800
+        )

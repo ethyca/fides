@@ -3,7 +3,6 @@ import { Icons } from "fidesui";
 import React, { useEffect, useRef } from "react";
 
 import SparkleIcon from "../icons/Sparkle";
-import palette from "../palette/palette.module.scss";
 import styles from "./CustomTag.module.scss";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -89,9 +88,8 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
 
       // If it's a brand color, use our palette
       const brandColor: string | undefined =
-        typeof color === "string" &&
-        `FIDESUI_BG_${color.toUpperCase()}` in palette
-          ? `FIDESUI_BG_${color.toUpperCase()}`
+        typeof color === "string"
+          ? `var(--fidesui-brand-bg-${color.toLowerCase()})`
           : undefined;
       const needsLightText = color && DARK_BACKGROUNDS.includes(color);
       const retainDefaultBorder =
@@ -99,10 +97,14 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
       let customStyle = {};
       if (brandColor) {
         customStyle = {
-          background: palette[brandColor],
-          color: needsLightText ? palette.FIDESUI_NEUTRAL_100 : undefined,
+          background: brandColor,
+          color: needsLightText ? "var(--fidesui-neutral-100)" : undefined,
         };
       }
+
+      const closeIconContent = props.closeIcon ?? (
+        <Icons.CloseLarge size={12} />
+      );
 
       const customProps: TagProps = {
         // If not a brand color, pass through to Ant Tag
@@ -111,7 +113,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           ...customStyle,
           marginInlineEnd: 0, // allow for flex gap instead of margin
           paddingInline: shouldReducePadding
-            ? "calc((var(--ant-padding-xs) * 0.5))"
+            ? "calc((var(--fidesui-padding-xs) * 0.5))"
             : undefined,
           ...style,
         },
@@ -121,19 +123,42 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         variant: retainDefaultBorder || !brandColor ? "outlined" : "filled",
         ...props,
         closeIcon:
+          // eslint-disable-next-line no-nested-ternary
           (props.closable ?? props.onClose) ? (
             // Ant's own close icon doesn't currently use a button element,
             // so we need to use our own for accessibility.
             //
             // NOTE: Ant Design overrides aria-label with "Close" no matter what,
             // but we fix this post-render using useEffect above.
-            <button
-              type="button"
-              className={styles.closeButton}
-              aria-label={closeButtonLabel}
-            >
-              {props.closeIcon ?? <Icons.CloseLarge size={12} />}
-            </button>
+            //
+            // When onClick is set, the tag is wrapped in an outer <button>,
+            // so we use a <span> to avoid invalid button-in-button nesting.
+            onClick ? (
+              <span
+                role="button"
+                tabIndex={0}
+                className={styles.closeButton}
+                aria-label={closeButtonLabel}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    (e.target as HTMLElement).click();
+                  }
+                }}
+              >
+                {closeIconContent}
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={styles.closeButton}
+                aria-label={closeButtonLabel}
+              >
+                {closeIconContent}
+              </button>
+            )
           ) : undefined,
         children: (
           <>

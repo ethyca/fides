@@ -1,0 +1,32 @@
+{
+  "policies": [
+    {
+      "key": "deny-unless-california",
+      "priority": 200,
+      "enabled": true,
+      "decision": "DENY",
+      "match": {},
+      "unless": [
+        {
+          "type": "geo_location",
+          "field": "environment.geo_location",
+          "operator": "in",
+          "values": ["US-CA"]
+        }
+      ]
+    },
+    {
+      "key": "fallback-allow",
+      "priority": 100,
+      "enabled": true,
+      "decision": "ALLOW",
+      "match": {}
+    }
+  ],
+  "request": {
+    "data_uses": ["essential.service"],
+    "context": {
+      "environment": { "geo_location": "US-CA" }
+    }
+  }
+}

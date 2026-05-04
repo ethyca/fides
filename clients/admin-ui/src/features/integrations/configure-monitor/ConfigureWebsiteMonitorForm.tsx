@@ -36,8 +36,10 @@ import { SharedConfigSelect } from "./SharedConfigSelect";
 
 dayjs.extend(utc);
 
-interface WebsiteMonitorConfig
-  extends Omit<EditableMonitorConfig, "datasource_params"> {
+interface WebsiteMonitorConfig extends Omit<
+  EditableMonitorConfig,
+  "datasource_params"
+> {
   datasource_params?: WebsiteMonitorParams;
   url: string;
 }

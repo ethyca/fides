@@ -105,7 +105,6 @@ class PrivacyRequestService:
         query: Query,
         filters: PrivacyRequestFilter,
         identity: Optional[str] = None,
-        include_consent_webhook_requests: Optional[bool] = False,
     ) -> Query:
         """Apply filters to a privacy request query."""
         return filter_privacy_request_queryset(
@@ -113,7 +112,8 @@ class PrivacyRequestService:
             query,
             filters,
             identity=identity,
-            include_consent_webhook_requests=include_consent_webhook_requests,
+            include_consent_webhook_requests=filters.include_consent_webhook_requests
+            or False,
         )
 
     def sort_privacy_requests(
@@ -645,6 +645,26 @@ class PrivacyRequestService:
                     failed.append(
                         BulkUpdateFailed(
                             message="Cannot transition status",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
+                    )
+                    continue
+
+                if (
+                    privacy_request.status == PrivacyRequestStatus.duplicate
+                    and privacy_request.identity_verified_at is None
+                    and self.config_proxy.execution.subject_identity_verification_required
+                ):
+                    logger.error(
+                        "Blocked approval of unverified duplicate privacy request {} by user {}",
+                        privacy_request.id,
+                        reviewed_by,
+                    )
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Cannot approve unverified duplicate request",
                             data=PrivacyRequestResponse.model_validate(
                                 privacy_request
                             ).model_dump(mode="json"),

@@ -14,13 +14,14 @@ import (
 type GapType string
 
 const (
-	GapUnresolvedIdentity  GapType = "unresolved_identity"
-	GapUnconfiguredDataset GapType = "unconfigured_dataset"
-	// GapUnconfiguredConsumer ("unconfigured_consumer") is produced by the
-	// Python service layer (step 5) when reclassifying identity gaps for
-	// consumers that exist but have no purposes. The Go engine does not
-	// produce this gap type — it's a service-layer concern, not an engine
-	// concern.
+	GapUnresolvedIdentity GapType = "unresolved_identity"
+	// GapUnconfiguredConsumer is produced by the pipeline package when
+	// an UNRESOLVED_IDENTITY gap is reclassified because the consumer
+	// exists but declares no purposes. The core engine functions
+	// (EvaluatePurpose / EvaluatePolicies) do not produce this type
+	// themselves — it's pipeline-layer output.
+	GapUnconfiguredConsumer GapType = "unconfigured_consumer"
+	GapUnconfiguredDataset  GapType = "unconfigured_dataset"
 )
 
 // ConsumerPurposes holds the declared purposes for a data consumer.
@@ -57,16 +58,24 @@ func (d *DatasetPurposes) EffectivePurposes(collection string) map[string]bool {
 }
 
 // PurposeViolation represents a purpose-based access violation.
+//
+// DataUse and Control are set by the service layer during enrichment.
+// SuppressedByPolicy and SuppressedByAction are set when an ALLOW
+// policy matched during the post-engine policy filter — the violation
+// is kept in the record for auditability, but a caller treating
+// suppressed violations as compliant should check these fields.
 type PurposeViolation struct {
-	ConsumerID       string   `json:"consumer_id"`
-	ConsumerName     string   `json:"consumer_name"`
-	DatasetKey       string   `json:"dataset_key"`
-	Collection       *string  `json:"collection,omitempty"`
-	ConsumerPurposes []string `json:"consumer_purposes"`
-	DatasetPurposes  []string `json:"dataset_purposes"`
-	Reason           string   `json:"reason"`
-	DataUse          *string  `json:"data_use,omitempty"`
-	Control          *string  `json:"control,omitempty"`
+	ConsumerID         string        `json:"consumer_id"`
+	ConsumerName       string        `json:"consumer_name"`
+	DatasetKey         string        `json:"dataset_key"`
+	Collection         *string       `json:"collection,omitempty"`
+	ConsumerPurposes   []string      `json:"consumer_purposes"`
+	DatasetPurposes    []string      `json:"dataset_purposes"`
+	Reason             string        `json:"reason"`
+	DataUse            *string       `json:"data_use,omitempty"`
+	Control            *string       `json:"control,omitempty"`
+	SuppressedByPolicy *string       `json:"suppressed_by_policy,omitempty"`
+	SuppressedByAction *PolicyAction `json:"suppressed_by_action,omitempty"`
 }
 
 // EvaluationGap represents a gap in PBAC coverage — incomplete configuration,

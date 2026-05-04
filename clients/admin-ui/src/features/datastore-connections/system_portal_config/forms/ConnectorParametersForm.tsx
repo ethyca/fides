@@ -17,7 +17,7 @@ import {
   useMessage,
 } from "fidesui";
 import _ from "lodash";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
@@ -57,9 +57,13 @@ type ConnectorParametersFormProps = {
    */
   onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
-   * Parent callback when Test Dataset is clicked
+   * Parent callback when Edit Dataset is clicked
    */
   onTestDatasetsClick: () => void;
+  /**
+   * Parent callback when Test Datasets is clicked (DB only)
+   */
+  onTestDatasetsRunClick?: () => void;
   /**
    * Text for the test button. Defaults to "Test connection"
    */
@@ -85,6 +89,7 @@ export const ConnectorParametersForm = ({
   onSaveClick,
   onTestConnectionClick,
   onTestDatasetsClick,
+  onTestDatasetsRunClick,
   onAuthorizeConnectionClick,
   testButtonLabel = "Test integration",
   connectionOption,
@@ -179,9 +184,27 @@ export const ConnectorParametersForm = ({
     connectionOption,
   ]);
 
+  useEffect(() => {
+    if (isEditingConnection) {
+      form.setFieldsValue(initialFormValues);
+    }
+  }, [form, initialFormValues, isEditingConnection]);
+
   const handleFinish = async (values: ConnectionConfigFormValues) => {
     const processedValues = preprocessValues(values);
     await onSaveClick(processedValues);
+
+    // After a successful create, mask secrets immediately so the user sees
+    // stars instead of blank fields while waiting for the refetch.
+    if (!isEditingConnection && secretsSchema) {
+      const maskedSecrets: Record<string, string> = {};
+      Object.keys(secretsSchema.properties).forEach((key) => {
+        if (processedValues.secrets[key]) {
+          maskedSecrets[key] = "**********";
+        }
+      });
+      form.setFieldsValue({ secrets: maskedSecrets });
+    }
 
     // Save property assignments if editing
     if (
@@ -399,9 +422,18 @@ export const ConnectorParametersForm = ({
                 </Button>
               ) : null}
               {isPlusEnabled &&
-                SystemType.DATABASE === connectionOption.type &&
+                (SystemType.DATABASE === connectionOption.type ||
+                  SystemType.SAAS === connectionOption.type) &&
                 !_.isEmpty(initialDatasets) && (
                   <Button onClick={() => onTestDatasetsClick()}>
+                    Edit dataset
+                  </Button>
+                )}
+              {isPlusEnabled &&
+                SystemType.DATABASE === connectionOption.type &&
+                !_.isEmpty(initialDatasets) &&
+                onTestDatasetsRunClick && (
+                  <Button onClick={() => onTestDatasetsRunClick()}>
                     Test datasets
                   </Button>
                 )}

@@ -290,7 +290,11 @@ export const StackedBarChart = ({
     sortedData.length * barHeight + (sortedData.length - 1) * rowGap + rowGap;
 
   return (
-    <ResponsiveContainer width="100%" height={chartHeight}>
+    <ResponsiveContainer
+      width="100%"
+      height={chartHeight}
+      initialDimension={{ width: 1, height: 1 }}
+    >
       <BarChart
         data={sortedData}
         layout="vertical"

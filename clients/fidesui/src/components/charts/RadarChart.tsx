@@ -293,7 +293,11 @@ export const RadarChart = ({
       })}
       onMouseLeave={tooltipContent ? handleTickLeave : undefined}
     >
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        initialDimension={{ width: 1, height: 1 }}
+      >
         <RechartsRadarChart
           data={empty ? EMPTY_GRID_DATA : data}
           cx="50%"

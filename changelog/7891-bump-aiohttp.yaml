@@ -1,4 +1,0 @@
-type: Security
-description: Bumped aiohttp to 3.13.4 to fix 10 CVEs including CVE-2026-34516, CVE-2026-22815, CVE-2026-34520
-pr: 7891
-labels: []

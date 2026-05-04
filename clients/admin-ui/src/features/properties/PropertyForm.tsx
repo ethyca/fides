@@ -150,7 +150,9 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                   data-testid="input-type"
                 />
               </Form.Item>
-              <Form.Item name="paths" hidden />
+              <Form.Item name="paths" hidden noStyle>
+                <Input />
+              </Form.Item>
               <Form.Item
                 name="experiences"
                 label="Experiences"

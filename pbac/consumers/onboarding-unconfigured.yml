@@ -1,0 +1,8 @@
+consumer:
+- name: Onboarding
+  description: Registered consumer with no declared purposes. Any member
+    of this consumer produces UNCONFIGURED_CONSUMER gaps until purposes
+    are declared.
+  members:
+  - dave@demo.example
+  purposes: []

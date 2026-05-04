@@ -1,4 +1,0 @@
-type: Fixed
-description: Cleaned up Ant Design v6 deprecated prop warnings in the browser console across the Admin UI
-pr: 7936
-labels: []

@@ -32,6 +32,7 @@ import type { AssignStewardRequest } from "./models/AssignStewardRequest";
 import type { AstralisPanelResponse } from "./models/AstralisPanelResponse";
 import type { AttachmentResponse } from "./models/AttachmentResponse";
 import type { AuthenticationMethods } from "./models/AuthenticationMethods";
+import type { AvailableScopeResponse } from "./models/AvailableScopeResponse";
 import { AWSAuthMethod } from "./models/AWSAuthMethod";
 import type { BackfillRequest } from "./models/BackfillRequest";
 import type { BackfillStatusResponse } from "./models/BackfillStatusResponse";
@@ -124,6 +125,8 @@ import type { ConsentRequestResponse } from "./models/ConsentRequestResponse";
 import type { ConsentResponse } from "./models/ConsentResponse";
 import { ConsentStatus } from "./models/ConsentStatus";
 import type { ConsumerRequestsByConsumerResponse } from "./models/ConsumerRequestsByConsumerResponse";
+import type { ConsumerTypeResponse } from "./models/ConsumerTypeResponse";
+import type { ControlResponse } from "./models/ControlResponse";
 import type { CreateAssessmentTaskRequest } from "./models/CreateAssessmentTaskRequest";
 import type { CreateAssessmentTaskResponse } from "./models/CreateAssessmentTaskResponse";
 import type { CreateConnectionConfigurationWithSecrets } from "./models/CreateConnectionConfigurationWithSecrets";
@@ -227,6 +230,9 @@ import type { HealthCheck } from "./models/HealthCheck";
 import type { HTTPValidationError } from "./models/HTTPValidationError";
 import type { IdentityDefinitionCreate } from "./models/IdentityDefinitionCreate";
 import type { IdentityDefinitionEntity } from "./models/IdentityDefinitionEntity";
+import type { IdentityGroupProviderCreate } from "./models/IdentityGroupProviderCreate";
+import type { IdentityGroupProviderResponse } from "./models/IdentityGroupProviderResponse";
+import type { IdentityGroupProviderUpdate } from "./models/IdentityGroupProviderUpdate";
 import type { IdentityProviderMonitorConfig } from "./models/IdentityProviderMonitorConfig";
 import type { IdentityVerificationConfigResponse } from "./models/IdentityVerificationConfigResponse";
 import { IDPActionType } from "./models/IDPActionType";
@@ -235,6 +241,7 @@ import type { IDPAllowedActionsResponse } from "./models/IDPAllowedActionsRespon
 import type { IDPBulkActionResponse } from "./models/IDPBulkActionResponse";
 import type { IDPMonitorBulkSelection } from "./models/IDPMonitorBulkSelection";
 import type { IDPMonitorResourcesDynamicFilters } from "./models/IDPMonitorResourcesDynamicFilters";
+import type { IDPStagedResourceUpdateRequest } from "./models/IDPStagedResourceUpdateRequest";
 import type { IngestRequest } from "./models/IngestRequest";
 import type { IngestResponse } from "./models/IngestResponse";
 import type { JiraCredentialLinkStatus } from "./models/JiraCredentialLinkStatus";
@@ -303,7 +310,7 @@ import type { OpenIDProviderUpdate } from "./models/OpenIDProviderUpdate";
 import type { OptionalStagedResourcesRequest } from "./models/OptionalStagedResourcesRequest";
 import type { Organization } from "./models/Organization";
 import type { Page_AccessPolicyResponse_ } from "./models/Page_AccessPolicyResponse_";
-import type { Page_AssessmentResponse_ } from "./models/Page_AssessmentResponse_";
+import type { Page_AssessmentGroupResponse_ } from "./models/Page_AssessmentGroupResponse_";
 import type { Page_AssessmentTaskResponse_ } from "./models/Page_AssessmentTaskResponse_";
 import type { Page_Asset_ } from "./models/Page_Asset_";
 import type { Page_AttachmentResponse_ } from "./models/Page_AttachmentResponse_";
@@ -331,6 +338,7 @@ import type { Page_EventAuditResponse_ } from "./models/Page_EventAuditResponse_
 import type { Page_ExecutionLogDetailResponse_ } from "./models/Page_ExecutionLogDetailResponse_";
 import type { Page_ExperienceConfigListViewResponse_ } from "./models/Page_ExperienceConfigListViewResponse_";
 import type { Page_FieldAccuracyDetail_ } from "./models/Page_FieldAccuracyDetail_";
+import type { Page_IdentityGroupProviderResponse_ } from "./models/Page_IdentityGroupProviderResponse_";
 import type { Page_Language_ } from "./models/Page_Language_";
 import type { Page_LimitedPrivacyNoticeResponseSchema_ } from "./models/Page_LimitedPrivacyNoticeResponseSchema_";
 import type { Page_ManualTaskConfigResponse_ } from "./models/Page_ManualTaskConfigResponse_";
@@ -2130,6 +2138,26 @@ export type patchConnectionSecretsApiV1SystemFidesKeyConnectionSecretsPatchData 
         }
       | {
           /**
+           * Keyfile creds
+           *
+           * The contents of the key file for a GCP service account with domain-wide delegation configured.
+           */
+          keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds;
+          /**
+           * Delegation subject
+           *
+           * Email of a Google Workspace admin to impersonate via domain-wide delegation.
+           */
+          delegation_subject: string;
+          /**
+           * Domain
+           *
+           * The Google Workspace domain (e.g., example.com).
+           */
+          domain: string;
+        }
+      | {
+          /**
            * Access Token
            */
           access_token?: string | null;
@@ -2150,6 +2178,18 @@ export type patchConnectionSecretsApiV1SystemFidesKeyConnectionSecretsPatchData 
            */
           site_url?: string | null;
           /**
+           * Client Id
+           */
+          client_id?: string | null;
+          /**
+           * Client Secret
+           */
+          client_secret?: string | null;
+          /**
+           * Redirect Uri
+           */
+          redirect_uri?: string | null;
+          /**
            * Domain
            */
           domain?: string | null;
@@ -2163,6 +2203,12 @@ export type patchConnectionSecretsApiV1SystemFidesKeyConnectionSecretsPatchData 
           api_key?: string | null;
           [key: string]:
             | unknown
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
             | string
             | null
             | string
@@ -3740,6 +3786,26 @@ export type patchConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPatchD
         }
       | {
           /**
+           * Keyfile creds
+           *
+           * The contents of the key file for a GCP service account with domain-wide delegation configured.
+           */
+          keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds;
+          /**
+           * Delegation subject
+           *
+           * Email of a Google Workspace admin to impersonate via domain-wide delegation.
+           */
+          delegation_subject: string;
+          /**
+           * Domain
+           *
+           * The Google Workspace domain (e.g., example.com).
+           */
+          domain: string;
+        }
+      | {
+          /**
            * Access Token
            */
           access_token?: string | null;
@@ -3760,6 +3826,18 @@ export type patchConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPatchD
            */
           site_url?: string | null;
           /**
+           * Client Id
+           */
+          client_id?: string | null;
+          /**
+           * Client Secret
+           */
+          client_secret?: string | null;
+          /**
+           * Redirect Uri
+           */
+          redirect_uri?: string | null;
+          /**
            * Domain
            */
           domain?: string | null;
@@ -3773,6 +3851,12 @@ export type patchConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPatchD
           api_key?: string | null;
           [key: string]:
             | unknown
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
             | string
             | null
             | string
@@ -4610,6 +4694,26 @@ export type putConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPutData 
         }
       | {
           /**
+           * Keyfile creds
+           *
+           * The contents of the key file for a GCP service account with domain-wide delegation configured.
+           */
+          keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds;
+          /**
+           * Delegation subject
+           *
+           * Email of a Google Workspace admin to impersonate via domain-wide delegation.
+           */
+          delegation_subject: string;
+          /**
+           * Domain
+           *
+           * The Google Workspace domain (e.g., example.com).
+           */
+          domain: string;
+        }
+      | {
+          /**
            * Access Token
            */
           access_token?: string | null;
@@ -4630,6 +4734,18 @@ export type putConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPutData 
            */
           site_url?: string | null;
           /**
+           * Client Id
+           */
+          client_id?: string | null;
+          /**
+           * Client Secret
+           */
+          client_secret?: string | null;
+          /**
+           * Redirect Uri
+           */
+          redirect_uri?: string | null;
+          /**
            * Domain
            */
           domain?: string | null;
@@ -4643,6 +4759,12 @@ export type putConnectionConfigSecretsApiV1ConnectionConnectionKeySecretPutData 
           api_key?: string | null;
           [key: string]:
             | unknown
+            | string
+            | null
+            | string
+            | null
+            | string
+            | null
             | string
             | null
             | string
@@ -12556,6 +12678,25 @@ export type getClassificationDetailsApiV1PlusClassifyDetailsDatasetFidesKeyGetRe
 export type getClassificationDetailsApiV1PlusClassifyDetailsDatasetFidesKeyGetResponse =
   getClassificationDetailsApiV1PlusClassifyDetailsDatasetFidesKeyGetResponses[keyof getClassificationDetailsApiV1PlusClassifyDetailsDatasetFidesKeyGetResponses];
 
+export type listControlsApiV1PlusControlsGetData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/plus/controls";
+};
+
+export type listControlsApiV1PlusControlsGetResponses = {
+  /**
+   * Response List Controls Api V1 Plus Controls Get
+   *
+   * Successful Response
+   */
+  200: Array<ControlResponse>;
+};
+
+export type listControlsApiV1PlusControlsGetResponse =
+  listControlsApiV1PlusControlsGetResponses[keyof listControlsApiV1PlusControlsGetResponses];
+
 export type listAccessPoliciesApiV1PlusAccessPolicyGetData = {
   body?: never;
   path?: never;
@@ -17476,6 +17617,10 @@ export type getMonitorFieldsApiV1PlusDiscoveryMonitorMonitorConfigIdFieldsGetDat
        */
       search?: string | null;
       /**
+       * Search Regex
+       */
+      search_regex?: boolean;
+      /**
        * Diff Status
        */
       diff_status?: Array<DiffStatus> | null;
@@ -18295,7 +18440,10 @@ export type promoteStagedResourcesByMonitorApiV1PlusDiscoveryMonitorMonitorConfi
 
 export type promoteStagedResourceEndpointApiV1PlusDiscoveryMonitorPromotePostData =
   {
-    body?: never;
+    /**
+     * Body
+     */
+    body?: BaseStagedResourcesRequest | null;
     path?: never;
     query?: {
       /**
@@ -18637,6 +18785,10 @@ export type getAllowedFieldActionsEndpointApiV1PlusDiscoveryMonitorMonitorConfig
        */
       search?: string | null;
       /**
+       * Search Regex
+       */
+      search_regex?: boolean;
+      /**
        * Diff Status
        */
       diff_status?: Array<DiffStatus> | null;
@@ -18696,6 +18848,10 @@ export type filteredFieldActionEndpointApiV1PlusDiscoveryMonitorMonitorConfigIdF
        * Search
        */
       search?: string | null;
+      /**
+       * Search Regex
+       */
+      search_regex?: boolean;
       /**
        * Diff Status
        */
@@ -22058,14 +22214,6 @@ export type getRolesApiV1PlusRbacRolesGetData = {
      * Include Inactive
      */
     include_inactive?: boolean;
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
   };
   url: "/api/v1/plus/rbac/roles";
 };
@@ -22095,16 +22243,7 @@ export type getRolesApiV1PlusRbacRolesGetResponse =
 export type createRoleApiV1PlusRbacRolesPostData = {
   body: RBACRoleCreate;
   path?: never;
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/roles";
 };
 
@@ -22136,16 +22275,7 @@ export type deleteRoleApiV1PlusRbacRolesRoleIdDeleteData = {
      */
     role_id: string;
   };
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/roles/{role_id}";
 };
 
@@ -22177,16 +22307,7 @@ export type getRoleApiV1PlusRbacRolesRoleIdGetData = {
      */
     role_id: string;
   };
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/roles/{role_id}";
 };
 
@@ -22218,16 +22339,7 @@ export type updateRoleApiV1PlusRbacRolesRoleIdPutData = {
      */
     role_id: string;
   };
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/roles/{role_id}";
 };
 
@@ -22259,16 +22371,7 @@ export type updateRolePermissionsApiV1PlusRbacRolesRoleIdPermissionsPutData = {
      */
     role_id: string;
   };
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/roles/{role_id}/permissions";
 };
 
@@ -22302,14 +22405,6 @@ export type getPermissionsApiV1PlusRbacPermissionsGetData = {
      * Resource Type
      */
     resource_type?: string | null;
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
   };
   url: "/api/v1/plus/rbac/permissions";
 };
@@ -22349,14 +22444,6 @@ export type getUserRolesApiV1PlusRbacUsersUserIdRolesGetData = {
      * Include Expired
      */
     include_expired?: boolean;
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
   };
   url: "/api/v1/plus/rbac/users/{user_id}/roles";
 };
@@ -22391,16 +22478,7 @@ export type assignRoleToUserApiV1PlusRbacUsersUserIdRolesPostData = {
      */
     user_id: string;
   };
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/users/{user_id}/roles";
 };
 
@@ -22437,16 +22515,7 @@ export type removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteData =
        */
       assignment_id: string;
     };
-    query?: {
-      /**
-       * Config Path Override
-       */
-      config_path_override?: string;
-      /**
-       * Verbose
-       */
-      verbose?: boolean;
-    };
+    query?: never;
     url: "/api/v1/plus/rbac/users/{user_id}/roles/{assignment_id}";
   };
 
@@ -22475,28 +22544,9 @@ export type removeUserRoleApiV1PlusRbacUsersUserIdRolesAssignmentIdDeleteRespons
 export type getConstraintsApiV1PlusRbacConstraintsGetData = {
   body?: never;
   path?: never;
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/constraints";
 };
-
-export type getConstraintsApiV1PlusRbacConstraintsGetErrors = {
-  /**
-   * Validation Error
-   */
-  422: HTTPValidationError;
-};
-
-export type getConstraintsApiV1PlusRbacConstraintsGetError =
-  getConstraintsApiV1PlusRbacConstraintsGetErrors[keyof getConstraintsApiV1PlusRbacConstraintsGetErrors];
 
 export type getConstraintsApiV1PlusRbacConstraintsGetResponses = {
   /**
@@ -22513,16 +22563,7 @@ export type getConstraintsApiV1PlusRbacConstraintsGetResponse =
 export type createConstraintApiV1PlusRbacConstraintsPostData = {
   body: RBACConstraintCreate;
   path?: never;
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/constraints";
 };
 
@@ -22554,16 +22595,7 @@ export type deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteData = {
      */
     constraint_id: string;
   };
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/constraints/{constraint_id}";
 };
 
@@ -22591,16 +22623,7 @@ export type deleteConstraintApiV1PlusRbacConstraintsConstraintIdDeleteResponse =
 export type evaluatePermissionApiV1PlusRbacEvaluatePostData = {
   body: RBACEvaluateRequest;
   path?: never;
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/evaluate";
 };
 
@@ -22627,28 +22650,9 @@ export type evaluatePermissionApiV1PlusRbacEvaluatePostResponse =
 export type getMyPermissionsApiV1PlusRbacMePermissionsGetData = {
   body?: never;
   path?: never;
-  query?: {
-    /**
-     * Config Path Override
-     */
-    config_path_override?: string;
-    /**
-     * Verbose
-     */
-    verbose?: boolean;
-  };
+  query?: never;
   url: "/api/v1/plus/rbac/me/permissions";
 };
-
-export type getMyPermissionsApiV1PlusRbacMePermissionsGetErrors = {
-  /**
-   * Validation Error
-   */
-  422: HTTPValidationError;
-};
-
-export type getMyPermissionsApiV1PlusRbacMePermissionsGetError =
-  getMyPermissionsApiV1PlusRbacMePermissionsGetErrors[keyof getMyPermissionsApiV1PlusRbacMePermissionsGetErrors];
 
 export type getMyPermissionsApiV1PlusRbacMePermissionsGetResponses = {
   /**
@@ -23414,6 +23418,10 @@ export type getDatastoreMonitorResourcesFilterValuesApiV1PlusFiltersDatastoreMon
        */
       search?: string | null;
       /**
+       * Search Regex
+       */
+      search_regex?: boolean;
+      /**
        * Diff Status
        */
       diff_status?: Array<DiffStatus> | null;
@@ -24016,10 +24024,6 @@ export type listAssessmentsApiV1PlusPrivacyAssessmentsGetData = {
   path?: never;
   query?: {
     /**
-     * Status
-     */
-    status?: string | null;
-    /**
      * Page
      */
     page?: number;
@@ -24027,6 +24031,10 @@ export type listAssessmentsApiV1PlusPrivacyAssessmentsGetData = {
      * Size
      */
     size?: number;
+    /**
+     * Status
+     */
+    status?: string | null;
   };
   url: "/api/v1/plus/privacy-assessments";
 };
@@ -24045,7 +24053,7 @@ export type listAssessmentsApiV1PlusPrivacyAssessmentsGetResponses = {
   /**
    * Successful Response
    */
-  200: Page_AssessmentResponse_;
+  200: Page_AssessmentGroupResponse_;
 };
 
 export type listAssessmentsApiV1PlusPrivacyAssessmentsGetResponse =
@@ -27285,6 +27293,44 @@ export type getViolationReasonApiV1AccessControlViolationsViolationIdReasonGetRe
 export type getViolationReasonApiV1AccessControlViolationsViolationIdReasonGetResponse =
   getViolationReasonApiV1AccessControlViolationsViolationIdReasonGetResponses[keyof getViolationReasonApiV1AccessControlViolationsViolationIdReasonGetResponses];
 
+export type listConsumerTypesApiV1PlusPbacConsumerTypesGetData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/plus/pbac/consumer-types";
+};
+
+export type listConsumerTypesApiV1PlusPbacConsumerTypesGetResponses = {
+  /**
+   * Response List Consumer Types Api V1 Plus Pbac Consumer Types Get
+   *
+   * Successful Response
+   */
+  200: Array<ConsumerTypeResponse>;
+};
+
+export type listConsumerTypesApiV1PlusPbacConsumerTypesGetResponse =
+  listConsumerTypesApiV1PlusPbacConsumerTypesGetResponses[keyof listConsumerTypesApiV1PlusPbacConsumerTypesGetResponses];
+
+export type listAllAvailableScopesApiV1PlusPbacAvailableScopesGetData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/plus/pbac/available-scopes";
+};
+
+export type listAllAvailableScopesApiV1PlusPbacAvailableScopesGetResponses = {
+  /**
+   * Response List All Available Scopes Api V1 Plus Pbac Available Scopes Get
+   *
+   * Successful Response
+   */
+  200: Array<AvailableScopeResponse>;
+};
+
+export type listAllAvailableScopesApiV1PlusPbacAvailableScopesGetResponse =
+  listAllAvailableScopesApiV1PlusPbacAvailableScopesGetResponses[keyof listAllAvailableScopesApiV1PlusPbacAvailableScopesGetResponses];
+
 export type listDataConsumersApiV1DataConsumerGetData = {
   body?: never;
   path?: never;
@@ -28001,6 +28047,251 @@ export type updateDataPurposeApiV1DataPurposeFidesKeyPutResponses = {
 
 export type updateDataPurposeApiV1DataPurposeFidesKeyPutResponse =
   updateDataPurposeApiV1DataPurposeFidesKeyPutResponses[keyof updateDataPurposeApiV1DataPurposeFidesKeyPutResponses];
+
+export type listIdentityGroupProvidersApiV1IdentityGroupProviderGetData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Connection Config Key
+     */
+    connection_config_key?: string | null;
+    /**
+     * Page
+     */
+    page?: number;
+    /**
+     * Size
+     */
+    size?: number;
+  };
+  url: "/api/v1/identity-group-provider";
+};
+
+export type listIdentityGroupProvidersApiV1IdentityGroupProviderGetErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type listIdentityGroupProvidersApiV1IdentityGroupProviderGetError =
+  listIdentityGroupProvidersApiV1IdentityGroupProviderGetErrors[keyof listIdentityGroupProvidersApiV1IdentityGroupProviderGetErrors];
+
+export type listIdentityGroupProvidersApiV1IdentityGroupProviderGetResponses = {
+  /**
+   * Successful Response
+   */
+  200: Page_IdentityGroupProviderResponse_;
+};
+
+export type listIdentityGroupProvidersApiV1IdentityGroupProviderGetResponse =
+  listIdentityGroupProvidersApiV1IdentityGroupProviderGetResponses[keyof listIdentityGroupProvidersApiV1IdentityGroupProviderGetResponses];
+
+export type createIdentityGroupProviderApiV1IdentityGroupProviderPostData = {
+  body: IdentityGroupProviderCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/identity-group-provider";
+};
+
+export type createIdentityGroupProviderApiV1IdentityGroupProviderPostErrors = {
+  /**
+   * Validation Error
+   */
+  422: HTTPValidationError;
+};
+
+export type createIdentityGroupProviderApiV1IdentityGroupProviderPostError =
+  createIdentityGroupProviderApiV1IdentityGroupProviderPostErrors[keyof createIdentityGroupProviderApiV1IdentityGroupProviderPostErrors];
+
+export type createIdentityGroupProviderApiV1IdentityGroupProviderPostResponses =
+  {
+    /**
+     * Successful Response
+     */
+    201: IdentityGroupProviderResponse;
+  };
+
+export type createIdentityGroupProviderApiV1IdentityGroupProviderPostResponse =
+  createIdentityGroupProviderApiV1IdentityGroupProviderPostResponses[keyof createIdentityGroupProviderApiV1IdentityGroupProviderPostResponses];
+
+export type deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Provider Id
+       */
+      provider_id: string;
+    };
+    query?: never;
+    url: "/api/v1/identity-group-provider/{provider_id}";
+  };
+
+export type deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteError =
+  deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteErrors[keyof deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteErrors];
+
+export type deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteResponses =
+  {
+    /**
+     * Successful Response
+     */
+    204: void;
+  };
+
+export type deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteResponse =
+  deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteResponses[keyof deleteIdentityGroupProviderApiV1IdentityGroupProviderProviderIdDeleteResponses];
+
+export type getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Provider Id
+       */
+      provider_id: string;
+    };
+    query?: never;
+    url: "/api/v1/identity-group-provider/{provider_id}";
+  };
+
+export type getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetError =
+  getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetErrors[keyof getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetErrors];
+
+export type getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: IdentityGroupProviderResponse;
+  };
+
+export type getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetResponse =
+  getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetResponses[keyof getIdentityGroupProviderApiV1IdentityGroupProviderProviderIdGetResponses];
+
+export type updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutData =
+  {
+    body: IdentityGroupProviderUpdate;
+    path: {
+      /**
+       * Provider Id
+       */
+      provider_id: string;
+    };
+    query?: never;
+    url: "/api/v1/identity-group-provider/{provider_id}";
+  };
+
+export type updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutError =
+  updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutErrors[keyof updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutErrors];
+
+export type updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: IdentityGroupProviderResponse;
+  };
+
+export type updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutResponse =
+  updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutResponses[keyof updateIdentityGroupProviderApiV1IdentityGroupProviderProviderIdPutResponses];
+
+export type testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Provider Id
+       */
+      provider_id: string;
+    };
+    query?: never;
+    url: "/api/v1/identity-group-provider/{provider_id}/test";
+  };
+
+export type testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostError =
+  testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostErrors[keyof testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostErrors];
+
+export type testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: TestConnectionResponse;
+  };
+
+export type testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostResponse =
+  testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostResponses[keyof testIdentityGroupProviderApiV1IdentityGroupProviderProviderIdTestPostResponses];
+
+export type listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Provider Id
+       */
+      provider_id: string;
+    };
+    query?: never;
+    url: "/api/v1/identity-group-provider/{provider_id}/available-scopes";
+  };
+
+export type listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetError =
+  listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetErrors[keyof listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetErrors];
+
+export type listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetResponses =
+  {
+    /**
+     * Response List Available Scopes Api V1 Identity Group Provider  Provider Id  Available Scopes Get
+     *
+     * Successful Response
+     */
+    200: Array<AvailableScopeResponse>;
+  };
+
+export type listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetResponse =
+  listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetResponses[keyof listAvailableScopesApiV1IdentityGroupProviderProviderIdAvailableScopesGetResponses];
 
 export type listQueryLogConfigsApiV1QueryLogConfigGetData = {
   body?: never;
@@ -28806,9 +29097,48 @@ export type getStagedResourceApiV1PlusDiscoveryMonitorStagedResourceStagedResour
 export type getStagedResourceApiV1PlusDiscoveryMonitorStagedResourceStagedResourceUrnGetResponse =
   getStagedResourceApiV1PlusDiscoveryMonitorStagedResourceStagedResourceUrnGetResponses[keyof getStagedResourceApiV1PlusDiscoveryMonitorStagedResourceStagedResourceUrnGetResponses];
 
+export type getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetData =
+  {
+    body?: never;
+    path: {
+      /**
+       * Monitor Config Key
+       */
+      monitor_config_key: string;
+      /**
+       * Urn
+       */
+      urn: string;
+    };
+    query?: never;
+    url: "/api/v1/plus/identity-provider-monitors/{monitor_config_key}/results/{urn}";
+  };
+
+export type getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetErrors =
+  {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+  };
+
+export type getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetError =
+  getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetErrors[keyof getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetErrors];
+
+export type getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetResponses =
+  {
+    /**
+     * Successful Response
+     */
+    200: StagedResourceAPIResponse;
+  };
+
+export type getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetResponse =
+  getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetResponses[keyof getIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnGetResponses];
+
 export type updateIdpStagedResourceApiV1PlusIdentityProviderMonitorsMonitorConfigKeyResultsUrnPatchData =
   {
-    body: StagedResourceUpdateRequest;
+    body: IDPStagedResourceUpdateRequest;
     path: {
       /**
        * Monitor Config Key

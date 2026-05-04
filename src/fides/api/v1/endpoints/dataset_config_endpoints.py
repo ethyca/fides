@@ -34,6 +34,7 @@ from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetConfigSchema,
+    DatasetProtectedFields,
     DatasetReachability,
     ValidateDatasetResponse,
 )
@@ -52,6 +53,7 @@ from fides.common.urn_registry import (
     DATASET_CONFIG_BY_KEY,
     DATASET_CONFIGS,
     DATASET_INPUTS,
+    DATASET_PROTECTED_FIELDS,
     DATASET_REACHABILITY,
     DATASET_VALIDATE,
     DATASETS,
@@ -172,12 +174,11 @@ def put_dataset_configs(
     requested_config_keys = {pair.fides_key for pair in dataset_pairs}
     config_keys_to_remove = existing_config_keys - requested_config_keys
 
-    if config_keys_to_remove:
-        db.query(DatasetConfig).filter(
-            DatasetConfig.connection_config_id == connection_config.id,
-            DatasetConfig.fides_key.in_(config_keys_to_remove),
-        ).delete(synchronize_session=False)
-        db.commit()
+    for key in config_keys_to_remove:
+        try:
+            dataset_config_service.delete_dataset_config(connection_config, key)
+        except DatasetNotFoundException:
+            pass  # already deleted; desired state reached
 
     # reuse the existing patch logic once we've removed the unused dataset configs
     return patch_dataset_configs(
@@ -439,31 +440,21 @@ def get_dataset_config(
 def delete_dataset(
     dataset_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
+    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
 ) -> None:
     """Removes the DatasetConfig based on the given key."""
 
     logger.info(
-        "Finding dataset '{}' for connection '{}'", dataset_key, connection_config.key
+        "Deleting dataset '{}' for connection '{}'", dataset_key, connection_config.key
     )
-    dataset_config = DatasetConfig.filter(
-        db=db,
-        conditions=(
-            (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == dataset_key)
-        ),
-    ).first()
-    if not dataset_config:
+    try:
+        dataset_config_service.delete_dataset_config(connection_config, dataset_key)
+    except DatasetNotFoundException:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No dataset with fides_key '{dataset_key}' and connection_key '{connection_config.key}'",
         )
-
-    logger.info(
-        "Deleting dataset '{}' for connection '{}'", dataset_key, connection_config.key
-    )
-    dataset_config.delete(db)
 
 
 @router.get(
@@ -588,6 +579,27 @@ def dataset_reachability(
         dataset_config, access_policy
     )
     return {"reachable": reachable, "details": details}
+
+
+@router.get(
+    DATASET_PROTECTED_FIELDS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetProtectedFields,
+)
+def get_dataset_protected_fields(
+    *,
+    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> DatasetProtectedFields:
+    """
+    Returns the fields that are protected on a SaaS connection:
+    immutable top-level metadata fields and collection fields
+    referenced by the SaaS config.
+
+    Protected fields are a property of the connection's SaaS config,
+    not any individual dataset.
+    """
+    return dataset_config_service.get_protected_fields(connection_config)
 
 
 @router.post(

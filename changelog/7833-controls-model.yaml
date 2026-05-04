@@ -1,7 +1,0 @@
-type: Added
-description: |
-  Add Control model and join table for associating regulatory frameworks
-  with access policies. Seed initial controls. Update FE to use consistent
-  controls naming and array shape.
-pr: 7833
-labels: ["db-migration"]

@@ -1,0 +1,4 @@
+type: Fixed
+description: Tightened reinvite user endpoint validation so disabled users whose disabled_reason is not pending_invite are rejected, and guarded the reinvite confirmation modal against rendering a null email address.
+pr: 7963
+labels: []

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ColorPicker, List } from "antd";
 
-import palette from "./palette.module.scss";
+import { palette } from "./palette";
 
 const meta = {
   title: "Palette",

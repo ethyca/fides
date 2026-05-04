@@ -1,0 +1,6 @@
+-- carol@demo.example is NOT registered as a consumer.
+--
+-- Gap (UNRESOLVED_IDENTITY): no consumer in pbac/consumers/ lists
+-- carol in its members, so identity resolution returns nothing and
+-- every dataset access is recorded as an identity gap.
+SELECT COUNT(*) FROM page_views;

@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated organization settings form from Chakra UI/Formik to Ant Design
-pr: 7872
-labels: []

@@ -75,6 +75,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "ATTRIBUTION_ANCHOR_TEXT"
   | "ATTRIBUTION_DESTINATION_URL"
   | "ATTRIBUTION_NOFOLLOW"
+  | "PRIVACY_REQUEST_DISCLOSURE_ENABLED"
 >;
 
 export type Styles = string;
@@ -278,6 +279,8 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     ATTRIBUTION_ANCHOR_TEXT: settings.ATTRIBUTION_ANCHOR_TEXT,
     ATTRIBUTION_DESTINATION_URL: settings.ATTRIBUTION_DESTINATION_URL,
     ATTRIBUTION_NOFOLLOW: settings.ATTRIBUTION_NOFOLLOW,
+    PRIVACY_REQUEST_DISCLOSURE_ENABLED:
+      settings.PRIVACY_REQUEST_DISCLOSURE_ENABLED,
   };
 
   return clientSettings;

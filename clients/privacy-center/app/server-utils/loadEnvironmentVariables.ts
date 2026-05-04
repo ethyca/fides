@@ -93,6 +93,9 @@ const loadEnvironmentVariables = () => {
     ),
     ENABLE_EXTERNAL_TASK_PORTAL:
       process.env.FIDES_PRIVACY_CENTER__ENABLE_EXTERNAL_TASK_PORTAL === "true",
+    PRIVACY_REQUEST_DISCLOSURE_ENABLED:
+      process.env.FIDES_PRIVACY_CENTER__PRIVACY_REQUEST_DISCLOSURE_ENABLED ===
+      "true", // default: false
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG

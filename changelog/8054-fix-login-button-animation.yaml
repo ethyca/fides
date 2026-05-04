@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed login button animation to be disabled and dimmer during transition
+pr: 8054
+labels: []

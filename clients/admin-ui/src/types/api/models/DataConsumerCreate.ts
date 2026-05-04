@@ -17,9 +17,11 @@ export type DataConsumerCreate = {
    */
   type: string;
   /**
-   * External Id
+   * Scope
    */
-  external_id?: string | null;
+  scope?: {
+    [key: string]: string;
+  };
   /**
    * Egress
    */
