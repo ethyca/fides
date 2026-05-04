@@ -37,14 +37,8 @@
   margin-top: 6px;
 }
 
-// Pin the chips strip to a single visible row so cards in a stack stay the
-// same height regardless of how many data categories an integration carries.
-// Excess chips collapse behind the +N tag rather than wrapping the body and
-// shifting downstream cards.
 .chipRow {
   margin-top: 6px;
-  flex-wrap: nowrap;
-  overflow: hidden;
 }
 
 .metaText {

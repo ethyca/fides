@@ -3,6 +3,7 @@ import { Flex, Tag, Text } from "fidesui";
 import { useMemo } from "react";
 
 import { useConnectionLogo } from "~/features/common/hooks/useConnectionLogo";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import type { ConnectionConfigurationResponse } from "~/types/api";
 import { ConnectionType } from "~/types/api/models/ConnectionType";
@@ -23,6 +24,8 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
     collection_count: collectionCount,
     data_categories: dataCategories,
   } = data;
+
+  const { getDataCategoryDisplayName } = useTaxonomies();
 
   // Reuse the app-wide logo machinery so SaaS connectors pick up their
   // ``encoded_icon`` from ConnectionSystemTypeMap and websites fall through to
@@ -88,10 +91,10 @@ const IntegrationNode = ({ data }: NodeProps<IntegrationNodeType>) => {
           </Tag>
         </Flex>
         {dataCategories.length > 0 && (
-          <Flex gap={4} className={styles.chipRow}>
+          <Flex gap={4} wrap className={styles.chipRow}>
             {dataCategories.slice(0, 3).map((dc) => (
               <Tag key={dc} className={styles.tag}>
-                {dc}
+                {getDataCategoryDisplayName(dc)}
               </Tag>
             ))}
             {dataCategories.length > 3 && (
