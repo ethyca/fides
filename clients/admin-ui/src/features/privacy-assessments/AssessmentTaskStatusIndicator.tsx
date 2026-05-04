@@ -8,6 +8,7 @@ import { AssessmentTaskPopoverContent } from "./AssessmentTaskPopoverContent";
 import {
   useGetAssessmentTasksQuery,
   useGetAssessmentTemplatesQuery,
+  useGetPrivacyAssessmentsQuery,
 } from "./privacy-assessments.slice";
 import { TaskStatus } from "./types";
 
@@ -44,6 +45,17 @@ export const AssessmentTaskStatusIndicator = ({
     { page: 1, size: 10 },
     { pollingInterval: ACTIVE_POLL_INTERVAL, skip: !activeTask },
   );
+
+  // Mirror the task poll on the assessments list while a task is active so
+  // freshly-materialized `generating` rows and per-row status flips appear in
+  // the page list within ~15s, instead of waiting for the first LLM call to
+  // finish (which can be minutes for large prompts). Shares the cache key
+  // with the page's `useGetPrivacyAssessmentsQuery()`, so the page list
+  // re-renders automatically when this polling fills the cache.
+  useGetPrivacyAssessmentsQuery(undefined, {
+    pollingInterval: ACTIVE_POLL_INTERVAL,
+    skip: !activeTask,
+  });
 
   const lastCompletedTask = useMemo(
     () =>
@@ -82,50 +94,11 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
-  const completedCount = activeTask?.completed_count ?? 0;
-
-  // A row just flipped from `generating` → `in_progress`; pull fresh list
-  // data so the card updates in place without requiring user interaction.
-  const prevCompletedCountRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (!activeTask) {
-      prevCompletedCountRef.current = null;
-      return;
-    }
-    if (
-      prevCompletedCountRef.current !== null &&
-      completedCount > prevCompletedCountRef.current
-    ) {
-      onTaskFinish?.();
-    }
-    prevCompletedCountRef.current = completedCount;
-  }, [activeTask, completedCount, onTaskFinish]);
-
-  // Active task just appeared: Celery has picked up the task and materialized
-  // the `generating` rows. The mutation's tag invalidation fired before
-  // materialization, so refetch once here to surface those rows. Skip the
-  // very first observation so a page mount with an already-active task
-  // doesn't trigger a redundant refetch on top of the initial query.
-  const prevActiveTaskIdRef = useRef<string | null>(null);
-  const hasObservedActiveTaskRef = useRef(false);
-  useEffect(() => {
-    const currentId = activeTask?.id ?? null;
-    if (
-      hasObservedActiveTaskRef.current &&
-      currentId &&
-      currentId !== prevActiveTaskIdRef.current
-    ) {
-      onTaskFinish?.();
-    }
-    prevActiveTaskIdRef.current = currentId;
-    hasObservedActiveTaskRef.current = true;
-  }, [activeTask, onTaskFinish]);
-
   // Detect active → idle transition for the final completion or error.
-  // The completed-count effect above can't catch the last increment because
-  // `activeTask` flips to null on the same poll that delivers it (the task
-  // status moves to COMPLETE/ERROR and falls out of the active filter), so
-  // refetch once here to surface the final row update.
+  // The list-poll subscription above stops the moment `activeTask` becomes
+  // null, so the very last row flip (committed at the same time the task
+  // moves to COMPLETE) won't be picked up by polling. Fire one explicit
+  // refetch here to surface that final state.
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
