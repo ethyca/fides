@@ -13,31 +13,22 @@ const INK = "#2b2e35";
 const INK_MUTED = "rgba(43,46,53,0.55)";
 
 export const HEADER_HEIGHT = 56;
-const RAIL_OFFSET = 64;
 
-const EthycaLogo = ({ size = 22 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect x="2" y="2" width="20" height="20" rx="4" fill={INK} />
-    <path
-      d="M8 8h8M8 12h6M8 16h8"
-      stroke="#f5f3f1"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-  </svg>
+const EthycaLogo = ({ height = 22 }: { height?: number }) => (
+  <img
+    src="/images/logomark-ethyca.svg"
+    alt="Ethyca"
+    height={height}
+    style={{ height, width: "auto", display: "block" }}
+  />
 );
 
-const CommandPaletteEntry = () => {
+const CommandPaletteEntry = ({ onClick }: { onClick?: () => void }) => {
   const [hover, setHover] = useState(false);
   return (
     <button
       type="button"
+      onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
@@ -119,9 +110,14 @@ const AccountAvatar = () => {
 interface HeaderProps {
   businessUnitId: string;
   onBusinessUnitChange: (id: string) => void;
+  onCommandPalette?: () => void;
 }
 
-const Header = ({ businessUnitId, onBusinessUnitChange }: HeaderProps) => {
+const Header = ({
+  businessUnitId,
+  onBusinessUnitChange,
+  onCommandPalette,
+}: HeaderProps) => {
   return (
     <header
       style={{
@@ -133,7 +129,7 @@ const Header = ({ businessUnitId, onBusinessUnitChange }: HeaderProps) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        paddingLeft: RAIL_OFFSET + 8,
+        paddingLeft: 20,
         paddingRight: 24,
         background: GLASS_BG_NEUTRAL,
         backdropFilter: GLASS_BLUR,
@@ -159,7 +155,7 @@ const Header = ({ businessUnitId, onBusinessUnitChange }: HeaderProps) => {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <CommandPaletteEntry />
+        <CommandPaletteEntry onClick={onCommandPalette} />
         <AccountAvatar />
       </div>
     </header>

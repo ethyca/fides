@@ -48,8 +48,12 @@ const GPS_SCORE = Math.round(
 
 type Mode = "splash" | "explore";
 
+type ChatEntryPoint = "header" | "bottom";
+const CHAT_ENTRY_POINT = "header" as ChatEntryPoint;
+
 const GridMotionExperiment = () => {
   const [mode, setMode] = useState<Mode>("splash");
+  const [chatOpen, setChatOpen] = useState(false);
   const [selectedDimension, setSelectedDimension] = useState<string | null>(
     null,
   );
@@ -95,6 +99,14 @@ const GridMotionExperiment = () => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && mode === "explore") {
         exitToSplash();
+      }
+      if (
+        CHAT_ENTRY_POINT === "header" &&
+        (e.metaKey || e.ctrlKey) &&
+        e.key.toLowerCase() === "k"
+      ) {
+        e.preventDefault();
+        setChatOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -168,6 +180,9 @@ const GridMotionExperiment = () => {
       <Header
         businessUnitId={businessUnitId}
         onBusinessUnitChange={setBusinessUnitId}
+        onCommandPalette={
+          CHAT_ENTRY_POINT === "header" ? () => setChatOpen(true) : undefined
+        }
       />
 
       <div
@@ -210,29 +225,29 @@ const GridMotionExperiment = () => {
               onDimensionClick={(_, point) => selectByLabel(point.subject)}
             />
           </div>
-          <motion.div
-            animate={{ marginTop: mode === "splash" ? 28 : 20 }}
-            transition={TRANSITION}
+          <div
             style={{
               display: "flex",
               alignItems: "baseline",
-              gap: 6,
+              gap: 8,
               color: INK,
+              marginTop: mode === "splash" ? 32 : 24,
+              transition: "margin-top 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            <motion.span
-              animate={{ fontSize: mode === "splash" ? 64 : 48 }}
-              transition={TRANSITION}
+            <span
               style={{
                 fontFamily:
                   "'Basier Square Mono', ui-monospace, SFMono-Regular, monospace",
                 fontWeight: 500,
-                lineHeight: 1,
-                letterSpacing: "-0.02em",
+                lineHeight: 0.9,
+                letterSpacing: "-0.04em",
+                fontSize: mode === "splash" ? 144 : 96,
+                transition: "font-size 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
               }}
             >
               {GPS_SCORE}
-            </motion.span>
+            </span>
             <span
               style={{
                 fontFamily:
@@ -245,7 +260,7 @@ const GridMotionExperiment = () => {
             >
               / 100 Governance Posture Score ®
             </span>
-          </motion.div>
+          </div>
         </motion.div>
 
         <AnimatePresence>
@@ -427,16 +442,35 @@ const GridMotionExperiment = () => {
 
       <SideNav />
 
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          pointerEvents: "none",
-          zIndex: 10,
-        }}
-      >
-        <ChatPanel expanded={null} />
-      </div>
+      {CHAT_ENTRY_POINT === "bottom" && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          <ChatPanel expanded={null} />
+        </div>
+      )}
+
+      {CHAT_ENTRY_POINT === "header" && chatOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          <ChatPanel
+            expanded={null}
+            open={chatOpen}
+            onOpenChange={setChatOpen}
+          />
+        </div>
+      )}
     </>
   );
 };

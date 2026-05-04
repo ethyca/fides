@@ -3,13 +3,12 @@ import { useState } from "react";
 
 import {
   buildBoxShadow,
+  getGlassBgStyle,
   GLASS_BLUR,
   GLASS_TRANSITION,
-  getGlassBgStyle,
 } from "./glass";
 import {
   AstralisIcon,
-  FidesIcon,
   GearIcon,
   HeliosIcon,
   JanusIcon,
@@ -42,14 +41,6 @@ type Section = {
   items: string[];
   accent?: boolean;
   brand?: boolean;
-};
-
-const BRAND_SECTION: Section = {
-  id: "fides",
-  Icon: FidesIcon,
-  header: null,
-  items: [],
-  brand: true,
 };
 
 const PRODUCT_SECTIONS: Section[] = [
@@ -239,11 +230,7 @@ const LabelGroup = ({
             key={item}
             style={{
               ...ITEM_BASE_STYLE,
-              color: isActive
-                ? INK
-                : isHoveredSection
-                  ? INK_MUTED
-                  : INK_REST,
+              color: isActive ? INK : isHoveredSection ? INK_MUTED : INK_REST,
               fontWeight: isActive ? 500 : 400,
               transition: "color 0.18s ease",
             }}
@@ -313,13 +300,6 @@ const SideNav = () => {
           padding: "12px 0",
         }}
       >
-        <IconButton
-          section={BRAND_SECTION}
-          isHoveredSection={hoveredSection === BRAND_SECTION.id}
-          isActiveSection={false}
-          onMouseEnter={handleSectionEnter(BRAND_SECTION.id)}
-          onMouseLeave={handleSectionLeave(BRAND_SECTION.id)}
-        />
         <div
           style={{
             flex: 1,
@@ -365,9 +345,7 @@ const SideNav = () => {
       <motion.div
         animate={{ opacity: expanded ? 1 : 0 }}
         transition={
-          expanded
-            ? { duration: 0.25, delay: 0.18 }
-            : { duration: 0.12 }
+          expanded ? { duration: 0.25, delay: 0.18 } : { duration: 0.12 }
         }
         style={{
           flex: 1,
@@ -378,7 +356,6 @@ const SideNav = () => {
           pointerEvents: expanded ? "auto" : "none",
         }}
       >
-        <div style={{ height: ICON_BUTTON_SIZE }} />
         <div
           style={{
             flex: 1,

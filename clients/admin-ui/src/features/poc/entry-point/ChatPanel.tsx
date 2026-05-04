@@ -377,8 +377,27 @@ const ClosedContent = ({ expanded: _expanded }: { expanded: string | null }) => 
 );
 
 
-const ChatPanel = ({ expanded }: { expanded: string | null }) => {
-  const [open, setOpen] = useState(true);
+interface ChatPanelProps {
+  expanded: string | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+const ChatPanel = ({
+  expanded,
+  open: controlledOpen,
+  onOpenChange,
+}: ChatPanelProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(next);
+    } else {
+      setInternalOpen(next);
+    }
+  };
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
   const [hovered, setHovered] = useState(false);
   const hoveredRef = useRef(hovered);
