@@ -12,11 +12,12 @@ the prior code path skipped classification states. Move them to
 widget can count "classified" via diff_status alone, matching the
 counting strategy applied to datastore and cloud-infrastructure monitors.
 
-Effective data_uses semantics mirror the application layer: when
-``user_assigned_data_uses`` is non-null, its presence (length > 0)
-governs; otherwise we fall back to ``data_uses``. An admin who has
-explicitly cleared all data uses via ``user_assigned_data_uses=[]`` is
-honoured and stays in 'addition'.
+Effective data_uses semantics mirror the datastore ``field_data_categories``
+helper (``user_assigned_*`` truthy precedence, fallthrough otherwise):
+``user_assigned_data_uses`` wins only when non-empty; otherwise we fall
+back to ``data_uses``. ``user_assigned_data_uses=[]`` is treated like
+``NULL`` and falls through. Admins who don't want a resource tracked
+should mute it rather than rely on an empty-list clear.
 """
 
 from alembic import op
@@ -36,11 +37,8 @@ _BACKFILL_FILTER = """
 
 _HAS_EFFECTIVE_DATA_USES = """
     (
-        (stagedresource.user_assigned_data_uses IS NOT NULL
-         AND COALESCE(array_length(stagedresource.user_assigned_data_uses, 1), 0) > 0)
-        OR
-        (stagedresource.user_assigned_data_uses IS NULL
-         AND COALESCE(array_length(stagedresource.data_uses, 1), 0) > 0)
+        COALESCE(array_length(stagedresource.user_assigned_data_uses, 1), 0) > 0
+        OR COALESCE(array_length(stagedresource.data_uses, 1), 0) > 0
     )
 """
 
