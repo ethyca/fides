@@ -1,0 +1,7 @@
+# Copy this file and rename it to <pr_number>-<short-description>.yaml (e.g., 1234-add-user-endpoint.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Changed
+description: Replaced the single worker_disable_gossip_heartbeat_mingle config flag with three independent flags (worker_disable_heartbeat, worker_disable_gossip, worker_disable_mingle) for granular control over Celery worker flags
+pr: 8077
+labels: []
