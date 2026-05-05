@@ -311,7 +311,7 @@ use_legacy_traversal = false # boolean
 task_soft_time_limit_seconds = 0 # integer
 
 # Minutes between polling Jira for ticket status updates.
-jira_polling_interval_minutes = 10 # integer
+jira_polling_interval_minutes = 3 # integer
 
 #-------------#
 #-- LOGGING --#

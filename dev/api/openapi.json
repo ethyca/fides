@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.84.1b1.dev52+g9360bc99f"
+    "version": "2.84.1b1.dev53+g328c5efc0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3029,6 +3029,17 @@
                         ],
                         "sensitive": true,
                         "title": "Api Key"
+                      },
+                      "completion_status": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Completion Status"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
@@ -6017,6 +6028,17 @@
                         ],
                         "sensitive": true,
                         "title": "Api Key"
+                      },
+                      "completion_status": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Completion Status"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
@@ -7610,6 +7632,17 @@
                         ],
                         "sensitive": true,
                         "title": "Api Key"
+                      },
+                      "completion_status": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Completion Status"
                       }
                     },
                     "title": "JiraTicketDocsSchema",
@@ -24541,6 +24574,17 @@
                     ],
                     "title": "Api Key",
                     "sensitive": true
+                  },
+                  "completion_status": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Completion Status"
                   }
                 },
                 "additionalProperties": true,
@@ -29080,6 +29124,17 @@
             ],
             "title": "Api Key",
             "sensitive": true
+          },
+          "completion_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completion Status"
           }
         },
         "additionalProperties": true,
@@ -36263,6 +36318,17 @@
                     ],
                     "title": "Api Key",
                     "sensitive": true
+                  },
+                  "completion_status": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Completion Status"
                   }
                 },
                 "additionalProperties": true,
