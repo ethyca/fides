@@ -76,6 +76,7 @@ export type ValidationError =
 
 export interface MapResult {
   pcShape: PcCustomFields;
+  identityInputs: Record<string, "required" | "optional">;
   droppedFeatures: DroppedFeature[];
   errors: ValidationError[];
 }
@@ -93,12 +94,22 @@ export interface JsonRenderSpec {
   elements: Record<string, JsonRenderElement>;
 }
 
-const FIELD_TYPE: Record<Exclude<ComponentType, "Form">, PcFieldType> = {
+const FIELD_TYPE: Record<
+  Exclude<ComponentType, "Form" | "Email" | "Name" | "Phone">,
+  PcFieldType
+> = {
   Text: "text",
   Select: "select",
   MultiSelect: "multiselect",
   Radio: "radio",
   Location: "location",
+};
+
+// Maps identity ComponentType names to their identity_inputs key.
+const IDENTITY_TYPE_KEY: Partial<Record<string, string>> = {
+  Email: "email",
+  Name: "name",
+  Phone: "phone",
 };
 
 const VISIBILITY_OPERATORS: VisibilityOperator[] = [
@@ -192,11 +203,12 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
   const droppedFeatures: DroppedFeature[] = [];
   const errors: ValidationError[] = [];
   const pcShape: PcCustomFields = {};
+  const identityInputs: Record<string, "required" | "optional"> = {};
 
   const root = spec.elements?.[spec.root];
   if (!root || root.type !== "Form") {
     errors.push({ kind: "missing_form_root", rootId: spec.root });
-    return { pcShape, droppedFeatures, errors };
+    return { pcShape, identityInputs, droppedFeatures, errors };
   }
 
   const seenNames: Record<string, string[]> = {};
@@ -230,6 +242,27 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
       }
     });
 
+    // Identity field types (Email/Name/Phone) map to identity_inputs, not pcShape.
+    const identityKey = IDENTITY_TYPE_KEY[child.type];
+    if (identityKey !== undefined) {
+      const validation = catalog.components[
+        child.type as keyof typeof catalog.components
+      ].props.safeParse(child.props);
+      if (!validation.success) {
+        errors.push({
+          kind: "invalid_props",
+          elementId: childId,
+          message: validation.error.issues
+            .map((i) => `${i.path.join(".")}: ${i.message}`)
+            .join("; "),
+        });
+        return;
+      }
+      const { required } = validation.data as { required: boolean };
+      identityInputs[identityKey] = required ? "required" : "optional";
+      return;
+    }
+
     if (!(child.type in FIELD_TYPE)) {
       droppedFeatures.push({
         kind: "unknown_component",
@@ -239,7 +272,10 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
       return;
     }
 
-    const componentType = child.type as Exclude<ComponentType, "Form">;
+    const componentType = child.type as Exclude<
+      ComponentType,
+      "Form" | "Email" | "Name" | "Phone"
+    >;
     const validation = catalog.components[componentType].props.safeParse(
       child.props,
     );
@@ -352,5 +388,5 @@ export function mapSpecToPcShape(spec: JsonRenderSpec): MapResult {
     }
   });
 
-  return { pcShape, droppedFeatures, errors };
+  return { pcShape, identityInputs, droppedFeatures, errors };
 }

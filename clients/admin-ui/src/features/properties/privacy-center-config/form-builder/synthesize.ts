@@ -17,6 +17,12 @@ const COMPONENT_FOR_FIELD: Record<PcCustomField["field_type"], string> = {
   location: "Location",
 };
 
+const IDENTITY_COMPONENT_FOR_KEY: Record<string, string> = {
+  email: "Email",
+  name: "Name",
+  phone: "Phone",
+};
+
 const visibilityToJsonRender = (
   conditions: NonNullable<PcCustomField["visible_when"]>,
 ): unknown[] =>
@@ -34,12 +40,30 @@ const visibilityToJsonRender = (
 
 export function synthesizeSpecFromPcShape(
   pcShape: PcCustomFields,
+  identityInputs?: Record<string, "required" | "optional"> | null,
 ): JsonRenderSpec {
   const elements: JsonRenderSpec["elements"] = {
     form: { type: "Form", props: {}, children: [] },
   };
 
   const childIds: string[] = [];
+
+  // Seed identity fields first, in canonical order, for any that are present.
+  if (identityInputs) {
+    (["name", "email", "phone"] as const).forEach((key) => {
+      const mode = identityInputs[key];
+      if (mode === "required" || mode === "optional") {
+        const elementId = `f_${key}`;
+        childIds.push(elementId);
+        elements[elementId] = {
+          type: IDENTITY_COMPONENT_FOR_KEY[key],
+          props: { required: mode === "required" },
+          children: [],
+        };
+      }
+    });
+  }
+
   Object.entries(pcShape).forEach(([name, field]) => {
     const elementId = `f_${name}`;
     childIds.push(elementId);

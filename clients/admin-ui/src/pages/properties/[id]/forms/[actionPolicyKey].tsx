@@ -7,6 +7,7 @@ import PageHeader from "~/features/common/PageHeader";
 import { FormBuilderPage } from "~/features/properties/privacy-center-config/form-builder/FormBuilderPage";
 import type {
   JsonRenderSpec,
+  MapResult,
   PcCustomFields,
 } from "~/features/properties/privacy-center-config/form-builder/mapper";
 import {
@@ -33,10 +34,12 @@ const FormBuilderRoute: NextPage = () => {
   const handleSave = async ({
     actionPolicyKey: key,
     pcShape,
+    identityInputs,
     richSpec,
   }: {
     actionPolicyKey: string;
     pcShape: PcCustomFields;
+    identityInputs: MapResult["identityInputs"];
     richSpec: JsonRenderSpec;
   }) => {
     if (!property) {
@@ -49,6 +52,8 @@ const FormBuilderRoute: NextPage = () => {
         ? {
             ...action,
             custom_privacy_request_fields: pcShape,
+            identity_inputs:
+              Object.keys(identityInputs).length > 0 ? identityInputs : null,
             // eslint-disable-next-line no-underscore-dangle
             _form_builder_spec: {
               version: 1,

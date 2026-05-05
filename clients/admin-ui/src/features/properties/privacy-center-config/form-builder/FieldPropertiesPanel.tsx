@@ -141,8 +141,13 @@ export const FieldPropertiesPanel = ({
     if (!selectedElementId || !element) {
       return;
     }
-    const fieldName =
-      (element.props as { name?: string }).name ?? selectedElementId;
+    const isIdentity =
+      element.type === "Email" ||
+      element.type === "Name" ||
+      element.type === "Phone";
+    const fieldName = isIdentity
+      ? element.type
+      : ((element.props as { name?: string }).name ?? selectedElementId);
     modal.confirm({
       title: "Remove field?",
       content: (
@@ -211,6 +216,10 @@ export const FieldPropertiesPanel = ({
   }
 
   const componentType = element.type as EditableType;
+  const isIdentityType =
+    componentType === "Email" ||
+    componentType === "Name" ||
+    componentType === "Phone";
 
   const handleValuesChange = (
     changed: Partial<FormValues>,
@@ -319,69 +328,200 @@ export const FieldPropertiesPanel = ({
         onValuesChange={handleValuesChange}
         initialValues={element.props}
       >
-        <Form.Item
-          noStyle
-          shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
-        >
-          {({ getFieldValue }) => {
-            const hiddenOn = !!getFieldValue("hidden");
-            return (
+        {isIdentityType ? (
+          <>
+            <Alert
+              type="info"
+              title="Identity field"
+              description="This field maps to a built-in privacy center identity input. Its label and field key are fixed and cannot be customized."
+              style={{ marginBottom: 16 }}
+            />
+            <Form.Item
+              label="Required"
+              name="required"
+              valuePropName="checked"
+              tooltip="Whether the user must fill this field before submitting."
+            >
+              <Switch data-testid="prop-required" />
+            </Form.Item>
+          </>
+        ) : (
+          <>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
+            >
+              {({ getFieldValue }) => {
+                const hiddenOn = !!getFieldValue("hidden");
+                return (
+                  <>
+                    <Form.Item
+                      label="Label"
+                      name="label"
+                      rules={[{ required: !hiddenOn }]}
+                      tooltip={
+                        hiddenOn
+                          ? "Hidden fields aren't shown to end users, so the label is unused. Toggle Hidden off to edit."
+                          : undefined
+                      }
+                    >
+                      <Input data-testid="prop-label" disabled={hiddenOn} />
+                    </Form.Item>
+                    <Form.Item
+                      label="Name"
+                      name="name"
+                      tooltip="Field key sent to the backend. Auto-generated from the label until you edit it. snake_case, ≤ 64 chars."
+                      rules={[
+                        {
+                          required: true,
+                          pattern: /^[a-z][a-z0-9_]{0,63}$/,
+                          message:
+                            "snake_case, must start with a letter, ≤ 64 chars",
+                        },
+                      ]}
+                    >
+                      <Input data-testid="prop-name" />
+                    </Form.Item>
+                    <Form.Item
+                      label="Placeholder"
+                      name="placeholder"
+                      tooltip={
+                        hiddenOn
+                          ? "Hidden fields aren't rendered, so placeholder text isn't shown. Toggle Hidden off to edit."
+                          : "Hint text shown inside the empty input."
+                      }
+                    >
+                      <Input
+                        data-testid="prop-placeholder"
+                        disabled={hiddenOn}
+                      />
+                    </Form.Item>
+                  </>
+                );
+              }}
+            </Form.Item>
+
+            {componentType === "Text" && (
               <>
-                <Form.Item
-                  label="Label"
-                  name="label"
-                  rules={[{ required: !hiddenOn }]}
-                  tooltip={
-                    hiddenOn
-                      ? "Hidden fields aren't shown to end users, so the label is unused. Toggle Hidden off to edit."
-                      : undefined
-                  }
-                >
-                  <Input data-testid="prop-label" disabled={hiddenOn} />
+                <Form.Item label="Default value" name="default_value">
+                  <Input data-testid="prop-default-value" />
                 </Form.Item>
                 <Form.Item
-                  label="Name"
-                  name="name"
-                  tooltip="Field key sent to the backend. Auto-generated from the label until you edit it. snake_case, ≤ 64 chars."
-                  rules={[
-                    {
-                      required: true,
-                      pattern: /^[a-z][a-z0-9_]{0,63}$/,
-                      message:
-                        "snake_case, must start with a letter, ≤ 64 chars",
-                    },
-                  ]}
+                  label="Query param key"
+                  name="query_param_key"
+                  tooltip="If set, this field's default value is read from the matching URL query parameter."
                 >
-                  <Input data-testid="prop-name" />
+                  <Input data-testid="prop-query-param-key" />
                 </Form.Item>
                 <Form.Item
-                  label="Placeholder"
-                  name="placeholder"
-                  tooltip={
-                    hiddenOn
-                      ? "Hidden fields aren't rendered, so placeholder text isn't shown. Toggle Hidden off to edit."
-                      : "Hint text shown inside the empty input."
-                  }
+                  noStyle
+                  shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
                 >
-                  <Input data-testid="prop-placeholder" disabled={hiddenOn} />
+                  {({ getFieldValue }) => {
+                    const hiddenOn = !!getFieldValue("hidden");
+                    return (
+                      <Form.Item
+                        label="Required"
+                        name="required"
+                        valuePropName="checked"
+                        tooltip={
+                          hiddenOn
+                            ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
+                            : "Whether the user must fill this field before submitting."
+                        }
+                      >
+                        <Switch
+                          data-testid="prop-required"
+                          disabled={hiddenOn}
+                        />
+                      </Form.Item>
+                    );
+                  }}
+                </Form.Item>
+                <Form.Item
+                  label="Hidden"
+                  name="hidden"
+                  valuePropName="checked"
+                  tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
+                >
+                  <Switch data-testid="prop-hidden" />
                 </Form.Item>
               </>
-            );
-          }}
-        </Form.Item>
+            )}
 
-        {componentType === "Text" && (
-          <>
-            <Form.Item label="Default value" name="default_value">
-              <Input data-testid="prop-default-value" />
-            </Form.Item>
-            <Form.Item
-              label="Query param key"
-              name="query_param_key"
-              tooltip="If set, this field's default value is read from the matching URL query parameter."
-            >
-              <Input data-testid="prop-query-param-key" />
-            </Form.Item>
+            {(componentType === "Select" ||
+              componentType === "MultiSelect" ||
+              componentType === "Radio") && (
+              <>
+                <Form.Item
+                  label="Options"
+                  name="options"
+                  rules={[{ required: true, message: "At least one option" }]}
+                >
+                  <OptionsEditor />
+                </Form.Item>
+                <Form.Item
+                  noStyle
+                  shouldUpdate={(prev, next) =>
+                    JSON.stringify(prev.options) !==
+                    JSON.stringify(next.options)
+                  }
+                >
+                  {({ getFieldValue }) => {
+                    const opts = (getFieldValue("options") ?? []) as string[];
+                    const isMulti = componentType === "MultiSelect";
+                    return (
+                      <Form.Item label="Default value" name="default_value">
+                        <Select
+                          aria-label="Default value"
+                          mode={isMulti ? "multiple" : undefined}
+                          allowClear
+                          placeholder="No default"
+                          data-testid="prop-default-value"
+                          options={opts.map((o) => ({ label: o, value: o }))}
+                        />
+                      </Form.Item>
+                    );
+                  }}
+                </Form.Item>
+                <Form.Item
+                  label="Required"
+                  name="required"
+                  valuePropName="checked"
+                  tooltip="Whether the user must fill this field before submitting."
+                >
+                  <Switch data-testid="prop-required" />
+                </Form.Item>
+              </>
+            )}
+
+            {componentType === "Location" && (
+              <>
+                <Form.Item
+                  label="Custom options"
+                  name="options"
+                  tooltip="Override the default country list. Leave empty for the built-in list."
+                >
+                  <OptionsEditor minItems={0} />
+                </Form.Item>
+                <Form.Item
+                  label="IP geolocation hint"
+                  name="ip_geolocation_hint"
+                  valuePropName="checked"
+                  tooltip="Pre-fill the location based on the user's IP address (best-effort)."
+                >
+                  <Switch data-testid="prop-ip-hint" />
+                </Form.Item>
+                <Form.Item
+                  label="Required"
+                  name="required"
+                  valuePropName="checked"
+                  tooltip="Whether the user must fill this field before submitting."
+                >
+                  <Switch data-testid="prop-required" />
+                </Form.Item>
+              </>
+            )}
             <Form.Item
               noStyle
               shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
@@ -390,135 +530,32 @@ export const FieldPropertiesPanel = ({
                 const hiddenOn = !!getFieldValue("hidden");
                 return (
                   <Form.Item
-                    label="Required"
-                    name="required"
-                    valuePropName="checked"
+                    label="Visibility"
                     tooltip={
                       hiddenOn
-                        ? "Hidden fields can't be required — the user can't see them to fill them in. Toggle Hidden off first."
-                        : "Whether the user must fill this field before submitting."
+                        ? "Hidden fields can't have visibility conditions — the field is never shown to end users. Toggle Hidden off first."
+                        : "Show this field only when conditions are met."
                     }
                   >
-                    <Switch data-testid="prop-required" disabled={hiddenOn} />
+                    {hiddenOn ? (
+                      <Alert
+                        type="info"
+                        title="Visibility conditions are unavailable while this field is hidden."
+                      />
+                    ) : (
+                      <VisibilityEditor
+                        spec={spec}
+                        selectedElementId={selectedElementId}
+                        rows={visibilityRows}
+                        onChange={handleVisibilityChange}
+                      />
+                    )}
                   </Form.Item>
                 );
               }}
             </Form.Item>
-            <Form.Item
-              label="Hidden"
-              name="hidden"
-              valuePropName="checked"
-              tooltip="Hide this field on the privacy center form. Useful for query-param-driven values."
-            >
-              <Switch data-testid="prop-hidden" />
-            </Form.Item>
           </>
         )}
-
-        {(componentType === "Select" ||
-          componentType === "MultiSelect" ||
-          componentType === "Radio") && (
-          <>
-            <Form.Item
-              label="Options"
-              name="options"
-              rules={[{ required: true, message: "At least one option" }]}
-            >
-              <OptionsEditor />
-            </Form.Item>
-            <Form.Item
-              noStyle
-              shouldUpdate={(prev, next) =>
-                JSON.stringify(prev.options) !== JSON.stringify(next.options)
-              }
-            >
-              {({ getFieldValue }) => {
-                const opts = (getFieldValue("options") ?? []) as string[];
-                const isMulti = componentType === "MultiSelect";
-                return (
-                  <Form.Item label="Default value" name="default_value">
-                    <Select
-                      aria-label="Default value"
-                      mode={isMulti ? "multiple" : undefined}
-                      allowClear
-                      placeholder="No default"
-                      data-testid="prop-default-value"
-                      options={opts.map((o) => ({ label: o, value: o }))}
-                    />
-                  </Form.Item>
-                );
-              }}
-            </Form.Item>
-            <Form.Item
-              label="Required"
-              name="required"
-              valuePropName="checked"
-              tooltip="Whether the user must fill this field before submitting."
-            >
-              <Switch data-testid="prop-required" />
-            </Form.Item>
-          </>
-        )}
-
-        {componentType === "Location" && (
-          <>
-            <Form.Item
-              label="Custom options"
-              name="options"
-              tooltip="Override the default country list. Leave empty for the built-in list."
-            >
-              <OptionsEditor minItems={0} />
-            </Form.Item>
-            <Form.Item
-              label="IP geolocation hint"
-              name="ip_geolocation_hint"
-              valuePropName="checked"
-              tooltip="Pre-fill the location based on the user's IP address (best-effort)."
-            >
-              <Switch data-testid="prop-ip-hint" />
-            </Form.Item>
-            <Form.Item
-              label="Required"
-              name="required"
-              valuePropName="checked"
-              tooltip="Whether the user must fill this field before submitting."
-            >
-              <Switch data-testid="prop-required" />
-            </Form.Item>
-          </>
-        )}
-        <Form.Item
-          noStyle
-          shouldUpdate={(prev, next) => prev.hidden !== next.hidden}
-        >
-          {({ getFieldValue }) => {
-            const hiddenOn = !!getFieldValue("hidden");
-            return (
-              <Form.Item
-                label="Visibility"
-                tooltip={
-                  hiddenOn
-                    ? "Hidden fields can't have visibility conditions — the field is never shown to end users. Toggle Hidden off first."
-                    : "Show this field only when conditions are met."
-                }
-              >
-                {hiddenOn ? (
-                  <Alert
-                    type="info"
-                    title="Visibility conditions are unavailable while this field is hidden."
-                  />
-                ) : (
-                  <VisibilityEditor
-                    spec={spec}
-                    selectedElementId={selectedElementId}
-                    rows={visibilityRows}
-                    onChange={handleVisibilityChange}
-                  />
-                )}
-              </Form.Item>
-            );
-          }}
-        </Form.Item>
       </Form>
     </div>
   );

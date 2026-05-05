@@ -20,12 +20,16 @@ interface PrivacyCenterConfigSectionProps {
   propertyId: string;
   value?: PrivacyCenterConfigValue | null;
   onChange?: (next: PrivacyCenterConfigValue) => void;
+  onDeleteImmediately?: (nextConfig: PrivacyCenterConfigValue) => Promise<void>;
+  onSaveImmediately?: (nextConfig: PrivacyCenterConfigValue) => Promise<void>;
 }
 
 export const PrivacyCenterConfigSection = ({
   propertyId,
   value,
   onChange,
+  onDeleteImmediately,
+  onSaveImmediately,
 }: PrivacyCenterConfigSectionProps) => {
   const [editing, setEditing] = useState<ActionFormValues | null>(null);
   const [open, setOpen] = useState(false);
@@ -42,15 +46,17 @@ export const PrivacyCenterConfigSection = ({
     setOpen(true);
   };
 
-  const handleDelete = (policyKey: string) => {
+  const handleDelete = async (policyKey: string) => {
     const current = value ?? { actions: [] };
     const nextActions = (current.actions ?? []).filter(
       (a) => a.policy_key !== policyKey,
     );
-    onChange?.({ ...current, actions: nextActions });
+    const nextConfig = { ...current, actions: nextActions };
+    onChange?.(nextConfig);
+    await onDeleteImmediately?.(nextConfig);
   };
 
-  const handleOk = (action: ActionFormValues) => {
+  const handleOk = async (action: ActionFormValues) => {
     const current = value ?? { actions: [] };
     const existingActions = current.actions ?? [];
     const isUpdate = existingActions.some(
@@ -61,8 +67,9 @@ export const PrivacyCenterConfigSection = ({
           a.policy_key === action.policy_key ? { ...a, ...action } : a,
         )
       : [...existingActions, action];
-
-    onChange?.({ ...current, actions: nextActions });
+    const nextConfig = { ...current, actions: nextActions };
+    onChange?.(nextConfig);
+    await onSaveImmediately?.(nextConfig);
     setOpen(false);
   };
 

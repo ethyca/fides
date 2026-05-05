@@ -3,9 +3,12 @@ import { catalog } from "../catalog";
 describe("form builder catalog", () => {
   it("defines exactly the supported component types", () => {
     expect(Object.keys(catalog.components).sort()).toEqual([
+      "Email",
       "Form",
       "Location",
       "MultiSelect",
+      "Name",
+      "Phone",
       "Radio",
       "Select",
       "Text",

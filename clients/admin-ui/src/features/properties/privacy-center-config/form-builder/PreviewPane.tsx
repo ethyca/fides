@@ -14,15 +14,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { JSONUIProvider, Renderer } from "@json-render/react";
-import {
-  Button,
-  Dropdown,
-  Empty,
-  Form,
-  Input,
-  Switch,
-  Typography,
-} from "fidesui";
+import { Button, Dropdown, Empty, Form, Switch, Typography } from "fidesui";
 import React from "react";
 
 import type { ComponentType } from "./catalog";
@@ -34,14 +26,6 @@ import { SortableFieldItem } from "./SortableFieldItem";
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
 export type PreviewMode = "edit" | "preview";
-
-type IdentityInputMode = "required" | "optional";
-
-interface IdentityInputs {
-  name?: IdentityInputMode | null;
-  email?: IdentityInputMode | null;
-  phone?: IdentityInputMode | null;
-}
 
 /**
  * Action-level copy that PC renders around the form: description above,
@@ -59,13 +43,6 @@ export interface ActionCopy {
 interface PreviewPaneProps {
   spec: JsonRenderSpec | null;
   selectedElementId?: string | null;
-  /**
-   * Identity inputs configured on the action (email/name/phone with required
-   * or optional mode). Rendered above the custom fields, mirroring the
-   * privacy center end-user form. Read-only here — managed via the action
-   * edit modal, not the form builder.
-   */
-  identityInputs?: IdentityInputs | null;
   /**
    * Action-level copy (description, subtext, button labels). Rendered in
    * Preview mode only, around the custom fields, mirroring PC.
@@ -85,41 +62,6 @@ interface PreviewPaneProps {
   previewMode?: PreviewMode;
   onPreviewModeChange?: (next: PreviewMode) => void;
 }
-
-const IDENTITY_INPUT_LABELS: Record<keyof IdentityInputs, string> = {
-  name: "Name",
-  email: "Email",
-  phone: "Phone",
-};
-
-// Read-only display of the action's identity inputs. Shown above the custom
-// fields so the preview matches what privacy-center renders.
-const IdentityInputsSection = ({ inputs }: { inputs: IdentityInputs }) => {
-  const entries = (
-    Object.keys(IDENTITY_INPUT_LABELS) as Array<keyof IdentityInputs>
-  )
-    .map((key) => ({ key, mode: inputs[key] }))
-    .filter(
-      (e): e is { key: keyof IdentityInputs; mode: IdentityInputMode } =>
-        e.mode === "required" || e.mode === "optional",
-    );
-  if (entries.length === 0) {
-    return null;
-  }
-  return (
-    <Form layout="vertical" style={{ marginBottom: 16 }}>
-      {entries.map(({ key, mode }) => (
-        <Form.Item
-          key={key}
-          label={IDENTITY_INPUT_LABELS[key]}
-          required={mode === "required"}
-        >
-          <Input placeholder={IDENTITY_INPUT_LABELS[key]} />
-        </Form.Item>
-      ))}
-    </Form>
-  );
-};
 
 const wrapperStyle: React.CSSProperties = {
   height: "100%",
@@ -173,33 +115,76 @@ const FIELD_TYPE_LABELS: Record<EditableComponentType, string> = {
   MultiSelect: "Multi-select dropdown",
   Radio: "Radio group",
   Location: "Location picker",
+  Email: "Email",
+  Name: "Name",
+  Phone: "Phone",
 };
 
-const fieldTypeMenuItems = (
+// Fixed element IDs for identity types — used to detect duplicates in the spec.
+const IDENTITY_ELEMENT_IDS: Partial<Record<EditableComponentType, string>> = {
+  Email: "f_email",
+  Name: "f_name",
+  Phone: "f_phone",
+};
+
+// Identity types in the canonical PC render order (Name → Email → Phone).
+const IDENTITY_TYPES_ORDERED: EditableComponentType[] = [
+  "Name",
+  "Email",
+  "Phone",
+];
+const IDENTITY_TYPE_SET = new Set<string>(IDENTITY_TYPES_ORDERED);
+
+// Custom (non-identity) types in alphabetical order.
+const CUSTOM_TYPES_ORDERED: EditableComponentType[] = (
   Object.keys(catalog.components).filter(
-    (k) => k !== "Form",
+    (k) => k !== "Form" && !IDENTITY_TYPE_SET.has(k),
   ) as EditableComponentType[]
-).map((type) => ({
-  key: type,
-  label: FIELD_TYPE_LABELS[type],
-}));
+).sort();
 
 const AddFieldButton = ({
   onAddField,
+  spec,
 }: {
   onAddField: (type: EditableComponentType) => void;
-}) => (
-  <Dropdown
-    menu={{
-      items: fieldTypeMenuItems,
-      onClick: ({ key }) => onAddField(key as EditableComponentType),
-    }}
-  >
-    <Button data-testid="add-field-button" type="dashed" block>
-      + Add field
-    </Button>
-  </Dropdown>
-);
+  spec: JsonRenderSpec | null;
+}) => {
+  const availableIdentity = IDENTITY_TYPES_ORDERED.filter((type) => {
+    const fixedId = IDENTITY_ELEMENT_IDS[type];
+    return !fixedId || !spec?.elements[fixedId];
+  });
+
+  const identityItems = availableIdentity.map((type) => ({
+    key: type,
+    label: <strong>{FIELD_TYPE_LABELS[type]}</strong>,
+  }));
+
+  const customItems = CUSTOM_TYPES_ORDERED.map((type) => ({
+    key: type,
+    label: FIELD_TYPE_LABELS[type],
+  }));
+
+  const items = [
+    ...identityItems,
+    ...(identityItems.length > 0 && customItems.length > 0
+      ? [{ type: "divider" as const }]
+      : []),
+    ...customItems,
+  ];
+
+  return (
+    <Dropdown
+      menu={{
+        items,
+        onClick: ({ key }) => onAddField(key as EditableComponentType),
+      }}
+    >
+      <Button data-testid="add-field-button" type="dashed" block>
+        + Add field
+      </Button>
+    </Dropdown>
+  );
+};
 
 // Build a single-element spec for one field so the Renderer can render
 // it in isolation. visible/watch are stripped because Edit mode shows
@@ -234,7 +219,6 @@ export const PreviewPane = ({
   actions,
   previewMode = "edit",
   onPreviewModeChange,
-  identityInputs,
   actionCopy,
 }: PreviewPaneProps) => {
   const sensors = useSensors(
@@ -300,7 +284,7 @@ export const PreviewPane = ({
           style={{ marginBottom: 16 }}
         />
       )}
-      <AddFieldButton onAddField={onAddField} />
+      <AddFieldButton onAddField={onAddField} spec={spec} />
     </div>
   );
 
@@ -353,6 +337,7 @@ export const PreviewPane = ({
           )}
           {subtext.map((line, i) => (
             <Typography.Paragraph
+              // eslint-disable-next-line react/no-array-index-key
               key={i}
               type="secondary"
               style={{ marginBottom: i === subtext.length - 1 ? 0 : 8 }}
@@ -362,7 +347,6 @@ export const PreviewPane = ({
           ))}
         </div>
       )}
-      {identityInputs && <IdentityInputsSection inputs={identityInputs} />}
       {hasFields && previewSpec ? (
         <JSONUIProvider registry={registry}>
           <Renderer spec={previewSpec as any} registry={registry} />

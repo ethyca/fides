@@ -74,6 +74,18 @@ const components = {
       .strict(),
     description: "Location picker (country / region).",
   },
+  Email: {
+    props: z.object({ required: z.boolean() }).strict(),
+    description: "Email address field (maps to identity_inputs.email).",
+  },
+  Name: {
+    props: z.object({ required: z.boolean() }).strict(),
+    description: "Full name field (maps to identity_inputs.name).",
+  },
+  Phone: {
+    props: z.object({ required: z.boolean() }).strict(),
+    description: "Phone number field (maps to identity_inputs.phone).",
+  },
 } as const;
 
 const actions = {} as const;

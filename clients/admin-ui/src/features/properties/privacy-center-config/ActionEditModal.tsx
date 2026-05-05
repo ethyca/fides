@@ -8,7 +8,6 @@ export interface ActionFormValues {
   title: string;
   description: string;
   icon_path: string;
-  identity_inputs?: Record<string, "required" | "optional">;
 }
 
 interface ActionEditModalProps {
@@ -64,11 +63,7 @@ export const ActionEditModal = ({
       onCancel={onCancel}
       destroyOnHidden
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={initial ?? { identity_inputs: { email: "required" } }}
-      >
+      <Form form={form} layout="vertical" initialValues={initial ?? {}}>
         <Form.Item
           label="Policy"
           name="policy_key"
@@ -105,19 +100,6 @@ export const ActionEditModal = ({
           rules={[{ required: true }]}
         >
           <Input placeholder="/icon.svg" />
-        </Form.Item>
-        <Form.Item
-          label="Identity inputs"
-          name={["identity_inputs", "email"]}
-          tooltip="Whether the privacy center asks for email before this action."
-        >
-          <Select
-            aria-label="Identity inputs"
-            options={[
-              { label: "Email required", value: "required" },
-              { label: "Email optional", value: "optional" },
-            ]}
-          />
         </Form.Item>
       </Form>
     </Modal>

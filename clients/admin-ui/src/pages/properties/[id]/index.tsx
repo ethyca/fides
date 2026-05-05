@@ -11,7 +11,11 @@ import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
 } from "~/features/properties/property.slice";
-import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
+import {
+  FormValues,
+  PropertyForm,
+} from "~/features/properties/PropertyForm";
+import type { PrivacyCenterConfigValue } from "~/features/properties/privacy-center-config/PrivacyCenterConfigSection";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
@@ -22,6 +26,24 @@ const EditPropertyPage: NextPage = () => {
     propertyId as string,
   );
   const [updateProperty] = useUpdatePropertyMutation();
+
+  const saveConfigImmediately = async (nextConfig: PrivacyCenterConfigValue) => {
+    if (!data) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+    const { id: _id, messaging_templates: _mt, ...rest } = data as any;
+    const result = await updateProperty({
+      id: propertyId as string,
+      property: { ...rest, privacy_center_config: nextConfig },
+    });
+    if (isErrorResult(result)) {
+      message.error(getErrorMessage(result.error));
+    }
+  };
+
+  const handleDeleteAction = saveConfigImmediately;
+  const handleSaveAction = saveConfigImmediately;
 
   const handleSubmit = async (values: FormValues) => {
     // We do not support adding messaging templates through the property form. This ensures we do not overwrite
@@ -72,6 +94,8 @@ const EditPropertyPage: NextPage = () => {
           property={data}
           isLoading={isLoading}
           handleSubmit={handleSubmit}
+          onDeleteAction={handleDeleteAction}
+          onSaveAction={handleSaveAction}
         />
       </div>
     </Layout>

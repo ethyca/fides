@@ -33,15 +33,21 @@ const PCConfigSectionAdapter = ({
   propertyId,
   value,
   onChange,
+  onDeleteImmediately,
+  onSaveImmediately,
 }: {
   propertyId: string;
   value?: PrivacyCenterConfigValue | null;
   onChange?: (next: PrivacyCenterConfigValue) => void;
+  onDeleteImmediately?: (nextConfig: PrivacyCenterConfigValue) => Promise<void>;
+  onSaveImmediately?: (nextConfig: PrivacyCenterConfigValue) => Promise<void>;
 }) => (
   <PrivacyCenterConfigSection
     propertyId={propertyId}
     value={value ?? null}
     onChange={(next) => onChange?.(next)}
+    onDeleteImmediately={onDeleteImmediately}
+    onSaveImmediately={onSaveImmediately}
   />
 );
 
@@ -49,6 +55,8 @@ interface Props {
   property?: Property;
   isLoading?: boolean;
   handleSubmit: (values: FormValues) => Promise<void>;
+  onDeleteAction?: (nextConfig: PrivacyCenterConfigValue) => Promise<void>;
+  onSaveAction?: (nextConfig: PrivacyCenterConfigValue) => Promise<void>;
 }
 
 export interface FormValues {
@@ -61,7 +69,13 @@ export interface FormValues {
   privacy_center_config?: PrivacyCenterConfigValue | null;
 }
 
-export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
+export const PropertyForm = ({
+  property,
+  isLoading,
+  handleSubmit,
+  onDeleteAction,
+  onSaveAction,
+}: Props) => {
   const router = useRouter();
   const [form] = Form.useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -193,7 +207,11 @@ export const PropertyForm = ({ property, isLoading, handleSubmit }: Props) => {
                 label="Privacy center config"
                 valuePropName="value"
               >
-                <PCConfigSectionAdapter propertyId={property?.id ?? ""} />
+                <PCConfigSectionAdapter
+                  propertyId={property?.id ?? ""}
+                  onDeleteImmediately={onDeleteAction}
+                  onSaveImmediately={onSaveAction}
+                />
               </Form.Item>
               <Form.Item
                 name="experiences"

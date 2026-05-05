@@ -14,6 +14,13 @@ const LocationField = dynamic(
   { ssr: false },
 );
 
+// PhoneField uses react-phone-number-input which bundles flag SVGs and
+// ships its own CSS — client-only for the same reason as LocationField.
+const PhoneFieldDynamic = dynamic(
+  () => import("./PhoneField").then((m) => m.PhoneField),
+  { ssr: false },
+);
+
 interface BaseFieldProps {
   name: string;
   label: string;
@@ -159,6 +166,46 @@ const MultiSelectField = ({ props }: { props: BaseFieldProps }) => {
   );
 };
 
+interface IdentityFieldProps {
+  required: boolean;
+  "data-element-id"?: string;
+}
+
+const EmailField = ({ props }: { props: IdentityFieldProps }) => {
+  const [value, setValue] = useFieldBinding<string>("email");
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label="Email" required={props.required}>
+        <Input
+          aria-label="Email"
+          data-testid="field-email"
+          placeholder="your-email@example.com"
+          type="email"
+          value={value ?? ""}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
+
+const NameField = ({ props }: { props: IdentityFieldProps }) => {
+  const [value, setValue] = useFieldBinding<string>("name");
+  return (
+    <FieldWrapper elementId={props["data-element-id"]}>
+      <Form.Item label="Name" required={props.required}>
+        <Input
+          aria-label="Name"
+          data-testid="field-name"
+          placeholder="Jane Smith"
+          value={value ?? ""}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      </Form.Item>
+    </FieldWrapper>
+  );
+};
+
 const RadioField = ({ props }: { props: BaseFieldProps }) => {
   const [value, setValue] = useFieldBinding<string>(props.name);
   useDefaultValueSeed(
@@ -191,5 +238,10 @@ export const { registry } = defineRegistry(catalog.jsonRender, {
     ),
     Radio: ({ props }) => <RadioField props={props as BaseFieldProps} />,
     Location: ({ props }) => <LocationField props={props as BaseFieldProps} />,
+    Email: ({ props }) => <EmailField props={props as IdentityFieldProps} />,
+    Name: ({ props }) => <NameField props={props as IdentityFieldProps} />,
+    Phone: ({ props }) => (
+      <PhoneFieldDynamic props={props as IdentityFieldProps} />
+    ),
   },
 });

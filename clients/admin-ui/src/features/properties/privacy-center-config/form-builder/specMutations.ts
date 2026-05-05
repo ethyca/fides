@@ -12,6 +12,16 @@ const DEFAULT_PROPS: Record<EditableComponentType, Record<string, unknown>> = {
   MultiSelect: { required: false, options: ["Option 1"] },
   Radio: { required: false, options: ["Option 1", "Option 2"] },
   Location: { required: false },
+  Email: { required: false },
+  Name: { required: false },
+  Phone: { required: false },
+};
+
+// Identity field types use fixed element IDs and have no configurable name/label.
+const IDENTITY_ELEMENT_IDS: Partial<Record<EditableComponentType, string>> = {
+  Email: "f_email",
+  Name: "f_name",
+  Phone: "f_phone",
 };
 
 const uniqueName = (
@@ -47,6 +57,9 @@ const TYPE_DEFAULTS: Record<EditableComponentType, TypeDefaults> = {
   MultiSelect: { base: "multi_select_field", label: "Multi select field" },
   Radio: { base: "radio_field", label: "Radio field" },
   Location: { base: "location_field", label: "Location field" },
+  Email: { base: "email", label: "Email" },
+  Name: { base: "name", label: "Name" },
+  Phone: { base: "phone", label: "Phone" },
 };
 
 export const emptySpec = (): JsonRenderSpec => ({
@@ -58,9 +71,7 @@ export const emptySpec = (): JsonRenderSpec => ({
 
 /**
  * Seed used when a form-builder page loads for an action that has no saved
- * fields yet. Mirrors the historical Fides privacy-center config defaults
- * (first_name + last_name) plus a hidden tenant_id field for multi-tenant
- * routing via URL query param.
+ * fields yet. Defaults to a required Email identity field.
  */
 export const defaultSpec = (): JsonRenderSpec => ({
   root: "form",
@@ -68,27 +79,11 @@ export const defaultSpec = (): JsonRenderSpec => ({
     form: {
       type: "Form",
       props: {},
-      children: ["f_first_name", "f_last_name", "f_tenant_id"],
+      children: ["f_email"],
     },
-    f_first_name: {
-      type: "Text",
-      props: { name: "first_name", label: "First name", required: true },
-      children: [],
-    },
-    f_last_name: {
-      type: "Text",
-      props: { name: "last_name", label: "Last name", required: false },
-      children: [],
-    },
-    f_tenant_id: {
-      type: "Text",
-      props: {
-        name: "tenant_id",
-        label: "Tenant ID",
-        required: false,
-        hidden: true,
-        query_param_key: "tenant_id",
-      },
+    f_email: {
+      type: "Email",
+      props: { required: true },
       children: [],
     },
   },
@@ -100,6 +95,29 @@ export const addField = (
 ): { spec: JsonRenderSpec; elementId: string } => {
   const current = spec ?? emptySpec();
   const root = current.elements[current.root];
+
+  // Identity types use a fixed element ID and props without name/label.
+  const identityId = IDENTITY_ELEMENT_IDS[type];
+  if (identityId) {
+    if (current.elements[identityId]) {
+      return { spec: current, elementId: identityId };
+    }
+    return {
+      spec: {
+        ...current,
+        elements: {
+          ...current.elements,
+          [identityId]: { type, props: { required: false }, children: [] },
+          [current.root]: {
+            ...root,
+            children: [...root.children, identityId],
+          },
+        },
+      },
+      elementId: identityId,
+    };
+  }
+
   const defaults = TYPE_DEFAULTS[type];
   const { suffix, name, elementId } = uniqueName(current, defaults.base);
   const label = `${defaults.label} ${suffix}`;

@@ -27,14 +27,6 @@ import { useFormBuilder } from "./useFormBuilder";
 
 type EditableComponentType = Exclude<ComponentType, "Form">;
 
-type IdentityInputMode = "required" | "optional";
-
-export interface IdentityInputs {
-  name?: IdentityInputMode | null;
-  email?: IdentityInputMode | null;
-  phone?: IdentityInputMode | null;
-}
-
 interface ActionShape {
   policy_key?: string;
   description?: string | null;
@@ -42,7 +34,7 @@ interface ActionShape {
   confirmButtonText?: string | null;
   cancelButtonText?: string | null;
   custom_privacy_request_fields?: PcCustomFields;
-  identity_inputs?: IdentityInputs | null;
+  identity_inputs?: Record<string, "required" | "optional"> | null;
   // eslint-disable-next-line no-underscore-dangle
   _form_builder_spec?: { spec: JsonRenderSpec; version: number };
 }
@@ -62,6 +54,7 @@ interface FormBuilderPageProps {
   onSave: (next: {
     actionPolicyKey: string;
     pcShape: PcCustomFields;
+    identityInputs: Record<string, "required" | "optional">;
     richSpec: JsonRenderSpec;
   }) => Promise<void>;
 }
@@ -130,8 +123,11 @@ export const FormBuilderPage = ({
       return action._form_builder_spec.spec;
     }
     /* eslint-enable no-underscore-dangle */
-    if (action?.custom_privacy_request_fields) {
-      return synthesizeSpecFromPcShape(action.custom_privacy_request_fields);
+    if (action?.custom_privacy_request_fields || action?.identity_inputs) {
+      return synthesizeSpecFromPcShape(
+        action.custom_privacy_request_fields ?? {},
+        action.identity_inputs,
+      );
     }
     // No saved fields yet — seed with the standard DSR defaults so the
     // builder isn't empty on first load.
@@ -313,11 +309,25 @@ export const FormBuilderPage = ({
       message.error("Form has validation errors — fix before saving.");
       return;
     }
+    const identityValues = Object.values(result.identityInputs);
+    if (identityValues.length === 0) {
+      message.error(
+        "Add at least one identity field (Email, Name, or Phone) before saving.",
+      );
+      return;
+    }
+    if (!identityValues.some((v) => v === "required")) {
+      message.error(
+        "At least one identity field must be set to required before saving.",
+      );
+      return;
+    }
     setSaving(true);
     try {
       await onSave({
         actionPolicyKey,
         pcShape: result.pcShape,
+        identityInputs: result.identityInputs,
         richSpec: builder.spec,
       });
       // Save just wrote rich + legacy in lockstep, so any prior drift is
@@ -348,9 +358,12 @@ export const FormBuilderPage = ({
     : [];
 
   const handleRebuild = () => {
-    if (action.custom_privacy_request_fields) {
+    if (action.custom_privacy_request_fields || action.identity_inputs) {
       builder.setSpec(
-        synthesizeSpecFromPcShape(action.custom_privacy_request_fields),
+        synthesizeSpecFromPcShape(
+          action.custom_privacy_request_fields ?? {},
+          action.identity_inputs,
+        ),
       );
       setSelectedElementId(null);
       setDriftAcknowledged(true);
@@ -396,7 +409,6 @@ export const FormBuilderPage = ({
           <PreviewPane
             spec={builder.spec}
             selectedElementId={selectedElementId}
-            identityInputs={action?.identity_inputs ?? null}
             actionCopy={
               action
                 ? {
