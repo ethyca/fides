@@ -1,0 +1,4 @@
+type: Changed  # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Updated action center caching dependencies
+pr: 7981 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

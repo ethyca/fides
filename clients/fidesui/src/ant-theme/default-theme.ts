@@ -37,6 +37,7 @@ const brandTokens = {
   brandBgWarning: palette.FIDESUI_BG_WARNING,
   brandBgSuccess: palette.FIDESUI_BG_SUCCESS,
   brandBgInfo: palette.FIDESUI_BG_INFO,
+  brandBgDefault: palette.FIDESUI_BG_DEFAULT,
   brandErrorText: palette.FIDESUI_ERROR_TEXT,
   brandSuccessText: palette.FIDESUI_SUCCESS_TEXT,
 };
