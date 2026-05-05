@@ -1,7 +1,7 @@
 # FidesJS: JavaScript SDK for Fides
 
 FidesJS is a JavaScript SDK to integrate Fides consent into any website or
-app! Commonly referred to as a Consent Management Platform (CMP), FidesJS
+app! Commonly referred to as a [Consent Management Platform (CMP)](/consent/concepts/fundamentals#consent-management-platform-cmp), FidesJS
 includes all the UI components (banners, modals, etc.), state management, and
 utility functions you need to collect consent & enforce data privacy in your
 application.

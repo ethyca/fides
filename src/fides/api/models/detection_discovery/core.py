@@ -17,8 +17,10 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    event,
     func,
     text,
+    update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -811,6 +813,28 @@ class StagedResource(StagedResourceBase):
             "urn",
             postgresql_where=text("is_leaf IS TRUE"),
         ),
+    )
+
+
+@event.listens_for(System, "before_delete")
+def _unlink_staged_resources_on_system_delete(
+    mapper: Any, connection: Any, target: System
+) -> None:
+    """Null out system_id and reset diff_status on StagedResources before a System is deleted.
+
+    StagedResources may reference a System from IDP monitor promotion (app promoted
+    to system) or website monitor vendor matching (resource linked to an existing
+    system by vendor_id).  This listener handles both paths.
+
+    The dependency direction stays correct: the discovery module knows about
+    System (via the FK), not the other way around.
+
+    """
+    logger.debug("Unlinking StagedResources from System {} before deletion", target.id)
+    connection.execute(
+        update(StagedResource.__table__)
+        .where(StagedResource.__table__.c.system_id == target.id)
+        .values(system_id=None, diff_status=DiffStatus.ADDITION.value)
     )
 
 

@@ -431,27 +431,27 @@ def test_sql_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("mysql", "Customer")]
-        == 'SELECT customer_id, name, email, contact_address_id FROM "Customer" WHERE ("email" = ?)'
+        == 'SELECT contact_address_id, customer_id, email, name FROM "Customer" WHERE ("email" = ?)'
     )
 
     assert (
         env[CollectionAddress("mysql", "User")]
-        == 'SELECT id, user_id, name FROM "User" WHERE ("user_id" = ?)'
+        == 'SELECT id, name, user_id FROM "User" WHERE ("user_id" = ?)'
     )
 
     assert (
         env[CollectionAddress("postgres", "Order")]
-        == 'SELECT order_id, customer_id, shipping_address_id, billing_address_id FROM "Order" WHERE ("customer_id" IN (?, ?))'
+        == 'SELECT billing_address_id, customer_id, order_id, shipping_address_id FROM "Order" WHERE ("customer_id" IN (?, ?))'
     )
 
     assert (
         env[CollectionAddress("mysql", "Address")]
-        == 'SELECT id, street, city, state, zip FROM "Address" WHERE ("id" IN (?, ?))'
+        == 'SELECT city, id, state, street, zip FROM "Address" WHERE ("id" IN (?, ?))'
     )
 
     assert (
         env[CollectionAddress("mssql", "Address")]
-        == "SELECT id, street, city, state, zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
+        == "SELECT city, id, state, street, zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
     )
 
 

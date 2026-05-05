@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.engine import URL, LegacyCursorResult  # type: ignore
 
@@ -22,11 +22,15 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
     secrets_schema = MicrosoftSQLServerSchema
 
-    def build_uri(self) -> URL:
+    def build_uri(self, dbname: Optional[str] = None) -> URL:
         """
         Build URI of format
         mssql+pymssql://[username]:[password]@[host]:[port]/[dbname]?read_only=[read_only_connection]
-        Returns URL obj, since SQLAlchemy's create_engine method accepts either a URL obj or a string
+        Returns URL obj, since SQLAlchemy's create_engine method accepts either a URL obj or a string.
+
+        ``dbname`` optionally overrides the database name from secrets, so callers
+        (e.g. the discovery monitor) can target a specific database without
+        mutating the connection config's secrets.
         """
 
         config = self.secrets_schema(**self.configuration.secrets or {})
@@ -37,7 +41,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
             password=config.password,
             host=config.host,
             port=config.port,
-            database=config.dbname,
+            database=dbname or config.dbname,
             query=(
                 {"read_only": str(config.read_only_connection)}
                 if config.read_only_connection

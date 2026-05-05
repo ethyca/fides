@@ -1,0 +1,3 @@
+type: Fixed
+description: Fixed IntegrityError when deleting a System that has linked StagedResources from IDP or website monitor discovery. StagedResources are now unlinked (system_id nulled, diff_status reset to addition) before system deletion.
+pr: 8032

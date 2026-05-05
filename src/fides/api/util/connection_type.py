@@ -266,7 +266,9 @@ def get_connection_types(
     """
     connection_system_types: list[ConnectionSystemTypeMap] = []
     if (system_type == SystemType.database or system_type is None) and (
-        ActionType.access in action_types or ActionType.erasure in action_types
+        ActionType.access in action_types
+        or ActionType.erasure in action_types
+        or ActionType.consent in action_types
     ):
         database_types: list[ConnectionType] = sorted(
             [
@@ -297,7 +299,11 @@ def get_connection_types(
                     identifier=item,
                     type=item.system_type,
                     human_readable=item.human_readable,
-                    supported_actions=[ActionType.access, ActionType.erasure],
+                    supported_actions=[
+                        ActionType.access,
+                        ActionType.erasure,
+                        ActionType.consent,
+                    ],
                 )
                 for item in database_types
             ]
