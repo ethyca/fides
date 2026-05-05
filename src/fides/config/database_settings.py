@@ -144,6 +144,8 @@ class DatabaseSettings(FidesSettings):
     )
     healthcheck_query_timeout: float = Field(
         default=1.0,
+        ge=0.1,
+        le=10.0,
         description="Timeout in seconds for database healthcheck queries on the /health/database endpoint.",
     )
     test_db: str = Field(
