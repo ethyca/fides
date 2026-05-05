@@ -706,14 +706,19 @@ def validate_reset_token(
             valid=False, reason=TokenValidationReason.invalid
         )
 
-    if matching_reset.is_expired():
-        return TokenValidationResponse(
-            valid=False, reason=TokenValidationReason.expired
-        )
-
+    # Validate the token before checking expiry so that the `expired` reason is
+    # only revealed to a caller who proves possession of the correct token. This
+    # prevents an unauthenticated caller who knows only a username from probing
+    # the endpoint with a fabricated token to learn whether the user has an
+    # active (expired or otherwise) password-reset record.
     if not matching_reset.token_valid(token):
         return TokenValidationResponse(
             valid=False, reason=TokenValidationReason.invalid
+        )
+
+    if matching_reset.is_expired():
+        return TokenValidationResponse(
+            valid=False, reason=TokenValidationReason.expired
         )
 
     return TokenValidationResponse(valid=True)

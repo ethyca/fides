@@ -168,7 +168,9 @@ const useLogin = () => {
 
   // Treat a network/server error from the validation endpoint as an invalid
   // token. Failing closed avoids showing the password form for a token whose
-  // status we couldn't confirm.
+  // status we couldn't confirm. `validationErrored` is surfaced separately so
+  // the UI can render distinct copy ("we couldn't verify this link") instead
+  // of incorrectly telling the user the link is no longer valid.
   const tokenIsInvalid =
     missingUsername ||
     validationErrored ||
@@ -275,25 +277,38 @@ const useLogin = () => {
     isValidatingToken,
     tokenIsInvalid,
     tokenInvalidReason,
+    validationErrored,
   };
 };
 
 type InvalidTokenMessageProps = {
   isFromInvite: boolean;
   reason: "expired" | "invalid" | null;
+  errored: boolean;
 };
 
 const InvalidTokenMessage = ({
   isFromInvite,
   reason,
+  errored,
 }: InvalidTokenMessageProps) => {
   const isExpired = reason === "expired";
-  const title = isExpired
-    ? "This link has expired"
-    : "This link is no longer valid";
+
+  let title: string;
+  if (errored) {
+    title = "We couldn't verify this link";
+  } else if (isExpired) {
+    title = "This link has expired";
+  } else {
+    title = "This link is no longer valid";
+  }
 
   let body: string;
-  if (isFromInvite) {
+  if (errored) {
+    body = isFromInvite
+      ? "Something went wrong while checking your invite. Please refresh the page, and ask your administrator if the problem persists."
+      : "Something went wrong while checking your reset link. Please refresh the page, and request a new link if the problem persists.";
+  } else if (isFromInvite) {
     body = isExpired
       ? "Please ask your administrator to send you a new invite."
       : "This invite link is invalid or has already been used. Please ask your administrator to send you a new invite.";
@@ -383,6 +398,7 @@ const Login: NextPage = () => {
     isValidatingToken,
     tokenIsInvalid,
     tokenInvalidReason,
+    validationErrored,
   } = useLogin();
   const [canSubmit, setCanSubmit] = useState(false);
   const {
@@ -467,6 +483,7 @@ const Login: NextPage = () => {
                 <InvalidTokenMessage
                   isFromInvite={isFromInvite}
                   reason={tokenInvalidReason}
+                  errored={validationErrored}
                 />
               )}
               {!showTokenLoading && !showInvalidToken && (
