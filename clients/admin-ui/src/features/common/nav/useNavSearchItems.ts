@@ -45,34 +45,37 @@ export interface FlatNavItem {
   keywords?: string[];
 }
 
+/** Relevance tiers for nav search ranking, lower is better. */
+export const NavMatchTier = {
+  TITLE: 0,
+  PARENT: 1,
+  GROUP: 2,
+  KEYWORD: 3,
+  NONE: Number.POSITIVE_INFINITY,
+} as const;
+
 /**
- * Relevance rank for a nav item against a query, lower is better:
- *   0 = title (direct) match
- *   1 = parent-page title match
- *   2 = group title match
- *   3 = keyword/alias match
- *   Number.POSITIVE_INFINITY = no match
- *
+ * Relevance rank for a nav item against a query, lower is better.
  * An empty/whitespace query ranks every item as 0 (no preference).
  */
 export const navMatchRank = (item: FlatNavItem, query: string): number => {
   const q = query.trim().toLowerCase();
   if (!q) {
-    return 0;
+    return NavMatchTier.TITLE;
   }
   if (item.title.toLowerCase().includes(q)) {
-    return 0;
+    return NavMatchTier.TITLE;
   }
   if (item.parentTitle?.toLowerCase().includes(q)) {
-    return 1;
+    return NavMatchTier.PARENT;
   }
   if (item.groupTitle.toLowerCase().includes(q)) {
-    return 2;
+    return NavMatchTier.GROUP;
   }
   if (item.keywords?.some((k) => k.toLowerCase().includes(q))) {
-    return 3;
+    return NavMatchTier.KEYWORD;
   }
-  return Number.POSITIVE_INFINITY;
+  return NavMatchTier.NONE;
 };
 
 /**

@@ -131,6 +131,8 @@ const NavSearchExpanded = ({ groups }: { groups: NavGroup[] }) => {
         onSelect={handleSelect}
         onOpenChange={handleOpenChange}
         defaultActiveFirstOption
+        // Disable Ant Design's built-in filter — it only checks title substrings,
+        // which would silently drop keyword/group matches. We filter manually.
         filterOption={false}
         className={styles.expandedAutoComplete}
         classNames={{ popup: { root: styles.searchDropdown } }}

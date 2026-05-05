@@ -5,6 +5,7 @@ import {
   FlatNavItem,
   matchesNavQuery,
   navMatchRank,
+  NavMatchTier,
 } from "./useNavSearchItems";
 
 const makeItem = (overrides: Partial<FlatNavItem> = {}): FlatNavItem => ({
@@ -50,6 +51,16 @@ describe("matchesNavQuery", () => {
     expect(matchesNavQuery(item, "data subject")).toBe(true);
   });
 
+  it("surfaces items matched only by keyword (no title/group/parent overlap)", () => {
+    const item = makeItem({
+      title: "Vendors",
+      groupTitle: "Consent Management",
+      keywords: ["TCF", "GVL"],
+    });
+    expect(matchesNavQuery(item, "tcf")).toBe(true);
+    expect(navMatchRank(item, "tcf")).toBe(NavMatchTier.KEYWORD);
+  });
+
   it("returns false when the query matches none of the fields", () => {
     const item = makeItem({ keywords: ["DSR"] });
     expect(matchesNavQuery(item, "integrations")).toBe(false);
@@ -79,15 +90,19 @@ describe("navMatchRank", () => {
       keywords: ["privacy requests"],
     });
 
-    expect(navMatchRank(titleHit, "privacy requests")).toBe(0);
-    expect(navMatchRank(parentHit, "privacy requests")).toBe(1);
-    expect(navMatchRank(groupHit, "privacy requests")).toBe(2);
-    expect(navMatchRank(keywordHit, "privacy requests")).toBe(3);
+    expect(navMatchRank(titleHit, "privacy requests")).toBe(NavMatchTier.TITLE);
+    expect(navMatchRank(parentHit, "privacy requests")).toBe(
+      NavMatchTier.PARENT,
+    );
+    expect(navMatchRank(groupHit, "privacy requests")).toBe(NavMatchTier.GROUP);
+    expect(navMatchRank(keywordHit, "privacy requests")).toBe(
+      NavMatchTier.KEYWORD,
+    );
   });
 
   it("returns Infinity when no field matches", () => {
     const item = makeItem({ keywords: ["dsr"] });
-    expect(navMatchRank(item, "integrations")).toBe(Number.POSITIVE_INFINITY);
+    expect(navMatchRank(item, "integrations")).toBe(NavMatchTier.NONE);
   });
 });
 
