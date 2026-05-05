@@ -1,6 +1,7 @@
 import { Button, Flex, Form, Input, Text } from "fidesui";
 import React from "react";
 
+import { isFieldVisible } from "~/common/visibility";
 import CustomFieldRenderer, {
   CustomFieldRendererProps,
 } from "~/components/common/CustomFieldRenderer";
@@ -138,6 +139,7 @@ const PrivacyRequestForm = ({
           ...customPrivacyRequestFields,
         })
           .filter(([, field]) => !field?.hidden)
+          .filter(([, field]) => (field ? isFieldVisible(field, values) : true))
           .map(([key, item]) => {
             const customFieldProps = (
               value: string | string[],

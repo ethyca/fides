@@ -17,11 +17,28 @@ export type CustomIdentityFields = Record<
 
 export type IdentityInputs = DefaultIdentities & CustomIdentityFields;
 
+export type VisibilityOperator = "eq" | "ne" | "set" | "empty" | "contains";
+
+export interface VisibilityCondition {
+  /** Sibling field key (snake_case `name`) whose value drives this condition. */
+  source_field: string;
+  operator: VisibilityOperator;
+  /** Omitted for `set` / `empty`. */
+  value?: string | number;
+}
+
 export interface ICustomField {
   label: string;
   required?: boolean;
   query_param_key?: string | null;
   hidden?: boolean;
+  placeholder?: string;
+  /**
+   * AND-combined conditions. Absent or empty ⇒ field is always visible.
+   * When evaluated against the current form values, all conditions must pass
+   * for the field to render (and be included in submission).
+   */
+  visible_when?: VisibilityCondition[];
 }
 
 export interface CustomTextField extends ICustomField {
@@ -32,6 +49,12 @@ export interface CustomTextField extends ICustomField {
 export interface CustomSelectField extends ICustomField {
   default_value?: string | null;
   field_type: "select";
+  options?: string[];
+}
+
+export interface CustomRadioField extends ICustomField {
+  default_value?: string | null;
+  field_type: "radio";
   options?: string[];
 }
 
@@ -51,11 +74,13 @@ export interface CustomLocationField extends ICustomField {
 export type CustomConfigField =
   | CustomTextField
   | CustomSelectField
+  | CustomRadioField
   | CustomMultiSelectField
   | CustomLocationField;
 export type CustomIdentityField =
   | CustomTextField
   | CustomSelectField
+  | CustomRadioField
   | (CustomLocationField & {
       required: true;
     });

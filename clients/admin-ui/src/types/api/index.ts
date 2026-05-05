@@ -952,6 +952,7 @@ export type * from "./models/VendorIds";
 export * from "./models/VendorMatchConfidence";
 export type * from "./models/VendorMatchStats";
 export type * from "./models/VerificationCode";
+export type * from "./models/VisibilityCondition";
 export type * from "./models/Violation";
 export type * from "./models/ViolationAttributes";
 export type * from "./models/ViolationDetailResponse";

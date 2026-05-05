@@ -54,6 +54,21 @@ class IdentityInputs(FidesSchema):
         super().__init__(**data)
 
 
+VisibilityOperator = Literal["eq", "ne", "set", "empty", "contains"]
+
+
+class VisibilityCondition(FidesSchema):
+    """A single AND-combined condition gating a field's visibility.
+
+    Evaluated against the current values of sibling fields in the same form.
+    `value` is omitted for `set` / `empty`.
+    """
+
+    source_field: str
+    operator: VisibilityOperator
+    value: Optional[Union[str, float]] = None
+
+
 class BaseCustomPrivacyRequestField(FidesSchema, ABC):
     """Abstract base class for all custom privacy request fields"""
 
@@ -62,6 +77,8 @@ class BaseCustomPrivacyRequestField(FidesSchema, ABC):
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
     query_param_key: Optional[str] = None
+    placeholder: Optional[str] = None
+    visible_when: Optional[List[VisibilityCondition]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -80,7 +97,7 @@ class BaseCustomPrivacyRequestField(FidesSchema, ABC):
 class CustomPrivacyRequestField(BaseCustomPrivacyRequestField):
     """Regular custom privacy request field supporting text, select, and multiselect types"""
 
-    field_type: Optional[Literal["text", "select", "multiselect"]] = None
+    field_type: Optional[Literal["text", "select", "multiselect", "radio"]] = None
     options: Optional[List[str]] = None
 
 
@@ -130,6 +147,8 @@ CustomPrivacyRequestFieldUnion = Annotated[
 
 
 class PrivacyRequestOption(FidesSchema):
+    model_config = ConfigDict(extra="allow", from_attributes=True)
+
     locations: Optional[Union[List[PrivacyNoticeRegion], Literal["fallback"]]] = None
     policy_key: Optional[str] = None
     icon_path: str
