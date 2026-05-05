@@ -31,7 +31,7 @@ const PropertyPathPrivacyRequestSuccessPage = async ({
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <AuthFormLayout
-        className="pc-page-success"
+        className="pc-page--success"
         title="Request submitted"
         dataTestId="privacy-request-success-layout"
       >

@@ -47,7 +47,7 @@ export const AuthFormLayout = ({
             {/* Fides Logo */}
             <Flex justify="center">
               <img
-                className="pc-form-logo"
+                className="pc-form__logo"
                 src={config?.logo_path || "/logo.svg"}
                 alt="Logo"
                 width={205}
@@ -59,7 +59,7 @@ export const AuthFormLayout = ({
             {/* Title and Form Container */}
             <Space direction="vertical" size={24} style={{ width: "100%" }}>
               {/* Form Box */}
-              <div className={[styles.formBox, "pc-form-box"].join(" ")}>
+              <div className={[styles.formBox, "pc-form__box"].join(" ")}>
                 <Space direction="vertical" size={32} style={{ width: "100%" }}>
                   {title && (
                     <div>
@@ -71,7 +71,7 @@ export const AuthFormLayout = ({
                         <Flex justify="center">
                           <Typography.Title
                             level={2}
-                            className={[styles.title, "pc-form-title"].join(
+                            className={[styles.title, "pc-form__title"].join(
                               " ",
                             )}
                           >
@@ -84,7 +84,7 @@ export const AuthFormLayout = ({
 
                   {/* Form Content */}
                   <div
-                    className={[styles.formContent, "pc-form-content"].join(
+                    className={[styles.formContent, "pc-form__content"].join(
                       " ",
                     )}
                   >
@@ -103,7 +103,7 @@ export const AuthFormLayout = ({
                 >
                   {policyLinks.map(({ url, label }) => (
                     <Link
-                      className="pc-policy-link"
+                      className="pc-policy-links__link"
                       key={`${url}-${label}`}
                       fontSize={["small", "medium"]}
                       fontWeight="medium"

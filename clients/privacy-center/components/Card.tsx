@@ -54,10 +54,10 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
       alt={description}
       boxSize="32px"
       src={iconPath}
-      className="pc-card-icon"
+      className="pc-card__icon"
     />
     <Text
-      className="pc-card-title"
+      className="pc-card__title"
       color="gray.800"
       fontSize="md"
       fontWeight="semibold"
@@ -66,7 +66,7 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
       {title}
     </Text>
     <Text
-      className="pc-card-description"
+      className="pc-card__description"
       color="gray.800"
       fontSize="xs"
       fontWeight="normal"

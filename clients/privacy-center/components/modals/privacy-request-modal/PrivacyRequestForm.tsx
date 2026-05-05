@@ -73,7 +73,7 @@ const PrivacyRequestForm = ({
         ))}
         {!!nameInput && (
           <Form.Item
-            className="pc-field-name"
+            className="pc-field--name"
             validateStatus={
               touched.name && Boolean(errors.name) ? "error" : undefined
             }
@@ -94,7 +94,7 @@ const PrivacyRequestForm = ({
         )}
         {!!emailInput && (
           <Form.Item
-            className="pc-field-email"
+            className="pc-field--email"
             validateStatus={
               touched.email && Boolean(errors.email) ? "error" : undefined
             }
@@ -116,7 +116,7 @@ const PrivacyRequestForm = ({
         )}
         {!!phoneInput && (
           <Form.Item
-            className="pc-field-phone"
+            className="pc-field--phone"
             validateStatus={
               touched.phone && Boolean(errors.phone) ? "error" : undefined
             }
@@ -176,7 +176,7 @@ const PrivacyRequestForm = ({
 
             return item ? (
               <Form.Item
-                className="pc-field-custom"
+                className="pc-field--custom"
                 key={key}
                 id={key}
                 validateStatus={
@@ -193,7 +193,7 @@ const PrivacyRequestForm = ({
           })}
         <Flex justify="stretch" gap="medium">
           <Button
-            className="pc-button-cancel"
+            className="pc-button--cancel"
             type="default"
             variant="outlined"
             onClick={onExit}
@@ -202,7 +202,7 @@ const PrivacyRequestForm = ({
             {action.cancelButtonText || "Cancel"}
           </Button>
           <Button
-            className="pc-button-submit"
+            className="pc-button--submit"
             htmlType="submit"
             type="primary"
             loading={isSubmitting}

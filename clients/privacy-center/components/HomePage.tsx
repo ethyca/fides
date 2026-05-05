@@ -184,7 +184,7 @@ const HomePage: NextPage = () => {
   }
 
   return (
-    <main data-testid="home" className="pc-page-home">
+    <main data-testid="home" className="pc-page--home">
       <Stack align="center" py={["6", "16"]} px={5} spacing={14}>
         <Stack align="center" spacing={3}>
           <Heading
@@ -258,7 +258,7 @@ const HomePage: NextPage = () => {
             >
               {policyLinks.map(({ url, label }) => (
                 <Link
-                  className="pc-policy-link"
+                  className="pc-policy-links__link"
                   key={`${url}-${label}`}
                   fontSize={["small", "medium"]}
                   fontWeight="medium"
