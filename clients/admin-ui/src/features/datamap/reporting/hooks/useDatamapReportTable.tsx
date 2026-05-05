@@ -40,6 +40,8 @@ const emptyResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
+const PINNED_LEFT_COLUMN_COUNT = 2;
+
 export const useDatamapReportTable = () => {
   const [form] = Form.useForm();
   const userCanSeeReports = useHasPermission([
@@ -239,16 +241,26 @@ export const useDatamapReportTable = () => {
         )
       : columnOrder;
 
+    let ordered = withVisibility;
     if (effectiveOrder.length > 0) {
       const orderMap = new Map(effectiveOrder.map((id, idx) => [id, idx]));
-      return [...withVisibility].sort((a, b) => {
+      ordered = [...withVisibility].sort((a, b) => {
         const aIdx = orderMap.get(getColKey(a)) ?? Infinity;
         const bIdx = orderMap.get(getColKey(b)) ?? Infinity;
         return aIdx - bIdx;
       });
     }
 
-    return withVisibility;
+    // Pin the first two non-hidden columns so the row identifiers stay visible
+    // while the rest of the (often very wide) table scrolls horizontally.
+    let pinned = 0;
+    return ordered.map((col) => {
+      if (pinned >= PINNED_LEFT_COLUMN_COUNT || col.hidden) {
+        return col;
+      }
+      pinned += 1;
+      return { ...col, fixed: "left" as const };
+    });
   }, [columns, columnVisibility, columnOrder, groupBy]);
 
   // Update column order when groupBy or data changes

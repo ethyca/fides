@@ -1,7 +1,7 @@
 .scoreValue {
   font-size: 32px;
   font-weight: 600;
-  font-family: var(--ant-font-family-code);
+  font-family: var(--fidesui-font-family-code);
   line-height: 1;
 }
 
@@ -13,15 +13,15 @@
 }
 
 .dimScore {
-  font-family: var(--ant-font-family-code);
-  font-size: var(--ant-font-size-sm);
-  color: var(--ant-color-text) !important;
+  font-family: var(--fidesui-font-family-code);
+  font-size: var(--fidesui-font-size-sm);
+  color: var(--fidesui-color-text) !important;
 }
 
 .dimensionCard {
-  border-radius: var(--ant-border-radius-lg);
-  padding: var(--ant-padding-sm) var(--ant-padding);
-  background-color: var(--ant-color-fill-quaternary);
+  border-radius: var(--fidesui-border-radius-lg);
+  padding: var(--fidesui-padding-sm) var(--fidesui-padding);
+  background-color: var(--fidesui-color-fill-quaternary);
   transition: background-color 0.15s ease;
 }
 
@@ -29,16 +29,16 @@
   display: block;
 
   &:hover .dimensionCard {
-    background-color: var(--ant-color-fill-tertiary);
+    background-color: var(--fidesui-color-fill-tertiary);
   }
 
   &:hover .launchIcon {
-    color: var(--ant-color-text);
+    color: var(--fidesui-color-text);
   }
 }
 
 .launchIcon {
   flex-shrink: 0;
-  color: var(--ant-color-text-quaternary);
+  color: var(--fidesui-color-text-quaternary);
   transition: color 0.15s ease;
 }

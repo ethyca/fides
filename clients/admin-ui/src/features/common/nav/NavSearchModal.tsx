@@ -18,7 +18,7 @@ const SEARCH_ICON_STYLE = {
 };
 const COLLAPSED_ICON_STYLE = {
   fontSize: 16,
-  color: "var(--fidesui-corinth)",
+  color: "var(--fidesui-brand-corinth)",
 };
 const isMac =
   typeof navigator !== "undefined" &&

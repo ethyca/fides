@@ -1,6 +1,7 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import {
+  CloudInfraMonitorUpdates,
   ConsentStatus,
   DatastoreMonitorUpdates,
   DiffStatus,
@@ -113,6 +114,7 @@ export const MONITOR_UPDATE_ORDER = [
   "javascript_tag",
   "iframe",
   "browser_request",
+  "addition",
   "unlabeled",
   "classifying",
   "in_review",
@@ -124,6 +126,7 @@ export const MONITOR_UPDATE_ORDER = [
   | keyof DatastoreMonitorUpdates
   | keyof WebMonitorUpdates
   | keyof InfrastructureMonitorUpdates
+  | keyof CloudInfraMonitorUpdates
 )[];
 
 export enum ConfidenceLevelLabel {

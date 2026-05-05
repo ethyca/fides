@@ -10,7 +10,7 @@
   :global(.ant-card-head-wrapper) {
     width: auto;
     flex: 0 0 auto;
-    margin-right: var(--ant-card-padding-lg, 24px);
+    margin-right: var(--fidesui-card-padding-lg, 24px);
     margin-bottom: 0;
     padding-bottom: 0;
   }
@@ -24,7 +24,7 @@
   }
 
   // Ant adds padding-top to title/extra when tabs are present via:
-  //   .ant-card-contain-tabs > div.ant-card-head .ant-card-head-title { padding-top: var(--ant-padding) }
+  //   .ant-card-contain-tabs > div.ant-card-head .ant-card-head-title { padding-top: var(--fidesui-padding) }
   // The `div` element selector gives that rule specificity (0,3,1) vs our (0,3,0), so we need !important.
   :global(.ant-card-head .ant-card-head-title),
   :global(.ant-card-head .ant-card-extra) {
@@ -39,7 +39,7 @@
   }
 
   // Ant adds padding-top to title/extra when tabs are present via:
-  //   .ant-card-contain-tabs > div.ant-card-head .ant-card-head-title { padding-top: var(--ant-padding) }
+  //   .ant-card-contain-tabs > div.ant-card-head .ant-card-head-title { padding-top: var(--fidesui-padding) }
   // The `div` element selector gives that rule specificity (0,3,1) vs our (0,3,0), so we need !important.
   :global(.ant-card-head .ant-card-head-title),
   :global(.ant-card-head .ant-card-extra) {
