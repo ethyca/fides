@@ -11,6 +11,7 @@ export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
   [AssessmentStatus.IN_PROGRESS]: "In progress",
   [AssessmentStatus.COMPLETED]: "Completed",
   [AssessmentStatus.OUTDATED]: "Out of date",
+  [AssessmentStatus.GENERATING]: "Generating...",
 };
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {
@@ -46,9 +47,9 @@ export const ANSWER_STATUS_TAG_COLORS: Record<AnswerStatus, CUSTOM_TAG_COLOR> =
   };
 
 export const RISK_LEVEL_DOT_COLORS: Record<RiskLevel, string> = {
-  [RiskLevel.HIGH]: "var(--fidesui-error)",
-  [RiskLevel.MEDIUM]: "var(--fidesui-warning)",
-  [RiskLevel.LOW]: "var(--fidesui-success)",
+  [RiskLevel.HIGH]: "var(--fidesui-color-error)",
+  [RiskLevel.MEDIUM]: "var(--fidesui-color-warning)",
+  [RiskLevel.LOW]: "var(--fidesui-color-success)",
 };
 
 export const FREQUENCY_OPTIONS = [

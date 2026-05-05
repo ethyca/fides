@@ -236,7 +236,7 @@ export interface FidesOptions {
    * For debugging purposes, you can decode the Notice Consent string using the
    * `window.Fides.decodeNoticeConsentString` function (see {@link Fides.decodeNoticeConsentString}).
    *
-   * Note: The Notice Consent string will take precedence over [GPC](/docs/regulations/gpc) and override any prior user consent.
+   * Note: The Notice Consent string will take precedence over [GPC](/regulations/gpc) and override any prior user consent.
    *
    * Defaults to `undefined`.
    */
@@ -396,7 +396,7 @@ export interface FidesOptions {
    *   this is not a supported configuration
    * - "disabled" = prevents repeated script loading entirely
    *
-   * See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
+   * See [Troubleshooting](/privacy-center-fidesjs/fidesjs/troubleshooting) for more information.
    *
    * Defaults to `"disabled"`.
    */

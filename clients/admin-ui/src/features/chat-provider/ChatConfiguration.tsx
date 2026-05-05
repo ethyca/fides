@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useGetChatConfigQuery } from "./chatProvider.slice";
 import ConfigurationCard from "./components/ConfigurationCard";
 import { CHAT_PROVIDER_LABELS, CHAT_PROVIDER_TYPES } from "./constants";
+import FidesChatForm from "./forms/FidesChatForm";
 import SlackChatForm from "./forms/SlackChatForm";
 
 const ChatConfiguration = () => {
@@ -39,6 +40,10 @@ const ChatConfiguration = () => {
         value: CHAT_PROVIDER_TYPES.SLACK,
         label: CHAT_PROVIDER_LABELS[CHAT_PROVIDER_TYPES.SLACK],
       },
+      {
+        value: CHAT_PROVIDER_TYPES.FIDES,
+        label: CHAT_PROVIDER_LABELS[CHAT_PROVIDER_TYPES.FIDES],
+      },
     ];
   }, []);
 
@@ -55,6 +60,8 @@ const ChatConfiguration = () => {
     switch (selectedProviderType) {
       case CHAT_PROVIDER_TYPES.SLACK:
         return <SlackChatForm configId={configId} />;
+      case CHAT_PROVIDER_TYPES.FIDES:
+        return <FidesChatForm configId={configId} />;
       default:
         return null;
     }

@@ -3,6 +3,13 @@
 import type { BulkUpdateFailed } from "./BulkUpdateFailed";
 import type { Dataset } from "./Dataset";
 
+export type DatasetFieldWarning = {
+  collection?: string;
+  field?: string;
+  action: "restored" | "removed" | "failed";
+  message: string;
+};
+
 /**
  * BulkPutDataset
  *
@@ -17,4 +24,5 @@ export type BulkPutDataset = {
    * Failed
    */
   failed: Array<BulkUpdateFailed>;
+  warnings?: Array<DatasetFieldWarning>;
 };

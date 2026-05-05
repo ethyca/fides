@@ -54,7 +54,7 @@ export const ResourceDetailsDrawer = ({
     <DetailsDrawer
       {...drawerProps}
       classNames={{
-        body: "!pt-0 !mt-[var(--ant-padding-lg)] max-h-full",
+        body: "!pt-0 !mt-[var(--fidesui-padding-lg)] max-h-full",
       }}
     >
       {resource ? (

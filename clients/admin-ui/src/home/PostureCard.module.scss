@@ -7,7 +7,7 @@
   :global(.ant-card-head) {
     flex-shrink: 0;
     min-height: unset !important;
-    padding: var(--ant-padding-lg, 24px) var(--ant-padding-lg, 24px) 0 !important;
+    padding: var(--fidesui-padding-lg, 24px) var(--fidesui-padding-lg, 24px) 0 !important;
   }
 
   :global(.ant-card-body) {
@@ -64,7 +64,7 @@
   font-size: 48px;
   font-weight: 600;
   line-height: 1;
-  font-family: var(--ant-font-family-code);
+  font-family: var(--fidesui-font-family-code);
 }
 
 .scoreDenominator {
@@ -79,7 +79,7 @@
 }
 
 .summaryText {
-  font-size: var(--ant-font-size);
+  font-size: var(--fidesui-font-size);
   line-height: 1.4;
   flex: 1;
   min-width: 0;
@@ -89,14 +89,14 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--ant-color-text);
+  color: var(--fidesui-color-text);
   white-space: nowrap;
   font-weight: 500;
 }
 
 .alertSm {
   :global(.ant-alert-message) {
-    font-size: var(--ant-font-size-sm);
+    font-size: var(--fidesui-font-size-sm);
   }
 }
 
@@ -115,5 +115,5 @@
 }
 
 .radarTooltip {
-  font-size: var(--ant-font-size-sm, 12px);
+  font-size: var(--fidesui-font-size-sm, 12px);
 }
