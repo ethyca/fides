@@ -105,6 +105,7 @@ describe("System integrations", () => {
           connection_type: "postgres",
           description: "",
           key: "asdasd_postgres",
+          name: "asdasd_postgres",
           enabled_actions: [],
         });
         expect(request.body[0].disabled).to.be.undefined;

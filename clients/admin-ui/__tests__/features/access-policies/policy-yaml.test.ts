@@ -360,10 +360,7 @@ action:
     expect(policyNode.data.fidesKey).toBe("meta_test");
     expect(policyNode.data.enabled).toBe(false);
     expect(policyNode.data.priority).toBe(50);
-    expect(policyNode.data.controls).toEqual([
-      "gdpr_article_9",
-      "ccpa_compliance",
-    ]);
+    expect(policyNode.data.control).toBe("gdpr_article_9");
     expect(policyNode.data.actionMessage).toBe(
       "Blocked for compliance reasons.",
     );
@@ -413,7 +410,7 @@ describe("nodesToYaml", () => {
           fidesKey: "my_key",
           enabled: true,
           priority: 100,
-          controls: ["gdpr_article_9"],
+          control: "gdpr_article_9",
           controlOptions: [],
           actionMessage: "",
         },
