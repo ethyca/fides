@@ -9,7 +9,6 @@ from watchfiles.filters import DefaultFilter
 
 from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
-from fides.config import CONFIG
 from fides.api.tasks import (
     BULK_CONSENT_IMPORT_QUEUE_NAME,
     CONSENT_WEBHOOK_QUEUE_NAME,
@@ -23,6 +22,7 @@ from fides.api.tasks import (
     PRIVACY_PREFERENCES_QUEUE_NAME,
     celery_app,
 )
+from fides.config import CONFIG
 
 
 class _PythonAndYamlFilter(DefaultFilter):
