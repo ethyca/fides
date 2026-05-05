@@ -1,0 +1,7 @@
+type: Changed
+description: >
+  Backfill existing IDP staged resources to classification_addition when their
+  effective data_uses are non-empty, aligning the IDP lifecycle with datastore
+  monitors so Helios Insights can count "classified" via diff_status alone.
+pr: 8109
+labels: ["db-migration"]
