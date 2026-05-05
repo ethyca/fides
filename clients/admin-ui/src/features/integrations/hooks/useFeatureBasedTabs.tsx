@@ -105,6 +105,7 @@ export const useFeatureBasedTabs = ({
                     testData={testData}
                     connectionOption={integrationOption}
                     connectionType={connection?.connection_type}
+                    isTestingConnection={testIsLoading}
                   />
                   <Spacer />
                   <Flex gap="medium">
@@ -130,10 +131,9 @@ export const useFeatureBasedTabs = ({
                         </Button>
                         {connection?.connection_type ===
                           ConnectionType.JIRA_TICKET &&
+                          testData.authorized &&
                           testData.succeeded === false &&
-                          testData.failureReason
-                            ?.toLowerCase()
-                            .includes("token") && (
+                          testData.timestamp && (
                             <Button
                               onClick={handleAuthorize}
                               data-testid="reauthorize-integration-btn"
