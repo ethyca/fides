@@ -1,0 +1,4 @@
+type: Security
+description: Harden file-upload type detection — disambiguate ZIP-family magic bytes against the per-field allow-list and restrict client-filename fallback to extensions without a magic signature
+pr: 8106
+labels: []
