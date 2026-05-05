@@ -1082,6 +1082,7 @@ class TestAsyncPollingStrategy:
         )
 
         assert result == 8
+
     def test_extract_correlation_id_from_response_body(self, async_polling_strategy):
         """Correlation ID is extracted from the JSON response body when present."""
         mock_response = Mock(spec=Response)
