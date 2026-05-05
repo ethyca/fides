@@ -312,14 +312,17 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         populated automatically.
         """
         # Try extracting from the response body first
-        try:
-            response_data = response.json()
-            if response_data and correlation_id_path:
-                correlation_id = pydash.get(response_data, correlation_id_path)
-                if correlation_id:
-                    return str(correlation_id)
-        except ValueError:
-            pass
+        response_data = None
+        if response.content:
+            try:
+                response_data = response.json()
+            except ValueError as exc:
+                raise FidesopsException(f"Invalid JSON response: {exc}")
+
+        if response_data and correlation_id_path:
+            correlation_id = pydash.get(response_data, correlation_id_path)
+            if correlation_id:
+                return str(correlation_id)
 
         # Fall back to param_value_map (e.g. privacy_request_id, uuid)
         if correlation_id_path:

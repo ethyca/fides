@@ -868,12 +868,12 @@ class TestAsyncPollingStrategy:
         )
         assert result == "pr-456"
 
-    def test_extract_correlation_id_falls_back_on_non_json_response(
+    def test_extract_correlation_id_falls_back_on_empty_response(
         self, async_polling_strategy
     ):
-        """When the response is not JSON (empty body), falls back to param_value_map."""
+        """When the response body is empty, falls back to param_value_map."""
         mock_response = Mock(spec=Response)
-        mock_response.json.side_effect = ValueError("No JSON")
+        mock_response.content = b""
 
         result = AsyncPollingStrategy._extract_correlation_id(
             mock_response,
@@ -881,6 +881,21 @@ class TestAsyncPollingStrategy:
             {"privacy_request_id": "pr-789"},
         )
         assert result == "pr-789"
+
+    def test_extract_correlation_id_raises_on_malformed_json(
+        self, async_polling_strategy
+    ):
+        """Raises FidesopsException when response has content but invalid JSON."""
+        mock_response = Mock(spec=Response)
+        mock_response.content = b"not json"
+        mock_response.json.side_effect = ValueError("No JSON")
+
+        with pytest.raises(FidesopsException, match="Invalid JSON response"):
+            AsyncPollingStrategy._extract_correlation_id(
+                mock_response,
+                "privacy_request_id",
+                {"privacy_request_id": "pr-789"},
+            )
 
     def test_extract_correlation_id_prefers_response_over_param_values(
         self, async_polling_strategy
