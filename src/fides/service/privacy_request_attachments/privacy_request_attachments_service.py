@@ -2,6 +2,7 @@
 
 import os
 import posixpath
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import Any, Optional
 from uuid import uuid4
@@ -37,6 +38,8 @@ from fides.api.service.storage.util import (
     FilesMagicBytes,
     FileUploadConstraints,
 )
+from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.common.session_management import with_optional_sync_session
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
@@ -57,6 +60,10 @@ DEFAULT_MAX_SIZE_BYTES = DEFAULT_FILE_MAX_SIZE_BYTES
 UPLOAD_READ_CHUNK_BYTES = 64 * 1024
 
 OBJECT_KEY_PREFIX = "privacy_request_attachments"
+
+ORPHAN_MIN_AGE_SECONDS = 3600  # uploaded rows younger than this are skipped
+ORPHAN_CLEANUP_INTERVAL_HOURS = 1
+ORPHAN_CLEANUP_JOB_ID = "attachment_user_provided_orphan_cleanup"
 
 
 def _bucket(storage_config: StorageConfig) -> str:
@@ -399,3 +406,101 @@ class AttachmentUserProvidedService:
                     row.object_key,
                     exc_info=True,
                 )
+
+
+def _cleanup_orphaned_attachments(db: Session) -> None:
+    """Sweep ``uploaded`` rows older than ``ORPHAN_MIN_AGE_SECONDS``.
+
+    For each row: delete the temp storage object, then CAS the row from
+    ``uploaded`` to ``deleted``. The ``InvalidAttachmentStateError`` raised
+    by :meth:`AttachmentUserProvidedRepository.mark_deleted` if the row has
+    already been promoted by a concurrent submission is logged and skipped
+    so the sweep is idempotent. The storage delete runs first because the
+    row in ``uploaded`` is the index that lets us find the object again on
+    the next sweep — leaving a row in ``deleted`` with the object still
+    present would orphan the bytes.
+
+    Inner function (no Celery context) so tests can drive it directly.
+    """
+    try:
+        provider, bucket, _ = _get_provider_and_bucket(db)
+    except (StorageNotConfiguredError, StorageBucketNotConfiguredError) as exc:
+        logger.info("Skipping attachment orphan cleanup: {}", exc)
+        return
+
+    cutoff = datetime.now(timezone.utc) - timedelta(seconds=ORPHAN_MIN_AGE_SECONDS)
+    repo = AttachmentUserProvidedRepository()
+    orphans = repo.list_uploaded_older_than(cutoff, session=db)
+
+    deleted = 0
+    skipped = 0
+    for row in orphans:
+        try:
+            provider.delete(bucket, row.object_key)
+        except Exception:
+            logger.warning(
+                "Failed to delete orphan storage object {}",
+                row.object_key,
+                exc_info=True,
+            )
+            skipped += 1
+            continue
+        try:
+            repo.mark_deleted(row, session=db)
+        except Exception:
+            # Storage object is already gone but the row could not be
+            # transitioned (concurrent promotion or unexpected state).
+            # Log and continue so one bad row does not abort the batch.
+            logger.warning(
+                "Failed to mark orphan row {} as deleted",
+                row.id,
+                exc_info=True,
+            )
+            skipped += 1
+            continue
+        deleted += 1
+
+    db.commit()
+    logger.info(
+        "Attachment orphan cleanup complete: deleted={} skipped={} cutoff={}",
+        deleted,
+        skipped,
+        cutoff.isoformat(),
+    )
+
+
+@celery_app.task(base=DatabaseTask, bind=True, ignore_result=True)
+def cleanup_orphaned_attachments(self: DatabaseTask) -> None:
+    """Celery wrapper that opens a fresh session and delegates to the
+    inner :func:`_cleanup_orphaned_attachments`. Scheduled via
+    :func:`initiate_scheduled_attachment_cleanup`."""
+    with self.get_new_session() as db:
+        _cleanup_orphaned_attachments(db)
+
+
+def initiate_scheduled_attachment_cleanup() -> None:
+    """Register the orphan-sweep task on the APScheduler.
+
+    Called from the FastAPI lifespan alongside the other periodic-task
+    initiators.
+    """
+    if CONFIG.test_mode:
+        return
+
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot add attachment orphan cleanup job."
+    )
+
+    logger.info(
+        "Initiating scheduler for attachment orphan cleanup (every {} h)",
+        ORPHAN_CLEANUP_INTERVAL_HOURS,
+    )
+    scheduler.add_job(
+        func=cleanup_orphaned_attachments.delay,
+        kwargs={},
+        id=ORPHAN_CLEANUP_JOB_ID,
+        coalesce=True,
+        replace_existing=True,
+        trigger="interval",
+        hours=ORPHAN_CLEANUP_INTERVAL_HOURS,
+    )

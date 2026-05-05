@@ -1,0 +1,4 @@
+type: Added
+description: Periodic orphan-sweep task that deletes stale uploaded AttachmentUserProvided rows and their temp storage objects an hour after upload if the row was never claimed by a privacy-request submission
+pr: 8107
+labels: []

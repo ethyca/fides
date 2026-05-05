@@ -2,6 +2,7 @@
 
 import io
 from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -27,9 +28,11 @@ from fides.service.privacy_request_attachments.privacy_request_attachments_repos
 )
 from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
     DEFAULT_MAX_SIZE_BYTES,
+    ORPHAN_MIN_AGE_SECONDS,
     AttachmentUserProvidedService,
     FileUploadConstraints,
     _bucket,
+    _cleanup_orphaned_attachments,
     _get_provider_and_bucket,
 )
 
@@ -1177,3 +1180,191 @@ class TestFileUploadConstraintsValidation:
         c = FileUploadConstraints.defaults()
         assert c.max_size_bytes > 0
         assert c.allowed_file_types
+
+
+def _make_uploaded_row(db, storage_config, *, age_seconds: int, suffix: str):
+    """Insert an ``uploaded`` row and back-date its ``created_at``."""
+    record = AttachmentUserProvidedRepository().create_uploaded(
+        object_key=f"privacy_request_attachments/{suffix}.pdf",
+        storage_key=storage_config.key,
+        field_name="file",
+        property_id="test_prop",
+        policy_key="example_access_request_policy",
+        session=db,
+    )
+    row = (
+        db.query(AttachmentUserProvided)
+        .filter(AttachmentUserProvided.id == record.id)
+        .one()
+    )
+    row.created_at = datetime.now(timezone.utc) - timedelta(seconds=age_seconds)
+    db.commit()
+    return row
+
+
+class TestCleanupOrphanedAttachments:
+    """Cover ``_cleanup_orphaned_attachments`` orphan-sweep semantics."""
+
+    def test_deletes_uploaded_rows_older_than_cutoff(
+        self,
+        db,
+        storage_config_default,
+        patch_provider_factory,
+        mock_provider,
+    ):
+        # Storage object deleted, row CAS'd uploaded → deleted.
+        old = _make_uploaded_row(
+            db,
+            storage_config_default,
+            age_seconds=ORPHAN_MIN_AGE_SECONDS + 60,
+            suffix="orphan",
+        )
+
+        _cleanup_orphaned_attachments(db)
+
+        db.refresh(old)
+        assert old.status == AttachmentUserProvidedStatus.deleted
+        mock_provider.delete.assert_called_once_with(
+            "test_bucket", "privacy_request_attachments/orphan.pdf"
+        )
+
+        old.delete(db)
+
+    def test_skips_rows_younger_than_cutoff(
+        self,
+        db,
+        storage_config_default,
+        patch_provider_factory,
+        mock_provider,
+    ):
+        young = _make_uploaded_row(
+            db,
+            storage_config_default,
+            age_seconds=ORPHAN_MIN_AGE_SECONDS - 60,
+            suffix="fresh",
+        )
+
+        _cleanup_orphaned_attachments(db)
+
+        db.refresh(young)
+        assert young.status == AttachmentUserProvidedStatus.uploaded
+        mock_provider.delete.assert_not_called()
+
+        young.delete(db)
+
+    def test_skips_already_promoted_rows(
+        self,
+        db,
+        storage_config_default,
+        patch_provider_factory,
+        mock_provider,
+    ):
+        # Promoted rows must not be touched even if older than the cutoff.
+        promoted = _make_uploaded_row(
+            db,
+            storage_config_default,
+            age_seconds=ORPHAN_MIN_AGE_SECONDS + 60,
+            suffix="claimed",
+        )
+        promoted.status = AttachmentUserProvidedStatus.promoted
+        db.commit()
+
+        _cleanup_orphaned_attachments(db)
+
+        db.refresh(promoted)
+        assert promoted.status == AttachmentUserProvidedStatus.promoted
+        mock_provider.delete.assert_not_called()
+
+        promoted.delete(db)
+
+    def test_keeps_row_in_uploaded_when_storage_delete_fails(
+        self,
+        db,
+        storage_config_default,
+        patch_provider_factory,
+        mock_provider,
+    ):
+        # If we cannot delete the bytes, leave the row in ``uploaded`` so
+        # the next sweep retries — never advance to ``deleted`` while the
+        # object is still live.
+        mock_provider.delete.side_effect = RuntimeError("s3 down")
+        old = _make_uploaded_row(
+            db,
+            storage_config_default,
+            age_seconds=ORPHAN_MIN_AGE_SECONDS + 60,
+            suffix="stuck",
+        )
+
+        _cleanup_orphaned_attachments(db)
+
+        db.refresh(old)
+        assert old.status == AttachmentUserProvidedStatus.uploaded
+
+        old.delete(db)
+
+    def test_short_circuits_when_no_storage_config(self, db, storage_config_default):
+        # Function returns cleanly without iterating rows when storage is
+        # not configured — re-running once configured does the work.
+        old = _make_uploaded_row(
+            db,
+            storage_config_default,
+            age_seconds=ORPHAN_MIN_AGE_SECONDS + 60,
+            suffix="no_storage",
+        )
+
+        with patch(
+            "fides.service.privacy_request_attachments."
+            "privacy_request_attachments_service.get_active_default_storage_config",
+            return_value=None,
+        ):
+            _cleanup_orphaned_attachments(db)
+
+        db.refresh(old)
+        assert old.status == AttachmentUserProvidedStatus.uploaded
+
+        old.delete(db)
+
+    def test_one_failure_does_not_abort_batch(
+        self,
+        db,
+        storage_config_default,
+        patch_provider_factory,
+        mock_provider,
+    ):
+        # First delete raises, second succeeds — second row must still be
+        # transitioned to ``deleted``.
+        first = _make_uploaded_row(
+            db,
+            storage_config_default,
+            age_seconds=ORPHAN_MIN_AGE_SECONDS + 120,
+            suffix="bad",
+        )
+        second = _make_uploaded_row(
+            db,
+            storage_config_default,
+            age_seconds=ORPHAN_MIN_AGE_SECONDS + 60,
+            suffix="good",
+        )
+
+        deleted_keys: list[str] = []
+
+        def _maybe_fail(_bucket: str, key: str) -> None:
+            deleted_keys.append(key)
+            if key.endswith("bad.pdf"):
+                raise RuntimeError("s3 transient")
+
+        mock_provider.delete.side_effect = _maybe_fail
+
+        _cleanup_orphaned_attachments(db)
+
+        db.refresh(first)
+        db.refresh(second)
+        assert first.status == AttachmentUserProvidedStatus.uploaded
+        assert second.status == AttachmentUserProvidedStatus.deleted
+        assert sorted(deleted_keys) == [
+            "privacy_request_attachments/bad.pdf",
+            "privacy_request_attachments/good.pdf",
+        ]
+
+        first.delete(db)
+        second.delete(db)

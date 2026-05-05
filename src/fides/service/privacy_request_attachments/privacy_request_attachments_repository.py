@@ -93,3 +93,38 @@ class AttachmentUserProvidedRepository:
             raise InvalidAttachmentStateError(row.object_key, row.status)
         row.status = AttachmentUserProvidedStatus.promoted
         row.promoted_at = promoted_at or datetime.now(timezone.utc)
+
+    @with_optional_sync_session
+    def list_uploaded_older_than(
+        self,
+        cutoff: datetime,
+        *,
+        session: Session,
+    ) -> list[AttachmentUserProvided]:
+        """Return ``uploaded`` rows whose ``created_at`` is strictly before
+        ``cutoff``. Used by the orphan-sweep task to find rows whose temp
+        storage object was never claimed by a privacy-request submission."""
+        return (
+            session.query(AttachmentUserProvided)
+            .filter(
+                AttachmentUserProvided.status == AttachmentUserProvidedStatus.uploaded
+            )
+            .filter(AttachmentUserProvided.created_at < cutoff)
+            .all()
+        )
+
+    @with_optional_sync_session
+    def mark_deleted(
+        self,
+        row: AttachmentUserProvided,
+        *,
+        session: Session,  # pylint: disable=unused-argument
+    ) -> None:
+        """Flip a single row from ``uploaded`` to ``deleted`` (orphan sweep).
+
+        Raises :class:`InvalidAttachmentStateError` if the row is not in
+        ``uploaded`` so a concurrent promotion is never overwritten.
+        """
+        if row.status != AttachmentUserProvidedStatus.uploaded:
+            raise InvalidAttachmentStateError(row.object_key, row.status)
+        row.status = AttachmentUserProvidedStatus.deleted
