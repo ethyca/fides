@@ -54,9 +54,7 @@ class IdentityInputs(FidesSchema):
         super().__init__(**data)
 
 
-VisibilityOperator = Literal[
-    "eq", "ne", "set", "empty", "contains"
-]
+VisibilityOperator = Literal["eq", "ne", "set", "empty", "contains"]
 
 
 class VisibilityCondition(FidesSchema):
