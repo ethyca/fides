@@ -276,6 +276,23 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         responseHandler: "content-type",
       }),
     }),
+
+    // Plus-only, MSW-mocked for now.
+    // TODO: replace with real endpoint once fidesplus ships it.
+    getPurposeSummaries: builder.query<PurposeSummary[], void>({
+      query: () => ({
+        url: `plus/data-purpose/summaries`,
+      }),
+      providesTags: ["DataPurpose"],
+    }),
+
+    downloadDataPurposesCsv: builder.query<Blob, DataPurposeParams>({
+      query: (params) => ({
+        url: `data-purpose`,
+        params: { ...params, download_csv: true },
+        responseHandler: "content-type",
+      }),
+    }),
   }),
 });
 

@@ -107,6 +107,29 @@ class TestConsentRequestCustomFieldFunctions:
             "account_ids": {"label": "Account IDs", "value": [123, 456]},
         }
 
+    def test_persist_custom_privacy_request_fields_preserves_bool_and_drops_empty(
+        self,
+        db,
+        consent_request,
+        allow_custom_privacy_request_field_collection_enabled,
+        allow_custom_privacy_request_fields_in_request_execution_enabled,
+    ):
+        """Boolean `False` checkbox values persist; None/empty-string values are dropped."""
+        consent_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields={
+                "agree": CustomPrivacyRequestField(label="Agree", value=False),
+                "consent": CustomPrivacyRequestField(label="Consent", value=True),
+                "notes_empty": CustomPrivacyRequestField(label="Notes", value=""),
+                "notes_none": CustomPrivacyRequestField(label="Notes2", value=None),
+            },
+        )
+        persisted = consent_request.get_persisted_custom_privacy_request_fields()
+        assert persisted == {
+            "agree": {"label": "Agree", "value": False},
+            "consent": {"label": "Consent", "value": True},
+        }
+
     def test_persist_custom_privacy_request_fields_collection_disabled(
         self,
         db,
