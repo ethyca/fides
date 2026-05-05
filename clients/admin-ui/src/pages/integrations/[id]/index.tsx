@@ -1,4 +1,4 @@
-import { Button, Col, Row, Spin, Tabs, useMessage } from "fidesui";
+import { Button, Col, Icons, Row, Spin, Tabs, useMessage } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
@@ -30,6 +30,7 @@ const IntegrationDetailView: NextPage = () => {
   const id = router.query.id as string;
   const message = useMessage();
   const oauthHandled = useRef(false);
+  const shouldTestAfterAuth = useRef(false);
 
   const {
     flags: { jiraIntegration },
@@ -90,6 +91,7 @@ const IntegrationDetailView: NextPage = () => {
     const jiraAuthStatus = router.query.jira_auth as string | undefined;
     if (jiraAuthStatus === "success") {
       oauthHandled.current = true;
+      shouldTestAfterAuth.current = true;
       message.success("Jira authorization successful");
       router.replace(`${INTEGRATION_MANAGEMENT_ROUTE}/${id}`, undefined, {
         shallow: true,
@@ -104,6 +106,14 @@ const IntegrationDetailView: NextPage = () => {
       });
     }
   }, [router.query.jira_auth, id, message, router]);
+
+  // Auto-test after successful OAuth re-authorization
+  useEffect(() => {
+    if (shouldTestAfterAuth.current && connection) {
+      shouldTestAfterAuth.current = false;
+      testConnection();
+    }
+  }, [connection, testConnection]);
 
   const integrationTypeInfo = getIntegrationTypeInfo(
     connection?.connection_type,
@@ -187,6 +197,17 @@ const IntegrationDetailView: NextPage = () => {
             title: connection?.name ?? connection?.key ?? "",
           },
         ]}
+        rightContent={
+          <Button
+            icon={<Icons.Edit />}
+            onClick={() =>
+              router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${id}/edit-dataset`)
+            }
+            data-testid="edit-dataset-btn"
+          >
+            Edit dataset
+          </Button>
+        }
       />
       <Row wrap={false} gutter={24}>
         <Col flex="1 1 auto">
