@@ -37,38 +37,6 @@ export interface CustomTagProps extends Omit<TagProps, "color"> {
 // Colors that need light text and border
 const DARK_BACKGROUNDS = ["minos"];
 const RETAIN_DEFAULT_BORDER = ["corinth", "white"];
-// Brand colors that have a `--fidesui-brand-bg-*` CSS variable defined in the
-// Ant theme. `default` and `white` are valid CUSTOM_TAG_COLOR values but have
-// no corresponding brand-bg var, so they fall through to Ant's own styling
-// rather than inheriting an undefined background.
-const BRAND_BG_COLORS = [
-  "minos",
-  "corinth",
-  "terracotta",
-  "olive",
-  "marble",
-  "sandstone",
-  "nectar",
-  "alert",
-  "caution",
-  "error",
-  "warning",
-  "success",
-  "info",
-] as const satisfies readonly BrandColor[];
-
-const NEUTRAL_COLORS = ["default", "white"] as const satisfies readonly BrandColor[];
-
-// Compile-time exhaustiveness: every CUSTOM_TAG_COLOR member must be in
-// either BRAND_BG_COLORS or NEUTRAL_COLORS. Adding a new enum member without
-// classifying it makes `_UnclassifiedColor` non-`never`, which fails the
-// assignment below with a TypeScript error.
-type _UnclassifiedColor = Exclude<
-  BrandColor,
-  (typeof BRAND_BG_COLORS)[number] | (typeof NEUTRAL_COLORS)[number]
->;
-const _exhaustive: _UnclassifiedColor extends never ? true : never = true;
-void _exhaustive;
 
 /**
  * Higher-order component that adds brand colors support to the Tag component.
@@ -118,12 +86,9 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         }
       }, [props.closable, props.onClose, closeButtonLabel, tagRef]);
 
-      // If it's a brand color with a defined CSS variable, use our palette.
-      // For `default`/`white` (no brand-bg var), pass the color name through
-      // to Ant so its built-in styling takes over.
+      // If it's a brand color, use our palette
       const brandColor: string | undefined =
-        typeof color === "string" &&
-        (BRAND_BG_COLORS as readonly string[]).includes(color.toLowerCase())
+        typeof color === "string"
           ? `var(--fidesui-brand-bg-${color.toLowerCase()})`
           : undefined;
       const needsLightText = color && DARK_BACKGROUNDS.includes(color);
