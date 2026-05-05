@@ -8,6 +8,9 @@ export const DetailsDrawerTitle = ({
   titleIcon,
   titleTag,
 }: Pick<DetailsDrawerProps, "title" | "titleIcon" | "titleTag">) => {
+  // Ant's `<Text ellipsis={{ tooltip }}>` would normally cover this, but its
+  // overflow detection doesn't fire reliably inside the drawer's animated
+  // mount path, so we drive the tooltip from a manual ResizeObserver.
   const titleRef = useRef<HTMLSpanElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
