@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Flex,
   Form,
@@ -42,6 +43,7 @@ interface JiraSecrets {
 
 interface JiraConfigTabProps {
   connection: ConnectionConfigurationResponse;
+  onReauthorize?: () => void;
 }
 
 interface JiraConfigFormValues {
@@ -53,7 +55,7 @@ interface JiraConfigFormValues {
   due_date_days?: string;
 }
 
-const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
+const JiraConfigTab = ({ connection, onReauthorize }: JiraConfigTabProps) => {
   const [form] = Form.useForm<JiraConfigFormValues>();
   const message = useMessage();
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -67,11 +69,19 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
   const descriptionTemplate = Form.useWatch("description_template", form);
 
   // RTK Query hooks
-  const { data: projects, isLoading: projectsLoading } =
-    useGetJiraProjectsQuery(
-      { connectionKey: connection.key },
-      { skip: !connection.key },
-    );
+  const {
+    data: projects,
+    isLoading: projectsLoading,
+    error: projectsError,
+  } = useGetJiraProjectsQuery(
+    { connectionKey: connection.key },
+    { skip: !connection.key },
+  );
+
+  const hasAuthError =
+    projectsError &&
+    "status" in projectsError &&
+    (projectsError.status === 400 || projectsError.status === 401);
 
   const { data: issueTypes, isLoading: issueTypesLoading } =
     useGetJiraIssueTypesQuery(
@@ -152,6 +162,29 @@ const JiraConfigTab = ({ connection }: JiraConfigTabProps) => {
       message.error("Failed to save configuration");
     }
   };
+
+  if (hasAuthError) {
+    return (
+      <Flex vertical gap="middle" className="max-w-screen-md pt-4">
+        <Alert
+          type="error"
+          showIcon
+          message="Jira authorization expired"
+          description="Your Jira connection needs to be re-authorized. Ticket creation and status polling are paused until the connection is restored."
+          action={
+            onReauthorize && (
+              <Button
+                onClick={onReauthorize}
+                data-testid="reauthorize-jira-btn"
+              >
+                Re-authorize
+              </Button>
+            )
+          }
+        />
+      </Flex>
+    );
+  }
 
   return (
     <Flex vertical gap="middle" className="max-w-screen-md pt-4">

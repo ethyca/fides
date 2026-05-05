@@ -57,7 +57,12 @@ const ConnectionStatusNotice = ({
   ) : (
     <Flex color="error-text.900" align="center" data-testid="connection-status">
       <Icons.WarningAltFilled size={16} className="mr-2" />
-      <Text>Last connection failed {testDate}</Text>
+      <Text>
+        Last connection failed {testDate}
+        {isJiraTicket && testData.authorized
+          ? " — Jira authorization may have expired"
+          : ""}
+      </Text>
     </Flex>
   );
 };
