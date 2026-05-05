@@ -706,9 +706,7 @@ def validate_reset_token(
             valid=False, reason=TokenValidationReason.invalid
         )
 
-    matching_reset = FidesUserPasswordReset.get_by(
-        db, field="user_id", value=user.id
-    )
+    matching_reset = FidesUserPasswordReset.get_by(db, field="user_id", value=user.id)
     if not matching_reset:
         return TokenValidationResponse(
             valid=False, reason=TokenValidationReason.invalid

@@ -331,9 +331,7 @@ class TestValidateInvite:
         assert response.status_code == HTTP_200_OK
         assert response.json() == {"valid": True, "reason": None}
 
-    def test_validate_invite_invalid_code(
-        self, api_client: TestClient, invited_user
-    ):
+    def test_validate_invite_invalid_code(self, api_client: TestClient, invited_user):
         response = api_client.get(
             VALIDATE_INVITE_URL,
             params={
@@ -356,9 +354,7 @@ class TestValidateInvite:
         assert response.json() == {"valid": False, "reason": "invalid"}
 
     @mock.patch("fides.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
-    def test_validate_invite_expired(
-        self, mock_get_by, api_client: TestClient
-    ):
+    def test_validate_invite_expired(self, mock_get_by, api_client: TestClient):
         mock_instance = mock.Mock(
             spec=FidesUserInvite,
             invite_code_valid=mock.Mock(return_value=True),
@@ -412,9 +408,7 @@ class TestValidateResetToken:
             data={"user_id": user.id, "roles": [VIEWER]},
         )
         token = str(uuid4())
-        FidesUserPasswordReset.create_or_replace(
-            db, user_id=user.id, token=token
-        )
+        FidesUserPasswordReset.create_or_replace(db, user_id=user.id, token=token)
         yield user, token
         try:
             user.delete(db)
@@ -491,9 +485,7 @@ class TestValidateResetToken:
             VALIDATE_RESET_TOKEN_URL,
             params={"username": "validate_reset_user", "token": token},
         )
-        remaining = FidesUserPasswordReset.get_by(
-            db, field="user_id", value=user.id
-        )
+        remaining = FidesUserPasswordReset.get_by(db, field="user_id", value=user.id)
         assert remaining is not None
 
 
