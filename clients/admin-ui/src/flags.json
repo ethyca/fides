@@ -42,13 +42,6 @@
     "test": true,
     "production": false
   },
-  "newIntegrationManagement": {
-    "label": "New integration management",
-    "description": "Shows all integrations (including SaaS) in the integrations page",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "alphaPrivacyNoticesSandbox": {
     "label": "Alpha privacy notices sandbox",
     "description": "Enable privacy notices sandbox page for testing consent v3",

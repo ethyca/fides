@@ -52,6 +52,32 @@ interface ClassifyInstancesParams {
   resource_type: GenerateTypes;
 }
 
+export interface JiraProject {
+  id: string;
+  key: string;
+  name: string;
+}
+
+export interface JiraIssueType {
+  id: string;
+  name: string;
+  description?: string;
+  subtask: boolean;
+}
+
+export interface JiraStatus {
+  id: string;
+  name: string;
+  category_key: string;
+  category_name: string | null;
+}
+
+export interface JiraTemplateVariable {
+  name: string;
+  description: string;
+  example_value?: string;
+}
+
 const plusApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<HealthCheck, void>({
@@ -524,33 +550,30 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Datastore Connection"],
     }),
-    getJiraProjects: build.query<
-      Array<{ id: string; key: string; name: string }>,
-      { connectionKey: string }
-    >({
+    getJiraProjects: build.query<JiraProject[], { connectionKey: string }>({
       query: ({ connectionKey }) => ({
         url: `plus/connection/${connectionKey}/jira/projects`,
       }),
     }),
     getJiraIssueTypes: build.query<
-      Array<{
-        id: string;
-        name: string;
-        description?: string;
-        subtask: boolean;
-      }>,
+      JiraIssueType[],
       { connectionKey: string; projectKey: string }
     >({
       query: ({ connectionKey, projectKey }) => ({
         url: `plus/connection/${connectionKey}/jira/projects/${projectKey}/issuetypes`,
       }),
     }),
+    getJiraStatuses: build.query<
+      JiraStatus[],
+      { connectionKey: string; projectKey: string; issueType: string }
+    >({
+      query: ({ connectionKey, projectKey, issueType }) => ({
+        url: `plus/connection/${connectionKey}/jira/statuses`,
+        params: { project_key: projectKey, issue_type: issueType },
+      }),
+    }),
     getJiraTemplateVariables: build.query<
-      Array<{
-        name: string;
-        description: string;
-        example_value?: string;
-      }>,
+      JiraTemplateVariable[],
       { connectionKey: string }
     >({
       query: ({ connectionKey }) => ({
@@ -611,6 +634,7 @@ export const {
   useInitiateJiraOAuthMutation,
   useGetJiraProjectsQuery,
   useGetJiraIssueTypesQuery,
+  useGetJiraStatusesQuery,
   useGetJiraTemplateVariablesQuery,
   usePreviewJiraTicketMutation,
 } = plusApi;

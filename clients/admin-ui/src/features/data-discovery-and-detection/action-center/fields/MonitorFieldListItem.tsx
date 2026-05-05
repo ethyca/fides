@@ -10,7 +10,6 @@ import {
   SparkleIcon,
   Tag,
   Text,
-  Tooltip,
 } from "fidesui";
 import _ from "lodash";
 
@@ -171,17 +170,15 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
                 {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
               </Tag>
             )}
-            <Tooltip title={urn} mouseEnterDelay={0.5}>
-              <Breadcrumb
-                className={styles["monitor-field__breadcrumb"]}
-                items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
-                // @ts-expect-error - role works here, but Ant's type system doesn't know that
-                role="presentation"
-                style={{
-                  overflow: "hidden",
-                }}
-              />
-            </Tooltip>
+            <Breadcrumb
+              className={styles["monitor-field__breadcrumb"]}
+              items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
+              // @ts-expect-error - role works here, but Ant's type system doesn't know that
+              role="presentation"
+              style={{
+                overflow: "hidden",
+              }}
+            />
           </Flex>
         }
         description={
