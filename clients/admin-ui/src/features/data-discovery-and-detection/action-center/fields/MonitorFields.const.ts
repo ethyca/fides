@@ -145,11 +145,11 @@ export const MAP_DIFF_STATUS_TO_STATUS_INFO: Partial<
   >
 > = {
   [DiffStatus.ADDITION]: {
-    color: "var(--fidesui-success)",
+    color: "var(--fidesui-color-success)",
     tooltip: "This resource was added in the latest scan",
   },
   [DiffStatus.REMOVAL]: {
-    color: "var(--fidesui-error)",
+    color: "var(--fidesui-color-error)",
     tooltip: "This resource was removed in the latest scan",
   },
 } as const;

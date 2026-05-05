@@ -89,7 +89,7 @@ export const ListExpandableCell = ({
           }}
           className="h-auto p-0"
           style={{
-            fontSize: "var(--ant-font-size)",
+            fontSize: "var(--fidesui-font-size)",
           }}
         >
           {isCollapsed ? "view" : COLLAPSE_BUTTON_TEXT}

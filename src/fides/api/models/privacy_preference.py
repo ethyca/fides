@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, cast
 
 from sqlalchemy import (
     Boolean,
@@ -31,7 +31,7 @@ from fides.api.models.privacy_notice import (
 from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.language import SupportedLanguage
-from fides.api.schemas.redis_cache import MultiValue
+from fides.api.schemas.redis_cache import MultiValue, is_empty_multivalue
 
 
 class RequestOrigin(Enum):
@@ -131,7 +131,7 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         Temporary function used to hash values to the previously used bcrypt hashes.
         This can be removed once the bcrypt to SHA-256 migration is complete.
         """
-        if not value:
+        if is_empty_multivalue(value):
             return None
 
         return ProvidedIdentity.bcrypt_hash_value(value, encoding)
@@ -145,10 +145,11 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         """Utility function to hash the value with a generated salt
         This returns None if there's no value, unlike ProvidedIdentity.hash_value
         """
-        if not value:
+        if is_empty_multivalue(value):
             return None
 
-        return ProvidedIdentity.hash_value(value, encoding)
+        # Narrow: is_empty_multivalue guarantees value is not None here.
+        return ProvidedIdentity.hash_value(cast(MultiValue, value), encoding)
 
     def migrate_hashed_fields(self) -> None:
         if unencrypted_email := self.email:
