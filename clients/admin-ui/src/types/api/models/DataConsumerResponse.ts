@@ -23,9 +23,11 @@ export type DataConsumerResponse = {
    */
   type: string;
   /**
-   * External Id
+   * Scope
    */
-  external_id?: string | null;
+  scope?: {
+    [key: string]: string;
+  };
   /**
    * System Fides Key
    */

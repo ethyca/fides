@@ -13,9 +13,11 @@ export type DataConsumerUpdate = {
    */
   description?: string | null;
   /**
-   * External Id
+   * Scope
    */
-  external_id?: string | null;
+  scope?: {
+    [key: string]: string;
+  } | null;
   /**
    * Egress
    */

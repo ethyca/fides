@@ -1,0 +1,4 @@
+type: Fixed
+description: Eliminated Next.js 16 warnings for above-the-fold logos on login and forgot-password pages
+pr: 8052
+labels: []

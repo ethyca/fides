@@ -88,7 +88,7 @@ const IntegrationListView: NextPage = () => {
   const oauthHandled = useRef(false);
 
   const {
-    flags: { newIntegrationManagement, jiraIntegration },
+    flags: { jiraIntegration },
   } = useFlags();
 
   useEffect(() => {
@@ -135,15 +135,12 @@ const IntegrationListView: NextPage = () => {
   const connectionTypesToQuery = useMemo(() => {
     let types = SUPPORTED_INTEGRATIONS;
 
-    if (!newIntegrationManagement) {
-      types = types.filter((type) => type !== ConnectionType.SAAS);
-    }
     if (!jiraIntegration) {
       types = types.filter((type) => type !== ConnectionType.JIRA_TICKET);
     }
 
     return types;
-  }, [newIntegrationManagement, jiraIntegration]);
+  }, [jiraIntegration]);
 
   const { data, isLoading, error } = useGetAllDatastoreConnectionsQuery({
     connection_type: connectionTypesToQuery,

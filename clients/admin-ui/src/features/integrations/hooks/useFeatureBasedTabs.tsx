@@ -105,6 +105,7 @@ export const useFeatureBasedTabs = ({
                     testData={testData}
                     connectionOption={integrationOption}
                     connectionType={connection?.connection_type}
+                    isTestingConnection={testIsLoading}
                   />
                   <Spacer />
                   <Flex gap="medium">
@@ -120,13 +121,27 @@ export const useFeatureBasedTabs = ({
                       </Button>
                     )}
                     {!needsAuthorization && (
-                      <Button
-                        onClick={testConnection}
-                        loading={testIsLoading}
-                        data-testid="test-connection-btn"
-                      >
-                        Test connection
-                      </Button>
+                      <>
+                        <Button
+                          onClick={testConnection}
+                          loading={testIsLoading}
+                          data-testid="test-connection-btn"
+                        >
+                          Test connection
+                        </Button>
+                        {connection?.connection_type ===
+                          ConnectionType.JIRA_TICKET &&
+                          testData.authorized &&
+                          testData.succeeded === false &&
+                          testData.timestamp && (
+                            <Button
+                              onClick={handleAuthorize}
+                              data-testid="reauthorize-integration-btn"
+                            >
+                              Re-authorize
+                            </Button>
+                          )}
+                      </>
                     )}
                     <Button onClick={onOpen} data-testid="manage-btn">
                       Manage
@@ -231,7 +246,12 @@ export const useFeatureBasedTabs = ({
       tabItems.push({
         label: "Ticket setup",
         key: "configuration",
-        children: <JiraConfigTab connection={connection!} />,
+        children: (
+          <JiraConfigTab
+            connection={connection!}
+            onReauthorize={handleAuthorize}
+          />
+        ),
       });
     }
 

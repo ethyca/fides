@@ -1,7 +1,7 @@
-import type {
+import {
   AssessmentResponse as GeneratedAssessmentResponse,
   CreateAssessmentTaskRequest,
-  Page_AssessmentResponse_,
+  Page_AssessmentTaskResponse_,
   TemplateResponse,
 } from "~/types/api";
 
@@ -15,6 +15,7 @@ export enum AssessmentStatus {
   IN_PROGRESS = "in_progress",
   COMPLETED = "completed",
   OUTDATED = "outdated",
+  GENERATING = "generating",
 }
 
 export enum AnswerStatus {
@@ -49,7 +50,7 @@ export interface PrivacyAssessmentResponse extends Omit<
 // Override Page type with our strongly-typed assessment
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface Page_PrivacyAssessmentResponse_ extends Omit<
-  Page_AssessmentResponse_,
+  Page_AssessmentTaskResponse_,
   "items"
 > {
   items: PrivacyAssessmentResponse[];
@@ -127,7 +128,16 @@ export interface EvidenceItem {
   data?: SlackEvidenceData;
 }
 
+export enum QuestionnaireSessionStatus {
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  STOPPED = "stopped",
+}
+
 export interface QuestionnaireStatus {
+  questionnaire_id: string | null;
+  status: QuestionnaireSessionStatus;
+  stop_reason: string | null;
   sent_at: string;
   channel: string;
   total_questions: number;
@@ -357,4 +367,40 @@ export interface AssessmentTaskPage {
   page: number;
   size: number;
   pages: number;
+}
+
+// ── Questionnaire chat types ────────────────────────────────────────
+
+export interface QuestionnaireChatMessage {
+  text: string;
+  is_bot_message: boolean;
+  sender_email: string | null;
+  sender_display_name: string | null;
+  timestamp: string | null;
+  question_index: number | null;
+}
+
+export interface StartChatRequest {
+  assessment_id: string;
+  include_question_ids?: string[];
+}
+
+export interface StartChatResponse {
+  questionnaire_id: string;
+  assessment_id: string;
+  messages: QuestionnaireChatMessage[];
+  total_questions: number;
+}
+
+export interface ChatReplyRequest {
+  assessment_id: string;
+  questionnaire_id: string;
+  message_text: string;
+}
+
+export interface ChatReplyResponse {
+  bot_messages: QuestionnaireChatMessage[];
+  status: QuestionnaireSessionStatus;
+  answered_questions: number;
+  total_questions: number;
 }

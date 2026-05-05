@@ -27,6 +27,18 @@ export type JiraTicketDocsSchema = {
    */
   site_url?: string | null;
   /**
+   * Client Id
+   */
+  client_id?: string | null;
+  /**
+   * Client Secret
+   */
+  client_secret?: string | null;
+  /**
+   * Redirect Uri
+   */
+  redirect_uri?: string | null;
+  /**
    * Domain
    */
   domain?: string | null;
@@ -40,6 +52,12 @@ export type JiraTicketDocsSchema = {
   api_key?: string | null;
   [key: string]:
     | unknown
+    | string
+    | null
+    | string
+    | null
+    | string
+    | null
     | string
     | null
     | string
