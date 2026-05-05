@@ -78,10 +78,17 @@ const JiraConfigTab = ({ connection, onReauthorize }: JiraConfigTabProps) => {
     { skip: !connection.key },
   );
 
-  const hasAuthError =
-    projectsError &&
-    "status" in projectsError &&
-    (projectsError.status === 400 || projectsError.status === 401);
+  const hasAuthError = (() => {
+    if (!projectsError || !("status" in projectsError)) {
+      return false;
+    }
+    if (projectsError.status === 401) {
+      return true;
+    }
+    const detail =
+      (projectsError as { data?: { detail?: string } }).data?.detail ?? "";
+    return detail.toLowerCase().includes("token refresh failed");
+  })();
 
   const { data: issueTypes, isLoading: issueTypesLoading } =
     useGetJiraIssueTypesQuery(
