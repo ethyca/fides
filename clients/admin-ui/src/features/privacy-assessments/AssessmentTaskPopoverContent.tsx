@@ -31,7 +31,9 @@ export const AssessmentTaskPopoverContent = ({
         <Descriptions column={1} size="small">
           <Descriptions.Item label="Status">
             <Flex align="center" gap="small">
-              <Spin size="small" />
+              <div>
+                <Spin size="small" />
+              </div>
               <span>In progress</span>
             </Flex>
           </Descriptions.Item>
