@@ -8,6 +8,7 @@ export type ConnectionStatusData = {
   succeeded?: boolean;
   authorized?: boolean;
   connectionKey?: string;
+  failureReason?: string;
 };
 
 const ConnectionStatusNotice = ({
@@ -59,7 +60,7 @@ const ConnectionStatusNotice = ({
       <Icons.WarningAltFilled size={16} className="mr-2" />
       <Text>
         Last connection failed {testDate}
-        {isJiraTicket && testData.authorized
+        {isJiraTicket && testData.failureReason?.toLowerCase().includes("token")
           ? " — Jira authorization may have expired"
           : ""}
       </Text>

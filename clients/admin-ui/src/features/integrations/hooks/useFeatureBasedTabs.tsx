@@ -131,7 +131,9 @@ export const useFeatureBasedTabs = ({
                         {connection?.connection_type ===
                           ConnectionType.JIRA_TICKET &&
                           testData.succeeded === false &&
-                          testData.timestamp && (
+                          testData.failureReason
+                            ?.toLowerCase()
+                            .includes("token") && (
                             <Button
                               onClick={handleAuthorize}
                               data-testid="reauthorize-integration-btn"
