@@ -8,7 +8,16 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    select,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -74,6 +83,9 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
+from fides.api.models.privacy_request.custom_field_persistence import (
+    CustomPrivacyRequestFieldPersistenceMixin,
+)
 from fides.api.models.privacy_request.duplicate_group import DuplicateGroup
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
@@ -127,13 +139,19 @@ if TYPE_CHECKING:
 
 
 class PrivacyRequest(
-    IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
+    CustomPrivacyRequestFieldPersistenceMixin,
+    IdentityVerificationMixin,
+    DecryptedIdentityAutomatonMixin,
+    Contextualizable,
+    Base,
 ):  # pylint: disable=R0904,too-many-instance-attributes
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
     progression within the Fides system.
     """
+
+    _custom_field_fk_column = "privacy_request_id"
 
     __table_args__ = (
         # Composite index for duplicate detection queries
@@ -610,34 +628,6 @@ class PrivacyRequest(
             except Exception as exc:
                 # This should never affect the ability to create privacy requests
                 logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
-
-    def persist_custom_privacy_request_fields(
-        self,
-        db: Session,
-        custom_privacy_request_fields: Dict[str, CustomPrivacyRequestFieldSchema],
-    ) -> None:
-        if not custom_privacy_request_fields:
-            return
-
-        if CONFIG.execution.allow_custom_privacy_request_field_collection:
-            for key, item in custom_privacy_request_fields.items():
-                if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
-                    CustomPrivacyRequestField.create(
-                        db=db,
-                        data={
-                            "privacy_request_id": self.id,
-                            "field_name": key,
-                            "field_label": item.label,
-                            "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
-                        },
-                    )
-        else:
-            logger.info(
-                "Custom fields provided in privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
-                self.id,
-            )
 
     def get_persisted_identity(self) -> Identity:
         """
@@ -1204,12 +1194,30 @@ class PrivacyRequest(
 
         It is possible Request Tasks get queued multiple times, so the celery task
         id returned is the last celery task queued.
+
+        Uses a column projection query to load only RequestTask.id, avoiding
+        loading large encrypted blobs (_access_data, _data_for_erasures) into
+        memory. This is critical because this method is called from the
+        cancel path in the webserver process.
         """
+        db = Session.object_session(self)
+        if db is None:
+            raise RuntimeError(
+                f"PrivacyRequest {self.id} is not bound to a session. "
+                "Cannot query request task IDs on a detached instance."
+            )
+
+        stmt = select(RequestTask.id).where(RequestTask.privacy_request_id == self.id)  # type: ignore[arg-type] # RequestTask.id is a mapped Column, not a plain str
+        request_task_ids = db.execute(stmt).scalars().all()
+
         request_task_celery_ids: List[str] = []
-        for request_task in self.request_tasks:
-            request_task_id: Optional[str] = request_task.get_cached_task_id()
-            if request_task_id:
-                request_task_celery_ids.append(request_task_id)
+        for rt_id in request_task_ids:
+            # Use the static method with the raw ID rather than the instance
+            # method — we intentionally avoid loading RequestTask ORM objects
+            # to prevent pulling large encrypted blobs into memory.
+            task_id = RequestTask.get_cached_task_id_by_id(rt_id)
+            if task_id:
+                request_task_celery_ids.append(task_id)
         return request_task_celery_ids
 
     def cancel_celery_tasks(self) -> None:

@@ -806,6 +806,21 @@ def requeue_polling_tasks(self: DatabaseTask) -> None:
 
 EMBEDDED_EXECUTION_LOG_LIMIT = 1000
 
+# Display names for AuditLogAction values when rendering audit log rows in the
+# privacy request activity timeline. Keys must cover every AuditLogAction;
+# missing keys fall back to a raw `f"Request {action}"` rendering. A test in
+# tests/ops/service/privacy_request/test_request_service.py guards against drift.
+AUDIT_LOG_DISPLAY_NAMES = {
+    "approved": "Request approved",
+    "denied": "Request denied",
+    "email_sent": "Email sent",
+    "finished": "Request finished",
+    "policy_evaluated": "Request policy evaluated",
+    "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
+    "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
+    "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
+}
+
 
 def batch_execution_and_audit_logs_by_dataset(
     db: Session,
@@ -863,20 +878,12 @@ def batch_execution_and_audit_logs_by_dataset(
 
     result: Dict[str, DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]] = {}
 
-    audit_log_display_names = {
-        "approved": "Request approved",
-        "denied": "Request denied",
-        "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
-        "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
-        "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
-    }
-
     for log in combined.order_by(ExecutionLog.updated_at.asc()):
         pr_id = log.privacy_request_id
         if pr_id not in result:
             result[pr_id] = defaultdict(list)
 
-        dataset_name: str = log.dataset_name or audit_log_display_names.get(
+        dataset_name: str = log.dataset_name or AUDIT_LOG_DISPLAY_NAMES.get(
             log.status, f"Request {log.status}"
         )
 
