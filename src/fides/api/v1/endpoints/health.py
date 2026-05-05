@@ -33,13 +33,16 @@ PoolHealth = Literal["healthy", "unhealthy", "skipped"]
 DatabaseResponseHealth = Literal["healthy", "unhealthy", "needs migration"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
 
+
 # Per-pool ping: cap how long the health endpoint can block on each async check, and bound
 # statement runtime on PostgreSQL (SET LOCAL is a no-op on other dialects we skip).
-DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS = 1.0
+def _healthcheck_timeout_seconds() -> float:
+    """Configurable timeout for healthcheck queries (default 1.0s)."""
+    return CONFIG.database.healthcheck_query_timeout
 
 
 def _healthcheck_statement_timeout_ms() -> int:
-    return max(1, int(DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS * 1000))
+    return max(1, int(_healthcheck_timeout_seconds() * 1000))
 
 
 def _bind_dialect_name(bind: Any) -> str:
@@ -249,13 +252,13 @@ async def _check_async_session(
     try:
         await asyncio.wait_for(
             _ping_with_session(),
-            timeout=DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS,
+            timeout=_healthcheck_timeout_seconds(),
         )
         return "healthy"
     except asyncio.TimeoutError:
         logger.error(
             "Async database healthcheck timed out after {}s",
-            DATABASE_HEALTHCHECK_QUERY_TIMEOUT_SECONDS,
+            _healthcheck_timeout_seconds(),
         )
         return "unhealthy"
     except Exception as error:  # pylint: disable=broad-except
