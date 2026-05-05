@@ -38,8 +38,8 @@ const buildSpec = (extraElements: Record<string, unknown> = {}) => ({
       children: ["f_email", ...Object.keys(extraElements)],
     },
     f_email: {
-      type: "Text",
-      props: { name: "email", label: "Email", required: true },
+      type: "Email",
+      props: { required: true },
       children: [],
     },
     ...extraElements,
@@ -118,8 +118,10 @@ describe("Privacy center form builder", () => {
         type: "Text",
         props: { name: "state", label: "State", required: false },
         children: [],
-        // `visible` is a dropped feature — the mapper will flag it
+        // `eq` visibility translates fine now, but a `watch` expression is
+        // still preserved-builder-only and gets flagged as a dropped feature.
         visible: [{ $state: "/form/country", eq: "US" }],
+        watch: ["/form/country"],
       },
     });
 
