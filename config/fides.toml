@@ -16,6 +16,10 @@ max_privacy_request_download_rows = 100000 # integer
 # This setting controls how errors are notified to users.
 error_notification_mode = "console_only" # string
 
+# Toggle whether consent-related UI is shown in the Admin UI
+# navigation.
+consent_module_enabled = true # boolean
+
 #------------#
 #-- CELERY --#
 #--------------------------------------------------------------------#
@@ -37,6 +41,25 @@ healthcheck_port = 9000 # integer
 
 # The timeout in seconds for the health check ping
 healthcheck_ping_timeout = 2.0 # number
+
+# If true, starts the worker with --without-heartbeat. Use this as a
+# workaround for Celery BRPOP connection drop issues
+# (celery/celery#7276).
+worker_disable_heartbeat = false # boolean
+
+# If true, starts the worker with --without-gossip. Use this as a
+# workaround for Celery BRPOP connection drop issues
+# (celery/celery#7276).
+worker_disable_gossip = false # boolean
+
+# If true, starts the worker with --without-mingle. Use this as a
+# workaround for Celery BRPOP connection drop issues
+# (celery/celery#7276).
+worker_disable_mingle = false # boolean
+
+# Number of worker processes/threads passed to `celery worker
+# --concurrency`.
+worker_concurrency = 2 # integer
 
 #---------#
 #-- CLI --#
@@ -78,6 +101,16 @@ override_vendor_purposes = false # boolean
 # plaintext. WARNING: Changing this setting requires a data migration
 # in order to keep existing data.
 consent_v3_encryption_enabled = true # boolean
+
+# Enable identity enrichment before consent propagation. When enabled,
+# resolves missing email or external_id from stored preferences before
+# falling back to DB connector queries.
+identity_enrichment = false # boolean
+
+# Maximum seconds to wait for a single identity enrichment DB query.
+# Prevents worker threads from blocking indefinitely on slow or
+# unreachable external databases.
+identity_enrichment_query_timeout_seconds = 30 # integer
 
 #--------------#
 #-- DATABASE --#
@@ -287,6 +320,11 @@ memory_watchdog_enabled = false # boolean
 # traversal.
 use_legacy_traversal = false # boolean
 
+# Soft time limit in seconds for privacy request Celery tasks. When
+# exceeded, SoftTimeLimitExceeded is raised and the full stack trace is
+# logged. Set to 0 to disable (default).
+task_soft_time_limit_seconds = 0 # integer
+
 # Minutes between polling Jira for ticket status updates.
 jira_polling_interval_minutes = 10 # integer
 
@@ -462,6 +500,11 @@ aes_gcm_nonce_length = 12 # integer
 # The key used to sign Fides API access tokens.
 app_encryption_key = "" # string
 
+# Envelope encryption provider. 'none' disables envelope encryption and
+# uses app_encryption_key directly (legacy). 'local' enables envelope
+# encryption, wrapping the DEK with a KEK via in-process AES-256-GCM.
+key_provider = "none" # string
+
 # Text encoding to use for the application.
 encoding = "UTF-8" # string
 
@@ -537,6 +580,10 @@ domain_validation_mode = "monitor" #
 # Either enables the collection of audit log resource data or bypasses
 # the middleware
 enable_audit_log_resource_middleware = false # boolean
+
+# The time in minutes for which a self-service password reset token is
+# valid. Must be between 15 and 60.
+password_reset_token_ttl_minutes = 30 # integer
 
 # The timeout in seconds for the transport socket
 # (``socket.settimeout``)
