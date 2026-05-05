@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.84.2..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.84.3..main)
+
+## [2.84.3](https://github.com/ethyca/fides/compare/2.84.2..2.84.3)
+
+### Changed
+- Replaced the single worker_disable_gossip_heartbeat_mingle config flag with three independent flags (worker_disable_heartbeat, worker_disable_gossip, worker_disable_mingle) for granular control over Celery worker flags [#8077](https://github.com/ethyca/fides/pull/8077)
 
 ## [2.84.2](https://github.com/ethyca/fides/compare/2.84.1..2.84.2)
 
