@@ -33,11 +33,6 @@ class CelerySettings(FidesSettings):
     healthcheck_ping_timeout: float = Field(
         default=2.0, description="The timeout in seconds for the health check ping"
     )
-    worker_enable_remote_control: bool = Field(
-        default=True,
-        description="If false, disables Celery remote control (pidbox). "
-        "Reduces Redis pub/sub connections. Disabling prevents remote worker management commands.",
-    )
     worker_disable_heartbeat: bool = Field(
         default=False,
         description="If true, starts the worker with --without-heartbeat. "
