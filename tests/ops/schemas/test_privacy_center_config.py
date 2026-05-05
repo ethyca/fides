@@ -4,7 +4,6 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.schemas.privacy_center_config import (
-    BaseCustomPrivacyRequestField,
     ConsentConfigPage,
     CustomPrivacyRequestField,
     IdentityInputs,
@@ -13,6 +12,7 @@ from fides.api.schemas.privacy_center_config import (
     get_field_type_discriminator,
     reorder_custom_privacy_request_fields,
 )
+from fides.api.schemas.privacy_center_field_base import BaseCustomPrivacyRequestField
 from fides.api.util.saas_util import load_as_string
 
 
