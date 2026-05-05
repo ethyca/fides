@@ -21,6 +21,12 @@ from fides.service.dataset.dataset_service import DatasetService
 from fides.service.event_audit_service import EventAuditService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.privacy_request_attachments.privacy_request_attachments_deps import (
+    get_attachment_user_provided_service,
+)
+from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+    AttachmentUserProvidedService,
+)
 from fides.service.system.system_service import SystemService
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.user.user_service import UserService
@@ -93,8 +99,13 @@ def get_privacy_request_service(
     db: Session = Depends(get_db),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
     messaging_service: MessagingService = Depends(get_messaging_service),
+    attachment_user_provided_service: AttachmentUserProvidedService = Depends(
+        get_attachment_user_provided_service
+    ),
 ) -> PrivacyRequestService:
-    return PrivacyRequestService(db, config_proxy, messaging_service)
+    return PrivacyRequestService(
+        db, config_proxy, messaging_service, attachment_user_provided_service
+    )
 
 
 def get_dataset_service(

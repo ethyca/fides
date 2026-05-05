@@ -189,6 +189,9 @@ from fides.service.privacy_request.privacy_request_service import (
     handle_approval,
     queue_privacy_request,
 )
+from fides.service.privacy_request_attachments.privacy_request_attachments_service import (
+    AttachmentUserProvidedService,
+)
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
@@ -199,7 +202,10 @@ def get_privacy_request_or_error(
     """Load the privacy request or throw a 404"""
     logger.debug("Finding privacy request with id '{}'", privacy_request_id)
     privacy_request_service = PrivacyRequestService(
-        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+        db,
+        ConfigProxy(db),
+        MessagingService(db, CONFIG, ConfigProxy(db)),
+        AttachmentUserProvidedService(),
     )
     privacy_request = privacy_request_service.get_privacy_request(privacy_request_id)
 
@@ -512,7 +518,10 @@ def get_request_status(
         sort_direction=sort_direction,
     )
     privacy_request_service = PrivacyRequestService(
-        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+        db,
+        ConfigProxy(db),
+        MessagingService(db, CONFIG, ConfigProxy(db)),
+        AttachmentUserProvidedService(),
     )
     return _shared_privacy_request_search(
         db=db,
@@ -550,7 +559,10 @@ def privacy_request_search(
         privacy_request_filter = PrivacyRequestFilter()
 
     privacy_request_service = PrivacyRequestService(
-        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+        db,
+        ConfigProxy(db),
+        MessagingService(db, CONFIG, ConfigProxy(db)),
+        AttachmentUserProvidedService(),
     )
     return _shared_privacy_request_search(
         db=db,
