@@ -39,7 +39,7 @@ const CommandPaletteEntry = ({ onClick }: { onClick?: () => void }) => {
         width: 240,
         padding: "0 10px 0 12px",
         border: `1px solid ${CHROME_GLASS_BORDER}`,
-        borderRadius: 8,
+        borderRadius: 4,
         background: hover ? CHROME_GLASS_BG_HOVER : "transparent",
         color: INK_MUTED,
         fontSize: 12,
@@ -90,7 +90,7 @@ const AccountAvatar = () => {
         alignItems: "center",
         justifyContent: "center",
         border: `1px solid ${CHROME_GLASS_BORDER}`,
-        borderRadius: "50%",
+        borderRadius: 4,
         background: hover ? CHROME_GLASS_BG_HOVER : "transparent",
         color: INK,
         fontFamily:

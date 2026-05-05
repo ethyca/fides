@@ -65,6 +65,17 @@ def test_nested_fields_unpacked(
 
 
 @pytest.mark.unit
+def test_get_all_level_fields_dict_missing_fields_key() -> None:
+    """Leaf field dicts may omit the 'fields' key — should not raise."""
+    fields = [
+        {"name": "leaf_a"},
+        {"name": "parent", "fields": [{"name": "leaf_b"}]},
+    ]
+    names = [f["name"] for f in core_utils.get_all_level_fields(fields)]
+    assert names == ["leaf_a", "parent", "leaf_b"]
+
+
+@pytest.mark.unit
 def test_get_manifest_list(tmp_path: PosixPath) -> None:
     """Test that the correct number of yml files are returned."""
     test_dir = tmp_path / "test"

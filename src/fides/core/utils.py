@@ -82,8 +82,9 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
     for field in fields:
         yield field
         if isinstance(field, dict):
-            if field["fields"]:
-                yield from get_all_level_fields(field["fields"])
+            nested = field.get("fields")
+            if nested:
+                yield from get_all_level_fields(nested)
         else:
             if field.fields:
                 yield from get_all_level_fields(field.fields)

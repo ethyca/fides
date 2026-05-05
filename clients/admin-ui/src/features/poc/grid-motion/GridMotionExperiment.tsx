@@ -1,17 +1,20 @@
 import type { RadarChartDataPoint } from "fidesui";
 import { CollapseIcon, ExpandIcon, RadarChart } from "fidesui";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 
 import ChatPanel from "../entry-point/ChatPanel";
 import BackgroundGlow from "./BackgroundGlow";
 import { DEFAULT_BUSINESS_UNIT_ID } from "./businessUnits";
 import { CardContent } from "./CardContent";
+import FeatureFlagPanel from "./FeatureFlagPanel";
 import { buildBoxShadow, getGlassBgStyle, GLASS_TRANSITION } from "./glass";
 import Header, { HEADER_HEIGHT } from "./Header";
 import { getCardStyle, RADAR_LAYOUT } from "./layout";
 import { CURRENT_PERSONA, DEFAULT_VIEW_BY_PERSONA, type View } from "./persona";
-import SideNav from "./SideNav";
+import ProductGrid, { type ProductCardVariant } from "./ProductGrid";
+import { type ProductId, PRODUCTS } from "./products";
 import TrendList from "./TrendList";
 import { CARD_SPECS, CardId } from "./types";
 import ViewToggle from "./ViewToggle";
@@ -49,11 +52,18 @@ const GPS_SCORE = Math.round(
 type Mode = "splash" | "explore";
 
 type ChatEntryPoint = "header" | "bottom";
-const CHAT_ENTRY_POINT = "header" as ChatEntryPoint;
+
+const CHAT_ENTRY_POINT_OPTIONS = ["header", "bottom"] as const;
+const CARD_VARIANT_OPTIONS = ["minimal", "metrics"] as const;
 
 const GridMotionExperiment = () => {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("splash");
   const [chatOpen, setChatOpen] = useState(false);
+  const [navigatingTo, setNavigatingTo] = useState<ProductId | null>(null);
+  const [chatEntryPoint, setChatEntryPoint] =
+    useState<ChatEntryPoint>("header");
+  const [cardVariant, setCardVariant] = useState<ProductCardVariant>("metrics");
   const [selectedDimension, setSelectedDimension] = useState<string | null>(
     null,
   );
@@ -101,7 +111,7 @@ const GridMotionExperiment = () => {
         exitToSplash();
       }
       if (
-        CHAT_ENTRY_POINT === "header" &&
+        chatEntryPoint === "header" &&
         (e.metaKey || e.ctrlKey) &&
         e.key.toLowerCase() === "k"
       ) {
@@ -111,7 +121,7 @@ const GridMotionExperiment = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [mode]);
+  }, [mode, chatEntryPoint]);
 
   const toggleCard = (id: CardId) => {
     setExpanded((current) => {
@@ -165,13 +175,22 @@ const GridMotionExperiment = () => {
   const radarTarget =
     mode === "splash"
       ? {
-          left: "50%",
-          width: 560,
+          left: "70%",
+          width: 480,
         }
       : {
           left: "20vw",
           width: 380,
         };
+
+  const handleProductSelect = (id: ProductId) => {
+    const product = PRODUCTS.find((p) => p.id === id);
+    if (!product?.owned) {
+      return;
+    }
+    setChatOpen(false);
+    setNavigatingTo(id);
+  };
 
   return (
     <>
@@ -181,17 +200,44 @@ const GridMotionExperiment = () => {
         businessUnitId={businessUnitId}
         onBusinessUnitChange={setBusinessUnitId}
         onCommandPalette={
-          CHAT_ENTRY_POINT === "header" ? () => setChatOpen(true) : undefined
+          chatEntryPoint === "header" ? () => setChatOpen(true) : undefined
         }
       />
 
-      <div
+      <motion.div
+        animate={{ opacity: navigatingTo ? 0 : 1 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        onAnimationComplete={() => {
+          if (navigatingTo) {
+            const product = PRODUCTS.find((p) => p.id === navigatingTo);
+            if (product) {
+              router.push(product.href);
+            }
+          }
+        }}
         style={{
           minHeight: "100vh",
           position: "relative",
           boxSizing: "border-box",
         }}
       >
+        <div
+          style={{
+            position: "fixed",
+            left: 32,
+            top: `calc(50% + ${HEADER_HEIGHT / 2}px)`,
+            transform: "translateY(-50%)",
+            width: "min(48vw, 700px)",
+            height: `min(820px, calc(100vh - ${HEADER_HEIGHT}px - 64px))`,
+            zIndex: 2,
+            pointerEvents: mode === "splash" ? "auto" : "none",
+            opacity: mode === "splash" ? 1 : 0,
+            transition: "opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
+        >
+          <ProductGrid variant={cardVariant} onSelect={handleProductSelect} />
+        </div>
+
         <motion.div
           initial={false}
           animate={radarTarget}
@@ -242,7 +288,7 @@ const GridMotionExperiment = () => {
                 fontWeight: 500,
                 lineHeight: 0.9,
                 letterSpacing: "-0.04em",
-                fontSize: mode === "splash" ? 144 : 96,
+                fontSize: mode === "splash" ? 96 : 64,
                 transition: "font-size 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
               }}
             >
@@ -438,11 +484,9 @@ const GridMotionExperiment = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
-      <SideNav />
-
-      {CHAT_ENTRY_POINT === "bottom" && (
+      {chatEntryPoint === "bottom" && (
         <div
           style={{
             position: "fixed",
@@ -455,7 +499,7 @@ const GridMotionExperiment = () => {
         </div>
       )}
 
-      {CHAT_ENTRY_POINT === "header" && chatOpen && (
+      {chatEntryPoint === "header" && chatOpen && (
         <div
           style={{
             position: "fixed",
@@ -471,6 +515,25 @@ const GridMotionExperiment = () => {
           />
         </div>
       )}
+
+      <FeatureFlagPanel
+        flags={[
+          {
+            key: "cardVariant",
+            label: "Product card variant",
+            value: cardVariant,
+            options: CARD_VARIANT_OPTIONS,
+            onChange: (v) => setCardVariant(v as ProductCardVariant),
+          },
+          {
+            key: "chatEntryPoint",
+            label: "Astralis entry point",
+            value: chatEntryPoint,
+            options: CHAT_ENTRY_POINT_OPTIONS,
+            onChange: (v) => setChatEntryPoint(v as ChatEntryPoint),
+          },
+        ]}
+      />
     </>
   );
 };

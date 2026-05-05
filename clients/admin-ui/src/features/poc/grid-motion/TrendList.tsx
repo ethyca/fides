@@ -88,7 +88,7 @@ const TrendList = ({
                 width: "100%",
                 padding: "14px 18px",
                 border: "none",
-                borderRadius: 6,
+                borderRadius: 4,
                 textAlign: "left",
                 cursor: "pointer",
                 color: INK,

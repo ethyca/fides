@@ -58,7 +58,7 @@ const BackgroundGlow = () => {
           right: "-90vmax",
           top: "-80vmax",
           borderRadius: "50%",
-          background: "#CDD2D3",
+          background: "#ffffff",
           opacity: 0.45,
           filter: BLOB_BLUR,
           transformOrigin: "35% 70%",
