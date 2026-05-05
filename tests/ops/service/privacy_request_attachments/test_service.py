@@ -589,6 +589,9 @@ class TestPromoteRowsToAttachments:
             repo.create_uploaded(
                 object_key=f"privacy_request_attachments/multi_{i}.pdf",
                 storage_key=storage_config_default.key,
+                field_name="file",
+                property_id="test_prop",
+                policy_key="example_access_request_policy",
                 session=db,
             )
             for i in range(2)
@@ -776,7 +779,7 @@ class TestCreatePrivacyRequestFileResolution:
             svc.create_privacy_request(req, authenticated=True)
         assert captured["names"] == {"doc"}
         assert captured["property_id"] == "test_prop"
-        assert captured["policy_key"] == "default_access_policy"
+        assert captured["policy_key"] == "example_access_request_policy"
 
     def test_rejects_when_property_id_missing(self, file_svc_req):
         from fides.api.common_exceptions import PrivacyRequestError

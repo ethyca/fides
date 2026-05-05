@@ -117,7 +117,7 @@ def resolve_upload_constraints(
 
     try:
         cfg = PrivacyCenterConfigSchema.model_validate(config_dict)
-    except ValidationError as exc:
+    except (ValidationError, ValueError, TypeError) as exc:
         logger.warning("Could not parse Privacy Center config for upload: {}", exc)
         return FileUploadConstraints.defaults()
 
