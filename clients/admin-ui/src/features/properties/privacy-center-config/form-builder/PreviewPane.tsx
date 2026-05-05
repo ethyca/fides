@@ -135,7 +135,7 @@ const toolbarStyle: React.CSSProperties = {
   gap: 8,
   padding: "8px 16px",
   background: "#f5f5f5",
-  borderTop: "1px solid var(--ant-color-border)",
+  borderTop: "1px solid var(--fidesui-color-border)",
   flexShrink: 0,
   minHeight: 48,
 };
@@ -345,7 +345,9 @@ export const PreviewPane = ({
       {(description || subtext.length > 0) && (
         <div style={{ marginBottom: 16 }}>
           {description && (
-            <Typography.Paragraph style={{ marginBottom: subtext.length ? 8 : 0 }}>
+            <Typography.Paragraph
+              style={{ marginBottom: subtext.length ? 8 : 0 }}
+            >
               {description}
             </Typography.Paragraph>
           )}

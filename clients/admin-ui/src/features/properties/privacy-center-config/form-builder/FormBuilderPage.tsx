@@ -103,7 +103,7 @@ const rootStyle: React.CSSProperties = {
 const splitterStyle: React.CSSProperties = {
   flex: 1,
   minHeight: 0,
-  border: "1px solid var(--ant-color-border)",
+  border: "1px solid var(--fidesui-color-border)",
   borderRadius: 4,
   overflow: "hidden",
 };
