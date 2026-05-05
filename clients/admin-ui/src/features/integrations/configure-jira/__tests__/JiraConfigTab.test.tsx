@@ -63,10 +63,16 @@ jest.mock("fidesui", () => ({
     {
       useForm: () => [{ setFieldValue: jest.fn() }],
       useWatch: () => undefined,
-      Item: ({ children, label }: Record<string, unknown>) => (
+      Item: ({
+        children,
+        label,
+      }: {
+        children?: React.ReactNode;
+        label?: React.ReactNode;
+      }) => (
         <div>
-          {label && <label>{label as React.ReactNode}</label>}
-          {children as React.ReactNode}
+          {label && <label>{label}</label>}
+          {children}
         </div>
       ),
     },
