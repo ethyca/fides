@@ -6,6 +6,7 @@ from pydantic import (
     ConfigDict,
     EmailStr,
     Field,
+    StrictBool,
     StrictInt,
     StrictStr,
     ValidationError,
@@ -17,7 +18,25 @@ from fides.api.common_exceptions import BadRequest
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
 
-MultiValue = Union[StrictInt, StrictStr, List[Union[StrictInt, StrictStr]]]
+# StrictBool must precede StrictInt: in Python bool is a subclass of int,
+# so it must be matched first to avoid True/False being accepted as 1/0.
+MultiValue = Union[
+    StrictBool, StrictInt, StrictStr, List[Union[StrictBool, StrictInt, StrictStr]]
+]
+
+
+def is_empty_multivalue(value: Optional[MultiValue]) -> bool:
+    """Whether a MultiValue should be treated as "no value supplied".
+
+    Returns True for None, empty string, 0, and empty list — callers use this
+    to drop those before hashing/persisting. Boolean values (``True`` and
+    ``False``) are always treated as real values: a user's explicit ``False``
+    on a checkbox is a legitimate submission.
+
+    Centralises the ``not value and not isinstance(value, bool)`` check so
+    the falsy-except-bool rule has a single definition.
+    """
+    return not value and not isinstance(value, bool)
 
 
 class IdentityBase(FidesSchema):
@@ -195,5 +214,7 @@ class CustomPrivacyRequestField(FidesSchema):
     """Schema for custom privacy request fields."""
 
     label: str
-    # use StrictInt and StrictStr to avoid type coercion and maintain the original types
-    value: MultiValue
+    # StrictBool/StrictInt/StrictStr keep types honest (no bool→int coercion).
+    # value is Optional so "no value supplied" can be expressed explicitly;
+    # persist_custom_privacy_request_fields filters None/empty before writing.
+    value: Optional[MultiValue] = None

@@ -1,0 +1,4 @@
+type: Changed
+description: Show privacy assessments as in-flight tiles immediately when generation is triggered
+pr: 8041
+labels: ["db-migration"]
