@@ -144,6 +144,8 @@ export const ChatConfigurations = () => {
             switch (record.provider_type) {
               case "slack":
                 return <SlackLogo size={20} />;
+              case "fides":
+                return <Icons.Checkmark />;
               default:
                 return <SlackLogo size={20} />;
             }
@@ -217,21 +219,24 @@ export const ChatConfigurations = () => {
         key: ChatProviderColumnKeys.ACTIONS,
         render: (_value: unknown, record: ChatConfigResponse) => (
           <Space>
-            {userCanUpdate && !record.authorized && record.client_id && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/api/v1/plus/chat/slack/authorize?config_id=${record.id}`;
-                }}
-                size="small"
-                type="primary"
-                title="Authorize with Slack"
-                aria-label="Authorize with Slack"
-                data-testid="authorize-chat-config-btn"
-              >
-                Authorize
-              </Button>
-            )}
+            {userCanUpdate &&
+              !record.authorized &&
+              record.client_id &&
+              record.provider_type !== "fides" && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/api/v1/plus/chat/slack/authorize?config_id=${record.id}`;
+                  }}
+                  size="small"
+                  type="primary"
+                  title="Authorize with Slack"
+                  aria-label="Authorize with Slack"
+                  data-testid="authorize-chat-config-btn"
+                >
+                  Authorize
+                </Button>
+              )}
             {userCanUpdate && (
               <Button
                 onClick={(e) => {
