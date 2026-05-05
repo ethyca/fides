@@ -47,6 +47,7 @@ class AssessmentStatus(str, EnumType):
     in_progress = "in_progress"
     completed = "completed"
     outdated = "outdated"
+    generating = "generating"
 
 
 class RiskLevel(str, EnumType):
@@ -413,7 +414,7 @@ class AnswerVersion(Base):
         nullable=False,
         index=True,
     )
-    created_by = Column(String, nullable=False, index=True)
+    created_by = Column(String, nullable=True, index=True)
 
     # Evidence and source references (JSONB for flexibility)
     evidence = Column(JSONB, server_default="{}", nullable=False)

@@ -563,7 +563,7 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
                     loading={isVerifying}
                     icon={
                       verificationStatus.isVerified && !isVerifying ? (
-                        <Icons.CheckmarkFilled color="var(--fidesui-success)" />
+                        <Icons.CheckmarkFilled color="var(--fidesui-color-success)" />
                       ) : undefined
                     }
                   >
