@@ -9,30 +9,11 @@ import {
 
 describe("specMutations", () => {
   describe("defaultSpec", () => {
-    it("seeds first_name (required), last_name, and a hidden tenant_id", () => {
+    it("seeds a required Email identity field", () => {
       const spec = defaultSpec();
-      expect(spec.elements.form.children).toEqual([
-        "f_first_name",
-        "f_last_name",
-        "f_tenant_id",
-      ]);
-      expect(spec.elements.f_first_name.props).toMatchObject({
-        name: "first_name",
-        label: "First name",
-        required: true,
-      });
-      expect(spec.elements.f_last_name.props).toMatchObject({
-        name: "last_name",
-        label: "Last name",
-        required: false,
-      });
-      expect(spec.elements.f_tenant_id.props).toMatchObject({
-        name: "tenant_id",
-        label: "Tenant ID",
-        required: false,
-        hidden: true,
-        query_param_key: "tenant_id",
-      });
+      expect(spec.elements.form.children).toEqual(["f_email"]);
+      expect(spec.elements.f_email.type).toBe("Email");
+      expect(spec.elements.f_email.props).toMatchObject({ required: true });
     });
   });
 

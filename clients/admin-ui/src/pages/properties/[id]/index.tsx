@@ -7,15 +7,12 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import type { PrivacyCenterConfigValue } from "~/features/properties/privacy-center-config/PrivacyCenterConfigSection";
 import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
 } from "~/features/properties/property.slice";
-import {
-  FormValues,
-  PropertyForm,
-} from "~/features/properties/PropertyForm";
-import type { PrivacyCenterConfigValue } from "~/features/properties/privacy-center-config/PrivacyCenterConfigSection";
+import { FormValues, PropertyForm } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
@@ -27,7 +24,9 @@ const EditPropertyPage: NextPage = () => {
   );
   const [updateProperty] = useUpdatePropertyMutation();
 
-  const saveConfigImmediately = async (nextConfig: PrivacyCenterConfigValue) => {
+  const saveConfigImmediately = async (
+    nextConfig: PrivacyCenterConfigValue,
+  ) => {
     if (!data) {
       return;
     }
