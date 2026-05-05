@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 
 import JiraConfigTab from "~/features/integrations/configure-jira/JiraConfigTab";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import { AccessLevel, ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 // Mock all RTK query hooks used by JiraConfigTab
 const mockUseGetJiraProjectsQuery = jest.fn();
@@ -41,7 +41,7 @@ jest.mock("fidesui", () => ({
     <div data-testid="alert" {...props}>
       <span>{message as string}</span>
       <span>{description as string}</span>
-      {action}
+      {action as React.ReactNode}
     </div>
   ),
   Button: ({ children, ...props }: Record<string, unknown>) => (
@@ -61,7 +61,7 @@ jest.mock("fidesui", () => ({
       useWatch: () => undefined,
       Item: ({ children, label }: Record<string, unknown>) => (
         <div>
-          {label && <label>{label as string}</label>}
+          {label && <label>{label as React.ReactNode}</label>}
           {children as React.ReactNode}
         </div>
       ),
@@ -97,7 +97,7 @@ const mockConnection: ConnectionConfigurationResponse = {
   key: "jira-test",
   name: "Jira Test",
   connection_type: ConnectionType.JIRA_TICKET,
-  access: "write" as const,
+  access: AccessLevel.WRITE,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
   disabled: false,
