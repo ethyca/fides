@@ -159,7 +159,7 @@ export const Filter = ({
           type="text"
           size="small"
           onClick={handleClear}
-          style={{ color: "var(--ant-color-text-secondary)" }}
+          style={{ color: "var(--fidesui-color-text-secondary)" }}
         >
           Clear
         </Button>

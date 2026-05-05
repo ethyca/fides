@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -12,9 +13,9 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_preference import CurrentPrivacyPreference
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.task.graph_task import build_consent_identity_enrichment_graph
+from fides.api.task.task_resources import Connections
 from fides.api.util.cache import FidesopsRedis, get_dsr_cache_store
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
@@ -77,7 +78,7 @@ def _find_reachable_collections(
 
 
 def _execute_identity_lookup(
-    connection_config: ConnectionConfig,
+    connector: SQLConnector,
     dataset_name: str,
     collection: Collection,
     identity_data: Dict[str, Any],
@@ -87,14 +88,6 @@ def _execute_identity_lookup(
     Execute a query against a collection to look up identity fields,
     using the connector's own query_config for correct SQL generation.
     """
-    connector = get_connector(connection_config)
-    if not isinstance(connector, SQLConnector):
-        logger.debug(
-            "Skipping identity enrichment for non-SQL connector: {}",
-            connection_config.key,
-        )
-        return []
-
     collection_identities = collection.identities()
 
     filters: Dict[str, List[Any]] = {}
@@ -126,17 +119,36 @@ def _execute_identity_lookup(
     if query is None:
         return []
 
-    engine = connector.client()
+    logger.info(
+        "Identity enrichment: querying {} for {}.{}",
+        connector.configuration.key,
+        dataset_name,
+        collection.name,
+    )
+    start = time.monotonic()
+
     try:
+        engine = connector.client()
         with engine.connect() as connection:
             connector.set_schema(connection)
             results = connection.execute(query)
-            return connector.cursor_result_to_rows(results)
-    except Exception as exc:
-        logger.warning(
-            "Identity enrichment query failed for {}.{}: {}",
-            connection_config.key,
+            rows = connector.cursor_result_to_rows(results)
+        elapsed = time.monotonic() - start
+        logger.info(
+            "Identity enrichment: query on {}.{} returned {} row(s) in {:.2f}s",
+            connector.configuration.key,
             collection.name,
+            len(rows),
+            elapsed,
+        )
+        return rows
+    except Exception as exc:
+        elapsed = time.monotonic() - start
+        logger.warning(
+            "Identity enrichment query failed for {}.{} after {:.2f}s: {}",
+            connector.configuration.key,
+            collection.name,
+            elapsed,
             exc,
         )
         return []
@@ -234,7 +246,20 @@ def enrich_identities_for_consent(
         return identity_data
 
     if identity_data.get("email") and identity_data.get("external_id"):
+        logger.debug(
+            "Identity enrichment: both email and external_id already present, skipping"
+        )
         return identity_data
+
+    missing = []
+    if not identity_data.get("email"):
+        missing.append("email")
+    if not identity_data.get("external_id"):
+        missing.append("external_id")
+    logger.info(
+        "Identity enrichment: starting, missing identities: {}",
+        missing,
+    )
 
     try:
         enriched = _enrich_from_current_preferences(identity_data, session)
@@ -286,6 +311,17 @@ def enrich_identities_for_consent(
             "Consent identity enrichment failed, proceeding with original identities: {}",
             exc,
         )
+        try:
+            privacy_request.add_error_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Consent identity enrichment",
+                collection_name=None,
+                message=f"Consent identity enrichment failed: {exc}",
+                action_type=ActionType.consent,
+            )
+        except Exception:
+            logger.warning("Failed to write enrichment error execution log")
         return identity_data
 
 
@@ -322,24 +358,57 @@ def _enrich_from_db_connectors(
     """Query consent-enabled DB integrations for missing identities."""
     graph = build_consent_identity_enrichment_graph(datasets)
     if not graph.nodes:
+        logger.debug("Identity enrichment: no consent-enabled DB connectors in graph")
         return identity_data
 
     targets = _find_reachable_collections(graph, identity_data)
     if not targets:
+        logger.debug(
+            "Identity enrichment: graph has {} node(s) but none are "
+            "reachable from the seed identities",
+            len(graph.nodes),
+        )
         return identity_data
 
-    logger.info("Consent identity enrichment: querying DB integrations")
+    target_descriptions = [f"{conn_key}.{coll.name}" for conn_key, _ds, coll in targets]
+    logger.info(
+        "Consent identity enrichment: querying {} DB integration(s): {}",
+        len(targets),
+        target_descriptions,
+    )
 
+    start = time.monotonic()
+    connections = Connections()
     enriched = dict(identity_data)
-    for connection_key, dataset_name, collection in targets:
-        config = _get_connection_config_by_key(connection_configs, connection_key)
-        if not config:
-            continue
+    try:
+        for connection_key, dataset_name, collection in targets:
+            config = _get_connection_config_by_key(connection_configs, connection_key)
+            if not config:
+                logger.warning(
+                    "Identity enrichment: connection config '{}' not found, skipping",
+                    connection_key,
+                )
+                continue
 
-        rows = _execute_identity_lookup(
-            config, dataset_name, collection, identity_data, session
-        )
-        discovered = _extract_identities_from_rows(rows, collection, identity_data)
-        enriched.update(discovered)
+            connector = connections.get_connector(config)
+            if not isinstance(connector, SQLConnector):
+                logger.debug(
+                    "Skipping identity enrichment for non-SQL connector: {}",
+                    config.key,
+                )
+                continue
 
+            rows = _execute_identity_lookup(
+                connector, dataset_name, collection, identity_data, session
+            )
+            discovered = _extract_identities_from_rows(rows, collection, identity_data)
+            enriched.update(discovered)
+    finally:
+        connections.close()
+
+    elapsed = time.monotonic() - start
+    logger.info(
+        "Consent identity enrichment: DB connector queries completed in {:.2f}s",
+        elapsed,
+    )
     return enriched
