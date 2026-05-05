@@ -42,6 +42,25 @@ healthcheck_port = 9000 # integer
 # The timeout in seconds for the health check ping
 healthcheck_ping_timeout = 2.0 # number
 
+# If true, starts the worker with --without-heartbeat. Use this as a
+# workaround for Celery BRPOP connection drop issues
+# (celery/celery#7276).
+worker_disable_heartbeat = false # boolean
+
+# If true, starts the worker with --without-gossip. Use this as a
+# workaround for Celery BRPOP connection drop issues
+# (celery/celery#7276).
+worker_disable_gossip = false # boolean
+
+# If true, starts the worker with --without-mingle. Use this as a
+# workaround for Celery BRPOP connection drop issues
+# (celery/celery#7276).
+worker_disable_mingle = false # boolean
+
+# Number of worker processes/threads passed to `celery worker
+# --concurrency`.
+worker_concurrency = 2 # integer
+
 #---------#
 #-- CLI --#
 #--------------------------------------------------------------------#

@@ -2271,7 +2271,26 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">600</span>
 <span class="normal">601</span>
 <span class="normal">602</span>
-<span class="normal">603</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2314,6 +2333,25 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The timeout in seconds for the health check ping</span>
 <span class="n">healthcheck_ping_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="c1"># number</span>
+
+<span class="c1"># If true, starts the worker with --without-heartbeat. Use this as a</span>
+<span class="c1"># workaround for Celery BRPOP connection drop issues</span>
+<span class="c1"># (celery/celery#7276).</span>
+<span class="n">worker_disable_heartbeat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># If true, starts the worker with --without-gossip. Use this as a</span>
+<span class="c1"># workaround for Celery BRPOP connection drop issues</span>
+<span class="c1"># (celery/celery#7276).</span>
+<span class="n">worker_disable_gossip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># If true, starts the worker with --without-mingle. Use this as a</span>
+<span class="c1"># workaround for Celery BRPOP connection drop issues</span>
+<span class="c1"># (celery/celery#7276).</span>
+<span class="n">worker_disable_mingle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Number of worker processes/threads passed to `celery worker</span>
+<span class="c1"># --concurrency`.</span>
+<span class="n">worker_concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1">#---------#</span>
 <span class="c1">#-- CLI --#</span>
