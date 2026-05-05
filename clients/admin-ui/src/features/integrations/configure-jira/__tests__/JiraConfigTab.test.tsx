@@ -2,7 +2,11 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 
 import JiraConfigTab from "~/features/integrations/configure-jira/JiraConfigTab";
-import { AccessLevel, ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import {
+  AccessLevel,
+  ConnectionConfigurationResponse,
+  ConnectionType,
+} from "~/types/api";
 
 // Mock all RTK query hooks used by JiraConfigTab
 const mockUseGetJiraProjectsQuery = jest.fn();
