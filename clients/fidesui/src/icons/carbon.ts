@@ -24,6 +24,7 @@ export {
   CircleSolid,
   Close,
   CloseLarge,
+  Cloud,
   Code,
   CollapseAll,
   Column,
