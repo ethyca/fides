@@ -1,7 +1,15 @@
-import { render, screen } from "@testing-library/react";
+import { render as rtlRender, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { FidesUIProvider } from "fidesui";
 
 import { ActionsTable } from "../ActionsTable";
+
+jest.mock("~/features/policies/policy.slice", () => ({
+  useGetPoliciesQuery: () => ({ data: { items: [] } }),
+}));
+
+const render = (ui: React.ReactElement) =>
+  rtlRender(<FidesUIProvider>{ui}</FidesUIProvider>);
 
 const sampleAction = {
   policy_key: "default_access_policy",
