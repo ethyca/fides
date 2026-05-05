@@ -1,0 +1,4 @@
+type: Added
+description: Validate invite and password-reset tokens on page load so expired or already-used links show a clear error instead of rendering the create-password form.
+pr: 8033
+labels: []
