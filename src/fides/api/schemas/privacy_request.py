@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum as EnumType
 from enum import StrEnum
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 from uuid import UUID
 
 from fideslang.validation import FidesKey
@@ -358,6 +358,12 @@ class HistoricalPrivacyRequestImport(FidesSchema):
 
     Used by the admin import endpoint to backfill DSRs from another Fides deployment
     without triggering any processing pipeline. Status must be terminal.
+
+    `reviewed_by` is intentionally omitted: the underlying `privacyrequest.reviewed_by`
+    column is a foreign key to `FidesUser.id`, and an arbitrary user identifier from
+    the source deployment will not generally exist as a `FidesUser` in the new tenant.
+    Audit accountability for imported records is captured by the calling admin's
+    `user_id` on the `imported` `AuditLog` entry written for each record.
     """
 
     external_id: Optional[str] = None
@@ -365,9 +371,10 @@ class HistoricalPrivacyRequestImport(FidesSchema):
     policy_key: FidesKey
     status: PrivacyRequestStatus
     requested_at: datetime
+    started_processing_at: Optional[datetime] = None
     finished_processing_at: datetime
     reviewed_at: Optional[datetime] = None
-    source: PrivacyRequestSource = PrivacyRequestSource.import_
+    source: Literal[PrivacyRequestSource.import_] = PrivacyRequestSource.import_
 
     @field_validator("status")
     @classmethod

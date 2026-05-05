@@ -10282,3 +10282,168 @@ class TestImportHistoricalPrivacyRequests:
         assert len(body["succeeded"]) == 1
         assert len(body["failed"]) == 1
         PrivacyRequest.get(db=db, object_id=body["succeeded"][0]["id"]).delete(db=db)
+
+    def test_import_atomicity_on_persist_identity_failure(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """If `persist_identity` fails after the PrivacyRequest row is created,
+        no orphan PrivacyRequest row should remain."""
+        test_external_id = f"atomicity-persist-{uuid4()}"
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "external_id": test_external_id,
+            "identity": {"email": "atomicity@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+
+        with mock.patch.object(
+            PrivacyRequest,
+            "persist_identity",
+            side_effect=RuntimeError("simulated identity failure"),
+        ):
+            resp = api_client.post(url, headers=auth_header, json=[record])
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["succeeded"] == []
+        assert len(body["failed"]) == 1
+
+        orphans = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.external_id == test_external_id)
+            .all()
+        )
+        # Clean up before asserting so a regression doesn't pollute later tests.
+        for orphan in orphans:
+            orphan.delete(db=db)
+        assert len(orphans) == 0, (
+            f"Expected no orphan PrivacyRequest rows; found {len(orphans)}"
+        )
+
+    def test_import_atomicity_on_audit_log_failure(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """If `AuditLog.create` fails after the PrivacyRequest and identity are
+        persisted, no orphan PrivacyRequest (or its identity rows) should remain."""
+        test_external_id = f"atomicity-audit-{uuid4()}"
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "external_id": test_external_id,
+            "identity": {"email": "atomicity-audit@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+
+        with mock.patch.object(
+            AuditLog,
+            "create",
+            side_effect=RuntimeError("simulated audit log failure"),
+        ):
+            resp = api_client.post(url, headers=auth_header, json=[record])
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["succeeded"] == []
+        assert len(body["failed"]) == 1
+
+        orphans = (
+            db.query(PrivacyRequest)
+            .filter(PrivacyRequest.external_id == test_external_id)
+            .all()
+        )
+        for orphan in orphans:
+            orphan.delete(db=db)
+        assert len(orphans) == 0, (
+            f"Expected no orphan PrivacyRequest rows; found {len(orphans)}"
+        )
+
+    def test_import_rejects_non_import_source(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        policy,
+    ):
+        """The schema constrains `source` to `Import`; any other value is rejected
+        at request validation time."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        bad_record = {
+            "identity": {"email": "wrong-source@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+            "source": PrivacyRequestSource.privacy_center.value,
+        }
+        resp = api_client.post(url, headers=auth_header, json=[bad_record])
+        assert resp.status_code == 422
+
+    def test_import_uses_explicit_started_processing_at(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """An explicit `started_processing_at` is persisted as-is, distinct from
+        `requested_at`."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "started-explicit@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "started_processing_at": "2024-01-17T08:30:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.requested_at == parse("2024-01-15T10:00:00.000Z")
+        assert pr.started_processing_at == parse("2024-01-17T08:30:00.000Z")
+        assert pr.started_processing_at != pr.requested_at
+        pr.delete(db=db)
+
+    def test_import_falls_back_started_processing_at_to_requested_at(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db,
+        url,
+        policy,
+    ):
+        """When `started_processing_at` is omitted, the service falls back to
+        `requested_at` so the row remains valid."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_IMPORT])
+        record = {
+            "identity": {"email": "started-fallback@example.com"},
+            "policy_key": policy.key,
+            "status": "complete",
+            "requested_at": "2024-01-15T10:00:00.000Z",
+            "finished_processing_at": "2024-01-20T10:00:00.000Z",
+        }
+        resp = api_client.post(url, headers=auth_header, json=[record])
+        assert resp.status_code == 200
+
+        pr_id = resp.json()["succeeded"][0]["id"]
+        pr = PrivacyRequest.get(db=db, object_id=pr_id)
+        assert pr.started_processing_at == pr.requested_at
+        pr.delete(db=db)

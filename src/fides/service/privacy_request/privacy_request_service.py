@@ -627,7 +627,8 @@ class PrivacyRequestService:
             "policy_id": policy.id,
             "status": record.status,
             "requested_at": record.requested_at,
-            "started_processing_at": record.requested_at,
+            "started_processing_at": record.started_processing_at
+            or record.requested_at,
             "finished_processing_at": record.finished_processing_at,
             "source": record.source,
         }
@@ -636,6 +637,14 @@ class PrivacyRequestService:
         if record.reviewed_at is not None:
             kwargs["reviewed_at"] = record.reviewed_at
 
+        # Each `Base.create` call commits independently (see
+        # `OrmWrappedFidesBase.persist_obj`). To avoid leaving an orphan
+        # PrivacyRequest row if `persist_identity` or `AuditLog.create` fails,
+        # we manually delete the partially-written row on exception. The
+        # PrivacyRequest -> ProvidedIdentity FK has ON DELETE CASCADE, so any
+        # identity rows already written are removed automatically; AuditLog
+        # rows have no FK enforcement, so we delete them explicitly first.
+        privacy_request: Optional[PrivacyRequest] = None
         try:
             privacy_request = PrivacyRequest.create(db=self.db, data=kwargs)
             privacy_request.persist_identity(db=self.db, identity=record.identity)
@@ -651,7 +660,23 @@ class PrivacyRequestService:
             )
             return privacy_request
         except Exception as exc:
-            logger.error(f"{exc.__class__.__name__}: {str(exc)}")
+            if privacy_request is not None:
+                try:
+                    self.db.query(AuditLog).filter(
+                        AuditLog.privacy_request_id == privacy_request.id
+                    ).delete(synchronize_session=False)
+                    privacy_request.delete(db=self.db)
+                except Exception:
+                    logger.warning(
+                        "Failed to roll back partial historical import for {}; "
+                        "the row may require manual cleanup.",
+                        privacy_request.id,
+                    )
+            logger.error(
+                "Failed to import historical privacy request: {}",
+                exc.__class__.__name__,
+                exc_info=True,
+            )
             raise PrivacyRequestError(
                 "This historical record could not be imported",
                 record.model_dump(mode="json"),
