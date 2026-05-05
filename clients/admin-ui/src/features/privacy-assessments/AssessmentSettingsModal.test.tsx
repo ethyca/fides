@@ -97,6 +97,7 @@ jest.mock("./privacy-assessments.slice", () => ({
 const mockGetChatChannelsQuery = jest.fn();
 jest.mock("~/features/chat-provider/chatProvider.slice", () => ({
   useGetChatChannelsQuery: () => mockGetChatChannelsQuery(),
+  useGetChatConfigsQuery: () => ({ data: { items: [] } }),
 }));
 
 jest.mock("~/features/common/hooks", () => ({
