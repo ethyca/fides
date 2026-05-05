@@ -33,9 +33,24 @@ class CelerySettings(FidesSettings):
     healthcheck_ping_timeout: float = Field(
         default=2.0, description="The timeout in seconds for the health check ping"
     )
-    worker_disable_gossip_heartbeat_mingle: bool = Field(
+    worker_enable_remote_control: bool = Field(
+        default=True,
+        description="If false, disables Celery remote control (pidbox). "
+        "Reduces Redis pub/sub connections. Disabling prevents remote worker management commands.",
+    )
+    worker_disable_heartbeat: bool = Field(
         default=False,
-        description="If true, starts the worker with --without-heartbeat --without-gossip --without-mingle. "
+        description="If true, starts the worker with --without-heartbeat. "
+        "Use this as a workaround for Celery BRPOP connection drop issues (celery/celery#7276).",
+    )
+    worker_disable_gossip: bool = Field(
+        default=False,
+        description="If true, starts the worker with --without-gossip. "
+        "Use this as a workaround for Celery BRPOP connection drop issues (celery/celery#7276).",
+    )
+    worker_disable_mingle: bool = Field(
+        default=False,
+        description="If true, starts the worker with --without-mingle. "
         "Use this as a workaround for Celery BRPOP connection drop issues (celery/celery#7276).",
     )
     broker_url: Optional[str] = Field(

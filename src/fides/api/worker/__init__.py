@@ -45,11 +45,20 @@ def _run_celery_worker(worker_queues: str) -> None:
         "--concurrency=2",
         f"--queues={worker_queues}",
     ]
-    if CONFIG.celery.worker_disable_gossip_heartbeat_mingle:
-        argv += ["--without-heartbeat", "--without-gossip", "--without-mingle"]
+    without_flags = []
+    if CONFIG.celery.worker_disable_heartbeat:
+        without_flags.append("--without-heartbeat")
+    if CONFIG.celery.worker_disable_gossip:
+        without_flags.append("--without-gossip")
+    if CONFIG.celery.worker_disable_mingle:
+        without_flags.append("--without-mingle")
+    if without_flags:
+        argv += without_flags
         logger.info(
-            "Worker started with --without-heartbeat --without-gossip --without-mingle "
-            "(FIDES__CELERY__WORKER_DISABLE_GOSSIP_HEARTBEAT_MINGLE=true)"
+            f"Worker started with {' '.join(without_flags)} "
+            f"(FIDES__CELERY__WORKER_DISABLE_HEARTBEAT={CONFIG.celery.worker_disable_heartbeat}, "
+            f"FIDES__CELERY__WORKER_DISABLE_GOSSIP={CONFIG.celery.worker_disable_gossip}, "
+            f"FIDES__CELERY__WORKER_DISABLE_MINGLE={CONFIG.celery.worker_disable_mingle})"
         )
     celery_app.worker_main(argv=argv)
 
