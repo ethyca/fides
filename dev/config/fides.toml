@@ -194,6 +194,10 @@ task_engine_keepalives_count = 5 # integer
 # still valid before using them.
 task_engine_pool_pre_ping = true # boolean
 
+# Timeout in seconds for database healthcheck queries on the
+# /health/database endpoint.
+healthcheck_query_timeout = 1.0 # number
+
 # The database user with which to login to the application database.
 user = "defaultuser" # string
 

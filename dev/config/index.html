@@ -2267,7 +2267,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">596</span>
 <span class="normal">597</span>
 <span class="normal">598</span>
-<span class="normal">599</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2462,6 +2466,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># If true, the engine will pre-ping connections to ensure they are</span>
 <span class="c1"># still valid before using them.</span>
 <span class="n">task_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Timeout in seconds for database healthcheck queries on the</span>
+<span class="c1"># /health/database endpoint.</span>
+<span class="n">healthcheck_query_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="c1"># number</span>
 
 <span class="c1"># The database user with which to login to the application database.</span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;defaultuser&quot;</span><span class="w"> </span><span class="c1"># string</span>
