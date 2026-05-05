@@ -48,7 +48,9 @@ export const ConsentManagementModal = ({
       {list?.length ? (
         <div>
           <Space size={[0, 2]} wrap>
-            {list?.map((item) => <Tag key={item}>{item}</Tag>)}
+            {list?.map((item) => (
+              <Tag key={item}>{item}</Tag>
+            ))}
           </Space>
         </div>
       ) : (

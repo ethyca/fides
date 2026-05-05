@@ -1,0 +1,37 @@
+.panel {
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--fidesui-color-border);
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.emptyState {
+  height: 100%;
+  padding: 24px;
+  color: var(--fidesui-color-text-tertiary);
+  text-align: center;
+}
+
+.list {
+  height: 100%;
+}
+
+.footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--fidesui-color-border);
+  flex-shrink: 0;
+}
+
+.agentAvatar {
+  padding: 2px;
+}

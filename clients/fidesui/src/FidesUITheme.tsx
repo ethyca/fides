@@ -4,7 +4,8 @@ import {
   extendTheme as extendChakraTheme,
 } from "@chakra-ui/react";
 import { Dict } from "@chakra-ui/utils";
-import palette from "fidesui/src/palette/palette.module.scss";
+
+import { palette } from "./palette/palette";
 
 // eslint-disable-next-line import/prefer-default-export
 

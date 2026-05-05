@@ -160,7 +160,11 @@ export const BarChart = ({
   return (
     <div ref={containerRef} className="h-full w-full">
       {containerWidth > 0 && (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 1, height: 1 }}
+        >
           <RechartsBarChart
             data={chartData}
             margin={{ top: 0, right: 0, bottom: 0, left: 0 }}

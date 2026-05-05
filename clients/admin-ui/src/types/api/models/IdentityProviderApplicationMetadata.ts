@@ -52,7 +52,7 @@ export type IdentityProviderApplicationMetadata = {
   /**
    * Description
    *
-   * Human-readable description of the application
+   * System-generated description of the application
    */
   description?: string | null;
 };

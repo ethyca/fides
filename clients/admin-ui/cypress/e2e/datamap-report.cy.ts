@@ -309,11 +309,16 @@ describe("Data map report table", () => {
       it("should cancel renaming columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
+        // data_uses is a pinned (fixed: "left") column, so its rename input
+        // sits in a sticky cell that the page-level sticky toolbar covers from
+        // Cypress's visibility check perspective. force: true bypasses that.
         cy.getByTestId("column-data_uses-input")
           .eq(0)
-          .clear()
+          .clear({ force: true })
           .then(() => {
-            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
+            cy.getByTestId("column-data_uses-input")
+              .eq(0)
+              .type("Custom Title", { force: true });
           });
         cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
@@ -324,11 +329,15 @@ describe("Data map report table", () => {
       it("should reset columns", () => {
         cy.getByTestId("more-menu").click();
         cy.selectAntDropdownOption("Rename columns");
+        // See note in "should cancel renaming columns": data_uses is a pinned
+        // column, so we bypass Cypress's visibility check on its rename input.
         cy.getByTestId("column-data_uses-input")
           .eq(0)
-          .clear()
+          .clear({ force: true })
           .then(() => {
-            cy.getByTestId("column-data_uses-input").eq(0).type("Custom Title");
+            cy.getByTestId("column-data_uses-input")
+              .eq(0)
+              .type("Custom Title", { force: true });
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("more-menu").click();

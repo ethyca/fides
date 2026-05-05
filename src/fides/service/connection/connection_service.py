@@ -515,6 +515,14 @@ class ConnectionService:
             instance_key=config.key,
         )
 
+        if DatasetConfig.filter(
+            db=self.db,
+            conditions=(DatasetConfig.fides_key == template_values.instance_key),  # type: ignore[arg-type]
+        ).count():
+            raise KeyOrNameAlreadyExists(
+                f"SaaS connector instance key '{template_values.instance_key}' already exists.",
+            )
+
         connection_config = self.create_connection_config_from_template_no_save(
             connector_template,
             template_values,
@@ -530,6 +538,16 @@ class ConnectionService:
                 connection_config_id=connection_config.id,  # type: ignore[attr-defined]
                 session=self.db,
             )
+
+        try:
+            self.upsert_dataset_config_from_template(
+                connection_config, connector_template, template_values
+            )
+        except Exception as e:
+            connection_config.delete(self.db)
+            raise Exception(
+                f"SaaS Connector could not be created from the '{config.saas_connector_type}' template at this time."
+            ) from e
 
         # Create audit events for connection and secrets creation
         self.create_connection_audit_event(

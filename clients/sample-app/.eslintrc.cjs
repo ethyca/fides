@@ -13,6 +13,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     createDefaultProgram: true,
   },
+  ignorePatterns: ["next-env.d.ts", "next.config.js"],
   root: true,
   rules: {
     // "curly": ["error", "all"],

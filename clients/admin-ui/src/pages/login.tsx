@@ -443,7 +443,13 @@ const Login: NextPage = () => {
           justify="center"
           className="px-6 py-12"
         >
-          <Image src="/logo.svg" alt="Fides logo" width={205} height={46} />
+          <Image
+            src="/logo.svg"
+            alt="Fides logo"
+            width={205}
+            height={46}
+            loading="eager"
+          />
           <Flex vertical align="center" gap="large">
             <Typography.Title level={1}>{pageTitle}</Typography.Title>
             <Card className="static w-[640px] px-32 py-12">
@@ -526,14 +532,20 @@ const Login: NextPage = () => {
                               className="h-8 w-full"
                               animate={
                                 showAnimation
-                                  ? { width: ["100%", "32px"] }
-                                  : { width: ["32px", "100%"] }
+                                  ? {
+                                      width: ["100%", "32px"],
+                                      opacity: [1, 0.5],
+                                    }
+                                  : {
+                                      width: ["32px", "100%"],
+                                      opacity: [0.5, 1],
+                                    }
                               }
                             >
                               <Button
                                 htmlType="submit"
                                 type="primary"
-                                disabled={!canSubmit}
+                                disabled={!canSubmit || showAnimation}
                                 data-testid="sign-in-btn"
                                 loading={isSubmitting}
                                 className="w-full"

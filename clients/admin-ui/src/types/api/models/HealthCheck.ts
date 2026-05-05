@@ -25,6 +25,6 @@ export type HealthCheck = {
   fidesplus_server: string;
   dictionary: DictionaryStatus;
   fides_cloud: FidesCloudStatus;
-  rbac: RBACStatus;
   tcf: TCFStatus;
+  rbac: RBACStatus;
 };

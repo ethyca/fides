@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated connection manager and integration forms from Formik/Chakra to Ant Design Form
-pr: 7898
-labels: []

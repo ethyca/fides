@@ -1,53 +1,21 @@
 import {
-  ChakraDivider as Divider,
-  ChakraStack as Stack,
-  ChakraText as Text,
   Checkbox,
+  Divider,
+  Flex,
   Form,
+  Radio,
+  Switch,
+  Typography,
 } from "fidesui";
-import { useField, useFormikContext } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import ControlledRadioGroup from "~/features/common/form/ControlledRadioGroup";
-import { CustomSwitch } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/config-settings/config-settings.slice";
 import { GPPUSApproach, PrivacyExperienceGPPSettings } from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
 import SettingsBox from "./SettingsBox";
-
-const CheckboxField = ({
-  name,
-  label,
-  tooltip,
-  onChange,
-}: {
-  name: string;
-  label: string;
-  tooltip?: string;
-  onChange?: (checked: boolean) => void;
-}) => {
-  const [field] = useField({ name, type: "checkbox" });
-
-  return (
-    <Form.Item tooltip={tooltip}>
-      <Checkbox
-        name={field.name}
-        checked={field.checked}
-        onChange={(e) => {
-          field.onChange(e);
-          onChange?.(e.target.checked);
-        }}
-        onBlur={field.onBlur}
-        data-testid={`input-${field.name}`}
-      >
-        {label}
-      </Checkbox>
-    </Form.Item>
-  );
-};
 
 const Section = ({
   title,
@@ -56,113 +24,173 @@ const Section = ({
   title: string;
   children: ReactNode;
 }) => (
-  <Stack spacing={3} mb={3} data-testid={`section-${title}`}>
-    <Text fontSize="sm" fontWeight="bold" lineHeight={5} color="gray.700">
+  <Flex vertical gap="middle" className="mb-3" data-testid={`section-${title}`}>
+    <Typography.Text strong className="text-sm">
       {title}
-    </Text>
+    </Typography.Text>
     {children}
-  </Stack>
+  </Flex>
 );
 
 const GppConfiguration = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const gppSettings = useAppSelector(selectGppSettings);
   const isEnabled = !!gppSettings.enabled;
-  const { values, setFieldValue } = useFormikContext<{
+  const form = Form.useFormInstance<{
     gpp: PrivacyExperienceGPPSettings;
   }>();
-  const showMspa = !!values.gpp.us_approach;
+  const gppValues = Form.useWatch("gpp", form);
+  const showMspa = !!gppValues?.us_approach;
 
   return (
     <SettingsBox title="Global Privacy Platform">
-      <Stack spacing={6}>
+      <Flex vertical gap="large">
         <FrameworkStatus name="GPP" enabled={isEnabled} />
         {isEnabled ? (
           <>
             <Section title="GPP U.S.">
-              <ControlledRadioGroup
-                name="gpp.us_approach"
-                layout="stacked"
-                defaultFirstSelected={false}
-                options={[
-                  {
-                    label: "Enable U.S. National",
-                    value: GPPUSApproach.NATIONAL,
-                    tooltip:
-                      "When US National is selected, Fides will present the same privacy notices to all consumers located anywhere in the United States.",
-                  },
-                  {
-                    label: "Enable U.S. State-by-State",
-                    value: GPPUSApproach.STATE,
-                    tooltip:
-                      "When state-by-state is selected, Fides will only present consent to consumers and save their preferences if they are located in a state that is supported by the GPP. The consent options presented to consumers will vary depending on the regulations in each state.",
-                  },
-                  {
-                    label: "Enable US National and State-by-State notices",
-                    value: GPPUSApproach.ALL,
-                    tooltip:
-                      "When enabled, Fides can be configured to serve the National and U.S. state notices. This mode is intended to provide consent coverage to U.S. states with new privacy laws where GPP support lags behind the effective date of state laws.",
-                  },
-                ]}
-              />
+              <Form.Item name={["gpp", "us_approach"]} noStyle>
+                <Radio.Group data-testid="input-gpp.us_approach">
+                  <Flex vertical gap="middle">
+                    <Radio
+                      value={GPPUSApproach.NATIONAL}
+                      data-testid={`option-${GPPUSApproach.NATIONAL}`}
+                    >
+                      <Flex align="center" gap="small">
+                        <Typography.Text className="text-sm font-medium">
+                          Enable U.S. National
+                        </Typography.Text>
+                        <Form.Item
+                          tooltip="When US National is selected, Fides will present the same privacy notices to all consumers located anywhere in the United States."
+                          noStyle
+                        >
+                          <span />
+                        </Form.Item>
+                      </Flex>
+                    </Radio>
+                    <Radio
+                      value={GPPUSApproach.STATE}
+                      data-testid={`option-${GPPUSApproach.STATE}`}
+                    >
+                      <Flex align="center" gap="small">
+                        <Typography.Text className="text-sm font-medium">
+                          Enable U.S. State-by-State
+                        </Typography.Text>
+                        <Form.Item
+                          tooltip="When state-by-state is selected, Fides will only present consent to consumers and save their preferences if they are located in a state that is supported by the GPP. The consent options presented to consumers will vary depending on the regulations in each state."
+                          noStyle
+                        >
+                          <span />
+                        </Form.Item>
+                      </Flex>
+                    </Radio>
+                    <Radio
+                      value={GPPUSApproach.ALL}
+                      data-testid={`option-${GPPUSApproach.ALL}`}
+                    >
+                      <Flex align="center" gap="small">
+                        <Typography.Text className="text-sm font-medium">
+                          Enable US National and State-by-State notices
+                        </Typography.Text>
+                        <Form.Item
+                          tooltip="When enabled, Fides can be configured to serve the National and U.S. state notices. This mode is intended to provide consent coverage to U.S. states with new privacy laws where GPP support lags behind the effective date of state laws."
+                          noStyle
+                        >
+                          <span />
+                        </Form.Item>
+                      </Flex>
+                    </Radio>
+                  </Flex>
+                </Radio.Group>
+              </Form.Item>
             </Section>
             {showMspa ? (
               <Section title="MSPA">
-                {/* Remove this font style when upgrading to an ant form */}
-                <div className="font-medium">
-                  <CheckboxField
-                    name="gpp.mspa_covered_transactions"
-                    label="All transactions covered by MSPA"
-                    tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
-                    onChange={(checked) => {
-                      if (!checked) {
-                        setFieldValue("gpp.mspa_service_provider_mode", false);
-                        setFieldValue("gpp.mspa_opt_out_option_mode", false);
+                <Form.Item
+                  name={["gpp", "mspa_covered_transactions"]}
+                  valuePropName="checked"
+                  tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
+                >
+                  <Checkbox
+                    data-testid="input-gpp.mspa_covered_transactions"
+                    onChange={(e) => {
+                      if (!e.target.checked) {
+                        form.setFieldValue(
+                          ["gpp", "mspa_service_provider_mode"],
+                          false,
+                        );
+                        form.setFieldValue(
+                          ["gpp", "mspa_opt_out_option_mode"],
+                          false,
+                        );
                       }
                     }}
-                  />
-                </div>
-                <CustomSwitch
+                  >
+                    All transactions covered by MSPA
+                  </Checkbox>
+                </Form.Item>
+                <Form.Item
+                  name={["gpp", "mspa_service_provider_mode"]}
                   label="Enable MSPA service provider mode"
-                  name="gpp.mspa_service_provider_mode"
-                  variant="switchFirst"
                   tooltip="Enable service provider mode if you do not engage in any sales or sharing of personal information."
-                  isDisabled={
-                    !!values.gpp.mspa_opt_out_option_mode ||
-                    !values.gpp.mspa_covered_transactions
-                  }
-                />
-                <CustomSwitch
+                  layout="horizontal"
+                  colon={false}
+                  valuePropName="checked"
+                >
+                  <Switch
+                    size="small"
+                    disabled={
+                      !!gppValues?.mspa_opt_out_option_mode ||
+                      !gppValues?.mspa_covered_transactions
+                    }
+                    data-testid="input-gpp.mspa_service_provider_mode"
+                  />
+                </Form.Item>
+                <Form.Item
+                  name={["gpp", "mspa_opt_out_option_mode"]}
                   label="Enable MSPA opt-out option mode"
-                  name="gpp.mspa_opt_out_option_mode"
-                  variant="switchFirst"
                   tooltip="Enable opt-out option mode if you engage or may engage in the sales or sharing of personal information, or process any information for the purpose of targeted advertising."
-                  isDisabled={
-                    !!values.gpp.mspa_service_provider_mode ||
-                    !values.gpp.mspa_covered_transactions
-                  }
-                />
+                  layout="horizontal"
+                  colon={false}
+                  valuePropName="checked"
+                >
+                  <Switch
+                    size="small"
+                    disabled={
+                      !!gppValues?.mspa_service_provider_mode ||
+                      !gppValues?.mspa_covered_transactions
+                    }
+                    data-testid="input-gpp.mspa_opt_out_option_mode"
+                  />
+                </Form.Item>
               </Section>
             ) : null}
           </>
         ) : null}
         {isTcfEnabled ? (
           <>
-            <Divider color="gray.200" />
+            <Divider className="my-0" />
             <Section title="GPP Europe">
-              <Text fontSize="sm" fontWeight="medium">
+              <Typography.Text className="text-sm font-medium">
                 Configure TCF string for Global Privacy Platform
-              </Text>
-              <CustomSwitch
+              </Typography.Text>
+              <Form.Item
+                name={["gpp", "enable_tcfeu_string"]}
                 label="Enable TC string"
-                name="gpp.enable_tcfeu_string"
-                variant="switchFirst"
                 tooltip="When enabled, the GPP API will include a TCF EU consent string for users who are in regions where TCF applies."
-              />
+                layout="horizontal"
+                colon={false}
+                valuePropName="checked"
+              >
+                <Switch
+                  size="small"
+                  data-testid="input-gpp.enable_tcfeu_string"
+                />
+              </Form.Item>
             </Section>
           </>
         ) : null}
-      </Stack>
+      </Flex>
     </SettingsBox>
   );
 };
