@@ -145,6 +145,7 @@ class TestWorkerDisableFlags:
         mock_config.celery.worker_disable_heartbeat = False
         mock_config.celery.worker_disable_gossip = False
         mock_config.celery.worker_disable_mingle = False
+        mock_config.celery.worker_concurrency = 2
         with patch("fides.api.worker.CONFIG", mock_config):
             yield mock_config
 
@@ -251,3 +252,37 @@ class TestWorkerDisableFlags:
         assert "--without-heartbeat" in argv
         assert "--without-gossip" not in argv
         assert "--without-mingle" in argv
+
+
+@patch("fides.api.worker.celery_app.worker_main")
+class TestWorkerConcurrency:
+    """Tests for CONFIG.celery.worker_concurrency."""
+
+    @pytest.fixture(autouse=True)
+    def mock_celery_config(self, worker_main_mock: MagicMock):
+        mock_config = MagicMock()
+        mock_config.celery.worker_disable_heartbeat = False
+        mock_config.celery.worker_disable_gossip = False
+        mock_config.celery.worker_disable_mingle = False
+        mock_config.celery.worker_concurrency = 2
+        with patch("fides.api.worker.CONFIG", mock_config):
+            yield mock_config
+
+    def test_default_concurrency_in_argv(
+        self, mock_celery_config: MagicMock, worker_main_mock: MagicMock
+    ):
+        start_worker()
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert "--concurrency=2" in argv
+
+    @pytest.mark.parametrize("concurrency", [1, 4, 16])
+    def test_custom_concurrency_in_argv(
+        self,
+        mock_celery_config: MagicMock,
+        worker_main_mock: MagicMock,
+        concurrency: int,
+    ):
+        mock_celery_config.celery.worker_concurrency = concurrency
+        start_worker()
+        argv = worker_main_mock.call_args.kwargs["argv"]
+        assert f"--concurrency={concurrency}" in argv

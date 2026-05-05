@@ -42,7 +42,7 @@ def _run_celery_worker(worker_queues: str) -> None:
         "--quiet",  # Disable Celery startup banner
         "worker",
         "--loglevel=info",
-        "--concurrency=2",
+        f"--concurrency={CONFIG.celery.worker_concurrency}",
         f"--queues={worker_queues}",
     ]
     without_flags = []
