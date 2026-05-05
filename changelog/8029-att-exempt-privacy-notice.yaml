@@ -1,0 +1,4 @@
+type: Added
+description: Add `att_exempt` field to PrivacyNotice, PrivacyNoticeHistory, and PrivacyNoticeTemplate to support Apple App Tracking Transparency (ATT) integration
+pr: 8029
+labels: ["db-migration"]
