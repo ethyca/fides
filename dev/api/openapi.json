@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.84.1b1.dev40+g649152a79"
+    "version": "2.84.1b1.dev41+g99f853427"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -25509,6 +25509,9 @@
           "value": {
             "anyOf": [
               {
+                "type": "boolean"
+              },
+              {
                 "type": "integer"
               },
               {
@@ -25518,6 +25521,9 @@
                 "items": {
                   "anyOf": [
                     {
+                      "type": "boolean"
+                    },
+                    {
                       "type": "integer"
                     },
                     {
@@ -25526,6 +25532,9 @@
                   ]
                 },
                 "type": "array"
+              },
+              {
+                "type": "null"
               }
             ],
             "title": "Value"
@@ -25533,8 +25542,7 @@
         },
         "type": "object",
         "required": [
-          "label",
-          "value"
+          "label"
         ],
         "title": "CustomPrivacyRequestField",
         "description": "Schema for custom privacy request fields."
@@ -28857,6 +28865,9 @@
           "value": {
             "anyOf": [
               {
+                "type": "boolean"
+              },
+              {
                 "type": "integer"
               },
               {
@@ -28865,6 +28876,9 @@
               {
                 "items": {
                   "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
                     {
                       "type": "integer"
                     },
@@ -28887,7 +28901,7 @@
           "label"
         ],
         "title": "IdentityValue",
-        "description": "Represents an identity value with a label in API responses.\n\nThe value field accepts MultiValue types which match what LabeledIdentity supports:\n- int\n- str\n- List[Union[int, str]]\n\nThis allows the schema to accept list values that were previously causing\nvalidation errors."
+        "description": "Represents an identity value with a label in API responses.\n\nThe value field accepts MultiValue types which match what LabeledIdentity supports:\n- bool\n- int\n- str\n- List[Union[bool, int, str]]\n\nThis allows the schema to accept list values that were previously causing\nvalidation errors."
       },
       "IdentityVerificationConfigResponse": {
         "properties": {
