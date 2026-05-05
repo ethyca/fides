@@ -48,7 +48,7 @@ const EventDetail = ({
     </Flex>
     <Divider marginTop="4px" marginBottom="6px" />
     <Box id="errorWrapper" overflow="auto" height="100%">
-      <Text>{errorMessage}</Text>
+      <Text whiteSpace="pre-wrap">{errorMessage}</Text>
     </Box>
   </Box>
 );

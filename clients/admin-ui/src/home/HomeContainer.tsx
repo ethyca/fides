@@ -25,13 +25,19 @@ const HomeContainerInner = () => {
   const activeTheme = resolvedMode === "dark" ? darkAntTheme : defaultAntTheme;
   const bgColor =
     resolvedMode === "dark"
-      ? "var(--fidesui-bg-minos)"
-      : "var(--fidesui-full-white)";
+      ? "var(--fidesui-brand-bg-minos)"
+      : "var(--fidesui-color-white)";
+
+  // Dark cssVar block is scoped to `.fidesui-dark` (see dark-theme.ts) so non-Ant
+  // DOM (SCSS modules, plain divs) inside this subtree picks up the dark vars.
+  const cssVarScope = resolvedMode === "dark" ? "fidesui-dark" : undefined;
 
   if (alphaDashboard) {
     return (
       <ConfigProvider theme={activeTheme}>
-        <AntLayout className="h-screen">
+        <AntLayout
+          className={["h-screen", cssVarScope].filter(Boolean).join(" ")}
+        >
           <AntLayout.Content className="overflow-auto">
             <HomeDashboard />
           </AntLayout.Content>
@@ -42,7 +48,10 @@ const HomeContainerInner = () => {
 
   return (
     <ConfigProvider theme={activeTheme}>
-      <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
+      <div
+        className={["min-h-full w-full", cssVarScope].filter(Boolean).join(" ")}
+        style={{ backgroundColor: bgColor }}
+      >
         <Layout title="Home" padded={false}>
           <Flex vertical gap={40} className="pb-6">
             <HomeBanner />

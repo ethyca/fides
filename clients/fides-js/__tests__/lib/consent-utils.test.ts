@@ -582,6 +582,63 @@ describe("shouldResurfaceBanner", () => {
       options: {},
       expected: true,
     },
+    {
+      label:
+        "returns true for TCF when version hash matches but resurface_behavior includes consentMethod",
+      experience: {
+        ...mockTCFExperience,
+        experience_config: {
+          component: ComponentType.TCF_OVERLAY,
+          resurface_behavior: ["reject"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.REJECT },
+        tcf_version_hash: "v1",
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
+    {
+      label:
+        "returns false for TCF when version hash matches and resurface_behavior does not include consentMethod",
+      experience: {
+        ...mockTCFExperience,
+        experience_config: {
+          component: ComponentType.TCF_OVERLAY,
+          resurface_behavior: ["reject"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.ACCEPT },
+        tcf_version_hash: "v1",
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns true for TCF with no cookie and no prior consent",
+      experience: mockTCFExperience,
+      cookie: undefined,
+      savedConsent: undefined,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns false for TCF when fidesModalDisplay is immediate",
+      experience: {
+        ...mockTCFExperience,
+        meta: { version_hash: "v2" },
+      },
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: { fidesModalDisplay: "immediate" },
+      expected: false,
+    },
   ])("$label", ({ experience, cookie, savedConsent, options, expected }) => {
     expect(
       shouldResurfaceBanner(
