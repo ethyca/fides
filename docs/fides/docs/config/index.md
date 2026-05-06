@@ -85,6 +85,21 @@ task_default_queue = "fides"
 task_always_eager = true
 ```
 
+#### Celery OpenTelemetry-style tracing
+
+By default, trace context crosses Celery boundaries and completed task spans are logged at INFO (without an OTLP collector). Spans use structured Loguru lines with the message `otel.celery.span`, including wall-clock `span_start_unix_ns` / `span_end_unix_ns` (nanoseconds since Unix epoch) and `span_duration_ms` when both timestamps are present.
+
+To turn tracing off:
+
+```toml
+[logging]
+celery_otel_tracing = false
+```
+
+```sh
+export FIDES__LOGGING__CELERY_OTEL_TRACING=false
+```
+
 ### Credentials
 
 The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like `fides scan dataset db --credentials-id app_postgres`. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if `fides scan system okta` is used, it will expect the object to contain orgUrl, clientId, and privateKey key/value pairs for OAuth2 authentication. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:
