@@ -155,10 +155,10 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
             <Button
               type="text"
               size="small"
-              className="-mx-2"
+              className={`-mx-2 ${styles["monitor-field__name"]}`}
               onClick={() => onNavigate && onNavigate(urn)}
             >
-              {name}
+              <Text ellipsis={{ tooltip: name }}>{name}</Text>
             </Button>
             {diff_status && diff_status !== DiffStatus.ADDITION && (
               <Tag
