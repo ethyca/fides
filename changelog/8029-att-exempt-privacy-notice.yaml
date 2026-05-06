@@ -1,0 +1,4 @@
+type: Added
+description: Added att_exempt fields across relevant privacy notice models.
+pr: 8029
+labels: ["db-migration"]

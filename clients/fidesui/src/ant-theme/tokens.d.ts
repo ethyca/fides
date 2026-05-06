@@ -27,6 +27,7 @@ declare module "antd/es/theme/interface/alias" {
     brandBgWarning: string;
     brandBgSuccess: string;
     brandBgInfo: string;
+    brandBgDefault: string;
     brandErrorText: string;
     brandSuccessText: string;
 

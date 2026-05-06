@@ -1,0 +1,4 @@
+type: Added
+description: Add semantic CSS class names across Privacy Center components for custom styling
+pr: 8072
+labels: []

@@ -29,5 +29,6 @@ export const DetailsDrawer = ({
     }
     width={width}
     {...drawerProps}
+    className={`[&_.ant-drawer-title]:min-w-0 ${drawerProps.className ?? ""}`}
   />
 );

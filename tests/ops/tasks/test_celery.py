@@ -40,6 +40,7 @@ def test_celery_default_config() -> None:
     assert config.celery.task_always_eager
     assert config.celery.event_queue_prefix == "fides_worker"
     assert config.celery.task_default_queue == "fides"
+    assert config.celery.worker_concurrency == 2
 
     celery_app = _create_celery(config)
     expected_broker = (
