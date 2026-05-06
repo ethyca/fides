@@ -1,0 +1,4 @@
+type: Added
+description: ENG-3517 foundation - `attachment_user_provided` table (alembic 9b449105864d), model, repository (CRUD + state-machine + cleanup helpers), domain exceptions. Upload service + endpoint live in fidesplus.
+pr: 8110
+labels: []
