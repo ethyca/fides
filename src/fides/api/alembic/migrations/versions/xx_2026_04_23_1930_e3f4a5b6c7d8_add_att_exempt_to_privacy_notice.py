@@ -7,7 +7,7 @@ when the user denies ATT. When True, the notice is exempt from ATT and remains
 user-toggleable regardless of the ATT decision.
 
 Revision ID: e3f4a5b6c7d8
-Revises: 55cf25a3e2ca
+Revises: d76443a8a2e3
 Create Date: 2026-04-23 19:30:00.000000
 
 """
