@@ -5,14 +5,16 @@ import { isErrorResult } from "~/features/common/helpers";
 import { pluralize } from "~/features/common/utils";
 
 import {
+  type PurposeDatasetAssignment,
   useAcceptPurposeCategoriesMutation,
-  useGetDataPurposeByKeyQuery,
-  useGetPurposeDatasetsQuery,
+  useGetPurposeOverviewQuery,
 } from "./data-purpose.slice";
 
 interface PurposeGovernanceAlertProps {
   fidesKey: string;
 }
+
+const EMPTY_DATASETS: PurposeDatasetAssignment[] = [];
 
 /**
  * Governance insight describing drift between defined and detected categories
@@ -25,8 +27,9 @@ interface PurposeGovernanceAlertProps {
  */
 const PurposeGovernanceAlert = ({ fidesKey }: PurposeGovernanceAlertProps) => {
   const message = useMessage();
-  const { data: purpose } = useGetDataPurposeByKeyQuery(fidesKey);
-  const { data: datasets = [] } = useGetPurposeDatasetsQuery(fidesKey);
+  const { data: overview } = useGetPurposeOverviewQuery(fidesKey);
+  const purpose = overview?.purpose;
+  const datasets = overview?.datasets ?? EMPTY_DATASETS;
   const [acceptCategories, { isLoading: isAccepting }] =
     useAcceptPurposeCategoriesMutation();
 

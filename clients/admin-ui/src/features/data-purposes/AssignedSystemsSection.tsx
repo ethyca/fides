@@ -25,11 +25,10 @@ import styles from "~/features/data-purposes/AssignedSystemsSection.module.scss"
 import AssignPickerModal from "./AssignPickerModal";
 import {
   type AvailableSystem,
+  type PurposeDatasetAssignment,
+  type PurposeSystemAssignment,
   useAssignSystemsToPurposeMutation,
-  useGetDataPurposeByKeyQuery,
-  useGetPurposeAvailableSystemsQuery,
-  useGetPurposeDatasetsQuery,
-  useGetPurposeSystemsQuery,
+  useGetPurposeOverviewQuery,
   useRemoveSystemsFromPurposeMutation,
 } from "./data-purpose.slice";
 
@@ -38,6 +37,9 @@ interface AssignedSystemsSectionProps {
 }
 
 const VISIBLE_COUNT = 8;
+const EMPTY_SYSTEMS: PurposeSystemAssignment[] = [];
+const EMPTY_DATASETS: PurposeDatasetAssignment[] = [];
+const EMPTY_AVAILABLE_SYSTEMS: AvailableSystem[] = [];
 
 const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -47,13 +49,14 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
   const message = useMessage();
   const router = useRouter();
 
-  const { data: purpose } = useGetDataPurposeByKeyQuery(fidesKey);
-  const { data: systems = [], isLoading: isLoadingSystems } =
-    useGetPurposeSystemsQuery(fidesKey);
-  const { data: datasets = [] } = useGetPurposeDatasetsQuery(fidesKey);
+  const { data: overview, isLoading: isLoadingSystems } =
+    useGetPurposeOverviewQuery(fidesKey);
+  const purpose = overview?.purpose;
+  const systems = overview?.systems ?? EMPTY_SYSTEMS;
+  const datasets = overview?.datasets ?? EMPTY_DATASETS;
+  const availableSystems =
+    overview?.available_systems ?? EMPTY_AVAILABLE_SYSTEMS;
   const [removeSystems] = useRemoveSystemsFromPurposeMutation();
-  const { data: availableSystems = [], isFetching: isFetchingAvailable } =
-    useGetPurposeAvailableSystemsQuery(fidesKey, { skip: !modalOpen });
   const [assignSystems, { isLoading: isAssigning }] =
     useAssignSystemsToPurposeMutation();
 
@@ -287,7 +290,7 @@ const AssignedSystemsSection = ({ fidesKey }: AssignedSystemsSectionProps) => {
         searchPlaceholder="Search data consumers..."
         filterPlaceholder="All types"
         data={availableSystems}
-        isFetching={isFetchingAvailable}
+        isFetching={false}
         isSubmitting={isAssigning}
         columns={[
           { title: "System", dataIndex: "system_name", key: "system_name" },

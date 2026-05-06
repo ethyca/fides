@@ -258,17 +258,6 @@ export const dataPurposesHandlers = () => {
       );
     }),
 
-    rest.get(`${apiBase}/data-purpose/:fidesKey`, (req, res, ctx) => {
-      const { fidesKey } = req.params;
-      const purpose = purposesStore.find(
-        (candidate) => candidate.fides_key === fidesKey,
-      );
-      if (!purpose) {
-        return res(ctx.status(404), ctx.json({ detail: "Purpose not found" }));
-      }
-      return res(ctx.status(200), ctx.json(purpose));
-    }),
-
     rest.post(`${apiBase}/data-purpose`, async (req, res, ctx) => {
       const body = (await req.json()) as Partial<DataPurposeResponse>;
       if (!body.fides_key || !body.name || !body.data_use) {
@@ -360,59 +349,39 @@ export const dataPurposesHandlers = () => {
       return res(ctx.status(200), ctx.json(summaries));
     }),
 
-    // GET /api/v1/plus/data-purpose/:fidesKey/systems
-    rest.get(`${plusBase}/data-purpose/:fidesKey/systems`, (req, res, ctx) => {
+    // GET /api/v1/plus/data-purpose/:fidesKey/overview
+    // Single batched call returning everything the detail page needs.
+    rest.get(`${plusBase}/data-purpose/:fidesKey/overview`, (req, res, ctx) => {
       const { fidesKey } = req.params;
+      const purpose = purposesStore.find(
+        (candidate) => candidate.fides_key === fidesKey,
+      );
+      if (!purpose) {
+        return res(ctx.status(404), ctx.json({ detail: "Purpose not found" }));
+      }
+      const systems = systemsStore[fidesKey as string] ?? [];
+      const datasets = datasetsStore[fidesKey as string] ?? [];
+      const assignedSystemIds = new Set(
+        systems.map((system) => system.system_id),
+      );
+      const assignedDatasetKeys = new Set(
+        datasets.map((dataset) => dataset.dataset_fides_key),
+      );
       return res(
         ctx.status(200),
-        ctx.json(systemsStore[fidesKey as string] ?? []),
+        ctx.json({
+          purpose,
+          systems,
+          datasets,
+          available_systems: mockAvailableSystems.filter(
+            (system) => !assignedSystemIds.has(system.system_id),
+          ),
+          available_datasets: mockAvailableDatasets.filter(
+            (dataset) => !assignedDatasetKeys.has(dataset.dataset_fides_key),
+          ),
+        }),
       );
     }),
-
-    // GET /api/v1/plus/data-purpose/:fidesKey/datasets
-    rest.get(`${plusBase}/data-purpose/:fidesKey/datasets`, (req, res, ctx) => {
-      const { fidesKey } = req.params;
-      return res(
-        ctx.status(200),
-        ctx.json(datasetsStore[fidesKey as string] ?? []),
-      );
-    }),
-
-    // GET /api/v1/plus/data-purpose/:fidesKey/available-systems
-    // "Available" = not yet assigned to this purpose.
-    rest.get(
-      `${plusBase}/data-purpose/:fidesKey/available-systems`,
-      (req, res, ctx) => {
-        const { fidesKey } = req.params;
-        const assignedIds = new Set(
-          (systemsStore[fidesKey as string] ?? []).map(
-            (system) => system.system_id,
-          ),
-        );
-        const available = mockAvailableSystems.filter(
-          (system) => !assignedIds.has(system.system_id),
-        );
-        return res(ctx.status(200), ctx.json(available));
-      },
-    ),
-
-    // GET /api/v1/plus/data-purpose/:fidesKey/available-datasets
-    // "Available" = not yet assigned to this purpose.
-    rest.get(
-      `${plusBase}/data-purpose/:fidesKey/available-datasets`,
-      (req, res, ctx) => {
-        const { fidesKey } = req.params;
-        const assignedKeys = new Set(
-          (datasetsStore[fidesKey as string] ?? []).map(
-            (dataset) => dataset.dataset_fides_key,
-          ),
-        );
-        const available = mockAvailableDatasets.filter(
-          (dataset) => !assignedKeys.has(dataset.dataset_fides_key),
-        );
-        return res(ctx.status(200), ctx.json(available));
-      },
-    ),
 
     // GET /api/v1/plus/data-purpose/feature-options
     rest.get(`${plusBase}/data-purpose/feature-options`, (_req, res, ctx) =>

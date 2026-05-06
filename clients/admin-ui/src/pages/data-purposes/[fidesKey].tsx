@@ -8,7 +8,7 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { isFetchBaseQueryError } from "~/features/common/helpers";
 import { DATA_PURPOSES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { useGetDataPurposeByKeyQuery } from "~/features/data-purposes/data-purpose.slice";
+import { useGetPurposeOverviewQuery } from "~/features/data-purposes/data-purpose.slice";
 import PurposeDashboard from "~/features/data-purposes/PurposeDashboard";
 
 const PurposeDetailPage: NextPage = () => {
@@ -18,13 +18,14 @@ const PurposeDetailPage: NextPage = () => {
   const fidesKey = typeof rawKey === "string" ? rawKey : undefined;
 
   const {
-    data: purpose,
+    data: overview,
     isLoading,
     isError,
     error,
-  } = useGetDataPurposeByKeyQuery(fidesKey ?? "", {
+  } = useGetPurposeOverviewQuery(fidesKey ?? "", {
     skip: !fidesKey || !flags.alphaPurposeBasedAccessControl,
   });
+  const purpose = overview?.purpose;
 
   if (!flags.alphaPurposeBasedAccessControl) {
     return (

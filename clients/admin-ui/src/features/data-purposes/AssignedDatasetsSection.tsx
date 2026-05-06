@@ -26,9 +26,7 @@ import {
   type PurposeDatasetAssignment,
   useAcceptPurposeCategoriesMutation,
   useAddDatasetsToPurposeMutation,
-  useGetDataPurposeByKeyQuery,
-  useGetPurposeAvailableDatasetsQuery,
-  useGetPurposeDatasetsQuery,
+  useGetPurposeOverviewQuery,
   useMarkPurposeCategoriesMisclassifiedMutation,
   useRemoveDatasetsFromPurposeMutation,
 } from "./data-purpose.slice";
@@ -38,6 +36,8 @@ interface AssignedDatasetsSectionProps {
 }
 
 const MAX_VISIBLE_CATEGORIES = 2;
+const EMPTY_DATASETS: PurposeDatasetAssignment[] = [];
+const EMPTY_AVAILABLE_DATASETS: AvailableDataset[] = [];
 
 interface DataCategoriesCellProps {
   categories: string[] | undefined;
@@ -83,14 +83,15 @@ const AssignedDatasetsSection = ({
   const [issuesOnly, setIssuesOnly] = useState(false);
   const message = useMessage();
 
-  const { data: purpose } = useGetDataPurposeByKeyQuery(fidesKey);
-  const { data: datasets = [], isLoading: isLoadingDatasets } =
-    useGetPurposeDatasetsQuery(fidesKey);
+  const { data: overview, isLoading: isLoadingDatasets } =
+    useGetPurposeOverviewQuery(fidesKey);
+  const purpose = overview?.purpose;
+  const datasets = overview?.datasets ?? EMPTY_DATASETS;
+  const availableDatasets =
+    overview?.available_datasets ?? EMPTY_AVAILABLE_DATASETS;
   const [acceptCategories] = useAcceptPurposeCategoriesMutation();
   const [markMisclassified] = useMarkPurposeCategoriesMisclassifiedMutation();
   const [removeDatasets] = useRemoveDatasetsFromPurposeMutation();
-  const { data: availableDatasets = [], isFetching: isFetchingAvailable } =
-    useGetPurposeAvailableDatasetsQuery(fidesKey, { skip: !modalOpen });
   const [addDatasets, { isLoading: isAdding }] =
     useAddDatasetsToPurposeMutation();
 
@@ -498,7 +499,7 @@ const AssignedDatasetsSection = ({
         searchPlaceholder="Search datasets..."
         filterPlaceholder="All systems"
         data={availableDatasets}
-        isFetching={isFetchingAvailable}
+        isFetching={false}
         isSubmitting={isAdding}
         columns={[
           { title: "Dataset", dataIndex: "dataset_name", key: "dataset_name" },

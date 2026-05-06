@@ -64,6 +64,14 @@ export interface PurposeFeatureOption {
   label: string;
 }
 
+export interface PurposeOverviewResponse {
+  purpose: DataPurpose;
+  systems: PurposeSystemAssignment[];
+  datasets: PurposeDatasetAssignment[];
+  available_systems: AvailableSystem[];
+  available_datasets: AvailableDataset[];
+}
+
 /**
  * Per-purpose enrichment used by the list grid and network view. Served
  * in a single batched call to avoid N+1 requests across cards.
@@ -95,14 +103,6 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         })),
       ],
     }),
-    getDataPurposeByKey: builder.query<DataPurpose, string>({
-      query: (fidesKey) => ({
-        url: `data-purpose/${fidesKey}`,
-      }),
-      providesTags: (_result, _error, fidesKey) => [
-        { type: "DataPurpose", id: fidesKey },
-      ],
-    }),
     createDataPurpose: builder.mutation<DataPurpose, Partial<DataPurpose>>({
       query: (body) => ({
         url: `data-purpose`,
@@ -121,7 +121,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        { type: "DataPurpose", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
         { type: "DataPurpose", id: "LIST" },
       ],
     }),
@@ -147,48 +147,20 @@ export const dataPurposesApi = baseApi.injectEndpoints({
       query: () => ({
         url: `plus/data-purpose/summaries`,
       }),
-      // Provide both list-level and per-id tags so scoped invalidations from
-      // per-purpose mutations (e.g. `{type: "PurposeSystems", id}`) flow
-      // through to the list grid's batched summary.
       providesTags: (result) => [
-        { type: "PurposeSystems" as const, id: "LIST" },
-        { type: "PurposeDatasets" as const, id: "LIST" },
-        ...(result ?? []).flatMap((summary) => [
-          { type: "PurposeSystems" as const, id: summary.fides_key },
-          { type: "PurposeDatasets" as const, id: summary.fides_key },
-        ]),
+        { type: "DataPurpose" as const, id: "LIST" },
+        ...(result ?? []).map((summary) => ({
+          type: "DataPurpose" as const,
+          id: summary.fides_key,
+        })),
       ],
     }),
-    getPurposeSystems: builder.query<PurposeSystemAssignment[], string>({
+    getPurposeOverview: builder.query<PurposeOverviewResponse, string>({
       query: (fidesKey) => ({
-        url: `plus/data-purpose/${fidesKey}/systems`,
+        url: `plus/data-purpose/${fidesKey}/overview`,
       }),
       providesTags: (_result, _error, fidesKey) => [
-        { type: "PurposeSystems", id: fidesKey },
-      ],
-    }),
-    getPurposeDatasets: builder.query<PurposeDatasetAssignment[], string>({
-      query: (fidesKey) => ({
-        url: `plus/data-purpose/${fidesKey}/datasets`,
-      }),
-      providesTags: (_result, _error, fidesKey) => [
-        { type: "PurposeDatasets", id: fidesKey },
-      ],
-    }),
-    getPurposeAvailableSystems: builder.query<AvailableSystem[], string>({
-      query: (fidesKey) => ({
-        url: `plus/data-purpose/${fidesKey}/available-systems`,
-      }),
-      providesTags: (_result, _error, fidesKey) => [
-        { type: "PurposeSystems", id: fidesKey },
-      ],
-    }),
-    getPurposeAvailableDatasets: builder.query<AvailableDataset[], string>({
-      query: (fidesKey) => ({
-        url: `plus/data-purpose/${fidesKey}/available-datasets`,
-      }),
-      providesTags: (_result, _error, fidesKey) => [
-        { type: "PurposeDatasets", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
       ],
     }),
     getPurposeFeatureOptions: builder.query<PurposeFeatureOption[], void>({
@@ -206,7 +178,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         body: { system_ids: systemIds },
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        { type: "PurposeSystems", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
       ],
     }),
     removeSystemsFromPurpose: builder.mutation<
@@ -219,7 +191,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         body: { system_ids: systemIds },
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        { type: "PurposeSystems", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
       ],
     }),
     addDatasetsToPurpose: builder.mutation<
@@ -232,7 +204,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         body: { dataset_fides_keys: datasetFidesKeys },
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        { type: "PurposeDatasets", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
       ],
     }),
     removeDatasetsFromPurpose: builder.mutation<
@@ -245,7 +217,7 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         body: { dataset_fides_keys: datasetFidesKeys },
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        { type: "PurposeDatasets", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
       ],
     }),
     acceptPurposeCategories: builder.mutation<
@@ -258,8 +230,8 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         body: { categories },
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        { type: "DataPurpose", id: fidesKey },
-        { type: "PurposeDatasets", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
       ],
     }),
     markPurposeCategoriesMisclassified: builder.mutation<
@@ -275,25 +247,9 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         },
       }),
       invalidatesTags: (_result, _error, { fidesKey }) => [
-        { type: "PurposeDatasets", id: fidesKey },
+        { type: "PurposeOverview", id: fidesKey },
+        { type: "DataPurpose", id: "LIST" },
       ],
-    }),
-
-    downloadDataPurposesCsv: builder.query<Blob, DataPurposeParams>({
-      query: (params) => ({
-        url: `data-purpose`,
-        params: { ...params, download_csv: true },
-        responseHandler: "content-type",
-      }),
-    }),
-
-    // Plus-only, MSW-mocked for now.
-    // TODO: replace with real endpoint once fidesplus ships it.
-    getPurposeSummaries: builder.query<PurposeSummary[], void>({
-      query: () => ({
-        url: `plus/data-purpose/summaries`,
-      }),
-      providesTags: ["DataPurpose"],
     }),
 
     downloadDataPurposesCsv: builder.query<Blob, DataPurposeParams>({
@@ -308,15 +264,11 @@ export const dataPurposesApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataPurposesQuery,
-  useGetDataPurposeByKeyQuery,
   useCreateDataPurposeMutation,
   useUpdateDataPurposeMutation,
   useDeleteDataPurposeMutation,
   useGetPurposeSummariesQuery,
-  useGetPurposeSystemsQuery,
-  useGetPurposeDatasetsQuery,
-  useGetPurposeAvailableSystemsQuery,
-  useGetPurposeAvailableDatasetsQuery,
+  useGetPurposeOverviewQuery,
   useGetPurposeFeatureOptionsQuery,
   useAssignSystemsToPurposeMutation,
   useRemoveSystemsFromPurposeMutation,
