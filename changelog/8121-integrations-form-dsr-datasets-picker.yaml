@@ -1,0 +1,4 @@
+type: Added
+description: Added a "Privacy request datasets" picker to the new Integrations form for editing database integrations.
+pr: 8121
+labels: []
