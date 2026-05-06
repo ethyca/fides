@@ -62,7 +62,6 @@ from fides.api.service.messaging.messaging_providers.twilio_sms_service import (
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.service.messaging.aws_ses_service import AWS_SES_Service
 
 EMAIL_JOIN_STRING = ", "
 
@@ -70,11 +69,7 @@ EMAIL_JOIN_STRING = ", "
 def _resolve_provider_map() -> dict[
     MessagingServiceType, type[BaseMessageProviderService]
 ]:
-    """Build provider map at call time so test mocks of provider classes are respected.
-
-    Note: aws_ses is excluded — it uses the legacy _aws_ses_dispatcher until
-    the follow-up PR migrates it to AwsSesService.
-    """
+    """Build provider map at call time so test mocks of provider classes are respected."""
     return {
         MessagingServiceType.mailgun: MailgunService,
         MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
@@ -84,7 +79,7 @@ def _resolve_provider_map() -> dict[
     }
 
 
-# Static reference for tests (incomplete until aws_ses is migrated)
+# Static reference for completeness invariant tests
 PROVIDER_MAP: dict[MessagingServiceType, type[BaseMessageProviderService]] = (
     _resolve_provider_map()
 )
