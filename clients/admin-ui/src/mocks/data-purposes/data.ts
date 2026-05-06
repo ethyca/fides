@@ -2,6 +2,7 @@ import type {
   AvailableDataset,
   AvailableSystem,
   PurposeDatasetAssignment,
+  PurposeFeatureOption,
   PurposeSystemAssignment,
 } from "~/features/data-purposes/data-purpose.slice";
 import type { DataPurposeResponse } from "~/types/api";
@@ -10,8 +11,15 @@ export type {
   AvailableDataset,
   AvailableSystem,
   PurposeDatasetAssignment,
+  PurposeFeatureOption,
   PurposeSystemAssignment,
 };
+
+export const mockPurposeFeatureOptions: PurposeFeatureOption[] = [
+  { value: "linking_devices", label: "Linking across devices" },
+  { value: "automated_decisions", label: "Automated decision-making" },
+  { value: "profiling", label: "Profiling" },
+];
 
 export const mockDataPurposes: DataPurposeResponse[] = [
   {

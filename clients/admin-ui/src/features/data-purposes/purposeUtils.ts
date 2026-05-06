@@ -9,12 +9,6 @@ export const DATA_USE_LABELS: Record<string, string> = {
 export const formatDataUse = (key: string): string =>
   DATA_USE_LABELS[key] ?? key;
 
-export const FEATURE_LABELS: Record<string, string> = {
-  linking_devices: "Linking across devices",
-  automated_decisions: "Automated decision-making",
-  profiling: "Profiling",
-};
-
 export type ComplianceStatus = "compliant" | "drift" | "unknown";
 
 export interface CategoryDrift {

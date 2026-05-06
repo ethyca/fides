@@ -22,9 +22,9 @@ import { LegalBasisForProcessingEnum } from "~/types/api";
 
 import {
   type DataPurpose,
+  useGetPurposeFeatureOptionsQuery,
   useUpdateDataPurposeMutation,
 } from "./data-purpose.slice";
-import { FEATURE_LABELS } from "./purposeUtils";
 
 interface PurposeConfigFormProps {
   purpose: DataPurpose;
@@ -54,13 +54,6 @@ const Section = ({ title, description, children }: SectionProps) => (
   </Card>
 );
 
-const FEATURE_OPTIONS = Object.entries(FEATURE_LABELS).map(
-  ([value, label]) => ({
-    value,
-    label,
-  }),
-);
-
 const PurposeConfigForm = ({ purpose }: PurposeConfigFormProps) => {
   const router = useRouter();
   const [form] = Form.useForm<Partial<DataPurpose>>();
@@ -72,6 +65,8 @@ const PurposeConfigForm = ({ purpose }: PurposeConfigFormProps) => {
   const { legalBasisOptions } = useLegalBasisOptions();
   const { specialCategoryLegalBasisOptions } =
     useSpecialCategoryLegalBasisOptions();
+  const { data: featureOptions = [], isLoading: isLoadingFeatureOptions } =
+    useGetPurposeFeatureOptionsQuery();
 
   const legalBasis = Form.useWatch("legal_basis_for_processing", form);
 
@@ -315,7 +310,8 @@ const PurposeConfigForm = ({ purpose }: PurposeConfigFormProps) => {
             <Select
               aria-label="Features"
               mode="multiple"
-              options={FEATURE_OPTIONS}
+              options={featureOptions}
+              loading={isLoadingFeatureOptions}
               placeholder="Select features"
               data-testid="data-purpose-features-select"
             />

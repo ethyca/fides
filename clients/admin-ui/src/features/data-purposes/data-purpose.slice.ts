@@ -59,6 +59,11 @@ export interface AvailableDataset {
   system_name: string;
 }
 
+export interface PurposeFeatureOption {
+  value: string;
+  label: string;
+}
+
 /**
  * Per-purpose enrichment used by the list grid and network view. Served
  * in a single batched call to avoid N+1 requests across cards.
@@ -186,6 +191,11 @@ export const dataPurposesApi = baseApi.injectEndpoints({
         { type: "PurposeDatasets", id: fidesKey },
       ],
     }),
+    getPurposeFeatureOptions: builder.query<PurposeFeatureOption[], void>({
+      query: () => ({
+        url: `plus/data-purpose/feature-options`,
+      }),
+    }),
     assignSystemsToPurpose: builder.mutation<
       PurposeSystemAssignment[],
       { fidesKey: string; systemIds: string[] }
@@ -307,6 +317,7 @@ export const {
   useGetPurposeDatasetsQuery,
   useGetPurposeAvailableSystemsQuery,
   useGetPurposeAvailableDatasetsQuery,
+  useGetPurposeFeatureOptionsQuery,
   useAssignSystemsToPurposeMutation,
   useRemoveSystemsFromPurposeMutation,
   useAddDatasetsToPurposeMutation,

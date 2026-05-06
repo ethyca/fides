@@ -12,6 +12,7 @@ import {
   mockAvailableSystems,
   mockDataPurposes,
   mockPurposeDatasets,
+  mockPurposeFeatureOptions,
   mockPurposeSystems,
   type PurposeDatasetAssignment,
   type PurposeSystemAssignment,
@@ -411,6 +412,11 @@ export const dataPurposesHandlers = () => {
         );
         return res(ctx.status(200), ctx.json(available));
       },
+    ),
+
+    // GET /api/v1/plus/data-purpose/feature-options
+    rest.get(`${plusBase}/data-purpose/feature-options`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockPurposeFeatureOptions)),
     ),
 
     // PUT /api/v1/plus/data-purpose/:fidesKey/systems — assign systems (bulk)
