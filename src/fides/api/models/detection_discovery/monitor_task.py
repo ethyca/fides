@@ -63,18 +63,6 @@ class MonitorTask(WorkerTask, Base):
     def allowed_action_types(cls) -> List[str]:
         return [e.value for e in MonitorTaskType]
 
-    @classmethod
-    def is_cancelled(cls, db: Session, celery_id: str) -> bool:
-        """Check if a monitor task has been cancelled by inspecting its status.
-
-        Cancellation uses awaiting_processing because partial classification
-        results are preserved — the task is paused, not discarded.
-        """
-        task = cls.get_by(db=db, field="celery_id", value=celery_id)
-        if not task:
-            return False
-        return task.status == ExecutionLogStatus.awaiting_processing
-
 
 class TaskRunType(Enum):
     """
@@ -174,3 +162,15 @@ def update_monitor_task_with_execution_log(
     db.commit()
     db.refresh(task_record)
     return task_record
+
+
+def is_monitor_task_cancelled(db: Session, celery_id: str) -> bool:
+    """Check if a monitor task has been cancelled by inspecting its status.
+
+    Cancellation uses awaiting_processing because partial classification
+    results are preserved — the task is paused, not discarded.
+    """
+    task = MonitorTask.get_by(db=db, field="celery_id", value=celery_id)
+    if not task:
+        return False
+    return task.status == ExecutionLogStatus.awaiting_processing

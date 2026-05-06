@@ -20,6 +20,7 @@ import ConnectionTypeLogo, {
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionType,
+  ExecutionLogStatus,
   MonitorTaskResponse,
   MonitorTaskType,
 } from "~/types/api";
@@ -94,9 +95,11 @@ export const InProgressMonitorTaskItem = ({
   })();
 
   const taskCount = task.staged_resource_urns?.length || 0;
-  const isInProgress = ["pending", "in_processing", "retrying"].includes(
-    (task.status || "").toLowerCase(),
-  );
+  const isInProgress = [
+    ExecutionLogStatus.PENDING as string,
+    ExecutionLogStatus.IN_PROCESSING as string,
+    ExecutionLogStatus.RETRYING as string,
+  ].includes((task.status || "").toLowerCase());
   const fieldCount = task.field_count || taskCount;
   const taskTitle = (() => {
     if (

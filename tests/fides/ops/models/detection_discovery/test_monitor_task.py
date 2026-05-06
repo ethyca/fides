@@ -8,6 +8,7 @@ from fides.api.models.detection_discovery.monitor_task import (
     MonitorTaskType,
     TaskRunType,
     create_monitor_task_with_execution_log,
+    is_monitor_task_cancelled,
     update_monitor_task_with_execution_log,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -574,10 +575,10 @@ class TestMonitorTaskCancellation:
             },
         )
 
-        assert MonitorTask.is_cancelled(db, celery_id) is expected
+        assert is_monitor_task_cancelled(db, celery_id) is expected
 
         db.delete(task)
         db.commit()
 
     def test_is_cancelled_unknown_celery_id(self, db: Session) -> None:
-        assert MonitorTask.is_cancelled(db, "non-existent-celery-id") is False
+        assert is_monitor_task_cancelled(db, "non-existent-celery-id") is False

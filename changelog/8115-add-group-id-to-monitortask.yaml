@@ -1,4 +1,4 @@
 type: Added
-description: Add group_id column and is_cancelled method to MonitorTask for task cancellation support
+description: Add group_id column to MonitorTask and is_monitor_task_cancelled for task cancellation support
 pr: 8115
 labels: ["db-migration"]
