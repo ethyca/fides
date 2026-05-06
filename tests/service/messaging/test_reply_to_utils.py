@@ -1,0 +1,35 @@
+"""Tests for reply-to token generation and address formatting."""
+
+from fides.api.service.messaging.messaging_providers.reply_to_utils import (
+    format_reply_to_address,
+    generate_reply_to_token,
+)
+
+
+class TestGenerateReplyToToken:
+    def test_token_is_32_hex_chars(self):
+        token = generate_reply_to_token()
+        assert len(token) == 32
+        assert all(c in "0123456789abcdef" for c in token)
+
+    def test_tokens_are_unique(self):
+        tokens = {generate_reply_to_token() for _ in range(100)}
+        assert len(tokens) == 100
+
+
+class TestFormatReplyToAddress:
+    def test_plus_addressing(self):
+        address = format_reply_to_address("abc123", "example.com")
+        assert address == "reply+abc123@replies.example.com"
+
+    def test_dedicated_subdomain(self):
+        address = format_reply_to_address(
+            "abc123", "example.com", use_plus_addressing=False
+        )
+        assert address == "abc123@replies.example.com"
+
+    def test_with_real_token(self):
+        token = generate_reply_to_token()
+        address = format_reply_to_address(token, "example.com")
+        assert address == f"reply+{token}@replies.example.com"
+        assert len(token) == 32

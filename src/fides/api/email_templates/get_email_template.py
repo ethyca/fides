@@ -7,6 +7,7 @@ from fides.api.common_exceptions import EmailTemplateUnhandledActionType
 from fides.api.email_templates.template_names import (
     CONSENT_REQUEST_EMAIL_FULFILLMENT,
     CONSENT_REQUEST_VERIFICATION_TEMPLATE,
+    CORRESPONDENCE,
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     EXTERNAL_USER_WELCOME,
     MANUAL_TASK_DIGEST,
@@ -65,6 +66,8 @@ def get_email_template(  # pylint: disable=too-many-return-statements, too-many-
         return template_env.get_template(EXTERNAL_USER_WELCOME)
     if action_type == MessagingActionType.MANUAL_TASK_DIGEST:
         return template_env.get_template(MANUAL_TASK_DIGEST)
+    if action_type == MessagingActionType.CORRESPONDENCE:
+        return template_env.get_template(CORRESPONDENCE)
 
     logger.error("No corresponding template linked to the {}", action_type)
     raise EmailTemplateUnhandledActionType(
