@@ -26,12 +26,19 @@ interface HeaderProps {
   privacyRequest: PrivacyRequestResponseExtended;
   primaryIdentity: IdentityValueWithKey | null;
   link?: HeaderLinkOverrides;
+  /**
+   * Optional element(s) rendered inline alongside the existing status / rule
+   * tags. Use to mark a row with extra context like a "Current" tag in
+   * embedded contexts.
+   */
+  extraTags?: React.ReactNode;
 }
 
 export const Header = ({
   privacyRequest,
   primaryIdentity,
   link,
+  extraTags,
 }: HeaderProps) => {
   const useNativeNavigation = link?.target !== undefined;
   const router = useRouter();
@@ -64,16 +71,15 @@ export const Header = ({
           </Typography.Link>
         </Typography.Title>
       </div>
-      <RequestStatusBadge status={privacyRequest.status} />
-      {uniqueRules.length > 0 && (
-        <Flex gap={4}>
-          {uniqueRules.map((rule) => (
-            <Tag key={rule.action_type}>
-              {SubjectRequestActionTypeMap.get(rule.action_type)}
-            </Tag>
-          ))}
-        </Flex>
-      )}
+      <Flex gap="small" align="center">
+        <RequestStatusBadge status={privacyRequest.status} />
+        {uniqueRules.map((rule) => (
+          <Tag key={rule.action_type}>
+            {SubjectRequestActionTypeMap.get(rule.action_type)}
+          </Tag>
+        ))}
+        {extraTags}
+      </Flex>
       {/* Only the first ticket is shown — at most one Jira ticket per request is supported today */}
       {flags.jiraIntegration && privacyRequest.jira_tickets?.[0] && (
         <Flex gap={4} align="center">

@@ -1,4 +1,4 @@
-import { Drawer, List, Spin, Typography } from "fidesui";
+import { CUSTOM_TAG_COLOR, Drawer, List, Spin, Tag, Typography } from "fidesui";
 import React, { useMemo } from "react";
 
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
@@ -37,10 +37,19 @@ const RelatedRequestsDrawer = ({
     { skip: !isOpen || !identityFields },
   );
 
-  // Drop the current request from results — the user is already viewing it.
-  const otherRequests = useMemo<PrivacyRequestResponse[]>(() => {
+  // Pin the current request to the top so it's visible in context, then
+  // preserve the API's default ordering for everything else.
+  const sortedRequests = useMemo<PrivacyRequestResponse[]>(() => {
     const items = (data?.items ?? []) as PrivacyRequestResponse[];
-    return items.filter((item) => item.id !== currentRequestId);
+    return [...items].sort((a, b) => {
+      if (a.id === currentRequestId) {
+        return -1;
+      }
+      if (b.id === currentRequestId) {
+        return 1;
+      }
+      return 0;
+    });
   }, [data, currentRequestId]);
 
   return (
@@ -53,7 +62,7 @@ const RelatedRequestsDrawer = ({
       title="Related requests"
     >
       <Typography.Paragraph type="secondary" className="!mb-4">
-        Showing other requests that match this request&apos;s{" "}
+        Showing all requests that match this request&apos;s{" "}
         <Typography.Text strong>
           {formatLabelList(identityFields?.labels ?? []).toLocaleLowerCase()}
         </Typography.Text>
@@ -62,8 +71,8 @@ const RelatedRequestsDrawer = ({
       <Spin spinning={isFetching} centered={false}>
         <List<PrivacyRequestResponse>
           data-testid="related-requests-drawer-list"
-          dataSource={otherRequests}
-          locale={{ emptyText: "No other related requests found." }}
+          dataSource={sortedRequests}
+          locale={{ emptyText: "No matching requests found." }}
           renderItem={(item) => (
             <ListItem
               item={item}
@@ -71,6 +80,10 @@ const RelatedRequestsDrawer = ({
               compact
               header={{
                 link: { target: "_blank", rel: "noopener noreferrer" },
+                extraTags:
+                  item.id === currentRequestId ? (
+                    <Tag color={CUSTOM_TAG_COLOR.INFO}>Current</Tag>
+                  ) : undefined,
               }}
             />
           )}

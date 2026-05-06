@@ -38,6 +38,7 @@ interface ListItemProps {
    */
   header?: {
     link?: HeaderLinkOverrides;
+    extraTags?: React.ReactNode;
   };
 }
 
@@ -73,6 +74,7 @@ export const ListItem = ({
           privacyRequest={item}
           primaryIdentity={primaryIdentity}
           link={header?.link}
+          extraTags={header?.extraTags}
         />
         <Flex vertical gap="small" wrap>
           <Flex gap="small" wrap>
